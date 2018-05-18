@@ -141,6 +141,10 @@ bool ShelfLayoutManager::State::IsScreenLocked() const {
   return session_state == session_manager::SessionState::LOCKED;
 }
 
+bool ShelfLayoutManager::State::IsActiveSessionState() const {
+  return session_state == session_manager::SessionState::ACTIVE;
+}
+
 bool ShelfLayoutManager::State::Equals(const State& other) const {
   return other.visibility_state == visibility_state &&
          (visibility_state != SHELF_AUTO_HIDE ||
@@ -242,12 +246,6 @@ ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
 }
 
 void ShelfLayoutManager::UpdateVisibilityState() {
-  // Shelf is not available before login.
-  // TODO(crbug.com/701157): Remove this when the login webui fake-shelf is
-  // replaced with views.
-  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
-    return;
-
   // Bail out early after shelf is destroyed.
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
   if (in_shutdown_ || !shelf_window)
@@ -256,8 +254,8 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   if (shelf_->ShouldHideOnSecondaryDisplay(state_.session_state)) {
     // Needed to hide system tray on secondary display.
     SetState(SHELF_HIDDEN);
-  } else if ((state_.IsScreenLocked() || state_.IsAddingSecondaryUser())) {
-    // Needed to show system tray on web UI lock screen.
+  } else if (!state_.IsActiveSessionState()) {
+    // Needed to show system tray in non active session state.
     SetState(SHELF_VISIBLE);
   } else if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
     SetState(SHELF_HIDDEN);

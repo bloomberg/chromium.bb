@@ -83,6 +83,14 @@ void SetShelfAlignmentFromPrefs() {
   }
 }
 
+void UpdateShelfVisibility() {
+  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
+    Shelf* shelf = GetShelfForDisplay(display.id());
+    if (shelf)
+      shelf->UpdateVisibilityState();
+  }
+}
+
 // Set each Shelf's auto-hide behavior and alignment from the per-display prefs.
 void SetShelfBehaviorsFromPrefs() {
   // The shelf should always be bottom-aligned and not hidden in tablet mode;
@@ -361,6 +369,10 @@ void ShelfController::OnTabletModeEnded() {
 void ShelfController::OnDisplayConfigurationChanged() {
   // Set/init the shelf behaviors from preferences, in case a display was added.
   SetShelfBehaviorsFromPrefs();
+
+  // Update shelf visibility to adapt to display changes. For instance shelf
+  // should be hidden on secondary display during inactive session states.
+  UpdateShelfVisibility();
 }
 
 void ShelfController::OnWindowTreeHostReusedForDisplay(
@@ -368,6 +380,10 @@ void ShelfController::OnWindowTreeHostReusedForDisplay(
     const display::Display& display) {
   // See comment in OnWindowTreeHostsSwappedDisplays().
   SetShelfBehaviorsFromPrefs();
+
+  // Update shelf visibility to adapt to display changes. For instance shelf
+  // should be hidden on secondary display during inactive session states.
+  UpdateShelfVisibility();
 }
 
 void ShelfController::OnWindowTreeHostsSwappedDisplays(
@@ -376,6 +392,10 @@ void ShelfController::OnWindowTreeHostsSwappedDisplays(
   // The display ids for existing shelf instances may have changed, so update
   // the alignment and auto-hide state from prefs. See http://crbug.com/748291
   SetShelfBehaviorsFromPrefs();
+
+  // Update shelf visibility to adapt to display changes. For instance shelf
+  // should be hidden on secondary display during inactive session states.
+  UpdateShelfVisibility();
 }
 
 void ShelfController::OnNotificationAdded(const std::string& notification_id) {

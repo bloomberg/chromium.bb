@@ -235,6 +235,9 @@ class ASH_EXPORT ShelfLayoutManager
 
     bool IsScreenLocked() const;
 
+    // Returns whether the session is in an active state.
+    bool IsActiveSessionState() const;
+
     // Returns true if the two states are considered equal. As
     // |auto_hide_state| only matters if |visibility_state| is
     // |SHELF_AUTO_HIDE|, Equals() ignores the |auto_hide_state| as
