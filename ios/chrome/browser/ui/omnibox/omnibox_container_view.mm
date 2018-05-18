@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
 
 #import "ios/chrome/browser/ui/animation_util.h"
-#import "ios/chrome/browser/ui/omnibox/clipping_textfield_container.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -29,29 +28,6 @@ const CGFloat kTextFieldLeadingOffsetNoImage = 16;
 const CGFloat kTextFieldLeadingOffsetImage = 6;
 }  // namespace
 
-@interface OmniboxTextFieldIOS ()
-
-// Gets the bounds of the rect covering the URL.
-- (CGRect)preEditLabelRectForBounds:(CGRect)bounds;
-// Creates the UILabel if it doesn't already exist and adds it as a
-// subview.
-- (void)createSelectionViewIfNecessary;
-// Helper method used to set the text of this field.  Updates the selection view
-// to contain the correct inline autocomplete text.
-- (void)setTextInternal:(NSAttributedString*)text
-     autocompleteLength:(NSUInteger)autocompleteLength;
-// Override deleteBackward so that backspace can clear query refinement chips.
-- (void)deleteBackward;
-// Returns the layers affected by animations added by |-animateFadeWithStyle:|.
-- (NSArray*)fadeAnimationLayers;
-// Returns the text that is displayed in the field, including any inline
-// autocomplete text that may be present as an NSString. Returns the same
-// value as -|displayedText| but prefer to use this to avoid unnecessary
-// conversion from NSString to base::string16 if possible.
-- (NSString*)nsDisplayedText;
-
-@end
-
 #pragma mark - OmniboxContainerView
 
 @interface OmniboxContainerView ()
@@ -61,10 +37,11 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
 // When the |leadingButton| is not hidden, this is a constraint that links the
 // leading edge of the button to self leading edge. Used for animations.
 @property(nonatomic, strong) NSLayoutConstraint* leadingButtonLeadingConstraint;
-// The textfield container. The |textField| is contained in it, and its frame
-// should not be managed directly, instead the location bar uses this container.
-// This is required to achieve desired text clipping of long URLs.
-@property(nonatomic, strong) ClippingTextFieldContainer* textFieldContainer;
+// The leading button, such as the security status icon.
+@property(nonatomic, strong) UIButton* leadingButton;
+// Redefined as readwrite.
+@property(nonatomic, strong) OmniboxTextFieldIOS* textField;
+
 @end
 
 @implementation OmniboxContainerView
@@ -73,7 +50,6 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
 @synthesize leadingTextfieldConstraint = _leadingTextfieldConstraint;
 @synthesize incognito = _incognito;
 @synthesize leadingButtonLeadingConstraint = _leadingButtonLeadingConstraint;
-@synthesize textFieldContainer = _textFieldContainer;
 
 #pragma mark - Public properties
 
@@ -104,35 +80,24 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
                                                        font:font
                                                   textColor:textColor
                                                   tintColor:tintColor];
+    [self addSubview:_textField];
 
-    // The text field is put into a container.
-
-    // TODO(crbug.com/789968): remove these insets when the location bar
-    // background is managed by this view and not toolbar controller. These
-    // insets allow the gradient masking of the omnibox to not extend beyond
-    // the omnibox background's visible frame.
-    self.layoutMargins = UIEdgeInsetsMake(3, 3, 3, 3);
-
-    _textFieldContainer = [[ClippingTextFieldContainer alloc]
-        initWithClippingTextField:_textField];
-    [self addSubview:_textFieldContainer];
-
-    _leadingTextfieldConstraint = [_textFieldContainer.leadingAnchor
+    _leadingTextfieldConstraint = [_textField.leadingAnchor
         constraintEqualToAnchor:self.leadingAnchor
                        constant:kTextFieldLeadingOffsetNoImage];
 
     [NSLayoutConstraint activateConstraints:@[
-      [_textFieldContainer.trailingAnchor
+      [_textField.trailingAnchor
           constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-      [_textFieldContainer.topAnchor
+      [_textField.topAnchor
           constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-      [_textFieldContainer.bottomAnchor
+      [_textField.bottomAnchor
           constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
       _leadingTextfieldConstraint,
     ]];
 
-    _textFieldContainer.translatesAutoresizingMaskIntoConstraints = NO;
-    [_textFieldContainer
+    _textField.translatesAutoresizingMaskIntoConstraints = NO;
+    [_textField
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                         forAxis:
                                             UILayoutConstraintAxisHorizontal];
@@ -157,7 +122,7 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
 
     NSLayoutConstraint* leadingButtonToTextField = nil;
     leadingButtonToTextField = [self.leadingButton.trailingAnchor
-        constraintEqualToAnchor:self.textFieldContainer.leadingAnchor
+        constraintEqualToAnchor:self.textField.leadingAnchor
                        constant:-kTextFieldLeadingOffsetImage];
 
     [NSLayoutConstraint activateConstraints:@[
