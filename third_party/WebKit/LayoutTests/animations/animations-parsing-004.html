@@ -23,7 +23,7 @@ test(() => {
 
   style.animationDirection = "reverse";
   assert_not_equals(Object.keys(style).indexOf('animationDirection'), -1);
-  assert_equals(Object.keys(style).indexOf('webkitAnimationDirection'), -1);
+  assert_not_equals(Object.keys(style).indexOf('webkitAnimationDirection'), -1);
   assert_equals(style.animationDirection, 'reverse');
   assert_equals(computedStyle.animationDirection, 'reverse');
   assert_equals(style.webkitAnimationDirection, 'reverse');
@@ -107,7 +107,7 @@ test(() => {
 
   style.animationPlayState = "paused";
   assert_not_equals(Object.keys(style).indexOf('animationPlayState'), -1);
-  assert_equals(Object.keys(style).indexOf('webkitAnimationPlayState'), -1);
+  assert_not_equals(Object.keys(style).indexOf('webkitAnimationPlayState'), -1);
   assert_equals(style.animationPlayState, 'paused');
   assert_equals(computedStyle.animationPlayState, 'paused');
   assert_equals(style.webkitAnimationPlayState, 'paused');
@@ -191,7 +191,7 @@ test(() => {
 
   style.animationFillMode = "forwards";
   assert_not_equals(Object.keys(style).indexOf('animationFillMode'), -1);
-  assert_equals(Object.keys(style).indexOf('webkitAnimationFillMode'), -1);
+  assert_not_equals(Object.keys(style).indexOf('webkitAnimationFillMode'), -1);
   assert_equals(style.animationFillMode, 'forwards');
   assert_equals(computedStyle.animationFillMode, 'forwards');
   assert_equals(style.webkitAnimationFillMode, 'forwards');

@@ -31,15 +31,22 @@ class {{property_classname}} final : public {{property.namespace_group}} {
  public:
   constexpr {{property_classname}}() : {{property.namespace_group}}() {}
   {% endif %}
+  {% if property.is_internal %}
+  bool IsEnabled() const override { return false; }
+  {% elif property.runtime_flag %}
+  bool IsEnabled() const override {
+    return RuntimeEnabledFeatures::{{property.runtime_flag}}Enabled();
+  }
+  {% endif %}
   const char* GetPropertyName() const override { return "{{property.name}}\0"; }
   const WTF::AtomicString& GetPropertyNameAtomicString() const override {
     static const WTF::AtomicString& name = WTF::AtomicString("{{property.name}}\0");
     return name;
   }
-  {% if property.alias_for == None %}
   const WTF::String GetJSPropertyName() const override {
     return WTF::String("{{property_classname[0].lower() + property_classname[1:]}}\0");
   }
+  {% if property.alias_for == None %}
   CSSPropertyID PropertyID() const override { return {{property.property_id}}; }
   {%if property.layout_dependent %}
   bool IsLayoutDependentProperty() const override { return true; }
@@ -69,13 +76,6 @@ class {{property_classname}} final : public {{property.namespace_group}} {
   {% endif %}
   {% if not property.is_property %}
   bool IsProperty() const override { return false; }
-  {% endif %}
-  {% if property.is_internal %}
-  bool IsEnabled() const override { return false; }
-  {% elif property.runtime_flag %}
-  bool IsEnabled() const override {
-    return RuntimeEnabledFeatures::{{property.runtime_flag}}Enabled();
-  }
   {% endif %}
   {% if not property.affected_by_all %}
   bool IsAffectedByAll() const override { return false; }

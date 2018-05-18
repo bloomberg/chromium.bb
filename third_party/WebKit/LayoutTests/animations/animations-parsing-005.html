@@ -32,7 +32,7 @@ test(() => {
 
   style.animation = "myShorthandAnim";
   assert_not_equals(Object.keys(style).indexOf('animation'), -1);
-  assert_equals(Object.keys(style).indexOf('webkitAnimation'), -1);
+  assert_not_equals(Object.keys(style).indexOf('webkitAnimation'), -1);
   assert_equals(style.animation, 'myShorthandAnim 0s ease 0s 1 normal none running');
   assert_equals(computedStyle.animation, 'myShorthandAnim 0s ease 0s 1 normal none running');
   assert_equals(style.webkitAnimation, 'myShorthandAnim 0s ease 0s 1 normal none running');
@@ -41,7 +41,7 @@ test(() => {
 
   style.animation = "none";
   assert_not_equals(Object.keys(style).indexOf('animation'), -1);
-  assert_equals(Object.keys(style).indexOf('webkitAnimation'), -1);
+  assert_not_equals(Object.keys(style).indexOf('webkitAnimation'), -1);
   assert_equals(style.animation, 'none 0s ease 0s 1 normal none running');
   assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
   assert_equals(style.webkitAnimation, 'none 0s ease 0s 1 normal none running');

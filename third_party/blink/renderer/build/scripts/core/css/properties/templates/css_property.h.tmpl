@@ -44,10 +44,6 @@ class CSSProperty : public CSSUnresolvedProperty {
   }
   bool IDEquals(CSSPropertyID id) const { return PropertyID() == id; }
   bool IsResolvedProperty() const override { return true; }
-  virtual const WTF::String GetJSPropertyName() const {
-    NOTREACHED();
-    return g_empty_string;
-  }
   virtual bool IsInterpolable() const { return false; }
   virtual bool IsInherited() const { return false; }
   virtual bool IsCompositableProperty() const { return false; }
@@ -59,7 +55,6 @@ class CSSProperty : public CSSUnresolvedProperty {
   virtual bool IsDescriptor() const { return false; }
   virtual bool SupportsPercentage() const { return false; }
   virtual bool IsProperty() const { return true; }
-  virtual bool IsEnabled() const { return true; }
   virtual bool IsAffectedByAll() const { return IsEnabled() && IsProperty(); }
   virtual bool IsLayoutDependentProperty() const { return false; }
   virtual bool IsLayoutDependent(const ComputedStyle* style, LayoutObject* layout_object) const { return false; }
