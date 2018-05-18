@@ -31,6 +31,7 @@ DCLayerOverlayProcessor::DCLayerResult FromYUVQuad(
   dc_layer_overlay->filter = GL_LINEAR;
   dc_layer_overlay->color_space = quad->video_color_space;
   dc_layer_overlay->require_overlay = quad->require_overlay;
+  dc_layer_overlay->is_protected_video = quad->is_protected_video;
   return DCLayerOverlayProcessor::DC_LAYER_SUCCESS;
 }
 

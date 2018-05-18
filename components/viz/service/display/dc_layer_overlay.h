@@ -71,6 +71,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
   gfx::ColorSpace color_space;
 
   bool require_overlay = false;
+  bool is_protected_video = false;
 };
 
 typedef std::vector<DCLayerOverlay> DCLayerOverlayList;

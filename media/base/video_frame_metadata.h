@@ -119,6 +119,9 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // rather than being composited into the framebuffer.
     REQUIRE_OVERLAY,
 
+    // Windows only: this video has protected content.
+    PROTECTED_VIDEO,
+
     // Whether this frame was decoded in a power efficient way.
     POWER_EFFICIENT,
 

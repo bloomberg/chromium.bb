@@ -1130,6 +1130,7 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   const float resource_multiplier = 1234.6f;
   const uint32_t bits_per_channel = 13;
   const bool require_overlay = true;
+  const bool is_protected_video = true;
 
   SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
   YUVVideoDrawQuad* quad =
@@ -1138,7 +1139,7 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
                uv_tex_coord_rect, ya_tex_size, uv_tex_size, y_plane_resource_id,
                u_plane_resource_id, v_plane_resource_id, a_plane_resource_id,
                video_color_space, resource_offset, resource_multiplier,
-               bits_per_channel, require_overlay);
+               bits_per_channel, require_overlay, is_protected_video);
 
   std::unique_ptr<RenderPass> output;
   SerializeAndDeserialize<mojom::RenderPass>(render_pass->DeepCopy(), &output);
@@ -1163,6 +1164,7 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   EXPECT_EQ(resource_multiplier, out_quad->resource_multiplier);
   EXPECT_EQ(bits_per_channel, out_quad->bits_per_channel);
   EXPECT_EQ(require_overlay, out_quad->require_overlay);
+  EXPECT_EQ(is_protected_video, out_quad->is_protected_video);
 }
 
 TEST_F(StructTraitsTest, CopyOutputResult_Empty) {
