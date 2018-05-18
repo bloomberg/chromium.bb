@@ -42,7 +42,6 @@ bool GetCastAllowAllIPsPref(PrefService* pref_service);
 extern const base::Feature kEnableDialSinkQuery;
 extern const base::Feature kEnableCastDiscovery;
 extern const base::Feature kCastMediaRouteProvider;
-extern const base::Feature kEnableCastLocalMedia;
 
 // Returns true if browser side DIAL Media Route Provider is enabled.
 bool DialMediaRouteProviderEnabled();
@@ -53,9 +52,6 @@ bool CastDiscoveryEnabled();
 // Returns true if browser side Cast Media Route Provider and sink query are
 // enabled.
 bool CastMediaRouteProviderEnabled();
-
-// Returns true if local media casting is enabled.
-bool CastLocalMediaEnabled();
 
 // Returns true if the presentation receiver window for local media casting is
 // available on the current platform.

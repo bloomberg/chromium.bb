@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
-#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
@@ -286,11 +285,9 @@ void MediaRouterUIBase::InitCommon(content::WebContents* initiator) {
   query_result_manager_->SetSourcesForCastMode(
       MediaCastMode::DESKTOP_MIRROR, {MediaSourceForDesktop()}, origin);
 
-  // For now, file mirroring is always availible if enabled.
-  if (CastLocalMediaEnabled()) {
-    query_result_manager_->SetSourcesForCastMode(
-        MediaCastMode::LOCAL_FILE, {MediaSourceForTab(0)}, origin);
-  }
+  // File mirroring is always availible.
+  query_result_manager_->SetSourcesForCastMode(MediaCastMode::LOCAL_FILE,
+                                               {MediaSourceForTab(0)}, origin);
 
   SessionID::id_type tab_id = SessionTabHelper::IdForTab(initiator).id();
   if (tab_id != -1) {
