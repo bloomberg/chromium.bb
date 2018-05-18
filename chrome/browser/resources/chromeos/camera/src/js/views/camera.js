@@ -33,11 +33,11 @@ camera.views.Camera = function(context, router) {
   this.model_ = null;
 
   /**
-   * Video element to catch the stream and plot it later onto a canvas.
+   * Video element to capture the stream.
    * @type {Video}
    * @private
    */
-  this.video_ = document.createElement('video');
+  this.video_ = document.querySelector('#main-preview');
 
   /**
    * Current camera stream.
@@ -66,13 +66,6 @@ camera.views.Camera = function(context, router) {
    * @private
    */
   this.photoCapabilities_ = null;
-
-  /**
-   * Last frame time, used to detect new frames of <video>.
-   * @type {number}
-   * @private
-   */
-  this.lastFrameTime_ = -1;
 
   /**
    * @type {?number}
@@ -119,76 +112,6 @@ camera.views.Camera = function(context, router) {
    * @private
    */
   this.locked_ = false;
-
-  /**
-   * The main (full screen) canvas for full quality capture.
-   * @type {fx.Canvas}
-   * @private
-   */
-  this.mainCanvas_ = null;
-
-  /**
-   * Texture for the full quality canvas.
-   * @type {fx.Texture}
-   * @private
-   */
-  this.mainCanvasTexture_ = null;
-
-  /**
-   * The main (full screen) canvas for previewing capture.
-   * @type {fx.Canvas}
-   * @private
-   */
-  this.mainPreviewCanvas_ = null;
-
-  /**
-   * Texture for the previewing canvas.
-   * @type {fx.Texture}
-   * @private
-   */
-  this.mainPreviewCanvasTexture_ = null;
-
-  /**
-   * The main (full screen canvas) for fast capture.
-   * @type {fx.Canvas}
-   * @private
-   */
-  this.mainFastCanvas_ = null;
-
-  /**
-   * Texture for the fast canvas.
-   * @type {fx.Texture}
-   * @private
-   */
-  this.mainFastCanvasTexture_ = null;
-
-  /**
-   * The main (full screen) processor in the full quality mode.
-   * @type {camera.Processor}
-   * @private
-   */
-  this.mainProcessor_ = null;
-
-  /**
-   * The main (full screen) processor in the previewing mode.
-   * @type {camera.Processor}
-   * @private
-   */
-  this.mainPreviewProcessor_ = null;
-
-  /**
-   * The main (full screen) processor in the fast mode.
-   * @type {camera.Processor}
-   * @private
-   */
-  this.mainFastProcessor_ = null;
-
-  /**
-   * Current previewing frame.
-   * @type {number}
-   * @private
-   */
-  this.frame_ = 0;
 
   /**
    * If the toolbar is expanded.
@@ -283,15 +206,6 @@ camera.views.Camera = function(context, router) {
   this.collapseTimer_ = null;
 
   /**
-   * Set to true before the ribbon is displayed. Used to render the ribbon's
-   * frames while it is not yet displayed, so the previews have some image
-   * as soon as possible.
-   * @type {boolean}
-   * @private
-   */
-  this.ribbonInitialization_ = true;
-
-  /**
    * Whether the camera is in video recording mode.
    * @type {boolean}
    * @private
@@ -347,18 +261,18 @@ camera.views.Camera = function(context, router) {
   this.keyBuffer_ = '';
 
   /**
-   * Measures performance.
-   * @type {camera.util.NamedPerformanceMonitor}
-   * @private
-   */
-  this.performanceMonitors_ = new camera.util.NamedPerformanceMonitors();
-
-  /**
    * Timer used to countdown before taking the picture.
    * @type {number?}
    * @private
    */
-  this.takePictureTimer_ = null;
+  this.tickTakePictureTimer_ = null;
+
+  /**
+   * Timer for do-take-picture calls.
+   * @type {number?}
+   * @private
+   */
+  this.doTakePictureTimer_ = null;
 
   /**
    * DeviceId of the camera device used for the last time during this session.
@@ -395,22 +309,14 @@ camera.views.Camera = function(context, router) {
    */
   this.mirroringToggles_ = {};
 
-  /**
-   * Aspect ratio of the last opened video stream, or null if nothing was
-   * opened.
-   * @type {?number}
-   */
-  this.lastVideoAspectRatio_ = null;
-
   // End of properties, seal the object.
   Object.seal(this);
 
-  // If dimensions of the video are first known or changed, then synchronize
-  // the window bounds.
+  // TODO(yuli): Disable resizing window and simplify code here.
   this.video_.addEventListener('loadedmetadata',
-      this.synchronizeBounds_.bind(this));
+      this.updateVideoSize_.bind(this));
   this.video_.addEventListener('resize',
-      this.synchronizeBounds_.bind(this));
+      this.updateVideoSize_.bind(this));
 
   // Handle the 'Take' button.
   document.querySelector('#take-picture').addEventListener(
@@ -444,26 +350,6 @@ camera.views.Camera = function(context, router) {
   this.recordEndSound_.src = '../sounds/record_end.ogg';
 };
 
-/**
- * Frame draw mode.
- * @enum {number}
- */
-camera.views.Camera.DrawMode = Object.freeze({
-  FAST: 0,  // Quality optimized for best performance.
-  NORMAL: 1,  // Quality adapted to the window's current size.
-  BEST: 2  // The best quality possible.
-});
-
-/**
- * Ratio between video and window aspect ratios to be considered close enough
- * to snap the window dimensions to the window frame. 1.1 means the aspect
- * ratios can differ by 1.1 times.
- *
- * @type {number}
- * @const
- */
-camera.views.Camera.ASPECT_RATIO_SNAP_RANGE = 1.1;
-
 camera.views.Camera.prototype = {
   __proto__: camera.View.prototype,
   get capturing() {
@@ -476,72 +362,28 @@ camera.views.Camera.prototype = {
  * @param {function()} callback Completion callback.
  */
 camera.views.Camera.prototype.initialize = function(callback) {
-  // Initialize the webgl canvases.
-  try {
-    this.mainCanvas_ = fx.canvas();
-    this.mainPreviewCanvas_ = fx.canvas();
-    this.mainFastCanvas_ = fx.canvas();
-  }
-  catch (e) {
-    // Initialization failed due to lack of webgl.
-    // TODO(mtomasz): Replace with a better icon.
-    this.context_.onError('no-camera',
-        chrome.i18n.getMessage('errorMsgNoWebGL'),
-        chrome.i18n.getMessage('errorMsgNoWebGLHint'));
-  }
-
-  if (this.mainCanvas_ && this.mainPreviewCanvas_ && this.mainFastCanvas_) {
-    // Initialize the processors.
-    this.mainCanvasTexture_ = this.mainCanvas_.texture(this.video_);
-    this.mainPreviewCanvasTexture_ = this.mainPreviewCanvas_.texture(
-        this.video_);
-    this.mainFastCanvasTexture_ = this.mainFastCanvas_.texture(this.video_);
-    this.mainProcessor_ = new camera.Processor(
-        this.mainCanvasTexture_,
-        this.mainCanvas_,
-        this.mainCanvas_);
-    this.mainPreviewProcessor_ = new camera.Processor(
-        this.mainPreviewCanvasTexture_,
-        this.mainPreviewCanvas_,
-        this.mainPreviewCanvas_);
-    this.mainFastProcessor_ = new camera.Processor(
-        this.mainFastCanvasTexture_,
-        this.mainFastCanvas_,
-        this.mainFastCanvas_);
-
-    // Insert the main canvas to its container.
-    document.querySelector('#main-canvas-wrapper').appendChild(
-        this.mainCanvas_);
-    document.querySelector('#main-preview-canvas-wrapper').appendChild(
-        this.mainPreviewCanvas_);
-    document.querySelector('#main-fast-canvas-wrapper').appendChild(
-        this.mainFastCanvas_);
-
-    // Select the default state of the toggle buttons.
-    // TODO(mtomasz): Move to chrome.storage.local.sync, after implementing
-    // syncing of the gallery.
-    chrome.storage.local.get(
-        {
-          toggleTimer: false,
-          toggleMirror: true,  // Deprecated.
-          mirroringToggles: {},  // Per device.
-        },
-        function(values) {
-          document.querySelector('#toggle-timer').checked =
-              values.toggleTimer;
-          this.legacyMirroringToggle_ = values.toggleMirror;
-          this.mirroringToggles_ = values.mirroringToggles;
-
-          // Initialize the web camera.
-          this.start_();
-        }.bind(this));
-    // Remove the deprecated values.
-    chrome.storage.local.remove(['effectIndex', 'toggleMulti']);
-  }
+  // Select the default state of the toggle buttons.
+  chrome.storage.local.get(
+      {
+        toggleTimer: false,
+        toggleMirror: true,  // Deprecated.
+        mirroringToggles: {},  // Per device.
+      },
+      function(values) {
+        document.querySelector('#toggle-timer').checked =
+            values.toggleTimer;
+        this.legacyMirroringToggle_ = values.toggleMirror;
+        this.mirroringToggles_ = values.mirroringToggles;
+      }.bind(this));
+  // Remove the deprecated values.
+  chrome.storage.local.remove(['effectIndex', 'toggleMulti']);
 
   // TODO: Replace with "devicechanged" event once it's implemented in Chrome.
   this.maybeRefreshVideoDeviceIds_();
   setInterval(this.maybeRefreshVideoDeviceIds_.bind(this), 1000);
+
+  // Start the camera after refreshing the device ids.
+  this.start_();
 
   // Monitor the locked state to avoid retrying camera connection when locked.
   chrome.idle.onStateChanged.addListener(function(newState) {
@@ -564,19 +406,13 @@ camera.views.Camera.prototype.initialize = function(callback) {
 };
 
 /**
- * Enters the view.
  * @override
  */
 camera.views.Camera.prototype.onEnter = function() {
-  this.performanceMonitors_.reset();
-  this.mainProcessor_.performanceMonitors.reset();
-  this.mainPreviewProcessor_.performanceMonitors.reset();
-  this.mainFastProcessor_.performanceMonitors.reset();
   this.onResize();
 };
 
 /**
- * Leaves the view.
  * @override
  */
 camera.views.Camera.prototype.onLeave = function() {
@@ -611,7 +447,7 @@ camera.views.Camera.prototype.onInactivate = function() {
 camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
   if (this.is_recording_mode_ && this.mediaRecorder_ == null) {
     if (this.mediaRecorder_ == null) {
-      // Create a media recorder before proceeding to record video.
+      // Create a media-recorder before proceeding to record video.
       this.mediaRecorder_ = this.createMediaRecorder_(this.stream_);
       if (this.mediaRecorder_ == null) {
         this.showToastMessage_(chrome.i18n.getMessage(
@@ -781,13 +617,7 @@ camera.views.Camera.prototype.onPointerActivity_ = function(event) {
     switch (event.type) {
       case 'mousedown':
         // Toggle the ribbon if clicking on static area.
-        if (event.target == document.body ||
-            document.querySelector('#main-canvas-wrapper').contains(
-                event.target) ||
-            document.querySelector('#main-preview-canvas-wrapper').contains(
-                event.target) ||
-            document.querySelector('#main-fast-canvas-wrapper').contains(
-                event.target)) {
+        if (event.target == document.body) {
           this.setExpanded_(!this.expanded_);
           break;
         }  // Otherwise continue.
@@ -884,7 +714,7 @@ camera.views.Camera.prototype.enableAudio_ = function(enabled) {
  * @override
  */
 camera.views.Camera.prototype.onResize = function() {
-  this.synchronizeBounds_();
+  this.updateVideoSize_();
 };
 
 /**
@@ -894,15 +724,8 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
   this.keyBuffer_ += String.fromCharCode(event.which);
   this.keyBuffer_ = this.keyBuffer_.substr(-10);
 
-  // Allow to load a file stream (for debugging).
-  if (this.keyBuffer_.indexOf('CRAZYPONY') !== -1) {
-    this.chooseFileStream_();
-    this.keyBuffer_ = '';
-  }
-
   if (this.keyBuffer_.indexOf('VER') !== -1) {
     this.showVersion_();
-    this.printPerformanceStats_();
     this.keyBuffer_ = '';
   }
 
@@ -921,6 +744,7 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
 
 /**
  * Shows a non-intrusive toast message in the middle of the screen.
+ * TODO(yuli): Add parameter to take i18n message name.
  * @param {string} message Message to be shown.
  * @private
  */
@@ -960,7 +784,7 @@ camera.views.Camera.prototype.showToastMessage_ = function(message) {
 };
 
 /**
- * Starts the timer and shows it on screen.
+ * Starts to show the timer of elapsed recording time.
  * @private
  */
 camera.views.Camera.prototype.showRecordingTimer_ = function() {
@@ -993,7 +817,7 @@ camera.views.Camera.prototype.showRecordingTimer_ = function() {
 };
 
 /**
- * Stops and hides the timer.
+ * Stops and hides the timer of recording time.
  * @private
  */
 camera.views.Camera.prototype.hideRecordingTimer_ = function() {
@@ -1042,22 +866,6 @@ camera.views.Camera.prototype.setExpanded_ = function(expanded) {
 };
 
 /**
- * Chooses a file stream to override the camera stream. Used for debugging.
- * @private
- */
-camera.views.Camera.prototype.chooseFileStream_ = function() {
-  chrome.fileSystem.chooseEntry(function(fileEntry) {
-    if (!fileEntry)
-      return;
-    fileEntry.file(function(file) {
-      var url = URL.createObjectURL(file);
-      this.video_.src = url;
-      this.video_.play();
-    }.bind(this));
-  }.bind(this));
-};
-
-/**
  * Shows a version dialog.
  * @private
  */
@@ -1065,9 +873,7 @@ camera.views.Camera.prototype.showVersion_ = function() {
   // No need to localize, since for debugging purpose only.
   var message = 'Version: ' + chrome.runtime.getManifest().version + '\n' +
       'Resolution: ' +
-          this.video_.videoWidth + 'x' + this.video_.videoHeight + '\n' +
-      'Frames per second: ' +
-          this.performanceMonitors_.fps('main').toPrecision(2) + '\n';
+          this.video_.videoWidth + 'x' + this.video_.videoHeight + '\n';
   this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
     type: camera.views.Dialog.Type.ALERT,
     message: message
@@ -1081,7 +887,7 @@ camera.views.Camera.prototype.showVersion_ = function() {
  */
 camera.views.Camera.prototype.takePicture_ = function() {
   if (this.taking_) {
-    // End the prior ongoing taking/recording; a new taking/reocording won't be
+    // End the prior ongoing taking/recording; a new taking/reocording cannot be
     // started until the prior one is ended.
     this.endTakePicture_();
     return;
@@ -1096,34 +902,28 @@ camera.views.Camera.prototype.takePicture_ = function() {
     tickCounter--;
     if (tickCounter == 0) {
       if (this.is_recording_mode_) {
-        // Play a sound before recording started, and don't end recording
-        // until another take-picture click.
+        // Play a sound before recording started and wait for its playback to
+        // avoid it being recorded.
         this.recordStartSound_.currentTime = 0;
         this.recordStartSound_.play();
-        setTimeout(function() {
-          // Record-started sound should have been ended by now; pause it just
-          // in case it's still playing to avoid the sound being recorded.
-          this.recordStartSound_.pause();
-          this.takePictureImmediately_(true);
-        }.bind(this), 250);
+        this.doTakePicture_(250);
       } else {
-        this.takePictureImmediately_(false);
-        this.endTakePicture_();
+        this.doTakePicture_(0);
       }
     } else {
-      this.takePictureTimer_ = setTimeout(onTimerTick, 1000);
+      this.tickTakePictureTimer_ = setTimeout(onTimerTick, 1000);
       this.tickSound_.play();
       // Blink the toggle timer button.
       toggleTimer.classList.add('animate');
       setTimeout(function() {
-        if (this.takePictureTimer_)
+        if (this.tickTakePictureTimer_)
           toggleTimer.classList.remove('animate');
       }.bind(this), 500);
     }
   }.bind(this);
 
   // First tick immediately in the next message loop cycle.
-  this.takePictureTimer_ = setTimeout(onTimerTick, 0);
+  this.tickTakePictureTimer_ = setTimeout(onTimerTick, 0);
 };
 
 /**
@@ -1131,38 +931,38 @@ camera.views.Camera.prototype.takePicture_ = function() {
  * @private
  */
 camera.views.Camera.prototype.endTakePicture_ = function() {
-  if (this.takePictureTimer_) {
-    clearTimeout(this.takePictureTimer_);
-    this.takePictureTimer_ = null;
+  if (this.doTakePictureTimer_) {
+    clearTimeout(this.doTakePictureTimer_);
+    this.doTakePictureTimer_ = null;
   }
+  if (this.tickTakePictureTimer_) {
+    clearTimeout(this.tickTakePictureTimer_);
+    this.tickTakePictureTimer_ = null;
+  }
+  // Toolbar will be updated after taking-photo/recording-video is finished.
   if (this.mediaRecorder_ && this.mediaRecorder_.state == 'recording') {
     this.mediaRecorder_.stop();
   }
   document.querySelector('#toggle-timer').classList.remove('animate');
-
-  this.taking_ = false;
-  this.updateToolbar_();
 };
 
 /**
- * Takes the still picture or starts to take the motion picture immediately,
- * and saves and puts to the album.
- *
- * @param {boolean} motionPicture True to start video recording, false to take
- *     a still picture.
+ * Takes the photo or starts to record video after timeout, and saves the photo
+ * or video-recording to the model.
+ * @param {number} timeout Timeout in milliseconds.
  * @private
  */
-camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) {
-  setTimeout(function() {
-    this.drawCameraFrame_(camera.views.Camera.DrawMode.BEST);
+camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
+  this.doTakePictureTimer_ = setTimeout(function() {
+    var errorToast = function(msg) {
+      this.showToastMessage_(chrome.i18n.getMessage(msg));
+    }.bind(this);
 
-    // Add picture to the gallery.
+    // Add picture to the model.
     var addPicture = function(blob, type) {
       var saveFailure = function() {
-        this.showToastMessage_(
-            chrome.i18n.getMessage('errorMsgGallerySaveFailed'));
-      }.bind(this);
-
+        errorToast('errorMsgGallerySaveFailed');
+      };
       if (!this.model_) {
         saveFailure();
         return;
@@ -1170,123 +970,134 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) 
       var albumButton = document.querySelector('#toolbar #album-enter');
       camera.util.setAnimationClass(albumButton, albumButton, 'flash');
 
-      // Add the photo or video to the model.
       this.model_.addPicture(blob, type, saveFailure);
     }.bind(this);
 
-    if (motionPicture) {
-      var recordedChunks = [];
-      this.mediaRecorder_.ondataavailable = function(event) {
-        if (event.data && event.data.size > 0) {
-          recordedChunks.push(event.data);
-        }
-      }.bind(this);
+    // Update toolbar after finishing taking-photo/recording-video.
+    var onFinish = function() {
+      this.taking_ = false;
+      this.updateToolbar_();
+    }.bind(this);
 
+    if (this.is_recording_mode_) {
       var takePictureButton = document.querySelector('#take-picture');
-      this.mediaRecorder_.onstop = function(event) {
+
+      var stopRecordingUI = function() {
         this.hideRecordingTimer_();
         takePictureButton.classList.remove('flash');
         this.updateButtonLabel_(takePictureButton, 'recordVideoStartButton');
-        this.enableAudio_(false);
-        // Add the motion picture after the recording is ended.
-        // TODO(yuli): Handle insufficient storage.
-        var recordedBlob = new Blob(recordedChunks, {type: 'video/webm'});
-        recordedChunks = [];
-        if (recordedBlob.size) {
-          // Play a video-record-ended sound.
-          this.recordEndSound_.currentTime = 0;
-          this.recordEndSound_.play();
-          addPicture(recordedBlob, camera.models.Gallery.PictureType.MOTION);
-        } else {
-          // The recording may have no data available because it's too short
-          // or the media recorder is not stable and Chrome needs to restart.
-          this.showToastMessage_(
-              chrome.i18n.getMessage('errorMsgEmptyRecording'));
-        }
       }.bind(this);
 
-      // Start recording.
-      this.enableAudio_(true);
-      this.mediaRecorder_.start();
-
-      // Start to show the elapsed recording time.
-      this.showRecordingTimer_();
+      this.createBlobOnRecordStop_(function(blob) {
+        // Play a sound for a successful recording after recording stopped.
+        this.recordEndSound_.currentTime = 0;
+        this.recordEndSound_.play();
+        stopRecordingUI();
+        addPicture(blob, camera.models.Gallery.PictureType.MOTION);
+      }.bind(this), function() {
+        stopRecordingUI();
+        // The recording may have no data available because it's too short or
+        // the media recorder is not stable and Chrome needs to restart.
+        errorToast('errorMsgEmptyRecording');
+      }, onFinish);
 
       // Re-enable the take-picture button to stop recording later and flash
       // the take-picture button until the recording is stopped.
       takePictureButton.disabled = false;
-      takePictureButton.classList.add('flash');
       this.updateButtonLabel_(takePictureButton, 'recordVideoStopButton');
+      takePictureButton.classList.add('flash');
+      this.showRecordingTimer_();
     } else {
-      if (camera.util.isChromeVersionAbove(68)) {
-        // "var" is not used here because we don't want this variable to be
-        // moved to the beginning of the function.
-        let getPhotoCapabilities = function() {
-          if (this.photoCapabilities_ == null) {
-             this.photoCapabilities_ =
-                this.imageCapture_.getPhotoCapabilities();
-          }
-          return this.photoCapabilities_;
-        }.bind(this);
-
-        getPhotoCapabilities().then(photoCapabilities => {
-          // The photo to be taken should have the same aspect ratio with the
-          // preview.
-          var photoSettings = {
-              imageWidth: photoCapabilities.imageWidth.max,
-              imageHeight: photoCapabilities.imageHeight.max
-          };
-          return this.imageCapture_.takePhoto(photoSettings);
-        }).then(blob => {
-          // Play a shutter sound.
-          this.shutterSound_.currentTime = 0;
-          this.shutterSound_.play();
-          addPicture(blob, camera.models.Gallery.PictureType.STILL);
-        }).catch(error => {
-          this.showToastMessage_(
-              chrome.i18n.getMessage('errorMsgTakePhotoFailed'));
-        });
-      } else {
-        // Since the takePhoto() API has not been implemented on CrOS until 68,
-        // we need to grab frame of preview as photo for older versions.
-        // TODO(shenghao): Remove this after min chrome version raises to 68.
-        this.mainCanvas_.toBlob(function(blob) {
-          // Play a shutter sound.
-          this.shutterSound_.currentTime = 0;
-          this.shutterSound_.play();
-          addPicture(blob, camera.models.Gallery.PictureType.STILL);
-        }.bind(this), 'image/jpeg');
-      }
+      this.createBlobOnPhotoTake_(function(blob) {
+        // Play a shutter sound.
+        this.shutterSound_.currentTime = 0;
+        this.shutterSound_.play();
+        addPicture(blob, camera.models.Gallery.PictureType.STILL);
+      }.bind(this), function() {
+        errorToast('errorMsgTakePhotoFailed');
+      }, onFinish);
     }
-  }.bind(this), 0);
+  }.bind(this), timeout);
 };
 
 /**
- * Synchronizes video size with the window's current size.
+ * Starts a recording and creates a blob of it after the recorder is stopped.
+ * @param {function(Blob)} onSuccess Success callback with the recorded video
+ *     as a blob.
+ * @param {function()} onFailure Failure callback.
+ * @param {function()} onFinish Finish callback.
  * @private
  */
-camera.views.Camera.prototype.synchronizeBounds_ = function() {
-  if (!this.video_.videoHeight)
-    return;
+camera.views.Camera.prototype.createBlobOnRecordStop_ = function(
+    onSuccess, onFailure, onFinish) {
+  var recordedChunks = [];
+  this.mediaRecorder_.ondataavailable = function(event) {
+    if (event.data && event.data.size > 0) {
+      recordedChunks.push(event.data);
+    }
+  }.bind(this);
 
-  var videoRatio = this.video_.videoWidth / this.video_.videoHeight;
-  var bodyRatio = document.body.offsetWidth / document.body.offsetHeight;
+  this.mediaRecorder_.onstop = function(event) {
+    this.enableAudio_(false);
+    // TODO(yuli): Handle insufficient storage.
+    var recordedBlob = new Blob(recordedChunks, {type: 'video/webm'});
+    recordedChunks = [];
+    if (recordedBlob.size) {
+      onSuccess(recordedBlob);
+    } else {
+      onFailure();
+    }
+    onFinish();
+  }.bind(this);
 
-  var scale;
-  if (videoRatio > bodyRatio) {
-    scale = Math.min(1, document.body.offsetWidth / this.video_.videoWidth);
-    document.body.classList.add('letterbox');
+  // Start recording.
+  this.enableAudio_(true);
+  this.mediaRecorder_.start();
+};
+
+/**
+ * Takes a photo and creates a blob of it.
+ * @param {function(Blob)} onSuccess Success callback with the taken photo as a
+ *     blob.
+ * @param {function()} onFailure Failure callback.
+ * @param {function()} onFinish Finish callback.
+ * @private
+ */
+camera.views.Camera.prototype.createBlobOnPhotoTake_ = function(
+    onSuccess, onFailure, onFinish) {
+  // Since the takePhoto() API has not been implemented on CrOS until 68, use
+  // canvas-drawing as a fallback for older Chrome versions.
+  // TODO(shenghao): Remove canvas-drawing after min-chrome-version is above 68.
+  if (camera.util.isChromeVersionAbove(68)) {
+    let getPhotoCapabilities = function() {
+      if (this.photoCapabilities_ == null) {
+         this.photoCapabilities_ =
+            this.imageCapture_.getPhotoCapabilities();
+      }
+      return this.photoCapabilities_;
+    }.bind(this);
+
+    getPhotoCapabilities().then(photoCapabilities => {
+      // Set to take the highest resolution, but the photo to be taken will
+      // still have the same aspect ratio with the preview.
+      var photoSettings = {
+          imageWidth: photoCapabilities.imageWidth.max,
+          imageHeight: photoCapabilities.imageHeight.max
+      };
+      return this.imageCapture_.takePhoto(photoSettings);
+    }).then(onSuccess).catch(error => { onFailure(); }).finally(onFinish);
   } else {
-    scale = Math.min(1, document.body.offsetHeight / this.video_.videoHeight);
-    document.body.classList.remove('letterbox');
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    canvas.width = this.video_.videoWidth;
+    canvas.height = this.video_.videoHeight;
+    context.drawImage(this.video_, 0, 0);
+    canvas.toBlob(blob => {
+      onSuccess(blob);
+      onFinish();
+    }, 'image/jpeg');
   }
-
-  this.mainPreviewProcessor_.scale = scale;
-  this.mainFastProcessor_.scale = scale / 2;
-
-  this.video_.width = this.video_.videoWidth;
-  this.video_.height = this.video_.videoHeight;
-}
+};
 
 /**
  * Creates the media recorder for the video stream.
@@ -1385,15 +1196,10 @@ camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
 
       this.stream_ = stream;
       document.body.classList.add('capturing');
+      this.updateWindowSize_();
       this.updateToolbar_();
-
       this.updateVideoDeviceId_(constraints);
       this.updateMirroring_();
-      var onAnimationFrame = function() {
-        this.onAnimationFrame_();
-        requestAnimationFrame(onAnimationFrame);
-      }.bind(this);
-      onAnimationFrame();
       onSuccess();
     }.bind(this);
     // Load the stream and wait for the metadata.
@@ -1409,115 +1215,74 @@ camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
 };
 
 /**
- * Sets the window size to match the video frame aspect ratio, and positions
- * it to stay visible and opticallly appealing.
- * @param {number=} opt_maxOuterHeight Maximum height of the window to be
- *     applied.
+ * Sets the window size to match the video frame aspect ratio.
  * @private
  */
-camera.views.Camera.prototype.resetWindowGeometry_ = function(
-    opt_maxOuterHeight) {
-  var outerBounds = chrome.app.window.current().outerBounds;
-  var innerBounds = chrome.app.window.current().innerBounds;
-
-  var decorationInsets = {
-    left: innerBounds.left - outerBounds.left,
-    top: innerBounds.top - outerBounds.top,
-  };
-  decorationInsets.right = outerBounds.width - innerBounds.width -
-      decorationInsets.left;
-  decorationInsets.bottom = outerBounds.height - innerBounds.height -
-      decorationInsets.top;
-
-  // Screen paddings are 10% of the dimension to avoid spanning the window
-  // behind any overlay launcher (if exists). However, if the window already
-  // exceeds these paddings, then use those paddings, so the user window
-  // placement is respected. Eg. if the user moved the window behind the
-  // overlay launcher, we shouldn't move it out of there. Though, we shouldn't
-  // move the window behind the overlay launcher if it wasn't there before.
-  var screenPaddings = {
-    left: Math.min(outerBounds.left, 0.1 * screen.width),
-    top: Math.min(outerBounds.top, 0.1 * screen.height),
-    right: Math.min(0.1 * screen.width, screen.width - outerBounds.width -
-        outerBounds.left),
-    bottom: Math.min(0.1 * screen.height, screen.height - outerBounds.height -
-        outerBounds.top)
-  };
-
-  // Moving the window partly outside of the top bound is impossible with
-  // a user gesture, though some users ended up with this hard to recover
-  // situation due to a bug in Camera app. Explicitly do not allow this
-  // situation.
-  if (screenPaddings.top < 0) {
-    screenPaddings.top = 0;
-  }
-
-  // We need aspect ratio of the client are so insets have to be taken into
-  // account. Though never make the window larger than the screen size (unless
-  // maximized).
-  var maxOuterWidth = Math.min(screen.width,
-      screen.width - screenPaddings.left - screenPaddings.right);
-  var maxOuterHeight = Math.min(screen.height,
-      opt_maxOuterHeight != undefined ? opt_maxOuterHeight :
-      (screen.height - screenPaddings.top - screenPaddings.bottom));
-
-  var targetAspectRatio = this.video_.videoWidth / this.video_.videoHeight;
-
-  // We need aspect ratio of the client are so insets have to be taken into
-  // account.
-  var targetWidth = maxOuterWidth;
-  var targetHeight =
-      (targetWidth - decorationInsets.left - decorationInsets.right) /
-      targetAspectRatio + decorationInsets.top + decorationInsets.bottom;
-
-  if (targetHeight > maxOuterHeight) {
-    targetHeight = maxOuterHeight;
-    targetWidth =
-        (targetHeight - decorationInsets.top - decorationInsets.bottom) *
-        targetAspectRatio + decorationInsets.left + decorationInsets.right;
-  }
-
-  // If dimensions didn't change, then respect the position set previously by
-  // the user.
-  if (Math.round(targetWidth) == outerBounds.width &&
-      Math.round(targetHeight) == outerBounds.height) {
+camera.views.Camera.prototype.updateWindowSize_ = function() {
+  var appWindow = chrome.app.window.current();
+  if (appWindow.isMaximized() || appWindow.isFullscreen())
     return;
+
+  // Minimize window dimension changes to avoid the jarring movement.
+  var outer = appWindow.outerBounds;
+  var inner = appWindow.innerBounds;
+  var aspectRatio = this.video_.videoWidth / this.video_.videoHeight;
+  var scaleW = inner.width / this.video_.videoWidth;
+  var scaleH = inner.height / this.video_.videoHeight;
+  var innerW = this.video_.videoWidth * scaleH;
+  var innerH = this.video_.videoHeight * scaleW;
+  if (Math.abs(innerW - inner.width) <= Math.abs(innerH - inner.height)) {
+    // Keep the original height and use the calculated new width.
+    innerH = inner.height;
+  } else {
+    // Keep the original width and use the calculated new height.
+    innerW = inner.width;
   }
 
-  // Use center as gravity to expand the dimensions in all directions if
-  // possible.
-  var targetLeft = outerBounds.left - (targetWidth - outerBounds.width) / 2;
-  var targetTop = outerBounds.top - (targetHeight - outerBounds.height) / 2;
+  // Make the window not larger than the screen available width/height.
+  var diffW = outer.width - inner.width;
+  var diffH = outer.height - inner.height;
+  var maxInnerW = screen.availWidth - diffW;
+  var maxInnerH = screen.availHeight - diffH;
+  if (innerW > maxInnerW || innerH > maxInnerH) {
+    var scale = Math.min(maxInnerH / innerH, maxInnerW / innerW);
+    innerW = scale * innerW;
+    innerH = scale * innerH;
+  }
 
-  var leftClamped = Math.max(screenPaddings.left, Math.min(
-      targetLeft, screen.width - targetWidth - screenPaddings.right));
-  var topClamped = Math.max(screenPaddings.top, Math.min(
-      targetTop, screen.height - targetHeight - screenPaddings.bottom));
+  // Keep the window centered at its original position and inside the screen.
+  var outerW = Math.round(innerW + diffW);
+  var outerH = Math.round(innerH + diffH);
+  var outerLeft = Math.round(outer.left - (outerW - outer.width) / 2);
+  var outerTop = Math.round(outer.top - (outerH - outer.height) / 2);
 
-  outerBounds.setPosition(Math.round(leftClamped), Math.round(topClamped));
-  outerBounds.setSize(Math.round(targetWidth), Math.round(targetHeight));
+  outerLeft = Math.max(screen.availLeft, outerLeft);
+  outerLeft = Math.min(
+      screen.availLeft + screen.availWidth - outerW, outerLeft);
+  outerTop = Math.max(0, outerTop);
+  outerTop = Math.min(
+      screen.availTop + screen.availHeight - outerH, outerTop);
+
+  outer.setSize(outerW, outerH);
+  outer.setPosition(outerLeft, outerTop);
 };
 
 /**
- * Checks whether the current inner bounds of the window matche the passed
- * aspect ratio closely enough.
- * @param {number} aspectRatio Aspect ratio to compare against.
- * @param {boolean} True if yes, false otherwise.
+ * Updates the video element's size for previewing in the window.
+ * @private
  */
-camera.views.Camera.prototype.isInnerBoundsAlmostAspectRatio_ =
-    function(aspectRatio) {
-  var bounds = chrome.app.window.current().innerBounds;
-  var windowAspectRatio = bounds.width / bounds.height;
+camera.views.Camera.prototype.updateVideoSize_ = function() {
+  if (!this.video_.videoHeight)
+    return;
 
-  if (aspectRatio / windowAspectRatio <
-          camera.views.Camera.ASPECT_RATIO_SNAP_RANGE &&
-      windowAspectRatio / aspectRatio <
-          camera.views.Camera.ASPECT_RATIO_SNAP_RANGE) {
-    return true;
-  }
-
-  return false;
-};
+  // Keep the video frame aspect ratio and fill up the whole window inner width
+  // and height.
+  // TODO(yuli): Handle letterbox mode when the window is fullscreen/maximized.
+  var scale = Math.max(window.innerHeight / this.video_.videoHeight,
+      window.innerWidth / this.video_.videoWidth);
+  this.video_.width = scale * this.video_.videoWidth;
+  this.video_.height = scale * this.video_.videoHeight;
+}
 
 /**
  * Updates list of available video devices when changed, including the UI.
@@ -1665,28 +1430,6 @@ camera.views.Camera.prototype.start_ = function() {
   }
 
   var onSuccess = function() {
-    // When no bounds are remembered, then apply some default geometry which
-    // matches the video aspect ratio. Otherwise, if the window is very close
-    // to the aspect ratio of the last video, then resnap to the new aspect
-    // ratio while keeping the last height. This is to avoid changing window
-    // size if the user explicitly changed the dimensions to not matching the
-    // aspect ratio.
-    var bounds = chrome.app.window.current().outerBounds;
-    if (bounds.width == 640 && bounds.height == 360) {
-      this.resetWindowGeometry_();
-    } else if (this.lastVideoAspectRatio_ != null &&
-        this.isInnerBoundsAlmostAspectRatio_(this.lastVideoAspectRatio_)) {
-      this.resetWindowGeometry_(bounds.height);
-    }
-
-    this.lastVideoAspectRatio_ = this.video_.width / this.video_.height;
-
-    // Set the ribbon in the initialization mode for 500 ms. This forces repaint
-    // of the ribbon, even if it is hidden, or animations are in progress.
-    setTimeout(function() {
-      this.ribbonInitialization_ = false;
-    }.bind(this), 500);
-
     if (this.retryStartTimer_) {
       clearTimeout(this.retryStartTimer_);
       this.retryStartTimer_ = null;
@@ -1735,120 +1478,6 @@ camera.views.Camera.prototype.start_ = function() {
     console.error('Failed to start camera.', error);
     onFailure();
   });
-};
-
-/**
- * Draws a single frame for the main canvas.
- * @param {camera.views.Camera.DrawMode} mode Drawing mode.
- * @private
- */
-camera.views.Camera.prototype.drawCameraFrame_ = function(mode) {
-  {
-    var finishMeasuring = this.performanceMonitors_.startMeasuring(
-        'main-fast-processor-load-contents-and-process');
-    if (this.frame_ % 10 == 0 || mode == camera.views.Camera.DrawMode.FAST) {
-      this.mainFastCanvasTexture_.loadContentsOf(this.video_);
-      this.mainFastProcessor_.processFrame();
-    }
-    finishMeasuring();
-  }
-
-  switch (mode) {
-    case camera.views.Camera.DrawMode.FAST:
-      this.mainCanvas_.parentNode.hidden = true;
-      this.mainPreviewCanvas_.parentNode.hidden = true;
-      this.mainFastCanvas_.parentNode.hidden = false;
-      break;
-    case camera.views.Camera.DrawMode.NORMAL:
-      {
-        var finishMeasuring = this.performanceMonitors_.startMeasuring(
-            'main-preview-processor-load-contents-and-process');
-        this.mainPreviewCanvasTexture_.loadContentsOf(this.video_);
-        this.mainPreviewProcessor_.processFrame();
-        finishMeasuring();
-      }
-      this.mainCanvas_.parentNode.hidden = true;
-      this.mainPreviewCanvas_.parentNode.hidden = false;
-      this.mainFastCanvas_.parentNode.hidden = true;
-      break;
-    case camera.views.Camera.DrawMode.BEST:
-      {
-        var finishMeasuring = this.performanceMonitors_.startMeasuring(
-            'main-processor-canvas-to-texture');
-        this.mainCanvasTexture_.loadContentsOf(this.video_);
-        finishMeasuring();
-      }
-      this.mainProcessor_.processFrame();
-      {
-        var finishMeasuring = this.performanceMonitors_.startMeasuring(
-            'main-processor-dom');
-        this.mainCanvas_.parentNode.hidden = false;
-        this.mainPreviewCanvas_.parentNode.hidden = true;
-        this.mainFastCanvas_.parentNode.hidden = true;
-        finishMeasuring();
-      }
-      break;
-  }
-};
-
-/**
- * Prints performance stats for named monitors to the console.
- * @private
- */
-camera.views.Camera.prototype.printPerformanceStats_ = function() {
-  console.info('Camera view');
-  console.info(this.performanceMonitors_.toDebugString());
-  console.info('Main processor');
-  console.info(this.mainProcessor_.performanceMonitors.toDebugString());
-  console.info('Main preview processor');
-  console.info(this.mainPreviewProcessor_.performanceMonitors.toDebugString());
-  console.info('Main fast processor');
-  console.info(this.mainFastProcessor_.performanceMonitors.toDebugString());
-};
-
-/**
- * Handles the animation frame event and refreshes the viewport if necessary.
- * @private
- */
-camera.views.Camera.prototype.onAnimationFrame_ = function() {
-  // No capturing when the view is inactive.
-  if (!this.active)
-    return;
-
-  // No capturing while resizing.
-  if (this.context.resizing)
-    return;
-
-  // If the animation is called more often than the video provides input, then
-  // there is no reason to process it. This will cup FPS to the Web Cam frame
-  // rate (eg. head tracker interpolation, nor ghost effect will not be updated
-  // more often than frames provided). Since we can assume that the webcam
-  // serves frames with 30 FPS speed it should be OK. As a result, we will
-  // significantly reduce CPU usage.
-  if (this.lastFrameTime_ == this.video_.currentTime)
-    return;
-
-  var finishFrameMeasuring = this.performanceMonitors_.startMeasuring('main');
-  this.frame_++;
-
-  // Draw the camera frame. Decrease the rendering resolution when scrolling, or
-  // while performing animations.
-  {
-    var finishMeasuring =
-        this.performanceMonitors_.startMeasuring('draw-frame');
-    if (this.toolbarEffect_.animating ||
-        this.context.isUIAnimating() || this.toastEffect_.animating ||
-        (this.scrollTracker_.scrolling && this.expanded_)) {
-      this.drawCameraFrame_(camera.views.Camera.DrawMode.FAST);
-    } else {
-      this.drawCameraFrame_(camera.views.Camera.DrawMode.NORMAL);
-    }
-    finishMeasuring();
-  }
-
-  this.frame_++;
-  finishFrameMeasuring();
-  this.lastFrameTime_ = this.video_.currentTime;
 };
 
 /**

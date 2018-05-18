@@ -133,14 +133,6 @@
     "message": "Nothing recorded.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "errorMsgNoWebGL": {
-    "message": "Hardware acceleration is not available.",
-    "description": "Error message shown when WebGL is not available."
-  },
-  "errorMsgNoWebGLHint": {
-    "message": "Your computer may have an incompatible graphics card, or old drivers.",
-    "description": "Hint shown below the main error message, when WebGL is not detected."
-  },
   "galleryButton": {
     "message": "Go to gallery",
     "description": "Label for the gallery button."

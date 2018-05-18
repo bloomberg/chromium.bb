@@ -19,7 +19,6 @@ camera.Camera = function() {
    * @private
    */
   this.context_ = new camera.Camera.Context(
-      this.isUIAnimating_.bind(this),
       this.onError_.bind(this),
       this.onErrorRecovered_.bind(this));
 
@@ -62,12 +61,6 @@ camera.Camera = function() {
   this.dialogView_ = new camera.views.Dialog(this.context_, this.router_);
 
   /**
-   * @type {?number}
-   * @private
-   */
-  this.resizingTimer_ = null;
-
-  /**
    * @type {camera.util.TooltipManager}
    * @private
    */
@@ -95,30 +88,19 @@ camera.Camera = function() {
 /**
  * Creates context for the views.
  *
- * @param {function():boolean} isUIAnimating Checks if the UI is animating.
  * @param {function(string, string, opt_string)} onError Callback to be called,
  *     when an error occurs. Arguments: identifier, first line, second line.
  * @param {function(string)} onErrorRecovered Callback to be called,
  *     when the error goes away. The argument is the error id.
  * @constructor
  */
-camera.Camera.Context = function(isUIAnimating, onError, onErrorRecovered) {
+camera.Camera.Context = function(onError, onErrorRecovered) {
   camera.View.Context.call(this);
 
   /**
    * @type {boolean}
    */
-  this.resizing = false;
-
-  /**
-   * @type {boolean}
-   */
   this.hasError = false;
-
-  /**
-   * @type {function():boolean}
-   */
-  this.isUIAnimating = isUIAnimating;
 
   /**
    * @type {function(string, string, string)}
@@ -272,17 +254,6 @@ camera.Camera.prototype.navigateById_ = function(
  * @private
  */
 camera.Camera.prototype.onWindowResize_ = function() {
-  // Suspend capturing while resizing for smoother UI.
-  this.context_.resizing = true;
-  if (this.resizingTimer_) {
-    clearTimeout(this.resizingTimer_);
-    this.resizingTimer_ = null;
-  }
-  this.resizingTimer_ = setTimeout(function() {
-    this.resizingTimer_ = null;
-    this.context_.resizing = false;
-  }.bind(this), 100);
-
   if (this.currentView)
     this.currentView.onResize();
 };
@@ -323,15 +294,6 @@ camera.Camera.prototype.onError_ = function(identifier, message, opt_hint) {
   this.context_.hasError = true;
   document.querySelector('#error-msg').textContent = message;
   document.querySelector('#error-msg-hint').textContent = opt_hint || '';
-};
-
-/**
- * Checks if any of UI elements are animating.
- * @return {boolean} True if animating, false otherwise.
- * @private
- */
-camera.Camera.prototype.isUIAnimating_ = function() {
-  return this.tooltipManager_.animating;
 };
 
 /**

@@ -984,6 +984,7 @@ camera.util.MouseScroller.prototype.onMouseUp_ = function(event) {
 
 /**
  * Monitors performance by calculating FPS.
+ * TODO(yuli): Rewrite to measure video element's FPS.
  * @constructor
  */
 camera.util.PerformanceMonitor = function() {
@@ -1071,82 +1072,6 @@ camera.util.PerformanceMonitor.prototype.finishMeasuring_ = function(
     this.tailStartTime_ = this.probes_[i][0];
     this.probes_.splice(0, i);
   }
-};
-
-/**
- * Manages multiple monitors in a name-keyed map.
- * @constructor
- */
-camera.util.NamedPerformanceMonitors = function() {
-  /**
-   * @type {Object.<camera.util.PerformanceMonitor}
-   * @private
-   */
-  this.monitors_ = {};
-
-  // No more properties, seal the object.
-  Object.seal(this);
-};
-
-/**
- * Gets a named monitor. If doesn't exist, then creates it.
- * @param {string} name Identifier.
- * @return {camera.util.PerformanceMonitor}
- * @private
- */
-camera.util.NamedPerformanceMonitors.prototype.get_ = function(name) {
-  if (!this.monitors_[name])
-    this.monitors_[name] = new camera.util.PerformanceMonitor();
-  return this.monitors_[name];
-};
-
-/**
- * Starts measuring a task execution time for the specific monitor.
- * @param {string} name Identifier.
- * @return {function()} Callback to be called, when the task is finished.
- */
-camera.util.NamedPerformanceMonitors.prototype.startMeasuring = function(name) {
-  return this.get_(name).startMeasuring();
-};
-
-/**
- * Resets all monitors.
- */
-camera.util.NamedPerformanceMonitors.prototype.reset = function() {
-  Object.keys(this.monitors_).forEach(function(identifier) {
-    this.monitors_[identifier].reset();
-  }.bind(this));
-};
-
-/**
- * Returns a debug string.
- * @return {string} Debug string.
- */
-camera.util.NamedPerformanceMonitors.prototype.toDebugString = function() {
-  var result = '';
-  Object.keys(this.monitors_).forEach(function(identifier) {
-    result += identifier + ': ' + this.average(identifier) +
-        ' ms @ ' + this.fps(identifier).toPrecision(2) + ' fps\n';
-  }.bind(this));
-  return result;
-};
-
-/**
- * Returns a fps value for the named monitor.
- * @param {string} Identifier.
- * @return {number} Number of frames per second.
- */
-camera.util.NamedPerformanceMonitors.prototype.fps = function(name) {
-  return this.get_(name).fps;
-};
-
-/**
- * Returns an average measurement duration value for the named monitor.
- * @param {string} Identifier.
- * @return {number} Average measurement duration in ms
- */
-camera.util.NamedPerformanceMonitors.prototype.average = function(name) {
-  return this.get_(name).average;
 };
 
 /**
