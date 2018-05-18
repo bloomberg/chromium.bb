@@ -38,8 +38,7 @@ void AddWebContents(Browser* browser,
                     content::WebContents* source_contents,
                     std::unique_ptr<content::WebContents> new_contents,
                     WindowOpenDisposition disposition,
-                    const gfx::Rect& initial_rect,
-                    bool user_gesture);
+                    const gfx::Rect& initial_rect);
 
 // Closes the specified WebContents in the specified Browser. If
 // |add_to_history| is true, an entry in the historical tab database is created.

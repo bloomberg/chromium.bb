@@ -1540,7 +1540,7 @@ void Browser::AddNewContents(WebContents* source,
   if (source && PopupBlockerTabHelper::ConsiderForPopupBlocking(disposition))
     PopupTracker::CreateForWebContents(new_contents.get(), source);
   chrome::AddWebContents(this, source, std::move(new_contents), disposition,
-                         initial_rect, user_gesture);
+                         initial_rect);
 }
 
 void Browser::ActivateContents(WebContents* contents) {
