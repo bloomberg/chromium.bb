@@ -4261,12 +4261,7 @@ crbug.com/817175 compositing/overflow/clip-escaping-reverse-order-should-not-cra
 crbug.com/817175 virtual/disable-spv175/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
 crbug.com/817175 virtual/prefer_compositing_to_lcd_text/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
 
-# RSA key generation is intrinsically very slow. Even when marked as [ Slow ], these tests can still time out.
-crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/successes_RSA-OAEP.https.worker.html [ Pass Timeout ]
-crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/successes_RSA-PSS.https.worker.html [ Pass Timeout ]
-crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/successes_RSASSA-PKCS1-v1_5.https.worker.html [ Pass Timeout ]
-crbug.com/787971 [ Mac ] external/wpt/WebCryptoAPI/generateKey/failures_RSA-OAEP.https.worker.html [ Pass Timeout ]
-crbug.com/787971 [ Mac ] external/wpt/WebCryptoAPI/generateKey/failures_RSA-PSS.https.worker.html [ Pass Timeout ]
+# These tests are intrinsically slow. Even when marked as [ Slow ], they can still time out.
 crbug.com/787971 external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.https.worker.html [ Pass Timeout ]
 crbug.com/787971 external/wpt/WebCryptoAPI/derive_bits_keys/pbkdf2.https.worker.html [ Pass Timeout ]
 
