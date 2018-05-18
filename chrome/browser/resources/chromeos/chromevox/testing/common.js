@@ -50,9 +50,9 @@ TestUtils.extractHtmlFromCommentEncodedString = function(
  */
 TestUtils.createUrlForDoc = function(doc) {
   var docString = TestUtils.extractHtmlFromCommentEncodedString(doc);
-  return TestUtils.collapseWhitespace(
-      'data:text/html,<!doctype html>' +
-      docString.replace(/[\n\r]/g, '').trim());
+  return 'data:text/html,<!doctype html>' +
+      encodeURIComponent(TestUtils.collapseWhitespace(
+          docString.replace(/[\n\r]/g, '').trim()));
 };
 
 /**
