@@ -374,48 +374,6 @@
         },
         'os_type': 'android',
       },
-      'Android Tests (trial)(dbg)': {
-        'test_suites': {
-          'scripts': 'telemetry_unittests_scripts',
-        },
-        'use_swarming': False,
-      },
-      'Android Tests with Tracing': {
-        'test_suites': {
-          'instrumentation_tests': 'android_fyi_instrumentation_tests',
-        },
-      },
-      'Jelly Bean Tester': {
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-          'instrumentation_tests': 'android_fyi_instrumentation_tests',
-        },
-        'use_swarming': False,
-      },
-      'Lollipop Consumer Tester': {
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-          'instrumentation_tests': 'android_fyi_instrumentation_tests',
-        },
-        'use_swarming': False,
-      },
-      'Lollipop Low-end Tester': {
-        'os_type': 'android',
-        'skip_cipd_packages': True,
-        'skip_output_links': True,
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'LMY47W',
-              'device_type': 'sprout',
-            }
-          ],
-          'expiration': 14400,
-        },
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-        },
-      },
       'Memory Infra Tester': {
         'swarming': {
           'dimension_sets': [

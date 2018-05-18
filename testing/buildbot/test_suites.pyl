@@ -1623,12 +1623,6 @@
     }
   },
 
-  'telemetry_unittests_scripts': {
-    'telemetry_unittests': {
-      'script': 'telemetry_unittests.py',
-    }
-  },
-
   'viz_fyi_gtests': {
     'surface_sync_browser_tests': {
       'args': [

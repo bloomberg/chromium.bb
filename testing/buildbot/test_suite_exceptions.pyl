@@ -291,9 +291,6 @@
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
       # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
@@ -386,8 +383,6 @@
   'chrome_public_test_apk': {
     'remove_gtest_from': [
       # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
     ],
@@ -399,9 +394,6 @@
     ],
     'key_removals': {
       # chromium.android.fyi
-      'Lollipop Low-end Tester': [
-        'args',
-      ],
       'Nougat Phone Tester': [
         'args',
       ],
@@ -461,19 +453,6 @@
         },
       },
       # chromium.android.fyi
-      'Android Tests with Tracing': {
-        'args': [
-          '-f',
-          'ContextualSearchTapEventTest#*',
-        ],
-        'trace_output': True,
-      },
-      'Lollipop Low-end Tester': {
-        'swarming': {
-          'hard_timeout': 0,
-          'shards': 6,
-        },
-      },
       'Nougat Phone Tester': {
         'swarming': {
           'hard_timeout': 1200,
@@ -522,9 +501,6 @@
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
       # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Nougat Phone Tester chromium.android.fyi',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
@@ -585,16 +561,11 @@
   'chrome_sync_shell_test_apk': {
     'remove_gtest_from': [
       # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
     ],
     'key_removals': {
       # chromium.android.fyi
-      'Lollipop Low-end Tester': [
-        'args',
-      ],
       'Nougat Phone Tester': [
         'args',
       ],
@@ -628,11 +599,6 @@
         },
       },
       # chromium.android.fyi
-      'Lollipop Low-end Tester': {
-        'swarming': {
-          'hard_timeout': 0,
-        },
-      },
       'x64 Device Tester': {
         'swarming': {
           'hard_timeout': 0,
@@ -763,12 +729,6 @@
         },
       },
       # chromium.android.fyi
-      'Lollipop Low-end Tester': {
-        'swarming': {
-          'hard_timeout': 0,
-          'shards': 1,
-        },
-      },
       'Nougat Phone Tester': {
         'swarming': {
           'hard_timeout': 960,
@@ -844,12 +804,6 @@
         },
       },
       # chromium.android.fyi
-      'Lollipop Low-end Tester': {
-        'swarming': {
-          'hard_timeout': 0,
-          'shards': 4,
-        },
-      },
       'Nougat Phone Tester': {
         'swarming': {
           'hard_timeout': 1200,
@@ -993,16 +947,11 @@
   'content_shell_test_apk': {
     'remove_gtest_from': [
       # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
     ],
     'key_removals': {
       # chromium.android.fyi
-      'Lollipop Low-end Tester': [
-        'args',
-      ],
       'Nougat Phone Tester': [
         'args',
       ],
@@ -1036,12 +985,6 @@
         },
       },
       # chromium.android.fyi
-      'Lollipop Low-end Tester': {
-        'swarming': {
-          'hard_timeout': 0,
-          'shards': 1,
-        },
-      },
       'Nougat Phone Tester': {
         'swarming': {
           'hard_timeout': 1200,
@@ -1119,11 +1062,6 @@
         },
       },
       # chromium.android.fyi
-      'Lollipop Low-end Tester': {
-        'swarming': {
-          'hard_timeout': 0,
-        },
-      },
       'Nougat Phone Tester': {
         'swarming': {
           'hard_timeout': 1200,
@@ -1196,9 +1134,6 @@
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
       # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
@@ -1470,11 +1405,6 @@
         },
       },
       # chromium.android.fyi
-      'Lollipop Low-end Tester': {
-        'swarming': {
-          'hard_timeout': 0,
-        },
-      },
       'Nougat Phone Tester': {
         'swarming': {
           'hard_timeout': 960,
@@ -1944,9 +1874,6 @@
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
       # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x64 Device Tester',
@@ -1983,9 +1910,6 @@
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
       # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x64 Device Tester',
@@ -2017,9 +1941,6 @@
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
       # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x64 Device Tester',
@@ -2048,9 +1969,6 @@
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
       # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x64 Device Tester',
@@ -2141,9 +2059,6 @@
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
        # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x64 Device Tester',
@@ -2303,9 +2218,6 @@
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
        # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
@@ -2654,11 +2566,6 @@
         },
       },
       # chromium.android.fyi
-      'Lollipop Low-end Tester': {
-        'swarming': {
-          'hard_timeout': 0,
-        },
-      },
       'Nougat Phone Tester': {
         'swarming': {
           'hard_timeout': 1200,
@@ -2721,9 +2628,6 @@
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
        # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
@@ -2756,9 +2660,6 @@
       # On chromium.android, unclear why these aren't run on all bots.
       'Nougat Phone Tester',
        # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x64 Device Tester',
@@ -2801,9 +2702,6 @@
       'KitKat Phone Tester (rel)',
       'Nougat Phone Tester chromium.android',
        # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x64 Device Tester',
@@ -2853,9 +2751,6 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
        # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Nougat Phone Tester chromium.android.fyi',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
@@ -3160,10 +3055,6 @@
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
       # chromium.android.fyi
-      'Android Tests (trial)(dbg)',
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
@@ -3183,7 +3074,6 @@
   },
   'webview_instrumentation_test_apk': {
     'remove_gtest_from': [
-      'Lollipop Consumer Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
     ],
@@ -3195,8 +3085,6 @@
       'KitKat Tablet Tester',
       'Nougat Phone Tester chromium.android',
       # chromium.android.fyi
-      'Android Tests with Tracing',
-      'Jelly Bean Tester',
       # chromium.clang; matching chromium.android, the test fails on these.
       'ToTAndroid x64',
       'ToTAndroid',
@@ -3208,9 +3096,6 @@
     ],
     'key_removals': {
       # chromium.android.fyi
-      'Lollipop Low-end Tester': [
-        'args',
-      ],
       'Nougat Phone Tester': [
         'args',
       ],
@@ -3250,11 +3135,6 @@
         },
       },
       # chromium.android.fyi
-      'Lollipop Low-end Tester': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
       'Nougat Phone Tester': {
         'swarming': {
           'hard_timeout': 1500,
@@ -3289,10 +3169,6 @@
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
       # chromium.android.fyi
-      'Android Tests (trial)(dbg)',
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
