@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_parent_folder_item.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/experimental_flags.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -16,6 +18,8 @@
 #error "This file requires ARC support."
 #endif
 
+#pragma mark - BookmarkParentFolderItem
+
 @implementation BookmarkParentFolderItem
 
 @synthesize title = _title;
@@ -24,7 +28,11 @@
   self = [super initWithType:type];
   if (self) {
     self.accessibilityIdentifier = @"Change Folder";
-    self.cellClass = [LegacyBookmarkParentFolderCell class];
+    if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+      self.cellClass = [BookmarkParentFolderCell class];
+    } else {
+      self.cellClass = [LegacyBookmarkParentFolderCell class];
+    }
   }
   return self;
 }
@@ -34,12 +42,110 @@
 - (void)configureCell:(UITableViewCell*)tableCell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:tableCell withStyler:styler];
-  LegacyBookmarkParentFolderCell* cell =
-      base::mac::ObjCCastStrict<LegacyBookmarkParentFolderCell>(tableCell);
-  cell.parentFolderNameLabel.text = self.title;
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    BookmarkParentFolderCell* cell =
+        base::mac::ObjCCastStrict<BookmarkParentFolderCell>(tableCell);
+    cell.parentFolderNameLabel.text = self.title;
+  } else {
+    LegacyBookmarkParentFolderCell* cell =
+        base::mac::ObjCCastStrict<LegacyBookmarkParentFolderCell>(tableCell);
+    cell.parentFolderNameLabel.text = self.title;
+  }
 }
 
 @end
+
+#pragma mark - BookmarkParentFolderCell
+
+@interface BookmarkParentFolderCell ()
+@property(nonatomic, readwrite, strong) UILabel* parentFolderNameLabel;
+@end
+
+@implementation BookmarkParentFolderCell
+@synthesize parentFolderNameLabel = _parentFolderNameLabel;
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style
+              reuseIdentifier:(NSString*)reuseIdentifier {
+  self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+  if (!self)
+    return nil;
+
+  self.isAccessibilityElement = YES;
+  self.accessibilityTraits |= UIAccessibilityTraitButton;
+
+  // "Folder" decoration label.
+  UILabel* titleLabel = [[UILabel alloc] init];
+  titleLabel.text = l10n_util::GetNSString(IDS_IOS_BOOKMARK_GROUP_BUTTON);
+  titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  titleLabel.adjustsFontForContentSizeCategory = YES;
+  [titleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                forAxis:UILayoutConstraintAxisHorizontal];
+  [titleLabel
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                      forAxis:UILayoutConstraintAxisHorizontal];
+
+  // Parent Folder name label.
+  self.parentFolderNameLabel = [[UILabel alloc] init];
+  self.parentFolderNameLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  self.parentFolderNameLabel.adjustsFontForContentSizeCategory = YES;
+  self.parentFolderNameLabel.textColor = [UIColor lightGrayColor];
+  self.parentFolderNameLabel.textAlignment = NSTextAlignmentRight;
+  [self.parentFolderNameLabel
+      setContentHuggingPriority:UILayoutPriorityDefaultLow
+                        forAxis:UILayoutConstraintAxisHorizontal];
+
+  // Container StackView.
+  UIStackView* horizontalStack = [[UIStackView alloc]
+      initWithArrangedSubviews:@[ titleLabel, self.parentFolderNameLabel ]];
+  horizontalStack.axis = UILayoutConstraintAxisHorizontal;
+  horizontalStack.spacing = kBookmarkCellViewSpacing;
+  horizontalStack.distribution = UIStackViewDistributionFill;
+  horizontalStack.alignment = UIStackViewAlignmentCenter;
+  horizontalStack.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.contentView addSubview:horizontalStack];
+
+  // Set up constraints.
+  [NSLayoutConstraint activateConstraints:@[
+    [horizontalStack.topAnchor
+        constraintEqualToAnchor:self.contentView.topAnchor
+                       constant:kBookmarkCellVerticalInset],
+    [horizontalStack.bottomAnchor
+        constraintEqualToAnchor:self.contentView.bottomAnchor
+                       constant:-kBookmarkCellVerticalInset],
+    [horizontalStack.leadingAnchor
+        constraintEqualToAnchor:self.contentView.leadingAnchor
+                       constant:kBookmarkCellHorizontalLeadingInset],
+    [horizontalStack.trailingAnchor
+        constraintEqualToAnchor:self.contentView.trailingAnchor
+                       constant:-kBookmarkCellHorizontalAccessoryViewSpacing],
+  ]];
+
+  // Chevron accessory view.
+  UIImageView* navigationChevronImage = [[UIImageView alloc]
+      initWithImage:[UIImage imageNamed:@"table_view_cell_chevron"]];
+  self.accessoryView = navigationChevronImage;
+
+  return self;
+}
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  self.parentFolderNameLabel.text = nil;
+}
+
+- (NSString*)accessibilityLabel {
+  return self.parentFolderNameLabel.text;
+}
+
+- (NSString*)accessibilityHint {
+  return l10n_util::GetNSString(
+      IDS_IOS_BOOKMARK_EDIT_PARENT_FOLDER_BUTTON_HINT);
+}
+
+@end
+
+#pragma mark - LegacyBookmarkParentFolderCell
 
 @interface LegacyBookmarkParentFolderCell ()
 @property(nonatomic, readwrite, strong) UILabel* parentFolderNameLabel;

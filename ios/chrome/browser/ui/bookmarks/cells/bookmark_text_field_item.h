@@ -34,6 +34,16 @@
 
 @end
 
+@interface BookmarkTextFieldCell : UITableViewCell
+
+// Label to display the type of content |self.textField| is displaying.
+@property(nonatomic, strong) UILabel* titleLabel;
+
+// Text field to display the title or the URL of the bookmark node.
+@property(nonatomic, strong) UITextField* textField;
+
+@end
+
 @interface LegacyBookmarkTextFieldCell : UITableViewCell
 
 // Text field to display the title or the URL of the bookmark node.
