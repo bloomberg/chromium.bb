@@ -39,15 +39,13 @@ namespace blink {
 
 class FloatPolygonTestValue {
  public:
-  FloatPolygonTestValue(const float* coordinates,
-                        unsigned coordinates_length,
-                        WindRule fill_rule) {
+  FloatPolygonTestValue(const float* coordinates, unsigned coordinates_length) {
     DCHECK(!(coordinates_length % 2));
     std::unique_ptr<Vector<FloatPoint>> vertices =
         std::make_unique<Vector<FloatPoint>>(coordinates_length / 2);
     for (unsigned i = 0; i < coordinates_length; i += 2)
       (*vertices)[i / 2] = FloatPoint(coordinates[i], coordinates[i + 1]);
-    polygon_ = std::make_unique<FloatPolygon>(std::move(vertices), fill_rule);
+    polygon_ = std::make_unique<FloatPolygon>(std::move(vertices));
   }
 
   const FloatPolygon& Polygon() const { return *polygon_; }
@@ -88,11 +86,10 @@ SortedOverlappingEdges(const FloatPolygon& polygon, float min_y, float max_y) {
  */
 TEST(FloatPolygonTest, basics) {
   const float kTriangleCoordinates[] = {200, 100, 200, 200, 100, 200};
-  FloatPolygonTestValue triangle_test_value(
-      kTriangleCoordinates, SIZEOF_ARRAY(kTriangleCoordinates), RULE_NONZERO);
+  FloatPolygonTestValue triangle_test_value(kTriangleCoordinates,
+                                            SIZEOF_ARRAY(kTriangleCoordinates));
   const FloatPolygon& triangle = triangle_test_value.Polygon();
 
-  EXPECT_EQ(RULE_NONZERO, triangle.FillRule());
   EXPECT_FALSE(triangle.IsEmpty());
 
   EXPECT_EQ(3u, triangle.NumberOfVertices());
@@ -178,7 +175,7 @@ TEST(FloatPolygonTest, basics) {
 }
 
 /**
- * Tests FloatPolygon::contains() with a right triangle, and fillRule = nonzero.
+ * Tests ContainsNonZero and ContainsEvenOdd with a right triangle.
  *
  *                        200,100
  *                          /|
@@ -189,54 +186,35 @@ TEST(FloatPolygonTest, basics) {
  */
 TEST(FloatPolygonTest, triangle_nonzero) {
   const float kTriangleCoordinates[] = {200, 100, 200, 200, 100, 200};
-  FloatPolygonTestValue triangle_test_value(
-      kTriangleCoordinates, SIZEOF_ARRAY(kTriangleCoordinates), RULE_NONZERO);
+  FloatPolygonTestValue triangle_test_value(kTriangleCoordinates,
+                                            SIZEOF_ARRAY(kTriangleCoordinates));
   const FloatPolygon& triangle = triangle_test_value.Polygon();
 
-  EXPECT_EQ(RULE_NONZERO, triangle.FillRule());
-  EXPECT_TRUE(triangle.Contains(FloatPoint(200, 100)));
-  EXPECT_TRUE(triangle.Contains(FloatPoint(200, 200)));
-  EXPECT_TRUE(triangle.Contains(FloatPoint(100, 200)));
-  EXPECT_TRUE(triangle.Contains(FloatPoint(150, 150)));
-  EXPECT_FALSE(triangle.Contains(FloatPoint(100, 100)));
-  EXPECT_FALSE(triangle.Contains(FloatPoint(149, 149)));
-  EXPECT_FALSE(triangle.Contains(FloatPoint(150, 200.5)));
-  EXPECT_FALSE(triangle.Contains(FloatPoint(201, 200.5)));
+  EXPECT_TRUE(triangle.ContainsNonZero(FloatPoint(200, 100)));
+  EXPECT_TRUE(triangle.ContainsNonZero(FloatPoint(200, 200)));
+  EXPECT_TRUE(triangle.ContainsNonZero(FloatPoint(100, 200)));
+  EXPECT_TRUE(triangle.ContainsNonZero(FloatPoint(150, 150)));
+  EXPECT_FALSE(triangle.ContainsNonZero(FloatPoint(100, 100)));
+  EXPECT_FALSE(triangle.ContainsNonZero(FloatPoint(149, 149)));
+  EXPECT_FALSE(triangle.ContainsNonZero(FloatPoint(150, 200.5)));
+  EXPECT_FALSE(triangle.ContainsNonZero(FloatPoint(201, 200.5)));
+
+  EXPECT_TRUE(triangle.ContainsEvenOdd(FloatPoint(200, 100)));
+  EXPECT_TRUE(triangle.ContainsEvenOdd(FloatPoint(200, 200)));
+  EXPECT_TRUE(triangle.ContainsEvenOdd(FloatPoint(100, 200)));
+  EXPECT_TRUE(triangle.ContainsEvenOdd(FloatPoint(150, 150)));
+  EXPECT_FALSE(triangle.ContainsEvenOdd(FloatPoint(100, 100)));
+  EXPECT_FALSE(triangle.ContainsEvenOdd(FloatPoint(149, 149)));
+  EXPECT_FALSE(triangle.ContainsEvenOdd(FloatPoint(150, 200.5)));
+  EXPECT_FALSE(triangle.ContainsEvenOdd(FloatPoint(201, 200.5)));
 }
 
-/**
- * Tests FloatPolygon::contains() with a right triangle, and fillRule = evenodd;
- *
- *                        200,100
- *                          /|
- *                         / |
- *                        /  |
- *                       -----
- *                 100,200   200,200
- */
-TEST(FloatPolygonTest, triangle_evenodd) {
-  const float kTriangleCoordinates[] = {200, 100, 200, 200, 100, 200};
-  FloatPolygonTestValue triangle_test_value(
-      kTriangleCoordinates, SIZEOF_ARRAY(kTriangleCoordinates), RULE_EVENODD);
-  const FloatPolygon& triangle = triangle_test_value.Polygon();
-
-  EXPECT_EQ(RULE_EVENODD, triangle.FillRule());
-  EXPECT_TRUE(triangle.Contains(FloatPoint(200, 100)));
-  EXPECT_TRUE(triangle.Contains(FloatPoint(200, 200)));
-  EXPECT_TRUE(triangle.Contains(FloatPoint(100, 200)));
-  EXPECT_TRUE(triangle.Contains(FloatPoint(150, 150)));
-  EXPECT_FALSE(triangle.Contains(FloatPoint(100, 100)));
-  EXPECT_FALSE(triangle.Contains(FloatPoint(149, 149)));
-  EXPECT_FALSE(triangle.Contains(FloatPoint(150, 200.5)));
-  EXPECT_FALSE(triangle.Contains(FloatPoint(201, 200.5)));
-}
-
-#define TEST_EMPTY(coordinates)                                             \
-  {                                                                         \
-    FloatPolygonTestValue empty_polygon_test_value(                         \
-        coordinates, SIZEOF_ARRAY(coordinates), RULE_NONZERO);              \
-    const FloatPolygon& empty_polygon = empty_polygon_test_value.Polygon(); \
-    EXPECT_TRUE(empty_polygon.IsEmpty());                                   \
+#define TEST_EMPTY(coordinates)                                                \
+  {                                                                            \
+    FloatPolygonTestValue empty_polygon_test_value(coordinates,                \
+                                                   SIZEOF_ARRAY(coordinates)); \
+    const FloatPolygon& empty_polygon = empty_polygon_test_value.Polygon();    \
+    EXPECT_TRUE(empty_polygon.IsEmpty());                                      \
   }
 
 TEST(FloatPolygonTest, emptyPolygons) {
@@ -260,8 +238,8 @@ TEST(FloatPolygonTest, emptyPolygons) {
 }
 
 /*
- * Test FloatPolygon::contains() with a trapezoid. The vertices are listed in
- * counter-clockwise order.
+ * Test FloatPolygon::ContainsEvenOdd() with a trapezoid. The vertices are
+ * listed in counter-clockwise order.
  *
  *        150,100   250,100
  *          +----------+
@@ -274,23 +252,23 @@ TEST(FloatPolygonTest, trapezoid) {
   const float kTrapezoidCoordinates[] = {100, 150, 300, 150,
                                          250, 100, 150, 100};
   FloatPolygonTestValue trapezoid_test_value(
-      kTrapezoidCoordinates, SIZEOF_ARRAY(kTrapezoidCoordinates), RULE_EVENODD);
+      kTrapezoidCoordinates, SIZEOF_ARRAY(kTrapezoidCoordinates));
   const FloatPolygon& trapezoid = trapezoid_test_value.Polygon();
 
   EXPECT_FALSE(trapezoid.IsEmpty());
   EXPECT_EQ(4u, trapezoid.NumberOfVertices());
   EXPECT_EQ(FloatRect(100, 100, 200, 50), trapezoid.BoundingBox());
 
-  EXPECT_TRUE(trapezoid.Contains(FloatPoint(150, 100)));
-  EXPECT_TRUE(trapezoid.Contains(FloatPoint(150, 101)));
-  EXPECT_TRUE(trapezoid.Contains(FloatPoint(200, 125)));
-  EXPECT_FALSE(trapezoid.Contains(FloatPoint(149, 100)));
-  EXPECT_FALSE(trapezoid.Contains(FloatPoint(301, 150)));
+  EXPECT_TRUE(trapezoid.ContainsEvenOdd(FloatPoint(150, 100)));
+  EXPECT_TRUE(trapezoid.ContainsEvenOdd(FloatPoint(150, 101)));
+  EXPECT_TRUE(trapezoid.ContainsEvenOdd(FloatPoint(200, 125)));
+  EXPECT_FALSE(trapezoid.ContainsEvenOdd(FloatPoint(149, 100)));
+  EXPECT_FALSE(trapezoid.ContainsEvenOdd(FloatPoint(301, 150)));
 }
 
 /*
- * Test FloatPolygon::contains() with a non-convex rectilinear polygon. The
- * polygon has the same shape as the letter "H":
+ * Test FloatPolygon::ContainsNonZero() with a non-convex rectilinear polygon.
+ * The polygon has the same shape as the letter "H":
  *
  *    100,100  150,100   200,100   250,100
  *       +--------+        +--------+
@@ -310,33 +288,33 @@ TEST(FloatPolygonTest, rectilinear) {
   const float kHCoordinates[] = {100, 100, 150, 100, 150, 150, 200, 150,
                                  200, 100, 250, 100, 250, 250, 200, 250,
                                  200, 200, 150, 200, 150, 250, 100, 250};
-  FloatPolygonTestValue h_test_value(kHCoordinates, SIZEOF_ARRAY(kHCoordinates),
-                                     RULE_NONZERO);
+  FloatPolygonTestValue h_test_value(kHCoordinates,
+                                     SIZEOF_ARRAY(kHCoordinates));
   const FloatPolygon& h = h_test_value.Polygon();
 
   EXPECT_FALSE(h.IsEmpty());
   EXPECT_EQ(12u, h.NumberOfVertices());
   EXPECT_EQ(FloatRect(100, 100, 150, 150), h.BoundingBox());
 
-  EXPECT_TRUE(h.Contains(FloatPoint(100, 100)));
-  EXPECT_TRUE(h.Contains(FloatPoint(125, 100)));
-  EXPECT_TRUE(h.Contains(FloatPoint(125, 125)));
-  EXPECT_TRUE(h.Contains(FloatPoint(150, 100)));
-  EXPECT_TRUE(h.Contains(FloatPoint(200, 200)));
-  EXPECT_TRUE(h.Contains(FloatPoint(225, 225)));
-  EXPECT_TRUE(h.Contains(FloatPoint(250, 250)));
-  EXPECT_TRUE(h.Contains(FloatPoint(100, 250)));
-  EXPECT_TRUE(h.Contains(FloatPoint(125, 250)));
+  EXPECT_TRUE(h.ContainsNonZero(FloatPoint(100, 100)));
+  EXPECT_TRUE(h.ContainsNonZero(FloatPoint(125, 100)));
+  EXPECT_TRUE(h.ContainsNonZero(FloatPoint(125, 125)));
+  EXPECT_TRUE(h.ContainsNonZero(FloatPoint(150, 100)));
+  EXPECT_TRUE(h.ContainsNonZero(FloatPoint(200, 200)));
+  EXPECT_TRUE(h.ContainsNonZero(FloatPoint(225, 225)));
+  EXPECT_TRUE(h.ContainsNonZero(FloatPoint(250, 250)));
+  EXPECT_TRUE(h.ContainsNonZero(FloatPoint(100, 250)));
+  EXPECT_TRUE(h.ContainsNonZero(FloatPoint(125, 250)));
 
-  EXPECT_FALSE(h.Contains(FloatPoint(99, 100)));
-  EXPECT_FALSE(h.Contains(FloatPoint(251, 100)));
-  EXPECT_FALSE(h.Contains(FloatPoint(151, 100)));
-  EXPECT_FALSE(h.Contains(FloatPoint(199, 100)));
-  EXPECT_FALSE(h.Contains(FloatPoint(175, 125)));
-  EXPECT_FALSE(h.Contains(FloatPoint(151, 250)));
-  EXPECT_FALSE(h.Contains(FloatPoint(199, 250)));
-  EXPECT_FALSE(h.Contains(FloatPoint(199, 250)));
-  EXPECT_FALSE(h.Contains(FloatPoint(175, 225)));
+  EXPECT_FALSE(h.ContainsNonZero(FloatPoint(99, 100)));
+  EXPECT_FALSE(h.ContainsNonZero(FloatPoint(251, 100)));
+  EXPECT_FALSE(h.ContainsNonZero(FloatPoint(151, 100)));
+  EXPECT_FALSE(h.ContainsNonZero(FloatPoint(199, 100)));
+  EXPECT_FALSE(h.ContainsNonZero(FloatPoint(175, 125)));
+  EXPECT_FALSE(h.ContainsNonZero(FloatPoint(151, 250)));
+  EXPECT_FALSE(h.ContainsNonZero(FloatPoint(199, 250)));
+  EXPECT_FALSE(h.ContainsNonZero(FloatPoint(199, 250)));
+  EXPECT_FALSE(h.ContainsNonZero(FloatPoint(175, 225)));
 }
 
 }  // namespace blink
