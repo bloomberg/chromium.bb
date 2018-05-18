@@ -35,9 +35,6 @@ const base::Feature kEnableCastDiscovery{"EnableCastDiscovery",
 const base::Feature kCastMediaRouteProvider{"CastMediaRouteProvider",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls if local media casting is enabled.
-const base::Feature kEnableCastLocalMedia{"EnableCastLocalMedia",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
@@ -101,10 +98,6 @@ bool CastDiscoveryEnabled() {
 
 bool CastMediaRouteProviderEnabled() {
   return base::FeatureList::IsEnabled(kCastMediaRouteProvider);
-}
-
-bool CastLocalMediaEnabled() {
-  return base::FeatureList::IsEnabled(kEnableCastLocalMedia);
 }
 
 bool PresentationReceiverWindowEnabled() {

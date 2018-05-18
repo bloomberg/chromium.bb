@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
-#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -55,7 +54,6 @@ MediaRouterE2EBrowserTest::~MediaRouterE2EBrowserTest() {
 
 void MediaRouterE2EBrowserTest::SetUpOnMainThread() {
   MediaRouterBaseBrowserTest::SetUpOnMainThread();
-  scoped_feature_list_.InitAndEnableFeature(kEnableCastLocalMedia);
   media_router_ =
       MediaRouterFactory::GetApiForBrowserContext(browser()->profile());
   DCHECK(media_router_);

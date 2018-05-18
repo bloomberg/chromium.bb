@@ -31,7 +31,6 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
  protected:
   // InProcessBrowserTest Overrides
   void TearDownOnMainThread() override;
-  void SetUpOnMainThread() override;
 
   // MediaRouterBaseBrowserTest Overrides
   void ParseCommandLine() override;
