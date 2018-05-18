@@ -399,6 +399,7 @@ public abstract class StackLayoutBase
     @Override
     public void setTabModelSelector(TabModelSelector modelSelector, TabContentManager manager) {
         super.setTabModelSelector(modelSelector, manager);
+        mSceneLayer.setTabModelSelector(modelSelector);
         resetScrollData();
     }
 

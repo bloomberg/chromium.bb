@@ -17,6 +17,7 @@ import android.widget.Button;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
 
@@ -123,9 +124,12 @@ public class NewTabButton extends Button implements Drawable.Callback {
         mModernDrawable = VectorDrawableCompat.create(
                 getContext().getResources(), R.drawable.new_tab_icon, getContext().getTheme());
         mModernDrawable.setState(getDrawableState());
-        mModernDrawable.setTintList(DeviceClassManager.enableAccessibilityLayout() && mIsIncognito
-                        ? mLightModeTint
-                        : mDarkModeTint);
+        final boolean shouldUseLightMode =
+                (DeviceClassManager.enableAccessibilityLayout()
+                        || ChromeFeatureList.isEnabled(
+                                   ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID))
+                && mIsIncognito;
+        mModernDrawable.setTintList(shouldUseLightMode ? mLightModeTint : mDarkModeTint);
         mModernDrawable.setBounds(
                 0, 0, mModernDrawable.getIntrinsicWidth(), mModernDrawable.getIntrinsicHeight());
         mModernDrawable.setCallback(this);
@@ -143,9 +147,12 @@ public class NewTabButton extends Button implements Drawable.Callback {
         mIsIncognito = incognito;
 
         if (mModernDrawable != null) {
-            mModernDrawable.setTintList(
-                    DeviceClassManager.enableAccessibilityLayout() && mIsIncognito ? mLightModeTint
-                                                                                   : mDarkModeTint);
+            final boolean shouldUseLightMode =
+                    (DeviceClassManager.enableAccessibilityLayout()
+                            || ChromeFeatureList.isEnabled(
+                                       ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID))
+                    && mIsIncognito;
+            mModernDrawable.setTintList(shouldUseLightMode ? mLightModeTint : mDarkModeTint);
             invalidateDrawable(mModernDrawable);
             return;
         }

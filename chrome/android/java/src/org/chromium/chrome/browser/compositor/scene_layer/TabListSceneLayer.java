@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.resources.ResourceManager;
@@ -30,6 +31,11 @@ import org.chromium.ui.resources.ResourceManager;
 @JNINamespace("android")
 public class TabListSceneLayer extends SceneLayer {
     private long mNativePtr;
+    private TabModelSelector mTabModelSelector;
+
+    public void setTabModelSelector(TabModelSelector tabModelSelector) {
+        mTabModelSelector = tabModelSelector;
+    }
 
     /**
      * Pushes all relevant {@link LayoutTab}s from a {@link Layout} to the CC Layer tree.  This will
@@ -156,6 +162,15 @@ public class TabListSceneLayer extends SceneLayer {
     protected int getTabListBackgroundColor(Context context) {
         int colorId = R.color.tab_switcher_background;
         if (FeatureUtilities.isChromeModernDesignEnabled()) colorId = R.color.modern_primary_color;
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)) {
+            if (mTabModelSelector != null && mTabModelSelector.isIncognitoSelected()) {
+                colorId = R.color.incognito_modern_primary_color;
+            } else {
+                colorId = R.color.modern_primary_color;
+            }
+        }
+
         return ApiCompatibilityUtils.getColor(context.getResources(), colorId);
     }
 
