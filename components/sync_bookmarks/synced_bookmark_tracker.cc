@@ -44,4 +44,8 @@ void SyncedBookmarkTracker::Associate(
   sync_id_to_entities_map_[sync_id] = std::make_unique<Entity>(bookmark_node);
 }
 
+std::size_t SyncedBookmarkTracker::TrackedEntitiesCountForTest() const {
+  return sync_id_to_entities_map_.size();
+}
+
 }  // namespace sync_bookmarks

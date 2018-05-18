@@ -172,29 +172,22 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
     // TODO(crbug.com/516866): Check |update_data| for sanity.
     // 1. Has bookmark specifics.
     // 2. All meta info entries in the specifics have unique keys.
-    const SyncedBookmarkTracker::Entity* entity_tracker =
+    const SyncedBookmarkTracker::Entity* tracked_entity =
         bookmark_tracker_.GetEntityForSyncId(update_data.id);
     if (update_data.is_deleted()) {
       // TODO(crbug.com/516866): Handle Delete.
       continue;
     }
-    if (!entity_tracker) {
+    if (!tracked_entity) {
       ProcessRemoteCreate(update_data);
       continue;
     }
     // Ignore changes to the permanent nodes (e.g. bookmarks bar). We only care
     // about their children.
-    if (bookmark_model_->is_permanent_node(entity_tracker->bookmark_node())) {
+    if (bookmark_model_->is_permanent_node(tracked_entity->bookmark_node())) {
       continue;
     }
-    if (entity_tracker->IsUnsynced()) {
-      // TODO(crbug.com/516866): Handle conflict resolution.
-      continue;
-    }
-    if (!entity_tracker->MatchesData(update_data)) {
-      // TODO(crbug.com/516866): Handle update
-      continue;
-    }
+    ProcessRemoteUpdate(update_data, tracked_entity);
   }
 }
 
@@ -203,6 +196,11 @@ std::vector<const syncer::UpdateResponseData*>
 BookmarkModelTypeProcessor::ReorderUpdatesForTest(
     const syncer::UpdateResponseDataList& updates) {
   return ReorderUpdates(updates);
+}
+
+const SyncedBookmarkTracker* BookmarkModelTypeProcessor::GetTrackerForTest()
+    const {
+  return &bookmark_tracker_;
 }
 
 // static
@@ -252,6 +250,10 @@ void BookmarkModelTypeProcessor::ProcessRemoteCreate(
                 << ", parent id = " << update_data.parent_id;
     return;
   }
+  // TODO(crbug.com/516866): This code appends the code to the very end of the
+  // list of the children by assigning the index to the
+  // parent_node->child_count(). It should instead compute the exact using the
+  // unique position information of the new node as well as the siblings.
   const bookmarks::BookmarkNode* bookmark_node =
       CreateBookmarkNode(update_data, parent_node, bookmark_model_,
                          sync_client_, parent_node->child_count());
@@ -263,6 +265,50 @@ void BookmarkModelTypeProcessor::ProcessRemoteCreate(
     return;
   }
   bookmark_tracker_.Associate(update_data.id, bookmark_node);
+  // TODO(crbug.com/516866): Update metadata (e.g. server version,
+  // specifics_hash).
+}
+
+void BookmarkModelTypeProcessor::ProcessRemoteUpdate(
+    const syncer::EntityData& update_data,
+    const SyncedBookmarkTracker::Entity* tracked_entity) {
+  // Can only update existing nodes.
+  DCHECK(tracked_entity);
+  DCHECK_EQ(tracked_entity,
+            bookmark_tracker_.GetEntityForSyncId(update_data.id));
+  // Must no be a deletion
+  DCHECK(!update_data.is_deleted());
+  if (tracked_entity->IsUnsynced()) {
+    // TODO(crbug.com/516866): Handle conflict resolution.
+    return;
+  }
+  if (tracked_entity->MatchesData(update_data)) {
+    // TODO(crbug.com/516866): Update metadata (e.g. server version,
+    // specifics_hash).
+    return;
+  }
+  const bookmarks::BookmarkNode* node = tracked_entity->bookmark_node();
+  if (update_data.is_folder != node->is_folder()) {
+    DLOG(ERROR) << "Could not update node. Remote node is a "
+                << (update_data.is_folder ? "folder" : "bookmark")
+                << " while local node is a "
+                << (node->is_folder() ? "folder" : "bookmark");
+    return;
+  }
+  const sync_pb::BookmarkSpecifics& specifics =
+      update_data.specifics.bookmark();
+  if (!update_data.is_folder) {
+    bookmark_model_->SetURL(node, GURL(specifics.url()));
+  }
+
+  bookmark_model_->SetTitle(node, base::UTF8ToUTF16(specifics.title()));
+  // TODO(crbug.com/516866): Add the favicon related code.
+  bookmark_model_->SetNodeMetaInfoMap(node, GetBookmarkMetaInfo(update_data));
+  // TODO(crbug.com/516866): Update metadata (e.g. server version,
+  // specifics_hash).
+  // TODO(crbug.com/516866): Handle reparenting.
+  // TODO(crbug.com/516866): Handle the case of moving the bookmark to a new
+  // position under the same parent (i.e. change in the unique position)
 }
 
 const bookmarks::BookmarkNode* BookmarkModelTypeProcessor::GetParentNode(

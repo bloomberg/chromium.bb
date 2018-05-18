@@ -45,14 +45,16 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor {
   static std::vector<const syncer::UpdateResponseData*> ReorderUpdatesForTest(
       const syncer::UpdateResponseDataList& updates);
 
+  const SyncedBookmarkTracker* GetTrackerForTest() const;
+
   base::WeakPtr<syncer::ModelTypeProcessor> GetWeakPtr();
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);
 
-  // Reorder incoming updates such that parent creation is before child creation
-  // and child deletion is before parent deletion. The returned pointers point
-  // to the elements in the original |updates|.
+  // Reorders incoming updates such that parent creation is before child
+  // creation and child deletion is before parent deletion. The returned
+  // pointers point to the elements in the original |updates|.
   static std::vector<const syncer::UpdateResponseData*> ReorderUpdates(
       const syncer::UpdateResponseDataList& updates);
 
@@ -61,13 +63,22 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor {
   const bookmarks::BookmarkNode* GetParentNode(
       const syncer::EntityData& update_data) const;
 
-  // Processor a remote creation of a bookmark node.
+  // Processes a remote creation of a bookmark node.
   // 1. For permanent folders, they are only registered in |bookmark_tracker_|.
   // 2. If the nodes parent cannot be found, the remote creation update is
   //    ignored.
   // 3. Otherwise, a new node is created in the local bookmark model and
   //    registered in |bookmark_tracker_|.
   void ProcessRemoteCreate(const syncer::EntityData& update_data);
+
+  // Processes a remote update of a bookmark node. |update_data| must not be a
+  // deletion, and the server_id must be already tracked, otherwise, it is a
+  // creation that gets handeled in ProcessRemoteCreate(). |tracked_entity| is
+  // the tracked entity for that server_id. It is passed as a dependency instead
+  // of performing a lookup inside ProcessRemoteUpdate() to avoid wasting CPU
+  // cycles for doing another lookup (this code runs on the UI thread).
+  void ProcessRemoteUpdate(const syncer::EntityData& update_data,
+                           const SyncedBookmarkTracker::Entity* tracked_entity);
 
   // Associates the permanent bookmark folders with the corresponding server
   // side ids and registers the association in |bookmark_tracker_|.
@@ -85,8 +96,8 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor {
 
   std::unique_ptr<syncer::CommitQueue> worker_;
 
-  // Keep the mapping between server ids and bookmarks nodes. It also caches the
-  // metadata upon a local change until the commit configration is received.
+  // Keeps the mapping between server ids and bookmarks nodes. It also caches
+  // the metadata upon a local change until the commit configration is received.
   SyncedBookmarkTracker bookmark_tracker_;
 
   base::WeakPtrFactory<BookmarkModelTypeProcessor> weak_ptr_factory_;
