@@ -135,6 +135,9 @@
 	- A compositor using a fractional scale of 1.5 will advertise a
 	  logical size to 2560×1620.
 
+	For example, for a wl_output mode 1920×1080 and a 90 degree rotation,
+	the compositor will advertise a logical size of 1080x1920.
+
 	The logical_size event is sent after creating an xdg_output
 	(see xdg_output_manager.get_xdg_output) and whenever the logical
 	size of the output changes, either as a result of a change in the
