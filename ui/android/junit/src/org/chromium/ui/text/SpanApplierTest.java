@@ -109,6 +109,20 @@ public class SpanApplierTest {
         }
     }
 
+    @Test
+    public void testNullSpan() {
+        String input = "Lorem <link>ipsum</link> dolor <span>sit</span> amet.";
+        SpanInfo linkSpan = new SpanInfo("<link>", "</link>", new QuoteSpan());
+        SpanInfo nullSpan = new SpanInfo("<span>", "</span>", null);
+
+        String output = "Lorem ipsum dolor sit amet.";
+        SpannableString expectedOutput = new SpannableString(output);
+        expectedOutput.setSpan(linkSpan.mSpan, 6, 11, 0);
+        SpannableString actualOutput = SpanApplier.applySpans(input, linkSpan, nullSpan);
+
+        assertSpannableStringEquality(expectedOutput, actualOutput);
+    }
+
     /*
      * Tests the attributes of two SpannableStrings and asserts expected equality.
      *
