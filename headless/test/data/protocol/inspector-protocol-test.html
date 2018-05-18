@@ -20,7 +20,7 @@ DevToolsHost.sendMessageToEmbedder = (message) => {
   console.debug(object.params[0]);
 }
 </script>
-<script src="inspector-protocol-test.js"></script>
+<script src="../../resources/inspector-protocol-test.js"></script>
 <script>
 DevToolsAPI._log = (text) => output.push(text);
 function onmessage(json) { DevToolsAPI.dispatchMessage(json); }
