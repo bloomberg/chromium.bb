@@ -46,8 +46,12 @@ SuggestionChipView::SuggestionChipView(const Params& params,
 SuggestionChipView::~SuggestionChipView() = default;
 
 gfx::Size SuggestionChipView::CalculatePreferredSize() const {
-  return gfx::Size(views::View::CalculatePreferredSize().width(),
-                   kPreferredHeightDip);
+  const int preferred_width = views::View::CalculatePreferredSize().width();
+  return gfx::Size(preferred_width, GetHeightForWidth(preferred_width));
+}
+
+int SuggestionChipView::GetHeightForWidth(int width) const {
+  return kPreferredHeightDip;
 }
 
 void SuggestionChipView::InitLayout(const Params& params) {

@@ -4,11 +4,15 @@
 
 #include "ash/assistant/ui/suggestion_container_view.h"
 
+#include <memory>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
+#include "ui/views/layout/box_layout.h"
 
 namespace ash {
 
@@ -20,11 +24,32 @@ constexpr int kPaddingDip = 14;
 constexpr int kPreferredHeightDip = 48;
 constexpr int kSpacingDip = 8;
 
+// InvisibleScrollBar ----------------------------------------------------------
+
+class InvisibleScrollBar : public views::OverlayScrollBar {
+ public:
+  explicit InvisibleScrollBar(bool horizontal)
+      : views::OverlayScrollBar(horizontal) {}
+
+  ~InvisibleScrollBar() override = default;
+
+  // views::OverlayScrollBar:
+  int GetThickness() const override { return 0; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InvisibleScrollBar);
+};
+
 }  // namespace
+
+// SuggestionContainerView -----------------------------------------------------
 
 SuggestionContainerView::SuggestionContainerView(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller) {
+    : assistant_controller_(assistant_controller),
+      contents_view_(new views::View()) {
+  InitLayout();
+
   // The Assistant controller indirectly owns the view hierarchy to which
   // SuggestionContainerView belongs so is guaranteed to outlive it.
   assistant_controller_->AddInteractionModelObserver(this);
@@ -35,43 +60,28 @@ SuggestionContainerView::~SuggestionContainerView() {
 }
 
 gfx::Size SuggestionContainerView::CalculatePreferredSize() const {
-  int width = 0;
-
-  for (int i = 0; i < child_count(); ++i) {
-    const views::View* child = child_at(i);
-    gfx::Size child_size = child->GetPreferredSize();
-
-    // Add spacing between chips.
-    if (i > 0)
-      width += kSpacingDip;
-
-    width += child_size.width();
-  }
-
-  // Add horizontal padding.
-  if (width > 0)
-    width += 2 * kPaddingDip;
-
-  return gfx::Size(width, GetHeightForWidth(width));
+  return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
 }
 
 int SuggestionContainerView::GetHeightForWidth(int width) const {
   return kPreferredHeightDip;
 }
 
-void SuggestionContainerView::Layout() {
-  const int height = views::View::height();
-  int left = kPaddingDip;
+void SuggestionContainerView::InitLayout() {
+  // Contents.
+  views::BoxLayout* layout_manager =
+      contents_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal,
+          gfx::Insets(0, kPaddingDip), kSpacingDip));
 
-  for (int i = 0; i < child_count(); ++i) {
-    views::View* child = child_at(i);
-    gfx::Size child_size = child->GetPreferredSize();
+  layout_manager->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
-    child->SetBounds(left, (height - child_size.height()) / 2,
-                     child_size.width(), child_size.height());
-
-    left += child_size.width() + kSpacingDip;
-  }
+  // ScrollView.
+  SetBackgroundColor(SK_ColorTRANSPARENT);
+  SetContents(contents_view_);
+  SetHorizontalScrollBar(new InvisibleScrollBar(/*horizontal=*/true));
+  SetVerticalScrollBar(new InvisibleScrollBar(/*horizontal=*/false));
 }
 
 void SuggestionContainerView::OnSuggestionsAdded(
@@ -95,19 +105,26 @@ void SuggestionContainerView::OnSuggestionsAdded(
     // allows us to look up the suggestion for the view during event handling.
     suggestion_chip_view->set_id(suggestion.first);
 
-    AddChildView(suggestion_chip_view);
+    contents_view_->AddChildView(suggestion_chip_view);
   }
-  SetVisible(has_children());
+  UpdateContentsBounds();
+  SetVisible(contents_view_->has_children());
 }
 
 void SuggestionContainerView::OnSuggestionsCleared() {
   SetVisible(false);
-  RemoveAllChildViews(/*delete_children=*/true);
+  contents_view_->RemoveAllChildViews(/*delete_children=*/true);
+  UpdateContentsBounds();
 }
 
 void SuggestionContainerView::OnSuggestionChipPressed(
     app_list::SuggestionChipView* suggestion_chip_view) {
   assistant_controller_->OnSuggestionChipPressed(suggestion_chip_view->id());
+}
+
+void SuggestionContainerView::UpdateContentsBounds() {
+  contents_view_->SetBounds(0, 0, contents_view_->GetPreferredSize().width(),
+                            kPreferredHeightDip);
 }
 
 }  // namespace ash

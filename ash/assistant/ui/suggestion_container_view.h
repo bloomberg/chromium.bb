@@ -8,13 +8,13 @@
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "base/macros.h"
 #include "ui/app_list/views/suggestion_chip_view.h"
-#include "ui/views/view.h"
+#include "ui/views/controls/scroll_view.h"
 
 namespace ash {
 
 class AssistantController;
 
-class SuggestionContainerView : public views::View,
+class SuggestionContainerView : public views::ScrollView,
                                 public AssistantInteractionModelObserver,
                                 public app_list::SuggestionChipListener {
  public:
@@ -26,7 +26,6 @@ class SuggestionContainerView : public views::View,
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
-  void Layout() override;
 
   // AssistantInteractionModelObserver:
   void OnSuggestionsAdded(
@@ -38,7 +37,11 @@ class SuggestionContainerView : public views::View,
       app_list::SuggestionChipView* suggestion_chip_view) override;
 
  private:
+  void InitLayout();
+  void UpdateContentsBounds();
+
   AssistantController* const assistant_controller_;  // Owned by Shell.
+  views::View* contents_view_;                       // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionContainerView);
 };

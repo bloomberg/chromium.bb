@@ -51,6 +51,7 @@ class APP_LIST_EXPORT SuggestionChipView : public views::View {
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
