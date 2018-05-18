@@ -926,10 +926,66 @@ TEST_F(MagnificationControllerTest, GestureLock) {
   DispatchTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(1200, 100), time,
                      pointer_details2);
 
-  // Confirm that nothing happens.
-  EXPECT_EQ(initial_position,
-            GetMagnificationController()->GetWindowPosition());
+  // Confirm that scale is the same.
   EXPECT_EQ(zoomed_scale, GetMagnificationController()->GetScale());
+
+  // The above touch events for simulating scroll gesture cause two pinch
+  // gesture events. Those events cancel each other and set scale back to the
+  // original value. Viewport origin moves with them as well and it can move a
+  // little after those calculation. Accept 1 pixel difference for those
+  // calculation.
+  gfx::Rect accept_position =
+      gfx::Rect(initial_position.x() - 1, initial_position.y() - 1, 2, 2);
+  EXPECT_TRUE(accept_position.Contains(
+      GetMagnificationController()->GetWindowPosition()));
+}
+
+TEST_F(MagnificationControllerTest, ZoomsIntoCenter) {
+  UpdateDisplay("0+0-500x500");
+
+  GetMagnificationController()->SetEnabled(true);
+  ASSERT_EQ(2.0f, GetMagnificationController()->GetScale());
+
+  GetMagnificationController()->CenterOnPoint(gfx::Point(250, 250));
+  ASSERT_EQ(gfx::Point(250, 250),
+            GetMagnificationController()->GetViewportRect().CenterPoint());
+
+  base::TimeTicks time = base::TimeTicks::Now();
+  ui::PointerDetails pointer_details1(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                      0);
+  ui::PointerDetails pointer_details2(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                      1);
+
+  // Simulate pinch gesture with keeping center of bounding box of touches at
+  // (250, 250). Note that GestureProvider dispatches scroll gesture from this
+  // touch sequence as well.
+  DispatchTouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(245, 250), time,
+                     pointer_details1);
+  DispatchTouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(255, 250), time,
+                     pointer_details2);
+
+  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(145, 250), time,
+                     pointer_details1);
+  DispatchTouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(355, 250), time,
+                     pointer_details2);
+
+  DispatchTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(145, 250), time,
+                     pointer_details1);
+  DispatchTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(355, 250), time,
+                     pointer_details2);
+
+  // Confirms that scale has increased with the gesture.
+  ASSERT_LT(2.0f, GetMagnificationController()->GetScale());
+
+  // Confirms that center is kept at center of pinch gesture. In ideal
+  // situation, center of viewport should be kept at (250, 250). But as noted
+  // above, scroll gesture caused by touch events for simulating pinch gesture
+  // moves the viewport a little. We accept 5 pixels viewport move for the
+  // scroll gesture.
+  EXPECT_TRUE(
+      gfx::Rect(245, 245, 10, 10)
+          .Contains(
+              GetMagnificationController()->GetViewportRect().CenterPoint()));
 }
 
 }  // namespace ash
