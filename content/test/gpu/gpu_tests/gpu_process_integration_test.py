@@ -162,8 +162,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return options.browser_type.startswith('android')
 
   def _SupportsSwiftShader(self):
-    # Currently we only enables SwiftShader on Windows and Linux.
-    return (sys.platform in ('cygwin', 'win32') or
+    # Currently we enable SwiftShader on Windows, Linux and MacOS.
+    return (sys.platform in ('cygwin', 'win32', 'darwin') or
             (sys.platform.startswith('linux') and
              not self._RunningOnAndroid()))
 
@@ -347,8 +347,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       return
     self.RestartBrowserIfNecessaryWithArgs(['--disable-gpu'])
     self._NavigateAndWait(test_path)
-    # On Windows or Linux, SwiftShader is enabled, so GPU process will still
-    # launch with SwiftShader.
+    # On Windows, Linux or MacOS, SwiftShader is enabled, so GPU process
+    # will still launch with SwiftShader.
     supports_swiftshader = self._SupportsSwiftShader()
     has_gpu_process = self.tab.EvaluateJavaScript(
         'chrome.gpuBenchmarking.hasGpuProcess()')
