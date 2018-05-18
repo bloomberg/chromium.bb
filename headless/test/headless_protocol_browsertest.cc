@@ -157,7 +157,16 @@ class HeadlessProtocolBrowserTest
 
 // Headless-specific tests
 HEADLESS_PROTOCOL_TEST(VirtualTimeAdvance, "emulation/virtual-time-advance.js");
+HEADLESS_PROTOCOL_TEST(VirtualTimeBasics, "emulation/virtual-time-basics.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimeErrorLoop,
                        "emulation/virtual-time-error-loop.js");
+HEADLESS_PROTOCOL_TEST(VirtualTimeNoBlock404, "emulation/virtual-time-404.js");
+HEADLESS_PROTOCOL_TEST(VirtualTimeLocalStorage,
+                       "emulation/virtual-time-local-storage.js");
+HEADLESS_PROTOCOL_TEST(VirtualTimeSessionStorage,
+                       "emulation/virtual-time-session-storage.js");
+HEADLESS_PROTOCOL_TEST(VirtualTimeStarvation,
+                       "emulation/virtual-time-starvation.js");
+HEADLESS_PROTOCOL_TEST(VirtualTimeVideo, "emulation/virtual-time-video.js");
 
 }  // namespace headless
