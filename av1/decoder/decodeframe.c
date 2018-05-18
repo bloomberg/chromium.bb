@@ -648,8 +648,9 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
                                &pre, &subpel_params, &block, bw, bh, mi_x, mi_y,
                                &scaled_mv, &subpel_x_mv, &subpel_y_mv);
 
-        extend_mc_borders(xd, sf, pre_buf, scaled_mv, block, subpel_x_mv,
-                          subpel_y_mv, 0);
+        if (!is_intrabc)
+          extend_mc_borders(xd, sf, pre_buf, scaled_mv, block, subpel_x_mv,
+                            subpel_y_mv, 0);
 
         conv_params.ref = ref;
         conv_params.do_average = ref;
@@ -706,8 +707,9 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
                                     subpel_params[ref].ys, NULL));
       do_warp = (do_warp && xd->cur_frame_force_integer_mv == 0);
 
-      extend_mc_borders(xd, sf, pre_buf, scaled_mv, block, subpel_x_mv,
-                        subpel_y_mv, do_warp);
+      if (!is_intrabc)
+        extend_mc_borders(xd, sf, pre_buf, scaled_mv, block, subpel_x_mv,
+                          subpel_y_mv, do_warp);
     }
 
     ConvolveParams conv_params = get_conv_params_no_round(
