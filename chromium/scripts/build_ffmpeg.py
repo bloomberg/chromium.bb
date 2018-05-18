@@ -277,6 +277,44 @@ def SetupWindowsCrossCompileToolchain(target_arch):
       new_args += ['--extra-ldflags=-libpath:' + flags[k]]
   return new_args
 
+def SetupMacCrossCompileToolchain():
+  # First compute the various SDK paths.
+  mac_min_ver = '10.10'
+  sdk_dir = os.path.join(CHROMIUM_ROOT_DIR, 'build', 'win_files',
+          'Xcode.app', 'Contents', 'Developer', 'Platforms', 'MacOSX.platform',
+          'Developer', 'SDKs', 'MacOSX' + mac_min_ver + '.sdk')
+
+  # We're guessing about the right sdk path, so warn if we don't find it.
+  if not os.path.exists(sdk_dir):
+      raise Exception("Can't find the mac sdk.  Please see crbug.com/841826")
+
+  frameworks_dir = os.path.join(sdk_dir, "System", "Library", "Frameworks")
+  libs_dir = os.path.join(sdk_dir, "usr", "lib")
+
+  # ld64.lld is a symlink to clang's ld
+  new_args = [
+      '--enable-cross-compile',
+      '--cc=clang',
+      '--ld=ld64.lld',
+      '--nm=llvm-nm',
+      '--ar=llvm-ar',
+      '--target-os=darwin',
+
+      '--extra-cflags=--target=i686-apple-darwin-macho',
+      '--extra-cflags=-F' + frameworks_dir,
+      '--extra-cflags=-mmacosx-version-min=' + mac_min_ver
+  ]
+
+  new_args += [
+      '--extra-cflags=-fblocks',
+      '--extra-ldflags=-syslibroot', '--extra-ldflags=' + sdk_dir,
+      '--extra-ldflags=' + '-L' + libs_dir,
+      '--extra-ldflags=-lSystem',
+      '--extra-ldflags=-macosx_version_min', '--extra-ldflags=' + mac_min_ver,
+      '--extra-ldflags=-sdk_version', '--extra-ldflags=' + mac_min_ver]
+
+  return new_args
+
 
 def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
                 config_only, config, configure_flags):
@@ -311,6 +349,14 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
          r'#define HAVE_SYSCTL 0 /* \1 -- forced to 0 for Fuchsia */')
     ]
 
+  # Turn off bcrypt, since we don't have it on Windows builders, but it does
+  # get detected when cross-compiling.
+  if target_os == 'win':
+    pre_make_rewrites += [
+        (r'(#define HAVE_BCRYPT [01])',
+         r'#define HAVE_BCRYPT 0')
+    ]
+
   RewriteFile(os.path.join(config_dir, 'config.h'), pre_make_rewrites)
 
   # Windows linking resolves external symbols. Since generate_gn.py does not
@@ -320,11 +366,19 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
   # triggering mis-detection during configure execution.
   if target_os == 'win':
     RewriteFile(
-        os.path.join(config_dir, 'ffbuild/config.mak'), r'(LDFLAGS=.*)',
-        r'\1 -FORCE:UNRESOLVED')
+        os.path.join(config_dir, 'ffbuild/config.mak'), [(r'(LDFLAGS=.*)',
+        r'\1 -FORCE:UNRESOLVED')])
+
+  # TODO(https://crbug.com/840976): Linking when targetting mac on linux is
+  # currently broken.
+  # Replace the linker step with something that just creates the target.
+  if target_os == 'mac' and host_os == 'linux':
+    RewriteFile(
+        os.path.join(config_dir, 'ffbuild/config.mak'), [(r'LD=ld64.lld',
+        r'LD=' + os.path.join(SCRIPTS_DIR, 'fake_linker.py'))])
 
   if target_os in (host_os, host_os + '-noasm', 'android',
-                   'win') and not config_only:
+                   'win', 'mac') and not config_only:
     libraries = [
         os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 58)),
         os.path.join('libavformat', GetDsoName(target_os, 'avformat', 58)),
@@ -460,6 +514,8 @@ def main(argv):
     result.get(1000)
   except Exception as e:
     p.terminate()
+    # Re-throw the exception so that we fail if any subprocess fails.
+    raise e
 
 
 def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
@@ -735,22 +791,24 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
     if target_arch not in ['arm64', 'ia32', 'mipsel'] and target_os != 'mac':
       configure_flags['Common'].append('--extra-ldflags=-fuse-ld=lld')
 
-  # Should be run on Mac.
+  # Should be run on Mac, unless we're cross-compiling on Linux.
   if target_os == 'mac':
-    if host_os != 'mac':
+    if host_os != 'mac' and host_os != 'linux':
       print(
-          'Script should be run on a Mac host. If this is not possible\n'
-          'try a merge of config files with new linux ia32 config.h\n'
-          'by hand.\n',
+          'Script should be run on a Mac or Linux host.\n',
           file=sys.stderr)
       return 1
 
-    # Mac dylib building resolves external symbols. We need to explicitly
-    # include -lopus to point to the system libopus so we can build
-    # libavcodec.XX.dylib.
-    configure_flags['Common'].extend([
-        '--extra-libs=-lopus',
-    ])
+    if host_os != 'mac':
+      configure_flags['Common'].extend(SetupMacCrossCompileToolchain())
+    else:
+      # Mac dylib building resolves external symbols. We need to explicitly
+      # include -lopus to point to the system libopus so we can build
+      # libavcodec.XX.dylib.A
+      # For cross-compiling, this doesn't work, and doesn't seem to be needed.
+      configure_flags['Common'].extend([
+          '--extra-libs=-lopus',
+      ])
 
     if target_arch == 'x64':
       configure_flags['Common'].extend([

@@ -285,7 +285,8 @@ static void sub2video_heartbeat(InputStream *ist, int64_t pts)
         /* do not send the heartbeat frame if the subtitle is already ahead */
         if (pts2 <= ist2->sub2video.last_pts)
             continue;
-        if (pts2 >= ist2->sub2video.end_pts || !ist2->sub2video.frame->data[0])
+        if (pts2 >= ist2->sub2video.end_pts ||
+            (!ist2->sub2video.frame->data[0] && ist2->sub2video.end_pts < INT64_MAX))
             sub2video_update(ist2, NULL);
         for (j = 0, nb_reqs = 0; j < ist2->nb_filters; j++)
             nb_reqs += av_buffersrc_get_nb_failed_requests(ist2->filters[j]->filter);
@@ -550,9 +551,6 @@ static void ffmpeg_cleanup(int ret)
         av_frame_free(&ost->filtered_frame);
         av_frame_free(&ost->last_frame);
         av_dict_free(&ost->encoder_opts);
-
-        av_parser_close(ost->parser);
-        avcodec_free_context(&ost->parser_avctx);
 
         av_freep(&ost->forced_keyframes);
         av_expr_free(ost->forced_keyframes_pexpr);
@@ -1832,6 +1830,19 @@ static void print_report(int is_last_report, int64_t timer_start, int64_t cur_ti
         print_final_stats(total_size);
 }
 
+static void ifilter_parameters_from_codecpar(InputFilter *ifilter, AVCodecParameters *par)
+{
+    // We never got any input. Set a fake format, which will
+    // come from libavformat.
+    ifilter->format                 = par->format;
+    ifilter->sample_rate            = par->sample_rate;
+    ifilter->channels               = par->channels;
+    ifilter->channel_layout         = par->channel_layout;
+    ifilter->width                  = par->width;
+    ifilter->height                 = par->height;
+    ifilter->sample_aspect_ratio    = par->sample_aspect_ratio;
+}
+
 static void flush_encoders(void)
 {
     int i, ret;
@@ -1858,18 +1869,8 @@ static void flush_encoders(void)
                 int x;
                 for (x = 0; x < fg->nb_inputs; x++) {
                     InputFilter *ifilter = fg->inputs[x];
-                    if (ifilter->format < 0) {
-                        AVCodecParameters *par = ifilter->ist->st->codecpar;
-                        // We never got any input. Set a fake format, which will
-                        // come from libavformat.
-                        ifilter->format                 = par->format;
-                        ifilter->sample_rate            = par->sample_rate;
-                        ifilter->channels               = par->channels;
-                        ifilter->channel_layout         = par->channel_layout;
-                        ifilter->width                  = par->width;
-                        ifilter->height                 = par->height;
-                        ifilter->sample_aspect_ratio    = par->sample_aspect_ratio;
-                    }
+                    if (ifilter->format < 0)
+                        ifilter_parameters_from_codecpar(ifilter, ifilter->ist->st->codecpar);
                 }
 
                 if (!ifilter_has_all_input_formats(fg))
@@ -2051,30 +2052,15 @@ static void do_streamcopy(InputStream *ist, OutputStream *ost, const AVPacket *p
     opkt.duration = av_rescale_q(pkt->duration, ist->st->time_base, ost->mux_timebase);
 
     opkt.flags    = pkt->flags;
-    // FIXME remove the following 2 lines they shall be replaced by the bitstream filters
-    if (  ost->st->codecpar->codec_id != AV_CODEC_ID_H264
-       && ost->st->codecpar->codec_id != AV_CODEC_ID_MPEG1VIDEO
-       && ost->st->codecpar->codec_id != AV_CODEC_ID_MPEG2VIDEO
-       && ost->st->codecpar->codec_id != AV_CODEC_ID_VC1
-       ) {
-        int ret = av_parser_change(ost->parser, ost->parser_avctx,
-                             &opkt.data, &opkt.size,
-                             pkt->data, pkt->size,
-                             pkt->flags & AV_PKT_FLAG_KEY);
-        if (ret < 0) {
-            av_log(NULL, AV_LOG_FATAL, "av_parser_change failed: %s\n",
-                   av_err2str(ret));
+
+    if (pkt->buf) {
+        opkt.buf = av_buffer_ref(pkt->buf);
+        if (!opkt.buf)
             exit_program(1);
-        }
-        if (ret) {
-            opkt.buf = av_buffer_create(opkt.data, opkt.size, av_buffer_default_free, NULL, 0);
-            if (!opkt.buf)
-                exit_program(1);
-        }
-    } else {
-        opkt.data = pkt->data;
-        opkt.size = pkt->size;
     }
+    opkt.data = pkt->data;
+    opkt.size = pkt->size;
+
     av_copy_packet_side_data(&opkt, pkt);
 
     output_packet(of, &opkt, ost, 0);
@@ -2203,7 +2189,7 @@ static int ifilter_send_frame(InputFilter *ifilter, AVFrame *frame)
 
 static int ifilter_send_eof(InputFilter *ifilter, int64_t pts)
 {
-    int i, j, ret;
+    int ret;
 
     ifilter->eof = 1;
 
@@ -2213,16 +2199,11 @@ static int ifilter_send_eof(InputFilter *ifilter, int64_t pts)
             return ret;
     } else {
         // the filtergraph was never configured
-        FilterGraph *fg = ifilter->graph;
-        for (i = 0; i < fg->nb_inputs; i++)
-            if (!fg->inputs[i]->eof)
-                break;
-        if (i == fg->nb_inputs) {
-            // All the input streams have finished without the filtergraph
-            // ever being configured.
-            // Mark the output streams as finished.
-            for (j = 0; j < fg->nb_outputs; j++)
-                finish_output_stream(fg->outputs[j]->ost);
+        if (ifilter->format < 0)
+            ifilter_parameters_from_codecpar(ifilter, ifilter->ist->st->codecpar);
+        if (ifilter->format < 0 && (ifilter->type == AVMEDIA_TYPE_AUDIO || ifilter->type == AVMEDIA_TYPE_VIDEO)) {
+            av_log(NULL, AV_LOG_ERROR, "Cannot determine format of input stream %d:%d after EOF\n", ifilter->ist->file_index, ifilter->ist->st->index);
+            return AVERROR_INVALIDDATA;
         }
     }
 
@@ -3124,11 +3105,6 @@ static int init_output_stream_streamcopy(OutputStream *ost)
             av_display_rotation_set((int32_t *)sd, -ost->rotate_override_value);
     }
 
-    ost->parser = av_parser_init(par_dst->codec_id);
-    ost->parser_avctx = avcodec_alloc_context3(NULL);
-    if (!ost->parser_avctx)
-        return AVERROR(ENOMEM);
-
     switch (par_dst->codec_type) {
     case AVMEDIA_TYPE_AUDIO:
         if (audio_volume != 256) {
@@ -3569,14 +3545,6 @@ static int init_output_stream(OutputStream *ost, char *error, int error_len)
         ret = init_output_stream_streamcopy(ost);
         if (ret < 0)
             return ret;
-
-        /*
-         * FIXME: will the codec context used by the parser during streamcopy
-         * This should go away with the new parser API.
-         */
-        ret = avcodec_parameters_to_context(ost->parser_avctx, ost->st->codecpar);
-        if (ret < 0)
-            return ret;
     }
 
     // parse user provided disposition, and update stream values
@@ -3593,6 +3561,7 @@ static int init_output_stream(OutputStream *ost, char *error, int error_len)
             { "hearing_impaired"    , NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_HEARING_IMPAIRED  },    .unit = "flags" },
             { "visual_impaired"     , NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_VISUAL_IMPAIRED   },    .unit = "flags" },
             { "clean_effects"       , NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_CLEAN_EFFECTS     },    .unit = "flags" },
+            { "attached_pic"        , NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_ATTACHED_PIC      },    .unit = "flags" },
             { "captions"            , NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_CAPTIONS          },    .unit = "flags" },
             { "descriptions"        , NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_DESCRIPTIONS      },    .unit = "flags" },
             { "dependent"           , NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_DEPENDENT         },    .unit = "flags" },
@@ -4170,12 +4139,6 @@ static int seek_to_start(InputFile *ifile, AVFormatContext *is)
         ist   = input_streams[ifile->ist_index + i];
         avctx = ist->dec_ctx;
 
-        // flush decoders
-        if (ist->decoding_needed) {
-            process_input_packet(ist, NULL, 1);
-            avcodec_flush_buffers(avctx);
-        }
-
         /* duration is the length of the last frame in a stream
          * when audio stream is present we don't care about
          * last video frame length because it's not defined exactly */
@@ -4244,6 +4207,17 @@ static int process_input(int file_index)
         return ret;
     }
     if (ret < 0 && ifile->loop) {
+        AVCodecContext *avctx;
+        for (i = 0; i < ifile->nb_streams; i++) {
+            ist = input_streams[ifile->ist_index + i];
+            avctx = ist->dec_ctx;
+            if (ist->decoding_needed) {
+                ret = process_input_packet(ist, NULL, 1);
+                if (ret>0)
+                    return 0;
+                avcodec_flush_buffers(avctx);
+            }
+        }
         ret = seek_to_start(ifile, is);
         if (ret < 0)
             av_log(NULL, AV_LOG_WARNING, "Seek to start failed.\n");
@@ -4803,12 +4777,9 @@ int main(int argc, char **argv)
         argv++;
     }
 
-    avcodec_register_all();
 #if CONFIG_AVDEVICE
     avdevice_register_all();
 #endif
-    avfilter_register_all();
-    av_register_all();
     avformat_network_init();
 
     show_banner(argc, argv, options);

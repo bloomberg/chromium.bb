@@ -205,10 +205,11 @@ static int mediacodec_wrap_hw_buffer(AVCodecContext *avctx,
     frame->width = avctx->width;
     frame->height = avctx->height;
     frame->format = avctx->pix_fmt;
+    frame->sample_aspect_ratio = avctx->sample_aspect_ratio;
 
     if (avctx->pkt_timebase.num && avctx->pkt_timebase.den) {
         frame->pts = av_rescale_q(info->presentationTimeUs,
-                                      av_make_q(1, 1000000),
+                                      AV_TIME_BASE_Q,
                                       avctx->pkt_timebase);
     } else {
         frame->pts = info->presentationTimeUs;
@@ -297,7 +298,7 @@ static int mediacodec_wrap_sw_buffer(AVCodecContext *avctx,
      *   * 0-sized avpackets are pushed to flush remaining frames at EOS */
     if (avctx->pkt_timebase.num && avctx->pkt_timebase.den) {
         frame->pts = av_rescale_q(info->presentationTimeUs,
-                                      av_make_q(1, 1000000),
+                                      AV_TIME_BASE_Q,
                                       avctx->pkt_timebase);
     } else {
         frame->pts = info->presentationTimeUs;
@@ -384,10 +385,10 @@ static int mediacodec_dec_parse_format(AVCodecContext *avctx, MediaCodecDecConte
     AMEDIAFORMAT_GET_INT32(s->width,  "width", 1);
     AMEDIAFORMAT_GET_INT32(s->height, "height", 1);
 
-    AMEDIAFORMAT_GET_INT32(s->stride, "stride", 1);
+    AMEDIAFORMAT_GET_INT32(s->stride, "stride", 0);
     s->stride = s->stride > 0 ? s->stride : s->width;
 
-    AMEDIAFORMAT_GET_INT32(s->slice_height, "slice-height", 1);
+    AMEDIAFORMAT_GET_INT32(s->slice_height, "slice-height", 0);
     s->slice_height = s->slice_height > 0 ? s->slice_height : s->height;
 
     if (strstr(s->codec_name, "OMX.Nvidia.")) {
@@ -413,6 +414,16 @@ static int mediacodec_dec_parse_format(AVCodecContext *avctx, MediaCodecDecConte
 
     width = s->crop_right + 1 - s->crop_left;
     height = s->crop_bottom + 1 - s->crop_top;
+
+    AMEDIAFORMAT_GET_INT32(s->display_width,  "display-width",  0);
+    AMEDIAFORMAT_GET_INT32(s->display_height, "display-height", 0);
+
+    if (s->display_width && s->display_height) {
+        AVRational sar = av_div_q(
+            (AVRational){ s->display_width, s->display_height },
+            (AVRational){ width, height });
+        ff_set_sar(avctx, sar);
+    }
 
     av_log(avctx, AV_LOG_INFO,
         "Output crop parameters top=%d bottom=%d left=%d right=%d, "
@@ -560,6 +571,7 @@ int ff_mediacodec_dec_send(AVCodecContext *avctx, MediaCodecDecContext *s,
     FFAMediaCodec *codec = s->codec;
     int status;
     int64_t input_dequeue_timeout_us = INPUT_DEQUEUE_TIMEOUT_US;
+    int64_t pts;
 
     if (s->flushing) {
         av_log(avctx, AV_LOG_ERROR, "Decoder is flushing and cannot accept new buffer "
@@ -594,13 +606,13 @@ int ff_mediacodec_dec_send(AVCodecContext *avctx, MediaCodecDecContext *s,
             return AVERROR_EXTERNAL;
         }
 
-        if (need_draining) {
-            int64_t pts = pkt->pts;
-            uint32_t flags = ff_AMediaCodec_getBufferFlagEndOfStream(codec);
+        pts = pkt->pts;
+        if (pts != AV_NOPTS_VALUE && avctx->pkt_timebase.num && avctx->pkt_timebase.den) {
+            pts = av_rescale_q(pts, avctx->pkt_timebase, AV_TIME_BASE_Q);
+        }
 
-            if (s->surface) {
-                pts = av_rescale_q(pts, avctx->pkt_timebase, av_make_q(1, 1000000));
-            }
+        if (need_draining) {
+            uint32_t flags = ff_AMediaCodec_getBufferFlagEndOfStream(codec);
 
             av_log(avctx, AV_LOG_DEBUG, "Sending End Of Stream signal\n");
 
@@ -616,15 +628,9 @@ int ff_mediacodec_dec_send(AVCodecContext *avctx, MediaCodecDecContext *s,
             s->draining = 1;
             break;
         } else {
-            int64_t pts = pkt->pts;
-
             size = FFMIN(pkt->size - offset, size);
             memcpy(data, pkt->data + offset, size);
             offset += size;
-
-            if (avctx->pkt_timebase.num && avctx->pkt_timebase.den) {
-                pts = av_rescale_q(pts, avctx->pkt_timebase, av_make_q(1, 1000000));
-            }
 
             status = ff_AMediaCodec_queueInputBuffer(codec, index, 0, size, pts, 0);
             if (status < 0) {
@@ -753,6 +759,18 @@ int ff_mediacodec_dec_receive(AVCodecContext *avctx, MediaCodecDecContext *s,
     return AVERROR(EAGAIN);
 }
 
+/*
+* ff_mediacodec_dec_flush returns 0 if the flush cannot be performed on
+* the codec (because the user retains frames). The codec stays in the
+* flushing state.
+*
+* ff_mediacodec_dec_flush returns 1 if the flush can actually be
+* performed on the codec. The codec leaves the flushing state and can
+* process again packets.
+*
+* ff_mediacodec_dec_flush returns a negative value if an error has
+* occurred.
+*/
 int ff_mediacodec_dec_flush(AVCodecContext *avctx, MediaCodecDecContext *s)
 {
     if (!s->surface || atomic_load(&s->refcount) == 1) {

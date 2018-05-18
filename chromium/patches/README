@@ -93,14 +93,19 @@ Current patches:
     Removes CELT, DIRAC, DAALA, and SPEEX support form the ogg parser. We don't
     support these codecs and the parsers have bugs. http://crbug.com/654612
 
-  libavcodec/mpegaudio_parser.c
-    mpegaudio_parse(): Drop trailing garbage on flush. Submitted upstream, so
-    should be present for M67 ffmpeg roll. http://crbug.com/794782
-
   libavformat/oggparseflac.c
     flac_header(): Free extradata before reallocating. https://crbug.com/789835
 
-  libavformat/mov.c
-    Check STSC and remove invalid entries. Applied from a patch currently in
-    upstream review at https://patchwork.ffmpeg.org/patch/8051/
-    See https://crbug.com/822547, https://crbug.com/822666, https://crbug.com/823009.
+  configure
+    Re-added missing quotes to allow inline asm detection that were removed
+    upstream by 8c893aa3cd5 .  https://crbug.com/840959 .
+
+  configure
+    Check explicity for v4l2, else it seems to include v4l2-m2m in the build
+    anyway.  https://crbug.com/841360 .
+
+  compat/atomics/win32/stdatomic.h
+    Remove unused fns that don't compile on windows (65d55e6e21e).
+
+  libavcodec/mpegaudio_parser.c
+    Don't invoke trailing garbage discard for every flush. (261398f81e5).
