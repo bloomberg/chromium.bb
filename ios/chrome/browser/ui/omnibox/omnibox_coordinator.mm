@@ -10,12 +10,14 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
+#include "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,6 +28,9 @@
 @property(nonatomic, strong)
     ToolbarAssistiveKeyboardDelegateImpl* keyboardDelegate;
 
+// View controller managed by this coordinator.
+@property(nonatomic, strong) OmniboxViewController* viewController;
+
 @end
 
 @implementation OmniboxCoordinator {
@@ -33,21 +38,33 @@
   // OmniboxPopupViewSuggestionsDelegate instead of OmniboxViewIOS.
   std::unique_ptr<OmniboxViewIOS> _editView;
 }
-@synthesize textField = _textField;
 @synthesize editController = _editController;
 @synthesize browserState = _browserState;
 @synthesize keyboardDelegate = _keyboardDelegate;
 @synthesize dispatcher = _dispatcher;
+@synthesize viewController = _viewController;
 
 - (void)start {
-  DCHECK(self.textField);
+  BOOL isIncognito = self.browserState->IsOffTheRecord();
+
+  UIColor* textColor =
+      isIncognito
+          ? [UIColor whiteColor]
+          : [UIColor colorWithWhite:0 alpha:[MDCTypography body1FontOpacity]];
+  UIColor* tintColor = isIncognito ? textColor : nil;
+
+  self.viewController =
+      [[OmniboxViewController alloc] initWithFont:[MDCTypography subheadFont]
+                                        textColor:textColor
+                                        tintColor:tintColor
+                                        incognito:isIncognito];
+
   DCHECK(self.editController);
   // TODO(crbug.com/818637): implement left view provider.
   _editView = std::make_unique<OmniboxViewIOS>(
       self.textField, self.editController, nullptr, self.browserState);
 
   // Configure the textfield.
-  BOOL isIncognito = self.browserState->IsOffTheRecord();
   SetA11yLabelAndUiAutomationName(self.textField, IDS_ACCNAME_LOCATION,
                                   @"Address");
   self.textField.incognito = isIncognito;
@@ -79,7 +96,7 @@
 - (void)stop {
   _editView.reset();
   self.editController = nil;
-  self.textField = nil;
+  self.viewController = nil;
 }
 
 - (void)updateOmniboxState {
@@ -129,6 +146,18 @@
   coordinator.positioner = positioner;
 
   return coordinator;
+}
+
+#pragma mark - private
+
+// Getter with proper type.
+- (UIViewController*)managedViewController {
+  return self.viewController;
+}
+
+// Convenience accessor.
+- (OmniboxTextFieldIOS*)textField {
+  return self.viewController.textField;
 }
 
 @end

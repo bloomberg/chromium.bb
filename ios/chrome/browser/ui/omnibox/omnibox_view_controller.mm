@@ -18,6 +18,7 @@
 @property(nonatomic, strong) UIFont* textFieldFont;
 @property(nonatomic, strong) UIColor* textFieldTintColor;
 @property(nonatomic, strong) UIColor* textFieldTextColor;
+@property(nonatomic, assign) BOOL incognito;
 
 @end
 
@@ -25,16 +26,19 @@
 @synthesize textFieldFont = _textFieldFont;
 @synthesize textFieldTintColor = _textFieldTintColor;
 @synthesize textFieldTextColor = _textFieldTextColor;
+@synthesize incognito = _incognito;
 @dynamic view;
 
 - (instancetype)initWithFont:(UIFont*)font
                    textColor:(UIColor*)textColor
-                   tintColor:(UIColor*)tintColor {
+                   tintColor:(UIColor*)tintColor
+                   incognito:(BOOL)isIncognito {
   self = [super init];
   if (self) {
     _textFieldFont = font;
     _textFieldTextColor = textColor;
     _textFieldTintColor = tintColor;
+    _incognito = isIncognito;
   }
   return self;
 }
@@ -47,6 +51,7 @@
                                              font:self.textFieldFont
                                         textColor:self.textFieldTextColor
                                         tintColor:self.textFieldTintColor];
+  self.view.incognito = self.incognito;
 }
 
 #pragma mark - public methods

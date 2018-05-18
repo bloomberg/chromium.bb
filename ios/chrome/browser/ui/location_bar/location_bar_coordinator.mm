@@ -110,11 +110,19 @@ const int kLocationAuthorizationStatusCount = 4;
   _editController->SetURLLoader(self);
 
   self.omniboxCoordinator = [[OmniboxCoordinator alloc] init];
-  self.omniboxCoordinator.textField = self.viewController.textField;
   self.omniboxCoordinator.editController = _editController.get();
   self.omniboxCoordinator.browserState = self.browserState;
   self.omniboxCoordinator.dispatcher = self.dispatcher;
   [self.omniboxCoordinator start];
+
+  [self.omniboxCoordinator.managedViewController
+      willMoveToParentViewController:self.viewController];
+  [self.viewController
+      addChildViewController:self.omniboxCoordinator.managedViewController];
+  [self.viewController
+      setEditView:self.omniboxCoordinator.managedViewController.view];
+  [self.omniboxCoordinator.managedViewController
+      didMoveToParentViewController:self.viewController];
 
   self.omniboxPopupCoordinator =
       [self.omniboxCoordinator createPopupCoordinator:self.popupPositioner];
