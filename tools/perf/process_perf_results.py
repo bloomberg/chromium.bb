@@ -148,6 +148,32 @@ def _handle_perf_json_test_results(
   return benchmark_enabled_map
 
 
+def _generate_unique_logdog_filename(name_prefix):
+  return name_prefix + '_' + str(uuid.uuid4())
+
+
+def _handle_perf_logs(benchmark_directory_list, extra_links):
+  """ Upload benchmark logs to logdog and add a page entry for them. """
+
+  benchmark_logs_links = {}
+
+  for directory in benchmark_directory_list:
+    # Obtain the test name we are running
+    benchmark_name = _get_benchmark_name(directory)
+    with open(join(directory, 'benchmark_log.txt')) as f:
+      uploaded_link = logdog_helper.text(
+          name=_generate_unique_logdog_filename(benchmark_name),
+          data=f.read())
+      benchmark_logs_links[benchmark_name] = uploaded_link
+
+  logdog_file_name = _generate_unique_logdog_filename('Benchmarks_Logs')
+  logdog_stream = logdog_helper.text(
+      logdog_file_name, json.dumps(benchmark_logs_links, sort_keys=True,
+                                   indent=4, separators=(',', ':')))
+  extra_links['Benchmarks logs'] = logdog_stream
+
+
+
 def _get_benchmark_name(directory):
   return basename(directory).replace(" benchmark", "")
 
@@ -189,12 +215,17 @@ def _process_perf_results(output_json, configuration_name,
 
   extra_links = {}
 
-  # First obtain the list of json test results to merge
-  # and determine the status of each benchmark
+  # First, upload all the benchmark logs to logdog and add a page entry for
+  # those links in extra_links.
+  _handle_perf_logs(benchmark_directory_list, extra_links)
+
+  # Then try to obtain the list of json test results to merge
+  # and determine the status of each benchmark.
   benchmark_enabled_map = _handle_perf_json_test_results(
       benchmark_directory_list, test_results_list)
+
   if not smoke_test_mode:
-    return_code = return_code or _handle_perf_results(
+    return_code = _handle_perf_results(
         benchmark_enabled_map, benchmark_directory_list,
         configuration_name, build_properties, service_account_file, extra_links)
 
@@ -233,7 +264,7 @@ def _handle_perf_results(
             oauth_file, tmpfile_dir, logdog_dict,
             ('.reference' in benchmark_name))
 
-    logdog_file_name = 'Results_Dashboard_' + str(uuid.uuid4())
+    logdog_file_name = _generate_unique_logdog_filename('Results_Dashboard_')
     logdog_stream = logdog_helper.text(logdog_file_name,
         json.dumps(logdog_dict, sort_keys=True,
             indent=4, separators=(',', ':')))
