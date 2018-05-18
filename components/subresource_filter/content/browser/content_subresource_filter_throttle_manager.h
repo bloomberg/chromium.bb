@@ -142,11 +142,6 @@ class ContentSubresourceFilterThrottleManager
   // a new process its RenderHost will be told that it's an ad.
   void OnFrameIsAdSubframe(content::RenderFrameHost* render_frame_host);
 
-  // The navigation handle ptr will be in an invalid state, do not access any
-  // members on it. This method is only for debugging crbug.com/736249.
-  void OnActivationThrottleDestroyed(
-      content::NavigationHandle* navigation_handle);
-
   // Adds the navigation's RenderFrameHost to activated_frame_hosts_ if it is a
   // special navigation which did not go through navigation throttles and its
   // parent frame is activated as well. The filter for these frames is set
