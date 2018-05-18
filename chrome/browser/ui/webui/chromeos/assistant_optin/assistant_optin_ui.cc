@@ -59,20 +59,6 @@ assistant::SettingsUiUpdate GetSettingsUiUpdate(
 
 AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui), weak_factory_(this) {
-  // Set up settings mojom.
-  Profile* const profile = Profile::FromWebUI(web_ui);
-  service_manager::Connector* connector =
-      content::BrowserContext::GetConnectorFor(profile);
-  connector->BindInterface(assistant::mojom::kServiceName,
-                           mojo::MakeRequest(&settings_manager_));
-
-  // Send GetSettings request for the ConsentFlow UI.
-  assistant::SettingsUiSelector selector = GetSettingsUiSelector();
-  settings_manager_->GetSettings(
-      selector.SerializeAsString(),
-      base::BindOnce(&AssistantOptInUI::HandleGetSettingsResponse,
-                     weak_factory_.GetWeakPtr()));
-
   // Set up the chrome://assistant-optin source.
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIAssistantOptInHost);
@@ -96,9 +82,42 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
   source->AddResourcePath("assistant_optin.js", IDR_ASSISTANT_OPTIN_JS);
   source->SetDefaultResource(IDR_ASSISTANT_OPTIN_HTML);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
+
+  if (arc::VoiceInteractionControllerClient::Get()->voice_interaction_state() !=
+      ash::mojom::VoiceInteractionState::RUNNING) {
+    arc::VoiceInteractionControllerClient::Get()->AddObserver(this);
+  } else {
+    Initialize();
+  }
 }
 
-AssistantOptInUI::~AssistantOptInUI() {}
+AssistantOptInUI::~AssistantOptInUI() {
+  arc::VoiceInteractionControllerClient::Get()->RemoveObserver(this);
+}
+
+void AssistantOptInUI::OnStateChanged(ash::mojom::VoiceInteractionState state) {
+  if (state == ash::mojom::VoiceInteractionState::RUNNING)
+    Initialize();
+}
+
+void AssistantOptInUI::Initialize() {
+  if (settings_manager_.is_bound())
+    return;
+
+  // Set up settings mojom.
+  Profile* const profile = Profile::FromWebUI(web_ui());
+  service_manager::Connector* connector =
+      content::BrowserContext::GetConnectorFor(profile);
+  connector->BindInterface(assistant::mojom::kServiceName,
+                           mojo::MakeRequest(&settings_manager_));
+
+  // Send GetSettings request for the ConsentFlow UI.
+  assistant::SettingsUiSelector selector = GetSettingsUiSelector();
+  settings_manager_->GetSettings(
+      selector.SerializeAsString(),
+      base::BindOnce(&AssistantOptInUI::OnGetSettingsResponse,
+                     weak_factory_.GetWeakPtr()));
+}
 
 void AssistantOptInUI::AddScreenHandler(
     std::unique_ptr<BaseWebUIHandler> handler) {
@@ -119,7 +138,7 @@ void AssistantOptInUI::OnExit(AssistantOptInScreenExitCode exit_code) {
       // Send the update to complete user opt-in.
       settings_manager_->UpdateSettings(
           GetSettingsUiUpdate(consent_token_).SerializeAsString(),
-          base::BindOnce(&AssistantOptInUI::HandleUpdateSettingsResponse,
+          base::BindOnce(&AssistantOptInUI::OnUpdateSettingsResponse,
                          weak_factory_.GetWeakPtr()));
       break;
     default:
@@ -127,7 +146,7 @@ void AssistantOptInUI::OnExit(AssistantOptInScreenExitCode exit_code) {
   }
 }
 
-void AssistantOptInUI::HandleGetSettingsResponse(const std::string& settings) {
+void AssistantOptInUI::OnGetSettingsResponse(const std::string& settings) {
   assistant::SettingsUi settings_ui;
   assistant::ConsentFlowUi::ConsentUi::ActivityControlUi activity_control_ui;
   settings_ui.ParseFromString(settings);
@@ -169,7 +188,7 @@ void AssistantOptInUI::HandleGetSettingsResponse(const std::string& settings) {
   assistant_handler_->ReloadContent(dictionary);
 }
 
-void AssistantOptInUI::HandleUpdateSettingsResponse(const std::string& result) {
+void AssistantOptInUI::OnUpdateSettingsResponse(const std::string& result) {
   assistant::SettingsUiUpdateResult ui_result;
   ui_result.ParseFromString(result);
 

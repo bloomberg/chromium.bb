@@ -51,6 +51,14 @@ VoiceInteractionControllerClient::~VoiceInteractionControllerClient() {
   g_voice_interaction_controller_client_instance = nullptr;
 }
 
+void VoiceInteractionControllerClient::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void VoiceInteractionControllerClient::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 // static
 VoiceInteractionControllerClient* VoiceInteractionControllerClient::Get() {
   return g_voice_interaction_controller_client_instance;
@@ -58,7 +66,10 @@ VoiceInteractionControllerClient* VoiceInteractionControllerClient::Get() {
 
 void VoiceInteractionControllerClient::NotifyStatusChanged(
     ash::mojom::VoiceInteractionState state) {
+  voice_interaction_state_ = state;
   voice_interaction_controller_->NotifyStatusChanged(state);
+  for (auto& observer : observers_)
+    observer.OnStateChanged(state);
 }
 
 void VoiceInteractionControllerClient::SetControllerForTesting(

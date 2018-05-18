@@ -11,7 +11,7 @@
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace chromeos {
@@ -35,7 +35,7 @@ class AssistantSettingsManagerImpl : public AssistantSettingsManager {
  private:
   AssistantManagerService* const assistant_manager_service_;
 
-  mojo::Binding<mojom::AssistantSettingsManager> binding_;
+  mojo::BindingSet<mojom::AssistantSettingsManager> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantSettingsManagerImpl);
 };

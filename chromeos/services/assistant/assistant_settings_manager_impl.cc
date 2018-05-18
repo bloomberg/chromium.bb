@@ -9,13 +9,13 @@ namespace assistant {
 
 AssistantSettingsManagerImpl::AssistantSettingsManagerImpl(
     AssistantManagerService* assistant_manager_service)
-    : assistant_manager_service_(assistant_manager_service), binding_(this) {}
+    : assistant_manager_service_(assistant_manager_service) {}
 
 AssistantSettingsManagerImpl::~AssistantSettingsManagerImpl() = default;
 
 void AssistantSettingsManagerImpl::BindRequest(
     mojom::AssistantSettingsManagerRequest request) {
-  binding_.Bind(std::move(request));
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void AssistantSettingsManagerImpl::GetSettings(const std::string& selector,
