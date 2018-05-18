@@ -647,6 +647,137 @@ by more than 10 steps at a time:
     volumeLevel.set(30); // Logs "Radically new volume level: 30"
 ```
 
+### Observers as Scopes
+
+Sometimes you might want to only `watch()` an `Observable` for a limited time,
+for instance, until some other `Observable` is activated. So how do you remove
+an observer?
+
+The `watch()` method actually returns a `Scope`, which, when `close()`d, will
+unregister the `ScopeFactory` registered in the `watch()` call. To `watch()` for
+a limited time, simply store the `Scope` somewhere, and call `close()` on it
+when you're done.
+
+```java
+    private final Observable<String> mMessages = ...;
+    private final List<String> mLog = ...;
+    private Scope mObserver = null;
+
+    public void startRecording() {
+        if (mObserver != null) stopRecording();
+        mObserver = mMessages.watch(ScopeFactories.onEnter(mLog::add));
+    }
+
+    public void stopRecording() {
+        if (mObserver == null) return;
+        mObserver.close();
+    }
+```
+
+... wait a minute, are those `null`-checks? And a *mutable variable*? I thought
+this framework was supposed to get rid of those!
+
+... hold on, `mObserver` is a `Scope`... that means we can use it in another
+`watch()` call!
+
+```java
+    private final Observable<String> mMessages = ...;
+    private final List<String> mLog = ...;
+    private final Controller<Unit> mRecordingState = ...;
+
+    {
+        // When mRecordingState is activated, a ScopeFactory is registered to
+        // watch mMessages.
+        mRecordingState.watch(() -> {
+            // When mRecordingState is deactivated, the Scope representing the
+            // fact that we are watching mMessages is closed, so new messages
+            // will stop being added to the log.
+            return mMessages.watch(ScopeFactories.onEnter(mLog::add));
+        });
+    }
+
+    public void startRecording() {
+        mRecordingState.set(Unit.unit());
+    }
+
+    public void stopRecording() {
+        mRecordingState.reset();
+    }
+```
+
+Now we have removed the mutable variable and delegated all management of state
+to `Observable`s.
+
+But wait, we could have done the same thing with `and()`:
+
+```java
+    {
+        mRecordingState.and(mMessages).watch(ScopeFactories.onEnter(
+                (Both<Unit, String> data) -> mLog.add(data.second)));
+    }
+```
+
+But here we can see the drawbacks of that approach. We need to deconstruct the
+`Both` object. Though the below section shows a way to circumvent that when only
+using a single `and()` call, it gets much harder to work with longer chains of
+`and()`-composed `Observable`s.
+
+Recall that deconstructing larger `Both` trees is ugly:
+
+```java
+    stateA.and(stateB).and(stateC).and(stateD).watch(data -> {
+        A a = data.first.first.first;
+        B b = data.first.first.second;
+        C c = data.first.second;
+        D d = data.second;
+        ...
+    });
+```
+
+If we only care about registering a `Scope` for when all four `Observable`s are
+activated, then we can use nested `watch()` calls instead:
+
+```java
+    stateA.watch(a -> stateB.watch(b -> stateC.watch(c -> stateD.watch(d -> {
+        ...
+    }))));
+```
+
+This is called **watch-currying**, and is a useful alternative to `and()` calls
+when registering `ScopeFactory` objects for the intersection of many
+`Observable`s.
+
+To show why this works, let's simplify to just this:
+
+```java
+   stateA.watch(a -> stateB.watch(b -> ...));
+```
+
+If `stateA` is activated first, then the `a -> stateB.watch(b -> ...)` lambda,
+which is a `ScopeFactory`, will start watching `stateB`. If `stateB` is then
+activated, then the `b -> ...` lambda will execute. If `stateB` is then
+deactivated, then the `Scope` created by that lambda will `close()`, or if
+`stateA` is deactivated first, then the `watch()` `Scope` that watches `stateA`
+will `close()`.
+
+The imporant fact that makes this work is that
+**a `watch()` `Scope` that is activated is implicitly deactivated when closed**.
+In other words, if `stateA` and `stateB` are activated, and then `stateA`
+deactivates, the fact that the `watch()` `Scope` inside `stateA`'s `watch()`
+call is closed implies that `stateB`'s exit handler is called.
+
+The fact that unregistering activated `ScopeFactories` implicitly closes their
+`Scope`s means that **`Scopes` will clean up after themselves**. Keep in mind,
+this means that if the exit handler of a `Scope` is called, it could mean
+*either* that the `Observable` that it is observing deactivated, *or* that the
+`ScopeFactory` that created the `Scope` was unregistered from the `Observable`
+(by calling the watch-scope's `close()` method).
+
+It is still preferable to use `and()`, because that's easier to read, but if an
+`and()`-chain becomes too clunky, and just needs to register a callback rather
+than return an `Observable`, you can use watch-currying to avoid deconstructing
+nasty `Both` objects.
+
 ### Increase readability for ScopeFactories with wrapper methods
 
 The `ScopeFactories` class contains several helper methods to increase the
@@ -725,13 +856,13 @@ and return an appropriate `ScopeFactory<Both>`:
 
 ```java
 {
-    observableA.and(observableB)
-            .watch(ScopeFactories.onEnter((A a, B b) -> {
-                Log.d(TAG, "on enter: a = " + a + "; b = " + b);
-            }))
-            .watch(ScopeFactories.onExit((A a, B b) -> {
-                Log.d(TAG, "on exit: a = " + a + "; b = " + b);
-            }));
+    Observable<Both<A, B>> both = observableA.and(observableB);
+    both.watch(ScopeFactories.onEnter((A a, B b) -> {
+        Log.d(TAG, "on enter: a = " + a + "; b = " + b);
+    }));
+    both.watch(ScopeFactories.onExit((A a, B b) -> {
+        Log.d(TAG, "on exit: a = " + a + "; b = " + b);
+    }));
 }
 ```
 
@@ -1175,79 +1306,3 @@ handling the underlying value can be registered before the underlying value is
 available. But unlike `Promise`s, `Observable`s provide a way to also handle
 teardowns, and to transitively tear down everything down stream when something
 is torn down.
-
-### Protocols
-
-When two components need to talk to each other over some unsafe serialization
-protocol, you can use a neat trick of using `Controller`s for output channels
-and `Observable`s for input channels, and using `andThen()` calls to ensure that
-incoming messages arrive in a certain order.
-
-As an illustrative example, let's consider the TCP three-way handshake. In this
-simple protocol, the client sends a `SYN` message, the server replies with a
-`SYN-ACK` message, and then the client replies with an `ACK` message.
-
-When implementing this protocol, one needs to consider that the medium may be
-untrustworthy, and that the other end of the protocol may not conform to your
-expectations. How does a server handle malicious or outdated clients? How does
-a client handle malicious or outdated servers? What if the server sends a
-`SYN-ACK` before the client sent a `SYN`, or what if the client sends an `ACK`
-without first sending a `SYN` or the server neglects to send a `SYN-ACK`? Even
-with such a simple protocol as a three-way handshake, there are a lot of edge
-cases!
-
-This is even further complicated by considerations of blocking and non-blocking
-sending and receiving of messages.
-
-Fortunately, we can express this beautifully with `Observable`s if we represent
-each message type as an `Observable`, with `Controller`s for outputs and
-`Observable`s for inputs:
-
-```java
-// Client: sends SYN, receives SYN-ACK, sends ACK, then done.
-public static Observable<Unti> tcpHandshakeClient(
-        Controller<Unit> syn, Observable<Unit> synAck, Controller<Unit> ack) {
-    Controller<Unit> done = new Controller<>();
-    syn.andThen(synAck)
-            .watch(() -> ack.set(Unit.unit()))
-            .watch(() -> done.set(Unit.unit()));
-    syn.set(Unit.unit());
-    return done;
-}
-
-// Server: receives SYN, sends SYN-ACK, receives ACK, then done.
-public static Observable<Unit> tcpHandshakeServer(
-        Observable<Unit> syn, Controller<Unit> synAck, Observable<Unit> ack) {
-    Controller<Unit> done = new Controller<>();
-    syn.watch(synAck::set).andThen(ack).watch(() -> done.set(Unit.unit()));
-    return done;
-}
-
-public static void simulateHandshake() {
-    Controller<Unit> syn = new Controller<>();
-    Controller<Unit> synAck = new Controller<>();
-    Controller<Unit> ack = new Controller<>();
-    Observable<Unit> client = tcpHandshakeClient(syn, synAck, ack);
-    Observable<Unit> server = tcpHandshakeServer(syn, synAck, ack);
-    client.and(server).watch(ScopeFactories.onEnter(() -> Log.d(TAG, "done!")));
-}
-```
-
-This gives several benefits:
-
-*   The protocol is expressed purely independent of the medium through which
-    messages are exchanged (e.g. a socket connection or IPC mechanism). This
-    allows you to test the protocol without worrying about the medium, just by
-    creating `Controller`s for each message type, as seen in
-    `simulateHandshake()`.
-*   The separation of the protocol from the medium also allows writing adapters
-    from `Observable`s and `Controller`s to the medium without regard to the
-    details of the protocol. This way, it's trivial to change the details of how
-    the messages are serialized and delivered (`Intent`s? `IBinder`? Protocol
-    buffers?) by writing thin adapters of `Controller` and `Observable` events
-    and actions to the desired medium, each easy to test, and each independent
-    of the protocol itself besides the messages that need to be sent.
-*   The `andThen()` calls impose a constraint that allows automatically ignoring
-    non-conforming messages. If the client gets a `SYN-ACK` before it sent its
-    `SYN`, the client will ignore it until it gets another `SYN-ACK` that
-    arrives *after* its `SYN` was sent.

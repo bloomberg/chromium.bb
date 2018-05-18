@@ -89,30 +89,13 @@ public class ObservableAndControllerTest {
     }
 
     @Test
-    public void testStateObservingState() {
-        // Use the closure of watch() under Observable to construct two observers.
-        // Verify both observers' events are triggered by the original Controller.
-        Controller<String> controller = new Controller<>();
-        List<String> result = new ArrayList<>();
-        Observable<String> state = controller.watch(report(result, "a"));
-        Observable<String> metastate = state.watch(report(result, "b"));
-        // Activate the controller, which should propagate a state transition to both states.
-        // Both states should be updated, so we should get two enter events.
-        controller.set("groovy");
-        controller.reset();
-        // Note that exit handlers are done in the reverse order that they were registered.
-        // i.e. the last observer to get activated is the first observer to get deactivated.
-        assertThat(result, contains("enter a: groovy", "enter b: groovy", "exit b", "exit a"));
-    }
-
-    @Test
     public void testMultipleStatesObservingSingleController() {
         // Construct two states that watch the same Controller. Verify both observers' events are
         // triggered.
         Controller<String> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        Observable<String> a = controller.watch(report(result, "a"));
-        Observable<String> b = controller.watch(report(result, "b"));
+        controller.watch(report(result, "a"));
+        controller.watch(report(result, "b"));
         // Activate the controller, which should propagate a state transition to both states.
         // Both states should be updated, so we should get two enter events.
         controller.set("neat");
@@ -149,6 +132,39 @@ public class ObservableAndControllerTest {
         // Resetting again after already resetting should not notify the observer.
         controller.reset();
         assertThat(result, contains("enter a: radical", "exit a"));
+    }
+
+    @Test
+    public void testClosedWatchScopeDoesNotGetNotifiedOfFutureActivations() {
+        Controller<String> a = new Controller<>();
+        List<String> result = new ArrayList<>();
+        Scope watching = a.watch(report(result, "temp"));
+        a.set("during temp");
+        a.reset();
+        watching.close();
+        a.set("after temp");
+        assertThat(result, contains("enter temp: during temp", "exit temp"));
+    }
+
+    @Test
+    public void testClosedWatchScopeIsImplicitlyDeactivated() {
+        Controller<String> a = new Controller<>();
+        List<String> result = new ArrayList<>();
+        Scope watching = a.watch(report(result, "temp"));
+        a.set("implicitly reset this");
+        watching.close();
+        assertThat(result, contains("enter temp: implicitly reset this", "exit temp"));
+    }
+
+    @Test
+    public void testCloseWatchScopeAfterDeactivatingSourceStateDoesNotCallExitHAndlerAgain() {
+        Controller<String> a = new Controller<>();
+        List<String> result = new ArrayList<>();
+        Scope watching = a.watch(report(result, "temp"));
+        a.set("and a one");
+        a.reset();
+        watching.close();
+        assertThat(result, contains("enter temp: and a one", "exit temp"));
     }
 
     @Test
@@ -329,17 +345,21 @@ public class ObservableAndControllerTest {
 
     @Test
     public void testMap() {
-        Controller<String> a = new Controller<>();
+        Controller<String> original = new Controller<>();
+        Observable<String> lowerCase = original.map(String::toLowerCase);
+        Observable<String> upperCase = lowerCase.map(String::toUpperCase);
         List<String> result = new ArrayList<>();
-        a.watch(report(result, "unchanged"))
-                .map(String::toLowerCase)
-                .watch(report(result, "lower"))
-                .map(String::toUpperCase)
-                .watch(report(result, "upper"));
-        a.set("sImPlY sTeAmEd KaLe");
+        original.watch(report(result, "unchanged"));
+        lowerCase.watch(report(result, "lower"));
+        upperCase.watch(report(result, "upper"));
+        original.set("sImPlY sTeAmEd KaLe");
+        original.reset();
+        // Note: order of activation doesn't really matter, but deactivation should be in reverse
+        // order or activation.
         assertThat(result,
-                contains("enter unchanged: sImPlY sTeAmEd KaLe", "enter lower: simply steamed kale",
-                        "enter upper: SIMPLY STEAMED KALE"));
+                contains("enter upper: SIMPLY STEAMED KALE", "enter lower: simply steamed kale",
+                        "enter unchanged: sImPlY sTeAmEd KaLe", "exit unchanged", "exit lower",
+                        "exit upper"));
     }
 
     @Test
@@ -390,7 +410,8 @@ public class ObservableAndControllerTest {
     public void testSetControllerInActivationHandler() {
         Controller<String> a = new Controller<>();
         List<String> result = new ArrayList<>();
-        a.watch(report(result, "weirdness")).watch((String s) -> {
+        a.watch(report(result, "weirdness"));
+        a.watch((String s) -> {
             // If the activation handler always calls set() on the source controller, you will have
             // an infinite loop, which is not cool. However, if the activation handler only
             // conditionally calls set() on its source controller, then the case where set() is not
@@ -413,7 +434,8 @@ public class ObservableAndControllerTest {
     public void testResetControllerInDeactivationHandler() {
         Controller<String> a = new Controller<>();
         List<String> result = new ArrayList<>();
-        a.watch(report(result, "bizzareness")).watch((String s) -> () -> a.reset());
+        a.watch(report(result, "bizzareness"));
+        a.watch((String s) -> () -> a.reset());
         a.set("yo");
         a.reset();
         // The reset() called by the deactivation handler should be a no-op.
@@ -424,7 +446,8 @@ public class ObservableAndControllerTest {
     public void testSetControllerInDeactivationHandler() {
         Controller<String> a = new Controller<>();
         List<String> result = new ArrayList<>();
-        a.watch(report(result, "astoundingness")).watch((String s) -> () -> a.set("never mind"));
+        a.watch(report(result, "astoundingness"));
+        a.watch((String s) -> () -> a.set("never mind"));
         a.set("retract this");
         a.reset();
         // The set() called by the deactivation handler should immediately set the controller back.
@@ -585,20 +608,90 @@ public class ObservableAndControllerTest {
         Controller<Unit> bState = new Controller<>();
         Controller<Unit> cState = new Controller<>();
         Controller<Unit> dState = new Controller<>();
+        Observable<Both<Unit, Unit>> aThenB = aState.andThen(bState);
+        Observable<Both<Both<Unit, Unit>, Unit>> aThenBThenC = aThenB.andThen(cState);
+        Observable<Both<Both<Both<Unit, Unit>, Unit>, Unit>> aThenBThenCThenD =
+                aThenBThenC.andThen(dState);
         List<String> result = new ArrayList<>();
-        aState.watch(ScopeFactories.onEnter(() -> result.add("A")))
-                .andThen(bState)
-                .watch(ScopeFactories.onEnter(() -> result.add("B")))
-                .andThen(cState)
-                .watch(ScopeFactories.onEnter(() -> result.add("C")))
-                .andThen(dState)
-                .watch(ScopeFactories.onEnter(() -> result.add("D")));
+        aState.watch(ScopeFactories.onEnter(() -> result.add("A")));
+        aThenB.watch(ScopeFactories.onEnter(() -> result.add("B")));
+        aThenBThenC.watch(ScopeFactories.onEnter(() -> result.add("C")));
+        aThenBThenCThenD.watch(ScopeFactories.onEnter(() -> result.add("D")));
         aState.set(Unit.unit());
         bState.set(Unit.unit());
         cState.set(Unit.unit());
         dState.set(Unit.unit());
         aState.reset();
         assertThat(result, contains("A", "B", "C", "D"));
+    }
+
+    @Test
+    public void testUseWatchScopeAsScopeFactory() {
+        Controller<String> aState = new Controller<>();
+        Controller<String> bState = new Controller<>();
+        List<String> result = new ArrayList<>();
+        aState.watch(report(result, "a"));
+        bState.watch(report(result, "b"));
+        // I guess this makes .and() obsolete?
+        aState.watch(a -> bState.watch(b -> {
+            result.add("enter both: " + a + ", " + b);
+            return () -> result.add("exit both");
+        }));
+        aState.set("A");
+        bState.set("B");
+        assertThat(result, contains("enter a: A", "enter b: B", "enter both: A, B"));
+        result.clear();
+        aState.reset();
+        assertThat(result, contains("exit both", "exit a"));
+        result.clear();
+        aState.set("AA");
+        assertThat(result, contains("enter a: AA", "enter both: AA, B"));
+        result.clear();
+        bState.reset();
+        assertThat(result, contains("exit both", "exit b"));
+    }
+
+    @Test
+    public void testPowerUnlimitedPower() {
+        Controller<Unit> aState = new Controller<>();
+        Controller<Unit> bState = new Controller<>();
+        Controller<Unit> cState = new Controller<>();
+        Controller<Unit> dState = new Controller<>();
+        List<String> result = new ArrayList<>();
+        // Praise be to Haskell Curry.
+        aState.watch(a -> bState.watch(b -> cState.watch(c -> dState.watch(d -> {
+            result.add("it worked!");
+            return () -> result.add("exit");
+        }))));
+        aState.set(Unit.unit());
+        bState.set(Unit.unit());
+        cState.set(Unit.unit());
+        dState.set(Unit.unit());
+        assertThat(result, contains("it worked!"));
+        result.clear();
+        aState.reset();
+        assertThat(result, contains("exit"));
+        result.clear();
+        aState.set(Unit.unit());
+        assertThat(result, contains("it worked!"));
+        result.clear();
+        bState.reset();
+        assertThat(result, contains("exit"));
+        result.clear();
+        bState.set(Unit.unit());
+        assertThat(result, contains("it worked!"));
+        result.clear();
+        cState.reset();
+        assertThat(result, contains("exit"));
+        result.clear();
+        cState.set(Unit.unit());
+        assertThat(result, contains("it worked!"));
+        result.clear();
+        dState.reset();
+        assertThat(result, contains("exit"));
+        result.clear();
+        dState.set(Unit.unit());
+        assertThat(result, contains("it worked!"));
     }
 
     // Any Scope's constructor whose parameters match the scope can be used as a method reference.

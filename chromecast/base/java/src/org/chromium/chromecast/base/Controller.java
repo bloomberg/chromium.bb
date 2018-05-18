@@ -7,6 +7,8 @@ package org.chromium.chromecast.base;
 import org.chromium.base.ObserverList;
 
 import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An Observable with public mutators that can control the state that it represents.
@@ -18,16 +20,21 @@ import java.util.ArrayDeque;
  * @param <T> The type of the state data.
  */
 public class Controller<T> extends Observable<T> {
+    private final Sequencer mSequencer = new Sequencer();
     private final ObserverList<ScopeFactory<? super T>> mEnterObservers = new ObserverList<>();
-    private final ObserverList<Scope> mExitObservers = new ObserverList<>();
+    private final Map<ScopeFactory<? super T>, Scope> mScopeMap = new HashMap<>();
     private T mData = null;
-    private boolean mIsNotifying = false;
-    private final ArrayDeque<Runnable> mMessageQueue = new ArrayDeque<>();
 
     @Override
-    protected void addObserver(ScopeFactory<? super T> observer) {
-        mEnterObservers.addObserver(observer);
-        if (mData != null) mExitObservers.addObserver(observer.create(mData));
+    public Scope watch(ScopeFactory<? super T> observer) {
+        mSequencer.sequence(() -> {
+            mEnterObservers.addObserver(observer);
+            if (mData != null) notifyEnter(observer);
+        });
+        return () -> mSequencer.sequence(() -> {
+            if (mData != null) notifyExit(observer);
+            mEnterObservers.removeObserver(observer);
+        });
     }
 
     /**
@@ -42,32 +49,21 @@ public class Controller<T> extends Observable<T> {
      * queued and handled synchronously after the current set() or reset() is resolved.
      */
     public void set(T data) {
-        if (mIsNotifying) {
-            mMessageQueue.add(() -> set(data));
-            return;
-        }
-        // set(null) is equivalent to reset().
-        if (data == null) {
-            reset();
-            return;
-        }
-        // If this Controller was already set(), call reset() so observing scopes can clean up
-        // before they are notified of the new data.
-        if (mData != null) {
-            reset();
-        }
-        // Observers might call set() and reset() in their callbacks. These calls should be queued
-        // rather than run synchronously to allow a well-defined order of events.
-        mIsNotifying = true;
-        mData = data;
-        for (ScopeFactory<? super T> observer : mEnterObservers) {
-            mExitObservers.addObserver(observer.create(data));
-        }
-        mIsNotifying = false;
-        // Done notifying observers; process any queued set() or reset() calls that they posted.
-        while (!mMessageQueue.isEmpty()) {
-            mMessageQueue.removeFirst().run();
-        }
+        mSequencer.sequence(() -> {
+            // set(null) is equivalent to reset().
+            if (data == null) {
+                resetInternal();
+                return;
+            }
+            // If this Controller was already set(), call reset() so observing Scopes can clean up.
+            if (mData != null) {
+                resetInternal();
+            }
+            mData = data;
+            for (ScopeFactory<? super T> observer : mEnterObservers) {
+                notifyEnter(observer);
+            }
+        });
     }
 
     /**
@@ -80,23 +76,57 @@ public class Controller<T> extends Observable<T> {
      * queued and handled synchronously after the current set() or reset() is resolved.
      */
     public void reset() {
+        mSequencer.sequence(() -> resetInternal());
+    }
+
+    private void resetInternal() {
+        assert mSequencer.inSequence();
         if (mData == null) return;
-        if (mIsNotifying) {
-            mMessageQueue.add(() -> reset());
-            return;
-        }
-        // Observers might call set() and reset() in their callbacks. These calls should be queued
-        // rather than run synchronously to allow a well-defined order of events.
-        mIsNotifying = true;
         mData = null;
-        for (Scope observer : Itertools.reverse(mExitObservers)) {
-            observer.close();
+        for (ScopeFactory<? super T> observer : Itertools.reverse(mEnterObservers)) {
+            notifyExit(observer);
         }
-        mExitObservers.clear();
-        mIsNotifying = false;
-        // Done notifying observers; process any queued set() or reset() calls that they posted.
-        while (!mMessageQueue.isEmpty()) {
-            mMessageQueue.removeFirst().run();
+    }
+
+    private void notifyEnter(ScopeFactory<? super T> factory) {
+        assert mSequencer.inSequence();
+        Scope scope = factory.create(mData);
+        assert scope != null;
+        mScopeMap.put(factory, scope);
+    }
+
+    private void notifyExit(ScopeFactory<? super T> factory) {
+        assert mSequencer.inSequence();
+        Scope scope = mScopeMap.get(factory);
+        assert scope != null;
+        mScopeMap.remove(factory);
+        scope.close();
+    }
+
+    // TODO(sanfin): make this its own public class and add tests.
+    private static class Sequencer {
+        private boolean mIsRunning = false;
+        private final ArrayDeque<Runnable> mMessageQueue = new ArrayDeque<>();
+
+        /**
+         * Runs the task synchronously, or, if a sequence()d task is already running, posts the task
+         * to a queue, whose items will be run synchronously when the current task is finished.
+         */
+        public void sequence(Runnable impl) {
+            if (mIsRunning) {
+                mMessageQueue.add(() -> sequence(impl));
+                return;
+            }
+            mIsRunning = true;
+            impl.run();
+            mIsRunning = false;
+            while (!mMessageQueue.isEmpty()) {
+                mMessageQueue.removeFirst().run();
+            }
+        }
+
+        public boolean inSequence() {
+            return mIsRunning;
         }
     }
 }

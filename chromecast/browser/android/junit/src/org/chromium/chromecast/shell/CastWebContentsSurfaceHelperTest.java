@@ -117,7 +117,7 @@ public class CastWebContentsSurfaceHelperTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mMediaSessionGetter.get(any())).thenReturn(mMediaSessionImpl);
-
+        when(mWebContentsView.create(any())).thenReturn(mock(Scope.class));
         mSurfaceHelper =
                 new CastWebContentsSurfaceHelper(mActivity, mWebContentsView, mFinishCallback);
         mSurfaceHelper.setContentVideoViewEmbedderSetterForTesting(mContentVideoViewEmbedderSetter);
