@@ -40,7 +40,7 @@ Polymer({
      */
     savedPasswords: {
       type: Array,
-      value: [],
+      value: () => [],
     },
 
     /**
@@ -49,7 +49,7 @@ Polymer({
      */
     passwordExceptions: {
       type: Array,
-      value: [],
+      value: () => [],
     },
 
     /**
@@ -178,6 +178,8 @@ Polymer({
         setSavedPasswordsListener);
     this.passwordManager_.addExceptionListChangedListener(
         setPasswordExceptionsListener);
+
+    this.notifySplices('savedPasswords', []);
 
     Polymer.RenderStatus.afterNextRender(this, function() {
       Polymer.IronA11yAnnouncer.requestAvailability();
