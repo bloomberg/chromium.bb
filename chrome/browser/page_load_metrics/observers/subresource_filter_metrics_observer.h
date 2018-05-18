@@ -13,7 +13,6 @@
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/common/activation_level.h"
-#include "components/ukm/ukm_source.h"
 
 namespace internal {
 
