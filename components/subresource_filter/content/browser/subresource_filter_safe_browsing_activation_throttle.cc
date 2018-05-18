@@ -17,13 +17,34 @@
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_client.h"
+#include "components/ukm/ukm_source.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace subresource_filter {
+
+namespace {
+
+void LogActivationUkm(content::NavigationHandle* navigation_handle,
+                      ActivationDecision decision,
+                      ActivationLevel level) {
+  ukm::SourceId source_id = ukm::ConvertToSourceId(
+      navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
+  ukm::builders::SubresourceFilter builder(source_id);
+  builder.SetActivationDecision(static_cast<int64_t>(decision));
+  if (level == subresource_filter::ActivationLevel::DRYRUN) {
+    DCHECK_EQ(subresource_filter::ActivationDecision::ACTIVATED, decision);
+    builder.SetDryRun(true);
+  }
+  builder.Record(ukm::UkmRecorder::Get());
+}
+
+}  // namespace
 
 SubresourceFilterSafeBrowsingActivationThrottle::
     SubresourceFilterSafeBrowsingActivationThrottle(
@@ -225,6 +246,8 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
     matched_configuration = Configuration();
   }
 
+  LogActivationUkm(navigation_handle(), activation_decision,
+                   matched_configuration.activation_options.activation_level);
   driver_factory->NotifyPageActivationComputed(
       navigation_handle(), activation_decision, matched_configuration, warning);
 

@@ -9,8 +9,6 @@
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/common/activation_state.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 
 using subresource_filter::SubresourceFilterSafeBrowsingActivationThrottle;
@@ -187,16 +185,6 @@ SubresourceFilterMetricsObserver::OnCommit(
   DCHECK(scoped_observer_.IsObservingSources());
   LogActivationDecisionMetrics(navigation_handle, *activation_decision_);
   scoped_observer_.RemoveAll();
-
-  ukm::builders::SubresourceFilter builder(source_id);
-  builder.SetActivationDecision(static_cast<int64_t>(*activation_decision_));
-  if (*activation_level_ == subresource_filter::ActivationLevel::DRYRUN) {
-    DCHECK_EQ(subresource_filter::ActivationDecision::ACTIVATED,
-              *activation_decision_);
-    builder.SetDryRun(true);
-  }
-  builder.Record(ukm::UkmRecorder::Get());
-
   return CONTINUE_OBSERVING;
 }
 

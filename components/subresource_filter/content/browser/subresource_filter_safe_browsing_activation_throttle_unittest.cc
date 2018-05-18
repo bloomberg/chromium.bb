@@ -33,6 +33,8 @@
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -40,6 +42,7 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/test_renderer_host.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -805,6 +808,67 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   SimulateCommitAndExpectProceed();
   tester().ExpectTotalCount(kMatchesPatternHistogramNameSubresourceFilterSuffix,
                             0);
+}
+
+TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, LogsUkm) {
+  ukm::InitializeSourceUrlRecorderForWebContents(
+      RenderViewHostTestHarness::web_contents());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  const GURL url(kURL);
+  ConfigureForMatch(url);
+  SimulateNavigateAndCommit({url}, main_rfh());
+  using SubresourceFilter = ukm::builders::SubresourceFilter;
+  const auto& entries =
+      test_ukm_recorder.GetEntriesByName(SubresourceFilter::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_ukm_recorder.ExpectEntrySourceHasUrl(entry, url);
+    test_ukm_recorder.ExpectEntryMetric(
+        entry, SubresourceFilter::kActivationDecisionName,
+        static_cast<int64_t>(ActivationDecision::ACTIVATED));
+  }
+}
+
+TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
+       LogsUkmNoActivation) {
+  ukm::InitializeSourceUrlRecorderForWebContents(
+      RenderViewHostTestHarness::web_contents());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  const GURL url(kURL);
+  SimulateNavigateAndCommit({url}, main_rfh());
+  using SubresourceFilter = ukm::builders::SubresourceFilter;
+  const auto& entries =
+      test_ukm_recorder.GetEntriesByName(SubresourceFilter::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_ukm_recorder.ExpectEntrySourceHasUrl(entry, url);
+    test_ukm_recorder.ExpectEntryMetric(
+        entry, SubresourceFilter::kActivationDecisionName,
+        static_cast<int64_t>(
+            ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET));
+  }
+}
+
+TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, LogsUkmDryRun) {
+  scoped_configuration()->ResetConfiguration(
+      Configuration(ActivationLevel::DRYRUN, ActivationScope::ALL_SITES));
+  ukm::InitializeSourceUrlRecorderForWebContents(
+      RenderViewHostTestHarness::web_contents());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  const GURL url(kURL);
+  SimulateNavigateAndCommit({url}, main_rfh());
+  using SubresourceFilter = ukm::builders::SubresourceFilter;
+  const auto& entries =
+      test_ukm_recorder.GetEntriesByName(SubresourceFilter::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* entry : entries) {
+    test_ukm_recorder.ExpectEntrySourceHasUrl(entry, url);
+    test_ukm_recorder.ExpectEntryMetric(
+        entry, SubresourceFilter::kActivationDecisionName,
+        static_cast<int64_t>(ActivationDecision::ACTIVATED));
+    test_ukm_recorder.ExpectEntryMetric(entry, SubresourceFilter::kDryRunName,
+                                        true);
+  }
 }
 
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,

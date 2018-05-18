@@ -15,7 +15,6 @@
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/test/navigation_simulator.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
 #include "url/gurl.h"
 
 namespace {
@@ -103,21 +102,6 @@ class SubresourceFilterMetricsObserverTest
     histogram_tester().ExpectBucketCount(
         internal::kHistogramSubresourceFilterActivationDecision,
         static_cast<int>(decision), 1);
-
-    using SubresourceFilter = ukm::builders::SubresourceFilter;
-    const auto& entries =
-        test_ukm_recorder().GetEntriesByName(SubresourceFilter::kEntryName);
-    EXPECT_EQ(1u, entries.size());
-    for (const auto* entry : entries) {
-      test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(url));
-      test_ukm_recorder().ExpectEntryMetric(
-          entry, SubresourceFilter::kActivationDecisionName,
-          static_cast<int64_t>(decision));
-      if (level == subresource_filter::ActivationLevel::DRYRUN) {
-        test_ukm_recorder().ExpectEntryMetric(
-            entry, SubresourceFilter::kDryRunName, true);
-      }
-    }
   }
 
  private:
