@@ -4,6 +4,7 @@
 
 #include "ash/message_center/message_center_controller.h"
 
+#include "ash/message_center/arc_notification_manager_delegate_impl.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
@@ -156,14 +157,12 @@ void MessageCenterController::SetArcNotificationsInstance(
     arc::mojom::NotificationsInstancePtr arc_notification_instance) {
   if (!arc_notification_manager_) {
     arc_notification_manager_ = std::make_unique<ArcNotificationManager>(
+        std::make_unique<ArcNotificationManagerDelegateImpl>(),
         Shell::Get()
             ->session_controller()
             ->GetPrimaryUserSession()
             ->user_info->account_id,
         message_center::MessageCenter::Get());
-    arc_notification_manager_->set_get_app_id_callback(
-        base::BindRepeating(&MessageCenterController::GetArcAppIdByPackageName,
-                            base::Unretained(this)));
   }
   arc_notification_manager_->SetInstance(std::move(arc_notification_instance));
 }
@@ -212,6 +211,13 @@ void MessageCenterController::GetActiveNotifications(
   std::move(callback).Run(notification_vector);
 }
 
+void MessageCenterController::GetArcAppIdByPackageName(
+    const std::string& package_name,
+    GetAppIdByPackageNameCallback callback) {
+  DCHECK(client_.is_bound());
+  client_->GetArcAppIdByPackageName(package_name, std::move(callback));
+}
+
 void MessageCenterController::SetNotifierSettingsListener(
     NotifierSettingsListener* listener) {
   DCHECK(!listener || !notifier_id_);
@@ -228,13 +234,6 @@ void MessageCenterController::OnGotNotifierList(
     std::vector<mojom::NotifierUiDataPtr> ui_data) {
   if (notifier_id_)
     notifier_id_->SetNotifierList(ui_data);
-}
-
-void MessageCenterController::GetArcAppIdByPackageName(
-    const std::string& package_name,
-    ArcNotificationManager::GetAppIdResponseCallback callback) {
-  DCHECK(client_.is_bound());
-  client_->GetArcAppIdByPackageName(package_name, std::move(callback));
 }
 
 }  // namespace ash

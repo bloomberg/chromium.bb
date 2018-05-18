@@ -382,6 +382,8 @@ component("ash") {
     "magnifier/partial_magnification_controller.h",
     "media_controller.cc",
     "media_controller.h",
+    "message_center/arc_notification_manager_delegate_impl.cc",
+    "message_center/arc_notification_manager_delegate_impl.h",
     "message_center/message_center_bubble.cc",
     "message_center/message_center_bubble.h",
     "message_center/message_center_button_bar.cc",

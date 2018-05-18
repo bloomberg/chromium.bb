@@ -51,6 +51,12 @@ class ASH_EXPORT MessageCenterController
                               bool enabled) override;
   void GetActiveNotifications(GetActiveNotificationsCallback callback) override;
 
+  // Handles get app id calls from ArcNotificationManager.
+  using GetAppIdByPackageNameCallback =
+      base::OnceCallback<void(const std::string& app_id)>;
+  void GetArcAppIdByPackageName(const std::string& package_name,
+                                GetAppIdByPackageNameCallback callback);
+
   InactiveUserNotificationBlocker*
   inactive_user_notification_blocker_for_testing() {
     return inactive_user_notification_blocker_.get();
@@ -77,11 +83,6 @@ class ASH_EXPORT MessageCenterController
  private:
   // Callback for GetNotifierList.
   void OnGotNotifierList(std::vector<mojom::NotifierUiDataPtr> ui_data);
-
-  // Handles get app id calls from ArcNotificationManager.
-  void GetArcAppIdByPackageName(
-      const std::string& package_name,
-      ArcNotificationManager::GetAppIdResponseCallback callback);
 
   std::unique_ptr<FullscreenNotificationBlocker>
       fullscreen_notification_blocker_;

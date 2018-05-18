@@ -17,6 +17,7 @@ static_library("arc") {
     "arc_notification_item_impl.h",
     "arc_notification_manager.cc",
     "arc_notification_manager.h",
+    "arc_notification_manager_delegate.h",
     "arc_notification_surface.h",
     "arc_notification_surface_impl.cc",
     "arc_notification_surface_impl.h",
