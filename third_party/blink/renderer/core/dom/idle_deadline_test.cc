@@ -44,6 +44,12 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
     return base::TimeTicks();
   }
 
+  void AddTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) override {}
+
+  void RemoveTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) override {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIdleDeadlineScheduler);
 };

@@ -6,14 +6,9 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_WEB_THREAD_SCHEDULER_H_
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/scheduler/single_thread_idle_task_runner.h"
 #include "third_party/blink/public/platform/web_common.h"
-
-namespace base {
-class MessageLoop;
-}
 
 namespace blink {
 namespace scheduler {
@@ -48,14 +43,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // work in this case.
   // Must be called from the thread this scheduler was created on.
   virtual bool CanExceedIdleDeadlineIfRequired() const = 0;
-
-  // Adds or removes a task observer from the scheduler. The observer will be
-  // notified before and after every executed task. These functions can only be
-  // called on the thread this scheduler was created on.
-  virtual void AddTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) = 0;
-  virtual void RemoveTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) = 0;
 
   // Shuts down the scheduler by dropping any remaining pending work in the work
   // queues. After this call any work posted to the task runners will be

@@ -51,6 +51,12 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
     return base::TimeTicks();
   }
 
+  void AddTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) override {}
+
+  void RemoveTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) override {}
+
   void RunIdleTask() { std::move(idle_task_).Run(0); }
   bool HasIdleTask() const { return !!idle_task_; }
 
