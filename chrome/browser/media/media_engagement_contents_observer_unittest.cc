@@ -4,6 +4,11 @@
 
 #include "chrome/browser/media/media_engagement_contents_observer.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/optional.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -21,6 +26,7 @@
 #include "components/ukm/ukm_source.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,6 +43,9 @@ class MediaEngagementContentsObserverTest
 
     ChromeRenderViewHostTestHarness::SetUp();
 
+    test_service_manager_context_ =
+        std::make_unique<content::TestServiceManagerContext>();
+
     SetContents(content::WebContentsTester::CreateTestWebContents(
         browser_context(), nullptr));
 
@@ -50,6 +59,12 @@ class MediaEngagementContentsObserverTest
 
     contents_observer_->SetTaskRunnerForTest(task_runner_);
     SimulateInaudible();
+  }
+
+  void TearDown() override {
+    // Must be reset before browser thread teardown.
+    test_service_manager_context_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   MediaEngagementContentsObserver* CreateContentsObserverFor(
@@ -399,6 +414,12 @@ class MediaEngagementContentsObserverTest
   const base::TimeDelta kMaxWaitingTime =
       MediaEngagementContentsObserver::kSignificantMediaPlaybackTime +
       base::TimeDelta::FromSeconds(2);
+
+  // WebContentsImpl accesses
+  // content::ServiceManagerConnection::GetForProcess(), so
+  // we must make sure it is instantiated.
+  std::unique_ptr<content::TestServiceManagerContext>
+      test_service_manager_context_;
 };
 
 // TODO(mlamouri): test that visits are not recorded multiple times when a
