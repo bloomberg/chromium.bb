@@ -27485,6 +27485,7 @@ from previous Chrome versions.
   <int value="57639188" label="SoundContentSetting:disabled"/>
   <int value="57791920" label="MemoryCoordinator:enabled"/>
   <int value="58099178" label="SecondaryUiMd:enabled"/>
+  <int value="58695502" label="NTPButton:disabled"/>
   <int value="59784035" label="ImeThread:disabled"/>
   <int value="59964519" label="OmniboxEnableClipboardProvider:disabled"/>
   <int value="61205887" label="enable-text-input-focus-manager"/>
@@ -28207,6 +28208,7 @@ from previous Chrome versions.
   <int value="1715338237" label="ContextualSearchSecondTap:disabled"/>
   <int value="1716104463" label="enable-fullscreen-app-list"/>
   <int value="1717987538" label="NTPTilesLowerResolutionFavicons:enabled"/>
+  <int value="1718341860" label="NTPButton:enabled"/>
   <int value="1719189460" label="EnablePasswordSelection:disabled"/>
   <int value="1723601083" label="enable-app-window-controls"/>
   <int value="1724800383" label="AsmJsToWebAssembly:disabled"/>
