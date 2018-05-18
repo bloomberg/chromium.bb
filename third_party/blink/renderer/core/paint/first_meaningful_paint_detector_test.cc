@@ -20,6 +20,15 @@ class FirstMeaningfulPaintDetectorTest : public PageTestBase {
   void SetUp() override {
     platform_->AdvanceClockSeconds(1);
     PageTestBase::SetUp();
+    ResetNetworkQuietTimer();
+  }
+
+  // The initial document doesn't need to load any resources other than itself.
+  // It means initially, the network quiet timers are already active. This
+  // function is used to reset them.
+  void ResetNetworkQuietTimer() {
+    Detector().network2_quiet_timer_.Stop();
+    Detector().network0_quiet_timer_.Stop();
   }
 
   TimeTicks AdvanceClockAndGetTime() {

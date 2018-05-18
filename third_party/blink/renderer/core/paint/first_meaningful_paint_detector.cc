@@ -119,7 +119,8 @@ int FirstMeaningfulPaintDetector::ActiveConnections() {
   return fetcher->BlockingRequestCount() + fetcher->NonblockingRequestCount();
 }
 
-// This function is called when the number of active connections is decreased.
+// This function is called when the number of active connections is decreased
+// and when the document is parsed.
 void FirstMeaningfulPaintDetector::CheckNetworkStable() {
   DCHECK(GetDocument());
   if (!GetDocument()->HasFinishedParsing())

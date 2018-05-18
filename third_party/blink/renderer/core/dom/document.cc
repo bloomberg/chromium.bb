@@ -220,6 +220,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
+#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/policy/document_policy.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -5842,6 +5843,8 @@ void Document::FinishedParsing() {
 
   if (IsPrefetchOnly())
     WebPrerenderingSupport::Current()->PrefetchFinished();
+
+  FirstMeaningfulPaintDetector::From(*this).CheckNetworkStable();
 }
 
 void Document::ElementDataCacheClearTimerFired(TimerBase*) {
