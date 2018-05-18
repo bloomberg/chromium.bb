@@ -48,9 +48,6 @@ class Grid : public Rect {
 
    private:
     GLuint model_view_proj_matrix_handle_;
-    GLuint scene_radius_handle_;
-    GLuint center_color_handle_;
-    GLuint edge_color_handle_;
     GLuint grid_color_handle_;
     GLuint opacity_handle_;
     GLuint lines_count_handle_;

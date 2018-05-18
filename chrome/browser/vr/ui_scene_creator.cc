@@ -898,8 +898,6 @@ std::unique_ptr<Grid> CreateGrid(Model* model, UiElementName name) {
   grid->SetTranslate(0.0, -kSceneHeight / 2, 0.0);
   grid->SetRotate(1, 0, 0, -base::kPiFloat / 2);
   grid->set_gridline_count(kFloorGridlineCount);
-  grid->SetEdgeColor(SK_ColorTRANSPARENT);
-  grid->SetCenterColor(SK_ColorTRANSPARENT);
   grid->SetGridColor(model->color_scheme().floor_grid);
   grid->set_focusable(false);
   return grid;

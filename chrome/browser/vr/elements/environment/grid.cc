@@ -14,14 +14,13 @@ namespace {
 
 // clang-format off
 static constexpr char const* kVertexShader = SHADER(
-  precision mediump float;
+  precision highp float;
   uniform mat4 u_ModelViewProjMatrix;
-  uniform float u_SceneRadius;
   attribute vec4 a_Position;
   varying vec2 v_GridPosition;
 
   void main() {
-    v_GridPosition = a_Position.xy / u_SceneRadius;
+    v_GridPosition = a_Position.xy;
     gl_Position = u_ModelViewProjMatrix * a_Position;
   }
 );
@@ -29,42 +28,23 @@ static constexpr char const* kVertexShader = SHADER(
 static constexpr char const* kFragmentShader = SHADER(
   precision highp float;
   varying vec2 v_GridPosition;
-  uniform vec4 u_CenterColor;
-  uniform vec4 u_EdgeColor;
   uniform vec4 u_GridColor;
   uniform mediump float u_Opacity;
   uniform float u_LinesCount;
 
   void main() {
-    float edgeColorWeight = clamp(length(v_GridPosition), 0.0, 1.0);
-    float centerColorWeight = 1.0 - edgeColorWeight;
-    vec4 bg_color = u_CenterColor * centerColorWeight +
-        u_EdgeColor * edgeColorWeight;
-    bg_color = vec4(bg_color.xyz * bg_color.w, bg_color.w);
-    float linesCountF = u_LinesCount * 0.5;
-    float pos_x = abs(v_GridPosition.x) * linesCountF;
-    float pos_y = abs(v_GridPosition.y) * linesCountF;
-    float diff_x = abs(pos_x - floor(pos_x + 0.5));
-    float diff_y = abs(pos_y - floor(pos_y + 0.5));
-    float diff = min(diff_x, diff_y);
-    if (diff < 0.01) {
-      float opacity = 1.0 - diff / 0.01;
-      opacity = opacity * opacity * centerColorWeight * u_GridColor.w;
-      vec3 grid_color = u_GridColor.xyz * opacity;
-      gl_FragColor = vec4(
-          grid_color.xyz + bg_color.xyz * (1.0 - opacity),
-          opacity + bg_color.w * (1.0 - opacity));
-    } else {
-      // Add some noise to prevent banding artifacts in the gradient.
-      float n =
-          (fract(dot(v_GridPosition.xy, vec2(12345.67, 456.7))) - 0.5) / 255.0;
-      gl_FragColor = bg_color + n;
-    }
+    vec2 tile_pos = fract(u_LinesCount * abs(v_GridPosition));
+    vec2 border_dist = min(tile_pos, 1.0 - tile_pos);
+    float diff = min(border_dist.x, border_dist.y);
+    if (diff > 0.01)
+      discard;
+    lowp float radialOpacity = 1.0 - clamp(length(v_GridPosition), 0.0, 1.0);
+    lowp float opacity = 1.0 - diff / 0.01;
+    opacity = u_Opacity * opacity * opacity * radialOpacity * u_GridColor.w;
+    gl_FragColor = vec4(u_GridColor.xyz * opacity, opacity);
   }
 );
 // clang-format on
-
-static constexpr float kSceneRadius = 0.5f;
 
 }  // namespace
 
@@ -97,9 +77,6 @@ Grid::Renderer::~Renderer() = default;
 Grid::Renderer::Renderer() : BaseQuadRenderer(kVertexShader, kFragmentShader) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
-  scene_radius_handle_ = glGetUniformLocation(program_handle_, "u_SceneRadius");
-  center_color_handle_ = glGetUniformLocation(program_handle_, "u_CenterColor");
-  edge_color_handle_ = glGetUniformLocation(program_handle_, "u_EdgeColor");
   grid_color_handle_ = glGetUniformLocation(program_handle_, "u_GridColor");
   opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
   lines_count_handle_ = glGetUniformLocation(program_handle_, "u_LinesCount");
@@ -113,13 +90,8 @@ void Grid::Renderer::Draw(const gfx::Transform& model_view_proj_matrix,
                           float opacity) {
   PrepareToDraw(model_view_proj_matrix_handle_, model_view_proj_matrix);
 
-  // Tell shader the grid size so that it can calculate the fading.
-  glUniform1f(scene_radius_handle_, kSceneRadius);
   glUniform1f(lines_count_handle_, static_cast<float>(gridline_count));
 
-  // Set the edge color to the fog color so that it seems to fade out.
-  SetColorUniform(edge_color_handle_, edge_color);
-  SetColorUniform(center_color_handle_, center_color);
   SetColorUniform(grid_color_handle_, grid_color);
   glUniform1f(opacity_handle_, opacity);
 
