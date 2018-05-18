@@ -240,8 +240,12 @@ TEST(NetworkContextCertTransparencyAuditingDisabledTest,
   request.url = https_server.GetURL("localhost", "/");
 
   mojom::URLLoaderFactoryPtr loader_factory;
+  auto url_loader_factory_params =
+      network::mojom::URLLoaderFactoryParams::New();
+  url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
+  url_loader_factory_params->is_corb_enabled = false;
   network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          0);
+                                          std::move(url_loader_factory_params));
 
   base::HistogramTester histograms;
   mojom::URLLoaderPtr loader;
@@ -372,8 +376,12 @@ TEST(NetworkContextCertTransparencyAuditingEnabledTest,
   request.url = https_server.GetURL("localhost", "/");
 
   mojom::URLLoaderFactoryPtr loader_factory;
+  auto url_loader_factory_params =
+      network::mojom::URLLoaderFactoryParams::New();
+  url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
+  url_loader_factory_params->is_corb_enabled = false;
   network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          0);
+                                          std::move(url_loader_factory_params));
 
   mojom::URLLoaderPtr loader;
   TestURLLoaderClient client;

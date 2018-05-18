@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/component_export.h"
@@ -59,7 +60,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       bool report_raw_headers,
       mojom::URLLoaderClientPtr url_loader_client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      uint32_t process_id,
+      const mojom::URLLoaderFactoryParams* factory_params,
       uint32_t request_id,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
       base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
@@ -125,7 +126,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   int32_t options_;
   int resource_type_;
   bool is_load_timing_enabled_;
-  uint32_t process_id_;
+
+  // URLLoaderFactory is guaranteed to outlive URLLoader, so it is safe to store
+  // a raw pointer to mojom::URLLoaderFactoryParams.
+  const mojom::URLLoaderFactoryParams* const factory_params_;
+
   uint32_t render_frame_id_;
   uint32_t request_id_;
   const bool keepalive_;

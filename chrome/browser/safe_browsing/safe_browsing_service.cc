@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -638,7 +639,12 @@ void SafeBrowsingService::CreateURLLoaderFactoryForIO(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (shutdown_)
     return;  // We've been shut down already.
-  GetNetworkContext()->CreateURLLoaderFactory(std::move(request), 0);
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = network::mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
+  GetNetworkContext()->CreateURLLoaderFactory(std::move(request),
+                                              std::move(params));
 }
 
 network::mojom::NetworkContextParamsPtr

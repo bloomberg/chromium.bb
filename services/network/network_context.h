@@ -107,12 +107,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // URLLoaderFactory.
   void CreateURLLoaderFactory(
       mojom::URLLoaderFactoryRequest request,
-      uint32_t process_id,
+      network::mojom::URLLoaderFactoryParamsPtr params,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client);
 
   // mojom::NetworkContext implementation:
-  void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request,
-                              uint32_t process_id) override;
+  void CreateURLLoaderFactory(
+      mojom::URLLoaderFactoryRequest request,
+      network::mojom::URLLoaderFactoryParamsPtr params) override;
   void GetCookieManager(mojom::CookieManagerRequest request) override;
   void GetRestrictedCookieManager(mojom::RestrictedCookieManagerRequest request,
                                   int32_t render_process_id,

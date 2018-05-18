@@ -8,6 +8,8 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/files/file.h"
@@ -336,13 +338,16 @@ class URLLoaderTest : public testing::Test {
     base::RunLoop delete_run_loop;
     mojom::URLLoaderPtr loader;
     std::unique_ptr<URLLoader> url_loader;
+    static mojom::URLLoaderFactoryParams params;
+    params.process_id = mojom::kBrowserProcessId;
+    params.is_corb_enabled = false;
     url_loader = std::make_unique<URLLoader>(
         context(), nullptr /* network_service_client */,
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
         mojo::MakeRequest(&loader), options, request, false,
-        client_.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
-        0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
-        nullptr, nullptr /* network_usage_accumulator */);
+        client_.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+        0 /* request_id */, resource_scheduler_client(), nullptr,
+        nullptr /* network_usage_accumulator */);
 
     ran_ = true;
 
@@ -846,13 +851,16 @@ TEST_F(URLLoaderTest, DestroyOnURLLoaderPipeClosed) {
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
   url_loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
       mojo::MakeRequest(&loader), 0, request, false,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
-      0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
-      nullptr, nullptr /* network_usage_accumulator */);
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
 
   // Run until the response body pipe arrives, to make sure that a live body
   // pipe does not result in keeping the loader alive when the URLLoader pipe is
@@ -895,13 +903,16 @@ TEST_F(URLLoaderTest, CloseResponseBodyConsumerBeforeProducer) {
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
   url_loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
       mojo::MakeRequest(&loader), 0, request, false,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
-      0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
-      nullptr, nullptr /* network_usage_accumulator */);
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
 
   client()->RunUntilResponseBodyArrived();
   EXPECT_TRUE(client()->has_received_response());
@@ -946,13 +957,16 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeResponseHeaders) {
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
   url_loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
       mojo::MakeRequest(&loader), 0, request, false,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
-      0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
-      nullptr, nullptr /* network_usage_accumulator */);
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
 
   // Pausing reading response body from network stops future reads from the
   // underlying URLRequest. So no data should be sent using the response body
@@ -1019,13 +1033,16 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
   url_loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
       mojo::MakeRequest(&loader), 0, request, false,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
-      0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
-      nullptr, nullptr /* network_usage_accumulator */);
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
 
   response_controller.WaitForRequest();
   response_controller.Send(
@@ -1081,13 +1098,16 @@ TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
   url_loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
       mojo::MakeRequest(&loader), 0, request, false,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
-      0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
-      nullptr, nullptr /* network_usage_accumulator */);
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
 
   loader->PauseReadingBodyFromNet();
   loader.FlushForTesting();
@@ -1138,13 +1158,16 @@ TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
   url_loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
       mojo::MakeRequest(&loader), 0, request, false,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
-      0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
-      nullptr, nullptr /* network_usage_accumulator */);
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
 
   // It is okay to call ResumeReadingBodyFromNet() even if there is no prior
   // PauseReadingBodyFromNet().
@@ -1398,13 +1421,15 @@ TEST_F(URLLoaderTest, UploadChunkedDataPipe) {
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
   url_loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
       mojo::MakeRequest(&loader), 0, request, false /* report_raw_headers */,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
-      0 /* process_id */, 0 /* request_id */,
-      nullptr /* resource_scheduler_client */,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, nullptr /* resource_scheduler_client */,
       nullptr /* keepalive_statistics_reporter */,
       nullptr /* network_usage_accumulator */);
 
@@ -1536,6 +1561,9 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
   // Fill up the ResourceScheduler with delayable requests.
   std::vector<std::pair<std::unique_ptr<URLLoader>, mojom::URLLoaderPtr>>
       loaders;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
   for (int i = 0; i < kRepeat; ++i) {
     TestURLLoaderClient client;
     mojom::URLLoaderPtr loaderInterfacePtr;
@@ -1544,7 +1572,7 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
         context(), nullptr /* network_service_client */,
         NeverInvokedDeleteLoaderCallback(),
         mojo::MakeRequest(&loaderInterfacePtr), 0, request, false,
-        client.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, kProcessId,
+        client.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
         0 /* request_id */, resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */);
 
@@ -1565,7 +1593,7 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
       context(), nullptr /* network_service_client */,
       NeverInvokedDeleteLoaderCallback(),
       mojo::MakeRequest(&loader_interface_ptr), 0, request, false,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, kProcessId,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */);
   base::RunLoop().RunUntilIdle();
@@ -1593,13 +1621,16 @@ TEST_F(URLLoaderTest, ReadPipeClosedWhileReadTaskPosted) {
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
   url_loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
       mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
-      0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
-      nullptr, nullptr /* network_usage_accumulator */);
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
 
   client()->RunUntilResponseBodyArrived();
   client()->response_body_release();
@@ -1693,11 +1724,14 @@ TEST_F(URLLoaderTest, SetAuth) {
       CreateResourceRequest("GET", test_server()->GetURL(kTestAuthURL));
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
       mojo::MakeRequest(&loader), 0, request, false,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, kProcessId,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */);
   base::RunLoop().RunUntilIdle();
@@ -1731,11 +1765,14 @@ TEST_F(URLLoaderTest, CancelAuth) {
       CreateResourceRequest("GET", test_server()->GetURL(kTestAuthURL));
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
       mojo::MakeRequest(&loader), 0, request, false,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, kProcessId,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */);
   base::RunLoop().RunUntilIdle();
@@ -1770,11 +1807,14 @@ TEST_F(URLLoaderTest, TwoChallenges) {
       CreateResourceRequest("GET", test_server()->GetURL(kTestAuthURL));
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
       mojo::MakeRequest(&loader), 0, request, false,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, kProcessId,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */);
   base::RunLoop().RunUntilIdle();
@@ -1810,11 +1850,14 @@ TEST_F(URLLoaderTest, NoAuthRequiredForFavicon) {
       CreateResourceRequest("GET", test_server()->GetURL(kFaviconTestPage));
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
       context(), &network_service_client,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
       mojo::MakeRequest(&loader), 0, request, false,
-      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, kProcessId,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */);
   base::RunLoop().RunUntilIdle();

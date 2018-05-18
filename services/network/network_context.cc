@@ -290,26 +290,26 @@ void NetworkContext::SetCertVerifierForTesting(
 
 void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
-    uint32_t process_id,
+    network::mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client) {
   url_loader_factories_.emplace(std::make_unique<URLLoaderFactory>(
-      this, process_id, std::move(resource_scheduler_client),
+      this, std::move(params), std::move(resource_scheduler_client),
       std::move(request)));
 }
 
 void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
-    uint32_t process_id) {
+    network::mojom::URLLoaderFactoryParamsPtr params) {
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client;
-  if (process_id != 0) {
+  if (params->process_id != mojom::kBrowserProcessId) {
     // Zero process ID means it's from the browser process and we don't want
     // to throttle the requests.
     resource_scheduler_client = base::MakeRefCounted<ResourceSchedulerClient>(
-        process_id, ++current_resource_scheduler_client_id_,
+        params->process_id, ++current_resource_scheduler_client_id_,
         resource_scheduler_.get(),
         url_request_context_->network_quality_estimator());
   }
-  CreateURLLoaderFactory(std::move(request), process_id,
+  CreateURLLoaderFactory(std::move(request), std::move(params),
                          std::move(resource_scheduler_client));
 }
 

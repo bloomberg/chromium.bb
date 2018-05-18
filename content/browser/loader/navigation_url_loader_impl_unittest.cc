@@ -4,6 +4,11 @@
 
 #include "content/browser/loader/navigation_url_loader_impl.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
@@ -76,13 +81,16 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
                    network::mojom::URLLoaderRequest request,
                    network::mojom::URLLoaderClientPtr client) {
     *most_recent_resource_request_ = resource_request;
+    static network::mojom::URLLoaderFactoryParams params;
+    params.process_id = network::mojom::kBrowserProcessId;
+    params.is_corb_enabled = false;
     url_loader_ = std::make_unique<network::URLLoader>(
         context_.get(), nullptr,
         base::BindOnce(&TestNavigationLoaderInterceptor::DeleteURLLoader,
                        base::Unretained(this)),
         std::move(request), 0 /* options */, resource_request,
         false /* report_raw_headers */, std::move(client),
-        TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* process_id */, 0, /* request_id */
+        TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0, /* request_id */
         resource_scheduler_client_, nullptr,
         nullptr /* network_usage_accumulator */);
   }

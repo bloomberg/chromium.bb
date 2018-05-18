@@ -6,7 +6,10 @@
 
 #include <stdint.h>
 
+#include <list>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
@@ -545,8 +548,12 @@ class SimpleURLLoaderTestBase {
     network_service_ptr->CreateNetworkContext(
         mojo::MakeRequest(&network_context_), std::move(context_params));
 
+    mojom::URLLoaderFactoryParamsPtr params =
+        mojom::URLLoaderFactoryParams::New();
+    params->process_id = mojom::kBrowserProcessId;
+    params->is_corb_enabled = false;
     network_context_->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_), 0);
+        mojo::MakeRequest(&url_loader_factory_), std::move(params));
 
     test_server_.AddDefaultHandlers(base::FilePath(FILE_PATH_LITERAL("")));
     test_server_.RegisterRequestHandler(

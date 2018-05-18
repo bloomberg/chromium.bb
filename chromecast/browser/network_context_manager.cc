@@ -52,8 +52,12 @@ void NetworkContextManager::InitializeOnIoThread() {
 void NetworkContextManager::BindRequestOnIOThread(
     network::mojom::URLLoaderFactoryRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  network_context_->CreateURLLoaderFactory(std::move(request),
-                                           0 /* process_id */);
+  auto url_loader_factory_params =
+      network::mojom::URLLoaderFactoryParams::New();
+  url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
+  url_loader_factory_params->is_corb_enabled = false;
+  network_context_->CreateURLLoaderFactory(
+      std::move(request), std::move(url_loader_factory_params));
 }
 
 network::mojom::URLLoaderFactoryPtr

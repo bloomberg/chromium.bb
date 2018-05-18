@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -156,8 +157,12 @@ class NetworkServiceTestWithService
   void StartLoadingURL(const ResourceRequest& request, uint32_t process_id) {
     client_.reset(new TestURLLoaderClient());
     mojom::URLLoaderFactoryPtr loader_factory;
+    mojom::URLLoaderFactoryParamsPtr params =
+        mojom::URLLoaderFactoryParams::New();
+    params->process_id = process_id;
+    params->is_corb_enabled = false;
     network_context_->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                             process_id);
+                                             std::move(params));
 
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader_), 1, 1, mojom::kURLLoadOptionNone, request,

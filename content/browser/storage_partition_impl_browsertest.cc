@@ -60,11 +60,16 @@ class StoragePartititionImplBrowsertest
 IN_PROC_BROWSER_TEST_P(StoragePartititionImplBrowsertest, NetworkContext) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = network::mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
   network::mojom::URLLoaderFactoryPtr loader_factory;
   BrowserContext::GetDefaultStoragePartition(
       shell()->web_contents()->GetBrowserContext())
       ->GetNetworkContext()
-      ->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory), 0);
+      ->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                               std::move(params));
 
   network::ResourceRequest request;
   network::TestURLLoaderClient client;

@@ -4,6 +4,9 @@
 
 #include "components/safe_browsing/browser/safe_browsing_network_context.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -91,8 +94,12 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
   network::mojom::URLLoaderFactory* GetURLLoaderFactory() {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     if (!url_loader_factory_ || url_loader_factory_.encountered_error()) {
+      network::mojom::URLLoaderFactoryParamsPtr params =
+          network::mojom::URLLoaderFactoryParams::New();
+      params->process_id = network::mojom::kBrowserProcessId;
+      params->is_corb_enabled = false;
       GetNetworkContext()->CreateURLLoaderFactory(
-          MakeRequest(&url_loader_factory_), 0);
+          MakeRequest(&url_loader_factory_), std::move(params));
     }
     return url_loader_factory_.get();
   }

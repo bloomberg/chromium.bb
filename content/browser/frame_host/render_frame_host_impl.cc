@@ -4257,6 +4257,14 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
 
 void RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
     network::mojom::URLLoaderFactoryRequest default_factory_request) {
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = GetProcess()->GetID();
+  // TODO(lukasza): https://crbug.com/792546: Start using CORB.
+  params->is_corb_enabled = false;
+  network::mojom::URLLoaderFactoryParamsPtr params_for_error_monitoring =
+      params->Clone();
+
   auto* context = GetSiteInstance()->GetBrowserContext();
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       this, false /* is_navigation */, &default_factory_request);
@@ -4268,11 +4276,11 @@ void RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
       BrowserContext::GetStoragePartition(context, GetSiteInstance()));
   if (g_create_network_factory_callback_for_test.Get().is_null()) {
     storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
-        std::move(default_factory_request), GetProcess()->GetID());
+        std::move(default_factory_request), std::move(params));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
     storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
-        mojo::MakeRequest(&original_factory), GetProcess()->GetID());
+        mojo::MakeRequest(&original_factory), std::move(params));
     g_create_network_factory_callback_for_test.Get().Run(
         std::move(default_factory_request), GetProcess()->GetID(),
         original_factory.PassInterface());
@@ -4283,7 +4291,7 @@ void RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
   if (IsOutOfProcessNetworkService()) {
     storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
         mojo::MakeRequest(&network_service_connection_error_handler_holder_),
-        GetProcess()->GetID());
+        std::move(params_for_error_monitoring));
     network_service_connection_error_handler_holder_
         .set_connection_error_handler(base::BindOnce(
             &RenderFrameHostImpl::UpdateSubresourceLoaderFactories,
