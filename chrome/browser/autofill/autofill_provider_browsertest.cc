@@ -89,10 +89,9 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
   AutofillProviderBrowserTest() {}
   ~AutofillProviderBrowserTest() override {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(::switches::kForceFieldTrials,
-                                    "AutofillSingleClick/Disabled");
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(features::kSingleClickAutofill);
+    InProcessBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -212,9 +211,9 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
 
  protected:
   std::unique_ptr<MockAutofillProvider> autofill_provider_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   TestAutofillClient autofill_client_;
 };
 
@@ -290,7 +289,8 @@ IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
                        LabelTagChangeImpactFormComparingWithFlagOn) {
-  scoped_feature_list_.InitAndEnableFeature(
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
       features::kAutofillSkipComparingInferredLabels);
   SetLabelChangeExpectationAndTriggerQuery();
   ChangeLabelAndCheckResult("label_id", false /*expect_forms_same*/);
@@ -298,7 +298,8 @@ IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
                        InferredLabelChangeNotImpactFormComparingWithFlagOn) {
-  scoped_feature_list_.InitAndEnableFeature(
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
       features::kAutofillSkipComparingInferredLabels);
   SetLabelChangeExpectationAndTriggerQuery();
   ChangeLabelAndCheckResult("p_id", true /*expect_forms_same*/);
@@ -306,7 +307,8 @@ IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
                        LabelTagChangeImpactFormComparingWithFlagOff) {
-  scoped_feature_list_.InitAndDisableFeature(
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
       features::kAutofillSkipComparingInferredLabels);
   SetLabelChangeExpectationAndTriggerQuery();
   ChangeLabelAndCheckResult("label_id", false /*expect_forms_same*/);
@@ -314,7 +316,8 @@ IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
                        InferredLabelChangeImpactFormComparingWithFlagOff) {
-  scoped_feature_list_.InitAndDisableFeature(
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
       features::kAutofillSkipComparingInferredLabels);
   SetLabelChangeExpectationAndTriggerQuery();
   ChangeLabelAndCheckResult("p_id", false /*expect_forms_same*/);

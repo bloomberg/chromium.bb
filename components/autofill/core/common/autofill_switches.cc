@@ -21,9 +21,6 @@ const char kDisableOfferStoreUnmaskedWalletCards[] =
 // account creation.
 const char kDisablePasswordGeneration[]     = "disable-password-generation";
 
-// The "disable" flag for kEnableSingleClickAutofill.
-const char kDisableSingleClickAutofill[]    = "disable-single-click-autofill";
-
 // Force showing the local save checkbox in the autofill dialog box for getting
 // the full credit card number for a wallet card.
 const char kEnableOfferStoreUnmaskedWalletCards[] =
@@ -32,9 +29,6 @@ const char kEnableOfferStoreUnmaskedWalletCards[] =
 // Enables password generation when we detect that the user is going through
 // account creation.
 const char kEnablePasswordGeneration[]      = "enable-password-generation";
-
-// Enables/disables suggestions without typing anything (on first click).
-const char kEnableSingleClickAutofill[]     = "enable-single-click-autofill";
 
 // Enables suggestions with substring matching instead of prefix matching.
 const char kEnableSuggestionsWithSubstringMatch[] =

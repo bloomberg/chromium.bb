@@ -88,24 +88,7 @@ size_t kWaitTimeForSelectOptionsChangesMs = 50;
 // Whether the "single click" autofill feature is enabled, through command-line
 // or field trial.
 bool IsSingleClickEnabled() {
-// On Android, default to showing the dropdown on field focus.
-// On desktop, require an extra click after field focus by default, unless the
-// experiment is active.
-#if defined(OS_ANDROID)
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableSingleClickAutofill);
-#endif
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("AutofillSingleClick");
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSingleClickAutofill))
-    return true;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSingleClickAutofill))
-    return false;
-
-  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
+  return base::FeatureList::IsEnabled(features::kSingleClickAutofill);
 }
 
 // Gets all the data list values (with corresponding label) for the given
@@ -836,13 +819,11 @@ void AutofillAgent::FormControlElementClicked(
 
   ShowSuggestionsOptions options;
   options.autofill_on_empty_values = true;
-  options.show_full_suggestion_list = element.IsAutofilled();
+  // Show full suggestions when clicking on an already-focused form field.
+  options.show_full_suggestion_list = element.IsAutofilled() || was_focused;
 
   if (!IsSingleClickEnabled()) {
-    // Show full suggestions when clicking on an already-focused form field. On
-    // the initial click (not focused yet), only show password suggestions.
-    options.show_full_suggestion_list =
-        options.show_full_suggestion_list || was_focused;
+    // On  the initial click (not focused yet), only show password suggestions.
     options.show_password_suggestions_only = !was_focused;
   }
   ShowSuggestions(element, options);

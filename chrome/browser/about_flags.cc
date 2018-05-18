@@ -1910,12 +1910,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"num-raster-threads", flag_descriptions::kNumRasterThreadsName,
      flag_descriptions::kNumRasterThreadsDescription, kOsAll,
      MULTI_VALUE_TYPE(kNumRasterThreadsChoices)},
-    {"enable-single-click-autofill",
-     flag_descriptions::kSingleClickAutofillName,
-     flag_descriptions::kSingleClickAutofillDescription, kOsAll,
-     ENABLE_DISABLE_VALUE_TYPE(
-         autofill::switches::kEnableSingleClickAutofill,
-         autofill::switches::kDisableSingleClickAutofill)},
     {"disable-cast-streaming-hw-encoding",
      flag_descriptions::kCastStreamingHwEncodingName,
      flag_descriptions::kCastStreamingHwEncodingDescription, kOsAll,
@@ -3824,6 +3818,9 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnforceMinRequiredFieldsForUpload)},
+    {"single-click-autofill", flag_descriptions::kSingleClickAutofillName,
+     flag_descriptions::kSingleClickAutofillDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kSingleClickAutofill)},
     {"enable-sync-uss-sessions", flag_descriptions::kEnableSyncUSSSessionsName,
      flag_descriptions::kEnableSyncUSSSessionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncUSSSessions)},

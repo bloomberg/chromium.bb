@@ -714,15 +714,16 @@ class AutofillSingleClickTest
       : AutofillInteractiveTestBase(std::get<0>(GetParam())),
         single_click_enabled_(std::get<1>(GetParam())) {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    AutofillInteractiveTestBase::SetUpCommandLine(command_line);
-    const char* group = single_click_enabled_ ? "Enabled" : "Disabled";
-    command_line->AppendSwitchASCII(
-        ::switches::kForceFieldTrials,
-        base::StringPrintf("AutofillSingleClick/%s", group));
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatureState(features::kSingleClickAutofill,
+                                              single_click_enabled_);
+    AutofillInteractiveTestBase::SetUp();
   }
 
-  bool single_click_enabled_;
+  const bool single_click_enabled_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Depending on whether or not AutofillSingleClick is enabled, makes sure that
