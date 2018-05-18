@@ -102,7 +102,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
             params_.quic_max_idle_time_before_crypto_handshake_seconds);
   EXPECT_FALSE(params_.quic_race_cert_verification);
   EXPECT_FALSE(params_.quic_estimate_initial_rtt);
-  EXPECT_FALSE(params_.quic_connect_using_default_network);
   EXPECT_FALSE(params_.quic_migrate_sessions_on_network_change);
   EXPECT_FALSE(params_.quic_migrate_sessions_early);
   EXPECT_FALSE(params_.quic_migrate_sessions_on_network_change_v2);
@@ -297,18 +296,6 @@ TEST_F(NetworkSessionConfiguratorTest, QuicEstimateInitialRtt) {
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.quic_estimate_initial_rtt);
-}
-
-TEST_F(NetworkSessionConfiguratorTest,
-       QuicConnectUsingDefaultNetworkFromFieldTrialParams) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["connect_using_default_network"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.quic_connect_using_default_network);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
