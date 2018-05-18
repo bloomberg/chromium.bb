@@ -1,17 +1,17 @@
-ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE invalid:true invalid:spelling invalid:grammar invalid:false invalid:unknown invalid:false
-++IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY invalid:false
-++++ROLE_SYSTEM_STATICTEXT name='invalid=true' invalid:false
-++IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY invalid:false
-++++ROLE_SYSTEM_STATICTEXT name='invalid=spelling' invalid:false
-++IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY invalid:false
-++++ROLE_SYSTEM_STATICTEXT name='invalid=grammar' invalid:false
-++IA2_ROLE_SECTION invalid:false
-++++ROLE_SYSTEM_STATICTEXT name='invalid=false' invalid:false
-++IA2_ROLE_SECTION invalid:false
-++++ROLE_SYSTEM_STATICTEXT name='invalid=<empty>' invalid:false
-++IA2_ROLE_SECTION invalid:false
-++++ROLE_SYSTEM_STATICTEXT name='invalid=<default>' invalid:false
-++IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY invalid:false
-++++ROLE_SYSTEM_STATICTEXT name='invalid=unknown' invalid:false
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE invalid:true invalid:spelling invalid:grammar invalid:unknown
+++IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY
+++++ROLE_SYSTEM_STATICTEXT name='invalid=true'
+++IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY
+++++ROLE_SYSTEM_STATICTEXT name='invalid=spelling'
+++IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY
+++++ROLE_SYSTEM_STATICTEXT name='invalid=grammar'
+++IA2_ROLE_SECTION
+++++ROLE_SYSTEM_STATICTEXT name='invalid=false'
+++IA2_ROLE_SECTION
+++++ROLE_SYSTEM_STATICTEXT name='invalid=<empty>'
+++IA2_ROLE_SECTION
+++++ROLE_SYSTEM_STATICTEXT name='invalid=<default>'
+++IA2_ROLE_SECTION IA2_STATE_INVALID_ENTRY
+++++ROLE_SYSTEM_STATICTEXT name='invalid=unknown'
 ++IA2_ROLE_FORM invalid:true
 ++++ROLE_SYSTEM_TEXT FOCUSABLE IA2_STATE_INVALID_ENTRY invalid:true

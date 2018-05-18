@@ -1,4 +1,8 @@
 rootWebArea
-++genericContainer
-++++staticText name='This is bold text'
-++++++inlineTextBox name='This is bold text'
+++paragraph
+++++staticText name='Some '
+++++++inlineTextBox name='Some '
+++++staticText name='bold' textStyle=1
+++++++inlineTextBox name='bold'
+++++staticText name=' text'
+++++++inlineTextBox name=' text'
