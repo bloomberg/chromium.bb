@@ -7961,6 +7961,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--debug",
           "--additional-driver-flag=--enable-blink-gen-property-trees"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
