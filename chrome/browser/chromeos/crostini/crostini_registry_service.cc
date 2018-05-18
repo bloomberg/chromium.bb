@@ -211,8 +211,6 @@ CrostiniRegistryService::Registration::Registration(
     const LocaleString& comment,
     const std::vector<std::string>& mime_types,
     bool no_display,
-    const std::string& startup_wm_class,
-    bool startup_notify,
     base::Time install_time,
     base::Time last_launch_time)
     : desktop_file_id(desktop_file_id),
@@ -222,8 +220,6 @@ CrostiniRegistryService::Registration::Registration(
       comment(comment),
       mime_types(mime_types),
       no_display(no_display),
-      startup_wm_class(startup_wm_class),
-      startup_notify(startup_notify),
       install_time(install_time),
       last_launch_time(last_launch_time) {
   DCHECK(name.find(std::string()) != name.end());
@@ -363,8 +359,8 @@ CrostiniRegistryService::GetRegistration(const std::string& app_id) const {
         {std::string(), kCrostiniTerminalAppName}};
     return std::make_unique<Registration>(
         "", kCrostiniDefaultVmName, kCrostiniDefaultContainerName, name,
-        Registration::LocaleString(), std::vector<std::string>(), false, "",
-        false, base::Time(),
+        Registration::LocaleString(), std::vector<std::string>(), false,
+        base::Time(),
         pref_registration ? GetTime(*pref_registration, kAppLastLaunchTimeKey)
                           : base::Time());
   }
@@ -387,18 +383,12 @@ CrostiniRegistryService::GetRegistration(const std::string& app_id) const {
       kAppMimeTypesKey, base::Value::Type::LIST);
   const base::Value* no_display = pref_registration->FindKeyOfType(
       kAppNoDisplayKey, base::Value::Type::BOOLEAN);
-  const base::Value* startup_wm_class = pref_registration->FindKeyOfType(
-      kAppStartupWMClassKey, base::Value::Type::STRING);
-  const base::Value* startup_notify = pref_registration->FindKeyOfType(
-      kAppStartupNotifyKey, base::Value::Type::BOOLEAN);
 
   return std::make_unique<Registration>(
       desktop_file_id->GetString(), vm_name->GetString(),
       container_name->GetString(), DictionaryToStringMap(name),
       DictionaryToStringMap(comment), ListToStringVector(mime_types),
       no_display->GetBool(),
-      startup_wm_class ? startup_wm_class->GetString() : "",
-      startup_notify && startup_notify->GetBool(),
       GetTime(*pref_registration, kAppInstallTimeKey),
       GetTime(*pref_registration, kAppLastLaunchTimeKey));
 }

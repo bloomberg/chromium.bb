@@ -79,8 +79,6 @@ class CrostiniRegistryService : public KeyedService {
                  const LocaleString& comment,
                  const std::vector<std::string>& mime_types,
                  bool no_display,
-                 const std::string& startup_wm_class,
-                 bool startup_notify,
                  base::Time install_time,
                  base::Time last_launch_time);
     ~Registration();
@@ -95,8 +93,6 @@ class CrostiniRegistryService : public KeyedService {
     LocaleString comment;
     std::vector<std::string> mime_types;
     bool no_display;
-    std::string startup_wm_class;
-    bool startup_notify;
 
     base::Time install_time;
     base::Time last_launch_time;
