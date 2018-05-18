@@ -44,8 +44,7 @@ void LatencyInfoSwapPromise::DidSwap() {}
 
 SwapPromise::DidNotSwapAction LatencyInfoSwapPromise::DidNotSwap(
     DidNotSwapReason reason) {
-  latency_.AddLatencyNumber(DidNotSwapReasonToLatencyComponentType(reason), 0,
-                            0);
+  latency_.AddLatencyNumber(DidNotSwapReasonToLatencyComponentType(reason), 0);
   // TODO(miletus): Turn this back on once per-event LatencyInfo tracking
   // is enabled in GPU side.
   // DCHECK(latency_.terminated);

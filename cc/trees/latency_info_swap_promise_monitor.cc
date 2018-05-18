@@ -21,7 +21,7 @@ bool AddRenderingScheduledComponent(ui::LatencyInfo* latency_info,
               : ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT;
   if (latency_info->FindLatency(type, 0, nullptr))
     return false;
-  latency_info->AddLatencyNumber(type, 0, 0);
+  latency_info->AddLatencyNumber(type, 0);
   return true;
 }
 
@@ -31,8 +31,7 @@ bool AddForwardingScrollUpdateToMainComponent(ui::LatencyInfo* latency_info) {
           nullptr))
     return false;
   latency_info->AddLatencyNumber(
-      ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT, 0,
-      latency_info->trace_id());
+      ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT, 0);
   return true;
 }
 
@@ -70,29 +69,13 @@ void LatencyInfoSwapPromiseMonitor::OnSetNeedsRedrawOnImpl() {
 
 void LatencyInfoSwapPromiseMonitor::OnForwardScrollUpdateToMainThreadOnImpl() {
   if (AddForwardingScrollUpdateToMainComponent(latency_)) {
-    int64_t new_sequence_number = 0;
-    for (ui::LatencyInfo::LatencyMap::const_iterator it =
-             latency_->latency_components().begin();
-         it != latency_->latency_components().end(); ++it) {
-      if (it->first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT) {
-        new_sequence_number =
-            ((static_cast<int64_t>(base::PlatformThread::CurrentId()) << 32) ^
-             (reinterpret_cast<uint64_t>(this) << 32)) |
-            (it->second.sequence_number & 0xffffffff);
-        if (new_sequence_number == it->second.sequence_number)
-          return;
-        break;
-      }
-    }
-    if (!new_sequence_number)
-      return;
     ui::LatencyInfo new_latency;
     new_latency.CopyLatencyFrom(
         *latency_,
         ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT);
     new_latency.AddLatencyNumberWithTraceName(
         ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, 0,
-        new_sequence_number, "ScrollUpdate");
+        "ScrollUpdate");
     std::unique_ptr<SwapPromise> swap_promise(
         new LatencyInfoSwapPromise(new_latency));
     host_impl_->QueueSwapPromiseForMainThreadScrollUpdate(

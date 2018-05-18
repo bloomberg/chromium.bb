@@ -551,8 +551,8 @@ MouseEvent::MouseEvent(const PlatformEvent& native_event)
       pointer_details_(GetMousePointerDetailsFromNative(native_event)) {
   latency()->set_source_event_type(ui::SourceEventType::MOUSE);
   latency()->AddLatencyNumberWithTimestamp(
-      INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0, time_stamp(), 1);
-  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+      INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, time_stamp(), 1);
+  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0);
   if (type() == ET_MOUSE_PRESSED || type() == ET_MOUSE_RELEASED)
     SetClickCount(GetRepeatCount(*this));
 }
@@ -622,7 +622,7 @@ MouseEvent::MouseEvent(EventType type,
   DCHECK_EQ(changed_button_flags_,
             changed_button_flags_ & kChangedButtonFlagMask);
   latency()->set_source_event_type(ui::SourceEventType::MOUSE);
-  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0);
   if (this->type() == ET_MOUSE_MOVED && IsAnyButton())
     SetType(ET_MOUSE_DRAGGED);
 }
@@ -819,8 +819,8 @@ TouchEvent::TouchEvent(const PlatformEvent& native_event)
       hovering_(false),
       pointer_details_(GetTouchPointerDetailsFromNative(native_event)) {
   latency()->AddLatencyNumberWithTimestamp(
-      INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0, time_stamp(), 1);
-  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+      INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, time_stamp(), 1);
+  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0);
 
   if (type() == ET_TOUCH_RELEASED || type() == ET_TOUCH_CANCELLED)
     should_remove_native_touch_id_mapping_ = true;
@@ -873,7 +873,7 @@ TouchEvent::TouchEvent(EventType type,
       should_remove_native_touch_id_mapping_(false),
       hovering_(false),
       pointer_details_(pointer_details) {
-  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0);
   pointer_details_.twist = angle;
 }
 
@@ -1157,8 +1157,8 @@ KeyEvent::KeyEvent(const PlatformEvent& native_event, int event_flags)
       code_(CodeFromNative(native_event)),
       is_char_(IsCharFromNative(native_event)) {
   latency()->AddLatencyNumberWithTimestamp(
-      INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0, time_stamp(), 1);
-  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+      INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, time_stamp(), 1);
+  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0);
 
   if (IsRepeated(*this))
     set_flags(flags() | ui::EF_IS_REPEAT);

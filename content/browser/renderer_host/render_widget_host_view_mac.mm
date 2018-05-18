@@ -341,7 +341,7 @@ void RenderWidgetHostViewMac::Show() {
 
   ui::LatencyInfo renderer_latency_info;
   renderer_latency_info.AddLatencyNumber(ui::TAB_SHOW_COMPONENT,
-                                         host()->GetLatencyComponentId(), 0);
+                                         host()->GetLatencyComponentId());
   renderer_latency_info.set_trace_id(++tab_show_sequence_);
   host()->WasShown(renderer_latency_info);
   TRACE_EVENT_ASYNC_BEGIN0("latency", "TabSwitching::Latency",
@@ -1405,7 +1405,7 @@ void RenderWidgetHostViewMac::OnNSViewRouteOrProcessMouseEvent(
     const blink::WebMouseEvent& const_web_event) {
   blink::WebMouseEvent web_event = const_web_event;
   ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0);
   if (ShouldRouteEvent(web_event)) {
     host()->delegate()->GetInputEventRouter()->RouteMouseEvent(this, &web_event,
                                                                latency_info);
@@ -1418,7 +1418,7 @@ void RenderWidgetHostViewMac::OnNSViewRouteOrProcessWheelEvent(
     const blink::WebMouseWheelEvent& const_web_event) {
   blink::WebMouseWheelEvent web_event = const_web_event;
   ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0);
   if (wheel_scroll_latching_enabled()) {
     mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
         web_event, ShouldRouteEvent(web_event));
@@ -1454,7 +1454,7 @@ void RenderWidgetHostViewMac::OnNSViewForwardWheelEvent(
                                                                    false);
   } else {
     ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
-    latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+    latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0);
     host()->ForwardWheelEventWithLatencyInfo(web_event, latency_info);
   }
 }

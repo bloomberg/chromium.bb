@@ -63,9 +63,6 @@ ui::mojom::LatencyComponentType UILatencyComponentTypeToMojo(
     case ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT;
-    case ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT;
     case ui::TAB_SHOW_COMPONENT:
       return ui::mojom::LatencyComponentType::TAB_SHOW_COMPONENT;
     case ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT:
@@ -151,9 +148,6 @@ ui::LatencyComponentType MojoLatencyComponentTypeToUI(
       return ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT;
     case ui::mojom::LatencyComponentType::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT:
       return ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT:
-      return ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
     case ui::mojom::LatencyComponentType::TAB_SHOW_COMPONENT:
       return ui::TAB_SHOW_COMPONENT;
     case ui::mojom::LatencyComponentType::
@@ -232,13 +226,6 @@ ui::SourceEventType MojoSourceEventTypeToUI(ui::mojom::SourceEventType type) {
 }  // namespace
 
 // static
-int64_t StructTraits<ui::mojom::LatencyComponentDataView,
-                     ui::LatencyInfo::LatencyComponent>::
-    sequence_number(const ui::LatencyInfo::LatencyComponent& component) {
-  return component.sequence_number;
-}
-
-// static
 base::TimeTicks StructTraits<ui::mojom::LatencyComponentDataView,
                              ui::LatencyInfo::LatencyComponent>::
     event_time(const ui::LatencyInfo::LatencyComponent& component) {
@@ -277,7 +264,6 @@ bool StructTraits<ui::mojom::LatencyComponentDataView,
     return false;
   if (!data.ReadLastEventTime(&out->last_event_time))
     return false;
-  out->sequence_number = data.sequence_number();
   out->event_count = data.event_count();
   return true;
 }
@@ -325,6 +311,13 @@ StructTraits<ui::mojom::LatencyInfoDataView,
 int64_t StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::trace_id(
     const ui::LatencyInfo& info) {
   return info.trace_id();
+}
+
+// static
+const ui::LatencyInfo::SnapshotMap&
+StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::snapshots(
+    const ui::LatencyInfo& info) {
+  return info.Snapshots();
 }
 
 // static
@@ -380,6 +373,8 @@ bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
   }
 
   out->trace_id_ = data.trace_id();
+  if (!data.ReadSnapshots(&out->snapshots_))
+    return false;
   out->ukm_source_id_ = data.ukm_source_id();
   out->coalesced_ = data.coalesced();
   out->began_ = data.began();

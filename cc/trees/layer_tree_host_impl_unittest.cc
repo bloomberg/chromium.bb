@@ -2601,8 +2601,7 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoomWheelBubbleBetweenViewports) {
 TEST_F(LayerTreeHostImplTest, ScrollWithSwapPromises) {
   ui::LatencyInfo latency_info;
   latency_info.set_trace_id(5);
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0,
-                                1234);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0);
   std::unique_ptr<SwapPromise> swap_promise(
       new LatencyInfoSwapPromise(latency_info));
 
@@ -10254,8 +10253,7 @@ TEST_F(LayerTreeHostImplLatencyInfoRendererTest,
   // component attached via LatencyInfoSwapPromise.
   ui::LatencyInfo latency_info;
   latency_info.set_trace_id(5);
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0,
-                                0);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0);
   std::unique_ptr<SwapPromise> swap_promise(
       new LatencyInfoSwapPromise(latency_info));
   host_impl_->active_tree()->QueuePinnedSwapPromise(std::move(swap_promise));
@@ -10310,8 +10308,7 @@ TEST_F(LayerTreeHostImplLatencyInfoUITest,
   // component attached via LatencyInfoSwapPromise.
   ui::LatencyInfo latency_info;
   latency_info.set_trace_id(5);
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0,
-                                0);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0);
   std::unique_ptr<SwapPromise> swap_promise(
       new LatencyInfoSwapPromise(latency_info));
   host_impl_->active_tree()->QueuePinnedSwapPromise(std::move(swap_promise));

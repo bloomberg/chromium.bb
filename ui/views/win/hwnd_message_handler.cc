@@ -2903,7 +2903,7 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
       ui::GetModifiersFromKeyState(), rotation_angle);
 
   event.latency()->AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0, event_time, 1);
+      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, event_time, 1);
 
   // There are cases where the code handling the message destroys the
   // window, so use the weak ptr to check if destruction occurred or not.
@@ -3023,7 +3023,6 @@ void HWNDMessageHandler::GenerateTouchEvent(ui::EventType event_type,
 
   event.latency()->AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
-      0,
       0,
       time_stamp,
       1);

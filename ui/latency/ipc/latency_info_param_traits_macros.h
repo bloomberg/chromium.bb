@@ -12,7 +12,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::LatencyComponentType,
                           ui::LATENCY_COMPONENT_TYPE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(ui::LatencyInfo::LatencyComponent)
-  IPC_STRUCT_TRAITS_MEMBER(sequence_number)
   IPC_STRUCT_TRAITS_MEMBER(event_time)
   IPC_STRUCT_TRAITS_MEMBER(event_count)
   IPC_STRUCT_TRAITS_MEMBER(first_event_time)

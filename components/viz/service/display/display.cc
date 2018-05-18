@@ -377,7 +377,7 @@ bool Display::DrawAndSwap() {
     if (scheduler_) {
       frame.metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);
       frame.metadata.latency_info.back().AddLatencyNumberWithTimestamp(
-          ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT, 0, 0,
+          ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT, 0,
           scheduler_->current_frame_time(), 1);
     }
 
@@ -417,13 +417,11 @@ bool Display::DrawAndSwap() {
       base::TimeTicks now = base::TimeTicks::Now();
       while (!frame.metadata.latency_info.empty()) {
         auto& latency = frame.metadata.latency_info.back();
-        if (latency.FindLatency(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-                                nullptr)) {
+        if (latency.Snapshots().size()) {
           stored_latency_info_.push_back(std::move(latency));
         } else {
           latency.AddLatencyNumberWithTimestamp(
-              ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, 0, now,
-              1);
+              ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, now, 1);
         }
         frame.metadata.latency_info.pop_back();
       }
@@ -490,10 +488,8 @@ void Display::DidFinishLatencyInfo(
     const std::vector<ui::LatencyInfo>& latency_info) {
   std::vector<ui::LatencyInfo> latency_info_with_snapshot_component;
   for (const auto& latency : latency_info) {
-    if (latency.FindLatency(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-                            nullptr)) {
+    if (latency.Snapshots().size())
       latency_info_with_snapshot_component.push_back(latency);
-    }
   }
 
   if (!latency_info_with_snapshot_component.empty()) {

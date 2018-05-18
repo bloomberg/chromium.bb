@@ -2016,16 +2016,16 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   ui::LatencyInfo& new_latency_info = metadata.latency_info.back();
   if (CommitToActiveTree()) {
     new_latency_info.AddLatencyNumberWithTimestamp(
-        ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT, 0, 0, frame_time, 1);
+        ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT, 0, frame_time, 1);
   } else {
     new_latency_info.AddLatencyNumberWithTimestamp(
-        ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT, 0, 0, frame_time,
+        ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT, 0, frame_time,
         1);
 
     base::TimeTicks draw_time = base::TimeTicks::Now();
     for (auto& latency : metadata.latency_info) {
       latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0, 0, draw_time, 1);
+          ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0, draw_time, 1);
     }
   }
   ui::LatencyInfo::TraceIntermediateFlowEvents(metadata.latency_info,

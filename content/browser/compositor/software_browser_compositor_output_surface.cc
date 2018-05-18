@@ -71,10 +71,10 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
   base::TimeTicks swap_time = base::TimeTicks::Now();
   for (auto& latency : frame.latency_info) {
     latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0, swap_time, 1);
+        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, swap_time, 1);
     latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0,
-        swap_time, 1);
+        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, swap_time,
+        1);
   }
 
   gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();

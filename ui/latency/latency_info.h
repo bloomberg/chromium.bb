@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -76,9 +77,6 @@ enum LatencyComponentType {
   INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT,
   // Timestamp when the event's ack is received by the RWH.
   INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT,
-  // Frame number when a browser snapshot was requested. The snapshot
-  // is taken when the rendering results actually reach the screen.
-  BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT,
   // Timestamp when a tab is requested to be shown.
   TAB_SHOW_COMPONENT,
   // Timestamp when the frame is swapped in renderer.
@@ -127,10 +125,6 @@ enum SourceEventType {
 class LatencyInfo {
  public:
   struct LatencyComponent {
-    // Nondecreasing number that can be used to determine what events happened
-    // in the component at the time this struct was sent on to the next
-    // component.
-    int64_t sequence_number;
     // Average time of events that happened in this component.
     base::TimeTicks event_time;
     // Count of events that happened in this component
@@ -147,6 +141,9 @@ class LatencyInfo {
   // component info.
   using LatencyMap = base::flat_map<std::pair<LatencyComponentType, int64_t>,
                                     LatencyComponent>;
+
+  // Map a frame sink id to the snapshot id.
+  using SnapshotMap = std::map<int64_t, int64_t>;
 
   LatencyInfo();
   LatencyInfo(const LatencyInfo& other);
@@ -179,23 +176,19 @@ class LatencyInfo {
 
   // Modifies the current sequence number for a component, and adds a new
   // sequence number with the current timestamp.
-  void AddLatencyNumber(LatencyComponentType component,
-                        int64_t id,
-                        int64_t component_sequence_number);
+  void AddLatencyNumber(LatencyComponentType component, int64_t id);
 
   // Similar to |AddLatencyNumber|, and also appends |trace_name_str| to
   // the trace event's name.
   // This function should only be called when adding a BEGIN component.
   void AddLatencyNumberWithTraceName(LatencyComponentType component,
                                      int64_t id,
-                                     int64_t component_sequence_number,
                                      const char* trace_name_str);
 
   // Modifies the current sequence number and adds a certain number of events
   // for a specific component.
   void AddLatencyNumberWithTimestamp(LatencyComponentType component,
                                      int64_t id,
-                                     int64_t component_sequence_number,
                                      base::TimeTicks time,
                                      uint32_t event_count);
 
@@ -223,6 +216,11 @@ class LatencyInfo {
     source_event_type_ = type;
   }
 
+  void AddSnapshot(int64_t frame_sink_id, int64_t snapshot_id) {
+    snapshots_[frame_sink_id] = snapshot_id;
+  }
+  const SnapshotMap& Snapshots() const { return snapshots_; }
+  void RemoveSnapshots() { snapshots_.clear(); }
   bool began() const { return began_; }
   bool terminated() const { return terminated_; }
   void set_coalesced() { coalesced_ = true; }
@@ -236,7 +234,6 @@ class LatencyInfo {
  private:
   void AddLatencyNumberWithTimestampImpl(LatencyComponentType component,
                                          int64_t id,
-                                         int64_t component_sequence_number,
                                          base::TimeTicks time,
                                          uint32_t event_count,
                                          const char* trace_name_str);
@@ -253,6 +250,8 @@ class LatencyInfo {
 
   // The unique id for matching the ASYNC_BEGIN/END trace event.
   int64_t trace_id_;
+  // Snapshot ids to be used to sync snapshot requests.
+  SnapshotMap snapshots_;
   // UKM Source id to be used for recording UKM metrics associated with this
   // event.
   ukm::SourceId ukm_source_id_;

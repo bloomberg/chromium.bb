@@ -117,7 +117,7 @@ TEST_F(EventWithLatencyInfoTest, LatencyInfoCoalescing) {
   MouseEventWithLatencyInfo mouse_0 =
       CreateMouseEvent(WebInputEvent::kMouseMove, 5.0);
   mouse_0.latency.AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0, base::TimeTicks(), 1);
+      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, base::TimeTicks(), 1);
   MouseEventWithLatencyInfo mouse_1 =
       CreateMouseEvent(WebInputEvent::kMouseMove, 10.0);
 

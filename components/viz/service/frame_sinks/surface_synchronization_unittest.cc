@@ -868,16 +868,14 @@ TEST_F(SurfaceSynchronizationTest, LimitLatencyInfo) {
   const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
   const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
   const ui::LatencyComponentType latency_type1 =
-      ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
+      ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT;
   const int64_t latency_id1 = 234;
-  const int64_t latency_sequence_number1 = 5645432;
   const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
   const int64_t latency_id2 = 31434351;
-  const int64_t latency_sequence_number2 = 663788;
 
   // Submit a frame with latency info
   ui::LatencyInfo info;
-  info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
+  info.AddLatencyNumber(latency_type1, latency_id1);
 
   CompositorFrameBuilder builder;
   builder.AddDefaultRenderPass();
@@ -897,7 +895,7 @@ TEST_F(SurfaceSynchronizationTest, LimitLatencyInfo) {
   // Submit another frame with some other latency info and a different
   // LocalSurfaceId.
   ui::LatencyInfo info2;
-  info2.AddLatencyNumber(latency_type2, latency_id2, latency_sequence_number2);
+  info2.AddLatencyNumber(latency_type2, latency_id2);
 
   builder.AddDefaultRenderPass();
   for (int i = 0; i < 60; ++i)
@@ -927,16 +925,14 @@ TEST_F(SurfaceSynchronizationTest,
   const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
   const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
   const ui::LatencyComponentType latency_type1 =
-      ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
+      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
   const int64_t latency_id1 = 234;
-  const int64_t latency_sequence_number1 = 5645432;
   const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
   const int64_t latency_id2 = 31434351;
-  const int64_t latency_sequence_number2 = 663788;
 
   // Submit a frame with latency info
   ui::LatencyInfo info;
-  info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
+  info.AddLatencyNumber(latency_type1, latency_id1);
 
   CompositorFrame frame = CompositorFrameBuilder()
                               .AddDefaultRenderPass()
@@ -955,7 +951,7 @@ TEST_F(SurfaceSynchronizationTest,
   // Submit another frame with some other latency info and a different
   // LocalSurfaceId.
   ui::LatencyInfo info2;
-  info2.AddLatencyNumber(latency_type2, latency_id2, latency_sequence_number2);
+  info2.AddLatencyNumber(latency_type2, latency_id2);
 
   CompositorFrame frame2 = CompositorFrameBuilder()
                                .AddDefaultRenderPass()
@@ -987,7 +983,6 @@ TEST_F(SurfaceSynchronizationTest,
   ui::LatencyInfo::LatencyComponent comp1;
   EXPECT_TRUE(
       aggregated_latency_info.FindLatency(latency_type1, latency_id1, &comp1));
-  EXPECT_EQ(latency_sequence_number1, comp1.sequence_number);
   EXPECT_TRUE(
       aggregated_latency_info.FindLatency(latency_type2, latency_id2, nullptr));
   EXPECT_TRUE(aggregated_latency_info.FindLatency(
@@ -1004,16 +999,14 @@ TEST_F(SurfaceSynchronizationTest,
   const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
 
   const ui::LatencyComponentType latency_type1 =
-      ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
+      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
   const int64_t latency_id1 = 234;
-  const int64_t latency_sequence_number1 = 5645432;
   const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
   const int64_t latency_id2 = 31434351;
-  const int64_t latency_sequence_number2 = 663788;
 
   // Submit a frame with no unresolved dependecy.
   ui::LatencyInfo info;
-  info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
+  info.AddLatencyNumber(latency_type1, latency_id1);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   frame.metadata.latency_info.push_back(info);
@@ -1023,7 +1016,7 @@ TEST_F(SurfaceSynchronizationTest,
 
   // Submit a frame with unresolved dependencies.
   ui::LatencyInfo info2;
-  info2.AddLatencyNumber(latency_type2, latency_id2, latency_sequence_number2);
+  info2.AddLatencyNumber(latency_type2, latency_id2);
 
   CompositorFrame frame2 = MakeCompositorFrame(
       {child_id}, empty_surface_ids(), std::vector<TransferableResource>());
@@ -1065,7 +1058,6 @@ TEST_F(SurfaceSynchronizationTest,
   ui::LatencyInfo::LatencyComponent comp1;
   EXPECT_TRUE(
       aggregated_latency_info.FindLatency(latency_type1, latency_id1, &comp1));
-  EXPECT_EQ(latency_sequence_number1, comp1.sequence_number);
   EXPECT_TRUE(
       aggregated_latency_info.FindLatency(latency_type2, latency_id2, nullptr));
   EXPECT_TRUE(aggregated_latency_info.FindLatency(
@@ -1082,16 +1074,14 @@ TEST_F(SurfaceSynchronizationTest,
   const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
 
   const ui::LatencyComponentType latency_type1 =
-      ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
+      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
   const int64_t latency_id1 = 234;
-  const int64_t latency_sequence_number1 = 5645432;
   const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
   const int64_t latency_id2 = 31434351;
-  const int64_t latency_sequence_number2 = 663788;
 
   // Submit a frame with no unresolved dependencies.
   ui::LatencyInfo info;
-  info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
+  info.AddLatencyNumber(latency_type1, latency_id1);
 
   CompositorFrame frame = MakeDefaultCompositorFrame();
   frame.metadata.latency_info.push_back(info);
@@ -1108,7 +1098,7 @@ TEST_F(SurfaceSynchronizationTest,
   // Submit a frame with a new local surface id and with unresolved
   // dependencies.
   ui::LatencyInfo info2;
-  info2.AddLatencyNumber(latency_type2, latency_id2, latency_sequence_number2);
+  info2.AddLatencyNumber(latency_type2, latency_id2);
 
   CompositorFrame frame2 = MakeCompositorFrame(
       {child_id}, empty_surface_ids(), std::vector<TransferableResource>());
@@ -1146,7 +1136,6 @@ TEST_F(SurfaceSynchronizationTest,
   ui::LatencyInfo::LatencyComponent comp1;
   EXPECT_TRUE(
       aggregated_latency_info.FindLatency(latency_type1, latency_id1, &comp1));
-  EXPECT_EQ(latency_sequence_number1, comp1.sequence_number);
   EXPECT_TRUE(
       aggregated_latency_info.FindLatency(latency_type2, latency_id2, nullptr));
   EXPECT_TRUE(aggregated_latency_info.FindLatency(
