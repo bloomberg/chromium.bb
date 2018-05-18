@@ -77,6 +77,40 @@ gen-signedexchange \
   -date 2018-03-12T05:53:20Z \
   -o test.example.org_hello.txt.htxg
 
+# Generate a "secp256r1 (== prime256v1) ecdsa with sha256" key/cert pair
+openssl ecparam -out prime256v1.key -name prime256v1 -genkey
+
+openssl req -new -sha256 -key prime256v1.key -out prime256v1-sha256.csr \
+  --subj '/CN=test.example.org/O=Test/C=US'
+
+openssl x509 -req -days 360 -in prime256v1-sha256.csr \
+  -CA ../../../../net/data/ssl/certificates/root_ca_cert.pem \
+  -out prime256v1-sha256.crt -set_serial 1
+
+# Generate a "secp384r1 ecdsa with sha256" key/cert pair for negative test
+openssl ecparam -out secp384r1.key -name secp384r1 -genkey
+
+openssl req -new -sha256 -key secp384r1.key -out secp384r1-sha256.csr \
+  --subj '/CN=test.example.org/O=Test/C=US'
+
+openssl x509 -req -days 360 -in secp384r1-sha256.csr \
+  -CA ../../../../net/data/ssl/certificates/root_ca_cert.pem \
+  -out secp384r1-sha256.crt -set_serial 1
+
+# Generate test signatures in signed_exchange_signature_verifier_unittest.cc
+./gen-signedexchange \
+  -uri https://test.example.org/test/ \
+  -content test.html \
+  -certificate ./prime256v1-sha256.crt \
+  -privateKey ./prime256v1.key \
+  -date 2018-02-06T04:45:41Z
+
+./gen-signedexchange \
+  -uri https://test.example.org/test/ \
+  -content test.html \
+  -certificate ./secp384r1-sha256.crt \
+  -privateKey ./secp384r1.key \
+  -date 2018-02-06T04:45:41Z
 
 # Install gen-certurl command from the original WICG repository [1].
 # (Note: this overwrites gen-certurl fetched from [2] in the above.)

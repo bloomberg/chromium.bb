@@ -63,7 +63,7 @@ const uint64_t kSignatureHeaderDate = 1517892341;
 const uint64_t kSignatureHeaderExpires = 1517895941;
 
 // clang-format off
-constexpr char kSignatureHeader[] =
+constexpr char kSignatureHeaderRSA[] =
     "sig; "
     "sig=*RhjjWuXi87riQUu90taBHFJgTo8XBhiCe9qTJMP7/XVPu2diRGipo06HoGsyXkidHiiW"
     "743JgoNmO7CjfeVXLXQgKDxtGidATtPsVadAT4JpBDZJWSUg5qAbWcASXjyO38Uhq9gJkeu4w"
@@ -74,6 +74,32 @@ constexpr char kSignatureHeader[] =
     "integrity=\"mi\"; "
     "certUrl=\"https://example.com/cert.msg\"; "
     "certSha256=*3wfzkF4oKGUwoQ0rE7U11FIdcA/8biGzlaACeRQQH6k; "
+    "date=1517892341; expires=1517895941";
+// clang-format on
+
+// See content/testdata/htxg/README on how to generate this data.
+// clang-format off
+constexpr char kSignatureHeaderECDSAP256[] =
+    "label; "
+    "sig=*MEYCIQDQYQAHAlpznkP/btvuNnvGY5ycO+NOOTFXsoBjF22UhAIhAMyzyMikudaQeIPYB"
+    "fh2JdqZVBwgsQ6a3Cn8lFA0XYGW; "
+    "validityUrl=\"https://example.com/resource.validity.msg\"; "
+    "integrity=\"mi\"; "
+    "certUrl=\"https://example.com/cert.msg\"; "
+    "certSha256=*CfDj40tr5B7oo6IaWwQF2L1uDgsHH0fA2YOCB7E0tAQ; "
+    "date=1517892341; expires=1517895941";
+// clang-format on
+
+// See content/testdata/htxg/README on how to generate this data.
+// clang-format off
+constexpr char kSignatureHeaderECDSAP384[] =
+    "label; "
+    "sig=*MGQCMDtOqWBsWjx1+WZta9tBpuuMJMLMwp8/eHu+PwNw95qCMMjD1xJiLIm0HUtFzdzSC"
+    "wIwVxSUD9IB2t4JIHz6IJPddqR1ex38kkSvOYSmFEwqVPRM1sqAcEtvwdpSU+cLJYbS; "
+    "validityUrl=\"https://example.com/resource.validity.msg\"; "
+    "integrity=\"mi\"; "
+    "certUrl=\"https://example.com/cert.msg\"; "
+    "certSha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA; "
     "date=1517892341; expires=1517895941";
 // clang-format on
 
@@ -94,7 +120,7 @@ constexpr char kSignatureHeaderInvalidExpires[] =
     "date=1517892341; expires=1518497142";
 // clang-format on
 
-constexpr char kCertPEM[] = R"(
+constexpr char kCertPEMRSA[] = R"(
 -----BEGIN CERTIFICATE-----
 MIID9zCCAt+gAwIBAgIUde2ndSB4271TAGDk0Ft+WuCCGnMwDQYJKoZIhvcNAQEL
 BQAwUDELMAkGA1UEBhMCSlAxEjAQBgNVBAgTCU1pbmF0by1rdTEOMAwGA1UEBxMF
@@ -120,18 +146,137 @@ U0/55zFz2OzNoAHaoBzMRxn4ZSc3+lxl0K1+cCP8ivhwkxdz/vhz5RfOjpSinxqt
 wYxI2+BLS6X5NpI=
 -----END CERTIFICATE-----)";
 
-TEST(SignedExchangeSignatureVerifier, Verify) {
-  base::Time verification_time =
-      base::Time::UnixEpoch() +
-      base::TimeDelta::FromSeconds(kSignatureHeaderDate);
+constexpr char kCertPEMECDSAP256[] = R"(
+-----BEGIN CERTIFICATE-----
+MIICQzCCASsCAQEwDQYJKoZIhvcNAQELBQAwYzELMAkGA1UEBhMCVVMxEzARBgNV
+BAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDU1vdW50YWluIFZpZXcxEDAOBgNVBAoM
+B1Rlc3QgQ0ExFTATBgNVBAMMDFRlc3QgUm9vdCBDQTAeFw0xODAzMjMwNDU3MzRa
+Fw0xOTAzMTgwNDU3MzRaMDcxGTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5vcmcxDTAL
+BgNVBAoMBFRlc3QxCzAJBgNVBAYTAlVTMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcD
+QgAECQYn3HDPPhtMv2hzyjI7E3FU89EjnzTtvLd9OP55GLAsaE/FCTWbx6rKOxF7
+O4jP0N3PsIzr+nT1lIix+HpxujANBgkqhkiG9w0BAQsFAAOCAQEAhKdVMvKm7gBz
+af6nfCkLGRo56KJasi6lJh2byF17vdqq+mSXR+jHZtsRsRZJyl+C+jaSzrT0TnMA
+kLg+U4ZnKZD5sTo7TWnRlTA4G4tOrWaq1tn89FWqe+hbvn6dEyTZ1XFPaO6hzeNH
+ZM5H+bIpngvGmP1lf7K6PtC3Tx/S938zBdQrfKz/4ZB0S5cmIyIUBnlj3PDWtLsB
+KS4wvSnjPj1EyVKxTQH1PdB2NqC4eT8bgFcryNWrkMOWdOUNhGWB55nVwI8yNPQO
+4OrKJLsDZir3v7dzcU9U1erBp4+udGFIfW86g24FX1gn3SavtO6lZt59AFLptyQ6
+LWh1CMv1aQ==
+-----END CERTIFICATE-----)";
+
+constexpr char kCertPEMECDSAP384[] = R"(
+-----BEGIN CERTIFICATE-----
+MIICYDCCAUgCAQEwDQYJKoZIhvcNAQELBQAwYzELMAkGA1UEBhMCVVMxEzARBgNV
+BAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDU1vdW50YWluIFZpZXcxEDAOBgNVBAoM
+B1Rlc3QgQ0ExFTATBgNVBAMMDFRlc3QgUm9vdCBDQTAeFw0xODA0MDkwMTUyMzVa
+Fw0xOTA0MDQwMTUyMzVaMDcxGTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5vcmcxDTAL
+BgNVBAoMBFRlc3QxCzAJBgNVBAYTAlVTMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE
+YK0FPc6B2UkDO3GHS95PLss9e82f8RdQDIZE9UPUSOJ1UISOT19j/SJq3gyoY+pK
+J818LhVe+ywgdH+tKosO6v1l2o/EffIRDjCfN/aSUuQjkkSwgyL62/9687+486z6
+MA0GCSqGSIb3DQEBCwUAA4IBAQB61Q+/68hsD5OapG+2CDsJI+oR91H+Jv+tRMby
+of47O0hJGISuAB9xcFhIcMKwBReODpBmzwSO713NNU/oaG/XysHH1TNZZodTtWD9
+Z1g5AJamfwvFS+ObqzOtyFUdFS4NBAE4lXi5XnHa2hU2Bkm+abVYLqyAGw1kh2ES
+DGC2vA1lb2Uy9bgLCYYkZoESjb/JYRQjCmqlwYKOozU7ZbIe3zJPjRWYP1Tuany5
++rYllWk/DJlMVjs/fbf0jj32vrevCgul43iWMgprOw1ncuK8l5nND/o5aN2mwMDw
+Xhe5DP7VATeQq3yGV3ps+rCTHDP6qSHDEWP7DqHQdSsxtI0E
+-----END CERTIFICATE-----)";
+
+class SignedExchangeSignatureVerifierTest : public ::testing::Test {
+ protected:
+  SignedExchangeSignatureVerifierTest() {}
+
+  const base::Time VerificationTime() {
+    return base::Time::UnixEpoch() +
+           base::TimeDelta::FromSeconds(kSignatureHeaderDate);
+  }
+
+  void TestVerifierGivenValidInput(
+      const SignedExchangeHeader& header,
+      scoped_refptr<net::X509Certificate> certificate) {
+    EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
+              SignedExchangeSignatureVerifier::Verify(
+                  header, certificate, VerificationTime(),
+                  nullptr /* devtools_proxy */));
+
+    EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
+              SignedExchangeSignatureVerifier::Verify(
+                  header, certificate,
+                  base::Time::UnixEpoch() +
+                      base::TimeDelta::FromSeconds(kSignatureHeaderDate - 1),
+                  nullptr /* devtools_proxy */
+                  ));
+
+    EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
+              SignedExchangeSignatureVerifier::Verify(
+                  header, certificate,
+                  base::Time::UnixEpoch() +
+                      base::TimeDelta::FromSeconds(kSignatureHeaderExpires),
+                  nullptr /* devtools_proxy */
+                  ));
+
+    EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
+              SignedExchangeSignatureVerifier::Verify(
+                  header, certificate,
+                  base::Time::UnixEpoch() +
+                      base::TimeDelta::FromSeconds(kSignatureHeaderExpires + 1),
+                  nullptr /* devtools_proxy */
+                  ));
+
+    SignedExchangeHeader invalid_expires_header(header);
+    auto invalid_expires_signature = SignedExchangeHeaderParser::ParseSignature(
+        kSignatureHeaderInvalidExpires, nullptr /* devtools_proxy */);
+    ASSERT_TRUE(invalid_expires_signature.has_value());
+    ASSERT_EQ(1u, invalid_expires_signature->size());
+    invalid_expires_header.SetSignatureForTesting(
+        (*invalid_expires_signature)[0]);
+    EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
+              SignedExchangeSignatureVerifier::Verify(
+                  invalid_expires_header, certificate, VerificationTime(),
+                  nullptr /* devtools_proxy */
+                  ));
+
+    SignedExchangeHeader corrupted_header(header);
+    corrupted_header.set_request_url(GURL("https://example.com/bad.html"));
+    EXPECT_EQ(SignedExchangeSignatureVerifier::Result::
+                  kErrSignatureVerificationFailed,
+              SignedExchangeSignatureVerifier::Verify(
+                  corrupted_header, certificate, VerificationTime(),
+                  nullptr /* devtools_proxy */
+                  ));
+
+    SignedExchangeHeader badsig_header(header);
+    SignedExchangeHeaderParser::Signature badsig = header.signature();
+    badsig.sig[0]++;
+    badsig_header.SetSignatureForTesting(badsig);
+    EXPECT_EQ(SignedExchangeSignatureVerifier::Result::
+                  kErrSignatureVerificationFailed,
+              SignedExchangeSignatureVerifier::Verify(
+                  badsig_header, certificate, VerificationTime(),
+                  nullptr /* devtools_proxy */
+                  ));
+
+    SignedExchangeHeader badsigsha256_header(header);
+    SignedExchangeHeaderParser::Signature badsigsha256 = header.signature();
+    badsigsha256.cert_sha256->data[0]++;
+    badsigsha256_header.SetSignatureForTesting(badsigsha256);
+    EXPECT_EQ(
+        SignedExchangeSignatureVerifier::Result::kErrCertificateSHA256Mismatch,
+        SignedExchangeSignatureVerifier::Verify(badsigsha256_header,
+                                                certificate, VerificationTime(),
+                                                nullptr /* devtools_proxy */
+                                                ));
+  }
+};
+
+TEST_F(SignedExchangeSignatureVerifierTest, VerifyRSA) {
   auto signature = SignedExchangeHeaderParser::ParseSignature(
-      kSignatureHeader, nullptr /* devtools_proxy */);
+      kSignatureHeaderRSA, nullptr /* devtools_proxy */);
   ASSERT_TRUE(signature.has_value());
   ASSERT_EQ(1u, signature->size());
 
   net::CertificateList certlist =
       net::X509Certificate::CreateCertificateListFromBytes(
-          kCertPEM, arraysize(kCertPEM), net::X509Certificate::FORMAT_AUTO);
+          kCertPEMRSA, base::size(kCertPEMRSA),
+          net::X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1u, certlist.size());
 
   SignedExchangeHeader header;
@@ -144,72 +289,62 @@ TEST(SignedExchangeSignatureVerifier, Verify) {
       "mi", "mi-sha256=4ld4G-h-sQSoLBD39ndIO15O_82NXSzq9UMFEYI02JQ");
   header.SetSignatureForTesting((*signature)[0]);
 
-  auto certificate = certlist[0];
+  TestVerifierGivenValidInput(header, certlist[0]);
+}
 
-  EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
-            SignedExchangeSignatureVerifier::Verify(
-                header, certificate, verification_time,
-                nullptr /* devtools_proxy */));
+TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
+  auto signature = SignedExchangeHeaderParser::ParseSignature(
+      kSignatureHeaderECDSAP256, nullptr /* devtools_proxy */);
+  ASSERT_TRUE(signature.has_value());
+  ASSERT_EQ(1u, signature->size());
 
-  EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
-            SignedExchangeSignatureVerifier::Verify(
-                header, certificate,
-                base::Time::UnixEpoch() +
-                    base::TimeDelta::FromSeconds(kSignatureHeaderDate - 1),
-                nullptr /* devtools_proxy */));
+  net::CertificateList certlist =
+      net::X509Certificate::CreateCertificateListFromBytes(
+          kCertPEMECDSAP256, base::size(kCertPEMECDSAP256),
+          net::X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1u, certlist.size());
 
-  EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
-            SignedExchangeSignatureVerifier::Verify(
-                header, certificate,
-                base::Time::UnixEpoch() +
-                    base::TimeDelta::FromSeconds(kSignatureHeaderExpires),
-                nullptr /* devtools_proxy */));
+  SignedExchangeHeader header;
+  header.set_request_method("GET");
+  header.set_request_url(GURL("https://test.example.org/test/"));
+  header.set_response_code(net::HTTP_OK);
+  header.AddResponseHeader("content-type", "text/html; charset=utf-8");
+  header.AddResponseHeader("content-encoding", "mi-sha256");
+  header.AddResponseHeader(
+      "mi", "mi-sha256=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RI");
 
-  EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
-            SignedExchangeSignatureVerifier::Verify(
-                header, certificate,
-                base::Time::UnixEpoch() +
-                    base::TimeDelta::FromSeconds(kSignatureHeaderExpires + 1),
-                nullptr /* devtools_proxy */));
+  header.SetSignatureForTesting((*signature)[0]);
 
-  SignedExchangeHeader invalid_expires_header(header);
-  auto invalid_expires_signature = SignedExchangeHeaderParser::ParseSignature(
-      kSignatureHeaderInvalidExpires, nullptr /* devtools_proxy */);
-  ASSERT_TRUE(invalid_expires_signature.has_value());
-  ASSERT_EQ(1u, invalid_expires_signature->size());
-  invalid_expires_header.SetSignatureForTesting(
-      (*invalid_expires_signature)[0]);
-  EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
-            SignedExchangeSignatureVerifier::Verify(
-                invalid_expires_header, certificate, verification_time,
-                nullptr /* devtools_proxy */));
+  TestVerifierGivenValidInput(header, certlist[0]);
+}
 
-  SignedExchangeHeader corrupted_header(header);
-  corrupted_header.set_request_url(GURL("https://example.com/bad.html"));
+TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP384) {
+  auto signature = SignedExchangeHeaderParser::ParseSignature(
+      kSignatureHeaderECDSAP384, nullptr /* devtools_proxy */);
+  ASSERT_TRUE(signature.has_value());
+  ASSERT_EQ(1u, signature->size());
+
+  net::CertificateList certlist =
+      net::X509Certificate::CreateCertificateListFromBytes(
+          kCertPEMECDSAP384, base::size(kCertPEMECDSAP384),
+          net::X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1u, certlist.size());
+
+  SignedExchangeHeader header;
+  header.set_request_method("GET");
+  header.set_request_url(GURL("https://test.example.org/test/"));
+  header.set_response_code(net::HTTP_OK);
+  header.AddResponseHeader("content-type", "text/html; charset=utf-8");
+  header.AddResponseHeader("content-encoding", "mi-sha256");
+  header.AddResponseHeader(
+      "mi", "mi-sha256=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RIG");
+
+  header.SetSignatureForTesting((*signature)[0]);
+
   EXPECT_EQ(
       SignedExchangeSignatureVerifier::Result::kErrSignatureVerificationFailed,
-      SignedExchangeSignatureVerifier::Verify(corrupted_header, certificate,
-                                              verification_time,
-                                              nullptr /* devtools_proxy */));
-
-  SignedExchangeHeader badsig_header(header);
-  SignedExchangeHeaderParser::Signature badsig = header.signature();
-  badsig.sig[0]++;
-  badsig_header.SetSignatureForTesting(badsig);
-  EXPECT_EQ(
-      SignedExchangeSignatureVerifier::Result::kErrSignatureVerificationFailed,
-      SignedExchangeSignatureVerifier::Verify(badsig_header, certificate,
-                                              verification_time,
-                                              nullptr /* devtools_proxy */));
-
-  SignedExchangeHeader badsigsha256_header(header);
-  SignedExchangeHeaderParser::Signature badsigsha256 = header.signature();
-  badsigsha256.cert_sha256->data[0]++;
-  badsigsha256_header.SetSignatureForTesting(badsigsha256);
-  EXPECT_EQ(
-      SignedExchangeSignatureVerifier::Result::kErrCertificateSHA256Mismatch,
-      SignedExchangeSignatureVerifier::Verify(badsigsha256_header, certificate,
-                                              verification_time,
+      SignedExchangeSignatureVerifier::Verify(header, certlist[0],
+                                              VerificationTime(),
                                               nullptr /* devtools_proxy */));
 }
 
