@@ -49,7 +49,7 @@ Polymer({
 
   observers:
       ['update_(settings.copies.value, settings.duplex.value, ' +
-       'settings.pages.value, state)'],
+       'settings.pages.value, settings.pagesPerSheet.value, state)'],
 
   /** @private */
   onPrintClick_: function() {
@@ -92,6 +92,14 @@ Polymer({
     let numSheets = numPages;
     if (!saveToPdfOrDrive && this.getSettingValue('duplex')) {
       numSheets = Math.ceil(numPages / 2);
+    }
+
+    const pagesPerSheet = parseInt(this.getSettingValue('pagesPerSheet'), 10);
+
+    if (!Number.isNaN(pagesPerSheet)) {
+      assert(pagesPerSheet > 0);
+      numSheets = Math.ceil(numSheets / pagesPerSheet);
+      numPages = Math.ceil(numPages / pagesPerSheet);
     }
 
     const copies = parseInt(this.getSettingValue('copies'), 10);
@@ -151,19 +159,10 @@ Polymer({
    * @private
    */
   getSummary_: function(labelInfo) {
-    let html = null;
-    if (labelInfo.numPages != labelInfo.numSheets) {
-      html = loadTimeData.getStringF(
-          'printPreviewSummaryFormatLong',
-          '<b>' + labelInfo.numSheets.toLocaleString() + '</b>',
-          '<b>' + labelInfo.summaryLabel + '</b>',
-          labelInfo.numPages.toLocaleString(), labelInfo.pagesLabel);
-    } else {
-      html = loadTimeData.getStringF(
-          'printPreviewSummaryFormatShort',
-          '<b>' + labelInfo.numSheets.toLocaleString() + '</b>',
-          '<b>' + labelInfo.summaryLabel + '</b>');
-    }
+    let html = loadTimeData.getStringF(
+        'printPreviewSummaryFormatShort',
+        '<b>' + labelInfo.numSheets.toLocaleString() + '</b>',
+        '<b>' + labelInfo.summaryLabel + '</b>');
 
     // Removing extra spaces from within the string.
     html = html.replace(/\s{2,}/g, ' ');
@@ -176,12 +175,6 @@ Polymer({
    * @private
    */
   getSummaryLabel_: function(labelInfo) {
-    if (labelInfo.numPages != labelInfo.numSheets) {
-      return loadTimeData.getStringF(
-          'printPreviewSummaryFormatLong', labelInfo.numSheets.toLocaleString(),
-          labelInfo.summaryLabel, labelInfo.numPages.toLocaleString(),
-          labelInfo.pagesLabel);
-    }
     return loadTimeData.getStringF(
         'printPreviewSummaryFormatShort', labelInfo.numSheets.toLocaleString(),
         labelInfo.summaryLabel);
