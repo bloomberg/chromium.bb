@@ -465,8 +465,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   // If prefs::kPasswordProtectionWarningTrigger isn't set to PASSWORD_REUSE,
   // |IsPasswordReuseProtectionConfigured(..)| returns false.
   EXPECT_EQ(PASSWORD_PROTECTION_OFF,
-            service->GetPasswordProtectionTriggerPref(
-                prefs::kPasswordProtectionWarningTrigger));
+            service->GetPasswordProtectionWarningTriggerPref());
   EXPECT_FALSE(
       ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
           profile));

@@ -613,7 +613,6 @@
         'SafeBrowsingExtendedReportingOptInAllowed',
         'SafeBrowsingWhitelistDomains',
         'PasswordProtectionWarningTrigger',
-        'PasswordProtectionRiskTrigger',
         'PasswordProtectionLoginURLs',
         'PasswordProtectionChangePasswordURL',
       ],
@@ -11546,46 +11545,6 @@
       If this policy is left unset, password protection warning will be triggered when the user reuses their Google password on a phishing site but the user will be able to change this setting.''',
     },
     {
-      'name': 'PasswordProtectionRiskTrigger',
-      'type': 'int-enum',
-      'schema': {
-        'type': 'integer',
-        'enum': [ 0, 1, 2 ],
-      },
-      'items': [
-        {
-          'name': 'PasswordProtectionRiskOff',
-          'value': 0,
-          'caption': '''Password protection at-risk account flagging is off''',
-        },
-        {
-          'name': 'PasswordProtectionRiskOnPasswordReuse',
-          'value': 1,
-          'caption': '''Password protection at-risk account flagging is triggered by password reuse''',
-        },
-        {
-          'name': 'PasswordProtectionRiskOnPhishingReuse',
-          'value': 2,
-          'caption': '''Password protection at-risk account flagging is triggered by password reuse on phishing page''',
-        },
-      ],
-      'supported_on': ['chrome.*:68-', 'chrome_os:68-'],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': True,
-      },
-      'example_value': 1,
-      'id': 412,
-      'caption': '''Password protection at-risk account flagging trigger''',
-      'tags': [],
-      'desc': '''Allows you to control the triggering of password protection at-risk account flagging. Password protection at-risk account flagging means informing Google that this account is at-risk of being hijacked.
-
-      If this policy is set to 'PasswordProtectionRiskOff', no password protection at-risk account flagging will be triggered.
-      If this policy is set to 'PasswordProtectionRiskOnPasswordReuse', password protection at-risk account flagging will be triggered when the user reuses their Google password on a non-whitelisted site.
-      If this policy is set to 'PasswordProtectionRiskOnPhishingReuse', password protection at-risk account flagging will be triggered when the user reuses their Google password on a phishing site.
-      If this policy is left unset, password protection at-risk account flagging will be triggered when the user reuses their Google password on a phishing site but the user will be able to change this setting.''',
-    },
-    {
       'id': 419,
       'name': 'RelaunchNotification',
       'tags': [],
@@ -12125,5 +12084,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   },
   'placeholders': [],
-  'deleted_policy_ids': []
+  'deleted_policy_ids': [412]
 }

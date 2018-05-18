@@ -75,11 +75,6 @@ extern const char kPasswordProtectionLoginURLs[];
 // by enterprise policy and has no effect on users who are not managed by
 // enterprise policy.
 extern const char kPasswordProtectionWarningTrigger[];
-
-// Integer indicating the password protection at-risk account flagging trigger.
-// This is managed by enterprise policy and has no effect on users who are not
-// managed by enterprise policy.
-extern const char kPasswordProtectionRiskTrigger[];
 }
 
 namespace safe_browsing {
