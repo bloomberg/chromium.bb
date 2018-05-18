@@ -93,7 +93,10 @@ metrics.umaEnabledFilter_ = function(hit) {
           hit.cancel();
         }
         metrics.enabled_ = enabled;
-        deferred.callback(enabled);
+        // TODO(sashab): We should call deferred.callback(enabled) here, but
+        // this can cause strange issues when behind certain VPNs. In the
+        // meantime, don't call anything, so Analytics is never contacted, which
+        // prevents this issue. See https://crbug.com/842880 for details.
       });
 
   return deferred;
