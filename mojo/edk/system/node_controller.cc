@@ -185,22 +185,12 @@ void NodeController::SendBrokerClientInvitation(
     }
   }
 
-#if defined(OS_WIN)
-  // On Windows, we need to duplicate the process handle because we have no
-  // control over its lifetime and it may become invalid by the time the posted
-  // task runs.
-  HANDLE dup_handle = INVALID_HANDLE_VALUE;
-  BOOL ok = ::DuplicateHandle(base::GetCurrentProcessHandle(), target_process,
-                              base::GetCurrentProcessHandle(), &dup_handle, 0,
-                              FALSE, DUPLICATE_SAME_ACCESS);
-  DPCHECK(ok);
-  target_process = dup_handle;
-#endif
-
+  ScopedProcessHandle scoped_target_process =
+      ScopedProcessHandle::CloneFrom(target_process);
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&NodeController::SendBrokerClientInvitationOnIOThread,
-                     base::Unretained(this), target_process,
+                     base::Unretained(this), std::move(scoped_target_process),
                      std::move(connection_params), temporary_node_name,
                      process_error_callback));
 }
@@ -332,7 +322,7 @@ void NodeController::NotifyBadMessageFrom(const ports::NodeName& source_node,
 }
 
 void NodeController::SendBrokerClientInvitationOnIOThread(
-    base::ProcessHandle target_process,
+    ScopedProcessHandle target_process,
     ConnectionParams connection_params,
     ports::NodeName temporary_node_name,
     const ProcessErrorCallback& process_error_callback) {
@@ -342,9 +332,9 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
   PlatformChannelPair node_channel;
   ScopedPlatformHandle server_handle = node_channel.PassServerHandle();
   // BrokerHost owns itself.
-  BrokerHost* broker_host =
-      new BrokerHost(target_process, connection_params.TakeChannelHandle(),
-                     process_error_callback);
+  BrokerHost* broker_host = new BrokerHost(
+      target_process.get(), connection_params.TakeChannelHandle(),
+      process_error_callback);
   bool channel_ok = broker_host->SendChannel(node_channel.PassClientHandle());
 
 #if defined(OS_WIN)
@@ -378,7 +368,7 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
   pending_invitations_.insert(std::make_pair(temporary_node_name, channel));
 
   channel->SetRemoteNodeName(temporary_node_name);
-  channel->SetRemoteProcessHandle(target_process);
+  channel->SetRemoteProcessHandle(std::move(target_process));
   channel->Start();
 
   channel->AcceptInvitee(name_, temporary_node_name);
@@ -796,7 +786,7 @@ void NodeController::OnAcceptInvitation(const ports::NodeName& from_node,
   scoped_refptr<NodeChannel> broker = GetBrokerChannel();
   if (broker) {
     // Inform the broker of this new client.
-    broker->AddBrokerClient(invitee_name, channel->CopyRemoteProcessHandle());
+    broker->AddBrokerClient(invitee_name, channel->CloneRemoteProcessHandle());
   } else {
     // If we have no broker, either we need to wait for one, or we *are* the
     // broker.
@@ -820,11 +810,8 @@ void NodeController::OnAcceptInvitation(const ports::NodeName& from_node,
 void NodeController::OnAddBrokerClient(const ports::NodeName& from_node,
                                        const ports::NodeName& client_name,
                                        base::ProcessHandle process_handle) {
-#if defined(OS_WIN)
-  // Scoped handle to avoid leaks on error.
-  ScopedPlatformHandle scoped_process_handle =
-      ScopedPlatformHandle(PlatformHandle(process_handle));
-#endif
+  ScopedProcessHandle scoped_process_handle(process_handle);
+
   scoped_refptr<NodeChannel> sender = GetPeerChannel(from_node);
   if (!sender) {
     DLOG(ERROR) << "Ignoring AddBrokerClient from unknown sender.";
@@ -851,10 +838,8 @@ void NodeController::OnAddBrokerClient(const ports::NodeName& from_node,
     DLOG(ERROR) << "Broker rejecting client with invalid process handle.";
     return;
   }
-  client->SetRemoteProcessHandle(scoped_process_handle.release().handle);
-#else
-  client->SetRemoteProcessHandle(process_handle);
 #endif
+  client->SetRemoteProcessHandle(std::move(scoped_process_handle));
 
   AddPeer(client_name, client, true /* start_channel */);
 
@@ -943,7 +928,7 @@ void NodeController::OnAcceptBrokerClient(const ports::NodeName& from_node,
     auto it = pending_invitations_.find(invitee_name);
     DCHECK(it != pending_invitations_.end());
     broker->AddBrokerClient(invitee_name,
-                            it->second->CopyRemoteProcessHandle());
+                            it->second->CloneRemoteProcessHandle());
     pending_broker_clients.pop();
   }
 
