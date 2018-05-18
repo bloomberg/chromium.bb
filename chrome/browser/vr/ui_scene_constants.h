@@ -103,13 +103,6 @@ static constexpr float kCloseButtonFullscreenVerticalOffset =
 static constexpr float kCloseButtonFullscreenDiameter =
     kButtonDiameterDMM * kCloseButtonFullscreenDistance;
 
-static constexpr float kLoadingIndicatorWidthDMM = 0.24f;
-static constexpr float kLoadingIndicatorHeightDMM = 0.008f;
-static constexpr float kLoadingIndicatorVerticalOffsetDMM =
-    (-kUrlBarVerticalOffsetDMM + kContentVerticalOffsetDMM -
-     kContentHeightDMM / 2 - kUrlBarHeightDMM / 2) /
-    2;
-
 static constexpr float kSceneSize = 25.0f;
 static constexpr float kSceneHeight = 4.0f;
 static constexpr int kFloorGridlineCount = 40;

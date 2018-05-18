@@ -132,6 +132,15 @@ void ContentElement::UpdateInput(const EditedText& info) {
     text_input_delegate_->UpdateInput(info.current);
 }
 
+void ContentElement::NotifyClientSizeAnimated(const gfx::SizeF& size,
+                                              int target_property_id,
+                                              cc::KeyframeModel* animation) {
+  if (target_property_id == BOUNDS && on_size_changed_callback_) {
+    on_size_changed_callback_.Run(size);
+  }
+  UiElement::NotifyClientSizeAnimated(size, target_property_id, animation);
+}
+
 bool ContentElement::OnBeginFrame(const gfx::Transform& head_pose) {
   // TODO(mthiesse): This projection matrix is always going to be a frame
   // behind when computing the content size. We'll need to address this somehow
