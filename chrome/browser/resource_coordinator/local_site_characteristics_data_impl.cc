@@ -223,8 +223,14 @@ void LocalSiteCharacteristicsDataImpl::InitWithDefaultValues(
   }
 }
 
-void LocalSiteCharacteristicsDataImpl::ClearObservations() {
+void LocalSiteCharacteristicsDataImpl::
+    ClearObservationsAndInvalidateReadOperation() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Invalidate the weak pointer that have been served, this will ensure that
+  // this object doesn't get initialized from the database after being cleared.
+  weak_factory_.InvalidateWeakPtrs();
+
   // Reset all the observations.
   InitWithDefaultValues(false);
 
@@ -234,6 +240,9 @@ void LocalSiteCharacteristicsDataImpl::ClearObservations() {
     site_characteristics_.set_last_loaded(
         TimeDeltaToInternalRepresentation(GetTickDeltaSinceEpoch()));
   }
+
+  // This object is now in a valid state and can be written in the database.
+  safe_to_write_to_db_ = true;
 }
 
 SiteFeatureUsage LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
