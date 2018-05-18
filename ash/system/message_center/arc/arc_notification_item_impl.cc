@@ -25,8 +25,6 @@ namespace ash {
 
 namespace {
 
-constexpr char kNotificationIdPrefix[] = "ARC_NOTIFICATION_";
-
 // Converts from Android notification priority to Chrome notification priority.
 // On Android, PRIORITY_DEFAULT does not pop up, so this maps PRIORITY_DEFAULT
 // to Chrome's -1 to adapt that behavior. Also, this maps PRIORITY_LOW and
@@ -63,7 +61,7 @@ ArcNotificationItemImpl::ArcNotificationItemImpl(
       message_center_(message_center),
       profile_id_(profile_id),
       notification_key_(notification_key),
-      notification_id_(kNotificationIdPrefix + notification_key_),
+      notification_id_(kArcNotificationIdPrefix + notification_key_),
       weak_ptr_factory_(this) {}
 
 ArcNotificationItemImpl::~ArcNotificationItemImpl() {

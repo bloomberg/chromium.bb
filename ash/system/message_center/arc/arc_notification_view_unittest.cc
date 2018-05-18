@@ -8,6 +8,7 @@
 #include "ash/system/message_center/arc/arc_notification_content_view.h"
 #include "ash/system/message_center/arc/arc_notification_item.h"
 #include "ash/system/message_center/arc/arc_notification_view.h"
+#include "ash/system/message_center/arc/mock_arc_notification_item.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -34,55 +35,6 @@ using message_center::Notification;
 namespace ash {
 
 namespace {
-
-constexpr char kNotificationIdPrefix[] = "ARC_NOTIFICATION_";
-
-class MockArcNotificationItem : public ArcNotificationItem {
- public:
-  MockArcNotificationItem(const std::string& notification_key)
-      : notification_key_(notification_key),
-        notification_id_(kNotificationIdPrefix + notification_key) {}
-
-  // Overriding methods for testing.
-  void Close(bool by_user) override {}
-  const gfx::ImageSkia& GetSnapshot() const override { return snapshot_; }
-  const std::string& GetNotificationKey() const override {
-    return notification_key_;
-  }
-  const std::string& GetNotificationId() const override {
-    return notification_id_;
-  }
-
-  // Overriding methods for returning dummy data or doing nothing.
-  void OnClosedFromAndroid() override {}
-  void Click() override {}
-  void ToggleExpansion() override {}
-  void OpenSettings() override {}
-  void AddObserver(Observer* observer) override {}
-  void RemoveObserver(Observer* observer) override {}
-  void IncrementWindowRefCount() override {}
-  void DecrementWindowRefCount() override {}
-  arc::mojom::ArcNotificationType GetNotificationType() const override {
-    return arc::mojom::ArcNotificationType::SIMPLE;
-  }
-  arc::mojom::ArcNotificationExpandState GetExpandState() const override {
-    return arc::mojom::ArcNotificationExpandState::FIXED_SIZE;
-  }
-  arc::mojom::ArcNotificationShownContents GetShownContents() const override {
-    return arc::mojom::ArcNotificationShownContents::CONTENTS_SHOWN;
-  }
-  gfx::Rect GetSwipeInputRect() const override { return gfx::Rect(); }
-  void OnUpdatedFromAndroid(arc::mojom::ArcNotificationDataPtr data,
-                            const std::string& app_id) override {}
-  bool IsManuallyExpandedOrCollapsed() const override { return false; }
-
- private:
-  std::string notification_key_;
-  std::string notification_id_;
-  gfx::ImageSkia snapshot_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockArcNotificationItem);
-};
 
 class TestTextInputClient : public ui::DummyTextInputClient {
  public:
