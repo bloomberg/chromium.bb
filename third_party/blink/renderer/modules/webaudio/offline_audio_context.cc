@@ -249,24 +249,27 @@ ScriptPromise OfflineAudioContext::suspendContext(ScriptState* script_state,
     return promise;
   }
 
-  // Quantize (to the lower boundary) the suspend time by the render quantum.
-  size_t frame = when * sampleRate();
-  frame -= frame % DestinationHandler().RenderQuantumFrames();
-
   // The suspend time should be earlier than the total render frame. If the
   // requested suspension time is equal to the total render frame, the promise
   // will be rejected.
-  if (total_render_frames_ <= frame) {
+  double total_render_duration = total_render_frames_ / sampleRate();
+  if (total_render_duration <= when) {
     resolver->Reject(DOMException::Create(
         kInvalidStateError,
-        "cannot schedule a suspend at frame " + String::Number(frame) + " (" +
-            String::Number(when) + " seconds) " +
-            "because it is greater than "
+        "cannot schedule a suspend at " +
+            String::NumberToStringECMAScript(when) +
+            " seconds because it is greater than "
             "or equal to the total "
             "render duration of " +
-            String::Number(total_render_frames_) + " frames"));
+            String::Number(total_render_frames_) + " frames (" +
+            String::NumberToStringECMAScript(total_render_duration) +
+            " seconds)"));
     return promise;
   }
+
+  // Quantize (to the lower boundary) the suspend time by the render quantum.
+  size_t frame = when * sampleRate();
+  frame -= frame % DestinationHandler().RenderQuantumFrames();
 
   // The specified suspend time is in the past; reject the promise.
   if (frame < CurrentSampleFrame()) {
