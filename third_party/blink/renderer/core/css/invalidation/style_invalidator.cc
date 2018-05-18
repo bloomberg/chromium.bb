@@ -341,14 +341,13 @@ ALWAYS_INLINE bool StyleInvalidator::CheckInvalidationSetsAgainstElement(
   return this_element_needs_style_recalc;
 }
 
-bool StyleInvalidator::InvalidateShadowRootChildren(
+void StyleInvalidator::InvalidateShadowRootChildren(
     Element& element,
     RecursionData& recursion_data) {
-  bool some_children_need_style_recalc = false;
   if (ShadowRoot* root = element.GetShadowRoot()) {
     if (!recursion_data.TreeBoundaryCrossing() &&
         !root->ChildNeedsStyleInvalidation() && !root->NeedsStyleInvalidation())
-      return false;
+      return;
     RecursionCheckpoint checkpoint(&recursion_data);
     SiblingData sibling_data;
     if (!recursion_data.WholeSubtreeInvalid()) {
@@ -359,35 +358,27 @@ bool StyleInvalidator::InvalidateShadowRootChildren(
     }
     for (Element* child = ElementTraversal::FirstChild(*root); child;
          child = ElementTraversal::NextSibling(*child)) {
-      bool child_recalced = Invalidate(*child, recursion_data, sibling_data);
-      some_children_need_style_recalc =
-          some_children_need_style_recalc || child_recalced;
+      Invalidate(*child, recursion_data, sibling_data);
     }
     root->ClearChildNeedsStyleInvalidation();
     root->ClearNeedsStyleInvalidation();
   }
-  return some_children_need_style_recalc;
 }
 
-bool StyleInvalidator::InvalidateChildren(Element& element,
+void StyleInvalidator::InvalidateChildren(Element& element,
                                           RecursionData& recursion_data) {
   SiblingData sibling_data;
-  bool some_children_need_style_recalc = false;
   if (UNLIKELY(!!element.GetShadowRoot())) {
-    some_children_need_style_recalc =
-        InvalidateShadowRootChildren(element, recursion_data);
+    InvalidateShadowRootChildren(element, recursion_data);
   }
 
   for (Element* child = ElementTraversal::FirstChild(element); child;
        child = ElementTraversal::NextSibling(*child)) {
-    bool child_recalced = Invalidate(*child, recursion_data, sibling_data);
-    some_children_need_style_recalc =
-        some_children_need_style_recalc || child_recalced;
+    Invalidate(*child, recursion_data, sibling_data);
   }
-  return some_children_need_style_recalc;
 }
 
-bool StyleInvalidator::Invalidate(Element& element,
+void StyleInvalidator::Invalidate(Element& element,
                                   RecursionData& recursion_data,
                                   SiblingData& sibling_data) {
   sibling_data.Advance();
@@ -397,9 +388,8 @@ bool StyleInvalidator::Invalidate(Element& element,
       element, recursion_data, sibling_data);
 
   if (recursion_data.HasInvalidationSets() ||
-      element.ChildNeedsStyleInvalidation()) {
+      element.ChildNeedsStyleInvalidation())
     InvalidateChildren(element, recursion_data);
-  }
 
   if (this_element_needs_style_recalc) {
     DCHECK(!recursion_data.WholeSubtreeInvalid());
@@ -418,8 +408,6 @@ bool StyleInvalidator::Invalidate(Element& element,
 
   element.ClearChildNeedsStyleInvalidation();
   element.ClearNeedsStyleInvalidation();
-
-  return this_element_needs_style_recalc;
 }
 
 void StyleInvalidator::InvalidateSlotDistributedElements(

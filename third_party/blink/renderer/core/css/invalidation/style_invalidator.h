@@ -141,9 +141,9 @@ class CORE_EXPORT StyleInvalidator {
     unsigned element_index_;
   };
 
-  bool Invalidate(Element&, RecursionData&, SiblingData&);
-  bool InvalidateShadowRootChildren(Element&, RecursionData&);
-  bool InvalidateChildren(Element&, RecursionData&);
+  void Invalidate(Element&, RecursionData&, SiblingData&);
+  void InvalidateShadowRootChildren(Element&, RecursionData&);
+  void InvalidateChildren(Element&, RecursionData&);
   void InvalidateSlotDistributedElements(HTMLSlotElement&,
                                          const RecursionData&) const;
   bool CheckInvalidationSetsAgainstElement(Element&,
