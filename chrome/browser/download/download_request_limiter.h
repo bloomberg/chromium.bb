@@ -223,6 +223,8 @@ class DownloadRequestLimiter
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DownloadTest, DownloadResourceThrottleCancels);
+  FRIEND_TEST_ALL_PREFIXES(DownloadTest,
+                           DownloadRequestLimiterDisallowsAnchorDownloadTag);
   FRIEND_TEST_ALL_PREFIXES(ContentSettingBubbleControllerTest, Init);
   FRIEND_TEST_ALL_PREFIXES(ContentSettingImageModelBrowserTest,
                            CreateBubbleModel);
@@ -267,6 +269,9 @@ class DownloadRequestLimiter
   static HostContentSettingsMap* GetContentSettings(
       content::WebContents* contents);
 
+  // Sets the callback for tests to know the result of OnCanDownloadDecided().
+  void SetOnCanDownloadDecidedCallbackForTesting(Callback callback);
+
   // TODO(bauerb): Change this to use WebContentsUserData.
   // Maps from tab to download state. The download state for a tab only exists
   // if the state is other than ALLOW_ONE_DOWNLOAD. Similarly once the state
@@ -274,6 +279,8 @@ class DownloadRequestLimiter
   // the TabDownloadState is removed and deleted (by way of Remove).
   typedef std::map<content::WebContents*, TabDownloadState*> StateMap;
   StateMap state_map_;
+
+  Callback on_can_download_decided_callback_;
 
   // Weak ptr factory used when |CanDownload| asks the delegate asynchronously
   // about the download.

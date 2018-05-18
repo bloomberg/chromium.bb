@@ -597,13 +597,8 @@ void DownloadManagerImpl::ResumeInterruptedDownload(
     std::unique_ptr<download::DownloadUrlParameters> params,
     uint32_t id,
     const GURL& site_url) {
-  StoragePartitionImpl* storage_partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetStoragePartitionForSite(browser_context_, site_url));
-  params->set_url_request_context_getter(
-      storage_partition->GetURLRequestContext());
   BeginDownloadInternal(std::move(params), nullptr /* blob_data_handle */,
-                        nullptr /* blob_url_loader_factory */, id,
-                        storage_partition);
+                        nullptr /* blob_url_loader_factory */, id, site_url);
 }
 
 void DownloadManagerImpl::SetDownloadItemFactoryForTesting(
@@ -722,8 +717,7 @@ void DownloadManagerImpl::InterceptNavigation(
     int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!delegate_) {
-    for (auto& observer : observers_)
-      observer.OnDownloadDropped(this);
+    DropDownload();
     return;
   }
 
@@ -787,12 +781,12 @@ void DownloadManagerImpl::DownloadUrl(
   download::RecordDownloadCountWithSource(
       download::DownloadCountTypes::DOWNLOAD_TRIGGERED_COUNT,
       params->download_source());
-  StoragePartitionImpl* storage_partition =
-      GetStoragePartition(browser_context_, params->render_process_host_id(),
-                          params->render_frame_host_routing_id());
+  auto* rfh = RenderFrameHost::FromID(params->render_process_host_id(),
+                                      params->render_frame_host_routing_id());
   BeginDownloadInternal(std::move(params), std::move(blob_data_handle),
                         std::move(blob_url_loader_factory),
-                        download::DownloadItem::kInvalidId, storage_partition);
+                        download::DownloadItem::kInvalidId,
+                        rfh ? rfh->GetSiteInstance()->GetSiteURL() : GURL());
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {
@@ -974,6 +968,12 @@ void DownloadManagerImpl::ShowDownloadInShell(
     delegate_->ShowDownloadInShell(download);
 }
 
+void DownloadManagerImpl::DropDownload() {
+  // TODO(qinmin): Add UMA for droppped download.
+  for (auto& observer : observers_)
+    observer.OnDownloadDropped(this);
+}
+
 void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
     ResourceRequestInfo::WebContentsGetter web_contents_getter,
     std::unique_ptr<network::ResourceRequest> resource_request,
@@ -983,8 +983,7 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     bool is_download_allowed) {
   if (!is_download_allowed) {
-    for (auto& observer : observers_)
-      observer.OnDownloadDropped(this);
+    DropDownload();
     return;
   }
 
@@ -1015,12 +1014,61 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
                                            false));
 }
 
+void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
+    std::unique_ptr<download::DownloadUrlParameters> params,
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+    uint32_t id,
+    const GURL& site_url,
+    bool is_download_allowed) {
+  if (!is_download_allowed) {
+    DropDownload();
+    return;
+  }
+
+  GURL tab_url, tab_referrer_url;
+  auto* rfh = RenderFrameHost::FromID(params->render_process_host_id(),
+                                      params->render_frame_host_routing_id());
+  if (rfh) {
+    auto* web_contents = WebContents::FromRenderFrameHost(rfh);
+    NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
+    if (entry) {
+      tab_url = entry->GetURL();
+      tab_referrer_url = entry->GetReferrer().url;
+    }
+  }
+
+  scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+      url_loader_factory_getter;
+  if (blob_url_loader_factory) {
+    DCHECK(params->url().SchemeIsBlob());
+    url_loader_factory_getter =
+        base::MakeRefCounted<DownloadURLLoaderFactoryGetterImpl>(
+            blob_url_loader_factory->Clone());
+  } else if (params->url().SchemeIsBlob()) {
+    url_loader_factory_getter =
+        base::MakeRefCounted<BlobDownloadURLLoaderFactoryGetter>(
+            params->url(), std::move(blob_data_handle));
+  } else {
+    StoragePartitionImpl* storage_partition =
+        static_cast<StoragePartitionImpl*>(
+            BrowserContext::GetStoragePartitionForSite(browser_context_,
+                                                       site_url));
+    url_loader_factory_getter =
+        CreateDownloadURLLoaderFactoryGetter(storage_partition, rfh, true);
+  }
+
+  in_progress_manager_->BeginDownload(std::move(params),
+                                      std::move(url_loader_factory_getter), id,
+                                      site_url, tab_url, tab_referrer_url);
+}
+
 void DownloadManagerImpl::BeginDownloadInternal(
     std::unique_ptr<download::DownloadUrlParameters> params,
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     uint32_t id,
-    StoragePartitionImpl* storage_partition) {
+    const GURL& site_url) {
   // Check if the renderer is permitted to request the requested URL.
   if (params->render_process_host_id() >= 0 &&
       !CanRequestURLFromRenderer(params->render_process_host_id(),
@@ -1033,38 +1081,40 @@ void DownloadManagerImpl::BeginDownloadInternal(
   }
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    GURL site_url, tab_url, tab_referrer_url;
     auto* rfh = RenderFrameHost::FromID(params->render_process_host_id(),
                                         params->render_frame_host_routing_id());
-    if (rfh) {
-      site_url = rfh->GetSiteInstance()->GetSiteURL();
-      auto* web_contents = WebContents::FromRenderFrameHost(rfh);
-      NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
-      if (entry) {
-        tab_url = entry->GetURL();
-        tab_referrer_url = entry->GetReferrer().url;
+    bool content_initiated = params->content_initiated();
+    // If it's from the web, we don't trust it, so we push the throttle on.
+    if (rfh && content_initiated) {
+      ResourceRequestInfo::WebContentsGetter web_contents_getter =
+          base::BindRepeating(WebContents::FromFrameTreeNodeId,
+                              rfh->GetFrameTreeNodeId());
+      const GURL& url = params->url();
+      const std::string& method = params->method();
+
+      base::OnceCallback<void(bool /* download allowed */)>
+          on_can_download_checks_done = base::BindOnce(
+              &DownloadManagerImpl::BeginResourceDownloadOnChecksComplete,
+              weak_factory_.GetWeakPtr(), std::move(params),
+              std::move(blob_data_handle), std::move(blob_url_loader_factory),
+              id, site_url);
+      if (delegate_) {
+        delegate_->CheckDownloadAllowed(std::move(web_contents_getter), url,
+                                        method,
+                                        std::move(on_can_download_checks_done));
+        return;
       }
     }
-    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-        url_loader_factory_getter;
-    if (blob_url_loader_factory) {
-      DCHECK(params->url().SchemeIsBlob());
-      url_loader_factory_getter =
-          base::MakeRefCounted<DownloadURLLoaderFactoryGetterImpl>(
-              blob_url_loader_factory->Clone());
-    } else if (params->url().SchemeIsBlob()) {
-      url_loader_factory_getter =
-          base::MakeRefCounted<BlobDownloadURLLoaderFactoryGetter>(
-              params->url(), std::move(blob_data_handle));
-    } else {
-      url_loader_factory_getter =
-          CreateDownloadURLLoaderFactoryGetter(storage_partition, rfh, true);
-    }
 
-    in_progress_manager_->BeginDownload(
-        std::move(params), std::move(url_loader_factory_getter), id, site_url,
-        tab_url, tab_referrer_url);
+    BeginResourceDownloadOnChecksComplete(
+        std::move(params), std::move(blob_data_handle),
+        std::move(blob_url_loader_factory), id, site_url,
+        rfh ? !content_initiated : true);
   } else {
+    StoragePartition* storage_partition =
+        BrowserContext::GetStoragePartitionForSite(browser_context_, site_url);
+    params->set_url_request_context_getter(
+        storage_partition->GetURLRequestContext());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&BeginDownload, std::move(params),

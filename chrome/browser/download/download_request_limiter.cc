@@ -498,6 +498,7 @@ void DownloadRequestLimiter::CanDownloadImpl(
   TabDownloadState* state =
       GetDownloadState(originating_contents, originating_contents, true);
   state->set_download_seen();
+  bool ret = true;
 
   // Always call SetDownloadStatusAndNotify since we may need to change the
   // omnibox UI even if the internal state stays the same. For instance, we want
@@ -525,6 +526,7 @@ void DownloadRequestLimiter::CanDownloadImpl(
 
     case DOWNLOADS_NOT_ALLOWED:
       state->SetDownloadStatusAndNotify(DOWNLOADS_NOT_ALLOWED);
+      ret = false;
       callback.Run(false);
       break;
 
@@ -532,21 +534,23 @@ void DownloadRequestLimiter::CanDownloadImpl(
       HostContentSettingsMap* content_settings =
           GetContentSettings(originating_contents);
       ContentSetting setting = CONTENT_SETTING_ASK;
-      if (content_settings)
+      if (content_settings) {
         setting = content_settings->GetContentSetting(
             originating_contents->GetURL(), originating_contents->GetURL(),
             CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, std::string());
+      }
       switch (setting) {
         case CONTENT_SETTING_ALLOW: {
           state->SetDownloadStatusAndNotify(ALLOW_ALL_DOWNLOADS);
           callback.Run(true);
           state->increment_download_count();
-          return;
+          break;
         }
         case CONTENT_SETTING_BLOCK: {
           state->SetDownloadStatusAndNotify(DOWNLOADS_NOT_ALLOWED);
+          ret = false;
           callback.Run(false);
-          return;
+          break;
         }
         case CONTENT_SETTING_DEFAULT:
         case CONTENT_SETTING_ASK:
@@ -565,6 +569,9 @@ void DownloadRequestLimiter::CanDownloadImpl(
     default:
       NOTREACHED();
   }
+
+  if (!on_can_download_decided_callback_.is_null())
+    on_can_download_decided_callback_.Run(ret);
 }
 
 void DownloadRequestLimiter::Remove(TabDownloadState* state,
@@ -572,4 +579,9 @@ void DownloadRequestLimiter::Remove(TabDownloadState* state,
   DCHECK(base::ContainsKey(state_map_, contents));
   state_map_.erase(contents);
   delete state;
+}
+
+void DownloadRequestLimiter::SetOnCanDownloadDecidedCallbackForTesting(
+    Callback callback) {
+  on_can_download_decided_callback_ = callback;
 }

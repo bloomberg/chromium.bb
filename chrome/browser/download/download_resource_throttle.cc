@@ -128,8 +128,10 @@ void DownloadResourceThrottle::WillDownload(bool* defer) {
     return;
   }
 
-  if (!request_allowed_)
+  if (!request_allowed_) {
+    RecordDownloadCount(CHROME_DOWNLOAD_COUNT_BLOCKED_BY_THROTTLING);
     Cancel();
+  }
 }
 
 void DownloadResourceThrottle::ContinueDownload(

@@ -42,7 +42,6 @@ class DownloadRequestHandleInterface;
 
 namespace content {
 class ResourceContext;
-class StoragePartitionImpl;
 
 class CONTENT_EXPORT DownloadManagerImpl
     : public DownloadManager,
@@ -241,13 +240,16 @@ class CONTENT_EXPORT DownloadManagerImpl
   bool IsOffTheRecord() const override;
   void ReportBytesWasted(download::DownloadItemImpl* download) override;
 
+  // Drops a download before it is created.
+  void DropDownload();
+
   // Helper method to start or resume a download.
   void BeginDownloadInternal(
       std::unique_ptr<download::DownloadUrlParameters> params,
       std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       uint32_t id,
-      StoragePartitionImpl* storage_partition);
+      const GURL& site_url);
 
   void InterceptNavigationOnChecksComplete(
       ResourceRequestInfo::WebContentsGetter web_contents_getter,
@@ -256,6 +258,13 @@ class CONTENT_EXPORT DownloadManagerImpl
       scoped_refptr<network::ResourceResponse> response,
       net::CertStatus cert_status,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      bool is_download_allowed);
+  void BeginResourceDownloadOnChecksComplete(
+      std::unique_ptr<download::DownloadUrlParameters> params,
+      std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      uint32_t id,
+      const GURL& site_url,
       bool is_download_allowed);
 
   // Factory for creation of downloads items.
