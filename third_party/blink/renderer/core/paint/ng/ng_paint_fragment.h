@@ -14,6 +14,7 @@
 namespace blink {
 
 class LayoutInline;
+struct LayoutSelectionStatus;
 struct PaintInfo;
 
 // The NGPaintFragment contains a NGPhysicalFragment and geometry in the paint
@@ -78,6 +79,9 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   LayoutRect VisualOverflowRect() const;
 
   LayoutRect PartialInvalidationRect() const override;
+
+  NGPhysicalOffsetRect ComputeLocalSelectionRect(
+      const LayoutSelectionStatus&) const;
 
   // Set ShouldDoFullPaintInvalidation flag in the corresponding LayoutObject
   // recursively.

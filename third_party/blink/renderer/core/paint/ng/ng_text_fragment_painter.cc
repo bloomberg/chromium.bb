@@ -6,8 +6,6 @@
 
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_text_decoration_offset.h"
@@ -60,35 +58,6 @@ Color SelectionBackgroundColor(const Document& document,
   return color;
 }
 
-NGPhysicalOffsetRect ExpandedSelectionRectForLineBreakIfNeeded(
-    const NGPhysicalOffsetRect& rect,
-    const NGPaintFragment& paint_fragment,
-    const LayoutSelectionStatus& selection_status) {
-  // Expand paint rect if selection covers multiple lines and
-  // this fragment is at the end of line.
-  if (selection_status.line_break == SelectLineBreak::kNotSelected)
-    return rect;
-  if (paint_fragment.GetLayoutObject()
-          ->EnclosingNGBlockFlow()
-          ->ShouldTruncateOverflowingText())
-    return rect;
-  // Copy from InlineTextBoxPainter.
-  const NGPaintFragment* container_line_box = paint_fragment.ContainerLineBox();
-  DCHECK(container_line_box);
-  const NGPhysicalLineBoxFragment& physical_line_box =
-      ToNGPhysicalLineBoxFragment(container_line_box->PhysicalFragment());
-  const LayoutUnit space_width(paint_fragment.Style().GetFont().SpaceWidth());
-  const NGPhysicalSize expanded_size(rect.size.width + space_width,
-                                     rect.size.height);
-  // TODO(yoichio): Support vertical writing mode.
-  // Consider sharing physical directional algorithm with ng_caret_rect.cc.
-  if (IsLtr(physical_line_box.BaseDirection()))
-    return NGPhysicalOffsetRect(rect.offset, expanded_size);
-  return NGPhysicalOffsetRect(
-      NGPhysicalOffset(rect.offset.left - space_width, rect.offset.top),
-      expanded_size);
-}
-
 }  // namespace
 
 NGTextFragmentPainter::NGTextFragmentPainter(
@@ -115,14 +84,11 @@ static void PaintSelection(GraphicsContext& context,
     return;
 
   GraphicsContextStateSaver state_saver(context);
-  const NGPhysicalOffsetRect& selection_rect =
-      text_fragment.LocalRect(selection_status.start, selection_status.end);
-  const NGPhysicalOffsetRect line_break_extended_rect =
-      ExpandedSelectionRectForLineBreakIfNeeded(selection_rect, paint_fragment,
-                                                selection_status);
+  const NGPhysicalOffsetRect selection_rect =
+      paint_fragment.ComputeLocalSelectionRect(selection_status);
   const NGPhysicalOffsetRect global_rect(
-      line_break_extended_rect.offset + NGPhysicalOffset(box_rect.Location()),
-      line_break_extended_rect.size);
+      selection_rect.offset + NGPhysicalOffset(box_rect.Location()),
+      selection_rect.size);
   context.FillRect(global_rect.ToFloatRect(), color);
 }
 

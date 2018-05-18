@@ -615,12 +615,16 @@ TEST_P(ParameterizedLayoutTextTest, LocalSelectionRect) {
   LoadAhem();
   // TODO(yoichio): Fix LayoutNG incompatibility.
   EXPECT_EQ(LayoutRect(10, 0, 50, 10), GetSelectionRectFor("f^oo ba|r"));
-  EXPECT_EQ(
-      LayoutNGEnabled() ? LayoutRect(0, 0, 30, 20) : LayoutRect(0, 0, 40, 20),
-      GetSelectionRectFor("<div style='width: 2em'>f^oo ba|r</div>"));
+  EXPECT_EQ(LayoutRect(0, 0, 40, 20),
+            GetSelectionRectFor("<div style='width: 2em'>f^oo ba|r</div>"));
   EXPECT_EQ(
       LayoutNGEnabled() ? LayoutRect(0, 0, 0, 0) : LayoutRect(30, 0, 10, 10),
       GetSelectionRectFor("foo^<br id='target'>|bar"));
+  EXPECT_EQ(
+      LayoutNGEnabled() ? LayoutRect(10, 0, 30, 10) : LayoutRect(10, 0, 20, 10),
+      GetSelectionRectFor("f^oo<br>b|ar"));
+  EXPECT_EQ(LayoutRect(10, 0, 30, 10),
+            GetSelectionRectFor("<div>f^oo</div><div>b|ar</div>"));
   EXPECT_EQ(LayoutRect(30, 0, 10, 10), GetSelectionRectFor("foo^ |bar"));
   EXPECT_EQ(LayoutRect(0, 0, 0, 0), GetSelectionRectFor("^ |foo"));
   EXPECT_EQ(LayoutRect(0, 0, 0, 0),

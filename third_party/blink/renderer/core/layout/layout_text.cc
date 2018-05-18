@@ -1957,11 +1957,8 @@ LayoutRect LayoutText::LocalSelectionRect() const {
           frame_selection.ComputeLayoutSelectionStatus(*fragment);
       if (status.start == status.end)
         continue;
-      // TODO(yoichio): We should consider linebreak selection. See
-      // ng_text_fragment_painter.cc::PaintSelection.
       NGPhysicalOffsetRect fragment_rect =
-          ToNGPhysicalTextFragment(fragment->PhysicalFragment())
-              .LocalRect(status.start, status.end);
+          fragment->ComputeLocalSelectionRect(status);
       fragment_rect.offset += fragment->InlineOffsetToContainerBox();
       rect.Unite(fragment_rect.ToLayoutRect());
     }
