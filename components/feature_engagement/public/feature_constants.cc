@@ -43,6 +43,10 @@ const base::Feature kIPHContextualSuggestionsFeature{
     "IPH_ContextualSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadSettingsFeature{
     "IPH_DownloadSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHDownloadInfoBarDownloadContinuingFeature{
+    "IPH_DownloadInfoBarDownloadContinuing", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHDownloadInfoBarDownloadsAreFasterFeature{
+    "IPH_DownloadInfoBarDownloadsAreFaster", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHHomePageButtonFeature{
     "IPH_HomePageButton", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)

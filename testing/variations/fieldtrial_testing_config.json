@@ -185,6 +185,46 @@
             ]
         }
     ],
+    "AndroidInProductHelpDownloadInfoBarDownloadContinuing": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Tracking",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:download_infobar_download_continuing_iph_trigger;comparator:==0;window:90;storage:360",
+                        "session_rate": "<1"
+                    },
+                    "enable_features": [
+                        "IPH_DownloadInfoBarDownloadContinuing"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AndroidInProductHelpDownloadInfoBarDownloadsAreFaster": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Tracking",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:download_infobar_downloads_are_faster_iph_trigger;comparator:==0;window:90;storage:360",
+                        "session_rate": "<1"
+                    },
+                    "enable_features": [
+                        "IPH_DownloadInfoBarDownloadsAreFaster"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidInProductHelpDownloadPage": [
         {
             "platforms": [

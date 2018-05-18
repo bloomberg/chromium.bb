@@ -35,6 +35,8 @@ extern const base::Feature kIPHContextualSearchPromotePanelOpenFeature;
 extern const base::Feature kIPHContextualSearchOptInFeature;
 extern const base::Feature kIPHContextualSuggestionsFeature;
 extern const base::Feature kIPHDownloadSettingsFeature;
+extern const base::Feature kIPHDownloadInfoBarDownloadContinuingFeature;
+extern const base::Feature kIPHDownloadInfoBarDownloadsAreFasterFeature;
 extern const base::Feature kIPHHomePageButtonFeature;
 #endif  // defined(OS_ANDROID)
 
