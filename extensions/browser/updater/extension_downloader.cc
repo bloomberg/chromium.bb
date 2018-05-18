@@ -204,12 +204,14 @@ ExtensionDownloader::ExtensionDownloader(
       delegate_(delegate),
       request_context_(request_context),
       connector_(connector),
-      manifests_queue_(&kDefaultBackoffPolicy,
-                       base::Bind(&ExtensionDownloader::CreateManifestFetcher,
-                                  base::Unretained(this))),
-      extensions_queue_(&kDefaultBackoffPolicy,
-                        base::Bind(&ExtensionDownloader::CreateExtensionFetcher,
-                                   base::Unretained(this))),
+      manifests_queue_(
+          &kDefaultBackoffPolicy,
+          base::BindRepeating(&ExtensionDownloader::CreateManifestFetcher,
+                              base::Unretained(this))),
+      extensions_queue_(
+          &kDefaultBackoffPolicy,
+          base::BindRepeating(&ExtensionDownloader::CreateExtensionFetcher,
+                              base::Unretained(this))),
       extension_cache_(NULL),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
@@ -806,9 +808,9 @@ void ExtensionDownloader::NotifyDelegateDownloadFinished(
   delegate_->OnExtensionDownloadFinished(
       CRXFileInfo(id, crx_path, package_hash), file_ownership_passed, url,
       version, ping_results_[id], request_ids,
-      from_cache ? base::Bind(&ExtensionDownloader::CacheInstallDone,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              base::Passed(&fetch_data))
+      from_cache ? base::BindRepeating(&ExtensionDownloader::CacheInstallDone,
+                                       weak_ptr_factory_.GetWeakPtr(),
+                                       base::Passed(&fetch_data))
                  : ExtensionDownloaderDelegate::InstallCallback());
   if (!from_cache)
     ping_results_.erase(id);
@@ -923,9 +925,10 @@ void ExtensionDownloader::OnCRXFetchComplete(
       const std::string& expected_hash = fetch_data->package_hash;
       extension_cache_->PutExtension(
           id, expected_hash, crx_path, version,
-          base::Bind(&ExtensionDownloader::NotifyDelegateDownloadFinished,
-                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&fetch_data),
-                     false));
+          base::BindRepeating(
+              &ExtensionDownloader::NotifyDelegateDownloadFinished,
+              weak_ptr_factory_.GetWeakPtr(), base::Passed(&fetch_data),
+              false));
     } else {
       NotifyDelegateDownloadFinished(std::move(fetch_data), false, crx_path,
                                      true);
