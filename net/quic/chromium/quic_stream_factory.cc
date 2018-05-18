@@ -728,7 +728,6 @@ QuicStreamFactory::QuicStreamFactory(
     int reduced_ping_timeout_seconds,
     int max_time_before_crypto_handshake_seconds,
     int max_idle_time_before_crypto_handshake_seconds,
-    bool connect_using_default_network,
     bool migrate_sessions_on_network_change,
     bool migrate_sessions_early,
     bool migrate_sessions_on_network_change_v2,
@@ -779,9 +778,6 @@ QuicStreamFactory::QuicStreamFactory(
       yield_after_packets_(kQuicYieldAfterPacketsRead),
       yield_after_duration_(QuicTime::Delta::FromMilliseconds(
           kQuicYieldAfterDurationMilliseconds)),
-      connect_using_default_network_(
-          connect_using_default_network &&
-          NetworkChangeNotifier::AreNetworkHandlesSupported()),
       close_sessions_on_ip_change_(close_sessions_on_ip_change),
       migrate_sessions_on_network_change_v2_(
           migrate_sessions_on_network_change_v2 &&
@@ -1402,8 +1398,6 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
     } else {
       rv = socket->ConnectUsingNetwork(network, addr);
     }
-  } else if (connect_using_default_network_) {
-    rv = socket->ConnectUsingDefaultNetwork(addr);
   } else {
     rv = socket->Connect(addr);
   }

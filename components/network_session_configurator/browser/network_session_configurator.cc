@@ -263,13 +263,6 @@ bool ShouldQuicHeadersIncludeH2StreamDependencies(
       "true");
 }
 
-bool ShouldQuicConnectUsingDefaultNetwork(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "connect_using_default_network"),
-      "true");
-}
-
 bool ShouldQuicMigrateSessionsOnNetworkChangeV2(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -405,8 +398,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
         ShouldQuicEstimateInitialRtt(quic_trial_params);
     params->quic_headers_include_h2_stream_dependency =
         ShouldQuicHeadersIncludeH2StreamDependencies(quic_trial_params);
-    params->quic_connect_using_default_network =
-        ShouldQuicConnectUsingDefaultNetwork(quic_trial_params);
     params->quic_migrate_sessions_on_network_change_v2 =
         ShouldQuicMigrateSessionsOnNetworkChangeV2(quic_trial_params);
     params->quic_migrate_sessions_early_v2 =

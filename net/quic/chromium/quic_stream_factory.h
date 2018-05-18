@@ -229,7 +229,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int reduced_ping_timeout_seconds,
       int max_time_before_crypto_handshake_seconds,
       int max_idle_time_before_crypto_handshake_seconds,
-      bool connect_using_default_network,
       bool migrate_sessions_on_network_change,
       bool migrate_sessions_early,
       bool migrate_sessions_on_network_change_v2,
@@ -521,10 +520,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // QuicChromiumPacketReader::StartReading() yields by doing a PostTask().
   int yield_after_packets_;
   QuicTime::Delta yield_after_duration_;
-
-  // Set if sockets should explicitly use default network to connect and
-  // NetworkHandle is supported.
-  const bool connect_using_default_network_;
 
   // Set if all sessions should be closed when any local IP address changes.
   const bool close_sessions_on_ip_change_;
