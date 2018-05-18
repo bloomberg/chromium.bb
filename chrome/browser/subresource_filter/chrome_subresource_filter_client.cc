@@ -121,17 +121,15 @@ void ChromeSubresourceFilterClient::OnNewNavigationStarted() {
 
 bool ChromeSubresourceFilterClient::OnPageActivationComputed(
     content::NavigationHandle* navigation_handle,
-    bool activated,
-    bool suppressing_notifications) {
+    bool activated) {
   const GURL& url(navigation_handle->GetURL());
   DCHECK(navigation_handle->IsInMainFrame());
 
   if (url.SchemeIsHTTPOrHTTPS()) {
     // With respect to persistent metadata, do not consider the site activated
-    // if it is forced via devtools, or if we are suppressing notifications.
+    // if it is forced via devtools.
     settings_manager_->ResetSiteMetadataBasedOnActivation(
-        url,
-        activated && !activated_via_devtools_ && !suppressing_notifications);
+        url, activated && !activated_via_devtools_);
   }
 
   // Return whether the activation should be whitelisted.
@@ -141,7 +139,7 @@ bool ChromeSubresourceFilterClient::OnPageActivationComputed(
          settings_manager_->GetSitePermission(url) == CONTENT_SETTING_ALLOW;
   // TODO(csharrison): Consider setting the metadata to an empty dict here if
   // the site is activated and not whitelisted. Need to be careful about various
-  // edge cases like |should_suppress_notification| and DRYRUN activation.
+  // edge cases like DRYRUN activation.
 }
 
 void ChromeSubresourceFilterClient::WhitelistInCurrentWebContents(

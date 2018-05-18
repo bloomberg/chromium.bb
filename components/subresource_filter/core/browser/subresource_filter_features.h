@@ -83,10 +83,6 @@ struct Configuration {
     // A number in the range [0, 1], indicating the fraction of page loads that
     // should have extended performance measurements enabled.
     double performance_measurement_rate = 0.0;
-
-    // Whether notifications indicating that a subresource was disallowed should
-    // be suppressed in the UI.
-    bool should_suppress_notifications = false;
   };
 
   // General settings that apply outside of the scope of a navigation.

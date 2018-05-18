@@ -222,8 +222,7 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   bool whitelisted = client_->OnPageActivationComputed(
       navigation_handle(),
       !warning && matched_configuration.activation_options.activation_level ==
-                      ActivationLevel::ENABLED,
-      matched_configuration.activation_options.should_suppress_notifications);
+                      ActivationLevel::ENABLED);
 
   // Only reset the activation decision reason if we would have activated.
   if (whitelisted && activation_decision == ActivationDecision::ACTIVATED) {

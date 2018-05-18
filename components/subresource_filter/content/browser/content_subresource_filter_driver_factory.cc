@@ -103,7 +103,6 @@ void ContentSubresourceFilterDriverFactory::NotifyPageActivationComputed(
   // This bit keeps track of BAS enforcement-style logging, not warning logging.
   state.enable_logging =
       activation_options().activation_level == ActivationLevel::ENABLED &&
-      !activation_options().should_suppress_notifications &&
       matched_configuration != Configuration::MakeForForcedActivation() &&
       base::FeatureList::IsEnabled(
           kSafeBrowsingSubresourceFilterExperimentalUI);
@@ -111,7 +110,7 @@ void ContentSubresourceFilterDriverFactory::NotifyPageActivationComputed(
   if (warning &&
       activation_options().activation_level == ActivationLevel::ENABLED) {
     DCHECK(on_commit_warning_messages_.empty());
-    SetOnCommitWarningMessages();
+    on_commit_warning_messages_.push_back(kActivationWarningConsoleMessage);
     // Do not disallow enforcement if activated via devtools.
     if (!forced_activation_via_devtools) {
       activation_decision_ = ActivationDecision::ACTIVATION_DISABLED;
@@ -132,8 +131,6 @@ void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
         "SubresourceFilter.PageLoad.ForcedActivation.DisallowedLoad", true);
     return;
   }
-  if (activation_options().should_suppress_notifications)
-    return;
   // This shouldn't happen normally, but in the rare case that an IPC from a
   // previous page arrives late we should guard against it.
   if (activation_options().activation_level != ActivationLevel::ENABLED) {
@@ -177,15 +174,6 @@ void ContentSubresourceFilterDriverFactory::DidFinishNavigation(
   for (auto& warning_message : log_messages) {
     frame_host->AddMessageToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING,
                                     warning_message);
-  }
-}
-
-void ContentSubresourceFilterDriverFactory::SetOnCommitWarningMessages() {
-  DCHECK_EQ(ActivationLevel::ENABLED, activation_options().activation_level);
-  // If the matched configuration *would have* triggered resource blocking,
-  // log a warning.
-  if (!activation_options().should_suppress_notifications) {
-    on_commit_warning_messages_.push_back(kActivationWarningConsoleMessage);
   }
 }
 

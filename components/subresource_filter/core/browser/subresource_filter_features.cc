@@ -103,10 +103,6 @@ double ParsePerformanceMeasurementRate(const std::string& rate) {
   return value < 1 ? value : 1;
 }
 
-bool ParseBool(const base::StringPiece value) {
-  return base::LowerCaseEqualsASCII(value, "true");
-}
-
 int ParseInt(const base::StringPiece value) {
   int result = 0;
   base::StringToInt(value, &result);
@@ -168,10 +164,6 @@ Configuration ParseExperimentalConfiguration(
   configuration.activation_options.performance_measurement_rate =
       ParsePerformanceMeasurementRate(TakeVariationParamOrReturnEmpty(
           params, kPerformanceMeasurementRateParameterName));
-
-  configuration.activation_options.should_suppress_notifications =
-      ParseBool(TakeVariationParamOrReturnEmpty(
-          params, kSuppressNotificationsParameterName));
 
   // GeneralSettings:
   configuration.general_settings.ruleset_flavor =
@@ -261,7 +253,6 @@ const char kActivationPriorityParameterName[] = "activation_priority";
 
 const char kPerformanceMeasurementRateParameterName[] =
     "performance_measurement_rate";
-const char kSuppressNotificationsParameterName[] = "suppress_notifications";
 const char kRulesetFlavorParameterName[] = "ruleset_flavor";
 
 const char kEnablePresetsParameterName[] = "enable_presets";
@@ -332,7 +323,6 @@ bool Configuration::operator==(const Configuration& rhs) const {
                     config.activation_conditions.forced_activation,
                     config.activation_options.activation_level,
                     config.activation_options.performance_measurement_rate,
-                    config.activation_options.should_suppress_notifications,
                     config.general_settings.ruleset_flavor);
   };
   return tie(*this) == tie(rhs);
@@ -361,8 +351,6 @@ std::unique_ptr<base::trace_event::TracedValue> Configuration::ToTracedValue()
                    StreamToString(activation_options.activation_level));
   value->SetDouble("performance_measurement_rate",
                    activation_options.performance_measurement_rate);
-  value->SetBoolean("should_suppress_notifications",
-                    activation_options.should_suppress_notifications);
   value->SetString("ruleset_flavor",
                    StreamToString(general_settings.ruleset_flavor));
   return value;

@@ -416,45 +416,6 @@ TEST_F(SubresourceFilterFeaturesTest, PerfMeasurementRate) {
   }
 }
 
-TEST_F(SubresourceFilterFeaturesTest, SuppressNotifications) {
-  const struct {
-    bool feature_enabled;
-    const char* suppress_notifications_param;
-    bool expected_suppress_notifications_value;
-  } kTestCases[] = {{false, "", false},
-                    {false, "true", false},
-                    {false, "false", false},
-                    {false, "invalid value", false},
-                    {true, "", false},
-                    {true, "false", false},
-                    {true, "invalid value", false},
-                    {true, "True", true},
-                    {true, "TRUE", true},
-                    {true, "true", true}};
-
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(::testing::Message("Enabled = ") << test_case.feature_enabled);
-    SCOPED_TRACE(::testing::Message("SuppressNotificationsParam = \"")
-                 << test_case.suppress_notifications_param << "\"");
-
-    ScopedExperimentalStateToggle scoped_experimental_state(
-        test_case.feature_enabled ? base::FeatureList::OVERRIDE_USE_DEFAULT
-                                  : base::FeatureList::OVERRIDE_DISABLE_FEATURE,
-        {{kSuppressNotificationsParameterName,
-          test_case.suppress_notifications_param}});
-
-    Configuration actual_configuration;
-    if (test_case.feature_enabled) {
-      ExpectAndRetrieveExactlyOneExtraEnabledConfig(&actual_configuration);
-    } else {
-      ExpectAndRetrieveExactlyOneEnabledConfig(&actual_configuration);
-    }
-    EXPECT_EQ(
-        test_case.expected_suppress_notifications_value,
-        actual_configuration.activation_options.should_suppress_notifications);
-  }
-}
-
 TEST_F(SubresourceFilterFeaturesTest, RulesetFlavor) {
   const struct {
     bool feature_enabled;
@@ -579,7 +540,6 @@ TEST_F(SubresourceFilterFeaturesTest, PresetForLiveRunOnBetterAdsSites) {
   EXPECT_EQ(ActivationLevel::ENABLED,
             config.activation_options.activation_level);
   EXPECT_EQ(0.0, config.activation_options.performance_measurement_rate);
-  EXPECT_FALSE(config.activation_options.should_suppress_notifications);
 }
 
 TEST_F(SubresourceFilterFeaturesTest, ConfigurationPriorities) {
