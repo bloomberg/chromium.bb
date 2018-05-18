@@ -37,9 +37,6 @@ constexpr char kUlpReadingKey[] = "reading";
 
 }  // namespace
 
-const base::Feature kUseHeuristicLanguageModel{
-    "UseHeuristicLanguageModel", base::FEATURE_DISABLED_BY_DEFAULT};
-
 bool HasBaseAndRegion(const std::string& lang, std::string* const base) {
   const std::vector<base::StringPiece> tokens = base::SplitStringPiece(
       lang, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);

@@ -4,6 +4,8 @@
 
 static_library("common") {
   sources = [
+    "language_experiments.cc",
+    "language_experiments.h",
     "locale_util.cc",
     "locale_util.h",
   ]
