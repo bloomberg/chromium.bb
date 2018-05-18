@@ -28,10 +28,28 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gl/test/gl_surface_test_support.h"
+#include "ui/wm/core/capture_controller.h"
 
 namespace ui {
 namespace ws2 {
 namespace {
+
+// Embedding contains the object necessary for an embedding. This is created
+// by way of WindowServiceTestHelper::CreateEmbededing().
+//
+// NOTE: destroying this object does not destroy the embedding.
+struct Embedding {
+  std::vector<Change>* changes() {
+    return window_tree_client.tracker()->changes();
+  }
+
+  TestWindowTreeClient window_tree_client;
+
+  // NOTE: this is owned by the WindowServiceClient that Embed() was called on.
+  WindowServiceClient* window_service_client = nullptr;
+
+  std::unique_ptr<WindowServiceClientTestHelper> helper;
+};
 
 // Sets up state needed for WindowService tests.
 class WindowServiceTestHelper {
@@ -62,6 +80,18 @@ class WindowServiceTestHelper {
     service_.reset();
     aura_test_helper_.TearDown();
     ui::TerminateContextFactoryForTests();
+  }
+
+  std::unique_ptr<Embedding> CreateEmbedding(aura::Window* embed_root,
+                                             uint32_t flags = 0) {
+    std::unique_ptr<Embedding> embedding = std::make_unique<Embedding>();
+    embedding->window_service_client = helper_->Embed(
+        embed_root, nullptr, &embedding->window_tree_client, flags);
+    if (!embedding->window_service_client)
+      return nullptr;
+    embedding->helper = std::make_unique<WindowServiceClientTestHelper>(
+        embedding->window_service_client);
+    return embedding;
   }
 
   aura::Window* root() { return aura_test_helper_.root_window(); }
@@ -523,6 +553,94 @@ TEST(WindowServiceClientTest, Capture) {
   window->Show();
   EXPECT_TRUE(helper.helper()->SetCapture(window));
   EXPECT_TRUE(helper.helper()->ReleaseCapture(window));
+}
+
+TEST(WindowServiceClientTest, CaptureNotification) {
+  WindowServiceTestHelper helper;
+  aura::Window* window = helper.helper()->NewWindow(1);
+  aura::Window* top_level = helper.helper()->NewTopLevelWindow(2);
+  top_level->AddChild(window);
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  window->Show();
+  helper.changes()->clear();
+  EXPECT_TRUE(helper.helper()->SetCapture(window));
+  EXPECT_TRUE(helper.changes()->empty());
+
+  wm::CaptureController::Get()->ReleaseCapture(window);
+  EXPECT_EQ("OnCaptureChanged new_window=null old_window=0,1",
+            SingleChangeToDescription(*(helper.changes())));
+}
+
+TEST(WindowServiceClientTest, CaptureNotificationForEmbedRoot) {
+  WindowServiceTestHelper helper;
+  aura::Window* window = helper.helper()->NewWindow(1);
+  aura::Window* top_level = helper.helper()->NewTopLevelWindow(2);
+  top_level->AddChild(window);
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  window->Show();
+  helper.changes()->clear();
+  EXPECT_TRUE(helper.helper()->SetCapture(window));
+  EXPECT_TRUE(helper.changes()->empty());
+
+  // Set capture on the embed-root from the embedded client. The embedder
+  // should be notified.
+  std::unique_ptr<Embedding> embedding = helper.CreateEmbedding(window);
+  ASSERT_TRUE(embedding);
+  helper.changes()->clear();
+  embedding->changes()->clear();
+  EXPECT_TRUE(embedding->helper->SetCapture(window));
+  EXPECT_EQ("OnCaptureChanged new_window=null old_window=0,1",
+            SingleChangeToDescription(*(helper.changes())));
+  helper.changes()->clear();
+  EXPECT_TRUE(embedding->changes()->empty());
+
+  // Set capture from the embedder. This triggers the embedded client to lose
+  // capture.
+  EXPECT_TRUE(helper.helper()->SetCapture(window));
+  EXPECT_TRUE(helper.changes()->empty());
+  // NOTE: the '2' is because the embedded client sees the high order bits of
+  // the root.
+  EXPECT_EQ("OnCaptureChanged new_window=null old_window=2,1",
+            SingleChangeToDescription(*(embedding->changes())));
+  embedding->changes()->clear();
+
+  // And release capture locally.
+  wm::CaptureController::Get()->ReleaseCapture(window);
+  EXPECT_EQ("OnCaptureChanged new_window=null old_window=0,1",
+            SingleChangeToDescription(*(helper.changes())));
+  EXPECT_TRUE(embedding->changes()->empty());
+}
+
+TEST(WindowServiceClientTest, CaptureNotificationForTopLevel) {
+  WindowServiceTestHelper helper;
+  aura::Window* top_level = helper.helper()->NewTopLevelWindow(11);
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  helper.changes()->clear();
+  EXPECT_TRUE(helper.helper()->SetCapture(top_level));
+  EXPECT_TRUE(helper.changes()->empty());
+
+  // Release capture locally.
+  wm::CaptureController* capture_controller = wm::CaptureController::Get();
+  capture_controller->ReleaseCapture(top_level);
+  EXPECT_EQ("OnCaptureChanged new_window=null old_window=0,11",
+            SingleChangeToDescription(*(helper.changes())));
+  helper.changes()->clear();
+
+  // Set capture locally.
+  capture_controller->SetCapture(top_level);
+  EXPECT_TRUE(helper.changes()->empty());
+
+  // Set capture from client.
+  EXPECT_TRUE(helper.helper()->SetCapture(top_level));
+  EXPECT_TRUE(helper.changes()->empty());
+
+  // Release locally.
+  capture_controller->ReleaseCapture(top_level);
+  EXPECT_EQ("OnCaptureChanged new_window=null old_window=0,11",
+            SingleChangeToDescription(*(helper.changes())));
 }
 
 TEST(WindowServiceClientTest, DeleteWindow) {

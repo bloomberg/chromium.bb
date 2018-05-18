@@ -20,17 +20,20 @@ WindowServiceClientBinding::~WindowServiceClientBinding() = default;
 
 void WindowServiceClientBinding::InitForEmbed(
     WindowService* window_service,
-    mojom::WindowTreeClientPtr window_tree_client,
+    mojom::WindowTreeClientPtr window_tree_client_ptr,
+    mojom::WindowTreeClient* window_tree_client,
     bool intercepts_events,
     aura::Window* initial_root,
     base::OnceClosure connection_lost_callback) {
-  window_tree_client_ = std::move(window_tree_client);
+  window_tree_client_ = std::move(window_tree_client_ptr);
   window_service_client_ = window_service->CreateWindowServiceClient(
-      window_tree_client_.get(), intercepts_events);
+      window_tree_client, intercepts_events);
   mojom::WindowTreePtr window_tree_ptr;
-  auto window_tree_request = mojo::MakeRequest(&window_tree_ptr);
-  CreateBinding(std::move(window_tree_request),
-                std::move(connection_lost_callback));
+  if (window_tree_client_) {
+    auto window_tree_request = mojo::MakeRequest(&window_tree_ptr);
+    CreateBinding(std::move(window_tree_request),
+                  std::move(connection_lost_callback));
+  }
   window_service_client_->InitForEmbed(initial_root,
                                        std::move(window_tree_ptr));
 }

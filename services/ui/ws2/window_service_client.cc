@@ -41,7 +41,9 @@ WindowServiceClient::WindowServiceClient(WindowService* window_service,
       client_id_(client_id),
       window_tree_client_(client),
       intercepts_events_(intercepts_events),
-      property_change_tracker_(std::make_unique<ClientChangeTracker>()) {}
+      property_change_tracker_(std::make_unique<ClientChangeTracker>()) {
+  wm::CaptureController::Get()->AddObserver(this);
+}
 
 void WindowServiceClient::InitForEmbed(aura::Window* root,
                                        mojom::WindowTreePtr window_tree_ptr) {
@@ -51,7 +53,8 @@ void WindowServiceClient::InitForEmbed(aura::Window* root,
   const ClientWindowId client_window_id = client_window->frame_sink_id();
   AddWindowToKnownWindows(root, client_window_id);
 
-  CreateClientRoot(root, std::move(window_tree_ptr));
+  const bool is_top_level = false;
+  CreateClientRoot(root, is_top_level, std::move(window_tree_ptr));
 }
 
 void WindowServiceClient::InitFromFactory() {
@@ -59,6 +62,7 @@ void WindowServiceClient::InitFromFactory() {
 }
 
 WindowServiceClient::~WindowServiceClient() {
+  wm::CaptureController::Get()->RemoveObserver(this);
   // Delete any WindowServiceClients created as a result of Embed(). There's
   // no point in having them outlive us given all the windows they were embedded
   // in have been destroyed.
@@ -108,6 +112,7 @@ bool WindowServiceClient::IsTopLevel(aura::Window* window) {
 
 ClientRoot* WindowServiceClient::CreateClientRoot(
     aura::Window* window,
+    bool is_top_level,
     mojom::WindowTreePtr window_tree) {
   OnWillBecomeClientRootWindow(window);
 
@@ -115,14 +120,12 @@ ClientRoot* WindowServiceClient::CreateClientRoot(
   DCHECK(client_window);
   const ClientWindowId client_window_id = client_window->frame_sink_id();
 
-  const bool for_embed = window_tree.is_bound();
-
   std::unique_ptr<ClientRoot> client_root_ptr =
-      std::make_unique<ClientRoot>(this, window, !for_embed);
+      std::make_unique<ClientRoot>(this, window, is_top_level);
   ClientRoot* client_root = client_root_ptr.get();
   client_roots_.push_back(std::move(client_root_ptr));
 
-  if (for_embed) {
+  if (!is_top_level) {
     const int64_t display_id =
         display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
     const ClientWindowId focused_window_id =
@@ -143,7 +146,7 @@ ClientRoot* WindowServiceClient::CreateClientRoot(
   client_root->FrameSinkIdChanged();
 
   // Requests for top-levels don't get OnFrameSinkIdAllocated().
-  if (for_embed) {
+  if (!is_top_level) {
     // TODO(sky): centralize FrameSinkId management.
     window_tree_client_->OnFrameSinkIdAllocated(
         ClientWindowIdToTransportId(client_window_id),
@@ -156,6 +159,14 @@ ClientRoot* WindowServiceClient::CreateClientRoot(
 void WindowServiceClient::DeleteClientRoot(ClientRoot* client_root,
                                            DeleteClientRootReason reason) {
   aura::Window* window = client_root->window();
+
+  ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
+  if (client_window->capture_owner() == this) {
+    // This client will no longer know about |window|, so it should not receive
+    // any events sent to the client.
+    client_window->set_capture_owner(nullptr);
+  }
+
   // Delete the ClientRoot first, so that we don't attempt to spam the
   // client with a bunch of notifications.
   auto iter = FindClientRootWithRoot(client_root->window());
@@ -249,6 +260,12 @@ bool WindowServiceClient::IsWindowRootOfAnotherClient(
   return client_window &&
          client_window->embedded_window_service_client() != nullptr &&
          client_window->embedded_window_service_client() != this;
+}
+
+void WindowServiceClient::OnCaptureLost(aura::Window* lost_capture) {
+  DCHECK(IsWindowKnown(lost_capture));
+  window_tree_client_->OnCaptureChanged(kInvalidTransportId,
+                                        TransportIdForWindow(lost_capture));
 }
 
 aura::Window* WindowServiceClient::AddClientCreatedWindow(
@@ -453,12 +470,26 @@ bool WindowServiceClient::SetCaptureImpl(const ClientWindowId& window_id) {
     return false;
   }
 
+  ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
+
   wm::CaptureController* capture_controller = wm::CaptureController::Get();
   DCHECK(capture_controller);
 
-  if (capture_controller->GetCaptureWindow() == window)
+  if (capture_controller->GetCaptureWindow() == window) {
+    if (client_window->capture_owner() != this) {
+      // The capture window didn't change, but the client that owns capture
+      // changed (see |ClientWindow::cpature_owner_| for details on this).
+      // Notify the current owner that it lost capture.
+      if (client_window->capture_owner())
+        client_window->capture_owner()->OnCaptureLost(window);
+      client_window->set_capture_owner(this);
+    }
     return true;
+  }
 
+  ClientChange change(property_change_tracker_.get(), window,
+                      ClientChangeType::kCapture);
+  client_window->set_capture_owner(this);
   capture_controller->SetCapture(window);
   return capture_controller->GetCaptureWindow() == window;
 }
@@ -487,6 +518,17 @@ bool WindowServiceClient::ReleaseCaptureImpl(const ClientWindowId& window_id) {
     return false;
   }
 
+  ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
+  if (client_window->capture_owner() &&
+      client_window->capture_owner() != this) {
+    // This client is trying to release capture, but it doesn't own capture.
+    DVLOG(1) << "ReleaseCapture failed (client did not request capture)";
+    return false;
+  }
+  client_window->set_capture_owner(nullptr);
+
+  ClientChange change(property_change_tracker_.get(), window,
+                      ClientChangeType::kCapture);
   capture_controller->ReleaseCapture(window);
   return capture_controller->GetCaptureWindow() != window;
 }
@@ -662,7 +704,8 @@ bool WindowServiceClient::SetWindowBoundsImpl(
 
 bool WindowServiceClient::EmbedImpl(
     const ClientWindowId& window_id,
-    mojom::WindowTreeClientPtr window_tree_client,
+    mojom::WindowTreeClientPtr window_tree_client_ptr,
+    mojom::WindowTreeClient* window_tree_client,
     uint32_t flags) {
   DVLOG(3) << "Embed window_id=" << window_id;
 
@@ -683,7 +726,7 @@ bool WindowServiceClient::EmbedImpl(
 
   auto new_client_binding = std::make_unique<WindowServiceClientBinding>();
   new_client_binding->InitForEmbed(
-      window_service_, std::move(window_tree_client),
+      window_service_, std::move(window_tree_client_ptr), window_tree_client,
       flags & mojom::kEmbedFlagEmbedderInterceptsEvents, window,
       base::BindOnce(&WindowServiceClient::OnChildBindingConnectionLost,
                      base::Unretained(this), new_client_binding.get()));
@@ -753,6 +796,44 @@ void WindowServiceClient::OnWindowDestroyed(aura::Window* window) {
   RemoveWindowFromKnownWindows(window, delete_if_owned);
 }
 
+void WindowServiceClient::OnCaptureChanged(aura::Window* lost_capture,
+                                           aura::Window* gained_capture) {
+  if (property_change_tracker_->IsProcessingChangeForWindow(
+          lost_capture, ClientChangeType::kCapture) ||
+      property_change_tracker_->IsProcessingChangeForWindow(
+          gained_capture, ClientChangeType::kCapture)) {
+    // The client initiated the change, don't notify the client.
+    return;
+  }
+
+  // Assume the environment the WindowService is running in is not requesting
+  // capture on windows created by clients. With this assumption, the only time
+  // the client needs to be notified is if the client had set capture on one of
+  // its windows, and capture changed. This might happen if the window is no
+  // longer valid for capture, or the local environment requests capture on
+  // another window.
+  if (lost_capture && (IsClientCreatedWindow(lost_capture) ||
+                       IsClientRootWindow(lost_capture))) {
+    ClientWindow* client_window = ClientWindow::GetMayBeNull(lost_capture);
+    if (client_window->capture_owner() == this) {
+      // One of the windows known to this client had capture. Notify the client
+      // of the change. If the client does not know about the window that gained
+      // capture, an invalid window id is used.
+      client_window->set_capture_owner(nullptr);
+      const Id gained_capture_id = gained_capture &&
+                                           IsWindowKnown(gained_capture) &&
+                                           !IsClientRootWindow(gained_capture)
+                                       ? TransportIdForWindow(gained_capture)
+                                       : kInvalidTransportId;
+      window_tree_client_->OnCaptureChanged(gained_capture_id,
+                                            TransportIdForWindow(lost_capture));
+    }
+  } else {
+    DCHECK(!gained_capture || !IsClientCreatedWindow(gained_capture) ||
+           IsTopLevel(gained_capture));
+  }
+}
+
 void WindowServiceClient::NewWindow(
     uint32_t change_id,
     Id transport_window_id,
@@ -804,7 +885,7 @@ void WindowServiceClient::NewTopLevelWindow(
   // This passes null for the mojom::WindowTreePtr because the client has
   // already been given the mojom::WindowTreePtr that is backed by this
   // WindowServiceClient.
-  ClientRoot* client_root = CreateClientRoot(top_level, nullptr);
+  ClientRoot* client_root = CreateClientRoot(top_level, is_top_level, nullptr);
   window_tree_client_->OnTopLevelCreated(
       change_id, WindowToWindowData(top_level), display_id,
       top_level->IsVisible(), client_root->GetLocalSurfaceId());
@@ -998,11 +1079,13 @@ void WindowServiceClient::GetWindowTree(Id window_id,
 }
 
 void WindowServiceClient::Embed(Id transport_window_id,
-                                mojom::WindowTreeClientPtr client,
+                                mojom::WindowTreeClientPtr client_ptr,
                                 uint32_t embed_flags,
                                 EmbedCallback callback) {
+  mojom::WindowTreeClient* client = client_ptr.get();
   std::move(callback).Run(EmbedImpl(MakeClientWindowId(transport_window_id),
-                                    std::move(client), embed_flags));
+                                    std::move(client_ptr), client,
+                                    embed_flags));
 }
 
 void WindowServiceClient::ScheduleEmbed(mojom::WindowTreeClientPtr client,

@@ -5,6 +5,7 @@
 #include "services/ui/ws2/window_service_client_test_helper.h"
 
 #include "services/ui/ws2/window_service_client.h"
+#include "services/ui/ws2/window_service_client_binding.h"
 
 namespace ui {
 namespace ws2 {
@@ -85,6 +86,21 @@ void WindowServiceClientTestHelper::SetWindowProperty(
   window_service_client_->SetWindowProperty(
       change_id, window_service_client_->TransportIdForWindow(window), name,
       value);
+}
+
+WindowServiceClient* WindowServiceClientTestHelper::Embed(
+    aura::Window* window,
+    mojom::WindowTreeClientPtr client_ptr,
+    mojom::WindowTreeClient* client,
+    uint32_t embed_flags) {
+  if (!window_service_client_->EmbedImpl(
+          window_service_client_->MakeClientWindowId(
+              window_service_client_->TransportIdForWindow(window)),
+          std::move(client_ptr), client, embed_flags)) {
+    return nullptr;
+  }
+  return window_service_client_->embedded_client_bindings_.back()
+      ->window_service_client();
 }
 
 void WindowServiceClientTestHelper::SetEventTargetingPolicy(

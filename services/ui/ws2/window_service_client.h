@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/ids.h"
+#include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {
@@ -55,7 +56,8 @@ class WindowServiceClientBinding;
 // WindowServiceClientBinding).
 class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
     : public mojom::WindowTree,
-      public aura::WindowObserver {
+      public aura::WindowObserver,
+      public aura::client::CaptureClientObserver {
  public:
   WindowServiceClient(WindowService* window_service,
                       ClientSpecificId client_id,
@@ -116,7 +118,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   };
 
   // Creates a new ClientRoot. The returned ClientRoot is owned by this.
+  // |is_top_level| is true if this is called from
+  // WindowTree::NewTopLevelWindow().
   ClientRoot* CreateClientRoot(aura::Window* window,
+                               bool is_top_level,
                                mojom::WindowTreePtr window_tree);
   void DeleteClientRoot(ClientRoot* client_root, DeleteClientRootReason reason);
   void DeleteClientRootWithRoot(aura::Window* window);
@@ -134,6 +139,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   // windows exposed to the client are referred to as the known windows.
   bool IsWindowKnown(aura::Window* window) const;
   bool IsWindowRootOfAnotherClient(aura::Window* window) const;
+
+  // Called when one of the windows known to the client loses capture.
+  // |lost_capture| is the window that had capture.
+  void OnCaptureLost(aura::Window* lost_capture);
 
   // Called for windows created by the client (including top-levels).
   aura::Window* AddClientCreatedWindow(
@@ -199,7 +208,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
                              const std::string& name,
                              const base::Optional<std::vector<uint8_t>>& value);
   bool EmbedImpl(const ClientWindowId& window_id,
-                 mojom::WindowTreeClientPtr window_tree_client,
+                 mojom::WindowTreeClientPtr window_tree_client_ptr,
+                 mojom::WindowTreeClient* window_tree_client,
                  uint32_t flags);
   bool SetWindowOpacityImpl(const ClientWindowId& window_id, float opacity);
   bool SetWindowBoundsImpl(
@@ -217,6 +227,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
 
   // aura::WindowObserver:
   void OnWindowDestroyed(aura::Window* window) override;
+
+  // aura::client::CaptureClientObserver:
+  void OnCaptureChanged(aura::Window* lost_capture,
+                        aura::Window* gained_capture) override;
 
   // mojom::WindowTree:
   void NewWindow(
@@ -283,7 +297,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
                      ::ui::mojom::OrderDirection direction) override;
   void GetWindowTree(Id window_id, GetWindowTreeCallback callback) override;
   void Embed(Id transport_window_id,
-             mojom::WindowTreeClientPtr client,
+             mojom::WindowTreeClientPtr client_ptr,
              uint32_t embed_flags,
              EmbedCallback callback) override;
   void ScheduleEmbed(mojom::WindowTreeClientPtr client,
