@@ -115,9 +115,6 @@ class Service : public service_manager::Service {
 
   service_manager::BinderRegistry registry_;
 
-  // Must be defined before ref counted members and members accessed in its quit
-  // closure (MaybeRequestQuitDelayed), because quit closure may be called on
-  // ref factory destruction.
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
