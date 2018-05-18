@@ -893,11 +893,11 @@ int EmbeddedWorkerInstance::worker_devtools_agent_route_id() const {
   return MSG_ROUTING_NONE;
 }
 
-void EmbeddedWorkerInstance::AddListener(Listener* listener) {
+void EmbeddedWorkerInstance::AddObserver(Listener* listener) {
   listener_list_.AddObserver(listener);
 }
 
-void EmbeddedWorkerInstance::RemoveListener(Listener* listener) {
+void EmbeddedWorkerInstance::RemoveObserver(Listener* listener) {
   listener_list_.RemoveObserver(listener);
 }
 

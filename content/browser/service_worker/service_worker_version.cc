@@ -337,7 +337,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
   DCHECK(registration);
   DCHECK(script_url_.is_valid());
   embedded_worker_ = context_->embedded_worker_registry()->CreateWorker(this);
-  embedded_worker_->AddListener(this);
+  embedded_worker_->AddObserver(this);
   context_->AddLiveVersion(this);
 }
 
@@ -360,7 +360,7 @@ ServiceWorkerVersion::~ServiceWorkerVersion() {
       running_status() == EmbeddedWorkerStatus::RUNNING) {
     embedded_worker_->Stop();
   }
-  embedded_worker_->RemoveListener(this);
+  embedded_worker_->RemoveObserver(this);
 }
 
 void ServiceWorkerVersion::SetNavigationPreloadState(
@@ -1608,10 +1608,10 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
     // EmbeddedWorkerInstance could destroy our ServiceWorkerProviderHost
     // which could in turn destroy |this|.
     scoped_refptr<ServiceWorkerVersion> protect_this(this);
-    embedded_worker_->RemoveListener(this);
+    embedded_worker_->RemoveObserver(this);
     embedded_worker_->Detach();
     embedded_worker_ = context_->embedded_worker_registry()->CreateWorker(this);
-    embedded_worker_->AddListener(this);
+    embedded_worker_->AddObserver(this);
 
     // Call OnStoppedInternal to fail callbacks and possibly restart.
     OnStoppedInternal(EmbeddedWorkerStatus::STOPPING);
