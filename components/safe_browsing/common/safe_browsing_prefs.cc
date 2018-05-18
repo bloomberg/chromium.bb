@@ -184,8 +184,6 @@ const char kPasswordProtectionLoginURLs[] =
     "safebrowsing.password_protection_login_urls";
 const char kPasswordProtectionWarningTrigger[] =
     "safebrowsing.password_protection_warning_trigger";
-const char kPasswordProtectionRiskTrigger[] =
-    "safebrowsing.password_protection_risk_trigger";
 }  // namespace prefs
 
 namespace safe_browsing {
@@ -383,8 +381,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kPasswordProtectionChangePasswordURL, "");
   registry->RegisterListPref(prefs::kPasswordProtectionLoginURLs);
   registry->RegisterIntegerPref(prefs::kPasswordProtectionWarningTrigger,
-                                PASSWORD_PROTECTION_OFF);
-  registry->RegisterIntegerPref(prefs::kPasswordProtectionRiskTrigger,
                                 PASSWORD_PROTECTION_OFF);
 }
 

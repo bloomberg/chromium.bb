@@ -241,8 +241,7 @@ bool ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
   ChromePasswordProtectionService* service =
       ChromePasswordProtectionService::GetPasswordProtectionService(profile);
   return service &&
-         service->GetPasswordProtectionTriggerPref(
-             prefs::kPasswordProtectionWarningTrigger) == PASSWORD_REUSE;
+         service->GetPasswordProtectionWarningTriggerPref() == PASSWORD_REUSE;
 }
 
 const policy::BrowserPolicyConnector*
@@ -441,8 +440,8 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
     return false;
 
   if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT) {
-    PasswordProtectionTrigger trigger_level = GetPasswordProtectionTriggerPref(
-        prefs::kPasswordProtectionWarningTrigger);
+    PasswordProtectionTrigger trigger_level =
+        GetPasswordProtectionWarningTriggerPref();
     if (trigger_level == PASSWORD_REUSE) {
       *reason = PASSWORD_ALERT_MODE;
       return false;
@@ -949,16 +948,15 @@ MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle) {
 }
 
 PasswordProtectionTrigger
-ChromePasswordProtectionService::GetPasswordProtectionTriggerPref(
-    const std::string& pref_name) const {
-  DCHECK(pref_name == prefs::kPasswordProtectionWarningTrigger ||
-         pref_name == prefs::kPasswordProtectionRiskTrigger);
+ChromePasswordProtectionService::GetPasswordProtectionWarningTriggerPref()
+    const {
   bool is_policy_managed =
       base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1) &&
-      profile_->GetPrefs()->HasPrefPath(pref_name);
+      profile_->GetPrefs()->HasPrefPath(
+          prefs::kPasswordProtectionWarningTrigger);
   PasswordProtectionTrigger trigger_level =
-      static_cast<PasswordProtectionTrigger>(
-          profile_->GetPrefs()->GetInteger(pref_name));
+      static_cast<PasswordProtectionTrigger>(profile_->GetPrefs()->GetInteger(
+          prefs::kPasswordProtectionWarningTrigger));
   PasswordReuseEvent::SyncAccountType account_type = GetSyncAccountType();
   switch (account_type) {
     case (PasswordReuseEvent::NOT_SIGNED_IN):

@@ -130,11 +130,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   bool UserClickedThroughSBInterstitial(
       content::WebContents* web_contents) override;
 
-  // For preference of |pref_name| is not managed by enterprise policy, this
-  // function should always return PHISHING_REUSE. Otherwise, returns the
-  // specified pref value.
-  PasswordProtectionTrigger GetPasswordProtectionTriggerPref(
-      const std::string& pref_name) const override;
+  // If |prefs::kPasswordProtectionWarningTrigger| is not managed by enterprise
+  // policy, this function should always return PHISHING_REUSE. Otherwise,
+  // returns the specified pref value.
+  PasswordProtectionTrigger GetPasswordProtectionWarningTriggerPref()
+      const override;
 
   // If change password URL is specified in preference, gets the pref value,
   // otherwise, gets the GAIA change password URL based on |account_info_|.

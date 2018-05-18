@@ -26,9 +26,8 @@ class MockPasswordProtectionService : public PasswordProtectionService {
                          PasswordReuseEvent::SyncAccountType());
   MOCK_CONST_METHOD0(GetBrowserPolicyConnector,
                      const policy::BrowserPolicyConnector*());
-  MOCK_CONST_METHOD1(
-      GetPasswordProtectionTriggerPref,
-      safe_browsing::PasswordProtectionTrigger(const std::string& pref_name));
+  MOCK_CONST_METHOD0(GetPasswordProtectionWarningTriggerPref,
+                     safe_browsing::PasswordProtectionTrigger());
   MOCK_CONST_METHOD2(IsURLWhitelistedForPasswordEntry,
                      bool(const GURL&, RequestOutcome*));
 

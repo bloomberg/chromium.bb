@@ -240,9 +240,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Returns if the event logging is enabled.
   bool IsEventLoggingEnabled();
 
-  // Returns the pref value of password protection trigger.
-  virtual PasswordProtectionTrigger GetPasswordProtectionTriggerPref(
-      const std::string& pref_name) const = 0;
+  // Returns the pref value of password protection warning trigger.
+  virtual PasswordProtectionTrigger GetPasswordProtectionWarningTriggerPref()
+      const = 0;
 
   // If |url| matches Safe Browsing whitelist domains, password protection
   // change password URL, or password protection login URLs in the enterprise

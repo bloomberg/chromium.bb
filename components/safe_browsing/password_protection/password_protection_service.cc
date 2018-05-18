@@ -848,13 +848,12 @@ bool PasswordProtectionService::IsModalWarningShowingInWebContents(
 }
 
 bool PasswordProtectionService::IsWarningEnabled() {
-  return GetPasswordProtectionTriggerPref(
-             prefs::kPasswordProtectionWarningTrigger) == PHISHING_REUSE;
+  return GetPasswordProtectionWarningTriggerPref() == PHISHING_REUSE;
 }
 
 bool PasswordProtectionService::IsEventLoggingEnabled() {
-  return GetPasswordProtectionTriggerPref(
-             prefs::kPasswordProtectionRiskTrigger) == PHISHING_REUSE;
+  return GetSyncAccountType() !=
+         LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN;
 }
 
 }  // namespace safe_browsing
