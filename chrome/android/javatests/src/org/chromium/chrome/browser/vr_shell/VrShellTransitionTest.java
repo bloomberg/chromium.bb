@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -369,6 +370,7 @@ public class VrShellTransitionTest {
      * Tests that attempting to start an Activity through the Activity context in VR triggers DOFF.
      */
     @Test
+    @DisabledTest(message = "https://crbug.com/831589")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @MediumTest
     public void testStartActivityTriggersDoffChromeActivity()
@@ -381,6 +383,7 @@ public class VrShellTransitionTest {
      * DOFF.
      */
     @Test
+    @DisabledTest(message = "https://crbug.com/831589")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @MediumTest
     public void testStartActivityTriggersDoffAppContext()
