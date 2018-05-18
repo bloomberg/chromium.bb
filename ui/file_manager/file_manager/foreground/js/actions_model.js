@@ -486,9 +486,7 @@ DriveManageAction.prototype.execute = function() {
  * @override
  */
 DriveManageAction.prototype.canExecute = function() {
-  // For now, only allow managing of regular files (not directories).
-  return !this.entry_.isDirectory &&
-      this.volumeManager_.getDriveConnectionState().type !==
+  return this.volumeManager_.getDriveConnectionState().type !==
       VolumeManagerCommon.DriveConnectionType.OFFLINE &&
       !util.isTeamDriveRoot(this.entry_);
 };

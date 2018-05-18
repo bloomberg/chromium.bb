@@ -258,7 +258,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestCase("shareFileDrive"),
                       TestCase("shareDirectoryDrive"),
                       TestCase("manageHostedFileDrive"),
-                      TestCase("manageFileDrive")));
+                      TestCase("manageFileDrive"),
+                      TestCase("manageDirectoryDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     SuggestAppDialog, /* suggest_app_dialog.js */
