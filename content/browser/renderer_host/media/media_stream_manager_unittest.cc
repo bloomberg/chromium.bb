@@ -22,6 +22,7 @@
 #include "content/public/browser/media_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -166,6 +167,7 @@ class MediaStreamManagerTest : public ::testing::Test {
         std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
     auto video_capture_provider = std::make_unique<MockVideoCaptureProvider>();
     video_capture_provider_ = video_capture_provider.get();
+    service_manager_context_ = std::make_unique<TestServiceManagerContext>();
     media_stream_manager_ = std::make_unique<MediaStreamManager>(
         audio_system_.get(), audio_manager_->GetTaskRunner(),
         std::move(video_capture_provider));
@@ -183,7 +185,10 @@ class MediaStreamManagerTest : public ::testing::Test {
             }));
   }
 
-  ~MediaStreamManagerTest() override { audio_manager_->Shutdown(); }
+  ~MediaStreamManagerTest() override {
+    audio_manager_->Shutdown();
+    service_manager_context_.reset();
+  }
 
   MOCK_METHOD1(Response, void(int index));
   void ResponseCallback(int index,
@@ -222,6 +227,8 @@ class MediaStreamManagerTest : public ::testing::Test {
   base::RunLoop run_loop_;
 
  private:
+  std::unique_ptr<TestServiceManagerContext> service_manager_context_;
+
   DISALLOW_COPY_AND_ASSIGN(MediaStreamManagerTest);
 };
 

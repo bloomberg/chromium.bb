@@ -30,6 +30,7 @@
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
+#include "content/browser/renderer_host/media/audio_service_listener.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/media_capture_devices_impl.h"
 #include "content/browser/renderer_host/media/media_devices_manager.h"
@@ -524,6 +525,12 @@ MediaStreamManager::MediaStreamManager(
   }
   InitializeMaybeAsync(std::move(video_capture_provider));
 
+  // May be null in tests.
+  if (ServiceManagerConnection::GetForProcess()) {
+    audio_service_listener_ = std::make_unique<AudioServiceListener>(
+        ServiceManagerConnection::GetForProcess()->GetConnector()->Clone());
+  }
+
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   // BrowserMainLoop always creates the PowerMonitor instance before creating
   // MediaStreamManager, but power_monitor may be NULL in unit tests.
@@ -553,6 +560,11 @@ AudioInputDeviceManager* MediaStreamManager::audio_input_device_manager() {
   // May be called on any thread, provided that we are not in shutdown.
   DCHECK(audio_input_device_manager_.get());
   return audio_input_device_manager_.get();
+}
+
+AudioServiceListener* MediaStreamManager::audio_service_listener() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return audio_service_listener_.get();
 }
 
 MediaDevicesManager* MediaStreamManager::media_devices_manager() {

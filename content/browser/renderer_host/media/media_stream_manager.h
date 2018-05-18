@@ -64,6 +64,7 @@ class Origin;
 namespace content {
 
 class AudioInputDeviceManager;
+class AudioServiceListener;
 class FakeMediaStreamUIProxy;
 class MediaStreamUIProxy;
 class VideoCaptureManager;
@@ -127,6 +128,9 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Used to access AudioInputDeviceManager.
   AudioInputDeviceManager* audio_input_device_manager();
+
+  // Used to access AudioServiceListener, must be called on IO thread.
+  AudioServiceListener* audio_service_listener();
 
   // Used to access MediaDevicesManager.
   MediaDevicesManager* media_devices_manager();
@@ -456,6 +460,8 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Maps render process hosts to log callbacks. Used on the IO thread.
   std::map<int, base::Callback<void(const std::string&)>> log_callbacks_;
+
+  std::unique_ptr<AudioServiceListener> audio_service_listener_;
 
   GenerateStreamTestCallback generate_stream_test_callback_;
 

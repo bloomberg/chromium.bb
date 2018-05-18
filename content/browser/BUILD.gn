@@ -1350,6 +1350,8 @@ jumbo_source_set("browser") {
     "renderer_host/media/audio_output_delegate_impl.h",
     "renderer_host/media/audio_output_stream_observer_impl.cc",
     "renderer_host/media/audio_output_stream_observer_impl.h",
+    "renderer_host/media/audio_service_listener.cc",
+    "renderer_host/media/audio_service_listener.h",
     "renderer_host/media/in_process_launched_video_capture_device.cc",
     "renderer_host/media/in_process_launched_video_capture_device.h",
     "renderer_host/media/in_process_video_capture_device_launcher.cc",
