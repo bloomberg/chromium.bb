@@ -256,6 +256,16 @@ be describing additional metrics about the same event.
   <summary>
     Recorded when a suggestion is shown to user.
   </summary>
+  <metric name="FieldSignature">
+    <summary>
+      The signature of the field
+    </summary>
+  </metric>
+  <metric name="FormSignature">
+    <summary>
+      The signature of the form.
+    </summary>
+  </metric>
   <metric name="HeuristicType">
     <summary>
       Field's |ServerFieldType| based on heuristics. See
