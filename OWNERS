@@ -18,6 +18,7 @@ per-file AUTHORS=*
 per-file BUILD.gn=file://build/OWNERS
 per-file codereview.settings=agable@chromium.org
 per-file DEPS=*
+per-file PRESUBMIT*.py=agrieve@chromium.org  # For .pydeps changes
 per-file PRESUBMIT*.py=dcheng@chromium.org
 per-file PRESUBMIT*.py=dpranke@chromium.org
 per-file PRESUBMIT*.py=jochen@chromium.org

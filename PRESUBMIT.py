@@ -628,6 +628,7 @@ _VALID_OS_MACROS = (
 
 
 _ANDROID_SPECIFIC_PYDEPS_FILES = [
+    'build/android/resource_sizes.pydeps',
     'build/android/test_runner.pydeps',
     'build/android/test_wrapper/logdog_wrapper.pydeps',
     'build/secondary/third_party/android_platform/'
@@ -638,6 +639,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
 
 _GENERIC_PYDEPS_FILES = [
     'chrome/test/chromedriver/test/run_py_tests.pydeps',
+    'tools/binary_size/supersize.pydeps',
 ]
 
 
