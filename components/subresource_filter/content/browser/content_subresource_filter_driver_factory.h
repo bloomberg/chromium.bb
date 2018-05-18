@@ -81,8 +81,6 @@ class ContentSubresourceFilterDriverFactory
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  void SetOnCommitWarningMessages();
-
   // Must outlive this class.
   SubresourceFilterClient* client_;
 

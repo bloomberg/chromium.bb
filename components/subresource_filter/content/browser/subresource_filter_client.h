@@ -33,8 +33,7 @@ class SubresourceFilterClient {
   // Precondition: The navigation must be a main frame navigation.
   virtual bool OnPageActivationComputed(
       content::NavigationHandle* navigation_handle,
-      bool activated,
-      bool suppressing_notifications) = 0;
+      bool activated) = 0;
 
   virtual VerifiedRulesetDealer::Handle* GetRulesetDealer() = 0;
 

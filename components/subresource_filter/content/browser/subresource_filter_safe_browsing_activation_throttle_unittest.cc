@@ -88,8 +88,7 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
   }
 
   bool OnPageActivationComputed(content::NavigationHandle* handle,
-                                bool activated,
-                                bool suppress_notifications) override {
+                                bool activated) override {
     DCHECK(handle->IsInMainFrame());
     return whitelisted_hosts_.count(handle->GetURL().host());
   }
@@ -599,19 +598,6 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   content::RenderFrameHost* rfh = SimulateNavigateAndCommit({url}, main_rfh());
 
   EXPECT_CALL(*client(), ShowNotification()).Times(1);
-  EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(rfh));
-}
-
-TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
-       SuppressNotificationVisibility) {
-  Configuration config(ActivationLevel::ENABLED, ActivationScope::ALL_SITES);
-  config.activation_options.should_suppress_notifications = true;
-  scoped_configuration()->ResetConfiguration(std::move(config));
-
-  GURL url(kURL);
-  content::RenderFrameHost* rfh = SimulateNavigateAndCommit({url}, main_rfh());
-  EXPECT_CALL(*client(), ShowNotification()).Times(0);
-  EXPECT_CALL(*client(), OnNewNavigationStarted()).Times(0);
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(rfh));
 }
 
