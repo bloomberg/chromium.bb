@@ -110,16 +110,6 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
   }
 
   /**
-   * Allow the iron-list to be sized properly.
-   * @param {!Object} passwordsSection
-   * @private
-   */
-  function flushPasswordSection(passwordsSection) {
-    passwordsSection.notifySplices('savedPasswords');
-    Polymer.dom.flush();
-  }
-
-  /**
    * Helper method used to create a password section for the given lists.
    * @param {!PasswordManagerProxy} passwordManager
    * @param {!Array<!chrome.passwordsPrivate.PasswordUiEntry>} passwordList
@@ -136,7 +126,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
     // Create a passwords-section to use for testing.
     const passwordsSection = document.createElement('passwords-section');
     document.body.appendChild(passwordsSection);
-    flushPasswordSection(passwordsSection);
+    Polymer.dom.flush();
     return passwordsSection;
   }
 
@@ -247,7 +237,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       validatePasswordList(passwordsSection.$.passwordList, []);
 
       assertFalse(passwordsSection.$.noPasswordsLabel.hidden);
-      assertTrue(passwordsSection.$.savedPasswordsHeading.hidden);
+      assertTrue(passwordsSection.$.savedPasswordsHeaders.hidden);
     });
 
     test('verifySavedPasswordLength', function() {
@@ -272,7 +262,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       validatePasswordList(passwordsSection.$.passwordList, passwordList);
 
       assertTrue(passwordsSection.$.noPasswordsLabel.hidden);
-      assertFalse(passwordsSection.$.savedPasswordsHeading.hidden);
+      assertFalse(passwordsSection.$.savedPasswordsHeaders.hidden);
     });
 
     // Test verifies that removing a password will update the elements.
@@ -290,7 +280,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       // Simulate 'longwebsite.com' being removed from the list.
       passwordsSection.splice('savedPasswords', 1, 1);
       passwordList.splice(1, 1);
-      flushPasswordSection(passwordsSection);
+      Polymer.dom.flush();
 
       assertFalse(listContainsUrl(
           passwordsSection.savedPasswords.map(entry => entry.entry),
@@ -440,7 +430,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       assertFalse(exceptionsListContainsUrl(
           passwordsSection.passwordExceptions, 'mail.com'));
       assertFalse(exceptionsListContainsUrl(exceptionList, 'mail.com'));
-      flushPasswordSection(passwordsSection);
+      Polymer.dom.flush();
 
       validateExceptionList(
           getDomRepeatChildren(passwordsSection.$.passwordExceptionsList),
