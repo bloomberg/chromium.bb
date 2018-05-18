@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
@@ -577,8 +578,11 @@ public class ChromeTabbedActivity
             if (!isShowingPromo) {
                 final Tracker tracker =
                         TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-                tracker.addOnInitializedCallback(
-                        (Callback<Boolean>) success -> maybeShowDownloadHomeTextBubble(tracker));
+                tracker.addOnInitializedCallback((Callback<Boolean>) success
+                        -> maybeShowAppMenuTextBubble(tracker,
+                                FeatureConstants.DOWNLOAD_HOME_FEATURE, R.id.downloads_menu_id,
+                                R.string.iph_download_home_text,
+                                R.string.iph_download_home_accessibility_text));
             }
 
             super.finishNativeInitialization();
@@ -870,23 +874,34 @@ public class ChromeTabbedActivity
         }
     }
 
-    private void maybeShowDownloadHomeTextBubble(final Tracker tracker) {
+    /**
+     * Shows an IPH text bubble that points to the app menu. If |highlightMenuItemId| is non-null,
+     * the corresponding menu item will be highlighted upon opening the app menu.
+     * @param tracker The feature engagement tracker
+     * @param featureName The name of the feature for which in-product help will be shown.
+     * @param highlightMenuItemId The menu item which should be highlighted when menu is opened.
+     * @param stringId The string resource corresponding to the message in the bubble.
+     * @param accessibilityStringId The string resource for the message in accessibility mode.
+     */
+    public void maybeShowAppMenuTextBubble(final Tracker tracker, String featureName,
+            Integer highlightMenuItemId, @StringRes int stringId,
+            @StringRes int accessibilityStringId) {
         // Don't show the IPH if we're in the process of destroying the activity.
         if (isActivityDestroyed()) return;
 
-        if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_HOME_FEATURE)) return;
+        if (!tracker.shouldTriggerHelpUI(featureName)) return;
 
-        View anchorView = getToolbarAnchorViewForDownloadHomeTextBubble();
+        View anchorView = getToolbarManager().getMenuButton();
         ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
-        TextBubble textBubble = new TextBubble(this, anchorView, R.string.iph_download_home_text,
-                R.string.iph_download_home_accessibility_text, rectProvider);
+        TextBubble textBubble =
+                new TextBubble(this, anchorView, stringId, accessibilityStringId, rectProvider);
         textBubble.setDismissOnTouchInteraction(true);
         textBubble.addOnDismissListener(() -> mHandler.postDelayed(() -> {
-            tracker.dismissed(FeatureConstants.DOWNLOAD_HOME_FEATURE);
-            turnOffHighlightForDownloadHomeTextBubble();
+            tracker.dismissed(featureName);
+            turnOffHighlightForAppMenuTextBubble();
         }, ViewHighlighter.IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS));
 
-        turnOnHighlightForDownloadHomeTextBubble();
+        turnOnHighlightForAppMenuTextBubble(highlightMenuItemId);
 
         int yInsetPx =
                 getResources().getDimensionPixelOffset(R.dimen.text_bubble_menu_anchor_y_inset);
@@ -894,15 +909,11 @@ public class ChromeTabbedActivity
         textBubble.show();
     }
 
-    private View getToolbarAnchorViewForDownloadHomeTextBubble() {
-        return getToolbarManager().getMenuButton();
+    private void turnOnHighlightForAppMenuTextBubble(@Nullable Integer highlightMenuItemId) {
+        getAppMenuHandler().setMenuHighlight(highlightMenuItemId);
     }
 
-    private void turnOnHighlightForDownloadHomeTextBubble() {
-        getAppMenuHandler().setMenuHighlight(R.id.downloads_menu_id);
-    }
-
-    private void turnOffHighlightForDownloadHomeTextBubble() {
+    private void turnOffHighlightForAppMenuTextBubble() {
         getAppMenuHandler().setMenuHighlight(null);
     }
 

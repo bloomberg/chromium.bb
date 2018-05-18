@@ -51,6 +51,20 @@ public final class FeatureConstants {
     public static final String DOWNLOAD_SETTINGS_FEATURE = "IPH_DownloadSettings";
 
     /**
+     * An IPH feature informing the users that even though infobar was closed, downloads are still
+     * continuing in the background.
+     */
+    public static final String DOWNLOAD_INFOBAR_DOWNLOAD_CONTINUING_FEATURE =
+            "IPH_DownloadInfoBarDownloadContinuing";
+
+    /**
+     * An IPH feature that points to the download progress infobar and informs users that downloads
+     * are now faster than before.
+     */
+    public static final String DOWNLOAD_INFOBAR_DOWNLOADS_ARE_FASTER_FEATURE =
+            "IPH_DownloadInfoBarDownloadsAreFaster";
+
+    /**
      * Do not instantiate.
      */
     private FeatureConstants() {}
