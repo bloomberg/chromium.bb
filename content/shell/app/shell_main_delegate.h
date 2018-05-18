@@ -25,7 +25,7 @@ class BrowserMainRunner;
 
 class ShellMainDelegate : public ContentMainDelegate {
  public:
-  ShellMainDelegate();
+  explicit ShellMainDelegate(bool is_browsertest = false);
   ~ShellMainDelegate() override;
 
   // ContentMainDelegate implementation:
@@ -44,6 +44,7 @@ class ShellMainDelegate : public ContentMainDelegate {
   static void InitializeResourceBundle();
 
  private:
+  bool is_browsertest_;
   std::unique_ptr<ShellContentBrowserClient> browser_client_;
   std::unique_ptr<ShellContentGpuClient> gpu_client_;
   std::unique_ptr<ShellContentRendererClient> renderer_client_;
