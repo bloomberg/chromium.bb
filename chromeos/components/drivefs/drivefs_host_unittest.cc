@@ -249,10 +249,9 @@ class DriveFsHostTest : public ::testing::Test,
     std::string source;
     EXPECT_CALL(
         *disk_manager_,
-        MountPath(testing::AllOf(
-                      testing::StartsWith("drivefs://"),
-                      testing::EndsWith("@/path/to/profile/GCache/v2/g-ID")),
-                  "", "", _, _, chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
+        MountPath(testing::StartsWith("drivefs://"), "", "drivefs-g-ID",
+                  testing::Contains("datadir=/path/to/profile/GCache/v2/g-ID"),
+                  _, chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
         .WillOnce(testing::SaveArg<0>(&source));
 
     mojom::DriveFsBootstrapPtrInfo bootstrap;
@@ -263,17 +262,13 @@ class DriveFsHostTest : public ::testing::Test,
     EXPECT_TRUE(host_->Mount());
     testing::Mock::VerifyAndClear(&disk_manager_);
 
-    return base::SplitStringPiece(
-               base::StringPiece(source).substr(strlen("drivefs://")), "@",
-               base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)[0]
-        .as_string();
+    return source.substr(strlen("drivefs://"));
   }
 
   void DispatchMountSuccessEvent(const std::string& token) {
     DispatchMountEvent(chromeos::disks::DiskMountManager::MOUNTING,
                        chromeos::MOUNT_ERROR_NONE,
-                       {base::StrCat({"drivefs://", token,
-                                      "@/path/to/profile/GCache/v2/g-ID"}),
+                       {base::StrCat({"drivefs://", token}),
                         "/media/drivefsroot/g-ID",
                         chromeos::MOUNT_TYPE_NETWORK_STORAGE,
                         {}});
@@ -414,12 +409,12 @@ TEST_F(DriveFsHostTest, ObserveOtherMount) {
                       "/some/other/mount/point",
                       chromeos::MOUNT_TYPE_DEVICE,
                       {}});
-  DispatchMountEvent(
-      chromeos::disks::DiskMountManager::UNMOUNTING, chromeos::MOUNT_ERROR_NONE,
-      {base::StrCat({"drivefs://", token, "@/path/to/profile/GCache/v2/g-ID"}),
-       "/media/drivefsroot/g-ID",
-       chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-       {}});
+  DispatchMountEvent(chromeos::disks::DiskMountManager::UNMOUNTING,
+                     chromeos::MOUNT_ERROR_NONE,
+                     {base::StrCat({"drivefs://", token}),
+                      "/media/drivefsroot/g-ID",
+                      chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+                      {}});
   EXPECT_FALSE(host_->IsMounted());
   host_->Unmount();
 }
@@ -428,13 +423,12 @@ TEST_F(DriveFsHostTest, MountError) {
   auto token = StartMount();
   EXPECT_CALL(*disk_manager_, UnmountPath(_, _, _)).Times(0);
 
-  DispatchMountEvent(
-      chromeos::disks::DiskMountManager::MOUNTING,
-      chromeos::MOUNT_ERROR_DIRECTORY_CREATION_FAILED,
-      {base::StrCat({"drivefs://", token, "@/path/to/profile/GCache/v2/g-ID"}),
-       "/media/drivefsroot/g-ID",
-       chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-       {}});
+  DispatchMountEvent(chromeos::disks::DiskMountManager::MOUNTING,
+                     chromeos::MOUNT_ERROR_DIRECTORY_CREATION_FAILED,
+                     {base::StrCat({"drivefs://", token}),
+                      "/media/drivefsroot/g-ID",
+                      chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+                      {}});
   EXPECT_FALSE(host_->IsMounted());
   EXPECT_FALSE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
 }
