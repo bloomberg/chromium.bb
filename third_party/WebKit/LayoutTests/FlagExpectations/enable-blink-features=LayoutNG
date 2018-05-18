@@ -30,6 +30,9 @@ crbug.com/591099 fast/shapes/shape-outside-floats/shape-outside-floats-inset-rou
 crbug.com/591099 fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-top-right.html [ Failure ]
 crbug.com/591099 fast/shapes/shape-outside-floats/shape-outside-floats-margin-crash.html [ Failure ]
 
+# Ref does not match because ref uses tables (old layout) while test does not (NG)
+crbug.com/714962 external/wpt/css/css-transforms/transform-abspos-006.html [ Skip ]
+crbug.com/714962 external/wpt/css/css-transforms/transform-abspos-007.html [ Skip ]
 
 # TODO(skobes): rebaseline
 crbug.com/811429 fast/text/font-format-support-cbdt-sbix-cff2-vertical.html [ Failure ]
@@ -371,8 +374,6 @@ crbug.com/591099 external/wpt/css/css-text/white-space/seg-break-transformation-
 crbug.com/591099 external/wpt/css/css-text/white-space/seg-break-transformation-012.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/word-break/word-break-break-all-004.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-text/word-break/word-break-normal-tdd-000.html [ Pass ]
-crbug.com/714962 external/wpt/css/css-transforms/transform-abspos-006.html [ Failure ]
-crbug.com/714962 external/wpt/css/css-transforms/transform-abspos-007.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-transforms/transform-generated-002.html [ Failure Pass ]
 crbug.com/591099 external/wpt/css/css-transforms/transform-matrix-006.html [ Failure Pass ]
 crbug.com/591099 external/wpt/css/css-transforms/transform-origin-name-002.html [ Failure Pass ]
@@ -1139,7 +1140,6 @@ crbug.com/591099 fast/js/dfg-byte-array-put.html [ Pass Timeout ]
 crbug.com/591099 fast/js/document-all-triggers-masquerades-watchpoint.html [ Pass Timeout ]
 crbug.com/591099 fast/lists/001-vertical.html [ Failure ]
 crbug.com/591099 fast/lists/001.html [ Failure ]
-crbug.com/591099 fast/lists/002-vertical.html [ Failure ]
 crbug.com/591099 fast/lists/003-vertical.html [ Failure ]
 crbug.com/591099 fast/lists/003.html [ Failure ]
 crbug.com/591099 fast/lists/004.html [ Failure ]
