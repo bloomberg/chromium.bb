@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
 
-#import "ios/chrome/browser/ui/location_bar/omnibox_container_view.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
