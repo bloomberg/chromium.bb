@@ -170,14 +170,18 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
 }
 
 void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
-  system_tray_->SetVisible(visible);
+  TrayBackgroundView* tray =
+      unified_system_tray_
+          ? static_cast<TrayBackgroundView*>(unified_system_tray_.get())
+          : static_cast<TrayBackgroundView*>(system_tray_.get());
+  tray->SetVisible(visible);
   // Opacity is set to prevent flakiness in kiosk browser tests. See
   // https://crbug.com/624584.
   SetOpacity(visible ? 1.f : 0.f);
   if (visible) {
     Show();
   } else {
-    system_tray_->CloseBubble();
+    tray->CloseBubble();
     Hide();
   }
 }
@@ -201,7 +205,8 @@ bool StatusAreaWidget::ShouldShowShelf() const {
 }
 
 bool StatusAreaWidget::IsMessageBubbleShown() const {
-  return system_tray_->IsSystemBubbleVisible() ||
+  return (unified_system_tray_ && unified_system_tray_->IsBubbleShown()) ||
+         (!unified_system_tray_ && system_tray_->IsSystemBubbleVisible()) ||
          (notification_tray_ && notification_tray_->IsMessageCenterVisible());
 }
 
