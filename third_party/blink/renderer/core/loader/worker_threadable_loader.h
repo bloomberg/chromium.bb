@@ -47,6 +47,7 @@
 
 namespace blink {
 
+class DocumentThreadableLoader;
 class ThreadableLoadingContext;
 class ResourceError;
 class ResourceRequest;
@@ -57,10 +58,11 @@ struct CrossThreadResourceRequestData;
 struct CrossThreadResourceTimingInfoData;
 
 // A WorkerThreadableLoader is a ThreadableLoader implementation intended to
-// be used in a WebWorker thread. Because Blink's ResourceFetcher and
-// ResourceLoader work only in the main thread, a WorkerThreadableLoader holds
-// a ThreadableLoader in the main thread and delegates tasks asynchronously
-// to the loader.
+// be used in a WebWorker thread. Because redirect handling doesn't perform CORS
+// checks for sync requests, a WorkerThreadableLoader holds a ThreadableLoader
+// in the parent thread and delegates tasks asynchronously to the loader.
+// The parent thread may be the main thread, or in the case of nested workers,
+// a different worker thread.
 //
 // CTP: CrossThreadPersistent
 // CTWP: CrossThreadWeakPersistent
@@ -72,13 +74,13 @@ struct CrossThreadResourceTimingInfoData;
 //      |          +------------------------+
 //      |
 // +----+------------------+    CTP  +------------------------+
-// + WorkerThreadableLoader|<--------+ MainThreadLoaderHolder |
-// | worker thread         +-------->| main thread            |
+// + WorkerThreadableLoader|<--------+ ParentThreadLoaderHolder |
+// | worker thread         +-------->| parent thread            |
 // +-----------------------+   CTWP  +----------------------+-+
 //                                                          |
 //                                 +------------------+     | Member
 //                                 | ThreadableLoader | <---+
-//                                 |      main thread |
+//                                 | parent thread    |
 //                                 +------------------+
 //
 class WorkerThreadableLoader final : public ThreadableLoader {
@@ -99,32 +101,33 @@ class WorkerThreadableLoader final : public ThreadableLoader {
   void Trace(blink::Visitor*) override;
 
  private:
-  // A TaskForwarder forwards a task to the worker thread.
-  class TaskForwarder : public GarbageCollectedFinalized<TaskForwarder> {
-   public:
-    virtual ~TaskForwarder() = default;
-    virtual void ForwardTask(const base::Location&, CrossThreadClosure) = 0;
-    virtual void ForwardTaskWithDoneSignal(const base::Location&,
-                                           CrossThreadClosure) = 0;
-    virtual void Abort() = 0;
-
-    virtual void Trace(blink::Visitor* visitor) {}
-  };
-  class AsyncTaskForwarder;
   struct TaskWithLocation;
   class WaitableEventWithTasks;
-  class SyncTaskForwarder;
+  // A TaskForwarder forwards a task to the worker thread.
+  class TaskForwarder final : public GarbageCollectedFinalized<TaskForwarder> {
+   public:
+    explicit TaskForwarder(
+        scoped_refptr<WaitableEventWithTasks> event_with_tasks);
+    ~TaskForwarder() = default;
+    void ForwardTask(const base::Location&, CrossThreadClosure);
+    void ForwardTaskWithDoneSignal(const base::Location&, CrossThreadClosure);
+    void Abort();
+    void Trace(blink::Visitor* visitor) {}
 
-  // An instance of this class lives in the main thread. It is a
+   private:
+    scoped_refptr<WaitableEventWithTasks> event_with_tasks_;
+  };
+
+  // An instance of this class lives in the parent thread. It is a
   // ThreadableLoaderClient for a DocumentThreadableLoader and forward
   // notifications to the associated WorkerThreadableLoader living in the
   // worker thread.
-  class MainThreadLoaderHolder final
-      : public GarbageCollectedFinalized<MainThreadLoaderHolder>,
+  class ParentThreadLoaderHolder final
+      : public GarbageCollectedFinalized<ParentThreadLoaderHolder>,
         public ThreadableLoaderClient,
         public WorkerThreadLifecycleObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(MainThreadLoaderHolder);
-    USING_PRE_FINALIZER(MainThreadLoaderHolder, Cancel);
+    USING_GARBAGE_COLLECTED_MIXIN(ParentThreadLoaderHolder);
+    USING_PRE_FINALIZER(ParentThreadLoaderHolder, Cancel);
 
    public:
     static void CreateAndStart(WorkerThreadableLoader*,
@@ -135,7 +138,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
                                const ThreadableLoaderOptions&,
                                const ResourceLoaderOptions&,
                                scoped_refptr<WaitableEventWithTasks>);
-    ~MainThreadLoaderHolder() override;
+    ~ParentThreadLoaderHolder() override;
 
     void OverrideTimeout(unsigned long timeout_millisecond);
     void Cancel();
@@ -160,14 +163,14 @@ class WorkerThreadableLoader final : public ThreadableLoader {
     void Trace(blink::Visitor*) override;
 
    private:
-    MainThreadLoaderHolder(TaskForwarder*, WorkerThreadLifecycleContext*);
+    ParentThreadLoaderHolder(TaskForwarder*, WorkerThreadLifecycleContext*);
     void Start(ThreadableLoadingContext&,
                std::unique_ptr<CrossThreadResourceRequestData>,
                const ThreadableLoaderOptions&,
                const ResourceLoaderOptions&);
 
     Member<TaskForwarder> forwarder_;
-    Member<ThreadableLoader> main_thread_loader_;
+    Member<DocumentThreadableLoader> parent_thread_loader_;
 
     // |*m_workerLoader| lives in the worker thread.
     CrossThreadWeakPersistent<WorkerThreadableLoader> worker_loader_;
@@ -177,7 +180,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
                          ThreadableLoaderClient*,
                          const ThreadableLoaderOptions&,
                          const ResourceLoaderOptions&);
-  void DidStart(MainThreadLoaderHolder*);
+  void DidStart(ParentThreadLoaderHolder*);
 
   void DidSendData(unsigned long long bytes_sent,
                    unsigned long long total_bytes_to_be_sent);
@@ -203,8 +206,8 @@ class WorkerThreadableLoader final : public ThreadableLoader {
   ThreadableLoaderOptions threadable_loader_options_;
   ResourceLoaderOptions resource_loader_options_;
 
-  // |*m_mainThreadLoaderHolder| lives in the main thread.
-  CrossThreadPersistent<MainThreadLoaderHolder> main_thread_loader_holder_;
+  // |parent_thread_loader_holder_| lives in the parent thread.
+  CrossThreadPersistent<ParentThreadLoaderHolder> parent_thread_loader_holder_;
 };
 
 }  // namespace blink
