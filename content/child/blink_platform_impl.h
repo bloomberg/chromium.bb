@@ -15,7 +15,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/webcrypto/webcrypto_impl.h"
-#include "content/child/webfallbackthemeengine_impl.h"
 #include "content/common/content_export.h"
 #include "media/blink/webmediacapabilitiesclient_impl.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -58,7 +57,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
 
   // Platform methods (partial implementation):
   blink::WebThemeEngine* ThemeEngine() override;
-  blink::WebFallbackThemeEngine* FallbackThemeEngine() override;
   blink::Platform::FileHandle DatabaseOpenFile(
       const blink::WebString& vfs_file_name,
       int desired_flags) override;
@@ -124,7 +122,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
   WebThemeEngineImpl native_theme_engine_;
-  WebFallbackThemeEngineImpl fallback_theme_engine_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
   webcrypto::WebCryptoImpl web_crypto_;
   media::WebMediaCapabilitiesClientImpl media_capabilities_client_;

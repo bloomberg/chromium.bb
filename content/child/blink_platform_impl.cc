@@ -59,7 +59,6 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 using blink::WebData;
-using blink::WebFallbackThemeEngine;
 using blink::WebLocalizedString;
 using blink::WebString;
 using blink::WebThemeEngine;
@@ -696,10 +695,6 @@ BlinkPlatformImpl::MediaCapabilitiesClient() {
 
 WebThemeEngine* BlinkPlatformImpl::ThemeEngine() {
   return &native_theme_engine_;
-}
-
-WebFallbackThemeEngine* BlinkPlatformImpl::FallbackThemeEngine() {
-  return &fallback_theme_engine_;
 }
 
 blink::Platform::FileHandle BlinkPlatformImpl::DatabaseOpenFile(

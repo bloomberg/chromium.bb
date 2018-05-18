@@ -3,3 +3,10 @@ include_rules = [
     # soup guidelines.
     "+cc/layers/picture_layer.h",
 ]
+
+specific_include_rules = {
+  "(theme_painter|fallback_theme)\.cc": [
+    "+ui/native_theme/native_theme.h",
+    "+ui/native_theme/native_theme_base.h",
+  ]
+}

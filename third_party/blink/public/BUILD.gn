@@ -250,7 +250,6 @@ source_set("blink_headers") {
     "platform/web_encrypted_media_request.h",
     "platform/web_encrypted_media_types.h",
     "platform/web_event_listener_properties.h",
-    "platform/web_fallback_theme_engine.h",
     "platform/web_file_error.h",
     "platform/web_file_info.h",
     "platform/web_file_system.h",

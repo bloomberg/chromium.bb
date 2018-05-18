@@ -55,6 +55,7 @@ class PLATFORM_EXPORT IntSize {
  public:
   IntSize() : width_(0), height_(0) {}
   IntSize(int width, int height) : width_(width), height_(height) {}
+  explicit IntSize(const gfx::Size&);
 
   int Width() const { return width_; }
   int Height() const { return height_; }
