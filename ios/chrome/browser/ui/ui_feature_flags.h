@@ -31,6 +31,4 @@ extern const base::Feature kCollectionsUIReboot;
 // IsRefreshInfobarEnabled().
 extern const base::Feature kInfobarsUIReboot;
 
-// Used to make BrowserContainerViewController fullscreen.
-extern const base::Feature kBrowserContainerFullscreen;
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

@@ -17,8 +17,8 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/web/public/features.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
@@ -272,7 +272,8 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   UIEdgeInsets headerInsets = UIEdgeInsetsZero;
   if (visibleFrameOnly) {
     headerInsets = [_delegate snapshotEdgeInsetsForWebState:_webState];
-  } else if (base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+  } else if (base::FeatureList::IsEnabled(
+                 web::features::kBrowserContainerFullscreen)) {
     headerInsets = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
   }
   frame = UIEdgeInsetsInsetRect(frame, headerInsets);

@@ -29,6 +29,9 @@ extern const base::Feature kWKHTTPSystemCookieStore;
 // https://crbug.com/841105.
 extern const base::Feature kCrashOnUnexpectedURLChange;
 
+// Used to make BrowserContainerViewController fullscreen.
+extern const base::Feature kBrowserContainerFullscreen;
+
 }  // namespace features
 }  // namespace web
 

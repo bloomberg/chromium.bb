@@ -3815,13 +3815,19 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // This will be resized later, but matching the final frame will minimize
   // re-rendering. Use the screen size because the application's key window
   // may still be nil.
-  // TODO(crbug.com/688259): Stop subtracting status bar height.
-  CGFloat statusBarHeight =
-      [[UIApplication sharedApplication] statusBarFrame].size.height;
-  CGRect containerViewFrame = [UIScreen mainScreen].bounds;
-  containerViewFrame.origin.y += statusBarHeight;
-  containerViewFrame.size.height -= statusBarHeight;
-  _containerView.frame = containerViewFrame;
+  if (base::FeatureList::IsEnabled(
+          web::features::kBrowserContainerFullscreen)) {
+    _containerView.frame = [UIScreen mainScreen].bounds;
+  } else {
+    // TODO(crbug.com/688259): Stop subtracting status bar height.
+    CGFloat statusBarHeight =
+        [[UIApplication sharedApplication] statusBarFrame].size.height;
+    CGRect containerViewFrame = [UIScreen mainScreen].bounds;
+    containerViewFrame.origin.y += statusBarHeight;
+    containerViewFrame.size.height -= statusBarHeight;
+    _containerView.frame = containerViewFrame;
+  }
+
   DCHECK(!CGRectIsEmpty(_containerView.frame));
 
   [_containerView addGestureRecognizer:[self touchTrackingRecognizer]];

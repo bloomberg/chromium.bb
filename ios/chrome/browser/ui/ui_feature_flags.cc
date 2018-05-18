@@ -19,5 +19,3 @@ const base::Feature kCollectionsUIReboot{"CollectionsUIReboot",
 const base::Feature kInfobarsUIReboot{"InfobarsUIReboot",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kBrowserContainerFullscreen{
-    "BrowserContainerFullscreen", base::FEATURE_DISABLED_BY_DEFAULT};
