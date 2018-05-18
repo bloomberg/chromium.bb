@@ -6,6 +6,7 @@
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_POINTER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/ozone/platform/wayland/wayland_cursor.h"
@@ -62,6 +63,8 @@ class WaylandPointer {
                    uint32_t axis,
                    wl_fixed_t value);
 
+  void MaybeSetOrResetImplicitGrab();
+
   WaylandConnection* connection_ = nullptr;
   std::unique_ptr<WaylandCursor> cursor_;
   wl::Object<wl_pointer> obj_;
@@ -77,6 +80,8 @@ class WaylandPointer {
 
   // The window the mouse is over.
   WaylandWindow* window_with_pointer_focus_ = nullptr;
+
+  base::WeakPtrFactory<WaylandPointer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandPointer);
 };
