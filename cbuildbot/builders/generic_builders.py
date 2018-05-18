@@ -142,7 +142,8 @@ class Builder(object):
             if (not db.HasFailureMsgForStage(build_stage_id) and
                 (stage_status is None or stage_status['status']
                  not in constants.BUILDER_NON_FAILURE_STATUSES)):
-              failures_lib.ReportStageFailureToCIDB(db, build_stage_id, ex)
+              failures_lib.ReportStageFailure(
+                  db, build_stage_id, ex, build_config=stage.build_config)
 
             # If this stage has non_completed status in buildStageTable, mark
             # the stage as 'fail' status in buildStageTable.

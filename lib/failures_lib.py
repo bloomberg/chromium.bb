@@ -15,6 +15,7 @@ import traceback
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import failure_message_lib
+from chromite.lib import metrics
 
 
 class StepFailure(Exception):
@@ -408,13 +409,14 @@ class TestWarning(StepFailure):
   """Raised if a test stage (e.g. VMTest) returns a warning code."""
 
 
-def ReportStageFailureToCIDB(db, build_stage_id, exception):
-  """Reports stage failure to cidb along with inner exceptions.
+def ReportStageFailure(db, build_stage_id, exception, build_config=None):
+  """Reports stage failure to CIDB and Mornach along with inner exceptions.
 
   Args:
     db: A valid cidb handle.
     build_stage_id: The cidb id for the build stage that failed.
     exception: The failure exception to report.
+    build_config: (Optional) Config name of the build.
 
   Returns:
     The Integer id of this exception in the failureTable (outer_failure_id if
@@ -427,22 +429,69 @@ def ReportStageFailureToCIDB(db, build_stage_id, exception):
   extra_info = (exception.EncodeExtraInfo()
                 if isinstance(exception, StepFailure) else None)
 
-  outer_failure_id = db.InsertFailure(build_stage_id,
-                                      type(exception).__name__,
-                                      exception_message,
-                                      _GetExceptionCategory(type(exception)),
-                                      extra_info=extra_info)
+  outer_failure_id = _InsertFailureToCIDBAndMornach(
+      db,
+      build_stage_id,
+      type(exception).__name__,
+      exception_message,
+      exception_category=_GetExceptionCategory(type(exception)),
+      extra_info=extra_info,
+      build_config=build_config)
 
   # This assumes that CompoundFailure can't be nested.
   if isinstance(exception, CompoundFailure):
     for exc_class, exc_str, _ in exception.exc_infos:
-      db.InsertFailure(build_stage_id,
-                       exc_class.__name__,
-                       exc_str,
-                       _GetExceptionCategory(exc_class),
-                       outer_failure_id)
+      _InsertFailureToCIDBAndMornach(
+          db,
+          build_stage_id,
+          exc_class.__name__,
+          exc_str,
+          exception_category=_GetExceptionCategory(exc_class),
+          outer_failure_id=outer_failure_id,
+          build_config=build_config)
 
   return outer_failure_id
+
+
+def _InsertFailureToCIDBAndMornach(
+    db, build_stage_id, exception_type, exception_message,
+    exception_category=constants.EXCEPTION_CATEGORY_UNKNOWN,
+    outer_failure_id=None,
+    extra_info=None,
+    build_config=None):
+  """Report a single stage failure to CIDB and Mornach if needed.
+
+  Args:
+    db: A valid cidb handle.
+    build_stage_id: The cidb id for the build stage that failed.
+    exception_type: str name of the exception class.
+    exception_message: str description of the failure.
+    exception_category: (Optional) one of
+                        constants.EXCEPTION_CATEGORY_ALL_CATEGORIES,
+                        Default: 'unknown'.
+    outer_failure_id: (Optional) primary key of outer failure which contains
+                      this failure. Used to store CompoundFailure
+                      relationship.
+    extra_info: (Optional) extra category-specific string description giving
+                failure details. Used for programmatic triage.
+    build_config: (Optional) Config name of the build.
+
+  Returns:
+    The Integer id of this exception in the failureTable.
+  """
+  failure_id = db.InsertFailure(
+      build_stage_id, exception_type, exception_message,
+      exception_category=exception_category,
+      outer_failure_id=outer_failure_id,
+      extra_info=extra_info)
+
+  if (build_config is not None and
+      exception_category != constants.EXCEPTION_CATEGORY_UNKNOWN):
+    counter = metrics.Counter(constants.MON_STAGE_FAILURE_COUNT)
+    counter.increment(fields={'exception_category': exception_category,
+                              'build_config': build_config})
+
+  return failure_id
 
 
 def GetStageFailureMessageFromException(stage_name, build_stage_id,

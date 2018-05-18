@@ -100,6 +100,9 @@ class BuilderStage(object):
     # TODO(mtennant): Try to rely on just self._run.buildroot directly, if
     # the os.path.abspath can be applied there instead.
     self._build_root = os.path.abspath(self._run.buildroot)
+
+    self.build_config = self._run.config.name
+
     self._prebuilt_type = None
     if self._run.ShouldUploadPrebuilts():
       self._prebuilt_type = self._run.config.build_type
@@ -738,9 +741,8 @@ class BuilderStage(object):
       if isinstance(result, BaseException) and self._build_stage_id is not None:
         _, db = self._run.GetCIDBHandle()
         if db:
-          failures_lib.ReportStageFailureToCIDB(db,
-                                                self._build_stage_id,
-                                                result)
+          failures_lib.ReportStageFailure(
+              db, self._build_stage_id, result, build_config=self.build_config)
 
       try:
         self.Finish()

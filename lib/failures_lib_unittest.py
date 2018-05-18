@@ -111,11 +111,11 @@ class CompoundFailureTest(cros_test_lib.TestCase):
     self.assertEqual(stage_failure_msg.exception_type, 'CompoundFailure')
     self.assertEqual(stage_failure_msg.exception_category, 'unknown')
 
-class ReportStageFailureToCIDBTest(cros_test_lib.TestCase):
-  """Tests for ReportStageFailureToCIDB."""
+class ReportStageFailureTest(cros_test_lib.TestCase):
+  """Tests for ReportStageFailure."""
 
-  def testReportStageFailureToCIDBOnCompoundFailure(self):
-    """Tests ReportStageFailureToCIDB on CompoundFailure."""
+  def testReportStageFailureOnCompoundFailure(self):
+    """Tests ReportStageFailure on CompoundFailure."""
     fake_db = fake_cidb.FakeCIDBConnection()
     inner_exception_1 = failures_lib.TestLabFailure()
     inner_exception_2 = TypeError()
@@ -123,7 +123,7 @@ class ReportStageFailureToCIDBTest(cros_test_lib.TestCase):
     exc_infos += failures_lib.CreateExceptInfo(inner_exception_2, None)
     outer_exception = failures_lib.GoBFailure(exc_infos=exc_infos)
     mock_build_stage_id = 9345
-    outer_failure_id = failures_lib.ReportStageFailureToCIDB(
+    outer_failure_id = failures_lib.ReportStageFailure(
         fake_db, mock_build_stage_id, outer_exception)
 
     self.assertEqual(3, len(fake_db.failureTable))
@@ -144,15 +144,15 @@ class ReportStageFailureToCIDBTest(cros_test_lib.TestCase):
         self.assertEqual(failure['exception_category'],
                          constants.EXCEPTION_CATEGORY_UNKNOWN)
 
-  def testReportStageFailureToCIDBOnBuildScriptFailure(self):
-    """Test ReportStageFailureToCIDB On BuildScriptFailure."""
+  def testReportStageFailureOnBuildScriptFailure(self):
+    """Test ReportStageFailure On BuildScriptFailure."""
     fake_db = fake_cidb.FakeCIDBConnection()
     msg = 'run command error'
     short_name = 'short name'
     error = cros_build_lib.RunCommandError(msg, cros_build_lib.CommandResult())
     build_failure = failures_lib.BuildScriptFailure(error, short_name)
     mock_build_stage_id = 1
-    failure_id = failures_lib.ReportStageFailureToCIDB(
+    failure_id = failures_lib.ReportStageFailure(
         fake_db, mock_build_stage_id, build_failure)
 
     extra_info_json_string = json.dumps({'shortname': short_name})
@@ -163,8 +163,8 @@ class ReportStageFailureToCIDBTest(cros_test_lib.TestCase):
     self.assertEqual(values['extra_info'], extra_info_json_string)
     self.assertEqual(json.loads(values['extra_info'])['shortname'], short_name)
 
-  def testReportStageFailureToCIDBOnPackageBuildFailure(self):
-    """Test ReportStageFailureToCIDB On PackageBuildFailure."""
+  def testReportStageFailureOnPackageBuildFailure(self):
+    """Test ReportStageFailure On PackageBuildFailure."""
     fake_db = fake_cidb.FakeCIDBConnection()
     msg = 'run command error'
     short_name = 'short name'
@@ -173,7 +173,7 @@ class ReportStageFailureToCIDBTest(cros_test_lib.TestCase):
     build_failure = failures_lib.PackageBuildFailure(
         error, short_name, failed_packages)
     mock_build_stage_id = 1
-    failure_id = failures_lib.ReportStageFailureToCIDB(
+    failure_id = failures_lib.ReportStageFailure(
         fake_db, mock_build_stage_id, build_failure)
 
     extra_info_json_string = json.dumps({

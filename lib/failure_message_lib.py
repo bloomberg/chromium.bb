@@ -93,7 +93,7 @@ class StageFailureMessage(object):
   """Message class contains information of a general stage failure.
 
   Failed stages report stage failures to CIDB failureTable (see more details
-  in failures_lib.ReportStageFailureToCIDB). This class constructs a failure
+  in failures_lib.ReportStageFailure). This class constructs a failure
   message instance from the stage failure information stored in CIDB.
   """
 
@@ -327,7 +327,7 @@ class FailureMessageManager(object):
     failure message into a CompoundFailureMessage instance 2) insert the inner
     failure messages to the inner_failures list of their outer failure messages.
     CompoundFailures in CIDB aren't nested
-    (see failures_lib.ReportStageFailureToCIDB), so there isn't another
+    (see failures_lib.ReportStageFailure), so there isn't another
     inner failure list layer in a inner failure message and there're no circular
     dependencies.
 
