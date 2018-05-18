@@ -304,17 +304,17 @@ def get_waterfall_config():
       {
        'gpu': '102b:0532',
        'os': 'Windows-2008ServerR2-SP1',
-       'pool': 'Chrome-perf',
+       'pool': 'chrome.tests.perf',
        'device_ids': [
-           'build185-m1', 'build186-m1',
-           'build187-m1', 'build188-m1', 'build189-m1'
+           'build197-m7', 'build198-m7',
+           'build199-m7', 'build200-m7', 'build201-m7'
           ],
        'perf_tests': [
-         ('load_library_perf_tests', 'build187-m1'),
+         ('load_library_perf_tests', 'build199-m7'),
          # crbug.com/735679
-         # ('performance_browser_tests', 'build187-m1'),
-         ('media_perftests', 'build188-m1'),
-         ('components_perftests', 'build189-m1')]
+         # ('performance_browser_tests', 'build199-m7'),
+         ('media_perftests', 'build200-m7'),
+         ('components_perftests', 'build201-m7')]
       }
     ])
   waterfall = add_tester(

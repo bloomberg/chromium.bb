@@ -2130,7 +2130,7 @@
     }
   },
   "Win 7 Perf": {
-    "build185-m1": {
+    "build197-m7": {
       "benchmarks": [
         "blink_perf.dom",
         "blink_perf.paint",
@@ -2148,7 +2148,7 @@
         "v8.runtime_stats.top_25"
       ]
     },
-    "build186-m1": {
+    "build198-m7": {
       "benchmarks": [
         "blink_perf.bindings",
         "blink_perf.canvas",
@@ -2173,7 +2173,7 @@
         "webrtc"
       ]
     },
-    "build187-m1": {
+    "build199-m7": {
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
@@ -2198,7 +2198,7 @@
         "wasm"
       ]
     },
-    "build188-m1": {
+    "build200-m7": {
       "benchmarks": [
         "blink_perf.parser",
         "blink_perf.svg",
@@ -2216,7 +2216,7 @@
         "v8.browsing_desktop"
       ]
     },
-    "build189-m1": {
+    "build201-m7": {
       "benchmarks": [
         "battor.steady_state",
         "blink_perf.css",
