@@ -1734,62 +1734,27 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
 
   const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
   struct buf_2d *const pre_buf = &pd->pre[ref];
+  const int hbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
   uint8_t *const dst =
-      (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH ? CONVERT_TO_BYTEPTR(ext_dst)
-                                                   : ext_dst) +
-      ext_dst_stride * y + x;
+      (hbd ? CONVERT_TO_BYTEPTR(ext_dst) : ext_dst) + ext_dst_stride * y + x;
   const MV mv = mi->mv[ref].as_mv;
-  uint8_t *pre;
 
-  SubpelParams subpel_params;
-  const int is_scaled = av1_is_scaled(sf);
   ConvolveParams conv_params = get_conv_params(ref, 0, plane, xd->bd);
   WarpTypesAllowed warp_types;
   const WarpedMotionParams *const wm = &xd->global_motion[mi->ref_frame[ref]];
   warp_types.global_warp_allowed = is_global_mv_block(mi, wm->wmtype);
   warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
+  const int pre_x = (mi_x) >> pd->subsampling_x;
+  const int pre_y = (mi_y) >> pd->subsampling_y;
+  uint8_t *pre;
+  SubpelParams subpel_params;
+  calc_subpel_params(xd, sf, mv, plane, pre_x, pre_y, x, y, pre_buf, &pre,
+                     &subpel_params, bw, bh);
 
-  if (is_scaled) {
-    int ssx = pd->subsampling_x;
-    int ssy = pd->subsampling_y;
-    int orig_pos_y = (mi_y << (SUBPEL_BITS - ssy)) + (y << SUBPEL_BITS);
-    orig_pos_y += mv.row * (1 << (1 - ssy));
-    int orig_pos_x = (mi_x << (SUBPEL_BITS - ssx)) + (x << SUBPEL_BITS);
-    orig_pos_x += mv.col * (1 << (1 - ssx));
-    int pos_y = sf->scale_value_y(orig_pos_y, sf);
-    int pos_x = sf->scale_value_x(orig_pos_x, sf);
-    pos_x += SCALE_EXTRA_OFF;
-    pos_y += SCALE_EXTRA_OFF;
-
-    const int top = -AOM_LEFT_TOP_MARGIN_SCALED(ssy);
-    const int left = -AOM_LEFT_TOP_MARGIN_SCALED(ssx);
-    const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
-                       << SCALE_SUBPEL_BITS;
-    const int right = (pre_buf->width + AOM_INTERP_EXTEND) << SCALE_SUBPEL_BITS;
-    pos_y = clamp(pos_y, top, bottom);
-    pos_x = clamp(pos_x, left, right);
-
-    pre = pre_buf->buf0 + (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
-          (pos_x >> SCALE_SUBPEL_BITS);
-    subpel_params.subpel_x = pos_x & SCALE_SUBPEL_MASK;
-    subpel_params.subpel_y = pos_y & SCALE_SUBPEL_MASK;
-    subpel_params.xs = sf->x_step_q4;
-    subpel_params.ys = sf->y_step_q4;
-  } else {
-    const MV mv_q4 = clamp_mv_to_umv_border_sb(
-        xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
-    subpel_params.xs = subpel_params.ys = SCALE_SUBPEL_SHIFTS;
-    subpel_params.subpel_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
-    subpel_params.subpel_y = (mv_q4.row & SUBPEL_MASK) << SCALE_EXTRA_BITS;
-    pre = pre_buf->buf + (y + (mv_q4.row >> SUBPEL_BITS)) * pre_buf->stride +
-          (x + (mv_q4.col >> SUBPEL_BITS));
-  }
-
-  av1_make_inter_predictor(
-      pre, pre_buf->stride, dst, ext_dst_stride, &subpel_params, sf, w, h,
-      &conv_params, mi->interp_filters, &warp_types,
-      (mi_x >> pd->subsampling_x) + x, (mi_y >> pd->subsampling_y) + y, plane,
-      ref, mi, 0, xd, can_use_previous);
+  av1_make_inter_predictor(pre, pre_buf->stride, dst, ext_dst_stride,
+                           &subpel_params, sf, w, h, &conv_params,
+                           mi->interp_filters, &warp_types, pre_x + x,
+                           pre_y + y, plane, ref, mi, 0, xd, can_use_previous);
 }
 
 void av1_build_inter_predictors_for_planes_single_buf(
