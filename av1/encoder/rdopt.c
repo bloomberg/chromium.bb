@@ -7934,6 +7934,7 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
              sizeof(x->blk_skip[0]) * xd->n8_h * xd->n8_w);
       best_xskip = x->skip;
       best_disable_skip = *disable_skip;
+      if (best_xskip) break;
     }
   }
   mbmi->ref_frame[1] = ref_frame_1;
