@@ -327,7 +327,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
-  worker->AddListener(this);
+  worker->AddObserver(this);
 
   // Start should succeed.
   ServiceWorkerStatusCode status;
@@ -534,7 +534,7 @@ TEST_F(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
   const int64_t version_id = pair.second->version_id();
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
-  worker->AddListener(this);
+  worker->AddObserver(this);
 
   // Run the start worker sequence and detach during process allocation.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
@@ -568,7 +568,7 @@ TEST_F(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
   const int64_t version_id = pair.second->version_id();
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
-  worker->AddListener(this);
+  worker->AddObserver(this);
 
   // Run the start worker sequence until a start worker message is sent.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
@@ -608,7 +608,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
   const int64_t version_id = pair.second->version_id();
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
-  worker->AddListener(this);
+  worker->AddObserver(this);
 
   // Stop the start worker sequence before a process is allocated.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
@@ -683,7 +683,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
   const int64_t version_id = pair.second->version_id();
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
-  worker->AddListener(this);
+  worker->AddObserver(this);
 
   // Run the start worker sequence until pause after download.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
@@ -716,7 +716,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
   const int64_t version_id = pair.second->version_id();
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
-  worker->AddListener(this);
+  worker->AddObserver(this);
 
   // Run the start worker sequence until a start worker message is sent.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
@@ -780,7 +780,7 @@ TEST_F(EmbeddedWorkerInstanceTest, Detach) {
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  worker->AddListener(this);
+  worker->AddObserver(this);
 
   // Start the worker.
   base::RunLoop run_loop;
@@ -815,7 +815,7 @@ TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
   const int64_t version_id = pair.second->version_id();
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
-  worker->AddListener(this);
+  worker->AddObserver(this);
 
   // Attempt to start the worker.
   mojom::EmbeddedWorkerStartParamsPtr params =
@@ -860,7 +860,7 @@ TEST_F(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
   const int64_t version_id = pair.second->version_id();
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
-  worker->AddListener(this);
+  worker->AddObserver(this);
 
   // Attempt to start the worker.
   mojom::EmbeddedWorkerStartParamsPtr params =
@@ -912,7 +912,7 @@ TEST_F(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   const int64_t version_id = pair.second->version_id();
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
-  worker->AddListener(this);
+  worker->AddObserver(this);
 
   // Attempt to start the worker and immediate AddMessageToConsole should not
   // cause a crash.

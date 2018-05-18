@@ -1165,7 +1165,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                                "/service_worker/worker_install_rejected.js"));
 
   ConsoleListener console_listener;
-  RunOnIOThread(base::BindOnce(&EmbeddedWorkerInstance::AddListener,
+  RunOnIOThread(base::BindOnce(&EmbeddedWorkerInstance::AddObserver,
                                base::Unretained(version_->embedded_worker()),
                                &console_listener));
 
@@ -1184,7 +1184,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   console_listener.WaitForConsoleMessages(1);
   ASSERT_NE(base::string16::npos,
             console_listener.messages()[0].find(expected));
-  RunOnIOThread(base::BindOnce(&EmbeddedWorkerInstance::RemoveListener,
+  RunOnIOThread(base::BindOnce(&EmbeddedWorkerInstance::RemoveObserver,
                                base::Unretained(version_->embedded_worker()),
                                &console_listener));
 }
@@ -1213,7 +1213,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutStartingWorker) {
   base::RunLoop start_run_loop;
   base::RunLoop load_run_loop;
   WaitForLoaded wait_for_load(load_run_loop.QuitClosure());
-  RunOnIOThread(base::BindOnce(&EmbeddedWorkerInstance::AddListener,
+  RunOnIOThread(base::BindOnce(&EmbeddedWorkerInstance::AddObserver,
                                base::Unretained(version_->embedded_worker()),
                                &wait_for_load));
   BrowserThread::PostTask(
@@ -1221,7 +1221,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutStartingWorker) {
       base::BindOnce(&self::StartOnIOThread, base::Unretained(this),
                      start_run_loop.QuitClosure(), &status));
   load_run_loop.Run();
-  RunOnIOThread(base::BindOnce(&EmbeddedWorkerInstance::RemoveListener,
+  RunOnIOThread(base::BindOnce(&EmbeddedWorkerInstance::RemoveObserver,
                                base::Unretained(version_->embedded_worker()),
                                &wait_for_load));
 
@@ -1342,7 +1342,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                      SERVICE_WORKER_OK);
 
   ConsoleListener console_listener;
-  RunOnIOThread(base::BindOnce(&EmbeddedWorkerInstance::AddListener,
+  RunOnIOThread(base::BindOnce(&EmbeddedWorkerInstance::AddObserver,
                                base::Unretained(version_->embedded_worker()),
                                &console_listener));
 
@@ -1355,7 +1355,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   ASSERT_NE(base::string16::npos,
             console_listener.messages()[0].find(expected1));
   ASSERT_EQ(0u, console_listener.messages()[1].find(expected2));
-  RunOnIOThread(base::BindOnce(&EmbeddedWorkerInstance::RemoveListener,
+  RunOnIOThread(base::BindOnce(&EmbeddedWorkerInstance::RemoveObserver,
                                base::Unretained(version_->embedded_worker()),
                                &console_listener));
 

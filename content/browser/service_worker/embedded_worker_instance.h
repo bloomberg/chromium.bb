@@ -162,8 +162,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   int thread_id() const { return thread_id_; }
   int worker_devtools_agent_route_id() const;
 
-  void AddListener(Listener* listener);
-  void RemoveListener(Listener* listener);
+  void AddObserver(Listener* listener);
+  void RemoveObserver(Listener* listener);
 
   void SetDevToolsAttached(bool attached);
   bool devtools_attached() const { return devtools_attached_; }

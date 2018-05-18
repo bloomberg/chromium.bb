@@ -47,6 +47,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       force_bypass_cache_(false),
       skip_script_comparison_(false),
       promise_resolved_status_(SERVICE_WORKER_OK),
+      observer_(this),
       weak_factory_(this) {}
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
@@ -65,6 +66,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       force_bypass_cache_(force_bypass_cache),
       skip_script_comparison_(skip_script_comparison),
       promise_resolved_status_(SERVICE_WORKER_OK),
+      observer_(this),
       weak_factory_(this) {
   internal_.registration = registration;
 }
@@ -356,7 +358,7 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
   new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
   if (registration()->has_installed_version() && !skip_script_comparison_) {
     new_version()->set_pause_after_download(true);
-    new_version()->embedded_worker()->AddListener(this);
+    observer_.Add(new_version()->embedded_worker());
   } else {
     new_version()->set_pause_after_download(false);
   }
@@ -533,7 +535,7 @@ void ServiceWorkerRegisterJob::CompleteInternal(
 
   if (new_version()) {
     new_version()->set_pause_after_download(false);
-    new_version()->embedded_worker()->RemoveListener(this);
+    observer_.RemoveAll();
   }
 
   if (status != SERVICE_WORKER_OK) {
