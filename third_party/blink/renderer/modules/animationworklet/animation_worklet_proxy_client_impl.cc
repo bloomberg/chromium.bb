@@ -49,23 +49,26 @@ void AnimationWorkletProxyClientImpl::SetGlobalScope(
 }
 
 void AnimationWorkletProxyClientImpl::Dispose() {
-  // At worklet scope termination break the reference to theClient from
-  // the comositor if it is still alive.
-  DCHECK(mutator_runner_);
-  PostCrossThreadTask(
-      *mutator_runner_, FROM_HERE,
-      CrossThreadBind(&CompositorMutatorImpl::UnregisterCompositorAnimator,
-                      mutator_, WrapCrossThreadPersistent(this)));
+  if (state_ == RunState::kWorking) {
+    // At worklet scope termination break the reference to the Client from
+    // the compositor if it is still alive.
+    DCHECK(mutator_runner_);
+    PostCrossThreadTask(
+        *mutator_runner_, FROM_HERE,
+        CrossThreadBind(&CompositorMutatorImpl::UnregisterCompositorAnimator,
+                        mutator_, WrapCrossThreadPersistent(this)));
+
+    DCHECK(global_scope_);
+    DCHECK(global_scope_->IsContextThread());
+
+    // At worklet scope termination break the reference cycle between
+    // AnimationWorkletGlobalScope and AnimationWorkletProxyClientImpl.
+    global_scope_ = nullptr;
+  }
+
   mutator_runner_ = nullptr;
   DCHECK(state_ != RunState::kDisposed);
   state_ = RunState::kDisposed;
-
-  DCHECK(global_scope_);
-  DCHECK(global_scope_->IsContextThread());
-
-  // At worklet scope termination break the reference cycle between
-  // AnimationWorkletGlobalScope and AnimationWorkletProxyClientImpl.
-  global_scope_ = nullptr;
 }
 
 std::unique_ptr<CompositorMutatorOutputState>
