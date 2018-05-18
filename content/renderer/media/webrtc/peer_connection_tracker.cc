@@ -177,6 +177,21 @@ static const char* SerializeRtcpMuxPolicy(
   return policy_str;
 }
 
+static const char* SerializeSdpSemantics(webrtc::SdpSemantics sdp_semantics) {
+  const char* sdp_semantics_str = "";
+  switch (sdp_semantics) {
+    case webrtc::SdpSemantics::kPlanB:
+      sdp_semantics_str = "plan-b";
+      break;
+    case webrtc::SdpSemantics::kUnifiedPlan:
+      sdp_semantics_str = "unified-plan";
+      break;
+    default:
+      NOTREACHED();
+  }
+  return sdp_semantics_str;
+}
+
 static std::string SerializeConfiguration(
     const webrtc::PeerConnectionInterface::RTCConfiguration& config) {
   std::ostringstream oss;
@@ -185,7 +200,9 @@ static std::string SerializeConfiguration(
       << ", iceTransportPolicy: " << SerializeIceTransportType(config.type)
       << ", bundlePolicy: " << SerializeBundlePolicy(config.bundle_policy)
       << ", rtcpMuxPolicy: " << SerializeRtcpMuxPolicy(config.rtcp_mux_policy)
-      << ", iceCandidatePoolSize: " << config.ice_candidate_pool_size << " }";
+      << ", iceCandidatePoolSize: " << config.ice_candidate_pool_size
+      << ", sdpSemantics: \"" << SerializeSdpSemantics(config.sdp_semantics)
+      << "\" }";
   return oss.str();
 }
 
