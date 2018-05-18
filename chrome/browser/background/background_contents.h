@@ -49,7 +49,6 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
         std::unique_ptr<content::WebContents> new_contents,
         WindowOpenDisposition disposition,
         const gfx::Rect& initial_rect,
-        bool user_gesture,
         bool* was_blocked) = 0;
 
    protected:

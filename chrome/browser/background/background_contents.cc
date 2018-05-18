@@ -158,7 +158,7 @@ void BackgroundContents::AddNewContents(
     bool user_gesture,
     bool* was_blocked) {
   delegate_->AddWebContents(std::move(new_contents), disposition, initial_rect,
-                            user_gesture, was_blocked);
+                            was_blocked);
 }
 
 bool BackgroundContents::IsNeverVisible(content::WebContents* web_contents) {

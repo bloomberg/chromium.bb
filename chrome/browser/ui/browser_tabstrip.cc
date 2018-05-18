@@ -50,8 +50,7 @@ void AddWebContents(Browser* browser,
                     content::WebContents* source_contents,
                     std::unique_ptr<content::WebContents> new_contents,
                     WindowOpenDisposition disposition,
-                    const gfx::Rect& initial_rect,
-                    bool user_gesture) {
+                    const gfx::Rect& initial_rect) {
   // No code for this yet.
   DCHECK(disposition != WindowOpenDisposition::SAVE_TO_DISK);
   // Can't create a new contents for the current tab - invalid case.
