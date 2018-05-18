@@ -12825,6 +12825,11 @@ Called by update_net_error_codes.py.-->
   </int>
 </enum>
 
+<enum name="EnterpriseExistingInstallAttributesLockType">
+  <int value="0" label="Fresh lock"/>
+  <int value="1" label="Reused lock"/>
+</enum>
+
 <enum name="EnterprisePolicies">
 <!-- Generated from components/policy/resources/policy_templates.json -->
 
