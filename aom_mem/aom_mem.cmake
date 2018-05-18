@@ -13,9 +13,9 @@ if(AOM_AOM_MEM_AOM_MEM_CMAKE_)
 endif() # AOM_AOM_MEM_AOM_MEM_CMAKE_
 set(AOM_AOM_MEM_AOM_MEM_CMAKE_ 1)
 
-set(AOM_MEM_SOURCES "${AOM_ROOT}/aom_mem/aom_mem.c"
-    "${AOM_ROOT}/aom_mem/aom_mem.h"
-    "${AOM_ROOT}/aom_mem/include/aom_mem_intrnl.h")
+list(APPEND AOM_MEM_SOURCES "${AOM_ROOT}/aom_mem/aom_mem.c"
+            "${AOM_ROOT}/aom_mem/aom_mem.h"
+            "${AOM_ROOT}/aom_mem/include/aom_mem_intrnl.h")
 
 # Creates the aom_mem build target and makes libaom depend on it. The libaom
 # target must exist before this function is called.
