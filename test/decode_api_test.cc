@@ -12,7 +12,6 @@
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "./aom_config.h"
-#include "test/ivf_video_source.h"
 #include "test/util.h"
 #include "aom/aomdx.h"
 #include "aom/aom_decoder.h"
