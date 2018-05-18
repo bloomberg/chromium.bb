@@ -244,7 +244,8 @@ void MediaRouterMojoImpl::CreateRoute(
   // TODO(https://crbug.com/808720): Remove check for DIAL when in-browser DIAL
   // MRP is fully implemented.
   if (provider_id == MediaRouteProviderId::CAST ||
-      provider_id == MediaRouteProviderId::DIAL) {
+      (provider_id == MediaRouteProviderId::DIAL &&
+       !DialMediaRouteProviderEnabled())) {
     provider_id = MediaRouteProviderId::EXTENSION;
   }
 
