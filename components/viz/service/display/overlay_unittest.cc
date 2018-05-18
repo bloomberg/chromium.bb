@@ -294,7 +294,7 @@ ResourceId CreateResource(
       base::BindRepeating([](const std::vector<ReturnedResource>&) {}));
 
   // Transfer resource to the parent.
-  cc::ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  std::vector<ResourceId> resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(resource_id);
   std::vector<TransferableResource> list;
   child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list,
@@ -302,7 +302,7 @@ ResourceId CreateResource(
   parent_resource_provider->ReceiveFromChild(child_id, list);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       parent_resource_provider->GetChildToParentMap(child_id);
   return resource_map[list[0].id];
 }
@@ -445,7 +445,7 @@ YUVVideoDrawQuad* CreateFullscreenCandidateYUVVideoQuad(
   return overlay_quad;
 }
 
-void CreateOpaqueQuadAt(cc::ResourceProvider* resource_provider,
+void CreateOpaqueQuadAt(cc::DisplayResourceProvider* resource_provider,
                         const SharedQuadState* shared_quad_state,
                         RenderPass* render_pass,
                         const gfx::Rect& rect) {
@@ -453,7 +453,7 @@ void CreateOpaqueQuadAt(cc::ResourceProvider* resource_provider,
   color_quad->SetNew(shared_quad_state, rect, rect, SK_ColorBLACK, false);
 }
 
-void CreateOpaqueQuadAt(cc::ResourceProvider* resource_provider,
+void CreateOpaqueQuadAt(cc::DisplayResourceProvider* resource_provider,
                         const SharedQuadState* shared_quad_state,
                         RenderPass* render_pass,
                         const gfx::Rect& rect,
@@ -463,7 +463,7 @@ void CreateOpaqueQuadAt(cc::ResourceProvider* resource_provider,
   color_quad->SetNew(shared_quad_state, rect, rect, color, false);
 }
 
-void CreateFullscreenOpaqueQuad(cc::ResourceProvider* resource_provider,
+void CreateFullscreenOpaqueQuad(cc::DisplayResourceProvider* resource_provider,
                                 const SharedQuadState* shared_quad_state,
                                 RenderPass* render_pass) {
   CreateOpaqueQuadAt(resource_provider, shared_quad_state, render_pass,
@@ -2829,7 +2829,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
       child_resource_provider_.get(), gfx::Size(32, 32), true);
 
   // Return the resource map.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap(
           {resource1, resource2, resource3}, resource_provider_.get(),
           child_resource_provider_.get(), child_provider_.get());
@@ -3018,7 +3018,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
       child_resource_provider_.get(), gfx::Size(32, 32), true);
 
   // Return the resource map.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap(
           {resource1, resource2, resource3}, resource_provider_.get(),
           child_resource_provider_.get(), child_provider_.get());

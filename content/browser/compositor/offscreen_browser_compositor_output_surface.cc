@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "cc/resources/resource_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"

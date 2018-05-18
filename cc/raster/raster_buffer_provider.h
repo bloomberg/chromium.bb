@@ -12,7 +12,6 @@
 #include "cc/raster/task_graph_runner.h"
 #include "cc/raster/tile_task.h"
 #include "cc/resources/resource_pool.h"
-#include "cc/resources/resource_provider.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

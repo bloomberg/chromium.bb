@@ -193,7 +193,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
       this->AllocateAndFillSoftwareResource(inner_size, cyan_tile);
 
   // Transfer resources to the parent, and get the resource map.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap({resource_yellow, resource_cyan},
                                          resource_provider(),
                                          child_resource_provider(), nullptr);
@@ -256,7 +256,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
       AllocateAndFillSoftwareResource(tile_size, cyan_tile);
 
   // Transfer resources to the parent, and get the resource map.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap({resource_cyan}, resource_provider(),
                                          child_resource_provider(), nullptr);
   ResourceId mapped_resource_cyan = resource_map[resource_cyan];

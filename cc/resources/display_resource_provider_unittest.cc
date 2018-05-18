@@ -487,7 +487,7 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
   // Transfer some resources to the parent.
-  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  std::vector<viz::ResourceId> resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(id1);
 
   std::vector<viz::TransferableResource> list;
@@ -499,7 +499,7 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
   resource_provider_->ReceiveFromChild(child_id, list);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
-  ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider_->GetChildToParentMap(child_id);
 
   unsigned parent_id = resource_map[list.front().id];

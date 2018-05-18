@@ -8,9 +8,10 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/filter_operations.h"
-#include "cc/resources/resource_provider.h"
 #include "cc/resources/video_resource_updater.h"
 #include "cc/scheduler/video_frame_controller.h"
+#include "components/viz/common/resources/resource_id.h"
+#include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "media/base/video_frame.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
@@ -203,7 +204,7 @@ void VideoFrameSubmitter::SubmitFrame(
   compositor_frame.metadata.device_scale_factor = 1;
   compositor_frame.metadata.may_contain_video = true;
 
-  cc::ResourceProvider::ResourceIdArray resources;
+  std::vector<viz::ResourceId> resources;
   for (auto* quad : render_pass->quad_list) {
     for (viz::ResourceId resource_id : quad->resources) {
       resources.push_back(resource_id);

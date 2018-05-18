@@ -22,12 +22,6 @@ using gpu::gles2::GLES2Interface;
 
 namespace cc {
 
-namespace {
-// The resource id in LayerTreeResourceProvider starts from 1 to avoid
-// conflicts with id from DisplayResourceProvider.
-const unsigned int kLayerTreeInitialResourceId = 1;
-}  // namespace
-
 struct LayerTreeResourceProvider::ImportedResource {
   viz::TransferableResource resource;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
@@ -60,8 +54,7 @@ LayerTreeResourceProvider::LayerTreeResourceProvider(
     viz::ContextProvider* compositor_context_provider,
     bool delegated_sync_points_required)
     : delegated_sync_points_required_(delegated_sync_points_required),
-      compositor_context_provider_(compositor_context_provider),
-      next_id_(kLayerTreeInitialResourceId) {
+      compositor_context_provider_(compositor_context_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 

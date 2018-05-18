@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "cc/resources/resource_provider.h"
+#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"

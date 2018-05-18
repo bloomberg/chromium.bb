@@ -8,7 +8,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "cc/resources/resource_provider.h"
+#include "cc/resources/display_resource_provider.h"
+#include "cc/resources/layer_tree_resource_provider.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
@@ -17,7 +18,9 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
+#include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/geometry/rect.h"
@@ -287,7 +290,7 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
       child_resource_provider, kSyncTokenForMailboxTextureQuad);
 
   // Transfer resource to the parent.
-  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  std::vector<viz::ResourceId> resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(resource1);
   resource_ids_to_transfer.push_back(resource2);
   resource_ids_to_transfer.push_back(resource3);
@@ -317,7 +320,7 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
 
   // Before create DrawQuad in DisplayResourceProvider's namespace, get the
   // mapped resource id first.
-  ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider->GetChildToParentMap(child_id);
   viz::ResourceId mapped_resource1 = resource_map[resource1];
   viz::ResourceId mapped_resource2 = resource_map[resource2];

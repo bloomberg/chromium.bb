@@ -5,7 +5,6 @@
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 
 #include "base/macros.h"
-#include "cc/resources/resource_provider.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -23,6 +22,7 @@
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 using testing::UnorderedElementsAre;
 using testing::IsEmpty;
