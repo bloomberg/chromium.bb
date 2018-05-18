@@ -15,7 +15,7 @@ source_set("support") {
   deps = [
     "../rule_parser",
     "//base",
-    "//components/url_pattern_index",
+    "//components/subresource_filter/core/common",
     "//components/url_pattern_index/proto:url_pattern_index",
     "//third_party/protobuf:protobuf_lite",
   ]

@@ -20,7 +20,8 @@ enum class RulesetFormat {
   // A serialized url_pattern_index::proto::FilteringRules message.
   kProto,
   // UnindexedRuleset format. See
-  // //components/url_pattern_index/unindexed_ruleset.* for details.
+  // //components/subresource_filter/core/common/unindexed_ruleset.* for
+  // details.
   kUnindexedRuleset,
 };
 
