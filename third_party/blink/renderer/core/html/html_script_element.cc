@@ -205,7 +205,6 @@ Document& HTMLScriptElement::GetDocument() const {
 }
 
 void HTMLScriptElement::DispatchLoadEvent() {
-  DCHECK(!loader_->HaveFiredLoadEvent());
   DispatchEvent(Event::Create(EventTypeNames::load));
 }
 

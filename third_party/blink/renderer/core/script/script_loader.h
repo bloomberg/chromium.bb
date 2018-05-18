@@ -98,14 +98,10 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // The entry point only for ScriptRunner that wraps ExecuteScriptBlock().
   virtual void Execute();
 
-  bool HaveFiredLoadEvent() const { return have_fired_load_; }
   bool WillBeParserExecuted() const { return will_be_parser_executed_; }
   bool ReadyToBeParserExecuted() const { return ready_to_be_parser_executed_; }
   bool WillExecuteWhenDocumentFinishedParsing() const {
     return will_execute_when_document_finished_parsing_;
-  }
-  void SetHaveFiredLoadEvent(bool have_fired_load) {
-    have_fired_load_ = have_fired_load;
   }
   bool IsParserInserted() const { return parser_inserted_; }
   bool AlreadyStarted() const { return already_started_; }
@@ -208,8 +204,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // href="https://html.spec.whatwg.org/multipage/scripting.html#concept-script-external">
   // ... It is determined when the script is prepared, ...</spec>
   bool is_external_script_ = false;
-
-  bool have_fired_load_;
 
   // Same as "The parser will handle executing the script."
   bool will_be_parser_executed_;
