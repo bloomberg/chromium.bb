@@ -6,8 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNK_H_
 
 #include <iosfwd>
+#include <memory>
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/hit_test_data.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/graphics/paint/ref_counted_property_tree_state.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -45,7 +47,8 @@ struct PLATFORM_EXPORT PaintChunk {
         outset_for_raster_effects(0),
         known_to_be_opaque(false),
         is_cacheable(cacheable == kCacheable),
-        client_is_just_created(id.client.IsJustCreated()) {}
+        client_is_just_created(id.client.IsJustCreated()),
+        hit_test_data(nullptr) {}
 
   size_t size() const {
     DCHECK_GE(end_index, begin_index);
@@ -69,6 +72,19 @@ struct PLATFORM_EXPORT PaintChunk {
     // chunk's client is just created at the same address of the old chunk's
     // deleted client).
     return !client_is_just_created;
+  }
+
+  HitTestData& EnsureHitTestData() {
+    if (!hit_test_data)
+      hit_test_data = std::make_unique<HitTestData>();
+    return *hit_test_data.get();
+  }
+
+  size_t MemoryUsageInBytes() const {
+    size_t total_size = sizeof(*this);
+    if (hit_test_data)
+      total_size += sizeof(*hit_test_data);
+    return total_size;
   }
 
   // Index of the first drawing in this chunk.
@@ -103,6 +119,20 @@ struct PLATFORM_EXPORT PaintChunk {
   bool client_is_just_created : 1;
 
   String ToString() const;
+
+  bool operator==(const PaintChunk& rhs) const {
+    return begin_index == rhs.begin_index && end_index == rhs.end_index &&
+           id == rhs.id && properties == rhs.properties &&
+           is_cacheable == rhs.is_cacheable &&
+           ((!hit_test_data && !rhs.hit_test_data) ||
+            (hit_test_data && rhs.hit_test_data &&
+             *hit_test_data == *rhs.hit_test_data));
+  }
+
+  bool operator!=(const PaintChunk& rhs) const { return !(*this == rhs); }
+
+ private:
+  std::unique_ptr<HitTestData> hit_test_data;
 };
 
 inline bool ChunkLessThanIndex(const PaintChunk& chunk, size_t index) {
@@ -124,16 +154,6 @@ inline Vector<PaintChunk>::const_iterator FindChunkInVectorByDisplayItemIndex(
     size_t index) {
   return FindChunkInVectorByDisplayItemIndex(
       const_cast<Vector<PaintChunk>&>(chunks), index);
-}
-
-inline bool operator==(const PaintChunk& a, const PaintChunk& b) {
-  return a.begin_index == b.begin_index && a.end_index == b.end_index &&
-         a.id == b.id && a.properties == b.properties &&
-         a.is_cacheable == b.is_cacheable;
-}
-
-inline bool operator!=(const PaintChunk& a, const PaintChunk& b) {
-  return !(a == b);
 }
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const PaintChunk&);

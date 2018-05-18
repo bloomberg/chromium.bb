@@ -124,27 +124,37 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   auto check_chunks = [&]() {
     // Check that new paint chunks were forced for |container1| and
     // |container2|.
-    EXPECT_THAT(
-        RootPaintController().GetPaintArtifact().PaintChunks(),
-        ElementsAre(
-            PaintChunk(0, 1, PaintChunk::Id(view_chunk_client, view_chunk_type),
-                       view_chunk_state),
-            PaintChunk(1, 2,
-                       PaintChunk::Id(*container1_layer, chunk_background_type),
-                       other_chunk_state),
-            PaintChunk(2, 3,
-                       PaintChunk::Id(*container1_layer, chunk_foreground_type),
-                       other_chunk_state),
-            PaintChunk(3, 4, PaintChunk::Id(*filler1_layer, filler_chunk_type),
-                       other_chunk_state),
-            PaintChunk(4, 5,
-                       PaintChunk::Id(*container2_layer, chunk_background_type),
-                       other_chunk_state),
-            PaintChunk(5, 6,
-                       PaintChunk::Id(*container2_layer, chunk_foreground_type),
-                       other_chunk_state),
-            PaintChunk(6, 7, PaintChunk::Id(*filler2_layer, filler_chunk_type),
-                       other_chunk_state)));
+    const auto& paint_chunks =
+        RootPaintController().GetPaintArtifact().PaintChunks();
+    EXPECT_EQ(paint_chunks.size(), 7u);
+    EXPECT_EQ(
+        paint_chunks[0],
+        PaintChunk(0, 1, PaintChunk::Id(view_chunk_client, view_chunk_type),
+                   view_chunk_state));
+    EXPECT_EQ(paint_chunks[1], PaintChunk(1, 2,
+                                          PaintChunk::Id(*container1_layer,
+                                                         chunk_background_type),
+                                          other_chunk_state));
+    EXPECT_EQ(paint_chunks[2], PaintChunk(2, 3,
+                                          PaintChunk::Id(*container1_layer,
+                                                         chunk_foreground_type),
+                                          other_chunk_state));
+    EXPECT_EQ(
+        paint_chunks[3],
+        PaintChunk(3, 4, PaintChunk::Id(*filler1_layer, filler_chunk_type),
+                   other_chunk_state));
+    EXPECT_EQ(paint_chunks[4], PaintChunk(4, 5,
+                                          PaintChunk::Id(*container2_layer,
+                                                         chunk_background_type),
+                                          other_chunk_state));
+    EXPECT_EQ(paint_chunks[5], PaintChunk(5, 6,
+                                          PaintChunk::Id(*container2_layer,
+                                                         chunk_foreground_type),
+                                          other_chunk_state));
+    EXPECT_EQ(
+        paint_chunks[6],
+        PaintChunk(6, 7, PaintChunk::Id(*filler2_layer, filler_chunk_type),
+                   other_chunk_state));
   };
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())

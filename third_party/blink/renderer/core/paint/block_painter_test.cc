@@ -41,7 +41,8 @@ TEST_P(BlockPainterTest, ScrollHitTestProperties) {
                       TestDisplayItem(container, kBackgroundType),
                       TestDisplayItem(container, kScrollHitTestType),
                       TestDisplayItem(child, kBackgroundType));
-  auto paint_chunks = RootPaintController().GetPaintArtifact().PaintChunks();
+  const auto& paint_chunks =
+      RootPaintController().GetPaintArtifact().PaintChunks();
   EXPECT_EQ(4u, paint_chunks.size());
   const auto& root_chunk = RootPaintController().PaintChunks()[0];
   EXPECT_EQ(GetLayoutView().Layer(), &root_chunk.id.client);
@@ -115,7 +116,8 @@ TEST_P(BlockPainterTest, FrameScrollHitTestProperties) {
                       TestDisplayItem(GetLayoutView(), kScrollHitTestType),
                       TestDisplayItem(child, kBackgroundType));
 
-  auto paint_chunks = RootPaintController().GetPaintArtifact().PaintChunks();
+  const auto& paint_chunks =
+      RootPaintController().GetPaintArtifact().PaintChunks();
   EXPECT_EQ(3u, paint_chunks.size());
   const auto& root_chunk = RootPaintController().PaintChunks()[0];
   EXPECT_EQ(GetLayoutView().Layer(), &root_chunk.id.client);
