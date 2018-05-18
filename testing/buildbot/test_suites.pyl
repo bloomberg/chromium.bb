@@ -362,6 +362,9 @@
   'chromeos_gtests': {
     'cacheinvalidation_unittests': {},
     'capture_unittests': {},
+    'cros_vm_sanity_test': {
+      'experiment_percentage': 100,
+    },
     'crypto_unittests': {},
     'midi_unittests': {},
     'google_apis_unittests': {},
