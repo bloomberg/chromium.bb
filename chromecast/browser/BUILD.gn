@@ -256,6 +256,8 @@ cast_source_set("browser") {
       "extensions/api/identity/identity_api.h",
       "extensions/api/module/module.cc",
       "extensions/api/module/module.h",
+      "extensions/api/notifications/notifications_api.cc",
+      "extensions/api/notifications/notifications_api.h",
       "extensions/api/tts/tts_engine_extension_api.cc",
       "extensions/api/tts/tts_engine_extension_api.h",
       "extensions/api/tts/tts_engine_extension_observer.cc",
