@@ -1069,6 +1069,30 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
             rwhv_nested->GetCompositorViewportPixelSize());
 }
 
+// Verify an OOPIF resize handler doesn't fire immediately after load without
+// the frame having been resized. See https://crbug.com/826457.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NoResizeAfterIframeLoad) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  FrameTreeNode* iframe = root->child_at(0);
+  GURL site_url =
+      embedded_test_server()->GetURL("b.com", "/page_with_resize_handler.html");
+  NavigateFrameToURL(iframe, site_url);
+
+  int resizes = -1;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      iframe->current_frame_host(),
+      "window.domAutomationController.send(resize_count);", &resizes));
+
+  // Should be zero because the iframe only has its initial size from parent.
+  EXPECT_EQ(resizes, 0);
+}
+
 // Test that the view bounds for an out-of-process iframe are set and updated
 // correctly, including accounting for local frame offsets in the parent and
 // scroll positions.

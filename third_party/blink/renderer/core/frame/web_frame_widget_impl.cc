@@ -200,7 +200,12 @@ void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
 
   // FIXME: Investigate whether this is needed; comment from eseidel suggests
   // that this function is flawed.
-  SendResizeEventAndRepaint();
+  // TODO(kenrb): It would probably make more sense to check whether lifecycle
+  // updates are throttled in the root's LocalFrameView, but for OOPIFs that
+  // doesn't happen. Need to investigate if OOPIFs can be throttled during
+  // load.
+  if (LocalRootImpl()->GetFrame()->GetDocument()->IsLoadCompleted())
+    SendResizeEventAndRepaint();
 }
 
 void WebFrameWidgetImpl::SendResizeEventAndRepaint() {
