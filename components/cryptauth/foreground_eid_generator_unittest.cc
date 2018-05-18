@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/raw_eid_generator_impl.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -542,7 +542,7 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
                                 kDefaultAdvertisingDevicePublicKey);
 
   std::string device_id =
-      RemoteDevice::GenerateDeviceId(kDefaultAdvertisingDevicePublicKey);
+      RemoteDeviceRef::GenerateDeviceId(kDefaultAdvertisingDevicePublicKey);
   std::vector<std::string> device_id_list = {device_id};
   std::string identified_device_id =
       eid_generator_->IdentifyRemoteDeviceByAdvertisement(
@@ -564,7 +564,7 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
       1, static_cast<char>(ForegroundEidGenerator::kBluetooth4Flag));
 
   std::string device_id =
-      RemoteDevice::GenerateDeviceId(kDefaultAdvertisingDevicePublicKey);
+      RemoteDeviceRef::GenerateDeviceId(kDefaultAdvertisingDevicePublicKey);
   std::vector<std::string> device_id_list = {device_id};
   std::string identified_device_id =
       eid_generator_->IdentifyRemoteDeviceByAdvertisement(
@@ -585,7 +585,7 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
   service_data.append("extra_flag_bytes");
 
   std::string device_id =
-      RemoteDevice::GenerateDeviceId(kDefaultAdvertisingDevicePublicKey);
+      RemoteDeviceRef::GenerateDeviceId(kDefaultAdvertisingDevicePublicKey);
   std::vector<std::string> device_id_list = {device_id};
   std::string identified_device_id =
       eid_generator_->IdentifyRemoteDeviceByAdvertisement(
@@ -617,7 +617,7 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
                                 kDefaultAdvertisingDevicePublicKey);
 
   std::string device_id =
-      RemoteDevice::GenerateDeviceId(kDefaultAdvertisingDevicePublicKey);
+      RemoteDeviceRef::GenerateDeviceId(kDefaultAdvertisingDevicePublicKey);
   std::vector<std::string> device_id_list = {device_id, "wrongDeviceId"};
   std::string identified_device_id =
       eid_generator_->IdentifyRemoteDeviceByAdvertisement(

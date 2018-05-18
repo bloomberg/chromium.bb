@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_screenlock_state_handler.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
 #include "chromeos/components/proximity_auth/screenlock_state.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class AccountId;
@@ -268,7 +268,7 @@ class EasyUnlockService : public KeyedService {
   // are loaded for |account_id|.
   void SetProximityAuthDevices(
       const AccountId& account_id,
-      const cryptauth::RemoteDeviceList& remote_devices);
+      const cryptauth::RemoteDeviceRefList& remote_devices);
 
  private:
   // A class to detect whether a bluetooth adapter is present.
@@ -315,7 +315,7 @@ class EasyUnlockService : public KeyedService {
   std::unique_ptr<BluetoothDetector> bluetooth_detector_;
 
   // Handles connecting, authenticating, and updating the UI on the lock/sign-in
-  // screen. After a |RemoteDevice| instance is provided, this object will
+  // screen. After a |RemoteDeviceRef| instance is provided, this object will
   // handle the rest.
   // TODO(tengs): This object is intended as a replacement of the background
   // page of the easy_unlock Chrome app. We are in the process of removing the

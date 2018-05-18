@@ -146,7 +146,7 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
     pref_manager_->SetEasyUnlockEnabledStateSet();
     LogSmartLockEnabledState(SmartLockEnabledState::ENABLED);
   } else {
-    SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceList());
+    SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceRefList());
 
     if (pref_manager_->IsEasyUnlockEnabledStateSet()) {
       LogSmartLockEnabledState(SmartLockEnabledState::DISABLED);
@@ -181,23 +181,29 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
 
 void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
     const cryptauth::RemoteDeviceList& remote_devices) {
-  SetProximityAuthDevices(GetAccountId(), remote_devices);
+  cryptauth::RemoteDeviceRefList remote_device_refs;
+  for (auto& remote_device : remote_devices) {
+    remote_device_refs.push_back(cryptauth::RemoteDeviceRef(
+        std::make_shared<cryptauth::RemoteDevice>(remote_device)));
+  }
+
+  SetProximityAuthDevices(GetAccountId(), remote_device_refs);
 
   // We need to store a copy of |remote devices_| in the TPM, so it can be
   // retrieved on the sign-in screen when a user session has not been started
   // yet.
   std::unique_ptr<base::ListValue> device_list(new base::ListValue());
-  for (const auto& device : remote_devices) {
+  for (const auto& device : remote_device_refs) {
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     std::string b64_public_key, b64_psk;
-    base::Base64UrlEncode(device.public_key,
+    base::Base64UrlEncode(device.public_key(),
                           base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                           &b64_public_key);
-    base::Base64UrlEncode(device.persistent_symmetric_key,
+    base::Base64UrlEncode(device.persistent_symmetric_key(),
                           base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                           &b64_psk);
 
-    dict->SetString("name", device.name);
+    dict->SetString("name", device.name());
     dict->SetString("psk", b64_psk);
     // TODO(jhawkins): Remove the bluetoothAddress field from this proto.
     dict->SetString("bluetoothAddress", std::string());
@@ -208,7 +214,7 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
     dict->SetString("permitRecord.data", b64_public_key);
 
     std::unique_ptr<base::ListValue> beacon_seed_list(new base::ListValue());
-    for (const auto& beacon_seed : device.beacon_seeds) {
+    for (const auto& beacon_seed : device.beacon_seeds()) {
       std::string b64_beacon_seed;
       base::Base64UrlEncode(beacon_seed.SerializeAsString(),
                             base::Base64UrlEncodePolicy::INCLUDE_PADDING,
@@ -641,7 +647,7 @@ void EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete(
       cryptauth::InvocationReason::INVOCATION_REASON_FEATURE_TOGGLED);
   EasyUnlockService::ResetLocalStateForUser(GetAccountId());
   SetRemoteDevices(base::ListValue());
-  SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceList());
+  SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceRefList());
   pref_manager_->SetIsEasyUnlockEnabled(false);
   SetTurnOffFlowStatus(IDLE);
   pref_manager_->SetIsEasyUnlockEnabled(false);

@@ -65,11 +65,13 @@ namespace {
 const char kTestUserPrivateKey[] = "kTestUserPrivateKey";
 const size_t kNumTestDevices = 5;
 
-cryptauth::RemoteDeviceList CreateTestDevices() {
-  cryptauth::RemoteDeviceList list =
-      cryptauth::GenerateTestRemoteDevices(kNumTestDevices);
-  for (auto& remote_device : list)
-    remote_device.supports_mobile_hotspot = true;
+cryptauth::RemoteDeviceRefList CreateTestDevices() {
+  cryptauth::RemoteDeviceRefList list;
+  for (size_t i = 0; i < kNumTestDevices; ++i) {
+    list.push_back(cryptauth::RemoteDeviceRefBuilder()
+                       .SetSupportsMobileHotspot(true)
+                       .Build());
+  }
   return list;
 }
 
@@ -213,7 +215,7 @@ class FakeTetherHostFetcherFactory
     : public chromeos::tether::TetherHostFetcherImpl::Factory {
  public:
   FakeTetherHostFetcherFactory(
-      const cryptauth::RemoteDeviceList& initial_devices)
+      const cryptauth::RemoteDeviceRefList& initial_devices)
       : initial_devices_(initial_devices) {}
   virtual ~FakeTetherHostFetcherFactory() = default;
 
@@ -232,7 +234,7 @@ class FakeTetherHostFetcherFactory
   }
 
  private:
-  cryptauth::RemoteDeviceList initial_devices_;
+  cryptauth::RemoteDeviceRefList initial_devices_;
   chromeos::tether::FakeTetherHostFetcher* last_created_ = nullptr;
 };
 
@@ -433,7 +435,7 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
     shutdown_reason_verified_ = true;
   }
 
-  const cryptauth::RemoteDeviceList test_devices_;
+  const cryptauth::RemoteDeviceRefList test_devices_;
   const content::TestBrowserThreadBundle thread_bundle_;
 
   std::unique_ptr<TestingProfile> profile_;

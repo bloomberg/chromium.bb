@@ -212,7 +212,7 @@ void TetherComponentImpl::InitiateShutdown() {
       ActiveHost::ActiveHostStatus::DISCONNECTED) {
     PA_LOG(INFO) << "There was an active connection during Tether shutdown. "
                  << "Initiating disconnection from device ID \""
-                 << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+                 << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
                         active_host->GetActiveHostDeviceId())
                  << "\".";
     tether_disconnector->DisconnectFromNetwork(

@@ -52,7 +52,7 @@ void KeepAliveScheduler::OnActiveHostChanged(
     DCHECK(change_info.new_wifi_network_guid.empty());
 
     keep_alive_operation_.reset();
-    active_host_device_.reset();
+    active_host_device_ = base::nullopt;
     timer_->Stop();
     return;
   }
@@ -69,10 +69,10 @@ void KeepAliveScheduler::OnActiveHostChanged(
 }
 
 void KeepAliveScheduler::OnOperationFinished(
-    const cryptauth::RemoteDevice& remote_device,
+    cryptauth::RemoteDeviceRef remote_device,
     std::unique_ptr<DeviceStatus> device_status) {
   // Make a copy before destroying the operation below.
-  const cryptauth::RemoteDevice device_copy = remote_device;
+  const cryptauth::RemoteDeviceRef device_copy = remote_device;
 
   keep_alive_operation_->RemoveObserver(this);
   keep_alive_operation_.reset();
@@ -96,7 +96,7 @@ void KeepAliveScheduler::OnOperationFinished(
            .SetTetherNetworkGuid(
                device_id_tether_network_guid_map_
                    ->GetTetherNetworkGuidForDeviceId(device_copy.GetDeviceId()))
-           .SetDeviceName(device_copy.name)
+           .SetDeviceName(device_copy.name())
            .SetCarrier(carrier)
            .SetBatteryPercentage(battery_percentage)
            .SetSignalStrength(signal_strength)

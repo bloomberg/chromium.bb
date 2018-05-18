@@ -18,7 +18,7 @@
 #include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/connection_observer.h"
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -38,8 +38,7 @@ class BluetoothLowEnergyConnectionFinder
   // advertised by the remote device.
   //
   // |remote_device|: The BLE remote device.
-  BluetoothLowEnergyConnectionFinder(
-      const cryptauth::RemoteDevice remote_device);
+  BluetoothLowEnergyConnectionFinder(cryptauth::RemoteDeviceRef remote_device);
 
   ~BluetoothLowEnergyConnectionFinder() override;
 
@@ -63,7 +62,7 @@ class BluetoothLowEnergyConnectionFinder
 
  protected:
   BluetoothLowEnergyConnectionFinder(
-      const cryptauth::RemoteDevice remote_device,
+      const cryptauth::RemoteDeviceRef remote_device,
       const std::string& service_uuid,
       std::unique_ptr<cryptauth::BackgroundEidGenerator> eid_generator);
 
@@ -106,7 +105,7 @@ class BluetoothLowEnergyConnectionFinder
   // The remote BLE device being searched. It maybe empty, in this case the
   // remote device should advertise |remote_service_uuid_| and
   // |advertised_name_|.
-  cryptauth::RemoteDevice remote_device_;
+  cryptauth::RemoteDeviceRef remote_device_;
 
   // The UUID of the service used by the Weave socket.
   std::string service_uuid_;

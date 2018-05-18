@@ -246,7 +246,7 @@ void SecureChannel::Authenticate() {
   DCHECK(!authenticator_);
 
   authenticator_ = DeviceToDeviceAuthenticator::Factory::NewInstance(
-      connection_.get(), connection_->remote_device().user_id,
+      connection_.get(), connection_->remote_device().user_id(),
       cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
   authenticator_->Authenticate(
       base::Bind(&SecureChannel::OnAuthenticationResult,

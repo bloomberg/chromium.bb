@@ -16,6 +16,9 @@ namespace cryptauth {
 
 struct RemoteDevice {
  public:
+  // Generates the device ID for a device given its public key.
+  static std::string GenerateDeviceId(const std::string& public_key);
+
   std::string user_id;
   std::string name;
   std::string public_key;
@@ -46,32 +49,13 @@ struct RemoteDevice {
   // Loads a vector of BeaconSeeds for the RemoteDevice.
   void LoadBeaconSeeds(const std::vector<BeaconSeed>& beacon_seeds);
 
-  // Returns a unique ID for the device.
   std::string GetDeviceId() const;
-
-  SoftwareFeatureState GetSoftwareFeatureState(
-      const SoftwareFeature& software_feature) const;
-
-  // Returns a shortened device ID for the purpose of concise logging (device
-  // IDs are often so long that logs are difficult to read). Note that this
-  // ID is not guaranteed to be unique, so it should only be used for log.
-  std::string GetTruncatedDeviceIdForLogs() const;
 
   bool operator==(const RemoteDevice& other) const;
 
   // Compares devices via their public keys. Note that this function is
   // necessary in order to use |RemoteDevice| as a key of a std::map.
   bool operator<(const RemoteDevice& other) const;
-
-  // Generates the device ID for a device given its public key.
-  static std::string GenerateDeviceId(const std::string& public_key);
-
-  // Derives the public key that was used to generate the given device ID;
-  // returns empty string if |device_id| is not a valid device ID.
-  static std::string DerivePublicKey(const std::string& device_id);
-
-  // Static method for truncated device ID for logs.
-  static std::string TruncateDeviceIdForLogs(const std::string& full_id);
 };
 
 typedef std::vector<RemoteDevice> RemoteDeviceList;

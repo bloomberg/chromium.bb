@@ -24,7 +24,7 @@ DisconnectTetheringOperation::Factory*
 // static
 std::unique_ptr<DisconnectTetheringOperation>
 DisconnectTetheringOperation::Factory::NewInstance(
-    const cryptauth::RemoteDevice& device_to_connect,
+    cryptauth::RemoteDeviceRef device_to_connect,
     BleConnectionManager* connection_manager) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
@@ -41,17 +41,17 @@ void DisconnectTetheringOperation::Factory::SetInstanceForTesting(
 
 std::unique_ptr<DisconnectTetheringOperation>
 DisconnectTetheringOperation::Factory::BuildInstance(
-    const cryptauth::RemoteDevice& device_to_connect,
+    cryptauth::RemoteDeviceRef device_to_connect,
     BleConnectionManager* connection_manager) {
   return base::WrapUnique(
       new DisconnectTetheringOperation(device_to_connect, connection_manager));
 }
 
 DisconnectTetheringOperation::DisconnectTetheringOperation(
-    const cryptauth::RemoteDevice& device_to_connect,
+    cryptauth::RemoteDeviceRef device_to_connect,
     BleConnectionManager* connection_manager)
     : MessageTransferOperation(
-          std::vector<cryptauth::RemoteDevice>{device_to_connect},
+          cryptauth::RemoteDeviceRefList{device_to_connect},
           connection_manager),
       remote_device_(device_to_connect),
       has_sent_message_(false),
@@ -75,7 +75,7 @@ void DisconnectTetheringOperation::NotifyObserversOperationFinished(
 }
 
 void DisconnectTetheringOperation::OnDeviceAuthenticated(
-    const cryptauth::RemoteDevice& remote_device) {
+    cryptauth::RemoteDeviceRef remote_device) {
   DCHECK(remote_devices().size() == 1u && remote_devices()[0] == remote_device);
 
   disconnect_message_sequence_number_ = SendMessageToDevice(

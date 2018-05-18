@@ -13,7 +13,7 @@
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/fake_secure_context.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -64,7 +64,7 @@ class TestMessenger : public MessengerImpl {
  public:
   TestMessenger()
       : MessengerImpl(std::make_unique<cryptauth::FakeConnection>(
-                          cryptauth::CreateRemoteDeviceForTest()),
+                          cryptauth::CreateRemoteDeviceRefForTest()),
                       std::make_unique<cryptauth::FakeSecureContext>()) {}
   explicit TestMessenger(std::unique_ptr<cryptauth::Connection> connection)
       : MessengerImpl(std::move(connection),

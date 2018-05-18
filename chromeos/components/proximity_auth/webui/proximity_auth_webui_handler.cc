@@ -22,8 +22,8 @@
 #include "chromeos/components/proximity_auth/webui/reachable_phone_flow.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/remote_device_loader.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/secure_message_delegate_impl.h"
 #include "components/prefs/pref_service.h"
@@ -357,9 +357,13 @@ void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
     return;
   }
 
+  std::string selected_device_public_key;
+  if (selected_remote_device_)
+    selected_device_public_key = selected_remote_device_->public_key();
+
   for (const auto& unlock_key : device_manager->GetUnlockKeys()) {
     if (unlock_key.public_key() == public_key) {
-      if (life_cycle_ && selected_remote_device_.public_key == public_key) {
+      if (life_cycle_ && selected_device_public_key == public_key) {
         CleanUpRemoteDeviceLifeCycle();
         return;
       }
@@ -459,7 +463,7 @@ ProximityAuthWebUIHandler::GetTruncatedLocalDeviceId() {
                         &device_id);
 
   return std::make_unique<base::Value>(
-      cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id));
+      cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id));
 }
 
 std::unique_ptr<base::DictionaryValue>
@@ -506,14 +510,20 @@ ProximityAuthWebUIHandler::GetRemoteDevicesList() {
 }
 
 void ProximityAuthWebUIHandler::OnRemoteDevicesLoaded(
-    const std::vector<cryptauth::RemoteDevice>& remote_devices) {
+    const cryptauth::RemoteDeviceList& remote_devices) {
+  if (remote_devices.empty()) {
+    PA_LOG(WARNING) << "Remote device list is empty.";
+    return;
+  }
+
   if (remote_devices[0].persistent_symmetric_key.empty()) {
     PA_LOG(ERROR) << "Failed to derive PSK.";
     return;
   }
 
-  selected_remote_device_ = remote_devices[0];
-  life_cycle_.reset(new RemoteDeviceLifeCycleImpl(selected_remote_device_));
+  selected_remote_device_ = cryptauth::RemoteDeviceRef(
+      std::make_shared<cryptauth::RemoteDevice>(remote_devices[0]));
+  life_cycle_.reset(new RemoteDeviceLifeCycleImpl(*selected_remote_device_));
   life_cycle_->AddObserver(this);
   life_cycle_->Start();
 }
@@ -532,7 +542,7 @@ ProximityAuthWebUIHandler::ExternalDeviceInfoToDictionary(
   dictionary->SetString(kExternalDevicePublicKey, base64_public_key);
   dictionary->SetString(
       kExternalDevicePublicKeyTruncated,
-      cryptauth::RemoteDevice::TruncateDeviceIdForLogs(base64_public_key));
+      cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(base64_public_key));
   dictionary->SetString(kExternalDeviceFriendlyName,
                         device_info.friendly_device_name());
   dictionary->SetString(kExternalDeviceBluetoothAddress,
@@ -564,8 +574,12 @@ ProximityAuthWebUIHandler::ExternalDeviceInfoToDictionary(
         return unlock_key.public_key() == public_key;
       });
 
+  std::string selected_device_public_key;
+  if (selected_remote_device_)
+    selected_device_public_key = selected_remote_device_->public_key();
+
   if (iterator == unlock_keys.end() ||
-      selected_remote_device_.public_key != device_info.public_key())
+      selected_device_public_key != device_info.public_key())
     return dictionary;
 
   // Fill in the current Bluetooth connection status.
@@ -612,9 +626,12 @@ ProximityAuthWebUIHandler::IneligibleDeviceToDictionary(
 }
 
 void ProximityAuthWebUIHandler::CleanUpRemoteDeviceLifeCycle() {
-  PA_LOG(INFO) << "Cleaning up connection to " << selected_remote_device_.name;
+  if (selected_remote_device_) {
+    PA_LOG(INFO) << "Cleaning up connection to "
+                 << selected_remote_device_->name();
+  }
   life_cycle_.reset();
-  selected_remote_device_ = cryptauth::RemoteDevice();
+  selected_remote_device_ = base::nullopt;
   last_remote_status_update_.reset();
   web_ui()->CallJavascriptFunctionUnsafe(
       "LocalStateInterface.onRemoteDevicesChanged", *GetRemoteDevicesList());

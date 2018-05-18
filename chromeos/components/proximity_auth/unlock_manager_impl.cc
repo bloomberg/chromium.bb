@@ -20,7 +20,7 @@
 #include "chromeos/components/proximity_auth/proximity_auth_pref_manager.h"
 #include "chromeos/components/proximity_auth/proximity_monitor_impl.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/secure_context.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
@@ -333,9 +333,9 @@ void UnlockManagerImpl::SendSignInChallenge() {
     return;
   }
 
-  cryptauth::RemoteDevice remote_device = life_cycle_->GetRemoteDevice();
+  cryptauth::RemoteDeviceRef remote_device = life_cycle_->GetRemoteDevice();
   proximity_auth_client_->GetChallengeForUserAndDevice(
-      remote_device.user_id, remote_device.public_key,
+      remote_device.user_id(), remote_device.public_key(),
       GetMessenger()->GetSecureContext()->GetChannelBindingData(),
       base::Bind(&UnlockManagerImpl::OnGotSignInChallenge,
                  weak_ptr_factory_.GetWeakPtr()));

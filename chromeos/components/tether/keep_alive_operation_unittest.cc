@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
@@ -34,7 +35,7 @@ class TestObserver final : public KeepAliveOperation::Observer {
 
   bool has_run_callback() { return has_run_callback_; }
 
-  cryptauth::RemoteDevice last_remote_device_received() {
+  base::Optional<cryptauth::RemoteDeviceRef> last_remote_device_received() {
     return last_remote_device_received_;
   }
 
@@ -43,7 +44,7 @@ class TestObserver final : public KeepAliveOperation::Observer {
   }
 
   void OnOperationFinished(
-      const cryptauth::RemoteDevice& remote_device,
+      cryptauth::RemoteDeviceRef remote_device,
       std::unique_ptr<DeviceStatus> device_status) override {
     has_run_callback_ = true;
     last_remote_device_received_ = remote_device;
@@ -52,7 +53,7 @@ class TestObserver final : public KeepAliveOperation::Observer {
 
  private:
   bool has_run_callback_;
-  cryptauth::RemoteDevice last_remote_device_received_;
+  base::Optional<cryptauth::RemoteDeviceRef> last_remote_device_received_;
   std::unique_ptr<DeviceStatus> last_device_status_received_;
 };
 
@@ -74,7 +75,7 @@ class KeepAliveOperationTest : public testing::Test {
  protected:
   KeepAliveOperationTest()
       : keep_alive_tickle_string_(CreateKeepAliveTickleString()),
-        test_device_(cryptauth::GenerateTestRemoteDevices(1)[0]) {}
+        test_device_(cryptauth::CreateRemoteDeviceRefListForTest(1)[0]) {}
 
   void SetUp() override {
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
@@ -103,7 +104,7 @@ class KeepAliveOperationTest : public testing::Test {
   }
 
   const std::string keep_alive_tickle_string_;
-  const cryptauth::RemoteDevice test_device_;
+  const cryptauth::RemoteDeviceRef test_device_;
 
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   base::SimpleTestClock test_clock_;
@@ -146,6 +147,7 @@ TEST_F(KeepAliveOperationTest, TestCannotConnect) {
 
   // The maximum number of connection failures has occurred.
   EXPECT_TRUE(test_observer_->has_run_callback());
+  ASSERT_TRUE(test_observer_->last_remote_device_received());
   EXPECT_EQ(test_device_, test_observer_->last_remote_device_received());
   EXPECT_FALSE(test_observer_->last_device_status_received());
 

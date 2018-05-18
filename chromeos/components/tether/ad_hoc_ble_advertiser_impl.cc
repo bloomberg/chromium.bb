@@ -9,7 +9,7 @@
 #include "chromeos/components/tether/error_tolerant_ble_advertisement_impl.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "components/cryptauth/ble/ble_advertisement_generator.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -50,7 +50,8 @@ void AdHocBleAdvertiserImpl::RequestGattServicesForDevice(
   if (device_id_to_advertisement_with_timer_map_.find(device_id) !=
       device_id_to_advertisement_with_timer_map_.end()) {
     PA_LOG(INFO) << "Advertisement already in progress to device with ID \""
-                 << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+                 << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                        device_id)
                  << "\".";
     return;
   }
@@ -61,7 +62,7 @@ void AdHocBleAdvertiserImpl::RequestGattServicesForDevice(
           device_id, local_device_data_provider_, remote_beacon_seed_fetcher_);
   if (!service_data) {
     PA_LOG(WARNING) << "Cannot generate advertisement for device with ID \""
-                    << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            device_id)
                     << "\"; GATT services cannot be requested.";
     return;
@@ -72,7 +73,7 @@ void AdHocBleAdvertiserImpl::RequestGattServicesForDevice(
           device_id, std::move(service_data), ble_synchronizer_);
 
   PA_LOG(INFO) << "Requesting GATT services for device with ID \""
-               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
                << "\" by creating a new advertisement to that device.";
 
   std::unique_ptr<base::Timer> timer = timer_factory_->CreateOneShotTimer();
@@ -93,13 +94,14 @@ void AdHocBleAdvertiserImpl::OnTimerFired(const std::string& device_id) {
   auto it = device_id_to_advertisement_with_timer_map_.find(device_id);
   if (it == device_id_to_advertisement_with_timer_map_.end()) {
     PA_LOG(ERROR) << "Timer fired for device with ID \""
-                  << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                         device_id)
                   << "\", but that device is not present in the map.";
     return;
   }
 
   PA_LOG(INFO) << "Stopping workaround advertisement for device with ID \""
-               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
                << "\".";
 
   it->second.advertisement->Stop(
@@ -112,7 +114,8 @@ void AdHocBleAdvertiserImpl::OnAdvertisementStopped(
   auto it = device_id_to_advertisement_with_timer_map_.find(device_id);
   if (it == device_id_to_advertisement_with_timer_map_.end()) {
     PA_LOG(ERROR) << "Advertisement stopped for device ID \""
-                  << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                         device_id)
                   << "\", but that device is not present in the map.";
     return;
   }

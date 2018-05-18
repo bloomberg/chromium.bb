@@ -34,12 +34,12 @@ const uint32_t kTestTimeoutSeconds = 5;
 // order to create a concrete instantiation of the class.
 class TestOperation : public MessageTransferOperation {
  public:
-  TestOperation(const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
+  TestOperation(const cryptauth::RemoteDeviceRefList& devices_to_connect,
                 BleConnectionManager* connection_manager)
       : MessageTransferOperation(devices_to_connect, connection_manager) {}
   ~TestOperation() override = default;
 
-  bool HasDeviceAuthenticated(const cryptauth::RemoteDevice& remote_device) {
+  bool HasDeviceAuthenticated(cryptauth::RemoteDeviceRef remote_device) {
     const auto iter = device_map_.find(remote_device);
     if (iter == device_map_.end()) {
       return false;
@@ -49,7 +49,7 @@ class TestOperation : public MessageTransferOperation {
   }
 
   std::vector<std::shared_ptr<MessageWrapper>> GetReceivedMessages(
-      const cryptauth::RemoteDevice& remote_device) {
+      cryptauth::RemoteDeviceRef remote_device) {
     const auto iter = device_map_.find(remote_device);
     if (iter == device_map_.end()) {
       return std::vector<std::shared_ptr<MessageWrapper>>();
@@ -60,13 +60,12 @@ class TestOperation : public MessageTransferOperation {
 
   // MessageTransferOperation:
   void OnDeviceAuthenticated(
-      const cryptauth::RemoteDevice& remote_device) override {
+      cryptauth::RemoteDeviceRef remote_device) override {
     device_map_[remote_device].has_device_authenticated = true;
   }
 
-  void OnMessageReceived(
-      std::unique_ptr<MessageWrapper> message_wrapper,
-      const cryptauth::RemoteDevice& remote_device) override {
+  void OnMessageReceived(std::unique_ptr<MessageWrapper> message_wrapper,
+                         cryptauth::RemoteDeviceRef remote_device) override {
     device_map_[remote_device].received_messages.push_back(
         std::move(message_wrapper));
 
@@ -107,7 +106,7 @@ class TestOperation : public MessageTransferOperation {
     std::vector<std::shared_ptr<MessageWrapper>> received_messages;
   };
 
-  std::map<cryptauth::RemoteDevice, DeviceMapValue> device_map_;
+  std::map<cryptauth::RemoteDeviceRef, DeviceMapValue> device_map_;
 
   uint32_t timeout_seconds_ = kTestTimeoutSeconds;
   bool should_unregister_device_on_message_received_ = false;
@@ -157,7 +156,7 @@ TetherAvailabilityResponse CreateTetherAvailabilityResponse() {
 class MessageTransferOperationTest : public testing::Test {
  protected:
   MessageTransferOperationTest()
-      : test_devices_(cryptauth::GenerateTestRemoteDevices(4)) {
+      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(4)) {
     // These tests are written under the assumption that there are a maximum of
     // 3 "empty scan" connection attempts and 6 "GATT" connection attempts; the
     // tests need to be edited if these values change.
@@ -170,7 +169,7 @@ class MessageTransferOperationTest : public testing::Test {
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
   }
 
-  void ConstructOperation(std::vector<cryptauth::RemoteDevice> remote_devices) {
+  void ConstructOperation(cryptauth::RemoteDeviceRefList remote_devices) {
     test_timer_factory_ = new TestTimerFactory();
     operation_ = base::WrapUnique(
         new TestOperation(remote_devices, fake_ble_connection_manager_.get()));
@@ -193,7 +192,7 @@ class MessageTransferOperationTest : public testing::Test {
   }
 
   void TransitionDeviceStatusFromDisconnectedToAuthenticated(
-      const cryptauth::RemoteDevice& remote_device) {
+      cryptauth::RemoteDeviceRef remote_device) {
     test_timer_factory_->set_device_id_for_next_timer(
         remote_device.GetDeviceId());
 
@@ -215,25 +214,24 @@ class MessageTransferOperationTest : public testing::Test {
         BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
   }
 
-  base::MockTimer* GetTimerForDevice(
-      const cryptauth::RemoteDevice& remote_device) {
+  base::MockTimer* GetTimerForDevice(cryptauth::RemoteDeviceRef remote_device) {
     return test_timer_factory_->GetTimerForDeviceId(
         remote_device.GetDeviceId());
   }
 
   void VerifyDefaultTimerCreatedForDevice(
-      const cryptauth::RemoteDevice& remote_device) {
+      cryptauth::RemoteDeviceRef remote_device) {
     VerifyTimerCreatedForDevice(remote_device, kTestTimeoutSeconds);
   }
 
-  void VerifyTimerCreatedForDevice(const cryptauth::RemoteDevice& remote_device,
+  void VerifyTimerCreatedForDevice(cryptauth::RemoteDeviceRef remote_device,
                                    uint32_t timeout_seconds) {
     EXPECT_TRUE(GetTimerForDevice(remote_device));
     EXPECT_EQ(base::TimeDelta::FromSeconds(timeout_seconds),
               GetTimerForDevice(remote_device)->GetCurrentDelay());
   }
 
-  const std::vector<cryptauth::RemoteDevice> test_devices_;
+  const cryptauth::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   TestTimerFactory* test_timer_factory_;
@@ -244,7 +242,7 @@ class MessageTransferOperationTest : public testing::Test {
 };
 
 TEST_F(MessageTransferOperationTest, CannotReceiveResponse_RetryLimitReached) {
-  ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
+  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
   InitializeOperation();
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
@@ -297,7 +295,7 @@ TEST_F(MessageTransferOperationTest, CannotReceiveResponse_RetryLimitReached) {
 
 TEST_F(MessageTransferOperationTest,
        CannotCompleteGattConnection_RetryLimitReached) {
-  ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
+  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
   InitializeOperation();
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
@@ -315,7 +313,7 @@ TEST_F(MessageTransferOperationTest,
 }
 
 TEST_F(MessageTransferOperationTest, MixedConnectionAttemptFailures) {
-  ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
+  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
   InitializeOperation();
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
@@ -342,7 +340,7 @@ TEST_F(MessageTransferOperationTest, MixedConnectionAttemptFailures) {
 }
 
 TEST_F(MessageTransferOperationTest, TestFailsThenConnects_Unanswered) {
-  ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
+  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
   InitializeOperation();
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
@@ -371,7 +369,7 @@ TEST_F(MessageTransferOperationTest, TestFailsThenConnects_Unanswered) {
 }
 
 TEST_F(MessageTransferOperationTest, TestFailsThenConnects_GattError) {
-  ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
+  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
   InitializeOperation();
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
@@ -405,7 +403,7 @@ TEST_F(MessageTransferOperationTest, TestFailsThenConnects_GattError) {
 
 TEST_F(MessageTransferOperationTest,
        TestSuccessfulConnectionAndReceiveMessage) {
-  ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
+  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
   InitializeOperation();
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
@@ -461,7 +459,7 @@ TEST_F(MessageTransferOperationTest,
        TestSuccessfulConnectionAndReceiveMessage_TimeoutSeconds) {
   const uint32_t kTimeoutSeconds = 90;
 
-  ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
+  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
   InitializeOperation();
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
@@ -491,7 +489,7 @@ TEST_F(MessageTransferOperationTest,
 }
 
 TEST_F(MessageTransferOperationTest, TestAuthenticatesButTimesOut) {
-  ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
+  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
   InitializeOperation();
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
@@ -512,7 +510,7 @@ TEST_F(MessageTransferOperationTest, TestAuthenticatesButTimesOut) {
 TEST_F(MessageTransferOperationTest, TestRepeatedInputDevice) {
   // Construct with two copies of the same device.
   ConstructOperation(
-      std::vector<cryptauth::RemoteDevice>{test_devices_[0], test_devices_[0]});
+      cryptauth::RemoteDeviceRefList{test_devices_[0], test_devices_[0]});
   InitializeOperation();
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
@@ -539,7 +537,7 @@ TEST_F(MessageTransferOperationTest, TestRepeatedInputDevice) {
 }
 
 TEST_F(MessageTransferOperationTest, TestReceiveEventForOtherDevice) {
-  ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
+  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
   InitializeOperation();
   EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(
       test_devices_[0].GetDeviceId()));
@@ -569,7 +567,7 @@ TEST_F(MessageTransferOperationTest, TestReceiveEventForOtherDevice) {
 
 TEST_F(MessageTransferOperationTest,
        TestAlreadyAuthenticatedBeforeInitialization) {
-  ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
+  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
 
   // Simulate the authentication of |test_devices_[0]|'s channel before
   // initialization.
@@ -601,7 +599,7 @@ TEST_F(MessageTransferOperationTest,
 
 TEST_F(MessageTransferOperationTest,
        AlreadyAuthenticatedBeforeInitialization_TimesOut) {
-  ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
+  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
 
   // Simulate the authentication of |test_devices_[0]|'s channel before
   // initialization.

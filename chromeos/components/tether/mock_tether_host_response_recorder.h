@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "chromeos/components/tether/tether_host_response_recorder.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -23,9 +23,9 @@ class MockTetherHostResponseRecorder : public TetherHostResponseRecorder {
   ~MockTetherHostResponseRecorder() override;
 
   MOCK_METHOD1(RecordSuccessfulTetherAvailabilityResponse,
-               void(const cryptauth::RemoteDevice&));
+               void(cryptauth::RemoteDeviceRef));
   MOCK_METHOD1(RecordSuccessfulConnectTetheringResponse,
-               void(const cryptauth::RemoteDevice&));
+               void(cryptauth::RemoteDeviceRef));
   MOCK_CONST_METHOD0(GetPreviouslyAvailableHostIds, std::vector<std::string>());
   MOCK_CONST_METHOD0(GetPreviouslyConnectedHostIds, std::vector<std::string>());
 

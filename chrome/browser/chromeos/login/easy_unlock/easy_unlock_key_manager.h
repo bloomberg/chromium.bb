@@ -71,7 +71,7 @@ class EasyUnlockKeyManager {
       const AccountId& account_id,
       const EasyUnlockDeviceKeyDataList& data_list,
       base::ListValue* device_list);
-  static bool RemoteDeviceListToDeviceDataList(
+  static bool RemoteDeviceRefListToDeviceDataList(
       const base::ListValue& device_list,
       EasyUnlockDeviceKeyDataList* data_list);
 

@@ -44,7 +44,7 @@ class TestBleScannerObserver final : public BleScanner::Observer {
     return device_addresses_;
   }
 
-  const std::vector<cryptauth::RemoteDevice>& devices() { return devices_; }
+  const cryptauth::RemoteDeviceRefList& devices() { return devices_; }
 
   std::vector<bool>& discovery_session_state_changes() {
     return discovery_session_state_changes_;
@@ -52,7 +52,7 @@ class TestBleScannerObserver final : public BleScanner::Observer {
 
   // BleScanner::Observer:
   void OnReceivedAdvertisementFromDevice(
-      const cryptauth::RemoteDevice& remote_device,
+      cryptauth::RemoteDeviceRef remote_device,
       device::BluetoothDevice* bluetooth_device,
       bool is_background_advertisement) override {
     device_addresses_.push_back(bluetooth_device->GetAddress());
@@ -65,7 +65,7 @@ class TestBleScannerObserver final : public BleScanner::Observer {
 
  private:
   std::vector<std::string> device_addresses_;
-  std::vector<cryptauth::RemoteDevice> devices_;
+  cryptauth::RemoteDeviceRefList devices_;
   std::vector<bool> discovery_session_state_changes_;
 };
 
@@ -88,7 +88,7 @@ class DeletingObserver final : public BleScanner::Observer {
   }
 
   void OnReceivedAdvertisementFromDevice(
-      const cryptauth::RemoteDevice& remote_device,
+      cryptauth::RemoteDeviceRef remote_device,
       device::BluetoothDevice* bluetooth_device,
       bool is_background_advertisement) override {}
 
@@ -188,7 +188,7 @@ class BleScannerImplTest : public testing::Test {
   };
 
   BleScannerImplTest()
-      : test_devices_(cryptauth::GenerateTestRemoteDevices(3)),
+      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(3)),
         test_beacon_seeds_(CreateFakeBeaconSeeds()) {}
 
   void SetUp() override {
@@ -291,7 +291,7 @@ class BleScannerImplTest : public testing::Test {
   }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const std::vector<cryptauth::RemoteDevice> test_devices_;
+  const cryptauth::RemoteDeviceRefList test_devices_;
   const std::vector<cryptauth::BeaconSeed> test_beacon_seeds_;
 
   std::unique_ptr<cryptauth::MockLocalDeviceDataProvider>

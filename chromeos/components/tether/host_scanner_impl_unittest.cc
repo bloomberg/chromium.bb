@@ -57,13 +57,13 @@ class FakeHostScanDevicePrioritizer : public HostScanDevicePrioritizer {
 
   // Simply leave |remote_devices| as-is.
   void SortByHostScanOrder(
-      std::vector<cryptauth::RemoteDevice>* remote_devices) const override {}
+      cryptauth::RemoteDeviceRefList* remote_devices) const override {}
 };
 
 class FakeHostScannerOperation : public HostScannerOperation {
  public:
   FakeHostScannerOperation(
-      const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
+      const cryptauth::RemoteDeviceRefList& devices_to_connect,
       BleConnectionManager* connection_manager,
       HostScanDevicePrioritizer* host_scan_device_prioritizer,
       TetherHostResponseRecorder* tether_host_response_recorder,
@@ -88,7 +88,7 @@ class FakeHostScannerOperation : public HostScannerOperation {
 class FakeHostScannerOperationFactory : public HostScannerOperation::Factory {
  public:
   FakeHostScannerOperationFactory(
-      const std::vector<cryptauth::RemoteDevice>& test_devices)
+      const cryptauth::RemoteDeviceRefList& test_devices)
       : expected_devices_(test_devices) {}
   virtual ~FakeHostScannerOperationFactory() = default;
 
@@ -99,7 +99,7 @@ class FakeHostScannerOperationFactory : public HostScannerOperation::Factory {
  protected:
   // HostScannerOperation::Factory:
   std::unique_ptr<HostScannerOperation> BuildInstance(
-      const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
+      const cryptauth::RemoteDeviceRefList& devices_to_connect,
       BleConnectionManager* connection_manager,
       HostScanDevicePrioritizer* host_scan_device_prioritizer,
       TetherHostResponseRecorder* tether_host_response_recorder,
@@ -113,19 +113,19 @@ class FakeHostScannerOperationFactory : public HostScannerOperation::Factory {
   }
 
  private:
-  const std::vector<cryptauth::RemoteDevice>& expected_devices_;
+  const cryptauth::RemoteDeviceRefList& expected_devices_;
   std::vector<FakeHostScannerOperation*> created_operations_;
 };
 
 std::string GenerateCellProviderForDevice(
-    const cryptauth::RemoteDevice& remote_device) {
+    cryptauth::RemoteDeviceRef remote_device) {
   // Return a string unique to |remote_device|.
   return "cellProvider" + remote_device.GetTruncatedDeviceIdForLogs();
 }
 
 std::vector<HostScannerOperation::ScannedDeviceInfo>
 CreateFakeScannedDeviceInfos(
-    const std::vector<cryptauth::RemoteDevice>& remote_devices) {
+    const cryptauth::RemoteDeviceRefList& remote_devices) {
   // At least 4 ScannedDeviceInfos should be created to ensure that all 4 cases
   // described below are tested.
   EXPECT_GT(remote_devices.size(), 3u);
@@ -190,7 +190,7 @@ CreateFakeScannedDeviceInfos(
 class HostScannerImplTest : public NetworkStateTest {
  protected:
   HostScannerImplTest()
-      : test_devices_(cryptauth::GenerateTestRemoteDevices(4)),
+      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(4)),
         test_scanned_device_infos(CreateFakeScannedDeviceInfos(test_devices_)) {
   }
 
@@ -339,7 +339,7 @@ class HostScannerImplTest : public NetworkStateTest {
   void VerifyScannedDeviceInfoAndCacheEntryAreEquivalent(
       const HostScannerOperation::ScannedDeviceInfo& scanned_device_info,
       const HostScanCacheEntry& entry) {
-    EXPECT_EQ(scanned_device_info.remote_device.name, entry.device_name);
+    EXPECT_EQ(scanned_device_info.remote_device.name(), entry.device_name);
 
     const DeviceStatus& status = scanned_device_info.device_status;
     if (!status.has_cell_provider() || status.cell_provider().empty())
@@ -391,7 +391,7 @@ class HostScannerImplTest : public NetworkStateTest {
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  const std::vector<cryptauth::RemoteDevice> test_devices_;
+  const cryptauth::RemoteDeviceRefList test_devices_;
   const std::vector<HostScannerOperation::ScannedDeviceInfo>
       test_scanned_device_infos;
 

@@ -14,17 +14,42 @@
 #include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/software_feature_state.h"
 
+namespace chromeos {
+class EasyUnlockServiceRegular;
+class EasyUnlockServiceSignin;
+namespace tether {
+class TetherHostFetcherImpl;
+class TetherHostFetcherImplTest;
+}  // namespace tether
+}  // namespace chromeos
+
+namespace proximity_auth {
+class BluetoothLowEnergySetupConnectionFinder;
+class ProximityAuthWebUIHandler;
+}  // namespace proximity_auth
+
 namespace cryptauth {
 
 // Contains metadata specific to a device associated with a user's account.
-// Because this metadata contains large and expensive data types,
-// RemoteDeviceRef is implemented using a pointer to a struct containing this
-// metadata; if multiple clients want to reference the same device, multiple
-// RemoteDeviceRefs can be created cheaply without duplicating the underlying
-// data. Should be passed by value.
+// Because this metadata contains large and expensive data types, and that data
+// can become stale if a Device Sync occurs during a client application's
+// lifecycle, RemoteDeviceRef is implemented using a pointer to a struct
+// containing this metadata; if multiple clients want to reference the same
+// device, multiple RemoteDeviceRefs can be created cheaply without duplicating
+// the underlying data. Should be passed by value.
 class RemoteDeviceRef {
  public:
-  RemoteDeviceRef(RemoteDeviceRef& other);
+  // Generates the device ID for a device given its public key.
+  static std::string GenerateDeviceId(const std::string& public_key);
+
+  // Derives the public key that was used to generate the given device ID;
+  // returns empty string if |device_id| is not a valid device ID.
+  static std::string DerivePublicKey(const std::string& device_id);
+
+  // Static method for truncated device ID for logs.
+  static std::string TruncateDeviceIdForLogs(const std::string& full_id);
+
+  RemoteDeviceRef(const RemoteDeviceRef& other);
   ~RemoteDeviceRef();
 
   const std::string& user_id() const { return remote_device_->user_id; }
@@ -43,6 +68,9 @@ class RemoteDeviceRef {
   const std::vector<BeaconSeed>& beacon_seeds() const {
     return remote_device_->beacon_seeds;
   }
+  bool are_beacon_seeds_loaded() const {
+    return remote_device_->are_beacon_seeds_loaded;
+  }
 
   std::string GetDeviceId() const;
   SoftwareFeatureState GetSoftwareFeatureState(
@@ -60,14 +88,26 @@ class RemoteDeviceRef {
   bool operator<(const RemoteDeviceRef& other) const;
 
  private:
+  friend class RemoteDeviceRefBuilder;
   friend class RemoteDeviceRefTest;
   FRIEND_TEST_ALL_PREFIXES(RemoteDeviceRefTest, TestFields);
   FRIEND_TEST_ALL_PREFIXES(RemoteDeviceRefTest, TestCopyAndAssign);
 
-  RemoteDeviceRef(std::shared_ptr<RemoteDevice> remote_device);
+  // TODO(crbug.com/752273): Remove these once clients have migrated to Device
+  // Sync service.
+  friend class chromeos::EasyUnlockServiceRegular;
+  friend class chromeos::EasyUnlockServiceSignin;
+  friend class chromeos::tether::TetherHostFetcherImpl;
+  friend class chromeos::tether::TetherHostFetcherImplTest;
+  friend class proximity_auth::ProximityAuthWebUIHandler;
+  friend class proximity_auth::BluetoothLowEnergySetupConnectionFinder;
+
+  explicit RemoteDeviceRef(std::shared_ptr<RemoteDevice> remote_device);
 
   std::shared_ptr<const RemoteDevice> remote_device_;
 };
+
+typedef std::vector<RemoteDeviceRef> RemoteDeviceRefList;
 
 }  // namespace cryptauth
 

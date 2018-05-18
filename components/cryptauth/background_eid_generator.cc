@@ -15,7 +15,7 @@
 #include "components/cryptauth/raw_eid_generator.h"
 #include "components/cryptauth/raw_eid_generator_impl.h"
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace cryptauth {
 
@@ -112,7 +112,8 @@ std::string BackgroundEidGenerator::IdentifyRemoteDeviceByAdvertisement(
         if (!remote_beacon_seed_fetcher->FetchSeedsForDeviceId(device_id,
                                                                &beacon_seeds)) {
           PA_LOG(WARNING) << "Error fetching beacon seeds for device with ID "
-                          << RemoteDevice::TruncateDeviceIdForLogs(device_id);
+                          << RemoteDeviceRef::TruncateDeviceIdForLogs(
+                                 device_id);
           return false;
         }
 

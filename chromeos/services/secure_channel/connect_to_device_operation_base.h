@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -31,7 +31,7 @@ class ConnectToDeviceOperationBase
           FailureDetailType>::ConnectionSuccessCallback success_callback,
       typename ConnectToDeviceOperation<
           FailureDetailType>::ConnectionFailedCallback failure_callback,
-      const cryptauth::RemoteDevice& device_to_connect_to,
+      const cryptauth::RemoteDeviceRef& device_to_connect_to,
       base::OnceClosure destructor_callback,
       scoped_refptr<base::TaskRunner> task_runner =
           base::ThreadTaskRunnerHandle::Get())
@@ -57,9 +57,9 @@ class ConnectToDeviceOperationBase
   }
 
   virtual void AttemptConnectionToDevice(
-      const cryptauth::RemoteDevice& device_to_connect_to) = 0;
+      const cryptauth::RemoteDeviceRef& device_to_connect_to) = 0;
   virtual void CancelConnectionAttemptToDevice(
-      const cryptauth::RemoteDevice& device_to_cancel_connection_to) = 0;
+      const cryptauth::RemoteDeviceRef& device_to_cancel_connection_to) = 0;
 
  private:
   // ConnectToDeviceOperation<FailureDetailType>:
@@ -67,7 +67,7 @@ class ConnectToDeviceOperationBase
     CancelConnectionAttemptToDevice(device_to_connect_to_);
   }
 
-  const cryptauth::RemoteDevice device_to_connect_to_;
+  const cryptauth::RemoteDeviceRef device_to_connect_to_;
   base::OnceClosure destructor_callback_;
   scoped_refptr<base::TaskRunner> task_runner_;
   base::WeakPtrFactory<ConnectToDeviceOperationBase> weak_ptr_factory_;

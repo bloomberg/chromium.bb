@@ -65,8 +65,7 @@ class EasyUnlockServiceRegular
   void LoadRemoteDevices();
 
   // Called when |remote_device_loader_| completes.
-  void OnRemoteDevicesLoaded(
-      const std::vector<cryptauth::RemoteDevice>& remote_devices);
+  void OnRemoteDevicesLoaded(const cryptauth::RemoteDeviceList& remote_devices);
 
   // True if we should promote EasyUnlock.
   bool ShouldPromote();

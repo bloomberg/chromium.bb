@@ -32,6 +32,13 @@ bool AreBeaconSeedsEqual(const std::vector<BeaconSeed> beacon_seeds1,
 
 }  // namespace
 
+// static
+std::string RemoteDevice::GenerateDeviceId(const std::string& public_key) {
+  std::string device_id;
+  base::Base64Encode(public_key, &device_id);
+  return device_id;
+}
+
 RemoteDevice::RemoteDevice()
     : unlock_key(false),
       supports_mobile_hotspot(false),
@@ -69,18 +76,6 @@ std::string RemoteDevice::GetDeviceId() const {
   return RemoteDevice::GenerateDeviceId(public_key);
 }
 
-SoftwareFeatureState RemoteDevice::GetSoftwareFeatureState(
-    const SoftwareFeature& software_feature) const {
-  if (!base::ContainsKey(software_features, software_feature))
-    return SoftwareFeatureState::kNotSupported;
-
-  return software_features.at(software_feature);
-}
-
-std::string RemoteDevice::GetTruncatedDeviceIdForLogs() const {
-  return RemoteDevice::TruncateDeviceIdForLogs(GetDeviceId());
-}
-
 bool RemoteDevice::operator==(const RemoteDevice& other) const {
   // Only compare |beacon_seeds| if they are loaded.
   bool are_beacon_seeds_equal = false;
@@ -106,32 +101,6 @@ bool RemoteDevice::operator<(const RemoteDevice& other) const {
   // each RemoteDevice. However, since it can contain null bytes, use
   // GetDeviceId(), which cannot contain null bytes, to compare devices.
   return GetDeviceId().compare(other.GetDeviceId()) < 0;
-}
-
-// static
-std::string RemoteDevice::GenerateDeviceId(const std::string& public_key) {
-  std::string device_id;
-  base::Base64Encode(public_key, &device_id);
-  return device_id;
-}
-
-// static
-std::string RemoteDevice::DerivePublicKey(const std::string& device_id) {
-  std::string public_key;
-  if (base::Base64Decode(device_id, &public_key))
-    return public_key;
-  return std::string();
-}
-
-// static
-std::string RemoteDevice::TruncateDeviceIdForLogs(const std::string& full_id) {
-  if (full_id.length() <= 10) {
-    return full_id;
-  }
-
-  return full_id.substr(0, 5)
-      + "..."
-      + full_id.substr(full_id.length() - 5, full_id.length());
 }
 
 }  // namespace cryptauth

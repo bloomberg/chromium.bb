@@ -11,7 +11,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -64,7 +64,8 @@ void ConnectionPreserverImpl::HandleSuccessfulTetherAvailabilityResponse(
     SetPreservedConnection(device_id);
   } else {
     PA_LOG(INFO) << "The connection to device with ID "
-                 << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+                 << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                        device_id)
                  << " was not preserved; another device has higher priority.";
   }
 }
@@ -118,7 +119,7 @@ void ConnectionPreserverImpl::SetPreservedConnection(
   DCHECK(preserved_connection_device_id_.empty());
 
   PA_LOG(INFO) << "Preserving connection to device with ID "
-               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
                << ".";
 
   preserved_connection_device_id_ = device_id;
@@ -136,7 +137,7 @@ void ConnectionPreserverImpl::RemovePreservedConnectionIfPresent() {
     return;
 
   PA_LOG(INFO) << "Removing preserved connection to device with ID "
-               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
                       preserved_connection_device_id_)
                << ".";
 

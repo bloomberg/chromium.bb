@@ -11,11 +11,11 @@ namespace chromeos {
 namespace tether {
 
 FakeTetherHostFetcher::FakeTetherHostFetcher(
-    const std::vector<cryptauth::RemoteDevice>& tether_hosts)
+    const cryptauth::RemoteDeviceRefList& tether_hosts)
     : tether_hosts_(tether_hosts) {}
 
 FakeTetherHostFetcher::FakeTetherHostFetcher()
-    : FakeTetherHostFetcher(std::vector<cryptauth::RemoteDevice>()) {}
+    : FakeTetherHostFetcher(cryptauth::RemoteDeviceRefList()) {}
 
 FakeTetherHostFetcher::~FakeTetherHostFetcher() = default;
 

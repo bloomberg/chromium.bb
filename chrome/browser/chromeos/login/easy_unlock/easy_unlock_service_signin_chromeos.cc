@@ -30,6 +30,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/software_feature_state.h"
 
 using proximity_auth::ScreenlockState;
@@ -400,7 +401,7 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   account_id_ = account_id;
   pref_manager_->SetActiveUser(account_id);
   user_pod_last_focused_timestamp_ = base::TimeTicks::Now();
-  SetProximityAuthDevices(account_id_, cryptauth::RemoteDeviceList());
+  SetProximityAuthDevices(account_id_, cryptauth::RemoteDeviceRefList());
   ResetScreenlockState();
 
   pref_manager_->SetActiveUser(account_id);
@@ -489,7 +490,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
   if (devices.empty())
     return;
 
-  cryptauth::RemoteDeviceList remote_devices;
+  cryptauth::RemoteDeviceRefList remote_devices;
   for (const auto& device : devices) {
     std::string decoded_public_key, decoded_psk;
     if (!base::Base64UrlDecode(device.public_key,
@@ -508,7 +509,13 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     // (as well as the "supports_mobile_hotspot" bool and
     // last_update_time_millis) as part of EasyUnlockDeviceKeyData instead of
     // making that assumption here.
-    cryptauth::RemoteDevice remote_device(
+
+    // While clients should usually handle a RemoteDeviceRef instead of a raw
+    // RemoteDevice, a raw RemoteDevice must be created here. Once the
+    // shared_ptr is passed into the new RemoteDeviceRef, it will be kept alive
+    // as long as at least one instance of that RemoteDeviceRef remains active.
+    std::shared_ptr<cryptauth::RemoteDevice> remote_device = std::make_shared<
+        cryptauth::RemoteDevice>(
         account_id.GetUserEmail(), std::string(), decoded_public_key,
         decoded_psk, true /* unlock_key */, false /* supports_mobile_hotspot */,
         0L /* last_update_time_millis */,
@@ -518,17 +525,18 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     if (!device.serialized_beacon_seeds.empty()) {
       PA_LOG(INFO) << "Deserializing BeaconSeeds: "
                    << device.serialized_beacon_seeds;
-      remote_device.LoadBeaconSeeds(
+      remote_device->LoadBeaconSeeds(
           DeserializeBeaconSeeds(device.serialized_beacon_seeds));
     } else {
       PA_LOG(WARNING) << "No BeaconSeeds were loaded.";
     }
 
-    remote_devices.push_back(remote_device);
+    cryptauth::RemoteDeviceRef remote_device_ref(remote_device);
+    remote_devices.push_back(remote_device_ref);
     PA_LOG(INFO) << "Loaded Remote Device:\n"
-                 << "  user id: " << remote_device.user_id << "\n"
-                 << "  name: " << remote_device.name << "\n"
-                 << "  public key" << device.public_key;
+                 << "  user id: " << remote_device_ref.user_id() << "\n"
+                 << "  name: " << remote_device_ref.name() << "\n"
+                 << "  public key" << remote_device_ref.public_key();
   }
 
   SetProximityAuthDevices(account_id, remote_devices);

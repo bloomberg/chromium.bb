@@ -37,7 +37,7 @@ ConnectTetheringOperation::Factory*
 // static
 std::unique_ptr<ConnectTetheringOperation>
 ConnectTetheringOperation::Factory::NewInstance(
-    const cryptauth::RemoteDevice& device_to_connect,
+    cryptauth::RemoteDeviceRef device_to_connect,
     BleConnectionManager* connection_manager,
     TetherHostResponseRecorder* tether_host_response_recorder,
     bool setup_required) {
@@ -57,7 +57,7 @@ void ConnectTetheringOperation::Factory::SetInstanceForTesting(
 
 std::unique_ptr<ConnectTetheringOperation>
 ConnectTetheringOperation::Factory::BuildInstance(
-    const cryptauth::RemoteDevice& device_to_connect,
+    cryptauth::RemoteDeviceRef device_to_connect,
     BleConnectionManager* connection_manager,
     TetherHostResponseRecorder* tether_host_response_recorder,
     bool setup_required) {
@@ -67,12 +67,12 @@ ConnectTetheringOperation::Factory::BuildInstance(
 }
 
 ConnectTetheringOperation::ConnectTetheringOperation(
-    const cryptauth::RemoteDevice& device_to_connect,
+    cryptauth::RemoteDeviceRef device_to_connect,
     BleConnectionManager* connection_manager,
     TetherHostResponseRecorder* tether_host_response_recorder,
     bool setup_required)
     : MessageTransferOperation(
-          std::vector<cryptauth::RemoteDevice>{device_to_connect},
+          cryptauth::RemoteDeviceRefList{device_to_connect},
           connection_manager),
       remote_device_(device_to_connect),
       tether_host_response_recorder_(tether_host_response_recorder),
@@ -91,7 +91,7 @@ void ConnectTetheringOperation::RemoveObserver(Observer* observer) {
 }
 
 void ConnectTetheringOperation::OnDeviceAuthenticated(
-    const cryptauth::RemoteDevice& remote_device) {
+    cryptauth::RemoteDeviceRef remote_device) {
   DCHECK(remote_devices().size() == 1u && remote_devices()[0] == remote_device);
   connect_tethering_request_start_time_ = clock_->Now();
   connect_message_sequence_number_ = SendMessageToDevice(
@@ -101,7 +101,7 @@ void ConnectTetheringOperation::OnDeviceAuthenticated(
 
 void ConnectTetheringOperation::OnMessageReceived(
     std::unique_ptr<MessageWrapper> message_wrapper,
-    const cryptauth::RemoteDevice& remote_device) {
+    cryptauth::RemoteDeviceRef remote_device) {
   if (message_wrapper->GetMessageType() !=
       MessageType::CONNECT_TETHERING_RESPONSE) {
     // If another type of message has been received, ignore it.

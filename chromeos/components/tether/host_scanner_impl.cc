@@ -86,7 +86,7 @@ void HostScannerImpl::StopScan() {
 }
 
 void HostScannerImpl::OnTetherHostsFetched(
-    const cryptauth::RemoteDeviceList& tether_hosts) {
+    const cryptauth::RemoteDeviceRefList& tether_hosts) {
   is_fetching_hosts_ = false;
 
   if (tether_hosts.empty()) {
@@ -115,7 +115,7 @@ void HostScannerImpl::OnTetherHostsFetched(
 void HostScannerImpl::OnTetherAvailabilityResponse(
     const std::vector<HostScannerOperation::ScannedDeviceInfo>&
         scanned_device_list_so_far,
-    const std::vector<cryptauth::RemoteDevice>&
+    const cryptauth::RemoteDeviceRefList&
         gms_core_notifications_disabled_devices,
     bool is_final_scan_result) {
   if (scanned_device_list_so_far.empty() && !is_final_scan_result) {
@@ -135,7 +135,7 @@ void HostScannerImpl::OnTetherAvailabilityResponse(
              NotificationPresenter::PotentialHotspotNotificationState::
                  MULTIPLE_HOTSPOTS_NEARBY_SHOWN ||
          is_final_scan_result)) {
-      const cryptauth::RemoteDevice& remote_device =
+      cryptauth::RemoteDeviceRef remote_device =
           scanned_device_list_so_far.at(0).remote_device;
       int32_t signal_strength;
       NormalizeDeviceStatus(scanned_device_list_so_far.at(0).device_status,
@@ -176,8 +176,7 @@ void HostScannerImpl::OnSessionStateChanged() {
 void HostScannerImpl::SetCacheEntry(
     const HostScannerOperation::ScannedDeviceInfo& scanned_device_info) {
   const DeviceStatus& status = scanned_device_info.device_status;
-  const cryptauth::RemoteDevice& remote_device =
-      scanned_device_info.remote_device;
+  cryptauth::RemoteDeviceRef remote_device = scanned_device_info.remote_device;
 
   std::string carrier;
   int32_t battery_percentage;
@@ -190,7 +189,7 @@ void HostScannerImpl::SetCacheEntry(
            .SetTetherNetworkGuid(device_id_tether_network_guid_map_
                                      ->GetTetherNetworkGuidForDeviceId(
                                          remote_device.GetDeviceId()))
-           .SetDeviceName(remote_device.name)
+           .SetDeviceName(remote_device.name())
            .SetCarrier(carrier)
            .SetBatteryPercentage(battery_percentage)
            .SetSignalStrength(signal_strength)

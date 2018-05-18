@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/cryptauth/connection.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace proximity_auth {
 
@@ -57,8 +57,8 @@ class RemoteDeviceLifeCycle {
   // Starts the life cycle.
   virtual void Start() = 0;
 
-  // Returns the RemoteDevice instance that this life cycle manages.
-  virtual cryptauth::RemoteDevice GetRemoteDevice() const = 0;
+  // Returns the RemoteDeviceRef instance that this life cycle manages.
+  virtual cryptauth::RemoteDeviceRef GetRemoteDevice() const = 0;
 
   // Returns the current Connection, or null if the device is not yet connected.
   virtual cryptauth::Connection* GetConnection() const = 0;

@@ -14,6 +14,7 @@
 #include "components/cryptauth/mock_local_device_data_provider.h"
 #include "components/cryptauth/mock_remote_beacon_seed_fetcher.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +28,7 @@ namespace {
 const char kFakePublicKey[] = "fakePublicKey";
 
 std::vector<BeaconSeed> CreateFakeBeaconSeedsForDevice(
-    const RemoteDevice& remote_device) {
+    RemoteDeviceRef remote_device) {
   BeaconSeed seed1;
   seed1.set_data("seed1Data" + remote_device.GetTruncatedDeviceIdForLogs());
   seed1.set_start_time_millis(1000L);
@@ -47,7 +48,7 @@ std::vector<BeaconSeed> CreateFakeBeaconSeedsForDevice(
 class CryptAuthBleAdvertisementGeneratorTest : public testing::Test {
  protected:
   CryptAuthBleAdvertisementGeneratorTest()
-      : fake_device_(GenerateTestRemoteDevices(1)[0]),
+      : fake_device_(CreateRemoteDeviceRefListForTest(1)[0]),
         fake_advertisement_("advertisement1", 1000L, 2000L) {}
 
   void SetUp() override {
@@ -76,7 +77,7 @@ class CryptAuthBleAdvertisementGeneratorTest : public testing::Test {
         mock_seed_fetcher_.get());
   }
 
-  const RemoteDevice fake_device_;
+  const RemoteDeviceRef fake_device_;
   const DataWithTimestamp fake_advertisement_;
 
   std::unique_ptr<MockRemoteBeaconSeedFetcher> mock_seed_fetcher_;

@@ -65,8 +65,8 @@ TEST_F(EasyUnlockPrivateApiTest, BrowserContextTearDown) {
   // a dependency of EasyUnlockPrivateApi, only references BrowserContext
   // dependencies if it has a Connection to shutdown.
   auto extension = CreateTestExtension();
-  auto connection =
-      std::make_unique<FakeConnection>(CreateRemoteDeviceForTest());
+  auto connection = std::make_unique<FakeConnection>(
+      cryptauth::CreateRemoteDeviceRefForTest());
   manager->AddConnection(extension.get(), std::move(connection), true);
 
   // The Profile is cleaned up at the end of this scope, and BrowserContext

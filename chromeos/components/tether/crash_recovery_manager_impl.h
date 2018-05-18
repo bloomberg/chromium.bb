@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/crash_recovery_manager.h"
 
@@ -59,11 +60,12 @@ class CrashRecoveryManagerImpl : public CrashRecoveryManager {
                              const std::string& active_host_device_id,
                              const std::string& tether_network_guid,
                              const std::string& wifi_network_guid);
-  void OnActiveHostFetched(const base::Closure& on_restoration_finished,
-                           ActiveHost::ActiveHostStatus active_host_status,
-                           std::shared_ptr<cryptauth::RemoteDevice> active_host,
-                           const std::string& tether_network_guid,
-                           const std::string& wifi_network_guid);
+  void OnActiveHostFetched(
+      const base::Closure& on_restoration_finished,
+      ActiveHost::ActiveHostStatus active_host_status,
+      base::Optional<cryptauth::RemoteDeviceRef> active_host,
+      const std::string& tether_network_guid,
+      const std::string& wifi_network_guid);
 
   NetworkStateHandler* network_state_handler_;
   ActiveHost* active_host_;

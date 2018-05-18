@@ -14,7 +14,7 @@
 #include "chromeos/components/proximity_auth/remote_device_life_cycle.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "components/account_id/account_id.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace proximity_auth {
 
@@ -49,12 +49,12 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   // they will be replaced.
   void SetRemoteDevicesForUser(
       const AccountId& account_id,
-      const cryptauth::RemoteDeviceList& remote_devices);
+      const cryptauth::RemoteDeviceRefList& remote_devices);
 
   // Returns the RemoteDevices registered for |account_id|. Returns an empty
   // list
   // if no devices are registered for |account_id|.
-  cryptauth::RemoteDeviceList GetRemoteDevicesForUser(
+  cryptauth::RemoteDeviceRefList GetRemoteDevicesForUser(
       const AccountId& account_id) const;
 
   // Called when the user clicks the user pod and attempts to unlock/sign-in.
@@ -78,7 +78,7 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   // Creates the RemoteDeviceLifeCycle for |remote_device|.
   // Exposed for testing.
   virtual std::unique_ptr<RemoteDeviceLifeCycle> CreateRemoteDeviceLifeCycle(
-      const cryptauth::RemoteDevice& remote_device);
+      cryptauth::RemoteDeviceRef remote_device);
 
   // RemoteDeviceLifeCycle::Observer:
   void OnLifeCycleStateChanged(RemoteDeviceLifeCycle::State old_state,
@@ -104,7 +104,7 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   ScreenlockType screenlock_type_;
 
   // Lists of remote devices, keyed by user account id.
-  std::map<AccountId, cryptauth::RemoteDeviceList> remote_devices_map_;
+  std::map<AccountId, cryptauth::RemoteDeviceRefList> remote_devices_map_;
 
   // Delegate for Chrome dependent functionality.
   ProximityAuthClient* proximity_auth_client_;

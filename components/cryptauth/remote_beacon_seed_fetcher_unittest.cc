@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "components/cryptauth/cryptauth_client.h"
 #include "components/cryptauth/fake_cryptauth_device_manager.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -106,7 +106,7 @@ TEST_F(CryptAuthRemoteBeaconSeedFetcherTest, TestRemoteDeviceWithNoPublicKey) {
 TEST_F(CryptAuthRemoteBeaconSeedFetcherTest, TestNoSyncedDevices) {
   std::vector<BeaconSeed> seeds;
   EXPECT_FALSE(fetcher_->FetchSeedsForDeviceId(
-      RemoteDevice::GenerateDeviceId(public_key1), &seeds));
+      RemoteDeviceRef::GenerateDeviceId(public_key1), &seeds));
 }
 
 TEST_F(CryptAuthRemoteBeaconSeedFetcherTest, TestDeviceHasDifferentPublicKey) {
@@ -115,7 +115,7 @@ TEST_F(CryptAuthRemoteBeaconSeedFetcherTest, TestDeviceHasDifferentPublicKey) {
 
   std::vector<BeaconSeed> seeds;
   EXPECT_FALSE(fetcher_->FetchSeedsForDeviceId(
-      RemoteDevice::GenerateDeviceId("differentPublicKey"), &seeds));
+      RemoteDeviceRef::GenerateDeviceId("differentPublicKey"), &seeds));
 }
 
 TEST_F(CryptAuthRemoteBeaconSeedFetcherTest, TestSuccess) {
@@ -124,7 +124,7 @@ TEST_F(CryptAuthRemoteBeaconSeedFetcherTest, TestSuccess) {
 
   std::vector<BeaconSeed> seeds1;
   ASSERT_TRUE(fetcher_->FetchSeedsForDeviceId(
-      RemoteDevice::GenerateDeviceId(public_key1), &seeds1));
+      RemoteDeviceRef::GenerateDeviceId(public_key1), &seeds1));
   ASSERT_EQ(2u, seeds1.size());
   EXPECT_EQ(fake_beacon_seed1_data, seeds1[0].data());
   EXPECT_EQ(fake_beacon_seed1_start_ms, seeds1[0].start_time_millis());
@@ -135,7 +135,7 @@ TEST_F(CryptAuthRemoteBeaconSeedFetcherTest, TestSuccess) {
 
   std::vector<BeaconSeed> seeds2;
   ASSERT_TRUE(fetcher_->FetchSeedsForDeviceId(
-      RemoteDevice::GenerateDeviceId(public_key2), &seeds2));
+      RemoteDeviceRef::GenerateDeviceId(public_key2), &seeds2));
   ASSERT_EQ(2u, seeds2.size());
   EXPECT_EQ(fake_beacon_seed3_data, seeds2[0].data());
   EXPECT_EQ(fake_beacon_seed3_start_ms, seeds2[0].start_time_millis());

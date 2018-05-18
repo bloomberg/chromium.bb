@@ -48,7 +48,7 @@ class RemoteDeviceLoader {
 
   // Creates the instance:
   // |device_info_list|: The ExternalDeviceInfo objects to convert to
-  //                     RemoteDevices.
+  //                     RemoteDevice.
   // |user_private_key|: The private key of the user's local device. Used to
   //                     derive the PSK.
   // |secure_message_delegate|: Used to derive each persistent symmetric key.

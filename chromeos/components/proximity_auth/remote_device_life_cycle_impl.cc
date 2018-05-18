@@ -32,7 +32,7 @@ const int kAuthenticationRecoveryTimeSeconds = 10;
 }  // namespace
 
 RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
-    const cryptauth::RemoteDevice& remote_device)
+    cryptauth::RemoteDeviceRef remote_device)
     : remote_device_(remote_device),
       state_(RemoteDeviceLifeCycle::State::STOPPED),
       weak_ptr_factory_(this) {}
@@ -40,12 +40,12 @@ RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
 RemoteDeviceLifeCycleImpl::~RemoteDeviceLifeCycleImpl() {}
 
 void RemoteDeviceLifeCycleImpl::Start() {
-  PA_LOG(INFO) << "Life cycle for " << remote_device_.name << " started.";
+  PA_LOG(INFO) << "Life cycle for " << remote_device_.name() << " started.";
   DCHECK(state_ == RemoteDeviceLifeCycle::State::STOPPED);
   FindConnection();
 }
 
-cryptauth::RemoteDevice RemoteDeviceLifeCycleImpl::GetRemoteDevice() const {
+cryptauth::RemoteDeviceRef RemoteDeviceLifeCycleImpl::GetRemoteDevice() const {
   return remote_device_;
 }
 
@@ -81,7 +81,7 @@ RemoteDeviceLifeCycleImpl::CreateConnectionFinder() {
 std::unique_ptr<cryptauth::Authenticator>
 RemoteDeviceLifeCycleImpl::CreateAuthenticator() {
   return std::make_unique<cryptauth::DeviceToDeviceAuthenticator>(
-      connection_.get(), remote_device_.user_id,
+      connection_.get(), remote_device_.user_id(),
       cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
 }
 

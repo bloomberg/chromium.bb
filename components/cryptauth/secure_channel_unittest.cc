@@ -15,6 +15,7 @@
 #include "components/cryptauth/fake_cryptauth_service.h"
 #include "components/cryptauth/fake_secure_context.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/secure_message_delegate_impl.h"
 #include "components/cryptauth/wire_message.h"
@@ -23,8 +24,6 @@
 namespace cryptauth {
 
 namespace {
-
-const std::string test_user_id = "testUserId";
 
 struct SecureChannelStatusChange {
   SecureChannelStatusChange(
@@ -159,9 +158,8 @@ class TestAuthenticatorFactory final
   Authenticator* last_instance_;
 };
 
-RemoteDevice CreateTestRemoteDevice() {
-  RemoteDevice remote_device = GenerateTestRemoteDevices(1)[0];
-  remote_device.user_id = test_user_id;
+RemoteDeviceRef CreateTestRemoteDevice() {
+  RemoteDeviceRef remote_device = CreateRemoteDeviceRefListForTest(1)[0];
   return remote_device;
 }
 
@@ -392,7 +390,7 @@ class CryptAuthSecureChannelTest : public testing::Test {
 
   std::unique_ptr<TestAuthenticatorFactory> test_authenticator_factory_;
 
-  const RemoteDevice test_device_;
+  const RemoteDeviceRef test_device_;
 
   base::WeakPtrFactory<CryptAuthSecureChannelTest> weak_ptr_factory_;
 

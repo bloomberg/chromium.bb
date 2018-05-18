@@ -13,7 +13,7 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/ble_synchronizer.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -97,7 +97,7 @@ void ErrorTolerantBleAdvertisementImpl::AdvertisementReleased(
   advertisement_ = nullptr;
 
   PA_LOG(WARNING) << "Advertisement was released. Trying again. Device ID: \""
-                  << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id())
                   << "\", Service data: " << advertisement_data_->DataInHex();
 
@@ -192,7 +192,8 @@ void ErrorTolerantBleAdvertisementImpl::OnAdvertisementRegistered(
   advertisement_->AddObserver(this);
 
   PA_LOG(INFO) << "Advertisement registered. Device ID: \""
-               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id())
+               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                      device_id())
                << "\", Service data: " << advertisement_data_->DataInHex();
 
   UpdateRegistrationStatus();
@@ -203,7 +204,8 @@ void ErrorTolerantBleAdvertisementImpl::OnErrorRegisteringAdvertisement(
   registration_in_progress_ = false;
 
   PA_LOG(ERROR) << "Error registering advertisement. Device ID: \""
-                << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id())
+                << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                       device_id())
                 << "\", Service data: " << advertisement_data_->DataInHex()
                 << ", Error code: " << error_code;
 
@@ -225,7 +227,8 @@ void ErrorTolerantBleAdvertisementImpl::OnErrorUnregisteringAdvertisement(
   unregistration_in_progress_ = false;
 
   PA_LOG(ERROR) << "Error unregistering advertisement. Device ID: \""
-                << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id())
+                << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                       device_id())
                 << "\", Service data: " << advertisement_data_->DataInHex()
                 << ", Error code: " << error_code;
 

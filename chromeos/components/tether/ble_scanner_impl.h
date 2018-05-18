@@ -10,10 +10,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chromeos/components/tether/ble_scanner.h"
 #include "components/cryptauth/background_eid_generator.h"
 #include "components/cryptauth/foreground_eid_generator.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 namespace base {
@@ -136,7 +137,7 @@ class BleScannerImpl : public BleScanner,
       device::BluetoothDevice* bluetooth_device,
       const std::string& device_id,
       bool is_background_advertisement,
-      std::unique_ptr<cryptauth::RemoteDevice> identified_device);
+      base::Optional<cryptauth::RemoteDeviceRef> identified_device);
 
   void ScheduleStatusChangeNotification(bool discovery_session_active);
 

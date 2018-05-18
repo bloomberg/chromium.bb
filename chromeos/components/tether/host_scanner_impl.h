@@ -18,7 +18,7 @@
 #include "chromeos/components/tether/host_scanner_operation.h"
 #include "chromeos/components/tether/notification_presenter.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/session_manager/core/session_manager_observer.h"
 
 namespace session_manager {
@@ -78,7 +78,7 @@ class HostScannerImpl : public HostScanner,
   void OnTetherAvailabilityResponse(
       const std::vector<HostScannerOperation::ScannedDeviceInfo>&
           scanned_device_list_so_far,
-      const std::vector<cryptauth::RemoteDevice>&
+      const cryptauth::RemoteDeviceRefList&
           gms_core_notifications_disabled_devices,
       bool is_final_scan_result) override;
 
@@ -97,7 +97,7 @@ class HostScannerImpl : public HostScanner,
     HOST_SCAN_RESULT_MAX
   };
 
-  void OnTetherHostsFetched(const cryptauth::RemoteDeviceList& tether_hosts);
+  void OnTetherHostsFetched(const cryptauth::RemoteDeviceRefList& tether_hosts);
   void SetCacheEntry(
       const HostScannerOperation::ScannedDeviceInfo& scanned_device_info);
   void OnFinalScanResultReceived(

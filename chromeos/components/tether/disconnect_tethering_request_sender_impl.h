@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/optional.h"
 #include "chromeos/components/tether/disconnect_tethering_operation.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 
@@ -55,7 +56,7 @@ class DisconnectTetheringRequestSenderImpl
  private:
   void OnTetherHostFetched(
       const std::string& device_id,
-      std::unique_ptr<cryptauth::RemoteDevice> tether_host);
+      base::Optional<cryptauth::RemoteDeviceRef> tether_host);
 
   BleConnectionManager* ble_connection_manager_;
   TetherHostFetcher* tether_host_fetcher_;

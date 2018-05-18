@@ -18,7 +18,7 @@
 #include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -364,10 +364,11 @@ void BleScannerImpl::OnIdentifiedHostFetched(
     device::BluetoothDevice* bluetooth_device,
     const std::string& device_id,
     bool is_background_advertisement,
-    std::unique_ptr<cryptauth::RemoteDevice> identified_device) {
+    base::Optional<cryptauth::RemoteDeviceRef> identified_device) {
   if (!identified_device) {
     PA_LOG(ERROR) << "Unable to fetch RemoteDevice object with ID \""
-                  << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                         device_id)
                   << "\".";
     return;
   }

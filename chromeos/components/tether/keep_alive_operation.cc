@@ -21,7 +21,7 @@ KeepAliveOperation::Factory* KeepAliveOperation::Factory::factory_instance_ =
 
 // static
 std::unique_ptr<KeepAliveOperation> KeepAliveOperation::Factory::NewInstance(
-    const cryptauth::RemoteDevice& device_to_connect,
+    cryptauth::RemoteDeviceRef device_to_connect,
     BleConnectionManager* connection_manager) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
@@ -36,17 +36,17 @@ void KeepAliveOperation::Factory::SetInstanceForTesting(Factory* factory) {
 }
 
 std::unique_ptr<KeepAliveOperation> KeepAliveOperation::Factory::BuildInstance(
-    const cryptauth::RemoteDevice& device_to_connect,
+    cryptauth::RemoteDeviceRef device_to_connect,
     BleConnectionManager* connection_manager) {
   return base::WrapUnique(
       new KeepAliveOperation(device_to_connect, connection_manager));
 }
 
 KeepAliveOperation::KeepAliveOperation(
-    const cryptauth::RemoteDevice& device_to_connect,
+    cryptauth::RemoteDeviceRef device_to_connect,
     BleConnectionManager* connection_manager)
     : MessageTransferOperation(
-          std::vector<cryptauth::RemoteDevice>{device_to_connect},
+          cryptauth::RemoteDeviceRefList{device_to_connect},
           connection_manager),
       remote_device_(device_to_connect),
       clock_(base::DefaultClock::GetInstance()) {}
@@ -62,7 +62,7 @@ void KeepAliveOperation::RemoveObserver(Observer* observer) {
 }
 
 void KeepAliveOperation::OnDeviceAuthenticated(
-    const cryptauth::RemoteDevice& remote_device) {
+    cryptauth::RemoteDeviceRef remote_device) {
   DCHECK(remote_devices().size() == 1u && remote_devices()[0] == remote_device);
   keep_alive_tickle_request_start_time_ = clock_->Now();
   SendMessageToDevice(remote_device,
@@ -71,7 +71,7 @@ void KeepAliveOperation::OnDeviceAuthenticated(
 
 void KeepAliveOperation::OnMessageReceived(
     std::unique_ptr<MessageWrapper> message_wrapper,
-    const cryptauth::RemoteDevice& remote_device) {
+    cryptauth::RemoteDeviceRef remote_device) {
   if (message_wrapper->GetMessageType() !=
       MessageType::KEEP_ALIVE_TICKLE_RESPONSE) {
     // If another type of message has been received, ignore it.

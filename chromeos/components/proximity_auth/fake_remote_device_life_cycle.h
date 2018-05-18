@@ -9,19 +9,18 @@
 #include "base/observer_list.h"
 #include "chromeos/components/proximity_auth/remote_device_life_cycle.h"
 #include "components/cryptauth/fake_connection.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace proximity_auth {
 
 class FakeRemoteDeviceLifeCycle : public RemoteDeviceLifeCycle {
  public:
-  explicit FakeRemoteDeviceLifeCycle(
-      const cryptauth::RemoteDevice& remote_device);
+  explicit FakeRemoteDeviceLifeCycle(cryptauth::RemoteDeviceRef remote_device);
   ~FakeRemoteDeviceLifeCycle() override;
 
   // RemoteDeviceLifeCycle:
   void Start() override;
-  cryptauth::RemoteDevice GetRemoteDevice() const override;
+  cryptauth::RemoteDeviceRef GetRemoteDevice() const override;
   cryptauth::Connection* GetConnection() const override;
   State GetState() const override;
   Messenger* GetMessenger() override;
@@ -42,7 +41,7 @@ class FakeRemoteDeviceLifeCycle : public RemoteDeviceLifeCycle {
   base::ObserverList<Observer>& observers() { return observers_; }
 
  private:
-  cryptauth::RemoteDevice remote_device_;
+  cryptauth::RemoteDeviceRef remote_device_;
 
   base::ObserverList<Observer> observers_;
 

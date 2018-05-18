@@ -27,7 +27,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,7 +61,7 @@ std::string CreateWifiConfigurationJsonString() {
 class FakeConnectTetheringOperation : public ConnectTetheringOperation {
  public:
   FakeConnectTetheringOperation(
-      const cryptauth::RemoteDevice& device_to_connect,
+      cryptauth::RemoteDeviceRef device_to_connect,
       BleConnectionManager* connection_manager,
       TetherHostResponseRecorder* tether_host_response_recorder,
       bool setup_required)
@@ -87,7 +87,7 @@ class FakeConnectTetheringOperation : public ConnectTetheringOperation {
     NotifyObserversOfConnectionFailure(error_code);
   }
 
-  cryptauth::RemoteDevice GetRemoteDevice() {
+  cryptauth::RemoteDeviceRef GetRemoteDevice() {
     EXPECT_EQ(1u, remote_devices().size());
     return remote_devices()[0];
   }
@@ -111,7 +111,7 @@ class FakeConnectTetheringOperationFactory
  protected:
   // ConnectTetheringOperation::Factory:
   std::unique_ptr<ConnectTetheringOperation> BuildInstance(
-      const cryptauth::RemoteDevice& device_to_connect,
+      cryptauth::RemoteDeviceRef device_to_connect,
       BleConnectionManager* connection_manager,
       TetherHostResponseRecorder* tether_host_response_recorder,
       bool setup_required) override {
@@ -132,7 +132,7 @@ class FakeConnectTetheringOperationFactory
 class TetherConnectorImplTest : public NetworkStateTest {
  public:
   TetherConnectorImplTest()
-      : test_devices_(cryptauth::GenerateTestRemoteDevices(2u)) {}
+      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(2u)) {}
   ~TetherConnectorImplTest() override = default;
 
   void SetUp() override {
@@ -268,7 +268,8 @@ class TetherConnectorImplTest : public NetworkStateTest {
 
     // test_devices_[0] does not require first-time setup, but test_devices_[1]
     // does require first-time setup. See SetUpTetherNetworks().
-    cryptauth::RemoteDevice test_device = test_devices_[setup_required ? 1 : 0];
+    cryptauth::RemoteDeviceRef test_device =
+        test_devices_[setup_required ? 1 : 0];
 
     CallConnect(GetTetherNetworkGuid(test_device.GetDeviceId()));
     EXPECT_EQ(ActiveHost::ActiveHostStatus::CONNECTING,
@@ -310,7 +311,7 @@ class TetherConnectorImplTest : public NetworkStateTest {
     return result;
   }
 
-  const std::vector<cryptauth::RemoteDevice> test_devices_;
+  const cryptauth::RemoteDeviceRefList test_devices_;
   const base::MessageLoop message_loop_;
 
   std::unique_ptr<FakeConnectTetheringOperationFactory> fake_operation_factory_;

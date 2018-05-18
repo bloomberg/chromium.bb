@@ -62,7 +62,7 @@ const cryptauth::GcmDeviceInfo& GetTestGcmDeviceInfo() {
 
 cryptauth::RemoteDeviceList GenerateTestRemoteDevices() {
   cryptauth::RemoteDeviceList devices =
-      cryptauth::GenerateTestRemoteDevices(kNumTestDevices);
+      cryptauth::CreateRemoteDeviceListForTest(kNumTestDevices);
 
   // One of the synced devices refers to the current (i.e., local) device.
   // Arbitrarily choose the 0th device as the local one and set its public key

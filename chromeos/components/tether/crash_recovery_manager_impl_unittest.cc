@@ -46,7 +46,7 @@ std::string CreateConfigurationJsonString(bool is_connected) {
 class CrashRecoveryManagerImplTest : public NetworkStateTest {
  protected:
   CrashRecoveryManagerImplTest()
-      : test_device_(cryptauth::GenerateTestRemoteDevices(1u)[0]) {}
+      : test_device_(cryptauth::CreateRemoteDeviceRefListForTest(1u)[0]) {}
   ~CrashRecoveryManagerImplTest() override = default;
 
   void SetUp() override {
@@ -120,7 +120,7 @@ class CrashRecoveryManagerImplTest : public NetworkStateTest {
   }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const cryptauth::RemoteDevice test_device_;
+  const cryptauth::RemoteDeviceRef test_device_;
 
   std::unique_ptr<FakeActiveHost> fake_active_host_;
   std::unique_ptr<FakeHostScanCache> fake_host_scan_cache_;

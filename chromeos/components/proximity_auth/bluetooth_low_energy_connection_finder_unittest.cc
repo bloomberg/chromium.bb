@@ -19,7 +19,7 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/fake_connection.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -75,7 +75,7 @@ class MockBluetoothLowEnergyConnectionFinder
  public:
   MockBluetoothLowEnergyConnectionFinder()
       : BluetoothLowEnergyConnectionFinder(
-            cryptauth::CreateRemoteDeviceForTest(),
+            cryptauth::CreateRemoteDeviceRefForTest(),
             kBLEGattServiceUUID,
             std::make_unique<FakeEidGenerator>(this)) {}
 
@@ -93,7 +93,8 @@ class MockBluetoothLowEnergyConnectionFinder
   // finder.
   cryptauth::FakeConnection* ExpectCreateConnection() {
     std::unique_ptr<cryptauth::FakeConnection> connection(
-        new cryptauth::FakeConnection(cryptauth::CreateRemoteDeviceForTest()));
+        new cryptauth::FakeConnection(
+            cryptauth::CreateRemoteDeviceRefForTest()));
     cryptauth::FakeConnection* connection_alias = connection.get();
     EXPECT_CALL(*this, CreateConnectionProxy())
         .WillOnce(Return(connection.release()));

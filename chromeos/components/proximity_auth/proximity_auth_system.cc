@@ -79,7 +79,7 @@ void ProximityAuthSystem::Stop() {
 
 void ProximityAuthSystem::SetRemoteDevicesForUser(
     const AccountId& account_id,
-    const cryptauth::RemoteDeviceList& remote_devices) {
+    const cryptauth::RemoteDeviceRefList& remote_devices) {
   remote_devices_map_[account_id] = remote_devices;
   if (started_) {
     const AccountId& focused_account_id =
@@ -89,10 +89,10 @@ void ProximityAuthSystem::SetRemoteDevicesForUser(
   }
 }
 
-cryptauth::RemoteDeviceList ProximityAuthSystem::GetRemoteDevicesForUser(
+cryptauth::RemoteDeviceRefList ProximityAuthSystem::GetRemoteDevicesForUser(
     const AccountId& account_id) const {
   if (remote_devices_map_.find(account_id) == remote_devices_map_.end())
-    return cryptauth::RemoteDeviceList();
+    return cryptauth::RemoteDeviceRefList();
   return remote_devices_map_.at(account_id);
 }
 
@@ -125,7 +125,7 @@ void ProximityAuthSystem::OnSuspendDone() {
 
 std::unique_ptr<RemoteDeviceLifeCycle>
 ProximityAuthSystem::CreateRemoteDeviceLifeCycle(
-    const cryptauth::RemoteDevice& remote_device) {
+    cryptauth::RemoteDeviceRef remote_device) {
   return std::unique_ptr<RemoteDeviceLifeCycle>(
       new RemoteDeviceLifeCycleImpl(remote_device));
 }
@@ -153,7 +153,7 @@ void ProximityAuthSystem::OnScreenDidUnlock(
 void ProximityAuthSystem::OnFocusedUserChanged(const AccountId& account_id) {
   // Update the current RemoteDeviceLifeCycle to the focused user.
   if (remote_device_life_cycle_) {
-    if (remote_device_life_cycle_->GetRemoteDevice().user_id !=
+    if (remote_device_life_cycle_->GetRemoteDevice().user_id() !=
         account_id.GetUserEmail()) {
       PA_LOG(INFO) << "Focused user changed, destroying life cycle for "
                    << account_id.Serialize() << ".";
@@ -181,7 +181,7 @@ void ProximityAuthSystem::OnFocusedUserChanged(const AccountId& account_id) {
 
   // TODO(tengs): We currently assume each user has only one RemoteDevice, so we
   // can simply take the first item in the list.
-  cryptauth::RemoteDevice remote_device = remote_devices_map_[account_id][0];
+  cryptauth::RemoteDeviceRef remote_device = remote_devices_map_[account_id][0];
   if (!suspended_) {
     PA_LOG(INFO) << "Creating RemoteDeviceLifeCycle for focused user: "
                  << account_id.Serialize();

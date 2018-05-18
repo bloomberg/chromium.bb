@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
