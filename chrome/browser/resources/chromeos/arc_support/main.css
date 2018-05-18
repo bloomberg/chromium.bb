@@ -151,7 +151,7 @@ p.title {
   width: 480px;
 }
 
-.overlay-text webview {
+.overlay-text #overlay-url-container {
   display: none;
 }
 
@@ -175,7 +175,8 @@ p.title {
   width: 100%;
 }
 
-.overlay-url.overlay-loading webview {
+.overlay-url.overlay-loading #overlay-url,
+.overlay-url:not(.overlay-loading) #overlay-url-loading {
   display: none;
 }
 

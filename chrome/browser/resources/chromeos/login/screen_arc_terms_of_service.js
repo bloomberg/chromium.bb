@@ -94,8 +94,9 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       };
 
       var overlayUrl = $('arc-tos-overlay-webview');
+      var overlayUrlContainer = $('arc-tos-overlay-webview-container');
       overlayUrl.addEventListener('contentload', function() {
-        overlayUrl.classList.remove('overlay-loading');
+        overlayUrlContainer.classList.remove('overlay-loading');
       });
       overlayUrl.addContentScripts([{
         name: 'postProcess',
@@ -103,6 +104,23 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
         css: {files: ['overlay.css']},
         run_at: 'document_end'
       }]);
+
+      var closeOverlayButton = $('arc-tos-overlay-close-bottom');
+      var overlayUrlContainer = $('arc-tos-overlay-webview-container');
+      $('arc-tos-overlay-start').onfocus = function() {
+        closeOverlayButton.focus();
+      };
+      $('arc-tos-overlay-end').onfocus = function() {
+        var style = window.getComputedStyle(overlayUrlContainer);
+        if (style.display == 'none') {
+          closeOverlayButton.focus();
+        } else {
+          overlayUrl.focus();
+        }
+      };
+
+      $('arc-tos-overlay-close-top').title =
+          loadTimeData.getString('arcOverlayClose');
 
       // Update the screen size after setup layout.
       if (Oobe.getInstance().currentScreen === this)
@@ -332,15 +350,30 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     },
 
     /**
+     * Shows overlay dialog.
+     * @param {string} defines overlay type, text or url.
+     */
+    showOverlay: function(overlayType) {
+      this.lastFocusedElement = document.activeElement;
+      if (this.lastFocusedElement == $('arc-tos-root')) {
+        this.lastFocusedElement = this.lastFocusedElement.getActiveElement();
+      }
+
+      var overlayRoot = $('arc-tos-overlay');
+      overlayRoot.classList.remove('arc-overlay-text');
+      overlayRoot.classList.remove('arc-overlay-url');
+      overlayRoot.classList.add(overlayType);
+      overlayRoot.hidden = false;
+      $('arc-tos-overlay-close-bottom').focus();
+    },
+
+    /**
      * Sets learn more content text and shows it as overlay dialog.
      * @param {string} content HTML formatted text to show.
      */
     showLearnMoreOverlay: function(content) {
-      this.lastFocusedElement = document.activeElement;
       $('arc-learn-more-content').innerHTML = content;
-      $('arc-tos-overlay-content-text').hidden = false;
-      $('arc-tos-overlay-text').hidden = false;
-      $('arc-tos-overlay-text-close').focus();
+      this.showOverlay('arc-overlay-text');
     },
 
     /**
@@ -348,19 +381,16 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * @param {string} targetUrl URL to open.
      */
     showUrlOverlay: function(targetUrl) {
-      this.lastFocusedElement = document.activeElement;
       $('arc-tos-overlay-webview').src = targetUrl;
-      $('arc-tos-overlay-webview').classList.add('overlay-loading');
-      $('arc-tos-overlay-url').hidden = false;
-      $('arc-tos-overlay-url-close').focus();
+      $('arc-tos-overlay-webview-container').classList.add('overlay-loading');
+      this.showOverlay('arc-overlay-url');
     },
 
     /**
      * Hides overlay dialog.
      */
     hideOverlay: function() {
-      $('arc-tos-overlay-text').hidden = true;
-      $('arc-tos-overlay-url').hidden = true;
+      $('arc-tos-overlay').hidden = true;
       if (this.lastFocusedElement) {
         this.lastFocusedElement.focus();
         this.lastFocusedElement = null;

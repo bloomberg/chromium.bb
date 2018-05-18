@@ -558,6 +558,8 @@ bool ArcSupportHost::Initialize() {
   loadtime_data->SetString(
       "activeDirectoryAuthDesc",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_ACTIVE_DIRECTORY_AUTH_DESC));
+  loadtime_data->SetString(
+      "overlayLoading", l10n_util::GetStringUTF16(IDS_ARC_POPUP_HELP_LOADING));
 
   loadtime_data->SetBoolean(kArcManaged, is_arc_managed_);
   loadtime_data->SetBoolean("isOwnerProfile",

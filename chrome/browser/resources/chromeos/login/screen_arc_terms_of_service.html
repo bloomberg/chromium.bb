@@ -5,32 +5,28 @@
     role="group" hidden>
   <arc-tos-root id="arc-tos-root"></arc-tos-root>
 
-  <div id="arc-tos-overlay-text" class="popup-overlay" hidden>
-    <div class="oobe-popup not-resizable">
-      <div class="arc-tos-overlay-close-up arc-overlay-close-button">
+  <div id="arc-tos-overlay" class="popup-overlay" hidden>
+    <a href="#" id="arc-tos-overlay-start" class="arc-tos-invisible-link"></a>
+    <div id="arc-tos-overlay-container" class="oobe-popup not-resizable">
+      <div id="arc-tos-overlay-close-top"
+          class="arc-tos-overlay-close-top arc-overlay-close-button">
+      </div>
+      <div id="arc-tos-overlay-webview-container">
+        <webview id="arc-tos-overlay-webview"></webview>
+        <div class="arc-tos-overlay-webview-loading">
+          <p i18n-content="arcOverlayLoading"></p>
+        </div>
       </div>
       <div id="arc-tos-overlay-content-text">
         <span id="arc-learn-more-content"></span>
       </div>
-      <button id="arc-tos-overlay-text-close"
-          class="arc-tos-overlay-close-bottom arc-overlay-close-button"
-          i18n-content="arcOverlayClose">
-      </button>
-    </div>
-  </div>
-
-  <div id="arc-tos-overlay-url" class="popup-overlay" hidden>
-    <div class="oobe-popup not-resizable arc-tos-overlay-wide">
-      <div class="arc-tos-overlay-close-up arc-overlay-close-button">
+      <div class="arc-tos-button-strip">
+        <oobe-text-button inverse id="arc-tos-overlay-close-bottom"
+            class="arc-overlay-close-button">
+          <div i18n-content="arcOverlayClose"></div>
+        </oobe-text-button>
       </div>
-      <div id="arc-tos-overlay-webview-container">
-        <webview id="arc-tos-overlay-webview"></webview>
-      </div>
-      <button id="arc-tos-overlay-url-close"
-          class="arc-tos-overlay-close-bottom arc-overlay-close-button"
-          i18n-content="arcOverlayClose">
-      </button>
     </div>
+    <a href="#" id="arc-tos-overlay-end" class="arc-tos-invisible-link"></a>
   </div>
-
 </div>
