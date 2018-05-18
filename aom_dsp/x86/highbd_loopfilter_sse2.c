@@ -224,7 +224,6 @@ static AOM_FORCE_INLINE void highbd_filter4_sse2(__m128i *p1p0, __m128i *q1q0,
 static INLINE void highbd_filter4_dual_sse2(__m128i *p, __m128i *q, __m128i *ps,
                                             __m128i *qs, const __m128i *mask,
                                             const __m128i *th, int bd,
-
                                             __m128i *t80) {
   __m128i ps0 = _mm_subs_epi16(p[0], *t80);
   __m128i ps1 = _mm_subs_epi16(p[1], *t80);
@@ -471,10 +470,12 @@ void aom_highbd_lpf_horizontal_14_sse2(uint16_t *s, int pitch,
 }
 
 static AOM_FORCE_INLINE void highbd_lpf_internal_14_dual_sse2(
-    __m128i *p, __m128i *q, const uint8_t *blt, const uint8_t *lt,
-    const uint8_t *thr, int bd) {
+    __m128i *p, __m128i *q, const uint8_t *blt0, const uint8_t *lt0,
+    const uint8_t *thr0, const uint8_t *blt1, const uint8_t *lt1,
+    const uint8_t *thr1, int bd) {
   __m128i blimit, limit, thresh, t80;
-  get_limit(blt, lt, thr, bd, &blimit, &limit, &thresh, &t80);
+  get_limit_dual(blt0, lt0, thr0, blt1, lt1, thr1, bd, &blimit, &limit, &thresh,
+                 &t80);
   __m128i mask;
   highbd_filter_mask(p, q, &limit, &blimit, &mask);
   __m128i flat, flat2;
@@ -629,15 +630,16 @@ static AOM_FORCE_INLINE void highbd_lpf_internal_14_dual_sse2(
   }
 }
 
-void aom_highbd_lpf_horizontal_14_dual_sse2(uint16_t *s, int pitch,
-                                            const uint8_t *_blimit,
-                                            const uint8_t *_limit,
-                                            const uint8_t *_thresh, int bd) {
+void aom_highbd_lpf_horizontal_14_dual_sse2(
+    uint16_t *s, int pitch, const uint8_t *_blimit0, const uint8_t *_limit0,
+    const uint8_t *_thresh0, const uint8_t *_blimit1, const uint8_t *_limit1,
+    const uint8_t *_thresh1, int bd) {
   __m128i p[7], q[7];
   int i;
   load_highbd_pixel(s, 7, pitch, p, q);
 
-  highbd_lpf_internal_14_dual_sse2(p, q, _blimit, _limit, _thresh, bd);
+  highbd_lpf_internal_14_dual_sse2(p, q, _blimit0, _limit0, _thresh0, _blimit1,
+                                   _limit1, _thresh1, bd);
   for (i = 0; i < 6; i++) {
     _mm_store_si128((__m128i *)(s - (i + 1) * pitch), p[i]);
     _mm_store_si128((__m128i *)(s + i * pitch), q[i]);
@@ -1461,10 +1463,10 @@ void aom_highbd_lpf_vertical_14_sse2(uint16_t *s, int pitch,
   _mm_storeu_si128((__m128i *)(s + 3 * pitch), d3_2);
 }
 
-void aom_highbd_lpf_vertical_14_dual_sse2(uint16_t *s, int pitch,
-                                          const uint8_t *blimit,
-                                          const uint8_t *limit,
-                                          const uint8_t *thresh, int bd) {
+void aom_highbd_lpf_vertical_14_dual_sse2(
+    uint16_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0,
+    const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1,
+    const uint8_t *thresh1, int bd) {
   __m128i q[7], p[7];
   __m128i p6, p5, p4, p3, p2, p1, p0, q0;
   __m128i p6_2, p5_2, p4_2, p3_2, p2_2, p1_2, q0_2, p0_2;
@@ -1496,7 +1498,8 @@ void aom_highbd_lpf_vertical_14_dual_sse2(uint16_t *s, int pitch,
                            &q0_2, &q[0], &q[1], &q[2], &q[3], &q[4], &q[5],
                            &q[6], &d7);
 
-  highbd_lpf_internal_14_dual_sse2(p, q, blimit, limit, thresh, bd);
+  highbd_lpf_internal_14_dual_sse2(p, q, blimit0, limit0, thresh0, blimit1,
+                                   limit1, thresh1, bd);
 
   highbd_transpose8x8_sse2(&d0, &p[6], &p[5], &p[4], &p[3], &p[2], &p[1], &p[0],
                            &d0_out, &d1_out, &d2_out, &d3_out, &d4_out, &d5_out,

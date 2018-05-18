@@ -521,7 +521,6 @@ static void setup_masks(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
     MB_MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride + mi_col;
     const MB_MODE_INFO *const mbmi = mi[0];
     const int curr_skip = mbmi->skip && is_inter_block(mbmi);
-    // FIXME(chengchen): which bsize is correct?
     const BLOCK_SIZE bsize = mbmi->sb_type;
     const BLOCK_SIZE bsizec = scale_chroma_bsize(bsize, ssx, ssy);
     const BLOCK_SIZE plane_bsize = ss_size_lookup[bsizec][ssx][ssy];
@@ -935,13 +934,18 @@ static void filter_selectively_vert_row2(
         LpfFunc lpf_vertical = plane ? aom_lpf_vertical_6 : aom_lpf_vertical_14;
 
         if ((mask_16x16_0 & mask_16x16_1) & 1) {
-          /*
-          aom_lpf_vertical_14_dual(s, pitch, lfi0->mblim, lfi0->lim,
-                                   lfi0->hev_thr);
-          */
-          lpf_vertical(s, pitch, lfi0->mblim, lfi0->lim, lfi0->hev_thr);
-          lpf_vertical(s + 4 * pitch, pitch, lfi1->mblim, lfi1->lim,
-                       lfi1->hev_thr);
+          if (plane) {
+            // TODO(any): add aom_lpf_vertical_6_dual for chroma plane.
+            aom_lpf_vertical_6(s, pitch, lfi0->mblim, lfi0->lim, lfi0->hev_thr);
+            aom_lpf_vertical_6(s + 4 * pitch, pitch, lfi1->mblim, lfi1->lim,
+                               lfi1->hev_thr);
+          } else {
+            // TODO(any): add dual function simd function. Current sse2 code
+            // just called aom_lpf_vertical_14_sse2 twice.
+            aom_lpf_vertical_14_dual(s, pitch, lfi0->mblim, lfi0->lim,
+                                     lfi0->hev_thr, lfi1->mblim, lfi1->lim,
+                                     lfi1->hev_thr);
+          }
         } else if (mask_16x16_0 & 1) {
           lpf_vertical(s, pitch, lfi0->mblim, lfi0->lim, lfi0->hev_thr);
         } else {
@@ -956,15 +960,15 @@ static void filter_selectively_vert_row2(
         LpfFunc lpf_vertical = plane ? aom_lpf_vertical_6 : aom_lpf_vertical_8;
 
         if ((mask_8x8_0 & mask_8x8_1) & 1) {
-          // TODO(chengchen): add aom_lpf_vertical_6_dual for chroma plane.
-          /*
-          aom_lpf_vertical_8_dual(s, pitch, lfi0->mblim, lfi0->lim,
-                                  lfi0->hev_thr, lfi1->mblim, lfi1->lim,
-                                  lfi1->hev_thr);
-          */
-          lpf_vertical(s, pitch, lfi0->mblim, lfi0->lim, lfi0->hev_thr);
-          lpf_vertical(s + 4 * pitch, pitch, lfi1->mblim, lfi1->lim,
-                       lfi1->hev_thr);
+          if (plane) {
+            aom_lpf_vertical_6(s, pitch, lfi0->mblim, lfi0->lim, lfi0->hev_thr);
+            aom_lpf_vertical_6(s + 4 * pitch, pitch, lfi1->mblim, lfi1->lim,
+                               lfi1->hev_thr);
+          } else {
+            aom_lpf_vertical_8_dual(s, pitch, lfi0->mblim, lfi0->lim,
+                                    lfi0->hev_thr, lfi1->mblim, lfi1->lim,
+                                    lfi1->hev_thr);
+          }
         } else if (mask_8x8_0 & 1) {
           lpf_vertical(s, pitch, lfi0->mblim, lfi0->lim, lfi0->hev_thr);
         } else {
@@ -975,14 +979,9 @@ static void filter_selectively_vert_row2(
 
       if ((mask_4x4_0 | mask_4x4_1) & 1) {
         if ((mask_4x4_0 & mask_4x4_1) & 1) {
-          /*
           aom_lpf_vertical_4_dual(s, pitch, lfi0->mblim, lfi0->lim,
                                   lfi0->hev_thr, lfi1->mblim, lfi1->lim,
                                   lfi1->hev_thr);
-          */
-          aom_lpf_vertical_4(s, pitch, lfi0->mblim, lfi0->lim, lfi0->hev_thr);
-          aom_lpf_vertical_4(s + 4 * pitch, pitch, lfi1->mblim, lfi1->lim,
-                             lfi1->hev_thr);
         } else if (mask_4x4_0 & 1) {
           aom_lpf_vertical_4(s, pitch, lfi0->mblim, lfi0->lim, lfi0->hev_thr);
         } else {
@@ -1026,15 +1025,16 @@ static void highbd_filter_selectively_vert_row2(
             plane ? aom_highbd_lpf_vertical_6 : aom_highbd_lpf_vertical_14;
 
         if ((mask_16x16_0 & mask_16x16_1) & 1) {
-          // TODO(chengchen): use dual function
-          /*
-          aom_highbd_lpf_vertical_14_dual(s, pitch, lfi0->mblim, lfi0->lim,
-                                          lfi0->hev_thr, bd);
-          */
-          highbd_lpf_vertical(s, pitch, lfi0->mblim, lfi0->lim, lfi0->hev_thr,
-                              bd);
-          highbd_lpf_vertical(s + 4 * pitch, pitch, lfi1->mblim, lfi1->lim,
-                              lfi1->hev_thr, bd);
+          if (plane) {
+            aom_highbd_lpf_vertical_6(s, pitch, lfi0->mblim, lfi0->lim,
+                                      lfi0->hev_thr, bd);
+            aom_highbd_lpf_vertical_6(s + 4 * pitch, pitch, lfi1->mblim,
+                                      lfi1->lim, lfi1->hev_thr, bd);
+          } else {
+            aom_highbd_lpf_vertical_14_dual(s, pitch, lfi0->mblim, lfi0->lim,
+                                            lfi0->hev_thr, lfi1->mblim,
+                                            lfi1->lim, lfi1->hev_thr, bd);
+          }
         } else if (mask_16x16_0 & 1) {
           highbd_lpf_vertical(s, pitch, lfi0->mblim, lfi0->lim, lfi0->hev_thr,
                               bd);
@@ -1049,15 +1049,16 @@ static void highbd_filter_selectively_vert_row2(
             plane ? aom_highbd_lpf_vertical_6 : aom_highbd_lpf_vertical_8;
 
         if ((mask_8x8_0 & mask_8x8_1) & 1) {
-          /*
-          aom_highbd_lpf_vertical_8_dual(s, pitch, lfi0->mblim, lfi0->lim,
-                                         lfi0->hev_thr, lfi1->mblim, lfi1->lim,
-                                         lfi1->hev_thr, bd);
-          */
-          highbd_lpf_vertical(s, pitch, lfi0->mblim, lfi0->lim, lfi0->hev_thr,
-                              bd);
-          highbd_lpf_vertical(s + 4 * pitch, pitch, lfi1->mblim, lfi1->lim,
-                              lfi1->hev_thr, bd);
+          if (plane) {
+            aom_highbd_lpf_vertical_6(s, pitch, lfi0->mblim, lfi0->lim,
+                                      lfi0->hev_thr, bd);
+            aom_highbd_lpf_vertical_6(s + 4 * pitch, pitch, lfi1->mblim,
+                                      lfi1->lim, lfi1->hev_thr, bd);
+          } else {
+            aom_highbd_lpf_vertical_8_dual(s, pitch, lfi0->mblim, lfi0->lim,
+                                           lfi0->hev_thr, lfi1->mblim,
+                                           lfi1->lim, lfi1->hev_thr, bd);
+          }
         } else if (mask_8x8_0 & 1) {
           highbd_lpf_vertical(s, pitch, lfi0->mblim, lfi0->lim, lfi0->hev_thr,
                               bd);
@@ -1069,15 +1070,9 @@ static void highbd_filter_selectively_vert_row2(
 
       if ((mask_4x4_0 | mask_4x4_1) & 1) {
         if ((mask_4x4_0 & mask_4x4_1) & 1) {
-          /*
           aom_highbd_lpf_vertical_4_dual(s, pitch, lfi0->mblim, lfi0->lim,
                                          lfi0->hev_thr, lfi1->mblim, lfi1->lim,
                                          lfi1->hev_thr, bd);
-          */
-          aom_highbd_lpf_vertical_4(s, pitch, lfi0->mblim, lfi0->lim,
-                                    lfi0->hev_thr, bd);
-          aom_highbd_lpf_vertical_4(s + 4 * pitch, pitch, lfi1->mblim,
-                                    lfi1->lim, lfi1->hev_thr, bd);
         } else if (mask_4x4_0 & 1) {
           aom_highbd_lpf_vertical_4(s, pitch, lfi0->mblim, lfi0->lim,
                                     lfi0->hev_thr, bd);

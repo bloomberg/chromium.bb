@@ -16,17 +16,20 @@
 #include "aom_dsp/x86/lpf_common_sse2.h"
 #include "aom/aom_integer.h"
 
-void aom_highbd_lpf_horizontal_14_dual_avx2(uint16_t *s, int p,
-                                            const uint8_t *blt,
-                                            const uint8_t *lt,
-                                            const uint8_t *thr, int bd) {
-  aom_highbd_lpf_horizontal_14_dual_sse2(s, p, blt, lt, thr, bd);
+void aom_highbd_lpf_horizontal_14_dual_avx2(
+    uint16_t *s, int p, const uint8_t *blimit0, const uint8_t *limit0,
+    const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1,
+    const uint8_t *thresh1, int bd) {
+  aom_highbd_lpf_horizontal_14_dual_sse2(s, p, blimit0, limit0, thresh0,
+                                         blimit1, limit1, thresh1, bd);
 }
 
-void aom_highbd_lpf_vertical_14_dual_avx2(uint16_t *s, int p,
-                                          const uint8_t *blt, const uint8_t *lt,
-                                          const uint8_t *thr, int bd) {
-  aom_highbd_lpf_vertical_14_dual_sse2(s, p, blt, lt, thr, bd);
+void aom_highbd_lpf_vertical_14_dual_avx2(
+    uint16_t *s, int p, const uint8_t *blimit0, const uint8_t *limit0,
+    const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1,
+    const uint8_t *thresh1, int bd) {
+  aom_highbd_lpf_vertical_14_dual_sse2(s, p, blimit0, limit0, thresh0, blimit1,
+                                       limit1, thresh1, bd);
 }
 
 void aom_highbd_lpf_horizontal_4_dual_avx2(

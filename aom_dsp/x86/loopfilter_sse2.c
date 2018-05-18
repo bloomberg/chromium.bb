@@ -898,12 +898,16 @@ void aom_lpf_horizontal_8_sse2(unsigned char *s, int p,
   xx_storel_32(s - 3 * p, p2);
   xx_storel_32(s + 2 * p, q2);
 }
+
 void aom_lpf_horizontal_14_dual_sse2(unsigned char *s, int p,
-                                     const unsigned char *_blimit,
-                                     const unsigned char *_limit,
-                                     const unsigned char *_thresh) {
-  aom_lpf_horizontal_14_sse2(s, p, _blimit, _limit, _thresh);
-  aom_lpf_horizontal_14_sse2(s + 4, p, _blimit, _limit, _thresh);
+                                     const unsigned char *_blimit0,
+                                     const unsigned char *_limit0,
+                                     const unsigned char *_thresh0,
+                                     const unsigned char *_blimit1,
+                                     const unsigned char *_limit1,
+                                     const unsigned char *_thresh1) {
+  aom_lpf_horizontal_14_sse2(s, p, _blimit0, _limit0, _thresh0);
+  aom_lpf_horizontal_14_sse2(s + 4, p, _blimit1, _limit1, _thresh1);
 }
 
 void aom_lpf_horizontal_8_dual_sse2(uint8_t *s, int p, const uint8_t *_blimit0,
@@ -1739,15 +1743,17 @@ void aom_lpf_vertical_14_sse2(unsigned char *s, int p,
   _mm_storel_epi64((__m128i *)(s + 3 * p), _mm_srli_si128(d2d3_2, 8));
 }
 
-void aom_lpf_vertical_14_dual_sse2(unsigned char *s, int p,
-                                   const uint8_t *blimit, const uint8_t *limit,
-                                   const uint8_t *thresh) {
+void aom_lpf_vertical_14_dual_sse2(
+    unsigned char *s, int p, const uint8_t *blimit0, const uint8_t *limit0,
+    const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1,
+    const uint8_t *thresh1) {
   DECLARE_ALIGNED(16, unsigned char, t_dst[256]);
   // Transpose 16x16
   transpose8x16(s - 8, s - 8 + 8 * p, p, t_dst, 16);
   transpose8x16(s, s + 8 * p, p, t_dst + 8 * 16, 16);
   // Loop filtering
-  aom_lpf_horizontal_14_dual_sse2(t_dst + 8 * 16, 16, blimit, limit, thresh);
+  aom_lpf_horizontal_14_dual_sse2(t_dst + 8 * 16, 16, blimit0, limit0, thresh0,
+                                  blimit1, limit1, thresh1);
   // Transpose back
   transpose8x16(t_dst, t_dst + 8 * 16, 16, s - 8, p);
   transpose8x16(t_dst + 8, t_dst + 8 + 8 * 16, 16, s - 8 + 8 * p, p);
