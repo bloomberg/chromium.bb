@@ -105,8 +105,8 @@ class CORE_EXPORT WebPluginContainerImpl final
   void Show() override;
   void Hide() override;
 
-  cc::Layer* PlatformLayer() const;
-  bool PreventContentsOpaqueChangesToPlatformLayer() const;
+  cc::Layer* CcLayer() const;
+  bool PreventContentsOpaqueChangesToCcLayer() const;
   v8::Local<v8::Object> ScriptableObject(v8::Isolate*);
   bool SupportsKeyboardFocus() const;
   bool SupportsInputMethod() const;
@@ -152,7 +152,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   float PageScaleFactor() override;
   float PageZoomFactor() override;
 
-  void SetWebLayer(cc::Layer*, bool prevent_contents_opaque_changes) override;
+  void SetCcLayer(cc::Layer*, bool prevent_contents_opaque_changes) override;
 
   void RequestFullscreen() override;
   bool IsFullscreenElement() const override;

@@ -229,7 +229,7 @@ void ImageLayerBridge::ResourceReleasedSoftware(
     recycled_bitmaps_.push_back(std::move(registered));
 }
 
-cc::Layer* ImageLayerBridge::PlatformLayer() const {
+cc::Layer* ImageLayerBridge::CcLayer() const {
   return layer_.get();
 }
 

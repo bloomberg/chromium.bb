@@ -2412,7 +2412,7 @@ TEST_F(CompositedLayerMappingTest, CompositedStickyConstraintRemovedAndAdded) {
   PaintLayer* sticky_layer =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"))->Layer();
   EXPECT_TRUE(sticky_layer->GraphicsLayerBacking()
-                  ->PlatformLayer()
+                  ->CcLayer()
                   ->sticky_position_constraint()
                   .is_sticky);
 
@@ -2426,7 +2426,7 @@ TEST_F(CompositedLayerMappingTest, CompositedStickyConstraintRemovedAndAdded) {
   sticky_layer =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"))->Layer();
   EXPECT_FALSE(sticky_layer->GraphicsLayerBacking()
-                   ->PlatformLayer()
+                   ->CcLayer()
                    ->sticky_position_constraint()
                    .is_sticky);
 
@@ -2438,7 +2438,7 @@ TEST_F(CompositedLayerMappingTest, CompositedStickyConstraintRemovedAndAdded) {
   sticky_layer =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"))->Layer();
   EXPECT_TRUE(sticky_layer->GraphicsLayerBacking()
-                  ->PlatformLayer()
+                  ->CcLayer()
                   ->sticky_position_constraint()
                   .is_sticky);
 }
@@ -2469,8 +2469,7 @@ TEST_F(CompositedLayerMappingTest, ScrollingContainerBoundsChange) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
 
-  cc::Layer* scrolling_layer =
-      scrollable_area->LayerForScrolling()->PlatformLayer();
+  cc::Layer* scrolling_layer = scrollable_area->LayerForScrolling()->CcLayer();
   EXPECT_EQ(0, scrolling_layer->scroll_offset().y());
   EXPECT_EQ(150, scrolling_layer->bounds().height());
   EXPECT_EQ(100, scrolling_layer->scroll_container_bounds().height());
@@ -2714,7 +2713,7 @@ TEST_F(CompositedLayerMappingTest, ImageWithInvertFilterLayer) {
   EXPECT_EQ(filters, ToLayoutBoxModelObject(GetLayoutObjectByElementId("image"))
                          ->Layer()
                          ->GraphicsLayerBacking()
-                         ->PlatformLayer()
+                         ->CcLayer()
                          ->filters());
 }
 
@@ -2729,7 +2728,7 @@ TEST_F(CompositedLayerMappingTest, ImageWithInvertFilterLayerUpdated) {
             ToLayoutBoxModelObject(GetLayoutObjectByElementId("image"))
                 ->Layer()
                 ->GraphicsLayerBacking()
-                ->PlatformLayer()
+                ->CcLayer()
                 ->filters());
   ToLayoutImage(GetLayoutObjectByElementId("image"))
       ->UpdateShouldInvertColorForTest(false);
@@ -2738,7 +2737,7 @@ TEST_F(CompositedLayerMappingTest, ImageWithInvertFilterLayerUpdated) {
             ToLayoutBoxModelObject(GetLayoutObjectByElementId("image"))
                 ->Layer()
                 ->GraphicsLayerBacking()
-                ->PlatformLayer()
+                ->CcLayer()
                 ->filters());
 }
 

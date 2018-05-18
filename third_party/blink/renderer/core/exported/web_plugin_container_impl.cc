@@ -325,8 +325,8 @@ float WebPluginContainerImpl::PageZoomFactor() {
   return frame->PageZoomFactor();
 }
 
-void WebPluginContainerImpl::SetWebLayer(cc::Layer* new_layer,
-                                         bool prevent_contents_opaque_changes) {
+void WebPluginContainerImpl::SetCcLayer(cc::Layer* new_layer,
+                                        bool prevent_contents_opaque_changes) {
   if (layer_ == new_layer &&
       prevent_contents_opaque_changes == prevent_contents_opaque_changes_)
     return;
@@ -691,12 +691,11 @@ void WebPluginContainerImpl::DidFailLoading(const ResourceError& error) {
   web_plugin_->DidFailLoading(error);
 }
 
-cc::Layer* WebPluginContainerImpl::PlatformLayer() const {
+cc::Layer* WebPluginContainerImpl::CcLayer() const {
   return layer_;
 }
 
-bool WebPluginContainerImpl::PreventContentsOpaqueChangesToPlatformLayer()
-    const {
+bool WebPluginContainerImpl::PreventContentsOpaqueChangesToCcLayer() const {
   return prevent_contents_opaque_changes_;
 }
 

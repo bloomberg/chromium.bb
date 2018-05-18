@@ -577,7 +577,7 @@ void ScrollableArea::CancelProgrammaticScrollAnimation() {
 
 bool ScrollableArea::ShouldScrollOnMainThread() const {
   if (GraphicsLayer* layer = LayerForScrolling()) {
-    uint32_t reasons = layer->PlatformLayer()->main_thread_scrolling_reasons();
+    uint32_t reasons = layer->CcLayer()->main_thread_scrolling_reasons();
     // Should scroll on main thread unless the reason is the one that is set
     // by the ScrollAnimator, in which case, the animation can still be
     // scheduled on the compositor.

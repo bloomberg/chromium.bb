@@ -23,7 +23,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
  public:
   StubWebMediaPlayer(WebMediaPlayerClient* client) : client_(client) {}
 
-  const cc::Layer* GetWebLayer() { return layer_.get(); }
+  const cc::Layer* GetCcLayer() { return layer_.get(); }
 
   // WebMediaPlayer
   void Load(LoadType, const WebMediaPlayerSource&, CORSMode) override {
@@ -33,7 +33,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
     client_->ReadyStateChanged();
     layer_ = cc::Layer::Create();
     layer_->SetIsDrawable(true);
-    client_->SetWebLayer(layer_.get());
+    client_->SetCcLayer(layer_.get());
   }
   NetworkState GetNetworkState() const override { return network_state_; }
   ReadyState GetReadyState() const override { return ready_state_; }
@@ -95,7 +95,7 @@ TEST_F(VideoPainterTestForSPv2, VideoLayerAppearsInLayerTree) {
       ToHTMLMediaElement(GetDocument().body()->firstChild());
   StubWebMediaPlayer* player =
       static_cast<StubWebMediaPlayer*>(element->GetWebMediaPlayer());
-  const cc::Layer* layer = player->GetWebLayer();
+  const cc::Layer* layer = player->GetCcLayer();
   ASSERT_TRUE(layer);
   EXPECT_TRUE(HasLayerAttached(*layer));
   EXPECT_EQ(gfx::Size(300, 200), layer->bounds());

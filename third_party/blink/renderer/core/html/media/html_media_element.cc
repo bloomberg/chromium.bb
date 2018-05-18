@@ -3650,7 +3650,7 @@ void HTMLMediaElement::DidExitFullscreen() {
   in_overlay_fullscreen_video_ = false;
 }
 
-cc::Layer* HTMLMediaElement::PlatformLayer() const {
+cc::Layer* HTMLMediaElement::CcLayer() const {
   return cc_layer_;
 }
 
@@ -3941,7 +3941,7 @@ WebMediaPlayer::CORSMode HTMLMediaElement::CorsMode() const {
   return WebMediaPlayer::kCORSModeAnonymous;
 }
 
-void HTMLMediaElement::SetWebLayer(cc::Layer* cc_layer) {
+void HTMLMediaElement::SetCcLayer(cc::Layer* cc_layer) {
   if (cc_layer == cc_layer_)
     return;
 

@@ -444,9 +444,7 @@ void CompositorAnimations::AttachCompositedLayers(
         !layer->GetCompositedLayerMapping()->MainGraphicsLayer())
       return;
 
-    if (!layer->GetCompositedLayerMapping()
-             ->MainGraphicsLayer()
-             ->PlatformLayer())
+    if (!layer->GetCompositedLayerMapping()->MainGraphicsLayer()->CcLayer())
       return;
   }
 

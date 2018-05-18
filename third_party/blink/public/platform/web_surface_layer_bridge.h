@@ -32,7 +32,7 @@ class BLINK_PLATFORM_EXPORT WebSurfaceLayerBridge {
       WebLayerTreeView*,
       WebSurfaceLayerBridgeObserver*);
   virtual ~WebSurfaceLayerBridge();
-  virtual cc::Layer* GetWebLayer() const = 0;
+  virtual cc::Layer* GetCcLayer() const = 0;
   virtual const viz::FrameSinkId& GetFrameSinkId() const = 0;
   virtual void ClearSurfaceId() = 0;
 };

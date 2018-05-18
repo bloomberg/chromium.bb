@@ -3526,28 +3526,26 @@ void WebViewImpl::RegisterViewportLayersWithCompositor() {
       GetPage()->GlobalRootScrollerController().RootContainerLayer();
   cc::Layer* layout_viewport_container_cc_layer =
       layout_viewport_container_layer
-          ? layout_viewport_container_layer->PlatformLayer()
+          ? layout_viewport_container_layer->CcLayer()
           : nullptr;
 
   GraphicsLayer* layout_viewport_scroll_layer =
       GetPage()->GlobalRootScrollerController().RootScrollerLayer();
   cc::Layer* layout_viewport_scroll_cc_layer =
-      layout_viewport_scroll_layer
-          ? layout_viewport_scroll_layer->PlatformLayer()
-          : nullptr;
+      layout_viewport_scroll_layer ? layout_viewport_scroll_layer->CcLayer()
+                                   : nullptr;
 
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
 
   WebLayerTreeView::ViewportLayers viewport_layers;
   viewport_layers.overscroll_elasticity =
-      visual_viewport.OverscrollElasticityLayer()->PlatformLayer();
-  viewport_layers.page_scale =
-      visual_viewport.PageScaleLayer()->PlatformLayer();
+      visual_viewport.OverscrollElasticityLayer()->CcLayer();
+  viewport_layers.page_scale = visual_viewport.PageScaleLayer()->CcLayer();
   viewport_layers.inner_viewport_container =
-      visual_viewport.ContainerLayer()->PlatformLayer();
+      visual_viewport.ContainerLayer()->CcLayer();
   viewport_layers.outer_viewport_container = layout_viewport_container_cc_layer;
   viewport_layers.inner_viewport_scroll =
-      visual_viewport.ScrollLayer()->PlatformLayer();
+      visual_viewport.ScrollLayer()->CcLayer();
   viewport_layers.outer_viewport_scroll = layout_viewport_scroll_cc_layer;
 
   layer_tree_view_->RegisterViewportLayers(viewport_layers);
@@ -3565,7 +3563,7 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
   if (graphics_layer) {
     root_graphics_layer_ = visual_viewport.RootGraphicsLayer();
     visual_viewport_container_layer_ = visual_viewport.ContainerLayer();
-    root_layer_ = root_graphics_layer_->PlatformLayer();
+    root_layer_ = root_graphics_layer_->CcLayer();
     UpdateDeviceEmulationTransform();
     layer_tree_view_->SetRootLayer(root_layer_);
     // We register viewport layers here since there may not be a layer

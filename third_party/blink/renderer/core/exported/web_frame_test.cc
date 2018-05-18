@@ -2023,9 +2023,8 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode) {
   LocalFrame* frame = web_view_helper.LocalMainFrame()->GetFrame();
   VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
   EXPECT_EQ(viewport_height, visual_viewport.ContainerLayer()->Size().Height());
-  EXPECT_TRUE(
-      visual_viewport.ContainerLayer()->PlatformLayer()->masks_to_bounds());
-  EXPECT_FALSE(scroll_container->PlatformLayer()->masks_to_bounds());
+  EXPECT_TRUE(visual_viewport.ContainerLayer()->CcLayer()->masks_to_bounds());
+  EXPECT_FALSE(scroll_container->CcLayer()->masks_to_bounds());
 }
 
 TEST_F(WebFrameTest, SetForceZeroLayoutHeight) {
@@ -6302,7 +6301,7 @@ class CompositedSelectionBoundsTest
         v8::Isolate::GetCurrent(), expected_result.Get(0));
     ASSERT_TRUE(layer_owner_node_for_start);
     EXPECT_EQ(GetExpectedLayerForSelection(layer_owner_node_for_start)
-                  ->PlatformLayer()
+                  ->CcLayer()
                   ->id(),
               select_start->layer_id);
 
@@ -6316,10 +6315,9 @@ class CompositedSelectionBoundsTest
         expected_result.Get(context, 5).ToLocalChecked());
 
     ASSERT_TRUE(layer_owner_node_for_end);
-    EXPECT_EQ(GetExpectedLayerForSelection(layer_owner_node_for_end)
-                  ->PlatformLayer()
-                  ->id(),
-              select_end->layer_id);
+    EXPECT_EQ(
+        GetExpectedLayerForSelection(layer_owner_node_for_end)->CcLayer()->id(),
+        select_end->layer_id);
 
     EXPECT_EQ(end_edge_top_in_layer_x, select_end->edge_top_in_layer.x);
     EXPECT_EQ(end_edge_top_in_layer_y, select_end->edge_top_in_layer.y);
@@ -8144,7 +8142,7 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
   PaintLayerCompositor* compositor = web_view_helper.GetWebView()->Compositor();
   GraphicsLayer* scroll_layer = compositor->ScrollLayer();
   ASSERT_TRUE(scroll_layer);
-  cc::Layer* cc_scroll_layer = scroll_layer->PlatformLayer();
+  cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
 
   // Verify that the cc::Layer is not scrollable initially.
   ASSERT_FALSE(cc_scroll_layer->user_scrollable_horizontal());
@@ -8156,7 +8154,7 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
   web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
 
   scroll_layer = compositor->ScrollLayer();
-  cc_scroll_layer = scroll_layer->PlatformLayer();
+  cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
   ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
 }
@@ -8440,14 +8438,14 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   GraphicsLayer* visual_viewport_scroll_layer =
       frame_view->GetPage()->GetVisualViewport().ScrollLayer();
 
-  ASSERT_FALSE(layout_viewport_scroll_layer->PlatformLayer()
-                   ->user_scrollable_horizontal());
-  ASSERT_FALSE(layout_viewport_scroll_layer->PlatformLayer()
-                   ->user_scrollable_vertical());
-  ASSERT_FALSE(visual_viewport_scroll_layer->PlatformLayer()
-                   ->user_scrollable_horizontal());
-  ASSERT_FALSE(visual_viewport_scroll_layer->PlatformLayer()
-                   ->user_scrollable_vertical());
+  ASSERT_FALSE(
+      layout_viewport_scroll_layer->CcLayer()->user_scrollable_horizontal());
+  ASSERT_FALSE(
+      layout_viewport_scroll_layer->CcLayer()->user_scrollable_vertical());
+  ASSERT_FALSE(
+      visual_viewport_scroll_layer->CcLayer()->user_scrollable_horizontal());
+  ASSERT_FALSE(
+      visual_viewport_scroll_layer->CcLayer()->user_scrollable_vertical());
 
   // Verify that the viewports are scrollable upon exiting fullscreen.
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
@@ -8458,14 +8456,14 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   layout_viewport_scroll_layer = web_view_impl->Compositor()->ScrollLayer();
   visual_viewport_scroll_layer =
       frame_view->GetPage()->GetVisualViewport().ScrollLayer();
-  ASSERT_TRUE(layout_viewport_scroll_layer->PlatformLayer()
-                  ->user_scrollable_horizontal());
-  ASSERT_TRUE(layout_viewport_scroll_layer->PlatformLayer()
-                  ->user_scrollable_vertical());
-  ASSERT_TRUE(visual_viewport_scroll_layer->PlatformLayer()
-                  ->user_scrollable_horizontal());
-  ASSERT_TRUE(visual_viewport_scroll_layer->PlatformLayer()
-                  ->user_scrollable_vertical());
+  ASSERT_TRUE(
+      layout_viewport_scroll_layer->CcLayer()->user_scrollable_horizontal());
+  ASSERT_TRUE(
+      layout_viewport_scroll_layer->CcLayer()->user_scrollable_vertical());
+  ASSERT_TRUE(
+      visual_viewport_scroll_layer->CcLayer()->user_scrollable_horizontal());
+  ASSERT_TRUE(
+      visual_viewport_scroll_layer->CcLayer()->user_scrollable_vertical());
 }
 
 TEST_F(WebFrameTest, FullscreenMainFrame) {
@@ -8485,7 +8483,7 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
                                    ->View()
                                    ->LayoutViewportScrollableArea()
                                    ->LayerForScrolling()
-                                   ->PlatformLayer();
+                                   ->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
   ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
@@ -8510,7 +8508,7 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
                         ->View()
                         ->LayoutViewportScrollableArea()
                         ->LayerForScrolling()
-                        ->PlatformLayer();
+                        ->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
   ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
@@ -12777,8 +12775,7 @@ TEST_F(WebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
   EXPECT_NE(nullptr, scrollable_area);
 
   // We should have a composited layer for scrolling due to will-change.
-  cc::Layer* cc_scroll_layer =
-      scrollable_area->LayerForScrolling()->PlatformLayer();
+  cc::Layer* cc_scroll_layer = scrollable_area->LayerForScrolling()->CcLayer();
   EXPECT_NE(nullptr, cc_scroll_layer);
 
   // Ensure a synthetic impl-side scroll offset propagates to the scrollable

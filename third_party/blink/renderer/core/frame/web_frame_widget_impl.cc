@@ -1077,7 +1077,7 @@ PaintLayerCompositor* WebFrameWidgetImpl::Compositor() const {
 
 void WebFrameWidgetImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
   root_graphics_layer_ = layer;
-  root_layer_ = layer ? layer->PlatformLayer() : nullptr;
+  root_layer_ = layer ? layer->CcLayer() : nullptr;
 
   SetIsAcceleratedCompositingActive(layer);
 

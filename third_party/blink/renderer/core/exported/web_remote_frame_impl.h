@@ -60,7 +60,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
                                     const ParsedFeaturePolicy&,
                                     WebRemoteFrameClient*,
                                     WebFrame* opener) override;
-  void SetWebLayer(cc::Layer*, bool prevent_contents_opaque_changes) override;
+  void SetCcLayer(cc::Layer*, bool prevent_contents_opaque_changes) override;
   void SetReplicatedOrigin(
       const WebSecurityOrigin&,
       bool is_potentially_trustworthy_unique_origin) override;

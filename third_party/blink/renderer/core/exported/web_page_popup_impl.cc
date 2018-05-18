@@ -357,7 +357,7 @@ void WebPagePopupImpl::SetWindowRect(const IntRect& rect_in_screen) {
 
 void WebPagePopupImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
   root_graphics_layer_ = layer;
-  root_layer_ = layer ? layer->PlatformLayer() : nullptr;
+  root_layer_ = layer ? layer->CcLayer() : nullptr;
 
   is_accelerated_compositing_active_ = !!layer;
   if (layer_tree_view_) {

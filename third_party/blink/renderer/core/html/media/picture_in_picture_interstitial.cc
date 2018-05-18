@@ -62,8 +62,8 @@ void PictureInPictureInterstitial::Show() {
   interstitial_timer_.StartOneShot(kPictureInPictureStyleChangeTransSeconds,
                                    FROM_HERE);
 
-  DCHECK(GetVideoElement().PlatformLayer());
-  GetVideoElement().PlatformLayer()->SetIsDrawable(false);
+  DCHECK(GetVideoElement().CcLayer());
+  GetVideoElement().CcLayer()->SetIsDrawable(false);
 }
 
 void PictureInPictureInterstitial::Hide() {
@@ -78,8 +78,8 @@ void PictureInPictureInterstitial::Hide() {
   interstitial_timer_.StartOneShot(kPictureInPictureHiddenAnimationSeconds,
                                    FROM_HERE);
 
-  if (GetVideoElement().PlatformLayer())
-    GetVideoElement().PlatformLayer()->SetIsDrawable(true);
+  if (GetVideoElement().CcLayer())
+    GetVideoElement().CcLayer()->SetIsDrawable(true);
 }
 
 void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {

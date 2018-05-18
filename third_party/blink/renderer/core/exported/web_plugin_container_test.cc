@@ -1366,19 +1366,19 @@ class CompositedPlugin : public FakeWebPlugin {
   explicit CompositedPlugin(const WebPluginParams& params)
       : FakeWebPlugin(params), layer_(cc::Layer::Create()) {}
 
-  cc::Layer* GetWebLayer() const { return layer_.get(); }
+  cc::Layer* GetCcLayer() const { return layer_.get(); }
 
   // WebPlugin
 
   bool Initialize(WebPluginContainer* container) override {
     if (!FakeWebPlugin::Initialize(container))
       return false;
-    container->SetWebLayer(layer_.get(), false);
+    container->SetCcLayer(layer_.get(), false);
     return true;
   }
 
   void Destroy() override {
-    Container()->SetWebLayer(nullptr, false);
+    Container()->SetCcLayer(nullptr, false);
     FakeWebPlugin::Destroy();
   }
 
@@ -1422,7 +1422,7 @@ TEST_F(WebPluginContainerTest, CompositedPluginSPv2) {
   ASSERT_EQ(DisplayItem::kForeignLayerPlugin, display_items[0].GetType());
   const auto& foreign_layer_display_item =
       static_cast<const ForeignLayerDisplayItem&>(display_items[0]);
-  EXPECT_EQ(plugin->GetWebLayer(), foreign_layer_display_item.GetLayer());
+  EXPECT_EQ(plugin->GetCcLayer(), foreign_layer_display_item.GetLayer());
 }
 
 TEST_F(WebPluginContainerTest, NeedsWheelEvents) {

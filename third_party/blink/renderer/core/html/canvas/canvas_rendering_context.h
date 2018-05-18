@@ -107,7 +107,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
     return false;
   }
 
-  virtual cc::Layer* PlatformLayer() const { return nullptr; }
+  virtual cc::Layer* CcLayer() const { return nullptr; }
 
   enum LostContextMode {
     kNotLostContext,

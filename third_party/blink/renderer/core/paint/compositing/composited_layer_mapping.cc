@@ -444,12 +444,11 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
   if (IsTextureLayerCanvas(GetLayoutObject())) {
     CanvasRenderingContext* context =
         ToHTMLCanvasElement(GetLayoutObject().GetNode())->RenderingContext();
-    cc::Layer* layer = context ? context->PlatformLayer() : nullptr;
+    cc::Layer* layer = context ? context->CcLayer() : nullptr;
     // Determine whether the external texture layer covers the whole graphics
     // layer. This may not be the case if there are box decorations or
     // shadows.
-    if (layer &&
-        layer->bounds() == graphics_layer_->PlatformLayer()->bounds()) {
+    if (layer && layer->bounds() == graphics_layer_->CcLayer()->bounds()) {
       // Determine whether the rendering context's external texture layer is
       // opaque.
       if (!context->CreationAttributes().alpha) {
@@ -842,9 +841,8 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
   }
 
   if (WebPluginContainerImpl* plugin = GetPluginContainer(layout_object)) {
-    graphics_layer_->SetContentsToPlatformLayer(
-        plugin->PlatformLayer(),
-        plugin->PreventContentsOpaqueChangesToPlatformLayer());
+    graphics_layer_->SetContentsToCcLayer(
+        plugin->CcLayer(), plugin->PreventContentsOpaqueChangesToCcLayer());
   } else if (layout_object.GetNode() &&
              layout_object.GetNode()->IsFrameOwnerElement() &&
              ToHTMLFrameOwnerElement(layout_object.GetNode())->ContentFrame()) {
@@ -852,27 +850,27 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
         ToHTMLFrameOwnerElement(layout_object.GetNode())->ContentFrame();
     if (frame->IsRemoteFrame()) {
       RemoteFrame* remote = ToRemoteFrame(frame);
-      cc::Layer* layer = remote->GetWebLayer();
-      graphics_layer_->SetContentsToPlatformLayer(
+      cc::Layer* layer = remote->GetCcLayer();
+      graphics_layer_->SetContentsToCcLayer(
           layer, remote->WebLayerHasFixedContentsOpaque());
     }
   } else if (layout_object.IsVideo()) {
     HTMLMediaElement* media_element =
         ToHTMLMediaElement(layout_object.GetNode());
-    graphics_layer_->SetContentsToPlatformLayer(
-        media_element->PlatformLayer(),
+    graphics_layer_->SetContentsToCcLayer(
+        media_element->CcLayer(),
         /*prevent_contents_opaque_changes=*/true);
   } else if (IsSurfaceLayerCanvas(layout_object)) {
     HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
-    graphics_layer_->SetContentsToPlatformLayer(
-        canvas->SurfaceLayerBridge()->GetWebLayer(),
+    graphics_layer_->SetContentsToCcLayer(
+        canvas->SurfaceLayerBridge()->GetCcLayer(),
         /*prevent_contents_opaque_changes=*/false);
     layer_config_changed = true;
   } else if (IsTextureLayerCanvas(layout_object)) {
     HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
     if (CanvasRenderingContext* context = canvas->RenderingContext()) {
-      graphics_layer_->SetContentsToPlatformLayer(
-          context->PlatformLayer(), /*prevent_contents_opaque_changes=*/false);
+      graphics_layer_->SetContentsToCcLayer(
+          context->CcLayer(), /*prevent_contents_opaque_changes=*/false);
     }
     layer_config_changed = true;
   }
@@ -1974,7 +1972,7 @@ void CompositedLayerMapping::UpdateDrawsContent() {
     CanvasRenderingContext* context =
         ToHTMLCanvasElement(GetLayoutObject().GetNode())->RenderingContext();
     // Content layer may be null if context is lost.
-    if (cc::Layer* content_layer = context->PlatformLayer()) {
+    if (cc::Layer* content_layer = context->CcLayer()) {
       Color bg_color(Color::kTransparent);
       if (ContentLayerSupportsDirectBackgroundComposition(GetLayoutObject())) {
         bg_color = LayoutObjectBackgroundColor();
@@ -2159,7 +2157,7 @@ bool CompositedLayerMapping::UpdateOverflowControlsLayers(
 
     if (scrolling_contents_layer_ &&
         scrollable_area->NeedsShowScrollbarLayers()) {
-      scrolling_contents_layer_->PlatformLayer()->ShowScrollbars();
+      scrolling_contents_layer_->CcLayer()->ShowScrollbars();
       scrollable_area->DidShowScrollbarLayers();
     }
   }

@@ -184,7 +184,7 @@ LayoutRect LayoutVideo::ReplacedContentRect() const {
 }
 
 bool LayoutVideo::SupportsAcceleratedRendering() const {
-  return !!MediaElement()->PlatformLayer();
+  return !!MediaElement()->CcLayer();
 }
 
 static const LayoutBlock* LayoutObjectPlaceholder(

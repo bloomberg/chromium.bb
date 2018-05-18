@@ -1537,9 +1537,8 @@ TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
                       "content.style.width = \"1500px\";"
                       "content.style.height = \"2400px\";"));
   frame_view.UpdateAllLifecyclePhases();
-  cc::Layer* scroll_layer = frame_view.LayoutViewportScrollableArea()
-                                ->LayerForScrolling()
-                                ->PlatformLayer();
+  cc::Layer* scroll_layer =
+      frame_view.LayoutViewportScrollableArea()->LayerForScrolling()->CcLayer();
 
   EXPECT_EQ(gfx::Size(1500, 2400), scroll_layer->bounds());
 }

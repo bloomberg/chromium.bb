@@ -300,7 +300,7 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
     web_stream_.RemoveObserver(this);
 
   // Destruct compositor resources in the proper order.
-  get_client()->SetWebLayer(nullptr);
+  get_client()->SetCcLayer(nullptr);
   if (video_layer_)
     video_layer_->StopUsingProvider();
 
@@ -1004,13 +1004,13 @@ void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
   DCHECK(thread_checker_.CalledOnValidThread());
   video_rotation_ = video_rotation;
 
-  // Keep the old |video_layer_| alive until SetWebLayer() is called with a new
+  // Keep the old |video_layer_| alive until SetCcLayer() is called with a new
   // pointer, as it may use the pointer from the last call.
   auto new_video_layer =
       cc::VideoLayer::Create(compositor_.get(), video_rotation);
   new_video_layer->SetContentsOpaque(is_opaque);
 
-  get_client()->SetWebLayer(new_video_layer.get());
+  get_client()->SetCcLayer(new_video_layer.get());
 
   video_layer_ = std::move(new_video_layer);
 }

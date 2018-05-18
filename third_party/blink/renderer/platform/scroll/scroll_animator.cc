@@ -48,7 +48,7 @@ namespace blink {
 namespace {
 
 cc::Layer* ToCcLayer(GraphicsLayer* layer) {
-  return layer ? layer->PlatformLayer() : nullptr;
+  return layer ? layer->CcLayer() : nullptr;
 }
 
 }  // namespace

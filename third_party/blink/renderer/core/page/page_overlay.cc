@@ -77,7 +77,7 @@ void PageOverlay::Update() {
 
     // This is required for contents of overlay to stay in sync with the page
     // while scrolling.
-    cc::Layer* cc_layer = layer_->PlatformLayer();
+    cc::Layer* cc_layer = layer_->CcLayer();
     cc_layer->AddMainThreadScrollingReasons(
         MainThreadScrollingReason::kPageOverlay);
     if (frame->IsMainFrame()) {
