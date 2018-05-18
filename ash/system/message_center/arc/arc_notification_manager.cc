@@ -7,14 +7,10 @@
 #include <memory>
 #include <utility>
 
-// TODO(https://crbug.com/768439): Remove nogncheck when moved to ash.
-#include "ash/login_status.h"                // nogncheck
-#include "ash/session/session_controller.h"  // nogncheck
-#include "ash/shell.h"                       // nogncheck
 #include "ash/system/message_center/arc/arc_notification_delegate.h"
 #include "ash/system/message_center/arc/arc_notification_item_impl.h"
+#include "ash/system/message_center/arc/arc_notification_manager_delegate.h"
 #include "ash/system/message_center/arc/arc_notification_view.h"
-#include "ash/system/message_center/notification_tray.h"  // nogncheck
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/arc/mojo_channel.h"
@@ -42,15 +38,6 @@ std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
   auto* arc_delegate =
       static_cast<ArcNotificationDelegate*>(notification.delegate());
   return arc_delegate->CreateCustomMessageView(notification);
-}
-
-bool IsPublicSessionOrKiosk() {
-  const LoginStatus login_status =
-      Shell::Get()->session_controller()->login_status();
-
-  return login_status == LoginStatus::PUBLIC ||
-         login_status == LoginStatus::KIOSK_APP ||
-         login_status == LoginStatus::ARC_KIOSK_APP;
 }
 
 }  // namespace
@@ -94,9 +81,11 @@ void ArcNotificationManager::SetCustomNotificationViewFactory() {
 }
 
 ArcNotificationManager::ArcNotificationManager(
+    std::unique_ptr<ArcNotificationManagerDelegate> delegate,
     const AccountId& main_profile_id,
     message_center::MessageCenter* message_center)
-    : main_profile_id_(main_profile_id),
+    : delegate_(std::move(delegate)),
+      main_profile_id_(main_profile_id),
       message_center_(message_center),
       instance_owner_(std::make_unique<InstanceOwner>()) {
   instance_owner_->holder()->SetHost(this);
@@ -159,9 +148,10 @@ void ArcNotificationManager::OnNotificationPosted(ArcNotificationDataPtr data) {
     it = result.first;
   }
 
-  GetAppId(data->package_name.value_or(std::string()),
-           base::BindOnce(&ArcNotificationManager::OnGotAppId,
-                          weak_ptr_factory_.GetWeakPtr(), std::move(data)));
+  delegate_->GetAppIdByPackageName(
+      data->package_name.value_or(std::string()),
+      base::BindOnce(&ArcNotificationManager::OnGotAppId,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(data)));
 }
 
 void ArcNotificationManager::OnNotificationUpdated(
@@ -176,14 +166,14 @@ void ArcNotificationManager::OnNotificationUpdated(
   if (it == items_.end())
     return;
 
-  GetAppId(data->package_name.value_or(std::string()),
-           base::BindOnce(&ArcNotificationManager::OnGotAppId,
-                          weak_ptr_factory_.GetWeakPtr(), std::move(data)));
+  delegate_->GetAppIdByPackageName(
+      data->package_name.value_or(std::string()),
+      base::BindOnce(&ArcNotificationManager::OnGotAppId,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(data)));
 }
 
 void ArcNotificationManager::OpenMessageCenter() {
-  ash::Shell::Get()->GetNotificationTray()->ShowMessageCenter(
-      false /* show_by_click */);
+  delegate_->ShowMessageCenter();
 }
 
 void ArcNotificationManager::OnNotificationRemoved(const std::string& key) {
@@ -378,21 +368,11 @@ bool ArcNotificationManager::ShouldIgnoreNotification(
   // TODO: Use centralized const for Play Store package.
   if (data->package_name.has_value() &&
       *data->package_name == kPlayStorePackageName &&
-      IsPublicSessionOrKiosk()) {
+      delegate_->IsPublicSessionOrKiosk()) {
     return true;
   }
 
   return false;
-}
-
-void ArcNotificationManager::GetAppId(const std::string& package_name,
-                                      GetAppIdResponseCallback callback) const {
-  if (get_app_id_callback_.is_null() || package_name.empty()) {
-    std::move(callback).Run(std::string());
-    return;
-  }
-
-  get_app_id_callback_.Run(package_name, std::move(callback));
 }
 
 void ArcNotificationManager::OnGotAppId(ArcNotificationDataPtr data,

@@ -19,6 +19,7 @@
 namespace ash {
 
 class ArcNotificationItem;
+class ArcNotificationManagerDelegate;
 
 class ArcNotificationManager
     : public arc::ConnectionObserver<arc::mojom::NotificationsInstance>,
@@ -28,8 +29,10 @@ class ArcNotificationManager
   // testing.
   static void SetCustomNotificationViewFactory();
 
-  ArcNotificationManager(const AccountId& main_profile_id,
-                         message_center::MessageCenter* message_center);
+  ArcNotificationManager(
+      std::unique_ptr<ArcNotificationManagerDelegate> delegate,
+      const AccountId& main_profile_id,
+      message_center::MessageCenter* message_center);
 
   ~ArcNotificationManager() override;
 
@@ -38,15 +41,6 @@ class ArcNotificationManager
   arc::ConnectionHolder<arc::mojom::NotificationsInstance,
                         arc::mojom::NotificationsHost>*
   GetConnectionHolderForTest();
-
-  using GetAppIdResponseCallback =
-      base::OnceCallback<void(const std::string& app_id)>;
-  using GetAppIdCallback =
-      base::RepeatingCallback<void(const std::string& package_name,
-                                   GetAppIdResponseCallback callback)>;
-  void set_get_app_id_callback(const GetAppIdCallback& get_app_id_callback) {
-    get_app_id_callback_ = get_app_id_callback;
-  }
 
   // ConnectionObserver<arc::mojom::NotificationsInstance> implementation:
   void OnConnectionReady() override;
@@ -75,23 +69,17 @@ class ArcNotificationManager
 
   bool ShouldIgnoreNotification(arc::mojom::ArcNotificationData* data);
 
-  // Calls |get_app_id_callback_| to retrieve the app id. |callback| will be
-  // invoked with the app id or an empty string.
-  void GetAppId(const std::string& package_name,
-                GetAppIdResponseCallback callback) const;
-
   // Invoked when |get_app_id_callback_| gets back the app id.
   void OnGotAppId(arc::mojom::ArcNotificationDataPtr data,
                   const std::string& app_id);
 
+  std::unique_ptr<ArcNotificationManagerDelegate> delegate_;
   const AccountId main_profile_id_;
   message_center::MessageCenter* const message_center_;
 
   using ItemMap =
       std::unordered_map<std::string, std::unique_ptr<ArcNotificationItem>>;
   ItemMap items_;
-
-  GetAppIdCallback get_app_id_callback_;
 
   bool ready_ = false;
 

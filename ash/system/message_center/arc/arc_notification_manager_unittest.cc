@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/system/message_center/arc/arc_notification_manager.h"
+#include "ash/system/message_center/arc/arc_notification_manager_delegate.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/arc/connection_holder.h"
@@ -59,6 +60,24 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   DISALLOW_COPY_AND_ASSIGN(MockMessageCenter);
 };
 
+class FakeArcNotificationManagerDelegate
+    : public ArcNotificationManagerDelegate {
+ public:
+  FakeArcNotificationManagerDelegate() = default;
+  ~FakeArcNotificationManagerDelegate() override = default;
+
+  // ArcNotificationManagerDelegate:
+  bool IsPublicSessionOrKiosk() const override { return false; }
+  void GetAppIdByPackageName(const std::string& package_name,
+                             GetAppIdByPackageNameCallback callback) override {
+    std::move(callback).Run(std::string());
+  }
+  void ShowMessageCenter() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeArcNotificationManagerDelegate);
+};
+
 }  // anonymous namespace
 
 class ArcNotificationManagerTest : public testing::Test {
@@ -100,6 +119,7 @@ class ArcNotificationManagerTest : public testing::Test {
     message_center_ = std::make_unique<MockMessageCenter>();
 
     arc_notification_manager_ = std::make_unique<ArcNotificationManager>(
+        std::make_unique<FakeArcNotificationManagerDelegate>(),
         EmptyAccountId(), message_center_.get());
 
     binding_ =
