@@ -1680,6 +1680,9 @@ now we are only interested in H264, VP8 and VP9.
 
 <rappor-metric name="PageLoad.CoarseTiming.NavigationToFirstContentfulPaint"
     type="UMA_RAPPOR_TYPE">
+  <obsolete>
+    Deprecated May 2018
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <owner>bmcquade@chromium.org</owner>
   <summary>
@@ -1723,6 +1726,9 @@ now we are only interested in H264, VP8 and VP9.
 <rappor-metric
     name="PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintNotRecorded"
     type="ETLD_PLUS_ONE">
+  <obsolete>
+    Deprecated May 2018
+  </obsolete>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     The domain and registry of the URL of a page which did not report

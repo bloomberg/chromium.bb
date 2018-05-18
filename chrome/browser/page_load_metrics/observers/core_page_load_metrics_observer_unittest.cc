@@ -11,8 +11,6 @@
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/test_rappor_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/navigation_simulator.h"
@@ -37,10 +35,7 @@ class CorePageLoadMetricsObserverTest
 
   void SetUp() override {
     page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
-    TestingBrowserProcess::GetGlobal()->SetRapporServiceImpl(&rappor_tester_);
   }
-
-  rappor::TestRapporServiceImpl rappor_tester_;
 };
 
 TEST_F(CorePageLoadMetricsObserverTest, NoMetrics) {
@@ -354,63 +349,6 @@ TEST_F(CorePageLoadMetricsObserverTest, FailedBackgroundProvisionalLoad) {
 
   histogram_tester().ExpectTotalCount(internal::kHistogramFailedProvisionalLoad,
                                       0);
-}
-
-TEST_F(CorePageLoadMetricsObserverTest, NoRappor) {
-  rappor::TestSample::Shadow* sample_obj =
-      rappor_tester_.GetRecordedSampleForMetric(
-          internal::kRapporMetricsNameCoarseTiming);
-  EXPECT_EQ(sample_obj, nullptr);
-}
-
-TEST_F(CorePageLoadMetricsObserverTest, RapporLongPageLoad) {
-  page_load_metrics::mojom::PageLoadTiming timing;
-  page_load_metrics::InitPageLoadTimingForTest(&timing);
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_contentful_paint =
-      base::TimeDelta::FromSeconds(40);
-  PopulateRequiredTimingFields(&timing);
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-  SimulateTimingUpdate(timing);
-
-  // Navigate again to force logging RAPPOR.
-  NavigateAndCommit(GURL(kDefaultTestUrl2));
-  rappor::TestSample::Shadow* sample_obj =
-      rappor_tester_.GetRecordedSampleForMetric(
-          internal::kRapporMetricsNameCoarseTiming);
-  const auto& string_it = sample_obj->string_fields.find("Domain");
-  EXPECT_NE(string_it, sample_obj->string_fields.end());
-  EXPECT_EQ(rappor::GetDomainAndRegistrySampleFromGURL(GURL(kDefaultTestUrl)),
-            string_it->second);
-
-  const auto& flag_it = sample_obj->flag_fields.find("IsSlow");
-  EXPECT_NE(flag_it, sample_obj->flag_fields.end());
-  EXPECT_EQ(1u, flag_it->second);
-}
-
-TEST_F(CorePageLoadMetricsObserverTest, RapporQuickPageLoad) {
-  page_load_metrics::mojom::PageLoadTiming timing;
-  page_load_metrics::InitPageLoadTimingForTest(&timing);
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_contentful_paint = base::TimeDelta::FromSeconds(1);
-  PopulateRequiredTimingFields(&timing);
-
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-  SimulateTimingUpdate(timing);
-
-  // Navigate again to force logging RAPPOR.
-  NavigateAndCommit(GURL(kDefaultTestUrl2));
-  rappor::TestSample::Shadow* sample_obj =
-      rappor_tester_.GetRecordedSampleForMetric(
-          internal::kRapporMetricsNameCoarseTiming);
-  const auto& string_it = sample_obj->string_fields.find("Domain");
-  EXPECT_NE(string_it, sample_obj->string_fields.end());
-  EXPECT_EQ(rappor::GetDomainAndRegistrySampleFromGURL(GURL(kDefaultTestUrl)),
-            string_it->second);
-
-  const auto& flag_it = sample_obj->flag_fields.find("IsSlow");
-  EXPECT_NE(flag_it, sample_obj->flag_fields.end());
-  EXPECT_EQ(0u, flag_it->second);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, Reload) {
