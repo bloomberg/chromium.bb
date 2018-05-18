@@ -3801,6 +3801,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list::features::kEnableSettingsShortcutSearch)},
 #endif  // OS_CHROMEOS
 
+    {"autofill-cache-query-responses",
+     flag_descriptions::kAutofillCacheQueryResponsesName,
+     flag_descriptions::kAutofillCacheQueryResponsesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillCacheQueryResponses)},
     {"autofill-enforce-min-required-fields-for-heuristics",
      flag_descriptions::kAutofillEnforceMinRequiredFieldsForHeuristicsName,
      flag_descriptions::

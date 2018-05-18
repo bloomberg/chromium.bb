@@ -8,6 +8,9 @@
 namespace autofill {
 namespace switches {
 
+// Override the default autofill server URL with "scheme://host[:port]/prefix/".
+const char kAutofillServerURL[] = "autofill-server-url";
+
 // Force hiding the local save checkbox in the autofill dialog box for getting
 // the full credit card number for a wallet card. The card will never be stored
 // locally.

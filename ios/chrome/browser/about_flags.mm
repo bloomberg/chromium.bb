@@ -321,6 +321,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBrowserContainerFullscreenName,
      flag_descriptions::kBrowserContainerFullscreenDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kBrowserContainerFullscreen)},
+    {"autofill-cache-query-responses",
+     flag_descriptions::kAutofillCacheQueryResponsesName,
+     flag_descriptions::kAutofillCacheQueryResponsesDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillCacheQueryResponses)},
 };
 
 // Add all switches from experimental flags to |command_line|.

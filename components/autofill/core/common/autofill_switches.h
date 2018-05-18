@@ -12,6 +12,7 @@ namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
+extern const char kAutofillServerURL[];
 extern const char kDisableOfferStoreUnmaskedWalletCards[];
 extern const char kDisablePasswordGeneration[];
 extern const char kDisableSingleClickAutofill[];

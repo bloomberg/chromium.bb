@@ -51,6 +51,12 @@ const char kAsyncImageDecodingName[] = "AsyncImageDecoding";
 const char kAsyncImageDecodingDescription[] =
     "Enables asynchronous decoding of images from raster for web content";
 
+const char kAutofillCacheQueryResponsesName[] =
+    "Cache Autofill Query Responses";
+const char kAutofillCacheQueryResponsesDescription[] =
+    "When enabled, autofill will cache the responses it receives from the "
+    "crowd-sourced field type prediction server.";
+
 const char kAutofillDynamicFormsName[] = "Autofill Dynamic Forms";
 const char kAutofillDynamicFormsDescription[] =
     "Allows autofill to fill dynamically changing forms";

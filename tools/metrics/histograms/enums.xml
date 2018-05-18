@@ -2545,6 +2545,16 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="8" label="Server Mismatch"/>
 </enum>
 
+<enum name="AutofillQueryMethod">
+  <summary>
+    The HTTP method used to fetch a URL. Logged as a boolean corresponding to
+    the first two enumeration values found in ::net::URLFetcher::RequestType.
+    See: net/url_request/url_fetcher.h
+  </summary>
+  <int value="0" label="GET"/>
+  <int value="1" label="POST"/>
+</enum>
+
 <enum name="AutofillQueryResult">
   <int value="0" label="Sent"/>
   <int value="1" label="Received"/>
@@ -26741,6 +26751,7 @@ from previous Chrome versions.
   <int value="-1575375861" label="enable-captive-portal-random-url"/>
   <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>
+  <int value="-1560729847" label="AutofillCacheQueryResponses:enabled"/>
   <int value="-1559789642" label="RunAllFlashInAllowMode:enabled"/>
   <int value="-1557527869" label="LoadingWithMojo:disabled"/>
   <int value="-1555510175" label="PasswordImport:enabled"/>
@@ -27109,6 +27120,7 @@ from previous Chrome versions.
   <int value="-772679248" label="MojoVideoEncodeAccelerator:enabled"/>
   <int value="-771080109" label="GrantNotificationsToDSE:disabled"/>
   <int value="-770319039" label="enable-touch-editing"/>
+  <int value="-769865314" label="AutofillCacheQueryResponses:disabled"/>
   <int value="-763759697" label="enable-audio-support-for-desktop-share"/>
   <int value="-762687134" label="ExperimentalCrostiniUI:enabled"/>
   <int value="-759830869" label="enable-tab-discarding"/>

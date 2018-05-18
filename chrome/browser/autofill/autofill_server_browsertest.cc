@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64url.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -21,6 +22,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 namespace autofill {
 namespace {
@@ -66,12 +68,34 @@ class WindowedNetworkObserver : public net::TestURLFetcher::DelegateForTests {
     factory_.reset();
   }
 
+  // Helper to extract the value of a query param. Returns "*** not found ***"
+  // if the requested query param is not in the query string.
+  std::string GetQueryParam(const net::TestURLFetcher& fetcher,
+                            const std::string& param_name) {
+    std::string query_str = fetcher.GetOriginalURL().query();
+    url::Component query(0, query_str.length());
+    url::Component key, value;
+    while (url::ExtractQueryKeyValue(query_str.c_str(), &query, &key, &value)) {
+      std::string key_string(query_str.substr(key.begin, key.len));
+      std::string param_text(query_str.substr(value.begin, value.len));
+      std::string param_value;
+      if (key_string == param_name &&
+          base::Base64UrlDecode(param_text,
+                                base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                                &param_value)) {
+        return param_value;
+      }
+    }
+    return "*** not found ***";
+  }
+
   // net::TestURLFetcher::DelegateForTests:
   void OnRequestStart(int fetcher_id) override {
     net::TestURLFetcher* fetcher = factory_->GetFetcherByID(fetcher_id);
-    if (fetcher->upload_data() == expected_upload_data_)
+    if (fetcher->upload_data() == expected_upload_data_ ||
+        GetQueryParam(*fetcher, "q") == expected_upload_data_) {
       message_loop_runner_->Quit();
-
+    }
     // Not interested in any further status updates from this fetcher.
     fetcher->SetDelegateForTests(nullptr);
   }
