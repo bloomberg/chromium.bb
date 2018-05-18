@@ -206,7 +206,7 @@ if (enable_av1_decoder) {
 
   if (current_cpu == "arm") {
     if (cpu_arch_full == "arm-neon") {
-      arm_assembly_sources = libaom_srcs_arm_neon_assembly
+      arm_assembly_sources = aom_dsp_common_asm_neon
     } else if (cpu_arch_full == "arm-neon-cpu-detect") {
       arm_assembly_sources = libaom_srcs_arm_neon_cpu_detect_assembly
     } else {
@@ -217,7 +217,7 @@ if (enable_av1_decoder) {
   # Converts ARM assembly files to GAS style.
   if (current_cpu == "arm" && arm_assembly_sources != []) {
     action_foreach("convert_arm_assembly") {
-      script = "//third_party/libaom/run_perl.py"
+      script = "//third_party/libvpx/run_perl.py"
       sources = arm_assembly_sources
       gen_file =
           get_label_info("//third_party/libaom/source/libaom", "root_gen_dir") +
@@ -289,7 +289,17 @@ if (enable_av1_decoder) {
       sources = libaom_srcs_mips
     } else if (current_cpu == "arm") {
       if (arm_use_neon) {
-        sources = libaom_srcs_arm_neon
+        sources = aom_av1_common_sources
+        sources += aom_av1_decoder_sources
+        sources += aom_dsp_common_sources
+        sources += aom_dsp_decoder_sources
+        sources += aom_mem_sources
+        sources += aom_rtcd_sources
+        sources += aom_scale_sources
+        sources += aom_sources
+        sources += aom_util_sources
+        sources += aom_av1_common_intrin_neon
+        sources += aom_dsp_common_intrin_neon
       } else if (is_android) {
         sources = libaom_srcs_arm_neon_cpu_detect
       } else {
