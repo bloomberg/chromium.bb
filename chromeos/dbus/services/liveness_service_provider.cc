@@ -18,7 +18,7 @@ LivenessServiceProvider::~LivenessServiceProvider() = default;
 void LivenessServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {
   exported_object->ExportMethod(
-      kLivenessServiceInterface, kCheckLiveness,
+      kLivenessServiceInterface, kLivenessServiceCheckLivenessMethod,
       base::Bind(&LivenessServiceProvider::CheckLiveness,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&LivenessServiceProvider::OnExported,
