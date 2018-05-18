@@ -18,7 +18,12 @@
 #include "content/browser/web_package/signed_exchange_header_parser.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "crypto/signature_verifier.h"
+#include "net/cert/asn1_util.h"
 #include "net/cert/x509_util.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
+#include "third_party/boringssl/src/include/openssl/ec.h"
+#include "third_party/boringssl/src/include/openssl/ec_key.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
 
 namespace content {
 
@@ -142,23 +147,51 @@ bool VerifySignature(base::span<const uint8_t> sig,
                      scoped_refptr<net::X509Certificate> cert,
                      SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature");
-  size_t size_bits;
-  net::X509Certificate::PublicKeyType type;
-  net::X509Certificate::GetPublicKeyInfo(cert->cert_buffer(), &size_bits,
-                                         &type);
-  if (type != net::X509Certificate::kPublicKeyTypeRSA) {
-    // TODO(crbug.com/803774): Add support for ecdsa_secp256r1_sha256 and
-    // ecdsa_secp384r1_sha384.
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "VerifySignature",
-        base::StringPrintf("Unsupported public key type: %d", type));
+  base::StringPiece spki;
+  if (!net::asn1::ExtractSPKIFromDERCert(
+          net::x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()),
+          &spki)) {
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature",
+                     "error", "Failed to extract SPKI.");
     return false;
+  }
+
+  crypto::SignatureVerifier::SignatureAlgorithm algorithm;
+  CBS cbs;
+  CBS_init(&cbs, reinterpret_cast<const uint8_t*>(spki.data()), spki.size());
+  bssl::UniquePtr<EVP_PKEY> pkey(EVP_parse_public_key(&cbs));
+  if (!pkey || CBS_len(&cbs) != 0) {
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "VerifySignature", "Failed to parse public key.");
+    return false;
+  }
+  switch (EVP_PKEY_id(pkey.get())) {
+    case EVP_PKEY_RSA:
+      algorithm = crypto::SignatureVerifier::RSA_PSS_SHA256;
+      break;
+    case EVP_PKEY_EC: {
+      const EC_GROUP* group =
+          EC_KEY_get0_group(EVP_PKEY_get0_EC_KEY(pkey.get()));
+      switch (EC_GROUP_get_curve_name(group)) {
+        case NID_X9_62_prime256v1:
+          algorithm = crypto::SignatureVerifier::ECDSA_SHA256;
+          break;
+        default:
+          signed_exchange_utils::ReportErrorAndEndTraceEvent(
+              devtools_proxy, "VerifySignature", "Unsupported EC group.");
+          return false;
+      }
+      break;
+    }
+    default:
+      signed_exchange_utils::ReportErrorAndEndTraceEvent(
+          devtools_proxy, "VerifySignature", "Unsupported public key type.");
+      return false;
   }
 
   crypto::SignatureVerifier verifier;
   if (!net::x509_util::SignatureVerifierInitWithCertificate(
-          &verifier, crypto::SignatureVerifier::RSA_PSS_SHA256, sig,
-          cert->cert_buffer())) {
+          &verifier, algorithm, sig, cert->cert_buffer())) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy, "VerifySignature",
         "SignatureVerifierInitWithCertificate failed.");
