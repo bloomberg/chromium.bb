@@ -354,6 +354,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void UpdateDebugInfo();
 
   void SetLayerClient(base::WeakPtr<LayerClient> client);
+  LayerClient* GetLayerClientForTesting() const { return inputs_.client.get(); }
 
   virtual bool IsSnapped();
 
