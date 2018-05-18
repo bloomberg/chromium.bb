@@ -178,6 +178,7 @@ enum class TaskType : unsigned {
   kMainThreadTaskQueueInput = 40,
   kMainThreadTaskQueueIdle = 41,
   kMainThreadTaskQueueIPC = 42,
+  kMainThreadTaskQueueControl = 43,
 
   ///////////////////////////////////////
   // The following task types are DEPRECATED! Use kInternal* instead.
@@ -187,7 +188,7 @@ enum class TaskType : unsigned {
   // should be very limited.
   kUnthrottled = 25,
 
-  kCount = 43,
+  kCount = 44,
 };
 
 }  // namespace blink
