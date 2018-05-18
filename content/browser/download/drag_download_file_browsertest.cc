@@ -6,8 +6,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/drag_download_file.h"
 #include "content/browser/download/drag_download_util.h"
@@ -54,7 +54,7 @@ class DragDownloadFileTest : public ContentBrowserTest {
   void Succeed() {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::MessageLoopCurrentForUI::Get()->QuitWhenIdleClosure());
+        base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   }
 
   void FailFast() {
