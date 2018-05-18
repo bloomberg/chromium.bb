@@ -74,8 +74,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   using ProviderInfoGetter =
       base::OnceCallback<mojom::ServiceWorkerProviderInfoForStartWorkerPtr(
           int /* process_id */,
-          network::mojom::
-              URLLoaderFactoryPtr /* non_network_loader_factory */)>;
+          scoped_refptr<network::SharedURLLoaderFactory>)>;
 
   class Listener {
    public:
@@ -241,12 +240,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Sends the StartWorker message to the renderer.
   //
   // S13nServiceWorker:
-  // |non_network_loader_factory| is non-null when the service worker script URL
-  // has a non-http(s) scheme. In that case, it is used to load the script since
-  // the usual network factory can't be used.
-  void SendStartWorker(
-      mojom::EmbeddedWorkerStartParamsPtr params,
-      network::mojom::URLLoaderFactoryPtr non_network_loader_factory);
+  // |factory| is used for loading non-installed scripts. It can internally be a
+  // bundle of factories instead of just the direct network factory to support
+  // non-NetworkService schemes like chrome-extension:// URLs.
+  void SendStartWorker(mojom::EmbeddedWorkerStartParamsPtr params,
+                       scoped_refptr<network::SharedURLLoaderFactory> factory);
 
   // Implements mojom::EmbeddedWorkerInstanceHost.
   // These functions all run on the IO thread.

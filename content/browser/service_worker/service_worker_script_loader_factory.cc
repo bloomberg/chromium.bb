@@ -20,13 +20,12 @@ namespace content {
 ServiceWorkerScriptLoaderFactory::ServiceWorkerScriptLoaderFactory(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    scoped_refptr<network::SharedURLLoaderFactory> network_factory,
-    network::mojom::URLLoaderFactoryPtr non_network_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : context_(context),
       provider_host_(provider_host),
-      network_factory_(std::move(network_factory)),
-      non_network_factory_(std::move(non_network_factory)) {
+      loader_factory_(std::move(loader_factory)) {
   DCHECK(provider_host_->IsProviderForServiceWorker());
+  DCHECK(loader_factory_);
 }
 
 ServiceWorkerScriptLoaderFactory::~ServiceWorkerScriptLoaderFactory() = default;
@@ -40,22 +39,14 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
-  DCHECK(network_factory_);
   if (!ShouldHandleScriptRequest(resource_request)) {
-    // If the request should not be handled (e.g., a fetch() request), just do a
-    // passthrough load. This needs a relaying as we use different associated
-    // message pipes.
+    // If the request should not be handled, just do a passthrough load. This
+    // needs a relaying as we use different associated message pipes.
     // TODO(kinuko): Record the reason like what we do with netlog in
     // ServiceWorkerContextRequestHandler.
-    if (!resource_request.url.SchemeIsHTTPOrHTTPS() && non_network_factory_) {
-      non_network_factory_->CreateLoaderAndStart(
-          std::move(request), routing_id, request_id, options, resource_request,
-          std::move(client), traffic_annotation);
-    } else {
-      network_factory_->CreateLoaderAndStart(
-          std::move(request), routing_id, request_id, options, resource_request,
-          std::move(client), traffic_annotation);
-    }
+    loader_factory_->CreateLoaderAndStart(
+        std::move(request), routing_id, request_id, options, resource_request,
+        std::move(client), traffic_annotation);
     return;
   }
 
@@ -80,14 +71,11 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   }
 
   // The common case: load the script and install it.
-  network::mojom::URLLoaderFactoryPtr cloned_non_network_factory;
-  if (!resource_request.url.SchemeIsHTTPOrHTTPS() && non_network_factory_)
-    non_network_factory_->Clone(mojo::MakeRequest(&cloned_non_network_factory));
   mojo::MakeStrongBinding(
       std::make_unique<ServiceWorkerNewScriptLoader>(
           routing_id, request_id, options, resource_request, std::move(client),
-          provider_host_->running_hosted_version(), network_factory_,
-          std::move(cloned_non_network_factory), traffic_annotation),
+          provider_host_->running_hosted_version(), loader_factory_,
+          traffic_annotation),
       std::move(request));
 }
 

@@ -228,7 +228,6 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
     loader_ = std::make_unique<ServiceWorkerNewScriptLoader>(
         routing_id, request_id, options, request, client_->CreateInterfacePtr(),
         version_, helper_->url_loader_factory_getter()->GetNetworkFactory(),
-        nullptr /* non_network_loader_factory */,
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 

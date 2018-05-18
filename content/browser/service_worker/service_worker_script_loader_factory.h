@@ -32,27 +32,14 @@ class ServiceWorkerProviderHost;
 class ServiceWorkerScriptLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
-  // |network_factory| is used to load scripts when the service worker main
-  // script has an http(s) scheme.
-  //
-  // |non_network_factory| is non-null when the service worker main
-  // script URL has a non-http(s) scheme (e.g., a chrome-extension:// URL).
-  // It will be used to load the main script and any non-http(s) imported
-  // script.
-  //
-  // It's assumed that the non-network factory can handle any non-http(s) URL
-  // that this service worker may load.
-  // TODO(crbug.com/836720): We probably need to pass the whole (scheme ->
-  // factory) map instead of just giving a single factory, since it's
-  // conceivable a service worker can import scripts from multiple schemes:
-  // importScripts(['scheme1://blah', 'scheme2://blah', 'scheme3://blah']). So
-  // far it's not needed with the Chrome embedder since it's only used for
-  // chrome-extension:// URLs.
+  // |loader_factory| is used to load scripts. Typically
+  // a new script will be loaded from the NetworkService. However,
+  // |loader_factory| may internally contain non-NetworkService
+  // factories used for non-http(s) URLs, e.g., a chrome-extension:// URL.
   ServiceWorkerScriptLoaderFactory(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      scoped_refptr<network::SharedURLLoaderFactory> network_factory,
-      network::mojom::URLLoaderFactoryPtr non_network_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
   ~ServiceWorkerScriptLoaderFactory() override;
 
   // network::mojom::URLLoaderFactory:
@@ -72,8 +59,7 @@ class ServiceWorkerScriptLoaderFactory
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
-  scoped_refptr<network::SharedURLLoaderFactory> network_factory_;
-  network::mojom::URLLoaderFactoryPtr non_network_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptLoaderFactory);
 };
