@@ -83,56 +83,6 @@ class VirtualTimeBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
   bool runtime_enabled = false;
 };
 
-class VirtualTimeObserverTest : public VirtualTimeBrowserTest {
- public:
-  VirtualTimeObserverTest() {
-    EXPECT_TRUE(embedded_test_server()->Start());
-    SetInitialURL(
-        embedded_test_server()->GetURL("/virtual_time_test.html").spec());
-  }
-
-  // emulation::Observer implementation:
-  void OnVirtualTimeBudgetExpired(
-      const emulation::VirtualTimeBudgetExpiredParams& params) override {
-    std::vector<std::string> expected_log = {"Paused @ 0ms",
-                                             "Advanced to 10ms",
-                                             "step1",
-                                             "Advanced to 110ms",
-                                             "step2",
-                                             "Paused @ 110ms",
-                                             "Advanced to 210ms",
-                                             "step3",
-                                             "Paused @ 210ms",
-                                             "Advanced to 310ms",
-                                             "step4",
-                                             "pass"};
-    // Note after the PASS step there are a number of virtual time advances, but
-    // this list seems to be non-deterministic because there's all sorts of
-    // timers in the system.  We don't really care about that here.
-    ASSERT_GE(log_.size(), expected_log.size());
-    for (size_t i = 0; i < expected_log.size(); i++) {
-      EXPECT_EQ(expected_log[i], log_[i]) << "At index " << i;
-    }
-    EXPECT_THAT(log_, Contains("Advanced to 5000ms"));
-    EXPECT_THAT(log_, Contains("Paused @ 5000ms"));
-    FinishAsynchronousTest();
-  }
-
-  void OnVirtualTimeAdvanced(
-      const emulation::VirtualTimeAdvancedParams& params) override {
-    log_.push_back(base::StringPrintf("Advanced to %.fms",
-                                      params.GetVirtualTimeElapsed()));
-  }
-
-  void OnVirtualTimePaused(
-      const emulation::VirtualTimePausedParams& params) override {
-    log_.push_back(
-        base::StringPrintf("Paused @ %.fms", params.GetVirtualTimeElapsed()));
-  }
-};
-
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(VirtualTimeObserverTest);
-
 class VirtualTimeBaseTest : public VirtualTimeBrowserTest {
  public:
   VirtualTimeBaseTest() {
@@ -688,64 +638,6 @@ class PendingScriptVirtualTimeTest : public VirtualTimeBrowserTest {
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(PendingScriptVirtualTimeTest);
-
-namespace {
-static constexpr char kResourceErrorLoop[] = R"(
-<html>
-<script>
-var counter = 1;
-</script>
-<img src="1" onerror="this.src='' + ++counter;">
-</html>
-)";
-}
-
-class VirtualTimeAndResourceErrorLoopTest : public VirtualTimeBrowserTest {
- public:
-  VirtualTimeAndResourceErrorLoopTest() { SetInitialURL("http://foo.com/"); }
-
-  ProtocolHandlerMap GetProtocolHandlers() override {
-    ProtocolHandlerMap protocol_handlers;
-    std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
-        new TestInMemoryProtocolHandler(browser()->BrowserIOThread(), nullptr));
-    http_handler_ = http_handler.get();
-    http_handler->InsertResponse("http://foo.com/",
-                                 {kResourceErrorLoop, "text/html"});
-    protocol_handlers[url::kHttpScheme] = std::move(http_handler);
-    return protocol_handlers;
-  }
-
-  void RunDevTooledTest() override {
-    http_handler_->SetHeadlessBrowserContext(browser_context_);
-    VirtualTimeBrowserTest::RunDevTooledTest();
-  }
-
-  void SetVirtualTimePolicy() override {
-    devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
-        emulation::SetVirtualTimePolicyParams::Builder()
-            .SetPolicy(
-                emulation::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING)
-            .SetBudget(5000)
-            .SetMaxVirtualTimeTaskStarvationCount(1000000)  // Prevent flakes.
-            .SetWaitForNavigation(true)
-            .Build(),
-        base::BindRepeating(&VirtualTimeBrowserTest::SetVirtualTimePolicyDone,
-                            base::Unretained(this)));
-  }
-
-  // emulation::Observer implementation:
-  void OnVirtualTimeBudgetExpired(
-      const emulation::VirtualTimeBudgetExpiredParams& params) override {
-    // The budget is 5000 virtual ms.  The resources are delivered with 10
-    // virtual ms delay, so we should have 500 urls.
-    EXPECT_EQ(500u, http_handler_->urls_requested().size());
-    FinishAsynchronousTest();
-  }
-
-  TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
-};
-
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(VirtualTimeAndResourceErrorLoopTest);
 
 namespace {
 static constexpr char kSiteA[] = R"(
