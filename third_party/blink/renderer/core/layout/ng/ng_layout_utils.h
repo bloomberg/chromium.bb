@@ -12,6 +12,8 @@ class NGLayoutResult;
 
 // Return true if layout is considered complete. In some cases we require more
 // than one layout pass.
+// This function never considers intermediate layouts
+// (space,IsIntermediateLayout()) to be complete.
 bool IsBlockLayoutComplete(const NGConstraintSpace&, const NGLayoutResult&);
 
 }  // namespace blink
