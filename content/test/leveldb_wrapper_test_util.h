@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
-#include "content/browser/leveldb_wrapper_impl.h"
 #include "content/common/leveldb_wrapper.mojom.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 // Utility functions and classes for testing LevelDBWrapper implementations.
@@ -32,11 +32,20 @@ bool PutSync(mojom::LevelDBWrapper* wrapper,
              const base::Optional<std::vector<uint8_t>>& old_value,
              const std::string& source);
 
-// This only accepts the implementation, as calling the mojo interface is a
-// synchronous call which freezes the thread. If the leveldb implementation
-// is asynchrounous, this requires 3 threads.
+bool GetSync(mojom::LevelDBWrapper* wrapper,
+             const std::vector<uint8_t>& key,
+             std::vector<uint8_t>* data_out);
+
 leveldb::mojom::DatabaseError GetAllSync(
-    content::LevelDBWrapperImpl* wrapper,
+    mojom::LevelDBWrapper* wrapper,
+    std::vector<mojom::KeyValuePtr>* data_out);
+
+// Unlike GetAllSync above, this method uses
+// mojo::MakeRequestAssociatedWithDedicatedPipe for the GetAllCallback object's
+// binding to the wrapper. This can be necessary if the wrapper is an
+// implementation and not a binding with it's own pipe already.
+leveldb::mojom::DatabaseError GetAllSyncOnDedicatedPipe(
+    mojom::LevelDBWrapper* wrapper,
     std::vector<mojom::KeyValuePtr>* data_out);
 
 // Does a |Delete| call on the wrapper and waits until the response is
@@ -64,6 +73,9 @@ class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
   static mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo CreateAndBind(
       bool* result,
       base::OnceClosure callback);
+
+  static mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo
+  CreateAndBindOnDedicatedPipe(bool* result, base::OnceClosure callback);
 
   ~GetAllCallback() override;
 
@@ -97,6 +109,11 @@ class MockLevelDBObserver : public content::mojom::LevelDBObserver {
                     const std::string& source));
   MOCK_METHOD1(AllDeleted, void(const std::string& source));
   MOCK_METHOD1(ShouldSendOldValueOnMutations, void(bool value));
+
+  mojom::LevelDBObserverAssociatedPtrInfo Bind();
+
+ private:
+  mojo::AssociatedBinding<mojom::LevelDBObserver> binding_;
 };
 
 }  // namespace test

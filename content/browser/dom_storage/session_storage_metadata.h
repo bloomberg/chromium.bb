@@ -20,6 +20,13 @@ namespace content {
 // logic for parsing and saving database content.
 class CONTENT_EXPORT SessionStorageMetadata {
  public:
+  // Version 0 represents the old SessionStorageDatabase where we never stored a
+  // version. This class stores '0' as the version in this case. Version 1
+  // removes 'namespaces-' dummy entry, and 'map-_-' refcount entries that are
+  // present in version 0.
+  static constexpr const int64_t kMinSessionStorageSchemaVersion = 0;
+  static constexpr const int64_t kLatestSessionStorageSchemaVersion = 1;
+
   static constexpr const int64_t kInvalidDatabaseVersion = -1;
   static constexpr const int64_t kInvalidMapId = -1;
 
@@ -36,9 +43,12 @@ class CONTENT_EXPORT SessionStorageMetadata {
   // Represents a map which can be shared by multiple areas.
   // The |DeleteNamespace| and |DeleteArea| methods can destroy any MapData
   // objects who are no longer referenced by another namespace.
+  // Maps (and thus MapData objects) can only be shared for the same origin.
   class CONTENT_EXPORT MapData : public base::RefCounted<MapData> {
    public:
-    explicit MapData(int64_t map_number);
+    explicit MapData(int64_t map_number, url::Origin origin);
+
+    const url::Origin& origin() const { return origin_; }
 
     // The number of namespaces that reference this map.
     int ReferenceCount() const { return reference_count_; }
@@ -63,6 +73,7 @@ class CONTENT_EXPORT SessionStorageMetadata {
     // representation of the map number.
     std::vector<uint8_t> number_as_bytes_;
     std::vector<uint8_t> key_prefix_;
+    url::Origin origin_;
     int reference_count_ = 0;
   };
 
@@ -73,27 +84,35 @@ class CONTENT_EXPORT SessionStorageMetadata {
   SessionStorageMetadata();
   ~SessionStorageMetadata();
 
-  // For a new database, this sets the database version, clears the metadata,
+  // For a new database, this saves the database version, clears the metadata,
   // and returns the operations to save to disk.
-  std::vector<leveldb::mojom::BatchedOperationPtr> SetupNewDatabase(
-      int64_t version);
+  std::vector<leveldb::mojom::BatchedOperationPtr> SetupNewDatabase();
 
   // This parses the database version from the bytes that were stored on
-  // disk.
-  bool ParseDatabaseVersion(const std::vector<uint8_t>& value);
-  // Parses all namespaces and maps, and stores all metadata locally.
-  // This invalidates all NamespaceEntry and MapData objects.
-  // If there is a parsing error, the namespaces will be cleared.
-  bool ParseNamespaces(std::vector<leveldb::mojom::KeyValuePtr> values);
+  // disk, or if there was no version saved then passes a base::nullopt. This
+  // call is not necessary on new databases. The |upgrade_operations| are
+  // populated with any operations needed to upgrade the databases versioning
+  // metadata. Note this is different than the namespaces metadata, which will
+  // be upgraded in ParseNamespaces.
+  // Returns if the parsing is correct and we support the version read.
+  bool ParseDatabaseVersion(
+      base::Optional<std::vector<uint8_t>> value,
+      std::vector<leveldb::mojom::BatchedOperationPtr>* upgrade_operations);
+
+  // Parses all namespaces and maps, and stores all metadata locally. This
+  // invalidates all NamespaceEntry and MapData objects. If there is a parsing
+  // error, the namespaces will be cleared.If the version given to
+  // |ParseDatabaseVersion| is an older version, any namespace metadata upgrades
+  // will be populated in |upgrade_operations|. This call is not necessary on
+  // new databases.
+  bool ParseNamespaces(
+      std::vector<leveldb::mojom::KeyValuePtr> values,
+      std::vector<leveldb::mojom::BatchedOperationPtr>* upgrade_operations);
 
   // Parses the next map id from the given bytes. If that fails, then it uses
   // the next available id from parsing the namespaces. This call is not
   // necessary on new databases.
   void ParseNextMapId(const std::vector<uint8_t>& map_id);
-
-  int64_t NextMapId() const { return next_map_id_; }
-  int64_t DatabaseVersion() const { return database_version_; }
-  std::vector<uint8_t> DatabaseVersionAsVector() const;
 
   // Creates new map data for the given namespace-origin area. If the area
   // entry exists, then it will decrement the refcount of the old map. The
@@ -138,7 +157,11 @@ class CONTENT_EXPORT SessionStorageMetadata {
     return namespace_origin_map_;
   }
 
+  int64_t NextMapId() const { return next_map_id_; }
+
  private:
+  static std::vector<uint8_t> LatestDatabaseVersionAsVector();
+
   static std::vector<uint8_t> GetNamespacePrefix(
       const std::string& namespace_id);
   static std::vector<uint8_t> GetAreaKey(const std::string& namespace_id,
@@ -147,7 +170,7 @@ class CONTENT_EXPORT SessionStorageMetadata {
   static std::vector<uint8_t> GetMapPrefix(
       const std::vector<uint8_t>& map_number_as_bytes);
 
-  int64_t database_version_ = kInvalidDatabaseVersion;
+  int64_t initial_database_version_from_disk_ = kInvalidDatabaseVersion;
   int64_t next_map_id_ = kInvalidMapId;
   int64_t next_map_id_from_namespaces_ = 0;
 

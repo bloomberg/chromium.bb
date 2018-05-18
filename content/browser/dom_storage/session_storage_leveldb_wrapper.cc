@@ -90,6 +90,7 @@ void SessionStorageLevelDBWrapper::DeleteAll(const std::string& source,
   DCHECK_NE(0, shared_data_map_->map_data()->ReferenceCount());
   if (shared_data_map_->map_data()->ReferenceCount() > 1) {
     CreateNewMap(NewMapType::EMPTY_FROM_DELETE_ALL, source);
+    std::move(callback).Run(true);
     return;
   }
   shared_data_map_->level_db_wrapper()->DeleteAll(source, std::move(callback));

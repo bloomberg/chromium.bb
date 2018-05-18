@@ -331,6 +331,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   RateLimiter data_rate_limiter_;
   RateLimiter commit_rate_limiter_;
   int commit_batches_in_flight_ = 0;
+  bool has_committed_data_ = false;
   std::unique_ptr<CommitBatch> commit_batch_;
 
   base::WeakPtrFactory<LevelDBWrapperImpl> weak_ptr_factory_;

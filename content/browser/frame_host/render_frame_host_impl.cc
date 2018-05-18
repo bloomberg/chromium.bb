@@ -2944,10 +2944,11 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   scoped_refptr<SessionStorageNamespaceImpl> cloned_namespace;
   if (base::FeatureList::IsEnabled(features::kMojoSessionStorage)) {
-    // Any cloning should have already happened using the mojo
+    // Any cloning should / will happen using the
     // SessionStorageNamespace::Clone in storage_partition_service.mojom.
-    cloned_namespace = SessionStorageNamespaceImpl::Create(
-        dom_storage_context, params->session_storage_namespace_id);
+    cloned_namespace = SessionStorageNamespaceImpl::CloneFrom(
+        dom_storage_context, params->session_storage_namespace_id,
+        params->clone_from_session_storage_namespace_id);
   } else {
     cloned_namespace = SessionStorageNamespaceImpl::CloneFrom(
         dom_storage_context, params->session_storage_namespace_id,

@@ -15,12 +15,10 @@ namespace content {
 
 SessionStorageNamespaceImplMojo::SessionStorageNamespaceImplMojo(
     std::string namespace_id,
-    leveldb::mojom::LevelDBDatabase* database,
     SessionStorageDataMap::Listener* data_map_listener,
     RegisterShallowClonedNamespace add_namespace_callback,
     SessionStorageLevelDBWrapper::RegisterNewAreaMap register_new_map_callback)
     : namespace_id_(std::move(namespace_id)),
-      database_(database),
       data_map_listener_(data_map_listener),
       add_namespace_callback_(std::move(add_namespace_callback)),
       register_new_map_callback_(std::move(register_new_map_callback)),
@@ -28,25 +26,42 @@ SessionStorageNamespaceImplMojo::SessionStorageNamespaceImplMojo(
 
 SessionStorageNamespaceImplMojo::~SessionStorageNamespaceImplMojo() = default;
 
+bool SessionStorageNamespaceImplMojo::HasAreaForOrigin(
+    const url::Origin& origin) const {
+  return origin_areas_.find(origin) != origin_areas_.end();
+}
+
 void SessionStorageNamespaceImplMojo::PopulateFromMetadata(
-    SessionStorageMetadata::NamespaceEntry namespace_metadata) {
+    leveldb::mojom::LevelDBDatabase* database,
+    SessionStorageMetadata::NamespaceEntry namespace_metadata,
+    const std::map<std::vector<uint8_t>, SessionStorageDataMap*>&
+        current_data_maps) {
   DCHECK(!IsPopulated());
   DCHECK(!waiting_on_clone_population());
+  database_ = database;
   populated_ = true;
   namespace_entry_ = namespace_metadata;
   for (const auto& pair : namespace_entry_->second) {
+    scoped_refptr<SessionStorageDataMap> data_map;
+    auto map_it = current_data_maps.find(pair.second->MapNumberAsBytes());
+    if (map_it == current_data_maps.end()) {
+      data_map = SessionStorageDataMap::Create(data_map_listener_, pair.second,
+                                               database_);
+    } else {
+      data_map = base::WrapRefCounted(map_it->second);
+    }
     origin_areas_[pair.first] = std::make_unique<SessionStorageLevelDBWrapper>(
-        namespace_entry_, pair.first,
-        SessionStorageDataMap::Create(data_map_listener_, pair.second.get(),
-                                      database_),
+        namespace_entry_, pair.first, std::move(data_map),
         register_new_map_callback_);
   }
 }
 
 void SessionStorageNamespaceImplMojo::PopulateAsClone(
+    leveldb::mojom::LevelDBDatabase* database,
     SessionStorageMetadata::NamespaceEntry namespace_metadata,
     const OriginAreas& areas_to_clone) {
   DCHECK(!IsPopulated());
+  database_ = database;
   populated_ = true;
   waiting_on_clone_population_ = false;
   namespace_entry_ = namespace_metadata;
@@ -63,6 +78,18 @@ void SessionStorageNamespaceImplMojo::PopulateAsClone(
   }
 }
 
+void SessionStorageNamespaceImplMojo::Reset() {
+  namespace_entry_ = SessionStorageMetadata::NamespaceEntry();
+  process_id_ = ChildProcessHost::kInvalidUniqueID;
+  database_ = nullptr;
+  waiting_on_clone_population_ = false;
+  bind_waiting_on_clone_population_ = false;
+  run_after_clone_population_.clear();
+  populated_ = false;
+  origin_areas_.clear();
+  binding_.Close();
+}
+
 void SessionStorageNamespaceImplMojo::Bind(
     mojom::SessionStorageNamespaceRequest request,
     int process_id) {
@@ -77,6 +104,14 @@ void SessionStorageNamespaceImplMojo::Bind(
   process_id_ = process_id;
   binding_.Bind(std::move(request));
   bind_waiting_on_clone_population_ = false;
+}
+
+void SessionStorageNamespaceImplMojo::PurgeUnboundWrappers() {
+  auto it = origin_areas_.begin();
+  while (it != origin_areas_.end()) {
+    if (!it->second->IsBound())
+      it = origin_areas_.erase(it);
+  }
 }
 
 void SessionStorageNamespaceImplMojo::RemoveOriginData(
@@ -131,13 +166,14 @@ void SessionStorageNamespaceImplMojo::Clone(
                               origin_areas_);
 }
 
-LevelDBWrapperImpl*
-SessionStorageNamespaceImplMojo::GetWrapperForOriginForTesting(
-    const url::Origin& origin) const {
+void SessionStorageNamespaceImplMojo::FlushOriginForTesting(
+    const url::Origin& origin) {
+  if (!IsPopulated())
+    return;
   auto it = origin_areas_.find(origin);
   if (it == origin_areas_.end())
-    return nullptr;
-  return it->second->data_map()->level_db_wrapper();
+    return;
+  it->second->data_map()->level_db_wrapper()->ScheduleImmediateCommit();
 }
 
 }  // namespace content

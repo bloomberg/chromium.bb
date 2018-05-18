@@ -283,6 +283,19 @@ DOMStorageContextWrapper::RecreateSessionStorage(
 }
 
 void DOMStorageContextWrapper::StartScavengingUnusedSessionStorage() {
+  if (mojo_session_state_) {
+    // base::Unretained is safe here, because the mojo_session_state_ won't be
+    // deleted until a ShutdownAndDelete task has been ran on the
+    // mojo_task_runner_, and as soon as that task is posted,
+    // mojo_session_state_ is set to null, preventing further tasks from being
+    // queued.
+    mojo_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&SessionStorageContextMojo::ScavengeUnusedNamespaces,
+                       base::Unretained(mojo_session_state_),
+                       base::OnceClosure()));
+    return;
+  }
   DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
@@ -305,12 +318,6 @@ void DOMStorageContextWrapper::SetForceKeepSessionState() {
       FROM_HERE,
       base::BindOnce(&LocalStorageContextMojo::SetForceKeepSessionState,
                      base::Unretained(mojo_state_)));
-  if (mojo_session_state_) {
-    mojo_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SessionStorageContextMojo::SetForceKeepSessionState,
-                       base::Unretained(mojo_session_state_)));
-  }
 }
 
 void DOMStorageContextWrapper::Shutdown() {
