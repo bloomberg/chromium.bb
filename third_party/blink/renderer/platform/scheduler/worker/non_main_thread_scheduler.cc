@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
@@ -27,6 +28,13 @@ std::unique_ptr<NonMainThreadScheduler> NonMainThreadScheduler::Create(
   return std::make_unique<WorkerThreadScheduler>(
       thread_type,
       base::sequence_manager::TaskQueueManager::TakeOverCurrentThread(), proxy);
+}
+
+// static
+NonMainThreadScheduler* NonMainThreadScheduler::Current() {
+  DCHECK_NE(Platform::Current()->CurrentThread(),
+            Platform::Current()->MainThread());
+  return static_cast<NonMainThreadScheduler*>(ThreadScheduler::Current());
 }
 
 void NonMainThreadScheduler::Init() {
