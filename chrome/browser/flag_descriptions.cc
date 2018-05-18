@@ -262,6 +262,13 @@ const char kDisallowDocWrittenScriptsUiDescription[] =
     "Disallows fetches for third-party parser-blocking scripts inserted into "
     "the main frame via document.write.";
 
+const char kDisallowUnsafeHttpDownloadsName[] =
+    "Block unsafe downloads over insecure connections";
+const char kDisallowUnsafeHttpDownloadsNameDescription[] =
+    "Disallows downloads of unsafe files (files that can potentially execute "
+    "code), where the final download origin or any origin in the redirect "
+    "chain is insecure.";
+
 const char kDriveSearchInChromeLauncherName[] =
     "Drive Search in Chrome App Launcher";
 const char kDriveSearchInChromeLauncherDescription[] =

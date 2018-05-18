@@ -192,6 +192,9 @@ extern const char kDisableTabForDesktopShareDescription[];
 extern const char kDisallowDocWrittenScriptsUiName[];
 extern const char kDisallowDocWrittenScriptsUiDescription[];
 
+extern const char kDisallowUnsafeHttpDownloadsName[];
+extern const char kDisallowUnsafeHttpDownloadsNameDescription[];
+
 extern const char kDisplayList2dCanvasName[];
 extern const char kDisplayList2dCanvasDescription[];
 

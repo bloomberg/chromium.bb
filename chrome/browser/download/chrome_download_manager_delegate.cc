@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -61,6 +62,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/common/origin_util.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
@@ -485,7 +487,8 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
              download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT)) {
       DVLOG(2) << __func__
                << "() SB service disabled. Marking download as DANGEROUS FILE";
-      if (ShouldBlockFile(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE)) {
+      if (ShouldBlockFile(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+                          item)) {
         item->OnContentCheckCompleted(
             // Specifying a dangerous type here would take precendence over the
             // blocking of the file.
@@ -1070,7 +1073,7 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
               download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT);
 
     if (danger_type != download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
-      if (ShouldBlockFile(danger_type)) {
+      if (ShouldBlockFile(danger_type, item)) {
         item->OnContentCheckCompleted(
             // Specifying a dangerous type here would take precendence over the
             // blocking of the file.
@@ -1127,7 +1130,7 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
 
     DownloadItemModel(item).SetDangerLevel(target_info->danger_level);
   }
-  if (ShouldBlockFile(target_info->danger_type)) {
+  if (ShouldBlockFile(target_info->danger_type, item)) {
     target_info->result = download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED;
     // A dangerous type would take precendence over the blocking of the file.
     target_info->danger_type = download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
@@ -1169,9 +1172,58 @@ bool ChromeDownloadManagerDelegate::IsOpenInBrowserPreferreredForFile(
 }
 
 bool ChromeDownloadManagerDelegate::ShouldBlockFile(
-    download::DownloadDangerType danger_type) const {
+    download::DownloadDangerType danger_type,
+    download::DownloadItem* item) const {
   DownloadPrefs::DownloadRestriction download_restriction =
       download_prefs_->download_restriction();
+
+  if (item &&
+      base::FeatureList::IsEnabled(features::kDisallowUnsafeHttpDownloads)) {
+    // Check field trial for an override of the default unsafe mime-type.
+    const std::string kDefaultUnsafeMimeType = "application/";
+    std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(
+        features::kDisallowUnsafeHttpDownloads,
+        features::kDisallowUnsafeHttpDownloadsParamName);
+    std::vector<base::StringPiece> unsafe_mime_types = base::SplitStringPiece(
+        field_trial_arg, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    if (unsafe_mime_types.empty())
+      unsafe_mime_types.push_back(kDefaultUnsafeMimeType);
+
+    bool is_final_origin_secure = content::IsOriginSecure(item->GetURL());
+    bool is_redirect_chain_secure = true;
+    for (const auto& url : item->GetUrlChain()) {
+      if (!content::IsOriginSecure(url)) {
+        is_redirect_chain_secure = false;
+        break;
+      }
+    }
+
+    if (!(is_final_origin_secure && is_redirect_chain_secure)) {
+      bool is_unsafe_download = false;
+      for (const auto& prefix : unsafe_mime_types) {
+        if (base::StartsWith(item->GetMimeType(), prefix,
+                             base::CompareCase::INSENSITIVE_ASCII)) {
+          is_unsafe_download = true;
+          break;
+        }
+      }
+      if (is_unsafe_download) {
+        content::WebContents* web_contents =
+            content::DownloadItemUtils::GetWebContents(item);
+        if (web_contents) {
+          web_contents->GetMainFrame()->AddMessageToConsole(
+              content::CONSOLE_MESSAGE_LEVEL_WARNING,
+              base::StringPrintf(
+                  "The download of %s has been blocked. Either the final "
+                  "download origin or one of the origins in the redirect "
+                  "chain leading to the download was insecure. Downloading "
+                  "unsafe file types over HTTP is deprecated.",
+                  item->GetURL().spec().c_str()));
+        }
+        return true;
+      }
+    }
+  }
 
   switch (download_restriction) {
     case (DownloadPrefs::DownloadRestriction::NONE):

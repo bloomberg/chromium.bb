@@ -198,6 +198,11 @@ const base::Feature kDesktopPWAWindowing {
 const base::Feature kDesktopPWAsLinkCapturing{
     "DesktopPWAsLinkCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Disables downloads of unsafe file types over HTTP.
+const base::Feature kDisallowUnsafeHttpDownloads{
+    "DisallowUnsafeHttpDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kDisallowUnsafeHttpDownloadsParamName[] = "MimeTypeList";
+
 #if !defined(OS_ANDROID)
 const base::Feature kDoodlesOnLocalNtp{"DoodlesOnLocalNtp",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
