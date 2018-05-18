@@ -57,5 +57,11 @@ message UpgradeArcContainerRequest {
   // a non-supervised state, and vice-versa.
   optional SupervisionTransition supervision_transition = 5;
 
-  // Next ID to use: 6
+  // Non-empty iff the ARC container is being upgraded for a Chrome OS demo
+  // session. The absolute path to the squashfs image that contains the set of
+  // Android apps to be pre-installed into demo sessions. Note that arc-setup
+  // expects this to be a path loaded by the imageloader service.
+  optional string demo_session_apps_path = 6;
+
+  // Next ID to use: 7
 }
