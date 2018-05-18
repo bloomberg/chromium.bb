@@ -32,10 +32,10 @@ class ModulatorImplBase : public Modulator {
   void Trace(blink::Visitor*) override;
   void TraceWrappers(ScriptWrappableVisitor*) const override;
 
-  ExecutionContext* GetExecutionContext() const;
-
  protected:
   explicit ModulatorImplBase(scoped_refptr<ScriptState>);
+
+  ExecutionContext* GetExecutionContext() const;
 
   ScriptState* GetScriptState() override { return script_state_.get(); }
 
