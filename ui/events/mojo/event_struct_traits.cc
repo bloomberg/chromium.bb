@@ -12,88 +12,8 @@
 #include "ui/latency/mojo/latency_info_struct_traits.h"
 
 namespace mojo {
+
 namespace {
-
-ui::mojom::EventType UIEventTypeToMojo(ui::EventType type) {
-  switch (type) {
-    case ui::ET_KEY_PRESSED:
-      return ui::mojom::EventType::KEY_PRESSED;
-
-    case ui::ET_KEY_RELEASED:
-      return ui::mojom::EventType::KEY_RELEASED;
-
-    case ui::ET_POINTER_DOWN:
-      return ui::mojom::EventType::POINTER_DOWN;
-
-    case ui::ET_POINTER_MOVED:
-      return ui::mojom::EventType::POINTER_MOVE;
-
-    case ui::ET_POINTER_EXITED:
-      return ui::mojom::EventType::MOUSE_EXIT;
-
-    case ui::ET_POINTER_UP:
-      return ui::mojom::EventType::POINTER_UP;
-
-    case ui::ET_POINTER_CANCELLED:
-      return ui::mojom::EventType::POINTER_CANCEL;
-
-    case ui::ET_POINTER_WHEEL_CHANGED:
-      return ui::mojom::EventType::POINTER_WHEEL_CHANGED;
-
-    case ui::ET_GESTURE_TAP:
-      return ui::mojom::EventType::GESTURE_TAP;
-
-    case ui::ET_SCROLL:
-      return ui::mojom::EventType::SCROLL;
-
-    case ui::ET_SCROLL_FLING_START:
-      return ui::mojom::EventType::SCROLL_FLING_START;
-
-    case ui::ET_SCROLL_FLING_CANCEL:
-      return ui::mojom::EventType::SCROLL_FLING_CANCEL;
-
-    default:
-      NOTREACHED() << "This unsupported event type will close the connection";
-      break;
-  }
-  return ui::mojom::EventType::UNKNOWN;
-}
-
-ui::EventType MojoPointerEventTypeToUIEvent(ui::mojom::EventType action) {
-  switch (action) {
-    case ui::mojom::EventType::POINTER_DOWN:
-      return ui::ET_POINTER_DOWN;
-
-    case ui::mojom::EventType::POINTER_UP:
-      return ui::ET_POINTER_UP;
-
-    case ui::mojom::EventType::POINTER_MOVE:
-      return ui::ET_POINTER_MOVED;
-
-    case ui::mojom::EventType::POINTER_CANCEL:
-      return ui::ET_POINTER_CANCELLED;
-
-    case ui::mojom::EventType::MOUSE_EXIT:
-      return ui::ET_POINTER_EXITED;
-
-    case ui::mojom::EventType::POINTER_WHEEL_CHANGED:
-      return ui::ET_POINTER_WHEEL_CHANGED;
-
-    case ui::mojom::EventType::SCROLL:
-      return ui::ET_SCROLL;
-
-    case ui::mojom::EventType::SCROLL_FLING_START:
-      return ui::ET_SCROLL_FLING_START;
-
-    case ui::mojom::EventType::SCROLL_FLING_CANCEL:
-      return ui::ET_SCROLL_FLING_CANCEL;
-
-    default:
-      NOTREACHED();
-  }
-
-  return ui::ET_UNKNOWN;
-}
 
 ui::mojom::LocationDataPtr GetLocationData(const ui::LocatedEvent* event) {
   ui::mojom::LocationDataPtr location_data(ui::mojom::LocationData::New());
@@ -205,10 +125,91 @@ static_assert(ui::mojom::kEventFlagForwardMouseButton ==
                   static_cast<int32_t>(ui::EF_FORWARD_MOUSE_BUTTON),
               "EVENT_FLAGS must match");
 
+// static
+ui::mojom::EventType TypeConverter<ui::mojom::EventType,
+                                   ui::EventType>::Convert(ui::EventType type) {
+  switch (type) {
+    case ui::ET_UNKNOWN:
+      return ui::mojom::EventType::UNKNOWN;
+    case ui::ET_KEY_PRESSED:
+      return ui::mojom::EventType::KEY_PRESSED;
+    case ui::ET_KEY_RELEASED:
+      return ui::mojom::EventType::KEY_RELEASED;
+    case ui::ET_POINTER_DOWN:
+      return ui::mojom::EventType::POINTER_DOWN;
+    case ui::ET_POINTER_MOVED:
+      return ui::mojom::EventType::POINTER_MOVED;
+    case ui::ET_POINTER_UP:
+      return ui::mojom::EventType::POINTER_UP;
+    case ui::ET_POINTER_CANCELLED:
+      return ui::mojom::EventType::POINTER_CANCELLED;
+    case ui::ET_POINTER_ENTERED:
+      return ui::mojom::EventType::POINTER_ENTERED;
+    case ui::ET_POINTER_EXITED:
+      return ui::mojom::EventType::POINTER_EXITED;
+    case ui::ET_POINTER_WHEEL_CHANGED:
+      return ui::mojom::EventType::POINTER_WHEEL_CHANGED;
+    case ui::ET_POINTER_CAPTURE_CHANGED:
+      return ui::mojom::EventType::POINTER_CAPTURE_CHANGED;
+    case ui::ET_GESTURE_TAP:
+      return ui::mojom::EventType::GESTURE_TAP;
+    case ui::ET_SCROLL:
+      return ui::mojom::EventType::SCROLL;
+    case ui::ET_SCROLL_FLING_START:
+      return ui::mojom::EventType::SCROLL_FLING_START;
+    case ui::ET_SCROLL_FLING_CANCEL:
+      return ui::mojom::EventType::SCROLL_FLING_CANCEL;
+    default:
+      NOTREACHED() << "Using unknown event types closes connections:" << type;
+      break;
+  }
+  return ui::mojom::EventType::UNKNOWN;
+}
+
+// static
+ui::EventType TypeConverter<ui::EventType, ui::mojom::EventType>::Convert(
+    ui::mojom::EventType type) {
+  switch (type) {
+    case ui::mojom::EventType::UNKNOWN:
+      return ui::ET_UNKNOWN;
+    case ui::mojom::EventType::KEY_PRESSED:
+      return ui::ET_KEY_PRESSED;
+    case ui::mojom::EventType::KEY_RELEASED:
+      return ui::ET_KEY_RELEASED;
+    case ui::mojom::EventType::POINTER_DOWN:
+      return ui::ET_POINTER_DOWN;
+    case ui::mojom::EventType::POINTER_MOVED:
+      return ui::ET_POINTER_MOVED;
+    case ui::mojom::EventType::POINTER_UP:
+      return ui::ET_POINTER_UP;
+    case ui::mojom::EventType::POINTER_CANCELLED:
+      return ui::ET_POINTER_CANCELLED;
+    case ui::mojom::EventType::POINTER_ENTERED:
+      return ui::ET_POINTER_ENTERED;
+    case ui::mojom::EventType::POINTER_EXITED:
+      return ui::ET_POINTER_EXITED;
+    case ui::mojom::EventType::POINTER_WHEEL_CHANGED:
+      return ui::ET_POINTER_WHEEL_CHANGED;
+    case ui::mojom::EventType::POINTER_CAPTURE_CHANGED:
+      return ui::ET_POINTER_CAPTURE_CHANGED;
+    case ui::mojom::EventType::GESTURE_TAP:
+      return ui::ET_GESTURE_TAP;
+    case ui::mojom::EventType::SCROLL:
+      return ui::ET_SCROLL;
+    case ui::mojom::EventType::SCROLL_FLING_START:
+      return ui::ET_SCROLL_FLING_START;
+    case ui::mojom::EventType::SCROLL_FLING_CANCEL:
+      return ui::ET_SCROLL_FLING_CANCEL;
+    default:
+      NOTREACHED();
+  }
+  return ui::ET_UNKNOWN;
+}
+
 ui::mojom::EventType
 StructTraits<ui::mojom::EventDataView, EventUniquePtr>::action(
     const EventUniquePtr& event) {
-  return UIEventTypeToMojo(event->type());
+  return mojo::ConvertTo<ui::mojom::EventType>(event->type());
 }
 
 int32_t StructTraits<ui::mojom::EventDataView, EventUniquePtr>::flags(
@@ -390,10 +391,12 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
     }
     case ui::mojom::EventType::POINTER_DOWN:
     case ui::mojom::EventType::POINTER_UP:
-    case ui::mojom::EventType::POINTER_MOVE:
-    case ui::mojom::EventType::POINTER_CANCEL:
-    case ui::mojom::EventType::MOUSE_EXIT:
-    case ui::mojom::EventType::POINTER_WHEEL_CHANGED: {
+    case ui::mojom::EventType::POINTER_MOVED:
+    case ui::mojom::EventType::POINTER_CANCELLED:
+    case ui::mojom::EventType::POINTER_ENTERED:
+    case ui::mojom::EventType::POINTER_EXITED:
+    case ui::mojom::EventType::POINTER_WHEEL_CHANGED:
+    case ui::mojom::EventType::POINTER_CAPTURE_CHANGED: {
       ui::mojom::PointerDataPtr pointer_data;
       if (!event.ReadPointerData<ui::mojom::PointerDataPtr>(&pointer_data))
         return false;
@@ -409,7 +412,7 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
       // This uses the event root_location field to store screen pixel
       // coordinates. See http://crbug.com/608547
       *out = std::make_unique<ui::PointerEvent>(
-          MojoPointerEventTypeToUIEvent(event.action()), location,
+          mojo::ConvertTo<ui::EventType>(event.action()), location,
           screen_location, event.flags(), pointer_data->changed_button_flags,
           pointer_details, time_stamp);
       break;
@@ -432,7 +435,7 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
         return false;
 
       *out = std::make_unique<ui::ScrollEvent>(
-          MojoPointerEventTypeToUIEvent(event.action()),
+          mojo::ConvertTo<ui::EventType>(event.action()),
           gfx::Point(scroll_data->location->x, scroll_data->location->y),
           time_stamp, event.flags(), scroll_data->x_offset,
           scroll_data->y_offset, scroll_data->x_offset_ordinal,
@@ -441,7 +444,7 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
       break;
     }
     case ui::mojom::EventType::UNKNOWN:
-      NOTREACHED() << "This unsupported event type will close the connection";
+      NOTREACHED() << "Using unknown event types closes connections";
       return false;
   }
 
