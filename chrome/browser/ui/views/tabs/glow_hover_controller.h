@@ -1,22 +1,21 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_CONTROLS_GLOW_HOVER_CONTROLLER_H_
-#define UI_VIEWS_CONTROLS_GLOW_HOVER_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TABS_GLOW_HOVER_CONTROLLER_H_
+#define CHROME_BROWSER_UI_VIEWS_TABS_GLOW_HOVER_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/views/views_export.h"
 
 namespace gfx {
 class Point;
 }
 
 namespace views {
-
 class View;
+}
 
 // GlowHoverController is responsible for drawing a hover effect as is used by
 // the tabstrip. Typical usage:
@@ -26,12 +25,9 @@ class View;
 //   OnPaint()        -> if ShouldDraw() returns true invoke Draw().
 // Internally GlowHoverController uses an animation to animate the glow and
 // invokes SchedulePaint() back on the View as necessary.
-class VIEWS_EXPORT GlowHoverController : public gfx::AnimationDelegate {
+class GlowHoverController : public gfx::AnimationDelegate {
  public:
-  enum Style {
-    SUBTLE,
-    PRONOUNCED
-  };
+  enum Style { SUBTLE, PRONOUNCED };
 
   explicit GlowHoverController(views::View* view);
   ~GlowHoverController() override;
@@ -81,6 +77,4 @@ class VIEWS_EXPORT GlowHoverController : public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(GlowHoverController);
 };
 
-}  // namespace views
-
-#endif  // UI_VIEWS_CONTROLS_GLOW_HOVER_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TABS_GLOW_HOVER_CONTROLLER_H_

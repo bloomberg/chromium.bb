@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/tabs/glow_hover_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "content/public/browser/notification_service.h"
@@ -23,7 +24,6 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
-#include "ui/views/controls/glow_hover_controller.h"
 
 namespace {
 
@@ -338,7 +338,7 @@ void TabScrubber::UpdateHighlightedTab(Tab* new_tab, int new_index) {
 
   if (new_index != browser_->tab_strip_model()->active_index()) {
     highlighted_tab_ = new_index;
-    new_tab->hover_controller()->Show(views::GlowHoverController::PRONOUNCED);
+    new_tab->hover_controller()->Show(GlowHoverController::PRONOUNCED);
   } else {
     highlighted_tab_ = -1;
   }

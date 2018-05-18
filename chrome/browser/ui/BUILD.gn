@@ -3237,6 +3237,8 @@ split_static_library("ui") {
         "views/tabs/alert_indicator_button.h",
         "views/tabs/browser_tab_strip_controller.cc",
         "views/tabs/browser_tab_strip_controller.h",
+        "views/tabs/glow_hover_controller.cc",
+        "views/tabs/glow_hover_controller.h",
         "views/tabs/new_tab_button.cc",
         "views/tabs/new_tab_button.h",
         "views/tabs/stacked_tab_strip_layout.cc",

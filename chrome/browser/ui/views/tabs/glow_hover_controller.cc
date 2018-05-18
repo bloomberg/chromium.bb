@@ -1,12 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/controls/glow_hover_controller.h"
+#include "chrome/browser/ui/views/tabs/glow_hover_controller.h"
 
 #include "ui/views/view.h"
-
-namespace views {
 
 // Amount to scale the opacity.
 static const double kSubtleOpacityScale = 0.45;
@@ -16,14 +14,11 @@ static const double kPronouncedOpacityScale = 1.0;
 static const int kTrackHoverDurationMs = 400;
 
 GlowHoverController::GlowHoverController(views::View* view)
-    : view_(view),
-      animation_(this),
-      opacity_scale_(kSubtleOpacityScale) {
+    : view_(view), animation_(this), opacity_scale_(kSubtleOpacityScale) {
   animation_.set_delegate(this);
 }
 
-GlowHoverController::~GlowHoverController() {
-}
+GlowHoverController::~GlowHoverController() {}
 
 void GlowHoverController::SetAnimationContainer(
     gfx::AnimationContainer* container) {
@@ -78,11 +73,9 @@ bool GlowHoverController::ShouldDraw() const {
 }
 
 void GlowHoverController::AnimationEnded(const gfx::Animation* animation) {
-  view_->SchedulePaint();
+  view_->Layout();
 }
 
 void GlowHoverController::AnimationProgressed(const gfx::Animation* animation) {
   view_->SchedulePaint();
 }
-
-}  // namespace views
