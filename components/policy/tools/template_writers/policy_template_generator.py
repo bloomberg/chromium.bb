@@ -5,7 +5,7 @@
 
 
 import copy
-
+import re
 
 class PolicyTemplateGenerator:
   '''Generates template text for a particular platform.
@@ -22,10 +22,24 @@ class PolicyTemplateGenerator:
     msg_txt = msg_txt.replace('$1', self._config['app_name'])
     msg_txt = msg_txt.replace('$2', self._config['os_name'])
     msg_txt = msg_txt.replace('$3', self._config['frame_name'])
-    # Strip spaces and escape newlines.
+
     lines = msg_txt.split('\n')
-    lines = [line.strip() for line in lines]
+    # Strip any extra leading spaces, but keep useful indentation:
+    min_leading_spaces = min(list(self._IterateLeadingSpaces(lines)) or [0])
+    if min_leading_spaces > 0:
+      lstrip_pattern = re.compile('^[ ]{1,%s}' % min_leading_spaces)
+      lines = [lstrip_pattern.sub('', line) for line in lines]
+    # Strip all trailing spaces:
+    lines = [line.rstrip() for line in lines]
     return "\n".join(lines)
+
+  def _IterateLeadingSpaces(self, lines):
+    '''Yields the number of leading spaces on each line, skipping lines which
+    have no leading spaces.'''
+    for line in lines:
+      match = re.search('^[ ]+', line)
+      if match:
+        yield len(match.group(0))
 
   def __init__(self, config, policy_data):
     '''Initializes this object with all the data necessary to output a
