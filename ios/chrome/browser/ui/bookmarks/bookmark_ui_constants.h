@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_UI_CONSTANTS_H_
 #define IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_UI_CONSTANTS_H_
 
+#import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 
 // Accessibility identifier of the BookmarkEditVC toolbar delete button.
@@ -19,5 +20,18 @@ extern NSString* const kBookmarkHomeCenterButtonIdentifier;
 extern NSString* const kBookmarkHomeTrailingButtonIdentifier;
 // Accessibility identifier of the BookmarkHomeVC UIToolbar.
 extern NSString* const kBookmarkHomeUIToolbarIdentifier;
+
+// Cell constants.
+
+// The space between UIViews inside the cell.
+extern const CGFloat kBookmarkCellViewSpacing;
+// The vertical space between the Cell margin and its contents.
+extern const CGFloat kBookmarkCellVerticalInset;
+// The horizontal leading space between the Cell margin and its contents.
+extern const CGFloat kBookmarkCellHorizontalLeadingInset;
+// The horizontal trailing space between the Cell margin and its contents.
+extern const CGFloat kBookmarkCellHorizontalTrailingInset;
+// The horizontal space between the Cell content and its accessory view.
+extern const CGFloat kBookmarkCellHorizontalAccessoryViewSpacing;
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_UI_CONSTANTS_H_

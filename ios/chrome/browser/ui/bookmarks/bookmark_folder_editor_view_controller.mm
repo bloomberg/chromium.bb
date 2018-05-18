@@ -14,6 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
@@ -139,9 +140,15 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
 - (instancetype)initWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel {
   DCHECK(bookmarkModel);
   DCHECK(bookmarkModel->loaded());
-  self =
-      [super initWithTableViewStyle:UITableViewStylePlain
-                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    self =
+        [super initWithTableViewStyle:UITableViewStylePlain
+                          appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  } else {
+    self =
+        [super initWithTableViewStyle:UITableViewStylePlain
+                          appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  }
   if (self) {
     _bookmarkModel = bookmarkModel;
 
@@ -166,7 +173,14 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.sectionHeaderHeight = 0;
   self.tableView.sectionFooterHeight = 0;
-  [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    self.tableView.tableFooterView = [[UIView alloc] init];
+    [self.tableView
+        setSeparatorInset:UIEdgeInsetsMake(
+                              0, kBookmarkCellHorizontalLeadingInset, 0, 0)];
+  } else {
+    [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+  }
 
   // Add Done button.
   UIBarButtonItem* doneItem = [[UIBarButtonItem alloc]
@@ -451,9 +465,7 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
 
 - (void)addToolbar {
   self.navigationController.toolbarHidden = NO;
-  self.navigationController.toolbar.barTintColor = [UIColor whiteColor];
   NSString* titleString = l10n_util::GetNSString(IDS_IOS_BOOKMARK_GROUP_DELETE);
-  titleString = [titleString uppercaseString];
   UIBarButtonItem* deleteButton =
       [[UIBarButtonItem alloc] initWithTitle:titleString
                                        style:UIBarButtonItemStylePlain
@@ -461,20 +473,29 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                                       action:@selector(deleteFolder)];
   deleteButton.accessibilityIdentifier =
       kBookmarkFolderEditorDeleteButtonIdentifier;
-  [deleteButton
-      setTitleTextAttributes:[NSDictionary
-                                 dictionaryWithObjectsAndKeys:
-                                     [[MDCTypography fontLoader]
-                                         mediumFontOfSize:14],
-                                     NSFontAttributeName, [UIColor blackColor],
-                                     NSForegroundColorAttributeName, nil]
-                    forState:UIControlStateNormal];
-
   UIBarButtonItem* spaceButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                            target:nil
                            action:nil];
-  [self setToolbarItems:@[ deleteButton, spaceButton ] animated:NO];
+
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    deleteButton.tintColor = [UIColor redColor];
+    [self setToolbarItems:@[ spaceButton, deleteButton, spaceButton ]
+                 animated:NO];
+  } else {
+    self.navigationController.toolbar.barTintColor = [UIColor whiteColor];
+    deleteButton.title = [deleteButton.title uppercaseString];
+    [deleteButton
+        setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                 [[MDCTypography fontLoader]
+                                                     mediumFontOfSize:14],
+                                                 NSFontAttributeName,
+                                                 [UIColor blackColor],
+                                                 NSForegroundColorAttributeName,
+                                                 nil]
+                      forState:UIControlStateNormal];
+    [self setToolbarItems:@[ deleteButton, spaceButton ] animated:NO];
+  }
 }
 
 - (void)updateSaveButtonState {
