@@ -231,6 +231,9 @@ bool RootScrollerController::IsValidRootScroller(const Element& element) const {
   if (!element.GetLayoutObject())
     return false;
 
+  if (!element.GetLayoutObject()->IsBox())
+    return false;
+
   // Ignore anything inside a FlowThread (multi-col, paginated, etc.).
   if (element.GetLayoutObject()->IsInsideFlowThread())
     return false;
@@ -266,6 +269,9 @@ bool RootScrollerController::IsValidImplicitCandidate(
     return false;
 
   if (!element.GetLayoutObject())
+    return false;
+
+  if (!element.GetLayoutObject()->IsBox())
     return false;
 
   // Ignore anything inside a FlowThread (multi-col, paginated, etc.).
