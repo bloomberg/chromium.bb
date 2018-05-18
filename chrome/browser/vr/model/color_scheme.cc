@@ -58,8 +58,8 @@ void InitializeColorSchemes() {
   normal_scheme.web_vr_floor_edge = SK_ColorBLACK;
   normal_scheme.web_vr_floor_center = 0xD9212121;
   normal_scheme.web_vr_floor_grid = 0xD9212121;
-  normal_scheme.loading_indicator_foreground = 0xFF2979FF;
-  normal_scheme.loading_indicator_background = 0xFF454545;
+  normal_scheme.loading_indicator_foreground = MakeColor(0x2979FF, 100);
+  normal_scheme.loading_indicator_background = MakeColor(0x2979FF, 50);
   normal_scheme.exit_warning_foreground = SK_ColorWHITE;
   normal_scheme.exit_warning_background = 0xCC1A1A1A;
   normal_scheme.web_vr_transient_toast_foreground = 0xFFF3F3F3;

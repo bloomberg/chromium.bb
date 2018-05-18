@@ -780,16 +780,32 @@ TEST_F(UiTest, DontPropagateContentBoundsOnNegligibleChange) {
 
 TEST_F(UiTest, LoadingIndicatorBindings) {
   CreateScene(kNotInCct, kNotInWebVr);
+  UiElement* background = scene_->GetUiElementByName(kLoadingIndicator);
+  UiElement* foreground =
+      scene_->GetUiElementByName(kLoadingIndicatorForeground);
+
   model_->loading = true;
+  model_->load_progress = 0;
+  EXPECT_TRUE(
+      VerifyVisibility({kLoadingIndicator, kLoadingIndicatorForeground}, true));
+  EXPECT_EQ(foreground->GetClipRect(), gfx::RectF(0, 0, 0, 1));
+  EXPECT_EQ(foreground->size(), background->size());
+
   model_->load_progress = 0.5f;
-  EXPECT_TRUE(VerifyVisibility({kLoadingIndicator}, true));
-  UiElement* loading_indicator = scene_->GetUiElementByName(kLoadingIndicator);
-  UiElement* loading_indicator_fg = loading_indicator->children().back().get();
-  EXPECT_FLOAT_EQ(loading_indicator->size().width() * 0.5f,
-                  loading_indicator_fg->size().width());
-  float tx =
-      loading_indicator_fg->GetTargetTransform().Apply().matrix().get(0, 3);
-  EXPECT_FLOAT_EQ(loading_indicator->size().width() * 0.25f, tx);
+  EXPECT_TRUE(
+      VerifyVisibility({kLoadingIndicator, kLoadingIndicatorForeground}, true));
+  EXPECT_EQ(foreground->GetClipRect(), gfx::RectF(0, 0, 0.5, 1));
+  EXPECT_EQ(foreground->size(), background->size());
+
+  model_->load_progress = 1.0f;
+  EXPECT_TRUE(
+      VerifyVisibility({kLoadingIndicator, kLoadingIndicatorForeground}, true));
+  EXPECT_EQ(foreground->GetClipRect(), gfx::RectF(0, 0, 1, 1));
+  EXPECT_EQ(foreground->size(), background->size());
+
+  model_->loading = false;
+  EXPECT_TRUE(VerifyVisibility({kLoadingIndicator, kLoadingIndicatorForeground},
+                               false));
 }
 
 TEST_F(UiTest, ExitWarning) {

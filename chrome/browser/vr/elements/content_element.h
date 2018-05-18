@@ -29,6 +29,7 @@ class ContentElement : public PlatformUiElement {
   ContentElement(ContentInputDelegate* delegate, ScreenBoundsChangedCallback);
   ~ContentElement() override;
 
+  // UiElement overrides.
   bool OnBeginFrame(const gfx::Transform& head_pose) override;
   void Render(UiElementRenderer* renderer,
               const CameraModel& model) const final;
@@ -38,6 +39,9 @@ class ContentElement : public PlatformUiElement {
   void RequestFocus() override;
   void RequestUnfocus() override;
   void UpdateInput(const EditedText& info) override;
+  void NotifyClientSizeAnimated(const gfx::SizeF& size,
+                                int target_property_id,
+                                cc::KeyframeModel* animation) override;
 
   void SetOverlayTextureId(unsigned int texture_id);
   void SetOverlayTextureLocation(UiElementRenderer::TextureLocation location);
@@ -46,6 +50,11 @@ class ContentElement : public PlatformUiElement {
   void SetProjectionMatrix(const gfx::Transform& matrix);
   void SetTextInputDelegate(TextInputDelegate* text_input_delegate);
   void SetUsesQuadLayer(bool uses_quad_layer);
+
+  void set_on_size_changed_callback(
+      base::RepeatingCallback<void(const gfx::SizeF& size)> callback) {
+    on_size_changed_callback_ = callback;
+  }
 
  private:
   TextInputDelegate* text_input_delegate_ = nullptr;
@@ -60,6 +69,8 @@ class ContentElement : public PlatformUiElement {
   bool focused_ = false;
   bool uses_quad_layer_ = false;
   ContentInputDelegate* content_delegate_ = nullptr;
+  base::RepeatingCallback<void(const gfx::SizeF& size)>
+      on_size_changed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentElement);
 };

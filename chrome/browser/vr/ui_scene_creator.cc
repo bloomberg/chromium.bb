@@ -1414,6 +1414,45 @@ void UiSceneCreator::CreateContentQuad() {
                         const EditedText& value) { e->UpdateInput(value); },
                      base::Unretained(main_content.get()))));
 
+  auto indicator_bg = Create<Rect>(kLoadingIndicator, kPhaseForeground);
+  indicator_bg->set_contributes_to_parent_bounds(false);
+  indicator_bg->set_bounds_contain_children(true);
+  indicator_bg->set_y_anchoring(BOTTOM);
+  indicator_bg->set_y_centering(BOTTOM);
+  indicator_bg->SetCornerRadii(
+      {0, 0, kContentCornerRadius, kContentCornerRadius});
+  VR_BIND_VISIBILITY(indicator_bg, model->loading);
+  VR_BIND_COLOR(model_, indicator_bg.get(),
+                &ColorScheme::loading_indicator_background, &Rect::SetColor);
+
+  auto indicator_fg =
+      Create<Rect>(kLoadingIndicatorForeground, kPhaseForeground);
+  indicator_fg->SetCornerRadii(
+      {0, 0, kContentCornerRadius, kContentCornerRadius});
+  // Start at content width; size is later updated in a content callback.
+  indicator_fg->SetSize(kContentWidth, kContentCornerRadius);
+  VR_BIND_COLOR(model_, indicator_fg.get(),
+                &ColorScheme::loading_indicator_foreground, &Rect::SetColor);
+  indicator_fg->AddBinding(std::make_unique<Binding<float>>(
+      VR_BIND_LAMBDA([](Model* m) { return m->load_progress; },
+                     base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](Rect* r, const float& progress) {
+            r->SetClipRect({0, 0, progress, 1});
+          },
+          base::Unretained(indicator_fg.get()))));
+
+  // Have content explicitly resize the loading indicator as it changes, in lieu
+  // of adding a UI framework capability.
+  main_content->set_on_size_changed_callback(base::BindRepeating(
+      [](Rect* rect, const gfx::SizeF& size) {
+        rect->SetSize(size.width(), kContentCornerRadius);
+      },
+      base::Unretained(indicator_fg.get())));
+
+  indicator_bg->AddChild(std::move(indicator_fg));
+  main_content->AddChild(std::move(indicator_bg));
+
   auto frame = Create<Rect>(kContentFrame, kPhaseForeground);
   frame->set_hit_testable(true);
   frame->set_bounds_contain_children(true);
@@ -2085,44 +2124,6 @@ void UiSceneCreator::CreateUrlBar() {
   VR_BIND_COLOR(model_, url_bar.get(), &ColorScheme::url_bar_background,
                 &Rect::SetColor);
   scene_->AddUiElement(kUrlBarDmmRoot, std::move(url_bar));
-
-  auto indicator_bg = std::make_unique<Rect>();
-  indicator_bg->SetName(kLoadingIndicator);
-  indicator_bg->set_hit_testable(true);
-  indicator_bg->SetDrawPhase(kPhaseForeground);
-  indicator_bg->SetTranslate(0, kLoadingIndicatorVerticalOffsetDMM, 0);
-  indicator_bg->SetSize(kLoadingIndicatorWidthDMM, kLoadingIndicatorHeightDMM);
-  indicator_bg->set_y_anchoring(TOP);
-  indicator_bg->SetTransitionedProperties({OPACITY});
-  indicator_bg->set_corner_radius(kLoadingIndicatorHeightDMM * 0.5f);
-  indicator_bg->set_contributes_to_parent_bounds(false);
-  VR_BIND_VISIBILITY(indicator_bg, model->loading);
-  VR_BIND_COLOR(model_, indicator_bg.get(),
-                &ColorScheme::loading_indicator_background, &Rect::SetColor);
-
-  scene_->AddUiElement(kUrlBar, std::move(indicator_bg));
-
-  auto indicator_fg = std::make_unique<Rect>();
-  indicator_fg->SetDrawPhase(kPhaseForeground);
-  indicator_fg->SetName(kLoadingIndicatorForeground);
-  indicator_fg->set_x_anchoring(LEFT);
-  indicator_fg->set_contributes_to_parent_bounds(false);
-  indicator_fg->set_corner_radius(kLoadingIndicatorHeightDMM * 0.5f);
-  VR_BIND_COLOR(model_, indicator_fg.get(),
-                &ColorScheme::loading_indicator_foreground, &Rect::SetColor);
-  indicator_fg->AddBinding(std::make_unique<Binding<float>>(
-      VR_BIND_LAMBDA([](Model* m) { return m->load_progress; },
-                     base::Unretained(model_)),
-      VR_BIND_LAMBDA(
-          [](Rect* r, const float& value) {
-            r->SetSize(kLoadingIndicatorWidthDMM * value,
-                       kLoadingIndicatorHeightDMM);
-            r->SetTranslate(kLoadingIndicatorWidthDMM * value * 0.5f, 0.0f,
-                            0.001f);
-          },
-          base::Unretained(indicator_fg.get()))));
-
-  scene_->AddUiElement(kLoadingIndicator, std::move(indicator_fg));
 
   auto layout =
       Create<LinearLayout>(kUrlBarLayout, kPhaseNone, LinearLayout::kRight);
