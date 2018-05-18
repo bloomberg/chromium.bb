@@ -461,16 +461,12 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
       base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
   auto did_swap_buffer_complete_callback = base::BindRepeating(
       &SkiaOutputSurfaceImpl::DidSwapBuffersComplete, weak_ptr_);
-  auto update_vsync_parameters_callback = base::BindRepeating(
-      &SkiaOutputSurfaceImpl::UpdateVSyncParameters, weak_ptr_);
   auto buffer_presented_callback =
       base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_);
   impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
       gpu_service_, surface_handle_,
       CreateSafeCallback(client_thread_task_runner_,
                          did_swap_buffer_complete_callback),
-      CreateSafeCallback(client_thread_task_runner_,
-                         update_vsync_parameters_callback),
       CreateSafeCallback(client_thread_task_runner_,
                          buffer_presented_callback));
   capabilities_ = impl_on_gpu_->capabilities();
@@ -498,18 +494,6 @@ void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
   client_->DidReceiveSwapBuffersAck(params.swap_response.swap_id);
 }
 
-void SkiaOutputSurfaceImpl::UpdateVSyncParameters(base::TimeTicks timebase,
-                                                  base::TimeDelta interval) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (synthetic_begin_frame_source_) {
-    // TODO(brianderson): We should not be receiving 0 intervals.
-    synthetic_begin_frame_source_->OnUpdateVSyncParameters(
-        timebase,
-        interval.is_zero() ? BeginFrameArgs::DefaultInterval() : interval);
-  }
-}
-
 void SkiaOutputSurfaceImpl::BufferPresented(
     uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
@@ -517,6 +501,14 @@ void SkiaOutputSurfaceImpl::BufferPresented(
   DCHECK(client_);
 
   client_->DidReceivePresentationFeedback(swap_id, feedback);
+  if (synthetic_begin_frame_source_ &&
+      feedback.flags & gfx::PresentationFeedback::kVSync) {
+    // TODO(brianderson): We should not be receiving 0 intervals.
+    synthetic_begin_frame_source_->OnUpdateVSyncParameters(
+        feedback.timestamp, feedback.interval.is_zero()
+                                ? BeginFrameArgs::DefaultInterval()
+                                : feedback.interval);
+  }
 }
 
 }  // namespace viz

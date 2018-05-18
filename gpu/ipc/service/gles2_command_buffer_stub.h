@@ -44,8 +44,6 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
   const gles2::FeatureInfo* GetFeatureInfo() const override;
   const GpuPreferences& GetGpuPreferences() const override;
   void SetSnapshotRequestedCallback(const base::Closure& callback) override;
-  void UpdateVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval) override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
 
   void AddFilter(IPC::MessageFilter* message_filter) override;

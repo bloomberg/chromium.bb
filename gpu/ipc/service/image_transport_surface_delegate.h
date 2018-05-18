@@ -46,10 +46,6 @@ class GPU_IPC_SERVICE_EXPORT ImageTransportSurfaceDelegate {
 
   virtual void SetSnapshotRequestedCallback(const base::Closure& callback) = 0;
 
-  // Informs the delegate about updated vsync parameters.
-  virtual void UpdateVSyncParameters(base::TimeTicks timebase,
-                                     base::TimeDelta interval) = 0;
-
   // Tells the delegate a buffer has been presented.
   virtual void BufferPresented(const gfx::PresentationFeedback& feedback) = 0;
   // Add IPC message filter.

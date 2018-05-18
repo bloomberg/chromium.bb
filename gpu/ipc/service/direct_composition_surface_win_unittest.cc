@@ -67,8 +67,6 @@ class TestImageTransportSurfaceDelegate
     return gpu_preferences_;
   }
   void SetSnapshotRequestedCallback(const base::Closure& callback) override {}
-  void UpdateVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval) override {}
   void BufferPresented(const gfx::PresentationFeedback& feedback) override {}
   void AddFilter(IPC::MessageFilter* message_filter) override {}
   int32_t GetRouteID() const override { return 0; }

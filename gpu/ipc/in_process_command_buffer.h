@@ -175,8 +175,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   const GpuPreferences& GetGpuPreferences() const override;
 
   void SetSnapshotRequestedCallback(const base::Closure& callback) override;
-  void UpdateVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval) override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
 
   void AddFilter(IPC::MessageFilter* message_filter) override;
@@ -196,8 +194,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void SetPresentationCallback(const PresentationCallback& callback);
 
   void DidSwapBuffersCompleteOnOriginThread(SwapBuffersCompleteParams params);
-  void UpdateVSyncParametersOnOriginThread(base::TimeTicks timebase,
-                                           base::TimeDelta interval);
   void BufferPresentedOnOriginThread(uint64_t swap_id,
                                      uint32_t flags,
                                      const gfx::PresentationFeedback& feedback);

@@ -47,7 +47,6 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/gl/gl_switches_util.h"
 #include "ui/gl/gl_workarounds.h"
 #include "ui/gl/init/gl_factory.h"
 
@@ -403,16 +402,8 @@ void GLES2CommandBufferStub::SetSnapshotRequestedCallback(
   snapshot_requested_callback_ = callback;
 }
 
-void GLES2CommandBufferStub::UpdateVSyncParameters(base::TimeTicks timebase,
-                                                   base::TimeDelta interval) {
-  DCHECK(!gl::IsPresentationCallbackEnabled());
-  Send(new GpuCommandBufferMsg_UpdateVSyncParameters(route_id_, timebase,
-                                                     interval));
-}
-
 void GLES2CommandBufferStub::BufferPresented(
     const gfx::PresentationFeedback& feedback) {
-  DCHECK(gl::IsPresentationCallbackEnabled());
   const SwapBufferParams& params = pending_presented_params_.front();
   pending_presented_params_.pop_front();
 
@@ -449,11 +440,7 @@ void GLES2CommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
 
 void GLES2CommandBufferStub::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {
   pending_swap_completed_params_.push_back({swap_id, flags});
-
-  // Only push to |pending_presented_params_| if presentation callbacks
-  // are enabled, otherwise these will never be popped.
-  if (gl::IsPresentationCallbackEnabled())
-    pending_presented_params_.push_back({swap_id, flags});
+  pending_presented_params_.push_back({swap_id, flags});
 }
 
 }  // namespace gpu

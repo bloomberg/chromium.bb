@@ -11,18 +11,15 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
-#include "ui/gl/gl_switches_util.h"
 
 namespace ash {
 
 TimeToFirstPresentRecorder::TimeToFirstPresentRecorder(aura::Window* window) {
   aura::WindowTreeHost* window_tree_host = window->GetHost();
   DCHECK(window_tree_host);
-  if (gl::IsPresentationCallbackEnabled()) {
-    window_tree_host->compositor()->RequestPresentationTimeForNextFrame(
-        base::BindOnce(&TimeToFirstPresentRecorder::DidPresentCompositorFrame,
-                       base::Unretained(this)));
-  }
+  window_tree_host->compositor()->RequestPresentationTimeForNextFrame(
+      base::BindOnce(&TimeToFirstPresentRecorder::DidPresentCompositorFrame,
+                     base::Unretained(this)));
 }
 
 TimeToFirstPresentRecorder::~TimeToFirstPresentRecorder() = default;
