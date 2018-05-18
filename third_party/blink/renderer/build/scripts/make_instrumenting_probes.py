@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import ast
+from functools import partial
 import optparse
 import os.path
 import re
@@ -16,16 +17,17 @@ import sys
 # If paths differ between pre-caching and individual file compilation, the cache
 # is regenerated, which causes a race condition and breaks concurrent build,
 # since some compile processes will try to read the partially written cache.
-module_path, module_filename = os.path.split(os.path.realpath(__file__))
-third_party_dir = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir))
+_MODULE_PATH, _ = os.path.split(os.path.realpath(__file__))
+_THIRD_PARTY_DIR = os.path.normpath(os.path.join(_MODULE_PATH, os.pardir, os.pardir, os.pardir, os.pardir))
 # jinja2 is in chromium's third_party directory.
 # Insert at 1 so at front to override system libraries, and
 # after path[0] == invoking script dir
-sys.path.insert(1, third_party_dir)
+sys.path.insert(1, _THIRD_PARTY_DIR)
 import jinja2
 
 from blinkbuild.name_style_converter import NameStyleConverter
 from name_utilities import method_name
+
 
 def _json5_loads(lines):
     # Use json5.loads when json5 is available. Currently we use simple
@@ -49,23 +51,23 @@ def to_lower_case(name):
     return name[:1].lower() + name[1:]
 
 
-def agent_config(agent_name, field):
+def agent_config(config, agent_name, field):
     return config["observers"].get(agent_name, {}).get(field)
 
 
-def agent_name_to_class(agent_name):
-    return agent_config(agent_name, "class") or "Inspector%sAgent" % agent_name
+def agent_name_to_class(config, agent_name):
+    return agent_config(config, agent_name, "class") or "Inspector%sAgent" % agent_name
 
 
-def agent_name_to_include(agent_name):
-    include_path = agent_config(agent_name, "include_path") or config["settings"]["include_path"]
-    agent_class = agent_name_to_class(agent_name)
+def agent_name_to_include(config, agent_name):
+    include_path = agent_config(config, agent_name, "include_path") or config["settings"]["include_path"]
+    agent_class = agent_name_to_class(config, agent_name)
     return os.path.join(include_path, NameStyleConverter(agent_class).to_snake_case() + ".h")
 
 
-def initialize_jinja_env(cache_dir):
+def initialize_jinja_env(config, cache_dir):
     jinja_env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(os.path.join(module_path, "templates")),
+        loader=jinja2.FileSystemLoader(os.path.join(_MODULE_PATH, "templates")),
         # Bytecode cache is not concurrency-safe unless pre-cached:
         # if pre-cached this is read-only, but writing creates a race condition.
         bytecode_cache=jinja2.FileSystemBytecodeCache(cache_dir),
@@ -75,8 +77,8 @@ def initialize_jinja_env(cache_dir):
     jinja_env.filters.update({
         "to_lower_case": to_lower_case,
         "to_singular": to_singular,
-        "agent_name_to_class": agent_name_to_class,
-        "agent_name_to_include": agent_name_to_include})
+        "agent_name_to_class": partial(agent_name_to_class, config),
+        "agent_name_to_include": partial(agent_name_to_include, config)})
     jinja_env.add_extension('jinja2.ext.loopcontrols')
     return jinja_env
 
@@ -178,7 +180,7 @@ def load_config(file_name):
         return _json5_loads(config_file.read()) or default_config
 
 
-def build_observers():
+def build_observers(config, files):
     all_pidl_probes = set()
     for f in files:
         probes = set([probe.name for probe in f.declarations])
@@ -206,69 +208,73 @@ def build_observers():
     return all_observers
 
 
-cmdline_parser = optparse.OptionParser()
-cmdline_parser.add_option("--output_dir")
-cmdline_parser.add_option("--config")
+def main():
+    cmdline_parser = optparse.OptionParser()
+    cmdline_parser.add_option("--output_dir")
+    cmdline_parser.add_option("--config")
 
-try:
-    arg_options, arg_values = cmdline_parser.parse_args()
-    if len(arg_values) != 1:
-        raise Exception("Exactly one plain argument expected (found %s)" % len(arg_values))
-    input_path = arg_values[0]
-    output_dirpath = arg_options.output_dir
-    if not output_dirpath:
-        raise Exception("Output directory must be specified")
-    config_file_name = arg_options.config
-except Exception:
-    # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
-    exc = sys.exc_info()[1]
-    sys.stderr.write("Failed to parse command-line arguments: %s\n\n" % exc)
-    sys.stderr.write("Usage: <script> [options] <probes.pidl>\n")
-    sys.stderr.write("Options:\n")
-    sys.stderr.write("\t--config <config_file.json5>\n")
-    sys.stderr.write("\t--output_dir <output_dir>\n")
-    exit(1)
+    try:
+        arg_options, arg_values = cmdline_parser.parse_args()
+        if len(arg_values) != 1:
+            raise ValueError("Exactly one plain argument expected (found %s)" % len(arg_values))
+        input_path = arg_values[0]
+        output_dirpath = arg_options.output_dir
+        if not output_dirpath:
+            raise ValueError("Output directory must be specified")
+        config_file_name = arg_options.config
+    except ValueError:
+        # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
+        exc = sys.exc_info()[1]
+        sys.stderr.write("Failed to parse command-line arguments: %s\n\n" % exc)
+        sys.stderr.write("Usage: <script> [options] <probes.pidl>\n")
+        sys.stderr.write("Options:\n")
+        sys.stderr.write("\t--config <config_file.json5>\n")
+        sys.stderr.write("\t--output_dir <output_dir>\n")
+        exit(1)
 
-match = re.search(r"\bgen[\\/]", output_dirpath)  # pylint: disable=invalid-name
-if match:
-    output_path_in_gen_dir = output_dirpath[match.end():].replace(os.path.sep, '/') + '/'  # pylint: disable=invalid-name
-else:
-    output_path_in_gen_dir = ''  # pylint: disable=invalid-name
+    match = re.search(r"\bgen[\\/]", output_dirpath)
+    if match:
+        output_path_in_gen_dir = output_dirpath[match.end():].replace(os.path.sep, '/') + '/'
+    else:
+        output_path_in_gen_dir = ''
 
-config = load_config(config_file_name)
-jinja_env = initialize_jinja_env(output_dirpath)
-base_name = os.path.splitext(os.path.basename(input_path))[0]
+    config = load_config(config_file_name)
+    jinja_env = initialize_jinja_env(config, output_dirpath)
+    base_name = os.path.splitext(os.path.basename(input_path))[0]
 
-fin = open(input_path, "r")
-files = load_model_from_idl(fin.read())
-fin.close()
+    fin = open(input_path, "r")
+    files = load_model_from_idl(fin.read())
+    fin.close()
 
-template_context = {
-    "files": files,
-    "agents": build_observers(),
-    "config": config,
-    "method_name": method_name,
-    "name": base_name,
-    "input_files": [os.path.basename(input_path)],
-    "output_path_in_gen_dir": output_path_in_gen_dir
-}
+    template_context = {
+        "files": files,
+        "agents": build_observers(config, files),
+        "config": config,
+        "method_name": method_name,
+        "name": base_name,
+        "input_files": [os.path.basename(input_path)],
+        "output_path_in_gen_dir": output_path_in_gen_dir
+    }
 
-template_context["template_file"] = "/InstrumentingProbesImpl.cpp.tmpl"
-cpp_template = jinja_env.get_template(template_context["template_file"])
-cpp_file = open(output_dirpath + "/" + base_name + "Impl.cpp", "w")
-cpp_file.write(cpp_template.render(template_context))
-cpp_file.close()
+    template_context["template_file"] = "/InstrumentingProbesImpl.cpp.tmpl"
+    cpp_template = jinja_env.get_template(template_context["template_file"])
+    cpp_file = open(output_dirpath + "/" + base_name + "Impl.cpp", "w")
+    cpp_file.write(cpp_template.render(template_context))
+    cpp_file.close()
 
-template_context["template_file"] = "/ProbeSink.h.tmpl"
-sink_h_template = jinja_env.get_template(template_context["template_file"])
-sink_h_file = open(output_dirpath + "/" + to_singular(base_name) + "Sink.h", "w")
-sink_h_file.write(sink_h_template.render(template_context))
-sink_h_file.close()
+    template_context["template_file"] = "/ProbeSink.h.tmpl"
+    sink_h_template = jinja_env.get_template(template_context["template_file"])
+    sink_h_file = open(output_dirpath + "/" + to_singular(base_name) + "Sink.h", "w")
+    sink_h_file.write(sink_h_template.render(template_context))
+    sink_h_file.close()
 
-for f in files:
-    template_context["file"] = f
-    template_context["template_file"] = "/InstrumentingProbesInl.h.tmpl"
-    h_template = jinja_env.get_template(template_context["template_file"])
-    h_file = open(output_dirpath + "/" + f.header_name + ".h", "w")
-    h_file.write(h_template.render(template_context))
-    h_file.close()
+    for f in files:
+        template_context["file"] = f
+        template_context["template_file"] = "/InstrumentingProbesInl.h.tmpl"
+        h_template = jinja_env.get_template(template_context["template_file"])
+        h_file = open(output_dirpath + "/" + f.header_name + ".h", "w")
+        h_file.write(h_template.render(template_context))
+        h_file.close()
+
+if __name__ == "__main__":
+    main()
