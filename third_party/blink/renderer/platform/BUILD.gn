@@ -1040,6 +1040,7 @@ jumbo_component("platform") {
     "graphics/paint/geometry_mapper_clip_cache.h",
     "graphics/paint/geometry_mapper_transform_cache.cc",
     "graphics/paint/geometry_mapper_transform_cache.h",
+    "graphics/paint/hit_test_data.h",
     "graphics/paint/paint_artifact.cc",
     "graphics/paint/paint_artifact.h",
     "graphics/paint/paint_canvas.h",

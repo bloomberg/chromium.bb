@@ -1170,16 +1170,17 @@ TEST_P(PaintControllerTest, CachedSubsequenceContainingFragments) {
   GetPaintController().CommitNewDisplayItems();
 
   auto check_paint_results = [this, &root, &container]() {
-    EXPECT_THAT(
-        GetPaintController().PaintChunks(),
-        ElementsAre(PaintChunk(0, 1, PaintChunk::Id(root, kBackgroundType),
-                               DefaultPaintChunkProperties()),
-                    // One chunk for all of the fragments because they have the
-                    // same properties.
-                    PaintChunk(1, 4, PaintChunk::Id(container, kBackgroundType),
-                               DefaultPaintChunkProperties()),
-                    PaintChunk(4, 5, PaintChunk::Id(root, kForegroundType),
-                               DefaultPaintChunkProperties())));
+    const auto& chunks = GetPaintController().PaintChunks();
+    EXPECT_EQ(chunks.size(), 3u);
+    EXPECT_EQ(chunks[0], PaintChunk(0, 1, PaintChunk::Id(root, kBackgroundType),
+                                    DefaultPaintChunkProperties()));
+    // One chunk for all of the fragments because they have the
+    // same properties.
+    EXPECT_EQ(chunks[1],
+              PaintChunk(1, 4, PaintChunk::Id(container, kBackgroundType),
+                         DefaultPaintChunkProperties()));
+    EXPECT_EQ(chunks[2], PaintChunk(4, 5, PaintChunk::Id(root, kForegroundType),
+                                    DefaultPaintChunkProperties()));
   };
   // Check results of the first paint.
   check_paint_results();

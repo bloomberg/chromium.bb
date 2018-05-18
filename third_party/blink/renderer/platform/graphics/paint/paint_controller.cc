@@ -736,9 +736,9 @@ void PaintController::AppendDebugDrawingAfterCommit(
   if (property_tree_state) {
     DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
     // Create a PaintChunk for the debug drawing.
-    PaintChunk chunk(display_item_list.size() - 1, display_item_list.size(),
-                     display_item.GetId(), *property_tree_state);
-    current_paint_artifact_.PaintChunks().push_back(chunk);
+    current_paint_artifact_.PaintChunks().emplace_back(
+        display_item_list.size() - 1, display_item_list.size(),
+        display_item.GetId(), *property_tree_state);
   }
 }
 

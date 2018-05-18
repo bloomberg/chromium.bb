@@ -27,6 +27,13 @@ struct PLATFORM_EXPORT TouchActionRect {
       : rect(layout_rect), whitelisted_touch_action(action) {}
 
   static cc::TouchActionRegion BuildRegion(const Vector<TouchActionRect>&);
+
+  bool operator==(const TouchActionRect& rhs) const {
+    return rect == rhs.rect &&
+           whitelisted_touch_action == rhs.whitelisted_touch_action;
+  }
+
+  bool operator!=(const TouchActionRect& rhs) const { return !(*this == rhs); }
 };
 
 using LayerHitTestRects =

@@ -32,10 +32,9 @@ class CompositedLayerRasterInvalidatorTest
     // of paint chunk and raster invalidation properties.
     PaintChunk::Id id(fake_client, static_cast<DisplayItem::Type>(
                                        DisplayItem::kDrawingFirst + type));
-    PaintChunk chunk(0, 0, id, DefaultPropertyTreeState());
-    chunk.bounds =
+    data_.chunks.emplace_back(0, 0, id, DefaultPropertyTreeState());
+    data_.chunks.back().bounds =
         FloatRect(type * 110, type * 220, type * 220 + 200, type * 110 + 200);
-    data_.chunks.push_back(chunk);
     return *this;
   }
 

@@ -65,15 +65,16 @@ TEST_F(PaintChunkerTest, SingleNonEmptyRange) {
   chunker.UpdateCurrentPaintChunkProperties(id, DefaultPaintChunkProperties());
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
-  const auto& chunks = chunker.PaintChunks();
 
-  EXPECT_THAT(chunks,
-              ElementsAre(PaintChunk(0, 2, id, DefaultPaintChunkProperties())));
+  const auto& chunks = chunker.PaintChunks();
+  EXPECT_EQ(chunks.size(), 1u);
+  EXPECT_EQ(chunks[0], PaintChunk(0, 2, id, DefaultPaintChunkProperties()));
 
   auto chunks_data = chunker.ReleaseData();
   EXPECT_TRUE(chunker.PaintChunks().IsEmpty());
-  EXPECT_THAT(chunks_data.chunks,
-              ElementsAre(PaintChunk(0, 2, id, DefaultPaintChunkProperties())));
+  EXPECT_EQ(chunks_data.chunks.size(), 1u);
+  EXPECT_EQ(chunks_data.chunks[0],
+            PaintChunk(0, 2, id, DefaultPaintChunkProperties()));
 }
 
 TEST_F(PaintChunkerTest, SamePropertiesTwiceCombineIntoOneChunk) {
@@ -84,15 +85,16 @@ TEST_F(PaintChunkerTest, SamePropertiesTwiceCombineIntoOneChunk) {
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
   chunker.UpdateCurrentPaintChunkProperties(id, DefaultPaintChunkProperties());
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
-  const auto& chunks = chunker.PaintChunks();
 
-  EXPECT_THAT(chunks,
-              ElementsAre(PaintChunk(0, 3, id, DefaultPaintChunkProperties())));
+  const auto& chunks = chunker.PaintChunks();
+  EXPECT_EQ(chunks.size(), 1u);
+  EXPECT_EQ(chunks[0], PaintChunk(0, 3, id, DefaultPaintChunkProperties()));
 
   auto chunks_data = chunker.ReleaseData();
   EXPECT_TRUE(chunker.PaintChunks().IsEmpty());
-  EXPECT_THAT(chunks_data.chunks,
-              ElementsAre(PaintChunk(0, 3, id, DefaultPaintChunkProperties())));
+  EXPECT_EQ(chunks_data.chunks.size(), 1u);
+  EXPECT_EQ(chunks_data.chunks[0],
+            PaintChunk(0, 3, id, DefaultPaintChunkProperties()));
 }
 
 TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging) {
@@ -120,11 +122,10 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging) {
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
   const auto& chunks = chunker.PaintChunks();
-
-  EXPECT_THAT(chunks,
-              ElementsAre(PaintChunk(0, 2, id1, DefaultPaintChunkProperties()),
-                          PaintChunk(2, 3, id2, simple_transform),
-                          PaintChunk(3, 4, id3, another_transform)));
+  EXPECT_EQ(chunks.size(), 3u);
+  EXPECT_EQ(chunks[0], PaintChunk(0, 2, id1, DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[1], PaintChunk(2, 3, id2, simple_transform));
+  EXPECT_EQ(chunks[2], PaintChunk(3, 4, id3, another_transform));
 }
 
 TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
@@ -177,17 +178,15 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
   const auto& chunks = chunker.PaintChunks();
-
-  EXPECT_THAT(
-      chunks,
-      ElementsAre(
-          PaintChunk(0, 1, id1, DefaultPaintChunkProperties()),
-          PaintChunk(1, 3, id2, simple_transform),
-          PaintChunk(3, 5, id3, simple_transform_and_effect),
-          PaintChunk(5, 7, id4,
-                     simple_transform_and_effect_with_updated_transform),
-          PaintChunk(7, 9, item_after_restore.GetId(),
-                     simple_transform_and_effect)));
+  EXPECT_EQ(chunks.size(), 5u);
+  EXPECT_EQ(chunks[0], PaintChunk(0, 1, id1, DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[1], PaintChunk(1, 3, id2, simple_transform));
+  EXPECT_EQ(chunks[2], PaintChunk(3, 5, id3, simple_transform_and_effect));
+  EXPECT_EQ(chunks[3],
+            PaintChunk(5, 7, id4,
+                       simple_transform_and_effect_with_updated_transform));
+  EXPECT_EQ(chunks[4], PaintChunk(7, 9, item_after_restore.GetId(),
+                                  simple_transform_and_effect));
 }
 
 TEST_F(PaintChunkerTest, BuildChunksFromNestedTransforms) {
@@ -220,12 +219,11 @@ TEST_F(PaintChunkerTest, BuildChunksFromNestedTransforms) {
   chunker.IncrementDisplayItemIndex(item_after_restore);
 
   const auto& chunks = chunker.PaintChunks();
-
-  EXPECT_THAT(chunks,
-              ElementsAre(PaintChunk(0, 1, id1, DefaultPaintChunkProperties()),
-                          PaintChunk(1, 3, id2, simple_transform),
-                          PaintChunk(3, 4, item_after_restore.GetId(),
-                                     DefaultPaintChunkProperties())));
+  EXPECT_EQ(chunks.size(), 3u);
+  EXPECT_EQ(chunks[0], PaintChunk(0, 1, id1, DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[1], PaintChunk(1, 3, id2, simple_transform));
+  EXPECT_EQ(chunks[2], PaintChunk(3, 4, item_after_restore.GetId(),
+                                  DefaultPaintChunkProperties()));
 }
 
 TEST_F(PaintChunkerTest, ChangingPropertiesWithoutItems) {
@@ -251,10 +249,9 @@ TEST_F(PaintChunkerTest, ChangingPropertiesWithoutItems) {
 
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
   const auto& chunks = chunker.PaintChunks();
-
-  EXPECT_THAT(chunks,
-              ElementsAre(PaintChunk(0, 1, id1, DefaultPaintChunkProperties()),
-                          PaintChunk(1, 2, id3, second_transform)));
+  EXPECT_EQ(chunks.size(), 2u);
+  EXPECT_EQ(chunks[0], PaintChunk(0, 1, id1, DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[1], PaintChunk(1, 2, id3, second_transform));
 }
 
 TEST_F(PaintChunkerTest, CreatesSeparateChunksWhenRequested) {
@@ -279,14 +276,16 @@ TEST_F(PaintChunkerTest, CreatesSeparateChunksWhenRequested) {
   chunker.IncrementDisplayItemIndex(i3);
 
   const auto& chunks = chunker.PaintChunks();
-  EXPECT_THAT(
-      chunks,
-      ElementsAre(
-          PaintChunk(0, 1, id0, DefaultPaintChunkProperties()),
-          PaintChunk(1, 2, i1.GetId(), DefaultPaintChunkProperties()),
-          PaintChunk(2, 3, i2.GetId(), DefaultPaintChunkProperties()),
-          PaintChunk(3, 5, after_i2.GetId(), DefaultPaintChunkProperties()),
-          PaintChunk(5, 6, i3.GetId(), DefaultPaintChunkProperties())));
+  EXPECT_EQ(chunks.size(), 5u);
+  EXPECT_EQ(chunks[0], PaintChunk(0, 1, id0, DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[1],
+            PaintChunk(1, 2, i1.GetId(), DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[2],
+            PaintChunk(2, 3, i2.GetId(), DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[3],
+            PaintChunk(3, 5, after_i2.GetId(), DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[4],
+            PaintChunk(5, 6, i3.GetId(), DefaultPaintChunkProperties()));
 }
 
 TEST_F(PaintChunkerTest, ForceNewChunkWithNewId) {
@@ -309,11 +308,10 @@ TEST_F(PaintChunkerTest, ForceNewChunkWithNewId) {
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
   const auto& chunks = chunker.PaintChunks();
-  EXPECT_THAT(
-      chunks,
-      ElementsAre(PaintChunk(0, 2, id0, DefaultPaintChunkProperties()),
-                  PaintChunk(2, 4, id1, DefaultPaintChunkProperties()),
-                  PaintChunk(4, 6, id2, DefaultPaintChunkProperties())));
+  EXPECT_EQ(chunks.size(), 3u);
+  EXPECT_EQ(chunks[0], PaintChunk(0, 2, id0, DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[1], PaintChunk(2, 4, id1, DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[2], PaintChunk(4, 6, id2, DefaultPaintChunkProperties()));
 }
 
 TEST_F(PaintChunkerTest, ForceNewChunkWithoutNewId) {
@@ -340,11 +338,10 @@ TEST_F(PaintChunkerTest, ForceNewChunkWithoutNewId) {
       TestChunkerDisplayItem(client_, DisplayItemType(21)));
 
   const auto& chunks = chunker.PaintChunks();
-  EXPECT_THAT(
-      chunks,
-      ElementsAre(PaintChunk(0, 2, id0, DefaultPaintChunkProperties()),
-                  PaintChunk(2, 4, id1, DefaultPaintChunkProperties()),
-                  PaintChunk(4, 6, id2, DefaultPaintChunkProperties())));
+  EXPECT_EQ(chunks.size(), 3u);
+  EXPECT_EQ(chunks[0], PaintChunk(0, 2, id0, DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[1], PaintChunk(2, 4, id1, DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[2], PaintChunk(4, 6, id2, DefaultPaintChunkProperties()));
 }
 
 TEST_F(PaintChunkerTest, NoNewChunkForSamePropertyDifferentIds) {
@@ -364,9 +361,9 @@ TEST_F(PaintChunkerTest, NoNewChunkForSamePropertyDifferentIds) {
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
-  EXPECT_THAT(
-      chunker.PaintChunks(),
-      ElementsAre(PaintChunk(0, 6, id0, DefaultPaintChunkProperties())));
+  const auto& chunks = chunker.PaintChunks();
+  EXPECT_EQ(chunks.size(), 1u);
+  EXPECT_EQ(chunks[0], PaintChunk(0, 6, id0, DefaultPaintChunkProperties()));
 }
 
 class TestScrollHitTestRequiringSeparateChunk : public TestChunkerDisplayItem {
@@ -398,12 +395,12 @@ TEST_F(PaintChunkerTest, ChunksFollowingForcedChunk) {
   chunker.IncrementDisplayItemIndex(after_forced2);
 
   const auto& chunks = chunker.PaintChunks();
-  EXPECT_THAT(chunks,
-              ElementsAre(PaintChunk(0, 2, id0, DefaultPaintChunkProperties()),
-                          PaintChunk(2, 3, forced.GetId(),
-                                     DefaultPaintChunkProperties()),
-                          PaintChunk(3, 5, after_forced1.GetId(),
-                                     DefaultPaintChunkProperties())));
+  EXPECT_EQ(chunks.size(), 3u);
+  EXPECT_EQ(chunks[0], PaintChunk(0, 2, id0, DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[1],
+            PaintChunk(2, 3, forced.GetId(), DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[2], PaintChunk(3, 5, after_forced1.GetId(),
+                                  DefaultPaintChunkProperties()));
 }
 
 TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
@@ -440,16 +437,16 @@ TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
   chunker.IncrementDisplayItemIndex(after_restore);
 
   const auto& chunks = chunker.PaintChunks();
-  EXPECT_THAT(
-      chunks,
-      ElementsAre(
-          PaintChunk(0, 2, id1, DefaultPaintChunkProperties()),
-          PaintChunk(2, 4, id2, simple_transform, PaintChunk::kUncacheable),
-          PaintChunk(4, 5, uncacheable_separate_chunk_item.GetId(),
-                     simple_transform, PaintChunk::kUncacheable),
-          PaintChunk(5, 6, after_separate_chunk.GetId(), simple_transform),
-          PaintChunk(6, 7, after_restore.GetId(),
-                     DefaultPaintChunkProperties())));
+  EXPECT_EQ(chunks.size(), 5u);
+  EXPECT_EQ(chunks[0], PaintChunk(0, 2, id1, DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks[1],
+            PaintChunk(2, 4, id2, simple_transform, PaintChunk::kUncacheable));
+  EXPECT_EQ(chunks[2], PaintChunk(4, 5, uncacheable_separate_chunk_item.GetId(),
+                                  simple_transform, PaintChunk::kUncacheable));
+  EXPECT_EQ(chunks[3],
+            PaintChunk(5, 6, after_separate_chunk.GetId(), simple_transform));
+  EXPECT_EQ(chunks[4], PaintChunk(6, 7, after_restore.GetId(),
+                                  DefaultPaintChunkProperties()));
 }
 
 }  // namespace

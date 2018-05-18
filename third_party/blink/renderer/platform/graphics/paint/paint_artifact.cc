@@ -80,9 +80,12 @@ size_t PaintArtifact::ApproximateUnsharedMemoryUsage() const {
   // when we have cleared raster invalidation information.
   DCHECK(chunks_and_invalidations_.raster_invalidation_rects.IsEmpty());
   DCHECK(chunks_and_invalidations_.raster_invalidation_trackings.IsEmpty());
-  return sizeof(*this) + display_item_list_.MemoryUsageInBytes() +
-         chunks_and_invalidations_.chunks.capacity() *
-             sizeof(chunks_and_invalidations_.chunks[0]);
+  size_t total_size = sizeof(*this) + display_item_list_.MemoryUsageInBytes() +
+                      chunks_and_invalidations_.chunks.capacity() *
+                          sizeof(chunks_and_invalidations_.chunks[0]);
+  for (const auto& chunk : chunks_and_invalidations_.chunks)
+    total_size += chunk.MemoryUsageInBytes();
+  return total_size;
 }
 
 void PaintArtifact::Replay(GraphicsContext& graphics_context,

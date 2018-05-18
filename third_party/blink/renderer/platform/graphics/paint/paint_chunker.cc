@@ -83,11 +83,10 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
 
   auto cacheable =
       item.SkippedCache() ? PaintChunk::kUncacheable : PaintChunk::kCacheable;
-  PaintChunk new_chunk(new_chunk_begin_index, new_chunk_begin_index + 1,
-                       next_chunk_id_ ? *next_chunk_id_ : item.GetId(),
-                       current_properties_, cacheable);
+  data_.chunks.emplace_back(new_chunk_begin_index, new_chunk_begin_index + 1,
+                            next_chunk_id_ ? *next_chunk_id_ : item.GetId(),
+                            current_properties_, cacheable);
   next_chunk_id_ = base::nullopt;
-  data_.chunks.push_back(new_chunk);
 
   // When forcing a new chunk, we still need to force new chunk for the next
   // display item. Otherwise reset force_new_chunk_ to false.
