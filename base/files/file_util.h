@@ -193,7 +193,10 @@ BASE_EXPORT int CreateAndOpenFdForTemporaryFileInDir(const FilePath& dir,
 
 #endif  // OS_POSIX || OS_FUCHSIA
 
-#if defined(OS_POSIX)
+// The following functions use POSIX functionality that isn't supported by
+// Fuchsia.
+// TODO(crbug/836416): Remove OS_FUCHSIA here.
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
 
 // Creates a symbolic link at |symlink| pointing to |target|.  Returns
 // false on failure.
@@ -235,7 +238,7 @@ BASE_EXPORT bool SetPosixFilePermissions(const FilePath& path, int mode);
 BASE_EXPORT bool ExecutableExistsInPath(Environment* env,
                                         const FilePath::StringType& executable);
 
-#endif  // OS_POSIX
+#endif  // OS_POSIX && !OS_FUCHSIA
 
 // Returns true if the given directory is empty
 BASE_EXPORT bool IsDirectoryEmpty(const FilePath& dir_path);

@@ -117,7 +117,7 @@ TEST(StringPrintfTest, Grow) {
   char* ref = new char[kRefSize];
 #if defined(OS_WIN)
   sprintf_s(ref, kRefSize, fmt, src, src, src, src, src, src, src);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif defined(OS_POSIX)
   snprintf(ref, kRefSize, fmt, src, src, src, src, src, src, src);
 #endif
 

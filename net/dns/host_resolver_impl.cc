@@ -2000,8 +2000,9 @@ HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
   NetworkChangeNotifier::AddIPAddressObserver(this);
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
   NetworkChangeNotifier::AddDNSObserver(this);
+// TODO(crbug/836416): Remove OS_FUCHSIA here.
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD) && \
-    !defined(OS_ANDROID)
+    !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   EnsureDnsReloaderInit();
 #endif
 
