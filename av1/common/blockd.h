@@ -847,7 +847,12 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
     } else {
       // In intra mode, uv planes don't share the same prediction mode as y
       // plane, so the tx_type should not be shared
-      tx_type = intra_mode_to_tx_type(mbmi, PLANE_TYPE_UV);
+      const int txk_type_idx =
+          av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
+      tx_type = mbmi->txk_type[txk_type_idx];
+      if (!(tx_type == IDTX && mbmi->mode == DC_PRED &&
+            mbmi->uv_mode == UV_DC_PRED))
+        tx_type = intra_mode_to_tx_type(mbmi, PLANE_TYPE_UV);
     }
   }
   assert(tx_type < TX_TYPES);
