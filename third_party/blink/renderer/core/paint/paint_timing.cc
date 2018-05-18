@@ -120,8 +120,6 @@ void PaintTiming::SetFirstMeaningfulPaint(
   if (had_input == FirstMeaningfulPaintDetector::kNoUserInput) {
     first_meaningful_paint_ = stamp;
     first_meaningful_paint_swap_ = swap_stamp;
-    ReportSwapTimeDeltaHistogram(first_meaningful_paint_,
-                                 first_meaningful_paint_swap_);
     NotifyPaintTimingChanged();
   }
 
@@ -245,7 +243,6 @@ void PaintTiming::SetFirstPaintSwap(TimeTicks stamp) {
   WindowPerformance* performance = GetPerformanceInstance(GetFrame());
   if (performance)
     performance->AddFirstPaintTiming(first_paint_swap_);
-  ReportSwapTimeDeltaHistogram(first_paint_, first_paint_swap_);
   NotifyPaintTimingChanged();
 }
 
@@ -259,8 +256,6 @@ void PaintTiming::SetFirstContentfulPaintSwap(TimeTicks stamp) {
     performance->AddFirstContentfulPaintTiming(first_contentful_paint_swap_);
   if (GetFrame())
     GetFrame()->Loader().Progress().DidFirstContentfulPaint();
-  ReportSwapTimeDeltaHistogram(first_contentful_paint_,
-                               first_contentful_paint_swap_);
   NotifyPaintTimingChanged();
   fmp_detector_->NotifyFirstContentfulPaint(first_contentful_paint_swap_);
 }
@@ -270,7 +265,6 @@ void PaintTiming::SetFirstTextPaintSwap(TimeTicks stamp) {
   first_text_paint_swap_ = stamp;
   probe::paintTiming(GetSupplementable(), "firstTextPaint",
                      TimeTicksInSeconds(first_text_paint_swap_));
-  ReportSwapTimeDeltaHistogram(first_text_paint_, first_text_paint_swap_);
   NotifyPaintTimingChanged();
 }
 
@@ -279,7 +273,6 @@ void PaintTiming::SetFirstImagePaintSwap(TimeTicks stamp) {
   first_image_paint_swap_ = stamp;
   probe::paintTiming(GetSupplementable(), "firstImagePaint",
                      TimeTicksInSeconds(first_image_paint_swap_));
-  ReportSwapTimeDeltaHistogram(first_image_paint_, first_image_paint_swap_);
   NotifyPaintTimingChanged();
 }
 
@@ -289,17 +282,6 @@ void PaintTiming::ReportSwapResultHistogram(
                       ("PageLoad.Internal.Renderer.PaintTiming.SwapResult",
                        WebLayerTreeView::SwapResult::kSwapResultMax));
   did_swap_histogram.Count(result);
-}
-
-void PaintTiming::ReportSwapTimeDeltaHistogram(TimeTicks timestamp,
-                                               TimeTicks swap_timestamp) {
-  DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, swap_time_diff_histogram,
-      ("PageLoad.Internal.Renderer.PaintTiming.SwapTimeDelta", 0, 10000, 50));
-  DCHECK(!timestamp.is_null());
-  DCHECK(!swap_timestamp.is_null());
-  DCHECK(swap_timestamp >= timestamp);
-  swap_time_diff_histogram.Count((swap_timestamp - timestamp).InMilliseconds());
 }
 
 }  // namespace blink

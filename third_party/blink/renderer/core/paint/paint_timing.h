@@ -139,8 +139,6 @@ class CORE_EXPORT PaintTiming final
   void RegisterNotifySwapTime(PaintEvent);
   void ReportUserInputHistogram(
       FirstMeaningfulPaintDetector::HadUserInput had_input);
-  void ReportSwapTimeDeltaHistogram(TimeTicks timestamp,
-                                    TimeTicks swap_timestamp);
 
   TimeTicks FirstPaintRendered() const { return first_paint_; }
 
