@@ -192,6 +192,44 @@ class CreatedObserver : public content::DownloadManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(CreatedObserver);
 };
 
+class OnCanDownloadDecidedObserver {
+ public:
+  OnCanDownloadDecidedObserver()
+      : on_decided_called_(false), last_allow_(false) {}
+
+  void Wait(bool expectation) {
+    if (on_decided_called_) {
+      EXPECT_EQ(last_allow_, expectation);
+      on_decided_called_ = false;
+    } else {
+      expectation_ = expectation;
+      base::RunLoop run_loop;
+      completion_closure_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+  }
+
+  void OnCanDownloadDecided(bool allow) {
+    // It is possible this is called before Wait(), so the result needs to
+    // be stored in that case.
+    if (!completion_closure_.is_null()) {
+      base::ResetAndReturn(&completion_closure_).Run();
+      EXPECT_EQ(allow, expectation_);
+    } else {
+      on_decided_called_ = true;
+      last_allow_ = allow;
+    }
+  }
+
+ private:
+  bool expectation_;
+  base::Closure completion_closure_;
+  bool on_decided_called_;
+  bool last_allow_;
+
+  DISALLOW_COPY_AND_ASSIGN(OnCanDownloadDecidedObserver);
+};
+
 class PercentWaiter : public download::DownloadItem::Observer {
  public:
   explicit PercentWaiter(DownloadItem* item) : item_(item) {
@@ -1426,6 +1464,65 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   // should have deleted it before it created a download item, so it
   // shouldn't be available as a cancelled download either.
   EXPECT_TRUE(VerifyNoDownloads());
+}
+
+// Test to make sure 'download' attribute in anchor tag doesn't trigger a
+// downloadd if DownloadRequestLimiter disallows it.
+IN_PROC_BROWSER_TEST_F(DownloadTest,
+                       DownloadRequestLimiterDisallowsAnchorDownloadTag) {
+  OnCanDownloadDecidedObserver can_download_observer;
+  g_browser_process->download_request_limiter()
+      ->SetOnCanDownloadDecidedCallbackForTesting(base::BindRepeating(
+          &OnCanDownloadDecidedObserver::OnCanDownloadDecided,
+          base::Unretained(&can_download_observer)));
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/download-anchor-script.html"));
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  // Make sure the initial navigation didn't trigger a download.
+  EXPECT_TRUE(VerifyNoDownloads());
+
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  DownloadRequestLimiter::TabDownloadState* tab_download_state =
+      g_browser_process->download_request_limiter()->GetDownloadState(
+          web_contents, web_contents, true);
+  ASSERT_TRUE(tab_download_state);
+  // Let the first download to fail.
+  tab_download_state->set_download_seen();
+  tab_download_state->SetDownloadStatusAndNotify(
+      DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
+  bool download_attempted;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send(startDownload1());",
+      &download_attempted));
+  ASSERT_TRUE(download_attempted);
+  can_download_observer.Wait(false);
+
+  // Let the 2nd download to succeed.
+  std::unique_ptr<content::DownloadTestObserver> observer(
+      CreateWaiter(browser(), 1));
+  tab_download_state->SetDownloadStatusAndNotify(
+      DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS);
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send(startDownload2());",
+      &download_attempted));
+  ASSERT_TRUE(download_attempted);
+  can_download_observer.Wait(true);
+  // Waits for the 2nd download to complete.
+  observer->WaitForFinished();
+
+  // Check that only the 2nd file is downloaded.
+  base::FilePath file1(FILE_PATH_LITERAL("red_dot1.png"));
+  base::FilePath file_path1(DestinationFile(browser(), file1));
+  base::FilePath file2(FILE_PATH_LITERAL("red_dot2.png"));
+  base::FilePath file_path2(DestinationFile(browser(), file2));
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  EXPECT_FALSE(base::PathExists(file_path1));
+  EXPECT_TRUE(base::PathExists(file_path2));
 }
 
 // Download a 0-size file with a content-disposition header, verify that the
