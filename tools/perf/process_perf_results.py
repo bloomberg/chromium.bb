@@ -91,23 +91,21 @@ def _is_histogram(json_file):
   return False
 
 
-def _merge_json_output(output_json, jsons_to_merge, perf_results_link,
-    perf_results_file_name):
+def _merge_json_output(output_json, jsons_to_merge, extra_links):
   """Merges the contents of one or more results JSONs.
 
   Args:
     output_json: A path to a JSON file to which the merged results should be
       written.
     jsons_to_merge: A list of JSON files that should be merged.
-    perf_results_link: A link for the logdog mapping of benchmarks to logs.
+    extra_links: a (key, value) map in which keys are the human-readable strings
+      which describe the data, and value is logdog url that contain the data.
   """
   merged_results = results_merger.merge_test_results(jsons_to_merge)
 
-  # Only append the perf results link if present
-  if perf_results_link:
-    merged_results['links'] = {
-      perf_results_file_name: perf_results_link
-    }
+  # Only append the perf results links if present
+  if extra_links:
+    merged_results['links'] = extra_links
 
   with open(output_json, 'w') as f:
     json.dump(merged_results, f)
@@ -149,17 +147,19 @@ def _handle_perf_json_test_results(
 
   return benchmark_enabled_map
 
+
 def _get_benchmark_name(directory):
   return basename(directory).replace(" benchmark", "")
+
 
 def _process_perf_results(output_json, configuration_name,
                           service_account_file,
                           build_properties, task_output_dir,
                           smoke_test_mode):
-  """Process one or more perf JSON results.
+  """Process perf results.
 
-  Consists of merging the json-test-format output and uploading the perf test
-  output (chartjson and histogram).
+  Consists of merging the json-test-format output, uploading the perf test
+  output (chartjson and histogram), and store the benchmark logs in logdog.
 
   Each directory in the task_output_dir represents one benchmark
   that was run. Within this directory, there is a subdirectory with the name
@@ -168,6 +168,7 @@ def _process_perf_results(output_json, configuration_name,
   or dashboard json format and an output.json file containing the json test
   results for the benchmark.
   """
+  return_code = 0
   directory_list = [
       f for f in listdir(task_output_dir)
       if not isfile(join(task_output_dir, f))
@@ -180,55 +181,74 @@ def _process_perf_results(output_json, configuration_name,
     ]
 
   test_results_list = []
-  tmpfile_dir = tempfile.mkdtemp('resultscache')
-  upload_failure = False
 
   build_properties = json.loads(build_properties)
   if not configuration_name:
     # we are deprecating perf-id crbug.com/817823
     configuration_name = build_properties['buildername']
 
-  try:
-    # First obtain the list of json test results to merge
-    # and determine the status of each benchmark
-    benchmark_enabled_map = _handle_perf_json_test_results(
-        benchmark_directory_list, test_results_list)
+  extra_links = {}
 
+  # First obtain the list of json test results to merge
+  # and determine the status of each benchmark
+  benchmark_enabled_map = _handle_perf_json_test_results(
+      benchmark_directory_list, test_results_list)
+  if not smoke_test_mode:
+    return_code = return_code or _handle_perf_results(
+        benchmark_enabled_map, benchmark_directory_list,
+        configuration_name, build_properties, service_account_file, extra_links)
+
+  # Finally, merge all test results json, add the extra links and write out to
+  # output location
+  _merge_json_output(output_json, test_results_list, extra_links)
+  return return_code
+
+
+def _handle_perf_results(
+    benchmark_enabled_map, benchmark_directory_list, configuration_name,
+    build_properties, service_account_file, extra_links):
+  """
+    Upload perf results to the perf dashboard.
+
+    This method also upload the perf results to logdog and augment it to
+    |extra_links|.
+
+    Returns:
+      0 if this upload to perf dashboard succesfully, 1 otherwise.
+  """
+  tmpfile_dir = tempfile.mkdtemp('resultscache')
+  try:
     # Upload all eligible benchmarks to the perf dashboard
     logdog_dict = {}
     logdog_stream = None
     logdog_label = 'Results Dashboard'
-    if not smoke_test_mode:
-      with oauth_api.with_access_token(service_account_file) as oauth_file:
-        for directory in benchmark_directory_list:
-          benchmark_name = _get_benchmark_name(directory)
-          if not benchmark_enabled_map[benchmark_name]:
-            continue
-          print 'Uploading perf results from %s benchmark' % benchmark_name
-          upload_fail = _upload_and_write_perf_data_to_logfile(
-              benchmark_name, directory, configuration_name, build_properties,
-              oauth_file, tmpfile_dir, logdog_dict,
-              ('.reference' in benchmark_name))
-          upload_failure = upload_failure or upload_fail
+    with oauth_api.with_access_token(service_account_file) as oauth_file:
+      for directory in benchmark_directory_list:
+        benchmark_name = _get_benchmark_name(directory)
+        if not benchmark_enabled_map[benchmark_name]:
+          continue
+        print 'Uploading perf results from %s benchmark' % benchmark_name
+        upload_fail = _upload_and_write_perf_data_to_logfile(
+            benchmark_name, directory, configuration_name, build_properties,
+            oauth_file, tmpfile_dir, logdog_dict,
+            ('.reference' in benchmark_name))
 
-      logdog_file_name = 'Results_Dashboard_' + str(uuid.uuid4())
-      logdog_stream = logdog_helper.text(logdog_file_name,
-          json.dumps(logdog_dict, sort_keys=True,
-              indent=4, separators=(',', ':')))
-      if upload_failure:
-        logdog_label += ' Upload Failure'
-
-    # Finally, merge all test results json and write out to output location
-    _merge_json_output(output_json, test_results_list,
-                       logdog_stream, logdog_label)
+    logdog_file_name = 'Results_Dashboard_' + str(uuid.uuid4())
+    logdog_stream = logdog_helper.text(logdog_file_name,
+        json.dumps(logdog_dict, sort_keys=True,
+            indent=4, separators=(',', ':')))
+    extra_links[logdog_label] = logdog_stream
+    if upload_fail:
+      return 1
+    return 0
   finally:
     shutil.rmtree(tmpfile_dir)
-  return upload_failure
 
 
 def _upload_and_write_perf_data_to_logfile(benchmark_name, directory,
     configuration_name, build_properties, oauth_file,
     tmpfile_dir, logdog_dict, is_ref):
+  upload_failure = False
   # logdog file to write perf results to
   output_json_file = logdog_helper.open_text(benchmark_name)
 
