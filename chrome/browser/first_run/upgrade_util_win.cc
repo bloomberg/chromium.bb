@@ -96,6 +96,8 @@ bool RelaunchChromeBrowser(const base::CommandLine& command_line) {
   // the version directory being kept open in the relaunched child process.
   base::LaunchOptions launch_options;
   launch_options.current_directory = chrome_exe.DirName();
+  // Give the new process the right to bring its windows to the foreground.
+  launch_options.grant_foreground_privilege = true;
   return base::LaunchProcess(chrome_exe_command_line, launch_options).IsValid();
 }
 
