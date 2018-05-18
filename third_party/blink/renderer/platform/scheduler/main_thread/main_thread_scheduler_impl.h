@@ -325,12 +325,12 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   base::WeakPtr<MainThreadSchedulerImpl> GetWeakPtr();
 
- protected:
   // WebMainThreadScheduler implementation.
   // Use *TaskQueue internally.
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner() override;
 
+ protected:
   // This is implemented in WebMainThreadScheduler implementation above.
   // scoped_refptr<SingleThreadTaskRunner> CompositorTaskRunner() override;
 
