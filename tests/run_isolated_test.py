@@ -27,7 +27,6 @@ import cipd
 import isolated_format
 import isolateserver
 import local_caching
-import named_cache
 import run_isolated
 from depot_tools import auto_stub
 from depot_tools import fix_encoding
@@ -760,9 +759,9 @@ class RunIsolatedTest(RunIsolatedTestBase):
         options, trim=False, time_fn=lambda: fake_time)
     self.assertIsInstance(
         isolate_cache, local_caching.DiskContentAddressedCache)
-    named_cache_manager = named_cache.process_named_cache_options(
+    named_cache_manager = run_isolated.process_named_cache_options(
         parser, options)
-    self.assertIsInstance(named_cache_manager, named_cache.CacheManager)
+    self.assertIsInstance(named_cache_manager, local_caching.CacheManager)
 
     # Add items to these caches.
     small = '0123456789'
@@ -813,7 +812,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
       return old_rmtree(p)
     old_rmtree = self.mock(file_path, 'rmtree', rmtree)
     isolate_cache = isolateserver.process_cache_options(options, trim=False)
-    named_cache_manager = named_cache.process_named_cache_options(
+    named_cache_manager = run_isolated.process_named_cache_options(
         parser, options)
     # This function uses real time, hence the time.time() calls above.
     actual = run_isolated.clean_caches(isolate_cache, named_cache_manager)

@@ -20,11 +20,34 @@ from depot_tools import auto_stub
 from depot_tools import fix_encoding
 
 from utils import file_path
+from utils import fs
 
 import local_caching
 
 
-class DiskContentAddressedCacheTest(auto_stub.TestCase):
+def write_file(path, contents):
+  with open(path, 'wb') as f:
+    f.write(contents)
+
+
+def read_file(path):
+  with open(path, 'rb') as f:
+    return f.read()
+
+
+class TestCase(auto_stub.TestCase):
+  def setUp(self):
+    super(TestCase, self).setUp()
+    self.tempdir = tempfile.mkdtemp(prefix=u'local_caching')
+
+  def tearDown(self):
+    try:
+      file_path.rmtree(self.tempdir)
+    finally:
+      super(TestCase, self).tearDown()
+
+
+class DiskContentAddressedCacheTest(TestCase):
   def setUp(self):
     super(DiskContentAddressedCacheTest, self).setUp()
     # If this fails on Windows, please rerun this tests as an elevated user with
@@ -40,18 +63,11 @@ class DiskContentAddressedCacheTest(auto_stub.TestCase):
         min_free_space=1000,
         max_items=2,
         max_age_secs=0)
-    self.tempdir = tempfile.mkdtemp(prefix=u'isolateserver')
 
     def get_free_space(p):
       self.assertEqual(p, os.path.join(self.tempdir, 'cache'))
       return self._free_disk
     self.mock(file_path, 'get_free_space', get_free_space)
-
-  def tearDown(self):
-    try:
-      file_path.rmtree(self.tempdir)
-    finally:
-      super(DiskContentAddressedCacheTest, self).tearDown()
 
   def get_cache(self, **kwargs):
     root_dir = os.path.join(self.tempdir, 'cache')
@@ -230,6 +246,135 @@ class DiskContentAddressedCacheTest(auto_stub.TestCase):
       # Evicting it still works, kills the 'ghost' entry.
       cache.evict(h_a)
       self.assertEqual(set(), cache.cached_set())
+
+
+class CacheManagerTest(TestCase):
+  def setUp(self):
+    super(CacheManagerTest, self).setUp()
+    self.policies = local_caching.CachePolicies(
+        max_cache_size=1024*1024*1024,
+        min_free_space=1024,
+        max_items=50,
+        max_age_secs=21*24*60*60)
+    root_dir = os.path.join(self.tempdir, 'cache')
+    os.mkdir(root_dir)
+    self.manager = local_caching.CacheManager(root_dir, self.policies)
+
+  def make_caches(self, names):
+    dest_dir = os.path.join(self.tempdir, 'dest')
+    try:
+      names = map(unicode, names)
+      for n in names:
+        self.manager.install(os.path.join(dest_dir, n), n)
+      self.assertEqual(set(names), set(os.listdir(dest_dir)))
+      for n in names:
+        self.manager.uninstall(os.path.join(dest_dir, n), n)
+      self.assertEqual([], os.listdir(dest_dir))
+      self.assertTrue(self.manager.available.issuperset(names))
+    finally:
+      file_path.rmtree(dest_dir)
+
+  def test_get_oldest(self):
+    with self.manager.open():
+      self.assertIsNone(self.manager.get_oldest())
+      self.make_caches(range(10))
+      self.assertEqual(self.manager.get_oldest(), u'0')
+
+  def test_get_timestamp(self):
+    now = 0
+    time_fn = lambda: now
+    with self.manager.open(time_fn=time_fn):
+      for i in xrange(10):
+        self.make_caches([i])
+        now += 1
+      for i in xrange(10):
+        self.assertEqual(i, self.manager.get_timestamp(str(i)))
+
+  def test_clean_cache(self):
+    dest_dir = os.path.join(self.tempdir, 'dest')
+    with self.manager.open():
+      self.assertEqual([], os.listdir(self.manager.root_dir))
+
+      a_path = os.path.join(dest_dir, u'a')
+      b_path = os.path.join(dest_dir, u'b')
+
+      self.manager.install(a_path, u'1')
+      self.manager.install(b_path, u'2')
+
+      self.assertEqual({u'a', u'b'}, set(os.listdir(dest_dir)))
+      self.assertFalse(self.manager.available)
+      self.assertEqual([], os.listdir(self.manager.root_dir))
+
+      write_file(os.path.join(a_path, u'x'), u'x')
+      write_file(os.path.join(b_path, u'y'), u'y')
+
+      self.manager.uninstall(a_path, u'1')
+      self.manager.uninstall(b_path, u'2')
+
+      self.assertEqual(3, len(os.listdir(self.manager.root_dir)))
+      path1 = os.path.join(self.manager.root_dir, self.manager._lru['1'])
+      path2 = os.path.join(self.manager.root_dir, self.manager._lru['2'])
+
+      self.assertEqual('x', read_file(os.path.join(path1, u'x')))
+      self.assertEqual('y', read_file(os.path.join(path2, u'y')))
+      self.assertEqual(os.readlink(self.manager._get_named_path('1')), path1)
+      self.assertEqual(os.readlink(self.manager._get_named_path('2')), path2)
+
+  def test_existing_cache(self):
+    dest_dir = os.path.join(self.tempdir, 'dest')
+    with self.manager.open():
+      # Assume test_clean passes.
+      a_path = os.path.join(dest_dir, u'a')
+      b_path = os.path.join(dest_dir, u'b')
+
+      self.manager.install(a_path, u'1')
+      write_file(os.path.join(dest_dir, u'a', u'x'), u'x')
+      self.manager.uninstall(a_path, u'1')
+
+      # Test starts here.
+      self.manager.install(a_path, u'1')
+      self.manager.install(b_path, u'2')
+      self.assertEqual({'a', 'b'}, set(os.listdir(dest_dir)))
+      self.assertFalse(self.manager.available)
+      self.assertEqual(['named'], os.listdir(self.manager.root_dir))
+
+      self.assertEqual(
+          'x', read_file(os.path.join(os.path.join(dest_dir, u'a', u'x'))))
+      write_file(os.path.join(a_path, 'x'), 'x2')
+      write_file(os.path.join(b_path, 'y'), 'y')
+
+      self.manager.uninstall(a_path, '1')
+      self.manager.uninstall(b_path, '2')
+
+      self.assertEqual(3, len(os.listdir(self.manager.root_dir)))
+      path1 = os.path.join(self.manager.root_dir, self.manager._lru['1'])
+      path2 = os.path.join(self.manager.root_dir, self.manager._lru['2'])
+
+      self.assertEqual('x2', read_file(os.path.join(path1, 'x')))
+      self.assertEqual('y', read_file(os.path.join(path2, 'y')))
+      self.assertEqual(os.readlink(self.manager._get_named_path('1')), path1)
+      self.assertEqual(os.readlink(self.manager._get_named_path('2')), path2)
+
+  def test_trim(self):
+    with self.manager.open():
+      item_count = self.policies.max_items + 10
+      self.make_caches(range(item_count))
+      self.assertEqual(len(self.manager), item_count)
+      self.manager.trim()
+      self.assertEqual(len(self.manager), self.policies.max_items)
+      self.assertEqual(
+          set(map(str, xrange(10, 10 + self.policies.max_items))),
+          set(os.listdir(os.path.join(self.manager.root_dir, 'named'))))
+
+  def test_corrupted(self):
+    with open(os.path.join(self.manager.root_dir, u'state.json'), 'w') as f:
+      f.write('}}}}')
+    fs.makedirs(os.path.join(self.manager.root_dir, 'a'), 0777)
+    with self.manager.open():
+      self.assertFalse(os.path.isdir(self.manager.root_dir))
+      self.make_caches(['a'])
+    self.assertTrue(
+        fs.islink(os.path.join(self.manager.root_dir, 'named', 'a')))
 
 
 if __name__ == '__main__':

@@ -38,6 +38,7 @@ import json
 import logging
 import optparse
 import os
+import re
 import sys
 import tempfile
 import time
@@ -58,7 +59,7 @@ from libs import luci_context
 import auth
 import cipd
 import isolateserver
-import named_cache
+import local_caching
 
 
 # Absolute path to this file (can be None if running from zip on Mac).
@@ -106,6 +107,10 @@ RUN_TEST_CASES_LOG = 'run_test_cases.log'
 ISOLATED_RUN_DIR = u'ir'
 ISOLATED_OUT_DIR = u'io'
 ISOLATED_TMP_DIR = u'it'
+
+
+# Keep synced with task_request.py
+CACHE_NAME_RE = re.compile(ur'^[a-z0-9_]{1,4096}$')
 
 
 OUTLIVING_ZOMBIE_MSG = """\
@@ -216,7 +221,6 @@ def get_as_zip_package(executable=True):
   package.add_python_file(os.path.join(BASE_DIR, 'auth.py'))
   package.add_python_file(os.path.join(BASE_DIR, 'cipd.py'))
   package.add_python_file(os.path.join(BASE_DIR, 'local_caching.py'))
-  package.add_python_file(os.path.join(BASE_DIR, 'named_cache.py'))
   package.add_directory(os.path.join(BASE_DIR, 'libs'))
   package.add_directory(os.path.join(BASE_DIR, 'third_party'))
   package.add_directory(os.path.join(BASE_DIR, 'utils'))
@@ -1121,7 +1125,23 @@ def create_option_parser():
   isolateserver.add_cache_options(parser)
 
   cipd.add_cipd_options(parser)
-  named_cache.add_named_cache_options(parser)
+
+  group = optparse.OptionGroup(parser, 'Named caches')
+  group.add_option(
+      '--named-cache',
+      dest='named_caches',
+      action='append',
+      nargs=2,
+      default=[],
+      help='A named cache to request. Accepts two arguments, name and path. '
+           'name identifies the cache, must match regex [a-z0-9_]{1,4096}. '
+           'path is a path relative to the run dir where the cache directory '
+           'must be put to. '
+           'This option can be specified more than once.')
+  group.add_option(
+      '--named-cache-root', default='named_caches',
+      help='Cache root directory. Default=%default')
+  parser.add_option_group(group)
 
   debug_group = optparse.OptionGroup(parser, 'Debugging')
   debug_group.add_option(
@@ -1135,11 +1155,36 @@ def create_option_parser():
 
   auth.add_auth_options(parser)
 
-  parser.set_defaults(
-      cache='cache',
-      cipd_cache='cipd_cache',
-      named_cache_root='named_caches')
+  parser.set_defaults(cache='cache', cipd_cache='cipd_cache')
   return parser
+
+
+def process_named_cache_options(parser, options):
+  """Validates named cache options and returns a CacheManager."""
+  if options.named_caches and not options.named_cache_root:
+    parser.error('--named-cache is specified, but --named-cache-root is empty')
+  for name, path in options.named_caches:
+    if not CACHE_NAME_RE.match(name):
+      parser.error(
+          'cache name %r does not match %r' % (name, CACHE_NAME_RE.pattern))
+    if not path:
+      parser.error('cache path cannot be empty')
+  if options.named_cache_root:
+    # Make these configurable later if there is use case but for now it's fairly
+    # safe values.
+    # In practice, a fair chunk of bots are already recycled on a daily schedule
+    # so this code doesn't have any effect to them, unless they are preloaded
+    # with a really old cache.
+    policies = local_caching.CachePolicies(
+        # 1TiB.
+        max_cache_size=1024*1024*1024*1024,
+        min_free_space=options.min_free_space,
+        max_items=50,
+        # 3 weeks.
+        max_age_secs=21*24*60*60)
+    root_dir = unicode(os.path.abspath(options.named_cache_root))
+    return local_caching.CacheManager(root_dir, policies)
+  return None
 
 
 def parse_args(args):
@@ -1179,7 +1224,7 @@ def main(args):
     logging.error('Symlink support is not enabled')
 
   isolate_cache = isolateserver.process_cache_options(options, trim=False)
-  named_cache_manager = named_cache.process_named_cache_options(parser, options)
+  named_cache_manager = process_named_cache_options(parser, options)
   if options.clean:
     if options.isolated:
       parser.error('Can\'t use --isolated with --clean.')
@@ -1271,7 +1316,7 @@ def main(args):
         for path, name in caches:
           try:
             named_cache_manager.uninstall(path, name)
-          except named_cache.Error:
+          except local_caching.NamedCacheError:
             logging.exception('Error while removing named cache %r at %r. '
                               'The cache will be lost.', path, name)
 
@@ -1318,7 +1363,10 @@ def main(args):
         assert storage.hash_algo == isolate_cache.hash_algo
         return run_tha_test(data, options.json)
     return run_tha_test(data, options.json)
-  except (cipd.Error, named_cache.Error) as ex:
+  except (
+      cipd.Error,
+      local_caching.NamedCacheError,
+      local_caching.NotFoundError) as ex:
     print >> sys.stderr, ex.message
     return 1
 
