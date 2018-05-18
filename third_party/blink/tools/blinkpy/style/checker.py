@@ -417,11 +417,6 @@ class CheckerDispatcher(object):
             return FileType.JSON
         elif file_extension == _PYTHON_FILE_EXTENSION:
             return FileType.PYTHON
-        elif not file_extension and os.path.dirname(file_path).endswith(os.path.join('Tools', 'Scripts')):
-            # TODO(qyearsley): Update this when Blink is moved from third_party/WebKit.
-            if os.path.basename(file_path) == 'OWNERS':
-                return FileType.NONE
-            return FileType.PYTHON
         elif file_extension in _XML_FILE_EXTENSIONS:
             return FileType.XML
         elif file_extension == _XCODEPROJ_FILE_EXTENSION:
