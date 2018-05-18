@@ -106,8 +106,7 @@ class BASE_EXPORT SharedMemory {
   // primitive.
   static SharedMemoryHandle DuplicateHandle(const SharedMemoryHandle& handle);
 
-// TODO(crbug/836416): Remove OS_FUCHSIA here.
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
   // This method requires that the SharedMemoryHandle is backed by a POSIX fd.
   static int GetFdFromSharedMemoryHandle(const SharedMemoryHandle& handle);
 #endif
@@ -216,9 +215,8 @@ class BASE_EXPORT SharedMemory {
   const UnguessableToken& mapped_id() const { return mapped_id_; }
 
  private:
-// TODO(crbug/836416): Remove OS_FUCHSIA here.
 #if defined(OS_POSIX) && !defined(OS_NACL) && !defined(OS_ANDROID) && \
-    !defined(OS_FUCHSIA) && (!defined(OS_MACOSX) || defined(OS_IOS))
+    (!defined(OS_MACOSX) || defined(OS_IOS))
   bool FilePathForMemoryName(const std::string& mem_name, FilePath* path);
 #endif
 

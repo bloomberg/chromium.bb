@@ -208,8 +208,7 @@ struct BASE_EXPORT LaunchOptions {
   std::vector<FilePath> paths_to_map;
 #endif  // defined(OS_FUCHSIA)
 
-// TODO(crbug/836416): Remove OS_FUCHSIA here.
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
   // If not empty, launch the specified executable instead of
   // cmdline.GetProgram(). This is useful when it is necessary to pass a custom
   // argv[0].
@@ -232,7 +231,7 @@ struct BASE_EXPORT LaunchOptions {
   // inheriting the parent's process group.  The pgid of the child process
   // will be the same as its pid.
   bool new_process_group = false;
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 #if defined(OS_CHROMEOS)
   // If non-negative, the specified file descriptor will be set as the launched

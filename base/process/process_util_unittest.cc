@@ -43,8 +43,7 @@
 #include <sched.h>
 #include <sys/syscall.h>
 #endif
-// TODO(crbug/836416): Remove OS_FUCHSIA here.
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 #include <sys/resource.h>
 #endif
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
