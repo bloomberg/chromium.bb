@@ -244,13 +244,6 @@ network::mojom::FetchCredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
   return network::mojom::FetchCredentialsMode::kOmit;
 }
 
-bool ScriptLoader::IsScriptTypeSupported(LegacyTypeSupport support_legacy_types,
-                                         ScriptType& out_script_type) const {
-  return IsValidScriptTypeAndLanguage(element_->TypeAttributeValue(),
-                                      element_->LanguageAttributeValue(),
-                                      support_legacy_types, out_script_type);
-}
-
 // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
 bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
                                  LegacyTypeSupport support_legacy_types) {
@@ -293,8 +286,12 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // <spec step="7">... Determine the script's type as follows: ...</spec>
   //
   // |script_type_| is set here.
-  if (!IsScriptTypeSupported(support_legacy_types, script_type_))
+
+  if (!IsValidScriptTypeAndLanguage(element_->TypeAttributeValue(),
+                                    element_->LanguageAttributeValue(),
+                                    support_legacy_types, script_type_)) {
     return false;
+  }
 
   // <spec step="8">If was-parser-inserted is true, then flag the element as
   // "parser-inserted" again, and set the element's "non-blocking" flag to

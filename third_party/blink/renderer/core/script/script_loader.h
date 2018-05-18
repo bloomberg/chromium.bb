@@ -98,9 +98,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // The entry point only for ScriptRunner that wraps ExecuteScriptBlock().
   virtual void Execute();
 
-  bool IsScriptTypeSupported(LegacyTypeSupport,
-                             ScriptType& out_script_type) const;
-
   bool HaveFiredLoadEvent() const { return have_fired_load_; }
   bool WillBeParserExecuted() const { return will_be_parser_executed_; }
   bool ReadyToBeParserExecuted() const { return ready_to_be_parser_executed_; }
