@@ -55,6 +55,20 @@ class CommandBufferHelperImpl
     return decoder_helper_ && decoder_helper_->MakeContextCurrent();
   }
 
+  bool IsContextCurrent() const override {
+    DVLOG(2) << __func__;
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+    if (!stub_)
+      return false;
+
+    gl::GLContext* context = stub_->decoder_context()->GetGLContext();
+    if (!context)
+      return false;
+
+    return context->IsCurrent(nullptr);
+  }
+
   GLuint CreateTexture(GLenum target,
                        GLenum internal_format,
                        GLsizei width,
@@ -135,6 +149,11 @@ class CommandBufferHelperImpl
                              std::vector<gpu::SyncToken>({sync_token})));
   }
 
+  void SetWillDestroyStubCB(WillDestroyStubCB will_destroy_stub_cb) override {
+    DCHECK(!will_destroy_stub_cb_);
+    will_destroy_stub_cb_ = std::move(will_destroy_stub_cb);
+  }
+
  private:
   ~CommandBufferHelperImpl() override {
     DVLOG(1) << __func__;
@@ -167,6 +186,13 @@ class CommandBufferHelperImpl
         iter.second->ForceContextLost();
     }
 
+    // In case |will_destroy_stub_cb_| drops the last reference to |this|, make
+    // sure that we're around a bit longer.
+    scoped_refptr<CommandBufferHelper> thiz(this);
+
+    if (will_destroy_stub_cb_)
+      std::move(will_destroy_stub_cb_).Run(have_context);
+
     // OnWillDestroyStub() is called with the context current if possible. Drop
     // the TextureRefs now while the platform textures can still be deleted.
     texture_refs_.clear();
@@ -197,6 +223,8 @@ class CommandBufferHelperImpl
   // TODO(sandersd): Merge GLES2DecoderHelper implementation into this class.
   std::unique_ptr<GLES2DecoderHelper> decoder_helper_;
   std::map<GLuint, scoped_refptr<gpu::gles2::TextureRef>> texture_refs_;
+
+  WillDestroyStubCB will_destroy_stub_cb_;
 
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(CommandBufferHelperImpl);

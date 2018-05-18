@@ -21,6 +21,10 @@ FakeCommandBufferHelper::~FakeCommandBufferHelper() {
 void FakeCommandBufferHelper::StubLost() {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  // Keep a reference to |this| in case the destruction cb drops the last one.
+  scoped_refptr<CommandBufferHelper> thiz(this);
+  if (will_destroy_stub_cb_)
+    std::move(will_destroy_stub_cb_).Run(!is_context_lost_);
   has_stub_ = false;
   is_context_lost_ = true;
   is_context_current_ = false;
@@ -65,6 +69,10 @@ bool FakeCommandBufferHelper::MakeContextCurrent() {
   DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   is_context_current_ = !is_context_lost_;
+  return is_context_current_;
+}
+
+bool FakeCommandBufferHelper::IsContextCurrent() const {
   return is_context_current_;
 }
 
@@ -122,6 +130,12 @@ void FakeCommandBufferHelper::WaitForSyncToken(gpu::SyncToken sync_token,
   DCHECK(!waits_.count(sync_token));
   if (has_stub_)
     waits_.emplace(sync_token, std::move(done_cb));
+}
+
+void FakeCommandBufferHelper::SetWillDestroyStubCB(
+    WillDestroyStubCB will_destroy_stub_cb) {
+  DCHECK(!will_destroy_stub_cb_);
+  will_destroy_stub_cb_ = std::move(will_destroy_stub_cb);
 }
 
 }  // namespace media
