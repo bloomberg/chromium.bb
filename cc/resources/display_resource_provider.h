@@ -18,11 +18,11 @@
 #include "build/build_config.h"
 #include "cc/cc_export.h"
 #include "cc/output/overlay_candidate.h"
-#include "cc/resources/return_callback.h"
 #include "components/viz/common/resources/resource.h"
 #include "components/viz/common/resources/resource_fence.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/resource_metadata.h"
+#include "components/viz/common/resources/return_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -260,7 +260,7 @@ class CC_EXPORT DisplayResourceProvider
   }
 
   // Creates accounting for a child. Returns a child ID.
-  int CreateChild(const ReturnCallback& return_callback);
+  int CreateChild(const viz::ReturnCallback& return_callback);
 
   // Destroys accounting for the child, deleting all accounted resources.
   void DestroyChild(int child);
@@ -300,7 +300,7 @@ class CC_EXPORT DisplayResourceProvider
     ~Child();
 
     std::unordered_map<viz::ResourceId, viz::ResourceId> child_to_parent_map;
-    ReturnCallback return_callback;
+    viz::ReturnCallback return_callback;
     bool marked_for_deletion = false;
     bool needs_sync_tokens = true;
   };

@@ -363,7 +363,8 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceLostOnReturn) {
   returned.back().lost = false;
   provider().ReceiveReturnsFromParent(returned);
 
-  // Return a second time, as lost. The ReturnCallback should report it lost.
+  // Return a second time, as lost. The viz::ReturnCallback should report it
+  // lost.
   returned.back().lost = true;
   EXPECT_CALL(release, Released(_, true));
   provider().ReceiveReturnsFromParent(returned);
