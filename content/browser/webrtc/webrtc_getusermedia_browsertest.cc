@@ -699,6 +699,14 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("srcObjectRemoveVideoTrack()");
 }
 
+// Flaky on memory and leak sanitizers. https://crbug.com/843844
+#if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_SrcObjectRemoveFirstOfTwoVideoTracks \
+  DISABLED_SrcObjectRemoveFirstOfTwoVideoTracks
+#else
+#define MAYBE_SrcObjectRemoveFirstOfTwoVideoTracks \
+  SrcObjectRemoveFirstOfTwoVideoTracks
+#endif
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
                        SrcObjectRemoveFirstOfTwoVideoTracks) {
   ASSERT_TRUE(embedded_test_server()->Start());
