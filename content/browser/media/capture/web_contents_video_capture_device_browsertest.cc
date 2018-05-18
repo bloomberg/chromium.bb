@@ -22,6 +22,7 @@
 #include "media/base/video_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -206,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
   AllocateAndStartAndWaitForFirstFrame();
 
   // Initially, the device captures any content changes normally.
-  ChangePageContentColor(SK_ColorRED);
+  ChangePageContentColor("ff0000");
   WaitForFrameWithColor(SK_ColorRED);
 
   // Delete the WebContents instance and the Shell, and allow the the "target
@@ -228,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
   AllocateAndStartAndWaitForFirstFrame();
 
   // Initially, the device captures any content changes normally.
-  ChangePageContentColor(SK_ColorRED);
+  ChangePageContentColor("ff0000");
   WaitForFrameWithColor(SK_ColorRED);
 
   // Suspend the device.
@@ -238,7 +239,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 
   // Change the page content and run the browser for five seconds. Expect no
   // frames were queued because the device should be suspended.
-  ChangePageContentColor(SK_ColorGREEN);
+  ChangePageContentColor("00ff00");
   base::RunLoop run_loop;
   BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
                                  run_loop.QuitClosure(),
@@ -262,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
   AllocateAndStartAndWaitForFirstFrame();
 
   // Set the page content to a known color.
-  ChangePageContentColor(SK_ColorRED);
+  ChangePageContentColor("ff0000");
   WaitForFrameWithColor(SK_ColorRED);
 
   // Without making any further changes to the source (which would trigger
@@ -296,23 +297,23 @@ INSTANTIATE_TEST_CASE_P(
     ,
     WebContentsVideoCaptureDeviceBrowserTestP,
     testing::Combine(
-        // Note: On ChromeOS, software compositing is not an option.
-        testing::Values(false /* GPU-accelerated compositing */),
-        testing::Values(false /* variable aspect ratio */,
-                        true /* fixed aspect ratio */),
-        testing::Values(false /* page has only a main frame */,
-                        true /* page contains a cross-site iframe */)));
+        // On ChromeOS, software compositing is not an option.
+        testing::Values(false),
+        // Force video frame resolutions to have a fixed aspect ratio?
+        testing::Values(false, true),
+        // Test with a document that contains a cross-site iframe?
+        testing::Values(false, true)));
 #else
 INSTANTIATE_TEST_CASE_P(
     ,
     WebContentsVideoCaptureDeviceBrowserTestP,
     testing::Combine(
-        testing::Values(false /* GPU-accelerated compositing */,
-                        true /* software compositing */),
-        testing::Values(false /* variable aspect ratio */,
-                        true /* fixed aspect ratio */),
-        testing::Values(false /* page has only a main frame */,
-                        true /* page contains a cross-site iframe */)));
+        // Use software compositing instead of GPU-accelerated compositing?
+        testing::Values(false, true),
+        // Force video frame resolutions to have a fixed aspect ratio?
+        testing::Values(false, true),
+        // Test with a document that contains a cross-site iframe?
+        testing::Values(false, true)));
 #endif  // defined(OS_CHROMEOS)
 
 // Tests that the device successfully captures a series of content changes,
@@ -367,13 +368,18 @@ IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
       }
     }
 
-    static constexpr SkColor kColorsToCycleThrough[] = {
-        SK_ColorRED,  SK_ColorGREEN,   SK_ColorBLUE,  SK_ColorYELLOW,
-        SK_ColorCYAN, SK_ColorMAGENTA, SK_ColorWHITE,
+    static const struct {
+      const char* const css_hex;
+      SkColor skia;
+    } kColorsToCycleThrough[] = {
+        {"ff0000", SK_ColorRED},   {"00ff00", SK_ColorGREEN},
+        {"0000ff", SK_ColorBLUE},  {"ffff00", SK_ColorYELLOW},
+        {"00ffff", SK_ColorCYAN},  {"ff00ff", SK_ColorMAGENTA},
+        {"ffffff", SK_ColorWHITE},
     };
-    for (SkColor color : kColorsToCycleThrough) {
-      ChangePageContentColor(color);
-      WaitForFrameWithColor(color);
+    for (const auto color : kColorsToCycleThrough) {
+      ChangePageContentColor(color.css_hex);
+      WaitForFrameWithColor(color.skia);
     }
   }
 
