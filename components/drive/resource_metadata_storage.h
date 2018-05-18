@@ -40,7 +40,7 @@ class ResourceMetadataStorage {
  public:
   // This should be incremented when incompatibility change is made to DB
   // format.
-  static constexpr int kDBVersion = 16;
+  static constexpr int kDBVersion = 17;
 
   // Object to iterate over entries stored in this storage.
   class Iterator {

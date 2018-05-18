@@ -493,6 +493,21 @@ bool UpgradeOldDBVersion15(leveldb::DB* resource_map) {
   return resource_map->Write(leveldb::WriteOptions(), &batch).ok();
 }
 
+bool UpgradeOldDBVersion16(leveldb::DB* resource_map) {
+  // From 15->16, the field |alternate_url| was moved from FileSpecificData
+  // to ResourceEntry. Since it isn't saved for directories, we need to do a
+  // full fetch to get the |alternate_url| fetched for each directory.
+  // Put a new header with the latest version number, and clear the start page
+  // token.
+  std::string serialized_header;
+  if (!GetDefaultHeaderEntry().SerializeToString(&serialized_header))
+    return false;
+
+  leveldb::WriteBatch batch;
+  batch.Put(GetHeaderDBKey(), serialized_header);
+  return resource_map->Write(leveldb::WriteOptions(), &batch).ok();
+}
+
 }  // namespace
 
 ResourceMetadataStorage::Iterator::Iterator(
@@ -611,9 +626,11 @@ bool ResourceMetadataStorage::UpgradeOldDB(
       return UpgradeOldDBVersion14(resource_map.get());
     case 15:
       return UpgradeOldDBVersion15(resource_map.get());
+    case 16:
+      return UpgradeOldDBVersion16(resource_map.get());
     case kDBVersion:
       static_assert(
-          kDBVersion == 16,
+          kDBVersion == 17,
           "database version and this function must be updated together");
       return true;
     default:

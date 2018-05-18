@@ -79,6 +79,8 @@ bool ConvertFileResourceToResourceEntry(
   converted.set_starred(input.labels().is_starred());
   converted.set_shared_with_me(!input.shared_with_me_date().is_null());
   converted.set_shared(input.shared());
+  if (!input.alternate_link().is_empty())
+    converted.set_alternate_url(input.alternate_link().spec());
 
   PlatformFileInfoProto* file_info = converted.mutable_file_info();
 
@@ -119,9 +121,6 @@ bool ConvertFileResourceToResourceEntry(
     }
     file_info->set_is_directory(false);
     file_specific_info->set_content_mime_type(input.mime_type());
-
-    if (!input.alternate_link().is_empty())
-      file_specific_info->set_alternate_url(input.alternate_link().spec());
 
     const int64_t image_width = input.image_media_metadata().width();
     if (image_width != -1)

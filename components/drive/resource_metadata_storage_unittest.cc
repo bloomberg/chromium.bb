@@ -657,7 +657,7 @@ TEST_F(ResourceMetadataStorageTest, CheckValidity) {
   EXPECT_TRUE(CheckValidity());
 }
 
-TEST_F(ResourceMetadataStorageTest, UpgradeDB15to16) {
+TEST_F(ResourceMetadataStorageTest, UpgradeDBv15) {
   constexpr int64_t kLargestChangestamp = 54321;
   constexpr char kStartPageToken[] = "54322";
   constexpr int64_t kDirectoryChangestamp = 12345;
@@ -697,6 +697,47 @@ TEST_F(ResourceMetadataStorageTest, UpgradeDB15to16) {
             entry.directory_specific_info().changestamp());
   EXPECT_EQ(kDirectoryStartpageToken,
             entry.directory_specific_info().start_page_token());
+}
+
+// Test that upgrading from DB version 16 to 17 triggers a full metadata refresh
+// (since this changes alternate_url to be set for directories, which need to
+// be re-fetched).
+TEST_F(ResourceMetadataStorageTest, UpgradeDBv16) {
+  constexpr int64_t kLargestChangestamp = 54321;
+  constexpr char kStartPageToken[] = "54322";
+
+  // Construct a v16 DB.
+  SetDBVersion(16);
+  EXPECT_EQ(FILE_ERROR_OK,
+            storage_->SetLargestChangestamp(kLargestChangestamp));
+  EXPECT_EQ(FILE_ERROR_OK, storage_->SetStartPageToken(kStartPageToken));
+
+  // Add a file.
+  ResourceEntry entry;
+  entry.set_local_id("local_id_1");
+  entry.set_base_name("resource_id_1");
+  EXPECT_EQ(FILE_ERROR_OK, storage_->PutEntry(entry));
+
+  // Upgrade and reopen.
+  storage_.reset();
+  EXPECT_TRUE(UpgradeOldDB());
+  storage_.reset(new ResourceMetadataStorage(
+      temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
+  ASSERT_TRUE(storage_->Initialize());
+
+  // Changestamps are reset.
+  int64_t largest_changestamp = 0;
+  EXPECT_EQ(FILE_ERROR_OK,
+            storage_->GetLargestChangestamp(&largest_changestamp));
+  EXPECT_EQ(0, largest_changestamp);
+
+  std::string start_page_token;
+  EXPECT_EQ(FILE_ERROR_OK, storage_->GetStartPageToken(&start_page_token));
+  EXPECT_EQ("", start_page_token);
+
+  // The data is retained.
+  EXPECT_EQ(FILE_ERROR_OK, storage_->GetEntry("local_id_1", &entry));
+  EXPECT_EQ("resource_id_1", entry.base_name());
 }
 
 }  // namespace internal

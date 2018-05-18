@@ -104,11 +104,9 @@ FileError CheckPreConditionForEnsureFileDownloaded(
     // We add the gdoc file extension in the temporary file, so that in cross
     // profile drag-and-drop between Drive folders, the destination profiles's
     // CopyOperation can detect the special JSON file only by the path.
-    if (!GeneratesUniquePathWithExtension(temporary_file_directory,
-                                          extension,
+    if (!GeneratesUniquePathWithExtension(temporary_file_directory, extension,
                                           &gdoc_file_path) ||
-        !util::CreateGDocFile(gdoc_file_path,
-                              GURL(entry->file_specific_info().alternate_url()),
+        !util::CreateGDocFile(gdoc_file_path, GURL(entry->alternate_url()),
                               entry->resource_id()) ||
         !base::GetFileInfo(gdoc_file_path,
                            reinterpret_cast<base::File::Info*>(&file_info)))
