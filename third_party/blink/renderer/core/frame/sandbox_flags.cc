@@ -71,9 +71,7 @@ SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
     } else if (EqualIgnoringASCIICase(sandbox_token, "allow-presentation")) {
       flags &= ~kSandboxPresentationController;
     } else if (EqualIgnoringASCIICase(
-                   sandbox_token, "allow-top-navigation-by-user-activation") &&
-               RuntimeEnabledFeatures::
-                   TopNavByUserActivationInSandboxEnabled()) {
+                   sandbox_token, "allow-top-navigation-by-user-activation")) {
       flags &= ~kSandboxTopNavigationByUserActivation;
     } else if (EqualIgnoringASCIICase(sandbox_token, "allow-downloads") &&
                RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled()) {
