@@ -26,6 +26,8 @@
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/assistant_settings_manager_impl.h"
+#include "services/device/public/mojom/battery_monitor.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
 #else
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
@@ -127,8 +129,12 @@ void Service::Init(mojom::ClientPtr client,
                    mojom::AudioInputPtr audio_input) {
   client_ = std::move(client);
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-  assistant_manager_service_ =
-      std::make_unique<AssistantManagerServiceImpl>(std::move(audio_input));
+  device::mojom::BatteryMonitorPtr battery_monitor;
+  context()->connector()->BindInterface(device::mojom::kServiceName,
+                                        mojo::MakeRequest(&battery_monitor));
+
+  assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
+      std::move(audio_input), std::move(battery_monitor));
 #else
   assistant_manager_service_ =
       std::make_unique<FakeAssistantManagerServiceImpl>();

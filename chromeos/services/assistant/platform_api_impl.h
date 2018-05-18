@@ -22,6 +22,7 @@
 #include "libassistant/contrib/platform/resources/resource_provider.h"
 #include "libassistant/shared/public/platform_api.h"
 #include "libassistant/shared/public/platform_auth.h"
+#include "services/device/public/mojom/battery_monitor.mojom.h"
 
 namespace chromeos {
 namespace assistant {
@@ -29,7 +30,9 @@ namespace assistant {
 // Platform API required by the voice assistant.
 class PlatformApiImpl : public assistant_client::PlatformApi {
  public:
-  PlatformApiImpl(const std::string& config, mojom::AudioInputPtr audio_input);
+  PlatformApiImpl(const std::string& config,
+                  mojom::AudioInputPtr audio_input,
+                  device::mojom::BatteryMonitorPtr battery_monitor);
   ~PlatformApiImpl() override;
 
   // assistant_client::PlatformApi overrides

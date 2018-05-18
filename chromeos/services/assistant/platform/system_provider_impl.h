@@ -9,13 +9,14 @@
 
 #include "base/macros.h"
 #include "libassistant/shared/public/platform_system.h"
+#include "services/device/public/mojom/battery_monitor.mojom.h"
 
 namespace chromeos {
 namespace assistant {
 
 class SystemProviderImpl : public assistant_client::SystemProvider {
  public:
-  SystemProviderImpl();
+  explicit SystemProviderImpl(device::mojom::BatteryMonitorPtr battery_monitor);
   ~SystemProviderImpl() override;
 
   // assistant_client::SystemProvider implementation:
@@ -27,6 +28,11 @@ class SystemProviderImpl : public assistant_client::SystemProvider {
                                const std::string& locale) override;
 
  private:
+  void OnBatteryStatus(device::mojom::BatteryStatusPtr battery_status);
+
+  device::mojom::BatteryMonitorPtr battery_monitor_;
+  device::mojom::BatteryStatusPtr current_battery_status_;
+
   DISALLOW_COPY_AND_ASSIGN(SystemProviderImpl);
 };
 
