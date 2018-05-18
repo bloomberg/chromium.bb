@@ -47,11 +47,6 @@ void MessageLoopCurrent::RemoveDestructionObserver(
   current_->destruction_observers_.RemoveObserver(destruction_observer);
 }
 
-// static
-Closure MessageLoopCurrent::QuitWhenIdleClosure() {
-  return Bind(&RunLoop::QuitCurrentWhenIdleDeprecated);
-}
-
 const scoped_refptr<SingleThreadTaskRunner>& MessageLoopCurrent::task_runner()
     const {
   DCHECK_CALLED_ON_VALID_THREAD(current_->bound_thread_checker_);

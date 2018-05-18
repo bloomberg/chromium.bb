@@ -6,7 +6,6 @@
 #define BASE_MESSAGE_LOOP_MESSAGE_LOOP_CURRENT_H_
 
 #include "base/base_export.h"
-#include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump_for_io.h"
@@ -88,11 +87,6 @@ class BASE_EXPORT MessageLoopCurrent {
   // Remove a DestructionObserver.  It is safe to call this method while a
   // DestructionObserver is receiving a notification callback.
   void RemoveDestructionObserver(DestructionObserver* destruction_observer);
-
-  // Construct a Closure that will call QuitWhenIdle(). Useful to schedule an
-  // arbitrary MessageLoop to QuitWhenIdle.
-  // DEPRECATED(https://crbug.com/616447): use RunLoop instead.
-  static Closure QuitWhenIdleClosure();
 
   // Forwards to MessageLoop::task_runner().
   // DEPRECATED(https://crbug.com/616447): Use ThreadTaskRunnerHandle::Get()
