@@ -6,10 +6,11 @@
  * Empty folder controller.
  * @param {!EmptyFolder} emptyFolder Empty folder ui.
  * @param {!DirectoryModel} directoryModel Directory model.
+ * @param {!FilesAlertDialog} alertDialog Alert dialog.
  * @constructor
  * @struct
  */
-function EmptyFolderController(emptyFolder, directoryModel) {
+function EmptyFolderController(emptyFolder, directoryModel, alertDialog) {
   /**
    * @private {!EmptyFolder}
    */
@@ -19,6 +20,11 @@ function EmptyFolderController(emptyFolder, directoryModel) {
    * @private {!DirectoryModel}
    */
   this.directoryModel_ = directoryModel;
+
+  /**
+   * @private {!FilesAlertDialog}
+   */
+  this.alertDialog_ = alertDialog;
 
   /**
    * @private {!FileListModel}
@@ -33,7 +39,7 @@ function EmptyFolderController(emptyFolder, directoryModel) {
   this.directoryModel_.addEventListener(
       'scan-started', this.onScanStarted_.bind(this));
   this.directoryModel_.addEventListener(
-      'scan-failed', this.onScanFinished_.bind(this));
+      'scan-failed', this.onScanFailed_.bind(this));
   this.directoryModel_.addEventListener(
       'scan-cancelled', this.onScanFinished_.bind(this));
   this.directoryModel_.addEventListener(
@@ -58,6 +64,21 @@ EmptyFolderController.prototype.onSplice_ = function() {
  */
 EmptyFolderController.prototype.onScanStarted_ = function() {
   this.isScanning_ = true;
+  this.update_();
+};
+
+/**
+ * Handles scan fail.
+ * @param {event} Event may contain error field containing DOMError for alert.
+ * @private
+ */
+EmptyFolderController.prototype.onScanFailed_ = function(event) {
+  this.isScanning_ = false;
+  // Show alert for crostini connection error.
+  if (event.error.name == DirectoryModel.CROSTINI_CONNECT_ERR) {
+    this.alertDialog_.showWithTitle(
+        str('ERROR_LINUX_FILES_CONNECTION'), event.error.message);
+  }
   this.update_();
 };
 

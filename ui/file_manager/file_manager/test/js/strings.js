@@ -43,6 +43,7 @@ loadTimeData.data = new Proxy(
           'All files saved in this folder are backed up online automatically',
       DRIVE_WELCOME_TITLE_ALTERNATIVE: 'Get 100 GB free with Google Drive',
       EMPTY_FOLDER: 'Nothing to see here...',
+      ERROR_LINUX_FILES_CONNECTION: 'Unable to view Linux Files',
       FILENAME_LABEL: 'File name',
       GALLERY_CONFIRM_DELETE_ONE: 'Are you sure you want to delete "$1"?',
       GALLERY_CONFIRM_DELETE_SOME: 'Are you sure you want to delete $1 items?',

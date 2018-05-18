@@ -349,7 +349,9 @@ CrostiniMounter.prototype.scan = function(
     if (chrome.runtime.lastError) {
       console.error(
           'mountCrostiniContainer error: ', chrome.runtime.lastError.message);
-      errorCallback(util.createDOMError(util.FileError.NOT_READABLE_ERR));
+      errorCallback(util.createDOMError(
+          DirectoryModel.CROSTINI_CONNECT_ERR,
+          chrome.runtime.lastError.message));
       return;
     }
     successCallback();
@@ -665,11 +667,12 @@ DirectoryContents.prototype.scan = function(refresh) {
 
   /**
    * Invoked when the scanning is finished but is not completed due to error.
+   * @param {DOMError} error error.
    * @this {DirectoryContents}
    */
-  function errorCallback() {
+  function errorCallback(error) {
     this.onScanFinished_();
-    this.onScanError_();
+    this.onScanError_(error);
   }
 
   // TODO(hidehiko,mtomasz): this scan method must be called at most once.
@@ -784,16 +787,19 @@ DirectoryContents.prototype.onScanCompleted_ = function() {
 
 /**
  * Called in case scan has failed. Should send the event.
+ * @param {DOMError} error error.
  * @private
  */
-DirectoryContents.prototype.onScanError_ = function() {
+DirectoryContents.prototype.onScanError_ = function(error) {
   if (this.scanCancelled_)
     return;
 
   this.processNewEntriesQueue_.run(function(callback) {
     // Call callback first, so isScanning() returns false in the event handlers.
     callback();
-    cr.dispatchSimpleEvent(this, 'scan-failed');
+    var event = new Event('scan-failed');
+    event.error = error;
+    this.dispatchEvent(event);
   }.bind(this));
 };
 

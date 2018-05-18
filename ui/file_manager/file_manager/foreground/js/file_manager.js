@@ -591,8 +591,7 @@ FileManager.prototype = /** @struct */ {
         this.selectionHandler_,
         this.directoryModel_);
     this.emptyFolderController_ = new EmptyFolderController(
-        this.ui_.emptyFolder,
-        this.directoryModel_);
+        this.ui_.emptyFolder, this.directoryModel_, this.ui_.alertDialog);
     this.actionsController_ = new ActionsController(
         this.volumeManager_, assert(this.metadataModel_), this.directoryModel_,
         assert(this.folderShortcutsModel_),

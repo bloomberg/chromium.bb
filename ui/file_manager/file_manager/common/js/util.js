@@ -725,25 +725,33 @@ util.isRecentRoot = function(entry) {
  * FileError except that it does not have the deprecated FileError.code member.
  *
  * @param {string} name Error name for the file error.
+ * @param {string=} opt_message optional message.
  * @return {DOMError} DOMError instance
  */
-util.createDOMError = function(name) {
-  return new util.UserDOMError(name);
+util.createDOMError = function(name, opt_message) {
+  return new util.UserDOMError(name, opt_message);
 };
 
 /**
  * Creates a DOMError-like object to be used in place of returning file errors.
  *
  * @param {string} name Error name for the file error.
+ * @param {string=} opt_message Optional message for this error.
  * @extends {DOMError}
  * @constructor
  */
-util.UserDOMError = function(name) {
+util.UserDOMError = function(name, opt_message) {
   /**
    * @type {string}
    * @private
    */
   this.name_ = name;
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this.message_ = opt_message || '';
   Object.freeze(this);
 };
 
@@ -751,8 +759,15 @@ util.UserDOMError.prototype = {
   /**
    * @return {string} File error name.
    */
-  get name() { return this.name_;
-  }
+  get name() {
+    return this.name_;
+  },
+  /**
+   * @return {string} Error message.
+   */
+  get message() {
+    return this.message_;
+  },
 };
 
 /**
