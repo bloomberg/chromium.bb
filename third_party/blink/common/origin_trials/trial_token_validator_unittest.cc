@@ -162,11 +162,10 @@ class TrialTokenValidatorTest : public testing::Test {
         expired_token_signature_(
             std::string(reinterpret_cast<const char*>(kExpiredTokenSignature),
                         arraysize(kExpiredTokenSignature))),
-        response_headers_(new net::HttpResponseHeaders("")),
-        policy_(new TestOriginTrialPolicy) {
+        response_headers_(new net::HttpResponseHeaders("")) {
     TrialTokenValidator::SetOriginTrialPolicyGetter(
         base::BindRepeating([](OriginTrialPolicy* policy) { return policy; },
-                            base::Unretained(policy_)));
+                            base::Unretained(&policy_)));
     SetPublicKey(kTestPublicKey);
   }
 
@@ -174,14 +173,14 @@ class TrialTokenValidatorTest : public testing::Test {
     TrialTokenValidator::ResetOriginTrialPolicyGetter();
   }
 
-  void SetPublicKey(const uint8_t* key) { policy_->SetPublicKey(key); }
+  void SetPublicKey(const uint8_t* key) { policy_.SetPublicKey(key); }
 
   void DisableFeature(const std::string& feature) {
-    policy_->DisableFeature(feature);
+    policy_.DisableFeature(feature);
   }
 
   void DisableToken(const std::string& token_signature) {
-    policy_->DisableToken(token_signature);
+    policy_.DisableToken(token_signature);
   }
 
   base::Time Now() { return base::Time::FromDoubleT(kNowTimestamp); }
@@ -195,7 +194,7 @@ class TrialTokenValidatorTest : public testing::Test {
 
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
 
-  TestOriginTrialPolicy* policy_;
+  TestOriginTrialPolicy policy_;
   const TrialTokenValidator validator_;
 };
 
