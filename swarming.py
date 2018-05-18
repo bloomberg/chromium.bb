@@ -37,6 +37,7 @@ from utils import tools
 import auth
 import cipd
 import isolateserver
+import local_caching
 import run_isolated
 
 
@@ -410,12 +411,12 @@ class TaskOutputCollector(object):
           result['outputs_ref']['namespace'])
       if storage:
         # Output files are supposed to be small and they are not reused across
-        # tasks. So use MemoryCache for them instead of on-disk cache. Make
-        # files writable, so that calling script can delete them.
+        # tasks. So use MemoryContentAddressedCache for them instead of on-disk
+        # cache. Make files writable, so that calling script can delete them.
         isolateserver.fetch_isolated(
             result['outputs_ref']['isolated'],
             storage,
-            isolateserver.MemoryCache(file_mode_mask=0700),
+            local_caching.MemoryContentAddressedCache(file_mode_mask=0700),
             os.path.join(self.task_output_dir, str(shard_index)),
             False)
 
@@ -1674,7 +1675,7 @@ def CMDreproduce(parser, args):
       bundle = isolateserver.fetch_isolated(
           properties['inputs_ref']['isolated'],
           storage,
-          isolateserver.MemoryCache(file_mode_mask=0700),
+          local_caching.MemoryContentAddressedCache(file_mode_mask=0700),
           workdir,
           False)
       command = bundle.command

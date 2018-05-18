@@ -24,6 +24,7 @@ import net_utils
 
 import auth
 import isolated_format
+import isolate_storage
 import isolateserver
 import isolate_storage
 import local_caching
@@ -111,7 +112,7 @@ class TestZipCompression(TestCase):
       ''.join(isolateserver.zip_decompress(['Im not a zip file']))
 
 
-class FakeItem(isolateserver.Item):
+class FakeItem(isolate_storage.Item):
   def __init__(self, data, high_priority=False):
     super(FakeItem, self).__init__(
       isolateserver_mock.hash_content(data), len(data), high_priority)
@@ -162,10 +163,6 @@ class UtilsTest(TestCase):
 
   def test_file_read(self):
     # TODO(maruel): Write test for file_read generator (or remove it).
-    pass
-
-  def test_file_write(self):
-    # TODO(maruel): Write test for file_write generator (or remove it).
     pass
 
   def test_fileobj_path(self):
@@ -337,10 +334,10 @@ class StorageTest(TestCase):
 
   def test_batch_items_for_check(self):
     items = [
-      isolateserver.Item('foo', 12),
-      isolateserver.Item('blow', 0),
-      isolateserver.Item('bizz', 1222),
-      isolateserver.Item('buzz', 1223),
+      isolate_storage.Item('foo', 12),
+      isolate_storage.Item('blow', 0),
+      isolate_storage.Item('bizz', 1222),
+      isolate_storage.Item('buzz', 1223),
     ]
     expected = [
       [items[3], items[2], items[0], items[1]],
@@ -350,10 +347,10 @@ class StorageTest(TestCase):
 
   def test_get_missing_items(self):
     items = [
-      isolateserver.Item('foo', 12),
-      isolateserver.Item('blow', 0),
-      isolateserver.Item('bizz', 1222),
-      isolateserver.Item('buzz', 1223),
+      isolate_storage.Item('foo', 12),
+      isolate_storage.Item('blow', 0),
+      isolate_storage.Item('bizz', 1222),
+      isolate_storage.Item('buzz', 1223),
     ]
     missing = {
       items[2]: 123,
@@ -872,7 +869,7 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
     self.assertEqual(set(items), set(uploaded))
 
     # Fetch them all back into local memory cache.
-    cache = isolateserver.MemoryCache()
+    cache = local_caching.MemoryContentAddressedCache()
     queue = isolateserver.FetchQueue(storage, cache)
 
     # Start fetching.
@@ -985,7 +982,7 @@ class IsolateServerDownloadTest(TestCase):
     actual = {}
     def out(key, generator):
       actual[key] = ''.join(generator)
-    self.mock(isolateserver, 'file_write', out)
+    self.mock(local_caching, 'file_write', out)
     server = 'http://example.com'
     coucou_sha1 = hashlib.sha1('Coucou').hexdigest()
     byebye_sha1 = hashlib.sha1('Bye Bye').hexdigest()
@@ -1276,203 +1273,6 @@ class TestArchive(TestCase):
   def test_archive_directory_envvar(self):
     with test_utils.EnvVars({'ISOLATE_SERVER': 'https://localhost:1'}):
       self.help_test_archive(['archive'])
-
-
-class DiskCacheTest(TestCase):
-  def setUp(self):
-    super(DiskCacheTest, self).setUp()
-    # If this fails on Windows, please rerun this tests as an elevated user with
-    # administrator access right.
-    self.assertEqual(True, file_path.enable_symlink())
-
-    self._algo = isolated_format.get_hash_algo('default-gzip')
-    self._free_disk = 1000
-    # Max: 100 bytes, 2 items
-    # Min free disk: 1000 bytes.
-    self._policies = local_caching.CachePolicies(
-        max_cache_size=100,
-        min_free_space=1000,
-        max_items=2,
-        max_age_secs=0)
-    def get_free_space(p):
-      self.assertEqual(p, self.tempdir)
-      return self._free_disk
-    self.mock(file_path, 'get_free_space', get_free_space)
-    # TODO(maruel): Test the following.
-    #cache.touch()
-
-  def get_cache(self, **kwargs):
-    return isolateserver.DiskCache(
-        self.tempdir, self._policies, self._algo, trim=True, **kwargs)
-
-  def to_hash(self, content):
-    return self._algo(content).hexdigest(), content
-
-  def test_read_evict(self):
-    self._free_disk = 1100
-    h_a = self.to_hash('a')[0]
-    with self.get_cache() as cache:
-      cache.write(h_a, 'a')
-      with cache.getfileobj(h_a) as f:
-        self.assertEqual('a', f.read())
-
-    with self.get_cache() as cache:
-      cache.evict(h_a)
-      with self.assertRaises(isolateserver.CacheMiss):
-        cache.getfileobj(h_a)
-
-  def test_policies_free_disk(self):
-    with self.assertRaises(isolateserver.Error):
-      self.get_cache().write(*self.to_hash('a'))
-
-  def test_policies_fit(self):
-    self._free_disk = 1100
-    self.get_cache().write(*self.to_hash('a'*100))
-
-  def test_policies_too_much(self):
-    # Cache (size and # items) is not enforced while adding items but free disk
-    # is.
-    self._free_disk = 1004
-    cache = self.get_cache()
-    for i in ('a', 'b', 'c', 'd'):
-      cache.write(*self.to_hash(i))
-    # Mapping more content than the amount of free disk required.
-    with self.assertRaises(isolateserver.Error) as cm:
-      cache.write(*self.to_hash('e'))
-    expected = (
-        'Not enough space to fetch the whole isolated tree.\n'
-        '  CachePolicies(max_cache_size=100; max_items=2; min_free_space=1000; '
-          'max_age_secs=0)\n'
-        '  cache=6bytes, 6 items; 999b free_space')
-    self.assertEqual(expected, cm.exception.message)
-
-  def test_cleanup(self):
-    # Inject an item without a state.json, one is lost. Both will be deleted on
-    # cleanup.
-    self._free_disk = 1003
-    cache = self.get_cache()
-    h_foo = hashlib.sha1('foo').hexdigest()
-    self.assertEqual([], sorted(cache._lru._items.iteritems()))
-    with cache:
-      cache.write(h_foo, ['foo'])
-    self.assertEqual([h_foo], [i[0] for i in cache._lru._items.iteritems()])
-
-    h_a = self.to_hash('a')[0]
-    isolateserver.file_write(os.path.join(self.tempdir, h_a), 'a')
-    os.remove(os.path.join(self.tempdir, h_foo))
-
-    # Still hasn't realized that the file is missing.
-    self.assertEqual([h_foo], [i[0] for i in cache._lru._items.iteritems()])
-    self.assertEqual(
-        sorted([h_a, u'state.json']), sorted(os.listdir(self.tempdir)))
-    cache.cleanup()
-    self.assertEqual([u'state.json'], os.listdir(self.tempdir))
-
-  def test_policies_active_trimming(self):
-    # Start with a larger cache, add many object.
-    # Reload the cache with smaller policies, the cache should be trimmed on
-    # load.
-    h_a = self.to_hash('a')[0]
-    h_b = self.to_hash('b')[0]
-    h_c = self.to_hash('c')[0]
-    h_large, large = self.to_hash('b' * 99)
-
-    def assertItems(expected):
-      actual = [
-        (digest, size) for digest, (size, _) in cache._lru._items.iteritems()]
-      self.assertEqual(expected, actual)
-
-    # Max policies is 100 bytes, 2 items, 1000 bytes free space.
-    self._free_disk = 1101
-    with self.get_cache() as cache:
-      cache.write(h_a, 'a')
-      cache.write(h_large, large)
-      # Cache (size and # items) is not enforced while adding items. The
-      # rationale is that a task may request more data than the size of the
-      # cache policies. As long as there is free space, this is fine.
-      cache.write(h_b, 'b')
-      assertItems([(h_a, 1), (h_large, len(large)), (h_b, 1)])
-      self.assertEqual(h_a, cache._protected)
-      self.assertEqual(1000, cache._free_disk)
-      self.assertEqual(0, cache.initial_number_items)
-      self.assertEqual(0, cache.initial_size)
-      # Free disk is enforced, because otherwise we assume the task wouldn't
-      # be able to start. In this case, it throws an exception since all items
-      # are protected. The item is added since it's detected after the fact.
-      with self.assertRaises(isolateserver.Error):
-        cache.write(h_c, 'c')
-
-    # At this point, after the implicit trim in __exit__(), h_a and h_large were
-    # evicted.
-    self.assertEqual(
-        sorted([h_b, h_c, u'state.json']), sorted(os.listdir(self.tempdir)))
-
-    # Allow 3 items and 101 bytes so h_large is kept.
-    self._policies = local_caching.CachePolicies(
-        max_cache_size=101,
-        min_free_space=1000,
-        max_items=3,
-        max_age_secs=0)
-    with self.get_cache() as cache:
-      cache.write(h_large, large)
-      self.assertEqual(2, cache.initial_number_items)
-      self.assertEqual(2, cache.initial_size)
-
-    self.assertEqual(
-        sorted([h_b, h_c, h_large, u'state.json']),
-        sorted(os.listdir(self.tempdir)))
-
-    # Assert that trimming is done in constructor too.
-    self._policies = local_caching.CachePolicies(
-        max_cache_size=100,
-        min_free_space=1000,
-        max_items=2,
-        max_age_secs=0)
-    with self.get_cache() as cache:
-      assertItems([(h_c, 1), (h_large, len(large))])
-      self.assertEqual(None, cache._protected)
-      self.assertEqual(1101, cache._free_disk)
-      self.assertEqual(2, cache.initial_number_items)
-      self.assertEqual(100, cache.initial_size)
-
-  def test_policies_trim_old(self):
-    # Add two items, one 3 weeks and one minute old, one recent, make sure the
-    # old one is trimmed.
-    self._policies = local_caching.CachePolicies(
-        max_cache_size=1000,
-        min_free_space=0,
-        max_items=1000,
-        max_age_secs=21*24*60*60)
-    now = 100
-    c = self.get_cache(time_fn=lambda: now)
-    # Test the very limit of 3 weeks:
-    c.write(hashlib.sha1('old').hexdigest(), 'old')
-    now += 1
-    c.write(hashlib.sha1('recent').hexdigest(), 'recent')
-    now += 21*24*60*60
-    c.trim()
-    self.assertEqual(set([hashlib.sha1('recent').hexdigest()]), c.cached_set())
-
-  def test_some_file_brutally_deleted(self):
-    h_a = self.to_hash('a')[0]
-
-    self._free_disk = 1100
-    with self.get_cache() as cache:
-      cache.write(h_a, 'a')
-      self.assertTrue(cache.touch(h_a, isolateserver.UNKNOWN_FILE_SIZE))
-      self.assertTrue(cache.touch(h_a, 1))
-
-    os.remove(os.path.join(self.tempdir, h_a))
-
-    with self.get_cache() as cache:
-      # 'Ghost' entry loaded with state.json is still there.
-      self.assertEqual({h_a}, cache.cached_set())
-      # 'touch' detects the file is missing by returning False.
-      self.assertFalse(cache.touch(h_a, isolateserver.UNKNOWN_FILE_SIZE))
-      self.assertFalse(cache.touch(h_a, 1))
-      # Evicting it still works, kills the 'ghost' entry.
-      cache.evict(h_a)
-      self.assertEqual(set(), cache.cached_set())
 
 
 def clear_env_vars():

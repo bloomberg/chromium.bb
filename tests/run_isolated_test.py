@@ -26,6 +26,7 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 import cipd
 import isolated_format
 import isolateserver
+import local_caching
 import named_cache
 import run_isolated
 from depot_tools import auto_stub
@@ -293,7 +294,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         extra_args=[],
         isolated_hash=isolated_hash,
         storage=StorageFake(files),
-        isolate_cache=isolateserver.MemoryCache(),
+        isolate_cache=local_caching.MemoryContentAddressedCache(),
         outputs=None,
         install_named_caches=init_named_caches_stub,
         leak_temp_dir=False,
@@ -757,7 +758,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
     parser, options, _ = run_isolated.parse_args(args)
     isolate_cache = isolateserver.process_cache_options(
         options, trim=False, time_fn=lambda: fake_time)
-    self.assertIsInstance(isolate_cache, isolateserver.DiskCache)
+    self.assertIsInstance(
+        isolate_cache, local_caching.DiskContentAddressedCache)
     named_cache_manager = named_cache.process_named_cache_options(
         parser, options)
     self.assertIsInstance(named_cache_manager, named_cache.CacheManager)
@@ -819,8 +821,9 @@ class RunIsolatedTest(RunIsolatedTestBase):
     # One of each entry should have been cleaned up. This only happen to work
     # because:
     # - file_path.get_free_space() is mocked
-    # - DiskCache.trim() keeps its own internal counter while deleting files so
-    #   it ignores get_free_space() output while deleting files.
+    # - DiskContentAddressedCache.trim() keeps its own internal counter while
+    #   deleting files so it ignores get_free_space() output while deleting
+    #   files.
     actual = genTree(np)
     expected = {
       os.path.join(cache_small, u'small'): small,
@@ -876,7 +879,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           extra_args=[],
           isolated_hash=isolated_hash,
           storage=store,
-          isolate_cache=isolateserver.MemoryCache(),
+          isolate_cache=local_caching.MemoryContentAddressedCache(),
           outputs=None,
           install_named_caches=init_named_caches_stub,
           leak_temp_dir=False,
@@ -1237,7 +1240,7 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
           extra_args=extra_args,
           isolated_hash=isolated_hash,
           storage=store,
-          isolate_cache=isolateserver.MemoryCache(),
+          isolate_cache=local_caching.MemoryContentAddressedCache(),
           outputs=['foo1', 'foodir/foo2_sl', 'bardir/'],
           install_named_caches=init_named_caches_stub,
           leak_temp_dir=False,

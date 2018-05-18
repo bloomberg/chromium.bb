@@ -263,10 +263,10 @@ def change_tree_read_only(rootdir, read_only):
     file_path.make_tree_files_read_only(rootdir)
   elif read_only in (0, None):
     # Anything can be modified.
-    # TODO(maruel): This is currently dangerous as long as DiskCache.touch()
-    # is not yet changed to verify the hash of the content of the files it is
-    # looking at, so that if a test modifies an input file, the file must be
-    # deleted.
+    # TODO(maruel): This is currently dangerous as long as
+    # DiskContentAddressedCache.touch() is not yet changed to verify the hash of
+    # the content of the files it is looking at, so that if a test modifies an
+    # input file, the file must be deleted.
     file_path.make_tree_writeable(rootdir)
   else:
     raise ValueError(

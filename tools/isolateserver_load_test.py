@@ -27,6 +27,7 @@ sys.path.insert(0, ROOT_DIR)
 from third_party import colorama
 
 import isolateserver
+import local_caching
 
 from utils import graph
 from utils import threading_utils
@@ -116,7 +117,7 @@ def send_and_receive(random_pool, storage, progress, size):
 
     start = time.time()
 
-    cache = isolateserver.MemoryCache()
+    cache = local_caching.MemoryContentAddressedCache()
     queue = isolateserver.FetchQueue(storage, cache)
     for i in items:
       queue.add(i.digest, i.size)

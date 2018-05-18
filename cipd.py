@@ -379,7 +379,7 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
   elif ':' in version:  # it's an immutable tag, cache the resolved version
     # version_cache is {hash(package_name, tag) -> instance id} mapping.
     # It does not take a lot of disk space.
-    version_cache = isolateserver.DiskCache(
+    version_cache = local_caching.DiskContentAddressedCache(
         unicode(os.path.join(cache_dir, 'versions')),
         local_caching.CachePolicies(
             # 512GiB.
@@ -399,7 +399,7 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
       try:
         with version_cache.getfileobj(version_digest) as f:
           instance_id = f.read()
-      except isolateserver.CacheMiss:
+      except local_caching.CacheMiss:
         instance_id = resolve_version(
             service_url, package_name, version, timeout=timeoutfn())
         version_cache.write(version_digest, instance_id)
@@ -409,7 +409,7 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
 
   # instance_cache is {instance_id -> client binary} mapping.
   # It is bounded by 5 client versions.
-  instance_cache = isolateserver.DiskCache(
+  instance_cache = local_caching.DiskContentAddressedCache(
       unicode(os.path.join(cache_dir, 'clients')),
         local_caching.CachePolicies(
             # 1GiB.

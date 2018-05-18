@@ -23,6 +23,7 @@ from depot_tools import auto_stub
 
 import auth
 import isolateserver
+import local_caching
 import swarming
 import test_utils
 
@@ -807,7 +808,7 @@ class TestSwarmingCollection(NetTestCase):
     actual_calls = []
     def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
       self.assertIs(storage.__class__, isolateserver.Storage)
-      self.assertIs(cache.__class__, isolateserver.MemoryCache)
+      self.assertIs(cache.__class__, local_caching.MemoryContentAddressedCache)
       # Ensure storage is pointing to required location.
       self.assertEqual('https://localhost:2', storage.location)
       self.assertEqual('default', storage.namespace)
