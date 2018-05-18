@@ -28,6 +28,30 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   output->origin = GURL(message.origin());
   output->service_worker_registration_id =
       message.service_worker_registration_id();
+  output->replaced_existing_notification =
+      message.replaced_existing_notification();
+  output->num_clicks = message.num_clicks();
+  output->num_action_button_clicks = message.num_action_button_clicks();
+  output->creation_time_millis = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(message.creation_time_millis()));
+  output->time_until_first_click_millis = base::TimeDelta::FromMilliseconds(
+      message.time_until_first_click_millis());
+  output->time_until_last_click_millis =
+      base::TimeDelta::FromMilliseconds(message.time_until_last_click_millis());
+  output->time_until_close_millis =
+      base::TimeDelta::FromMilliseconds(message.time_until_close_millis());
+
+  switch (message.closed_reason()) {
+    case NotificationDatabaseDataProto::USER:
+      output->closed_reason = NotificationDatabaseData::ClosedReason::USER;
+      break;
+    case NotificationDatabaseDataProto::DEVELOPER:
+      output->closed_reason = NotificationDatabaseData::ClosedReason::DEVELOPER;
+      break;
+    case NotificationDatabaseDataProto::UNKNOWN:
+      output->closed_reason = NotificationDatabaseData::ClosedReason::UNKNOWN;
+      break;
+  }
 
   PlatformNotificationData* notification_data = &output->notification_data;
   const NotificationDatabaseDataProto::NotificationData& payload =
@@ -178,6 +202,30 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
   message.set_service_worker_registration_id(
       input.service_worker_registration_id);
   message.set_allocated_notification_data(payload.release());
+  message.set_replaced_existing_notification(
+      input.replaced_existing_notification);
+  message.set_num_clicks(input.num_clicks);
+  message.set_num_action_button_clicks(input.num_action_button_clicks);
+  message.set_creation_time_millis(
+      input.creation_time_millis.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  message.set_time_until_first_click_millis(
+      input.time_until_first_click_millis.InMilliseconds());
+  message.set_time_until_last_click_millis(
+      input.time_until_last_click_millis.InMilliseconds());
+  message.set_time_until_close_millis(
+      input.time_until_close_millis.InMilliseconds());
+
+  switch (input.closed_reason) {
+    case NotificationDatabaseData::ClosedReason::USER:
+      message.set_closed_reason(NotificationDatabaseDataProto::USER);
+      break;
+    case NotificationDatabaseData::ClosedReason::DEVELOPER:
+      message.set_closed_reason(NotificationDatabaseDataProto::DEVELOPER);
+      break;
+    case NotificationDatabaseData::ClosedReason::UNKNOWN:
+      message.set_closed_reason(NotificationDatabaseDataProto::UNKNOWN);
+      break;
+  }
 
   return message.SerializeToString(output);
 }

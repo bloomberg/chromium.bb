@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/common/platform_notification_data.h"
 #include "url/gurl.h"
@@ -17,12 +18,27 @@ namespace content {
 // Stores information about a Web Notification as available in the notification
 // database. Beyond the notification's own data, its id and attribution need
 // to be available for users of the database as well.
+// Note: There are extra properties being stored for UKM logging purposes.
+// TODO(https://crbug.com/842622): Add the UKM that will use these properties.
 struct CONTENT_EXPORT NotificationDatabaseData {
   NotificationDatabaseData();
   NotificationDatabaseData(const NotificationDatabaseData& other);
   ~NotificationDatabaseData();
 
   NotificationDatabaseData& operator=(const NotificationDatabaseData& other);
+
+  // Corresponds to why a notification was closed.
+  enum class ClosedReason {
+    // The user explicitly closed the notification.
+    USER,
+
+    // The notification was closed by the developer.
+    DEVELOPER,
+
+    // The notification was found to be closed in the notification database,
+    // but why it was closed was not found.
+    UNKNOWN
+  };
 
   // Id of the notification as assigned by the NotificationIdGenerator.
   std::string notification_id;
@@ -35,6 +51,35 @@ struct CONTENT_EXPORT NotificationDatabaseData {
 
   // Platform data of the notification that's being stored.
   PlatformNotificationData notification_data;
+
+  // Boolean for if this current notification is replacing an existing
+  // notification.
+  bool replaced_existing_notification = false;
+
+  // Number of clicks on the notification itself, i.e. clicks on the
+  // notification that take the user to the website. This excludes action
+  // button clicks.
+  int num_clicks = 0;
+
+  // Number of action button clicks.
+  int num_action_button_clicks = 0;
+
+  // Time the notification was first requested to be shown.
+  base::Time creation_time_millis;
+
+  // Amount of time, in ms, between when the notification is shown and the
+  // first click.
+  base::TimeDelta time_until_first_click_millis;
+
+  // Amount of time, in ms, between when the notification is shown and the
+  // last click.
+  base::TimeDelta time_until_last_click_millis;
+
+  // Amount of time, in ms, between when the notification is shown and closed.
+  base::TimeDelta time_until_close_millis;
+
+  // Why the notification was closed.
+  ClosedReason closed_reason = ClosedReason::UNKNOWN;
 };
 
 }  // namespace content
