@@ -217,10 +217,13 @@ void HighlighterController::RecognizeGesture() {
 
   if (!box.IsEmpty() &&
       gesture_type != HighlighterGestureType::kNotRecognized) {
-    if (client_) {
-      client_->HandleSelection(gfx::ToEnclosingRect(
-          gfx::ScaleRect(box, GetScreenshotScale(current_window))));
-    }
+    const gfx::Rect selection_rect = gfx::ToEnclosingRect(
+        gfx::ScaleRect(box, GetScreenshotScale(current_window)));
+    if (client_)
+      client_->HandleSelection(selection_rect);
+
+    for (auto& observer : observers_)
+      observer.OnHighlighterSelectionRecognized(selection_rect);
 
     result_view_ = std::make_unique<HighlighterResultView>(current_window);
     result_view_->Animate(box, gesture_type,

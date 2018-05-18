@@ -39,9 +39,14 @@ class TestHighlighterObserver : public HighlighterController::Observer {
     }
   }
 
+  void OnHighlighterSelectionRecognized(const gfx::Rect& rect) override {
+    last_recognized_rect_ = rect;
+  }
+
   int enabled_count_ = 0;
   int disabled_by_user_count_ = 0;
   int disabled_by_session_end_ = 0;
+  gfx::Rect last_recognized_rect_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestHighlighterObserver);
@@ -54,8 +59,9 @@ class HighlighterControllerTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    controller_test_api_ = std::make_unique<HighlighterControllerTestApi>(
-        Shell::Get()->highlighter_controller());
+    controller_ = Shell::Get()->highlighter_controller();
+    controller_test_api_ =
+        std::make_unique<HighlighterControllerTestApi>(controller_);
 
     palette_tool_delegate_ = std::make_unique<MockPaletteToolDelegate>();
     tool_ = std::make_unique<MetalayerMode>(palette_tool_delegate_.get());
@@ -95,6 +101,8 @@ class HighlighterControllerTest : public AshTestBase {
   std::unique_ptr<HighlighterControllerTestApi> controller_test_api_;
   std::unique_ptr<MockPaletteToolDelegate> palette_tool_delegate_;
   std::unique_ptr<PaletteTool> tool_;
+
+  HighlighterController* controller_ = nullptr;  // Not owned.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HighlighterControllerTest);
@@ -208,6 +216,9 @@ TEST_F(HighlighterControllerTest, HighlighterGestures) {
   controller_test_api_->SetEnabled(true);
   GetEventGenerator().EnterPenPointerMode();
 
+  TestHighlighterObserver observer;
+  controller_->AddObserver(&observer);
+
   // A non-horizontal stroke is not recognized
   controller_test_api_->ResetSelection();
   GetEventGenerator().MoveTouch(gfx::Point(100, 100));
@@ -228,7 +239,9 @@ TEST_F(HighlighterControllerTest, HighlighterGestures) {
   //   have the same horizontal center line as the stroke bounding box,
   //   be 4dp wider than the stroke bounding box,
   //   be exactly 14dp high.
-  EXPECT_EQ("98,94 204x14", controller_test_api_->selection().ToString());
+  gfx::Rect expected_rect(98, 94, 204, 14);
+  EXPECT_EQ(expected_rect, controller_test_api_->selection());
+  EXPECT_EQ(expected_rect, observer.last_recognized_rect_);
 
   // An insufficiently closed C-like shape is not recognized
   controller_test_api_->ResetSelection();
@@ -250,7 +263,9 @@ TEST_F(HighlighterControllerTest, HighlighterGestures) {
   GetEventGenerator().MoveTouch(gfx::Point(200, 20));
   GetEventGenerator().ReleaseTouch();
   EXPECT_TRUE(controller_test_api_->HandleSelectionCalled());
-  EXPECT_EQ("0,0 200x100", controller_test_api_->selection().ToString());
+  expected_rect = gfx::Rect(0, 0, 200, 100);
+  EXPECT_EQ(expected_rect, controller_test_api_->selection());
+  EXPECT_EQ(expected_rect, observer.last_recognized_rect_);
 
   // A closed diamond shape is recognized
   controller_test_api_->ResetSelection();
@@ -262,7 +277,11 @@ TEST_F(HighlighterControllerTest, HighlighterGestures) {
   GetEventGenerator().MoveTouch(gfx::Point(100, 50));
   GetEventGenerator().ReleaseTouch();
   EXPECT_TRUE(controller_test_api_->HandleSelectionCalled());
-  EXPECT_EQ("0,50 200x200", controller_test_api_->selection().ToString());
+  expected_rect = gfx::Rect(0, 50, 200, 200);
+  EXPECT_EQ(expected_rect, controller_test_api_->selection());
+  EXPECT_EQ(expected_rect, observer.last_recognized_rect_);
+
+  controller_->RemoveObserver(&observer);
 }
 
 TEST_F(HighlighterControllerTest, HighlighterGesturesScaled) {
@@ -498,9 +517,8 @@ TEST_F(HighlighterControllerTest, DetachedClient) {
 // Test enabling/disabling metalayer mode by selecting/deselecting on palette
 // tool and calling UpdateEnabledState notify observers properly.
 TEST_F(HighlighterControllerTest, UpdateEnabledState) {
-  HighlighterController* controller = Shell::Get()->highlighter_controller();
   TestHighlighterObserver observer;
-  controller->AddObserver(&observer);
+  controller_->AddObserver(&observer);
 
   ASSERT_EQ(0, observer.enabled_count_);
   ASSERT_EQ(0, observer.disabled_by_user_count_);
@@ -519,13 +537,13 @@ TEST_F(HighlighterControllerTest, UpdateEnabledState) {
   EXPECT_EQ(2, observer.enabled_count_);
   EXPECT_EQ(1, observer.disabled_by_user_count_);
   EXPECT_EQ(0, observer.disabled_by_session_end_);
-  controller->UpdateEnabledState(
+  controller_->UpdateEnabledState(
       HighlighterEnabledState::kDisabledBySessionEnd);
   EXPECT_EQ(2, observer.enabled_count_);
   EXPECT_EQ(1, observer.disabled_by_user_count_);
   EXPECT_EQ(1, observer.disabled_by_session_end_);
 
-  controller->RemoveObserver(&observer);
+  controller_->RemoveObserver(&observer);
 }
 
 }  // namespace ash

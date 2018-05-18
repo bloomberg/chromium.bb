@@ -48,6 +48,9 @@ class ASH_EXPORT HighlighterController
     // Called when highlighter enabled state changes.
     virtual void OnHighlighterEnabledChanged(HighlighterEnabledState state) {}
 
+    // Called when highlighter selection is recognized.
+    virtual void OnHighlighterSelectionRecognized(const gfx::Rect& rect) {}
+
    protected:
     virtual ~Observer() = default;
   };
