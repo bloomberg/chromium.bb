@@ -116,11 +116,11 @@ class KEYBOARD_EXPORT KeyboardController
   // false while closing the keyboard.
   void HideKeyboard(HideReason reason);
 
-  // Requests the keyboard controller to hide virtual keyboard if it's shown.
-  // This request can be canceled by calling ShowKeyboard() or focusing
-  // another text input field within certain period. This method is no-op if
-  // it's called when virtual keyboard is hidden.
-  void RequestHideKeyboard();
+  // Hides virtual keyboard if it's shown and not locked. This request can be
+  // canceled by calling ShowKeyboard() or focusing another text input field
+  // within certain period. This method is no-op if it's called when virtual
+  // keyboard is hidden or it's locked.
+  void MaybeHideKeyboard();
 
   // Force the keyboard to show up if not showing and lock the keyboard if
   // |lock| is true.

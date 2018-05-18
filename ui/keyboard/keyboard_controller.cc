@@ -400,7 +400,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
   }
 }
 
-void KeyboardController::RequestHideKeyboard() {
+void KeyboardController::MaybeHideKeyboard() {
   if (state_ != KeyboardControllerState::SHOWN || keyboard_locked())
     return;
 
@@ -537,7 +537,7 @@ void KeyboardController::OnTextInputStateChanged(
         show_on_content_update_ = false;
         return;
       case KeyboardControllerState::SHOWN:
-        RequestHideKeyboard();
+        MaybeHideKeyboard();
         return;
       default:
         return;

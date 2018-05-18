@@ -324,7 +324,7 @@ void ArcImeService::OnCursorRectChangedWithSurroundingText(
 
 void ArcImeService::RequestHideIme() {
   if (keyboard_controller_)
-    keyboard_controller_->RequestHideKeyboard();
+    keyboard_controller_->MaybeHideKeyboard();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
