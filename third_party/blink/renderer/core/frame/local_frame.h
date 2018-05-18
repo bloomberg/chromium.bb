@@ -228,7 +228,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   bool ShouldThrottleRendering() const;
 
-  // Returns the frame scheduler, creating one if needed.
+  // Returns frame scheduler for this frame.
+  // FrameScheduler is destroyed during frame detach and nullptr will be
+  // returned after it.
   FrameScheduler* GetFrameScheduler();
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType);
   void ScheduleVisualUpdateUnlessThrottled();
