@@ -59,10 +59,10 @@ union ThreadRef {
   // value meaning "this thread" and so the thread-id is used. The former
   // can be converted to a thread-id with a system call.
   PlatformThreadId as_tid;
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-  // On Posix and Fuchsia, the handle is always a unique identifier so no
-  // conversion needs to be done. However, its value is officially opaque so
-  // there is no one correct way to convert it to a numerical identifier.
+#elif defined(OS_POSIX)
+  // On Posix, the handle is always a unique identifier so no conversion
+  // needs to be done. However, it's value is officially opaque so there
+  // is no one correct way to convert it to a numerical identifier.
   PlatformThreadHandle::Handle as_handle;
 #endif
 };
@@ -736,7 +736,7 @@ ThreadActivityTracker::ThreadActivityTracker(void* base, size_t size)
 
 #if defined(OS_WIN)
     header_->thread_ref.as_tid = PlatformThread::CurrentId();
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif defined(OS_POSIX)
     header_->thread_ref.as_handle =
         PlatformThread::CurrentHandle().platform_handle();
 #endif

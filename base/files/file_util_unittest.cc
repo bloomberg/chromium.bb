@@ -637,7 +637,8 @@ TEST_F(FileUtilTest, CreateTemporaryFileInDirLongPathTest) {
 
 #endif  // defined(OS_WIN)
 
-#if defined(OS_POSIX)
+// TODO(crbug/836416): Remove OS_FUCHSIA here.
+#if !defined(OS_FUCHSIA) && defined(OS_POSIX)
 
 TEST_F(FileUtilTest, CreateAndReadSymlinks) {
   FilePath link_from = temp_dir_.GetPath().Append(FPL("from_file"));
@@ -1219,7 +1220,7 @@ TEST_F(FileUtilTest, CopyFileExecutablePermission) {
   EXPECT_EQ(0777, mode);
 }
 
-#endif  // defined(OS_POSIX)
+#endif  // !defined(OS_FUCHSIA) && defined(OS_POSIX)
 
 #if !defined(OS_FUCHSIA)
 
@@ -1932,7 +1933,8 @@ TEST_F(FileUtilTest, CopyDirectoryWithTrailingSeparators) {
   EXPECT_TRUE(PathExists(file_name_to));
 }
 
-#if defined(OS_POSIX)
+// TODO(crbug/836416): Remove OS_FUCHSIA here.
+#if !defined(OS_FUCHSIA) && defined(OS_POSIX)
 TEST_F(FileUtilTest, CopyDirectoryWithNonRegularFiles) {
   // Create a directory.
   FilePath dir_name_from =
@@ -2145,7 +2147,7 @@ TEST_F(FileUtilTest, CopyDirectoryExclFileOverFifo) {
   // Check that copying fails.
   EXPECT_FALSE(CopyDirectoryExcl(dir_name_from, dir_name_to, false));
 }
-#endif  // defined(OS_POSIX)
+#endif  // !defined(OS_FUCHSIA) && defined(OS_POSIX)
 
 TEST_F(FileUtilTest, CopyFile) {
   // Create a directory
@@ -3307,7 +3309,8 @@ TEST_F(FileUtilTest, SetCloseOnExec) {
 
 #endif
 
-#if defined(OS_POSIX)
+// TODO(crbug/836416): Remove OS_FUCHSIA here.
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
 
 // Testing VerifyPathControlledByAdmin() is hard, because there is no
 // way a test can make a file owned by root, or change file paths
@@ -3591,7 +3594,7 @@ TEST_F(VerifyPathControlledByUserTest, WriteBitChecks) {
   EXPECT_TRUE(VerifyPathControlledByUser(sub_dir_, text_file_, uid_, ok_gids_));
 }
 
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
 
 #if defined(OS_ANDROID)
 TEST_F(FileUtilTest, ValidContentUriTest) {

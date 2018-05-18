@@ -161,7 +161,8 @@ class BASE_EXPORT SharedMemoryHandle {
   bool SetRegionReadOnly() const;
 #endif
 
-#if defined(OS_POSIX)
+// TODO(crbug/836416): Remove OS_FUCHSIA here.
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
   // Constructs a SharedMemoryHandle backed by a FileDescriptor. The newly
   // created instance has the same ownership semantics as base::FileDescriptor.
   // This typically means that the SharedMemoryHandle takes ownership of the
