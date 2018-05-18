@@ -346,7 +346,7 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
 
   set_context_menu_controller(this);
 
-  const int kPulseDurationMs = 200;
+  constexpr int kPulseDurationMs = 200;
   pulse_animation_.SetSlideDuration(kPulseDurationMs);
   pulse_animation_.SetContainer(animation_container_.get());
 
@@ -922,7 +922,7 @@ void Tab::OnMouseCaptureLost() {
 }
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
-  hover_controller_.Show(views::GlowHoverController::SUBTLE);
+  hover_controller_.Show(GlowHoverController::SUBTLE);
   if (MD::IsRefreshUi())
     RepaintSubsequentTab();
   Layout();

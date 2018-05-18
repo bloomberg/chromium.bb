@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/paint/paint_record.h"
+#include "chrome/browser/ui/views/tabs/glow_hover_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -21,7 +22,6 @@
 #include "ui/gfx/paint_throbber.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/glow_hover_controller.h"
 #include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/view.h"
 
@@ -127,9 +127,7 @@ class Tab : public gfx::AnimationDelegate,
     return tab_activated_with_last_tap_down_;
   }
 
-  views::GlowHoverController* hover_controller() {
-    return &hover_controller_;
-  }
+  GlowHoverController* hover_controller() { return &hover_controller_; }
 
   // Returns the width of the largest part of the tab that is available for the
   // user to click to select/activate the tab.
@@ -306,7 +304,7 @@ class Tab : public gfx::AnimationDelegate,
 
   bool tab_activated_with_last_tap_down_ = false;
 
-  views::GlowHoverController hover_controller_;
+  GlowHoverController hover_controller_;
 
   // The offset used to paint the inactive background image.
   gfx::Point background_offset_;
