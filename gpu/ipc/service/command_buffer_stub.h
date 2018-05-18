@@ -59,7 +59,9 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   class DestructionObserver {
    public:
     // Called in Destroy(), before the context/surface are released.
-    virtual void OnWillDestroyStub() = 0;
+    // If |have_context| is false, then the context cannot be made current, else
+    // it already is.
+    virtual void OnWillDestroyStub(bool have_context) = 0;
 
    protected:
     virtual ~DestructionObserver() = default;

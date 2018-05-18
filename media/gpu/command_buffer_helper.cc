@@ -157,9 +157,15 @@ class CommandBufferHelperImpl
     DestroyStub();
   }
 
-  void OnWillDestroyStub() override {
+  void OnWillDestroyStub(bool have_context) override {
     DVLOG(1) << __func__;
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+    // If we don't have a context, then tell the textures.
+    if (!have_context) {
+      for (auto iter : texture_refs_)
+        iter.second->ForceContextLost();
+    }
 
     // OnWillDestroyStub() is called with the context current if possible. Drop
     // the TextureRefs now while the platform textures can still be deleted.

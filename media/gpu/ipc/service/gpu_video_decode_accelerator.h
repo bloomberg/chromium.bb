@@ -73,7 +73,7 @@ class GpuVideoDecodeAccelerator
   void NotifyError(VideoDecodeAccelerator::Error error) override;
 
   // CommandBufferStub::DestructionObserver implementation.
-  void OnWillDestroyStub() override;
+  void OnWillDestroyStub(bool have_context) override;
 
   // Function to delegate sending to actual sender.
   bool Send(IPC::Message* message) override;

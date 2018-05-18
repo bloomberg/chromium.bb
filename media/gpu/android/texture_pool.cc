@@ -17,7 +17,21 @@ TexturePool::TexturePool(std::unique_ptr<CommandBufferStubWrapper> stub)
 }
 
 TexturePool::~TexturePool() {
-  DestroyAllPlatformTextures();
+  // Note that the size of |pool_| doesn't, in general, tell us if there are any
+  // textures.  If the stub has been destroyed, then we will drop the
+  // TextureRefs but leave null entries in the map.  So, we check |stub_| too.
+  if (pool_.size() && stub_) {
+    // TODO(liberato): consider using ScopedMakeCurrent here, though if we are
+    // ever called as part of decoder teardown, then using ScopedMakeCurrent
+    // isn't safe.  For now, we preserve the old behavior (MakeCurrent).
+    //
+    // We check IsCurrent, even though that only checks for the underlying
+    // shared context if |context| is a virtual context.  Assuming that all
+    // TextureRef does is to delete a texture, this is enough.  Of course, we
+    // shouldn't assume that this is all it does.
+    bool have_context = stub_->IsCurrent() || stub_->MakeCurrent();
+    DestroyAllPlatformTextures(have_context);
+  }
 
   if (stub_)
     stub_->RemoveDestructionObserver(this);
@@ -47,16 +61,8 @@ void TexturePool::ReleaseTexture(TextureWrapper* texture) {
   pool_.erase(iter);
 }
 
-void TexturePool::DestroyAllPlatformTextures() {
+void TexturePool::DestroyAllPlatformTextures(bool have_context) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // Don't bother to make the context current if we have no textures.
-  if (!pool_.size())
-    return;
-
-  // If we can't make the context current, then notify all the textures that
-  // they can't delete the underlying platform textures.
-  const bool have_context = stub_ && stub_->MakeCurrent();
 
   // Destroy the wrapper, but keep the entry around in the map.  We do this so
   // that ReleaseTexture can still check that at least the texture was, at some
@@ -75,11 +81,10 @@ void TexturePool::DestroyAllPlatformTextures() {
   }
 }
 
-void TexturePool::OnWillDestroyStub() {
+void TexturePool::OnWillDestroyStub(bool have_context) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(stub_);
-  // Since the stub is going away, clean up while we can.
-  DestroyAllPlatformTextures();
+  DestroyAllPlatformTextures(have_context);
   stub_ = nullptr;
 }
 

@@ -5,6 +5,7 @@
 #include "command_buffer_stub_wrapper_impl.h"
 
 #include "gpu/ipc/service/command_buffer_stub.h"
+#include "ui/gl/gl_context.h"
 
 namespace media {
 
@@ -15,6 +16,10 @@ CommandBufferStubWrapperImpl::CommandBufferStubWrapperImpl(
 bool CommandBufferStubWrapperImpl::MakeCurrent() {
   // Support |!stub_| as a convenience.
   return stub_ && stub_->decoder_context()->MakeCurrent();
+}
+
+bool CommandBufferStubWrapperImpl::IsCurrent() const {
+  return stub_ && stub_->decoder_context()->GetGLContext()->IsCurrent(nullptr);
 }
 
 void CommandBufferStubWrapperImpl::AddDestructionObserver(

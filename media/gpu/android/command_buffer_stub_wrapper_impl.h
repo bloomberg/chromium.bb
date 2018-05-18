@@ -17,6 +17,7 @@ class CommandBufferStubWrapperImpl : public CommandBufferStubWrapper {
 
   // CommandBufferStubWrapper
   bool MakeCurrent() override;
+  bool IsCurrent() const override;
   void AddDestructionObserver(
       gpu::CommandBufferStub::DestructionObserver* observer) override;
   void RemoveDestructionObserver(

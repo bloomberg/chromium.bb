@@ -48,14 +48,14 @@ class MEDIA_GPU_EXPORT TexturePool
   ~TexturePool() override;
 
   // DestructionObserver
-  void OnWillDestroyStub() override;
+  void OnWillDestroyStub(bool have_context) override;
 
   // When called, we will destroy any platform textures if we have a context,
   // or mark them as "lost context" if we don't.  This will not actually remove
   // entries in |pool_|, but will instead clear the unique_ptr to delete the
   // texture.  Assuming that nobody adds textures after our stub is destroyed,
   // this is still alias-free.
-  void DestroyAllPlatformTextures();
+  void DestroyAllPlatformTextures(bool have_context);
 
  private:
   friend class base::RefCounted<TexturePool>;
