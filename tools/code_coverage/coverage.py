@@ -85,7 +85,8 @@ from collections import defaultdict
 SRC_ROOT_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))
 
-# Absolute path to the code coverage tools binary.
+# Absolute path to the code coverage tools binary. These paths can be
+# overwritten by user specified coverage tool paths.
 LLVM_BUILD_DIR = clang_update.LLVM_BUILD_DIR
 LLVM_BIN_DIR = os.path.join(LLVM_BUILD_DIR, 'bin')
 LLVM_COV_PATH = os.path.join(LLVM_BIN_DIR, 'llvm-cov')
@@ -347,6 +348,24 @@ def _ConfigureLogging(args):
   log_format = '[%(asctime)s %(levelname)s] %(message)s'
   log_file = args.log_file if args.log_file else None
   logging.basicConfig(filename=log_file, level=log_level, format=log_format)
+
+
+def _ConfigureLLVMCoverageTools(args):
+  """Configures llvm coverage tools."""
+  if args.coverage_tools_dir:
+    llvm_bin_dir = os.path.abspath(args.coverage_tools_dir)
+    global LLVM_COV_PATH
+    global LLVM_PROFDATA_PATH
+    LLVM_COV_PATH = os.path.join(llvm_bin_dir, 'llvm-cov')
+    LLVM_PROFDATA_PATH = os.path.join(llvm_bin_dir, 'llvm-profdata')
+  else:
+    DownloadCoverageToolsIfNeeded()
+
+  coverage_tools_exist = (
+      os.path.exists(LLVM_COV_PATH) and os.path.exists(LLVM_PROFDATA_PATH))
+  assert coverage_tools_exist, ('Cannot find coverage tools, please make sure '
+                                'both \'%s\' and \'%s\' exist.') % (
+                                    LLVM_COV_PATH, LLVM_PROFDATA_PATH)
 
 
 def _GetSharedLibraries(binary_paths):
@@ -1482,6 +1501,14 @@ def _ParseCommandArguments():
       'cause the browser to freeze, and this argument comes handy.')
 
   arg_parser.add_argument(
+      '--coverage-tools-dir',
+      type=str,
+      help='Path of the directory where LLVM coverage tools (llvm-cov, '
+      'llvm-profdata) exist. This should be only needed if you are testing '
+      'against a custom built clang revision. Otherwise, we pick coverage '
+      'tools automatically from your current source checkout.')
+
+  arg_parser.add_argument(
       '-j',
       '--jobs',
       type=int,
@@ -1512,15 +1539,19 @@ def _ParseCommandArguments():
 
 def Main():
   """Execute tool commands."""
+  # Setup coverage binaries even when script is called with empty params. This
+  # is used by coverage bot for initial setup.
+  if len(sys.argv) == 1:
+    DownloadCoverageToolsIfNeeded()
+    print(__doc__)
+    return
+
   # Change directory to source root to aid in relative paths calculations.
   os.chdir(SRC_ROOT_PATH)
 
-  # Setup coverage binaries even when script is called with empty params. This
-  # is used by coverage bot for initial setup.
-  DownloadCoverageToolsIfNeeded()
-
   args = _ParseCommandArguments()
   _ConfigureLogging(args)
+  _ConfigureLLVMCoverageTools(args)
 
   global BUILD_DIR
   BUILD_DIR = os.path.abspath(args.build_dir)
