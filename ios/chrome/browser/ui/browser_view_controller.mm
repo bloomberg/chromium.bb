@@ -252,6 +252,7 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#include "ios/web/public/features.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer_util.h"
@@ -1614,7 +1615,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 // Perform additional set up after loading the view, typically from a nib.
 - (void)viewDidLoad {
   CGRect initialViewsRect = self.view.bounds;
-  if (!base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+  if (!base::FeatureList::IsEnabled(
+          web::features::kBrowserContainerFullscreen)) {
     initialViewsRect.origin.y += StatusBarHeight();
     initialViewsRect.size.height -= StatusBarHeight();
   }
@@ -1681,6 +1683,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       [self secondaryToolbarHeightWithInset];
   self.secondaryToolbarNoFullscreenHeightConstraint.constant =
       [self secondaryToolbarHeightWithInset];
+
+  // Force a layout pass to make sure the toolbar has the correct height.
+  [self.primaryToolbarCoordinator.viewController.view setNeedsLayout];
+  [self.primaryToolbarCoordinator.viewController.view layoutIfNeeded];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -2398,7 +2404,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Adjust the content area to be under the toolbar, for fullscreen or below
   // the toolbar is not fullscreen.
   CGRect contentFrame = self.contentArea.frame;
-  if (!base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+  if (!base::FeatureList::IsEnabled(
+          web::features::kBrowserContainerFullscreen)) {
     CGFloat marginWithHeader = StatusBarHeight();
     contentFrame.size.height = CGRectGetMaxY(contentFrame) - marginWithHeader;
     contentFrame.origin.y = marginWithHeader;
@@ -2568,7 +2575,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     }
   }
   CGFloat statusBarOffset = 0;
-  if (!base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+  if (!base::FeatureList::IsEnabled(
+          web::features::kBrowserContainerFullscreen)) {
     statusBarOffset = StatusBarHeight();
   }
 
@@ -2603,7 +2611,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Changing the origin here is unnecessary, it's set in page_animation_util.
   if (!fullScreen) {
     frame.size.height -= self.headerHeight;
-  } else if (base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+  } else if (base::FeatureList::IsEnabled(
+                 web::features::kBrowserContainerFullscreen)) {
     frame.size.height -= StatusBarHeight();
   }
 
@@ -3836,7 +3845,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (CGFloat)overscrollHeaderHeight {
-  if (base::FeatureList::IsEnabled(kBrowserContainerFullscreen))
+  if (base::FeatureList::IsEnabled(web::features::kBrowserContainerFullscreen))
     return self.headerHeight;
   return self.headerHeight + StatusBarHeight();
 }
@@ -3967,6 +3976,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (IsUIRefreshPhase1Enabled() && tab &&
       tab.webState->GetVisibleURL() == kChromeUINewTabURL &&
       ![self canShowTabStrip]) {
+    if (base::FeatureList::IsEnabled(
+            web::features::kBrowserContainerFullscreen))
+      return 0;
     // Also subtract the top safe area so the view will appear as full screen.
     // TODO(crbug.com/826369) Remove this once NTP is out of native content.
     if (@available(iOS 11, *)) {
@@ -3997,7 +4009,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (IsUIRefreshPhase1Enabled()) {
     toolbarHeightFullscreen = kToolbarHeightFullscreen;
   }
-  if (base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+  if (base::FeatureList::IsEnabled(
+          web::features::kBrowserContainerFullscreen)) {
     toolbarHeightFullscreen += StatusBarHeight();
   }
   return MAX(0, self.headerHeight - toolbarHeightFullscreen);
@@ -5167,7 +5180,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
           // Restore content area frame, which was resized to fullscreen for
           // NTP opening animation.
           CGRect contentAreaFrame = self.view.bounds;
-          if (!base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+          if (!base::FeatureList::IsEnabled(
+                  web::features::kBrowserContainerFullscreen)) {
             contentAreaFrame.origin.y += StatusBarHeight();
             contentAreaFrame.size.height -= StatusBarHeight();
           }
@@ -5191,7 +5205,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
           [self snapshotEdgeInsetsForWebState:topTab.webState]);
     } else {
       imageFrame = [topTab.webState->GetView() bounds];
-      if (base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+      if (base::FeatureList::IsEnabled(
+              web::features::kBrowserContainerFullscreen)) {
         imageFrame.origin.y += StatusBarHeight();
         imageFrame.size.height -= StatusBarHeight();
       }

@@ -50,16 +50,16 @@ const int kLinkColor = 0x03A9F4;
   UIView* _containerView;
   UIStackView* _stackView;
 
+  // Layout Guide whose height is the height of the bottom unsafe area.
+  UILayoutGuide* _bottomUnsafeAreaGuide;
+  UILayoutGuide* _bottomUnsafeAreaGuideInSuperview;
+
   // Constraint ensuring that |containerView| is at least as high as the
   // superview of the IncognitoNTPView, i.e. the Incognito panel.
   // This ensures that if the Incognito panel is higher than a compact
   // |containerView|, the |containerView|'s |topGuide| and |bottomGuide| are
   // forced to expand, centering the views in between them.
-  NSLayoutConstraint* _containerVerticalConstraint;
-
-  // Constraint ensuring that |containerView| is as wide as the superview of the
-  // the IncognitoNTPView, i.e. the Incognito panel.
-  NSLayoutConstraint* _containerHorizontalConstraint;
+  NSArray<NSLayoutConstraint*>* _superViewConstraints;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame urlLoader:(id<UrlLoader>)loader {
@@ -68,6 +68,11 @@ const int kLinkColor = 0x03A9F4;
     _loader = loader;
 
     self.alwaysBounceVertical = YES;
+    if (@available(iOS 11.0, *)) {
+      // The bottom safe area is taken care of with the bottomUnsafeArea guides.
+      self.contentInsetAdjustmentBehavior =
+          UIScrollViewContentInsetAdjustmentNever;
+    }
 
     // Container to hold and vertically position the stack view.
     _containerView = [[UIView alloc] initWithFrame:frame];
@@ -138,8 +143,12 @@ const int kLinkColor = 0x03A9F4;
     // inside the container scrollview.
     UILayoutGuide* topGuide = [[UILayoutGuide alloc] init];
     UILayoutGuide* bottomGuide = [[UILayoutGuide alloc] init];
+    _bottomUnsafeAreaGuide = [[UILayoutGuide alloc] init];
     [_containerView addLayoutGuide:topGuide];
     [_containerView addLayoutGuide:bottomGuide];
+    [_containerView addLayoutGuide:_bottomUnsafeAreaGuide];
+
+    [self addSubview:_containerView];
 
     [NSLayoutConstraint activateConstraints:@[
       // Position the stackview between the two guides.
@@ -162,6 +171,16 @@ const int kLinkColor = 0x03A9F4;
       [_stackView.centerXAnchor
           constraintEqualToAnchor:_containerView.centerXAnchor],
 
+      // Constraint the _bottomUnsafeAreaGuide to the stack view and the
+      // container view. Its height is set in the -didMoveToSuperview to take
+      // into account the unsafe area.
+      [_bottomUnsafeAreaGuide.topAnchor
+          constraintEqualToAnchor:_stackView.bottomAnchor
+                         constant:2 * kLayoutGuideMinHeight +
+                                  kLayoutGuideVerticalMargin],
+      [_bottomUnsafeAreaGuide.bottomAnchor
+          constraintEqualToAnchor:_containerView.bottomAnchor],
+
       // Ensure that the stackview width is constrained.
       [_stackView.widthAnchor
           constraintLessThanOrEqualToConstant:kStackViewMaxWidth],
@@ -173,8 +192,6 @@ const int kLinkColor = 0x03A9F4;
       [bottomGuide.heightAnchor constraintEqualToAnchor:topGuide.heightAnchor
                                              multiplier:2.0],
     ]];
-
-    [self addSubview:_containerView];
 
     // Constraints comunicating the size of the contentView to the scrollview.
     // See UIScrollView autolayout information at
@@ -193,31 +210,34 @@ const int kLinkColor = 0x03A9F4;
 
 - (void)didMoveToSuperview {
   [super didMoveToSuperview];
-  _containerHorizontalConstraint =
-      [NSLayoutConstraint constraintWithItem:_containerView
-                                   attribute:NSLayoutAttributeWidth
-                                   relatedBy:NSLayoutRelationEqual
-                                      toItem:[self superview]
-                                   attribute:NSLayoutAttributeWidth
-                                  multiplier:1
-                                    constant:0];
-  _containerVerticalConstraint =
-      [NSLayoutConstraint constraintWithItem:_containerView
-                                   attribute:NSLayoutAttributeHeight
-                                   relatedBy:NSLayoutRelationGreaterThanOrEqual
-                                      toItem:[self superview]
-                                   attribute:NSLayoutAttributeHeight
-                                  multiplier:1
-                                    constant:0];
-  [[self superview] addConstraint:_containerHorizontalConstraint];
-  [[self superview] addConstraint:_containerVerticalConstraint];
+  if (!self.superview)
+    return;
+
+  id<LayoutGuideProvider> safeAreaGuide =
+      SafeAreaLayoutGuideForView(self.superview);
+  _bottomUnsafeAreaGuideInSuperview = [[UILayoutGuide alloc] init];
+  [self.superview addLayoutGuide:_bottomUnsafeAreaGuideInSuperview];
+
+  _superViewConstraints = @[
+    [safeAreaGuide.bottomAnchor
+        constraintEqualToAnchor:_bottomUnsafeAreaGuideInSuperview.topAnchor],
+    [self.superview.bottomAnchor
+        constraintEqualToAnchor:_bottomUnsafeAreaGuideInSuperview.bottomAnchor],
+    [_bottomUnsafeAreaGuide.heightAnchor
+        constraintGreaterThanOrEqualToAnchor:_bottomUnsafeAreaGuideInSuperview
+                                                 .heightAnchor],
+    [_containerView.widthAnchor
+        constraintEqualToAnchor:self.superview.widthAnchor],
+    [_containerView.heightAnchor
+        constraintGreaterThanOrEqualToAnchor:self.superview.heightAnchor],
+  ];
+
+  [NSLayoutConstraint activateConstraints:_superViewConstraints];
 }
 
 - (void)willMoveToSuperview:(UIView*)newSuperview {
-  [[self superview] removeConstraint:_containerHorizontalConstraint];
-  [[self superview] removeConstraint:_containerVerticalConstraint];
-  _containerHorizontalConstraint = nil;
-  _containerVerticalConstraint = nil;
+  [NSLayoutConstraint deactivateConstraints:_superViewConstraints];
+  [self.superview removeLayoutGuide:_bottomUnsafeAreaGuideInSuperview];
   [super willMoveToSuperview:newSuperview];
 }
 

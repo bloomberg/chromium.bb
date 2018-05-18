@@ -23,9 +23,9 @@
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
+#include "ios/web/public/features.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -371,8 +371,8 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
       contentOffsetFromTheTop + self.initialHeaderInset;
   CGFloat limit = 0;
   CGFloat topMargin = 0;
-  if (!_webViewProxy &&
-      base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+  if (!_webViewProxy && base::FeatureList::IsEnabled(
+                            web::features::kBrowserContainerFullscreen)) {
     limit = -StatusBarHeight();
     topMargin = StatusBarHeight();
   }

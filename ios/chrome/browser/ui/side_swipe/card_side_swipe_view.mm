@@ -20,12 +20,12 @@
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
 #import "ios/chrome/browser/ui/side_swipe_gesture_recognizer.h"
 #import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_snapshot_providing.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
+#include "ios/web/public/features.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -104,7 +104,8 @@ const CGFloat kResizeFactor = 4;
     _toolbarTopConstraint = [[_topToolbarSnapshot topAnchor]
         constraintEqualToAnchor:self.topAnchor];
 
-    if (!base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+    if (!base::FeatureList::IsEnabled(
+            web::features::kBrowserContainerFullscreen)) {
       _toolbarTopConstraint.constant = -StatusBarHeight();
     }
 
@@ -156,7 +157,8 @@ const CGFloat kResizeFactor = 4;
 
 - (void)setTopToolbarImage:(UIImage*)image isNewTabPage:(BOOL)isNewTabPage {
   [self.topToolbarSnapshot setImage:image];
-  if (!base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+  if (!base::FeatureList::IsEnabled(
+          web::features::kBrowserContainerFullscreen)) {
     // Update constraints as StatusBarHeight changes depending on orientation.
     self.toolbarTopConstraint.constant = -StatusBarHeight();
   }
