@@ -462,7 +462,7 @@ public class CustomTabActivity extends ChromeActivity {
                         recordClientConnectionStatus();
                         finishAndClose(false);
                     }
-                });
+                }, null);
 
         mBrowserSessionContentHandler = new BrowserSessionContentHandler() {
             @Override

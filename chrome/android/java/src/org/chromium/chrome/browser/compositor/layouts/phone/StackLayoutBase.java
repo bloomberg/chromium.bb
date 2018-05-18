@@ -323,12 +323,19 @@ public abstract class StackLayoutBase
     }
 
     /**
+     * Whether or not the HorizontalTabSwitcherAndroid flag (which enables the new horizontal tab
+     * switcher in both portrait and landscape mode) is enabled.
+     */
+    protected boolean isHorizontalTabSwitcherFlagEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
+    }
+
+    /**
      * Whether or not we're currently having the tabs scroll horizontally (as opposed to
      * vertically).
      */
     private boolean isUsingHorizontalLayout() {
-        return getOrientation() == Orientation.LANDSCAPE
-                || ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
+        return getOrientation() == Orientation.LANDSCAPE || isHorizontalTabSwitcherFlagEnabled();
     }
 
     /**
@@ -982,6 +989,10 @@ public abstract class StackLayoutBase
 
         @Override
         float getInnerMargin() {
+            // If we're using the new horizontal tab switcher, don't show the edge of the other
+            // stack (normal if in incognito mode and incognito if in normal mode) on-screen.
+            if (isHorizontalTabSwitcherFlagEnabled()) return 0;
+
             float margin = mInnerMarginPercent
                     * Math.max(mMinMaxInnerMargin, mWidth * INNER_MARGIN_PERCENT_PERCENT);
             return margin;
@@ -1036,6 +1047,10 @@ public abstract class StackLayoutBase
 
         @Override
         float getStack0ToStack1TranslationY() {
+            // Need getHeight() for this case instead of getHeightMinusBrowserControls() so the
+            // normal stack goes up high enough to clear the status bar when the incognito stack is
+            // active.
+            if (isHorizontalTabSwitcherFlagEnabled()) return StackLayoutBase.this.getHeight();
             return Math.round(mWidth - getInnerMargin());
         }
     }
@@ -1229,6 +1244,11 @@ public abstract class StackLayoutBase
      * @return The distance between two neighboring tab stacks.
      */
     private float getFullScrollDistance() {
+        // For the horizontal tab switcher experiment, we use getHeight() instead of
+        // getHeightMinusBrowserControls() to make sure the normal stack goes up enough to clear the
+        // status bar when switching to incognito mode.
+        if (isHorizontalTabSwitcherFlagEnabled()) return getHeight();
+
         float distance = isUsingHorizontalLayout() ? getHeightMinusBrowserControls() : getWidth();
         if (mStacks.size() > 2) {
             return distance - getViewportParameters().getInnerMargin();

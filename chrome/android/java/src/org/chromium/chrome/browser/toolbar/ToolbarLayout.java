@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
@@ -424,6 +425,12 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @param listener The callback that will be notified when the close button is pressed.
      */
     public void setCustomTabCloseClickHandler(OnClickListener listener) { }
+
+    /**
+     * Sets the OnClickListener to notify when the incognito button is pressed.
+     * @param listener The callback that will be notifed when the incognito button is pressed.
+     */
+    public void setIncognitoClickHandler(OnClickListener listener) {}
 
     /**
      * Sets whether the urlbar should be hidden on first page load.
@@ -938,4 +945,10 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
 
     @Override
     public void setBottomSheet(BottomSheet sheet) {}
+
+    /**
+     * Sets the current TabModelSelector so the toolbar can pass it into buttons that need access to
+     * it.
+     */
+    public void setTabModelSelector(TabModelSelector selector) {}
 }

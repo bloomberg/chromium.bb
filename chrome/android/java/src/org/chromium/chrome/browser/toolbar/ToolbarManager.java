@@ -658,10 +658,11 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             FindToolbarManager findToolbarManager, OverviewModeBehavior overviewModeBehavior,
             LayoutManager layoutManager, OnClickListener tabSwitcherClickHandler,
             OnClickListener newTabClickHandler, OnClickListener bookmarkClickHandler,
-            OnClickListener customTabsBackClickHandler) {
+            OnClickListener customTabsBackClickHandler, OnClickListener incognitoClickHandler) {
         assert !mInitializedWithNative;
         mTabModelSelector = tabModelSelector;
 
+        mToolbar.setTabModelSelector(mTabModelSelector);
         mToolbar.getLocationBar().updateVisualsForState();
         mToolbar.getLocationBar().setUrlToPageUrl();
         mToolbar.setBrowserControlsVisibilityDelegate(controlsVisibilityDelegate);
@@ -669,6 +670,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mToolbar.setOnNewTabClickHandler(newTabClickHandler);
         mToolbar.setBookmarkClickHandler(bookmarkClickHandler);
         mToolbar.setCustomTabCloseClickHandler(customTabsBackClickHandler);
+        mToolbar.setIncognitoClickHandler(incognitoClickHandler);
         mToolbar.setLayoutUpdateHost(layoutManager);
 
         mToolbarModel.initializeWithNative();

@@ -116,6 +116,13 @@ public class StackLayout extends StackLayoutBase {
 
     @Override
     protected int getMinRenderedScrollOffset() {
+        // If the horizontal tab switcher flag is enabled, we let the user tap the incognito button
+        // to switch to incognito mode, even if no incognito tabs are open.
+        if (isHorizontalTabSwitcherFlagEnabled()) return -1;
+
+        // If there's at least one incognito tab open, or we're in the process of switching back
+        // from incognito to normal mode, return -1 so we don't cause any clamping. Otherwise,
+        // return 0 to prevent scrolling.
         if (mStacks.get(INCOGNITO_STACK_INDEX).isDisplayable() || mFlingFromModelChange) return -1;
         return 0;
     }
@@ -136,6 +143,10 @@ public class StackLayout extends StackLayoutBase {
 
     @Override
     protected @SwipeMode int computeInputMode(long time, float x, float y, float dx, float dy) {
+        // If this experiment flag is enabled, we add an incognito toggle button to the toolbar, and
+        // disable swiping between the stacks.
+        if (isHorizontalTabSwitcherFlagEnabled()) return SWIPE_MODE_SEND_TO_STACK;
+
         if (mStacks.size() == 2 && !mStacks.get(1).isDisplayable()) return SWIPE_MODE_SEND_TO_STACK;
         return super.computeInputMode(time, x, y, dx, dy);
     }

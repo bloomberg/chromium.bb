@@ -40,6 +40,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewDebug;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.view.WindowManager;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
@@ -66,6 +67,7 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -73,6 +75,7 @@ import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
+import org.chromium.chrome.browser.widget.incognitotoggle.IncognitoToggleButton;
 import org.chromium.chrome.browser.widget.newtab.NewTabButton;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -125,9 +128,12 @@ public class ToolbarPhone extends ToolbarLayout
     private static final Interpolator NTP_SEARCH_BOX_EXPANSION_INTERPOLATOR =
             new FastOutSlowInInterpolator();
 
+    private TabModelSelector mTabModelSelector;
+
     protected LocationBarPhone mLocationBar;
 
     protected ViewGroup mToolbarButtonsContainer;
+    private IncognitoToggleButton mIncognitoToggleButton;
     protected ImageView mToggleTabStackButton;
     protected NewTabButton mNewTabButton;
     protected @Nullable TintedImageButton mHomeButton;
@@ -179,6 +185,7 @@ public class ToolbarPhone extends ToolbarLayout
 
     private OnClickListener mTabSwitcherListener;
     private OnClickListener mNewTabListener;
+    private OnClickListener mIncognitoListener;
 
     @ViewDebug.ExportedProperty(category = "chrome")
     protected boolean mUrlFocusChangeInProgress;
@@ -588,6 +595,8 @@ public class ToolbarPhone extends ToolbarLayout
                 RecordUserAction.record("MobileNewTabOpened");
                 // TODO(kkimlabs): Record UMA action for homepage button.
             }
+        } else if (mIncognitoToggleButton == v) {
+            if (mIncognitoListener != null) mIncognitoListener.onClick(v);
         } else if (mHomeButton != null && mHomeButton == v) {
             openHomepage();
             if (isNativeLibraryReady()
@@ -827,7 +836,15 @@ public class ToolbarPhone extends ToolbarLayout
      * @return The right bounds of the location bar after accounting for any visible left buttons.
      */
     protected int getBoundsAfterAccountingForRightButtons() {
-        return Math.max(mToolbarSidePadding, mToolbarButtonsContainer.getMeasuredWidth());
+        // We set the incognito toggle button's visibility from GONE to VISIBLE when the tab
+        // switcher starts to open, but we don't want this to affect the Omnibox's size during the
+        // animation, so we have to make an adjustment here.
+        int incognitoButtonWidth = 0;
+        if (mIncognitoToggleButton != null && mIncognitoToggleButton.getVisibility() == VISIBLE) {
+            incognitoButtonWidth += mIncognitoToggleButton.getMeasuredWidth();
+        }
+        return Math.max(mToolbarSidePadding,
+                mToolbarButtonsContainer.getMeasuredWidth() - incognitoButtonWidth);
     }
 
     protected void updateToolbarBackground(int color) {
@@ -1814,8 +1831,25 @@ public class ToolbarPhone extends ToolbarLayout
         int tabSwitcherViewsVisibility = mTabSwitcherState != STATIC_TAB  ? VISIBLE : INVISIBLE;
         int browsingViewsVisibility = mTabSwitcherState != STATIC_TAB ? INVISIBLE : VISIBLE;
 
+        // Don't inflate the incognito toggle button unless the horizontal tab switcher experiment
+        // is enabled and the user actually enters the tab switcher.
+        if (mIncognitoToggleButton == null && mTabSwitcherState != STATIC_TAB
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)) {
+            ViewStub incognitoToggleButtonStub = findViewById(R.id.incognito_button_stub);
+            mIncognitoToggleButton = (IncognitoToggleButton) incognitoToggleButtonStub.inflate();
+            mIncognitoToggleButton.setOnClickListener(this);
+            mIncognitoToggleButton.setTabModelSelector(mTabModelSelector);
+            mTabSwitcherModeViews.add(mIncognitoToggleButton);
+        }
+
         for (View view : mTabSwitcherModeViews) {
-            view.setVisibility(tabSwitcherViewsVisibility);
+            // The incognito toggle button needs to be set to GONE rather than INVISIBLE so it
+            // doesn't reduce the space available for the Omnibox.
+            if (view == mIncognitoToggleButton && tabSwitcherViewsVisibility == INVISIBLE) {
+                view.setVisibility(GONE);
+            } else {
+                view.setVisibility(tabSwitcherViewsVisibility);
+            }
         }
         for (View view : mBrowsingModeViews) {
             view.setVisibility(browsingViewsVisibility);
@@ -1885,6 +1919,7 @@ public class ToolbarPhone extends ToolbarLayout
         } else {
             if (!mDelayingTabSwitcherAnimation) {
                 mTabSwitcherModeAnimation = createExitTabSwitcherAnimation(showToolbar);
+                if (mIncognitoToggleButton != null) mIncognitoToggleButton.setClickable(false);
             }
         }
 
@@ -1916,6 +1951,8 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     protected void onTabSwitcherTransitionFinished() {
+        if (mIncognitoToggleButton != null) mIncognitoToggleButton.setClickable(true);
+
         setAlpha(1.f);
         mClipRect = null;
 
@@ -1984,6 +2021,11 @@ public class ToolbarPhone extends ToolbarLayout
     @Override
     public void setOnNewTabClickHandler(OnClickListener listener) {
         mNewTabListener = listener;
+    }
+
+    @Override
+    public void setIncognitoClickHandler(OnClickListener listener) {
+        mIncognitoListener = listener;
     }
 
     @Override
@@ -2634,6 +2676,14 @@ public class ToolbarPhone extends ToolbarLayout
     protected void setMenuButtonHighlightDrawable(boolean highlighting) {
         highlighting &= !isTabSwitcherAnimationRunning();
         super.setMenuButtonHighlightDrawable(highlighting);
+    }
+
+    @Override
+    public void setTabModelSelector(TabModelSelector selector) {
+        mTabModelSelector = selector;
+        if (mIncognitoToggleButton != null) {
+            mIncognitoToggleButton.setTabModelSelector(mTabModelSelector);
+        }
     }
 
     @Override

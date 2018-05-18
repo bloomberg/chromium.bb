@@ -42,6 +42,15 @@
             android:layout_width="4dp"
             android:layout_height="match_parent" />
 
+        <ViewStub
+            android:id="@+id/incognito_button_stub"
+            android:inflatedId="@+id/incognito_button"
+            android:layout="@layout/toolbar_phone_incognito_button"
+            style="@style/ToolbarButton"
+            android:layout_gravity="top"
+            android:contentDescription="@string/accessibility_tabstrip_btn_incognito_toggle_standard"
+            android:visibility="gone" />
+
         <ImageButton android:id="@+id/tab_switcher_button"
             style="@style/ToolbarButton"
             android:paddingStart="8dp"

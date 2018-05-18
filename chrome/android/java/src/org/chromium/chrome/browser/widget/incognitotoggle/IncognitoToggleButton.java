@@ -22,6 +22,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
  * done in IncognitoToggleButtonTablet) to add additional behaviors.
  */
 public class IncognitoToggleButton extends ImageButton {
+    // TODO(crbug.com/843749): refactor this class so it doesn't need to hold a reference to
+    // TabModelSelector.
     protected TabModelSelector mTabModelSelector;
     protected TabModelSelectorObserver mTabModelSelectorObserver;
 
