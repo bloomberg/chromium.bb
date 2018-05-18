@@ -21,11 +21,6 @@
     "chromeosInfoPrivate",
     {"fileSystem": ["write", "directory"]}
   ],
-  "requirements": {
-    "3D": {
-      "features": ["webgl"]
-    }
-  },
   "app": {
     "background": {
       "scripts": ["js/background.js"]

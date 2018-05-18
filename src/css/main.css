@@ -208,30 +208,6 @@ body {
       url(../images/2x/gallery_button_delete.png) 2x);
 }
 
-body.letterbox #main-canvas-wrapper,
-body.letterbox #main-preview-canvas-wrapper,
-body.letterbox #main-fast-canvas-wrapper,
-body.letterbox #main-canvas-wrapper canvas,
-body.letterbox #main-preview-canvas-wrapper canvas,
-body.letterbox #main-fast-canvas-wrapper canvas {
-  width: 100%;
-}
-
-body:not(.letterbox) #main-canvas-wrapper,
-body:not(.letterbox) #main-preview-canvas-wrapper,
-body:not(.letterbox) #main-fast-canvas-wrapper,
-body:not(.letterbox) #main-canvas-wrapper canvas,
-body:not(.letterbox) #main-preview-canvas-wrapper canvas,
-body:not(.letterbox) #main-fast-canvas-wrapper canvas {
-  height: 100%;
-}
-
-#main-canvas-wrapper canvas,
-#main-preview-canvas-wrapper canvas,
-#main-fast-canvas-wrapper canvas {
-  pointer-events: none;
-}
-
 #error {
   align-items: center;
   background: black;
@@ -293,7 +269,7 @@ body.has-error #error {
   display: flex;
 }
 
-body.mirror canvas {
+body.mirror #main-preview {
   -webkit-transform: scaleX(-1);
 }
 
@@ -554,11 +530,16 @@ body.album #album {
   visibility: visible;
 }
 
-#camera {
+#camera,
+#main-preview-wrapper {
   align-items: center;
   display: flex;
   justify-content: center;
   overflow: hidden;
+}
+
+#main-preview-wrapper {
+  flex-shrink: 0;
 }
 
 #toast {

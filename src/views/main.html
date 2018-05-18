@@ -6,7 +6,6 @@
     <title>&#xfeff;</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="../css/main.css">
-    <script src="../js/third_party/glfx/glfx.js"></script>
     <script src="../js/util.js"></script>
     <script src="../js/scrollbar.js"></script>
     <script src="../js/models/gallery.js"></script>
@@ -16,15 +15,14 @@
     <script src="../js/views/dialog.js"></script>
     <script src="../js/views/album.js"></script>
     <script src="../js/views/browser.js"></script>
-    <script src="../js/processor.js"></script>
     <script src="../js/router.js"></script>
     <script src="../js/main.js"></script>
   </head>
   <body class="mirror">
     <div id="camera">
-      <div id="main-canvas-wrapper"></div>
-      <div id="main-preview-canvas-wrapper"></div>
-      <div id="main-fast-canvas-wrapper"></div>
+      <div id="main-preview-wrapper">
+        <video id="main-preview"></video>
+      </div>
       <div id="toolbar-puller-wrapper">
         <div id="toolbar">
           <div id="toolbar-background"></div>

@@ -1,7 +1,7 @@
 Camera App
 ==========
 
-Camera App is a packaged app designed to take pictures with several effects using the embedded web camera.
+Camera App is a packaged app designed to take photos and record videos.
 
 Supported systems
 -----------------

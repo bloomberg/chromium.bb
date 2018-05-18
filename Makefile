@@ -100,7 +100,6 @@ SRC_RESOURCES= \
 	src/js/background.js \
 	src/js/main.js \
 	src/js/models/gallery.js \
-	src/js/processor.js \
 	src/js/router.js \
 	src/js/scrollbar.js \
 	src/js/test.js \
@@ -127,69 +126,11 @@ SRC_MANIFEST=src/manifest.json
 # Manifest file for the tests.crx package.
 SRC_TESTS_MANIFEST=src/manifest-tests.json
 
-# Resources of the third party glfx library. They will be built, and the target
-# glfx.js with LICENSE will be copied to the target package.
-GLFX_RESOURCES= \
-	third_party/glfx/LICENSE \
-	third_party/glfx/build.py \
-	third_party/glfx/src/OES_texture_float_linear-polyfill.js \
-	third_party/glfx/src/core/canvas.js \
-	third_party/glfx/src/core/matrix.js \
-	third_party/glfx/src/core/shader.js \
-	third_party/glfx/src/core/spline.js \
-	third_party/glfx/src/core/texture.js \
-	third_party/glfx/src/filters/adjust/brightnesscontrast.js \
-	third_party/glfx/src/filters/adjust/curves.js \
-	third_party/glfx/src/filters/adjust/denoise.js \
-	third_party/glfx/src/filters/adjust/huesaturation.js \
-	third_party/glfx/src/filters/adjust/noise.js \
-	third_party/glfx/src/filters/adjust/sepia.js \
-	third_party/glfx/src/filters/adjust/unsharpmask.js \
-	third_party/glfx/src/filters/adjust/vibrance.js \
-	third_party/glfx/src/filters/adjust/vignette.js \
-	third_party/glfx/src/filters/blur/lensblur.js \
-	third_party/glfx/src/filters/blur/tiltshift.js \
-	third_party/glfx/src/filters/blur/triangleblur.js \
-	third_party/glfx/src/filters/blur/zoomblur.js \
-	third_party/glfx/src/filters/common.js \
-	third_party/glfx/src/filters/fun/colorhalftone.js \
-	third_party/glfx/src/filters/fun/dotscreen.js \
-	third_party/glfx/src/filters/fun/edgework.js \
-	third_party/glfx/src/filters/fun/ghost.js \
-	third_party/glfx/src/filters/fun/hexagonalpixelate.js \
-	third_party/glfx/src/filters/fun/ink.js \
-	third_party/glfx/src/filters/fun/modern.js \
-	third_party/glfx/src/filters/fun/photolab.js \
-	third_party/glfx/src/filters/warp/bulgepinch.js \
-	third_party/glfx/src/filters/warp/matrixwarp.js \
-	third_party/glfx/src/filters/warp/perspective.js \
-	third_party/glfx/src/filters/warp/swirl.js \
-	third_party/glfx/www/build.py \
-
 # Builds camera.crx and tests.crx
 all: build/camera.crx build/tests.crx
 
-# Builds the glfx third_party library.
-build/third_party/glfx: $(GLFX_RESOURCES)
-	mkdir -p build
-	cp --parents $(GLFX_RESOURCES) build
-	cd build/third_party/glfx && ./build.py
-
-# Copies the built glfx library to the camera.crx build directory.
-build/camera/js/third_party/glfx: $(GLFX_RESOURCES) build/third_party/glfx
-	mkdir -p build/camera/js/third_party/glfx
-	cp build/third_party/glfx/glfx.js build/camera/js/third_party/glfx
-	cp build/third_party/glfx/LICENSE build/camera/js/third_party/glfx
-
-# Copies the built library to the tests.crx build directory.
-build/tests/js/third_party/glfx: $(GLFX_RESOURCES) build/third_party/glfx
-	mkdir -p build/tests/js/third_party/glfx
-	cp build/third_party/glfx/glfx.js build/tests/js/third_party/glfx
-	cp build/third_party/glfx/LICENSE build/tests/js/third_party/glfx
-
 # Builds the release version.
-build/camera: $(SRC_RESOURCES) $(SRC_MANIFEST) \
-	  build/camera/js/third_party/glfx
+build/camera: $(SRC_RESOURCES) $(SRC_MANIFEST)
 	mkdir -p build/camera
 	cd $(SRC_PATH); cp --parents $(patsubst $(SRC_PATH)%, %, \
 	  $(SRC_RESOURCES)) ../build/camera
@@ -204,8 +145,7 @@ build/camera.crx: build/camera
 camera: build/camera.crx
 
 # Builds the tests version.
-build/tests: $(SRC_RESOURCES) $(SRC_TESTS_MANIFEST) \
-	  build/tests/js/third_party/glfx
+build/tests: $(SRC_RESOURCES) $(SRC_TESTS_MANIFEST)
 	mkdir -p build/tests
 	cd $(SRC_PATH); cp --parents $(patsubst $(SRC_PATH)%, %, \
 	  $(SRC_RESOURCES)) ../build/tests
