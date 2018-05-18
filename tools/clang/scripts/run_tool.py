@@ -208,7 +208,8 @@ def _ExecuteTool(toolname, tool_args, build_directory, compdb_entry):
 
   args.append('--')
   args.extend([
-      a for a in shlex.split(compdb_entry.command)
+      a for a in shlex.split(compdb_entry.command,
+                             posix=(sys.platform != 'win32'))
       # 'command' contains the full command line, including the input
       # source file itself. We need to filter it out otherwise it's
       # passed to the tool twice - once directly and once via
@@ -216,6 +217,10 @@ def _ExecuteTool(toolname, tool_args, build_directory, compdb_entry):
       if a != compdb_entry.filename
   ])
 
+  # shlex.split escapes double qoutes in non-Posix mode, so we need to strip
+  # them back.
+  if sys.platform == 'win32':
+    args = [a.replace('\\"', '"') for a in args]
   command = subprocess.Popen(
       args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=build_directory)
   stdout_text, stderr_text = command.communicate()
