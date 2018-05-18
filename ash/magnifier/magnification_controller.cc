@@ -50,7 +50,7 @@ constexpr float kInitialMagnifiedScale = 2.0f;
 constexpr float kScrollScaleChangeFactor = 0.00125f;
 
 constexpr float kZoomGestureLockThreshold = 0.2f;
-constexpr float kScrollGestureLockThreshold = 2500.0f;
+constexpr float kScrollGestureLockThreshold = 20000.0f;
 
 // Default animation parameters for redrawing the magnification window.
 constexpr gfx::Tween::Type kDefaultAnimationTweenType = gfx::Tween::EASE_OUT;
@@ -749,7 +749,30 @@ bool MagnificationController::ProcessGestures() {
           locked_gesture_ = MagnificationController::ZOOM;
         }
 
-        RedrawDIP(origin_, scale, 0, kDefaultAnimationTweenType);
+        // |details.bounding_box().CenterPoint()| return center of touch points
+        // of gesture in non-dip screen coordinate.
+        gfx::PointF gesture_center =
+            gfx::PointF(details.bounding_box().CenterPoint());
+
+        // Root transform does dip scaling, screen magnification scaling and
+        // translation. Apply inverse transform to convert non-dip screen
+        // coordinate to dip logical coordinate.
+        root_window_->GetHost()->GetInverseRootTransform().TransformPoint(
+            &gesture_center);
+
+        // Calcualte new origin to keep the distance between |gesture_center|
+        // and |origin| same in screen coordinate. This means the following
+        // equation.
+        // (gesture_center.x - origin_.x) * scale_ =
+        //   (gesture_center.x - new_origin.x) * scale
+        // If you solve it for |new_origin|, you will get the following formula.
+        const gfx::PointF origin = gfx::PointF(
+            gesture_center.x() -
+                (scale_ / scale) * (gesture_center.x() - origin_.x()),
+            gesture_center.y() -
+                (scale_ / scale) * (gesture_center.y() - origin_.y()));
+
+        RedrawDIP(origin, scale, 0, kDefaultAnimationTweenType);
       }
     } else if (gesture->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
       original_origin_ = origin_;
