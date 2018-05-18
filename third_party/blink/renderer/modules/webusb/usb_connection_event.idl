@@ -6,7 +6,7 @@
 
 [
     Constructor(DOMString type, USBConnectionEventInit eventInitDict),
-    RuntimeEnabled=WebUSB
+    Exposed(DedicatedWorker WebUSBOnDedicatedAndSharedWorkers,SharedWorker WebUSBOnDedicatedAndSharedWorkers,Window WebUSB)
 ] interface USBConnectionEvent : Event {
     [SameObject] readonly attribute USBDevice device;
 };

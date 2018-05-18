@@ -214,6 +214,7 @@
           "blink.mojom.NotificationService",
           "blink.mojom.PermissionService",
           "blink.mojom.QuotaDispatcherHost",
+          "device.mojom.UsbDeviceManager",
           "network.mojom.WebSocket",
           "payments.mojom.PaymentManager",
           "shape_detection.mojom.BarcodeDetection",

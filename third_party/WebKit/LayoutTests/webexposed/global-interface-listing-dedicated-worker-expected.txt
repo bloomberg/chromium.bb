@@ -1179,6 +1179,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method getDevices
 [Worker]     setter onconnect
 [Worker]     setter ondisconnect
+[Worker] interface USBConnectionEvent : Event
+[Worker]     attribute @@toStringTag
+[Worker]     getter device
+[Worker]     method constructor
 [Worker] interface WebGL2RenderingContext
 [Worker]     attribute @@toStringTag
 [Worker]     attribute ACTIVE_ATTRIBUTES

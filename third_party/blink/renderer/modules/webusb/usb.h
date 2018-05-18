@@ -79,6 +79,9 @@ class USB final : public EventTargetWithInlineData,
 
   void EnsureDeviceManagerConnection();
 
+  bool IsContextSupported() const;
+  bool IsFeatureEnabled() const;
+
   device::mojom::blink::UsbDeviceManagerPtr device_manager_;
   HeapHashSet<Member<ScriptPromiseResolver>> device_manager_requests_;
   device::mojom::blink::UsbChooserServicePtr chooser_service_;
