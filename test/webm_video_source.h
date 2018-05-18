@@ -27,8 +27,8 @@ class WebMVideoSource : public CompressedVideoSource {
  public:
   explicit WebMVideoSource(const std::string &file_name)
       : file_name_(file_name), aom_ctx_(new AvxInputContext()),
-        webm_ctx_(new WebmInputContext()), buf_(NULL), buf_sz_(0), frame_(0),
-        end_of_file_(false) {}
+        webm_ctx_(new WebmInputContext()), buf_(NULL), buf_sz_(0), frame_sz_(0),
+        frame_(0), end_of_file_(false) {}
 
   virtual ~WebMVideoSource() {
     if (aom_ctx_->file != NULL) fclose(aom_ctx_->file);
@@ -56,7 +56,7 @@ class WebMVideoSource : public CompressedVideoSource {
 
   void FillFrame() {
     ASSERT_TRUE(aom_ctx_->file != NULL);
-    const int status = webm_read_frame(webm_ctx_, &buf_, &buf_sz_);
+    const int status = webm_read_frame(webm_ctx_, &buf_, &frame_sz_, &buf_sz_);
     ASSERT_GE(status, 0) << "webm_read_frame failed";
     if (status == 1) {
       end_of_file_ = true;
@@ -66,7 +66,8 @@ class WebMVideoSource : public CompressedVideoSource {
   void SeekToNextKeyFrame() {
     ASSERT_TRUE(aom_ctx_->file != NULL);
     do {
-      const int status = webm_read_frame(webm_ctx_, &buf_, &buf_sz_);
+      const int status =
+          webm_read_frame(webm_ctx_, &buf_, &frame_sz_, &buf_sz_);
       ASSERT_GE(status, 0) << "webm_read_frame failed";
       ++frame_;
       if (status == 1) {
@@ -76,7 +77,7 @@ class WebMVideoSource : public CompressedVideoSource {
   }
 
   virtual const uint8_t *cxdata() const { return end_of_file_ ? NULL : buf_; }
-  virtual size_t frame_size() const { return buf_sz_; }
+  virtual size_t frame_size() const { return frame_sz_; }
   virtual unsigned int frame_number() const { return frame_; }
 
  protected:
@@ -85,6 +86,7 @@ class WebMVideoSource : public CompressedVideoSource {
   WebmInputContext *webm_ctx_;
   uint8_t *buf_;
   size_t buf_sz_;
+  size_t frame_sz_;
   unsigned int frame_;
   bool end_of_file_;
 };
