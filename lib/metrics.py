@@ -323,8 +323,8 @@ def CumulativeSmallIntegerDistribution(name, reset_after=False,
 
 
 @_Metric
-def SecondsDistribution(name, scale=1, reset_after=False, description=None,
-                        field_spec=_MISSING):
+def CumulativeSecondsDistribution(name, scale=1, reset_after=False,
+                                  description=None, field_spec=_MISSING):
   """Returns a metric handle for a cumulative distribution named |name|.
 
   The distribution handle returned by this method is better suited than the
@@ -347,10 +347,13 @@ def SecondsDistribution(name, scale=1, reset_after=False, description=None,
       name, bucketer=b, units=ts_mon.MetricsDataUnits.SECONDS,
       description=description, field_spec=field_spec)
 
+SecondsDistribution = CumulativeSecondsDistribution
+
 
 @_Metric
-def PercentageDistribution(name, num_buckets=1000, reset_after=False,
-                           description=None, field_spec=_MISSING):
+def PercentageDistribution(
+    name, num_buckets=1000, reset_after=False,
+    description=None, field_spec=_MISSING):
   """Returns a metric handle for a cumulative distribution for percentage.
 
   The distribution handle returned by this method is better suited for reporting
@@ -378,10 +381,10 @@ def PercentageDistribution(name, num_buckets=1000, reset_after=False,
 @contextlib.contextmanager
 def SecondsTimer(name, fields=None, description=None, field_spec=_MISSING,
                  scale=1, record_on_exception=True, add_exception_field=False):
-  """Record the time of an operation to a SecondsDistributionMetric.
+  """Record the time of an operation to a CumulativeSecondsDistributionMetric.
 
   Records the time taken inside of the context block, to the
-  SecondsDistribution named |name|, with the given fields.
+  CumulativeSecondsDistribution named |name|, with the given fields.
 
   Usage:
 
@@ -415,7 +418,7 @@ def SecondsTimer(name, fields=None, description=None, field_spec=_MISSING,
     fields: The fields of the metric to create.
     description: A string description of the metric.
     field_spec: A sequence of ts_mon.Field objects to specify the field schema.
-    scale: A float to scale the SecondsDistribution buckets by.
+    scale: A float to scale the CumulativeSecondsDistribution buckets by.
     record_on_exception: Whether to record metrics if an exception is raised.
     add_exception_field: Whether to add a BooleanField("encountered_exception")
         to the FieldSpec provided, and set its value to True iff an exception
@@ -424,7 +427,7 @@ def SecondsTimer(name, fields=None, description=None, field_spec=_MISSING,
   if field_spec is not None and field_spec is not _MISSING:
     field_spec.append(ts_mon.BooleanField('encountered_exception'))
 
-  m = SecondsDistribution(
+  m = CumulativeSecondsDistribution(
       name, scale=scale, description=description, field_spec=field_spec)
   f = fields or {}
   f = dict(f)
@@ -549,8 +552,8 @@ class RuntimeBreakdownTimer(object):
       doSomeNonStepWork()
 
   This will emit the following metrics:
-  - .../timer/name/total_duration - A SecondsDistribution metric for the time
-        spent inside the outer with block.
+  - .../timer/name/total_duration - A CumulativeSecondsDistribution metric for
+        the time spent inside the outer with block.
   - .../timer/name/breakdown/first_step and
     .../timer/name/breakdown/second_step - PercentageDistribution metrics for
         the fraction of time devoted to each substep.
@@ -595,9 +598,10 @@ class RuntimeBreakdownTimer(object):
   def __exit__(self, _type, _value, _traceback):
     self._RecordTotalTime()
 
-    outer_timer = SecondsDistribution('%s/total_duration' % (self._name,),
-                                      field_spec=self._field_spec,
-                                      description=self._description)
+    outer_timer = CumulativeSecondsDistribution(
+        '%s/total_duration' % (self._name,),
+        field_spec=self._field_spec,
+        description=self._description)
     outer_timer.add(self._total_time_s, fields=self._fields)
 
     for name, percent in self._GetStepBreakdowns().iteritems():

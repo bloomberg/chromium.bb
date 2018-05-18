@@ -238,7 +238,7 @@ def _RecordDurationMetric(batches):
   Yields:
     Re-yields the same batches
   """
-  m = metrics.SecondsDistribution(
+  m = metrics.CumulativeSecondsDistribution(
       _SPAN_DURATION_METRIC,
       description="The durations of Spans consumed by export_to_cloud_trace",
       field_spec=[ts_mon.StringField('name')])

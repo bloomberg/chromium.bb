@@ -149,7 +149,7 @@ class TestSecondsTimer(cros_test_lib.MockTestCase):
 
   def setUp(self):
     self._mockMetric = mock.MagicMock()
-    self.PatchObject(metrics, 'SecondsDistribution',
+    self.PatchObject(metrics, 'CumulativeSecondsDistribution',
                      return_value=self._mockMetric)
 
   @metrics.SecondsTimerDecorator('fooname', fields={'foo': 'bar'})
@@ -159,14 +159,14 @@ class TestSecondsTimer(cros_test_lib.MockTestCase):
   def testDecorator(self):
     """Test that calling a decorated function ends up emitting metric."""
     self._DecoratedFunction(1, 2, 3, foo='bar')
-    self.assertEqual(metrics.SecondsDistribution.call_count, 1)
+    self.assertEqual(metrics.CumulativeSecondsDistribution.call_count, 1)
     self.assertEqual(self._mockMetric.add.call_count, 1)
 
   def testContextManager(self):
     """Test that timing context manager emits a metric."""
     with metrics.SecondsTimer('fooname'):
       pass
-    self.assertEqual(metrics.SecondsDistribution.call_count, 1)
+    self.assertEqual(metrics.CumulativeSecondsDistribution.call_count, 1)
     self.assertEqual(self._mockMetric.add.call_count, 1)
 
   def testContextManagerWithUpdate(self):
@@ -310,9 +310,9 @@ class TestRuntimeBreakdownTimer(cros_test_lib.MockTestCase):
     # An arbitrary, but fixed, seed time.
     self._fake_time = datetime.datetime(1, 2, 3)
 
-    metric_mock = self.PatchObject(metrics, 'SecondsDistribution',
+    metric_mock = self.PatchObject(metrics, 'CumulativeSecondsDistribution',
                                    autospec=True)
-    self._mockSecondsDistribution = metric_mock.return_value
+    self._mockCumulativeSecondsDistribution = metric_mock.return_value
     metric_mock = self.PatchObject(metrics, 'PercentageDistribution',
                                    autospec=True)
     self._mockPercentageDistribution = metric_mock.return_value
@@ -331,11 +331,12 @@ class TestRuntimeBreakdownTimer(cros_test_lib.MockTestCase):
         self._IncrementFakeTime(1)
       self._IncrementFakeTime(5)
 
-    self.assertEqual(metrics.SecondsDistribution.call_count, 1)
-    self.assertEqual(metrics.SecondsDistribution.call_args[0][0],
+    self.assertEqual(metrics.CumulativeSecondsDistribution.call_count, 1)
+    self.assertEqual(metrics.CumulativeSecondsDistribution.call_args[0][0],
                      'fubar/total_duration')
-    self.assertEqual(self._mockSecondsDistribution.add.call_count, 1)
-    self.assertEqual(self._mockSecondsDistribution.add.call_args[0][0], 10.0)
+    self.assertEqual(self._mockCumulativeSecondsDistribution.add.call_count, 1)
+    self.assertEqual(
+        self._mockCumulativeSecondsDistribution.add.call_args[0][0], 10.0)
 
     self.assertEqual(metrics.PercentageDistribution.call_count, 3)
     breakdown_names = [x[0][0] for x in
@@ -368,11 +369,12 @@ class TestRuntimeBreakdownTimer(cros_test_lib.MockTestCase):
         with runtime.Step('step%d' % i):
           self._IncrementFakeTime(1)
 
-    self.assertEqual(metrics.SecondsDistribution.call_count, 1)
-    self.assertEqual(metrics.SecondsDistribution.call_args[0][0],
+    self.assertEqual(metrics.CumulativeSecondsDistribution.call_count, 1)
+    self.assertEqual(metrics.CumulativeSecondsDistribution.call_args[0][0],
                      'fubar/total_duration')
-    self.assertEqual(self._mockSecondsDistribution.add.call_count, 1)
-    self.assertEqual(self._mockSecondsDistribution.add.call_args[0][0], 300.0)
+    self.assertEqual(self._mockCumulativeSecondsDistribution.add.call_count, 1)
+    self.assertEqual(
+        self._mockCumulativeSecondsDistribution.add.call_args[0][0], 300.0)
 
     self.assertEqual(metrics.CumulativeMetric.call_count, 1)
     self.assertEqual(metrics.CumulativeMetric.call_args[0][0],

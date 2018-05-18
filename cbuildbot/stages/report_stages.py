@@ -1039,7 +1039,7 @@ class ReportStage(generic_stages.BuilderStage,
                     'important': self._run.config.important}
       metrics.Counter(constants.MON_BUILD_COMP_COUNT).increment(
           fields=mon_fields)
-      metrics.SecondsDistribution(constants.MON_BUILD_DURATION).add(
+      metrics.CumulativeSecondsDistribution(constants.MON_BUILD_DURATION).add(
           duration, fields=mon_fields)
 
       if self._run.options.sanity_check_build:
@@ -1063,8 +1063,8 @@ class ReportStage(generic_stages.BuilderStage,
             constants.SELF_DESTRUCTED_BUILD, False)
         mon_fields = {'status': status_for_db,
                       'self_destructed': self_destructed}
-        metrics.SecondsDistribution(constants.MON_CQ_BUILD_DURATION).add(
-            duration, fields=mon_fields)
+        metrics.CumulativeSecondsDistribution(
+            constants.MON_CQ_BUILD_DURATION).add(duration, fields=mon_fields)
         annotator_link = tree_status.ConstructAnnotatorURL(build_id)
         logging.PrintBuildbotLink('Build annotator', annotator_link)
 

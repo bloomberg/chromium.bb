@@ -318,12 +318,12 @@ class WorkQueueServer(_BaseWorkQueue):
   # construction till later.
   _METRICS_CONSTRUCTORS = [
       ('ticks', metrics.Counter),
-      ('time_waiting', (
-          lambda name: metrics.SecondsDistribution(name, scale=0.01))),
-      ('time_running', (
-          lambda name: metrics.SecondsDistribution(name, scale=0.01))),
-      ('time_to_abort', (
-          lambda name: metrics.SecondsDistribution(name, scale=0.01))),
+      ('time_waiting',
+       (lambda name: metrics.CumulativeSecondsDistribution(name, scale=0.01))),
+      ('time_running',
+       (lambda name: metrics.CumulativeSecondsDistribution(name, scale=0.01))),
+      ('time_to_abort',
+       (lambda name: metrics.CumulativeSecondsDistribution(name, scale=0.01))),
       ('task_count', metrics.Gauge),
       ('total_received', metrics.Counter),
       ('total_completed', metrics.Counter),

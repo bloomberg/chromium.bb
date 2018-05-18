@@ -26,15 +26,15 @@ def RecordSubmissionMetrics(action_history, submitted_change_strategies):
         times recorded in monarch.
   """
   # TODO(phobbs) move to top level after crbug.com/755415
-  handling_time_metric = metrics.SecondsDistribution(
+  handling_time_metric = metrics.CumulativeSecondsDistribution(
       constants.MON_CL_HANDLE_TIME)
-  wall_clock_time_metric = metrics.SecondsDistribution(
+  wall_clock_time_metric = metrics.CumulativeSecondsDistribution(
       constants.MON_CL_WALL_CLOCK_TIME)
-  precq_time_metric = metrics.SecondsDistribution(
+  precq_time_metric = metrics.CumulativeSecondsDistribution(
       constants.MON_CL_PRECQ_TIME)
-  wait_time_metric = metrics.SecondsDistribution(
+  wait_time_metric = metrics.CumulativeSecondsDistribution(
       constants.MON_CL_WAIT_TIME)
-  cq_run_time_metric = metrics.SecondsDistribution(
+  cq_run_time_metric = metrics.CumulativeSecondsDistribution(
       constants.MON_CL_CQRUN_TIME)
   cq_tries_metric = metrics.CumulativeSmallIntegerDistribution(
       constants.MON_CL_CQ_TRIES)

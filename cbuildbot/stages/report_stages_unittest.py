@@ -427,7 +427,7 @@ class ReportStageTest(AbstractReportStageTestCase):
 
   def testPerformStage(self):
     """Test PerformStage."""
-    mock_sd = self.PatchObject(metrics, 'SecondsDistribution')
+    mock_sd = self.PatchObject(metrics, 'CumulativeSecondsDistribution')
     self.PatchObject(report_stages.ReportStage, 'ArchiveResults')
     stage = self.ConstructStage()
     stage.PerformStage()
@@ -442,7 +442,7 @@ class ReportStageForMasterCQTest(AbstractReportStageTestCase):
 
   def testPerformStage(self):
     """Test PerformStage."""
-    mock_sd = self.PatchObject(metrics, 'SecondsDistribution')
+    mock_sd = self.PatchObject(metrics, 'CumulativeSecondsDistribution')
     self.PatchObject(report_stages.ReportStage, 'ArchiveResults')
     stage = self.ConstructStage()
     stage.PerformStage()

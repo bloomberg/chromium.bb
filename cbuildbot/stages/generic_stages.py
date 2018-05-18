@@ -233,7 +233,7 @@ class BuilderStage(object):
               'build_config': self._run.config.name,
               'important': self._run.config.important}
 
-    metrics.SecondsDistribution(constants.MON_STAGE_DURATION).add(
+    metrics.CumulativeSecondsDistribution(constants.MON_STAGE_DURATION).add(
         elapsed_time_seconds, fields=fields)
     metrics.Counter(constants.MON_STAGE_COMP_COUNT).increment(fields=fields)
 
