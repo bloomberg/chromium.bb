@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/metrics/histogram_functions.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -14,15 +15,17 @@
 #include "ui/gfx/geometry/size.h"
 
 FaviconDownloader::FaviconDownloader(
-  content::WebContents* web_contents,
-  const std::vector<GURL>& extra_favicon_urls,
-  FaviconDownloaderCallback callback)
-  : content::WebContentsObserver(web_contents),
-    need_favicon_urls_(true),
-    extra_favicon_urls_(extra_favicon_urls),
-    callback_(callback),
-    weak_ptr_factory_(this) {
-}
+    content::WebContents* web_contents,
+    const std::vector<GURL>& extra_favicon_urls,
+    const char* https_status_code_class_histogram_name,
+    FaviconDownloaderCallback callback)
+    : content::WebContentsObserver(web_contents),
+      need_favicon_urls_(true),
+      extra_favicon_urls_(extra_favicon_urls),
+      callback_(std::move(callback)),
+      https_status_code_class_histogram_name_(
+          https_status_code_class_histogram_name),
+      weak_ptr_factory_(this) {}
 
 FaviconDownloader::~FaviconDownloader() {
 }
@@ -94,7 +97,7 @@ void FaviconDownloader::FetchIcons(const std::vector<GURL>& urls) {
   // callback.
   if (in_progress_requests_.empty() && !need_favicon_urls_) {
     base::MessageLoopCurrent::Get()->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(callback_, true, favicon_map_));
+        FROM_HERE, base::BindOnce(std::move(callback_), true, favicon_map_));
   }
 }
 
@@ -108,11 +111,18 @@ void FaviconDownloader::DidDownloadFavicon(
   if (in_progress_requests_.erase(id) == 0)
     return;
 
+  if (!https_status_code_class_histogram_name_.empty()) {
+    DCHECK_LE(100, http_status_code);
+    DCHECK_GT(600, http_status_code);
+    base::UmaHistogramExactLinear(https_status_code_class_histogram_name_,
+                                  http_status_code / 100, 5);
+  }
+
   favicon_map_[image_url] = bitmaps;
 
   // Once all requests have been resolved, perform post-download tasks.
   if (in_progress_requests_.empty() && !need_favicon_urls_)
-    callback_.Run(true, favicon_map_);
+    std::move(callback_).Run(true, favicon_map_);
 }
 
 // content::WebContentsObserver overrides:
@@ -124,7 +134,7 @@ void FaviconDownloader::DidFinishNavigation(
   // Clear all pending requests.
   in_progress_requests_.clear();
   favicon_map_.clear();
-  callback_.Run(false, favicon_map_);
+  std::move(callback_).Run(false, favicon_map_);
 }
 
 void FaviconDownloader::DidUpdateFaviconURL(

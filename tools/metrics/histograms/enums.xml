@@ -23155,6 +23155,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="REUSED_IDLE">previously used (keep-alive?) socket</int>
 </enum>
 
+<enum name="HttpStatusCodeClass">
+  <int value="0" label="Invalid"/>
+  <int value="1" label="1XX"/>
+  <int value="2" label="2XX"/>
+  <int value="3" label="3XX"/>
+  <int value="4" label="4XX"/>
+  <int value="5" label="5XX"/>
+</enum>
+
 <enum name="HttpStatusLineStatus">
   <int value="0" label="OK">Spec-compliant status line</int>
   <int value="1" label="EMPTY">Empty status line</int>
