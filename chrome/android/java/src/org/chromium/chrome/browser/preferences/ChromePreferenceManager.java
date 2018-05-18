@@ -50,6 +50,8 @@ public class ChromePreferenceManager {
     private static final String HOME_PAGE_BUTTON_FORCE_ENABLED_KEY =
             "home_page_button_force_enabled";
 
+    private static final String NTP_BUTTON_ENABLED_KEY = "ntp_button_enabled";
+
     private static final String CONTENT_SUGGESTIONS_SHOWN_KEY = "content_suggestions_shown";
 
     private static final String SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED =
@@ -371,6 +373,22 @@ public class ChromePreferenceManager {
      */
     public void clearNewTabPageSigninPromoSuppressionPeriodStart() {
         removeKey(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
+    }
+
+    /**
+     * Set whether or not the new tab page button is enabled.
+     * @param isEnabled If the new tab page button is enabled.
+     */
+    public void setNewTabPageButtonEnabled(boolean isEnabled) {
+        writeBoolean(NTP_BUTTON_ENABLED_KEY, isEnabled);
+    }
+
+    /**
+     * Get whether or not the new tab page button is enabled.
+     * @return True if the new tab page button is enabled.
+     */
+    public boolean isNewTabPageButtonEnabled() {
+        return mSharedPreferences.getBoolean(NTP_BUTTON_ENABLED_KEY, false);
     }
 
     /**

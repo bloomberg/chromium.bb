@@ -53,6 +53,7 @@ extern const base::Feature kSearchEnginePromoExistingDevice;
 extern const base::Feature kSearchEnginePromoNewDevice;
 extern const base::Feature kNewPhotoPicker;
 extern const base::Feature kNoCreditCardAbort;
+extern const base::Feature kNTPButton;
 extern const base::Feature kNTPLaunchAfterInactivity;
 extern const base::Feature kNTPModernLayoutFeature;
 extern const base::Feature kNTPShowGoogleGInOmniboxFeature;
