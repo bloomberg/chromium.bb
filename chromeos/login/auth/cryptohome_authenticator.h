@@ -95,6 +95,7 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
     FAILED_PREVIOUS_MIGRATION_INCOMPLETE = 25,  // Login failed, cryptohome is
                                                 // partially encrypted in old
                                                 // format.
+    OFFLINE_NO_MOUNT = 26,  // Offline login failed due to missing cryptohome.
   };
 
   CryptohomeAuthenticator(scoped_refptr<base::TaskRunner> task_runner,
