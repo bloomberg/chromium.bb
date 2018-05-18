@@ -56,34 +56,34 @@ SPECIAL_TOKENS = [
 MATCHING_EXPRESSION = '((?:[A-Z][a-z]+)|[0-9]D?$)'
 
 
-class SmartTokenizer(object):
-    """Detects special cases that are not easily discernible without additional
-       knowledge, such as recognizing that in SVGSVGElement, the first two SVGs
-       are separate tokens, but WebGL is one token."""
+def tokenize_name(name):
+    """Tokenize the specified name.
 
-    def __init__(self, name):
-        self.remaining = name
+    Detects special cases that are not easily discernible without additional
+    knowledge, such as recognizing that in SVGSVGElement, the first two SVGs
+    are separate tokens, but WebGL is one token.
 
-    def tokenize(self):
-        name = self.remaining
-        tokens = []
-        while len(name) > 0:
-            matched_token = None
-            for token in SPECIAL_TOKENS:
-                if name.startswith(token):
-                    matched_token = token
-                    break
-            if not matched_token:
-                match = re.search(MATCHING_EXPRESSION, name)
-                if not match:
-                    matched_token = name
-                elif match.start(0) != 0:
-                    matched_token = name[:match.start(0)]
-                else:
-                    matched_token = match.group(0)
-            tokens.append(name[:len(matched_token)])
-            name = name[len(matched_token):]
-        return tokens
+    Returns:
+        A list of token strings.
+    """
+    tokens = []
+    while len(name) > 0:
+        matched_token = None
+        for token in SPECIAL_TOKENS:
+            if name.startswith(token):
+                matched_token = token
+                break
+        if not matched_token:
+            match = re.search(MATCHING_EXPRESSION, name)
+            if not match:
+                matched_token = name
+            elif match.start(0) != 0:
+                matched_token = name[:match.start(0)]
+            else:
+                matched_token = match.group(0)
+        tokens.append(name[:len(matched_token)])
+        name = name[len(matched_token):]
+    return tokens
 
 
 class NameStyleConverter(object):
@@ -91,11 +91,7 @@ class NameStyleConverter(object):
     """
 
     def __init__(self, name):
-        self.tokens = self.tokenize(name)
-
-    def tokenize(self, name):
-        tokenizer = SmartTokenizer(name)
-        return tokenizer.tokenize()
+        self.tokens = tokenize_name(name)
 
     def to_snake_case(self):
         """Snake case is the file and variable name style per Google C++ Style
