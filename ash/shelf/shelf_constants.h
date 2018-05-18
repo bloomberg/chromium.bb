@@ -10,10 +10,6 @@
 
 namespace ash {
 
-// The fallback notifier id for ARC notifications. Used when ArcNotificationItem
-// is provided with an empty app id.
-ASH_EXPORT constexpr char kDefaultArcNotifierId[] = "ARC_NOTIFICATION";
-
 // Size of the shelf when visible (height when the shelf is horizontal and
 // width when the shelf is vertical).
 ASH_EXPORT constexpr int kShelfSize = 48;
