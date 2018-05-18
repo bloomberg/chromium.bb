@@ -351,7 +351,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual bool HasSlowPaths() const;
   virtual bool HasNonAAPaint() const;
 
-  std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo();
+  void UpdateDebugInfo();
 
   void SetLayerClient(base::WeakPtr<LayerClient> client);
 
@@ -646,9 +646,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     // The following elements can not and are not serialized.
     base::WeakPtr<LayerClient> client;
-    // During commit, the main thread is blocked on the compositor thread, so
-    // we use the raw pointer to the LayerClient.
-    LayerClient* client_rawptr;
+    std::unique_ptr<base::trace_event::TracedValue> debug_info;
 
     base::Callback<void(const gfx::ScrollOffset&, const ElementId&)>
         did_scroll_callback;

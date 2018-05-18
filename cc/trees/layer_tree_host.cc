@@ -286,19 +286,6 @@ void LayerTreeHost::FinishCommitOnImplThread(
     LayerTreeHostImpl* host_impl) {
   DCHECK(task_runner_provider_->IsImplThread());
 
-  bool is_new_trace;
-  TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
-  if (is_new_trace &&
-      frame_viewer_instrumentation::IsTracingLayerTreeSnapshots() &&
-      root_layer()) {
-    // We'll be dumping layer trees as part of trace, so make sure
-    // PushPropertiesTo() propagates layer debug info to the impl side --
-    // otherwise this won't happen for the layers that remain unchanged since
-    // tracing started.
-    LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](Layer* layer) { layer->SetNeedsPushProperties(); });
-  }
-
   LayerTreeImpl* sync_tree = host_impl->sync_tree();
   sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kBeginningSync);
 
@@ -427,6 +414,22 @@ void LayerTreeHost::PushPropertyTreesTo(LayerTreeImpl* tree_impl) {
 void LayerTreeHost::WillCommit() {
   swap_promise_manager_.WillCommit();
   client_->WillCommit();
+
+  if (frame_viewer_instrumentation::IsTracingLayerTreeSnapshots()) {
+    bool is_new_trace;
+    TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
+    if (is_new_trace) {
+      // We'll be dumping layer trees as part of trace, so make sure
+      // PushPropertiesTo() propagates layer debug info to the impl side --
+      // otherwise this won't happen for the layers that remain unchanged since
+      // tracing started.
+      LayerTreeHostCommon::CallFunctionForEveryLayer(
+          this, [](Layer* layer) { layer->SetNeedsPushProperties(); });
+    }
+
+    for (Layer* layer : LayersThatShouldPushProperties())
+      layer->UpdateDebugInfo();
+  }
 }
 
 
