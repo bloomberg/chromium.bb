@@ -85,9 +85,8 @@ static unsigned FindNextEdgeVertexIndex(const FloatPolygon& polygon,
   return vertex_index2;
 }
 
-FloatPolygon::FloatPolygon(std::unique_ptr<Vector<FloatPoint>> vertices,
-                           WindRule fill_rule)
-    : vertices_(std::move(vertices)), fill_rule_(fill_rule) {
+FloatPolygon::FloatPolygon(std::unique_ptr<Vector<FloatPoint>> vertices)
+    : vertices_(std::move(vertices)) {
   unsigned n_vertices = NumberOfVertices();
   edges_.resize(n_vertices);
   empty_ = n_vertices < 3;
@@ -174,6 +173,8 @@ static inline float LeftSide(const FloatPoint& vertex1,
 }
 
 bool FloatPolygon::ContainsEvenOdd(const FloatPoint& point) const {
+  if (!bounding_box_.Contains(point))
+    return false;
   unsigned crossing_count = 0;
   for (unsigned i = 0; i < NumberOfEdges(); ++i) {
     const FloatPoint& vertex1 = EdgeAt(i).Vertex1();
@@ -191,6 +192,8 @@ bool FloatPolygon::ContainsEvenOdd(const FloatPoint& point) const {
 }
 
 bool FloatPolygon::ContainsNonZero(const FloatPoint& point) const {
+  if (!bounding_box_.Contains(point))
+    return false;
   int winding_number = 0;
   for (unsigned i = 0; i < NumberOfEdges(); ++i) {
     const FloatPoint& vertex1 = EdgeAt(i).Vertex1();
@@ -206,13 +209,6 @@ bool FloatPolygon::ContainsNonZero(const FloatPoint& point) const {
     }
   }
   return winding_number;
-}
-
-bool FloatPolygon::Contains(const FloatPoint& point) const {
-  if (!bounding_box_.Contains(point))
-    return false;
-  return (FillRule() == RULE_NONZERO) ? ContainsNonZero(point)
-                                      : ContainsEvenOdd(point);
 }
 
 bool VertexPair::Intersection(const VertexPair& other,
