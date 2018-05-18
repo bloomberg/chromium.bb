@@ -145,11 +145,11 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
             yield "third_party/blink/renderer/core/css/properties/" + property_['namespace_group'].lower() + ".h"
             if property_['direction_aware_options']:
                 yield "third_party/blink/renderer/core/style_property_shorthand.h"
-            if property_['runtime_flag']:
-                yield "third_party/blink/renderer/platform/runtime_enabled_features.h"
             if property_['should_implement_apply_functions']:
                 for include in self.apply_includes(property_):
                     yield 'third_party/blink/renderer/' + include
+        if property_['runtime_flag']:
+            yield "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
     def cpp_includes(self, property_):
         if 'should_implement_apply_functions_in_cpp' in property_:

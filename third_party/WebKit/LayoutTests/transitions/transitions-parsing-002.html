@@ -23,7 +23,7 @@ test(() => {
 
   style.transitionDuration = "0s";
   assert_not_equals(Object.keys(style).indexOf('transitionDuration'), -1);
-  assert_equals(Object.keys(style).indexOf('webkitTransitionDuration'), -1);
+  assert_not_equals(Object.keys(style).indexOf('webkitTransitionDuration'), -1);
   assert_equals(style.transitionDuration, '0s');
   assert_equals(computedStyle.transitionDuration, '0s');
   assert_equals(style.webkitTransitionDuration, '0s');

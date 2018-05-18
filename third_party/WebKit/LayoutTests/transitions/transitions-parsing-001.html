@@ -23,7 +23,7 @@ test(() => {
 
   style.transitionProperty = "none";
   assert_not_equals(Object.keys(style).indexOf('transitionProperty'), -1);
-  assert_equals(Object.keys(style).indexOf('webkitTransitionProperty'), -1);
+  assert_not_equals(Object.keys(style).indexOf('webkitTransitionProperty'), -1);
   assert_equals(style.transitionProperty, 'none');
   assert_equals(computedStyle.transitionProperty, 'none');
   assert_equals(style.webkitTransitionProperty, 'none');

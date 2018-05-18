@@ -21,6 +21,7 @@ class CSSUnresolvedProperty {
  public:
   CORE_EXPORT static const CSSUnresolvedProperty& Get(CSSPropertyID);
 
+  virtual bool IsEnabled() const { return true; }
   virtual bool IsResolvedProperty() const { return false; }
   virtual const char* GetPropertyName() const {
     NOTREACHED();
@@ -29,6 +30,10 @@ class CSSUnresolvedProperty {
   virtual const WTF::AtomicString& GetPropertyNameAtomicString() const {
     NOTREACHED();
     return g_empty_atom;
+  }
+  virtual const WTF::String GetJSPropertyName() const {
+    NOTREACHED();
+    return g_empty_string;
   }
   WTF::String GetPropertyNameString() const {
     // We share the StringImpl with the AtomicStrings.

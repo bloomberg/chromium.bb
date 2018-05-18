@@ -210,6 +210,12 @@ void CSSStyleDeclaration::NamedPropertyEnumerator(Vector<String>& names,
       if (property_class.IsEnabled())
         property_names.push_back(property_class.GetJSPropertyName());
     }
+    for (CSSPropertyID property_id : kCSSPropertyAliasList) {
+      const CSSUnresolvedProperty* property_class =
+          CSSUnresolvedProperty::GetAliasProperty(property_id);
+      if (property_class->IsEnabled())
+        property_names.push_back(property_class->GetJSPropertyName());
+    }
     std::sort(property_names.begin(), property_names.end(),
               WTF::CodePointCompareLessThan);
   }

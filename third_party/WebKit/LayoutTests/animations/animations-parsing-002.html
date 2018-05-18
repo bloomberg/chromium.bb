@@ -23,7 +23,7 @@ test(() => {
 
   style.animationTimingFunction = "linear";
   assert_not_equals(Object.keys(style).indexOf('animationTimingFunction'), -1);
-  assert_equals(Object.keys(style).indexOf('webkitAnimationTimingFunction'), -1);
+  assert_not_equals(Object.keys(style).indexOf('webkitAnimationTimingFunction'), -1);
   assert_equals(style.animationTimingFunction, 'linear');
   assert_equals(computedStyle.animationTimingFunction, 'linear');
   assert_equals(style.webkitAnimationTimingFunction, 'linear');
