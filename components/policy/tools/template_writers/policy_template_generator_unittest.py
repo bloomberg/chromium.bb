@@ -19,6 +19,18 @@ from writers import template_writer
 class PolicyTemplateGeneratorUnittest(unittest.TestCase):
   '''Unit tests for policy_template_generator.py.'''
 
+  TEST_CONFIG = {
+      'app_name': '_app_name',
+      'frame_name': '_frame_name',
+      'os_name': '_os_name',
+    }
+
+  TEST_POLICY_DATA = {
+    'messages': {},
+    'placeholders': [],
+    'policy_definitions': [],
+  }
+
   def do_test(self, policy_data, writer):
     '''Executes a test case.
 
@@ -36,19 +48,10 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
         mock_writer.MockWriter.
     '''
     writer.tester = self
-    config = {
-      'app_name': '_app_name',
-      'frame_name': '_frame_name',
-      'os_name': '_os_name',
-    }
-    if not 'messages' in policy_data:
-      policy_data['messages'] = {}
-    if not 'placeholders' in policy_data:
-      policy_data['placeholders'] = []
-    if not 'policy_definitions' in policy_data:
-      policy_data['policy_definitions'] = []
+
+    policy_data = dict(self.TEST_POLICY_DATA, **policy_data)
     policy_generator = policy_template_generator.PolicyTemplateGenerator(
-        config,
+        self.TEST_CONFIG,
         policy_data)
     res = policy_generator.GetTemplateText(writer)
     writer.Test()
@@ -401,6 +404,41 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
           self.result_list,
           ['ap', 'zp'])
     self.do_test(policy_data, LocalMockWriter())
+
+  def testImportMessage_noIndentation(self):
+    message = '''
+Simple policy:
+
+Description of simple policy'''
+
+    policy_generator = policy_template_generator.PolicyTemplateGenerator(
+        self.TEST_CONFIG,
+        self.TEST_POLICY_DATA)
+    self.assertEquals(message, policy_generator._ImportMessage(message))
+
+  def testImportMessage_withIndentation(self):
+    message = '''JSON policy:
+
+        JSON spec:
+        {
+          "key": {
+            "key2": "value"
+          }
+        }'''
+    imported_message = '''JSON policy:
+
+JSON spec:
+{
+  "key": {
+    "key2": "value"
+  }
+}'''
+
+    policy_generator = policy_template_generator.PolicyTemplateGenerator(
+        self.TEST_CONFIG,
+        self.TEST_POLICY_DATA)
+    self.assertEquals(imported_message,
+                      policy_generator._ImportMessage(message))
 
 
 if __name__ == '__main__':
