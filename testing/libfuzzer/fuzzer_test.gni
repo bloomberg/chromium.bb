@@ -180,20 +180,7 @@ template("fuzzer_test") {
   } else {
     # noop on unsupported platforms.
     # mark attributes as used.
-    not_needed(invoker,
-               [
-                 "additional_configs",
-                 "check_includes",
-                 "defines",
-                 "deps",
-                 "dict",
-                 "include_dirs",
-                 "libfuzzer_options",
-                 "seed_corpus",
-                 "seed_corpus_deps",
-                 "seed_corpuses",
-                 "sources",
-               ])
+    not_needed(invoker, "*")
 
     group(target_name) {
     }
