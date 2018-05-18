@@ -21,7 +21,6 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/mus/mus_client.h"
-#include "ui/views/style/typography_provider.h"
 #include "ui/views/views_delegate.h"
 
 #if defined(OS_LINUX)
@@ -96,11 +95,15 @@ bool AuraInit::Init(service_manager::Connector* connector,
   env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
 
   if (mode == Mode::AURA_MUS || mode == Mode::AURA_MUS2) {
-    mus_client_ = std::make_unique<MusClient>(
-        connector, identity, io_task_runner, true,
-        MusClientTestingState::NO_TESTING,
-        mode == Mode::AURA_MUS2 ? aura::WindowTreeClient::Config::kMus2
-                                : aura::WindowTreeClient::Config::kMash);
+    MusClient::InitParams params;
+    params.connector = connector;
+    params.identity = identity;
+    params.io_task_runner = io_task_runner;
+    params.wtc_config = mode == Mode::AURA_MUS2
+                            ? aura::WindowTreeClient::Config::kMus2
+                            : aura::WindowTreeClient::Config::kMash;
+    params.create_wm_state = true;
+    mus_client_ = std::make_unique<MusClient>(params);
   }
   // MaterialDesignController may have initialized already (such as happens
   // in the utility process).

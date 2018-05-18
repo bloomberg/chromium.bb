@@ -58,28 +58,41 @@ namespace internal {
 class NativeWidgetDelegate;
 }
 
-namespace test {
-class MusClientTestApi;
-}
-
-enum MusClientTestingState { NO_TESTING, CREATE_TESTING_STATE };
-
 // MusClient establishes a connection to mus and sets up necessary state so that
 // aura and views target mus. This class is useful for typical clients, not the
 // WindowManager. Most clients don't create this directly, rather use AuraInit.
 class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
                                    public ScreenMusDelegate {
  public:
+  struct VIEWS_MUS_EXPORT InitParams {
+    InitParams();
+    ~InitParams();
+
+    // Production code should provide |connector|, |identity|, |wtc_config|
+    // and an |io_task_runner| if the process already has one. Test code may
+    // skip these parameters (e.g. a unit test that does not need to connect
+    // to the window service does not need to provide a connector).
+    service_manager::Connector* connector = nullptr;
+    service_manager::Identity identity;
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr;
+    aura::WindowTreeClient::Config wtc_config =
+        aura::WindowTreeClient::Config::kMash;
+
+    // Create a wm::WMState. Some processes (e.g. the browser) may already
+    // have one.
+    bool create_wm_state = true;
+
+    // Tests may need to control objects owned by MusClient.
+    bool create_cursor_factory = true;
+    bool bind_test_ws_interfaces = false;
+
+    // If provided, MusClient will not create the WindowTreeClient. Not owned.
+    // Must outlive MusClient.
+    aura::WindowTreeClient* window_tree_client = nullptr;
+  };
+
   // Most clients should use AuraInit, which creates a MusClient.
-  // |create_wm_state| indicates whether MusClient should create a wm::WMState.
-  MusClient(
-      service_manager::Connector* connector,
-      const service_manager::Identity& identity,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
-      bool create_wm_state = true,
-      MusClientTestingState testing_state = MusClientTestingState::NO_TESTING,
-      aura::WindowTreeClient::Config config =
-          aura::WindowTreeClient::Config::kMash);
+  explicit MusClient(const InitParams& params);
   ~MusClient() override;
 
   static MusClient* Get() { return instance_; }
@@ -95,9 +108,7 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   static std::map<std::string, std::vector<uint8_t>>
   ConfigurePropertiesFromParams(const Widget::InitParams& init_params);
 
-  aura::WindowTreeClient* window_tree_client() {
-    return window_tree_client_.get();
-  }
+  aura::WindowTreeClient* window_tree_client() { return window_tree_client_; }
 
   PointerWatcherEventRouter* pointer_watcher_event_router() {
     return pointer_watcher_event_router_.get();
@@ -140,7 +151,6 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
 
  private:
   friend class AuraInit;
-  friend class test::MusClientTestApi;
 
   // Creates a DesktopWindowTreeHostMus. This is set as the factory function
   // ViewsDelegate such that if DesktopNativeWidgetAura is created without a
@@ -185,7 +195,11 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   std::unique_ptr<aura::PropertyConverter> property_converter_;
   std::unique_ptr<MusPropertyMirror> mus_property_mirror_;
 
-  std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
+  // Non-null if MusClient created the WindowTreeClient.
+  std::unique_ptr<aura::WindowTreeClient> owned_window_tree_client_;
+
+  // Never null.
+  aura::WindowTreeClient* window_tree_client_;
 
   std::unique_ptr<PointerWatcherEventRouter> pointer_watcher_event_router_;
 

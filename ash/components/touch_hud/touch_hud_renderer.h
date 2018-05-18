@@ -31,6 +31,8 @@ class TouchHudRenderer {
   void HandleTouchEvent(const ui::PointerEvent& event);
 
  private:
+  friend class TouchHudApplicationTestApi;
+
   // The widget containing the touch point views.
   std::unique_ptr<views::Widget> widget_;
 

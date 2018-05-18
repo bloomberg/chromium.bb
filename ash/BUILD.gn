@@ -1852,6 +1852,7 @@ test("ash_unittests") {
     "//ash/components/fast_ink",
     "//ash/components/fast_ink:unit_tests",
     "//ash/components/shortcut_viewer:unit_tests",
+    "//ash/components/touch_hud:unit_tests",
     "//ash/public/cpp",
     "//ash/public/cpp:unit_tests",
     "//ash/public/cpp/vector_icons",

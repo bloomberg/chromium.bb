@@ -34,3 +34,18 @@ service_manifest("manifest") {
   name = "touch_hud_app"
   source = "manifest.json"
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "touch_hud_application_unittest.cc",
+  ]
+  deps = [
+    ":lib",
+    "//testing/gtest",
+    "//ui/aura:test_support",
+    "//ui/views",
+    "//ui/views:test_support",
+    "//ui/views/mus",
+  ]
+}
