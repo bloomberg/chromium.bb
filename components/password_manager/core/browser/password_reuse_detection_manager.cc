@@ -74,11 +74,13 @@ void PasswordReuseDetectionManager::OnKeyPressed(const base::string16& text) {
 
 void PasswordReuseDetectionManager::OnReuseFound(
     size_t password_length,
-    bool matches_sync_password,
+    base::Optional<PasswordHashData> reused_protected_password_hash,
     const std::vector<std::string>& matching_domains,
     int saved_passwords) {
   reuse_on_this_page_was_found_ = true;
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
+  bool matches_sync_password = reused_protected_password_hash &&
+                               reused_protected_password_hash->is_gaia_password;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));

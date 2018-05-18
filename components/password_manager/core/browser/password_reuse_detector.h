@@ -57,8 +57,21 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   // Stores internal |sync_password_data| for password reuse checking.
   void UseSyncPasswordHash(base::Optional<PasswordHashData> sync_password_data);
 
-  // Clears a sync password hash if it was saved.
-  void ClearSyncPasswordHash();
+  // Stores a vector of PasswordHashData for Gaia password reuse checking.
+  void UseGaiaPasswordHash(
+      base::Optional<std::vector<PasswordHashData>> password_hash_data_list);
+
+  // Stores a vector of PasswordHashData for enterprise password reuse checking.
+  void UseNonGaiaEnterprisePasswordHash(
+      base::Optional<std::vector<PasswordHashData>> password_hash_data_list);
+
+  void ClearGaiaPasswordHash(const std::string& username);
+
+  void ClearAllGaiaPasswordHash();
+
+  void ClearAllEnterprisePasswordHash();
+
+  void SetPrefs(PrefService* prefs) { prefs_ = prefs; }
 
  private:
   using passwords_iterator = std::map<base::string16,
@@ -68,10 +81,17 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   // Add password from |form| to |passwords_|.
   void AddPassword(const autofill::PasswordForm& form);
 
-  // If sync-password reuse is found, return the length of the reused
-  // password. If no reuse is found, return 0.
-  size_t CheckSyncPasswordReuse(const base::string16& input,
-                                const std::string& domain);
+  // If Gaia password reuse is found, return the PasswordHashData of the reused
+  // password. If no reuse is found, return |base::nullopt|.
+  base::Optional<PasswordHashData> CheckGaiaPasswordReuse(
+      const base::string16& input,
+      const std::string& domain);
+
+  // If Non-Gaia enterprise password reuse is found, return the PasswordHashData
+  // of the the reused password. If no reuse is found, return |base::nullopt|.
+  base::Optional<PasswordHashData> CheckNonGaiaEnterprisePasswordReuse(
+      const base::string16& input,
+      const std::string& domain);
 
   // If saved-password reuse is found, fill in the registry-controlled
   // domains that match any reused password, and return the length of the
@@ -102,7 +122,12 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   // of times how many different sites it's saved on.
   int saved_passwords_ = 0;
 
-  base::Optional<PasswordHashData> sync_password_data_;
+  base::Optional<std::vector<PasswordHashData>> gaia_password_hash_data_list_;
+
+  base::Optional<std::vector<PasswordHashData>>
+      enterprise_password_hash_data_list_;
+
+  PrefService* prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseDetector);
 };

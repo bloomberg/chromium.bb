@@ -139,6 +139,16 @@ class PasswordStoreTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreTest);
 };
 
+base::Optional<PasswordHashData> GetSyncPasswordFromPref(
+    const std::string& username,
+    PrefService* prefs) {
+  HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(prefs);
+
+  return hash_password_manager.RetrievePasswordHash(username,
+                                                    /*is_gaia_password=*/true);
+}
+
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       std::make_unique<LoginDatabase>(test_login_db_file_path())));
@@ -895,8 +905,7 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
     if (test_data.reused_password_len != 0) {
       EXPECT_CALL(
           mock_consumer,
-          OnReuseFound(test_data.reused_password_len,
-                       false /* matches_sync_password */,
+          OnReuseFound(test_data.reused_password_len, Matches(base::nullopt),
                        std::vector<std::string>({test_data.reuse_domain}), 2));
     } else {
       EXPECT_CALL(mock_consumer, OnReuseFound(_, _, _, _)).Times(0);
@@ -929,12 +938,14 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
       metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
   WaitForPasswordStore();
   EXPECT_TRUE(prefs.HasPrefPath(prefs::kPasswordHashDataList));
+  base::Optional<PasswordHashData> sync_password_hash =
+      GetSyncPasswordFromPref("sync_username", &prefs);
 
   // Check that sync password reuse is found.
   MockPasswordReuseDetectorConsumer mock_consumer;
-  EXPECT_CALL(mock_consumer, OnReuseFound(sync_password.size(),
-                                          true /* matches_sync_password */,
-                                          std::vector<std::string>(), 0));
+  EXPECT_CALL(mock_consumer,
+              OnReuseFound(sync_password.size(), Matches(sync_password_hash),
+                           std::vector<std::string>(), 0));
   store->CheckReuse(input, "https://facebook.com", &mock_consumer);
   WaitForPasswordStore();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);

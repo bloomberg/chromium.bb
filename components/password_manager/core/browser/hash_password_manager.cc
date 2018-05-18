@@ -23,6 +23,7 @@ constexpr char kHashFieldKey[] = "hash";
 constexpr char kLastSignInTimeFieldKey[] = "last_signin";
 constexpr char kLengthAndSaltFieldKey[] = "salt_length";
 constexpr char kUsernameFieldKey[] = "username";
+constexpr char kIsGaiaFieldKey[] = "is_gaia";
 
 // The maximum number of password hash data we store in prefs.
 constexpr size_t kMaxPasswordHashDataDictSize = 5;
@@ -110,6 +111,10 @@ bool StringToLengthAndSalt(const std::string& s,
   return !salt->empty() && base::StringToSizeT(prefix, password_length);
 }
 
+std::string BooleanToString(bool bool_value) {
+  return bool_value ? "true" : "false";
+}
+
 // Helper function to convert a dictionary value to PasswordWordHashData.
 base::Optional<PasswordHashData> ConvertToPasswordHashData(
     const base::Value& dict) {
@@ -127,6 +132,8 @@ base::Optional<PasswordHashData> ConvertToPasswordHashData(
                              &result.length, &result.salt)) {
     return base::nullopt;
   }
+
+  result.is_gaia_password = GetAndDecryptField(dict, kIsGaiaFieldKey) == "true";
 
   return result;
 }
@@ -149,17 +156,27 @@ bool SyncPasswordData::MatchesPassword(const base::string16& password) {
 
 PasswordHashData::PasswordHashData(const std::string& username,
                                    const base::string16& password,
-                                   bool force_update)
+                                   bool force_update,
+                                   bool is_gaia_password)
     : username(username),
       length(password.size()),
       salt(HashPasswordManager::CreateRandomSalt()),
       hash(HashPasswordManager::CalculatePasswordHash(password, salt)),
-      force_update(force_update) {}
+      force_update(force_update),
+      is_gaia_password(is_gaia_password) {}
+
+PasswordHashData::PasswordHashData() = default;
+
+PasswordHashData::PasswordHashData(const PasswordHashData& other) = default;
 
 bool PasswordHashData::MatchesPassword(const std::string& username,
-                                       const base::string16& password) {
-  if (password.size() != this->length || username != this->username)
+                                       const base::string16& password,
+                                       bool is_gaia_password) {
+  if (password.size() != this->length || username != this->username ||
+      is_gaia_password != this->is_gaia_password) {
     return false;
+  }
+
   return HashPasswordManager::CalculatePasswordHash(password, this->salt) ==
          this->hash;
 }
@@ -182,7 +199,8 @@ bool HashPasswordManager::SavePasswordHash(const base::string16& password) {
 }
 
 bool HashPasswordManager::SavePasswordHash(const std::string username,
-                                           const base::string16& password) {
+                                           const base::string16& password,
+                                           bool is_gaia_password) {
   if (!prefs_)
     return false;
 
@@ -194,8 +212,8 @@ bool HashPasswordManager::SavePasswordHash(const std::string username,
     if (GetAndDecryptField(password_hash_data, kUsernameFieldKey) == username) {
       base::Optional<PasswordHashData> existing_password_hash =
           ConvertToPasswordHashData(password_hash_data);
-      if (existing_password_hash &&
-          existing_password_hash->MatchesPassword(username, password)) {
+      if (existing_password_hash && existing_password_hash->MatchesPassword(
+                                        username, password, is_gaia_password)) {
         password_hash_data.SetKey(kLastSignInTimeFieldKey,
                                   base::Value(base::Time::Now().ToDoubleT()));
         return true;
@@ -203,7 +221,8 @@ bool HashPasswordManager::SavePasswordHash(const std::string username,
     }
   }
 
-  return SavePasswordHash(PasswordHashData(username, password, true));
+  return SavePasswordHash(
+      PasswordHashData(username, password, true, is_gaia_password));
 }
 
 bool HashPasswordManager::SavePasswordHash(
@@ -223,7 +242,8 @@ bool HashPasswordManager::SavePasswordHash(
 bool HashPasswordManager::SavePasswordHash(
     const PasswordHashData& password_hash_data) {
   bool should_save = password_hash_data.force_update ||
-                     !HasPasswordHash(password_hash_data.username);
+                     !HasPasswordHash(password_hash_data.username,
+                                      password_hash_data.is_gaia_password);
   return should_save ? EncryptAndSave(password_hash_data) : false;
 }
 
@@ -232,12 +252,15 @@ void HashPasswordManager::ClearSavedPasswordHash() {
     prefs_->ClearPref(prefs::kSyncPasswordHash);
 }
 
-void HashPasswordManager::ClearSavedPasswordHash(const std::string& username) {
+void HashPasswordManager::ClearSavedPasswordHash(const std::string& username,
+                                                 bool is_gaia_password) {
   if (prefs_) {
     ListPrefUpdate update(prefs_, prefs::kPasswordHashDataList);
     for (auto it = update->GetList().begin(); it != update->GetList().end();
          it++) {
-      if (GetAndDecryptField(*it, kUsernameFieldKey) == username) {
+      if (GetAndDecryptField(*it, kUsernameFieldKey) == username &&
+          GetAndDecryptField(*it, kIsGaiaFieldKey) ==
+              BooleanToString(is_gaia_password)) {
         update->GetList().erase(it);
         return;
       }
@@ -279,7 +302,8 @@ std::vector<PasswordHashData> HashPasswordManager::RetrieveAllPasswordHashes() {
 }
 
 base::Optional<PasswordHashData> HashPasswordManager::RetrievePasswordHash(
-    const std::string& username) {
+    const std::string& username,
+    bool is_gaia_password) {
   if (!prefs_ || username.empty() ||
       !prefs_->HasPrefPath(prefs::kPasswordHashDataList)) {
     return base::nullopt;
@@ -287,8 +311,11 @@ base::Optional<PasswordHashData> HashPasswordManager::RetrievePasswordHash(
 
   for (const base::Value& entry :
        prefs_->GetList(prefs::kPasswordHashDataList)->GetList()) {
-    if (GetAndDecryptField(entry, kUsernameFieldKey) == username)
+    if (GetAndDecryptField(entry, kUsernameFieldKey) == username &&
+        GetAndDecryptField(entry, kIsGaiaFieldKey) ==
+            BooleanToString(is_gaia_password)) {
       return ConvertToPasswordHashData(entry);
+    }
   }
 
   return base::nullopt;
@@ -298,7 +325,8 @@ bool HashPasswordManager::HasPasswordHash() {
   return prefs_ ? prefs_->HasPrefPath(prefs::kSyncPasswordHash) : false;
 }
 
-bool HashPasswordManager::HasPasswordHash(const std::string& username) {
+bool HashPasswordManager::HasPasswordHash(const std::string& username,
+                                          bool is_gaia_password) {
   if (username.empty() || !prefs_ ||
       !prefs_->HasPrefPath(prefs::kPasswordHashDataList)) {
     return false;
@@ -306,8 +334,11 @@ bool HashPasswordManager::HasPasswordHash(const std::string& username) {
 
   for (const base::Value& entry :
        prefs_->GetList(prefs::kPasswordHashDataList)->GetList()) {
-    if (username == GetAndDecryptField(entry, kUsernameFieldKey))
+    if (username == GetAndDecryptField(entry, kUsernameFieldKey) &&
+        BooleanToString(is_gaia_password) ==
+            GetAndDecryptField(entry, kIsGaiaFieldKey)) {
       return true;
+    }
   }
 
   return false;
@@ -333,6 +364,7 @@ void HashPasswordManager::MaybeMigrateExistingSyncPasswordHash(
   password_hash_data.salt = captured_sync_password_hash->salt;
   password_hash_data.hash = captured_sync_password_hash->hash;
   password_hash_data.force_update = true;
+  password_hash_data.is_gaia_password = true;
 
   SavePasswordHash(password_hash_data);
   prefs_->ClearPref(prefs::kSyncPasswordHash);
@@ -415,6 +447,11 @@ bool HashPasswordManager::EncryptAndSave(
   if (encrypted_length_and_salt.empty())
     return false;
 
+  std::string encrypted_is_gaia_value =
+      EncryptString(BooleanToString(password_hash_data.is_gaia_password));
+  if (encrypted_is_gaia_value.empty())
+    return false;
+
   base::DictionaryValue encrypted_password_hash_entry;
   encrypted_password_hash_entry.SetKey(kUsernameFieldKey,
                                        base::Value(encrypted_username));
@@ -422,13 +459,17 @@ bool HashPasswordManager::EncryptAndSave(
                                        base::Value(encrypted_hash));
   encrypted_password_hash_entry.SetKey(kLengthAndSaltFieldKey,
                                        base::Value(encrypted_length_and_salt));
+  encrypted_password_hash_entry.SetKey(kIsGaiaFieldKey,
+                                       base::Value(encrypted_is_gaia_value));
   encrypted_password_hash_entry.SetKey(
       kLastSignInTimeFieldKey, base::Value(base::Time::Now().ToDoubleT()));
   ListPrefUpdate update(prefs_, prefs::kPasswordHashDataList);
   for (auto it = update->GetList().begin(); it != update->GetList().end();
        it++) {
     if (GetAndDecryptField(*it, kUsernameFieldKey) ==
-        password_hash_data.username) {
+            password_hash_data.username &&
+        GetAndDecryptField(*it, kIsGaiaFieldKey) ==
+            BooleanToString(password_hash_data.is_gaia_password)) {
       update->GetList().erase(it);
       update->GetList().push_back(std::move(encrypted_password_hash_entry));
       return true;

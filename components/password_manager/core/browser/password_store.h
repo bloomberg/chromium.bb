@@ -332,10 +332,11 @@ class PasswordStore : protected PasswordStoreSync,
     ~CheckReuseRequest() override;
 
     // PasswordReuseDetectorConsumer
-    void OnReuseFound(size_t password_length,
-                      bool matches_sync_password,
-                      const std::vector<std::string>& matches_domains,
-                      int saved_passwords) override;
+    void OnReuseFound(
+        size_t password_length,
+        base::Optional<PasswordHashData> reused_protected_password_hash,
+        const std::vector<std::string>& matching_domains,
+        int saved_passwords) override;
 
    private:
     const scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
