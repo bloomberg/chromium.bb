@@ -44,6 +44,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
@@ -53,13 +54,13 @@
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
+#include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
@@ -1932,7 +1933,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
 
   base::RunLoop().RunUntilIdle();
 
-  // Now deferred contollers should go away together with shelf items and ARC
+  // Now spinner contollers should go away together with shelf items and ARC
   // app instance should receive request for launching apps and shortcuts.
   EXPECT_FALSE(launcher_controller_->GetItem(shelf_id_app_1));
   EXPECT_FALSE(launcher_controller_->GetItem(shelf_id_app_2));
@@ -1953,7 +1954,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
             shortcut.intent_uri);
 }
 
-// Ensure the deferred controller does not override the active app controller
+// Ensure the spinner controller does not override the active app controller
 // (crbug.com/701152).
 TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
   InitLauncherController();
@@ -1980,7 +1981,8 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
 
   // This launch request should be ignored in case of active app.
   arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
-  EXPECT_FALSE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
 
   // Closing the app should leave a pinned but closed shelf item shortcut.
   launcher_controller_->CloseLauncherItem(shelf_id);
@@ -1991,7 +1993,8 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
 
   // Now launch request should not be ignored.
   arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
-  EXPECT_TRUE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
 }
 
 TEST_P(ChromeLauncherControllerMultiProfileWithArcTest, ArcMultiUser) {
@@ -4008,7 +4011,8 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   ash::ShelfItemDelegate* item_delegate =
       model_->GetShelfItemDelegate(ash::ShelfID(app_id));
   ASSERT_TRUE(item_delegate);
-  EXPECT_TRUE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
+  EXPECT_TRUE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
   EXPECT_FALSE(item_delegate->image_set_by_controller());
 
   std::string window_app_id("org.chromium.arc.1");
@@ -4018,7 +4022,8 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   EXPECT_TRUE(launcher_controller_->GetItem(ash::ShelfID(app_id)));
   item_delegate = model_->GetShelfItemDelegate(ash::ShelfID(app_id));
   ASSERT_TRUE(item_delegate);
-  EXPECT_FALSE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
+  EXPECT_FALSE(
+      launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
   EXPECT_TRUE(item_delegate->image_set_by_controller());
 }
 
@@ -4036,7 +4041,7 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
   // Pin Play Store. It should be pinned but not scheduled for deferred launch.
   launcher_controller_->PinAppWithID(arc::kPlayStoreAppId);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(arc::kPlayStoreAppId));
-  EXPECT_FALSE(launcher_controller_->GetArcDeferredLauncher()->HasApp(
+  EXPECT_FALSE(launcher_controller_->GetShelfSpinnerController()->HasApp(
       arc::kPlayStoreAppId));
 
   // Simulate click. This should schedule Play Store for deferred launch.
@@ -4045,7 +4050,7 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
   EXPECT_TRUE(item_delegate);
   SelectItem(item_delegate);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(arc::kPlayStoreAppId));
-  EXPECT_TRUE(launcher_controller_->GetArcDeferredLauncher()->HasApp(
+  EXPECT_TRUE(launcher_controller_->GetShelfSpinnerController()->HasApp(
       arc::kPlayStoreAppId));
 }
 

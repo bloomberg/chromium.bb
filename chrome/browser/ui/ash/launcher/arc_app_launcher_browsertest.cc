@@ -26,10 +26,10 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_test_util.h"
+#include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -120,8 +120,8 @@ class AppAnimatedWaiter {
   void Wait() {
     const base::TimeDelta threshold =
         base::TimeDelta::FromMilliseconds(kAppAnimatedThresholdMs);
-    ArcAppDeferredLauncherController* controller =
-        ChromeLauncherController::instance()->GetArcDeferredLauncher();
+    ShelfSpinnerController* controller =
+        ChromeLauncherController::instance()->GetShelfSpinnerController();
     while (controller->GetActiveTime(app_id_) < threshold) {
       base::RunLoop().RunUntilIdle();
     }
@@ -419,7 +419,7 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherWithParamsBrowserTest,
       // should stop animation and delete icon from the shelf.
       InstallTestApps(kTestAppPackage, false);
       SendPackageAdded(kTestAppPackage, false);
-      EXPECT_TRUE(controller->GetArcDeferredLauncher()
+      EXPECT_TRUE(controller->GetShelfSpinnerController()
                       ->GetActiveTime(app_id)
                       .is_zero());
       EXPECT_EQ(is_pinned(), controller->GetItem(shelf_id) != nullptr);
@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherWithParamsBrowserTest,
       ash::ShelfItemDelegate* delegate = GetShelfItemDelegate(app_id);
       ASSERT_TRUE(delegate);
       delegate->Close();
-      EXPECT_TRUE(controller->GetArcDeferredLauncher()
+      EXPECT_TRUE(controller->GetShelfSpinnerController()
                       ->GetActiveTime(app_id)
                       .is_zero());
       EXPECT_EQ(is_pinned(), controller->GetItem(shelf_id) != nullptr);

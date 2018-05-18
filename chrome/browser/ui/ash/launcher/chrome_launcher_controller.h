@@ -30,13 +30,13 @@
 class AppIconLoader;
 class AppSyncUIState;
 class AppWindowLauncherController;
-class ArcAppDeferredLauncherController;
 class BrowserShortcutLauncherItemController;
 class BrowserStatusMonitor;
 class ChromeLauncherControllerUserSwitchObserver;
 class GURL;
 class Profile;
 class LauncherControllerHelper;
+class ShelfSpinnerController;
 
 namespace ash {
 class ShelfModel;
@@ -205,8 +205,8 @@ class ChromeLauncherController
   // Called when the user profile is fully loaded and ready to switch to.
   void OnUserProfileReadyToSwitch(Profile* profile);
 
-  // Controller to launch ARC apps in deferred mode.
-  ArcAppDeferredLauncherController* GetArcDeferredLauncher();
+  // Controller to launch ARC and Crostini apps with a spinner.
+  ShelfSpinnerController* GetShelfSpinnerController();
 
   // Temporarily prevent pinned shelf item changes from updating the sync model.
   using ScopedPinSyncDisabler = std::unique_ptr<base::AutoReset<bool>>;
@@ -425,7 +425,7 @@ class ChromeLauncherController
   std::unique_ptr<ChromeLauncherControllerUserSwitchObserver>
       user_switch_observer_;
 
-  std::unique_ptr<ArcAppDeferredLauncherController> arc_deferred_launcher_;
+  std::unique_ptr<ShelfSpinnerController> shelf_spinner_controller_;
 
   // The list of running & un-pinned applications for different users on hidden
   // desktops.
