@@ -47381,6 +47381,8 @@ Full version information for the fingerprint enum values:
       label="Request to Play install API failed - User not signed into Play"/>
   <int value="13" label="Request to Play install API failed - Network Error"/>
   <int value="14" label="Request to Play install API failed - Resolve Error"/>
+  <int value="15"
+      label="Request to Play install API failed - Not Google Signed"/>
 </enum>
 
 <enum name="WebApkGooglePlayInstallState">

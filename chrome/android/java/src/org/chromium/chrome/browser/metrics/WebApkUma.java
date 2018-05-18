@@ -58,11 +58,14 @@ public class WebApkUma {
     public static final int GOOGLE_PLAY_INSTALL_FAILED_DOWNLOAD_ERROR = 8;
     public static final int GOOGLE_PLAY_INSTALL_FAILED_INSTALL_ERROR = 9;
     public static final int GOOGLE_PLAY_INSTALL_FAILED_INSTALL_TIMEOUT = 10;
+    // GOOGLE_PLAY_INSTALL_REQUEST_FAILED_* errors are the error codes shown in the "reason" of
+    // the returned Bundle when calling installPackage() API returns false.
     public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_POLICY_DISABLED = 11;
     public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_UNKNOWN_ACCOUNT = 12;
     public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_NETWORK_ERROR = 13;
     public static final int GOOGLE_PLAY_INSTALL_REQUSET_FAILED_RESOLVE_ERROR = 14;
-    public static final int GOOGLE_PLAY_INSTALL_RESULT_MAX = 14;
+    public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_NOT_GOOGLE_SIGNED = 15;
+    public static final int GOOGLE_PLAY_INSTALL_RESULT_MAX = 16;
 
     // This enum is used to back UMA histograms, and should therefore be treated as append-only.
     private static final int PERMISSION_OTHER = 0;
