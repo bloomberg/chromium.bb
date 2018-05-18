@@ -14,7 +14,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
-struct Manifest;
 class WebContents;
 }
 

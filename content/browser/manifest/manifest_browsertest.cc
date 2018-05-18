@@ -13,7 +13,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/manifest.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -23,7 +22,8 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/platform/modules/manifest/manifest_manager.mojom.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 
 namespace content {
 
@@ -80,15 +80,14 @@ class ManifestBrowserTest : public ContentBrowserTest,
     message_loop_runner_->Run();
   }
 
-  void OnGetManifest(const GURL& manifest_url, const Manifest& manifest) {
+  void OnGetManifest(const GURL& manifest_url,
+                     const blink::Manifest& manifest) {
     manifest_url_ = manifest_url;
     manifest_ = manifest;
     message_loop_runner_->Quit();
   }
 
-  const Manifest& manifest() const {
-    return manifest_;
-  }
+  const blink::Manifest& manifest() const { return manifest_; }
 
   const GURL& manifest_url() const {
     return manifest_url_;
@@ -148,7 +147,7 @@ class ManifestBrowserTest : public ContentBrowserTest,
   std::unique_ptr<MockWebContentsDelegate> mock_web_contents_delegate_;
   std::unique_ptr<net::EmbeddedTestServer> cors_embedded_test_server_;
   GURL manifest_url_;
-  Manifest manifest_;
+  blink::Manifest manifest_;
   int console_error_count_;
   std::vector<GURL> reported_manifest_urls_;
   std::vector<size_t> manifests_reported_when_favicon_url_updated_;

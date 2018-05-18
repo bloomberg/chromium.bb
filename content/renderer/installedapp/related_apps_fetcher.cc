@@ -5,10 +5,10 @@
 #include "content/renderer/installedapp/related_apps_fetcher.h"
 
 #include "base/bind.h"
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
+#include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 #include "third_party/blink/public/platform/modules/installedapp/web_related_application.h"
-#include "third_party/blink/public/platform/modules/manifest/manifest.mojom.h"
-#include "third_party/blink/public/platform/modules/manifest/manifest_manager.mojom.h"
 #include "third_party/blink/public/platform/web_string.h"
 
 namespace content {
@@ -33,7 +33,7 @@ void RelatedAppsFetcher::OnGetManifestForRelatedApplications(
         const blink::WebVector<blink::WebRelatedApplication>&,
         void>> callbacks,
     const GURL& /*url*/,
-    const Manifest& manifest) {
+    const blink::Manifest& manifest) {
   std::vector<blink::WebRelatedApplication> related_apps;
   for (const auto& relatedApplication : manifest.related_applications) {
     blink::WebRelatedApplication webRelatedApplication;

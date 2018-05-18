@@ -25,6 +25,7 @@ class DictionaryValue;
 }
 
 namespace blink {
+struct Manifest;
 class WebInputEvent;
 class WebLocalFrame;
 class WebMediaStream;
@@ -33,10 +34,6 @@ struct WebPluginParams;
 struct WebSize;
 class WebURLRequest;
 class WebView;
-}
-
-namespace content {
-struct Manifest;
 }
 
 namespace device {
@@ -237,7 +234,7 @@ class WebTestDelegate {
   // Fetch the manifest for a given WebView from the given url.
   virtual void FetchManifest(
       blink::WebView* view,
-      base::OnceCallback<void(const GURL&, const content::Manifest&)>
+      base::OnceCallback<void(const GURL&, const blink::Manifest&)>
           callback) = 0;
 
   // Sends a message to the LayoutTestPermissionManager in order for it to

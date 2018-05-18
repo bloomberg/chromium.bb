@@ -11,7 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/platform/modules/payments/payment_app.mojom.h"
 
 namespace content {
@@ -25,7 +25,7 @@ class PaymentInstrumentIconFetcher {
   static void Start(
       const GURL& scope,
       std::unique_ptr<std::vector<std::pair<int, int>>> provider_hosts,
-      const std::vector<Manifest::Icon>& icons,
+      const std::vector<blink::Manifest::Icon>& icons,
       PaymentInstrumentIconFetcherCallback callback);
 
  private:

@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 #include "third_party/skia/include/core/SkColor.h"
 

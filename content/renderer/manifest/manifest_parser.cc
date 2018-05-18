@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/public/common/manifest.h"
 #include "content/public/common/manifest_share_target_util.h"
 #include "content/public/common/manifest_util.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
@@ -81,7 +80,7 @@ void ManifestParser::Parse() {
   ManifestUmaUtil::ParseSucceeded(manifest_);
 }
 
-const Manifest& ManifestParser::manifest() const {
+const blink::Manifest& ManifestParser::manifest() const {
   return manifest_;
 }
 
@@ -278,13 +277,13 @@ std::vector<gfx::Size> ManifestParser::ParseIconSizes(
   return sizes;
 }
 
-std::vector<Manifest::Icon::IconPurpose> ManifestParser::ParseIconPurpose(
-    const base::DictionaryValue& icon) {
+std::vector<blink::Manifest::Icon::IconPurpose>
+ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
   base::NullableString16 purpose_str = ParseString(icon, "purpose", NoTrim);
-  std::vector<Manifest::Icon::IconPurpose> purposes;
+  std::vector<blink::Manifest::Icon::IconPurpose> purposes;
 
   if (purpose_str.is_null()) {
-    purposes.push_back(Manifest::Icon::IconPurpose::ANY);
+    purposes.push_back(blink::Manifest::Icon::IconPurpose::ANY);
     return purposes;
   }
 
@@ -293,9 +292,9 @@ std::vector<Manifest::Icon::IconPurpose> ManifestParser::ParseIconPurpose(
       base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (const base::string16& keyword : keywords) {
     if (base::LowerCaseEqualsASCII(keyword, "any")) {
-      purposes.push_back(Manifest::Icon::IconPurpose::ANY);
+      purposes.push_back(blink::Manifest::Icon::IconPurpose::ANY);
     } else if (base::LowerCaseEqualsASCII(keyword, "badge")) {
-      purposes.push_back(Manifest::Icon::IconPurpose::BADGE);
+      purposes.push_back(blink::Manifest::Icon::IconPurpose::BADGE);
     } else {
       AddErrorInfo(
           "found icon with invalid purpose. "
@@ -304,15 +303,15 @@ std::vector<Manifest::Icon::IconPurpose> ManifestParser::ParseIconPurpose(
   }
 
   if (purposes.empty()) {
-    purposes.push_back(Manifest::Icon::IconPurpose::ANY);
+    purposes.push_back(blink::Manifest::Icon::IconPurpose::ANY);
   }
 
   return purposes;
 }
 
-std::vector<Manifest::Icon> ManifestParser::ParseIcons(
+std::vector<blink::Manifest::Icon> ManifestParser::ParseIcons(
     const base::DictionaryValue& dictionary) {
-  std::vector<Manifest::Icon> icons;
+  std::vector<blink::Manifest::Icon> icons;
   if (!dictionary.HasKey("icons"))
     return icons;
 
@@ -327,7 +326,7 @@ std::vector<Manifest::Icon> ManifestParser::ParseIcons(
     if (!icons_list->GetDictionary(i, &icon_dictionary))
       continue;
 
-    Manifest::Icon icon;
+    blink::Manifest::Icon icon;
     icon.src = ParseIconSrc(*icon_dictionary);
     // An icon MUST have a valid src. If it does not, it MUST be ignored.
     if (!icon.src.is_valid())
@@ -356,19 +355,19 @@ GURL ManifestParser::ParseShareTargetURLTemplate(
   return url_template;
 }
 
-base::Optional<Manifest::ShareTarget> ManifestParser::ParseShareTarget(
+base::Optional<blink::Manifest::ShareTarget> ManifestParser::ParseShareTarget(
     const base::DictionaryValue& dictionary) {
   if (!dictionary.HasKey("share_target"))
     return base::nullopt;
 
-  Manifest::ShareTarget share_target;
+  blink::Manifest::ShareTarget share_target;
   const base::DictionaryValue* share_target_dict = nullptr;
   dictionary.GetDictionary("share_target", &share_target_dict);
   share_target.url_template = ParseShareTargetURLTemplate(*share_target_dict);
 
   if (share_target.url_template.is_empty())
     return base::nullopt;
-  return base::Optional<Manifest::ShareTarget>(share_target);
+  return base::Optional<blink::Manifest::ShareTarget>(share_target);
 }
 
 base::NullableString16 ManifestParser::ParseRelatedApplicationPlatform(
@@ -387,10 +386,10 @@ base::NullableString16 ManifestParser::ParseRelatedApplicationId(
   return ParseString(application, "id", Trim);
 }
 
-std::vector<Manifest::RelatedApplication>
+std::vector<blink::Manifest::RelatedApplication>
 ManifestParser::ParseRelatedApplications(
     const base::DictionaryValue& dictionary) {
-  std::vector<Manifest::RelatedApplication> applications;
+  std::vector<blink::Manifest::RelatedApplication> applications;
   if (!dictionary.HasKey("related_applications"))
     return applications;
 
@@ -406,7 +405,7 @@ ManifestParser::ParseRelatedApplications(
     if (!applications_list->GetDictionary(i, &application_dictionary))
       continue;
 
-    Manifest::RelatedApplication application;
+    blink::Manifest::RelatedApplication application;
     application.platform =
         ParseRelatedApplicationPlatform(*application_dictionary);
     // "If platform is undefined, move onto the next item if any are left."

@@ -23,6 +23,9 @@ mojom("mojom_platform") {
     "frame/find_in_page.mojom",
     "leak_detector/leak_detector.mojom",
     "loader/prefetch_url_loader_service.mojom",
+    "manifest/display_mode.mojom",
+    "manifest/manifest.mojom",
+    "manifest/manifest_manager.mojom",
     "net/ip_address_space.mojom",
     "page/page_visibility_state.mojom",
     "quota/quota_dispatcher_host.mojom",
@@ -42,6 +45,7 @@ mojom("mojom_platform") {
 
   public_deps = [
     "//mojo/public/mojom/base",
+    "//services/device/public/mojom",
     "//services/network/public/mojom",
 
     # TODO(https://crbug.com/822804): Remove when mojom bindings deps checks

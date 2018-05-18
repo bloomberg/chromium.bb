@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_BANNERS_APP_BANNER_METRICS_H_
 
 #include "chrome/browser/installable/installable_logging.h"
-#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/public/common/manifest/web_display_mode.h"
 
 namespace banners {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_MANIFEST_H_
-#define CONTENT_PUBLIC_COMMON_MANIFEST_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_MANIFEST_MANIFEST_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_MANIFEST_MANIFEST_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,22 +13,22 @@
 #include "base/optional.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
-#include "third_party/blink/public/platform/web_display_mode.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace blink {
 
 // The Manifest structure is an internal representation of the Manifest file
 // described in the "Manifest for Web Application" document:
 // http://w3c.github.io/manifest/
-struct CONTENT_EXPORT Manifest {
+struct BLINK_COMMON_EXPORT Manifest {
   // Structure representing an icon as per the Manifest specification, see:
   // http://w3c.github.io/manifest/#dfn-icon-object
-  struct CONTENT_EXPORT Icon {
+  struct BLINK_COMMON_EXPORT Icon {
     enum IconPurpose {
       ANY = 0,
       BADGE,
@@ -62,7 +62,7 @@ struct CONTENT_EXPORT Manifest {
   };
 
   // Structure representing how a Web Share target handles an incoming share.
-  struct CONTENT_EXPORT ShareTarget {
+  struct BLINK_COMMON_EXPORT ShareTarget {
     ShareTarget();
     ~ShareTarget();
 
@@ -72,7 +72,7 @@ struct CONTENT_EXPORT Manifest {
   };
 
   // Structure representing a related application.
-  struct CONTENT_EXPORT RelatedApplication {
+  struct BLINK_COMMON_EXPORT RelatedApplication {
     RelatedApplication();
     ~RelatedApplication();
 
@@ -154,13 +154,8 @@ struct CONTENT_EXPORT Manifest {
 
   // Empty if the parsing failed or the field was not present.
   GURL scope;
-
-  // Maximum length for all the strings inside the Manifest when it is sent over
-  // IPC. The renderer process should truncate the strings before sending the
-  // Manifest and the browser process must do the same when receiving it.
-  static const size_t kMaxIPCStringLength;
 };
 
-} // namespace content
+}  // namespace blink
 
-#endif // CONTENT_PUBLIC_COMMON_MANIFEST_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_MANIFEST_MANIFEST_H_

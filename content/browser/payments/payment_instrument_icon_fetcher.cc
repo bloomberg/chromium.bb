@@ -28,13 +28,13 @@ const int kPaymentAppMinimumIconSize = 0;
 
 void DownloadBestMatchingIcon(
     WebContents* web_contents,
-    const std::vector<Manifest::Icon>& icons,
+    const std::vector<blink::Manifest::Icon>& icons,
     PaymentInstrumentIconFetcher::PaymentInstrumentIconFetcherCallback
         callback);
 
 void OnIconFetched(
     WebContents* web_contents,
-    const std::vector<Manifest::Icon>& icons,
+    const std::vector<blink::Manifest::Icon>& icons,
     PaymentInstrumentIconFetcher::PaymentInstrumentIconFetcherCallback callback,
     const SkBitmap& bitmap) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -64,14 +64,14 @@ void OnIconFetched(
 
 void DownloadBestMatchingIcon(
     WebContents* web_contents,
-    const std::vector<Manifest::Icon>& icons,
+    const std::vector<blink::Manifest::Icon>& icons,
     PaymentInstrumentIconFetcher::PaymentInstrumentIconFetcherCallback
         callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GURL icon_url = ManifestIconSelector::FindBestMatchingIcon(
       icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
-      Manifest::Icon::IconPurpose::ANY);
+      blink::Manifest::Icon::IconPurpose::ANY);
   if (web_contents == nullptr || !icon_url.is_valid()) {
     // If the icon url is invalid, it's better to give the information to
     // developers in advance unlike when fetching or decoding fails. We already
@@ -82,7 +82,7 @@ void DownloadBestMatchingIcon(
     return;
   }
 
-  std::vector<Manifest::Icon> copy_icons;
+  std::vector<blink::Manifest::Icon> copy_icons;
   for (const auto& icon : icons) {
     if (icon.src != icon_url) {
       copy_icons.emplace_back(icon);
@@ -123,7 +123,7 @@ WebContents* GetWebContentsFromProviderHostIds(
 void StartOnUI(
     const GURL& scope,
     std::unique_ptr<std::vector<std::pair<int, int>>> provider_hosts,
-    const std::vector<Manifest::Icon>& icons,
+    const std::vector<blink::Manifest::Icon>& icons,
     PaymentInstrumentIconFetcher::PaymentInstrumentIconFetcherCallback
         callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -139,7 +139,7 @@ void StartOnUI(
 void PaymentInstrumentIconFetcher::Start(
     const GURL& scope,
     std::unique_ptr<std::vector<std::pair<int, int>>> provider_hosts,
-    const std::vector<Manifest::Icon>& icons,
+    const std::vector<blink::Manifest::Icon>& icons,
     PaymentInstrumentIconFetcherCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

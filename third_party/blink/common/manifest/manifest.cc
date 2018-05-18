@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 
-namespace content {
-
-const size_t Manifest::kMaxIPCStringLength = 4 * 1024;
+namespace blink {
 
 Manifest::Icon::Icon() = default;
 
@@ -45,4 +43,4 @@ bool Manifest::IsEmpty() const {
          gcm_sender_id.is_null() && scope.is_empty();
 }
 
-} // namespace content
+}  // namespace blink

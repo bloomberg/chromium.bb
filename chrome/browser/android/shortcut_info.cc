@@ -18,7 +18,7 @@ ShortcutInfo::ShortcutInfo(const ShortcutInfo& other) = default;
 ShortcutInfo::~ShortcutInfo() {
 }
 
-void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
+void ShortcutInfo::UpdateFromManifest(const blink::Manifest& manifest) {
   if (!manifest.short_name.string().empty() ||
       !manifest.name.string().empty()) {
     short_name = manifest.short_name.string();
@@ -68,7 +68,7 @@ void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
 
   // Set the icon urls based on the icons in the manifest, if any.
   icon_urls.clear();
-  for (const content::Manifest::Icon& icon : manifest.icons)
+  for (const blink::Manifest::Icon& icon : manifest.icons)
     icon_urls.push_back(icon.src.spec());
 
   if (manifest.share_target)

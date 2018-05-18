@@ -19,12 +19,9 @@ class GURL;
 class SkBitmap;
 
 namespace blink {
+struct Manifest;
 class WebLocalFrame;
 class WebView;
-}
-
-namespace content {
-struct Manifest;
 }
 
 namespace gin {
@@ -97,7 +94,7 @@ class TestRunnerForSpecificView {
   void GetManifestThen(v8::Local<v8::Function> callback);
   void GetManifestCallback(v8::UniquePersistent<v8::Function> callback,
                            const GURL& manifest_url,
-                           const content::Manifest& manifest);
+                           const blink::Manifest& manifest);
 
   // Calls |callback| with a DOMString[] representing the events recorded since
   // the last call to this function.

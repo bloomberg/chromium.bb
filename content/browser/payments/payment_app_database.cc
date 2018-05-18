@@ -17,7 +17,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -71,7 +71,7 @@ PaymentInstrumentPtr ToPaymentInstrumentForMojo(const std::string& input) {
   PaymentInstrumentPtr instrument = PaymentInstrument::New();
   instrument->name = instrument_proto.name();
   for (const auto& icon_proto : instrument_proto.icons()) {
-    Manifest::Icon icon;
+    blink::Manifest::Icon icon;
     icon.src = GURL(icon_proto.src());
     icon.type = base::UTF8ToUTF16(icon_proto.type());
     for (const auto& size_proto : icon_proto.sizes()) {
@@ -197,7 +197,7 @@ void PaymentAppDatabase::WritePaymentInstrument(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (instrument->icons.size() > 0) {
-    std::vector<Manifest::Icon> icons(instrument->icons);
+    std::vector<blink::Manifest::Icon> icons(instrument->icons);
     PaymentInstrumentIconFetcher::Start(
         scope, service_worker_context_->GetProviderHostIds(scope.GetOrigin()),
         icons,

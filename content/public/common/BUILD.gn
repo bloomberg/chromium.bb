@@ -157,8 +157,6 @@ jumbo_source_set("common_sources") {
     "isolated_world_ids.h",
     "javascript_dialog_type.h",
     "main_function_params.h",
-    "manifest.cc",
-    "manifest.h",
     "manifest_share_target_util.cc",
     "manifest_share_target_util.h",
     "manifest_util.cc",
