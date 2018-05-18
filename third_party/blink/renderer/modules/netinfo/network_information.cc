@@ -19,10 +19,20 @@ namespace blink {
 namespace {
 
 Settings* GetSettings(ExecutionContext* execution_context) {
-  DCHECK(execution_context);
+  if (!execution_context)
+    return nullptr;
 
   Document* document = ToDocument(execution_context);
+  if (!document)
+    return nullptr;
   return document->GetSettings();
+}
+
+bool IsInDataSaverHoldbackWebApi(ExecutionContext* execution_context) {
+  Settings* settings = GetSettings(execution_context);
+  if (!settings)
+    return false;
+  return settings->GetDataSaverHoldbackWebApi();
 }
 
 String ConnectionTypeToString(WebConnectionType type) {
@@ -112,10 +122,10 @@ double NetworkInformation::downlink() const {
 }
 
 bool NetworkInformation::saveData() const {
-  return IsObserving() ? save_data_
-                       : GetNetworkStateNotifier().SaveDataEnabled() &&
-                             !GetSettings(GetExecutionContext())
-                                  ->GetDataSaverHoldbackWebApi();
+  return IsObserving()
+             ? save_data_
+             : GetNetworkStateNotifier().SaveDataEnabled() &&
+                   !IsInDataSaverHoldbackWebApi(GetExecutionContext());
 }
 
 void NetworkInformation::ConnectionChange(
@@ -238,9 +248,8 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
       downlink_mbps_(GetNetworkStateNotifier().RoundMbps(
           Host(),
           GetNetworkStateNotifier().DownlinkThroughputMbps())),
-      save_data_(
-          GetNetworkStateNotifier().SaveDataEnabled() &&
-          !GetSettings(GetExecutionContext())->GetDataSaverHoldbackWebApi()),
+      save_data_(GetNetworkStateNotifier().SaveDataEnabled() &&
+                 !IsInDataSaverHoldbackWebApi(GetExecutionContext())),
       context_stopped_(false) {
   DCHECK_LE(1u, GetNetworkStateNotifier().RandomizationSalt());
   DCHECK_GE(20u, GetNetworkStateNotifier().RandomizationSalt());
