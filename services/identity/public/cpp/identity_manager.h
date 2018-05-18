@@ -147,9 +147,9 @@ class IdentityManager : public SigninManagerBase::Observer,
   // and its backing SigninManager/ProfileOAuth2TokenService instances.
   // Prefer using the methods in identity_test_{environment, utils}.h to using
   // this method directly.
-  void SetPrimaryAccountSynchronouslyForTests(std::string gaia_id,
-                                              std::string email_address,
-                                              std::string refresh_token);
+  void SetPrimaryAccountSynchronouslyForTests(const std::string& gaia_id,
+                                              const std::string& email_address,
+                                              const std::string& refresh_token);
 
   // Sets the primary account info synchronously with both the IdentityManager
   // and its backing SigninManager instance. If |refresh_token| is not empty,
@@ -157,9 +157,9 @@ class IdentityManager : public SigninManagerBase::Observer,
   // instance. This method should not be used directly; it exists only to serve
   // one legacy use case at this point.
   // TODO(https://crbug.com/814787): Eliminate the need for this method.
-  void SetPrimaryAccountSynchronously(std::string gaia_id,
-                                      std::string email_address,
-                                      std::string refresh_token);
+  void SetPrimaryAccountSynchronously(const std::string& gaia_id,
+                                      const std::string& email_address,
+                                      const std::string& refresh_token);
 
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
