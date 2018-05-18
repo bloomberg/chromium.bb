@@ -89,7 +89,12 @@ NewPasswordFormManager::NewPasswordFormManager(
 NewPasswordFormManager::~NewPasswordFormManager() = default;
 
 bool NewPasswordFormManager::DoesManage(const autofill::FormData& form) const {
-  return observed_form_.SameFormAs(form);
+  if (observed_form_.is_form_tag != form.is_form_tag)
+    return false;
+  // All unowned input elements are considered as one synthetic form.
+  if (!observed_form_.is_form_tag && !form.is_form_tag)
+    return true;
+  return observed_form_.unique_renderer_id == form.unique_renderer_id;
 }
 
 void NewPasswordFormManager::ProcessMatches(

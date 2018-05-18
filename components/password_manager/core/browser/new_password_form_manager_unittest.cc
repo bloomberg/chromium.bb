@@ -46,6 +46,8 @@ class NewPasswordFormManagerTest : public testing::Test {
     observed_form_.origin = origin;
     observed_form_.action = action;
     observed_form_.name = ASCIIToUTF16("sign-in");
+    observed_form_.unique_renderer_id = 1;
+    observed_form_.is_form_tag = true;
 
     FormFieldData field;
     field.name = ASCIIToUTF16("firstname");
@@ -81,12 +83,24 @@ TEST_F(NewPasswordFormManagerTest, DoesManage) {
                                       observed_form_, &fetcher);
   EXPECT_TRUE(form_manager.DoesManage(observed_form_));
   FormData another_form = observed_form_;
-  another_form.name += ASCIIToUTF16("1");
+  another_form.is_form_tag = false;
   EXPECT_FALSE(form_manager.DoesManage(another_form));
 
   another_form = observed_form_;
-  another_form.fields[0].name += ASCIIToUTF16("1");
+  another_form.unique_renderer_id = observed_form_.unique_renderer_id + 1;
   EXPECT_FALSE(form_manager.DoesManage(another_form));
+}
+
+TEST_F(NewPasswordFormManagerTest, DoesManageNoFormTag) {
+  observed_form_.is_form_tag = false;
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+  FormData another_form = observed_form_;
+  // Simulate that new input was added by JavaScript.
+  another_form.fields.push_back(FormFieldData());
+  EXPECT_TRUE(form_manager.DoesManage(another_form));
 }
 
 TEST_F(NewPasswordFormManagerTest, Autofill) {
@@ -118,10 +132,16 @@ TEST_F(NewPasswordFormManagerTest, SetSubmitted) {
 
   FormData another_form = observed_form_;
   another_form.name += ASCIIToUTF16("1");
-  EXPECT_FALSE(form_manager.SetSubmittedFormIfIsManaged(another_form));
+  // |another_form| is managed because the same |unique_renderer_id| as
+  // |observed_form_|.
+  EXPECT_TRUE(form_manager.SetSubmittedFormIfIsManaged(another_form));
   EXPECT_TRUE(form_manager.is_submitted());
 
   form_manager.set_not_submitted();
+  EXPECT_FALSE(form_manager.is_submitted());
+
+  another_form.unique_renderer_id = observed_form_.unique_renderer_id + 1;
+  EXPECT_FALSE(form_manager.SetSubmittedFormIfIsManaged(another_form));
   EXPECT_FALSE(form_manager.is_submitted());
 }
 
