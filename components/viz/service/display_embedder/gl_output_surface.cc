@@ -25,6 +25,10 @@ GLOutputSurface::GLOutputSurface(
     SyntheticBeginFrameSource* synthetic_begin_frame_source)
     : OutputSurface(context_provider),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
+      use_gpu_fence_(
+          context_provider->ContextCapabilities().chromium_gpu_fence &&
+          context_provider->ContextCapabilities()
+              .use_gpu_fences_for_overlay_planes),
       weak_ptr_factory_(this) {
   capabilities_.flipped_output_surface =
       context_provider->ContextCapabilities().flips_vertically;
@@ -37,7 +41,10 @@ GLOutputSurface::GLOutputSurface(
       &GLOutputSurface::OnPresentation, weak_ptr_factory_.GetWeakPtr()));
 }
 
-GLOutputSurface::~GLOutputSurface() {}
+GLOutputSurface::~GLOutputSurface() {
+  if (gpu_fence_id_ > 0)
+    context_provider()->ContextGL()->DestroyGpuFenceCHROMIUM(gpu_fence_id_);
+}
 
 void GLOutputSurface::BindToClient(OutputSurfaceClient* client) {
   DCHECK(client);
@@ -175,5 +182,17 @@ gpu::VulkanSurface* GLOutputSurface::GetVulkanSurface() {
   return nullptr;
 }
 #endif
+
+unsigned GLOutputSurface::UpdateGpuFence() {
+  if (!use_gpu_fence_)
+    return 0;
+
+  if (gpu_fence_id_ > 0)
+    context_provider()->ContextGL()->DestroyGpuFenceCHROMIUM(gpu_fence_id_);
+
+  gpu_fence_id_ = context_provider()->ContextGL()->CreateGpuFenceCHROMIUM();
+
+  return gpu_fence_id_;
+}
 
 }  // namespace viz

@@ -135,4 +135,8 @@ gpu::VulkanSurface* SoftwareBrowserCompositorOutputSurface::GetVulkanSurface() {
 }
 #endif
 
+unsigned SoftwareBrowserCompositorOutputSurface::UpdateGpuFence() {
+  return 0;
+}
+
 }  // namespace content

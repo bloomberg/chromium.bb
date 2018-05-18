@@ -132,4 +132,8 @@ gpu::VulkanSurface* SoftwareOutputSurface::GetVulkanSurface() {
 }
 #endif
 
+unsigned SoftwareOutputSurface::UpdateGpuFence() {
+  return 0;
+}
+
 }  // namespace viz

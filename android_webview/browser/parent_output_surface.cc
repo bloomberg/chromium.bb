@@ -92,4 +92,8 @@ gfx::BufferFormat ParentOutputSurface::GetOverlayBufferFormat() const {
   return gfx::BufferFormat::RGBX_8888;
 }
 
+unsigned ParentOutputSurface::UpdateGpuFence() {
+  return 0;
+}
+
 }  // namespace android_webview

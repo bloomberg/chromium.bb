@@ -424,6 +424,8 @@ class AndroidOutputSurface : public viz::OutputSurface {
     return gl->GetCopyTextureInternalFormat();
   }
 
+  unsigned UpdateGpuFence() override { return 0; }
+
  private:
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy() {
     ui::ContextProviderCommandBuffer* provider_command_buffer =

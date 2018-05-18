@@ -42,6 +42,7 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
 #if BUILDFLAG(ENABLE_VULKAN)
   gpu::VulkanSurface* GetVulkanSurface() override;
 #endif
+  unsigned UpdateGpuFence() override;
 
  private:
   void SwapBuffersCallback(uint64_t swap_id);

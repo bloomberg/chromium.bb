@@ -207,4 +207,8 @@ OffscreenBrowserCompositorOutputSurface::GetVulkanSurface() {
 }
 #endif
 
+unsigned OffscreenBrowserCompositorOutputSurface::UpdateGpuFence() {
+  return 0;
+}
+
 }  // namespace content

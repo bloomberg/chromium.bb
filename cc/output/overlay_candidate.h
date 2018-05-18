@@ -99,6 +99,9 @@ class CC_EXPORT OverlayCandidate {
   // an overlay.
   bool overlay_handled;
 
+  // Gpu fence to wait for before overlay is ready for display.
+  unsigned gpu_fence_id;
+
  private:
   static bool FromDrawQuadResource(DisplayResourceProvider* resource_provider,
                                    const viz::DrawQuad* quad,

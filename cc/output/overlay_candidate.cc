@@ -185,7 +185,8 @@ OverlayCandidate::OverlayCandidate()
 #endif
       plane_z_order(0),
       is_unoccluded(false),
-      overlay_handled(false) {
+      overlay_handled(false),
+      gpu_fence_id(0) {
 }
 
 OverlayCandidate::OverlayCandidate(const OverlayCandidate& other) = default;

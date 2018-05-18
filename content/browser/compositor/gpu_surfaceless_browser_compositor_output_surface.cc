@@ -33,6 +33,11 @@ GpuSurfacelessBrowserCompositorOutputSurface::
     : GpuBrowserCompositorOutputSurface(std::move(context),
                                         update_vsync_parameters_callback,
                                         std::move(overlay_candidate_validator)),
+      use_gpu_fence_(
+          context_provider_->ContextCapabilities().chromium_gpu_fence &&
+          context_provider_->ContextCapabilities()
+              .use_gpu_fences_for_overlay_planes),
+      gpu_fence_id_(0),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
@@ -55,6 +60,8 @@ GpuSurfacelessBrowserCompositorOutputSurface::
 
 GpuSurfacelessBrowserCompositorOutputSurface::
     ~GpuSurfacelessBrowserCompositorOutputSurface() {
+  if (gpu_fence_id_ > 0)
+    context_provider_->ContextGL()->DestroyGpuFenceCHROMIUM(gpu_fence_id_);
 }
 
 bool GpuSurfacelessBrowserCompositorOutputSurface::IsDisplayedAsOverlayPlane()
@@ -129,6 +136,18 @@ void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
       std::move(latency_info), modified_params);
   if (force_swap)
     client_->SetNeedsRedrawRect(gfx::Rect(swap_size_));
+}
+
+unsigned GpuSurfacelessBrowserCompositorOutputSurface::UpdateGpuFence() {
+  if (!use_gpu_fence_)
+    return 0;
+
+  if (gpu_fence_id_ > 0)
+    context_provider_->ContextGL()->DestroyGpuFenceCHROMIUM(gpu_fence_id_);
+
+  gpu_fence_id_ = context_provider_->ContextGL()->CreateGpuFenceCHROMIUM();
+
+  return gpu_fence_id_;
 }
 
 }  // namespace content

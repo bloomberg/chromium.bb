@@ -41,6 +41,7 @@ class PixelTestOutputSurface : public viz::OutputSurface {
 #if BUILDFLAG(ENABLE_VULKAN)
   gpu::VulkanSurface* GetVulkanSurface() override;
 #endif
+  unsigned UpdateGpuFence() override;
 
   void set_has_external_stencil_test(bool has_test) {
     external_stencil_test_ = has_test;
