@@ -19,6 +19,8 @@ GPU_EXPORT extern const base::Feature kDefaultEnableGpuRasterization;
 
 GPU_EXPORT extern const base::Feature kDefaultPassthroughCommandDecoder;
 
+GPU_EXPORT extern const base::Feature kDirectCompositionOverlays;
+
 }  // namespace features
 
 #endif  // GPU_CONFIG_GPU_FEATURES_H_

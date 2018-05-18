@@ -18,7 +18,6 @@
 #include "gpu/config/gpu_switching.h"
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
-#include "gpu/ipc/service/switches.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_features.h"
