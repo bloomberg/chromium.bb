@@ -405,7 +405,7 @@ wait_for_udev:
     }
 #endif
 
-    fd = open(buf, O_RDWR, 0);
+    fd = open(buf, O_RDWR | O_CLOEXEC, 0);
     drmMsg("drmOpenDevice: open result is %d, (%s)\n",
            fd, fd < 0 ? strerror(errno) : "OK");
     if (fd >= 0)
@@ -425,7 +425,7 @@ wait_for_udev:
             chmod(buf, devmode);
         }
     }
-    fd = open(buf, O_RDWR, 0);
+    fd = open(buf, O_RDWR | O_CLOEXEC, 0);
     drmMsg("drmOpenDevice: open result is %d, (%s)\n",
            fd, fd < 0 ? strerror(errno) : "OK");
     if (fd >= 0)
@@ -474,7 +474,7 @@ static int drmOpenMinor(int minor, int create, int type)
     };
 
     sprintf(buf, dev_name, DRM_DIR_NAME, minor);
-    if ((fd = open(buf, O_RDWR, 0)) >= 0)
+    if ((fd = open(buf, O_RDWR | O_CLOEXEC, 0)) >= 0)
         return fd;
     return -errno;
 }
