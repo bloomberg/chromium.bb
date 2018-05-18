@@ -240,9 +240,10 @@ class PaintOpHelper {
   }
 
   static std::string SkiaTypeToString(const SkMatrix& matrix) {
-    SkString str;
-    matrix.toString(&str);
-    return str.c_str();
+    return base::StringPrintf(
+        "[%8.4f %8.4f %8.4f][%8.4f %8.4f %8.4f][%8.4f %8.4f %8.4f]", matrix[0],
+        matrix[1], matrix[2], matrix[3], matrix[4], matrix[5], matrix[6],
+        matrix[7], matrix[8]);
   }
 
   static std::string SkiaTypeToString(const SkColor& color) {
@@ -415,33 +416,25 @@ class PaintOpHelper {
   static std::string SkiaTypeToString(const sk_sp<SkColorFilter>& filter) {
     if (!filter)
       return "(nil)";
-    SkString str;
-    filter->toString(&str);
-    return str.c_str();
+    return "SkColorFilter";
   }
 
   static std::string SkiaTypeToString(const sk_sp<SkMaskFilter>& filter) {
     if (!filter)
       return "(nil)";
-    SkString str;
-    filter->toString(&str);
-    return str.c_str();
+    return "SkMaskFilter";
   }
 
   static std::string SkiaTypeToString(const sk_sp<SkPathEffect>& effect) {
     if (!effect)
       return "(nil)";
-    SkString str;
-    effect->toString(&str);
-    return str.c_str();
+    return "SkPathEffect";
   }
 
   static std::string SkiaTypeToString(const sk_sp<SkDrawLooper>& looper) {
     if (!looper)
       return "(nil)";
-    SkString str;
-    looper->toString(&str);
-    return str.c_str();
+    return "SkDrawLooper";
   }
 
   template <typename T>
