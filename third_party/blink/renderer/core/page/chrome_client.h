@@ -75,6 +75,7 @@ class HitTestResult;
 class IntRect;
 class KeyboardEvent;
 class LocalFrame;
+class LocalFrameView;
 class Node;
 class Page;
 class PagePopup;
@@ -97,6 +98,15 @@ struct WebWindowFeatures;
 class CORE_EXPORT ChromeClient : public PlatformChromeClient {
  public:
   virtual void ChromeDestroyed() = 0;
+
+  // Requests the host invalidate the contents.
+  virtual void InvalidateRect(const IntRect& update_rect) = 0;
+
+  // Converts the rect from the viewport coordinates to screen coordinates.
+  virtual IntRect ViewportToScreen(const IntRect&,
+                                   const LocalFrameView*) const = 0;
+
+  virtual void ScheduleAnimation(const LocalFrameView*) = 0;
 
   // The specified rectangle is adjusted for the minimum window size and the
   // screen, then setWindowRect with the adjusted rectangle is called.

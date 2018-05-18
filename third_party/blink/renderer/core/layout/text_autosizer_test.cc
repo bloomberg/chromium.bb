@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/platform_frame_view.h"
 
 namespace blink {
 class TextAutosizerClient : public EmptyChromeClient {
@@ -20,7 +19,7 @@ class TextAutosizerClient : public EmptyChromeClient {
     return value * device_scale_factor_;
   }
   IntRect ViewportToScreen(const IntRect& rect,
-                           const PlatformFrameView* view) const override {
+                           const LocalFrameView*) const override {
     IntRect scaled_rect(rect);
     scaled_rect.Scale(1 / device_scale_factor_);
     return scaled_rect;

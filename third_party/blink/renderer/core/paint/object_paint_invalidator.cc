@@ -8,12 +8,12 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/find_paint_offset_and_visual_rect_needing_update.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/platform_chrome_client.h"
 
 namespace blink {
 
@@ -269,7 +269,7 @@ static void InvalidatePaintRectangleOnWindow(
   if (paint_rect.IsEmpty())
     return;
 
-  if (PlatformChromeClient* client = frame_view->GetChromeClient())
+  if (ChromeClient* client = frame_view->GetChromeClient())
     client->InvalidateRect(frame_view->ContentsToRootFrame(paint_rect));
 }
 

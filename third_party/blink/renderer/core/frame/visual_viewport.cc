@@ -716,11 +716,8 @@ LocalFrame* VisualViewport::MainFrame() const {
 }
 
 bool VisualViewport::ScheduleAnimation() {
-  if (PlatformChromeClient* client = GetChromeClient()) {
-    client->ScheduleAnimation(MainFrame()->View());
-    return true;
-  }
-  return false;
+  GetPage().GetChromeClient().ScheduleAnimation(MainFrame()->View());
+  return true;
 }
 
 void VisualViewport::ClampToBoundaries() {

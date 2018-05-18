@@ -104,9 +104,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                                     String& result) override;
   bool TabsToLinks() override;
   void InvalidateRect(const IntRect&) override;
-  void ScheduleAnimation(const PlatformFrameView*) override;
+  void ScheduleAnimation(const LocalFrameView*) override;
   IntRect ViewportToScreen(const IntRect&,
-                           const PlatformFrameView*) const override;
+                           const LocalFrameView*) const override;
   float WindowToViewportScalar(const float) const override;
   WebScreenInfo GetScreenInfo() const override;
   base::Optional<IntRect> VisibleContentRectForPainting() const override;

@@ -1257,7 +1257,6 @@ jumbo_component("platform") {
     "peerconnection/rtc_stats_response_base.h",
     "peerconnection/rtc_void_request.h",
     "platform_chrome_client.h",
-    "platform_frame_view.h",
     "plugins/plugin_data.cc",
     "plugins/plugin_data.h",
     "plugins/plugin_list_builder.cc",

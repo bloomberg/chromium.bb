@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_frontend_client.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/context_menu_provider.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -55,7 +56,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
-#include "third_party/blink/renderer/platform/platform_chrome_client.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 
 namespace blink {
@@ -159,8 +159,7 @@ float DevToolsHost::zoomFactor() {
   float zoom_factor = frontend_frame_->PageZoomFactor();
   // Cancel the device scale factor applied to the zoom factor in
   // use-zoom-for-dsf mode.
-  const PlatformChromeClient* client =
-      frontend_frame_->View()->GetChromeClient();
+  const ChromeClient* client = frontend_frame_->View()->GetChromeClient();
   float window_to_viewport_ratio = client->WindowToViewportScalar(1.0f);
   return zoom_factor / window_to_viewport_ratio;
 }
