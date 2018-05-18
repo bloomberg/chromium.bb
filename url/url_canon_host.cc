@@ -67,6 +67,17 @@ const unsigned char kHostCharLookup[0x80] = {
 //   p    q    r    s    t    u    v    w    x    y    z    {    |    }    ~
     'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',kEsc,kEsc,kEsc,  0 ,  0 };
 
+// RFC1034 maximum FQDN length.
+constexpr int kMaxHostLength = 253;
+
+// Generous padding to account for the fact that UTS#46 normalization can cause
+// a long string to actually shrink and fit within the 253 character RFC1034
+// FQDN length limit. Note that this can still be too short for pathological
+// cases: An arbitrary number of characters (e.g. U+00AD SOFT HYPHEN) can be
+// removed from the input by UTS#46 processing. However, this should be
+// sufficient for all normally-encountered, non-abusive hostname strings.
+constexpr int kMaxHostBufferLength = kMaxHostLength*5;
+
 const int kTempHostBufferLen = 1024;
 typedef RawCanonOutputT<char, kTempHostBufferLen> StackBuffer;
 typedef RawCanonOutputT<base::char16, kTempHostBufferLen> StackBufferW;
@@ -159,7 +170,6 @@ bool DoSimpleHost(const INCHAR* host,
       *has_non_ascii = true;
     }
   }
-
   return success;
 }
 
@@ -172,6 +182,10 @@ bool DoIDNHost(const base::char16* src, int src_len, CanonOutput* output) {
   RawCanonOutputW<kTempHostBufferLen> url_escaped_host;
   bool has_non_ascii;
   DoSimpleHost(src, src_len, &url_escaped_host, &has_non_ascii);
+  if (url_escaped_host.length() > kMaxHostBufferLength) {
+    AppendInvalidNarrowString(src, 0, src_len, output);
+    return false;
+  }
 
   StackBufferW wide_output;
   if (!IDNToASCII(url_escaped_host.data(),

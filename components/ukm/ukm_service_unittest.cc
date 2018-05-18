@@ -624,7 +624,8 @@ TEST_F(UkmServiceTest, SourceURLLength) {
   auto id = GetWhitelistedSourceId(0);
 
   // This URL is too long to be recorded fully.
-  const std::string long_string = "https://" + std::string(10000, 'a');
+  const std::string long_string =
+      "https://example.com/" + std::string(10000, 'a');
   recorder.UpdateSourceURL(id, GURL(long_string));
 
   service.Flush();
