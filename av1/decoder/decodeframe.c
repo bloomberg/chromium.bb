@@ -488,12 +488,10 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         }
 
         av1_make_inter_predictor(
-            pre, pre_buf->stride, dst, dst_buf->stride, subpel_params.subpel_x,
-            subpel_params.subpel_y, sf, b4_w, b4_h, &conv_params,
-            this_mbmi->interp_filters, &warp_types,
+            pre, pre_buf->stride, dst, dst_buf->stride, &subpel_params, sf,
+            b4_w, b4_h, &conv_params, this_mbmi->interp_filters, &warp_types,
             (mi_x >> pd->subsampling_x) + x, (mi_y >> pd->subsampling_y) + y,
-            plane, ref, mi, build_for_obmc, subpel_params.xs, subpel_params.ys,
-            xd, cm->allow_warped_motion);
+            plane, ref, mi, build_for_obmc, xd, cm->allow_warped_motion);
 
         ++col;
       }
@@ -549,11 +547,9 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
       else
         av1_make_inter_predictor(
             pre[ref], pre_buf->stride, dst, dst_buf->stride,
-            subpel_params[ref].subpel_x, subpel_params[ref].subpel_y, sf, bw,
-            bh, &conv_params, mi->interp_filters, &warp_types,
-            mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y, plane, ref,
-            mi, build_for_obmc, subpel_params[ref].xs, subpel_params[ref].ys,
-            xd, cm->allow_warped_motion);
+            &subpel_params[ref], sf, bw, bh, &conv_params, mi->interp_filters,
+            &warp_types, mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y,
+            plane, ref, mi, build_for_obmc, xd, cm->allow_warped_motion);
     }
   }
 }

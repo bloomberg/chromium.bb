@@ -547,10 +547,10 @@ void aom_upsampled_pred_sse2(MACROBLOCKD *xd, const struct AV1Common *const cm,
       const uint8_t *const pre =
           pre_buf->buf0 + (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
           (pos_x >> SCALE_SUBPEL_BITS);
-      const int subpel_x = pos_x & SCALE_SUBPEL_MASK;
-      const int subpel_y = pos_y & SCALE_SUBPEL_MASK;
-      const int xs = sf->x_step_q4;
-      const int ys = sf->y_step_q4;
+
+      const SubpelParams subpel_params = { sf->x_step_q4, sf->y_step_q4,
+                                           pos_x & SCALE_SUBPEL_MASK,
+                                           pos_y & SCALE_SUBPEL_MASK };
 
       // Get warp types.
       const WarpedMotionParams *const wm =
@@ -567,11 +567,11 @@ void aom_upsampled_pred_sse2(MACROBLOCKD *xd, const struct AV1Common *const cm,
 
       // Get the inter predictor.
       const int build_for_obmc = 0;
-      av1_make_inter_predictor(
-          pre, pre_buf->stride, comp_pred, width, subpel_x, subpel_y, sf, width,
-          height, &conv_params, filters, &warp_types, mi_x >> pd->subsampling_x,
-          mi_y >> pd->subsampling_y, plane, ref_num, mi, build_for_obmc, xs, ys,
-          xd, cm->allow_warped_motion);
+      av1_make_inter_predictor(pre, pre_buf->stride, comp_pred, width,
+                               &subpel_params, sf, width, height, &conv_params,
+                               filters, &warp_types, mi_x >> pd->subsampling_x,
+                               mi_y >> pd->subsampling_y, plane, ref_num, mi,
+                               build_for_obmc, xd, cm->allow_warped_motion);
 
       return;
     }
