@@ -101,7 +101,7 @@ crbug.com/653722 virtual/disable-spv175/compositing/reflections/nested-reflectio
 crbug.com/653722 compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
 crbug.com/653722 virtual/disable-spv175/compositing/reflections/nested-reflection-transition.html [ Skip ]
 
-crbug.com/816045 [ Win Linux ] virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ Pass Timeout ]
+crbug.com/816045 [ Win Linux Mac ] virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ Pass Timeout ]
 
 ########## Bugs to fix ##########
 # This is a missing event and increasing the timeout or using run-after-layout-and-paint doesn't
@@ -109,15 +109,32 @@ crbug.com/816045 [ Win Linux ] virtual/gpu/fast/canvas/canvas-imageSmoothingQual
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
 crbug.com/309675 virtual/disable-spv175/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Skip ]
 
-# The failure in the next line is due to virtual/gpu bots using osmesa
-# Under osmesa, skia's filter quality doesn't work correctly. This test is expected to pass
-# when we swith to swiftshader.
-crbug.com/549742 [ Mac ] virtual/gpu/fast/canvas/canvas-drawImage-video-imageSmoothingEnabled.html [ Failure ]
-
 # SwiftShader Failures
-crbug.com/726075 [ Win Linux ] compositing/3d-cube.html [ Failure ]
-crbug.com/726075 [ Win Linux ] virtual/disable-spv175/compositing/3d-cube.html [ Skip ]
+crbug.com/726075 [ Win Linux Mac ] compositing/3d-cube.html [ Failure ]
+crbug.com/726075 [ Win Linux Mac ] virtual/disable-spv175/compositing/3d-cube.html [ Skip ]
 crbug.com/726075 [ Linux ] shapedetection/detection-HTMLVideoElement.html [ Timeout ]
+
+# SwiftShader MacOS specific flaky tests
+crbug.com/726075 [ Mac ] css3/filters/effect-combined-hw.html [ Pass Timeout ]
+crbug.com/726075 [ Mac ] http/tests/media/media-load-nonmedia-crossorigin.html [ Pass Failure Crash ]
+crbug.com/726075 [ Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-filter-in-worker.html [ Pass Timeout ]
+crbug.com/726075 [ Mac ] virtual/gpu-rasterization/images/color-profile-image.html [ Pass Failure ]
+crbug.com/726075 [ Mac ] virtual/gpu-rasterization/images/content-url-image-with-alt-text.html [ Pass Failure ]
+crbug.com/726075 [ Mac ] virtual/gpu-rasterization/images/content-url-image-with-alt-text-dynamic.html [ Pass Failure ]
+crbug.com/726075 [ Mac ] virtual/gpu-rasterization/images/feature-policy-max-downscaling-image-resize.html [ Pass Failure ]
+crbug.com/726075 [ Mac ] virtual/gpu-rasterization/images/imagemap-duplicate-outlines-crash.html [ Pass Failure ]
+crbug.com/726075 [ Mac ] virtual/gpu-rasterization/images/imagemap-focus-ring-zoom-style.html [ Pass Failure ]
+crbug.com/726075 [ Mac ] virtual/gpu-rasterization/images/imagemap-focus-ring-zoom-style-default-shape.html [ Pass Failure ]
+crbug.com/726075 [ Mac ] virtual/gpu-rasterization/images/object-data-url-case-insensitivity.html [ Pass Failure ]
+crbug.com/726075 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/overflow-menu-always-visible.html [ Pass Timeout ]
+crbug.com/726075 [ Mac ] virtual/threaded/animations/display-none-terminates-animation.html [ Pass Failure Crash ]
+crbug.com/726075 [ Mac ] virtual/threaded/fast/animationworklet/animation-worklet-start-delay.html [ Pass Failure Crash ]
+crbug.com/726075 [ Mac ] virtual/threaded/fast/animationworklet/worklet-animation-duration.html [ Pass Failure Crash ]
+crbug.com/726075 [ Mac ] virtual/threaded/fast/animationworklet/worklet-animation-local-time-before-start.html [ Pass Failure Crash ]
+crbug.com/726075 [ Mac ] virtual/threaded/fast/animationworklet/worklet-animation-set-keyframes.html [ Pass Failure Crash ]
+crbug.com/726075 [ Mac ] virtual/threaded/fast/animationworklet/worklet-animation-set-timing.html [ Pass Failure Crash ]
+crbug.com/726075 [ Mac ] virtual/threaded/fast/scroll-behavior/snaps-after-scrollbar-dragging.html [ Pass Failure Crash ]
+crbug.com/726075 [ Mac ] vr/requestAnimationFrame_submitFrame_combinations.html [ Pass Failure Crash ]
 
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
@@ -2351,7 +2368,7 @@ crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mou
 crbug.com/665577 virtual/threaded/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Pass Timeout ]
 crbug.com/665577 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure ]
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure Timeout ]
-crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Pass Failure ]
+crbug.com/665577 [ Linux Win Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Pass Failure Crash ]
 
 crbug.com/599670 [ Win ] http/tests/devtools/resource-parameters-ipv6.js [ Pass Failure ]
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Failure ]
@@ -4398,7 +4415,7 @@ crbug.com/785980 [ Win ] http/tests/devtools/network/network-xhr-same-url-as-mai
 crbug.com/786235 http/tests/misc/resource-timing-sizes-tags.html [ Failure Pass ]
 
 # Sheriff failures 2017-11-21
-crbug.com/786641 [ Win Linux ] virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing-in-worker.html [ Timeout Pass ]
+crbug.com/786641 [ Win Linux Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing-in-worker.html [ Timeout Pass ]
 
 # Sheriff failures 2017-11-28
 crbug.com/789111 http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Failure Timeout ]
@@ -4509,7 +4526,7 @@ crbug.com/810009 [ Linux ] virtual/disable-spv175/paint/invalidation/image/canva
 crbug.com/812417 [ Win7 ] http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Failure ]
 
 # Sheriff failures 2018-02-19
-crbug.com/771643 [ Mac10.11 ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Failure ]
+crbug.com/771643 [ Mac ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Failure ]
 
 # Sheriff failures 2018-02-20
 crbug.com/789921 media/controls/repaint-on-resize.html [ Failure Pass ]

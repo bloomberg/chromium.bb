@@ -9,5 +9,5 @@ declare_args() {
 
   # Should EGL support be compiled. Can be overriden to test during bring up
   # of EGL support on other platforms
-  use_egl = is_win || is_android || is_linux || is_fuchsia
+  use_egl = is_win || is_android || is_linux || is_fuchsia || is_mac
 }
