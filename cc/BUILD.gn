@@ -649,7 +649,6 @@ cc_test("cc_unittests") {
     "resources/layer_tree_resource_provider_unittest.cc",
     "resources/resource_pool_unittest.cc",
     "resources/resource_provider_unittest.cc",
-    "resources/resource_util_unittest.cc",
     "resources/video_resource_updater_unittest.cc",
     "scheduler/compositor_timing_history_unittest.cc",
     "scheduler/scheduler_state_machine_unittest.cc",
