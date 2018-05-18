@@ -65,8 +65,8 @@ class OnceCallback<R(Args...)> : public internal::CallbackBase {
   OnceCallback(const OnceCallback&) = delete;
   OnceCallback& operator=(const OnceCallback&) = delete;
 
-  OnceCallback(OnceCallback&&) = default;
-  OnceCallback& operator=(OnceCallback&&) = default;
+  OnceCallback(OnceCallback&&) noexcept = default;
+  OnceCallback& operator=(OnceCallback&&) noexcept = default;
 
   OnceCallback(RepeatingCallback<RunType> other)
       : internal::CallbackBase(std::move(other)) {}
@@ -112,8 +112,8 @@ class RepeatingCallback<R(Args...)> : public internal::CallbackBaseCopyable {
   // Copyable and movable.
   RepeatingCallback(const RepeatingCallback&) = default;
   RepeatingCallback& operator=(const RepeatingCallback&) = default;
-  RepeatingCallback(RepeatingCallback&&) = default;
-  RepeatingCallback& operator=(RepeatingCallback&&) = default;
+  RepeatingCallback(RepeatingCallback&&) noexcept = default;
+  RepeatingCallback& operator=(RepeatingCallback&&) noexcept = default;
 
   bool Equals(const RepeatingCallback& other) const {
     return EqualsInternal(other);

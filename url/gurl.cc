@@ -150,7 +150,7 @@ GURL& GURL::operator=(const GURL& other) {
   return *this;
 }
 
-GURL& GURL::operator=(GURL&& other) {
+GURL& GURL::operator=(GURL&& other) noexcept {
   spec_ = std::move(other.spec_);
   is_valid_ = other.is_valid_;
   parsed_ = other.parsed_;
