@@ -255,6 +255,25 @@ class NullServiceProcessLauncherFactory
   DISALLOW_COPY_AND_ASSIGN(NullServiceProcessLauncherFactory);
 };
 
+// This class is intended for tests that want to load service binaries (rather
+// than via the utility process). Production code uses
+// NullServiceProcessLauncherFactory.
+class ServiceBinaryLauncherFactory
+    : public service_manager::ServiceProcessLauncherFactory {
+ public:
+  ServiceBinaryLauncherFactory() = default;
+  ~ServiceBinaryLauncherFactory() override = default;
+
+ private:
+  std::unique_ptr<service_manager::ServiceProcessLauncher> Create(
+      const base::FilePath& service_path) override {
+    return std::make_unique<service_manager::ServiceProcessLauncher>(
+        nullptr, service_path);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceBinaryLauncherFactory);
+};
+
 // Helper to invoke GetGeolocationRequestContext on the currently-set
 // ContentBrowserClient.
 void GetGeolocationRequestContextFromContentClient(
@@ -318,8 +337,18 @@ class ServiceManagerContext::InProcessServiceManagerContext
       std::unique_ptr<BuiltinManifestProvider> manifest_provider,
       service_manager::mojom::ServicePtrInfo packaged_services_service_info) {
     manifest_provider_ = std::move(manifest_provider);
+    std::unique_ptr<service_manager::ServiceProcessLauncherFactory>
+        service_process_launcher_factory;
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableServiceBinaryLauncher)) {
+      service_process_launcher_factory =
+          std::make_unique<ServiceBinaryLauncherFactory>();
+    } else {
+      service_process_launcher_factory =
+          std::make_unique<NullServiceProcessLauncherFactory>();
+    }
     service_manager_ = std::make_unique<service_manager::ServiceManager>(
-        std::make_unique<NullServiceProcessLauncherFactory>(), nullptr,
+        std::move(service_process_launcher_factory), nullptr,
         manifest_provider_.get());
 
     service_manager::mojom::ServicePtr packaged_services_service;

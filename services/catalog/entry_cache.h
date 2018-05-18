@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 
 namespace catalog {
@@ -16,7 +17,7 @@ namespace catalog {
 class Entry;
 
 // Indexed storage for all existing service catalog entries.
-class EntryCache {
+class COMPONENT_EXPORT(CATALOG) EntryCache {
  public:
   EntryCache();
   ~EntryCache();

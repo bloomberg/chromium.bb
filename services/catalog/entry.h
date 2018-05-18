@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "services/catalog/public/mojom/catalog.mojom.h"
@@ -21,7 +22,7 @@ class Value;
 namespace catalog {
 
 // Static information about a service package known to the Catalog.
-class Entry {
+class COMPONENT_EXPORT(CATALOG) Entry {
  public:
   Entry();
   explicit Entry(const std::string& name);

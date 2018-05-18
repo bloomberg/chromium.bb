@@ -5,9 +5,11 @@
 #ifndef SERVICES_CATALOG_CONSTANTS_H_
 #define SERVICES_CATALOG_CONSTANTS_H_
 
+#include "base/component_export.h"
+
 namespace catalog {
 
-extern const char kPackagesDirName[];
+COMPONENT_EXPORT(CATALOG) extern const char kPackagesDirName[];
 
 }  // namespace catalog
 
