@@ -50,12 +50,8 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
 
-    self.Fail('Pixel_Video_MP4', bug=820240)
-    # Disabled for rebaseline
-    #self.Flaky('Pixel_Video_MP4', ['android', 'nvidia'], bug=716564)
-    #self.Fail('Pixel_Video_MP4',
-    #    ['android', ('qualcomm', 'Adreno (TM) 418')], bug=820240)
-    #self.Flaky('Pixel_Video_MP4', ['linux', 'nvidia'], bug=819635)
+    self.Flaky('Pixel_Video_MP4', ['android', 'nvidia'], bug=716564)
+    self.Flaky('Pixel_Video_MP4', ['linux', 'nvidia'], bug=819635)
 
     # TODO(junov); validate new test results
     self.Fail('Pixel_CanvasLowLatency2D',
@@ -78,9 +74,8 @@ class PixelExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=773293)
 
     # Failing on Mac Intel HighSierra
-    # Disabled for rebaseline
-    #self.Fail('Pixel_Video_MP4',
-    #    ['highsierra', ('intel', 0xa2e)], bug=774809)
+    self.Fail('Pixel_Video_MP4',
+        ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Fail('Pixel_Video_VP9',
         ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
