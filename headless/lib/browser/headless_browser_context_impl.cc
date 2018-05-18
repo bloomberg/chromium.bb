@@ -384,6 +384,14 @@ void HeadlessBrowserContextImpl::RemoveObserver(Observer* obs) {
   observers_.RemoveObserver(obs);
 }
 
+void HeadlessBrowserContextImpl::NotifyChildContentsCreated(
+    HeadlessWebContentsImpl* parent,
+    HeadlessWebContentsImpl* child) {
+  base::AutoLock lock(observers_lock_);
+  for (auto& observer : observers_)
+    observer.OnChildContentsCreated(parent, child);
+}
+
 void HeadlessBrowserContextImpl::NotifyUrlRequestFailed(
     net::URLRequest* request,
     int net_error,

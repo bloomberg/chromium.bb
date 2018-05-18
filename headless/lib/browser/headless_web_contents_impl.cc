@@ -112,6 +112,8 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
     HeadlessWebContentsImpl* raw_child_contents = child_contents.get();
     headless_web_contents_->browser_context()->RegisterWebContents(
         std::move(child_contents));
+    headless_web_contents_->browser_context()->NotifyChildContentsCreated(
+        headless_web_contents_, raw_child_contents);
 
     const gfx::Rect default_rect(
         headless_web_contents_->browser()->options()->window_size);
@@ -138,6 +140,8 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
                 ->CreateWebContentsBuilder()
                 .SetWindowSize(source->GetContainerBounds().size())
                 .Build());
+        headless_web_contents_->browser_context()->NotifyChildContentsCreated(
+            headless_web_contents_, child_contents);
         target = child_contents->web_contents();
         break;
       }
