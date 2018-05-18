@@ -1056,23 +1056,6 @@
           'gtest_tests': 'goma_gtests',
         },
       },
-      'Linux Xenial': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            },
-          ],
-        },
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
-          'scripts': 'chromium_linux_scripts',
-        },
-      },
       'Linux Viz': {
         'additional_compile_targets': [
           'all',

@@ -2434,13 +2434,6 @@
           'shards': 1,
         },
       },
-      # chromium.fyi
-      'Linux Xenial': {
-        'args': [
-          '--xvfb',
-          '--jobs=1',
-        ],
-      },
       # chromium.linux
       'Linux Tests': {
         'args': [
