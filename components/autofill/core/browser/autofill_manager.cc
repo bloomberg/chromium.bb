@@ -860,10 +860,12 @@ void AutofillManager::DidShowSuggestions(bool is_new_popup,
 
     if (autofill_field->Type().group() == CREDIT_CARD) {
       credit_card_form_event_logger_->OnDidShowSuggestions(
-          *autofill_field, form_structure->form_parsed_timestamp());
+          *form_structure, *autofill_field,
+          form_structure->form_parsed_timestamp());
     } else {
       address_form_event_logger_->OnDidShowSuggestions(
-          *autofill_field, form_structure->form_parsed_timestamp());
+          *form_structure, *autofill_field,
+          form_structure->form_parsed_timestamp());
     }
   }
 }

@@ -1405,10 +1405,11 @@ void AutofillMetrics::FormEventLogger::OnDidPollSuggestions(
 }
 
 void AutofillMetrics::FormEventLogger::OnDidShowSuggestions(
+    const FormStructure& form,
     const AutofillField& field,
     const base::TimeTicks& form_parsed_timestamp) {
-  form_interactions_ukm_logger_->LogSuggestionsShown(field,
-                                                     form_parsed_timestamp);
+  form_interactions_ukm_logger_->LogSuggestionsShown(
+      form, field, form_parsed_timestamp);
 
   Log(AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN);
   if (!has_logged_suggestions_shown_) {
@@ -1642,6 +1643,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogInteractedWithForm(
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown(
+    const FormStructure& form,
     const AutofillField& field,
     const base::TimeTicks& form_parsed_timestamp) {
   if (!CanLog())
@@ -1654,6 +1656,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown(
       .SetHeuristicType(static_cast<int>(field.heuristic_type()))
       .SetHtmlFieldType(static_cast<int>(field.html_type()))
       .SetServerType(static_cast<int>(field.server_type()))
+      .SetFormSignature(HashFormSignature(form.form_signature()))
+      .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
       .SetMillisecondsSinceFormParsed(
           MillisecondsSinceFormParsed(form_parsed_timestamp))
       .Record(ukm_recorder_);

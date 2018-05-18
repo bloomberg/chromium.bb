@@ -667,7 +667,8 @@ class AutofillMetrics {
                                size_t local_record_type_count,
                                size_t server_record_type_count,
                                FormSignature form_signature);
-    void LogSuggestionsShown(const AutofillField& field,
+    void LogSuggestionsShown(const FormStructure& form,
+                             const AutofillField& field,
                              const base::TimeTicks& form_parsed_timestamp);
     void LogSelectedMaskedServerCard(
         const base::TimeTicks& form_parsed_timestamp);
@@ -1011,7 +1012,8 @@ class AutofillMetrics {
 
     void OnDidPollSuggestions(const FormFieldData& field);
 
-    void OnDidShowSuggestions(const AutofillField& field,
+    void OnDidShowSuggestions(const FormStructure& form,
+                              const AutofillField& field,
                               const base::TimeTicks& form_parsed_timestamp);
 
     void OnDidSelectMaskedServerCardSuggestion(

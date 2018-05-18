@@ -2666,11 +2666,19 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
       {{{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
         {UkmTextFieldDidChangeType::kHeuristicTypeName, CREDIT_CARD_NAME_FULL},
         {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
-        {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NAME_FULL}},
+        {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NAME_FULL},
+        {UkmSuggestionsShownType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[0]))},
+        {UkmSuggestionsShownType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}},
        {{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
         {UkmTextFieldDidChangeType::kHeuristicTypeName, CREDIT_CARD_NUMBER},
         {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
-        {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NUMBER}}});
+        {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NUMBER},
+        {UkmSuggestionsShownType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[1]))},
+        {UkmSuggestionsShownType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}}});
   // Expect 2 |FORM_EVENT_LOCAL_SUGGESTION_FILLED| events. First, from
   // call to |external_delegate_->DidAcceptSuggestion|. Second, from call to
   // |autofill_manager_->FillOrPreviewForm|.
@@ -2781,11 +2789,19 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
       {{{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
         {UkmTextFieldDidChangeType::kHeuristicTypeName, ADDRESS_HOME_STATE},
         {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
-        {UkmTextFieldDidChangeType::kServerTypeName, ADDRESS_HOME_STATE}},
+        {UkmTextFieldDidChangeType::kServerTypeName, ADDRESS_HOME_STATE},
+        {UkmSuggestionsShownType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[0]))},
+        {UkmSuggestionsShownType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}},
        {{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
         {UkmTextFieldDidChangeType::kHeuristicTypeName, ADDRESS_HOME_CITY},
         {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
-        {UkmTextFieldDidChangeType::kServerTypeName, ADDRESS_HOME_CITY}}});
+        {UkmTextFieldDidChangeType::kServerTypeName, ADDRESS_HOME_CITY},
+        {UkmSuggestionsShownType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[1]))},
+        {UkmSuggestionsShownType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}}});
   // Expect 2 |FORM_EVENT_LOCAL_SUGGESTION_FILLED| events. First, from
   // call to |external_delegate_->DidAcceptSuggestion|. Second, from call to
   // |autofill_manager_->FillOrPreviewForm|.
@@ -3969,7 +3985,11 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
           {UkmTextFieldDidChangeType::kHeuristicTypeName, CREDIT_CARD_NUMBER},
           {UkmTextFieldDidChangeType::kHtmlFieldTypeName,
            HTML_TYPE_UNSPECIFIED},
-          {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NUMBER}}});
+          {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NUMBER},
+          {UkmSuggestionsShownType::kFieldSignatureName,
+           Collapse(CalculateFieldSignatureForField(form.fields[2]))},
+          {UkmSuggestionsShownType::kFormSignatureName,
+           Collapse(CalculateFormSignature(form))}}});
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
@@ -4006,7 +4026,11 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
           {UkmTextFieldDidChangeType::kHeuristicTypeName, CREDIT_CARD_NUMBER},
           {UkmTextFieldDidChangeType::kHtmlFieldTypeName,
            HTML_TYPE_UNSPECIFIED},
-          {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NUMBER}}});
+          {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NUMBER},
+          {UkmSuggestionsShownType::kFieldSignatureName,
+           Collapse(CalculateFieldSignatureForField(form.fields[2]))},
+          {UkmSuggestionsShownType::kFormSignatureName,
+           Collapse(CalculateFormSignature(form))}}});
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
@@ -4259,7 +4283,11 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
           {UkmTextFieldDidChangeType::kHeuristicTypeName, CREDIT_CARD_NUMBER},
           {UkmTextFieldDidChangeType::kHtmlFieldTypeName,
            HTML_TYPE_UNSPECIFIED},
-          {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NUMBER}}});
+          {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NUMBER},
+          {UkmSuggestionsShownType::kFieldSignatureName,
+           Collapse(CalculateFieldSignatureForField(form.fields[2]))},
+          {UkmSuggestionsShownType::kFormSignatureName,
+           Collapse(CalculateFormSignature(form))}}});
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
@@ -5442,6 +5470,10 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
     VerifyFormInteractionUkm(
         test_ukm_recorder_, form, UkmSuggestionsShownType::kEntryName,
         {{{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+          {UkmSuggestionsShownType::kFieldSignatureName,
+           Collapse(CalculateFieldSignatureForField(form.fields[2]))},
+          {UkmSuggestionsShownType::kFormSignatureName,
+           Collapse(CalculateFormSignature(form))},
           {UkmTextFieldDidChangeType::kHeuristicTypeName,
            PHONE_HOME_WHOLE_NUMBER},
           {UkmTextFieldDidChangeType::kHtmlFieldTypeName,
@@ -6073,21 +6105,37 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
         {UkmTextFieldDidChangeType::kHeuristicTypeName,
          PHONE_HOME_WHOLE_NUMBER},
         {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
-        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA}},
+        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA},
+        {UkmSuggestionsShownType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[2]))},
+        {UkmSuggestionsShownType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}},
        {{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
         {UkmTextFieldDidChangeType::kHeuristicTypeName,
          PHONE_HOME_WHOLE_NUMBER},
         {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
-        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA}},
+        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA},
+        {UkmSuggestionsShownType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[2]))},
+        {UkmSuggestionsShownType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}},
        {{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
         {UkmTextFieldDidChangeType::kHeuristicTypeName,
          PHONE_HOME_WHOLE_NUMBER},
         {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
-        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA}},
+        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA},
+        {UkmSuggestionsShownType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[2]))},
+        {UkmSuggestionsShownType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}},
        {{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
         {UkmTextFieldDidChangeType::kHeuristicTypeName, EMAIL_ADDRESS},
         {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
-        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA}}});
+        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA},
+        {UkmSuggestionsShownType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[1]))},
+        {UkmSuggestionsShownType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}}});
   VerifyFormInteractionUkm(
       test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
       {{{UkmSuggestionFilledType::kRecordTypeName,
@@ -6942,6 +6990,46 @@ TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_NoUkmService) {
   AutofillMetrics::LogCardUploadDecisionsUkm(nullptr, url, 1);
   EXPECT_EQ(0ul, test_ukm_recorder_.sources_count());
   EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
+}
+
+// Test the ukm recorded when Suggestion is shown.
+TEST_F(AutofillMetricsTest, AutofillSuggestionShownTest) {
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example_cc.com/form.html");
+  form.action = GURL("http://example_cc.com/submit.html");
+  form.main_frame_origin =
+      url::Origin::Create(GURL("http://example_root_cc.com/form.html"));
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("Name on card", "cc-name", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NAME_FULL);
+  test::CreateTestFormField("Credit card", "card", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NUMBER);
+  test::CreateTestFormField("Month", "card_month", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_MONTH);
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  // Simulate and Autofill query on credit card name field.
+  autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                        form.fields[0]);
+  VerifyFormInteractionUkm(
+      test_ukm_recorder_, form, UkmSuggestionsShownType::kEntryName,
+      {{{UkmSuggestionsShownType::kMillisecondsSinceFormParsedName, 0},
+        {UkmSuggestionsShownType::kHeuristicTypeName, CREDIT_CARD_NAME_FULL},
+        {UkmSuggestionsShownType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
+        {UkmSuggestionsShownType::kServerTypeName, CREDIT_CARD_NAME_FULL},
+        {UkmSuggestionsShownType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[0]))},
+        {UkmSuggestionsShownType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}}});
 }
 
 }  // namespace autofill
