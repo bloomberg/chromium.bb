@@ -1057,8 +1057,10 @@ $CLOSE_NAMESPACE
         'POST_CALL': post_call,
         'STUB_NAME': self.helper.GetStubName(native),
         'PROFILING_ENTERED_NATIVE': profiling_entered_native,
+        'TRACE_EVENT': '',
     }
 
+    namespace_qual = self.namespace + '::' if self.namespace else ''
     if is_method:
       optional_error_return = JavaReturnValueToC(native.return_type)
       if optional_error_return:
@@ -1068,20 +1070,28 @@ $CLOSE_NAMESPACE
           'PARAM0_NAME': native.params[0].name,
           'P0_TYPE': native.p0_type,
       })
+      if self.options.enable_tracing:
+        values['TRACE_EVENT'] = self.GetTraceEventForNameTemplate(
+            namespace_qual + '${P0_TYPE}::${NAME}', values);
       template = Template("""\
 JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS_IN_STUB}) {
   ${PROFILING_ENTERED_NATIVE}
+  ${TRACE_EVENT}
   ${P0_TYPE}* native = reinterpret_cast<${P0_TYPE}*>(${PARAM0_NAME});
   CHECK_NATIVE_PTR(env, jcaller, native, "${NAME}"${OPTIONAL_ERROR_RETURN});
   return native->${NAME}(${PARAMS_IN_CALL})${POST_CALL};
 }
 """)
     else:
+      if self.options.enable_tracing:
+        values['TRACE_EVENT'] = self.GetTraceEventForNameTemplate(
+            namespace_qual + '${IMPL_METHOD_NAME}', values)
       template = Template("""
 static ${RETURN_DECLARATION} ${IMPL_METHOD_NAME}(JNIEnv* env, ${PARAMS});
 
 JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS_IN_STUB}) {
   ${PROFILING_ENTERED_NATIVE}
+  ${TRACE_EVENT}
   return ${IMPL_METHOD_NAME}(${PARAMS_IN_CALL})${POST_CALL};
 }
 """)
@@ -1146,6 +1156,17 @@ JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS_IN_STUB}) {
     profiling_leaving_native = ''
     if self.options.enable_profiling:
       profiling_leaving_native = 'JNI_SAVE_FRAME_POINTER;'
+    jni_name = called_by_native.name
+    jni_return_type = called_by_native.return_type
+    if called_by_native.is_constructor:
+      jni_name = '<init>'
+      jni_return_type = 'void'
+    if called_by_native.signature:
+      jni_signature = called_by_native.signature
+    else:
+      jni_signature = self.jni_params.Signature(called_by_native.params,
+                                                jni_return_type, True)
+    java_name_full = java_class.replace('/', '.') + '.' + jni_name
     return {
         'JAVA_CLASS_ONLY': java_class_only,
         'JAVA_CLASS': GetBinaryClassName(java_class),
@@ -1160,12 +1181,14 @@ JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS_IN_STUB}) {
         'ENV_CALL': called_by_native.env_call,
         'FIRST_PARAM_IN_CALL': first_param_in_call,
         'PARAMS_IN_CALL': params_in_call,
-        'METHOD_ID_VAR_NAME': called_by_native.method_id_var_name,
         'CHECK_EXCEPTION': check_exception,
-        'GET_METHOD_ID_IMPL': self.GetMethodIDImpl(called_by_native),
         'PROFILING_LEAVING_NATIVE': profiling_leaving_native,
+        'JNI_NAME': jni_name,
+        'JNI_SIGNATURE': jni_signature,
+        'METHOD_ID_VAR_NAME': called_by_native.method_id_var_name,
+        'METHOD_ID_TYPE': 'STATIC' if called_by_native.static else 'INSTANCE',
+        'JAVA_NAME_FULL': java_name_full,
     }
-
 
   def GetLazyCalledByNativeMethodStub(self, called_by_native):
     """Returns a string."""
@@ -1183,7 +1206,14 @@ ${FUNCTION_HEADER}
   CHECK_CLAZZ(env, ${FIRST_PARAM_IN_CALL},
       ${JAVA_CLASS}_clazz(env)${OPTIONAL_ERROR_RETURN});
   jmethodID method_id =
-    ${GET_METHOD_ID_IMPL}
+    base::android::MethodID::LazyGet<
+      base::android::MethodID::TYPE_${METHOD_ID_TYPE}>(
+      env, ${JAVA_CLASS}_clazz(env),
+      "${JNI_NAME}",
+      ${JNI_SIGNATURE},
+      &g_${JAVA_CLASS}_${METHOD_ID_VAR_NAME});
+
+  ${TRACE_EVENT}
   ${PROFILING_LEAVING_NATIVE}
   ${RETURN_DECLARATION}
      ${PRE_CALL}env->${ENV_CALL}(${FIRST_PARAM_IN_CALL},
@@ -1199,39 +1229,16 @@ ${FUNCTION_HEADER}
           function_header_with_unused_template.substitute(values))
     else:
       values['FUNCTION_HEADER'] = function_header_template.substitute(values)
+    if self.options.enable_tracing:
+      values['TRACE_EVENT'] = self.GetTraceEventForNameTemplate(
+          '${JAVA_NAME_FULL}', values)
+    else:
+      values['TRACE_EVENT'] = ''
     return RemoveIndentedEmptyLines(template.substitute(values))
 
-  def GetMethodIDImpl(self, called_by_native):
-    """Returns the implementation of GetMethodID."""
-    template = Template("""\
-  base::android::MethodID::LazyGet<
-      base::android::MethodID::TYPE_${STATIC}>(
-      env, ${JAVA_CLASS}_clazz(env),
-      "${JNI_NAME}",
-      ${JNI_SIGNATURE},
-      &g_${JAVA_CLASS}_${METHOD_ID_VAR_NAME});
-""")
-    jni_name = called_by_native.name
-    jni_return_type = called_by_native.return_type
-    if called_by_native.is_constructor:
-      jni_name = '<init>'
-      jni_return_type = 'void'
-    if called_by_native.signature:
-      signature = called_by_native.signature
-    else:
-      signature = self.jni_params.Signature(called_by_native.params,
-                                            jni_return_type, True)
-    java_class = self.fully_qualified_class
-    if called_by_native.java_class_name:
-      java_class += '$' + called_by_native.java_class_name
-    values = {
-        'JAVA_CLASS': GetBinaryClassName(java_class),
-        'JNI_NAME': jni_name,
-        'METHOD_ID_VAR_NAME': called_by_native.method_id_var_name,
-        'STATIC': 'STATIC' if called_by_native.static else 'INSTANCE',
-        'JNI_SIGNATURE': signature,
-    }
-    return template.substitute(values)
+  def GetTraceEventForNameTemplate(self, name_template, values):
+    name = Template(name_template).substitute(values)
+    return 'TRACE_EVENT0("jni", "%s");' % name
 
 
 def WrapOutput(output):
@@ -1365,6 +1372,8 @@ See SampleForTests.java for more details.
                            help='The path to javap command.')
   option_parser.add_option('--enable_profiling', action='store_true',
                            help='Add additional profiling instrumentation.')
+  option_parser.add_option('--enable_tracing', action='store_true',
+                           help='Add TRACE_EVENTs to generated functions.')
   options, args = option_parser.parse_args(argv)
   if options.jar_file:
     input_file = ExtractJarInputFile(options.jar_file, options.input_file,

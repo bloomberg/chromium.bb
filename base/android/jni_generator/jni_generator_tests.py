@@ -46,6 +46,7 @@ class TestOptions(object):
     self.javap = 'javap'
     self.native_exports_optional = True
     self.enable_profiling = False
+    self.enable_tracing = False
 
 class TestGenerator(unittest.TestCase):
   def assertObjEquals(self, first, second):
@@ -1124,6 +1125,31 @@ class Foo {
     jni_from_java = jni_generator.JNIFromJavaSource(test_data,
                                                     'org/chromium/foo/Foo',
                                                     TestOptions())
+    self.assertGoldenTextEquals(jni_from_java.GetContent())
+
+  def testTracing(self):
+    test_data = """
+    package org.chromium.foo;
+
+    @JNINamespace("org::chromium_foo")
+    class Foo {
+
+    @CalledByNative
+    Foo();
+
+    @CalledByNative
+    void callbackFromNative();
+
+    native void nativeInstanceMethod(long nativeInstance);
+
+    static native void nativeStaticMethod();
+    }
+    """
+    options_with_tracing = TestOptions()
+    options_with_tracing.enable_tracing = True
+    jni_from_java = jni_generator.JNIFromJavaSource(test_data,
+                                                    'org/chromium/foo/Foo',
+                                                    options_with_tracing)
     self.assertGoldenTextEquals(jni_from_java.GetContent())
 
 
