@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/component_export.h"
+
 namespace base {
 class Value;
 }
@@ -15,7 +17,7 @@ namespace catalog {
 
 // An interface which can be implemented by a catalog embedder to override
 // manifest fetching behavior.
-class ManifestProvider {
+class COMPONENT_EXPORT(CATALOG) ManifestProvider {
  public:
   virtual ~ManifestProvider() {}
 

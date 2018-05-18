@@ -16,6 +16,7 @@
 #include "base/process/launch.h"
 #include "base/synchronization/lock.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
@@ -99,6 +100,9 @@ mojom::ServicePtr ServiceProcessLauncher::Start(const Identity& target,
 }
 
 void ServiceProcessLauncher::Join() {
+  // TODO: This code runs on the IO thread where Wait() is not allowed. This
+  // needs to be fixed: https://crbug.com/844078.
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_sync;
   if (mojo_ipc_channel_)
     start_child_process_event_.Wait();
   mojo_ipc_channel_.reset();

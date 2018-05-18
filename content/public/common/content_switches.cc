@@ -402,6 +402,11 @@ const char kEnableRGBA4444Textures[] = "enable-rgba-4444-textures";
 // Set options to cache V8 data. (off, preparse data, or code)
 const char kV8CacheOptions[] = "v8-cache-options";
 
+// If true the ServiceProcessLauncher is used to launch services. This allows
+// for service binaries to be loaded rather than using the utility process. This
+// is only useful for tests.
+const char kEnableServiceBinaryLauncher[] = "enable-service-binary-launcher";
+
 // Enables the Skia benchmarking extension
 const char kEnableSkiaBenchmarking[]        = "enable-skia-benchmarking";
 

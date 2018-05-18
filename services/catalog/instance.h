@@ -5,6 +5,7 @@
 #ifndef SERVICES_CATALOG_INSTANCE_H_
 #define SERVICES_CATALOG_INSTANCE_H_
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/values.h"
@@ -18,7 +19,7 @@ namespace catalog {
 class EntryCache;
 class ManifestProvider;
 
-class Instance : public mojom::Catalog {
+class COMPONENT_EXPORT(CATALOG) Instance : public mojom::Catalog {
  public:
   // Neither |system_cache| nor |service_manifest_provider| is owned.
   // |service_manifest_provider| may be null

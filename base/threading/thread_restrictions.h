@@ -112,6 +112,10 @@ namespace resource_coordinator {
 class TabManagerDelegate;
 }
 
+namespace service_manager {
+class ServiceProcessLauncher;
+}
+
 namespace shell_integration {
 class LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
 }
@@ -318,6 +322,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class content::SynchronousCompositorHost;
   friend class content::SynchronousCompositorSyncCallBridge;
   friend class midi::TaskService;  // https://crbug.com/796830
+  // Not used in production yet, https://crbug.com/844078.
+  friend class service_manager::ServiceProcessLauncher;
 
   ScopedAllowBaseSyncPrimitivesOutsideBlockingScope()
       EMPTY_BODY_IF_DCHECK_IS_OFF;
