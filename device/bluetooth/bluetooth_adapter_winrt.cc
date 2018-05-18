@@ -116,7 +116,9 @@ HRESULT PostAsyncResults(ComPtr<IAsyncOperation<T>> async_op,
         async_op(std::move(async_op)), task_runner(std::move(task_runner)),
         callback(std::move(callback))
       ](IAsyncOperation<T> * async_op_raw, AsyncStatus async_status) mutable {
-        DCHECK_EQ(async_op.Get(), async_op_raw);
+        // Note: We are using |async_op_raw| instead of async_op.Get(), as this
+        // could be executed on any thread and only |async_op_raw| is guaranteed
+        // to be in the correct COM apartment.
         task_runner->PostTask(
             FROM_HERE,
             base::BindOnce(std::move(callback),

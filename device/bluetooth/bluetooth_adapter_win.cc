@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -15,6 +16,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/win/windows_version.h"
+#include "device/base/features.h"
+#include "device/bluetooth/bluetooth_adapter_winrt.h"
 #include "device/bluetooth/bluetooth_device_win.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
@@ -33,10 +37,21 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapterWin::CreateAdapter(
     InitCallback init_callback) {
-  BluetoothAdapterWin* adapter =
-      new BluetoothAdapterWin(std::move(init_callback));
+  if (UseNewBLEWinImplementation()) {
+    auto* adapter = new BluetoothAdapterWinrt();
+    adapter->Init(std::move(init_callback));
+    return adapter->weak_ptr_factory_.GetWeakPtr();
+  }
+
+  auto* adapter = new BluetoothAdapterWin(std::move(init_callback));
   adapter->Init();
   return adapter->weak_ptr_factory_.GetWeakPtr();
+}
+
+// static
+bool BluetoothAdapterWin::UseNewBLEWinImplementation() {
+  return base::FeatureList::IsEnabled(kNewBLEWinImplementation) &&
+         base::win::GetVersion() >= base::win::VERSION_WIN10;
 }
 
 BluetoothAdapterWin::BluetoothAdapterWin(InitCallback init_callback)

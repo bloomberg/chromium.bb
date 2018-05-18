@@ -59,6 +59,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
       const std::string& identifier) const override;
 
  protected:
+  friend class BluetoothAdapterWin;
   friend class BluetoothTestWin;
 
   BluetoothAdapterWinrt();

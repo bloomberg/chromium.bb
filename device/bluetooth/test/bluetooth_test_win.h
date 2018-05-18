@@ -7,6 +7,9 @@
 
 #include "device/bluetooth/test/bluetooth_test.h"
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -14,13 +17,11 @@
 #include "base/test/test_pending_task.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/win/scoped_winrt_initializer.h"
-#include "device/base/features.h"
 #include "device/bluetooth/bluetooth_classic_win_fake.h"
 #include "device/bluetooth/bluetooth_low_energy_win_fake.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
 
 namespace device {
-class BluetoothAdapterWin;
 
 // Windows implementation of BluetoothTestBase.
 class BluetoothTestWin : public BluetoothTestBase,
@@ -84,7 +85,6 @@ class BluetoothTestWin : public BluetoothTestBase,
  private:
   scoped_refptr<base::TestSimpleTaskRunner> ui_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> bluetooth_task_runner_;
-  BluetoothAdapterWin* adapter_win_;
 
   win::BluetoothClassicWrapperFake* fake_bt_classic_wrapper_;
   win::BluetoothLowEnergyWrapperFake* fake_bt_le_wrapper_;

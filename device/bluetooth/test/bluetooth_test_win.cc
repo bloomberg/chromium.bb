@@ -13,13 +13,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/test_pending_task.h"
 #include "base/time/time.h"
 #include "base/win/windows_version.h"
+#include "device/base/features.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
 #include "device/bluetooth/bluetooth_adapter_winrt.h"
 #include "device/bluetooth/bluetooth_low_energy_win.h"
@@ -78,7 +78,7 @@ BLUETOOTH_ADDRESS CanonicalStringToBLUETOOTH_ADDRESS(
   int result =
       sscanf_s(device_address.c_str(), "%02X:%02X:%02X:%02X:%02X:%02X",
                &data[5], &data[4], &data[3], &data[2], &data[1], &data[0]);
-  CHECK(result == 6);
+  CHECK_EQ(6, result);
   for (int i = 0; i < 6; i++) {
     win_addr.rgBytes[i] = data[i];
   }
@@ -92,7 +92,7 @@ BTH_LE_UUID CanonicalStringToBTH_LE_UUID(std::string uuid) {
     win_uuid.IsShortUuid = TRUE;
     unsigned int data[1];
     int result = sscanf_s(uuid.c_str(), "%04x", &data[0]);
-    CHECK(result == 1);
+    CHECK_EQ(1, result);
     win_uuid.Value.ShortUuid = data[0];
   } else if (uuid.size() == 36) {
     win_uuid.IsShortUuid = FALSE;
@@ -101,7 +101,7 @@ BTH_LE_UUID CanonicalStringToBTH_LE_UUID(std::string uuid) {
         uuid.c_str(), "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
         &data[0], &data[1], &data[2], &data[3], &data[4], &data[5], &data[6],
         &data[7], &data[8], &data[9], &data[10]);
-    CHECK(result == 11);
+    CHECK_EQ(11, result);
     win_uuid.Value.LongUuid.Data1 = data[0];
     win_uuid.Value.LongUuid.Data2 = data[1];
     win_uuid.Value.LongUuid.Data3 = data[2];
@@ -120,11 +120,6 @@ BTH_LE_UUID CanonicalStringToBTH_LE_UUID(std::string uuid) {
   return win_uuid;
 }
 
-bool UseNewBLEWinImplementation() {
-  return base::FeatureList::IsEnabled(device::kNewBLEWinImplementation) &&
-         base::win::GetVersion() >= base::win::VERSION_WIN10;
-}
-
 }  // namespace
 
 namespace device {
@@ -132,7 +127,6 @@ namespace device {
 BluetoothTestWin::BluetoothTestWin()
     : ui_task_runner_(new base::TestSimpleTaskRunner()),
       bluetooth_task_runner_(new base::TestSimpleTaskRunner()),
-      adapter_win_(nullptr),
       fake_bt_classic_wrapper_(nullptr),
       fake_bt_le_wrapper_(nullptr) {}
 BluetoothTestWin::~BluetoothTestWin() {}
@@ -143,26 +137,24 @@ bool BluetoothTestWin::PlatformSupportsLowEnergy() {
   return true;
 }
 
-void BluetoothTestWin::AdapterInitCallback() {}
-
 void BluetoothTestWin::InitWithDefaultAdapter() {
-  if (UseNewBLEWinImplementation()) {
+  if (BluetoothAdapterWin::UseNewBLEWinImplementation()) {
     base::RunLoop run_loop;
-    auto* adapter = new BluetoothAdapterWinrt();
+    auto adapter = base::WrapRefCounted(new BluetoothAdapterWinrt());
     adapter->Init(run_loop.QuitClosure());
-    adapter_ = base::WrapRefCounted(adapter);
+    adapter_ = std::move(adapter);
     run_loop.Run();
     return;
   }
 
-  adapter_ = new BluetoothAdapterWin(base::Bind(
-      &BluetoothTestWin::AdapterInitCallback, base::Unretained(this)));
-  adapter_win_ = static_cast<BluetoothAdapterWin*>(adapter_.get());
-  adapter_win_->Init();
+  auto adapter =
+      base::WrapRefCounted(new BluetoothAdapterWin(base::DoNothing()));
+  adapter->Init();
+  adapter_ = std::move(adapter);
 }
 
 void BluetoothTestWin::InitWithoutDefaultAdapter() {
-  if (UseNewBLEWinImplementation()) {
+  if (BluetoothAdapterWin::UseNewBLEWinImplementation()) {
     base::RunLoop run_loop;
     adapter_ = base::MakeRefCounted<TestBluetoothAdapterWinrt>(
         nullptr, nullptr, run_loop.QuitClosure());
@@ -170,14 +162,14 @@ void BluetoothTestWin::InitWithoutDefaultAdapter() {
     return;
   }
 
-  adapter_ = new BluetoothAdapterWin(base::Bind(
-      &BluetoothTestWin::AdapterInitCallback, base::Unretained(this)));
-  adapter_win_ = static_cast<BluetoothAdapterWin*>(adapter_.get());
-  adapter_win_->InitForTest(ui_task_runner_, bluetooth_task_runner_);
+  auto adapter =
+      base::WrapRefCounted(new BluetoothAdapterWin(base::DoNothing()));
+  adapter->InitForTest(ui_task_runner_, bluetooth_task_runner_);
+  adapter_ = std::move(adapter);
 }
 
 void BluetoothTestWin::InitWithFakeAdapter() {
-  if (UseNewBLEWinImplementation()) {
+  if (BluetoothAdapterWin::UseNewBLEWinImplementation()) {
     base::RunLoop run_loop;
     adapter_ = base::MakeRefCounted<TestBluetoothAdapterWinrt>(
         Make<FakeBluetoothAdapterWinrt>(kTestAdapterAddress),
@@ -196,10 +188,10 @@ void BluetoothTestWin::InitWithFakeAdapter() {
       base::SysUTF8ToWide(kTestAdapterName),
       CanonicalStringToBLUETOOTH_ADDRESS(kTestAdapterAddress));
 
-  adapter_ = new BluetoothAdapterWin(base::Bind(
-      &BluetoothTestWin::AdapterInitCallback, base::Unretained(this)));
-  adapter_win_ = static_cast<BluetoothAdapterWin*>(adapter_.get());
-  adapter_win_->InitForTest(nullptr, bluetooth_task_runner_);
+  auto adapter =
+      base::WrapRefCounted(new BluetoothAdapterWin(base::DoNothing()));
+  adapter->InitForTest(nullptr, bluetooth_task_runner_);
+  adapter_ = std::move(adapter);
   FinishPendingTasks();
 }
 
@@ -255,7 +247,7 @@ BluetoothDevice* BluetoothTestWin::SimulateLowEnergyDevice(int device_ordinal) {
   }
   FinishPendingTasks();
 
-  std::vector<BluetoothDevice*> devices = adapter_win_->GetDevices();
+  std::vector<BluetoothDevice*> devices = adapter_->GetDevices();
   for (auto* device : devices) {
     if (device->GetAddress() == device_address)
       return device;
@@ -590,9 +582,10 @@ void BluetoothTestWin::RunPendingTasksUntilCallback() {
 }
 
 void BluetoothTestWin::ForceRefreshDevice() {
-  adapter_win_->force_update_device_for_test_ = true;
+  auto* adapter_win = static_cast<BluetoothAdapterWin*>(adapter_.get());
+  adapter_win->force_update_device_for_test_ = true;
   FinishPendingTasks();
-  adapter_win_->force_update_device_for_test_ = false;
+  adapter_win->force_update_device_for_test_ = false;
 
   // The characteristics still need to be discovered.
   base::RunLoop().RunUntilIdle();
