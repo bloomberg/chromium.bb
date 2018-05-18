@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-{% from 'core/css/properties/templates/style_builder_functions.tmpl' import declare_initial, declare_inherit, declare_value %}
+{% from 'core/css/properties/templates/style_builder_functions.tmpl' import declare_initial, declare_inherit, declare_value, set_value %}
 {% from 'templates/macros.tmpl' import source_files_for_generated_file %}
 {{source_files_for_generated_file(template_file, input_files)}}
 
@@ -74,6 +74,35 @@ namespace CSSLonghand {
     // Reset all remaining layers to not have the property set.
     currChild->Clear{{fill_type}}();
     currChild = currChild->Next();
+  }
+}
+{% elif property.custom_apply == 'color' %}
+{% set initial_color = property.custom_apply_args['initial_color'] %}
+{% set visited_link_setter = 'SetVisitedLink' + property.name_for_methods %}
+{{declare_initial(property.upper_camel_name)}} {
+  StyleColor color = {{initial_color}}();
+  if (state.ApplyPropertyToRegularStyle())
+    {{set_value(property)}}(color);
+  if (state.ApplyPropertyToVisitedLinkStyle())
+    state.Style()->{{visited_link_setter}}(color);
+}
+
+{{declare_inherit(property.upper_camel_name)}} {
+  // Visited link style can never explicitly inherit from parent visited link
+  // style so no separate getters are needed.
+  StyleColor color = state.ParentStyle()->{{property.getter}}();
+  if (state.ApplyPropertyToRegularStyle())
+    {{set_value(property)}}(color);
+  if (state.ApplyPropertyToVisitedLinkStyle())
+    state.Style()->{{visited_link_setter}}(color);
+}
+
+{{declare_value(property.upper_camel_name)}} {
+  if (state.ApplyPropertyToRegularStyle())
+    {{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value));
+  if (state.ApplyPropertyToVisitedLinkStyle()) {
+    state.Style()->{{visited_link_setter}}(
+        StyleBuilderConverter::{{property.converter}}(state, value, true));
   }
 }
 {% endif %}

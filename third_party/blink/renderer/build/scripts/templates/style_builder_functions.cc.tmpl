@@ -121,49 +121,6 @@ namespace blink {
 {{apply_animation('CSSPropertyTransitionProperty', 'Property', 'Transition')}}
 {{apply_animation('CSSPropertyTransitionTimingFunction', 'TimingFunction', 'Transition')}}
 
-{% macro apply_color(property_id, initial_color='StyleColor::CurrentColor') %}
-{% set property = properties_by_id[property_id] %}
-{% set visited_link_setter = 'SetVisitedLink' + property.name_for_methods %}
-{{declare_initial_function(property_id)}} {
-  StyleColor color = {{initial_color}}();
-  if (state.ApplyPropertyToRegularStyle())
-    {{set_value(property)}}(color);
-  if (state.ApplyPropertyToVisitedLinkStyle())
-    state.Style()->{{visited_link_setter}}(color);
-}
-
-{{declare_inherit_function(property_id)}} {
-  // Visited link style can never explicitly inherit from parent visited link
-  // style so no separate getters are needed.
-  StyleColor color = state.ParentStyle()->{{property.getter}}();
-  if (state.ApplyPropertyToRegularStyle())
-    {{set_value(property)}}(color);
-  if (state.ApplyPropertyToVisitedLinkStyle())
-    state.Style()->{{visited_link_setter}}(color);
-}
-
-{{declare_value_function(property_id)}}
-{
-  if (state.ApplyPropertyToRegularStyle())
-    {{set_value(property)}}(StyleBuilderConverter::ConvertStyleColor(state, value));
-  if (state.ApplyPropertyToVisitedLinkStyle()) {
-    state.Style()->{{visited_link_setter}}(
-        StyleBuilderConverter::ConvertStyleColor(state, value, true));
-  }
-}
-{% endmacro %}
-{{apply_color('CSSPropertyBackgroundColor', initial_color='ComputedStyleInitialValues::InitialBackgroundColor') }}
-{{apply_color('CSSPropertyBorderBottomColor')}}
-{{apply_color('CSSPropertyBorderLeftColor')}}
-{{apply_color('CSSPropertyBorderRightColor')}}
-{{apply_color('CSSPropertyBorderTopColor')}}
-{{apply_color('CSSPropertyOutlineColor')}}
-{{apply_color('CSSPropertyTextDecorationColor')}}
-{{apply_color('CSSPropertyColumnRuleColor')}}
-{{apply_color('CSSPropertyWebkitTextEmphasisColor')}}
-{{apply_color('CSSPropertyWebkitTextFillColor')}}
-{{apply_color('CSSPropertyWebkitTextStrokeColor')}}
-
 {% macro apply_counter(property_id, action) %}
 {% set property = properties_by_id[property_id] %}
 {{declare_initial_function(property_id)}} {

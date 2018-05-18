@@ -51,13 +51,22 @@ def calculate_apply_functions_to_declare(property_):
     # properties once all of them have been implemented
     if property_['custom_apply_functions_all']:
         if (property_['upper_camel_name'] in [
-                'BackgroundAttachment', 'BackgroundBlendMode', 'BackgroundClip', 'BackgroundImage', 'BackgroundOrigin',
-                'BackgroundPositionX', 'BackgroundPositionY', 'BackgroundRepeatX', 'BackgroundRepeatY', 'BackgroundSize',
-                'BorderImageOutset', 'BorderImageRepeat', 'BorderImageSlice', 'BorderImageWidth', 'Clip', 'ColumnCount',
-                'ColumnWidth', 'MaskSourceType', 'WebkitMaskBoxImageOutset', 'WebkitMaskBoxImageRepeat',
-                'WebkitMaskBoxImageSlice', 'WebkitMaskBoxImageWidth', 'WebkitMaskClip', 'WebkitMaskComposite', 'WebkitMaskImage',
-                'WebkitMaskOrigin', 'WebkitMaskPositionX', 'WebkitMaskPositionY', 'WebkitMaskRepeatX', 'WebkitMaskRepeatY',
-                'WebkitMaskSize', 'ZIndex']):
+                'BackgroundAttachment', 'BackgroundBlendMode', 'BackgroundClip',
+                'BackgroundColor', 'BackgroundImage', 'BackgroundOrigin',
+                'BackgroundPositionX', 'BackgroundPositionY',
+                'BackgroundRepeatX', 'BackgroundRepeatY', 'BackgroundSize',
+                'BorderBottomColor', 'BorderImageOutset', 'BorderImageRepeat',
+                'BorderImageSlice', 'BorderImageWidth', 'BorderLeftColor',
+                'BorderRightColor', 'BorderTopColor', 'Clip', 'ColumnCount',
+                'ColumnRuleColor', 'ColumnWidth', 'MaskSourceType',
+                'OutlineColor', 'TextDecorationColor',
+                'WebkitMaskBoxImageOutset', 'WebkitMaskBoxImageRepeat',
+                'WebkitMaskBoxImageSlice', 'WebkitMaskBoxImageWidth',
+                'WebkitMaskClip', 'WebkitMaskComposite', 'WebkitMaskImage',
+                'WebkitMaskOrigin', 'WebkitMaskPositionX',
+                'WebkitMaskPositionY', 'WebkitMaskRepeatX', 'WebkitMaskRepeatY',
+                'WebkitMaskSize', 'WebkitTextEmphasisColor',
+                'WebkitTextFillColor', 'WebkitTextStrokeColor', 'ZIndex']):
             property_['use_property_class_in_stylebuilder'] = True
 
 
