@@ -9,150 +9,101 @@
 import unittest
 
 from name_style_converter import NameStyleConverter
-from name_style_converter import SmartTokenizer
+from name_style_converter import tokenize_name
 
 
 class SmartTokenizerTest(unittest.TestCase):
     def test_simple_cases(self):
-        tokenizer = SmartTokenizer('foo')
-        self.assertEqual(tokenizer.tokenize(), ['foo'])
+        self.assertEqual(tokenize_name('foo'), ['foo'])
 
-        tokenizer = SmartTokenizer('fooBar')
-        self.assertEqual(tokenizer.tokenize(), ['foo', 'Bar'])
+        self.assertEqual(tokenize_name('fooBar'), ['foo', 'Bar'])
 
-        tokenizer = SmartTokenizer('fooBarBaz')
-        self.assertEqual(tokenizer.tokenize(), ['foo', 'Bar', 'Baz'])
+        self.assertEqual(tokenize_name('fooBarBaz'), ['foo', 'Bar', 'Baz'])
 
-        tokenizer = SmartTokenizer('Baz')
-        self.assertEqual(tokenizer.tokenize(), ['Baz'])
+        self.assertEqual(tokenize_name('Baz'), ['Baz'])
 
-        tokenizer = SmartTokenizer('')
-        self.assertEqual(tokenizer.tokenize(), [])
+        self.assertEqual(tokenize_name(''), [])
 
-        tokenizer = SmartTokenizer('FOO')
-        self.assertEqual(tokenizer.tokenize(), ['FOO'])
+        self.assertEqual(tokenize_name('FOO'), ['FOO'])
 
-        tokenizer = SmartTokenizer('foo2')
-        self.assertEqual(tokenizer.tokenize(), ['foo', '2'])
+        self.assertEqual(tokenize_name('foo2'), ['foo', '2'])
 
     def test_tricky_cases(self):
-        tokenizer = SmartTokenizer('XMLHttpRequest')
-        self.assertEqual(tokenizer.tokenize(), ['XML', 'Http', 'Request'])
+        self.assertEqual(tokenize_name('XMLHttpRequest'), ['XML', 'Http', 'Request'])
 
-        tokenizer = SmartTokenizer('HTMLElement')
-        self.assertEqual(tokenizer.tokenize(), ['HTML', 'Element'])
+        self.assertEqual(tokenize_name('HTMLElement'), ['HTML', 'Element'])
 
-        tokenizer = SmartTokenizer('WebGLRenderingContext')
-        self.assertEqual(tokenizer.tokenize(),
+        self.assertEqual(tokenize_name('WebGLRenderingContext'),
                          ['WebGL', 'Rendering', 'Context'])
 
-        tokenizer = SmartTokenizer('CanvasRenderingContext2D')
-        self.assertEqual(tokenizer.tokenize(),
+        self.assertEqual(tokenize_name('CanvasRenderingContext2D'),
                          ['Canvas', 'Rendering', 'Context', '2D'])
-        tokenizer = SmartTokenizer('CanvasRenderingContext2DAPITest')
-        self.assertEqual(tokenizer.tokenize(),
+        self.assertEqual(tokenize_name('CanvasRenderingContext2DAPITest'),
                          ['Canvas', 'Rendering', 'Context', '2D', 'API', 'Test'])
 
-        tokenizer = SmartTokenizer('SVGSVGElement')
-        self.assertEqual(tokenizer.tokenize(), ['SVG', 'SVG', 'Element'])
+        self.assertEqual(tokenize_name('SVGSVGElement'), ['SVG', 'SVG', 'Element'])
 
-        tokenizer = SmartTokenizer('CanvasRenderingContext2D')
-        self.assertEqual(tokenizer.tokenize(), ['Canvas', 'Rendering', 'Context', '2D'])
+        self.assertEqual(tokenize_name('CanvasRenderingContext2D'),
+                         ['Canvas', 'Rendering', 'Context', '2D'])
 
-        tokenizer = SmartTokenizer('CSSURLImageValue')
-        self.assertEqual(tokenizer.tokenize(), ['CSS', 'URL', 'Image', 'Value'])
-        tokenizer = SmartTokenizer('CSSPropertyAPID')
-        self.assertEqual(tokenizer.tokenize(), ['CSS', 'Property', 'API', 'D'])
-        tokenizer = SmartTokenizer('AXARIAGridCell')
-        self.assertEqual(tokenizer.tokenize(), ['AX', 'ARIA', 'Grid', 'Cell'])
+        self.assertEqual(tokenize_name('CSSURLImageValue'), ['CSS', 'URL', 'Image', 'Value'])
+        self.assertEqual(tokenize_name('CSSPropertyAPID'), ['CSS', 'Property', 'API', 'D'])
+        self.assertEqual(tokenize_name('AXARIAGridCell'), ['AX', 'ARIA', 'Grid', 'Cell'])
 
-        tokenizer = SmartTokenizer('CDATASection')
-        self.assertEqual(tokenizer.tokenize(), ['CDATA', 'Section'])
+        self.assertEqual(tokenize_name('CDATASection'), ['CDATA', 'Section'])
 
-        tokenizer = SmartTokenizer('ASCIICType')
-        self.assertEqual(tokenizer.tokenize(), ['ASCII', 'CType'])
-        tokenizer = SmartTokenizer('CString')
-        self.assertEqual(tokenizer.tokenize(), ['CString'])
+        self.assertEqual(tokenize_name('ASCIICType'), ['ASCII', 'CType'])
+        self.assertEqual(tokenize_name('CString'), ['CString'])
 
-        tokenizer = SmartTokenizer('HTMLDListElement')
-        self.assertEqual(tokenizer.tokenize(), ['HTML', 'DList', 'Element'])
-        tokenizer = SmartTokenizer('HTMLOListElement')
-        self.assertEqual(tokenizer.tokenize(), ['HTML', 'OList', 'Element'])
-        tokenizer = SmartTokenizer('HTMLIFrameElement')
-        self.assertEqual(tokenizer.tokenize(), ['HTML', 'IFrame', 'Element'])
-        tokenizer = SmartTokenizer('HTMLPlugInElement')
-        self.assertEqual(tokenizer.tokenize(), ['HTML', 'PlugIn', 'Element'])
+        self.assertEqual(tokenize_name('HTMLDListElement'), ['HTML', 'DList', 'Element'])
+        self.assertEqual(tokenize_name('HTMLOListElement'), ['HTML', 'OList', 'Element'])
+        self.assertEqual(tokenize_name('HTMLIFrameElement'), ['HTML', 'IFrame', 'Element'])
+        self.assertEqual(tokenize_name('HTMLPlugInElement'), ['HTML', 'PlugIn', 'Element'])
 
         # No special handling for OptGroup, FieldSet, and TextArea.
-        tokenizer = SmartTokenizer('HTMLOptGroupElement')
-        self.assertEqual(tokenizer.tokenize(), ['HTML', 'Opt', 'Group', 'Element'])
-        tokenizer = SmartTokenizer('HTMLFieldSetElement')
-        self.assertEqual(tokenizer.tokenize(), ['HTML', 'Field', 'Set', 'Element'])
-        tokenizer = SmartTokenizer('HTMLTextAreaElement')
-        self.assertEqual(tokenizer.tokenize(), ['HTML', 'Text', 'Area', 'Element'])
+        self.assertEqual(tokenize_name('HTMLOptGroupElement'), ['HTML', 'Opt', 'Group', 'Element'])
+        self.assertEqual(tokenize_name('HTMLFieldSetElement'), ['HTML', 'Field', 'Set', 'Element'])
+        self.assertEqual(tokenize_name('HTMLTextAreaElement'), ['HTML', 'Text', 'Area', 'Element'])
 
-        tokenizer = SmartTokenizer('Path2D')
-        self.assertEqual(tokenizer.tokenize(), ['Path', '2D'])
-        tokenizer = SmartTokenizer('Point2D')
-        self.assertEqual(tokenizer.tokenize(), ['Point', '2D'])
-        tokenizer = SmartTokenizer('CanvasRenderingContext2DState')
-        self.assertEqual(tokenizer.tokenize(), ['Canvas', 'Rendering', 'Context', '2D', 'State'])
+        self.assertEqual(tokenize_name('Path2D'), ['Path', '2D'])
+        self.assertEqual(tokenize_name('Point2D'), ['Point', '2D'])
+        self.assertEqual(tokenize_name('CanvasRenderingContext2DState'),
+                         ['Canvas', 'Rendering', 'Context', '2D', 'State'])
 
-        tokenizer = SmartTokenizer('RTCDTMFSender')
-        self.assertEqual(tokenizer.tokenize(), ['RTC', 'DTMF', 'Sender'])
+        self.assertEqual(tokenize_name('RTCDTMFSender'), ['RTC', 'DTMF', 'Sender'])
 
-        tokenizer = SmartTokenizer('WebGLCompressedTextureS3TCsRGB')
-        self.assertEqual(tokenizer.tokenize(), ['WebGL', 'Compressed', 'Texture', 'S3TC', 'sRGB'])
-        tokenizer = SmartTokenizer('WebGL2CompressedTextureETC1')
-        self.assertEqual(tokenizer.tokenize(), ['WebGL2', 'Compressed', 'Texture', 'ETC1'])
-        tokenizer = SmartTokenizer('EXTsRGB')
-        self.assertEqual(tokenizer.tokenize(), ['EXT', 'sRGB'])
+        self.assertEqual(tokenize_name('WebGLCompressedTextureS3TCsRGB'),
+                         ['WebGL', 'Compressed', 'Texture', 'S3TC', 'sRGB'])
+        self.assertEqual(tokenize_name('WebGL2CompressedTextureETC1'),
+                         ['WebGL2', 'Compressed', 'Texture', 'ETC1'])
+        self.assertEqual(tokenize_name('EXTsRGB'), ['EXT', 'sRGB'])
 
-        tokenizer = SmartTokenizer('SVGFEBlendElement')
-        self.assertEqual(tokenizer.tokenize(), ['SVG', 'FE', 'Blend', 'Element'])
-        tokenizer = SmartTokenizer('SVGMPathElement')
-        self.assertEqual(tokenizer.tokenize(), ['SVG', 'MPath', 'Element'])
-        tokenizer = SmartTokenizer('SVGTSpanElement')
-        self.assertEqual(tokenizer.tokenize(), ['SVG', 'TSpan', 'Element'])
-        tokenizer = SmartTokenizer('SVGURIReference')
-        self.assertEqual(tokenizer.tokenize(), ['SVG', 'URI', 'Reference'])
+        self.assertEqual(tokenize_name('SVGFEBlendElement'), ['SVG', 'FE', 'Blend', 'Element'])
+        self.assertEqual(tokenize_name('SVGMPathElement'), ['SVG', 'MPath', 'Element'])
+        self.assertEqual(tokenize_name('SVGTSpanElement'), ['SVG', 'TSpan', 'Element'])
+        self.assertEqual(tokenize_name('SVGURIReference'), ['SVG', 'URI', 'Reference'])
 
-        tokenizer = SmartTokenizer('UTF16TextIterator')
-        self.assertEqual(tokenizer.tokenize(), ['UTF16', 'Text', 'Iterator'])
-        tokenizer = SmartTokenizer('UTF8Decoder')
-        self.assertEqual(tokenizer.tokenize(), ['UTF8', 'Decoder'])
-        tokenizer = SmartTokenizer('Uint8Array')
-        self.assertEqual(tokenizer.tokenize(), ['Uint8', 'Array'])
-        tokenizer = SmartTokenizer('DOMWindowBase64')
-        self.assertEqual(tokenizer.tokenize(), ['DOM', 'Window', 'Base64'])
-        tokenizer = SmartTokenizer('TextCodecLatin1')
-        self.assertEqual(tokenizer.tokenize(), ['Text', 'Codec', 'Latin1'])
-        tokenizer = SmartTokenizer('V8BindingForCore')
-        self.assertEqual(tokenizer.tokenize(), ['V8', 'Binding', 'For', 'Core'])
-        tokenizer = SmartTokenizer('V8DOMRect')
-        self.assertEqual(tokenizer.tokenize(), ['V8', 'DOM', 'Rect'])
-        tokenizer = SmartTokenizer('String16MojomTraits')
-        self.assertEqual(tokenizer.tokenize(), ['String16', 'Mojom', 'Traits'])
+        self.assertEqual(tokenize_name('UTF16TextIterator'), ['UTF16', 'Text', 'Iterator'])
+        self.assertEqual(tokenize_name('UTF8Decoder'), ['UTF8', 'Decoder'])
+        self.assertEqual(tokenize_name('Uint8Array'), ['Uint8', 'Array'])
+        self.assertEqual(tokenize_name('DOMWindowBase64'), ['DOM', 'Window', 'Base64'])
+        self.assertEqual(tokenize_name('TextCodecLatin1'), ['Text', 'Codec', 'Latin1'])
+        self.assertEqual(tokenize_name('V8BindingForCore'), ['V8', 'Binding', 'For', 'Core'])
+        self.assertEqual(tokenize_name('V8DOMRect'), ['V8', 'DOM', 'Rect'])
+        self.assertEqual(tokenize_name('String16MojomTraits'), ['String16', 'Mojom', 'Traits'])
 
-        tokenizer = SmartTokenizer('V0InsertionPoint')
-        self.assertEqual(tokenizer.tokenize(), ['V0', 'Insertion', 'Point'])
-        tokenizer = SmartTokenizer('ShadowDOMV0Test')
-        self.assertEqual(tokenizer.tokenize(), ['Shadow', 'DOM', 'V0', 'Test'])
-        tokenizer = SmartTokenizer('ElementShadowV0')
-        self.assertEqual(tokenizer.tokenize(), ['Element', 'Shadow', 'V0'])
-        tokenizer = SmartTokenizer('StubChromeClientForSPv2')
-        self.assertEqual(tokenizer.tokenize(), ['Stub', 'Chrome', 'Client', 'For', 'SPv2'])
+        self.assertEqual(tokenize_name('V0InsertionPoint'), ['V0', 'Insertion', 'Point'])
+        self.assertEqual(tokenize_name('ShadowDOMV0Test'), ['Shadow', 'DOM', 'V0', 'Test'])
+        self.assertEqual(tokenize_name('ElementShadowV0'), ['Element', 'Shadow', 'V0'])
+        self.assertEqual(tokenize_name('StubChromeClientForSPv2'),
+                         ['Stub', 'Chrome', 'Client', 'For', 'SPv2'])
 
-        tokenizer = SmartTokenizer('SQLiteAuthorizer')
-        self.assertEqual(tokenizer.tokenize(), ['SQLite', 'Authorizer'])
-        tokenizer = SmartTokenizer('XPathEvaluator')
-        self.assertEqual(tokenizer.tokenize(), ['XPath', 'Evaluator'])
+        self.assertEqual(tokenize_name('SQLiteAuthorizer'), ['SQLite', 'Authorizer'])
+        self.assertEqual(tokenize_name('XPathEvaluator'), ['XPath', 'Evaluator'])
 
-        tokenizer = SmartTokenizer('IsXHTMLDocument')
-        self.assertEqual(tokenizer.tokenize(), ['Is', 'XHTML', 'Document'])
+        self.assertEqual(tokenize_name('IsXHTMLDocument'), ['Is', 'XHTML', 'Document'])
 
-        tokenizer = SmartTokenizer('Animation.idl')
-        self.assertEqual(tokenizer.tokenize(), ['Animation', '.idl'])
+        self.assertEqual(tokenize_name('Animation.idl'), ['Animation', '.idl'])
 
 
 class NameStyleConverterTest(unittest.TestCase):
