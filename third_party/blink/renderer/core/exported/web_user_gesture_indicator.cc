@@ -72,8 +72,4 @@ void WebUserGestureIndicator::ExtendTimeout() {
   UserGestureIndicator::SetTimeoutPolicy(UserGestureToken::kOutOfProcess);
 }
 
-void WebUserGestureIndicator::DisableTimeout() {
-  UserGestureIndicator::SetTimeoutPolicy(UserGestureToken::kHasPaused);
-}
-
 }  // namespace blink

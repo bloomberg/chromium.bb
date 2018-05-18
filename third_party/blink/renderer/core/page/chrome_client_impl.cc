@@ -51,8 +51,6 @@
 #include "third_party/blink/public/web/web_selection.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_text_direction.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
-#include "third_party/blink/public/web/web_user_gesture_token.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -347,9 +345,8 @@ bool ChromeClientImpl::OpenJavaScriptAlertDelegate(LocalFrame* frame,
   NotifyPopupOpeningObservers();
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
   if (webframe->Client()) {
-    // (TODO(mustaq): why is it going through the web layer? crbug.com/781328
-    if (WebUserGestureIndicator::IsProcessingUserGesture(webframe))
-      WebUserGestureIndicator::DisableTimeout();
+    if (UserGestureIndicator::ProcessingUserGesture())
+      UserGestureIndicator::SetTimeoutPolicy(UserGestureToken::kHasPaused);
     webframe->Client()->RunModalAlertDialog(message);
     return true;
   }
@@ -362,9 +359,8 @@ bool ChromeClientImpl::OpenJavaScriptConfirmDelegate(LocalFrame* frame,
   NotifyPopupOpeningObservers();
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
   if (webframe->Client()) {
-    // (TODO(mustaq): why is it going through the web layer? crbug.com/781328
-    if (WebUserGestureIndicator::IsProcessingUserGesture(webframe))
-      WebUserGestureIndicator::DisableTimeout();
+    if (UserGestureIndicator::ProcessingUserGesture())
+      UserGestureIndicator::SetTimeoutPolicy(UserGestureToken::kHasPaused);
     return webframe->Client()->RunModalConfirmDialog(message);
   }
   return false;
@@ -378,9 +374,8 @@ bool ChromeClientImpl::OpenJavaScriptPromptDelegate(LocalFrame* frame,
   NotifyPopupOpeningObservers();
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
   if (webframe->Client()) {
-    // (TODO(mustaq): why is it going through the web layer?
-    if (WebUserGestureIndicator::IsProcessingUserGesture(webframe))
-      WebUserGestureIndicator::DisableTimeout();
+    if (UserGestureIndicator::ProcessingUserGesture())
+      UserGestureIndicator::SetTimeoutPolicy(UserGestureToken::kHasPaused);
     WebString actual_value;
     bool ok = webframe->Client()->RunModalPromptDialog(message, default_value,
                                                        &actual_value);

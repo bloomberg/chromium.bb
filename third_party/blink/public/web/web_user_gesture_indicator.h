@@ -68,8 +68,8 @@ class WebUserGestureIndicator {
   BLINK_EXPORT static WebUserGestureToken CurrentUserGestureToken();
 
   BLINK_EXPORT static void ExtendTimeout();
-  BLINK_EXPORT static void DisableTimeout();
 };
-}
+
+}  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_USER_GESTURE_INDICATOR_H_
