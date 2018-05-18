@@ -34,6 +34,8 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
  public:
   REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
+  using WillDestroyStubCB = base::OnceCallback<void(bool have_context)>;
+
   // TODO(sandersd): Consider adding an Initialize(stub) method so that
   // CommandBufferHelpers can be created before a stub is available.
   static scoped_refptr<CommandBufferHelper> Create(
@@ -47,6 +49,11 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
 
   // Makes the GL context current.
   virtual bool MakeContextCurrent() = 0;
+
+  // Returns whether or not the the context is current in the
+  // GLContext::IsCurrent(nullptr) sense.  Note that this is not necessarily the
+  // same for virtual contexts as "Did somebody run MakeContextCurrent?".
+  virtual bool IsContextCurrent() const = 0;
 
   // Creates a texture and returns its |service_id|.
   //
@@ -104,6 +111,10 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   // is probably necessary.
   virtual void WaitForSyncToken(gpu::SyncToken sync_token,
                                 base::OnceClosure done_cb) = 0;
+
+  // Set the callback to be called when our stub is destroyed.  This callback
+  // may not change the current context.
+  virtual void SetWillDestroyStubCB(WillDestroyStubCB will_destroy_stub_cb) = 0;
 
  protected:
   CommandBufferHelper() = default;

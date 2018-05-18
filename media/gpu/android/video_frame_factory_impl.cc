@@ -21,9 +21,9 @@
 #include "media/gpu/android/codec_image.h"
 #include "media/gpu/android/codec_image_group.h"
 #include "media/gpu/android/codec_wrapper.h"
-#include "media/gpu/android/command_buffer_stub_wrapper_impl.h"
 #include "media/gpu/android/texture_pool.h"
 #include "media/gpu/android/texture_wrapper.h"
+#include "media/gpu/command_buffer_helper.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
@@ -136,8 +136,7 @@ scoped_refptr<TextureOwner> GpuVideoFrameFactory::Initialize(
     return nullptr;
   stub_->AddDestructionObserver(this);
 
-  texture_pool_ =
-      new TexturePool(std::make_unique<CommandBufferStubWrapperImpl>(stub_));
+  texture_pool_ = new TexturePool(CommandBufferHelper::Create(stub_));
 
   decoder_helper_ = GLES2DecoderHelper::Create(stub_->decoder_context());
   return SurfaceTextureGLOwner::Create();
@@ -165,10 +164,11 @@ void GpuVideoFrameFactory::CreateVideoFrame(
 
   std::unique_ptr<TextureWrapper> texture_wrapper =
       std::make_unique<TextureWrapperImpl>(std::move(texture_ref));
+  // Note that this keeps the pool around while any texture is.
   auto drop_texture_ref = base::BindOnce(
       [](scoped_refptr<TexturePool> texture_pool,
          TextureWrapper* texture_wrapper, const gpu::SyncToken& sync_token) {
-        texture_pool->ReleaseTexture(texture_wrapper);
+        texture_pool->ReleaseTexture(texture_wrapper, sync_token);
       },
       texture_pool_, base::Unretained(texture_wrapper.get()));
   texture_pool_->AddTexture(std::move(texture_wrapper));
