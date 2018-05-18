@@ -538,7 +538,7 @@ void CrxInstaller::CheckInstall() {
                 base::ASCIIToUTF16(imported_module->version().GetString()))));
         return;
       }
-      if (!SharedModuleInfo::IsExportAllowedByWhitelist(imported_module,
+      if (!SharedModuleInfo::IsExportAllowedByAllowlist(imported_module,
                                                         extension()->id())) {
         ReportFailureFromUIThread(CrxInstallError(
             CrxInstallError::ERROR_DECLINED,

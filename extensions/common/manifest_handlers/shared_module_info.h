@@ -34,10 +34,10 @@ class SharedModuleInfo : public Extension::ManifestData {
 
   // Functions relating to exporting resources.
   static bool IsSharedModule(const Extension* extension);
-  // Check against the shared module's whitelist to see if |other_id| can import
-  // its resources. If no whitelist is specified, all extensions can import this
+  // Check against the shared module's allowlist to see if |other_id| can import
+  // its resources. If no allowlist is specified, all extensions can import this
   // extension.
-  static bool IsExportAllowedByWhitelist(const Extension* extension,
+  static bool IsExportAllowedByAllowlist(const Extension* extension,
                                          const std::string& other_id);
 
   // Functions relating to importing resources.
@@ -48,7 +48,7 @@ class SharedModuleInfo : public Extension::ManifestData {
 
  private:
   // Optional list of extensions from which importing is allowed.
-  std::set<std::string> export_whitelist_;
+  std::set<std::string> export_allowlist_;
 
   // Optional list of module imports of other extensions.
   std::vector<ImportInfo> imports_;
