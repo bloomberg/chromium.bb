@@ -155,7 +155,11 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
         ThreadUtils.assertOnUiThread();
         JobScheduler jobScheduler =
                 (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        jobScheduler.cancel(taskId);
+        try {
+            jobScheduler.cancel(taskId);
+        } catch (NullPointerException exception) {
+            Log.e(TAG, "Failed to cancel task: " + taskId);
+        }
     }
 
     private boolean hasPendingJob(JobScheduler jobScheduler, int jobId) {
