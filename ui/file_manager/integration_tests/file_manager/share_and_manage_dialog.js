@@ -204,3 +204,10 @@ testcase.manageHostedFileDrive = function() {
 testcase.manageFileDrive = function() {
   manage('world.ogv', 'https://file_alternate_link/world.ogv');
 };
+
+/**
+ * Tests managing a directory on Drive.
+ */
+testcase.manageDirectoryDrive = function() {
+  manage('photos', 'https://folder_alternate_link/photos');
+};

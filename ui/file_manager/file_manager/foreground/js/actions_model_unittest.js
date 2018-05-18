@@ -124,7 +124,7 @@ function testDriveDirectoryEntry(callback) {
     };
     assertFalse(shareAction.canExecute());
 
-    // 'Manage in Drive' should be disabled for directories.
+    // 'Manage in Drive' should be disabled in offline mode.
     var manageInDriveAction =
         actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
     assertTrue(!!manageInDriveAction);
@@ -301,17 +301,18 @@ function testTeamDriveDirectoryEntry(callback) {
         var actions = model.getActions();
         assertEquals(3, Object.keys(actions).length);
 
-        // "share" action is enabled for Team Drive directories.
+        // "Share" is enabled for Team Drive directories, and is the same as the
+        // "Manage in Drive" action.
         var shareAction = actions[ActionsModel.CommonActionId.SHARE];
         assertTrue(!!shareAction);
-        // TODO(sashab): Re-enable when 'Manage' works for directories.
-        assertFalse(shareAction.canExecute());
+        assertTrue(shareAction.canExecute());
+        assertTrue(shareAction instanceof DriveManageAction);
 
-        // "manage in drive" action is disabled for Team Drive directories.
+        // "Manage in drive" is enabled for Team Drive directories.
         var manageAction =
             actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
         assertTrue(!!manageAction);
-        assertFalse(manageAction.canExecute());
+        assertTrue(manageAction.canExecute());
 
         // 'Create shortcut' should be enabled.
         var createFolderShortcutAction =
