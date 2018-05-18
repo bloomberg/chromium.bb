@@ -114,6 +114,7 @@ import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -1469,6 +1470,18 @@ public class ChromeTabbedActivity
             return null;
         }
 
+        mTabModelSelectorImpl.addObserver(new EmptyTabModelSelectorObserver() {
+            @Override
+            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                if (isInOverviewMode()) {
+                    // The passed-in color is ignored when the tab switcher is open. This call
+                    // causes the toolbar color to change (if necessary) based on whether or not
+                    // we're in incognito mode.
+                    setStatusBarColor(null, Color.BLACK);
+                }
+            }
+        });
+
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelectorImpl) {
             private boolean mIsFirstPageLoadStart = true;
 
@@ -2155,14 +2168,35 @@ public class ChromeTabbedActivity
     protected void setStatusBarColor(@Nullable Tab tab, int color) {
         if (isTablet()) return;
 
+        if (!isInOverviewMode()) {
+            super.setStatusBarColor(tab, color);
+            return;
+        }
+
         int tabSwitcherColor = Color.BLACK;
         boolean supportsDarkStatusIcons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
-        if (supportsDarkStatusIcons && supportsModernDesign()
-                && FeatureUtilities.isChromeModernDesignEnabled()) {
-            tabSwitcherColor =
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color);
+        if (!supportsDarkStatusIcons || !supportsModernDesign()
+                || !FeatureUtilities.isChromeModernDesignEnabled()) {
+            super.setStatusBarColor(tab, Color.BLACK);
+            return;
         }
-        super.setStatusBarColor(tab, isInOverviewMode() ? tabSwitcherColor : color);
+
+        if (!ChromeFeatureList.isInitialized()
+                || !ChromeFeatureList.isEnabled(
+                           ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)) {
+            super.setStatusBarColor(tab,
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
+            return;
+        }
+
+        if (mTabModelSelectorImpl != null && mTabModelSelectorImpl.isIncognitoSelected()) {
+            super.setStatusBarColor(tab,
+                    ApiCompatibilityUtils.getColor(
+                            getResources(), R.color.incognito_modern_primary_color));
+        } else {
+            super.setStatusBarColor(tab,
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
+        }
     }
 
     @Override

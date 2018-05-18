@@ -117,8 +117,15 @@ public class NavigationBarColorController implements VrModeObserver {
 
     private void updateNavigationBarColor() {
         boolean overviewVisible = mOverviewModeBehavior.overviewVisible() && !mOverviewModeHiding;
-        boolean useLightNavigation = !mTabModelSelector.isIncognitoSelected() && !overviewVisible;
-        if (FeatureUtilities.isChromeModernDesignEnabled()) useLightNavigation |= overviewVisible;
+
+        boolean useLightNavigation;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)) {
+            useLightNavigation = !mTabModelSelector.isIncognitoSelected();
+        } else if (FeatureUtilities.isChromeModernDesignEnabled()) {
+            useLightNavigation = !mTabModelSelector.isIncognitoSelected() || overviewVisible;
+        } else {
+            useLightNavigation = !mTabModelSelector.isIncognitoSelected() && !overviewVisible;
+        }
 
         if (mUseLightNavigation == useLightNavigation) return;
 

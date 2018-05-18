@@ -878,6 +878,11 @@ public class ToolbarPhone extends ToolbarLayout
                 return getToolbarDataProvider().getPrimaryColor();
             case TAB_SWITCHER_NORMAL:
             case TAB_SWITCHER_INCOGNITO:
+                if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
+                        && !DeviceClassManager.enableAccessibilityLayout()) {
+                    return Color.TRANSPARENT;
+                }
+
                 if (mLocationBar.useModernDesign()) {
                     if (!DeviceClassManager.enableAccessibilityLayout()) return Color.TRANSPARENT;
                     int colorId = visualState == VisualState.TAB_SWITCHER_NORMAL
@@ -2584,8 +2589,11 @@ public class ToolbarPhone extends ToolbarLayout
                     || mVisualState == VisualState.TAB_SWITCHER_INCOGNITO;
             int colorForVisualState = getToolbarColorForVisualState(mVisualState);
             mUseLightToolbarDrawables =
-                    ColorUtils.shouldUseLightForegroundOnBackground(colorForVisualState)
-                    && colorForVisualState != Color.TRANSPARENT;
+                    (ColorUtils.shouldUseLightForegroundOnBackground(colorForVisualState)
+                            && colorForVisualState != Color.TRANSPARENT);
+            mUseLightToolbarDrawables |=
+                    (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
+                            && isIncognito());
             mLocationBarBackgroundAlpha = LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
             getProgressBar().setBackgroundColor(mProgressBackBackgroundColorWhite);
             getProgressBar().setForegroundColor(ApiCompatibilityUtils.getColor(getResources(),
