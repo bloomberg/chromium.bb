@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -25,6 +26,9 @@ class LocalSiteCharacteristicsDataReaderTest;
 class LocalSiteCharacteristicsDataWriterTest;
 
 namespace internal {
+
+FORWARD_DECLARE_TEST(LocalSiteCharacteristicsDataImplTest,
+                     LateAsyncReadDoesntBypassClearEvent);
 
 // Internal class used to read/write site characteristics. This is a wrapper
 // class around a SiteCharacteristicsProto object and offers various to query
@@ -114,6 +118,9 @@ class LocalSiteCharacteristicsDataImpl
       const SiteCharacteristicsFeatureProto& feature_proto) const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataImplTest,
+                           LateAsyncReadDoesntBypassClearEvent);
+
   static const int64_t kZeroIntervalInternalRepresentation;
 
   // Add |extra_observation_duration| to the observation window of a given
@@ -135,8 +142,9 @@ class LocalSiteCharacteristicsDataImpl
   // properly update the last_loaded time, instead call |ClearObservations|.
   void InitWithDefaultValues(bool only_init_uninitialized_fields);
 
-  // Clear all the past observations about this site.
-  void ClearObservations();
+  // Clear all the past observations about this site and invalidate the pending
+  // read observations from the database.
+  void ClearObservationsAndInvalidateReadOperation();
 
   // Returns the usage of |site_feature| for this site.
   SiteFeatureUsage GetFeatureUsage(

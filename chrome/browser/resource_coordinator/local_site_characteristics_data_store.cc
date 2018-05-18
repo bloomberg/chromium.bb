@@ -87,38 +87,27 @@ void LocalSiteCharacteristicsDataStore::
   DCHECK_EQ(1U, num_erased);
 }
 
-LocalSiteCharacteristicsDataStore::LocalSiteCharacteristicsMap::iterator
-LocalSiteCharacteristicsDataStore::ResetLocalSiteCharacteristicsEntry(
-    LocalSiteCharacteristicsMap::iterator entry) {
-  if (entry->second->IsLoaded()) {
-    entry->second->ClearObservations();
-    entry++;
-  } else {
-    entry = origin_data_map_.erase(entry);
-  }
-  return entry;
-}
-
 void LocalSiteCharacteristicsDataStore::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
-  // TODO(sebmarchand): Invalidates all the pending read/write operations to the
-  // database once it's asynchronous.
+  // It's not necessary to invalidate the pending DB write operations as they
+  // run on a sequenced task and so it's guaranteed that the remove operations
+  // posted here will run after any other pending operation.
   if (deletion_info.IsAllHistory()) {
-    for (auto iter = origin_data_map_.begin();
-         iter != origin_data_map_.end();) {
-      iter = ResetLocalSiteCharacteristicsEntry(iter);
-    }
+    for (auto& data : origin_data_map_)
+      data.second->ClearObservationsAndInvalidateReadOperation();
     database_->ClearDatabase();
   } else {
     std::vector<std::string> entries_to_remove;
     for (auto deleted_row : deletion_info.deleted_rows()) {
       auto map_iter =
           origin_data_map_.find(deleted_row.url().GetOrigin().GetContent());
-      if (map_iter != origin_data_map_.end()) {
-        ResetLocalSiteCharacteristicsEntry(map_iter);
-        entries_to_remove.emplace_back(map_iter->first);
-      }
+      if (map_iter != origin_data_map_.end())
+        map_iter->second->ClearObservationsAndInvalidateReadOperation();
+
+      // The database will ignore the entries that don't exist in it.
+      entries_to_remove.emplace_back(
+          deleted_row.url().GetOrigin().GetContent());
     }
     database_->RemoveSiteCharacteristicsFromDB(entries_to_remove);
   }

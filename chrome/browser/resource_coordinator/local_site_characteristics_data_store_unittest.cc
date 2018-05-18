@@ -144,11 +144,17 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
   // changed.
   EXPECT_EQ(data->last_loaded_time_for_testing(), last_loaded_time);
 
-  history::URLRows urls_to_delete = {
-      history::URLRow(GURL(kTestOrigin)),
-      history::URLRow(GURL("http://www.url-not-in-map.com"))};
-  EXPECT_CALL(*mock_db, RemoveSiteCharacteristicsFromDB(::testing::ContainerEq(
-                            std::vector<std::string>({kOrigin1Url}))));
+  // Make sure that all data passed to |OnURLsDeleted| get passed to the
+  // database, even if they're not in the internal map used by the data store.
+  const char* kOriginNotInMap = "http://www.url-not-in-map.com";
+  const std::string kOriginNotInMapURL =
+      GURL(kOriginNotInMap).GetOrigin().GetContent();
+  history::URLRows urls_to_delete = {history::URLRow(GURL(kTestOrigin)),
+                                     history::URLRow(GURL(kOriginNotInMap))};
+  EXPECT_CALL(
+      *mock_db,
+      RemoveSiteCharacteristicsFromDB(::testing::ContainerEq(
+          std::vector<std::string>({kOrigin1Url, kOriginNotInMapURL}))));
   data_store_.OnURLsDeleted(nullptr, history::DeletionInfo::ForUrls(
                                          urls_to_delete, std::set<GURL>()));
   ::testing::Mock::VerifyAndClear(mock_db);

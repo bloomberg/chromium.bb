@@ -76,12 +76,6 @@ class LocalSiteCharacteristicsDataStore
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;
 
-  // Reset the observations about a given LocalSiteCharacteristicsMap entry,
-  // removes this entry from the map if it's not loaded by any tab.
-  // Returns an iterator to the next element in the map.
-  LocalSiteCharacteristicsMap::iterator ResetLocalSiteCharacteristicsEntry(
-      LocalSiteCharacteristicsMap::iterator entry);
-
   // Map a serialized origin to a LocalSiteCharacteristicDataInternal
   // pointer.
   LocalSiteCharacteristicsMap origin_data_map_;
