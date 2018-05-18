@@ -128,6 +128,10 @@ static void amdgpu_device_free_internal(amdgpu_device_handle dev)
 {
 	pthread_mutex_lock(&fd_mutex);
 	util_hash_table_remove(fd_tab, UINT_TO_PTR(dev->fd));
+	if (util_hash_table_count(fd_tab) == 0) {
+		util_hash_table_destroy(fd_tab);
+		fd_tab = NULL;
+	}
 	close(dev->fd);
 	if ((dev->flink_fd >= 0) && (dev->fd != dev->flink_fd))
 		close(dev->flink_fd);
