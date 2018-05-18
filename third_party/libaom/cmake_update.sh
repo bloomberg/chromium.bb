@@ -12,6 +12,11 @@
 # Usage:
 # $ ./cmake_update.sh
 # Requirements:
+# - cmake3
+# - yasm or nasm
+# Toolchain for armv7:
+#  -gcc-arm-linux-gnueabihf
+#  -g++-arm-linux-gnueabihf
 # 32bit build environment for cmake. Including but potentially not limited to:
 #  -lib32gcc-7-dev
 #  -lib32stdc++-7-dev
@@ -183,5 +188,18 @@ sed -i.bak \
 rm "${CFG}/win/x64/aom_config.h.bak"
 egrep "#define [A-Z0-9_]+ [01]" "${CFG}/win/x64/aom_config.h" \
   | awk '{print "%define " $2 " " $3}' > "${CFG}/win/x64/aom_config.asm"
+
+cd ..
+rm -rf "${TMP}"
+mkdir "${TMP}"
+cd "${TMP}"
+
+echo "Generate linux/arm-neon config files."
+gen_config_files linux/arm-neon "${toolchain}/armv7-linux-gcc.cmake ${all_platforms}"
+rm -f "${CFG}/linux/arm-neon"/*
+# mkdir required only for initial commit
+mkdir -p "${CFG}/linux/arm-neon"
+cp aom_config.h aom_config.c aom_config.asm "${CFG}/linux/arm-neon/"
+gen_rtcd_header linux/arm-neon armv7
 
 clean
