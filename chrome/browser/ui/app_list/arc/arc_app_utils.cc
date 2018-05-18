@@ -20,9 +20,10 @@
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
+#include "chrome/browser/ui/ash/launcher/arc_shelf_spinner_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -276,8 +277,9 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
         ChromeLauncherController::instance();
     DCHECK(chrome_controller || !ash::Shell::HasInstance());
     if (chrome_controller) {
-      chrome_controller->GetArcDeferredLauncher()->RegisterDeferredLaunch(
-          app_id, event_flags, GetValidDisplayId(display_id));
+      chrome_controller->GetShelfSpinnerController()->AddSpinnerToShelf(
+          app_id, std::make_unique<ArcShelfSpinnerItemController>(
+                      app_id, event_flags, GetValidDisplayId(display_id)));
 
       // On some boards, ARC is booted with a restricted set of resources by
       // default to avoid slowing down Chrome's user session restoration.

@@ -40,7 +40,6 @@
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
@@ -53,6 +52,7 @@
 #include "chrome/browser/ui/ash/launcher/launcher_extension_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
+#include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
@@ -216,8 +216,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   DCHECK_EQ(profile, profile_);
   model_->AddObserver(this);
 
-  if (arc::IsArcAllowedForProfile(profile))
-    arc_deferred_launcher_.reset(new ArcAppDeferredLauncherController(this));
+  shelf_spinner_controller_.reset(new ShelfSpinnerController(this));
 
   // Create either the real window manager or a stub.
   MultiUserWindowManager::CreateInstance();
@@ -667,9 +666,8 @@ void ChromeLauncherController::OnUserProfileReadyToSwitch(Profile* profile) {
     user_switch_observer_->OnUserProfileReadyToSwitch(profile);
 }
 
-ArcAppDeferredLauncherController*
-ChromeLauncherController::GetArcDeferredLauncher() {
-  return arc_deferred_launcher_.get();
+ShelfSpinnerController* ChromeLauncherController::GetShelfSpinnerController() {
+  return shelf_spinner_controller_.get();
 }
 
 ChromeLauncherController::ScopedPinSyncDisabler
@@ -771,8 +769,7 @@ void ChromeLauncherController::OnAppImageUpdated(const std::string& app_id,
       continue;
     }
     item.image = image;
-    if (arc_deferred_launcher_)
-      arc_deferred_launcher_->MaybeApplySpinningEffect(app_id, &item.image);
+    shelf_spinner_controller_->MaybeApplySpinningEffect(app_id, &item.image);
     // Update the image in Ash's ShelfModel, ShelfItemChanged strips images.
     if (shelf_controller_)
       shelf_controller_->UpdateShelfItem(item);
