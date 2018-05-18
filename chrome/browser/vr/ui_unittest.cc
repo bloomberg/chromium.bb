@@ -419,7 +419,7 @@ TEST_F(UiTest, WebVrSplashScreenHiddenWhenTimeoutImminent) {
   VerifyOnlyElementsVisible("Initial", {kSplashScreenText, kWebVrBackground});
 
   ui_->SetWebVrMode(true);
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       RunForSeconds(kSplashScreenMinDurationSeconds + kSmallDelaySeconds * 2));
 
   ui_->OnWebVrTimeoutImminent();
@@ -910,8 +910,9 @@ TEST_F(UiTest, SpeechRecognitionUiVisibility) {
                     false);
   VerifyVisibility({k2dBrowsingForeground, kSpeechRecognitionListening}, false);
 
-  // The visibility of Speech Recognition UI should not change at this point.
-  EXPECT_FALSE(RunForMs(10));
+  // The visibility of Speech Recognition UI should not change at this point,
+  // but it will be animating.
+  EXPECT_TRUE(RunForMs(10));
 
   EXPECT_TRUE(RunForMs(kSpeechRecognitionResultTimeoutMs));
   // Start hide speech recognition result and show browsing foreground.
@@ -1030,7 +1031,7 @@ TEST_F(UiTest, ControllerQuiescence) {
 
   model_->skips_redraw_when_not_dirty = false;
   model_->controller.quiescent = true;
-  EXPECT_FALSE(RunForMs(1000));
+  EXPECT_TRUE(RunForMs(1000));
   EXPECT_TRUE(IsVisible(kControllerGroup));
 }
 

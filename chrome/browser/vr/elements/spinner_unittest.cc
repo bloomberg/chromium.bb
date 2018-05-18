@@ -44,6 +44,7 @@ void CheckArc(UiTexture* texture, float start_angle, float sweep_angle) {
 
 TEST(Spinner, Animation) {
   UiScene scene;
+  scene.RunFirstFrameForTest();
   auto spinner_element = std::make_unique<TestSpinner>(kMaximumWidth);
   UiTexture* texture = spinner_element->GetTexture();
   scene.AddUiElement(kRoot, std::move(spinner_element));

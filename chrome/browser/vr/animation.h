@@ -48,6 +48,9 @@ class Animation final {
 
   void Tick(base::TimeTicks monotonic_time);
 
+  // This ticks all keyframe models until they are complete.
+  void FinishAll();
+
   using KeyframeModels = std::vector<std::unique_ptr<cc::KeyframeModel>>;
   const KeyframeModels& keyframe_models() { return keyframe_models_; }
 
@@ -92,7 +95,10 @@ class Animation final {
   SkColor GetTargetColorValue(int target_property, SkColor default_value) const;
 
  private:
-  void StartKeyframeModels(base::TimeTicks monotonic_time);
+  void TickInternal(base::TimeTicks monotonic_time,
+                    bool include_infinite_animations);
+  void StartKeyframeModels(base::TimeTicks monotonic_time,
+                           bool include_infinite_animations);
   template <typename ValueType>
   void TransitionValueTo(base::TimeTicks monotonic_time,
                          int target_property,
