@@ -67,7 +67,7 @@ using protocol::Response;
 unsigned InspectorLayerTreeAgent::last_snapshot_id_;
 
 inline String IdForLayer(const GraphicsLayer* graphics_layer) {
-  return String::Number(graphics_layer->PlatformLayer()->id());
+  return String::Number(graphics_layer->CcLayer()->id());
 }
 
 static std::unique_ptr<protocol::DOM::Rect> BuildObjectForRect(
@@ -97,7 +97,7 @@ BuildScrollRectsForLayer(GraphicsLayer* graphics_layer,
                          bool report_wheel_scrollers) {
   std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scroll_rects =
       Array<protocol::LayerTree::ScrollRect>::create();
-  cc::Layer* cc_layer = graphics_layer->PlatformLayer();
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
   const cc::Region& non_fast_scrollable_rects =
       cc_layer->non_fast_scrollable_region();
   for (const gfx::Rect& rect : non_fast_scrollable_rects) {
@@ -127,7 +127,7 @@ BuildScrollRectsForLayer(GraphicsLayer* graphics_layer,
 // property tree once blink is able to access them. https://crbug.com/754339
 static GraphicsLayer* FindLayerByElementId(GraphicsLayer* root,
                                            CompositorElementId element_id) {
-  if (root->PlatformLayer()->element_id() == element_id)
+  if (root->CcLayer()->element_id() == element_id)
     return root;
   for (size_t i = 0, size = root->Children().size(); i < size; ++i) {
     if (GraphicsLayer* layer =
@@ -161,14 +161,14 @@ BuildStickyInfoForLayer(GraphicsLayer* root, cc::Layer* layer) {
     constraints_obj->setNearestLayerShiftingStickyBox(String::Number(
         FindLayerByElementId(root,
                              constraints.nearest_element_shifting_sticky_box)
-            ->PlatformLayer()
+            ->CcLayer()
             ->id()));
   }
   if (constraints.nearest_element_shifting_containing_block) {
     constraints_obj->setNearestLayerShiftingContainingBlock(String::Number(
         FindLayerByElementId(
             root, constraints.nearest_element_shifting_containing_block)
-            ->PlatformLayer()
+            ->CcLayer()
             ->id()));
   }
 
@@ -180,7 +180,7 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
     GraphicsLayer* graphics_layer,
     int node_id,
     bool report_wheel_event_listeners) {
-  cc::Layer* cc_layer = graphics_layer->PlatformLayer();
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
   std::unique_ptr<protocol::LayerTree::Layer> layer_object =
       protocol::LayerTree::Layer::create()
           .setLayerId(IdForLayer(graphics_layer))
@@ -308,7 +308,7 @@ InspectorLayerTreeAgent::BuildLayerTree() {
                                   ->LayoutViewportScrollableArea()
                                   ->LayerForScrolling();
   int scrolling_layer_id =
-      layer_for_scrolling ? layer_for_scrolling->PlatformLayer()->id() : 0;
+      layer_for_scrolling ? layer_for_scrolling->CcLayer()->id() : 0;
   bool have_blocking_wheel_event_handlers =
       inspected_frames_->Root()->GetChromeClient().EventListenerProperties(
           inspected_frames_->Root(), WebEventListenerClass::kMouseWheel) ==
@@ -326,7 +326,7 @@ void InspectorLayerTreeAgent::BuildLayerIdToNodeIdMap(
     if (Node* node = root->GetLayoutObject().GeneratingNode()) {
       GraphicsLayer* graphics_layer =
           root->GetCompositedLayerMapping()->ChildForSuperlayers();
-      layer_id_to_node_id_map.Set(graphics_layer->PlatformLayer()->id(),
+      layer_id_to_node_id_map.Set(graphics_layer->CcLayer()->id(),
                                   IdForNode(node));
     }
   }
@@ -358,7 +358,7 @@ void InspectorLayerTreeAgent::GatherGraphicsLayers(
     int scrolling_layer_id) {
   if (client_->IsInspectorLayer(layer))
     return;
-  int layer_id = layer->PlatformLayer()->id();
+  int layer_id = layer->CcLayer()->id();
   layers->addItem(BuildObjectForLayer(
       RootGraphicsLayer(), layer, layer_id_to_node_id_map.at(layer_id),
       has_wheel_event_handlers && layer_id == scrolling_layer_id));
@@ -386,7 +386,7 @@ GraphicsLayer* InspectorLayerTreeAgent::RootGraphicsLayer() {
 }
 
 static GraphicsLayer* FindLayerById(GraphicsLayer* root, int layer_id) {
-  if (root->PlatformLayer()->id() == layer_id)
+  if (root->CcLayer()->id() == layer_id)
     return root;
   for (size_t i = 0, size = root->Children().size(); i < size; ++i) {
     if (GraphicsLayer* layer = FindLayerById(root->Children()[i], layer_id))

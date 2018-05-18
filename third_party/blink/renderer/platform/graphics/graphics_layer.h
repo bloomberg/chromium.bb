@@ -227,15 +227,15 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // SetContentsOpaque() will not be passed on to the |layer|. Use when
   // the client wants to have control of the opaqueness of the contents
   // |layer| independently of what outcome painting produces.
-  void SetContentsToPlatformLayer(cc::Layer* layer,
-                                  bool prevent_contents_opaque_changes) {
+  void SetContentsToCcLayer(cc::Layer* layer,
+                            bool prevent_contents_opaque_changes) {
     SetContentsTo(layer, prevent_contents_opaque_changes);
   }
   bool HasContentsLayer() const { return contents_layer_; }
   cc::Layer* ContentsLayer() const { return contents_layer_; }
 
   // For hosting this GraphicsLayer in a native layer hierarchy.
-  cc::Layer* PlatformLayer() const;
+  cc::Layer* CcLayer() const;
 
   int PaintCount() const { return paint_count_; }
 

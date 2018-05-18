@@ -49,8 +49,8 @@ void ImageBitmapRenderingContextBase::SetUV(const FloatPoint& left_top,
   image_layer_bridge_->SetUV(left_top, right_bottom);
 }
 
-cc::Layer* ImageBitmapRenderingContextBase::PlatformLayer() const {
-  return image_layer_bridge_->PlatformLayer();
+cc::Layer* ImageBitmapRenderingContextBase::CcLayer() const {
+  return image_layer_bridge_->CcLayer();
 }
 
 bool ImageBitmapRenderingContextBase::IsPaintable() const {

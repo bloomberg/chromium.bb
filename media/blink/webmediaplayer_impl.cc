@@ -327,7 +327,7 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
     adjust_allocated_memory_cb_.Run(-last_reported_memory_usage_);
 
   // Destruct compositor resources in the proper order.
-  client_->SetWebLayer(nullptr);
+  client_->SetCcLayer(nullptr);
 
   client_->MediaRemotingStopped(
       blink::WebLocalizedString::kMediaRemotingStopNoText);
@@ -400,13 +400,13 @@ void WebMediaPlayerImpl::OnWebLayerUpdated() {}
 
 void WebMediaPlayerImpl::RegisterContentsLayer(cc::Layer* layer) {
   DCHECK(bridge_);
-  bridge_->GetWebLayer()->SetContentsOpaque(opaque_);
-  client_->SetWebLayer(layer);
+  bridge_->GetCcLayer()->SetContentsOpaque(opaque_);
+  client_->SetCcLayer(layer);
 }
 
 void WebMediaPlayerImpl::UnregisterContentsLayer(cc::Layer* layer) {
   // |client_| will unregister its cc::Layer if given a nullptr.
-  client_->SetWebLayer(nullptr);
+  client_->SetCcLayer(nullptr);
 }
 
 void WebMediaPlayerImpl::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
@@ -1636,7 +1636,7 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
           compositor_.get(),
           pipeline_metadata_.video_decoder_config.video_rotation());
       video_layer_->SetContentsOpaque(opaque_);
-      client_->SetWebLayer(video_layer_.get());
+      client_->SetCcLayer(video_layer_.get());
     } else {
       vfc_task_runner_->PostTask(
           FROM_HERE,
@@ -1904,8 +1904,8 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
   if (!surface_layer_for_video_enabled_) {
     if (video_layer_)
       video_layer_->SetContentsOpaque(opaque_);
-  } else if (bridge_->GetWebLayer()) {
-    bridge_->GetWebLayer()->SetContentsOpaque(opaque_);
+  } else if (bridge_->GetCcLayer()) {
+    bridge_->GetCcLayer()->SetContentsOpaque(opaque_);
   }
 }
 
@@ -2206,10 +2206,10 @@ gfx::Size WebMediaPlayerImpl::GetCanvasSize() const {
 
     return video_layer_->bounds();
   }
-  if (!bridge_->GetWebLayer())
+  if (!bridge_->GetCcLayer())
     return pipeline_metadata_.natural_size;
 
-  return bridge_->GetWebLayer()->bounds();
+  return bridge_->GetCcLayer()->bounds();
 }
 
 void WebMediaPlayerImpl::SetDeviceScaleFactor(float scale_factor) {

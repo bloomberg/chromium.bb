@@ -44,8 +44,8 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   void DidResume() override;
   void SetIsInert(bool) override;
 
-  void SetWebLayer(cc::Layer*, bool prevent_contents_opaque_changes);
-  cc::Layer* GetWebLayer() const { return cc_layer_; }
+  void SetCcLayer(cc::Layer*, bool prevent_contents_opaque_changes);
+  cc::Layer* GetCcLayer() const { return cc_layer_; }
   bool WebLayerHasFixedContentsOpaque() const {
     return prevent_contents_opaque_changes_;
   }

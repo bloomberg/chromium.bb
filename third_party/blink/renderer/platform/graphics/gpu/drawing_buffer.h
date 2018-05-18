@@ -193,7 +193,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // default framebuffer.
   bool DefaultBufferRequiresAlphaChannelToBePreserved();
 
-  cc::Layer* PlatformLayer();
+  cc::Layer* CcLayer();
 
   gpu::gles2::GLES2Interface* ContextGL();
   WebGraphicsContext3DProvider* ContextProvider();
@@ -408,7 +408,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // the operation was successful.
   bool ResizeDefaultFramebuffer(const IntSize&);
 
-  void ClearPlatformLayer();
+  void ClearCcLayer();
 
   RegisteredBitmap CreateOrRecycleBitmap(
       cc::SharedBitmapIdRegistrar* bitmap_registrar);

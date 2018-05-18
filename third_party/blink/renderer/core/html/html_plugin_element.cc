@@ -262,7 +262,7 @@ void HTMLPlugInElement::RemovedFrom(ContainerNode* insertion_point) {
 
 bool HTMLPlugInElement::ShouldAccelerate() const {
   WebPluginContainerImpl* plugin = OwnedPlugin();
-  return plugin && plugin->PlatformLayer();
+  return plugin && plugin->CcLayer();
 }
 
 ParsedFeaturePolicy HTMLPlugInElement::ConstructContainerPolicy(
@@ -595,7 +595,7 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
   }
 
   GetDocument().SetContainsPlugins();
-  // TODO(esprehn): WebPluginContainerImpl::SetWebLayer() also schedules a
+  // TODO(esprehn): WebPluginContainerImpl::SetCcLayer() also schedules a
   // compositing update, do we need both?
   SetNeedsCompositingUpdate();
   // Make sure any input event handlers introduced by the plugin are taken into

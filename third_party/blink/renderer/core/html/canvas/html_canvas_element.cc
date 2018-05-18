@@ -148,9 +148,8 @@ intptr_t HTMLCanvasElement::global_gpu_memory_usage_ = 0;
 unsigned HTMLCanvasElement::global_accelerated_context_count_ = 0;
 
 HTMLCanvasElement::~HTMLCanvasElement() {
-  if (surface_layer_bridge_ && surface_layer_bridge_->GetWebLayer()) {
-    GraphicsLayer::UnregisterContentsLayer(
-        surface_layer_bridge_->GetWebLayer());
+  if (surface_layer_bridge_ && surface_layer_bridge_->GetCcLayer()) {
+    GraphicsLayer::UnregisterContentsLayer(surface_layer_bridge_->GetCcLayer());
   }
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
       -externally_allocated_memory_);
@@ -516,8 +515,8 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
     }
   }
 
-  if (context_ && HasImageBitmapContext() && context_->PlatformLayer()) {
-    context_->PlatformLayer()->SetNeedsDisplay();
+  if (context_ && HasImageBitmapContext() && context_->CcLayer()) {
+    context_->CcLayer()->SetNeedsDisplay();
   }
 
   NotifyListenersCanvasChanged();

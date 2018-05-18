@@ -102,7 +102,7 @@ TEST_P(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
 
   // Fetch the layer associated with the <canvas>, and check that it was
   // correctly configured in the layer tree.
-  const cc::Layer* layer = context->PlatformLayer();
+  const cc::Layer* layer = context->CcLayer();
   ASSERT_TRUE(layer);
   EXPECT_TRUE(HasLayerAttached(*layer));
   EXPECT_EQ(gfx::Size(300, 200), layer->bounds());

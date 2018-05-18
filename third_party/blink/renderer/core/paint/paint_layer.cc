@@ -238,9 +238,8 @@ void PaintLayer::ContentChanged(ContentChangeType change_type) {
           kCompositingUpdateAfterCompositingInputChange);
 
       // Although we're missing test coverage, we need to call
-      // GraphicsLayer::setContentsToPlatformLayer with the new platform
-      // layer for this canvas.
-      // See http://crbug.com/349195
+      // GraphicsLayer::SetContentsToCcLayer with the new cc::Layer for this
+      // canvas. See http://crbug.com/349195
       if (HasCompositedLayerMapping()) {
         GetCompositedLayerMapping()->SetNeedsGraphicsLayerUpdate(
             kGraphicsLayerUpdateSubtree);

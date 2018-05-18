@@ -1187,7 +1187,7 @@ void PaintLayerCompositor::UpdateOverflowControlsLayers() {
 void PaintLayerCompositor::ShowScrollbarLayersIfNeeded() {
   LocalFrameView* frame_view = layout_view_.GetFrameView();
   if (scroll_layer_ && frame_view->NeedsShowScrollbarLayers()) {
-    scroll_layer_->PlatformLayer()->ShowScrollbars();
+    scroll_layer_->CcLayer()->ShowScrollbars();
     frame_view->DidShowScrollbarLayers();
   }
 }

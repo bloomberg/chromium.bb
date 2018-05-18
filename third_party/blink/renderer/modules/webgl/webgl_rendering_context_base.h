@@ -653,7 +653,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool IsAccelerated() const override { return true; }
   void SetIsHidden(bool) override;
   bool PaintRenderingResultsToCanvas(SourceDrawingBuffer) override;
-  cc::Layer* PlatformLayer() const override;
+  cc::Layer* CcLayer() const override;
   void Stop() override;
   void FinalizeFrame() override;
   void PushFrame() override;

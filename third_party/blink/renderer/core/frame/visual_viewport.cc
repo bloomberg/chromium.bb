@@ -113,7 +113,7 @@ void VisualViewport::SetSize(const IntSize& size) {
 
   if (inner_viewport_container_layer_) {
     inner_viewport_container_layer_->SetSize(size_);
-    inner_viewport_scroll_layer_->PlatformLayer()->SetScrollable(
+    inner_viewport_scroll_layer_->CcLayer()->SetScrollable(
         static_cast<gfx::Size>(size_));
 
     // Need to re-compute sizes for the overlay scrollbars.
@@ -373,7 +373,7 @@ void VisualViewport::CreateLayerTree() {
       GetPage().GetSettings().GetMainFrameClipsContent());
   inner_viewport_container_layer_->SetSize(size_);
 
-  inner_viewport_scroll_layer_->PlatformLayer()->SetScrollable(
+  inner_viewport_scroll_layer_->CcLayer()->SetScrollable(
       static_cast<gfx::Size>(size_));
   DCHECK(MainFrame());
   DCHECK(MainFrame()->GetDocument());
@@ -467,12 +467,12 @@ void VisualViewport::SetupScrollbar(ScrollbarOrientation orientation) {
     // The compositor will control the scrollbar's visibility. Set to invisible
     // by default so scrollbars don't show up in layout tests.
     scrollbar_layer_group->layer->SetOpacity(0.f);
-    scrollbar_graphics_layer->SetContentsToPlatformLayer(
+    scrollbar_graphics_layer->SetContentsToCcLayer(
         scrollbar_layer_group->layer.get(),
         /*prevent_contents_opaque_changes=*/false);
     scrollbar_graphics_layer->SetDrawsContent(false);
     scrollbar_layer_group->scrollbar_layer->SetScrollElementId(
-        inner_viewport_scroll_layer_->PlatformLayer()->element_id());
+        inner_viewport_scroll_layer_->CcLayer()->element_id());
   }
 
   int x_position = is_horizontal
@@ -679,7 +679,7 @@ void VisualViewport::UpdateScrollOffset(const ScrollOffset& position,
   if (IsExplicitScrollType(scroll_type)) {
     NotifyRootFrameViewport();
     if (scroll_type != kCompositorScroll && LayerForScrolling())
-      LayerForScrolling()->PlatformLayer()->ShowScrollbars();
+      LayerForScrolling()->CcLayer()->ShowScrollbars();
   }
 }
 

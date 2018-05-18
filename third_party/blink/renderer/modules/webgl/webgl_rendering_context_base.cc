@@ -6424,8 +6424,8 @@ uint32_t WebGLRenderingContextBase::NumberOfContextLosses() const {
   return context_group_->NumberOfContextLosses();
 }
 
-cc::Layer* WebGLRenderingContextBase::PlatformLayer() const {
-  return isContextLost() ? nullptr : GetDrawingBuffer()->PlatformLayer();
+cc::Layer* WebGLRenderingContextBase::CcLayer() const {
+  return isContextLost() ? nullptr : GetDrawingBuffer()->CcLayer();
 }
 
 void WebGLRenderingContextBase::SetFilterQuality(

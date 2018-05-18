@@ -64,8 +64,7 @@ class WebRemoteFrame : public WebFrame {
                                             WebFrame* opener) = 0;
 
   // Layer for the in-process compositor.
-  virtual void SetWebLayer(cc::Layer*,
-                           bool prevent_contents_opaque_changes) = 0;
+  virtual void SetCcLayer(cc::Layer*, bool prevent_contents_opaque_changes) = 0;
 
   // Set security origin replicated from another process.
   virtual void SetReplicatedOrigin(

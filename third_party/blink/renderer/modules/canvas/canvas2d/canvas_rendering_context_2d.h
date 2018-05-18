@@ -250,7 +250,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   bool IsTransformInvertible() const override;
 
-  cc::Layer* PlatformLayer() const override;
+  cc::Layer* CcLayer() const override;
   bool IsCanvas2DBufferValid() const override;
 
   Member<HitRegionManager> hit_region_manager_;

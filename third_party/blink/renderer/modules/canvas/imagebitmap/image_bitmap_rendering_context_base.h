@@ -42,7 +42,7 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
   bool IsComposited() const final { return true; }
   bool IsAccelerated() const final;
 
-  cc::Layer* PlatformLayer() const final;
+  cc::Layer* CcLayer() const final;
   // TODO(junov): handle lost contexts when content is GPU-backed
   void LoseContext(LostContextMode) override {}
 

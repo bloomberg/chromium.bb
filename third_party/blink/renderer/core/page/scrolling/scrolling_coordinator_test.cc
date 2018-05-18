@@ -107,7 +107,7 @@ class ScrollingCoordinatorTest : public testing::Test {
   cc::Layer* GetRootScrollLayer() {
     GraphicsLayer* layer =
         GetFrame()->View()->LayoutViewportScrollableArea()->LayerForScrolling();
-    return layer ? layer->PlatformLayer() : nullptr;
+    return layer ? layer->CcLayer() : nullptr;
   }
 
   WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
@@ -153,7 +153,7 @@ TEST_F(ScrollingCoordinatorTest, fastScrollingByDefault) {
                 WebEventListenerClass::kMouseWheel));
 
   cc::Layer* inner_viewport_scroll_layer =
-      page->GetVisualViewport().ScrollLayer()->PlatformLayer();
+      page->GetVisualViewport().ScrollLayer()->CcLayer();
   ASSERT_TRUE(inner_viewport_scroll_layer->scrollable());
   ASSERT_FALSE(inner_viewport_scroll_layer->should_scroll_on_main_thread());
 }
@@ -179,7 +179,7 @@ TEST_F(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting) {
 
   // Main scrolling should also propagate to inner viewport layer.
   cc::Layer* inner_viewport_scroll_layer =
-      page->GetVisualViewport().ScrollLayer()->PlatformLayer();
+      page->GetVisualViewport().ScrollLayer()->CcLayer();
   ASSERT_TRUE(inner_viewport_scroll_layer->scrollable());
   ASSERT_TRUE(inner_viewport_scroll_layer->should_scroll_on_main_thread());
 }
@@ -214,7 +214,7 @@ TEST_F(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
   ASSERT_TRUE(composited_layer_mapping->HasScrollingLayer());
   DCHECK(composited_layer_mapping->ScrollingContentsLayer());
   cc::Layer* cc_scroll_layer =
-      composited_layer_mapping->ScrollingContentsLayer()->PlatformLayer();
+      composited_layer_mapping->ScrollingContentsLayer()->CcLayer();
   ASSERT_TRUE(cc_scroll_layer);
   ASSERT_NEAR(1.2f, cc_scroll_layer->scroll_offset().x(), 0.01f);
   ASSERT_NEAR(1.2f, cc_scroll_layer->scroll_offset().y(), 0.01f);
@@ -236,7 +236,7 @@ static cc::Layer* CcLayerFromElement(Element* element) {
   GraphicsLayer* graphics_layer = composited_layer_mapping->MainGraphicsLayer();
   if (!graphics_layer)
     return nullptr;
-  return graphics_layer->PlatformLayer();
+  return graphics_layer->CcLayer();
 }
 
 TEST_F(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
@@ -540,7 +540,7 @@ TEST_F(ScrollingCoordinatorTest, touchAction) {
       box->Layer()->GetCompositedLayerMapping();
 
   GraphicsLayer* graphics_layer = composited_layer_mapping->MainGraphicsLayer();
-  cc::Layer* cc_layer = graphics_layer->PlatformLayer();
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
   cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
       TouchAction::kTouchActionPanX | TouchAction::kTouchActionPanDown);
   EXPECT_EQ(region.GetRegionComplexity(), 1);
@@ -562,7 +562,7 @@ TEST_F(ScrollingCoordinatorTest, touchActionRegions) {
       box->Layer()->GetCompositedLayerMapping();
 
   GraphicsLayer* graphics_layer = composited_layer_mapping->MainGraphicsLayer();
-  cc::Layer* cc_layer = graphics_layer->PlatformLayer();
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
 
   cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
       TouchAction::kTouchActionPanDown | TouchAction::kTouchActionPanX);
@@ -595,7 +595,7 @@ TEST_F(ScrollingCoordinatorTest, touchActionBlockingHandler) {
       box->Layer()->GetCompositedLayerMapping();
 
   GraphicsLayer* graphics_layer = composited_layer_mapping->MainGraphicsLayer();
-  cc::Layer* cc_layer = graphics_layer->PlatformLayer();
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
 
   cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
       TouchAction::kTouchActionNone);
@@ -631,7 +631,7 @@ TEST_F(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
       paint_layer_child_frame
           ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries()
           ->GraphicsLayerBacking(&paint_layer_child_frame->GetLayoutObject())
-          ->PlatformLayer()
+          ->CcLayer()
           ->touch_action_region()
           .GetRegionForTouchAction(TouchAction::kTouchActionNone);
   PaintLayer* paint_layer_main_frame = GetWebView()
@@ -644,7 +644,7 @@ TEST_F(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
       paint_layer_main_frame
           ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries()
           ->GraphicsLayerBacking(&paint_layer_main_frame->GetLayoutObject())
-          ->PlatformLayer()
+          ->CcLayer()
           ->touch_action_region()
           .GetRegionForTouchAction(TouchAction::kTouchActionNone);
   EXPECT_TRUE(region_main_frame.bounds().IsEmpty());
@@ -685,7 +685,7 @@ TEST_F(ScrollingCoordinatorTest, overflowScrolling) {
             graphics_layer->GetScrollableArea());
 
   cc::Layer* cc_scroll_layer =
-      composited_layer_mapping->ScrollingContentsLayer()->PlatformLayer();
+      composited_layer_mapping->ScrollingContentsLayer()->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
   ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
@@ -731,7 +731,7 @@ TEST_F(ScrollingCoordinatorTest, overflowHidden) {
             graphics_layer->GetScrollableArea());
 
   cc::Layer* cc_scroll_layer =
-      composited_layer_mapping->ScrollingContentsLayer()->PlatformLayer();
+      composited_layer_mapping->ScrollingContentsLayer()->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
   ASSERT_FALSE(cc_scroll_layer->user_scrollable_vertical());
@@ -757,7 +757,7 @@ TEST_F(ScrollingCoordinatorTest, overflowHidden) {
             graphics_layer->GetScrollableArea());
 
   cc_scroll_layer =
-      composited_layer_mapping->ScrollingContentsLayer()->PlatformLayer();
+      composited_layer_mapping->ScrollingContentsLayer()->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_FALSE(cc_scroll_layer->user_scrollable_horizontal());
   ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
@@ -799,7 +799,7 @@ TEST_F(ScrollingCoordinatorTest, iframeScrolling) {
   ASSERT_EQ(inner_frame_view->LayoutViewportScrollableArea(),
             scroll_layer->GetScrollableArea());
 
-  cc::Layer* cc_scroll_layer = scroll_layer->PlatformLayer();
+  cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
 
 #if defined(OS_ANDROID)
@@ -853,7 +853,7 @@ TEST_F(ScrollingCoordinatorTest, rtlIframe) {
   ASSERT_EQ(inner_frame_view->LayoutViewportScrollableArea(),
             scroll_layer->GetScrollableArea());
 
-  cc::Layer* cc_scroll_layer = scroll_layer->PlatformLayer();
+  cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
 
   int expected_scroll_position =
@@ -894,9 +894,9 @@ TEST_F(ScrollingCoordinatorTest,
   ASSERT_TRUE(scrollbar_graphics_layer);
 
   bool has_cc_scrollbar_layer = !scrollbar_graphics_layer->DrawsContent();
-  ASSERT_TRUE(has_cc_scrollbar_layer ||
-              scrollbar_graphics_layer->PlatformLayer()
-                  ->should_scroll_on_main_thread());
+  ASSERT_TRUE(
+      has_cc_scrollbar_layer ||
+      scrollbar_graphics_layer->CcLayer()->should_scroll_on_main_thread());
 }
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
@@ -917,7 +917,7 @@ TEST_F(ScrollingCoordinatorTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
       frame_view->LayoutViewportScrollableArea()->LayerForHorizontalScrollbar();
   ASSERT_TRUE(scrollbar_graphics_layer);
 
-  cc::Layer* platform_layer = scrollbar_graphics_layer->PlatformLayer();
+  cc::Layer* platform_layer = scrollbar_graphics_layer->CcLayer();
   ASSERT_TRUE(platform_layer);
 
   cc::Layer* contents_layer = scrollbar_graphics_layer->ContentsLayer();
@@ -980,11 +980,11 @@ TEST_F(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll) {
   GraphicsLayer* scrollbar_graphics_layer =
       composited_layer_mapping->LayerForVerticalScrollbar();
   ASSERT_TRUE(scrollbar_graphics_layer);
-  ASSERT_TRUE(scrollbar_graphics_layer->PlatformLayer()
-                  ->should_scroll_on_main_thread());
-  ASSERT_TRUE(scrollbar_graphics_layer->PlatformLayer()
-                  ->main_thread_scrolling_reasons() &
-              MainThreadScrollingReason::kCustomScrollbarScrolling);
+  ASSERT_TRUE(
+      scrollbar_graphics_layer->CcLayer()->should_scroll_on_main_thread());
+  ASSERT_TRUE(
+      scrollbar_graphics_layer->CcLayer()->main_thread_scrolling_reasons() &
+      MainThreadScrollingReason::kCustomScrollbarScrolling);
 
   // remove custom scrollbar class, the scrollbar is expected to scroll on
   // impl thread as it is an overlay scrollbar.
@@ -992,11 +992,11 @@ TEST_F(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll) {
   ForceFullCompositingUpdate();
   scrollbar_graphics_layer =
       composited_layer_mapping->LayerForVerticalScrollbar();
-  ASSERT_FALSE(scrollbar_graphics_layer->PlatformLayer()
-                   ->should_scroll_on_main_thread());
-  ASSERT_FALSE(scrollbar_graphics_layer->PlatformLayer()
-                   ->main_thread_scrolling_reasons() &
-               MainThreadScrollingReason::kCustomScrollbarScrolling);
+  ASSERT_FALSE(
+      scrollbar_graphics_layer->CcLayer()->should_scroll_on_main_thread());
+  ASSERT_FALSE(
+      scrollbar_graphics_layer->CcLayer()->main_thread_scrolling_reasons() &
+      MainThreadScrollingReason::kCustomScrollbarScrolling);
 }
 
 TEST_F(ScrollingCoordinatorTest,
@@ -1034,7 +1034,7 @@ TEST_F(ScrollingCoordinatorTest,
   ASSERT_EQ(inner_frame_view->LayoutViewportScrollableArea(),
             scroll_layer->GetScrollableArea());
 
-  cc::Layer* cc_scroll_layer = scroll_layer->PlatformLayer();
+  cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_TRUE(cc_scroll_layer->main_thread_scrolling_reasons() &
               MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
@@ -1056,7 +1056,7 @@ TEST_F(ScrollingCoordinatorTest,
                      ->LayerForScrolling();
   ASSERT_TRUE(scroll_layer);
 
-  cc_scroll_layer = scroll_layer->PlatformLayer();
+  cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_FALSE(cc_scroll_layer->main_thread_scrolling_reasons() &
                MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
@@ -1079,7 +1079,7 @@ TEST_F(ScrollingCoordinatorTest,
                      ->LayerForScrolling();
   ASSERT_TRUE(scroll_layer);
 
-  cc_scroll_layer = scroll_layer->PlatformLayer();
+  cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_TRUE(cc_scroll_layer->main_thread_scrolling_reasons() &
               MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
@@ -1114,7 +1114,7 @@ TEST_F(ScrollingCoordinatorTest,
                                     ->LayerForScrolling();
   ASSERT_TRUE(scroll_layer);
 
-  cc::Layer* cc_scroll_layer = scroll_layer->PlatformLayer();
+  cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_TRUE(
       cc_scroll_layer->main_thread_scrolling_reasons() &
@@ -1137,7 +1137,7 @@ TEST_F(ScrollingCoordinatorTest, StickyTriggersMainThreadScroll) {
       "<div style='position: sticky; top: 0'>sticky</div>");
   ForceFullCompositingUpdate();
   ScrollableArea* viewport = GetFrame()->View()->LayoutViewportScrollableArea();
-  cc::Layer* scroll_layer = viewport->LayerForScrolling()->PlatformLayer();
+  cc::Layer* scroll_layer = viewport->LayerForScrolling()->CcLayer();
   ASSERT_EQ(MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects,
             scroll_layer->main_thread_scrolling_reasons());
 }

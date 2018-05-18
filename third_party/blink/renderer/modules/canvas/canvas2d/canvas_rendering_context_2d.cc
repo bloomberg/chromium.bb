@@ -913,7 +913,7 @@ bool CanvasRenderingContext2D::IsTransformInvertible() const {
   return GetState().IsTransformInvertible();
 }
 
-cc::Layer* CanvasRenderingContext2D::PlatformLayer() const {
+cc::Layer* CanvasRenderingContext2D::CcLayer() const {
   return IsPaintable() ? canvas()->GetCanvas2DLayerBridge()->Layer() : nullptr;
 }
 

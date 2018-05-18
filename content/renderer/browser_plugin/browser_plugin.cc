@@ -859,7 +859,7 @@ cc::Layer* BrowserPlugin::GetLayer() {
 void BrowserPlugin::SetLayer(scoped_refptr<cc::Layer> layer,
                              bool prevent_contents_opaque_changes) {
   if (container_)
-    container_->SetWebLayer(layer.get(), prevent_contents_opaque_changes);
+    container_->SetCcLayer(layer.get(), prevent_contents_opaque_changes);
   embedded_layer_ = std::move(layer);
 }
 

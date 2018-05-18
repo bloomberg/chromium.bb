@@ -875,7 +875,7 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
   return true;
 }
 
-cc::Layer* DrawingBuffer::PlatformLayer() {
+cc::Layer* DrawingBuffer::CcLayer() {
   if (!layer_) {
     layer_ = cc::TextureLayer::CreateForMailbox(this);
 
@@ -902,7 +902,7 @@ cc::Layer* DrawingBuffer::PlatformLayer() {
   return layer_.get();
 }
 
-void DrawingBuffer::ClearPlatformLayer() {
+void DrawingBuffer::ClearCcLayer() {
   if (layer_)
     layer_->ClearTexture();
 
@@ -913,7 +913,7 @@ void DrawingBuffer::BeginDestruction() {
   DCHECK(!destruction_in_progress_);
   destruction_in_progress_ = true;
 
-  ClearPlatformLayer();
+  ClearCcLayer();
   recycled_color_buffer_queue_.clear();
 
   // If the drawing buffer is being destroyed due to a real context loss these

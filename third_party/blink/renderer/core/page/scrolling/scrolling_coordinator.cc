@@ -77,7 +77,7 @@ using blink::WebVector;
 namespace {
 
 cc::Layer* GraphicsLayerToCcLayer(blink::GraphicsLayer* layer) {
-  return layer ? layer->PlatformLayer() : nullptr;
+  return layer ? layer->CcLayer() : nullptr;
 }
 
 }  // namespace
@@ -375,7 +375,7 @@ ScrollingCoordinator::CreateSolidColorScrollbarLayer(
 static void DetachScrollbarLayer(GraphicsLayer* scrollbar_graphics_layer) {
   DCHECK(scrollbar_graphics_layer);
 
-  scrollbar_graphics_layer->SetContentsToPlatformLayer(nullptr, false);
+  scrollbar_graphics_layer->SetContentsToCcLayer(nullptr, false);
   scrollbar_graphics_layer->SetDrawsContent(true);
 }
 
@@ -391,7 +391,7 @@ static void SetupScrollbarLayer(
   }
   scrollbar_layer_group->scrollbar_layer->SetScrollElementId(
       scrolling_layer->element_id());
-  scrollbar_graphics_layer->SetContentsToPlatformLayer(
+  scrollbar_graphics_layer->SetContentsToCcLayer(
       scrollbar_layer_group->layer.get(),
       /*prevent_contents_opaque_changes=*/false);
   scrollbar_graphics_layer->SetDrawsContent(false);
@@ -433,14 +433,14 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
                                : *scrollable_area->VerticalScrollbar();
     if (scrollbar.IsCustomScrollbar()) {
       DetachScrollbarLayer(scrollbar_graphics_layer);
-      scrollbar_graphics_layer->PlatformLayer()->AddMainThreadScrollingReasons(
+      scrollbar_graphics_layer->CcLayer()->AddMainThreadScrollingReasons(
           MainThreadScrollingReason::kCustomScrollbarScrolling);
       return;
     }
 
     // Invalidate custom scrollbar scrolling reason in case a custom
     // scrollbar becomes a non-custom one.
-    scrollbar_graphics_layer->PlatformLayer()->ClearMainThreadScrollingReasons(
+    scrollbar_graphics_layer->CcLayer()->ClearMainThreadScrollingReasons(
         MainThreadScrollingReason::kCustomScrollbarScrolling);
     ScrollbarLayerGroup* scrollbar_layer_group =
         GetScrollbarLayerGroup(scrollable_area, orientation);
@@ -850,7 +850,7 @@ void ScrollingCoordinator::SetTouchEventTargetRects(
 
   for (const auto& layer_rect : graphics_layer_rects) {
     const GraphicsLayer* graphics_layer = layer_rect.key;
-    graphics_layer->PlatformLayer()->SetTouchActionRegion(
+    graphics_layer->CcLayer()->SetTouchActionRegion(
         TouchActionRect::BuildRegion(layer_rect.value));
   }
 }

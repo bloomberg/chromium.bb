@@ -866,7 +866,7 @@ cc::Layer* RenderFrameProxy::GetLayer() {
 void RenderFrameProxy::SetLayer(scoped_refptr<cc::Layer> layer,
                                 bool prevent_contents_opaque_changes) {
   if (web_frame())
-    web_frame()->SetWebLayer(layer.get(), prevent_contents_opaque_changes);
+    web_frame()->SetCcLayer(layer.get(), prevent_contents_opaque_changes);
   embedded_layer_ = std::move(layer);
 }
 

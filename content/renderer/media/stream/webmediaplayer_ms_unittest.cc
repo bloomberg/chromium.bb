@@ -499,7 +499,7 @@ class WebMediaPlayerMSTest
   void DurationChanged() override {}
   void SizeChanged() override;
   void PlaybackStateChanged() override {}
-  void SetWebLayer(cc::Layer* layer) override;
+  void SetCcLayer(cc::Layer* layer) override;
   blink::WebMediaPlayer::TrackId AddAudioTrack(const blink::WebString& id,
                                                AudioTrackKind,
                                                const blink::WebString& label,
@@ -574,7 +574,7 @@ class WebMediaPlayerMSTest
   MOCK_METHOD0(DoStopRendering, void());
   MOCK_METHOD0(DoDidReceiveFrame, void());
 
-  MOCK_METHOD1(DoSetWebLayer, void(bool));
+  MOCK_METHOD1(DoSetCcLayer, void(bool));
   MOCK_METHOD1(DoNetworkStateChanged,
                void(blink::WebMediaPlayer::NetworkState));
   MOCK_METHOD1(DoReadyStateChanged, void(blink::WebMediaPlayer::ReadyState));
@@ -647,7 +647,7 @@ void WebMediaPlayerMSTest::ReadyStateChanged() {
     player_->Play();
 }
 
-void WebMediaPlayerMSTest::SetWebLayer(cc::Layer* layer) {
+void WebMediaPlayerMSTest::SetCcLayer(cc::Layer* layer) {
   // Make sure that the old layer is still alive, see http://crbug.com/705448.
   if (layer_set_)
     EXPECT_TRUE(layer_ != nullptr);
@@ -656,7 +656,7 @@ void WebMediaPlayerMSTest::SetWebLayer(cc::Layer* layer) {
   layer_ = layer;
   if (layer)
     compositor_->SetVideoFrameProviderClient(this);
-  DoSetWebLayer(!!layer);
+  DoSetCcLayer(!!layer);
 }
 
 void WebMediaPlayerMSTest::StopUsingProvider() {
@@ -728,7 +728,7 @@ TEST_F(WebMediaPlayerMSTest, NoDataDuringLoadForVideo) {
       media::PipelineStatus::PIPELINE_OK);
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoSetCcLayer(false));
 }
 
 TEST_F(WebMediaPlayerMSTest, NoWaitForFrameForAudio) {
@@ -754,7 +754,7 @@ TEST_F(WebMediaPlayerMSTest, NoWaitForFrameForAudio) {
       media::PipelineStatus::PIPELINE_OK);
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoSetCcLayer(false));
 }
 
 TEST_F(WebMediaPlayerMSTest, NoWaitForFrameForAudioOnly) {
@@ -767,7 +767,7 @@ TEST_F(WebMediaPlayerMSTest, NoWaitForFrameForAudioOnly) {
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveEnoughData));
   LoadAndGetFrameProvider(true);
-  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoSetCcLayer(false));
 }
 
 TEST_F(WebMediaPlayerMSTest, Playing_Normal) {
@@ -782,7 +782,7 @@ TEST_F(WebMediaPlayerMSTest, Playing_Normal) {
   std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
   provider->QueueFrames(timestamps);
 
-  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoSetCcLayer(true));
   EXPECT_CALL(*this, DoStartRendering());
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveMetadata));
@@ -797,7 +797,7 @@ TEST_F(WebMediaPlayerMSTest, Playing_Normal) {
   EXPECT_EQ(kStandardHeight, natural_size.height);
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoSetCcLayer(false));
   EXPECT_CALL(*this, DoStopRendering());
 }
 
@@ -813,7 +813,7 @@ TEST_F(WebMediaPlayerMSTest, Playing_ErrorFrame) {
   std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
   provider->QueueFrames(timestamps);
 
-  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoSetCcLayer(true));
   EXPECT_CALL(*this, DoStartRendering());
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveMetadata));
@@ -827,7 +827,7 @@ TEST_F(WebMediaPlayerMSTest, Playing_ErrorFrame) {
       media::PipelineStatus::PIPELINE_ERROR_NETWORK);
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoSetCcLayer(false));
   EXPECT_CALL(*this, DoStopRendering());
 }
 
@@ -845,7 +845,7 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPause) {
   std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
   provider->QueueFrames(timestamps, opaque_frame, odd_size_frame);
 
-  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoSetCcLayer(true));
   EXPECT_CALL(*this, DoStartRendering());
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveMetadata));
@@ -869,7 +869,7 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPause) {
   EXPECT_EQ(prev_frame->timestamp(), after_frame->timestamp());
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoSetCcLayer(false));
 }
 
 TEST_P(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
@@ -886,7 +886,7 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
   std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
   provider->QueueFrames(timestamps, opaque_frame, odd_size_frame);
 
-  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoSetCcLayer(true));
   EXPECT_CALL(*this, DoStartRendering());
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveMetadata));
@@ -920,7 +920,7 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
   EXPECT_NE(prev_frame->timestamp(), after_frame->timestamp());
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoSetCcLayer(false));
   EXPECT_CALL(*this, DoStopRendering());
 }
 
@@ -938,7 +938,7 @@ TEST_F(WebMediaPlayerMSTest, RotationChange) {
   static int tokens[] = {0, 33, kTestBrake};
   std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
   provider->QueueFrames(timestamps, false, false, 17, media::VIDEO_ROTATION_90);
-  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoSetCcLayer(true));
   EXPECT_CALL(*this, DoStartRendering());
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveMetadata));
@@ -955,7 +955,7 @@ TEST_F(WebMediaPlayerMSTest, RotationChange) {
 
   // Change rotation.
   provider->QueueFrames(timestamps, false, false, 17, media::VIDEO_ROTATION_0);
-  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoSetCcLayer(true));
   EXPECT_CALL(*this, DoStopRendering());
   EXPECT_CALL(*this, DoStartRendering());
   message_loop_controller_.RunAndWaitForStatus(
@@ -965,7 +965,7 @@ TEST_F(WebMediaPlayerMSTest, RotationChange) {
   EXPECT_EQ(kStandardWidth, natural_size.width);
 
   testing::Mock::VerifyAndClearExpectations(this);
-  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoSetCcLayer(false));
   EXPECT_CALL(*this, DoStopRendering());
 }
 
@@ -979,7 +979,7 @@ TEST_F(WebMediaPlayerMSTest, OpacityChange) {
   static int tokens[] = {0, kTestBrake};
   std::vector<int> timestamps(tokens, tokens + arraysize(tokens));
   provider->QueueFrames(timestamps, true);
-  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoSetCcLayer(true));
   EXPECT_CALL(*this, DoStartRendering());
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveMetadata));
@@ -1005,7 +1005,7 @@ TEST_F(WebMediaPlayerMSTest, OpacityChange) {
   EXPECT_TRUE(layer_->contents_opaque());
 
   testing::Mock::VerifyAndClearExpectations(this);
-  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoSetCcLayer(false));
   EXPECT_CALL(*this, DoStopRendering());
 }
 
@@ -1025,7 +1025,7 @@ TEST_F(WebMediaPlayerMSTest, BackgroundRendering) {
   std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
   provider->QueueFrames(timestamps);
 
-  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoSetCcLayer(true));
   EXPECT_CALL(*this, DoStartRendering());
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveMetadata));
@@ -1056,7 +1056,7 @@ TEST_F(WebMediaPlayerMSTest, BackgroundRendering) {
   EXPECT_NE(prev_frame->timestamp(), after_frame->timestamp());
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoSetCcLayer(false));
   EXPECT_CALL(*this, DoStopRendering());
 }
 
@@ -1071,7 +1071,7 @@ TEST_F(WebMediaPlayerMSTest, FrameSizeChange) {
   std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
   provider->QueueFrames(timestamps, false, false, 7);
 
-  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoSetCcLayer(true));
   EXPECT_CALL(*this, DoStartRendering());
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveMetadata));
@@ -1085,7 +1085,7 @@ TEST_F(WebMediaPlayerMSTest, FrameSizeChange) {
       media::PipelineStatus::PIPELINE_OK);
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoSetCcLayer(false));
   EXPECT_CALL(*this, DoStopRendering());
 }
 
@@ -1102,7 +1102,7 @@ TEST_F(WebMediaPlayerMSTest, CreateHardwareFrames) {
       media::PipelineStatus::PIPELINE_OK);
 
   ASSERT_EQ(1u, frame_ready_cbs_.size());
-  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoSetCcLayer(true));
   EXPECT_CALL(*this, DoStartRendering());
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveMetadata));
@@ -1117,7 +1117,7 @@ TEST_F(WebMediaPlayerMSTest, CreateHardwareFrames) {
   ASSERT_TRUE(frame != nullptr);
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoSetCcLayer(false));
   EXPECT_CALL(*this, DoStopRendering());
 }
 
@@ -1133,7 +1133,7 @@ TEST_F(WebMediaPlayerMSTest, StopsCreatingHardwareFramesWhenHiddenOrClosed) {
   static int tokens[] = {0, kTestBrake};
   std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
   provider->QueueFrames(timestamps);
-  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoSetCcLayer(true));
   EXPECT_CALL(*this, DoStartRendering());
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveMetadata));
@@ -1176,7 +1176,7 @@ TEST_F(WebMediaPlayerMSTest, StopsCreatingHardwareFramesWhenHiddenOrClosed) {
 
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoSetCcLayer(false));
   EXPECT_CALL(*this, DoStopRendering());
 }
 #endif  // !defined(OS_ANDROID)
@@ -1226,7 +1226,7 @@ TEST_F(WebMediaPlayerMSTest, HiddenPlayerTests) {
   // OnShown() should restart after a forced suspension.
   player_->OnFrameShown();
   EXPECT_FALSE(player_->Paused());
-  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoSetCcLayer(false));
 
   base::RunLoop().RunUntilIdle();
 }

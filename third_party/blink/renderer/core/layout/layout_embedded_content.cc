@@ -124,7 +124,7 @@ bool LayoutEmbeddedContent::RequiresAcceleratedCompositing() const {
   // Second, if this is a LayoutObject with a contentDocument and that document
   // needs a layer, then we need a layer.
   WebPluginContainerImpl* plugin_view = Plugin();
-  if (plugin_view && plugin_view->PlatformLayer())
+  if (plugin_view && plugin_view->CcLayer())
     return true;
 
   if (!GetNode() || !GetNode()->IsFrameOwnerElement())

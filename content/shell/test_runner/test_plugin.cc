@@ -181,7 +181,7 @@ bool TestPlugin::Initialize(blink::WebPluginContainer* container) {
 
   layer_ = cc::TextureLayer::CreateForMailbox(this);
   bool prevent_contents_opaque_changes = false;
-  container_->SetWebLayer(layer_.get(), prevent_contents_opaque_changes);
+  container_->SetCcLayer(layer_.get(), prevent_contents_opaque_changes);
   if (re_request_touch_events_) {
     container_->RequestTouchEventType(
         blink::WebPluginContainer::kTouchEventRequestTypeSynthesizedMouse);
@@ -197,7 +197,7 @@ void TestPlugin::Destroy() {
   if (layer_.get())
     layer_->ClearTexture();
   if (container_)
-    container_->SetWebLayer(nullptr, false);
+    container_->SetCcLayer(nullptr, false);
   layer_ = nullptr;
   DestroyScene();
 

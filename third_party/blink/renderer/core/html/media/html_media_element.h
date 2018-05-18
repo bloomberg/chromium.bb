@@ -124,7 +124,7 @@ class CORE_EXPORT HTMLMediaElement
 
   bool SupportsSave() const;
 
-  cc::Layer* PlatformLayer() const;
+  cc::Layer* CcLayer() const;
 
   enum DelayedActionType {
     kLoadMediaResource = 1 << 0,
@@ -403,7 +403,7 @@ class CORE_EXPORT HTMLMediaElement
   void SizeChanged() final;
   void PlaybackStateChanged() final;
 
-  void SetWebLayer(cc::Layer*) final;
+  void SetCcLayer(cc::Layer*) final;
   WebMediaPlayer::TrackId AddAudioTrack(const WebString&,
                                         WebMediaPlayerClient::AudioTrackKind,
                                         const WebString&,

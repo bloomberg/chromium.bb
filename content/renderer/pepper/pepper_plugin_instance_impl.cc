@@ -2214,7 +2214,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
 
   if (texture_layer_ || compositor_layer_) {
     if (!layer_bound_to_fullscreen_)
-      container_->SetWebLayer(nullptr, false);
+      container_->SetCcLayer(nullptr, false);
     else if (fullscreen_container_)
       fullscreen_container_->SetLayer(nullptr);
     if (texture_layer_) {
@@ -2256,7 +2256,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
     if (fullscreen_container_)
       fullscreen_container_->SetLayer(either_layer);
     else
-      container_->SetWebLayer(either_layer, true);
+      container_->SetCcLayer(either_layer, true);
     if (is_flash_plugin_)
       either_layer->SetMayContainVideo(true);
   }

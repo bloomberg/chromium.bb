@@ -131,7 +131,7 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD0(DurationChanged, void());
   MOCK_METHOD0(SizeChanged, void());
   MOCK_METHOD0(PlaybackStateChanged, void());
-  MOCK_METHOD1(SetWebLayer, void(cc::Layer*));
+  MOCK_METHOD1(SetCcLayer, void(cc::Layer*));
   MOCK_METHOD5(AddAudioTrack,
                blink::WebMediaPlayer::TrackId(
                    const blink::WebString&,
@@ -281,7 +281,7 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
 
 class MockSurfaceLayerBridge : public blink::WebSurfaceLayerBridge {
  public:
-  MOCK_CONST_METHOD0(GetWebLayer, cc::Layer*());
+  MOCK_CONST_METHOD0(GetCcLayer, cc::Layer*());
   MOCK_CONST_METHOD0(GetFrameSinkId, const viz::FrameSinkId&());
   MOCK_METHOD0(ClearSurfaceId, void());
 };
@@ -385,7 +385,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   }
 
   ~WebMediaPlayerImplTest() override {
-    EXPECT_CALL(client_, SetWebLayer(nullptr));
+    EXPECT_CALL(client_, SetCcLayer(nullptr));
     EXPECT_CALL(client_, MediaRemotingStopped(_));
     // Destruct WebMediaPlayerImpl and pump the message loop to ensure that
     // objects passed to the message loop for destruction are released.
@@ -1143,7 +1143,7 @@ TEST_F(WebMediaPlayerImplTest, NoStreams) {
   InitializeWebMediaPlayerImpl();
   PipelineMetadata metadata;
 
-  EXPECT_CALL(client_, SetWebLayer(_)).Times(0);
+  EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
 
   if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId()).Times(0);
@@ -1162,12 +1162,12 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
   metadata.natural_size = gfx::Size(320, 240);
 
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(client_, SetWebLayer(_)).Times(0);
+    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
   } else {
-    EXPECT_CALL(client_, SetWebLayer(NotNull()));
+    EXPECT_CALL(client_, SetCcLayer(NotNull()));
   }
 
   OnMetadata(metadata);
@@ -1187,12 +1187,12 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
   metadata.natural_size = gfx::Size(320, 240);
 
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(client_, SetWebLayer(_)).Times(0);
+    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
   } else {
-    EXPECT_CALL(client_, SetWebLayer(NotNull()));
+    EXPECT_CALL(client_, SetCcLayer(NotNull()));
   }
 
   OnMetadata(metadata);
@@ -1213,12 +1213,12 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   metadata.video_decoder_config = TestVideoConfig::Normal();
 
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(client_, SetWebLayer(_)).Times(0);
+    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
   } else {
-    EXPECT_CALL(client_, SetWebLayer(NotNull()));
+    EXPECT_CALL(client_, SetCcLayer(NotNull()));
   }
 
   OnMetadata(metadata);
@@ -1287,12 +1287,12 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
   metadata.natural_size = gfx::Size(400, 400);
 
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(client_, SetWebLayer(_)).Times(0);
+    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
         .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
   } else {
-    EXPECT_CALL(client_, SetWebLayer(NotNull()));
+    EXPECT_CALL(client_, SetCcLayer(NotNull()));
   }
 
   OnMetadata(metadata);
@@ -1319,9 +1319,9 @@ TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
 
   scoped_refptr<cc::Layer> layer = cc::Layer::Create();
 
-  EXPECT_CALL(*surface_layer_bridge_ptr_, GetWebLayer())
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetCcLayer())
       .WillRepeatedly(Return(layer.get()));
-  EXPECT_CALL(client_, SetWebLayer(Eq(layer.get())));
+  EXPECT_CALL(client_, SetCcLayer(Eq(layer.get())));
   wmpi_->RegisterContentsLayer(layer.get());
 }
 

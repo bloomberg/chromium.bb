@@ -163,12 +163,11 @@ void GraphicsLayer::SetSnapContainerData(
 
 void GraphicsLayer::SetIsResizedByBrowserControls(
     bool is_resized_by_browser_controls) {
-  PlatformLayer()->SetIsResizedByBrowserControls(
-      is_resized_by_browser_controls);
+  CcLayer()->SetIsResizedByBrowserControls(is_resized_by_browser_controls);
 }
 
 void GraphicsLayer::SetIsContainerForFixedPositionLayers(bool is_container) {
-  PlatformLayer()->SetIsContainerForFixedPositionLayers(is_container);
+  CcLayer()->SetIsContainerForFixedPositionLayers(is_container);
 }
 
 void GraphicsLayer::SetParent(GraphicsLayer* layer) {
@@ -262,7 +261,7 @@ void GraphicsLayer::RemoveFromParent() {
     SetParent(nullptr);
   }
 
-  PlatformLayer()->RemoveFromParent();
+  CcLayer()->RemoveFromParent();
 }
 
 void GraphicsLayer::SetOffsetFromLayoutObject(
@@ -278,7 +277,7 @@ void GraphicsLayer::SetOffsetDoubleFromLayoutObject(
     return;
 
   offset_from_layout_object_ = offset;
-  PlatformLayer()->SetFiltersOrigin(FloatPoint() - ToFloatSize(offset));
+  CcLayer()->SetFiltersOrigin(FloatPoint() - ToFloatSize(offset));
 
   // If the compositing layer offset changes, we need to repaint.
   if (should_set_needs_display == kSetNeedsDisplay)
@@ -429,7 +428,7 @@ void GraphicsLayer::UpdateChildList() {
   }
 
   for (size_t i = 0; i < children_.size(); ++i)
-    child_host->AddChild(children_[i]->PlatformLayer());
+    child_host->AddChild(children_[i]->CcLayer());
 
   for (size_t i = 0; i < link_highlights_.size(); ++i)
     child_host->AddChild(link_highlights_[i]->Layer());
@@ -551,10 +550,9 @@ void GraphicsLayer::SetupContentsLayer(cc::Layer* contents_layer) {
   // Insert the content layer first. Video elements require this, because they
   // have shadow content that must display in front of the video.
   layer_->InsertChild(contents_layer_, 0);
-  cc::Layer* border_cc_layer =
-      contents_clipping_mask_layer_
-          ? contents_clipping_mask_layer_->PlatformLayer()
-          : nullptr;
+  cc::Layer* border_cc_layer = contents_clipping_mask_layer_
+                                   ? contents_clipping_mask_layer_->CcLayer()
+                                   : nullptr;
   contents_layer_->SetMaskLayer(border_cc_layer);
 
   contents_layer_->Set3dSortingContextId(rendering_context3d_);
@@ -978,7 +976,7 @@ String GraphicsLayer::DebugName(cc::Layer* layer) const {
 
 void GraphicsLayer::SetPosition(const FloatPoint& point) {
   position_ = point;
-  PlatformLayer()->SetPosition(position_);
+  CcLayer()->SetPosition(position_);
 }
 
 void GraphicsLayer::SetSize(const IntSize& size) {
@@ -1003,13 +1001,13 @@ void GraphicsLayer::SetSize(const IntSize& size) {
 
 void GraphicsLayer::SetTransform(const TransformationMatrix& transform) {
   transform_ = transform;
-  PlatformLayer()->SetTransform(TransformationMatrix::ToTransform(transform));
+  CcLayer()->SetTransform(TransformationMatrix::ToTransform(transform));
 }
 
 void GraphicsLayer::SetTransformOrigin(const FloatPoint3D& transform_origin) {
   has_transform_origin_ = true;
   transform_origin_ = transform_origin;
-  PlatformLayer()->SetTransformOrigin(transform_origin);
+  CcLayer()->SetTransformOrigin(transform_origin);
 }
 
 void GraphicsLayer::SetShouldFlattenTransform(bool should_flatten) {
@@ -1098,7 +1096,7 @@ void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer) {
     return;
 
   mask_layer_ = mask_layer;
-  layer_->SetMaskLayer(mask_layer_ ? mask_layer_->PlatformLayer() : nullptr);
+  layer_->SetMaskLayer(mask_layer_ ? mask_layer_->CcLayer() : nullptr);
 }
 
 void GraphicsLayer::SetContentsClippingMaskLayer(
@@ -1111,43 +1109,42 @@ void GraphicsLayer::SetContentsClippingMaskLayer(
   if (!contents_layer)
     return;
   cc::Layer* contents_clipping_mask_cc_layer =
-      contents_clipping_mask_layer_
-          ? contents_clipping_mask_layer_->PlatformLayer()
-          : nullptr;
+      contents_clipping_mask_layer_ ? contents_clipping_mask_layer_->CcLayer()
+                                    : nullptr;
   contents_layer->SetMaskLayer(contents_clipping_mask_cc_layer);
   UpdateContentsRect();
 }
 
 void GraphicsLayer::SetBackfaceVisibility(bool visible) {
   backface_visibility_ = visible;
-  PlatformLayer()->SetDoubleSided(backface_visibility_);
+  CcLayer()->SetDoubleSided(backface_visibility_);
 }
 
 void GraphicsLayer::SetOpacity(float opacity) {
   float clamped_opacity = clampTo(opacity, 0.0f, 1.0f);
   opacity_ = clamped_opacity;
-  PlatformLayer()->SetOpacity(opacity);
+  CcLayer()->SetOpacity(opacity);
 }
 
 void GraphicsLayer::SetBlendMode(BlendMode blend_mode) {
   if (blend_mode_ == blend_mode)
     return;
   blend_mode_ = blend_mode;
-  PlatformLayer()->SetBlendMode(WebCoreBlendModeToSkBlendMode(blend_mode));
+  CcLayer()->SetBlendMode(WebCoreBlendModeToSkBlendMode(blend_mode));
 }
 
 void GraphicsLayer::SetIsRootForIsolatedGroup(bool isolated) {
   if (is_root_for_isolated_group_ == isolated)
     return;
   is_root_for_isolated_group_ = isolated;
-  PlatformLayer()->SetIsRootForIsolatedGroup(isolated);
+  CcLayer()->SetIsRootForIsolatedGroup(isolated);
 }
 
 void GraphicsLayer::SetHitTestableWithoutDrawsContent(bool should_hit_test) {
   if (hit_testable_without_draws_content_ == should_hit_test)
     return;
   hit_testable_without_draws_content_ = should_hit_test;
-  PlatformLayer()->SetHitTestableWithoutDrawsContent(should_hit_test);
+  CcLayer()->SetHitTestableWithoutDrawsContent(should_hit_test);
 }
 
 void GraphicsLayer::SetContentsNeedsDisplay() {
@@ -1254,16 +1251,16 @@ void GraphicsLayer::SetContentsToImage(
                 /*prevent_contents_opaque_changes=*/true);
 }
 
-cc::Layer* GraphicsLayer::PlatformLayer() const {
+cc::Layer* GraphicsLayer::CcLayer() const {
   return layer_.get();
 }
 
 void GraphicsLayer::SetFilters(CompositorFilterOperations filters) {
-  PlatformLayer()->SetFilters(filters.ReleaseCcFilterOperations());
+  CcLayer()->SetFilters(filters.ReleaseCcFilterOperations());
 }
 
 void GraphicsLayer::SetBackdropFilters(CompositorFilterOperations filters) {
-  PlatformLayer()->SetBackgroundFilters(filters.ReleaseCcFilterOperations());
+  CcLayer()->SetBackgroundFilters(filters.ReleaseCcFilterOperations());
 }
 
 void GraphicsLayer::SetStickyPositionConstraint(
@@ -1348,12 +1345,12 @@ PaintController& GraphicsLayer::GetPaintController() const {
 }
 
 void GraphicsLayer::SetElementId(const CompositorElementId& id) {
-  if (cc::Layer* layer = PlatformLayer())
+  if (cc::Layer* layer = CcLayer())
     layer->SetElementId(id);
 }
 
 CompositorElementId GraphicsLayer::GetElementId() const {
-  if (cc::Layer* layer = PlatformLayer())
+  if (cc::Layer* layer = CcLayer())
     return layer->element_id();
   return CompositorElementId();
 }

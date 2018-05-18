@@ -50,7 +50,7 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
       !displaying_poster && !force_software_video_paint &&
       RuntimeEnabledFeatures::SlimmingPaintV2Enabled();
   if (paint_with_foreign_layer) {
-    if (cc::Layer* layer = layout_video_.MediaElement()->PlatformLayer()) {
+    if (cc::Layer* layer = layout_video_.MediaElement()->CcLayer()) {
       IntRect pixel_snapped_rect = PixelSnappedIntRect(content_rect);
       layer->SetBounds(static_cast<gfx::Size>(pixel_snapped_rect.Size()));
       layer->SetIsDrawable(true);

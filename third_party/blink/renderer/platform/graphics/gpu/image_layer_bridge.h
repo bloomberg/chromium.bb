@@ -49,7 +49,7 @@ class PLATFORM_EXPORT ImageLayerBridge
 
   scoped_refptr<StaticBitmapImage> GetImage() { return image_; }
 
-  cc::Layer* PlatformLayer() const;
+  cc::Layer* CcLayer() const;
 
   void SetFilterQuality(SkFilterQuality filter_quality) {
     filter_quality_ = filter_quality;

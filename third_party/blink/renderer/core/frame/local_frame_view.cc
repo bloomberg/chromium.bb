@@ -3411,10 +3411,9 @@ static void CollectDrawableLayersForLayerListRecursively(
       // during CompositingUpdate, and we have to clear them here to ensure no
       // extraneous layers are still attached. In future we will disable all
       // those layer hierarchy code so we won't need this line.
-      layer->PlatformLayer()->RemoveAllChildren();
+      layer->CcLayer()->RemoveAllChildren();
       RecordForeignLayer(context, *layer, DisplayItem::kForeignLayerWrapper,
-                         layer->PlatformLayer(),
-                         layer->GetOffsetFromTransformNode(),
+                         layer->CcLayer(), layer->GetOffsetFromTransformNode(),
                          RoundedIntSize(layer->Size()));
     }
     if (contents_layer) {
@@ -3537,7 +3536,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(
             // ScrollingCoordinator.
             WrapWeakPersistent(page->GetScrollingCoordinator())));
     page->GetChromeClient().AttachRootLayer(
-        paint_artifact_compositor_->GetWebLayer(), &GetFrame());
+        paint_artifact_compositor_->GetCcLayer(), &GetFrame());
   }
 
   SCOPED_UMA_AND_UKM_TIMER("Blink.Compositing.UpdateTime",
@@ -5773,7 +5772,7 @@ void LocalFrameView::UpdateSubFrameScrollOnMainReason(
                                                ->LayoutViewportScrollableArea()
                                                ->LayerForScrolling()) {
     if (cc::Layer* platform_layer_for_scrolling =
-            layer_for_scrolling->PlatformLayer()) {
+            layer_for_scrolling->CcLayer()) {
       if (reasons) {
         platform_layer_for_scrolling->AddMainThreadScrollingReasons(reasons);
       } else {
@@ -5873,8 +5872,8 @@ String LocalFrameView::MainThreadScrollingReasonsAsText() {
     DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kCompositingClean);
     if (GraphicsLayer* layer_for_scrolling =
             LayoutViewportScrollableArea()->LayerForScrolling()) {
-      if (cc::Layer* platform_layer = layer_for_scrolling->PlatformLayer())
-        reasons = platform_layer->main_thread_scrolling_reasons();
+      if (cc::Layer* cc_layer = layer_for_scrolling->CcLayer())
+        reasons = cc_layer->main_thread_scrolling_reasons();
     }
   }
 
