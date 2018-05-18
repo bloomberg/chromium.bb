@@ -268,7 +268,7 @@ void DisplayResourceProvider::WaitSyncToken(viz::ResourceId id) {
 }
 
 int DisplayResourceProvider::CreateChild(
-    const ReturnCallback& return_callback) {
+    const viz::ReturnCallback& return_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   Child child_info;

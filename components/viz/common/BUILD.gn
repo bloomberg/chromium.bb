@@ -117,6 +117,7 @@ viz_component("common") {
     "resources/resource_settings.h",
     "resources/resource_sizes.h",
     "resources/resource_type.h",
+    "resources/return_callback.h",
     "resources/returned_resource.h",
     "resources/shared_bitmap_manager.h",
     "resources/shared_bitmap_reporter.cc",

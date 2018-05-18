@@ -386,7 +386,7 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
     array->insert(array->end(), returned.begin(), returned.end());
   }
 
-  static ReturnCallback GetReturnCallback(
+  static viz::ReturnCallback GetReturnCallback(
       std::vector<viz::ReturnedResource>* array) {
     return base::Bind(&ResourceProviderTest::CollectResources, array);
   }
@@ -468,7 +468,7 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
       GLuint target,
       const gpu::SyncToken& sync_token,
       DisplayResourceProvider* resource_provider) {
-    ReturnCallback return_callback = base::DoNothing();
+    viz::ReturnCallback return_callback = base::DoNothing();
 
     int child = resource_provider->CreateChild(return_callback);
 
@@ -1586,7 +1586,7 @@ TEST_P(ResourceProviderTest, WaitSyncTokenIfNeeded_ResourceFromChild) {
 
   // Receive a resource from the child.
   std::vector<viz::ReturnedResource> returned;
-  ReturnCallback return_callback = base::Bind(
+  viz::ReturnCallback return_callback = base::BindRepeating(
       [](std::vector<viz::ReturnedResource>* out,
          const std::vector<viz::ReturnedResource>& in) {
         *out = std::move(in);
