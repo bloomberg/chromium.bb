@@ -47,7 +47,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.NativeLibraries;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.components.autofill.AutofillProvider;
-import org.chromium.content.browser.selection.LGEmailActionModeWorkaround;
+import org.chromium.content_public.browser.LGEmailActionModeWorkaround;
 
 import java.io.File;
 import java.util.List;
@@ -402,8 +402,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         final String lgeMailPackageId = "com.lge.email";
         if (lgeMailPackageId.equals(appName)) {
             if (appTargetSdkVersion > Build.VERSION_CODES.N) return false;
-            // This is the last broken version shipped on LG V20/NRD90M.
-            if (versionCode > LGEmailActionModeWorkaround.LGEmailWorkaroundMaxVersion) return false;
+            if (LGEmailActionModeWorkaround.isSafeVersion(versionCode)) return false;
             shouldDisable = true;
         }
 

@@ -23,7 +23,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.common.ContentSwitches;
+import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;

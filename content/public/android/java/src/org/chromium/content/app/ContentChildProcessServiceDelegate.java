@@ -28,10 +28,10 @@ import org.chromium.base.memory.MemoryPressureUma;
 import org.chromium.base.process_launcher.ChildProcessServiceDelegate;
 import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.ContentChildProcessConstants;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.content.common.IGpuProcessCallback;
 import org.chromium.content.common.SurfaceWrapper;
 import org.chromium.content_public.common.ContentProcessInfo;
+import org.chromium.content_public.common.ContentSwitches;
 
 import java.util.List;
 

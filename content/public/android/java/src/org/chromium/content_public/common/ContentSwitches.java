@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.common;
+package org.chromium.content_public.common;
 
 /**
  * Contains all of the command line switches that are specific to the content/
  * portion of Chromium on Android.
  */
-public abstract class ContentSwitches {
+public final class ContentSwitches {
     // Tell Java to use the official command line, loaded from the
     // official-command-line.xml files.  WARNING this is not done
     // immediately on startup, so early running Java code will not see
@@ -76,18 +76,4 @@ public abstract class ContentSwitches {
 
     // Prevent instantiation.
     private ContentSwitches() {}
-
-    public static String getSwitchValue(final String[] commandLine, String switchKey) {
-        if (commandLine == null || switchKey == null) {
-            return null;
-        }
-        // This format should be matched with the one defined in command_line.h.
-        final String switchKeyPrefix = "--" + switchKey + "=";
-        for (String command : commandLine) {
-            if (command != null && command.startsWith(switchKeyPrefix)) {
-                return command.substring(switchKeyPrefix.length());
-            }
-        }
-        return null;
-    }
 }
