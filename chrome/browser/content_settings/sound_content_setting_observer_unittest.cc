@@ -4,6 +4,9 @@
 
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
 
+#include <memory>
+#include <string>
+
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,6 +15,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,6 +44,9 @@ class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
+    test_service_manager_context_ =
+        std::make_unique<content::TestServiceManagerContext>();
+
     SoundContentSettingObserver::CreateForWebContents(web_contents());
     ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
     host_content_settings_map_ = HostContentSettingsMapFactory::GetForProfile(
@@ -47,6 +54,12 @@ class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
     test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
 
     NavigateAndCommit(GURL(kURL1));
+  }
+
+  void TearDown() override {
+    // Must be reset before browser thread teardown.
+    test_service_manager_context_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
  protected:
@@ -95,6 +108,12 @@ class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
  private:
   HostContentSettingsMap* host_content_settings_map_;
   std::unique_ptr<ukm::TestUkmRecorder> test_ukm_recorder_;
+
+  // WebContentsImpl accesses
+  // content::ServiceManagerConnection::GetForProcess(), so
+  // we must make sure it is instantiated.
+  std::unique_ptr<content::TestServiceManagerContext>
+      test_service_manager_context_;
 
   DISALLOW_COPY_AND_ASSIGN(SoundContentSettingObserverTest);
 };
