@@ -59,6 +59,7 @@ void TraceOutputter::TraceDevice(GpuTracerSource source,
                                  int64_t start_time,
                                  int64_t end_time) {
   DCHECK(source >= 0 && source < NUM_TRACER_SOURCES);
+  DCHECK(end_time >= start_time) << end_time << " >= " << start_time;
   TRACE_EVENT_COPY_BEGIN_WITH_ID_TID_AND_TIMESTAMP2(
       TRACE_DISABLED_BY_DEFAULT("gpu.device"),
       name.c_str(),
@@ -72,12 +73,14 @@ void TraceOutputter::TraceDevice(GpuTracerSource source,
 
   // Time stamps are inclusive, since the traces are durations we subtract
   // 1 microsecond from the end time to make the trace markers show up cleaner.
+  if (end_time > start_time)
+    end_time -= 1;
   TRACE_EVENT_COPY_END_WITH_ID_TID_AND_TIMESTAMP2(
       TRACE_DISABLED_BY_DEFAULT("gpu.device"),
       name.c_str(),
       local_trace_device_id_,
       named_thread_.GetThreadId(),
-      base::TimeTicks::FromInternalValue(end_time - 1),
+      base::TimeTicks::FromInternalValue(end_time),
       "gl_category",
       category.c_str(),
       "channel",
