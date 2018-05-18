@@ -171,11 +171,18 @@ void Animation::RemoveKeyframeModels(int target_property) {
 }
 
 void Animation::Tick(base::TimeTicks monotonic_time) {
+  TickInternal(monotonic_time, true);
+}
+
+void Animation::TickInternal(base::TimeTicks monotonic_time,
+                             bool include_infinite_animations) {
   DCHECK(target_);
 
-  StartKeyframeModels(monotonic_time);
+  StartKeyframeModels(monotonic_time, include_infinite_animations);
 
   for (auto& keyframe_model : keyframe_models_) {
+    if (!include_infinite_animations && keyframe_model->iterations() < 0)
+      continue;
     cc::KeyframeEffect::TickKeyframeModel(monotonic_time, keyframe_model.get(),
                                           target_);
   }
@@ -188,7 +195,19 @@ void Animation::Tick(base::TimeTicks monotonic_time) {
                          keyframe_model->IsFinishedAt(monotonic_time);
                 });
 
-  StartKeyframeModels(monotonic_time);
+  StartKeyframeModels(monotonic_time, include_infinite_animations);
+}
+
+void Animation::FinishAll() {
+  base::TimeTicks now = base::TimeTicks::Now();
+  const bool include_infinite_animations = false;
+  TickInternal(now, include_infinite_animations);
+  TickInternal(base::TimeTicks::Max(), include_infinite_animations);
+#ifndef NDEBUG
+  for (auto& keyframe_model : keyframe_models_) {
+    DCHECK_GT(0, keyframe_model->iterations());
+  }
+#endif
 }
 
 void Animation::SetTransitionedProperties(const std::set<int>& properties) {
@@ -261,15 +280,20 @@ SkColor Animation::GetTargetColorValue(int target_property,
   return GetTargetValue<SkColor>(target_property, default_value);
 }
 
-void Animation::StartKeyframeModels(base::TimeTicks monotonic_time) {
+void Animation::StartKeyframeModels(base::TimeTicks monotonic_time,
+                                    bool include_infinite_animations) {
   cc::TargetProperties animated_properties;
   for (auto& keyframe_model : keyframe_models_) {
+    if (!include_infinite_animations && keyframe_model->iterations() < 0)
+      continue;
     if (keyframe_model->run_state() == cc::KeyframeModel::RUNNING ||
         keyframe_model->run_state() == cc::KeyframeModel::PAUSED) {
       animated_properties[keyframe_model->target_property_id()] = true;
     }
   }
   for (auto& keyframe_model : keyframe_models_) {
+    if (!include_infinite_animations && keyframe_model->iterations() < 0)
+      continue;
     if (!animated_properties[keyframe_model->target_property_id()] &&
         keyframe_model->run_state() ==
             cc::KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY) {

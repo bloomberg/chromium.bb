@@ -250,6 +250,7 @@ TEST(UiElement, BoundsContainScaledChildren) {
 
 TEST(UiElement, AnimateSize) {
   UiScene scene;
+  scene.RunFirstFrameForTest();
   auto rect = std::make_unique<UiElement>();
   rect->SetSize(10, 100);
   rect->AddKeyframeModel(CreateBoundsAnimation(1, 1, gfx::SizeF(10, 100),
@@ -267,6 +268,7 @@ TEST(UiElement, AnimateSize) {
 
 TEST(UiElement, AnimationAffectsInheritableTransform) {
   UiScene scene;
+  scene.RunFirstFrameForTest();
   auto rect = std::make_unique<UiElement>();
   UiElement* rect_ptr = rect.get();
   scene.AddUiElement(kRoot, std::move(rect));

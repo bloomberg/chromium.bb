@@ -242,14 +242,19 @@ void UiElement::UpdateInput(const EditedText& info) {
   NOTREACHED();
 }
 
-bool UiElement::DoBeginFrame(const gfx::Transform& head_pose) {
+bool UiElement::DoBeginFrame(const gfx::Transform& head_pose,
+                             bool force_animations_to_completion) {
   // TODO(mthiesse): This is overly cautious. We may have keyframe_models but
   // not trigger any updates, so we should refine this logic and have
   // Animation::Tick return a boolean. Similarly, the bindings update may have
   // had no visual effect and dirtiness should be related to setting properties
   // that do indeed cause visual updates.
   bool keyframe_models_updated = animation_.keyframe_models().size() > 0;
-  animation_.Tick(last_frame_time_);
+  if (force_animations_to_completion) {
+    animation_.FinishAll();
+  } else {
+    animation_.Tick(last_frame_time_);
+  }
   set_update_phase(kUpdatedAnimations);
   bool begin_frame_updated = OnBeginFrame(head_pose);
   UpdateComputedOpacity();
@@ -262,7 +267,7 @@ bool UiElement::DoBeginFrame(const gfx::Transform& head_pose) {
 
   if (was_visible_at_any_point) {
     for (auto& child : children_)
-      dirty |= child->DoBeginFrame(head_pose);
+      dirty |= child->DoBeginFrame(head_pose, force_animations_to_completion);
   }
 
   return dirty;
@@ -799,7 +804,7 @@ bool UiElement::IsAnimatingProperty(TargetProperty property) const {
 }
 
 bool UiElement::SizeAndLayOut() {
-  if (!IsVisible())
+  if (!IsVisible() && !IsOrWillBeLocallyVisible())
     return false;
 
   // May be overridden by layout elements.
@@ -995,9 +1000,9 @@ void UiElement::UpdateComputedOpacity() {
   updated_visibility_this_frame_ = IsVisible() != was_visible;
 }
 
-void UiElement::UpdateWorldSpaceTransform(bool parent_changed) {
+bool UiElement::UpdateWorldSpaceTransform(bool parent_changed) {
   if (!IsVisible() && !updated_visibility_this_frame_)
-    return;
+    return false;
 
   bool changed = false;
   if (ShouldUpdateWorldSpaceTransform(parent_changed)) {
@@ -1022,12 +1027,14 @@ void UiElement::UpdateWorldSpaceTransform(bool parent_changed) {
     changed = true;
   }
 
+  bool child_changed = false;
   set_update_phase(kUpdatedWorldSpaceTransform);
   for (auto& child : children_) {
-    child->UpdateWorldSpaceTransform(changed);
+    child_changed |= child->UpdateWorldSpaceTransform(changed);
   }
 
   OnUpdatedWorldSpaceTransform();
+  return changed || child_changed;
 }
 
 gfx::Transform UiElement::LocalTransform() const {

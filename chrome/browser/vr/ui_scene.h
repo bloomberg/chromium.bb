@@ -80,6 +80,8 @@ class UiScene {
 
   SkiaSurfaceProvider* SurfaceProviderForTesting() { return provider_; }
 
+  void RunFirstFrameForTest();
+
  private:
   void InitializeElement(UiElement* element);
 
@@ -91,11 +93,13 @@ class UiScene {
   bool gl_initialized_ = false;
   bool initialized_scene_ = false;
 
-  // TODO(mthiesse): Convert everything that manipulates UI elements to
-  // bindings. Don't allow any code to go in and manipulate UI elements outside
-  // of bindings so that we can do a single pass and update everything and
-  // easily compute dirtiness.
+  // TODO(mthiesse): Convert everything that manipulates UI elements to bindings
+  // or layout updates. Don't allow any code to go in and manipulate UI elements
+  // outside of these phases so that we can more easily compute dirtiness.
   bool is_dirty_ = false;
+
+  // This is used to advance animations to completion on the first frame.
+  bool first_frame_ = true;
 
   std::vector<UiElement*> all_elements_;
 

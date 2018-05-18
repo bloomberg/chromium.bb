@@ -34,6 +34,7 @@ TEST(Rect, SetColorCorrectly) {
 
 TEST(Rect, AnimateColorCorrectly) {
   UiScene scene;
+  scene.RunFirstFrameForTest();
   auto element = std::make_unique<Rect>();
   Rect* rect = element.get();
   scene.AddUiElement(kRoot, std::move(element));

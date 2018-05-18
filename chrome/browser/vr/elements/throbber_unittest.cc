@@ -25,6 +25,7 @@ constexpr float kInitialOpacity = 0.8;
 
 TEST(Throbber, CircleGrowAnimation) {
   UiScene scene;
+  scene.RunFirstFrameForTest();
   auto element = std::make_unique<Throbber>();
   element->SetSize(kTestSize, kTestSize);
   element->set_corner_radius(kTestSize / 2);

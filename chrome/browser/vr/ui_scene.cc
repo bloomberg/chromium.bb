@@ -161,7 +161,7 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
 
     // Process all animations and pre-binding work. I.e., induce any
     // time-related "dirtiness" on the scene graph.
-    scene_dirty |= root_element_->DoBeginFrame(head_pose);
+    scene_dirty |= root_element_->DoBeginFrame(head_pose, first_frame_);
     FrameLifecycle::set_phase(kUpdatedComputedOpacity);
   }
 
@@ -177,10 +177,13 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     // Now that we have finalized our local values, we can safely update our
     // final, baked transform.
     const bool parent_transform_changed = false;
-    root_element_->UpdateWorldSpaceTransform(parent_transform_changed);
+    scene_dirty |=
+        root_element_->UpdateWorldSpaceTransform(parent_transform_changed);
   }
 
   FrameLifecycle::set_phase(kUpdatedWorldSpaceTransform);
+
+  first_frame_ = false;
   return scene_dirty;
 }
 
@@ -277,6 +280,10 @@ void UiScene::InitializeElement(UiElement* element) {
   CHECK_GE(element->draw_phase(), 0);
   if (gl_initialized_)
     InitializeElementRecursive(element, provider_);
+}
+
+void UiScene::RunFirstFrameForTest() {
+  OnBeginFrame(base::TimeTicks(), gfx::Transform());
 }
 
 }  // namespace vr

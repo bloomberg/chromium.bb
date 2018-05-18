@@ -129,7 +129,8 @@ class UiElement : public cc::AnimationTarget {
   void UpdateBindings();
 
   // Returns true if the element has been updated in any visible way.
-  bool DoBeginFrame(const gfx::Transform& head_pose);
+  bool DoBeginFrame(const gfx::Transform& head_pose,
+                    bool force_animations_to_completion);
 
   // Returns true if the element has changed size or position, or otherwise
   // warrants re-rendering the scene.
@@ -427,7 +428,7 @@ class UiElement : public cc::AnimationTarget {
   virtual gfx::Transform GetTargetLocalTransform() const;
 
   void UpdateComputedOpacity();
-  void UpdateWorldSpaceTransform(bool parent_changed);
+  bool UpdateWorldSpaceTransform(bool parent_changed);
 
   std::vector<std::unique_ptr<UiElement>>& children() { return children_; }
   const std::vector<std::unique_ptr<UiElement>>& children() const {

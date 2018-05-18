@@ -19,7 +19,8 @@ namespace {
 
 bool DoBeginFrame(UiElement* element, int time_milliseconds) {
   element->set_last_frame_time(MsToTicks(time_milliseconds));
-  return element->DoBeginFrame(kStartHeadPose);
+  const bool force_animations_to_completion = false;
+  return element->DoBeginFrame(kStartHeadPose, force_animations_to_completion);
 }
 
 }  // namespace
