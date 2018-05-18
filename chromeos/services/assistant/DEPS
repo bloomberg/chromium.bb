@@ -4,6 +4,7 @@ include_rules = [
   "+google_apis/gaia",
   "+libassistant",
   "+mojo/public",
+  "+services/device/public",
   "+services/identity/public",
   "+services/service_manager/public",
 ]

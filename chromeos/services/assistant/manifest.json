@@ -5,7 +5,8 @@
     "service_manager:connector": {
       "requires": {
         "ash": [ "system_ui" ],
-        "identity": [ "identity_manager" ]
+        "identity": [ "identity_manager" ],
+        "device": [ "device:battery_monitor" ]
       },
       "provides": {
         "assistant": [

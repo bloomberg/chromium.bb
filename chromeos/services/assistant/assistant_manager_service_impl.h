@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 // TODO(xiaohuic): replace with "base/macros.h" once we remove
 // libassistant/contrib dependency.
@@ -20,6 +21,7 @@
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/public/conversation_state_listener.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "services/device/public/mojom/battery_monitor.mojom.h"
 
 namespace assistant_client {
 class AssistantManager;
@@ -41,7 +43,9 @@ class AssistantManagerServiceImpl
       public assistant_client::ConversationStateListener,
       public assistant_client::AssistantManagerDelegate {
  public:
-  explicit AssistantManagerServiceImpl(mojom::AudioInputPtr audio_input);
+  explicit AssistantManagerServiceImpl(
+      mojom::AudioInputPtr audio_input,
+      device::mojom::BatteryMonitorPtr battery_monitor);
   ~AssistantManagerServiceImpl() override;
 
   // assistant::AssistantManagerService overrides

@@ -72,12 +72,14 @@ void PlatformApiImpl::DummyAuthProvider::Reset() {}
 // PlatformApiImpl
 ////////////////////////////////////////////////////////////////////////////////
 
-PlatformApiImpl::PlatformApiImpl(const std::string& config,
-                                 mojom::AudioInputPtr audio_input)
+PlatformApiImpl::PlatformApiImpl(
+    const std::string& config,
+    mojom::AudioInputPtr audio_input,
+    device::mojom::BatteryMonitorPtr battery_monitor)
     : audio_input_provider_(std::move(audio_input)),
       audio_output_provider_(config, this),
       resource_provider_(config),
-      system_provider_() {}
+      system_provider_(std::move(battery_monitor)) {}
 
 PlatformApiImpl::~PlatformApiImpl() = default;
 
