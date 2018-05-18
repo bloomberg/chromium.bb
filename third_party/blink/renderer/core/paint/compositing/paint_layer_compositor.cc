@@ -964,7 +964,10 @@ bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
   return has_accelerated_compositing_ &&
          (has_compositor_animation || !layer->SubtreeIsInvisible()) &&
          layer->IsSelfPaintingLayer() &&
-         !layer->GetLayoutObject().IsLayoutFlowThread();
+         !layer->GetLayoutObject().IsLayoutFlowThread() &&
+         // Don't composite <foreignObject> for the moment, to reduce
+         // instances of the "fundamental compositing bug" breaking content.
+         !layer->GetLayoutObject().IsSVGForeignObject();
 }
 
 // Return true if the given layer is a stacking context and has compositing
