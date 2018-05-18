@@ -3870,6 +3870,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kRecurrentInterstitialDescription, kOsAll,
      FEATURE_VALUE_TYPE(kRecurrentInterstitialFeature)},
 
+    {"disallow-unsafe-http-downloads",
+     flag_descriptions::kDisallowUnsafeHttpDownloadsName,
+     flag_descriptions::kDisallowUnsafeHttpDownloadsNameDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kDisallowUnsafeHttpDownloads)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

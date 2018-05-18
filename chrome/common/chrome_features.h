@@ -106,6 +106,9 @@ extern const base::Feature kDesktopPWAWindowing;
 
 extern const base::Feature kDesktopPWAsLinkCapturing;
 
+extern const base::Feature kDisallowUnsafeHttpDownloads;
+extern const char kDisallowUnsafeHttpDownloadsParamName[];
+
 #if !defined(OS_ANDROID)
 extern const base::Feature kDoodlesOnLocalNtp;
 #endif
