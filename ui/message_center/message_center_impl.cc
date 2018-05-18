@@ -141,6 +141,12 @@ Notification* MessageCenterImpl::FindVisibleNotificationById(
   return notification_list_->GetNotificationById(id);
 }
 
+NotificationList::Notifications MessageCenterImpl::FindNotificationsByAppId(
+    const std::string& app_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return notification_list_->GetNotificationsByAppId(app_id);
+}
+
 const NotificationList::Notifications&
 MessageCenterImpl::GetVisibleNotifications() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

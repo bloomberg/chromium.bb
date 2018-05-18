@@ -47,6 +47,8 @@ class MESSAGE_CENTER_EXPORT MessageCenterImpl
   bool HasPopupNotifications() const override;
   bool IsQuietMode() const override;
   Notification* FindVisibleNotificationById(const std::string& id) override;
+  NotificationList::Notifications FindNotificationsByAppId(
+      const std::string& app_id) override;
   const NotificationList::Notifications& GetVisibleNotifications() override;
   NotificationList::PopupNotifications GetPopupNotifications() override;
   void AddNotification(std::unique_ptr<Notification> notification) override;

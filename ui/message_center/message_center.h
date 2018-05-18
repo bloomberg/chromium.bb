@@ -75,6 +75,11 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   // found. The returned instance is owned by the message center.
   virtual Notification* FindVisibleNotificationById(const std::string& id) = 0;
 
+  // Find all notifications with the corresponding |app_id|. Returns an
+  // empty set if none are found.
+  virtual NotificationList::Notifications FindNotificationsByAppId(
+      const std::string& app_id) = 0;
+
   // Gets all notifications to be shown to the user in the message center.  Note
   // that queued changes due to the message center being open are not reflected
   // in this list.

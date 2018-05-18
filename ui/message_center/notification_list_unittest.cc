@@ -361,6 +361,68 @@ TEST_F(NotificationListTest, Priority) {
   EXPECT_EQ(kMaxVisiblePopupNotifications * 4, GetPopupCounts());
 }
 
+// Tests that GetNotificationsByAppId returns notifications regardless of their
+// visibility.
+TEST_F(NotificationListTest, GetNotificationsByAppId) {
+  // Add a notification for |app_id1|.
+  const std::string app_id1("app_id1");
+  const std::string id1("id1");
+  std::unique_ptr<Notification> notification(
+      new Notification(NOTIFICATION_TYPE_PROGRESS, id1, UTF8ToUTF16("updated"),
+                       UTF8ToUTF16("updated"), gfx::Image(), base::string16(),
+                       GURL(), NotifierId(NotifierId::APPLICATION, app_id1),
+                       RichNotificationData(), NULL));
+  notification_list_->AddNotification(std::move(notification));
+  EXPECT_EQ(1u, notification_list_->GetNotificationsByAppId(app_id1).size());
+
+  // Mark the popup as shown but not read.
+  notification_list_->MarkSinglePopupAsShown(id1, false);
+  EXPECT_EQ(1u, notification_list_->GetNotificationsByAppId(app_id1).size());
+
+  // Mark the popup as shown and read.
+  notification_list_->MarkSinglePopupAsShown(id1, true);
+  EXPECT_EQ(1u, notification_list_->GetNotificationsByAppId(app_id1).size());
+
+  // Remove the notification.
+  notification_list_->RemoveNotification(id1);
+  EXPECT_EQ(0u, notification_list_->GetNotificationsByAppId(app_id1).size());
+
+  // Add two notifications for |app_id1| and one for |app_id2|.
+  notification.reset(
+      new Notification(NOTIFICATION_TYPE_PROGRESS, id1, UTF8ToUTF16("updated"),
+                       UTF8ToUTF16("updated"), gfx::Image(), base::string16(),
+                       GURL(), NotifierId(NotifierId::APPLICATION, app_id1),
+                       RichNotificationData(), NULL));
+  notification_list_->AddNotification(std::move(notification));
+
+  const std::string id2("id2");
+  notification.reset(
+      new Notification(NOTIFICATION_TYPE_PROGRESS, id2, UTF8ToUTF16("updated"),
+                       UTF8ToUTF16("updated"), gfx::Image(), base::string16(),
+                       GURL(), NotifierId(NotifierId::APPLICATION, app_id1),
+                       RichNotificationData(), NULL));
+  notification_list_->AddNotification(std::move(notification));
+  EXPECT_EQ(2u, notification_list_->GetNotificationsByAppId(app_id1).size());
+
+  const std::string id3("id3");
+  const std::string app_id2("app_id2");
+  notification.reset(
+      new Notification(NOTIFICATION_TYPE_PROGRESS, id3, UTF8ToUTF16("updated"),
+                       UTF8ToUTF16("updated"), gfx::Image(), base::string16(),
+                       GURL(), NotifierId(NotifierId::APPLICATION, app_id2),
+                       RichNotificationData(), NULL));
+  notification_list_->AddNotification(std::move(notification));
+  EXPECT_EQ(2u, notification_list_->GetNotificationsByAppId(app_id1).size());
+  EXPECT_EQ(1u, notification_list_->GetNotificationsByAppId(app_id2).size());
+
+  for (std::string app_id : {app_id1, app_id2}) {
+    for (auto* notification :
+         notification_list_->GetNotificationsByAppId(app_id)) {
+      EXPECT_EQ(app_id, notification->notifier_id().id);
+    }
+  }
+}
+
 TEST_F(NotificationListTest, HasPopupsWithPriority) {
   ASSERT_EQ(0u, notification_list_->NotificationCount(blockers_));
 
@@ -528,7 +590,7 @@ TEST_F(NotificationListTest, NotificationOrderAndPriority) {
     EXPECT_EQ(max_id, (*iter)->id());
   }
   {
-    // Notifications: high priority comes ealier.
+    // Notifications: high priority comes earlier.
     const NotificationList::Notifications notifications =
         notification_list_->GetVisibleNotifications(blockers_);
     EXPECT_EQ(3u, notifications.size());

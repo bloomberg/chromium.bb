@@ -128,6 +128,17 @@ NotificationList::Notifications NotificationList::GetNotificationsByNotifierId(
   return notifications;
 }
 
+NotificationList::Notifications NotificationList::GetNotificationsByAppId(
+    const std::string& app_id) {
+  Notifications notifications;
+  for (const auto& tuple : notifications_) {
+    Notification* notification = tuple.first.get();
+    if (notification->notifier_id().id == app_id)
+      notifications.insert(notification);
+  }
+  return notifications;
+}
+
 bool NotificationList::SetNotificationIcon(const std::string& notification_id,
                                            const gfx::Image& image) {
   auto iter = GetNotification(notification_id);

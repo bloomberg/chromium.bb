@@ -72,6 +72,9 @@ class RemoveObserver : public MessageCenterObserver {
   DISALLOW_COPY_AND_ASSIGN(RemoveObserver);
 };
 
+// The default app id used to create simple notifications.
+const std::string kDefaultAppId = "app1";
+
 }  // anonymous namespace
 
 class MessageCenterImplTest : public testing::Test {
@@ -103,10 +106,8 @@ class MessageCenterImplTest : public testing::Test {
 
  protected:
   Notification* CreateSimpleNotification(const std::string& id) {
-    return CreateNotificationWithNotifierId(
-        id,
-        "app1",
-        NOTIFICATION_TYPE_SIMPLE);
+    return CreateNotificationWithNotifierId(id, kDefaultAppId,
+                                            NOTIFICATION_TYPE_SIMPLE);
   }
 
   Notification* CreateSimpleNotificationWithNotifierId(
@@ -119,7 +120,7 @@ class MessageCenterImplTest : public testing::Test {
 
   Notification* CreateNotification(const std::string& id,
                                    NotificationType type) {
-    return CreateNotificationWithNotifierId(id, "app1", type);
+    return CreateNotificationWithNotifierId(id, kDefaultAppId, type);
   }
 
   Notification* CreateNotificationWithNotifierId(const std::string& id,
@@ -732,27 +733,27 @@ TEST_F(MessageCenterImplTest, NotifierEnabledChanged) {
 }
 
 TEST_F(MessageCenterImplTest, UpdateWhileMessageCenterVisible) {
-  std::string id("id1");
+  std::string id1("id1");
   std::string id2("id2");
   NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
 
   // First, add and update a notification to ensure updates happen
   // normally.
-  std::unique_ptr<Notification> notification(CreateSimpleNotification(id));
+  std::unique_ptr<Notification> notification(CreateSimpleNotification(id1));
   message_center()->AddNotification(std::move(notification));
   notification.reset(CreateSimpleNotification(id2));
-  message_center()->UpdateNotification(id, std::move(notification));
+  message_center()->UpdateNotification(id1, std::move(notification));
   EXPECT_TRUE(message_center()->FindVisibleNotificationById(id2));
-  EXPECT_FALSE(message_center()->FindVisibleNotificationById(id));
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(id1));
 
   // Then open the message center.
   message_center()->SetVisibility(VISIBILITY_MESSAGE_CENTER);
 
   // Then update a notification; the update should have propagated.
-  notification.reset(CreateSimpleNotification(id));
+  notification.reset(CreateSimpleNotification(id1));
   message_center()->UpdateNotification(id2, std::move(notification));
   EXPECT_FALSE(message_center()->FindVisibleNotificationById(id2));
-  EXPECT_TRUE(message_center()->FindVisibleNotificationById(id));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(id1));
 }
 
 TEST_F(MessageCenterImplTest, AddWhileMessageCenterVisible) {
@@ -781,6 +782,87 @@ TEST_F(MessageCenterImplTest, RemoveWhileMessageCenterVisible) {
   // Then update a notification; the update should have propagated.
   message_center()->RemoveNotification(id, false);
   EXPECT_FALSE(message_center()->FindVisibleNotificationById(id));
+}
+
+TEST_F(MessageCenterImplTest, FindNotificationsByAppId) {
+  const std::string app_id1("app_id1");
+  const std::string id1("id1");
+
+  // Add a notification for |app_id1|.
+  std::unique_ptr<Notification> notification(
+      CreateNotificationWithNotifierId(id1, app_id1, NOTIFICATION_TYPE_SIMPLE));
+  message_center()->AddNotification(std::move(notification));
+  EXPECT_EQ(1u, message_center()->FindNotificationsByAppId(app_id1).size());
+
+  // Mark the notification as shown but not read.
+  message_center()->MarkSinglePopupAsShown(id1, false);
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ(1u, message_center()->FindNotificationsByAppId(app_id1).size());
+#else
+  // Marking a popup as shown in !OS_CHROMEOS removes the notification.
+  EXPECT_EQ(0u, message_center()->FindNotificationsByAppId(app_id1).size());
+  // Re-add the notification for the next test scenario.
+  notification.reset(
+      CreateNotificationWithNotifierId(id1, app_id1, NOTIFICATION_TYPE_SIMPLE));
+  message_center()->AddNotification(std::move(notification));
+  EXPECT_EQ(1u, message_center()->FindNotificationsByAppId(app_id1).size());
+#endif
+
+  // Mark the notification as shown and read.
+  message_center()->MarkSinglePopupAsShown(id1, true);
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ(1u, message_center()->FindNotificationsByAppId(app_id1).size());
+#else
+  // Marking a popup as shown in !OS_CHROMEOS removes the notification.
+  EXPECT_EQ(0u, message_center()->FindNotificationsByAppId(app_id1).size());
+  // Re-add the notification for the next test scenario.
+  notification.reset(
+      CreateNotificationWithNotifierId(id1, app_id1, NOTIFICATION_TYPE_SIMPLE));
+  message_center()->AddNotification(std::move(notification));
+  EXPECT_EQ(1u, message_center()->FindNotificationsByAppId(app_id1).size());
+#endif
+
+  // Remove the notification.
+  message_center()->RemoveNotification(id1, true);
+  EXPECT_EQ(0u, message_center()->FindNotificationsByAppId(app_id1).size());
+
+  // Add two notifications for |app_id1|.
+  notification.reset(
+      CreateNotificationWithNotifierId(id1, app_id1, NOTIFICATION_TYPE_SIMPLE));
+  message_center()->AddNotification(std::move(notification));
+
+  const std::string id2("id2");
+  notification.reset(
+      CreateNotificationWithNotifierId(id2, app_id1, NOTIFICATION_TYPE_SIMPLE));
+  message_center()->AddNotification(std::move(notification));
+  EXPECT_EQ(2u, message_center()->FindNotificationsByAppId(app_id1).size());
+
+  // Remove |id2|,there should only be one notification for |app_id1|.
+  message_center()->RemoveNotification(id2, true);
+  EXPECT_EQ(1u, message_center()->FindNotificationsByAppId(app_id1).size());
+
+  // Add a notification for |app_id2|.
+  const std::string app_id2("app_id2");
+  const std::string id3("id3");
+  notification.reset(
+      CreateNotificationWithNotifierId(id3, app_id2, NOTIFICATION_TYPE_SIMPLE));
+  message_center()->AddNotification(std::move(notification));
+  EXPECT_EQ(1u, message_center()->FindNotificationsByAppId(app_id1).size());
+  EXPECT_EQ(1u, message_center()->FindNotificationsByAppId(app_id2).size());
+
+  for (std::string app_id : {app_id1, app_id2}) {
+    for (auto* notification :
+         message_center()->FindNotificationsByAppId(app_id)) {
+      EXPECT_EQ(app_id, notification->notifier_id().id);
+    }
+  }
+
+  // Remove all notifications.
+  message_center()->RemoveAllNotifications(true,
+                                           MessageCenterImpl::RemoveType::ALL);
+
+  EXPECT_EQ(0u, message_center()->FindNotificationsByAppId(app_id1).size());
+  EXPECT_EQ(0u, message_center()->FindNotificationsByAppId(app_id2).size());
 }
 
 }  // namespace internal

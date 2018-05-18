@@ -93,7 +93,11 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
   void RemoveNotification(const std::string& id);
 
+  // Returns all notifications that have a matching |notifier_id|.
   Notifications GetNotificationsByNotifierId(const NotifierId& notifier_id);
+
+  // Returns all notifications that have a matching |app_id|.
+  Notifications GetNotificationsByAppId(const std::string& app_id);
 
   // Returns true if the notification exists and was updated.
   bool SetNotificationIcon(const std::string& notification_id,
