@@ -131,7 +131,8 @@ def get_sharding_map_path(args):
       args.test_shard_map_filename)
 
 def write_results(
-    perf_test_name, perf_results, json_test_results, isolated_out_dir, encoded):
+    perf_test_name, perf_results, json_test_results, benchmark_log,
+    isolated_out_dir, encoded):
   benchmark_path = os.path.join(isolated_out_dir, perf_test_name)
 
   os.makedirs(benchmark_path)
@@ -143,6 +144,9 @@ def write_results(
       json.dump(perf_results, f)
   with open(os.path.join(benchmark_path, 'test_results.json'), 'w') as f:
     json.dump(json_test_results, f)
+
+  with open(os.path.join(benchmark_path, 'benchmark_log.txt'), 'w') as f:
+    f.write(benchmark_log)
 
 
 def execute_benchmark(benchmark, isolated_out_dir,
@@ -174,12 +178,13 @@ def execute_benchmark(benchmark, isolated_out_dir,
   # We don't care exactly what these are. In particular, the perf results
   # could be any format (chartjson, legacy, histogram). We just pass these
   # through, and expose these as results for this task.
-  rc, perf_results, json_test_results = (
+  rc, perf_results, json_test_results, benchmark_log = (
       run_telemetry_benchmark_as_googletest.run_benchmark(
           args, per_benchmark_args, is_histograms))
 
   write_results(
-      benchmark_name, perf_results, json_test_results, isolated_out_dir, False)
+      benchmark_name, perf_results, json_test_results, benchmark_log,
+      isolated_out_dir, False)
   return rc
 
 
@@ -246,7 +251,9 @@ def main():
     return_code, charts, output_json = run_gtest_perf_test.execute_perf_test(
         args, rest_args)
 
-    write_results(benchmark_name, charts, output_json, isolated_out_dir, True)
+    write_results(benchmark_name, charts, output_json,
+                  benchmark_log='Not available for C++ perf test',
+                  isolated_out_dir=isolated_out_dir, encoded=True)
   else:
     # If the user has supplied a list of benchmark names, execute those instead
     # of the entire suite of benchmarks.
