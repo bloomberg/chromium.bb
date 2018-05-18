@@ -73,10 +73,7 @@ bool GetNetErrorFromIOSErrorCode(NSInteger ios_error_code,
       *net_error_code = net::ERR_ABORTED;
       break;
     case kCFURLErrorUserAuthenticationRequired:
-      // TODO(crbug.com/546159): ERR_SSL_RENEGOTIATION_REQUESTED is more
-      // specific than the kCFURLErrorUserAuthenticationRequired.  Consider
-      // adding a new net error for this scenario.
-      *net_error_code = net::ERR_SSL_RENEGOTIATION_REQUESTED;
+      *net_error_code = net::ERR_FAILED;
       break;
     case kCFURLErrorZeroByteResource:
       *net_error_code = net::ERR_EMPTY_RESPONSE;
