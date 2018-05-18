@@ -79,14 +79,15 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
             host_->delegate_->CreateMojoConnectionDelegate()),
         pending_token_(base::UnguessableToken::Create()),
         binding_(this) {
-    source_path_ =
-        base::StrCat({kMountScheme, pending_token_.ToString(), "@",
-                      host_->profile_path_.Append(kDataPath)
-                          .Append(host_->account_id_.GetAccountIdKey())
-                          .value()});
-
+    source_path_ = base::StrCat({kMountScheme, pending_token_.ToString()});
+    std::string datadir_option = base::StrCat(
+        {"datadir=", host_->profile_path_.Append(kDataPath)
+                         .Append(host_->account_id_.GetAccountIdKey())
+                         .value()});
     chromeos::disks::DiskMountManager::GetInstance()->MountPath(
-        source_path_, "", "", {}, chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+        source_path_, "",
+        base::StrCat({"drivefs-", host_->account_id_.GetAccountIdKey()}),
+        {datadir_option}, chromeos::MOUNT_TYPE_NETWORK_STORAGE,
         chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
 
     auto bootstrap =
