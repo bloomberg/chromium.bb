@@ -675,16 +675,9 @@ class GraphicsLayer::LayersAsJSONArray {
   }
 
   static FloatPoint ScrollPosition(const GraphicsLayer& layer) {
-    const auto* scrollable_area = layer.GetScrollableArea();
-    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      // The LayoutView layer's scrollable area is on the "Frame Scrolling
-      // Layer" ancestor.
-      if (layer.DebugName() == "LayoutView #document")
-        scrollable_area = layer.Parent()->Parent()->GetScrollableArea();
-      else if (layer.DebugName() == "Frame Scrolling Layer")
-        scrollable_area = nullptr;
-    }
-    return scrollable_area ? scrollable_area->ScrollPosition() : FloatPoint();
+    if (const auto* scrollable_area = layer.GetScrollableArea())
+      return scrollable_area->ScrollPosition();
+    return FloatPoint();
   }
 
   void AddLayer(const GraphicsLayer& layer,
