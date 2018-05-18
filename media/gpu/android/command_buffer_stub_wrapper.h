@@ -25,6 +25,9 @@ class CommandBufferStubWrapper {
   // Make the stub's context current.  Return true on success.
   virtual bool MakeCurrent() = 0;
 
+  // Return true if this context is current in the GLContext::IsCurrent sense.
+  virtual bool IsCurrent() const = 0;
+
   // Add or remove a destruction observer on the underlying stub.
   virtual void AddDestructionObserver(
       gpu::CommandBufferStub::DestructionObserver* observer) = 0;

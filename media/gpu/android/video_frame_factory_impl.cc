@@ -273,7 +273,7 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
   *texture_ref_out = std::move(texture_ref);
 }
 
-void GpuVideoFrameFactory::OnWillDestroyStub() {
+void GpuVideoFrameFactory::OnWillDestroyStub(bool have_context) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(stub_);
   stub_ = nullptr;

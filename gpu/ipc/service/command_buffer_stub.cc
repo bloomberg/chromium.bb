@@ -485,7 +485,7 @@ void CommandBufferStub::Destroy() {
         decoder_context_->GetGLContext()->MakeCurrent(surface_.get());
   }
   for (auto& observer : destruction_observers_)
-    observer.OnWillDestroyStub();
+    observer.OnWillDestroyStub(have_context);
 
   share_group_ = nullptr;
 

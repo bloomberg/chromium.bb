@@ -95,9 +95,7 @@ TEST_F(TexturePoolTest, TexturesAreReleasedOnStubDestructionWithContext) {
     EXPECT_CALL(*textures.back(), ForceContextLost()).Times(0);
   }
 
-  EXPECT_CALL(*stub_, MakeCurrent()).Times(1);
-
-  stub_->NotifyDestruction();
+  stub_->NotifyDestruction(true);
 
   // TextureWrappers should be destroyed.
   for (auto& texture : textures)
@@ -119,10 +117,9 @@ TEST_F(TexturePoolTest, TexturesAreReleasedOnStubDestructionWithoutContext) {
     EXPECT_CALL(*textures.back(), ForceContextLost()).Times(1);
   }
 
-  SetContextCanBeCurrent(false);
-  EXPECT_CALL(*stub_, MakeCurrent()).Times(1);
+  EXPECT_CALL(*stub_, MakeCurrent()).Times(0);
 
-  stub_->NotifyDestruction();
+  stub_->NotifyDestruction(false);
 
   for (auto& texture : textures)
     ASSERT_FALSE(texture);
@@ -138,7 +135,7 @@ TEST_F(TexturePoolTest, NonEmptyPoolAfterStubDestructionDoesntCrash) {
   // works (doesn't crash) even though the pool is not empty.
   CreateAndAddTexture();
 
-  stub_->NotifyDestruction();
+  stub_->NotifyDestruction(true);
 }
 
 TEST_F(TexturePoolTest,
@@ -147,8 +144,7 @@ TEST_F(TexturePoolTest,
   // works (doesn't crash) even though the pool is not empty.
   CreateAndAddTexture();
 
-  SetContextCanBeCurrent(false);
-  stub_->NotifyDestruction();
+  stub_->NotifyDestruction(false);
 }
 
 }  // namespace media

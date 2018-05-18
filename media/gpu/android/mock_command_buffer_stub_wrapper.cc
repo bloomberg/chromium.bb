@@ -22,9 +22,9 @@ void MockCommandBufferStubWrapper::RemoveDestructionObserver(
   observer_ = nullptr;
 }
 
-void MockCommandBufferStubWrapper::NotifyDestruction() {
+void MockCommandBufferStubWrapper::NotifyDestruction(bool have_context) {
   if (observer_)
-    observer_->OnWillDestroyStub();
+    observer_->OnWillDestroyStub(have_context);
 }
 
 }  // namespace media

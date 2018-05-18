@@ -19,6 +19,7 @@ class MockCommandBufferStubWrapper
 
   // CommandBufferStubWrapper
   MOCK_METHOD0(MakeCurrent, bool());
+  MOCK_CONST_METHOD0(IsCurrent, bool());
 
   void AddDestructionObserver(
       gpu::CommandBufferStub::DestructionObserver* observer);
@@ -26,7 +27,7 @@ class MockCommandBufferStubWrapper
       gpu::CommandBufferStub::DestructionObserver* observer);
 
   // Notify the observer that we will be destroyed.
-  void NotifyDestruction();
+  void NotifyDestruction(bool have_context);
 
  private:
   gpu::CommandBufferStub::DestructionObserver* observer_ = nullptr;

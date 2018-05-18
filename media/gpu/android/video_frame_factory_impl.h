@@ -98,7 +98,7 @@ class GpuVideoFrameFactory
       scoped_refptr<VideoFrame>* video_frame_out,
       scoped_refptr<gpu::gles2::TextureRef>* texture_ref_out);
 
-  void OnWillDestroyStub() override;
+  void OnWillDestroyStub(bool have_context) override;
 
   // Removes |image| from |images_|.
   void OnImageDestructed(CodecImage* image);

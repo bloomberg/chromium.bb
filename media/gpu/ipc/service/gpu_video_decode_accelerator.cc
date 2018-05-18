@@ -305,7 +305,7 @@ void GpuVideoDecodeAccelerator::NotifyError(
   }
 }
 
-void GpuVideoDecodeAccelerator::OnWillDestroyStub() {
+void GpuVideoDecodeAccelerator::OnWillDestroyStub(bool have_context) {
   // The stub is going away, so we have to stop and destroy VDA here, before
   // returning, because the VDA may need the GL context to run and/or do its
   // cleanup. We cannot destroy the VDA before the IO thread message filter is
@@ -513,7 +513,7 @@ void GpuVideoDecodeAccelerator::OnSetOverlayInfo(
 
 void GpuVideoDecodeAccelerator::OnDestroy() {
   DCHECK(video_decode_accelerator_);
-  OnWillDestroyStub();
+  OnWillDestroyStub(false);
 }
 
 void GpuVideoDecodeAccelerator::OnFilterRemoved() {

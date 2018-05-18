@@ -88,7 +88,7 @@ void StreamTexture::GetTextureMatrix(float xform[16]) {
   YInvertMatrix(xform);
 }
 
-void StreamTexture::OnWillDestroyStub() {
+void StreamTexture::OnWillDestroyStub(bool have_context) {
   owner_stub_->RemoveDestructionObserver(this);
   owner_stub_->channel()->RemoveRoute(route_id_);
 

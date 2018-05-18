@@ -73,7 +73,7 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
                            int display_height) override {}
 
   // CommandBufferStub::DestructionObserver implementation.
-  void OnWillDestroyStub() override;
+  void OnWillDestroyStub(bool have_context) override;
 
   std::unique_ptr<ui::ScopedMakeCurrent> MakeStubCurrent();
 
