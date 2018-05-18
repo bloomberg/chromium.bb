@@ -2089,7 +2089,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool CanContainFixedPositionObjects(bool is_document_element) const {
     return HasTransformRelatedProperty() || ContainsPaint() ||
-           ContainsLayout() ||
            // Filter establishes containing block for non-document elements:
            // https://drafts.fxtf.org/filter-effects-1/#FilterProperty
            (!is_document_element && HasFilter());

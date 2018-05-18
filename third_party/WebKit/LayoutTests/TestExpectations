@@ -288,7 +288,8 @@ crbug.com/694374 external/wpt/css/css-tables/anonymous-table-ws-001.html [ Failu
 
 # [css-contain]
 
-crbug.com/843329 external/wpt/css/css-contain/contain-layout-005.html [ Failure ]
+crbug.com/785212 external/wpt/css/css-contain/contain-layout-006.html [ Failure ]
+crbug.com/785212 external/wpt/css/css-contain/contain-layout-007.html [ Failure ]
 crbug.com/843329 external/wpt/css/css-contain/contain-paint-002.html [ Failure ]
 crbug.com/843329 external/wpt/css/css-contain/contain-paint-005.html [ Failure ]
 crbug.com/843329 external/wpt/css/css-contain/contain-paint-006.html [ Failure ]
