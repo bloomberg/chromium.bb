@@ -35,6 +35,10 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler,
       WebThreadType thread_type,
       WorkerSchedulerProxy* proxy);
 
+  // Same as ThreadScheduler::Current(), but this asserts the caller is on
+  // a non-main thread.
+  static NonMainThreadScheduler* Current();
+
   // Blink should use NonMainThreadScheduler::DefaultTaskQueue instead of
   // WebThreadScheduler::DefaultTaskRunner.
   virtual scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() = 0;

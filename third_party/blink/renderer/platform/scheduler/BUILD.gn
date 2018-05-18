@@ -74,6 +74,7 @@ blink_platform_sources("scheduler") {
     "child/worker_task_queue.h",
     "common/scheduler_helper.cc",
     "common/scheduler_helper.h",
+    "common/thread_scheduler.cc",
     "common/throttling/budget_pool.cc",
     "common/throttling/budget_pool.h",
     "common/throttling/cpu_time_budget_pool.cc",
