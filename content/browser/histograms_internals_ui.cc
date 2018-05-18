@@ -63,6 +63,7 @@ HistogramsMessageHandler::~HistogramsMessageHandler() {}
 
 void HistogramsMessageHandler::HandleRequestHistograms(
     const base::ListValue* args) {
+  base::StatisticsRecorder::ImportProvidedHistograms();
   HistogramSynchronizer::FetchHistograms();
 
   AllowJavascript();
