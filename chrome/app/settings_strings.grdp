@@ -337,8 +337,14 @@
     <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_TITLE" desc="In the settings tab, the text next to the checkbox to enable an option to hold a key and click to speak any on-screen text out loud.">
       Enable select-to-speak
     </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_DISABLED_DESCRIPTION" desc="In the settings tab, the description a feature which will read on-screen text out loud, shown when that feature is disabled.">
+      Hear text read aloud
+    </message>
     <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_DESCRIPTION" desc="In the settings tab, the description of an option to hold a key and click or drag a box with the mouse to speak any on-screen text out loud.">
-      Highlight what you want to hear, then press Search + S. Or, press and hold Search, then click or drag to select content.
+      Highlight what you want to hear, then press Search + S. Or, press and hold search, or tap the Select-to-Speak icon near your profile image, then select a region to be read aloud.
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_DESCRIPTION_WITHOUT_KEYBOARD" desc="In the settings tab, the description of an option tap a button and drag a box with the mouse, stylus or touch to speak any on-screen text out loud.">
+      Tap the Select-to-Speak icon near your profile image, then select what you want to hear.
     </message>
     <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_OPTIONS_LABEL" desc="In the settings tab, the label for the button that opens the Options page for the Select-to-Speak feature.">
       Open select-to-speak settings

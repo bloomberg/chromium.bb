@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/values.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/service_manager_connection.h"
@@ -52,6 +53,10 @@ void KeyboardHandler::RegisterMessages() {
       "showKeyboardShortcutsOverlay",
       base::BindRepeating(&KeyboardHandler::HandleShowKeyboardShortcutsOverlay,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "initializeKeyboardWatcher",
+      base::BindRepeating(&KeyboardHandler::HandleKeyboardChange,
+                          base::Unretained(this)));
 }
 
 void KeyboardHandler::OnJavascriptAllowed() {
@@ -63,12 +68,15 @@ void KeyboardHandler::OnJavascriptDisallowed() {
 }
 
 void KeyboardHandler::OnKeyboardDeviceConfigurationChanged() {
+  AllowJavascript();
   UpdateShowKeys();
+  UpdateKeyboards();
 }
 
 void KeyboardHandler::HandleInitialize(const base::ListValue* args) {
   AllowJavascript();
   UpdateShowKeys();
+  UpdateKeyboards();
 }
 
 void KeyboardHandler::HandleShowKeyboardShortcutsOverlay(
@@ -78,6 +86,30 @@ void KeyboardHandler::HandleShowKeyboardShortcutsOverlay(
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName, &new_window_controller);
   new_window_controller->ShowKeyboardOverlay();
+}
+
+void KeyboardHandler::HandleKeyboardChange(const base::ListValue* args) {
+  AllowJavascript();
+  UpdateKeyboards();
+}
+
+void KeyboardHandler::UpdateKeyboards() {
+  bool physical_keyboard = false;
+  // In tablet mode, physical keybards are disabled / ignored.
+  if (!TabletModeClient::Get() ||
+      !TabletModeClient::Get()->tablet_mode_enabled()) {
+    physical_keyboard = true;
+  }
+  if (!physical_keyboard) {
+    for (const ui::InputDevice& keyboard :
+         ui::InputDeviceManager::GetInstance()->GetKeyboardDevices()) {
+      if (keyboard.type != ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
+        physical_keyboard = true;
+        break;
+      }
+    }
+  }
+  FireWebUIListener("has-hardware-keyboard", base::Value(physical_keyboard));
 }
 
 void KeyboardHandler::UpdateShowKeys() {

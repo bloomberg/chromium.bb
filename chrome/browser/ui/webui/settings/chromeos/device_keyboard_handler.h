@@ -61,9 +61,15 @@ class KeyboardHandler
   // Shows the Ash keyboard shortcuts overlay.
   void HandleShowKeyboardShortcutsOverlay(const base::ListValue* args) const;
 
+  // Determines what types of keyboards are attached.
+  void HandleKeyboardChange(const base::ListValue* args);
+
   // Shows or hides the Caps Lock and Diamond key settings based on whether the
   // system status.
   void UpdateShowKeys();
+
+  // Sends the UI a message about whether hardware keyboard are attached.
+  void UpdateKeyboards();
 
   ScopedObserver<ui::InputDeviceManager, KeyboardHandler> observer_;
 
