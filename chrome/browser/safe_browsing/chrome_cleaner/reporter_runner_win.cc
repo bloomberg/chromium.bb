@@ -16,6 +16,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -487,11 +488,24 @@ int LaunchAndWaitForExitOnBackgroundThread(
     const SwReporterInvocation& invocation) {
   if (g_testing_delegate_)
     return g_testing_delegate_->LaunchReporter(invocation);
+
+  base::FilePath tmpdir;
+  int exit_code = kReporterNotLaunchedExitCode;
+  if (!base::GetTempDir(&tmpdir)) {
+    return exit_code;
+  }
+
+  // The reporter runs from the system tmp directory. This is to avoid
+  // unnecessarily holding on to the installation directory while running as it
+  // prevents uninstallation of chrome.
+  base::LaunchOptions launch_options;
+  launch_options.current_directory = tmpdir;
+
   base::Process reporter_process =
-      base::LaunchProcess(invocation.command_line(), base::LaunchOptions());
+      base::LaunchProcess(invocation.command_line(), launch_options);
+
   // This exit code is used to identify that a reporter run didn't happen, so
   // the result should be ignored and a rerun scheduled for the usual delay.
-  int exit_code = kReporterNotLaunchedExitCode;
   UMAHistogramReporter uma(invocation.suffix());
   if (reporter_process.IsValid()) {
     uma.RecordReporterStep(SW_REPORTER_START_EXECUTION);
