@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -19,11 +20,9 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "net/base/backoff_entry.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
-
-namespace net {
-class URLFetcher;
-}  // namespace net
+#include "url/gurl.h"
 
 namespace autofill {
 
@@ -99,10 +98,18 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   struct FormRequestData;
   typedef std::list<std::pair<std::string, std::string> > QueryRequestCache;
 
+  // Returns the URL and request method to use when issuing the request
+  // described by |request_data|. If the returned method is GET, the URL
+  // fully encompasses the request, do not include request_data.payload when
+  // transmitting the request.
+  std::tuple<GURL, net::URLFetcher::RequestType> GetRequestURLAndMethod(
+      const FormRequestData& request_data) const;
+
   // Initiates request to Autofill servers to download/upload type predictions.
   // |request_data| - form signature hash(es), request payload data and request
   //   type (query or upload).
-  bool StartRequest(const FormRequestData& request_data);
+  // Note: |request_data| takes ownership of request_data, call with std::move.
+  bool StartRequest(FormRequestData request_data);
 
   // Each request is page visited. We store last |max_form_cache_size|
   // request, to avoid going over the wire. Set to 16 in constructor. Warning:
@@ -133,6 +140,10 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   // The observer to notify when server predictions are successfully received.
   // Must not be null.
   AutofillDownloadManager::Observer* const observer_;  // WEAK
+
+  // The autofill server URL root: scheme://host[:port]/path excluding the
+  // final path component for the request and the query params.
+  GURL autofill_server_url_;
 
   // For each requested form for both query and upload we create a separate
   // request and save its info. As url fetcher is identified by its address

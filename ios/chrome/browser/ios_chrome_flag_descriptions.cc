@@ -11,22 +11,17 @@
 
 namespace flag_descriptions {
 
+const char kAutofillCacheQueryResponsesName[] =
+    "Cache Autofill Query Responses";
+const char kAutofillCacheQueryResponsesDescription[] =
+    "When enabled, autofill will cache the responses it receives from the "
+    "crowd-sourced field type prediction server.";
+
 const char kAutofillCreditCardUploadName[] =
     "Offers uploading Autofilled credit cards";
 const char kAutofillCreditCardUploadDescription[] =
     "Offers uploading Autofilled credit cards to Google Payments after form "
     "submission.";
-
-const char kAutofillUpstreamUseGooglePayBrandingOnMobileName[] =
-    "Enable Google Pay branding when offering credit card upload";
-const char kAutofillUpstreamUseGooglePayBrandingOnMobileDescription[] =
-    "When enabled, shows the Google Pay logo and a shorter header message when "
-    "offering credit card upload to Google Payments.";
-
-const char kAutofillIOSDelayBetweenFieldsName[] = "Autofill delay";
-const char kAutofillIOSDelayBetweenFieldsDescription[] =
-    "Delay between the different fields of a form being autofilled. In "
-    "milliseconds.";
 
 const char kAutofillDynamicFormsName[] = "Autofill dynamic forms";
 const char kAutofillDynamicFormsDescription[] =
@@ -50,10 +45,21 @@ const char kAutofillEnforceMinRequiredFieldsForUploadDescription[] =
     "When enabled, autofill will generally require a form to have at least 3 "
     "fillable fields before uploading field-type votes for that form.";
 
+const char kAutofillIOSDelayBetweenFieldsName[] = "Autofill delay";
+const char kAutofillIOSDelayBetweenFieldsDescription[] =
+    "Delay between the different fields of a form being autofilled. In "
+    "milliseconds.";
+
 const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[] =
     "Restrict formless form extraction";
 const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[] =
     "Restrict extraction of formless forms to checkout flows";
+
+const char kAutofillUpstreamUseGooglePayBrandingOnMobileName[] =
+    "Enable Google Pay branding when offering credit card upload";
+const char kAutofillUpstreamUseGooglePayBrandingOnMobileDescription[] =
+    "If enabled, shows the Google Pay logo and a shorter header message when "
+    "credit card upload to Google Payments is offered.";
 
 const char kBrowserContainerFullscreenName[] = "Browser Container Fullscreen";
 const char kBrowserContainerFullscreenDescription[] =

@@ -12,9 +12,10 @@ namespace features {
 const base::Feature kAutofillAddressNormalizer{
     "AutofillAddressNormalizer", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether credit card suggestions are made on insecure pages.
-const base::Feature kAutofillRequireSecureCreditCardContext{
-    "AutofillRequireSecureCreditCardContext", base::FEATURE_ENABLED_BY_DEFAULT};
+// Controls the use of GET (instead of POST) to fetch cacheable autofill query
+// responses.
+const base::Feature kAutofillCacheQueryResponses{
+    "AutofillCacheQueryResponses", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether Autofill attemps to fill dynamically changing forms.
 const base::Feature kAutofillDynamicForms{"AutofillDynamicForms",
@@ -37,6 +38,10 @@ const base::Feature kAutofillEnforceMinRequiredFieldsForQuery{
 const base::Feature kAutofillEnforceMinRequiredFieldsForUpload{
     "AutofillEnforceMinRequiredFieldsForUpload",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether credit card suggestions are made on insecure pages.
+const base::Feature kAutofillRequireSecureCreditCardContext{
+    "AutofillRequireSecureCreditCardContext", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether or not a group of fields not enclosed in a form can be
 // considered a form. If this is enabled, unowned fields will only constitute

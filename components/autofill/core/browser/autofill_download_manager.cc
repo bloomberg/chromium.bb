@@ -4,31 +4,147 @@
 
 #include "components/autofill/core/browser/autofill_download_manager.h"
 
+#include <tuple>
 #include <utility>
 
+#include "base/base64url.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "url/gurl.h"
+
+namespace autofill {
 
 namespace {
+
+const size_t kMaxQueryGetSize = 1400;  // 1.25KB
+const size_t kMaxFormCacheSize = 16;
+const size_t kMaxFieldsPerQueryRequest = 100;
+
+const net::BackoffEntry::Policy kAutofillBackoffPolicy = {
+    // Number of initial errors (in sequence) to ignore before applying
+    // exponential back-off rules.
+    0,
+
+    // Initial delay for exponential back-off in ms.
+    1000,  // 1 second.
+
+    // Factor by which the waiting time will be multiplied.
+    2,
+
+    // Fuzzing percentage. ex: 10% will spread requests randomly
+    // between 90%-100% of the calculated time.
+    0.33,  // 33%.
+
+    // Maximum amount of time we are willing to delay our request in ms.
+    30 * 1000,  // 30 seconds.
+
+    // Time to keep an entry from being discarded even when it
+    // has no significant state, -1 to never discard.
+    -1,
+
+    // Don't use initial delay unless the last request was an error.
+    false,
+};
+
+#if defined(GOOGLE_CHROME_BUILD)
+const char kClientName[] = "Google+Chrome";
+#else
+const char kClientName[] = "Chromium";
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+const char kDefaultAutofillServerURL[] =
+    "https://clients1.google.com/tbproxy/af/";
+
+// Returns the base URL for the autofill server.
+GURL GetAutofillServerURL() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kAutofillServerURL)) {
+    GURL url(command_line.GetSwitchValueASCII(switches::kAutofillServerURL));
+    if (url.is_valid())
+      return url;
+
+    LOG(ERROR) << "Invalid URL given for --" << switches::kAutofillServerURL
+               << ". Using default value.";
+  }
+
+  GURL default_url(kDefaultAutofillServerURL);
+  DCHECK(default_url.is_valid());
+  return default_url;
+}
+
+// Helper to log the HTTP |response_code| received for |request_type| to UMA.
+void LogHttpResponseCode(AutofillDownloadManager::RequestType request_type,
+                         int response_code) {
+  const char* name = nullptr;
+  switch (request_type) {
+    case AutofillDownloadManager::REQUEST_QUERY:
+      name = "Autofill.Query.HttpResponseCode";
+      break;
+    case AutofillDownloadManager::REQUEST_UPLOAD:
+      name = "Autofill.Upload.HttpResponseCode";
+      break;
+    default:
+      NOTREACHED();
+      name = "Autofill.Unknown.HttpResponseCode";
+  }
+
+  if (response_code < 100 || response_code > 599)
+    response_code = 0;
+
+  // An expanded version of UMA_HISTOGRAM_ENUMERATION that supports using
+  // a different name with each invocation.
+  base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
+      name, 1, 599, 600, base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(response_code);
+}
+
+// Helper to log, to UMA, the |num_bytes| sent for a failing instance of
+// |request_type|.
+void LogFailingPayloadSize(AutofillDownloadManager::RequestType request_type,
+                           size_t num_bytes) {
+  const char* name = nullptr;
+  switch (request_type) {
+    case AutofillDownloadManager::REQUEST_QUERY:
+      name = "Autofill.Query.FailingPayloadSize";
+      break;
+    case AutofillDownloadManager::REQUEST_UPLOAD:
+      name = "Autofill.Upload.FailingPayloadSize";
+      break;
+    default:
+      NOTREACHED();
+      name = "Autofill.Unknown.FailingPayloadSize";
+  }
+
+  // An expanded version of UMA_HISTOGRAM_COUNTS_100000 that supports using
+  // a different name with each invocation.
+  base::HistogramBase* histogram = base::Histogram::FactoryGet(
+      name, 1, 100000, 50, base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(num_bytes);
+}
 
 net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
     const autofill::AutofillDownloadManager::RequestType& request_type) {
@@ -98,47 +214,6 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
       })");
 }
 
-}  // namespace
-
-namespace autofill {
-
-namespace {
-
-const size_t kMaxFormCacheSize = 16;
-const size_t kMaxFieldsPerQueryRequest = 100;
-
-const net::BackoffEntry::Policy kAutofillBackoffPolicy = {
-    // Number of initial errors (in sequence) to ignore before applying
-    // exponential back-off rules.
-    0,
-
-    // Initial delay for exponential back-off in ms.
-    1000,  // 1 second.
-
-    // Factor by which the waiting time will be multiplied.
-    2,
-
-    // Fuzzing percentage. ex: 10% will spread requests randomly
-    // between 90%-100% of the calculated time.
-    0.33,  // 33%.
-
-    // Maximum amount of time we are willing to delay our request in ms.
-    30 * 1000,  // 30 seconds.
-
-    // Time to keep an entry from being discarded even when it
-    // has no significant state, -1 to never discard.
-    -1,
-
-    // Don't use initial delay unless the last request was an error.
-    false,
-};
-
-#if defined(GOOGLE_CHROME_BUILD)
-const char kClientName[] = "Google Chrome";
-#else
-const char kClientName[] = "Chromium";
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
 size_t CountActiveFieldsInForms(const std::vector<FormStructure*>& forms) {
   size_t active_field_count = 0;
   for (const auto* form : forms)
@@ -146,7 +221,7 @@ size_t CountActiveFieldsInForms(const std::vector<FormStructure*>& forms) {
   return active_field_count;
 }
 
-std::string RequestTypeToString(AutofillDownloadManager::RequestType type) {
+const char* RequestTypeToString(AutofillDownloadManager::RequestType type) {
   switch (type) {
     case AutofillDownloadManager::REQUEST_QUERY:
       return "query";
@@ -154,12 +229,7 @@ std::string RequestTypeToString(AutofillDownloadManager::RequestType type) {
       return "upload";
   }
   NOTREACHED();
-  return std::string();
-}
-
-GURL GetRequestUrl(AutofillDownloadManager::RequestType request_type) {
-  return GURL("https://clients1.google.com/tbproxy/af/" +
-              RequestTypeToString(request_type) + "?client=" + kClientName);
+  return "";
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -219,6 +289,7 @@ AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
                                                  Observer* observer)
     : driver_(driver),
       observer_(observer),
+      autofill_server_url_(GetAutofillServerURL()),
       max_form_cache_size_(kMaxFormCacheSize),
       fetcher_backoff_(&kAutofillBackoffPolicy),
       fetcher_id_for_unittest_(0),
@@ -247,12 +318,12 @@ bool AutofillDownloadManager::StartQueryRequest(
     return false;
 
   request_data.request_type = AutofillDownloadManager::REQUEST_QUERY;
-  request_data.payload = payload;
+  request_data.payload = std::move(payload);
   AutofillMetrics::LogServerQueryMetric(AutofillMetrics::QUERY_SENT);
 
   std::string query_data;
   if (CheckCacheForQueryRequest(request_data.form_signatures, &query_data)) {
-    VLOG(1) << "AutofillDownloadManager: query request has been retrieved "
+    DVLOG(1) << "AutofillDownloadManager: query request has been retrieved "
              << "from the cache, form signatures: "
              << GetCombinedSignature(request_data.form_signatures);
     observer_->OnLoadedServerPredictions(std::move(query_data),
@@ -260,9 +331,9 @@ bool AutofillDownloadManager::StartQueryRequest(
     return true;
   }
 
-  VLOG(1) << "Sending Autofill Query Request:\n" << query;
+  DVLOG(1) << "Sending Autofill Query Request:\n" << query;
 
-  return StartRequest(request_data);
+  return StartRequest(std::move(request_data));
 }
 
 bool AutofillDownloadManager::StartUploadRequest(
@@ -282,7 +353,7 @@ bool AutofillDownloadManager::StartUploadRequest(
     return false;
 
   if (form.upload_required() == UPLOAD_NOT_REQUIRED) {
-    VLOG(1) << "AutofillDownloadManager: Upload request is ignored.";
+    DVLOG(1) << "AutofillDownloadManager: Upload request is ignored.";
     // If we ever need notification that upload was skipped, add it here.
     return false;
   }
@@ -290,35 +361,69 @@ bool AutofillDownloadManager::StartUploadRequest(
   FormRequestData request_data;
   request_data.form_signatures.push_back(form.FormSignatureAsStr());
   request_data.request_type = AutofillDownloadManager::REQUEST_UPLOAD;
-  request_data.payload = payload;
+  request_data.payload = std::move(payload);
 
-  VLOG(1) << "Sending Autofill Upload Request:\n" << upload;
+  DVLOG(1) << "Sending Autofill Upload Request:\n" << upload;
 
-  return StartRequest(request_data);
+  return StartRequest(std::move(request_data));
 }
 
-bool AutofillDownloadManager::StartRequest(
-    const FormRequestData& request_data) {
+std::tuple<GURL, net::URLFetcher::RequestType>
+AutofillDownloadManager::GetRequestURLAndMethod(
+    const FormRequestData& request_data) const {
+  net::URLFetcher::RequestType method = net::URLFetcher::POST;
+  std::string query_str(base::StrCat({"client=", kClientName}));
+
+  if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY) {
+    if (request_data.payload.length() <= kMaxQueryGetSize &&
+        base::FeatureList::IsEnabled(features::kAutofillCacheQueryResponses)) {
+      method = net::URLFetcher::GET;
+      std::string base64_payload;
+      base::Base64UrlEncode(request_data.payload,
+                            base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                            &base64_payload);
+      base::StrAppend(&query_str, {"&q=", base64_payload});
+    }
+    UMA_HISTOGRAM_BOOLEAN("Autofill.Query.Method",
+                          (method == net::URLFetcher::GET) ? 0 : 1);
+  }
+
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(std::move(query_str));
+
+  GURL url = autofill_server_url_
+                 .Resolve(RequestTypeToString(request_data.request_type))
+                 .ReplaceComponents(replacements);
+
+  return std::make_tuple(std::move(url), method);
+}
+
+bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
   net::URLRequestContextGetter* request_context =
       driver_->GetURLRequestContext();
   DCHECK(request_context);
-  GURL request_url = GetRequestUrl(request_data.request_type);
+
+  // Get the URL and method to use for this request.
+  net::URLFetcher::RequestType method;
+  GURL request_url;
+  std::tie(request_url, method) = GetRequestURLAndMethod(request_data);
 
   // Id is ignored for regular chrome, in unit test id's for fake fetcher
   // factory will be 0, 1, 2, ...
-  std::unique_ptr<net::URLFetcher> owned_fetcher = net::URLFetcher::Create(
-      fetcher_id_for_unittest_++, request_url, net::URLFetcher::POST, this,
+  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
+      fetcher_id_for_unittest_++, request_url, method, this,
       GetNetworkTrafficAnnotation(request_data.request_type));
-  net::URLFetcher* fetcher = owned_fetcher.get();
+
   data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher, data_use_measurement::DataUseUserData::AUTOFILL);
-  url_fetchers_[fetcher] =
-      std::make_pair(std::move(owned_fetcher), request_data);
+      fetcher.get(), data_use_measurement::DataUseUserData::AUTOFILL);
   fetcher->SetAutomaticallyRetryOn5xx(false);
   fetcher->SetRequestContext(request_context);
-  fetcher->SetUploadData("text/proto", request_data.payload);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                         net::LOAD_DO_NOT_SEND_COOKIES);
+  if (method == net::URLFetcher::POST) {
+    fetcher->SetUploadData("text/proto", request_data.payload);
+  }
+
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
   // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
@@ -329,7 +434,14 @@ bool AutofillDownloadManager::StartRequest(
                                          : variations::InIncognito::kNo,
                                      variations::SignedIn::kNo, &headers);
   fetcher->SetExtraRequestHeaders(headers.ToString());
-  fetcher->Start();
+
+  // Transfer ownership of the fetcher into url_fetchers_. Temporarily hang
+  // onto the raw pointer to use it as a key and to kick off the request;
+  // transferring ownership (std::move) invalidates the |fetcher| variable.
+  auto* raw_fetcher = fetcher.get();
+  url_fetchers_[raw_fetcher] =
+      std::make_pair(std::move(fetcher), std::move(request_data));
+  raw_fetcher->Start();
 
   return true;
 }
@@ -394,41 +506,58 @@ void AutofillDownloadManager::OnURLFetchComplete(
     // with unknown fetcher when network is refreshed.
     return;
   }
-  std::string request_type(RequestTypeToString(it->second.second.request_type));
 
-  CHECK(it->second.second.form_signatures.size());
-  bool success = source->GetResponseCode() == net::HTTP_OK;
+  // Move the fetcher and request out of the active fetchers list.
+  std::unique_ptr<net::URLFetcher> fetcher = std::move(it->second.first);
+  FormRequestData request_data = std::move(it->second.second);
+  url_fetchers_.erase(it);
+
+  CHECK(request_data.form_signatures.size());
+  const int response_code = fetcher->GetResponseCode();
+  const bool success = (response_code == net::HTTP_OK);
   fetcher_backoff_.InformOfRequest(success);
 
+  LogHttpResponseCode(request_data.request_type, response_code);
+
   if (!success) {
+    DVLOG(1) << "AutofillDownloadManager: "
+             << RequestTypeToString(request_data.request_type)
+             << " request has failed with response " << response_code;
+
+    observer_->OnServerRequestError(request_data.form_signatures[0],
+                                    request_data.request_type, response_code);
+
+    LogFailingPayloadSize(request_data.request_type,
+                          request_data.payload.length());
+
+    // If the failure was a client error don't retry.
+    if (response_code >= 400 && response_code <= 499)
+      return;
+
     // Reschedule with the appropriate delay, ignoring return value because
     // payload is already well formed.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(&AutofillDownloadManager::StartRequest),
-                   weak_factory_.GetWeakPtr(), it->second.second),
+        base::BindOnce(
+            base::IgnoreResult(&AutofillDownloadManager::StartRequest),
+            weak_factory_.GetWeakPtr(), std::move(request_data)),
         fetcher_backoff_.GetTimeUntilRelease());
-
-    VLOG(1) << "AutofillDownloadManager: " << request_type
-             << " request has failed with response "
-             << source->GetResponseCode();
-    observer_->OnServerRequestError(it->second.second.form_signatures[0],
-                                    it->second.second.request_type,
-                                    source->GetResponseCode());
-  } else {
-    std::string response_body;
-    source->GetResponseAsString(&response_body);
-    if (it->second.second.request_type ==
-        AutofillDownloadManager::REQUEST_QUERY) {
-      CacheQueryRequest(it->second.second.form_signatures, response_body);
-      observer_->OnLoadedServerPredictions(std::move(response_body),
-                                           it->second.second.form_signatures);
-    } else {
-      VLOG(1) << "AutofillDownloadManager: upload request has succeeded.";
-      observer_->OnUploadedPossibleFieldTypes();
-    }
+    return;
   }
-  url_fetchers_.erase(it);
+
+  if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY) {
+    std::string response_body;
+    fetcher->GetResponseAsString(&response_body);
+    CacheQueryRequest(request_data.form_signatures, response_body);
+    UMA_HISTOGRAM_BOOLEAN("Autofill.Query.WasInCache", fetcher->WasCached());
+    observer_->OnLoadedServerPredictions(std::move(response_body),
+                                         request_data.form_signatures);
+    return;
+  }
+
+  DCHECK_EQ(request_data.request_type, AutofillDownloadManager::REQUEST_UPLOAD);
+  DVLOG(1) << "AutofillDownloadManager: upload request has succeeded.";
+  observer_->OnUploadedPossibleFieldTypes();
 }
 
 }  // namespace autofill

@@ -7,18 +7,13 @@
 
 namespace flag_descriptions {
 
+// Title and description for the flag to control the autofill query cache.
+extern const char kAutofillCacheQueryResponsesName[];
+extern const char kAutofillCacheQueryResponsesDescription[];
+
 // Title and description for the flag to control upstreaming credit cards.
 extern const char kAutofillCreditCardUploadName[];
 extern const char kAutofillCreditCardUploadDescription[];
-
-// Title and description for the flag to control GPay branding in credit card
-// upstream infobar.
-extern const char kAutofillUpstreamUseGooglePayBrandingOnMobileName[];
-extern const char kAutofillUpstreamUseGooglePayBrandingOnMobileDescription[];
-
-// Title and description for the flag to control the autofill delay.
-extern const char kAutofillIOSDelayBetweenFieldsName[];
-extern const char kAutofillIOSDelayBetweenFieldsDescription[];
 
 // Title and description for the flag to control the dynamic autofill.
 extern const char kAutofillDynamicFormsName[];
@@ -32,10 +27,19 @@ extern const char kAutofillEnforceMinRequiredFieldsForQueryDescription[];
 extern const char kAutofillEnforceMinRequiredFieldsForUploadName[];
 extern const char kAutofillEnforceMinRequiredFieldsForUploadDescription[];
 
+// Title and description for the flag to control the autofill delay.
+extern const char kAutofillIOSDelayBetweenFieldsName[];
+extern const char kAutofillIOSDelayBetweenFieldsDescription[];
+
 // Title and description for the flag to restrict extraction of formless forms
 // to checkout flows.
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
+
+// Title and description for the flag to control GPay branding in credit card
+// upstream infobar.
+extern const char kAutofillUpstreamUseGooglePayBrandingOnMobileName[];
+extern const char kAutofillUpstreamUseGooglePayBrandingOnMobileDescription[];
 
 // Title and description for the flag to make browser container fullscreen.
 extern const char kBrowserContainerFullscreenName[];
