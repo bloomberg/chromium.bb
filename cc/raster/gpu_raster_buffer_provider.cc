@@ -18,7 +18,6 @@
 #include "cc/raster/raster_source.h"
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/layer_tree_resource_provider.h"
-#include "cc/resources/resource.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/gpu/texture_allocation.h"

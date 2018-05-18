@@ -14,7 +14,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/raster/raster_source.h"
-#include "cc/resources/resource.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/platform_color.h"

@@ -20,11 +20,12 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/unguessable_token.h"
 #include "cc/cc_export.h"
-#include "cc/resources/resource.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "components/viz/common/resources/resource_id.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
