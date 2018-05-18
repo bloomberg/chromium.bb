@@ -198,6 +198,8 @@ const char* TaskTypeToString(TaskType task_type) {
       return "MainThreadTaskQueueIdle";
     case TaskType::kMainThreadTaskQueueIPC:
       return "MainThreadTaskQueueIPC";
+    case TaskType::kMainThreadTaskQueueControl:
+      return "MainThreadTaskQueueControl";
     case TaskType::kCount:
       return "Count";
   }
@@ -267,7 +269,8 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       delayed_update_policy_runner_(
           base::BindRepeating(&MainThreadSchedulerImpl::UpdatePolicy,
                               base::Unretained(this)),
-          helper_.ControlMainThreadTaskQueue()),
+          TaskQueueWithTaskType::Create(helper_.ControlMainThreadTaskQueue(),
+                                        TaskType::kMainThreadTaskQueueControl)),
       queueing_time_estimator_(this, kQueueingTimeWindowDuration, 20),
       main_thread_only_(this,
                         compositor_task_queue_,

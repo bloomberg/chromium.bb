@@ -84,6 +84,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kMainThreadTaskQueueInput:
     case TaskType::kMainThreadTaskQueueIdle:
     case TaskType::kMainThreadTaskQueueIPC:
+    case TaskType::kMainThreadTaskQueueControl:
     case TaskType::kCount:
       NOTREACHED();
       break;
