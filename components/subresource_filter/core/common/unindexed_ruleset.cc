@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/url_pattern_index/unindexed_ruleset.h"
+#include "components/subresource_filter/core/common/unindexed_ruleset.h"
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"

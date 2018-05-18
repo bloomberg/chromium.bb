@@ -22,7 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
-#include "components/url_pattern_index/unindexed_ruleset.h"
+#include "components/subresource_filter/core/common/unindexed_ruleset.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/TestSubresourceFilterPublisher_jni.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"

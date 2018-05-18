@@ -10,9 +10,9 @@
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
+#include "components/subresource_filter/core/common/unindexed_ruleset.h"
 #include "components/url_pattern_index/copying_file_stream.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
-#include "components/url_pattern_index/unindexed_ruleset.h"
 
 namespace subresource_filter {
 

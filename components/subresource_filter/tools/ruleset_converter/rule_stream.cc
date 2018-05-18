@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "components/subresource_filter/core/common/unindexed_ruleset.h"
 #include "components/subresource_filter/tools/rule_parser/rule.h"
 #include "components/subresource_filter/tools/rule_parser/rule_parser.h"
-#include "components/url_pattern_index/unindexed_ruleset.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace subresource_filter {

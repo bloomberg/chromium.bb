@@ -19,8 +19,8 @@
 // before reading the next one. In practice, this should not be an issue as
 // indexing of the ruleset is expected to be performed in an on-line fashion.
 
-#ifndef COMPONENTS_URL_PATTERN_INDEX_UNINDEXED_RULESET_H_
-#define COMPONENTS_URL_PATTERN_INDEX_UNINDEXED_RULESET_H_
+#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_UNINDEXED_RULESET_H_
+#define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_UNINDEXED_RULESET_H_
 
 #include "base/macros.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
@@ -97,4 +97,4 @@ class UnindexedRulesetWriter {
 
 }  // namespace url_pattern_index
 
-#endif  // COMPONENTS_URL_PATTERN_INDEX_UNINDEXED_RULESET_H_
+#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_UNINDEXED_RULESET_H_

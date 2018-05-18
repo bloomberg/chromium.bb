@@ -27,6 +27,8 @@ static_library("common") {
     "memory_mapped_ruleset.h",
     "scoped_timers.h",
     "time_measurements.h",
+    "unindexed_ruleset.cc",
+    "unindexed_ruleset.h",
   ]
 
   public_deps = [
@@ -67,6 +69,7 @@ source_set("unit_tests") {
     "first_party_origin_unittest.cc",
     "indexed_ruleset_unittest.cc",
     "scoped_timers_unittest.cc",
+    "unindexed_ruleset_unittest.cc",
   ]
   deps = [
     ":common",
