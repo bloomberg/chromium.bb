@@ -1944,11 +1944,7 @@ PaintLayer* PaintLayer::HitTestLayer(
   if (result.GetHitTestRequest().IgnoreClipping())
     clip_behavior = kIgnoreOverflowClip;
 
-  // Always send foreignObject PaintLayers through the "transform" code path,
-  // even if they have no transform. This is in order to collect any ancestor
-  // SVG transforms, including the SVG root to border box transform, which
-  // are represented outside of the PaintLayer tree.
-  bool use_transform = Transform() || GetLayoutObject().IsSVGForeignObject();
+  bool use_transform = Transform();
 
   // Apply a transform if we have one.
   if (use_transform && !applied_transform) {
@@ -1978,17 +1974,6 @@ PaintLayer* PaintLayer::HitTestLayer(
   }
 
   if (HitTestClippedOutByClipPath(root_layer, hit_test_location))
-    return nullptr;
-
-  // TODO(chrishtr): this can have incorrect results for rects that are not
-  // unit-sized due to use of Center().
-  if (GetLayoutObject().IsSVGForeignObject() &&
-      !GeometryMapper::PointVisibleInAncestorSpace(
-          GetLayoutObject().FirstFragment().LocalBorderBoxProperties(),
-          container_layer->GetLayoutObject()
-              .FirstFragment()
-              .LocalBorderBoxProperties(),
-          FloatPoint(hit_test_location.BoundingBox().Center())))
     return nullptr;
 
   // The natural thing would be to keep HitTestingTransformState on the stack,
@@ -2316,6 +2301,14 @@ bool PaintLayer::HitTestContents(HitTestResult& result,
   return true;
 }
 
+bool PaintLayer::IsReplacedNormalFlowStacking() {
+  if (!GetLayoutObject().IsSVGForeignObject())
+    return false;
+  if (!GetLayoutObject().StyleRef().HasAutoZIndex())
+    return false;
+  return true;
+}
+
 PaintLayer* PaintLayer::HitTestChildren(
     ChildrenIteration childrento_visit,
     PaintLayer* root_layer,
@@ -2338,12 +2331,17 @@ PaintLayer* PaintLayer::HitTestChildren(
                                                  childrento_visit);
   while (PaintLayerStackingNode* child = iterator.Next()) {
     PaintLayer* child_layer = child->Layer();
+
+    if (child_layer->IsReplacedNormalFlowStacking())
+      continue;
+
     // Calling IsDescendantOf is sad (slow), but it's the only way to tell
     // whether the child layer is a descendant of the stop node.
     if (stop_layer == this &&
         child_layer->GetLayoutObject().IsDescendantOf(stop_node)) {
       continue;
     }
+
     PaintLayer* hit_layer = nullptr;
     HitTestResult temp_result(result.GetHitTestRequest(),
                               result.GetHitTestLocation());

@@ -1030,6 +1030,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool ShouldFragmentCompositedBounds(
       const PaintLayer* compositing_layer = nullptr) const;
 
+  // See
+  // https://chromium.googlesource.com/chromium/src.git/+/master/third_party/blink/renderer/core/paint/README.md
+  // for the definition of a replaced normal-flow stacking element.
+  bool IsReplacedNormalFlowStacking();
+
  private:
   void SetNeedsCompositingInputsUpdateInternal();
 

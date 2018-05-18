@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
-#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
@@ -192,9 +191,6 @@ bool LayoutSVGContainer::NodeAtFloatPoint(HitTestResult& result,
 
   for (LayoutObject* child = LastChild(); child;
        child = child->PreviousSibling()) {
-    if (child->IsBoxModelObject() &&
-        ToLayoutBoxModelObject(child)->HasSelfPaintingLayer())
-      continue;
     if (child->NodeAtFloatPoint(result, local_point, hit_test_action)) {
       const LayoutPoint& local_layout_point = LayoutPoint(local_point);
       UpdateHitTestResult(result, local_layout_point);

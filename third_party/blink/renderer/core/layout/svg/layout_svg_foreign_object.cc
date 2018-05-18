@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
 #include "third_party/blink/renderer/core/svg/svg_foreign_object_element.h"
 
@@ -127,15 +128,19 @@ void LayoutSVGForeignObject::UpdateLayout() {
 bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,
                                               const FloatPoint& point_in_parent,
                                               HitTestAction hit_test_action) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    NOTREACHED();
-    return false;
-  }
   AffineTransform local_transform = LocalSVGTransform();
   if (!local_transform.IsInvertible())
     return false;
 
   FloatPoint local_point = local_transform.Inverse().MapPoint(point_in_parent);
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    HitTestResult layer_result(result.GetHitTestRequest(),
+                               LayoutPoint(local_point));
+    bool retval = Layer()->HitTest(layer_result);
+    result = layer_result;
+    return retval;
+  }
 
   // Early exit if local point is not contained in clipped viewport area
   if (SVGLayoutSupport::IsOverflowHidden(*this) &&
@@ -150,16 +155,6 @@ bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,
                                   kHitTestFloat) ||
          LayoutBlock::NodeAtPoint(result, hit_test_location, LayoutPoint(),
                                   kHitTestChildBlockBackgrounds);
-}
-
-void LayoutSVGForeignObject::GetTransformFromContainer(
-    const LayoutObject* container,
-    const LayoutSize& offset_in_container,
-    TransformationMatrix& matrix) const {
-  AffineTransform to_svg_root_transform;
-  SVGLayoutSupport::ComputeTransformToSVGRoot(*this, to_svg_root_transform);
-  matrix = to_svg_root_transform;
-  GetTransformFromContainerInternal(container, offset_in_container, matrix);
 }
 
 bool LayoutSVGForeignObject::NodeAtPoint(

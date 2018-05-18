@@ -2600,14 +2600,6 @@ void LayoutObject::GetTransformFromContainer(
   if (layer && layer->Transform())
     transform.Multiply(layer->CurrentTransform());
 
-  GetTransformFromContainerInternal(container_object, offset_in_container,
-                                    transform);
-}
-
-void LayoutObject::GetTransformFromContainerInternal(
-    const LayoutObject* container_object,
-    const LayoutSize& offset_in_container,
-    TransformationMatrix& transform) const {
   transform.PostTranslate(offset_in_container.Width().ToFloat(),
                           offset_in_container.Height().ToFloat());
 
