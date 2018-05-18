@@ -3395,6 +3395,7 @@ bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
   return GetDocument().InQuirksMode() && !containing_block->IsTableCell() &&
          !containing_block->IsOutOfFlowPositioned() &&
          !containing_block->IsLayoutGrid() &&
+         !containing_block->IsFlexibleBoxIncludingDeprecated() &&
          containing_block->Style()->LogicalHeight().IsAuto();
 }
 
