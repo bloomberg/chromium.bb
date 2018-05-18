@@ -230,7 +230,7 @@ void SessionControllerClient::PrepareForLock(base::OnceClosure callback) {
 }
 
 void SessionControllerClient::StartLock(StartLockCallback callback) {
-  session_controller_->StartLock(callback);
+  session_controller_->StartLock(std::move(callback));
 }
 
 void SessionControllerClient::NotifyChromeLockAnimationsComplete() {
@@ -238,8 +238,9 @@ void SessionControllerClient::NotifyChromeLockAnimationsComplete() {
 }
 
 void SessionControllerClient::RunUnlockAnimation(
-    base::Closure animation_finished_callback) {
-  session_controller_->RunUnlockAnimation(animation_finished_callback);
+    base::OnceClosure animation_finished_callback) {
+  session_controller_->RunUnlockAnimation(
+      std::move(animation_finished_callback));
 }
 
 void SessionControllerClient::ShowTeleportWarningDialog(
