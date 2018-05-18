@@ -19,7 +19,8 @@ class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
       'waterfalls.pyl': waterfalls,
       'test_suites.pyl': test_suites,
       'test_suite_exceptions.pyl': exceptions,
-      '../../infra/config/global/luci-milo.cfg': luci_milo_cfg,
+      os.path.join( '..', '..', 'infra', 'config', 'global', 'luci-milo.cfg'):
+          luci_milo_cfg,
     }
 
   def read_file(self, relative_path):
