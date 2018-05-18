@@ -4767,6 +4767,9 @@
   <message name="IDS_ARC_OOBE_TERMS_POPUP_HELP_CLOSE_BUTTON" desc="Close button of the popup local help of Arc Play Store Terms OOBE dialog.">
     Close
   </message>
+  <message name="IDS_ARC_POPUP_HELP_LOADING" desc="Loading message of the Arc popup help.">
+    Loading...
+  </message>
   <message name="IDS_LOW_DISK_NOTIFICATION_TITLE" desc="Title of the notification warning users that they are low on disk space.">
     Device is low on disk space
   </message>

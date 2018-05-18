@@ -118,6 +118,7 @@ void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
       IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE);
   builder->Add("arcLearnMorePaiService", IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE);
   builder->Add("arcOverlayClose", IDS_ARC_OOBE_TERMS_POPUP_HELP_CLOSE_BUTTON);
+  builder->Add("arcOverlayLoading", IDS_ARC_POPUP_HELP_LOADING);
 }
 
 void ArcTermsOfServiceScreenHandler::SendArcManagedStatus(Profile* profile) {

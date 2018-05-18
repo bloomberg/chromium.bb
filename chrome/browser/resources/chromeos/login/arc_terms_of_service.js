@@ -36,6 +36,13 @@ Polymer({
   },
 
   /**
+   * Returns focused element inside this element.
+   */
+  getActiveElement: function(id) {
+    return this.shadowRoot.activeElement;
+  },
+
+  /**
    * On-tap event handler for Accept button.
    *
    * @private

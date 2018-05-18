@@ -220,10 +220,15 @@
   </div>
   <div id="overlay-container" class="overlay" hidden>
     <div class="page" id="overlay-page">
-      <div class="close-button"></div>
+      <div id="close-button" class="close-button"></div>
       <div class="content-area">
         <span id="overlay-text-content"></span>
-        <webview id="overlay-url"></webview>
+        <div id="overlay-url-container">
+          <webview id="overlay-url"></webview>
+          <div id="overlay-url-loading">
+            <p i18n-content="overlayLoading"></p>
+          </div>
+        </div>
       </div>
       <div class="action-area">
         <div class="action-area-right">

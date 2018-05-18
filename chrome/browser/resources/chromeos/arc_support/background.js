@@ -728,6 +728,9 @@ function initialize(data, deviceId) {
   activeDirectoryAuthPage =
       new ActiveDirectoryAuthPage(doc.getElementById('active-directory-auth'));
 
+  doc.getElementById('close-button').title =
+      loadTimeData.getString('overlayClose');
+
   adjustTopMargin();
 }
 
