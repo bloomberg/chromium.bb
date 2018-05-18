@@ -72,7 +72,6 @@ class ChromeOmniboxClient : public OmniboxClient {
                      bool user_input_in_progress,
                      const base::string16& user_text,
                      const AutocompleteResult& result,
-                     bool is_popup_open,
                      bool has_focus) override;
   void OnRevert() override;
   void OnURLOpenedFromOmnibox(OmniboxLog* log) override;

@@ -49,7 +49,6 @@ class ChromeOmniboxClientIOS : public OmniboxClient {
                                const AutocompleteMatch& match,
                                WindowOpenDisposition disposition,
                                OmniboxNavigationObserver* observer) override;
-  void OnInputStateChanged() override;
   void OnFocusChanged(OmniboxFocusState state,
                       OmniboxFocusChangeReason reason) override;
   void OnResultChanged(
@@ -57,20 +56,10 @@ class ChromeOmniboxClientIOS : public OmniboxClient {
       bool default_match_changed,
       const base::Callback<void(int result_index, const SkBitmap& bitmap)>&
           on_bitmap_fetched) override;
-  void OnCurrentMatchChanged(const AutocompleteMatch& match) override;
-  void OnURLOpenedFromOmnibox(OmniboxLog* log) override;
   void OnBookmarkLaunched() override;
   void DiscardNonCommittedNavigations() override;
   const base::string16& GetTitle() const override;
   gfx::Image GetFavicon() const override;
-  void OnTextChanged(const AutocompleteMatch& current_match,
-                     bool user_input_in_progress,
-                     const base::string16& user_text,
-                     const AutocompleteResult& result,
-                     bool is_popup_open,
-                     bool has_focus) override;
-  void OnInputAccepted(const AutocompleteMatch& match) override;
-  void OnRevert() override;
 
  private:
   WebOmniboxEditController* controller_;
