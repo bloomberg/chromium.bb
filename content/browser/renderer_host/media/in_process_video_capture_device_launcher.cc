@@ -27,7 +27,7 @@
 #else
 #include "content/browser/media/capture/web_contents_video_capture_device.h"
 #if defined(USE_AURA)
-#include "content/browser/media/capture/aura_window_video_capture_device.h"
+#include "content/browser/media/capture/desktop_capture_device_aura.h"
 #endif
 #include "content/browser/media/capture/desktop_capture_device.h"
 #endif  // defined(OS_ANDROID)
@@ -127,13 +127,6 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
 
     case MEDIA_DESKTOP_VIDEO_CAPTURE: {
       const DesktopMediaID desktop_id = DesktopMediaID::Parse(device_id);
-      if (desktop_id.is_null()) {
-        DLOG(ERROR) << "Desktop media ID is null";
-        start_capture_closure =
-            base::BindOnce(std::move(after_start_capture_callback), nullptr);
-        break;
-      }
-
 #if !defined(OS_ANDROID)
       if (desktop_id.type == DesktopMediaID::TYPE_WEB_CONTENTS) {
         after_start_capture_callback = base::BindOnce(
@@ -159,19 +152,6 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
         break;
       }
 #endif  // !defined(OS_ANDROID)
-
-#if defined(USE_AURA)
-      if (desktop_id.aura_id != DesktopMediaID::kNullId) {
-        start_capture_closure = base::BindOnce(
-            &InProcessVideoCaptureDeviceLauncher::
-                DoStartAuraWindowCaptureOnDeviceThread,
-            base::Unretained(this), desktop_id, params, std::move(receiver),
-            std::move(after_start_capture_callback));
-        break;
-      }
-#endif  // defined(USE_AURA)
-
-      // All cases other than tab capture or Aura desktop/window capture.
       start_capture_closure = base::BindOnce(
           &InProcessVideoCaptureDeviceLauncher::
               DoStartDesktopCaptureOnDeviceThread,
@@ -302,41 +282,6 @@ void InProcessVideoCaptureDeviceLauncher::DoStartTabCaptureOnDeviceThread(
 }
 #endif  // !defined(OS_ANDROID)
 
-#if defined(USE_AURA)
-void InProcessVideoCaptureDeviceLauncher::
-    DoStartAuraWindowCaptureOnDeviceThread(
-        const DesktopMediaID& device_id,
-        const media::VideoCaptureParams& params,
-        std::unique_ptr<media::VideoFrameReceiver> receiver,
-        ReceiveDeviceCallback result_callback) {
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StartDeviceTime");
-  DCHECK(device_task_runner_->BelongsToCurrentThread());
-
-  auto video_capture_device =
-      std::make_unique<AuraWindowVideoCaptureDevice>(device_id);
-  if (video_capture_device) {
-    video_capture_device->AllocateAndStartWithReceiver(params,
-                                                       std::move(receiver));
-    switch (device_id.type) {
-      case DesktopMediaID::TYPE_SCREEN:
-        IncrementDesktopCaptureCounter(SCREEN_CAPTURER_CREATED);
-        IncrementDesktopCaptureCounter(
-            device_id.audio_share ? SCREEN_CAPTURER_CREATED_WITH_AUDIO
-                                  : SCREEN_CAPTURER_CREATED_WITHOUT_AUDIO);
-        break;
-      case DesktopMediaID::TYPE_WINDOW:
-        IncrementDesktopCaptureCounter(WINDOW_CAPTURER_CREATED);
-        break;
-      case DesktopMediaID::TYPE_NONE:
-      case DesktopMediaID::TYPE_WEB_CONTENTS:
-        NOTREACHED();
-        break;
-    }
-  }
-  std::move(result_callback).Run(std::move(video_capture_device));
-}
-#endif  // defined(USE_AURA)
-
 void InProcessVideoCaptureDeviceLauncher::DoStartDesktopCaptureOnDeviceThread(
     const DesktopMediaID& desktop_id,
     const media::VideoCaptureParams& params,
@@ -344,12 +289,20 @@ void InProcessVideoCaptureDeviceLauncher::DoStartDesktopCaptureOnDeviceThread(
     ReceiveDeviceCallback result_callback) {
   SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StartDeviceTime");
   DCHECK(device_task_runner_->BelongsToCurrentThread());
-  DCHECK(!desktop_id.is_null());
+
+  if (desktop_id.is_null()) {
+    DLOG(ERROR) << "Desktop media ID is null";
+    std::move(result_callback).Run(nullptr);
+    return;
+  }
 
   std::unique_ptr<media::VideoCaptureDevice> video_capture_device;
 #if defined(OS_ANDROID)
   video_capture_device = std::make_unique<ScreenCaptureDeviceAndroid>();
 #else
+#if defined(USE_AURA)
+  video_capture_device = DesktopCaptureDeviceAura::Create(desktop_id);
+#endif  // defined(USE_AURA)
   if (!video_capture_device)
     video_capture_device = DesktopCaptureDevice::Create(desktop_id);
 #endif  // defined (OS_ANDROID)
