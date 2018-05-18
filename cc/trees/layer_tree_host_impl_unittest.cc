@@ -10,14 +10,17 @@
 #include <cmath>
 #include <utility>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/transform_operations.h"
@@ -11618,6 +11621,51 @@ TEST_F(LayerTreeHostImplTest, OnDrawConstraintSetNeedsRedraw) {
                      resourceless_software_draw);
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_FALSE(last_on_draw_frame_->has_no_damage);
+}
+
+// TODO(gyuyoung): OnMemoryPressure disabled on ASAN, TSAN, Android, windows
+//                 due to the test failure. Will be handled on
+//                 http://crbug.com/1000193.
+#if defined(OS_WIN) || defined(OS_ANDROID) || defined(ADDRESS_SANITIZER) || \
+    defined(THREAD_SANITIZER)
+#define MAYBE_OnMemoryPressure DISABLED_OnMemoryPressure
+#else
+#define MAYBE_OnMemoryPressure OnMemoryPressure
+#endif
+
+TEST_F(LayerTreeHostImplTest, MAYBE_OnMemoryPressure) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableLowEndDeviceMode);
+
+  const gfx::Size viewport_size(100, 100);
+  host_impl_->SetViewportSize(viewport_size);
+  host_impl_->CreatePendingTree();
+  scoped_refptr<FakeRasterSource> raster_source(
+      FakeRasterSource::CreateFilled(viewport_size));
+  std::unique_ptr<FakePictureLayerImpl> layer(
+      FakePictureLayerImpl::CreateWithRasterSource(host_impl_->pending_tree(),
+                                                   11, raster_source));
+  layer->SetBounds(viewport_size);
+  layer->SetDrawsContent(true);
+  host_impl_->pending_tree()->SetRootLayerForTesting(std::move(layer));
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_->ActivateSyncTree();
+  const gfx::Transform draw_transform;
+  host_impl_->OnDraw(draw_transform, gfx::Rect(viewport_size), false);
+
+  std::unique_ptr<base::ProcessMetrics> metric(
+      base::ProcessMetrics::CreateCurrentProcessMetrics());
+  size_t current_memory_usage = metric->GetMallocUsage();
+
+  base::MemoryPressureListener::SimulatePressureNotification(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+
+  size_t memory_usage_after_memory_pressure = metric->GetMallocUsage();
+
+  // Memory usage after the memory pressure should be less than previous one.
+  EXPECT_LT(memory_usage_after_memory_pressure, current_memory_usage);
+  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
 }
 
 // We will force the touch event handler to be passive if we touch on a layer

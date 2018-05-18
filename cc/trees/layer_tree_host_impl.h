@@ -17,6 +17,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "cc/base/synced_property.h"
@@ -859,6 +860,9 @@ class CC_EXPORT LayerTreeHostImpl
   // active tree.
   void ActivateStateForImages();
 
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level);
+
   std::unordered_map<UIResourceId, UIResourceData> ui_resource_map_;
   // UIResources are held here once requested to be deleted until they are
   // released from the display compositor, then the backing can be deleted.
@@ -1072,6 +1076,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   const int default_color_space_id_;
   const gfx::ColorSpace default_color_space_;
+
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };
