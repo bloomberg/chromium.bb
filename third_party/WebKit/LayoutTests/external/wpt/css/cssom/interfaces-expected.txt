@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 470 tests; 388 PASS, 82 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 442 tests; 386 PASS, 56 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS HTMLElement interface: attribute style
 PASS Unscopable handled correctly for style property on HTMLElement
@@ -332,10 +332,6 @@ PASS CSSStyleDeclaration interface: operation getPropertyPriority(CSSOMString)
 PASS Unscopable handled correctly for getPropertyPriority(CSSOMString) on CSSStyleDeclaration
 PASS CSSStyleDeclaration interface: operation setProperty(CSSOMString, CSSOMString, CSSOMString)
 PASS Unscopable handled correctly for setProperty(CSSOMString, CSSOMString, CSSOMString) on CSSStyleDeclaration
-FAIL CSSStyleDeclaration interface: operation setPropertyValue(CSSOMString, CSSOMString) assert_own_property: interface prototype object missing non-static operation expected property "setPropertyValue" missing
-PASS Unscopable handled correctly for setPropertyValue(CSSOMString, CSSOMString) on CSSStyleDeclaration
-FAIL CSSStyleDeclaration interface: operation setPropertyPriority(CSSOMString, CSSOMString) assert_own_property: interface prototype object missing non-static operation expected property "setPropertyPriority" missing
-PASS Unscopable handled correctly for setPropertyPriority(CSSOMString, CSSOMString) on CSSStyleDeclaration
 PASS CSSStyleDeclaration interface: operation removeProperty(CSSOMString)
 PASS Unscopable handled correctly for removeProperty(CSSOMString) on CSSStyleDeclaration
 PASS CSSStyleDeclaration interface: attribute parentRule
@@ -354,10 +350,6 @@ PASS CSSStyleDeclaration interface: style_element.sheet.cssRules[4].style must i
 PASS CSSStyleDeclaration interface: calling getPropertyPriority(CSSOMString) on style_element.sheet.cssRules[4].style with too few arguments must throw TypeError
 PASS CSSStyleDeclaration interface: style_element.sheet.cssRules[4].style must inherit property "setProperty(CSSOMString, CSSOMString, CSSOMString)" with the proper type
 PASS CSSStyleDeclaration interface: calling setProperty(CSSOMString, CSSOMString, CSSOMString) on style_element.sheet.cssRules[4].style with too few arguments must throw TypeError
-FAIL CSSStyleDeclaration interface: style_element.sheet.cssRules[4].style must inherit property "setPropertyValue(CSSOMString, CSSOMString)" with the proper type assert_inherits: property "setPropertyValue" not found in prototype chain
-FAIL CSSStyleDeclaration interface: calling setPropertyValue(CSSOMString, CSSOMString) on style_element.sheet.cssRules[4].style with too few arguments must throw TypeError assert_inherits: property "setPropertyValue" not found in prototype chain
-FAIL CSSStyleDeclaration interface: style_element.sheet.cssRules[4].style must inherit property "setPropertyPriority(CSSOMString, CSSOMString)" with the proper type assert_inherits: property "setPropertyPriority" not found in prototype chain
-FAIL CSSStyleDeclaration interface: calling setPropertyPriority(CSSOMString, CSSOMString) on style_element.sheet.cssRules[4].style with too few arguments must throw TypeError assert_inherits: property "setPropertyPriority" not found in prototype chain
 PASS CSSStyleDeclaration interface: style_element.sheet.cssRules[4].style must inherit property "removeProperty(CSSOMString)" with the proper type
 PASS CSSStyleDeclaration interface: calling removeProperty(CSSOMString) on style_element.sheet.cssRules[4].style with too few arguments must throw TypeError
 PASS CSSStyleDeclaration interface: style_element.sheet.cssRules[4].style must inherit property "parentRule" with the proper type
@@ -374,10 +366,6 @@ PASS CSSStyleDeclaration interface: style_element.sheet.cssRules[2].style must i
 PASS CSSStyleDeclaration interface: calling getPropertyPriority(CSSOMString) on style_element.sheet.cssRules[2].style with too few arguments must throw TypeError
 PASS CSSStyleDeclaration interface: style_element.sheet.cssRules[2].style must inherit property "setProperty(CSSOMString, CSSOMString, CSSOMString)" with the proper type
 PASS CSSStyleDeclaration interface: calling setProperty(CSSOMString, CSSOMString, CSSOMString) on style_element.sheet.cssRules[2].style with too few arguments must throw TypeError
-FAIL CSSStyleDeclaration interface: style_element.sheet.cssRules[2].style must inherit property "setPropertyValue(CSSOMString, CSSOMString)" with the proper type assert_inherits: property "setPropertyValue" not found in prototype chain
-FAIL CSSStyleDeclaration interface: calling setPropertyValue(CSSOMString, CSSOMString) on style_element.sheet.cssRules[2].style with too few arguments must throw TypeError assert_inherits: property "setPropertyValue" not found in prototype chain
-FAIL CSSStyleDeclaration interface: style_element.sheet.cssRules[2].style must inherit property "setPropertyPriority(CSSOMString, CSSOMString)" with the proper type assert_inherits: property "setPropertyPriority" not found in prototype chain
-FAIL CSSStyleDeclaration interface: calling setPropertyPriority(CSSOMString, CSSOMString) on style_element.sheet.cssRules[2].style with too few arguments must throw TypeError assert_inherits: property "setPropertyPriority" not found in prototype chain
 PASS CSSStyleDeclaration interface: style_element.sheet.cssRules[2].style must inherit property "removeProperty(CSSOMString)" with the proper type
 PASS CSSStyleDeclaration interface: calling removeProperty(CSSOMString) on style_element.sheet.cssRules[2].style with too few arguments must throw TypeError
 PASS CSSStyleDeclaration interface: style_element.sheet.cssRules[2].style must inherit property "parentRule" with the proper type
@@ -394,10 +382,6 @@ FAIL CSSStyleDeclaration interface: style_element.sheet.cssRules[2].cssRules[0].
 FAIL CSSStyleDeclaration interface: calling getPropertyPriority(CSSOMString) on style_element.sheet.cssRules[2].cssRules[0].style with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Cannot read property '0' of undefined"
 FAIL CSSStyleDeclaration interface: style_element.sheet.cssRules[2].cssRules[0].style must inherit property "setProperty(CSSOMString, CSSOMString, CSSOMString)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Cannot read property '0' of undefined"
 FAIL CSSStyleDeclaration interface: calling setProperty(CSSOMString, CSSOMString, CSSOMString) on style_element.sheet.cssRules[2].cssRules[0].style with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Cannot read property '0' of undefined"
-FAIL CSSStyleDeclaration interface: style_element.sheet.cssRules[2].cssRules[0].style must inherit property "setPropertyValue(CSSOMString, CSSOMString)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Cannot read property '0' of undefined"
-FAIL CSSStyleDeclaration interface: calling setPropertyValue(CSSOMString, CSSOMString) on style_element.sheet.cssRules[2].cssRules[0].style with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Cannot read property '0' of undefined"
-FAIL CSSStyleDeclaration interface: style_element.sheet.cssRules[2].cssRules[0].style must inherit property "setPropertyPriority(CSSOMString, CSSOMString)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Cannot read property '0' of undefined"
-FAIL CSSStyleDeclaration interface: calling setPropertyPriority(CSSOMString, CSSOMString) on style_element.sheet.cssRules[2].cssRules[0].style with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Cannot read property '0' of undefined"
 FAIL CSSStyleDeclaration interface: style_element.sheet.cssRules[2].cssRules[0].style must inherit property "removeProperty(CSSOMString)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Cannot read property '0' of undefined"
 FAIL CSSStyleDeclaration interface: calling removeProperty(CSSOMString) on style_element.sheet.cssRules[2].cssRules[0].style with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Cannot read property '0' of undefined"
 FAIL CSSStyleDeclaration interface: style_element.sheet.cssRules[2].cssRules[0].style must inherit property "parentRule" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Cannot read property '0' of undefined"
@@ -414,10 +398,6 @@ PASS CSSStyleDeclaration interface: style_element.style must inherit property "g
 PASS CSSStyleDeclaration interface: calling getPropertyPriority(CSSOMString) on style_element.style with too few arguments must throw TypeError
 PASS CSSStyleDeclaration interface: style_element.style must inherit property "setProperty(CSSOMString, CSSOMString, CSSOMString)" with the proper type
 PASS CSSStyleDeclaration interface: calling setProperty(CSSOMString, CSSOMString, CSSOMString) on style_element.style with too few arguments must throw TypeError
-FAIL CSSStyleDeclaration interface: style_element.style must inherit property "setPropertyValue(CSSOMString, CSSOMString)" with the proper type assert_inherits: property "setPropertyValue" not found in prototype chain
-FAIL CSSStyleDeclaration interface: calling setPropertyValue(CSSOMString, CSSOMString) on style_element.style with too few arguments must throw TypeError assert_inherits: property "setPropertyValue" not found in prototype chain
-FAIL CSSStyleDeclaration interface: style_element.style must inherit property "setPropertyPriority(CSSOMString, CSSOMString)" with the proper type assert_inherits: property "setPropertyPriority" not found in prototype chain
-FAIL CSSStyleDeclaration interface: calling setPropertyPriority(CSSOMString, CSSOMString) on style_element.style with too few arguments must throw TypeError assert_inherits: property "setPropertyPriority" not found in prototype chain
 PASS CSSStyleDeclaration interface: style_element.style must inherit property "removeProperty(CSSOMString)" with the proper type
 PASS CSSStyleDeclaration interface: calling removeProperty(CSSOMString) on style_element.style with too few arguments must throw TypeError
 PASS CSSStyleDeclaration interface: style_element.style must inherit property "parentRule" with the proper type
@@ -434,10 +414,6 @@ PASS CSSStyleDeclaration interface: svg_element.style must inherit property "get
 PASS CSSStyleDeclaration interface: calling getPropertyPriority(CSSOMString) on svg_element.style with too few arguments must throw TypeError
 PASS CSSStyleDeclaration interface: svg_element.style must inherit property "setProperty(CSSOMString, CSSOMString, CSSOMString)" with the proper type
 PASS CSSStyleDeclaration interface: calling setProperty(CSSOMString, CSSOMString, CSSOMString) on svg_element.style with too few arguments must throw TypeError
-FAIL CSSStyleDeclaration interface: svg_element.style must inherit property "setPropertyValue(CSSOMString, CSSOMString)" with the proper type assert_inherits: property "setPropertyValue" not found in prototype chain
-FAIL CSSStyleDeclaration interface: calling setPropertyValue(CSSOMString, CSSOMString) on svg_element.style with too few arguments must throw TypeError assert_inherits: property "setPropertyValue" not found in prototype chain
-FAIL CSSStyleDeclaration interface: svg_element.style must inherit property "setPropertyPriority(CSSOMString, CSSOMString)" with the proper type assert_inherits: property "setPropertyPriority" not found in prototype chain
-FAIL CSSStyleDeclaration interface: calling setPropertyPriority(CSSOMString, CSSOMString) on svg_element.style with too few arguments must throw TypeError assert_inherits: property "setPropertyPriority" not found in prototype chain
 PASS CSSStyleDeclaration interface: svg_element.style must inherit property "removeProperty(CSSOMString)" with the proper type
 PASS CSSStyleDeclaration interface: calling removeProperty(CSSOMString) on svg_element.style with too few arguments must throw TypeError
 PASS CSSStyleDeclaration interface: svg_element.style must inherit property "parentRule" with the proper type
@@ -454,10 +430,6 @@ PASS CSSStyleDeclaration interface: getComputedStyle(svg_element) must inherit p
 PASS CSSStyleDeclaration interface: calling getPropertyPriority(CSSOMString) on getComputedStyle(svg_element) with too few arguments must throw TypeError
 PASS CSSStyleDeclaration interface: getComputedStyle(svg_element) must inherit property "setProperty(CSSOMString, CSSOMString, CSSOMString)" with the proper type
 PASS CSSStyleDeclaration interface: calling setProperty(CSSOMString, CSSOMString, CSSOMString) on getComputedStyle(svg_element) with too few arguments must throw TypeError
-FAIL CSSStyleDeclaration interface: getComputedStyle(svg_element) must inherit property "setPropertyValue(CSSOMString, CSSOMString)" with the proper type assert_inherits: property "setPropertyValue" not found in prototype chain
-FAIL CSSStyleDeclaration interface: calling setPropertyValue(CSSOMString, CSSOMString) on getComputedStyle(svg_element) with too few arguments must throw TypeError assert_inherits: property "setPropertyValue" not found in prototype chain
-FAIL CSSStyleDeclaration interface: getComputedStyle(svg_element) must inherit property "setPropertyPriority(CSSOMString, CSSOMString)" with the proper type assert_inherits: property "setPropertyPriority" not found in prototype chain
-FAIL CSSStyleDeclaration interface: calling setPropertyPriority(CSSOMString, CSSOMString) on getComputedStyle(svg_element) with too few arguments must throw TypeError assert_inherits: property "setPropertyPriority" not found in prototype chain
 PASS CSSStyleDeclaration interface: getComputedStyle(svg_element) must inherit property "removeProperty(CSSOMString)" with the proper type
 PASS CSSStyleDeclaration interface: calling removeProperty(CSSOMString) on getComputedStyle(svg_element) with too few arguments must throw TypeError
 PASS CSSStyleDeclaration interface: getComputedStyle(svg_element) must inherit property "parentRule" with the proper type
