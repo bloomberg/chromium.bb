@@ -221,6 +221,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/webcontents/WebContentsObserverProxy.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsUserData.java",
     "java/src/org/chromium/content/common/ContentSwitchUtils.java",
+    "java/src/org/chromium/content/common/ServiceManagerConnectionImpl.java",
     "java/src/org/chromium/content/common/SurfaceWrapper.java",
     "java/src/org/chromium/content_public/browser/AccessibilitySnapshotCallback.java",
     "java/src/org/chromium/content_public/browser/AccessibilitySnapshotNode.java",
@@ -269,6 +270,7 @@ android_library("content_java") {
     "java/src/org/chromium/content_public/common/Referrer.java",
     "java/src/org/chromium/content_public/common/ResourceRequestBody.java",
     "java/src/org/chromium/content_public/common/ScreenOrientationConstants.java",
+    "java/src/org/chromium/content_public/common/ServiceManagerConnection.java",
     "java/src/org/chromium/content_public/common/UseZoomForDSFPolicy.java",
   ]
 }
@@ -391,6 +393,7 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/selection/SmartSelectionClient.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsObserverProxy.java",
+    "java/src/org/chromium/content/common/ServiceManagerConnectionImpl.java",
     "java/src/org/chromium/content_public/browser/LoadUrlParams.java",
     "java/src/org/chromium/content_public/common/MediaMetadata.java",
     "java/src/org/chromium/content_public/common/ResourceRequestBody.java",
@@ -435,6 +438,8 @@ android_library("content_javatests") {
     "//mojo/public/mojom/base:base_java",
     "//net/android:net_java",
     "//net/android:net_java_test_support",
+    "//services/service_manager/public/java:service_manager_java",
+    "//services/test/echo/public/mojom:mojom_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/android_tools:android_support_annotations_java",
@@ -500,6 +505,7 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/picker/DateTimePickerDialogTest.java",
     "javatests/src/org/chromium/content/browser/webcontents/AccessibilitySnapshotTest.java",
     "javatests/src/org/chromium/content/browser/webcontents/WebContentsTest.java",
+    "javatests/src/org/chromium/content/common/ServiceManagerConnectionImplTest.java",
   ]
 
   data = [

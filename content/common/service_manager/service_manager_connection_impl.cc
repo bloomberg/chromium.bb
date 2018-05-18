@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/common/child.mojom.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/service_names.mojom.h"
@@ -27,6 +28,13 @@
 #include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "jni/ServiceManagerConnectionImpl_jni.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
+#endif
 
 namespace content {
 namespace {
@@ -350,6 +358,23 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadContext);
 };
+
+#if defined(OS_ANDROID)
+// static
+jint JNI_ServiceManagerConnectionImpl_GetConnectorMessagePipeHandle(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller) {
+  DCHECK(ServiceManagerConnection::GetForProcess());
+
+  service_manager::mojom::ConnectorPtrInfo connector_info;
+  ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindConnectorRequest(mojo::MakeRequest(&connector_info));
+
+  return connector_info.PassHandle().release().value();
+}
+
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // ServiceManagerConnection, public:
