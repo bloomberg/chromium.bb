@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,6 +22,13 @@ namespace content {
 
 const char kNotificationId[] = "my-notification";
 const int64_t kServiceWorkerRegistrationId = 9001;
+const bool kReplacedExistingNotification = true;
+const int kNumClicks = 8;
+const int kNumActionButtonClicks = 9;
+const double kInitTimeMillis = 12345;
+const int kTimeUntilFirstClickMillis = 11111;
+const int kTimeUntilLastClickMillis = 22222;
+const int kTimeUntilCloseMillis = 33333;
 
 const PlatformNotificationActionType kNotificationActionType =
     PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
@@ -40,10 +48,11 @@ const unsigned char kNotificationData[] = {0xdf, 0xff, 0x0, 0x0, 0xff, 0xdf};
 TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   std::vector<int> vibration_pattern(
       kNotificationVibrationPattern,
-      kNotificationVibrationPattern + arraysize(kNotificationVibrationPattern));
+      kNotificationVibrationPattern +
+          base::size(kNotificationVibrationPattern));
 
   std::vector<char> developer_data(
-      kNotificationData, kNotificationData + arraysize(kNotificationData));
+      kNotificationData, kNotificationData + base::size(kNotificationData));
 
   PlatformNotificationData notification_data;
   notification_data.title = base::ASCIIToUTF16(kNotificationTitle);
@@ -77,7 +86,17 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   database_data.origin = GURL(kOrigin);
   database_data.service_worker_registration_id = kServiceWorkerRegistrationId;
   database_data.notification_data = notification_data;
-
+  database_data.replaced_existing_notification = kReplacedExistingNotification;
+  database_data.num_clicks = kNumClicks;
+  database_data.num_action_button_clicks = kNumActionButtonClicks;
+  database_data.creation_time_millis = base::Time::FromDoubleT(kInitTimeMillis);
+  database_data.time_until_first_click_millis =
+      base::TimeDelta::FromMilliseconds(kTimeUntilFirstClickMillis);
+  database_data.time_until_last_click_millis =
+      base::TimeDelta::FromMilliseconds(kTimeUntilLastClickMillis);
+  database_data.time_until_close_millis =
+      base::TimeDelta::FromMilliseconds(kTimeUntilCloseMillis);
+  database_data.closed_reason = NotificationDatabaseData::ClosedReason::USER;
   std::string serialized_data;
 
   // Serialize the data in |notification_data| to the string |serialized_data|.
@@ -94,6 +113,20 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   EXPECT_EQ(database_data.origin, copied_data.origin);
   EXPECT_EQ(database_data.service_worker_registration_id,
             copied_data.service_worker_registration_id);
+  EXPECT_EQ(database_data.num_clicks, copied_data.num_clicks);
+  EXPECT_EQ(database_data.num_action_button_clicks,
+            copied_data.num_action_button_clicks);
+  EXPECT_EQ(database_data.replaced_existing_notification,
+            copied_data.replaced_existing_notification);
+  EXPECT_EQ(database_data.creation_time_millis,
+            copied_data.creation_time_millis);
+  EXPECT_EQ(database_data.time_until_first_click_millis,
+            copied_data.time_until_first_click_millis);
+  EXPECT_EQ(database_data.time_until_last_click_millis,
+            copied_data.time_until_last_click_millis);
+  EXPECT_EQ(database_data.time_until_close_millis,
+            copied_data.time_until_close_millis);
+  EXPECT_EQ(database_data.closed_reason, copied_data.closed_reason);
 
   const PlatformNotificationData& copied_notification_data =
       copied_data.notification_data;
@@ -170,7 +203,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeDirections) {
       PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT,
       PlatformNotificationData::DIRECTION_AUTO};
 
-  for (size_t i = 0; i < arraysize(directions); ++i) {
+  for (size_t i = 0; i < base::size(directions); ++i) {
     PlatformNotificationData notification_data;
     notification_data.direction = directions[i];
 
@@ -186,6 +219,28 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeDirections) {
         DeserializeNotificationDatabaseData(serialized_data, &copied_data));
 
     EXPECT_EQ(directions[i], copied_data.notification_data.direction);
+  }
+}
+
+TEST(NotificationDatabaseDataTest, SerializeAndDeserializeclosed_reasons) {
+  NotificationDatabaseData::ClosedReason closed_reasons[] = {
+      NotificationDatabaseData::ClosedReason::USER,
+      NotificationDatabaseData::ClosedReason::DEVELOPER,
+      NotificationDatabaseData::ClosedReason::UNKNOWN};
+
+  for (size_t i = 0; i < base::size(closed_reasons); ++i) {
+    NotificationDatabaseData database_data;
+    database_data.closed_reason = closed_reasons[i];
+
+    std::string serialized_data;
+    ASSERT_TRUE(
+        SerializeNotificationDatabaseData(database_data, &serialized_data));
+
+    NotificationDatabaseData copied_data;
+    ASSERT_TRUE(
+        DeserializeNotificationDatabaseData(serialized_data, &copied_data));
+
+    EXPECT_EQ(closed_reasons[i], copied_data.closed_reason);
   }
 }
 
