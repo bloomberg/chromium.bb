@@ -19,6 +19,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/nix/xdg_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -1159,18 +1160,23 @@ ProxyConfigServiceLinux::Delegate::GetConfigFromSettings() {
 
   return ProxyConfigWithAnnotation(
       config, NetworkTrafficAnnotationTag(traffic_annotation_));
-  ;
 }
-
-ProxyConfigServiceLinux::Delegate::Delegate()
-    : env_var_getter_(base::Environment::Create()) {}
 
 ProxyConfigServiceLinux::Delegate::Delegate(
     std::unique_ptr<base::Environment> env_var_getter,
-    const NetworkTrafficAnnotationTag& traffic_annotation)
-    : env_var_getter_(std::move(env_var_getter)),
-      traffic_annotation_(
-          MutableNetworkTrafficAnnotationTag(traffic_annotation)) {
+    base::Optional<std::unique_ptr<SettingGetter>> setting_getter,
+    base::Optional<NetworkTrafficAnnotationTag> traffic_annotation)
+    : env_var_getter_(std::move(env_var_getter)) {
+  if (traffic_annotation) {
+    traffic_annotation_ =
+        MutableNetworkTrafficAnnotationTag(traffic_annotation.value());
+  }
+
+  if (setting_getter) {
+    setting_getter_ = std::move(setting_getter.value());
+    return;
+  }
+
   // Figure out which SettingGetterImpl to use, if any.
   switch (base::nix::GetDesktopEnvironment(env_var_getter_.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_CINNAMON:
@@ -1198,15 +1204,6 @@ ProxyConfigServiceLinux::Delegate::Delegate(
       break;
   }
 }
-
-ProxyConfigServiceLinux::Delegate::Delegate(
-    std::unique_ptr<base::Environment> env_var_getter,
-    SettingGetter* setting_getter,
-    const NetworkTrafficAnnotationTag& traffic_annotation)
-    : env_var_getter_(std::move(env_var_getter)),
-      setting_getter_(setting_getter),
-      traffic_annotation_(
-          MutableNetworkTrafficAnnotationTag(traffic_annotation)) {}
 
 void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
     const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
@@ -1387,7 +1384,9 @@ void ProxyConfigServiceLinux::Delegate::OnDestroy() {
 }
 
 ProxyConfigServiceLinux::ProxyConfigServiceLinux()
-    : delegate_(new Delegate()) {}
+    : delegate_(new Delegate(base::Environment::Create(),
+                             base::nullopt,
+                             base::nullopt)) {}
 
 ProxyConfigServiceLinux::~ProxyConfigServiceLinux() {
   delegate_->PostDestroyTask();
@@ -1396,14 +1395,16 @@ ProxyConfigServiceLinux::~ProxyConfigServiceLinux() {
 ProxyConfigServiceLinux::ProxyConfigServiceLinux(
     std::unique_ptr<base::Environment> env_var_getter,
     const NetworkTrafficAnnotationTag& traffic_annotation)
-    : delegate_(new Delegate(std::move(env_var_getter), traffic_annotation)) {}
+    : delegate_(new Delegate(std::move(env_var_getter),
+                             base::nullopt,
+                             traffic_annotation)) {}
 
 ProxyConfigServiceLinux::ProxyConfigServiceLinux(
     std::unique_ptr<base::Environment> env_var_getter,
     SettingGetter* setting_getter,
     const NetworkTrafficAnnotationTag& traffic_annotation)
     : delegate_(new Delegate(std::move(env_var_getter),
-                             setting_getter,
+                             base::WrapUnique(setting_getter),
                              traffic_annotation)) {}
 
 void ProxyConfigServiceLinux::AddObserver(Observer* observer) {
