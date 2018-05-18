@@ -144,7 +144,7 @@ var StatsTable = (function(ssrcInfoManager) {
 
       // Highlights the table for the active connection.
       if (rowName == 'googActiveConnection') {
-        if (value === 'true') {
+        if (value === true) {
           statsTable.parentElement.classList.add(activeConnectionClass);
         } else {
           statsTable.parentElement.classList.remove(activeConnectionClass);
