@@ -30,9 +30,9 @@ namespace subresource_filter {
 
 namespace {
 
-void LogActivationUkm(content::NavigationHandle* navigation_handle,
-                      ActivationDecision decision,
-                      ActivationLevel level) {
+void LogActivationDecision(content::NavigationHandle* navigation_handle,
+                           ActivationDecision decision,
+                           ActivationLevel level) {
   ukm::SourceId source_id = ukm::ConvertToSourceId(
       navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
   ukm::builders::SubresourceFilter builder(source_id);
@@ -42,6 +42,10 @@ void LogActivationUkm(content::NavigationHandle* navigation_handle,
     builder.SetDryRun(true);
   }
   builder.Record(ukm::UkmRecorder::Get());
+
+  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.PageLoad.ActivationDecision",
+                            decision,
+                            ActivationDecision::ACTIVATION_DECISION_MAX);
 }
 
 }  // namespace
@@ -246,8 +250,9 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
     matched_configuration = Configuration();
   }
 
-  LogActivationUkm(navigation_handle(), activation_decision,
-                   matched_configuration.activation_options.activation_level);
+  LogActivationDecision(
+      navigation_handle(), activation_decision,
+      matched_configuration.activation_options.activation_level);
   driver_factory->NotifyPageActivationComputed(
       navigation_handle(), activation_decision, matched_configuration, warning);
 

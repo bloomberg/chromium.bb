@@ -947,8 +947,6 @@ jumbo_split_static_library("browser") {
     "page_load_metrics/observers/security_state_page_load_metrics_observer.h",
     "page_load_metrics/observers/service_worker_page_load_metrics_observer.cc",
     "page_load_metrics/observers/service_worker_page_load_metrics_observer.h",
-    "page_load_metrics/observers/subresource_filter_metrics_observer.cc",
-    "page_load_metrics/observers/subresource_filter_metrics_observer.h",
     "page_load_metrics/observers/tab_restore_page_load_metrics_observer.cc",
     "page_load_metrics/observers/tab_restore_page_load_metrics_observer.h",
     "page_load_metrics/observers/ukm_page_load_metrics_observer.cc",
