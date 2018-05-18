@@ -47,10 +47,9 @@ void OutputSurface::UpdateLatencyInfoOnSwap(
     std::vector<ui::LatencyInfo>* latency_info) {
   for (auto& latency : *latency_info) {
     latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0, response.swap_start,
-        1);
+        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, response.swap_start, 1);
     latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0,
+        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0,
         response.swap_end, 1);
   }
 }
@@ -58,10 +57,8 @@ void OutputSurface::UpdateLatencyInfoOnSwap(
 bool OutputSurface::LatencyInfoHasSnapshotRequest(
     const std::vector<ui::LatencyInfo>& latency_info) {
   for (const auto& latency : latency_info) {
-    if (latency.FindLatency(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-                            nullptr)) {
+    if (latency.Snapshots().size())
       return true;
-    }
   }
   return false;
 }

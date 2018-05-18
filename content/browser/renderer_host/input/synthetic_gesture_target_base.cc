@@ -49,7 +49,7 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
                "type", WebInputEvent::GetName(event.GetType()));
 
   ui::LatencyInfo latency_info;
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0);
 
   if (WebInputEvent::IsTouchEventType(event.GetType())) {
     const WebTouchEvent& web_touch =

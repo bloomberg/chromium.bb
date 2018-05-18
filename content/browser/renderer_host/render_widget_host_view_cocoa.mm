@@ -673,7 +673,7 @@ void ExtractUnderlines(NSAttributedString* string,
     latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
   }
 
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0);
 
   // If KeyboardLock has been requested for this keyCode, then mark the event
   // so it skips the pre-handler and is delivered straight to the website.

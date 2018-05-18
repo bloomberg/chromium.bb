@@ -783,6 +783,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                          RenderProcessHost*,
                                          RenderWidgetHost*);
 
+  // Helper for notifying corresponding RenderWidgetHosts
+  static void NotifyCorrespondingRenderWidgetHost(
+      int64_t frame_id,
+      std::set<RenderWidgetHostImpl*>&,
+      const ui::LatencyInfo&);
+
   // Tell this object to destroy itself. If |also_delete| is specified, the
   // destructor is called as well.
   void Destroy(bool also_delete);

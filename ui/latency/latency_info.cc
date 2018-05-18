@@ -39,7 +39,6 @@ const char* GetComponentName(ui::LatencyComponentType type) {
     CASE_TYPE(INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT);
-    CASE_TYPE(BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT);
     CASE_TYPE(TAB_SHOW_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT);
@@ -200,7 +199,6 @@ void LatencyInfo::CopyLatencyFrom(const LatencyInfo& other,
     if (lc.first.first == type) {
       AddLatencyNumberWithTimestamp(lc.first.first,
                                     lc.first.second,
-                                    lc.second.sequence_number,
                                     lc.second.event_time,
                                     lc.second.event_count);
     }
@@ -211,6 +209,8 @@ void LatencyInfo::CopyLatencyFrom(const LatencyInfo& other,
   // isn't very intuitive, and we can actually begin multiple times across
   // copied events.
   terminated_ = other.terminated();
+
+  snapshots_ = other.Snapshots();
 }
 
 void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
@@ -227,7 +227,6 @@ void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
     if (!FindLatency(lc.first.first, lc.first.second, NULL)) {
       AddLatencyNumberWithTimestamp(lc.first.first,
                                     lc.first.second,
-                                    lc.second.sequence_number,
                                     lc.second.event_time,
                                     lc.second.event_count);
     }
@@ -238,38 +237,34 @@ void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
   // very intuitive, and we can actually begin multiple times across copied
   // events.
   terminated_ = other.terminated();
+
+  snapshots_ = other.Snapshots();
 }
 
-void LatencyInfo::AddLatencyNumber(LatencyComponentType component,
-                                   int64_t id,
-                                   int64_t component_sequence_number) {
-  AddLatencyNumberWithTimestampImpl(component, id, component_sequence_number,
-                                    base::TimeTicks::Now(), 1, nullptr);
+void LatencyInfo::AddLatencyNumber(LatencyComponentType component, int64_t id) {
+  AddLatencyNumberWithTimestampImpl(component, id, base::TimeTicks::Now(), 1,
+                                    nullptr);
 }
 
 void LatencyInfo::AddLatencyNumberWithTraceName(
     LatencyComponentType component,
     int64_t id,
-    int64_t component_sequence_number,
     const char* trace_name_str) {
-  AddLatencyNumberWithTimestampImpl(component, id, component_sequence_number,
-                                    base::TimeTicks::Now(), 1, trace_name_str);
+  AddLatencyNumberWithTimestampImpl(component, id, base::TimeTicks::Now(), 1,
+                                    trace_name_str);
 }
 
 void LatencyInfo::AddLatencyNumberWithTimestamp(
     LatencyComponentType component,
     int64_t id,
-    int64_t component_sequence_number,
     base::TimeTicks time,
     uint32_t event_count) {
-  AddLatencyNumberWithTimestampImpl(component, id, component_sequence_number,
-                                    time, event_count, nullptr);
+  AddLatencyNumberWithTimestampImpl(component, id, time, event_count, nullptr);
 }
 
 void LatencyInfo::AddLatencyNumberWithTimestampImpl(
     LatencyComponentType component,
     int64_t id,
-    int64_t component_sequence_number,
     base::TimeTicks time,
     uint32_t event_count,
     const char* trace_name_str) {
@@ -323,12 +318,9 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
   LatencyMap::key_type key = std::make_pair(component, id);
   LatencyMap::iterator it = latency_components_.find(key);
   if (it == latency_components_.end()) {
-    LatencyComponent info = {component_sequence_number, time, event_count, time,
-                             time};
+    LatencyComponent info = {time, event_count, time, time};
     latency_components_[key] = info;
   } else {
-    it->second.sequence_number = std::max(component_sequence_number,
-                                          it->second.sequence_number);
     uint32_t new_count = event_count + it->second.event_count;
     if (event_count > 0 && new_count != 0) {
       // Do a weighted average, so that the new event_time is the average of
@@ -371,12 +363,17 @@ LatencyInfo::AsTraceableData() {
         "time", static_cast<double>(
                     lc.second.event_time.since_origin().InMicroseconds()));
     component_info->SetDouble("count", lc.second.event_count);
-    component_info->SetDouble("sequence_number",
-                              lc.second.sequence_number);
     record_data->Set(GetComponentName(lc.first.first),
                      std::move(component_info));
   }
   record_data->SetDouble("trace_id", static_cast<double>(trace_id_));
+  for (const auto& snapshot : snapshots_) {
+    std::unique_ptr<base::DictionaryValue> snapshot_info(
+        new base::DictionaryValue());
+    snapshot_info->SetInteger("frame_id", snapshot.first);
+    snapshot_info->SetInteger("snapshot_id", snapshot.second);
+    record_data->Set("snapshot_info", std::move(snapshot_info));
+  }
   return LatencyInfoTracedValue::FromValue(std::move(record_data));
 }
 

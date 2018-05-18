@@ -1726,8 +1726,7 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
   if (from_surface) {
     pending_surface_browser_snapshots_.insert(std::make_pair(id, callback));
     ui::LatencyInfo latency_info;
-    latency_info.AddLatencyNumber(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-                                  GetLatencyComponentId(), id);
+    latency_info.AddSnapshot(GetLatencyComponentId(), id);
     Send(new ViewMsg_ForceRedraw(GetRoutingID(), latency_info));
     return;
   }
@@ -1739,10 +1738,10 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
   if (pending_browser_snapshots_.empty())
     GetWakeLock()->RequestWakeLock();
 #endif
+  // TODO(nzolghadr): Remove the duplication here and the if block just above.
   pending_browser_snapshots_.insert(std::make_pair(id, callback));
   ui::LatencyInfo latency_info;
-  latency_info.AddLatencyNumber(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-                                GetLatencyComponentId(), id);
+  latency_info.AddSnapshot(GetLatencyComponentId(), id);
   Send(new ViewMsg_ForceRedraw(GetRoutingID(), latency_info));
 }
 
@@ -2043,12 +2042,9 @@ void RenderWidgetHostImpl::OnGpuSwapBuffersCompletedInternal(
   // Note that a compromised renderer can send LatencyInfo to a
   // RenderWidgetHostImpl other than its own. Be mindful of security
   // implications of the code you add here.
-  ui::LatencyInfo::LatencyComponent window_snapshot_component;
-  if (latency_info.FindLatency(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-                               GetLatencyComponentId(),
-                               &window_snapshot_component)) {
-    int sequence_number =
-        static_cast<int>(window_snapshot_component.sequence_number);
+  if (latency_info.Snapshots().find(GetLatencyComponentId()) !=
+      latency_info.Snapshots().end()) {
+    int snapshot_id = latency_info.Snapshots().at(GetLatencyComponentId());
 #if defined(OS_MACOSX) || defined(OS_WIN)
     // On Mac, when using CoreAnimation, or Win32 when using GDI, there is a
     // delay between when content is drawn to the screen, and when the
@@ -2058,10 +2054,10 @@ void RenderWidgetHostImpl::OnGpuSwapBuffersCompletedInternal(
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&RenderWidgetHostImpl::WindowSnapshotReachedScreen,
-                   weak_factory_.GetWeakPtr(), sequence_number),
+                   weak_factory_.GetWeakPtr(), snapshot_id),
         TimeDelta::FromSecondsD(1. / 6));
 #else
-    WindowSnapshotReachedScreen(sequence_number);
+    WindowSnapshotReachedScreen(snapshot_id);
 #endif
   }
 }
@@ -2710,27 +2706,35 @@ void RenderWidgetHostImpl::OnSnapshotReceived(int snapshot_id,
 }
 
 // static
+void RenderWidgetHostImpl::NotifyCorrespondingRenderWidgetHost(
+    int64_t frame_id,
+    std::set<RenderWidgetHostImpl*>& notified_hosts,
+    const ui::LatencyInfo& latency_info) {
+  // Matches with GetLatencyComponentId.
+  int routing_id = frame_id & 0xffffffff;
+  int process_id = (frame_id >> 32) & 0xffffffff;
+  RenderWidgetHost* rwh = RenderWidgetHost::FromID(process_id, routing_id);
+  if (!rwh)
+    return;
+  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
+  if (notified_hosts.insert(rwhi).second)
+    rwhi->OnGpuSwapBuffersCompletedInternal(latency_info);
+}
+
+// static
 void RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info) {
   for (size_t i = 0; i < latency_info.size(); i++) {
     std::set<RenderWidgetHostImpl*> rwhi_set;
     for (const auto& lc : latency_info[i].latency_components()) {
       if (lc.first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT ||
-          lc.first.first == ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT ||
-          lc.first.first == ui::TAB_SHOW_COMPONENT) {
-        // Matches with GetLatencyComponentId
-        int routing_id = lc.first.second & 0xffffffff;
-        int process_id = (lc.first.second >> 32) & 0xffffffff;
-        RenderWidgetHost* rwh =
-            RenderWidgetHost::FromID(process_id, routing_id);
-        if (!rwh) {
-          continue;
-        }
-        RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
-        if (rwhi_set.insert(rwhi).second)
-          rwhi->OnGpuSwapBuffersCompletedInternal(latency_info[i]);
-      }
+          lc.first.first == ui::TAB_SHOW_COMPONENT)
+        NotifyCorrespondingRenderWidgetHost(lc.first.second, rwhi_set,
+                                            latency_info[i]);
     }
+    for (const auto& snapshot : latency_info[i].Snapshots())
+      NotifyCorrespondingRenderWidgetHost(snapshot.first, rwhi_set,
+                                          latency_info[i]);
   }
 }
 

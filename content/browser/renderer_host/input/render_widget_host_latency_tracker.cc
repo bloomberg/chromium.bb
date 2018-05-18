@@ -171,14 +171,13 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
     latency->AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
         0,
-        0,
         timestamp_original,
         1);
   }
 
   latency->AddLatencyNumberWithTraceName(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, latency_component_id_,
-      ++last_event_id_, WebInputEvent::GetName(event.GetType()));
+      WebInputEvent::GetName(event.GetType()));
 
   if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
     has_seen_first_gesture_scroll_update_ = false;
@@ -193,8 +192,8 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
           has_seen_first_gesture_scroll_update_
               ? ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT
               : ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-          latency_component_id_, original_component.sequence_number,
-          original_component.event_time, original_component.event_count);
+          latency_component_id_, original_component.event_time,
+          original_component.event_count);
     }
 
     has_seen_first_gesture_scroll_update_ = true;
@@ -224,13 +223,13 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
     }
   }
 
-  latency->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0);
+  latency->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0);
   // If this event couldn't have caused a gesture event, and it didn't trigger
   // rendering, we're done processing it. If the event got coalesced then
   // terminate it as well.
   if (!rendering_scheduled || latency->coalesced()) {
     latency->AddLatencyNumber(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, 0);
+        ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0);
   }
 
   ComputeInputLatencyHistograms(event.GetType(), latency_component_id_,
