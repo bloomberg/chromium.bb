@@ -105,7 +105,6 @@ void InspectorEmulationAgent::Restore() {
                        &wait_for_navigation);
 
     // Reinstate the stored policy.
-    double virtual_time_base_ms;
     double virtual_time_ticks_base_ms;
 
     // For Pause, do not pass budget or starvation count.
@@ -113,7 +112,7 @@ void InspectorEmulationAgent::Restore() {
         protocol::Emulation::VirtualTimePolicyEnum::Pause) {
       setVirtualTimePolicy(protocol::Emulation::VirtualTimePolicyEnum::Pause,
                            Maybe<double>(), Maybe<int>(), wait_for_navigation,
-                           std::move(initial_time), &virtual_time_base_ms,
+                           std::move(initial_time),
                            &virtual_time_ticks_base_ms);
       return;
     }
@@ -133,8 +132,7 @@ void InspectorEmulationAgent::Restore() {
 
     setVirtualTimePolicy(virtual_time_policy, budget_remaining,
                          starvation_count, wait_for_navigation,
-                         std::move(initial_time), &virtual_time_base_ms,
-                         &virtual_time_ticks_base_ms);
+                         std::move(initial_time), &virtual_time_ticks_base_ms);
   }
 }
 
@@ -202,7 +200,6 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
     protocol::Maybe<int> max_virtual_time_task_starvation_count,
     protocol::Maybe<bool> wait_for_navigation,
     protocol::Maybe<double> initial_virtual_time,
-    double* virtual_time_base_ms,
     double* virtual_time_ticks_base_ms) {
   state_->setString(EmulationAgentState::kVirtualTimePolicy, policy);
 
@@ -273,12 +270,8 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
   }
 
   if (virtual_time_base_ticks_.is_null()) {
-    *virtual_time_base_ms = 0;
     *virtual_time_ticks_base_ms = 0;
   } else {
-    WTF::TimeDelta virtual_time_base_delta =
-        virtual_time_base_ticks_ - WTF::TimeTicks::UnixEpoch();
-    *virtual_time_base_ms = virtual_time_base_delta.InMillisecondsF();
     *virtual_time_ticks_base_ms =
         (virtual_time_base_ticks_ - WTF::TimeTicks()).InMillisecondsF();
   }

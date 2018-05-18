@@ -118,10 +118,7 @@ Response HeadlessHandler::Disable() {
   return Response::OK();
 }
 
-void HeadlessHandler::BeginFrame(Maybe<double> in_frame_time,
-                                 Maybe<double> in_frame_time_ticks,
-                                 Maybe<double> in_deadline,
-                                 Maybe<double> in_deadline_ticks,
+void HeadlessHandler::BeginFrame(Maybe<double> in_frame_time_ticks,
                                  Maybe<double> in_interval,
                                  Maybe<bool> in_no_display_updates,
                                  Maybe<ScreenshotParams> screenshot,
@@ -141,29 +138,11 @@ void HeadlessHandler::BeginFrame(Maybe<double> in_frame_time,
                     "https://goo.gl/3zHXhB for more info.";
   }
 
-  if (in_frame_time.isJust() && in_frame_time_ticks.isJust()) {
-    callback->sendFailure(Response::InvalidParams(
-        "May only set one of frameTime & frameTimeTicks."));
-    return;
-  }
-
-  if (in_deadline.isJust() && in_deadline_ticks.isJust()) {
-    callback->sendFailure(Response::InvalidParams(
-        "May only set one of deadline & deadlineTicks."));
-    return;
-  }
-
-  base::Time frame_time;
   base::TimeTicks frame_time_ticks;
-  base::TimeTicks deadline;
   base::TimeDelta interval;
   bool no_display_updates = in_no_display_updates.fromMaybe(false);
 
-  if (in_frame_time.isJust()) {
-    frame_time = base::Time::FromJsTime(in_frame_time.fromJust());
-    base::TimeDelta delta = frame_time - base::Time::UnixEpoch();
-    frame_time_ticks = base::TimeTicks::UnixEpoch() + delta;
-  } else if (in_frame_time_ticks.isJust()) {
+  if (in_frame_time_ticks.isJust()) {
     frame_time_ticks = base::TimeTicks() + base::TimeDelta::FromMillisecondsD(
                                                in_frame_time_ticks.fromJust());
   } else {
@@ -182,34 +161,7 @@ void HeadlessHandler::BeginFrame(Maybe<double> in_frame_time,
     interval = viz::BeginFrameArgs::DefaultInterval();
   }
 
-  if (in_deadline.isJust()) {
-    base::TimeDelta delta =
-        base::Time::FromDoubleT(in_deadline.fromJust()) - frame_time;
-    if (delta <= base::TimeDelta()) {
-      callback->sendFailure(
-          Response::InvalidParams("deadline has to be after frameTime"));
-      return;
-    }
-    deadline = frame_time_ticks + delta;
-  } else if (in_deadline_ticks.isJust()) {
-    if (in_frame_time.isJust()) {
-      callback->sendFailure(
-          Response::InvalidParams("Use deadline if frameTime specified"));
-      return;
-    }
-    base::TimeDelta delta =
-        (base::TimeTicks() +
-         base::TimeDelta::FromMillisecondsD(in_deadline_ticks.fromJust())) -
-        frame_time_ticks;
-    if (delta <= base::TimeDelta()) {
-      callback->sendFailure(
-          Response::InvalidParams("deadline has to be after frameTimeTicks"));
-      return;
-    }
-    deadline = frame_time_ticks + delta;
-  } else {
-    deadline = frame_time_ticks + interval;
-  }
+  base::TimeTicks deadline = frame_time_ticks + interval;
 
   bool capture_screenshot = false;
   ImageEncoding encoding;

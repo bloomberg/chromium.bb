@@ -153,8 +153,8 @@ class VirtualTimeBaseTest : public VirtualTimeBrowserTest {
   void SetFirstVirtualTimePolicyDone(
       std::unique_ptr<emulation::SetVirtualTimePolicyResult> result) {
     // Should have enabled virtual time, and returned a valid time base.
-    virtual_time_base_ = result->GetVirtualTimeBase();
-    EXPECT_NE(0, virtual_time_base_);
+    virtual_time_ticks_base_ = result->GetVirtualTimeTicksBase();
+    EXPECT_NE(0, virtual_time_ticks_base_);
 
     // Set with wait_for_navigation, the returned time base shouldn't change.
     devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
@@ -171,7 +171,7 @@ class VirtualTimeBaseTest : public VirtualTimeBrowserTest {
 
   void SetSecondVirtualTimePolicyDone(
       std::unique_ptr<emulation::SetVirtualTimePolicyResult> result) {
-    EXPECT_EQ(virtual_time_base_, result->GetVirtualTimeBase());
+    EXPECT_EQ(virtual_time_ticks_base_, result->GetVirtualTimeTicksBase());
 
     SetVirtualTimePolicyDone(std::move(result));
   }
@@ -183,7 +183,7 @@ class VirtualTimeBaseTest : public VirtualTimeBrowserTest {
   }
 
  private:
-  double virtual_time_base_ = 0;
+  double virtual_time_ticks_base_ = 0;
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(VirtualTimeBaseTest);
