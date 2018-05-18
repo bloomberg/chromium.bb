@@ -99,15 +99,14 @@ class ClientWindowEventHandler : public ui::EventHandler {
     // Because we StopPropagation() in the pre-phase an event should never be
     // received for other phases.
     DCHECK_EQ(event->phase(), EP_PRETARGET);
-    // Events typically target the embedded client. Exceptions include the
+    // Events typically target the embedded client. Exceptions include when the
     // embedder intercepts events, or the window is a top-level and the event is
     // in the non-client area.
-    WindowServiceClient* client =
-        client_window_->owning_window_service_client() &&
-                client_window_->owning_window_service_client()
-                    ->intercepts_events()
-            ? client_window_->owning_window_service_client()
-            : client_window_->embedded_window_service_client();
+    auto* owning = client_window_->owning_window_service_client();
+    auto* embedded = client_window_->embedded_window_service_client();
+    auto* client = (owning && owning->intercepts_events()) || !embedded
+                       ? owning
+                       : embedded;
     DCHECK(client);
     client->SendEventToClient(client_window_->window(), *event);
 
