@@ -47,6 +47,7 @@ class LayoutRect;
 class FloatRect;
 class FloatQuad;
 class FloatBox;
+class JSONArray;
 struct Rotation;
 #if defined(ARCH_CPU_X86_64)
 #define TRANSFORMATION_MATRIX_USE_X86_64_SSE2
@@ -525,6 +526,8 @@ class PLATFORM_EXPORT TransformationMatrix {
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
                                          const TransformationMatrix&);
+PLATFORM_EXPORT std::unique_ptr<JSONArray> TransformAsJSONArray(
+    const TransformationMatrix&);
 
 }  // namespace blink
 

@@ -10,8 +10,6 @@
 
 namespace blink {
 
-class TransformationMatrix;
-
 template <typename T>
 static std::unique_ptr<JSONArray> RectAsJSONArray(const T& rect) {
   std::unique_ptr<JSONArray> array = JSONArray::Create();
@@ -37,9 +35,6 @@ std::unique_ptr<JSONArray> SizeAsJSONArray(const T& size) {
   array->PushDouble(size.Height());
   return array;
 }
-
-PLATFORM_EXPORT std::unique_ptr<JSONArray> TransformAsJSONArray(
-    const TransformationMatrix&);
 
 }  // namespace blink
 
