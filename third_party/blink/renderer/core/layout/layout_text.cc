@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/inline_box_position.h"
 #include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
@@ -616,10 +617,6 @@ PositionWithAffinity CreatePositionWithAffinityForBox(
       offset + text_start_offset, affinity);
 }
 
-TextDirection ContainingBlockDirectionOf(const InlineBox& box) {
-  return box.GetLineLayoutItem().ContainingBlock().Style()->Direction();
-}
-
 PositionWithAffinity
 CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
     const InlineTextBox* box,
@@ -632,70 +629,15 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
   if (static_cast<unsigned>(offset) > box->Len())
     offset = box->Len();
 
-  if ((offset && static_cast<unsigned>(offset) < box->Len()) ||
-      box->Direction() == ContainingBlockDirectionOf(*box)) {
-    // TODO(layout-dev): Fix handling of left on 12CBA
+  if (offset && static_cast<unsigned>(offset) < box->Len()) {
     return CreatePositionWithAffinityForBox(box, box->Start() + offset,
                                             should_affinity_be_downstream);
   }
 
-  bool position_is_at_start_of_box = !offset;
-  if (position_is_at_start_of_box == box->IsLeftToRightDirection()) {
-    // offset is on the left edge
-
-    const InlineBox* prev_box = box->PrevLeafChildIgnoringLineBreak();
-    if (prev_box && prev_box->BidiLevel() == box->BidiLevel()) {
-      return CreatePositionWithAffinityForBox(box, box->CaretLeftmostOffset(),
-                                              should_affinity_be_downstream);
-    }
-
-    if (prev_box && prev_box->BidiLevel() > box->BidiLevel()) {
-      // e.g. left of B in aDC12BAb
-      const InlineBox& leftmost_box =
-          InlineBoxTraversal::FindLeftBoundaryOfBidiRunIgnoringLineBreak(
-              *prev_box, box->BidiLevel());
-      return CreatePositionWithAffinityForBox(
-          &leftmost_box, leftmost_box.CaretRightmostOffset(),
-          should_affinity_be_downstream);
-    }
-
-    // e.g. left of D in aDC12BAb
-    const InlineBox& rightmost_box =
-        InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
-            *box, box->BidiLevel());
-    return CreatePositionWithAffinityForBox(
-        &rightmost_box,
-        box->IsLeftToRightDirection() ? rightmost_box.CaretMaxOffset()
-                                      : rightmost_box.CaretMinOffset(),
-        should_affinity_be_downstream);
-  }
-
-  // offset is on the right edge
-
-  const InlineBox* next_box = box->NextLeafChildIgnoringLineBreak();
-  if (next_box && next_box->BidiLevel() == box->BidiLevel()) {
-    return CreatePositionWithAffinityForBox(box, box->CaretRightmostOffset(),
-                                            should_affinity_be_downstream);
-  }
-
-  if (next_box && next_box->BidiLevel() > box->BidiLevel()) {
-    // e.g. right of C in aDC12BAb
-    const InlineBox& rightmost_box =
-        InlineBoxTraversal::FindRightBoundaryOfBidiRunIgnoringLineBreak(
-            *next_box, box->BidiLevel());
-    return CreatePositionWithAffinityForBox(&rightmost_box,
-                                            rightmost_box.CaretLeftmostOffset(),
-                                            should_affinity_be_downstream);
-  }
-
-  // e.g. right of A in aDC12BAb
-  const InlineBox& leftmost_box =
-      InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
-          *box, box->BidiLevel());
-  return CreatePositionWithAffinityForBox(&leftmost_box,
-                                          box->IsLeftToRightDirection()
-                                              ? leftmost_box.CaretMinOffset()
-                                              : leftmost_box.CaretMaxOffset(),
+  const InlineBoxPosition adjusted = BidiAdjustment::AdjustForHitTest(
+      InlineBoxPosition(box, box->Start() + offset));
+  return CreatePositionWithAffinityForBox(adjusted.inline_box,
+                                          adjusted.offset_in_box,
                                           should_affinity_be_downstream);
 }
 
