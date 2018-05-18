@@ -562,9 +562,10 @@ BackgroundTracingManagerImpl::GenerateMetadataDict() {
     auto config_dict = std::make_unique<base::DictionaryValue>();
     config_->IntoDict(config_dict.get());
     metadata_dict->Set("config", std::move(config_dict));
+    metadata_dict->SetString("scenario_name", config_->scenario_name());
   }
   if (last_triggered_rule_)
-    metadata_dict->Set("last_triggered_rule_", std::move(last_triggered_rule_));
+    metadata_dict->Set("last_triggered_rule", std::move(last_triggered_rule_));
   return metadata_dict;
 }
 
