@@ -135,32 +135,6 @@ TEST_F(ChromePermissionMessageProviderUnittest,
   EXPECT_FALSE(message1.submessages().empty());
 }
 
-// Anti-test: Check that adding a parameter to a SettingsOverridePermission
-// doesn't trigger a privilege increase. This is because prior to M46 beta, we
-// failed to store the parameter in the granted_permissions pref. Now we do, and
-// we don't want to bother every user with a spurious permissions warning.
-// See crbug.com/533086 and crbug.com/619759.
-// TODO(treib,devlin): Remove this for M56, when hopefully all users will have
-// updated prefs.
-TEST_F(ChromePermissionMessageProviderUnittest,
-       EvilHackToSuppressSettingsOverrideParameter) {
-  const APIPermissionInfo* info =
-      PermissionsInfo::GetInstance()->GetByID(APIPermission::kSearchProvider);
-
-  APIPermissionSet granted_permissions;
-  granted_permissions.insert(new SettingsOverrideAPIPermission(info));
-
-  APIPermissionSet actual_permissions;
-  actual_permissions.insert(new SettingsOverrideAPIPermission(info, "a.com"));
-
-  EXPECT_FALSE(IsPrivilegeIncrease(granted_permissions, actual_permissions));
-
-  // Just to be safe: Adding the permission (with or without parameter) should
-  // still be considered a privilege escalation.
-  EXPECT_TRUE(IsPrivilegeIncrease(APIPermissionSet(), granted_permissions));
-  EXPECT_TRUE(IsPrivilegeIncrease(APIPermissionSet(), actual_permissions));
-}
-
 // Check that if IDN domains are provided in host permissions, then those
 // domains are converted to punycode.
 TEST_F(ChromePermissionMessageProviderUnittest,
