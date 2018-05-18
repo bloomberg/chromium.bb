@@ -38,6 +38,7 @@ class CHROMEOS_EXPORT AuthFailure {
     TPM_ERROR = 10,                   // Critical TPM error encountered.
     USERNAME_HASH_FAILED = 11,        // Could not get username hash.
     FAILED_TO_INITIALIZE_TOKEN = 12,  // Could not get OAuth2 Token,
+    MISSING_CRYPTOHOME = 13,          // cryptohome missing from disk.
     NUM_FAILURE_REASONS,              // This has to be the last item.
   };
 
@@ -88,6 +89,8 @@ class CHROMEOS_EXPORT AuthFailure {
         return "Login attempt blocked by whitelist.";
       case FAILED_TO_INITIALIZE_TOKEN:
         return "OAuth2 token fetch failed.";
+      case MISSING_CRYPTOHOME:
+        return "Cryptohome missing from disk.";
       default:
         NOTREACHED();
         return std::string();

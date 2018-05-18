@@ -911,6 +911,12 @@ void CryptohomeAuthenticator::Resolve() {
           base::BindOnce(&CryptohomeAuthenticator::OnOldEncryptionDetected,
                          this, state == FAILED_PREVIOUS_MIGRATION_INCOMPLETE));
       break;
+    case OFFLINE_NO_MOUNT:
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&CryptohomeAuthenticator::OnAuthFailure, this,
+                         AuthFailure(AuthFailure::MISSING_CRYPTOHOME)));
+      break;
     default:
       NOTREACHED();
       break;
@@ -1009,6 +1015,11 @@ CryptohomeAuthenticator::ResolveCryptohomeFailureState() {
       // for online login to succeed and try again with the "create" flag set.
       return NO_MOUNT;
     }
+  } else if (current_state_->cryptohome_code() ==
+             cryptohome::MOUNT_ERROR_USER_DOES_NOT_EXIST) {
+    // If we tried a mount but the user did not exist in the offline flow,
+    // surface this as an error.
+    return OFFLINE_NO_MOUNT;
   }
 
   if (!current_state_->username_hash_valid())

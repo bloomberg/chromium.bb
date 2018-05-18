@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/enterprise_user_session_metrics.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_token_initializer.h"
@@ -852,6 +853,8 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
     return;
   }
 
+  const bool is_known_user = user_manager::UserManager::Get()->IsKnownUser(
+      last_login_attempt_account_id_);
   if (failure.reason() == AuthFailure::OWNER_REQUIRED) {
     ShowError(IDS_LOGIN_ERROR_OWNER_REQUIRED, error);
     content::BrowserThread::PostDelayedTask(
@@ -867,11 +870,14 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
     // Show no errors, just re-enable input.
     login_display_->ClearAndEnablePassword();
     StartAutoLoginTimer();
+  } else if (is_known_user &&
+             failure.reason() == AuthFailure::MISSING_CRYPTOHOME) {
+    ForceOnlineLoginForAccountId(last_login_attempt_account_id_);
+    RecordReauthReason(last_login_attempt_account_id_,
+                       ReauthReason::MISSING_CRYPTOHOME);
   } else {
     // Check networking after trying to login in case user is
     // cached locally or the local admin account.
-    const bool is_known_user = user_manager::UserManager::Get()->IsKnownUser(
-        last_login_attempt_account_id_);
     if (!network_state_helper_->IsConnected()) {
       if (is_known_user)
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
@@ -900,14 +906,6 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
 
   ClearActiveDirectoryState();
   ClearRecordedNames();
-
-  // TODO(ginkage): Fix this case once crbug.com/469990 is ready.
-  /*
-    if (failure.reason() == AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME) {
-      RecordReauthReason(last_login_attempt_account_id_,
-                         ReauthReason::MISSING_CRYPTOHOME);
-    }
-  */
 }
 
 void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
@@ -1189,17 +1187,20 @@ void ExistingUserController::WipePerformed(const UserContext& user_context,
   // removing the user's cryptohome.  Without this, the user can sign-in offline
   // but after sign-in would immediately see the "sign-in details are out of
   // date" error message and be prompted to sign out.
+  ForceOnlineLoginForAccountId(user_context.GetAccountId());
+}
 
+void ExistingUserController::ForceOnlineLoginForAccountId(
+    const AccountId& account_id) {
   // Save the necessity to sign-in online into UserManager in case the user
   // aborts the online flow.
-  user_manager::UserManager::Get()->SaveForceOnlineSignin(
-      user_context.GetAccountId(), true);
+  user_manager::UserManager::Get()->SaveForceOnlineSignin(account_id, true);
   host_->OnPreferencesChanged();
 
   // Start online sign-in UI for the user.
   is_login_in_progress_ = false;
   login_performer_.reset();
-  login_display_->ShowSigninUI(user_context.GetAccountId().GetUserEmail());
+  login_display_->ShowSigninUI(account_id.GetUserEmail());
 }
 
 void ExistingUserController::WhiteListCheckFailed(const std::string& email) {

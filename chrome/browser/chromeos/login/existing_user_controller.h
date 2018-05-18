@@ -307,6 +307,9 @@ class ExistingUserController
                      bool success,
                      cryptohome::MountError return_code);
 
+  // Triggers online login for the given |account_id|.
+  void ForceOnlineLoginForAccountId(const AccountId& account_id);
+
   // Clear the recorded displayed email, displayed name, given name so it won't
   // affect any future attempts.
   void ClearRecordedNames();
