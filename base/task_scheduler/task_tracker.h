@@ -160,10 +160,26 @@ class BASE_EXPORT TaskTracker {
   // Returns true if shutdown has completed (Shutdown() has returned).
   bool IsShutdownComplete() const;
 
+  enum class LatencyHistogramType {
+    // Records the latency of each individual task posted through TaskTracker.
+    TASK_LATENCY,
+    // Records the latency of heartbeat tasks which are independent of current
+    // workload. These avoid a bias towards TASK_LATENCY reporting that high-
+    // priority tasks are "slower" than regular tasks because high-priority
+    // tasks tend to be correlated with heavy workloads.
+    HEARTBEAT_LATENCY,
+  };
+
   // Causes HasShutdownStarted() to return true. Unlike when Shutdown() returns,
   // IsShutdownComplete() won't return true after this returns. Shutdown()
   // cannot be called after this.
   void SetHasShutdownStartedForTesting();
+
+  // Records |Now() - posted_time| to the appropriate |latency_histogram_type|
+  // based on |task_traits|.
+  void RecordLatencyHistogram(LatencyHistogramType latency_histogram_type,
+                              TaskTraits task_traits,
+                              TimeTicks posted_time) const;
 
   TrackedRef<TaskTracker> GetTrackedRef() {
     return tracked_ref_factory_.GetTrackedRef();
@@ -256,10 +272,6 @@ class BASE_EXPORT TaskTracker {
       scoped_refptr<Sequence> just_ran_sequence,
       CanScheduleSequenceObserver* observer);
 
-  // Records the TaskScheduler.TaskLatency.[task priority].[may block] histogram
-  // for |task|.
-  void RecordTaskLatencyHistogram(const Task& task);
-
   // Calls |flush_callback_for_testing_| if one is available in a lock-safe
   // manner.
   void CallFlushCallbackForTesting();
@@ -319,11 +331,16 @@ class BASE_EXPORT TaskTracker {
   // Number of currently scheduled background sequences.
   int num_scheduled_background_sequences_ = 0;
 
-  // TaskScheduler.TaskLatency.[task priority].[may block] histograms. The first
-  // index is a TaskPriority. The second index is 0 for non-blocking tasks, 1
-  // for blocking tasks. Intentionally leaked.
-  HistogramBase* const
-      task_latency_histograms_[static_cast<int>(TaskPriority::HIGHEST) + 1][2];
+  // TaskScheduler.TaskLatencyMicroseconds.* and
+  // TaskScheduler.HeartbeatLatencyMicroseconds.* histograms. The first index is
+  // a TaskPriority. The second index is 0 for non-blocking tasks, 1 for
+  // blocking tasks. Intentionally leaked.
+  // TODO(scheduler-dev): Consider using STATIC_HISTOGRAM_POINTER_GROUP for
+  // these.
+  static constexpr int kNumTaskPriorities =
+      static_cast<int>(TaskPriority::HIGHEST) + 1;
+  HistogramBase* const task_latency_histograms_[kNumTaskPriorities][2];
+  HistogramBase* const heartbeat_latency_histograms_[kNumTaskPriorities][2];
 
   // Number of BLOCK_SHUTDOWN tasks posted during shutdown.
   HistogramBase::Sample num_block_shutdown_tasks_posted_during_shutdown_ = 0;

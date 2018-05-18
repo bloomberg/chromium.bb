@@ -1319,35 +1319,36 @@ TEST(TaskSchedulerTaskTrackerHistogramTest, TaskLatency) {
   struct {
     const TaskTraits traits;
     const char* const expected_histogram;
-  } tests[] = {{{TaskPriority::BACKGROUND},
-                "TaskScheduler.TaskLatencyMicroseconds.Test."
-                "BackgroundTaskPriority"},
-               {{MayBlock(), TaskPriority::BACKGROUND},
-                "TaskScheduler.TaskLatencyMicroseconds.Test."
-                "BackgroundTaskPriority_MayBlock"},
-               {{WithBaseSyncPrimitives(), TaskPriority::BACKGROUND},
-                "TaskScheduler.TaskLatencyMicroseconds.Test."
-                "BackgroundTaskPriority_MayBlock"},
-               {{TaskPriority::USER_VISIBLE},
-                "TaskScheduler.TaskLatencyMicroseconds.Test."
-                "UserVisibleTaskPriority"},
-               {{MayBlock(), TaskPriority::USER_VISIBLE},
-                "TaskScheduler.TaskLatencyMicroseconds.Test."
-                "UserVisibleTaskPriority_MayBlock"},
-               {{WithBaseSyncPrimitives(), TaskPriority::USER_VISIBLE},
-                "TaskScheduler.TaskLatencyMicroseconds.Test."
-                "UserVisibleTaskPriority_MayBlock"},
-               {{TaskPriority::USER_BLOCKING},
-                "TaskScheduler.TaskLatencyMicroseconds.Test."
-                "UserBlockingTaskPriority"},
-               {{MayBlock(), TaskPriority::USER_BLOCKING},
-                "TaskScheduler.TaskLatencyMicroseconds.Test."
-                "UserBlockingTaskPriority_MayBlock"},
-               {{WithBaseSyncPrimitives(), TaskPriority::USER_BLOCKING},
-                "TaskScheduler.TaskLatencyMicroseconds.Test."
-                "UserBlockingTaskPriority_MayBlock"}};
+  } static constexpr kTests[] = {
+      {{TaskPriority::BACKGROUND},
+       "TaskScheduler.TaskLatencyMicroseconds.Test."
+       "BackgroundTaskPriority"},
+      {{MayBlock(), TaskPriority::BACKGROUND},
+       "TaskScheduler.TaskLatencyMicroseconds.Test."
+       "BackgroundTaskPriority_MayBlock"},
+      {{WithBaseSyncPrimitives(), TaskPriority::BACKGROUND},
+       "TaskScheduler.TaskLatencyMicroseconds.Test."
+       "BackgroundTaskPriority_MayBlock"},
+      {{TaskPriority::USER_VISIBLE},
+       "TaskScheduler.TaskLatencyMicroseconds.Test."
+       "UserVisibleTaskPriority"},
+      {{MayBlock(), TaskPriority::USER_VISIBLE},
+       "TaskScheduler.TaskLatencyMicroseconds.Test."
+       "UserVisibleTaskPriority_MayBlock"},
+      {{WithBaseSyncPrimitives(), TaskPriority::USER_VISIBLE},
+       "TaskScheduler.TaskLatencyMicroseconds.Test."
+       "UserVisibleTaskPriority_MayBlock"},
+      {{TaskPriority::USER_BLOCKING},
+       "TaskScheduler.TaskLatencyMicroseconds.Test."
+       "UserBlockingTaskPriority"},
+      {{MayBlock(), TaskPriority::USER_BLOCKING},
+       "TaskScheduler.TaskLatencyMicroseconds.Test."
+       "UserBlockingTaskPriority_MayBlock"},
+      {{WithBaseSyncPrimitives(), TaskPriority::USER_BLOCKING},
+       "TaskScheduler.TaskLatencyMicroseconds.Test."
+       "UserBlockingTaskPriority_MayBlock"}};
 
-  for (const auto& test : tests) {
+  for (const auto& test : kTests) {
     Task task(FROM_HERE, DoNothing(), test.traits, TimeDelta());
     ASSERT_TRUE(tracker.WillPostTask(task));
 

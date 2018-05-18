@@ -96,8 +96,8 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   // |all_tasks_user_blocking_| is set.
   TaskTraits SetUserBlockingPriorityIfNeeded(const TaskTraits& traits) const;
 
-  std::unique_ptr<Thread> service_thread_;
   const std::unique_ptr<TaskTrackerImpl> task_tracker_;
+  std::unique_ptr<Thread> service_thread_;
   DelayedTaskManager delayed_task_manager_;
   SchedulerSingleThreadTaskRunnerManager single_thread_task_runner_manager_;
 
