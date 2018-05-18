@@ -29,19 +29,22 @@ struct SyncPasswordData {
 };
 
 struct PasswordHashData {
-  PasswordHashData() = default;
-  PasswordHashData(const PasswordHashData& other) = default;
+  PasswordHashData();
+  PasswordHashData(const PasswordHashData& other);
   PasswordHashData(const std::string& username,
                    const base::string16& password,
-                   bool force_update);
+                   bool force_update,
+                   bool is_gaia_password = true);
   bool MatchesPassword(const std::string& username,
-                       const base::string16& password);
+                       const base::string16& password,
+                       bool is_gaia_password);
 
   std::string username;
   size_t length;
   std::string salt;
   uint64_t hash;
   bool force_update;
+  bool is_gaia_password = true;
 };
 
 // Responsible for saving, clearing, retrieving and encryption of a password
@@ -55,11 +58,13 @@ class HashPasswordManager {
 
   bool SavePasswordHash(const base::string16& password);
   bool SavePasswordHash(const std::string username,
-                        const base::string16& password);
+                        const base::string16& password,
+                        bool is_gaia_password = true);
   bool SavePasswordHash(const SyncPasswordData& sync_password_data);
   bool SavePasswordHash(const PasswordHashData& password_hash_data);
   void ClearSavedPasswordHash();
-  void ClearSavedPasswordHash(const std::string& username);
+  void ClearSavedPasswordHash(const std::string& username,
+                              bool is_gaia_password);
 
   // Returns empty if no hash is available.
   base::Optional<SyncPasswordData> RetrievePasswordHash();
@@ -67,15 +72,17 @@ class HashPasswordManager {
   // Returns empty array if no hash is available.
   std::vector<PasswordHashData> RetrieveAllPasswordHashes();
 
-  // Returns empty if no hash of |username| is available.
+  // Returns empty if no hash matching |username| and |is_gaia_password| is
+  // available.
   base::Optional<PasswordHashData> RetrievePasswordHash(
-      const std::string& username);
+      const std::string& username,
+      bool is_gaia_password);
 
   // Whether |prefs_| has |kSyncPasswordHash| pref path.
   bool HasPasswordHash();
 
-  // Whether password hash of |username| is stored.
-  bool HasPasswordHash(const std::string& username);
+  // Whether password hash of |username| and |is_gaia_password| is stored.
+  bool HasPasswordHash(const std::string& username, bool is_gaia_password);
 
   void set_prefs(PrefService* prefs) { prefs_ = prefs; }
 
