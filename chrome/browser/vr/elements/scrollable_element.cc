@@ -71,11 +71,6 @@ void ScrollableElement::SetInitialScroll() {
   } else {
     scroll_offset_ = 0.0f;
   }
-  if (orientation_ == kVertical) {
-    inner_element_->SetLayoutOffset(0.0f, scroll_offset_);
-  } else {
-    inner_element_->SetLayoutOffset(scroll_offset_, 0.0f);
-  }
 }
 
 gfx::RectF ScrollableElement::ComputeContributingChildrenBounds() {
@@ -92,6 +87,11 @@ void ScrollableElement::LayOutNonContributingChildren() {
   if (!SizeEquals(inner_size_, inner_element_->size())) {
     inner_size_ = inner_element_->size();
     SetInitialScroll();
+  }
+  if (orientation_ == kVertical) {
+    inner_element_->SetLayoutOffset(0.0f, scroll_offset_);
+  } else {
+    inner_element_->SetLayoutOffset(scroll_offset_, 0.0f);
   }
 }
 
@@ -113,15 +113,11 @@ void ScrollableElement::OnScrollUpdate(
   float half_scroll_span = ComputeScrollSpan() / 2.0f;
   if (orientation_ == kHorizontal) {
     scroll_offset_ -= update.delta_x * kScrollScaleFactor;
-    scroll_offset_ =
-        base::ClampToRange(scroll_offset_, -half_scroll_span, half_scroll_span);
-    inner_element_->SetLayoutOffset(scroll_offset_, 0.0f);
   } else {
     scroll_offset_ -= update.delta_y * kScrollScaleFactor;
-    scroll_offset_ =
-        base::ClampToRange(scroll_offset_, -half_scroll_span, half_scroll_span);
-    inner_element_->SetLayoutOffset(0.0f, scroll_offset_);
   }
+  scroll_offset_ =
+      base::ClampToRange(scroll_offset_, -half_scroll_span, half_scroll_span);
 }
 
 void ScrollableElement::OnScrollEnd(
