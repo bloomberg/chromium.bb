@@ -12,6 +12,7 @@
 #include "base/sync_socket.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/audio_bus.h"
 #include "media/base/vector_math.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -45,6 +46,9 @@ LoopbackStream::LoopbackStream(
       network_(nullptr, base::OnTaskRunnerDeleter(flow_task_runner)),
       weak_factory_(this) {
   DCHECK(coordinator_);
+
+  TRACE_EVENT1("audio", "LoopbackStream::LoopbackStream", "params",
+               params.AsHumanReadableString());
 
   // Generate an error and shut down automatically whenever any of the mojo
   // bindings is closed.
@@ -105,6 +109,8 @@ LoopbackStream::LoopbackStream(
 LoopbackStream::~LoopbackStream() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  TRACE_EVENT0("audio", "LoopbackStream::~LoopbackStream");
+
   if (network_) {
     if (network_->is_started()) {
       coordinator_->RemoveObserver(group_id_, this);
@@ -122,6 +128,8 @@ void LoopbackStream::Record() {
   if (!network_ || network_->is_started()) {
     return;
   }
+
+  TRACE_EVENT0("audio", "LoopbackStream::Record");
 
   // Begin snooping on all group members. This will set up the mixer network
   // and begin accumulating audio data in the Snoopers' buffers.
@@ -142,6 +150,9 @@ void LoopbackStream::Record() {
 void LoopbackStream::SetVolume(double volume) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  TRACE_EVENT_INSTANT1("audio", "LoopbackStream::SetVolume",
+                       TRACE_EVENT_SCOPE_THREAD, "volume", volume);
+
   if (!std::isfinite(volume) || volume < 0.0) {
     mojo::ReportBadMessage("Invalid volume");
     OnError();
@@ -160,6 +171,9 @@ void LoopbackStream::OnMemberJoinedGroup(GroupMember* member) {
     return;
   }
 
+  TRACE_EVENT1("audio", "LoopbackStream::OnMemberJoinedGroup", "member",
+               member);
+
   const media::AudioParameters& input_params = member->GetAudioParameters();
   const auto emplace_result = snoopers_.emplace(
       std::piecewise_construct, std::forward_as_tuple(member),
@@ -177,6 +191,8 @@ void LoopbackStream::OnMemberLeftGroup(GroupMember* member) {
     return;
   }
 
+  TRACE_EVENT1("audio", "LoopbackStream::OnMemberLeftGroup", "member", member);
+
   const auto snoop_it = snoopers_.find(member);
   DCHECK(snoop_it != snoopers_.end());
   SnooperNode* const snooper = &(snoop_it->second);
@@ -191,6 +207,8 @@ void LoopbackStream::OnError() {
   if (!binding_lost_callback_) {
     return;  // OnError() was already called.
   }
+
+  TRACE_EVENT0("audio", "LoopbackStream::OnError");
 
   binding_.Close();
   if (client_) {
@@ -277,6 +295,9 @@ LoopbackStream::FlowNetwork::~FlowNetwork() {
 void LoopbackStream::FlowNetwork::GenerateMoreAudio() {
   DCHECK(flow_task_runner_->RunsTasksInCurrentSequence());
 
+  TRACE_EVENT_WITH_FLOW0("audio", "GenerateMoreAudio", this,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   // Always generate audio from the recent past, to prevent buffer underruns
   // in the inputs.
   const base::TimeTicks delayed_capture_time =
@@ -337,6 +358,9 @@ void LoopbackStream::FlowNetwork::GenerateMoreAudio() {
       output_params_.sample_rate() / base::Time::kMicrosecondsPerSecond;
   if (frames_elapsed_ < required_frames_elapsed) {
     // Audio generation has fallen behind. Skip ahead to the next interval.
+    TRACE_EVENT_INSTANT1("audio", "GenerateMoreAudio Is Behind",
+                         TRACE_EVENT_SCOPE_THREAD, "frames_behind",
+                         (required_frames_elapsed - frames_elapsed_));
     frames_elapsed_ = ((required_frames_elapsed + frames_per_buffer - 1) /
                        frames_per_buffer) *
                       frames_per_buffer;
