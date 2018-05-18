@@ -94,6 +94,11 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
     return EmeFeatureSupport::ALWAYS_ENABLED;
   }
 
+  bool IsEncryptionSchemeSupported(
+      ::media::EncryptionMode encryption_mode) const override {
+    return encryption_mode == ::media::EncryptionMode::kCenc;
+  }
+
  private:
   const SupportedCodecs supported_non_secure_codecs_;
 #if defined(OS_ANDROID)
@@ -149,7 +154,11 @@ void AddCmaKeySystems(
 #if defined(WIDEVINE_CDM_AVAILABLE)
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
 
+  base::flat_set<::media::EncryptionMode> supported_encryption_schemes = {
+      ::media::EncryptionMode::kCenc, ::media::EncryptionMode::kCbcs};
+
   key_systems_properties->emplace_back(new cdm::WidevineKeySystemProperties(
+      supported_encryption_schemes,          // Encryption schemes.
       codecs,                                // Regular codecs.
       Robustness::HW_SECURE_ALL,             // Max audio robustness.
       Robustness::HW_SECURE_ALL,             // Max video robustness.
