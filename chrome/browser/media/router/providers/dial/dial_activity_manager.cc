@@ -183,6 +183,7 @@ void DialActivityManager::LaunchApp(
   const base::Optional<std::string>& post_data = message.launch_parameter
                                                      ? message.launch_parameter
                                                      : launch_info.post_data;
+  DVLOG(2) << "Launching app on " << route_id;
 
   // TODO(https://crbug.com/816628): Add metrics to record launch success/error.
   auto fetcher =

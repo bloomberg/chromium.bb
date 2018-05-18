@@ -99,6 +99,8 @@ static_library("router") {
       "providers/cast/chrome_cast_message_handler.h",
       "providers/cast/dual_media_sink_service.cc",
       "providers/cast/dual_media_sink_service.h",
+      "providers/common/buffered_message_sender.cc",
+      "providers/common/buffered_message_sender.h",
       "providers/dial/dial_activity_manager.cc",
       "providers/dial/dial_activity_manager.h",
       "providers/dial/dial_internal_message_util.cc",

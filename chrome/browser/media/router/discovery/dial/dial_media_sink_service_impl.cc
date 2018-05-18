@@ -97,6 +97,10 @@ void DialMediaSinkServiceImpl::OnUserGesture() {
   RescanAppInfo();
 }
 
+DialAppDiscoveryService* DialMediaSinkServiceImpl::app_discovery_service() {
+  return app_discovery_service_.get();
+}
+
 DialMediaSinkServiceImpl::SinkQueryByAppSubscription
 DialMediaSinkServiceImpl::StartMonitoringAvailableSinksForApp(
     const std::string& app_name,

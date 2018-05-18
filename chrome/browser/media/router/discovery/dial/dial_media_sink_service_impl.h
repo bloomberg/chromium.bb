@@ -72,6 +72,8 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
     return task_runner_;
   }
 
+  virtual DialAppDiscoveryService* app_discovery_service();
+
   // Registers |callback| to callback list entry in |sink_queries_|, with the
   // key |app_name|. Returns a unique_ptr of callback list subscription. Caller
   // owns the returned subscription and is responsible for destroying when it
