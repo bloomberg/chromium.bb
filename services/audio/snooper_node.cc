@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/numerics/checked_math.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
 
@@ -79,6 +80,10 @@ SnooperNode::SnooperNode(const media::AudioParameters& input_params,
                      : kAfter)),
       channel_mixer_(input_params_.channel_layout(),
                      output_params_.channel_layout()) {
+  TRACE_EVENT2("audio", "SnooperNode::SnooperNode", "input_params",
+               input_params.AsHumanReadableString(), "output_params",
+               output_params.AsHumanReadableString());
+
   // Prime the resampler with silence to keep the calculations in Render()
   // simple.
   resampler_.PrimeWithSilence();
@@ -99,6 +104,12 @@ void SnooperNode::OnData(const media::AudioBus& input_bus,
   DCHECK_EQ(input_bus.channels(), input_params_.channels());
   DCHECK_EQ(input_bus.frames(), input_params_.frames_per_buffer());
 
+  TRACE_EVENT_WITH_FLOW2("audio", "SnooperNode::OnData", this,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "reference_time (bogo-μs)",
+                         reference_time.since_origin().InMicroseconds(),
+                         "write_position", write_position_);
+
   base::AutoLock scoped_lock(lock_);
 
   // If this is the first OnData() call, just set the starting read position.
@@ -109,6 +120,9 @@ void SnooperNode::OnData(const media::AudioBus& input_bus,
   } else {
     const base::TimeDelta delta = reference_time - write_reference_time_;
     if (delta >= input_bus_duration_) {
+      TRACE_EVENT_INSTANT1("audio", "SnooperNode Input Gap",
+                           TRACE_EVENT_SCOPE_THREAD, "gap (μs)",
+                           delta.InMicroseconds());
       write_position_ +=
           Helper::TimeToFrames(delta, input_params_.sample_rate());
     }
@@ -124,6 +138,11 @@ void SnooperNode::Render(base::TimeTicks reference_time,
                          media::AudioBus* output_bus) {
   DCHECK_EQ(output_bus->channels(), output_params_.channels());
   DCHECK_EQ(output_bus->frames(), output_params_.frames_per_buffer());
+
+  TRACE_EVENT_WITH_FLOW1("audio", "SnooperNode::Render", this,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "reference_time (bogo-μs)",
+                         reference_time.since_origin().InMicroseconds());
 
   // Use the difference in reference times between OnData() and Render() to
   // estimate the position of the audio about to come out of the resampler.
@@ -162,6 +181,7 @@ void SnooperNode::Render(base::TimeTicks reference_time,
           read_position_ - std::lround(resampler_.BufferedFrames());
       const int drift = base::checked_cast<int>(estimated_output_position -
                                                 actual_output_position);
+      TRACE_COUNTER_ID1("audio", "SnooperNode Drift", this, drift);
 
       // The goal is to have zero drift, and the target is to achieve that goal
       // in approximately one second.
@@ -188,6 +208,10 @@ void SnooperNode::Render(base::TimeTicks reference_time,
         // No correction necessary.
       }
     } else /* if (delta >= threshold) */ {  // Gap detected.
+      TRACE_EVENT_INSTANT1("audio", "SnooperNode Render Gap",
+                           TRACE_EVENT_SCOPE_THREAD, "gap (μs)",
+                           delta.InMicroseconds());
+
       // Rather than flush and re-prime the resampler, just skip-ahead its next
       // read-from position.
       read_position_ +=
@@ -198,6 +222,9 @@ void SnooperNode::Render(base::TimeTicks reference_time,
       // forward. Thus, set a zero correction rate.
       UpdateCorrectionRate(0);
     }
+
+    TRACE_COUNTER_ID1("audio", "SnooperNode Correction FPS", this,
+                      correction_fps_);
   }
 
   // Perform resampling and also channel mixing, if required. The resampler will
@@ -225,6 +252,8 @@ void SnooperNode::ReadFromDelayBuffer(int ignored,
                                       media::AudioBus* resampler_bus) {
   DCHECK_NE(read_position_, kNullPosition);
   const int frames_to_read = resampler_bus->frames();
+  TRACE_EVENT2("audio", "SnooperNode::ReadFromDelayBuffer", "read_position",
+               read_position_, "frames", frames_to_read);
 
   if (channel_mix_strategy_ == kBefore) {
     DCHECK_EQ(resampler_bus->channels(), output_params_.channels());
