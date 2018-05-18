@@ -5,8 +5,6 @@
 static_library("url_pattern_index") {
   sources = [
     "closed_hash_map.h",
-    "copying_file_stream.cc",
-    "copying_file_stream.h",
     "fuzzy_pattern_matching.cc",
     "fuzzy_pattern_matching.h",
     "ngram_extractor.h",
