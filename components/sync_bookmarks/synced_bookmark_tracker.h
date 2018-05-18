@@ -63,6 +63,9 @@ class SyncedBookmarkTracker {
   void Associate(const std::string& sync_id,
                  const bookmarks::BookmarkNode* bookmark_node);
 
+  // Returns number of tracked entities. Used only in test.
+  std::size_t TrackedEntitiesCountForTest() const;
+
  private:
   // A map of sync server ids to sync entities. This should contain entries and
   // metadata for almost everything. However, since local data are loaded only
