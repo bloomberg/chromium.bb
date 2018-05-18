@@ -2133,6 +2133,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Accepted"/>
   <int value="2" label="Denied"/>
   <int value="3" label="Ignored"/>
+  <int value="4" label="NotShown, invalid legal message"/>
 </enum>
 
 <enum name="AutofillDeveloperEngagement">
