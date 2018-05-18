@@ -29,8 +29,9 @@ import org.chromium.base.process_launcher.ChildProcessLauncher;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.app.SandboxedProcessService;
-import org.chromium.content.common.ContentSwitches;
+import org.chromium.content.common.ContentSwitchUtils;
 import org.chromium.content_public.browser.ChildProcessImportance;
+import org.chromium.content_public.common.ContentSwitches;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -192,7 +193,7 @@ public class ChildProcessLauncherHelper {
             long nativePointer, String[] commandLine, FileDescriptorInfo[] filesToBeMapped) {
         assert LauncherThread.runningOnLauncherThread();
         String processType =
-                ContentSwitches.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
+                ContentSwitchUtils.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
 
         boolean sandboxed = true;
         if (!ContentSwitches.SWITCH_RENDERER_PROCESS.equals(processType)) {
@@ -203,7 +204,7 @@ public class ChildProcessLauncherHelper {
                 assert ContentSwitches.SWITCH_UTILITY_PROCESS.equals(processType);
 
                 // Remove sandbox restriction on network service process.
-                if (ContentSwitches.NETWORK_SANDBOX_TYPE.equals(ContentSwitches.getSwitchValue(
+                if (ContentSwitches.NETWORK_SANDBOX_TYPE.equals(ContentSwitchUtils.getSwitchValue(
                             commandLine, ContentSwitches.SWITCH_SERVICE_SANDBOX_TYPE))) {
                     sandboxed = false;
                 }
@@ -386,7 +387,7 @@ public class ChildProcessLauncherHelper {
                 commandLine, filesToBeMapped, connectionAllocator,
                 binderCallback == null ? null : Arrays.asList(binderCallback));
         mProcessType =
-                ContentSwitches.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
+                ContentSwitchUtils.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
 
         if (sandboxed) {
             mRanking = sSandboxedChildConnectionRanking;

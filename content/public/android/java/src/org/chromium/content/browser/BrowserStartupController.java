@@ -328,7 +328,7 @@ public class BrowserStartupController {
             public void run() {
                 if (!mPostResourceExtractionTasksCompleted) {
                     // TODO(yfriedman): Remove dependency on a command line flag for this.
-                    DeviceUtils.addDeviceSpecificUserAgentSwitch(
+                    DeviceUtilsImpl.addDeviceSpecificUserAgentSwitch(
                             ContextUtils.getApplicationContext());
                     nativeSetCommandLineFlags(
                             singleProcess, nativeIsPluginEnabled() ? getPlugins() : null);

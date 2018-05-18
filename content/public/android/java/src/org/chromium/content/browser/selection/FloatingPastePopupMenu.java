@@ -65,7 +65,7 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
                 new ActionModeCallback(), ActionMode.TYPE_FLOATING);
         if (actionMode != null) {
             // crbug.com/651706
-            LGEmailActionModeWorkaround.runIfNecessary(mContext, actionMode);
+            LGEmailActionModeWorkaroundImpl.runIfNecessary(mContext, actionMode);
 
             assert actionMode.getType() == ActionMode.TYPE_FLOATING;
             mActionMode = actionMode;

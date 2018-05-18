@@ -33,11 +33,17 @@ import java.lang.reflect.Method;
  * a system update. However, LG Email team is committed to fixing this in the near future.
  * This is a version code limited workaround to avoid crashes in the app.
  */
-public final class LGEmailActionModeWorkaround {
+public final class LGEmailActionModeWorkaroundImpl {
     private static final String TAG = "cr_Ime";
 
     // This is the last broken version shipped on LG V20/NRD90M.
     public static final int LGEmailWorkaroundMaxVersion = 67502100;
+
+    private LGEmailActionModeWorkaroundImpl() {}
+
+    public static boolean isSafeVersion(int versionCode) {
+        return versionCode > LGEmailWorkaroundMaxVersion;
+    }
 
     /**
      * Run this workaround only when it's applicable and absolutely necessary.

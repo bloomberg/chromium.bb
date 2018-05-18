@@ -46,7 +46,7 @@ import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.components.crash.browser.CrashDumpManager;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.DeviceUtils;
+import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.content_public.browser.SpeechRecognition;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.policy.CombinedPolicyProvider;

@@ -23,7 +23,6 @@ include_rules = [
   "-content/public/android/java",
   "+content/public/android/java/src/org/chromium/content_public",
   "!content/public/android/java/src/org/chromium/content/browser/ChildProcessLauncherHelper.java",
-  "!content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
 
   "-content/public/android/javatests",
   "+content/public/test/android/javatests",
@@ -34,15 +33,15 @@ include_rules = [
 
 specific_include_rules = {
   "WebappNavigationTest\.java": [
-    "+content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
+    "+content/public/android/java/src/org/chromium/content_public/common/ContentSwitches.java",
   ],
   "WebApkIntegrationTest\.java": [
-    "+content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
+    "+content/public/android/java/src/org/chromium/content_public/common/ContentSwitches.java",
   ],
   "AuthenticatorTest\.java": [
-    "+content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
+    "+content/public/android/java/src/org/chromium/content_public/common/ContentSwitches.java",
   ],
   "PageInfoPopupTest\.java": [
-    "+content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
+    "+content/public/android/java/src/org/chromium/content_public/common/ContentSwitches.java",
   ],
 }

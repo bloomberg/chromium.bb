@@ -452,7 +452,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                                                              : mView.startActionMode(mCallback);
         if (actionMode != null) {
             // This is to work around an LGE email issue. See crbug.com/651706 for more details.
-            LGEmailActionModeWorkaround.runIfNecessary(mContext, actionMode);
+            LGEmailActionModeWorkaroundImpl.runIfNecessary(mContext, actionMode);
         }
         mActionMode = actionMode;
         mUnselectAllOnDismiss = true;

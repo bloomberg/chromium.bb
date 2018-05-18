@@ -23,10 +23,8 @@ include_rules = [
   "!content/public/android/java/src/org/chromium/content/browser/BrowserStartupController.java",
   "!content/public/android/java/src/org/chromium/content/browser/ChildProcessCreationParams.java",
   "!content/public/android/java/src/org/chromium/content/browser/ChildProcessLauncherHelper.java",
-  "!content/public/android/java/src/org/chromium/content/browser/DeviceUtils.java",
   "!content/public/android/java/src/org/chromium/content/browser/MotionEventSynthesizer.java",
   "!content/public/android/java/src/org/chromium/content/browser/ScreenOrientationProvider.java",
-  "!content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
 
   "+device/gamepad/android/java",
   "+device/geolocation/android/java",

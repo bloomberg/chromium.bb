@@ -15,7 +15,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chromecast.base.ChromecastConfigAndroid;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.DeviceUtils;
+import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.net.NetworkChangeNotifier;
 
 /**
