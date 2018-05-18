@@ -107,6 +107,8 @@ if (is_chromeos) {
       "chromeos/change_list_processor.h",
       "chromeos/directory_loader.cc",
       "chromeos/directory_loader.h",
+      "chromeos/drive_file_util.cc",
+      "chromeos/drive_file_util.h",
       "chromeos/file_cache.cc",
       "chromeos/file_cache.h",
       "chromeos/file_system.cc",

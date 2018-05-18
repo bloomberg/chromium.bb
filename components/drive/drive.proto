@@ -71,6 +71,12 @@ message FileSpecificInfo {
   optional FileCacheEntry cache_state = 11;
 }
 
+// Represents metadata for a single team drive, store in the root entry.
+message TeamDriveRootSpecificInfo {
+  // The individual start page token for this team drive.
+  optional string start_page_token = 1;
+}
+
 // Directory specific info, which is a part of ResourceEntry.
 message DirectorySpecificInfo {
   // The changestamp of this directory. This value can be larger than the
@@ -86,6 +92,7 @@ message DirectorySpecificInfo {
 }
 
 // Represents metadata of a resource (file or directory) on Drive.
+// Next Entry: 24
 message ResourceEntry {
   optional PlatformFileInfoProto file_info = 1;
   // Base name of the entry. The base name is used for file paths. Usually
@@ -128,6 +135,9 @@ message ResourceEntry {
 
   // Directory specific information, such as changestamp.
   optional DirectorySpecificInfo directory_specific_info = 13;
+
+  // Team Drive root specific information, if this entry is a team drive root.
+  optional TeamDriveRootSpecificInfo team_drive_root_specific_info = 23;
 
   // Used to remember whether this entry is edited locally or not.
   enum EditState {
