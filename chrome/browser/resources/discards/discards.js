@@ -74,7 +74,11 @@ cr.define('discards', function() {
     // Compares numeric fields.
     // Note: Visibility is represented as a numeric value.
     if ([
-          'visibility', 'discardCount', 'utilityRank', 'lastActiveSeconds'
+          'visibility',
+          'discardCount',
+          'utilityRank',
+          'reactivationScore',
+          'lastActiveSeconds',
         ].includes(sortKey)) {
       return val1 - val2;
     }
@@ -273,6 +277,8 @@ cr.define('discards', function() {
     // Update the content.
     row.querySelector('.utility-rank-cell').textContent =
         info.utilityRank.toString();
+    row.querySelector('.reactivation-score-cell').textContent =
+        info.hasReactivationScore ? info.reactivationScore.toFixed(4) : 'N/A';
     row.querySelector('.favicon-div').style.backgroundImage =
         cr.icon.getFavicon(info.tabUrl);
     row.querySelector('.title-div').textContent = info.title;
