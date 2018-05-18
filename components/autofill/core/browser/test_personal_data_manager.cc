@@ -42,6 +42,15 @@ void TestPersonalDataManager::AddProfile(const AutofillProfile& profile) {
   NotifyPersonalDataChanged();
 }
 
+void TestPersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
+  AutofillProfile* existing_profile =
+      GetProfileWithGUID(profile.guid().c_str());
+  if (existing_profile) {
+    RemoveByGUID(existing_profile->guid());
+    AddProfile(profile);
+  }
+}
+
 void TestPersonalDataManager::RemoveByGUID(const std::string& guid) {
   CreditCard* credit_card = GetCreditCardWithGUID(guid.c_str());
   if (credit_card) {
@@ -67,6 +76,15 @@ void TestPersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
       std::make_unique<CreditCard>(credit_card);
   local_credit_cards_.push_back(std::move(local_credit_card));
   NotifyPersonalDataChanged();
+}
+
+void TestPersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
+  CreditCard* existing_credit_card =
+      GetCreditCardWithGUID(credit_card.guid().c_str());
+  if (existing_credit_card) {
+    RemoveByGUID(existing_credit_card->guid());
+    AddCreditCard(credit_card);
+  }
 }
 
 void TestPersonalDataManager::AddFullServerCreditCard(
