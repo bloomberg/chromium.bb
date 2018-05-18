@@ -12,7 +12,7 @@ import java.lang.annotation.RetentionPolicy;
 /** A list of possible filter types on offlined items. */
 public interface Filters {
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({NONE, VIDEOS, MUSIC, IMAGES, SITES, OTHER})
+    @IntDef({NONE, VIDEOS, MUSIC, IMAGES, SITES, OTHER, PREFETCHED})
     public @interface FilterType {}
     public static final int NONE = 0;
     public static final int VIDEOS = 1;
@@ -20,4 +20,5 @@ public interface Filters {
     public static final int IMAGES = 3;
     public static final int SITES = 4;
     public static final int OTHER = 5;
+    public static final int PREFETCHED = 6;
 }

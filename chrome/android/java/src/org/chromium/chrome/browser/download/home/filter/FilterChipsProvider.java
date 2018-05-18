@@ -21,11 +21,21 @@ import java.util.List;
 public class FilterChipsProvider implements ChipsProvider {
     private static final int INVALID_INDEX = -1;
 
+    /** A delegate responsible for handling UI actions like selecting filters. */
+    public interface Delegate {
+        /** Called when the selected filter has changed. */
+        void onFilterSelected(@FilterType int filterType);
+    }
+
+    private final Delegate mDelegate;
+
     private final ObserverList<Observer> mObservers = new ObserverList<ChipsProvider.Observer>();
     private final List<Chip> mSortedChips = new ArrayList<>();
 
     /** Builds a new FilterChipsBackend. */
-    public FilterChipsProvider() {
+    public FilterChipsProvider(Delegate delegate) {
+        mDelegate = delegate;
+
         Chip noneChip = new Chip(Filters.NONE, R.string.download_manager_ui_all_downloads,
                 R.string.download_manager_ui_all_downloads, R.drawable.ic_play_arrow_white_24dp,
                 () -> onChipSelected(Filters.NONE));
@@ -86,6 +96,18 @@ public class FilterChipsProvider implements ChipsProvider {
         }
     }
 
+    /**
+     * @return The {@link FilterType} of the selected filter or {@link Filters#NONE} if no filter
+     * is selected.
+     */
+    public @FilterType int getSelectedFilter() {
+        for (Chip chip : mSortedChips) {
+            if (chip.selected) return chip.id;
+        }
+
+        return Filters.NONE;
+    }
+
     // ChipsProvider implementation.
     @Override
     public void addObserver(Observer observer) {
@@ -104,7 +126,7 @@ public class FilterChipsProvider implements ChipsProvider {
 
     private void onChipSelected(int id) {
         setFilterSelected(id);
-        // TODO(dtrainor): Notify external sources.
+        mDelegate.onFilterSelected(id);
     }
 
     private int getChipIndex(@FilterType int type) {
