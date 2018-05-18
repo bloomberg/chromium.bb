@@ -537,6 +537,52 @@ bool CaretPositionResolutionAdjuster<
   return backward_box.BidiLevel() > box.BidiLevel();
 }
 
+// Adjustment algorithm at the end of hit tests.
+template <typename TraversalStrategy>
+class HitTestAdjuster {
+  STATIC_ONLY(HitTestAdjuster);
+
+ public:
+  static AbstractInlineBoxAndSideAffinity UnadjustedHitTestPosition(
+      const AbstractInlineBox& box) {
+    return AbstractInlineBoxAndBackwardSideAffinity<TraversalStrategy>(box);
+  }
+
+  static AbstractInlineBoxAndSideAffinity AdjustFor(
+      const AbstractInlineBox& box) {
+    // TODO(editing-dev): Fix handling of left on 12CBA
+    if (box.Direction() == box.ParagraphDirection())
+      return UnadjustedHitTestPosition(box);
+
+    const UBiDiLevel level = box.BidiLevel();
+
+    const AbstractInlineBox backward_box =
+        TraversalStrategy::BackwardIgnoringLineBreak(box);
+    if (backward_box.IsNotNull() && backward_box.BidiLevel() == level)
+      return UnadjustedHitTestPosition(box);
+
+    if (backward_box.IsNotNull() && backward_box.BidiLevel() > level) {
+      // e.g. left of B in aDC12BAb when adjusting left side
+      const AbstractInlineBox backward_most_box =
+          FindBoundaryOfBidiRunIgnoringLineBreak<Backwards<TraversalStrategy>>(
+              backward_box, level);
+      return AbstractInlineBoxAndForwardSideAffinity<TraversalStrategy>(
+          backward_most_box);
+    }
+
+    // backward_box.IsNull() || backward_box.BidiLevel() < level
+    // e.g. left of D in aDC12BAb when adjusting left side
+    const AbstractInlineBox forward_most_box =
+        FindBoundaryOfEntireBidiRunIgnoringLineBreak<TraversalStrategy>(box,
+                                                                        level);
+    return box.Direction() == forward_most_box.Direction()
+               ? AbstractInlineBoxAndForwardSideAffinity<TraversalStrategy>(
+                     forward_most_box)
+               : AbstractInlineBoxAndBackwardSideAffinity<TraversalStrategy>(
+                     forward_most_box);
+  }
+};
+
 }  // namespace
 
 const InlineBox* InlineBoxTraversal::FindLeftBidiRun(const InlineBox& box,
@@ -617,6 +663,16 @@ NGCaretPosition BidiAdjustment::AdjustForCaretPositionResolution(
           : CaretPositionResolutionAdjuster<TraverseLeft>::AdjustFor(
                 unadjusted.GetBox(), unicode_bidi);
   return adjusted.ToNGCaretPosition();
+}
+
+InlineBoxPosition BidiAdjustment::AdjustForHitTest(
+    const InlineBoxPosition& caret_position) {
+  const AbstractInlineBoxAndSideAffinity unadjusted(caret_position);
+  const AbstractInlineBoxAndSideAffinity adjusted =
+      unadjusted.AtLeftSide()
+          ? HitTestAdjuster<TraverseRight>::AdjustFor(unadjusted.GetBox())
+          : HitTestAdjuster<TraverseLeft>::AdjustFor(unadjusted.GetBox());
+  return adjusted.ToInlineBoxPosition();
 }
 
 }  // namespace blink

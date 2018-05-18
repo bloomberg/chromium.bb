@@ -20,12 +20,18 @@ class BidiAdjustment final {
   STATIC_ONLY(BidiAdjustment);
 
  public:
+  // Function to be called at the end of caret position resolution, adjusting
+  // the result in bidi text runs.
   // TODO(xiaochengh): Eliminate |unicode_bidi| from parameters.
   static InlineBoxPosition AdjustForCaretPositionResolution(
       const InlineBoxPosition&,
       UnicodeBidi unicode_bidi);
   static NGCaretPosition AdjustForCaretPositionResolution(
       const NGCaretPosition&);
+
+  // Function to be called at the end of hit tests, adjusting the result in bidi
+  // text runs.
+  static InlineBoxPosition AdjustForHitTest(const InlineBoxPosition&);
 
   // TODO(xiaochengh): Clients of InlineBoxTraversal should be wrapped into
   // new member functions here.
