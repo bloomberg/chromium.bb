@@ -131,10 +131,12 @@ LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
       active_webcontents_count_(0U),
       database_(database),
       delegate_(delegate),
+      safe_to_write_to_db_(false),
       weak_factory_(this) {
-  DCHECK_NE(nullptr, delegate_);
-  DCHECK_NE(nullptr, database_);
+  DCHECK(database_);
+  DCHECK(delegate_);
   DCHECK(!site_characteristics_.IsInitialized());
+
   database_->ReadSiteCharacteristicsFromDB(
       origin_str_,
       base::BindOnce(&LocalSiteCharacteristicsDataImpl::OnInitCallback,
@@ -148,10 +150,13 @@ LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
   // TODO(sebmarchand): Check if this is a valid assumption.
   DCHECK(!IsLoaded());
 
-  DCHECK_NE(nullptr, delegate_);
+  DCHECK(delegate_);
   delegate_->OnLocalSiteCharacteristicsDataImplDestroyed(this);
 
-  if (site_characteristics_.IsInitialized()) {
+  // TODO(sebmarchand): Some data might be lost here if the read operation has
+  // not completed, add some metrics to measure if this is really an issue.
+  if (safe_to_write_to_db_) {
+    DCHECK(site_characteristics_.IsInitialized());
     database_->WriteSiteCharacteristicsIntoDB(origin_str_,
                                               site_characteristics_);
   }
@@ -266,7 +271,6 @@ void LocalSiteCharacteristicsDataImpl::NotifyFeatureUsage(
 void LocalSiteCharacteristicsDataImpl::OnInitCallback(
     base::Optional<SiteCharacteristicsProto> db_site_characteristics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   // Check if the initialization has succeeded.
   if (db_site_characteristics) {
     // If so, iterates over all the features and initialize them.
@@ -313,6 +317,7 @@ void LocalSiteCharacteristicsDataImpl::OnInitCallback(
     InitWithDefaultValues(true /* only_init_uninitialized_fields */);
   }
 
+  safe_to_write_to_db_ = true;
   DCHECK(site_characteristics_.IsInitialized());
 }
 

@@ -23,7 +23,7 @@ constexpr char kSiteCharacteristicsDirectoryName[] =
 LocalSiteCharacteristicsDataStore::LocalSiteCharacteristicsDataStore(
     Profile* profile)
     : history_observer_(this) {
-  database_ = LevelDBSiteCharacteristicsDatabase::OpenOrCreateDatabase(
+  database_ = std::make_unique<LevelDBSiteCharacteristicsDatabase>(
       profile->GetPath().AppendASCII(kSiteCharacteristicsDirectoryName));
 
   history::HistoryService* history =
@@ -69,6 +69,7 @@ LocalSiteCharacteristicsDataStore::GetOrCreateFeatureImpl(
   internal::LocalSiteCharacteristicsDataImpl* site_characteristic_data =
       new internal::LocalSiteCharacteristicsDataImpl(origin_str, this,
                                                      database_.get());
+
   // internal::LocalSiteCharacteristicsDataImpl is a ref-counted object, it's
   // safe to store a raw pointer to it here as this class will get notified when
   // it's about to be destroyed and it'll be removed from the map.

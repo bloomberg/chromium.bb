@@ -8,6 +8,8 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_database.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
@@ -19,16 +21,13 @@ namespace resource_coordinator {
 //     database if it becomes too big and ensure that this fail nicely when the
 //     disk is full.
 //   - Batch the write operations to reduce the number of I/O events.
-//   - Move the I/O operations to a different thread.
 //
-// All the DB operations need to be done on the I/O thread.
+// All the DB operations are done asynchronously on a sequence allowed to do
+// I/O operations.
 class LevelDBSiteCharacteristicsDatabase
     : public LocalSiteCharacteristicsDatabase {
  public:
-  // Initialize the database, create it if it doesn't exist or just open it if
-  // it does. The on-disk database will be stored in |db_path|.
-  static std::unique_ptr<LevelDBSiteCharacteristicsDatabase>
-  OpenOrCreateDatabase(const base::FilePath& db_path);
+  explicit LevelDBSiteCharacteristicsDatabase(const base::FilePath& db_path);
 
   ~LevelDBSiteCharacteristicsDatabase() override;
 
@@ -41,24 +40,23 @@ class LevelDBSiteCharacteristicsDatabase
       const std::string& site_origin,
       const SiteCharacteristicsProto& site_characteristic_proto) override;
   void RemoveSiteCharacteristicsFromDB(
-      const std::vector<std::string>& site_origin) override;
+      const std::vector<std::string>& site_origins) override;
   void ClearDatabase() override;
 
  private:
-  LevelDBSiteCharacteristicsDatabase(std::unique_ptr<leveldb::DB> db,
-                                     const base::FilePath& db_path);
+  class AsyncHelper;
 
-  // The connection to the LevelDB database.
-  std::unique_ptr<leveldb::DB> db_;
-  // The options to be used for all database read operations.
-  leveldb::ReadOptions read_options_;
-  // The options to be used for all database write operations.
-  leveldb::WriteOptions write_options_;
+  // The task runner used to run all the blocking operations.
+  const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  // The on disk location of the database.
-  const base::FilePath db_path_;
+  // Helper object that should be used to trigger all the operations that need
+  // to run on |blocking_task_runner_|, it is guaranteed that the AsyncHelper
+  // held by this object will only be destructed once all the tasks that have
+  // been posted to it have completed.
+  std::unique_ptr<AsyncHelper, base::OnTaskRunnerDeleter> async_helper_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(LevelDBSiteCharacteristicsDatabase);
 };
 

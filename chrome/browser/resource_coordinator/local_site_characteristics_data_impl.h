@@ -174,12 +174,17 @@ class LocalSiteCharacteristicsDataImpl
   // state of a tab.
   size_t active_webcontents_count_;
 
-  // The database used to store the site characteristics.
-  LocalSiteCharacteristicsDatabase* database_;
+  // The database used to store the site characteristics, it should outlive
+  // this object.
+  LocalSiteCharacteristicsDatabase* const database_;
 
   // The delegate that should get notified when this object is about to get
-  // destroyed.
+  // destroyed, it should outlive this object.
   OnDestroyDelegate* const delegate_;
+
+  // Indicates if this object is in a state where it can be written to the
+  // database without erasing some data.
+  bool safe_to_write_to_db_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
