@@ -108,14 +108,14 @@ class BASE_EXPORT BindStateBase
 // CallbackBase<Copyable> uses CallbackBase<MoveOnly> for its implementation.
 class BASE_EXPORT CallbackBase {
  public:
-  CallbackBase(CallbackBase&& c);
-  CallbackBase& operator=(CallbackBase&& c);
+  CallbackBase(CallbackBase&& c) noexcept;
+  CallbackBase& operator=(CallbackBase&& c) noexcept;
 
   explicit CallbackBase(const CallbackBaseCopyable& c);
   CallbackBase& operator=(const CallbackBaseCopyable& c);
 
-  explicit CallbackBase(CallbackBaseCopyable&& c);
-  CallbackBase& operator=(CallbackBaseCopyable&& c);
+  explicit CallbackBase(CallbackBaseCopyable&& c) noexcept;
+  CallbackBase& operator=(CallbackBaseCopyable&& c) noexcept;
 
   // Returns true if Callback is null (doesn't refer to anything).
   bool is_null() const { return !bind_state_; }
@@ -158,9 +158,9 @@ constexpr CallbackBase::CallbackBase() = default;
 class BASE_EXPORT CallbackBaseCopyable : public CallbackBase {
  public:
   CallbackBaseCopyable(const CallbackBaseCopyable& c);
-  CallbackBaseCopyable(CallbackBaseCopyable&& c);
+  CallbackBaseCopyable(CallbackBaseCopyable&& c) noexcept;
   CallbackBaseCopyable& operator=(const CallbackBaseCopyable& c);
-  CallbackBaseCopyable& operator=(CallbackBaseCopyable&& c);
+  CallbackBaseCopyable& operator=(CallbackBaseCopyable&& c) noexcept;
 
  protected:
   constexpr CallbackBaseCopyable() = default;
