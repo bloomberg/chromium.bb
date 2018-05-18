@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
-import org.chromium.chrome.browser.webauth.U2fApiHandler;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
 import org.chromium.policy.AppRestrictionsProvider;
@@ -342,12 +341,5 @@ public abstract class AppHooks {
      */
     public Fido2ApiHandler createFido2ApiHandler() {
         return new Fido2ApiHandler();
-    }
-
-    /**
-     * @return a new {@link U2fApiHandler} instance.
-     */
-    public U2fApiHandler createU2fApiHandler() {
-        return new U2fApiHandler();
     }
 }

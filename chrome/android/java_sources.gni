@@ -1423,7 +1423,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webauth/AuthenticatorImpl.java",
   "java/src/org/chromium/chrome/browser/webauth/Fido2ApiHandler.java",
   "java/src/org/chromium/chrome/browser/webauth/HandlerResponseCallback.java",
-  "java/src/org/chromium/chrome/browser/webauth/U2fApiHandler.java",
   "java/src/org/chromium/chrome/browser/webshare/ShareServiceImpl.java",
   "java/src/org/chromium/chrome/browser/webshare/ShareServiceImplementationFactory.java",
   "java/src/org/chromium/chrome/browser/widget/AlertDialogEditText.java",
