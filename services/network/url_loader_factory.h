@@ -5,11 +5,15 @@
 #ifndef SERVICES_NETWORK_URL_LOADER_FACTORY_H_
 #define SERVICES_NETWORK_URL_LOADER_FACTORY_H_
 
+#include <memory>
+#include <set>
+
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace network {
@@ -37,7 +41,7 @@ class URLLoaderFactory : public mojom::URLLoaderFactory {
   // NOTE: |context| must outlive this instance.
   URLLoaderFactory(
       NetworkContext* context,
-      uint32_t process_id,
+      mojom::URLLoaderFactoryParamsPtr params,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
       mojom::URLLoaderFactoryRequest request);
 
@@ -67,7 +71,7 @@ class URLLoaderFactory : public mojom::URLLoaderFactory {
 
   // The NetworkContext that owns |this|.
   NetworkContext* const context_;
-  uint32_t process_id_;
+  mojom::URLLoaderFactoryParamsPtr params_;
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 
   mojo::BindingSet<mojom::URLLoaderFactory> binding_set_;

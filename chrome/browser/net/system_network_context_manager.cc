@@ -5,6 +5,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 
 #include <string>
+#include <utility>
 
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
@@ -123,8 +124,12 @@ SystemNetworkContextManager::GetURLLoaderFactory() {
     return url_loader_factory_.get();
   }
 
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = network::mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
   GetContext()->CreateURLLoaderFactory(mojo::MakeRequest(&url_loader_factory_),
-                                       0);
+                                       std::move(params));
   return url_loader_factory_.get();
 }
 

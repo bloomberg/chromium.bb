@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/barrier_closure.h"
@@ -413,7 +414,7 @@ class StoragePartitionImpl::DataDeletionHelper {
   // to the DataDeletionHelper.
   class OwnsReference {
    public:
-    OwnsReference(DataDeletionHelper* helper) : helper_(helper) {
+    explicit OwnsReference(DataDeletionHelper* helper) : helper_(helper) {
       DCHECK_CURRENTLY_ON(BrowserThread::UI);
       helper->IncrementTaskCountOnUI();
     }
@@ -1251,15 +1252,20 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
     return url_loader_factory_for_browser_process_.get();
   }
 
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = network::mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
   if (g_url_loader_factory_callback_for_test.Get().is_null()) {
     GetNetworkContext()->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_for_browser_process_), 0);
+        mojo::MakeRequest(&url_loader_factory_for_browser_process_),
+        std::move(params));
     return url_loader_factory_for_browser_process_.get();
   }
 
   network::mojom::URLLoaderFactoryPtr original_factory;
   GetNetworkContext()->CreateURLLoaderFactory(
-      mojo::MakeRequest(&original_factory), 0);
+      mojo::MakeRequest(&original_factory), std::move(params));
   url_loader_factory_for_browser_process_ =
       g_url_loader_factory_callback_for_test.Get().Run(
           std::move(original_factory));

@@ -33,8 +33,9 @@ class TestNetworkContext : public mojom::NetworkContext {
   TestNetworkContext() = default;
   ~TestNetworkContext() override = default;
 
-  void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest url_loader_factory,
-                              uint32_t process_id) override {}
+  void CreateURLLoaderFactory(
+      mojom::URLLoaderFactoryRequest request,
+      network::mojom::URLLoaderFactoryParamsPtr params) override {}
   void GetCookieManager(mojom::CookieManagerRequest cookie_manager) override {}
   void GetRestrictedCookieManager(
       mojom::RestrictedCookieManagerRequest restricted_cookie_manager,

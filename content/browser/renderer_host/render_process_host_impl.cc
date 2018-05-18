@@ -2127,8 +2127,13 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
     NOTREACHED();
     return;
   }
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = id_;
+  // TODO(lukasza): https://crbug.com/792546: Start using CORB.
+  params->is_corb_enabled = false;
   storage_partition_impl_->GetNetworkContext()->CreateURLLoaderFactory(
-      std::move(request), id_);
+      std::move(request), std::move(params));
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {

@@ -165,8 +165,13 @@ network::mojom::URLLoaderFactory* BrowserState::GetURLLoaderFactory() {
 
     network_context_owner_ = std::make_unique<NetworkContextOwner>(
         GetRequestContext(), &network_context_);
+    auto url_loader_factory_params =
+        network::mojom::URLLoaderFactoryParams::New();
+    url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
+    url_loader_factory_params->is_corb_enabled = false;
     network_context_->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_), 0 /* process_id */);
+        mojo::MakeRequest(&url_loader_factory_),
+        std::move(url_loader_factory_params));
   }
 
   return url_loader_factory_.get();

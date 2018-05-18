@@ -152,8 +152,12 @@ void AwSafeBrowsingUIManager::SendSerializedThreatDetails(
 void AwSafeBrowsingUIManager::CreateURLLoaderFactoryForIO(
     network::mojom::URLLoaderFactoryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto url_loader_factory_params =
+      network::mojom::URLLoaderFactoryParams::New();
+  url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
+  url_loader_factory_params->is_corb_enabled = false;
   network_context_->GetNetworkContext()->CreateURLLoaderFactory(
-      std::move(request), 0);
+      std::move(request), std::move(url_loader_factory_params));
 }
 
 }  // namespace android_webview

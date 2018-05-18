@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
@@ -109,8 +110,12 @@ class TwoPhaseUploaderTest : public testing::Test {
     network_context_ = std::make_unique<network::NetworkContext>(
         nullptr, mojo::MakeRequest(&network_context),
         url_request_context_.get());
+    network::mojom::URLLoaderFactoryParamsPtr params =
+        network::mojom::URLLoaderFactoryParams::New();
+    params->process_id = network::mojom::kBrowserProcessId;
+    params->is_corb_enabled = false;
     network_context_->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_), 0);
+        mojo::MakeRequest(&url_loader_factory_), std::move(params));
     shared_url_loader_factory_ =
         base::MakeRefCounted<SharedURLLoaderFactory>(url_loader_factory_.get());
   }

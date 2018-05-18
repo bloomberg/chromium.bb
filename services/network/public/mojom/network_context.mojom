@@ -244,13 +244,26 @@ interface NetLogExporter {
   Stop(mojo_base.mojom.DictionaryValue polled_values) => (int32 net_error);
 };
 
+const uint32 kBrowserProcessId = 0;
+const uint32 kInvalidProcessId = 0xffffffff;
+
+struct URLLoaderFactoryParams {
+  // Process requesting the URLLoaderFactory.
+  // Set to kBrowserProcessId to indicate the brower process.
+  uint32 process_id = kInvalidProcessId;
+
+  // Cross-origin read blocking (CORB) configuration.
+  // TODO(lukasza): https://crbug.com/792546: Actually use the settings below.
+  bool is_corb_enabled = true;
+  string corb_excluded_initiator_scheme;
+};
+
 // Represents a distinct context for making network requests, with its own
 // storage (e.g. cookies and cache).
 interface NetworkContext {
-  // |process_id| is 0 for requests initiated in the browser process, otherwise
-  // it's the child process ID.
+  // Creates a new URLLoaderFactory with the given |params|.
   CreateURLLoaderFactory(URLLoaderFactory& url_loader_factory,
-                         uint32 process_id);
+                         URLLoaderFactoryParams params);
 
   // Gets the CookieManager associated with this network context.
   GetCookieManager(CookieManager& cookie_manager);

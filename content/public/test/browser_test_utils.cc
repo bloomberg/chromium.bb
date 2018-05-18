@@ -2532,8 +2532,12 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
                      int process_id,
                      int render_frame_id) {
   network::mojom::URLLoaderFactoryPtr url_loader_factory;
+  network::mojom::URLLoaderFactoryParamsPtr url_loader_factory_params =
+      network::mojom::URLLoaderFactoryParams::New();
+  url_loader_factory_params->process_id = process_id;
+  url_loader_factory_params->is_corb_enabled = false;
   network_context->CreateURLLoaderFactory(MakeRequest(&url_loader_factory),
-                                          process_id);
+                                          std::move(url_loader_factory_params));
   // |url_loader_factory| will receive error notification asynchronously if
   // |network_context| has already encountered error. However it's still false
   // at this point.

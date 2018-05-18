@@ -4,6 +4,9 @@
 
 #include "content/browser/url_loader_factory_getter.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
@@ -246,8 +249,12 @@ void URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread(
   // still held by consumers.
   if (!partition_)
     return;
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = network::mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
   partition_->GetNetworkContext()->CreateURLLoaderFactory(
-      std::move(network_factory_request), 0);
+      std::move(network_factory_request), std::move(params));
 }
 
 }  // namespace content

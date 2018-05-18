@@ -162,8 +162,12 @@ TEST_F(NetworkContextTest, DestroyContextWithLiveRequest) {
   request.url = test_server.GetURL("/hung-after-headers");
 
   mojom::URLLoaderFactoryPtr loader_factory;
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
   network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                          0);
+                                          std::move(params));
 
   mojom::URLLoaderPtr loader;
   TestURLLoaderClient client;

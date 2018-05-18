@@ -5,6 +5,7 @@
 #include "services/network/cors/preflight_controller.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -144,8 +145,12 @@ class PreflightControllerTest : public testing::Test {
         mojo::MakeRequest(&network_context_ptr_),
         mojom::NetworkContextParams::New());
 
+    network::mojom::URLLoaderFactoryParamsPtr params =
+        network::mojom::URLLoaderFactoryParams::New();
+    params->process_id = mojom::kBrowserProcessId;
+    params->is_corb_enabled = false;
     network_context_ptr_->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_ptr_), 0 /* process_id */);
+        mojo::MakeRequest(&url_loader_factory_ptr_), std::move(params));
   }
 
  protected:

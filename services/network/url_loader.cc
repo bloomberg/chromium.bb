@@ -4,7 +4,10 @@
 
 #include "services/network/url_loader.h"
 
+#include <limits>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
@@ -270,7 +273,7 @@ URLLoader::URLLoader(
     bool report_raw_headers,
     mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    uint32_t process_id,
+    const mojom::URLLoaderFactoryParams* factory_params,
     uint32_t request_id,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
     base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
@@ -281,7 +284,7 @@ URLLoader::URLLoader(
       options_(options),
       resource_type_(request.resource_type),
       is_load_timing_enabled_(request.enable_load_timing),
-      process_id_(process_id),
+      factory_params_(std::move(factory_params)),
       render_frame_id_(request.render_frame_id),
       request_id_(request_id),
       keepalive_(request.keepalive),
@@ -361,7 +364,7 @@ URLLoader::URLLoader(
   }
 
   if (keepalive_ && keepalive_statistics_recorder_)
-    keepalive_statistics_recorder_->OnLoadStarted(process_id_);
+    keepalive_statistics_recorder_->OnLoadStarted(factory_params_->process_id);
 
   bool defer = false;
   if (resource_scheduler_client_) {
@@ -383,7 +386,7 @@ URLLoader::~URLLoader() {
   RecordBodyReadFromNetBeforePausedIfNeeded();
 
   if (keepalive_ && keepalive_statistics_recorder_)
-    keepalive_statistics_recorder_->OnLoadFinished(process_id_);
+    keepalive_statistics_recorder_->OnLoadFinished(factory_params_->process_id);
 }
 
 void URLLoader::FollowRedirect() {
@@ -489,9 +492,10 @@ void URLLoader::OnAuthRequired(net::URLRequest* unused,
   auth_challenge_responder_binding_.set_connection_error_handler(
       base::BindOnce(&URLLoader::DeleteSelf, base::Unretained(this)));
   network_service_client_->OnAuthRequired(
-      process_id_, render_frame_id_, request_id_, url_request_->url(),
-      url_request_->site_for_cookies(), first_auth_attempt_, auth_info,
-      resource_type_, std::move(auth_challenge_responder));
+      factory_params_->process_id, render_frame_id_, request_id_,
+      url_request_->url(), url_request_->site_for_cookies(),
+      first_auth_attempt_, auth_info, resource_type_,
+      std::move(auth_challenge_responder));
 
   first_auth_attempt_ = false;
 }
@@ -505,7 +509,7 @@ void URLLoader::OnCertificateRequested(net::URLRequest* unused,
   }
 
   network_service_client_->OnCertificateRequested(
-      process_id_, render_frame_id_, request_id_, cert_info,
+      factory_params_->process_id, render_frame_id_, request_id_, cert_info,
       base::BindOnce(&URLLoader::OnCertificateRequestedResponse,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -518,8 +522,8 @@ void URLLoader::OnSSLCertificateError(net::URLRequest* request,
     return;
   }
   network_service_client_->OnSSLCertificateError(
-      process_id_, render_frame_id_, request_id_, resource_type_,
-      url_request_->url(), ssl_info, fatal,
+      factory_params_->process_id, render_frame_id_, request_id_,
+      resource_type_, url_request_->url(), ssl_info, fatal,
       base::Bind(&URLLoader::OnSSLCertificateErrorResponse,
                  weak_ptr_factory_.GetWeakPtr(), ssl_info));
 }
@@ -753,7 +757,8 @@ void URLLoader::NotifyCompleted(int error_code) {
 
   if (network_usage_accumulator_) {
     network_usage_accumulator_->OnBytesTransferred(
-        process_id_, render_frame_id_, url_request_->GetTotalReceivedBytes(),
+        factory_params_->process_id, render_frame_id_,
+        url_request_->GetTotalReceivedBytes(),
         url_request_->GetTotalSentBytes());
   }
 
