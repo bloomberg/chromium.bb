@@ -65,7 +65,7 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
                                                  kPopupMenuVerticalInsets, 0);
   self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(
       kScrollIndicatorVerticalInsets, 0, kScrollIndicatorVerticalInsets, 0);
-  self.tableView.rowHeight = UITableViewAutomaticDimension;
+  self.tableView.rowHeight = 0;
   self.tableView.sectionHeaderHeight = 0;
   self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   // Adding a tableHeaderView is needed to prevent a wide inset on top of the
@@ -138,6 +138,13 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
   if (section == self.tableViewModel.numberOfSections - 1)
     return 0;
   return kFooterHeight;
+}
+
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForRowAtIndexPath:(NSIndexPath*)indexPath {
+  TableViewItem<PopupMenuItem>* item =
+      [self.tableViewModel itemAtIndexPath:indexPath];
+  return [item cellSizeForWidth:self.view.bounds.size.width].height;
 }
 
 #pragma mark - Private
