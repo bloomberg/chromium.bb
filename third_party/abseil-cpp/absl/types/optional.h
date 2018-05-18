@@ -776,10 +776,13 @@ class optional : private optional_internal::optional_data<T>,
   // `optional` is empty, behavior is undefined.
   //
   // If you need myOpt->foo in constexpr, use (*myOpt).foo instead.
-  const T* operator->() const { return this->pointer(); }
+  const T* operator->() const {
+    assert(this->engaged_);
+    return std::addressof(this->data_);
+  }
   T* operator->() {
     assert(this->engaged_);
-    return this->pointer();
+    return std::addressof(this->data_);
   }
 
   // optional::operator*()
@@ -871,10 +874,6 @@ class optional : private optional_internal::optional_data<T>,
   }
 
  private:
-  // Private accessors for internal storage viewed as pointer to T.
-  const T* pointer() const { return std::addressof(this->data_); }
-  T* pointer() { return std::addressof(this->data_); }
-
   // Private accessors for internal storage viewed as reference to T.
   constexpr const T& reference() const { return this->data_; }
   T& reference() { return this->data_; }
@@ -958,7 +957,8 @@ constexpr auto operator==(const optional<T>& x, const optional<U>& y)
     -> decltype(optional_internal::convertible_to_bool(*x == *y)) {
   return static_cast<bool>(x) != static_cast<bool>(y)
              ? false
-             : static_cast<bool>(x) == false ? true : *x == *y;
+             : static_cast<bool>(x) == false ? true
+                                             : static_cast<bool>(*x == *y);
 }
 
 // Returns: If bool(x) != bool(y), true; otherwise, if bool(x) == false, false;
@@ -968,31 +968,32 @@ constexpr auto operator!=(const optional<T>& x, const optional<U>& y)
     -> decltype(optional_internal::convertible_to_bool(*x != *y)) {
   return static_cast<bool>(x) != static_cast<bool>(y)
              ? true
-             : static_cast<bool>(x) == false ? false : *x != *y;
+             : static_cast<bool>(x) == false ? false
+                                             : static_cast<bool>(*x != *y);
 }
 // Returns: If !y, false; otherwise, if !x, true; otherwise *x < *y.
 template <typename T, typename U>
 constexpr auto operator<(const optional<T>& x, const optional<U>& y)
     -> decltype(optional_internal::convertible_to_bool(*x < *y)) {
-  return !y ? false : !x ? true : *x < *y;
+  return !y ? false : !x ? true : static_cast<bool>(*x < *y);
 }
 // Returns: If !x, false; otherwise, if !y, true; otherwise *x > *y.
 template <typename T, typename U>
 constexpr auto operator>(const optional<T>& x, const optional<U>& y)
     -> decltype(optional_internal::convertible_to_bool(*x > *y)) {
-  return !x ? false : !y ? true : *x > *y;
+  return !x ? false : !y ? true : static_cast<bool>(*x > *y);
 }
 // Returns: If !x, true; otherwise, if !y, false; otherwise *x <= *y.
 template <typename T, typename U>
 constexpr auto operator<=(const optional<T>& x, const optional<U>& y)
     -> decltype(optional_internal::convertible_to_bool(*x <= *y)) {
-  return !x ? true : !y ? false : *x <= *y;
+  return !x ? true : !y ? false : static_cast<bool>(*x <= *y);
 }
 // Returns: If !y, true; otherwise, if !x, false; otherwise *x >= *y.
 template <typename T, typename U>
 constexpr auto operator>=(const optional<T>& x, const optional<U>& y)
     -> decltype(optional_internal::convertible_to_bool(*x >= *y)) {
-  return !y ? true : !x ? false : *x >= *y;
+  return !y ? true : !x ? false : static_cast<bool>(*x >= *y);
 }
 
 // Comparison with nullopt [optional.nullops]
@@ -1054,62 +1055,62 @@ constexpr bool operator>=(nullopt_t, const optional<T>& x) noexcept {
 template <typename T, typename U>
 constexpr auto operator==(const optional<T>& x, const U& v)
     -> decltype(optional_internal::convertible_to_bool(*x == v)) {
-  return static_cast<bool>(x) ? *x == v : false;
+  return static_cast<bool>(x) ? static_cast<bool>(*x == v) : false;
 }
 template <typename T, typename U>
 constexpr auto operator==(const U& v, const optional<T>& x)
     -> decltype(optional_internal::convertible_to_bool(v == *x)) {
-  return static_cast<bool>(x) ? v == *x : false;
+  return static_cast<bool>(x) ? static_cast<bool>(v == *x) : false;
 }
 template <typename T, typename U>
 constexpr auto operator!=(const optional<T>& x, const U& v)
     -> decltype(optional_internal::convertible_to_bool(*x != v)) {
-  return static_cast<bool>(x) ? *x != v : true;
+  return static_cast<bool>(x) ? static_cast<bool>(*x != v) : true;
 }
 template <typename T, typename U>
 constexpr auto operator!=(const U& v, const optional<T>& x)
     -> decltype(optional_internal::convertible_to_bool(v != *x)) {
-  return static_cast<bool>(x) ? v != *x : true;
+  return static_cast<bool>(x) ? static_cast<bool>(v != *x) : true;
 }
 template <typename T, typename U>
 constexpr auto operator<(const optional<T>& x, const U& v)
     -> decltype(optional_internal::convertible_to_bool(*x < v)) {
-  return static_cast<bool>(x) ? *x < v : true;
+  return static_cast<bool>(x) ? static_cast<bool>(*x < v) : true;
 }
 template <typename T, typename U>
 constexpr auto operator<(const U& v, const optional<T>& x)
     -> decltype(optional_internal::convertible_to_bool(v < *x)) {
-  return static_cast<bool>(x) ? v < *x : false;
+  return static_cast<bool>(x) ? static_cast<bool>(v < *x) : false;
 }
 template <typename T, typename U>
 constexpr auto operator<=(const optional<T>& x, const U& v)
     -> decltype(optional_internal::convertible_to_bool(*x <= v)) {
-  return static_cast<bool>(x) ? *x <= v : true;
+  return static_cast<bool>(x) ? static_cast<bool>(*x <= v) : true;
 }
 template <typename T, typename U>
 constexpr auto operator<=(const U& v, const optional<T>& x)
     -> decltype(optional_internal::convertible_to_bool(v <= *x)) {
-  return static_cast<bool>(x) ? v <= *x : false;
+  return static_cast<bool>(x) ? static_cast<bool>(v <= *x) : false;
 }
 template <typename T, typename U>
 constexpr auto operator>(const optional<T>& x, const U& v)
     -> decltype(optional_internal::convertible_to_bool(*x > v)) {
-  return static_cast<bool>(x) ? *x > v : false;
+  return static_cast<bool>(x) ? static_cast<bool>(*x > v) : false;
 }
 template <typename T, typename U>
 constexpr auto operator>(const U& v, const optional<T>& x)
     -> decltype(optional_internal::convertible_to_bool(v > *x)) {
-  return static_cast<bool>(x) ? v > *x : true;
+  return static_cast<bool>(x) ? static_cast<bool>(v > *x) : true;
 }
 template <typename T, typename U>
 constexpr auto operator>=(const optional<T>& x, const U& v)
     -> decltype(optional_internal::convertible_to_bool(*x >= v)) {
-  return static_cast<bool>(x) ? *x >= v : false;
+  return static_cast<bool>(x) ? static_cast<bool>(*x >= v) : false;
 }
 template <typename T, typename U>
 constexpr auto operator>=(const U& v, const optional<T>& x)
     -> decltype(optional_internal::convertible_to_bool(v >= *x)) {
-  return static_cast<bool>(x) ? v >= *x : true;
+  return static_cast<bool>(x) ? static_cast<bool>(v >= *x) : true;
 }
 
 }  // namespace absl
