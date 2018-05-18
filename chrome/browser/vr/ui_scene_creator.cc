@@ -2436,32 +2436,29 @@ void UiSceneCreator::CreateOverflowMenu() {
     button_region->AddChild(std::move(button));
   }
 
-  std::vector<std::tuple<UiElementName, int>> menu_items = {
-      {kOverflowMenuCloseAllTabsItem, IDS_VR_MENU_CLOSE_ALL_TABS},
-      {kOverflowMenuCloseAllIncognitoTabsItem,
-       IDS_VR_MENU_CLOSE_INCOGNITO_TABS},
-      {kOverflowMenuNewTabItem, IDS_VR_MENU_NEW_TAB},
-      {kOverflowMenuNewIncognitoTabItem, IDS_VR_MENU_NEW_INCOGNITO_TAB},
-      {kOverflowMenuBookmarksItem, IDS_VR_MENU_BOOKMARKS},
-      {kOverflowMenuRecentTabsItem, IDS_VR_MENU_RECENT_TABS},
-      {kOverflowMenuHistoryItem, IDS_VR_MENU_HISTORY},
-      {kOverflowMenuDownloadsItem, IDS_VR_MENU_DOWNLOADS},
-      {kOverflowMenuShareItem, IDS_VR_MENU_SHARE},
-      {kOverflowMenuPreferencesItem, IDS_VR_MENU_PREFERENCES},
-      {kOverflowMenuSendFeedbackItem, IDS_VR_MENU_SEND_FEEDBACK},
-  };
+  std::vector<std::tuple<UiElementName, bool, int,
+                         base::RepeatingCallback<void(UiBrowserInterface*)>>>
+      menu_items = {
+          {kOverflowMenuNewIncognitoTabItem, false,
+           IDS_VR_MENU_NEW_INCOGNITO_TAB,
+           base::BindRepeating(
+               [](UiBrowserInterface* browser) { browser->OpenNewTab(true); })},
+          {kOverflowMenuCloseAllIncognitoTabsItem, false,
+           IDS_VR_MENU_CLOSE_INCOGNITO_TABS,
+           base::BindRepeating([](UiBrowserInterface* browser) {
+             browser->CloseAllIncognitoTabs();
+           })},
+          {kOverflowMenuPreferencesItem, true, IDS_VR_MENU_PREFERENCES,
+           base::BindRepeating(
+               [](UiBrowserInterface* browser) { browser->OpenSettings(); })},
+      };
 
   auto overflow_menu_scroll = Create<ScrollableElement>(
       kNone, kPhaseNone, ScrollableElement::kVertical);
   overflow_menu_scroll->SetMaxSpan(kOverflowMenuMaxSpan);
   overflow_menu_scroll->SetScrollAnchoring(TOP);
-  auto overflow_menu_layout =
-      Create<LinearLayout>(kOverflowMenuLayout, kPhaseNone, LinearLayout::kUp);
-
-  // The item that reserves space in the menu layout for the buttons.
-  auto button_spacer =
-      CreateSpacer(kOverflowMenuMinimumWidth, kOverflowButtonRegionHeight);
-  overflow_menu_layout->AddChild(std::move(button_spacer));
+  auto overflow_menu_layout = Create<LinearLayout>(
+      kOverflowMenuLayout, kPhaseNone, LinearLayout::kDown);
 
   for (auto& item : menu_items) {
     auto layout = std::make_unique<LinearLayout>(LinearLayout::kRight);
@@ -2471,7 +2468,7 @@ void UiSceneCreator::CreateOverflowMenu() {
     auto text =
         Create<Text>(kNone, kPhaseForeground, kSuggestionContentTextHeightDMM);
     text->SetDrawPhase(kPhaseForeground);
-    text->SetText(l10n_util::GetStringUTF16(std::get<1>(item)));
+    text->SetText(l10n_util::GetStringUTF16(std::get<2>(item)));
     text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
     text->SetFieldWidth(kOverflowMenuMinimumWidth -
                         2 * kOverflowMenuItemXPadding);
@@ -2496,88 +2493,23 @@ void UiSceneCreator::CreateOverflowMenu() {
                           &ColorScheme::url_bar_button,
                           &Button::SetButtonColors);
     background->AddChild(std::move(layout));
-    base::RepeatingClosure callback;
-    switch (std::get<0>(item)) {
-      case kOverflowMenuCloseAllTabsItem:
-        callback = base::BindRepeating(
-            [](UiBrowserInterface* browser) { browser->CloseAllTabs(); },
-            base::Unretained(browser_));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device &&
-                                           (!model->incognito_tabs.empty() ||
-                                            !model->regular_tabs.empty()));
-        break;
-      case kOverflowMenuCloseAllIncognitoTabsItem:
-        callback = base::BindRepeating(
-            [](UiBrowserInterface* browser) {
-              browser->CloseAllIncognitoTabs();
-            },
-            base::Unretained(browser_));
-        VR_BIND_VISIBILITY(background, !model->incognito_tabs.empty());
-        break;
-      case kOverflowMenuNewTabItem:
-        callback = base::BindRepeating(
-            [](UiBrowserInterface* browser) { browser->OpenNewTab(false); },
-            base::Unretained(browser_));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
-      case kOverflowMenuNewIncognitoTabItem:
-        callback = base::BindRepeating(
-            [](UiBrowserInterface* browser) { browser->OpenNewTab(true); },
-            base::Unretained(browser_));
-        break;
-      case kOverflowMenuBookmarksItem:
-        callback = base::BindRepeating(
-            [](UiBrowserInterface* browser) { browser->OpenBookmarks(); },
-            base::Unretained(browser_));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
-      case kOverflowMenuRecentTabsItem:
-        callback = base::BindRepeating(
-            [](UiBrowserInterface* browser) { browser->OpenRecentTabs(); },
-            base::Unretained(browser_));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
-      case kOverflowMenuHistoryItem:
-        callback = base::BindRepeating(
-            [](UiBrowserInterface* browser) { browser->OpenHistory(); },
-            base::Unretained(browser_));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
-      case kOverflowMenuDownloadsItem:
-        callback = base::BindRepeating(
-            [](UiBrowserInterface* browser) { browser->OpenDownloads(); },
-            base::Unretained(browser_));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
-      case kOverflowMenuShareItem:
-        callback = base::BindRepeating(
-            [](UiBrowserInterface* browser) { browser->OpenShare(); },
-            base::Unretained(browser_));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
-      case kOverflowMenuPreferencesItem:
-        callback = base::BindRepeating(
-            [](UiBrowserInterface* browser) { browser->OpenSettings(); },
-            base::Unretained(browser_));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
-      case kOverflowMenuSendFeedbackItem:
-        callback = base::BindRepeating(
-            [](UiBrowserInterface* browser) { browser->OpenFeedback(); },
-            base::Unretained(browser_));
-        VR_BIND_VISIBILITY(background, model->standalone_vr_device);
-        break;
-      default:
-        break;
-    }
+    base::RepeatingClosure callback =
+        base::BindRepeating(std::get<3>(item), base::Unretained(browser_));
     background->set_click_handler(base::BindRepeating(
         [](Model* model, const base::RepeatingClosure& callback) {
           model->overflow_menu_enabled = false;
           callback.Run();
         },
         base::Unretained(model_), callback));
+    if (std::get<1>(item))
+      VR_BIND_VISIBILITY(background, model->standalone_vr_device)
     overflow_menu_layout->AddChild(std::move(background));
   }
+
+  // The item that reserves space in the menu layout for the buttons.
+  auto button_spacer =
+      CreateSpacer(kOverflowMenuMinimumWidth, kOverflowButtonRegionHeight);
+  overflow_menu_layout->AddChild(std::move(button_spacer));
 
   overflow_menu_scroll->AddScrollingChild(std::move(overflow_menu_layout));
   overflow_outer_layout->AddChild(std::move(overflow_menu_scroll));
