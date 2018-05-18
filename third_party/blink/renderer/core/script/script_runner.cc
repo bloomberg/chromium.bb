@@ -100,7 +100,9 @@ void ScriptRunner::Resume() {
 
 void ScriptRunner::ScheduleReadyInOrderScripts() {
   while (!pending_in_order_scripts_.IsEmpty() &&
-         pending_in_order_scripts_.front()->IsReady()) {
+         pending_in_order_scripts_.front()
+             ->GetPendingScriptIfControlledByScriptRunner()
+             ->IsReady()) {
     in_order_scripts_to_execute_soon_.push_back(
         pending_in_order_scripts_.TakeFirst());
     PostTask(FROM_HERE);
@@ -213,14 +215,14 @@ bool ScriptRunner::ExecuteInOrderTask() {
 
 bool ScriptRunner::ExecuteAsyncTask() {
   // Find an async script loader which is not currently streaming.
-  auto it = std::find_if(async_scripts_to_execute_soon_.begin(),
-                         async_scripts_to_execute_soon_.end(),
-                         [](ScriptLoader* loader) {
-                           PendingScript* pending_script =
-                               loader->GetPendingScriptIfScriptOfAsyncScript();
-                           DCHECK(pending_script);
-                           return !pending_script->IsCurrentlyStreaming();
-                         });
+  auto it = std::find_if(
+      async_scripts_to_execute_soon_.begin(),
+      async_scripts_to_execute_soon_.end(), [](ScriptLoader* loader) {
+        PendingScript* pending_script =
+            loader->GetPendingScriptIfControlledByScriptRunner();
+        DCHECK(pending_script);
+        return !pending_script->IsCurrentlyStreaming();
+      });
   if (it == async_scripts_to_execute_soon_.end()) {
     return false;
   }
@@ -285,9 +287,11 @@ bool ScriptRunner::DoTryStream(ScriptLoader* script_loader) {
                    script_loader) != async_scripts_to_execute_soon_.end());
 
   PendingScript* pending_script =
-      script_loader->GetPendingScriptIfScriptOfAsyncScript();
+      script_loader->GetPendingScriptIfControlledByScriptRunner();
   if (!pending_script)
     return false;
+
+  DCHECK(script_loader->IsAsync());
 
 #ifndef NDEBUG
   bool was_already_streaming = pending_script->IsCurrentlyStreaming();

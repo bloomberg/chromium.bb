@@ -966,8 +966,9 @@ bool ScriptLoader::IsScriptForEventSupported() const {
          DeprecatedEqualIgnoringCase(event_attribute, "onload()");
 }
 
-PendingScript* ScriptLoader::GetPendingScriptIfScriptOfAsyncScript() {
-  DCHECK(IsAsync());
+PendingScript* ScriptLoader::GetPendingScriptIfControlledByScriptRunner() {
+  DCHECK_NE(async_exec_type_, ScriptRunner::kNone);
+  DCHECK(pending_script_);
   return pending_script_;
 }
 
