@@ -134,11 +134,9 @@ SpellingRequest::SpellingRequest(
 void SpellingRequest::RequestRemoteCheck(
     SpellingServiceClient* client,
     const service_manager::Identity& renderer_identity) {
-  BrowserContext* context = NULL;
-  content::RenderProcessHost* host =
-      content::RenderProcessHost::FromRendererIdentity(renderer_identity);
-  if (host)
-    context = host->GetBrowserContext();
+  BrowserContext* context =
+      content::BrowserContext::GetBrowserContextForServiceUserId(
+          renderer_identity.user_id());
 
   // |this| may be gone at callback invocation if the owner has been removed.
   client->RequestTextCheck(
