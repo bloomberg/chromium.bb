@@ -1847,6 +1847,7 @@ jumbo_source_set("unit_tests") {
     "html/html_link_element_sizes_attribute_test.cc",
     "html/html_link_element_test.cc",
     "html/html_meta_element_test.cc",
+    "html/html_object_element_test.cc",
     "html/html_slot_element_test.cc",
     "html/html_table_row_element_test.cc",
     "html/image_document_test.cc",
