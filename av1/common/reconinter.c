@@ -955,57 +955,49 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 
   {
-    struct buf_2d *const dst_buf = &pd->dst;
-    uint8_t *const dst = dst_buf->buf;
-    uint8_t *pre[2];
-    SubpelParams subpel_params[2];
     DECLARE_ALIGNED(32, uint16_t, tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE]);
-    for (ref = 0; ref < 1 + is_compound; ++ref) {
-      const struct scale_factors *const sf =
-          is_intrabc ? &cm->sf_identity : &xd->block_refs[ref]->sf;
-      struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
-      const MV mv = mi->mv[ref].as_mv;
-
-      calc_subpel_params(xd, sf, mv, plane, pre_x, pre_y, 0, 0, pre_buf,
-                         &pre[ref], &subpel_params[ref], bw, bh);
-    }
-
     ConvolveParams conv_params = get_conv_params_no_round(
         0, 0, plane, tmp_dst, MAX_SB_SIZE, is_compound, xd->bd);
     av1_jnt_comp_weight_assign(cm, mi, 0, &conv_params.fwd_offset,
                                &conv_params.bck_offset,
                                &conv_params.use_jnt_comp_avg, is_compound);
 
+    struct buf_2d *const dst_buf = &pd->dst;
+    uint8_t *const dst = dst_buf->buf;
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf =
           is_intrabc ? &cm->sf_identity : &xd->block_refs[ref]->sf;
       struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
+      const MV mv = mi->mv[ref].as_mv;
+
+      uint8_t *pre;
+      SubpelParams subpel_params;
+      calc_subpel_params(xd, sf, mv, plane, pre_x, pre_y, 0, 0, pre_buf, &pre,
+                         &subpel_params, bw, bh);
+
       WarpTypesAllowed warp_types;
       warp_types.global_warp_allowed = is_global[ref];
       warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
       conv_params.ref = ref;
-      conv_params.do_average = ref;
-      if (is_masked_compound_type(mi->interinter_compound_type)) {
+
+      if (ref && is_masked_compound_type(mi->interinter_compound_type)) {
         // masked compound type has its own average mechanism
         conv_params.do_average = 0;
-      }
-
-      if (ref && is_masked_compound_type(mi->interinter_compound_type))
         av1_make_masked_inter_predictor(
-            pre[ref], pre_buf->stride, dst, dst_buf->stride,
-            subpel_params[ref].subpel_x, subpel_params[ref].subpel_y, sf, bw,
-            bh, &conv_params, mi->interp_filters, subpel_params[ref].xs,
-            subpel_params[ref].ys, plane, &warp_types,
-            mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y, ref, xd,
-            cm->allow_warped_motion);
-      else
+            pre, pre_buf->stride, dst, dst_buf->stride, subpel_params.subpel_x,
+            subpel_params.subpel_y, sf, bw, bh, &conv_params,
+            mi->interp_filters, subpel_params.xs, subpel_params.ys, plane,
+            &warp_types, mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y,
+            ref, xd, cm->allow_warped_motion);
+      } else {
+        conv_params.do_average = ref;
         av1_make_inter_predictor(
-            pre[ref], pre_buf->stride, dst, dst_buf->stride,
-            subpel_params[ref].subpel_x, subpel_params[ref].subpel_y, sf, bw,
-            bh, &conv_params, mi->interp_filters, &warp_types,
-            mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y, plane, ref,
-            mi, build_for_obmc, subpel_params[ref].xs, subpel_params[ref].ys,
-            xd, cm->allow_warped_motion);
+            pre, pre_buf->stride, dst, dst_buf->stride, subpel_params.subpel_x,
+            subpel_params.subpel_y, sf, bw, bh, &conv_params,
+            mi->interp_filters, &warp_types, mi_x >> pd->subsampling_x,
+            mi_y >> pd->subsampling_y, plane, ref, mi, build_for_obmc,
+            subpel_params.xs, subpel_params.ys, xd, cm->allow_warped_motion);
+      }
     }
   }
 }
