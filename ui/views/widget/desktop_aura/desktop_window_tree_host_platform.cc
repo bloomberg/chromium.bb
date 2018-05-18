@@ -77,7 +77,9 @@ void DesktopWindowTreeHostPlatform::Close() {
     return;
 
   // Hide while waiting for the close.
-  platform_window()->Hide();
+  // Please note that it's better to call WindowTreeHost::Hide, which also calls
+  // PlatformWindow::Hide and Compositor::SetVisible(false).
+  Hide();
 
   waiting_for_close_now_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -412,6 +414,10 @@ void DesktopWindowTreeHostPlatform::OnClosed() {
 
 void DesktopWindowTreeHostPlatform::OnCloseRequest() {
   GetWidget()->Close();
+}
+
+void DesktopWindowTreeHostPlatform::OnAcceleratedWidgetDestroying() {
+  native_widget_delegate_->OnNativeWidgetDestroying();
 }
 
 void DesktopWindowTreeHostPlatform::OnActivationChanged(bool active) {

@@ -51,12 +51,17 @@ WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
       state_(PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN) {}
 
 WaylandWindow::~WaylandWindow() {
+  delegate_->OnAcceleratedWidgetDestroying();
+
   if (xdg_surface_) {
     PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
     connection_->RemoveWindow(surface_.id());
   }
   if (has_pointer_focus_)
     connection_->pointer()->reset_window_with_pointer_focus();
+
+  surface_.reset();
+  delegate_->OnAcceleratedWidgetDestroyed();
 }
 
 // static

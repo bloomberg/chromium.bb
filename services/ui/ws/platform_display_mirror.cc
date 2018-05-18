@@ -154,6 +154,8 @@ void PlatformDisplayMirror::OnAcceleratedWidgetAvailable(
     frame_generator_->SetEmbeddedSurface(info);
 }
 
+void PlatformDisplayMirror::OnAcceleratedWidgetDestroying() {}
+
 void PlatformDisplayMirror::OnAcceleratedWidgetDestroyed() {}
 
 void PlatformDisplayMirror::OnActivationChanged(bool active) {}

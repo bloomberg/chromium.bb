@@ -67,6 +67,7 @@ class PlatformDisplayMirror : public PlatformDisplay,
   void OnLostCapture() override;
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
                                     float device_scale_factor) override;
+  void OnAcceleratedWidgetDestroying() override;
   void OnAcceleratedWidgetDestroyed() override;
   void OnActivationChanged(bool active) override;
 
