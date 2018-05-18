@@ -247,6 +247,10 @@ void D3D11VideoDecoderImpl::DoDecode() {
       CreatePictureBuffers();
     } else if (result == media::AcceleratedVideoDecoder::kAllocateNewSurfaces) {
       CreatePictureBuffers();
+    } else if (result == media::AcceleratedVideoDecoder::kNoKey) {
+      state_ = State::kWaitingForNewKey;
+      // Note that another DoDecode() task would be posted in NotifyNewKey().
+      return;
     } else {
       LOG(ERROR) << "VDA Error " << result;
       NotifyError("Accelerated decode failed");
@@ -398,8 +402,18 @@ base::WeakPtr<D3D11VideoDecoderImpl> D3D11VideoDecoderImpl::GetWeakPtr() {
 }
 
 void D3D11VideoDecoderImpl::NotifyNewKey() {
-  // TODO(rkuroiwa): Implement this method.
-  NOTIMPLEMENTED();
+  if (state_ != State::kWaitingForNewKey) {
+    // Note that this method may be called before DoDecode() because the key
+    // acquisition stack may be running independently of the media decoding
+    // stack. So if this isn't in kWaitingForNewKey state no "resuming" is
+    // required therefore no special action taken here.
+    return;
+  }
+
+  state_ = State::kRunning;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&D3D11VideoDecoderImpl::DoDecode,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void D3D11VideoDecoderImpl::NotifyError(const char* reason) {

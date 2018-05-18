@@ -64,8 +64,13 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
     // in which |codec_| might be non-null. If |codec_| is null, a codec
     // creation is pending.
     kRunning,
+    // The decoder cannot make progress because it doesn't have the key to
+    // decrypt the buffer. Waiting for a new key to be available.
+    // This should only be transitioned from kRunning, and should only
+    // transition to kRunning.
+    kWaitingForNewKey,
     // A fatal error occurred. A terminal state.
-    kError
+    kError,
   };
 
   void DoDecode();

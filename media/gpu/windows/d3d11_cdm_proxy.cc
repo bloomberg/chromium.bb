@@ -96,6 +96,7 @@ class D3D11CdmContext : public CdmContext {
               const std::vector<uint8_t>& key_id,
               const std::vector<uint8_t>& key_blob) {
     cdm_proxy_context_.SetKey(crypto_session, key_id, key_blob);
+    new_key_callbacks_.Notify();
   }
   void RemoveKey(ID3D11CryptoSession* crypto_session,
                  const std::vector<uint8_t>& key_id) {
@@ -125,7 +126,6 @@ class D3D11CdmContext : public CdmContext {
 
   std::unique_ptr<D3D11Decryptor> decryptor_;
 
-  // TODO(rkuroiwa): Call Notify() when new usable key is available.
   ClosureRegistry new_key_callbacks_;
 
   base::WeakPtrFactory<D3D11CdmContext> weak_factory_;
