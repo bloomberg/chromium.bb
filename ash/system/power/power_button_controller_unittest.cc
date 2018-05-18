@@ -46,13 +46,13 @@ namespace {
 constexpr double kNonZeroBrightness = 10.;
 
 // Width of the display.
-constexpr int kDisplayWidth = 2000;
+constexpr int kDisplayWidth = 800;
 
 // Height of the display.
-constexpr int kDisplayHeight = 1200;
+constexpr int kDisplayHeight = 600;
 
 // Power button position offset percentage.
-constexpr double kPowerButtonPercentage = 0.9f;
+constexpr double kPowerButtonPercentage = 0.75f;
 
 // Shorthand for some long constants.
 constexpr power_manager::BacklightBrightnessChange_Cause kUserCause =
@@ -1193,7 +1193,7 @@ TEST_P(PowerButtonControllerWithPositionTest,
 // display has different scale factors.
 TEST_P(PowerButtonControllerWithPositionTest, MenuShownAtPercentageOfPosition) {
   const int scale_factor = 2;
-  std::string display = "4000x2400*" + std::to_string(scale_factor);
+  std::string display = "1000x500*" + std::to_string(scale_factor);
   UpdateDisplay(display);
   int64_t primary_id = GetPrimaryDisplay().id();
   display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
@@ -1236,63 +1236,6 @@ TEST_P(PowerButtonControllerWithPositionTest, MenuShownAtPercentageOfPosition) {
     EXPECT_EQ(menu_center_point.x(), static_cast<int>(display_bounds.width() *
                                                       kPowerButtonPercentage));
   }
-}
-
-TEST_P(PowerButtonControllerWithPositionTest, AdjustMenuShownForDisplaySize) {
-  OpenPowerButtonMenu();
-  gfx::Rect menu_bounds = power_button_test_api_->GetMenuBoundsInScreen();
-  TapToDismissPowerButtonMenu();
-
-  // (1 - kPowerButtonPercentage) * display_height < 0.5 * menu_height makes
-  // sure menu will be cut off by display when button is on LEFT/RIGHT, and (1 -
-  // kPowerButtonPercentage) * display_width < 0.5 * menu_width makes sure menu
-  // will be cut off by display when button is on TOP/BOTTOM.
-  int display_width =
-      0.5 / (1.0f - kPowerButtonPercentage) * menu_bounds.width() - 5;
-  int display_height =
-      0.5 / (1.0f - kPowerButtonPercentage) * menu_bounds.height() - 5;
-  std::string display =
-      std::to_string(display_width) + "x" + std::to_string(display_height);
-  UpdateDisplay(display);
-  display::test::ScopedSetInternalDisplayId set_internal(
-      display_manager(), GetPrimaryDisplay().id());
-
-  ScreenOrientationControllerTestApi test_api(
-      Shell::Get()->screen_orientation_controller());
-  // Set the screen orientation to LANDSCAPE_PRIMARY.
-  test_api.SetDisplayRotation(display::Display::ROTATE_0,
-                              display::Display::RotationSource::ACTIVE);
-  EXPECT_EQ(test_api.GetCurrentOrientation(),
-            OrientationLockType::kLandscapePrimary);
-  EnableTabletMode(true);
-  OpenPowerButtonMenu();
-  // Menu's bounds is always inside the display.
-  EXPECT_TRUE(GetPrimaryDisplay().bounds().Contains(
-      power_button_test_api_->GetMenuBoundsInScreen()));
-
-  // Rotate the screen by 270 degrees.
-  test_api.SetDisplayRotation(display::Display::ROTATE_270,
-                              display::Display::RotationSource::ACTIVE);
-  EXPECT_EQ(test_api.GetCurrentOrientation(),
-            OrientationLockType::kPortraitPrimary);
-  EXPECT_TRUE(GetPrimaryDisplay().bounds().Contains(
-      power_button_test_api_->GetMenuBoundsInScreen()));
-
-  // Rotate the screen by 180 degrees.
-  test_api.SetDisplayRotation(display::Display::ROTATE_180,
-                              display::Display::RotationSource::ACTIVE);
-  EXPECT_EQ(test_api.GetCurrentOrientation(),
-            OrientationLockType::kLandscapeSecondary);
-  EXPECT_TRUE(GetPrimaryDisplay().bounds().Contains(
-      power_button_test_api_->GetMenuBoundsInScreen()));
-
-  // Rotate the screen by 90 degrees.
-  test_api.SetDisplayRotation(display::Display::ROTATE_90,
-                              display::Display::RotationSource::ACTIVE);
-  EXPECT_EQ(test_api.GetCurrentOrientation(),
-            OrientationLockType::kPortraitSecondary);
-  EXPECT_TRUE(GetPrimaryDisplay().bounds().Contains(
-      power_button_test_api_->GetMenuBoundsInScreen()));
 }
 
 INSTANTIATE_TEST_CASE_P(AshPowerButtonPosition,
