@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/location.h"
+#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
@@ -86,6 +87,14 @@ class PLATFORM_EXPORT ThreadScheduler {
   // Returns the current time recognized by the scheduler, which may perhaps
   // be based on a real or virtual time domain. Used by Timer.
   virtual base::TimeTicks MonotonicallyIncreasingVirtualTime() = 0;
+
+  // Adds or removes a task observer from the scheduler. The observer will be
+  // notified before and after every executed task. These functions can only be
+  // called on the thread this scheduler was created on.
+  virtual void AddTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) = 0;
+  virtual void RemoveTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) = 0;
 
   // Test helpers.
 
