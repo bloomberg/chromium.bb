@@ -31,7 +31,7 @@ For Googlers, more information available at [go/chrome-apk-size](https://goto.go
 
 ### Normalized APK Size
 
- * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=d8f7a27ce61034755ba926dfff9beff7dfbee6f8a596da7f4bb80e3bdd721ad4)
+ * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=d6542096534166992e063320f8e1b7128e10ed53091e865eef3b5295644e60ce)
  * Monitored by [Binary Size Sheriffs](../apk_size_regressions.md).
    * Alerts fire for changes of 16kb or more.
  * Computed as:
@@ -43,39 +43,38 @@ For Googlers, more information available at [go/chrome-apk-size](https://goto.go
 
 ### Native Code Size Metrics
 
- * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=3b4a5766fd4cee11679defe471618fff2fb23bd2f46b901b573c10092f8e03cf)
+ * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=7b392aa248c77bd4c4fe03ca870e30863e3dcb7f06167cb50c9d7d99010687a9)
  * File size of `libchrome.so`
  * Code vs data sections (.text vs .data + .rodata)
 
 ### Java Code Size Metrics
 
- * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=a9fecfc34518cf942ec7841324d05947670c65a0e4e4016f2fe31a66cb76b844)
+ * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=d2f2a1dfefd89c43902299efeddf6e4e6521db5e01d3716b8202f6ad8ad960da)
  * File size of `classes.dex`
  * "Dex": Counts of the number of fields, methods, strings, types.
  * "DexCache": The number of bytes of RAM required to load our dex file (computed from counts)
 
 ### Breakdown Metrics
 
- * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=eeff03cb0872424f121c3adb897e2815eaa891a1261e270e87c052aee770e1f5)
- * APK Size: The file size of `Chrome.apk`
- * Breakdown: The sum of these equals APK Size.
+ * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=c7f4afc0f438e7868b81be12c44aca7d0e9f7379bf1ae862df261fcd28d222f1)
+ * Compressed size of each apk component.
+ * The sum of these equals APK Size (which can be found under "Install Size Metrics": "APK Size")
 
 ### Install Metrics
 
- * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=baaba126e7098409c7848647a8cb7c8b101033e3ffdf3420f9d7261cda56a048)
+ * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=33515ace819bc607a742c8748316ffe6a36b3fcbc598efd35cd80d0a83c190ae)
  * Estimated installed size: How much disk is required to install Chrome on a device.
    * This is just an estimate, since actual size depends on Android version (e.g. Dex overhead is very different for pre-L vs L+).
    * Does not include disk used up by profile, etc.
    * We believe it to be fairly accurate for all L+ devices (less space is required for Dalvik runtime pre-L).
- * InstallBreakdown: The sum of these equals Estimated installed size.
+ * The sum of these equals Estimated installed size.
 
 ### Transfer Size Metrics
 
  * Deflated apk size:
-   * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=f77578280ea9636212c6823b4aa59eb94f785e8de882a25621b59014e36fcf8a)
+   * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=c7dcbe09dee57f6dab19f9307acd97a044a150710357ad25bf217ce004b3b4bb)
    * Only relevant for non-patch updates of Chrome (new installs, or manual app updates)
  * Patch Size:
-   * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=414b082ff6c4d1841a33dc6b2315e1bfa159f75f85ef93fadf5e4cc46d7ad7da)
    * Uses [https://github.com/googlesamples/apk-patch-size-estimator](https://github.com/googlesamples/apk-patch-size-estimator)
    * No longer runs:
      * Is too slow to be running on the Perf Builder
@@ -84,6 +83,6 @@ For Googlers, more information available at [go/chrome-apk-size](https://goto.go
 
 ### Uncompressed Metrics
 
- * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=b91f74582d1069c5491956b6c55fc3071e6645ecdec04de8443633a42acaf0ed)
+ * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=33f59871f4e9fa3d155be3c13a068d35e6e621bcc98d9b7b103e0c8485e21097)
  * Uncompressed size of classes.dex, locale .pak files, etc
  * Reported only for things that are compressed within the .apk
