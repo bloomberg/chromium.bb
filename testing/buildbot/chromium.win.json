@@ -1250,12 +1250,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "components_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "components_unittests"
       },
       {
@@ -1339,12 +1333,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "extensions_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "extensions_unittests"
       },
       {
@@ -1387,12 +1375,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "headless_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "headless_unittests"
       },
       {
@@ -1411,13 +1393,6 @@
           ]
         },
         "test": "installer_util_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
-        },
-        "test": "interactive_ui_tests"
       },
       {
         "swarming": {
@@ -1665,13 +1640,6 @@
       }
     ],
     "isolated_scripts": [
-      {
-        "isolate_name": "content_shell_crash_test",
-        "name": "content_shell_crash_test",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
       {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
