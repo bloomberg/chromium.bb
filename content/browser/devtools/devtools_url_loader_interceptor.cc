@@ -1227,7 +1227,9 @@ void InterceptionJob::OnStartLoadingResponseBody(
 
 void InterceptionJob::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  if (ShouldBypassForResponse()) {
+  // Essentially ShouldBypassForResponse(), but skip DCHECKs
+  // since this may be called in any state during shutdown.
+  if (!response_metadata_) {
     client_->OnComplete(status);
     Shutdown();
     return;
