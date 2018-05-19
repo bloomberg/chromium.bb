@@ -103,9 +103,11 @@ void PaintOpBufferSerializer::Serialize(const PaintOpBuffer* buffer) {
   SerializeBuffer(buffer, nullptr);
 }
 
-void PaintOpBufferSerializer::Serialize(const PaintOpBuffer* buffer,
-                                        const gfx::Rect& playback_rect,
-                                        const gfx::SizeF& post_scale) {
+void PaintOpBufferSerializer::Serialize(
+    const PaintOpBuffer* buffer,
+    const gfx::Rect& playback_rect,
+    const gfx::SizeF& post_scale,
+    const SkMatrix& post_matrix_for_analysis) {
   DCHECK(canvas_->getTotalMatrix().isIdentity());
 
   PaintOp::SerializeOptions options(
@@ -125,6 +127,7 @@ void PaintOpBufferSerializer::Serialize(const PaintOpBuffer* buffer,
     SerializeOp(&scale_op, options, params);
   }
 
+  canvas_->concat(post_matrix_for_analysis);
   SerializeBuffer(buffer, nullptr);
 }
 

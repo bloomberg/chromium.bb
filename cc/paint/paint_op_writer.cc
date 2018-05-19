@@ -403,7 +403,8 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
     Write(shader->id_);
     const gfx::Rect playback_rect(
         gfx::ToEnclosingRect(gfx::SkRectToRectF(shader->tile())));
-    Write(shader->record_.get(), playback_rect, paint_record_post_scale);
+    Write(shader->record_.get(), playback_rect, paint_record_post_scale,
+          SkMatrix::I());
   } else {
     DCHECK_EQ(shader->id_, PaintShader::kInvalidRecordShaderId);
     Write(false);
@@ -644,7 +645,8 @@ void PaintOpWriter::Write(const ImagePaintFilter& filter) {
 
 void PaintOpWriter::Write(const RecordPaintFilter& filter) {
   WriteSimple(filter.record_bounds());
-  Write(filter.record().get());
+  Write(filter.record().get(), gfx::Rect(), gfx::SizeF(1.f, 1.f),
+        options_.canvas ? options_.canvas->getTotalMatrix() : SkMatrix::I());
 }
 
 void PaintOpWriter::Write(const MergePaintFilter& filter) {
@@ -725,9 +727,9 @@ void PaintOpWriter::Write(const LightingSpotPaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const PaintRecord* record,
-                          base::Optional<gfx::Rect> playback_rect,
-                          base::Optional<gfx::SizeF> post_scale) {
-  DCHECK_EQ(playback_rect.has_value(), post_scale.has_value());
+                          const gfx::Rect& playback_rect,
+                          const gfx::SizeF& post_scale,
+                          const SkMatrix& post_matrix_for_analysis) {
   // We need to record how many bytes we will serialize, but we don't know this
   // information until we do the serialization. So, skip the amount needed
   // before writing.
@@ -754,11 +756,8 @@ void PaintOpWriter::Write(const PaintRecord* record,
       memory_, remaining_bytes_, options_.image_provider,
       options_.transfer_cache, options_.strike_server, options_.color_space,
       options_.can_use_lcd_text);
-  if (playback_rect) {
-    serializer.Serialize(record, *playback_rect, *post_scale);
-  } else {
-    serializer.Serialize(record);
-  }
+  serializer.Serialize(record, playback_rect, post_scale,
+                       post_matrix_for_analysis);
 
   if (!serializer.valid()) {
     valid_ = false;

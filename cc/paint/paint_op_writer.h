@@ -133,11 +133,10 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const LightingPointPaintFilter& filter);
   void Write(const LightingSpotPaintFilter& filter);
 
-  // TODO(khushalsagar): These shouldn't be optional once we sort out
-  // PaintRecord filters.
   void Write(const PaintRecord* record,
-             base::Optional<gfx::Rect> playback_rect = base::nullopt,
-             base::Optional<gfx::SizeF> post_scale = base::nullopt);
+             const gfx::Rect& playback_rect,
+             const gfx::SizeF& post_scale,
+             const SkMatrix& post_matrix_for_analysis);
   void Write(const SkRegion& region);
   void WriteImage(uint32_t transfer_cache_entry_id);
 
