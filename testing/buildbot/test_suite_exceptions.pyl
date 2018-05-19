@@ -1300,11 +1300,6 @@
       'UBSanVptr Linux',
       # chromium.fyi
       'Out of Process Profiling Linux',
-      # chromium.linux
-      'Linux Tests',  # https://crbug.com/835072
-      'Linux Tests (dbg)(1)',  # https://crbug.com/835072
-      'Linux Tests (dbg)(1)(32)',  # https://crbug.com/835072
-      'linux-xenial-rel',  # https://crbug.com/835072
       # chromium.memory
       # Can't run on MSAN because gl_tests uses the hardware driver,
       # which isn't instrumented.
@@ -1393,16 +1388,8 @@
   },
   'gl_unittests': {
     'remove_from': [
-      # chromium.clang
-      'ToTLinuxUBSanVptr',  # https://crbug.com/815183
-      'UBSanVptr Linux',  # https://crbug.com/815183
       # chromium.fyi
       'Out of Process Profiling Linux',
-      # chromium.linux
-      'Linux Tests',  # https://crbug.com/835072
-      'Linux Tests (dbg)(1)',  # https://crbug.com/835072
-      'Linux Tests (dbg)(1)(32)',  # https://crbug.com/835072
-      'linux-xenial-rel',  # https://crbug.com/835072
     ],
     'modifications': {
       # chromium.android
@@ -1495,9 +1482,6 @@
       'Linux Tests (dbg)(1)(32)',
       # On chromium.mac, unclear why these aren't run on "Mac10.11 Tests".
       'Mac10.11 Tests',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',  # https://crbug.com/843732
-      'Linux TSan Tests',  # https://crbug.com/843734
       # client.v8.chromium
       'Linux - Future (dbg)',
       # chromium.win
@@ -1509,8 +1493,6 @@
       'Linux Tests (dbg)(1)(32)',
       # On chromium.mac, unclear why these aren't run on "Mac10.11 Tests".
       'Mac10.11 Tests',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',  # https://crbug.com/843732
       # client.v8.chromium
       'Linux - Future (dbg)'
     ],
@@ -1790,12 +1772,6 @@
         },
       },
     },
-  },
-  'nacl_helper_nonsfi_unittests': {
-    'remove_from': [
-      # chromium.memory
-      'Linux TSan Tests',  # The TSan bot sets enable_nacl=false
-    ],
   },
   'nacl_loader_unittests': {
     'remove_from': [

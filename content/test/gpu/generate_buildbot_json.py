@@ -1594,16 +1594,6 @@ COMMON_GTESTS = {
     ]
   },
   'angle_unittests': {
-    'disabled_tester_configs': [
-      {
-        'names': [
-          # On Android, these are already run on the main waterfall.
-          # Run them on the one-off Android FYI bots, though.
-          'Android Release (Nexus 5X)',
-          'Android FYI Release (Nexus 5X)',
-        ],
-      },
-    ],
     'desktop_args': [
       '--use-gpu-in-tests',
       # ANGLE test retries deliberately disabled to prevent flakiness.
