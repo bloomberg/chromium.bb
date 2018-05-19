@@ -1430,7 +1430,7 @@ void EventSender::PointerDown(int button_number,
                               int tiltX,
                               int tiltY) {
   if (force_layout_on_events_)
-    widget()->UpdateAllLifecyclePhases();
+    widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
 
   DCHECK_NE(-1, button_number);
 
@@ -1466,7 +1466,7 @@ void EventSender::PointerUp(int button_number,
                             int tiltX,
                             int tiltY) {
   if (force_layout_on_events_)
-    widget()->UpdateAllLifecyclePhases();
+    widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
 
   DCHECK_NE(-1, button_number);
 
@@ -1732,7 +1732,7 @@ void EventSender::KeyDown(const std::string& code_str,
   // EventSender.m forces a layout here, with at least one
   // test (fast/forms/focus-control-to-page.html) relying on this.
   if (force_layout_on_events_)
-    widget()->UpdateAllLifecyclePhases();
+    widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
 
   // In the browser, if a keyboard event corresponds to an editor command,
   // the command will be dispatched to the renderer just before dispatching
@@ -1775,7 +1775,7 @@ void EventSender::ClearKillRing() {}
 
 std::vector<std::string> EventSender::ContextClick() {
   if (force_layout_on_events_)
-    widget()->UpdateAllLifecyclePhases();
+    widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
 
   UpdateClickCountForButton(WebMouseEvent::Button::kRight);
 
@@ -1964,7 +1964,7 @@ void EventSender::GestureFlingCancel() {
   // choose Touchpad here.
 
   if (force_layout_on_events_)
-    widget()->UpdateAllLifecyclePhases();
+    widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
 
   HandleInputEventOnViewOrPopup(event);
 }
@@ -2005,7 +2005,7 @@ void EventSender::GestureFlingStart(float x,
   event.data.fling_start.velocity_y = velocity_y;
 
   if (force_layout_on_events_)
-    widget()->UpdateAllLifecyclePhases();
+    widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
 
   HandleInputEventOnViewOrPopup(event);
 }
@@ -2196,7 +2196,7 @@ void EventSender::MouseScrollBy(gin::Arguments* args,
 
 void EventSender::MouseMoveTo(gin::Arguments* args) {
   if (force_layout_on_events_)
-    widget()->UpdateAllLifecyclePhases();
+    widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
 
   double x;
   double y;
@@ -2253,7 +2253,7 @@ void EventSender::MouseLeave(
     blink::WebPointerProperties::PointerType pointerType,
     int pointerId) {
   if (force_layout_on_events_)
-    widget()->UpdateAllLifecyclePhases();
+    widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
 
   WebMouseEvent event(WebInputEvent::kMouseLeave,
                       ModifiersForPointer(pointerId), GetCurrentEventTime());
@@ -2309,7 +2309,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
   DCHECK_LE(touch_points_.size(),
             static_cast<unsigned>(WebTouchEvent::kTouchesLengthCap));
   if (force_layout_on_events_)
-    widget()->UpdateAllLifecyclePhases();
+    widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
 
   base::TimeTicks time_stamp = GetCurrentEventTime();
   blink::WebInputEvent::DispatchType dispatch_type =
@@ -2560,7 +2560,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
   event.SetPositionInScreen(event.PositionInWidget());
 
   if (force_layout_on_events_)
-    widget()->UpdateAllLifecyclePhases();
+    widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
 
   WebInputEventResult result = HandleInputEventOnViewOrPopup(event);
 
@@ -2600,7 +2600,7 @@ WebMouseWheelEvent EventSender::GetMouseWheelEvent(gin::Arguments* args,
   // determined before we send events (as well as all the other methods
   // that send an event do).
   if (force_layout_on_events_)
-    widget()->UpdateAllLifecyclePhases();
+    widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
 
   double horizontal;
   double vertical;
@@ -2879,7 +2879,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
   }
 
   if (force_layout_on_events_)
-    widget()->UpdateAllLifecyclePhases();
+    widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
 
   HandleInputEventOnViewOrPopup(begin_event);
 
@@ -2895,7 +2895,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
       begin_event.data.scroll_begin.delta_hint_units;
 
   if (force_layout_on_events_)
-    widget()->UpdateAllLifecyclePhases();
+    widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
   HandleInputEventOnViewOrPopup(update_event);
 
   WebGestureEvent end_event(WebInputEvent::kGestureScrollEnd,
@@ -2906,7 +2906,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
       begin_event.data.scroll_begin.delta_hint_units;
 
   if (force_layout_on_events_)
-    widget()->UpdateAllLifecyclePhases();
+    widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
   HandleInputEventOnViewOrPopup(end_event);
 }
 

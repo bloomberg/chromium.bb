@@ -1,13 +1,24 @@
 <!DOCTYPE html>
 <script src="../resources/text-based-repaint.js"></script>
 <script>
+window.testIsAsync = true;
 function repaintTest() {
-  editor.focus();
-  if (!window.eventSender)
-    return;
-  eventSender.keyDown('a');
-  eventSender.keyDown('b');
-  eventSender.keyDown('c');
+  requestAnimationFrame(function() {
+    editor.focus();
+    requestAnimationFrame(function() {
+      if (window.eventSender)
+        eventSender.keyDown('a');
+      requestAnimationFrame(function() {
+        if (window.eventSender)
+          eventSender.keyDown('b');
+        requestAnimationFrame(function() {
+          if (window.eventSender)
+            eventSender.keyDown('c');
+          finishRepaintTest();
+        });
+      });
+    });
+  });
 }
 onload = runRepaintAndPixelTest;
 </script>

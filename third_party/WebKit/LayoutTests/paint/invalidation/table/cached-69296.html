@@ -24,16 +24,23 @@ Collapsed borders should not disappear.
         </style>
     <head>
         <script type="text/javascript">
+            window.testIsAsync = true;
             function repaintTest() {
                 row = document.getElementById('row1');
                 rowRect = row.getBoundingClientRect();
                 x = rowRect.left + 75;
                 y = rowRect.top;
-                document.body.offsetTop;
-                if (window.eventSender) {
-                    eventSender.mouseMoveTo(x, y + 1);
-                    eventSender.mouseMoveTo(x, y - 1);
-                }
+                requestAnimationFrame(function() {
+                    // Move cursor over row.
+                    if (window.eventSender)
+                        eventSender.mouseMoveTo(x, y + 1);
+                    requestAnimationFrame(function() {
+                        // Move cursor off row.
+                        if (window.eventSender)
+                            eventSender.mouseMoveTo(x, y - 1);
+                        finishRepaintTest();
+                    });
+                });
             }
         </script>
     </head>
