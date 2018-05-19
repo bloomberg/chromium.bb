@@ -51,8 +51,7 @@ class GLOutputSurface : public OutputSurface {
   OutputSurfaceClient* client() const { return client_; }
 
   // Called when a swap completion is signaled from ImageTransportSurface.
-  virtual void DidReceiveSwapBuffersAck(gfx::SwapResult result,
-                                        uint64_t swap_id);
+  virtual void DidReceiveSwapBuffersAck(gfx::SwapResult result);
 
  private:
   // Called when a swap completion is signaled from ImageTransportSurface.
@@ -60,8 +59,7 @@ class GLOutputSurface : public OutputSurface {
                                  const gpu::SwapBuffersCompleteParams& params);
   void OnVSyncParametersUpdated(base::TimeTicks timebase,
                                 base::TimeDelta interval);
-  void OnPresentation(uint64_t swap_id,
-                      const gfx::PresentationFeedback& feedback);
+  void OnPresentation(const gfx::PresentationFeedback& feedback);
 
   OutputSurfaceClient* client_ = nullptr;
   SyntheticBeginFrameSource* const synthetic_begin_frame_source_;

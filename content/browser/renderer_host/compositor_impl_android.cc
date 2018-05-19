@@ -443,16 +443,15 @@ class AndroidOutputSurface : public viz::OutputSurface {
   void OnSwapBuffersCompleted(std::vector<ui::LatencyInfo> latency_info,
                               gfx::Size swap_size,
                               const gpu::SwapBuffersCompleteParams& params) {
-    client_->DidReceiveSwapBuffersAck(params.swap_response.swap_id);
+    client_->DidReceiveSwapBuffersAck();
     swap_buffers_callback_.Run(swap_size);
     UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
     RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
     latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   }
 
-  void OnPresentation(uint64_t swap_id,
-                      const gfx::PresentationFeedback& feedback) {
-    client_->DidReceivePresentationFeedback(swap_id, feedback);
+  void OnPresentation(const gfx::PresentationFeedback& feedback) {
+    client_->DidReceivePresentationFeedback(feedback);
   }
 
  private:

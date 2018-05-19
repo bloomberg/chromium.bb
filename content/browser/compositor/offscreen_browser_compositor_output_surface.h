@@ -64,7 +64,6 @@ class OffscreenBrowserCompositorOutputSurface
   unsigned UpdateGpuFence() override;
 
   void OnSwapBuffersComplete(const std::vector<ui::LatencyInfo>& latency_info,
-                             uint64_t swap_id,
                              bool need_presentation_feedback);
 
   viz::OutputSurfaceClient* client_ = nullptr;
@@ -72,7 +71,6 @@ class OffscreenBrowserCompositorOutputSurface
   uint32_t fbo_ = 0;
   bool reflector_changed_ = false;
   std::unique_ptr<ReflectorTexture> reflector_texture_;
-  uint64_t swap_id_ = 0;
   ui::LatencyTracker latency_tracker_;
   base::WeakPtrFactory<OffscreenBrowserCompositorOutputSurface>
       weak_ptr_factory_;

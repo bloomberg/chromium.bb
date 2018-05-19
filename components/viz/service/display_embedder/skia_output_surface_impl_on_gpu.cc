@@ -305,9 +305,7 @@ void SkiaOutputSurfaceImplOnGpu::SetSnapshotRequestedCallback(
 void SkiaOutputSurfaceImplOnGpu::BufferPresented(
     const gfx::PresentationFeedback& feedback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  uint64_t swap_id = pending_presented_ids_.front();
-  pending_presented_ids_.pop_front();
-  buffer_presented_callback_.Run(swap_id, feedback);
+  buffer_presented_callback_.Run(feedback);
 }
 
 void SkiaOutputSurfaceImplOnGpu::AddFilter(IPC::MessageFilter* message_filter) {
@@ -395,7 +393,6 @@ void SkiaOutputSurfaceImplOnGpu::PreprocessYUVResources(
 void SkiaOutputSurfaceImplOnGpu::OnSwapBuffers() {
   uint64_t swap_id = swap_id_++;
   pending_swap_completed_ids_.push_back(swap_id);
-  pending_presented_ids_.push_back(swap_id);
 }
 
 }  // namespace viz

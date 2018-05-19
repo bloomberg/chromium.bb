@@ -161,7 +161,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
 
   display_->Resize(viewport);
   display_->DrawAndSwap();
-  display_->DidReceiveSwapBuffersAck(++swap_id_);
+  display_->DidReceiveSwapBuffersAck();
 }
 
 void SurfacesInstance::AddChildId(const viz::SurfaceId& child_id) {

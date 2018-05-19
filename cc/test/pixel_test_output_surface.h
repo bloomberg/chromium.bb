@@ -48,11 +48,10 @@ class PixelTestOutputSurface : public viz::OutputSurface {
   }
 
  private:
-  void SwapBuffersCallback(uint64_t swap_id, bool need_presentation_feedback);
+  void SwapBuffersCallback(bool need_presentation_feedback);
 
   bool external_stencil_test_ = false;
   viz::OutputSurfaceClient* client_ = nullptr;
-  uint64_t swap_id_ = 0;
   base::WeakPtrFactory<PixelTestOutputSurface> weak_ptr_factory_;
 };
 

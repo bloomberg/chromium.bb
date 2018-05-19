@@ -58,7 +58,7 @@ void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     client_->DidReceiveCALayerParams(params.ca_layer_params);
   if (!params.texture_in_use_responses.empty())
     client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
-  client_->DidReceiveSwapBuffersAck(params.swap_response.swap_id);
+  client_->DidReceiveSwapBuffersAck();
   UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
   RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
@@ -185,10 +185,9 @@ void GpuBrowserCompositorOutputSurface::SetDrawRectangle(
 }
 
 void GpuBrowserCompositorOutputSurface::OnPresentation(
-    uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
   DCHECK(client_);
-  client_->DidReceivePresentationFeedback(swap_id, feedback);
+  client_->DidReceivePresentationFeedback(feedback);
 }
 
 void GpuBrowserCompositorOutputSurface::OnUpdateVSyncParameters(

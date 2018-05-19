@@ -105,7 +105,7 @@ class DirectOutputSurface : public viz::OutputSurface {
 
     context_provider_->ContextSupport()->SignalSyncToken(
         sync_token, base::BindOnce(&DirectOutputSurface::OnSwapBuffersComplete,
-                                   weak_ptr_factory_.GetWeakPtr(), ++swap_id_,
+                                   weak_ptr_factory_.GetWeakPtr(),
                                    frame.need_presentation_feedback));
   }
   uint32_t GetFramebufferCopyTextureFormat() override {
@@ -129,17 +129,13 @@ class DirectOutputSurface : public viz::OutputSurface {
   unsigned UpdateGpuFence() override { return 0; }
 
  private:
-  void OnSwapBuffersComplete(uint64_t swap_id,
-                             bool need_presentation_feedback) {
-    client_->DidReceiveSwapBuffersAck(swap_id);
-    if (need_presentation_feedback) {
-      client_->DidReceivePresentationFeedback(swap_id,
-                                              gfx::PresentationFeedback());
-    }
+  void OnSwapBuffersComplete(bool need_presentation_feedback) {
+    client_->DidReceiveSwapBuffersAck();
+    if (need_presentation_feedback)
+      client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
   }
 
   viz::OutputSurfaceClient* client_ = nullptr;
-  uint64_t swap_id_ = 0;
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectOutputSurface);

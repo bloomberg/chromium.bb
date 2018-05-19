@@ -45,11 +45,10 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
   unsigned UpdateGpuFence() override;
 
  private:
-  void SwapBuffersCallback(uint64_t swap_id, bool need_presentation_feedback);
+  void SwapBuffersCallback(bool need_presentation_feedback);
 
   OutputSurfaceClient* client_ = nullptr;
   base::TimeDelta refresh_interval_;
-  uint64_t swap_id_ = 0;
   std::vector<ui::LatencyInfo> stored_latency_info_;
   ui::LatencyTracker latency_tracker_;
   base::WeakPtrFactory<SoftwareOutputSurface> weak_factory_;

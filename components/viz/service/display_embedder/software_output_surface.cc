@@ -79,10 +79,9 @@ void SoftwareOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   //  vsync_provider->GetVSyncParameters(update_vsync_parameters_callback_);
   // Update refresh_interval_ as well.
 
-  ++swap_id_;
   software_device()->OnSwapBuffers(base::BindOnce(
       &SoftwareOutputSurface::SwapBuffersCallback, weak_factory_.GetWeakPtr(),
-      swap_id_, frame.need_presentation_feedback));
+      frame.need_presentation_feedback));
 }
 
 bool SoftwareOutputSurface::IsDisplayedAsOverlayPlane() const {
@@ -116,16 +115,14 @@ uint32_t SoftwareOutputSurface::GetFramebufferCopyTextureFormat() {
 }
 
 void SoftwareOutputSurface::SwapBuffersCallback(
-    uint64_t swap_id,
     bool need_presentation_feedback) {
   latency_tracker_.OnGpuSwapBuffersCompleted(stored_latency_info_);
   client_->DidFinishLatencyInfo(stored_latency_info_);
   std::vector<ui::LatencyInfo>().swap(stored_latency_info_);
-  client_->DidReceiveSwapBuffersAck(swap_id);
+  client_->DidReceiveSwapBuffersAck();
   if (need_presentation_feedback) {
-    client_->DidReceivePresentationFeedback(
-        swap_id, gfx::PresentationFeedback(base::TimeTicks::Now(),
-                                           refresh_interval_, 0u));
+    client_->DidReceivePresentationFeedback(gfx::PresentationFeedback(
+        base::TimeTicks::Now(), refresh_interval_, 0u));
   }
 }
 

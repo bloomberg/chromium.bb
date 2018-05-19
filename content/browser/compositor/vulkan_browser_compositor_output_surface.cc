@@ -103,17 +103,15 @@ VulkanBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
 void VulkanBrowserCompositorOutputSurface::SwapBuffers(
     viz::OutputSurfaceFrame frame) {
   surface_->SwapBuffers();
-  ++swap_id_;
-
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&VulkanBrowserCompositorOutputSurface::SwapBuffersAck,
-                 weak_ptr_factory_.GetWeakPtr(), swap_id_));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void VulkanBrowserCompositorOutputSurface::SwapBuffersAck(uint64_t swap_id) {
+void VulkanBrowserCompositorOutputSurface::SwapBuffersAck() {
   DCHECK(client_);
-  client_->DidReceiveSwapBuffersAck(swap_id);
+  client_->DidReceiveSwapBuffersAck();
 }
 
 gpu::VulkanSurface* VulkanBrowserCompositorOutputSurface::GetVulkanSurface() {

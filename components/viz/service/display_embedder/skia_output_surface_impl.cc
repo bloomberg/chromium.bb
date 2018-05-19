@@ -495,16 +495,14 @@ void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
     client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
   if (!params.ca_layer_params.is_empty)
     client_->DidReceiveCALayerParams(params.ca_layer_params);
-  client_->DidReceiveSwapBuffersAck(params.swap_response.swap_id);
+  client_->DidReceiveSwapBuffersAck();
 }
 
 void SkiaOutputSurfaceImpl::BufferPresented(
-    uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(client_);
-
-  client_->DidReceivePresentationFeedback(swap_id, feedback);
+  client_->DidReceivePresentationFeedback(feedback);
   if (synthetic_begin_frame_source_ &&
       feedback.flags & gfx::PresentationFeedback::kVSync) {
     // TODO(brianderson): We should not be receiving 0 intervals.
