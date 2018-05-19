@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "ui/gfx/overlay_transform.h"
+#include "ui/gfx/presentation_feedback.h"
 
 class GrContext;
 
@@ -56,15 +57,24 @@ class ContextSupport {
 
   using SwapCompletedCallback =
       base::OnceCallback<void(const SwapBuffersCompleteParams&)>;
-  virtual void Swap(uint32_t flags, SwapCompletedCallback swap_completed) = 0;
+  using PresentationCallback =
+      base::OnceCallback<void(uint64_t, const gfx::PresentationFeedback&)>;
+  virtual void Swap(uint32_t flags,
+                    SwapCompletedCallback complete_callback,
+                    PresentationCallback presentation_callback) = 0;
   virtual void SwapWithBounds(const std::vector<gfx::Rect>& rects,
                               uint32_t flags,
-                              SwapCompletedCallback swap_completed) = 0;
-  virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer,
-                                  uint32_t flags,
-                                  SwapCompletedCallback swap_completed) = 0;
-  virtual void CommitOverlayPlanes(uint32_t flags,
-                                   SwapCompletedCallback swap_completed) = 0;
+                              SwapCompletedCallback swap_completed,
+                              PresentationCallback presentation_callback) = 0;
+  virtual void PartialSwapBuffers(
+      const gfx::Rect& sub_buffer,
+      uint32_t flags,
+      SwapCompletedCallback swap_completed,
+      PresentationCallback presentation_callback) = 0;
+  virtual void CommitOverlayPlanes(
+      uint32_t flags,
+      SwapCompletedCallback swap_completed,
+      PresentationCallback presentation_callback) = 0;
 
   // Schedule a texture to be presented as an overlay synchronously with the
   // primary surface during the next buffer swap or CommitOverlayPlanes.

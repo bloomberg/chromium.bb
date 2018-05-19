@@ -83,9 +83,6 @@ void GpuBrowserCompositorOutputSurface::BindToClient(
   GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(base::BindRepeating(
       &GpuBrowserCompositorOutputSurface::OnUpdateVSyncParameters,
       weak_ptr_factory_.GetWeakPtr()));
-  GetCommandBufferProxy()->SetPresentationCallback(
-      base::BindRepeating(&GpuBrowserCompositorOutputSurface::OnPresentation,
-                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GpuBrowserCompositorOutputSurface::EnsureBackbuffer() {}
@@ -134,17 +131,25 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
       &GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted,
       weak_ptr_factory_.GetWeakPtr(), std::move(frame.latency_info));
   uint32_t flags = gpu::SwapBuffersFlags::kVSyncParams;
-  if (frame.need_presentation_feedback)
+  gpu::ContextSupport::PresentationCallback presentation_callback;
+  if (frame.need_presentation_feedback) {
     flags |= gpu::SwapBuffersFlags::kPresentationFeedback;
+    presentation_callback =
+        base::BindOnce(&GpuBrowserCompositorOutputSurface::OnPresentation,
+                       weak_ptr_factory_.GetWeakPtr());
+  }
   if (frame.sub_buffer_rect) {
     DCHECK(frame.content_bounds.empty());
     context_provider_->ContextSupport()->PartialSwapBuffers(
-        *frame.sub_buffer_rect, flags, std::move(swap_callback));
+        *frame.sub_buffer_rect, flags, std::move(swap_callback),
+        std::move(presentation_callback));
   } else if (!frame.content_bounds.empty()) {
     context_provider_->ContextSupport()->SwapWithBounds(
-        frame.content_bounds, flags, std::move(swap_callback));
+        frame.content_bounds, flags, std::move(swap_callback),
+        std::move(presentation_callback));
   } else {
-    context_provider_->ContextSupport()->Swap(flags, std::move(swap_callback));
+    context_provider_->ContextSupport()->Swap(flags, std::move(swap_callback),
+                                              std::move(presentation_callback));
   }
 }
 

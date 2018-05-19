@@ -149,11 +149,6 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   void SetUpdateVSyncParametersCallback(
       const UpdateVSyncParametersCallback& callback);
 
-  using PresentationCallback =
-      base::Callback<void(uint64_t swap_id,
-                          const gfx::PresentationFeedback& feedback)>;
-  void SetPresentationCallback(const PresentationCallback& callback);
-
   void SetNeedsVSync(bool needs_vsync);
 
   int32_t route_id() const { return route_id_; }
@@ -288,7 +283,6 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   bool snapshot_requested_ = false;
 
   UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;
-  PresentationCallback presentation_callback_;
 
   using GetGpuFenceTaskMap =
       base::flat_map<uint32_t,
