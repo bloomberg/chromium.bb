@@ -341,6 +341,23 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
     if (!source_rfh) {
       new_params.source_routing_id = MSG_ROUTING_NONE;
     } else {
+      // https://crbug.com/822958: If the postMessage is going to a descendant
+      // frame, ensure that any pending visual properties such as size are sent
+      // to the target frame before the postMessage, as sites might implicitly
+      // be relying on this ordering.
+      bool target_is_descendant_of_source = false;
+      for (FrameTreeNode* node = target_rfh->frame_tree_node(); node;
+           node = node->parent()) {
+        if (node == source_rfh->frame_tree_node()) {
+          target_is_descendant_of_source = true;
+          break;
+        }
+      }
+      if (target_is_descendant_of_source) {
+        target_rfh->GetRenderWidgetHost()
+            ->SynchronizeVisualPropertiesIgnoringPendingAck();
+      }
+
       // Ensure that we have a swapped-out RVH and proxy for the source frame
       // in the target SiteInstance. If it doesn't exist, create it on demand
       // and also create its opener chain, since that will also be accessible
