@@ -261,12 +261,24 @@ void SingleTreeTracker::OnSCTVerified(base::StringPiece hostname,
   }
 
   EntryToAudit entry(sct->timestamp);
-  if (!GetLogEntryLeafHash(cert, sct, &entry.leaf_hash))
+  if (!GetLogEntryLeafHash(cert, sct, &entry.leaf_hash)) {
+    LogCanBeCheckedForInclusionToUMA(NOT_AUDITED_INVALID_LEAF_HASH);
     return;
+  }
 
   // Avoid queueing multiple instances of the same entry.
-  if (GetAuditedEntryInclusionStatus(entry) != SCT_NOT_OBSERVED)
-    return;
+  switch (GetAuditedEntryInclusionStatus(entry)) {
+    case SCT_NOT_OBSERVED:
+      // No need to record UMA, will be done below.
+      break;
+    case SCT_INCLUDED_IN_LOG:
+      LogCanBeCheckedForInclusionToUMA(NOT_AUDITED_ALREADY_CHECKED);
+      return;
+    default:
+      // Already pending, either due to a newer STH or in the queue.
+      LogCanBeCheckedForInclusionToUMA(NOT_AUDITED_ALREADY_PENDING_CHECK);
+      return;
+  }
 
   if (pending_entries_.size() >= kPendingEntriesQueueSize) {
     // Queue is full - cannot audit SCT.
