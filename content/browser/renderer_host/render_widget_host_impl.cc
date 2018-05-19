@@ -891,6 +891,11 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties() {
   return SynchronizeVisualProperties(false);
 }
 
+void RenderWidgetHostImpl::SynchronizeVisualPropertiesIgnoringPendingAck() {
+  visual_properties_ack_pending_ = false;
+  SynchronizeVisualProperties();
+}
+
 bool RenderWidgetHostImpl::SynchronizeVisualProperties(
     bool scroll_focused_node_into_view) {
   // Skip if the |delegate_| has already been detached because

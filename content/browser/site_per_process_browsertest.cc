@@ -12051,4 +12051,47 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       CrossProcessFrameConnector::CrashVisibility::kShownAfterCrashing, 1);
 }
 
+// Check that when a frame changes a subframe's size twice and then sends a
+// postMessage to the subframe, the subframe's onmessage handler sees the new
+// size.  In particular, ensure that the postMessage won't get reordered with
+// the second resize, which might be throttled if the first resize is still in
+// progress. See https://crbug.com/828529.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ResizeAndCrossProcessPostMessagePreserveOrder) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Add an onmessage handler to the subframe to send back its width.
+  EXPECT_TRUE(ExecuteScript(root->child_at(0), R"(
+      window.addEventListener('message', function(event) {
+        domAutomationController.send(document.body.clientWidth);
+      });)"));
+
+  // Drop the visual properties ACKs from the child renderer.  To do this,
+  // unsubscribe the child's RenderWidgetHost from its
+  // RenderFrameMetadataProvider, which ensures that
+  // DidUpdateVisualProperties() won't be called on it, and the ACK won't be
+  // reset.  This simulates that the ACK for the first resize below does not
+  // arrive before the second resize IPC arrives from the
+  // parent, and that the second resize IPC early-exits in
+  // SynchronizeVisualProperties() due to the pending visual properties ACK.
+  RenderWidgetHostImpl* rwh =
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
+  rwh->render_frame_metadata_provider_.RemoveObserver(rwh);
+
+  // Now, resize the subframe twice from the main frame and send it a
+  // postMessage. The postMessage handler should see the second updated size.
+  int width = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(root, R"(
+      var f = document.querySelector('iframe');
+      f.width = 500;
+      f.offsetTop; // force layout; this sends a resize IPC for width of 500.
+      f.width = 700;
+      f.offsetTop; // force layout; this sends a resize IPC for width of 700.
+      f.contentWindow.postMessage('foo', '*');)", &width));
+  EXPECT_EQ(width, 700);
+}
+
 }  // namespace content

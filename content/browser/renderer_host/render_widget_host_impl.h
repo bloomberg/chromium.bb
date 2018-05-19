@@ -576,6 +576,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // focused node should be scrolled into view.
   bool SynchronizeVisualProperties(bool scroll_focused_node_into_view);
 
+  // Similar to SynchronizeVisualProperties(), but performed even if
+  // |visual_properties_ack_pending_| is set.  Used to guarantee that the
+  // latest visual properties are sent to the renderer before another IPC.
+  void SynchronizeVisualPropertiesIgnoringPendingAck();
+
   // Called when we receive a notification indicating that the renderer process
   // is gone. This will reset our state so that our state will be consistent if
   // a new renderer is created.
@@ -776,6 +781,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                            ChildAllocationAcceptedInParent);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacTest,
                            ConflictingAllocationsResolve);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           ResizeAndCrossProcessPostMessagePreserveOrder);
   friend class MockRenderWidgetHost;
   friend class OverscrollNavigationOverlayTest;
   friend class TestRenderViewHost;
