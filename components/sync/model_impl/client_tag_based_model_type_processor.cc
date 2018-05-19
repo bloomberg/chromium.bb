@@ -94,13 +94,10 @@ void ClientTagBasedModelTypeProcessor::OnModelStarting(
 }
 
 void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
-    ModelTypeSyncBridge* bridge,
     std::unique_ptr<MetadataBatch> batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(entities_.empty());
   DCHECK(!model_ready_to_sync_);
-  // The |bridge| argument is ignored here because it is already stored as
-  // |bridge_| by OnModelStarting().
 
   model_ready_to_sync_ = true;
 
@@ -188,7 +185,7 @@ void ClientTagBasedModelTypeProcessor::DisableSync() {
     case ModelTypeSyncBridge::DisableSyncResponse::kModelStillReadyToSync:
       // The model is still ready to sync (with the same |bridge_|) - replay the
       // initialization.
-      ModelReadyToSync(bridge_, std::make_unique<MetadataBatch>());
+      ModelReadyToSync(std::make_unique<MetadataBatch>());
       break;
     case ModelTypeSyncBridge::DisableSyncResponse::kModelNoLongerReadyToSync:
       // Model not ready to sync, so wait until the bridge calls

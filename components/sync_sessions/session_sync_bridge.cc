@@ -403,7 +403,7 @@ void SessionSyncBridge::OnStoreInitialized(
       base::BindRepeating(&SessionSyncBridge::DeleteForeignSessionFromUI,
                           base::Unretained(this)));
 
-  change_processor()->ModelReadyToSync(this, std::move(metadata_batch));
+  change_processor()->ModelReadyToSync(std::move(metadata_batch));
 
   // If initial sync was already done, MergeSyncData() will never be called so
   // we need to start syncing local changes.

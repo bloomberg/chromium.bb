@@ -156,7 +156,7 @@ void ReadingListStore::OnReadAllMetadata(
   if (error) {
     change_processor()->ReportError({FROM_HERE, "Failed to read metadata."});
   } else {
-    change_processor()->ModelReadyToSync(this, std::move(metadata_batch));
+    change_processor()->ModelReadyToSync(std::move(metadata_batch));
   }
 }
 

@@ -37,8 +37,7 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
                         MetadataChangeList* metadata_change_list) override;
   void UntrackEntity(const EntityData& entity_data) override;
   void OnModelStarting(ModelTypeSyncBridge* bridge) override;
-  void ModelReadyToSync(ModelTypeSyncBridge* bridge,
-                        std::unique_ptr<MetadataBatch> batch) override;
+  void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override;
   bool IsTrackingMetadata() override;
   void ReportError(const ModelError& error) override;
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegateOnUIThread()

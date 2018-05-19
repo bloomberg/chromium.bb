@@ -48,9 +48,8 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
     other_->OnModelStarting(bridge);
   }
 
-  void ModelReadyToSync(ModelTypeSyncBridge* bridge,
-                        std::unique_ptr<MetadataBatch> batch) override {
-    other_->ModelReadyToSync(bridge, std::move(batch));
+  void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override {
+    other_->ModelReadyToSync(std::move(batch));
   }
 
   bool IsTrackingMetadata() override { return other_->IsTrackingMetadata(); }
@@ -74,19 +73,6 @@ MockModelTypeChangeProcessor::MockModelTypeChangeProcessor() {}
 
 MockModelTypeChangeProcessor::~MockModelTypeChangeProcessor() {}
 
-void MockModelTypeChangeProcessor::Put(
-    const std::string& storage_key,
-    std::unique_ptr<EntityData> entity_data,
-    MetadataChangeList* metadata_change_list) {
-  DoPut(storage_key, entity_data.get(), metadata_change_list);
-}
-
-void MockModelTypeChangeProcessor::ModelReadyToSync(
-    ModelTypeSyncBridge* bridge,
-    std::unique_ptr<MetadataBatch> batch) {
-  DoModelReadyToSync(bridge, batch.get());
-}
-
 std::unique_ptr<ModelTypeChangeProcessor>
 MockModelTypeChangeProcessor::CreateForwardingProcessor() {
   return base::WrapUnique<ModelTypeChangeProcessor>(
@@ -97,14 +83,13 @@ void MockModelTypeChangeProcessor::DelegateCallsByDefaultTo(
     ModelTypeChangeProcessor* delegate) {
   DCHECK(delegate);
 
-  ON_CALL(*this, DoPut(_, _, _))
-      .WillByDefault(Invoke(
-          [delegate](const std::string& storage_key, EntityData* entity_data,
-                     MetadataChangeList* metadata_change_list) {
-            delegate->Put(storage_key,
-                          std::make_unique<EntityData>(std::move(*entity_data)),
-                          metadata_change_list);
-          }));
+  ON_CALL(*this, Put(_, _, _))
+      .WillByDefault([delegate](const std::string& storage_key,
+                                std::unique_ptr<EntityData> entity_data,
+                                MetadataChangeList* metadata_change_list) {
+        delegate->Put(storage_key, std::move(entity_data),
+                      metadata_change_list);
+      });
   ON_CALL(*this, Delete(_, _))
       .WillByDefault(Invoke(delegate, &ModelTypeChangeProcessor::Delete));
   ON_CALL(*this, UpdateStorageKey(_, _, _))
@@ -116,12 +101,10 @@ void MockModelTypeChangeProcessor::DelegateCallsByDefaultTo(
   ON_CALL(*this, OnModelStarting(_))
       .WillByDefault(
           Invoke(delegate, &ModelTypeChangeProcessor::OnModelStarting));
-  ON_CALL(*this, DoModelReadyToSync(_, _))
-      .WillByDefault(
-          Invoke([delegate](ModelTypeSyncBridge* bridge, MetadataBatch* batch) {
-            delegate->ModelReadyToSync(
-                bridge, std::make_unique<MetadataBatch>(std::move(*batch)));
-          }));
+  ON_CALL(*this, ModelReadyToSync(_))
+      .WillByDefault([delegate](std::unique_ptr<MetadataBatch> batch) {
+        delegate->ModelReadyToSync(std::move(batch));
+      });
   ON_CALL(*this, IsTrackingMetadata())
       .WillByDefault(
           Invoke(delegate, &ModelTypeChangeProcessor::IsTrackingMetadata));

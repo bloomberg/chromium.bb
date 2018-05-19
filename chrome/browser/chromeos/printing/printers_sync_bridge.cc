@@ -140,8 +140,7 @@ class PrintersSyncBridge::StoreProxy {
       return;
     }
 
-    owner_->change_processor()->ModelReadyToSync(owner_,
-                                                 std::move(metadata_batch));
+    owner_->change_processor()->ModelReadyToSync(std::move(metadata_batch));
   }
 
   PrintersSyncBridge* owner_;

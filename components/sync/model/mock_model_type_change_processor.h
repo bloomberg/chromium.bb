@@ -19,15 +19,10 @@ class MockModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   MockModelTypeChangeProcessor();
   ~MockModelTypeChangeProcessor() override;
 
-  // TODO(crbug.com/729950): Use unique_ptr here direclty once move-only
-  // arguments are supported in gMock.
-  MOCK_METHOD3(DoPut,
+  MOCK_METHOD3(Put,
                void(const std::string& storage_key,
-                    EntityData* entity_data,
+                    std::unique_ptr<EntityData> entity_data,
                     MetadataChangeList* metadata_change_list));
-  void Put(const std::string& storage_key,
-           std::unique_ptr<EntityData> entity_data,
-           MetadataChangeList* metadata_change_list) override;
   MOCK_METHOD2(Delete,
                void(const std::string& storage_key,
                     MetadataChangeList* metadata_change_list));
@@ -37,12 +32,7 @@ class MockModelTypeChangeProcessor : public ModelTypeChangeProcessor {
                     MetadataChangeList* metadata_change_list));
   MOCK_METHOD1(UntrackEntity, void(const EntityData& entity_data));
   MOCK_METHOD1(OnModelStarting, void(ModelTypeSyncBridge* bridge));
-  // TODO(crbug.com/729950): Use unique_ptr here directly once move-only
-  // arguments are supported in gMock.
-  MOCK_METHOD2(DoModelReadyToSync,
-               void(ModelTypeSyncBridge* bridge, MetadataBatch* batch));
-  void ModelReadyToSync(ModelTypeSyncBridge* bridge,
-                        std::unique_ptr<MetadataBatch> batch) override;
+  MOCK_METHOD1(ModelReadyToSync, void(std::unique_ptr<MetadataBatch> batch));
   MOCK_METHOD0(IsTrackingMetadata, bool());
   MOCK_METHOD1(ReportError, void(const ModelError& error));
   MOCK_METHOD0(GetControllerDelegateOnUIThread,

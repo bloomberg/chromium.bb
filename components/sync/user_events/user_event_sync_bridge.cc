@@ -319,7 +319,7 @@ void UserEventSyncBridge::OnReadAllMetadata(
   if (error) {
     change_processor()->ReportError(*error);
   } else {
-    change_processor()->ModelReadyToSync(this, std::move(metadata_batch));
+    change_processor()->ModelReadyToSync(std::move(metadata_batch));
     DCHECK(change_processor()->IsTrackingMetadata());
     if (is_sync_starting_or_started_) {
       ReadAllDataAndResubmit();

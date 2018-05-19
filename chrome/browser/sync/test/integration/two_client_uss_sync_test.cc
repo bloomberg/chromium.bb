@@ -77,7 +77,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
             std::make_unique<ClientTagBasedModelTypeProcessor>(
                 syncer::PREFERENCES,
                 /*dump_stack=*/base::RepeatingClosure())) {
-    change_processor()->ModelReadyToSync(this, db().CreateMetadataBatch());
+    change_processor()->ModelReadyToSync(db().CreateMetadataBatch());
   }
 
   base::Optional<syncer::ModelError> ApplySyncChanges(

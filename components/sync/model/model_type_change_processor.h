@@ -58,11 +58,8 @@ class ModelTypeChangeProcessor {
   virtual void UntrackEntity(const EntityData& entity_data) = 0;
 
   // Pass the pointer to the processor so that the processor can notify the
-  // bridge that sync is starting.
-  // This is a intermediate hack needed for fixing https://crbug.com/819993.
-  // TODO(jkrcal): Remove this hack (either by removing the bridge pointer from
-  // ModelReadyToSync or, preferrably, by swapping the ownership of the bridge
-  // and the processor).
+  // bridge of various events; |bridge| must not be nullptr and must outlive
+  // this object.
   virtual void OnModelStarting(ModelTypeSyncBridge* bridge) = 0;
 
   // The |bridge| is expected to call this exactly once unless it encounters an
@@ -71,9 +68,7 @@ class ModelTypeChangeProcessor {
   // Delete(). The bridge needs to be able to synchronously handle
   // MergeSyncData() and ApplySyncChanges() after calling ModelReadyToSync(). If
   // an error is encountered, calling ReportError() instead is sufficient.
-  // |bridge| must not be nullptr and must outlive this object.
-  virtual void ModelReadyToSync(ModelTypeSyncBridge* bridge,
-                                std::unique_ptr<MetadataBatch> batch) = 0;
+  virtual void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) = 0;
 
   // Returns a boolean representing whether the processor's metadata is
   // currently up to date and accurately tracking the model type's data. If
