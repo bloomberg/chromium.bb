@@ -97,11 +97,8 @@ void ClientRoot::OnWindowBoundsChanged(aura::Window* window,
   UpdatePrimarySurfaceId();
   client_surface_embedder_->UpdateSizeAndGutters();
   base::Optional<viz::LocalSurfaceId> surface_id = local_surface_id_;
-  if (window_service_client_->property_change_tracker_
-          ->IsProcessingChangeForWindow(window, ClientChangeType::kBounds)) {
-    // Do not send notifications for changes intiated by the client.
-    return;
-  }
+  // See comments in WindowServiceClient::SetWindowBoundsImpl() for details on
+  // why this always notifies the client.
   window_service_client_->window_tree_client_->OnWindowBoundsChanged(
       window_service_client_->TransportIdForWindow(window), old_bounds,
       new_bounds, std::move(surface_id));

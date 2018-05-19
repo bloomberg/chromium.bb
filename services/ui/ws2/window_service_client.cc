@@ -663,6 +663,8 @@ bool WindowServiceClient::SetWindowBoundsImpl(
     const ClientWindowId& window_id,
     const gfx::Rect& bounds,
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+  // TODO: |local_surface_id| needs to be routed correctly.
+  // https://crbug.com/844789.
   aura::Window* window = GetWindowByClientId(window_id);
 
   DVLOG(3) << "SetWindowBounds window_id=" << window_id
@@ -680,6 +682,9 @@ bool WindowServiceClient::SetWindowBoundsImpl(
     return false;
   }
 
+  if (window->bounds() == bounds)
+    return true;
+
   ClientChange change(property_change_tracker_.get(), window,
                       ClientChangeType::kBounds);
   const gfx::Rect original_bounds = window->bounds();
@@ -687,7 +692,17 @@ bool WindowServiceClient::SetWindowBoundsImpl(
   if (!change.window())
     return true;  // Return value doesn't matter if window destroyed.
 
-  if (change.window()->bounds() == bounds)
+  if (IsClientRootWindow(window)) {
+    // ClientRoot always notifies the client of changes to the bounds. This is
+    // important as OnWindowBoundsChanged() includes a LocalSurfaceId, which is
+    // assigned by the WindowService (not by the client requesting the change).
+    // Returning false ensures the client applies the LocalSurfaceId assigned
+    // by ClientRoot and sent to the client in
+    // ClientRoot::OnWindowBoundsChanged().
+    return false;
+  }
+
+  if (window->bounds() == bounds)
     return true;
 
   if (window->bounds() == original_bounds)
