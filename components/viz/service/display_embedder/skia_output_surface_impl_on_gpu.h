@@ -74,8 +74,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   using DidSwapBufferCompleteCallback =
       base::RepeatingCallback<void(gpu::SwapBuffersCompleteParams)>;
   using BufferPresentedCallback =
-      base::RepeatingCallback<void(uint64_t swap_id,
-                                   const gfx::PresentationFeedback& feedback)>;
+      base::RepeatingCallback<void(const gfx::PresentationFeedback& feedback)>;
   SkiaOutputSurfaceImplOnGpu(
       GpuServiceImpl* gpu_service,
       gpu::SurfaceHandle surface_handle,
@@ -158,7 +157,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
   // ID is pushed each time we begin a swap, and popped each time we present or
   // complete a swap.
-  base::circular_deque<uint64_t> pending_presented_ids_;
   base::circular_deque<uint64_t> pending_swap_completed_ids_;
   uint64_t swap_id_ = 0;
 

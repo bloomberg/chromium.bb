@@ -94,8 +94,7 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void InitializeOnGpuThread(base::WaitableEvent* event);
   void RecreateRecorder();
   void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params);
-  void BufferPresented(uint64_t swap_id,
-                       const gfx::PresentationFeedback& feedback);
+  void BufferPresented(const gfx::PresentationFeedback& feedback);
 
   uint64_t sync_fence_release_ = 0;
   GpuServiceImpl* const gpu_service_;

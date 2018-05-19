@@ -83,8 +83,7 @@ class GpuBrowserCompositorOutputSurface : public BrowserCompositorOutputSurface,
 #endif
 
  protected:
-  void OnPresentation(uint64_t swap_id,
-                      const gfx::PresentationFeedback& feedback);
+  void OnPresentation(const gfx::PresentationFeedback& feedback);
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                base::TimeDelta interval);
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();

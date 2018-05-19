@@ -61,8 +61,7 @@ class GLOutputSurfaceBufferQueue : public GLOutputSurface {
   gfx::BufferFormat GetOverlayBufferFormat() const override;
 
   // GLOutputSurface:
-  void DidReceiveSwapBuffersAck(gfx::SwapResult result,
-                                uint64_t swap_id) override;
+  void DidReceiveSwapBuffersAck(gfx::SwapResult result) override;
 
   GLHelper gl_helper_;
   std::unique_ptr<BufferQueue> buffer_queue_;

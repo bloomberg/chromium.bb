@@ -46,14 +46,12 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   unsigned UpdateGpuFence() override;
 
  private:
-  void SwapBuffersCallback(uint64_t swap_id,
-                           const std::vector<ui::LatencyInfo>& latency_info,
+  void SwapBuffersCallback(const std::vector<ui::LatencyInfo>& latency_info,
                            bool need_presentation_feedback);
   void UpdateVSyncCallback(const base::TimeTicks timebase,
                            const base::TimeDelta interval);
 
   viz::OutputSurfaceClient* client_ = nullptr;
-  uint64_t swap_id_ = 0;
   base::TimeDelta refresh_interval_;
   ui::LatencyTracker latency_tracker_;
   base::WeakPtrFactory<SoftwareBrowserCompositorOutputSurface> weak_factory_;

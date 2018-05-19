@@ -145,9 +145,8 @@ bool GLOutputSurface::HasExternalStencilTest() const {
 
 void GLOutputSurface::ApplyExternalStencil() {}
 
-void GLOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result,
-                                               uint64_t swap_id) {
-  client_->DidReceiveSwapBuffersAck(swap_id);
+void GLOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result) {
+  client_->DidReceiveSwapBuffersAck();
 }
 
 void GLOutputSurface::OnGpuSwapBuffersCompleted(
@@ -157,8 +156,7 @@ void GLOutputSurface::OnGpuSwapBuffersCompleted(
     client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
   if (!params.ca_layer_params.is_empty)
     client_->DidReceiveCALayerParams(params.ca_layer_params);
-  DidReceiveSwapBuffersAck(params.swap_response.result,
-                           params.swap_response.swap_id);
+  DidReceiveSwapBuffersAck(params.swap_response.result);
 
   UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
@@ -176,9 +174,8 @@ void GLOutputSurface::OnVSyncParametersUpdated(base::TimeTicks timebase,
 }
 
 void GLOutputSurface::OnPresentation(
-    uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
-  client_->DidReceivePresentationFeedback(swap_id, feedback);
+  client_->DidReceivePresentationFeedback(feedback);
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)

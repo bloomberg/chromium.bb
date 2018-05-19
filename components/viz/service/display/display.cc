@@ -435,7 +435,7 @@ bool Display::DrawAndSwap() {
   return true;
 }
 
-void Display::DidReceiveSwapBuffersAck(uint64_t swap_id) {
+void Display::DidReceiveSwapBuffersAck() {
   if (scheduler_)
     scheduler_->DidReceiveSwapBuffersAck();
   if (renderer_)
@@ -455,7 +455,6 @@ void Display::DidReceiveCALayerParams(
 }
 
 void Display::DidReceivePresentationFeedback(
-    uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
   DCHECK(!pending_presented_callbacks_.empty());
   auto& callbacks = pending_presented_callbacks_.front();
