@@ -38,8 +38,7 @@ TouchActionFilter::TouchActionFilter()
     : suppress_manipulation_events_(false),
       drop_current_tap_ending_event_(false),
       allow_current_double_tap_event_(true),
-      force_enable_zoom_(false),
-      allowed_touch_action_(cc::kTouchActionAuto) {}
+      force_enable_zoom_(false) {}
 
 FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     WebGestureEvent* gesture_event) {
@@ -49,15 +48,17 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
   // Filter for allowable touch actions first (eg. before the TouchEventQueue
   // can decide to send a touch cancel event).
   switch (gesture_event->GetType()) {
-    case WebInputEvent::kGestureScrollBegin:
+    case WebInputEvent::kGestureScrollBegin: {
       DCHECK(!suppress_manipulation_events_);
       suppress_manipulation_events_ =
           ShouldSuppressManipulation(*gesture_event);
+      active_scroll_count_++;
       return suppress_manipulation_events_
                  ? FilterGestureEventResult::kFilterGestureEventFiltered
                  : FilterGestureEventResult::kFilterGestureEventAllowed;
+    }
 
-    case WebInputEvent::kGestureScrollUpdate:
+    case WebInputEvent::kGestureScrollUpdate: {
       if (suppress_manipulation_events_)
         return FilterGestureEventResult::kFilterGestureEventFiltered;
 
@@ -69,16 +70,17 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       // two-finger scrolling but a "touch-action: pan-x pinch-zoom" region
       // doesn't.
       // TODO(mustaq): Add it to spec?
-      if (IsYAxisActionDisallowed(allowed_touch_action_)) {
+      if (IsYAxisActionDisallowed(allowed_touch_action_.value())) {
         gesture_event->data.scroll_update.delta_y = 0;
         gesture_event->data.scroll_update.velocity_y = 0;
-      } else if (IsXAxisActionDisallowed(allowed_touch_action_)) {
+      } else if (IsXAxisActionDisallowed(allowed_touch_action_.value())) {
         gesture_event->data.scroll_update.delta_x = 0;
         gesture_event->data.scroll_update.velocity_x = 0;
       }
       break;
+    }
 
-    case WebInputEvent::kGestureFlingStart:
+    case WebInputEvent::kGestureFlingStart: {
       ReportGestureEventFiltered(suppress_manipulation_events_);
       // Touchscreen flings should always have non-zero velocity.
       DCHECK(gesture_event->data.fling_start.velocity_x ||
@@ -86,9 +88,9 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       if (!suppress_manipulation_events_) {
         // Flings restricted to a specific axis shouldn't permit velocity
         // in the perpendicular axis.
-        if (IsYAxisActionDisallowed(allowed_touch_action_))
+        if (IsYAxisActionDisallowed(allowed_touch_action_.value()))
           gesture_event->data.fling_start.velocity_y = 0;
-        else if (IsXAxisActionDisallowed(allowed_touch_action_))
+        else if (IsXAxisActionDisallowed(allowed_touch_action_.value()))
           gesture_event->data.fling_start.velocity_x = 0;
         // As the renderer expects a scroll-ending event, but does not expect a
         // zero-velocity fling, convert the now zero-velocity fling accordingly.
@@ -100,9 +102,15 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       return FilterManipulationEventAndResetState()
                  ? FilterGestureEventResult::kFilterGestureEventFiltered
                  : FilterGestureEventResult::kFilterGestureEventAllowed;
+    }
 
     case WebInputEvent::kGestureScrollEnd:
       ReportGestureEventFiltered(suppress_manipulation_events_);
+      DCHECK_GT(active_scroll_count_, 0u);
+      active_scroll_count_--;
+      ReportTouchAction();
+      if (active_scroll_count_ == 0 && has_touch_event_handler_)
+        ResetTouchAction();
       return FilterManipulationEventAndResetState()
                  ? FilterGestureEventResult::kFilterGestureEventFiltered
                  : FilterGestureEventResult::kFilterGestureEventAllowed;
@@ -125,20 +133,22 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       break;
 
     // If double tap is disabled, there's no reason for the tap delay.
-    case WebInputEvent::kGestureTapUnconfirmed:
+    case WebInputEvent::kGestureTapUnconfirmed: {
       DCHECK_EQ(1, gesture_event->data.tap.tap_count);
       allow_current_double_tap_event_ =
-          (allowed_touch_action_ & cc::kTouchActionDoubleTapZoom) != 0;
+          (allowed_touch_action_.value() & cc::kTouchActionDoubleTapZoom) != 0;
       if (!allow_current_double_tap_event_) {
         gesture_event->SetType(WebInputEvent::kGestureTap);
         drop_current_tap_ending_event_ = true;
       }
       break;
+    }
 
-    case WebInputEvent::kGestureTap:
+    case WebInputEvent::kGestureTap: {
       allow_current_double_tap_event_ =
-          (allowed_touch_action_ & cc::kTouchActionDoubleTapZoom) != 0;
+          (allowed_touch_action_.value() & cc::kTouchActionDoubleTapZoom) != 0;
       FALLTHROUGH;
+    }
 
     case WebInputEvent::kGestureTapCancel:
       if (drop_current_tap_ending_event_) {
@@ -148,6 +158,8 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       break;
 
     case WebInputEvent::kGestureTapDown:
+      if (gesture_event->is_source_touch_event_set_non_blocking)
+        allowed_touch_action_ = cc::kTouchActionAuto;
       DCHECK(!drop_current_tap_ending_event_);
       break;
 
@@ -180,22 +192,25 @@ void TouchActionFilter::OnSetTouchAction(cc::TouchAction touch_action) {
   //    down "at once" will be deterministic.
   // 2. Only subtractive - eg. can't trigger scrolling on a element that
   //    otherwise has scrolling disabling by the addition of a finger.
-  allowed_touch_action_ &= touch_action;
+  allowed_touch_action_ =
+      allowed_touch_action_.value_or(cc::kTouchActionAuto) & touch_action;
 
   // When user enabled force enable zoom, we should always allow pinch-zoom
   // except for touch-action:none.
   if (force_enable_zoom_ && allowed_touch_action_ != cc::kTouchActionNone)
-    allowed_touch_action_ |= cc::kTouchActionPinchZoom;
+    allowed_touch_action_ =
+        allowed_touch_action_.value() | cc::kTouchActionPinchZoom;
 }
 
-void TouchActionFilter::ReportAndResetTouchAction() {
+void TouchActionFilter::ReportTouchAction() {
   // Report the effective touch action computed by blink such as
   // kTouchActionNone, kTouchActionPanX, etc.
   // Since |cc::kTouchActionAuto| is equivalent to |cc::kTouchActionMax|, we
   // must add one to the upper bound to be able to visualize the number of
   // times |cc::kTouchActionAuto| is hit.
   UMA_HISTOGRAM_ENUMERATION("TouchAction.EffectiveTouchAction",
-                            allowed_touch_action_, cc::kTouchActionMax + 1);
+                            allowed_touch_action_.value(),
+                            cc::kTouchActionMax + 1);
 
   // Report how often the effective touch action computed by blink is or is
   // not equivalent to the whitelisted touch action computed by the
@@ -203,15 +218,14 @@ void TouchActionFilter::ReportAndResetTouchAction() {
   if (white_listed_touch_action_.has_value()) {
     UMA_HISTOGRAM_BOOLEAN(
         "TouchAction.EquivalentEffectiveAndWhiteListed",
-        allowed_touch_action_ == white_listed_touch_action_.value());
+        allowed_touch_action_.value() == white_listed_touch_action_.value());
   }
-  ResetTouchAction();
 }
 
 void TouchActionFilter::ResetTouchAction() {
   // Note that resetting the action mid-sequence is tolerated. Gestures that had
   // their begin event(s) suppressed will be suppressed until the next sequence.
-  allowed_touch_action_ = cc::kTouchActionAuto;
+  allowed_touch_action_.reset();
   white_listed_touch_action_.reset();
 }
 
@@ -235,7 +249,7 @@ bool TouchActionFilter::ShouldSuppressManipulation(
     // Any GestureScrollBegin with more than one fingers is like a pinch-zoom
     // for touch-actions, see crbug.com/632525. Therefore, we switch to
     // blocked-manipulation mode iff pinch-zoom is disallowed.
-    return (allowed_touch_action_ & cc::kTouchActionPinchZoom) == 0;
+    return (allowed_touch_action_.value() & cc::kTouchActionPinchZoom) == 0;
   }
 
   const float& deltaXHint = gesture_event.data.scroll_begin.delta_x_hint;
@@ -262,7 +276,20 @@ bool TouchActionFilter::ShouldSuppressManipulation(
   }
   DCHECK(minimal_conforming_touch_action != cc::kTouchActionNone);
 
-  return (allowed_touch_action_ & minimal_conforming_touch_action) == 0;
+  return (allowed_touch_action_.value() & minimal_conforming_touch_action) == 0;
+}
+
+void TouchActionFilter::OnHasTouchEventHandlers(bool has_handlers) {
+  has_touch_event_handler_ = has_handlers;
+  // Lack of a touch handler indicates that the page either has no touch-action
+  // modifiers or that all its touch-action modifiers are auto. Resetting the
+  // touch-action here allows forwarding of subsequent gestures even if the
+  // underlying touches never reach the router.
+  if (!has_handlers) {
+    OnSetTouchAction(cc::kTouchActionAuto);
+  } else {
+    ResetTouchAction();
+  }
 }
 
 }  // namespace content

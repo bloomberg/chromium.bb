@@ -201,20 +201,6 @@ TEST(TouchActionFilterTest, SimpleFilter) {
   WebGestureEvent tap = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureTap, kSourceDevice);
 
-  // No events filtered by default.
-  filter.ResetTouchAction();
-  EXPECT_EQ(filter.FilterGestureEvent(&scroll_begin),
-            FilterGestureEventResult::kFilterGestureEventAllowed);
-  EXPECT_EQ(filter.FilterGestureEvent(&scroll_update),
-            FilterGestureEventResult::kFilterGestureEventAllowed);
-  EXPECT_EQ(kDeltaX, scroll_update.data.scroll_update.delta_x);
-  EXPECT_EQ(kDeltaY, scroll_update.data.scroll_update.delta_y);
-  EXPECT_EQ(filter.FilterGestureEvent(&scroll_end),
-            FilterGestureEventResult::kFilterGestureEventAllowed);
-  filter.ResetTouchAction();
-  EXPECT_EQ(filter.FilterGestureEvent(&tap),
-            FilterGestureEventResult::kFilterGestureEventAllowed);
-
   // cc::kTouchActionAuto doesn't cause any filtering.
   filter.ResetTouchAction();
   filter.OnSetTouchAction(cc::kTouchActionAuto);
@@ -245,6 +231,7 @@ TEST(TouchActionFilterTest, SimpleFilter) {
 
   // When a new touch sequence begins, the state is reset.
   filter.ResetTouchAction();
+  filter.OnSetTouchAction(cc::kTouchActionAuto);
   EXPECT_EQ(filter.FilterGestureEvent(&scroll_begin),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter.FilterGestureEvent(&scroll_update),
@@ -254,6 +241,7 @@ TEST(TouchActionFilterTest, SimpleFilter) {
 
   // Setting touch action doesn't impact any in-progress gestures.
   filter.ResetTouchAction();
+  filter.OnSetTouchAction(cc::kTouchActionAuto);
   EXPECT_EQ(filter.FilterGestureEvent(&scroll_begin),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   filter.OnSetTouchAction(cc::kTouchActionNone);
@@ -264,6 +252,7 @@ TEST(TouchActionFilterTest, SimpleFilter) {
 
   // And the state is still cleared for the next gesture.
   filter.ResetTouchAction();
+  filter.OnSetTouchAction(cc::kTouchActionAuto);
   EXPECT_EQ(filter.FilterGestureEvent(&scroll_begin),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter.FilterGestureEvent(&scroll_end),
@@ -630,6 +619,7 @@ class TouchActionFilterPinchTest : public testing::Test {
 
     // Pinch state is automatically reset at the end of a scroll.
     filter.ResetTouchAction();
+    filter.OnSetTouchAction(cc::kTouchActionAuto);
     EXPECT_EQ(filter.FilterGestureEvent(&scroll_begin),
               FilterGestureEventResult::kFilterGestureEventAllowed);
     EXPECT_EQ(filter.FilterGestureEvent(&pinch_begin),
@@ -747,6 +737,7 @@ TEST(TouchActionFilterTest, DoubleTapWithTouchActionAuto) {
 
   // Double tap is allowed with touch action auto.
   filter.ResetTouchAction();
+  filter.OnSetTouchAction(cc::kTouchActionAuto);
   EXPECT_EQ(filter.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter.FilterGestureEvent(&unconfirmed_tap),
@@ -810,6 +801,7 @@ TEST(TouchActionFilterTest, SingleTapWithTouchActionAuto) {
 
   // Single tap is allowed with touch action auto.
   filter.ResetTouchAction();
+  filter.OnSetTouchAction(cc::kTouchActionAuto);
   EXPECT_EQ(filter.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter.FilterGestureEvent(&unconfirmed_tap1),
@@ -864,6 +856,7 @@ TEST(TouchActionFilterTest, TouchActionResetsOnResetTouchAction) {
             FilterGestureEventResult::kFilterGestureEventAllowed);
 
   filter.ResetTouchAction();
+  filter.OnSetTouchAction(cc::kTouchActionAuto);
   EXPECT_EQ(filter.FilterGestureEvent(&scroll_begin),
             FilterGestureEventResult::kFilterGestureEventAllowed);
 }
@@ -894,6 +887,7 @@ TEST(TouchActionFilterTest, TouchActionResetMidSequence) {
   // Even though the allowed action is auto after the reset, the remaining
   // scroll and pinch events should be suppressed.
   filter.ResetTouchAction();
+  filter.OnSetTouchAction(cc::kTouchActionAuto);
   EXPECT_EQ(filter.FilterGestureEvent(&pinch_update),
             FilterGestureEventResult::kFilterGestureEventFiltered);
   EXPECT_EQ(filter.FilterGestureEvent(&pinch_end),
@@ -902,6 +896,7 @@ TEST(TouchActionFilterTest, TouchActionResetMidSequence) {
             FilterGestureEventResult::kFilterGestureEventFiltered);
 
   // A new scroll and pinch sequence should be allowed.
+  filter.OnSetTouchAction(cc::kTouchActionAuto);
   EXPECT_EQ(filter.FilterGestureEvent(&scroll_begin),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter.FilterGestureEvent(&pinch_begin),
@@ -911,6 +906,7 @@ TEST(TouchActionFilterTest, TouchActionResetMidSequence) {
 
   // Resetting from auto to auto mid-stream should have no effect.
   filter.ResetTouchAction();
+  filter.OnSetTouchAction(cc::kTouchActionAuto);
   EXPECT_EQ(filter.FilterGestureEvent(&pinch_update),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter.FilterGestureEvent(&pinch_end),
