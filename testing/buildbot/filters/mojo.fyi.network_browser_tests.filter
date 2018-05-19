@@ -251,6 +251,12 @@
 -IOThreadEctFieldTrialAndCommandLineBrowserTest.ECTFromCommandLineOverridesFieldTrial
 -IOThreadEctFieldTrialBrowserTest.ForceECTUsingFieldTrial
 
+# The network service must be cleanly shut down to guarantee HSTS information is
+# flushed to disk, but that currently generally doesn't happen. Note that these
+# tests fail flakily when enabled.
+# See https://crbug.com/820996.
+-ProfileMainNetworkContext/NetworkContextConfigurationBrowserTest.Hsts/0
+
 # Fails on Windows. It's passing on Linux but this feature needs to be converted
 # to work with network service.
 -ConditionalCacheCountingHelperBrowserTest.Count
