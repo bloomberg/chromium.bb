@@ -39,7 +39,8 @@ class VideoCaptureClientTest : public ::testing::Test {
     media::mojom::VideoCaptureHostPtr host;
     host_impl_ =
         std::make_unique<FakeVideoCaptureHost>(mojo::MakeRequest(&host));
-    client_ = std::make_unique<VideoCaptureClient>(std::move(host));
+    client_ = std::make_unique<VideoCaptureClient>(media::VideoCaptureParams(),
+                                                   std::move(host));
   }
 
   ~VideoCaptureClientTest() override {

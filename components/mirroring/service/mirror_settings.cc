@@ -9,6 +9,7 @@
 using media::cast::FrameSenderConfig;
 using media::cast::Codec;
 using media::cast::RtpPayloadType;
+using media::ResolutionChangePolicy;
 
 namespace mirroring {
 
@@ -97,6 +98,24 @@ FrameSenderConfig MirrorSettings::GetDefaultVideoConfig(
 void MirrorSettings::SetResolutionContraints(int max_width, int max_height) {
   max_width_ = std::max(max_width, min_width_);
   max_height_ = std::max(max_height, min_height_);
+}
+
+media::VideoCaptureParams MirrorSettings::GetVideoCaptureParams() {
+  media::VideoCaptureParams params;
+  params.requested_format =
+      media::VideoCaptureFormat(gfx::Size(max_width_, max_height_),
+                                kMaxFrameRate, media::PIXEL_FORMAT_I420);
+  if (max_height_ == min_height_ && max_width_ == min_width_) {
+    params.resolution_change_policy = ResolutionChangePolicy::FIXED_RESOLUTION;
+  } else if ((100 * min_width_ / min_height_) ==
+             (100 * max_width_ / max_height_)) {
+    params.resolution_change_policy =
+        ResolutionChangePolicy::FIXED_ASPECT_RATIO;
+  } else {
+    params.resolution_change_policy = ResolutionChangePolicy::ANY_WITHIN_LIMIT;
+  }
+  DCHECK(params.IsValid());
+  return params;
 }
 
 }  // namespace mirroring

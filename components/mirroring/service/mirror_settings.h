@@ -6,6 +6,7 @@
 #define COMPONENTS_MIRRORING_SERVICE_MIRROR_SETTINGS_H_
 
 #include "base/time/time.h"
+#include "media/capture/video_capture_types.h"
 #include "media/cast/cast_config.h"
 
 namespace mirroring {
@@ -13,8 +14,7 @@ namespace mirroring {
 // Holds the default settings for a mirroring session. This class provides the
 // audio/video configs that this sender supports. And also provides the
 // audio/video constraints used for capturing.
-// TODO(xjz): Add the function to generate the audio/video contraints for
-// capturing.
+// TODO(xjz): Add the function to generate the audio capture contraints.
 // TODO(xjz): Add setters to the settings that might be overriden by integration
 // tests.
 class MirrorSettings {
@@ -32,6 +32,9 @@ class MirrorSettings {
 
   // Call to override the default resolution settings.
   void SetResolutionContraints(int max_width, int max_height);
+
+  // Get video capture constraints with the current settings.
+  media::VideoCaptureParams GetVideoCaptureParams();
 
   int max_width() const { return max_width_; }
   int max_height() const { return max_height_; }

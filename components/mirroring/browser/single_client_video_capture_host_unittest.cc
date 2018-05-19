@@ -167,7 +167,6 @@ class SingleClientVideoCaptureHostTest : public ::testing::Test {
   SingleClientVideoCaptureHostTest() : weak_factory_(this) {
     auto host_impl = std::make_unique<SingleClientVideoCaptureHost>(
         std::string(), content::MediaStreamType::MEDIA_TAB_VIDEO_CAPTURE,
-        VideoCaptureParams(),
         base::BindRepeating(
             &SingleClientVideoCaptureHostTest::CreateDeviceLauncher,
             base::Unretained(this)));

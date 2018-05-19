@@ -51,11 +51,9 @@ class DeviceLauncherCallbacks final
 SingleClientVideoCaptureHost::SingleClientVideoCaptureHost(
     const std::string& device_id,
     content::MediaStreamType type,
-    const VideoCaptureParams& params,
     DeviceLauncherCreateCallback callback)
     : device_id_(device_id),
       type_(type),
-      params_(params),
       device_launcher_callback_(std::move(callback)),
       weak_factory_(this) {
   DCHECK(!device_launcher_callback_.is_null());
@@ -86,7 +84,7 @@ void SingleClientVideoCaptureHost::Start(
       device_launcher_callback_.Run();
   content::VideoCaptureDeviceLauncher* launcher = device_launcher.get();
   launcher->LaunchDeviceAsync(
-      device_id_, type_, params_, weak_factory_.GetWeakPtr(),
+      device_id_, type_, params, weak_factory_.GetWeakPtr(),
       base::BindOnce(&SingleClientVideoCaptureHost::OnError,
                      weak_factory_.GetWeakPtr()),
       callbacks,

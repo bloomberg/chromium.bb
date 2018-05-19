@@ -39,14 +39,12 @@ class SingleClientVideoCaptureHost final
       std::unique_ptr<content::VideoCaptureDeviceLauncher>()>;
   SingleClientVideoCaptureHost(const std::string& device_id,
                                content::MediaStreamType type,
-                               const VideoCaptureParams& params,
                                DeviceLauncherCreateCallback callback);
   ~SingleClientVideoCaptureHost() override;
 
   // media::mojom::VideoCaptureHost implementations
   // |device_id| and |session_id| are ignored since there will be only one
-  // device and one client. |params| is also ignored since it is already set
-  // through the constructor.
+  // device and one client.
   void Start(int32_t device_id,
              int32_t session_id,
              const VideoCaptureParams& params,
@@ -97,7 +95,6 @@ class SingleClientVideoCaptureHost final
 
   const std::string device_id_;
   const content::MediaStreamType type_;
-  const VideoCaptureParams params_;
   const DeviceLauncherCreateCallback device_launcher_callback_;
 
   media::mojom::VideoCaptureObserverPtr observer_;

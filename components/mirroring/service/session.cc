@@ -494,8 +494,8 @@ void Session::OnAnswer(const std::string& cast_mode,
         std::move(video_sender), weak_factory_.GetWeakPtr());
     media::mojom::VideoCaptureHostPtr video_host;
     resource_provider_->GetVideoCaptureHost(mojo::MakeRequest(&video_host));
-    video_capture_client_ =
-        std::make_unique<VideoCaptureClient>(std::move(video_host));
+    video_capture_client_ = std::make_unique<VideoCaptureClient>(
+        mirror_settings_.GetVideoCaptureParams(), std::move(video_host));
     video_capture_client_->Start(
         base::BindRepeating(&VideoRtpStream::InsertVideoFrame,
                             video_stream_->AsWeakPtr()),
