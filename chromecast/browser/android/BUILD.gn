@@ -150,10 +150,10 @@ android_library("cast_shell_java") {
 
   if (is_android_things_non_public) {
     java_files += [ "$java_src_dir/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java" ]
-    deps += [
-      "//chromecast/internal/android/prebuilt/things:support_lib_java",
-      "//chromecast/internal/assistant/ui:boot_parameters_java",
-    ]
+    deps += [ "//chromecast/internal/android/prebuilt/things:support_lib_java" ]
+    if (enable_assistant) {
+      deps += [ "//chromecast/internal/assistant/ui:boot_parameters_java" ]
+    }
   }
 }
 
