@@ -49,7 +49,11 @@ bool GetNetErrorFromIOSErrorCode(NSInteger ios_error_code,
       *net_error_code = net::ERR_CONNECTION_FAILED;
       break;
     case kCFURLErrorNetworkConnectionLost:
-      *net_error_code = net::ERR_INTERNET_DISCONNECTED;
+      // This looks like catch-all code for errors like ERR_CONNECTION_CLOSED,
+      // ERR_EMPTY_RESPONSE, ERR_NETWORK_CHANGED or ERR_CONNECTION_RESET.
+      // ERR_CONNECTION_CLOSED is too specific for this case, but there is no
+      // better cross platform analogue.
+      *net_error_code = net::ERR_CONNECTION_CLOSED;
       break;
     case kCFURLErrorDNSLookupFailed:
       *net_error_code = net::ERR_NAME_RESOLUTION_FAILED;
