@@ -531,6 +531,11 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // connection experiences poor connectivity.
   const bool migrate_sessions_early_v2_;
 
+  // If |migrate_sessions_early_v2_| is true, tracks the current default
+  // network, and is updated OnNetworkMadeDefault.
+  // Otherwise, always set to NetworkChangeNotifier::kInvalidNetwork.
+  NetworkChangeNotifier::NetworkHandle default_network_;
+
   // Maximum time sessions could use on non-default network before try to
   // migrate back to default network.
   const base::TimeDelta max_time_on_non_default_network_;
