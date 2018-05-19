@@ -201,7 +201,16 @@ TEST_F(BattOrConnectionImplTest, FlushConnectionSucceedsOnlyAfterTimeout) {
   ASSERT_TRUE(GetFlushSuccess());
 }
 
-TEST_F(BattOrConnectionImplTest, FlushConnectionFlushesAlreadyReadBuffer) {
+#if defined(ADDRESS_SANITIZER)
+// https://crbug.com/843729
+#define MAYBE_FlushConnectionFlushesAlreadyReadBuffer \
+  DISABLED_FlushConnectionFlushesAlreadyReadBuffer
+#else
+#define MAYBE_FlushConnectionFlushesAlreadyReadBuffer \
+  FlushConnectionFlushesAlreadyReadBuffer
+#endif
+TEST_F(BattOrConnectionImplTest,
+       MAYBE_FlushConnectionFlushesAlreadyReadBuffer) {
   OpenConnection();
   ASSERT_TRUE(IsOpenComplete());
   ASSERT_TRUE(GetOpenSuccess());
@@ -263,8 +272,16 @@ TEST_F(BattOrConnectionImplTest, FlushConnectionNewBytesRestartQuietPeriod) {
   ASSERT_TRUE(IsFlushComplete());
 }
 
+#if defined(ADDRESS_SANITIZER)
+// https://crbug.com/843729
+#define MAYBE_FlushConnectionFlushesBytesReceivedInQuietPeriod \
+  DISABLED_FlushConnectionFlushesBytesReceivedInQuietPeriod
+#else
+#define MAYBE_FlushConnectionFlushesBytesReceivedInQuietPeriod \
+  FlushConnectionFlushesBytesReceivedInQuietPeriod
+#endif
 TEST_F(BattOrConnectionImplTest,
-       FlushConnectionFlushesBytesReceivedInQuietPeriod) {
+       MAYBE_FlushConnectionFlushesBytesReceivedInQuietPeriod) {
   OpenConnection();
   ASSERT_TRUE(IsOpenComplete());
   ASSERT_TRUE(GetOpenSuccess());
@@ -311,7 +328,13 @@ TEST_F(BattOrConnectionImplTest, FlushConnectionFlushesMultipleReadsOfData) {
   ASSERT_TRUE(GetReadSuccess());
 }
 
-TEST_F(BattOrConnectionImplTest, FlushIncompleteBeforeTimeout) {
+#if defined(ADDRESS_SANITIZER)
+// https://crbug.com/843729
+#define MAYBE_FlushIncompleteBeforeTimeout DISABLED_FlushIncompleteBeforeTimeout
+#else
+#define MAYBE_FlushIncompleteBeforeTimeout FlushIncompleteBeforeTimeout
+#endif
+TEST_F(BattOrConnectionImplTest, MAYBE_FlushIncompleteBeforeTimeout) {
   OpenConnection();
   ASSERT_TRUE(IsOpenComplete());
   ASSERT_TRUE(GetOpenSuccess());

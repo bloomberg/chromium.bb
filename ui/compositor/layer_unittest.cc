@@ -1368,7 +1368,14 @@ TEST_F(LayerWithRealCompositorTest, DrawAlphaBlendedPixels) {
 
 // Checks that using the AlphaShape filter applied to a layer with
 // transparency, alpha-blends properly with the layer below.
-TEST_F(LayerWithRealCompositorTest, DrawAlphaThresholdFilterPixels) {
+#if defined(OS_ANDROID)
+// https://crbug.com/843726
+#define MAYBE_DrawAlphaThresholdFilterPixels \
+  DISABLED_DrawAlphaThresholdFilterPixels
+#else
+#define MAYBE_DrawAlphaThresholdFilterPixels DrawAlphaThresholdFilterPixels
+#endif
+TEST_F(LayerWithRealCompositorTest, MAYBE_DrawAlphaThresholdFilterPixels) {
   gfx::Size viewport_size = GetCompositor()->size();
 
   int test_size = 200;

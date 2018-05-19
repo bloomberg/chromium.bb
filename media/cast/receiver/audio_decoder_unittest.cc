@@ -7,12 +7,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/cfi_buildflags.h"
 #include "base/macros.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/receiver/audio_decoder.h"
 #include "media/cast/test/utility/audio_utility.h"
@@ -238,7 +238,7 @@ TEST_P(AudioDecoderTest, RecoversFromDroppedFrames) {
   WaitForAllAudioToBeDecoded();
 }
 
-#if !BUILDFLAG(CFI_CAST_CHECK)  // https://crbug.com/831999
+#if !defined(OS_ANDROID)  // https://crbug.com/831999
 INSTANTIATE_TEST_CASE_P(
     AudioDecoderTestScenarios,
     AudioDecoderTest,
