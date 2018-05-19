@@ -115,12 +115,12 @@ class QuicClientPromisedInfoTest : public QuicTest {
   std::unique_ptr<QuicSpdyClientStream> stream_;
   std::unique_ptr<StreamVisitor> stream_visitor_;
   std::unique_ptr<QuicSpdyClientStream> promised_stream_;
-  SpdyHeaderBlock headers_;
+  spdy::SpdyHeaderBlock headers_;
   QuicString body_;
-  SpdyHeaderBlock push_promise_;
+  spdy::SpdyHeaderBlock push_promise_;
   QuicStreamId promise_id_;
   QuicString promise_url_;
-  SpdyHeaderBlock client_request_;
+  spdy::SpdyHeaderBlock client_request_;
 };
 
 TEST_F(QuicClientPromisedInfoTest, PushPromise) {

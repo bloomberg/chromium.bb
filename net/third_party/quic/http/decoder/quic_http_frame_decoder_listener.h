@@ -45,15 +45,15 @@ class QuicHttpFrameDecoderListener {
 
   // Called once the common frame header has been decoded for any frame, and
   // before any of the methods below, which will also be called. This method is
-  // included in this interface only for the purpose of supporting SpdyFramer
-  // semantics via an adapter. This is the only method that has a non-void
-  // return type, and this is just so that QuicHttpFrameDecoderAdapter (called
-  // from SpdyFramer) can more readily pass existing tests that expect decoding
-  // to stop if the headers alone indicate an error. Return false to stop
-  // decoding just after decoding the header, else return true to continue
-  // decoding.
+  // included in this interface only for the purpose of supporting
+  // spdy::SpdyFramer semantics via an adapter. This is the only method that has
+  // a non-void return type, and this is just so that
+  // QuicHttpFrameDecoderAdapter (called from spdy::SpdyFramer) can more readily
+  // pass existing tests that expect decoding to stop if the headers alone
+  // indicate an error. Return false to stop decoding just after decoding the
+  // header, else return true to continue decoding.
   // TODO(jamessynge): Remove OnFrameHeader once done with supporting
-  // SpdyFramer's exact states.
+  // spdy::SpdyFramer's exact states.
   virtual bool OnFrameHeader(const QuicHttpFrameHeader& header) = 0;
 
   //////////////////////////////////////////////////////////////////////////////
@@ -289,10 +289,10 @@ class QuicHttpFrameDecoderListener {
   // to do.
   // From RFC Section 4.2, Frame Size:
   //     An endpoint MUST send an error code of FRAME_SIZE_ERROR if a frame
-  //     exceeds the size defined in SETTINGS_MAX_FRAME_SIZE, exceeds any limit
-  //     defined for the frame type, or is too small to contain mandatory frame
-  //     data. A frame size error in a frame that could alter the state of the
-  //     the entire connection MUST be treated as a connection error
+  //     exceeds the size defined in spdy::SETTINGS_MAX_FRAME_SIZE, exceeds any
+  //     limit defined for the frame type, or is too small to contain mandatory
+  //     frame data. A frame size error in a frame that could alter the state of
+  //     the the entire connection MUST be treated as a connection error
   //     (Section 5.4.1); this includes any frame carrying a header block
   //     (Section 4.3) (that is, HEADERS, PUSH_PROMISE, and CONTINUATION),
   //     SETTINGS, and any frame with a stream identifier of 0.
@@ -306,7 +306,7 @@ class QuicHttpFrameDecoderNoOpListener : public QuicHttpFrameDecoderListener {
   ~QuicHttpFrameDecoderNoOpListener() override {}
 
   // TODO(jamessynge): Remove OnFrameHeader once done with supporting
-  // SpdyFramer's exact states.
+  // spdy::SpdyFramer's exact states.
   bool OnFrameHeader(const QuicHttpFrameHeader& header) override;
 
   void OnDataStart(const QuicHttpFrameHeader& header) override {}

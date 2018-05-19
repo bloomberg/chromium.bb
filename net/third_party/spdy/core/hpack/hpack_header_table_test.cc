@@ -14,7 +14,7 @@
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace spdy {
 
 using std::distance;
 
@@ -444,4 +444,4 @@ TEST_F(HpackHeaderTableTest, StaticAndDynamicEntriesEqual) {
 
 }  // namespace
 
-}  // namespace net
+}  // namespace spdy

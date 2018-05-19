@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
-namespace net {
+namespace spdy {
 
 namespace {
 
@@ -387,4 +387,4 @@ bool SpdyAltSvcWireFormat::ParsePositiveInteger32(
   return ParsePositiveIntegerImpl<uint32_t>(c, end, value);
 }
 
-}  // namespace net
+}  // namespace spdy

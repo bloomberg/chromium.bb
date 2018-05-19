@@ -30,7 +30,7 @@ class QuicTestPacketMaker {
   struct Http2StreamDependency {
     QuicStreamId stream_id;
     QuicStreamId parent_stream_id;
-    SpdyPriority spdy_priority;
+    spdy::SpdyPriority spdy_priority;
   };
 
   // |client_headers_include_h2_stream_dependency| affects the output of
@@ -161,8 +161,8 @@ class QuicTestPacketMaker {
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      SpdyPriority priority,
-      SpdyHeaderBlock headers,
+      spdy::SpdyPriority priority,
+      spdy::SpdyHeaderBlock headers,
       QuicStreamId parent_stream_id,
       QuicStreamOffset* header_stream_offset,
       size_t* spdy_headers_frame_length,
@@ -175,8 +175,8 @@ class QuicTestPacketMaker {
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      SpdyPriority priority,
-      SpdyHeaderBlock headers,
+      spdy::SpdyPriority priority,
+      spdy::SpdyHeaderBlock headers,
       QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length);
 
@@ -185,8 +185,8 @@ class QuicTestPacketMaker {
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      SpdyPriority priority,
-      SpdyHeaderBlock headers,
+      spdy::SpdyPriority priority,
+      spdy::SpdyHeaderBlock headers,
       QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset);
@@ -197,8 +197,8 @@ class QuicTestPacketMaker {
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      SpdyPriority priority,
-      SpdyHeaderBlock headers,
+      spdy::SpdyPriority priority,
+      spdy::SpdyHeaderBlock headers,
       QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset,
@@ -209,8 +209,8 @@ class QuicTestPacketMaker {
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      SpdyPriority priority,
-      SpdyHeaderBlock headers,
+      spdy::SpdyPriority priority,
+      spdy::SpdyHeaderBlock headers,
       QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* header_stream_offset,
@@ -224,8 +224,8 @@ class QuicTestPacketMaker {
                                              QuicStreamId stream_id,
                                              bool should_include_version,
                                              bool fin,
-                                             SpdyPriority priority,
-                                             SpdyHeaderBlock headers,
+                                             spdy::SpdyPriority priority,
+                                             spdy::SpdyHeaderBlock headers,
                                              QuicStreamId parent_stream_id,
                                              QuicStreamOffset* offset);
 
@@ -237,7 +237,7 @@ class QuicTestPacketMaker {
       QuicStreamId promised_stream_id,
       bool should_include_version,
       bool fin,
-      SpdyHeaderBlock headers,
+      spdy::SpdyHeaderBlock headers,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset);
 
@@ -248,7 +248,7 @@ class QuicTestPacketMaker {
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      SpdyHeaderBlock headers,
+      spdy::SpdyHeaderBlock headers,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset);
 
@@ -257,7 +257,7 @@ class QuicTestPacketMaker {
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      SpdyHeaderBlock headers,
+      spdy::SpdyHeaderBlock headers,
       size_t* spdy_headers_frame_length);
 
   // Convenience method for calling MakeResponseHeadersPacket with nullptr for
@@ -267,7 +267,7 @@ class QuicTestPacketMaker {
                                               QuicStreamId stream_id,
                                               bool should_include_version,
                                               bool fin,
-                                              SpdyHeaderBlock headers,
+                                              spdy::SpdyHeaderBlock headers,
                                               QuicStreamOffset* offset);
 
   // Creates a packet containing the initial SETTINGS frame, and saves the
@@ -288,7 +288,7 @@ class QuicTestPacketMaker {
       bool should_include_version,
       QuicStreamId id,
       QuicStreamId parent_stream_id,
-      SpdyPriority priority,
+      spdy::SpdyPriority priority,
       QuicStreamOffset* offset);
 
   std::unique_ptr<QuicReceivedPacket> MakeAckAndMultiplePriorityFramesPacket(
@@ -304,16 +304,16 @@ class QuicTestPacketMaker {
 
   void SetLongHeaderType(QuicLongHeaderType type);
 
-  SpdyHeaderBlock GetRequestHeaders(const std::string& method,
-                                    const std::string& scheme,
-                                    const std::string& path);
+  spdy::SpdyHeaderBlock GetRequestHeaders(const std::string& method,
+                                          const std::string& scheme,
+                                          const std::string& path);
 
-  SpdyHeaderBlock ConnectRequestHeaders(const std::string& host_port);
+  spdy::SpdyHeaderBlock ConnectRequestHeaders(const std::string& host_port);
 
-  SpdyHeaderBlock GetResponseHeaders(const std::string& status);
+  spdy::SpdyHeaderBlock GetResponseHeaders(const std::string& status);
 
-  SpdyHeaderBlock GetResponseHeaders(const std::string& status,
-                                     const std::string& alt_svc);
+  spdy::SpdyHeaderBlock GetResponseHeaders(const std::string& status,
+                                           const std::string& alt_svc);
 
  private:
   std::unique_ptr<QuicReceivedPacket> MakePacket(const QuicPacketHeader& header,
@@ -325,11 +325,11 @@ class QuicTestPacketMaker {
   void InitializeHeader(QuicPacketNumber packet_number,
                         bool should_include_version);
 
-  SpdySerializedFrame MakeSpdyHeadersFrame(QuicStreamId stream_id,
-                                           bool fin,
-                                           SpdyPriority priority,
-                                           SpdyHeaderBlock headers,
-                                           QuicStreamId parent_stream_id);
+  spdy::SpdySerializedFrame MakeSpdyHeadersFrame(QuicStreamId stream_id,
+                                                 bool fin,
+                                                 spdy::SpdyPriority priority,
+                                                 spdy::SpdyHeaderBlock headers,
+                                                 QuicStreamId parent_stream_id);
 
   bool ShouldIncludeVersion(bool include_version) const;
 
@@ -339,8 +339,8 @@ class QuicTestPacketMaker {
   QuicConnectionId connection_id_;
   MockClock* clock_;  // Owned by QuicStreamFactory.
   std::string host_;
-  SpdyFramer spdy_request_framer_;
-  SpdyFramer spdy_response_framer_;
+  spdy::SpdyFramer spdy_request_framer_;
+  spdy::SpdyFramer spdy_response_framer_;
   MockRandom random_generator_;
   QuicPacketHeader header_;
   Perspective perspective_;

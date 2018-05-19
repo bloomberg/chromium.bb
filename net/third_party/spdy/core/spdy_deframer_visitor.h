@@ -82,7 +82,7 @@
 #include "net/third_party/spdy/core/spdy_test_utils.h"
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 
-namespace net {
+namespace spdy {
 namespace test {
 
 // Non-lossy representation of a SETTINGS frame payload.
@@ -247,6 +247,6 @@ class DeframerCallbackCollector : public SpdyDeframerVisitorInterface {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_SPDY_DEFRAMER_VISITOR_H_

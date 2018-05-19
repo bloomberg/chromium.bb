@@ -106,7 +106,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream : public MultiplexedHttpStream {
   int DoSendBodyComplete(int rv);
 
   void OnReadResponseHeadersComplete(int rv);
-  int ProcessResponseHeaders(const SpdyHeaderBlock& headers);
+  int ProcessResponseHeaders(const spdy::SpdyHeaderBlock& headers);
   void ReadTrailingHeaders();
   void OnReadTrailingHeadersComplete(int rv);
 
@@ -172,12 +172,12 @@ class NET_EXPORT_PRIVATE QuicHttpStream : public MultiplexedHttpStream {
   int response_status_;
 
   // Serialized request headers.
-  SpdyHeaderBlock request_headers_;
+  spdy::SpdyHeaderBlock request_headers_;
 
-  SpdyHeaderBlock response_header_block_;
+  spdy::SpdyHeaderBlock response_header_block_;
   bool response_headers_received_;
 
-  SpdyHeaderBlock trailing_header_block_;
+  spdy::SpdyHeaderBlock trailing_header_block_;
   bool trailing_headers_received_;
 
   // Number of bytes received by the headers stream on behalf of this stream.

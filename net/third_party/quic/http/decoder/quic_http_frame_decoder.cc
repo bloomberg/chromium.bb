@@ -88,7 +88,7 @@ QuicHttpDecodeStatus QuicHttpFrameDecoder::StartDecodingPayload(
   const QuicHttpFrameHeader& header = frame_header();
 
   // TODO(jamessynge): Remove OnFrameHeader once done with supporting
-  // SpdyFramer's exact states.
+  // spdy::SpdyFramer's exact states.
   if (!listener()->OnFrameHeader(header)) {
     DVLOG(2) << "OnFrameHeader rejected the frame, will discard; header: "
              << header;

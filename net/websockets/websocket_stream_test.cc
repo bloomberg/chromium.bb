@@ -165,24 +165,24 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
     // connection preface, initial settings, and window update.
 
     // HTTP/2 connection preface.
-    frames_.push_back(
-        SpdySerializedFrame(const_cast<char*>(kHttp2ConnectionHeaderPrefix),
-                            kHttp2ConnectionHeaderPrefixSize,
-                            /* owns_buffer = */ false));
+    frames_.push_back(spdy::SpdySerializedFrame(
+        const_cast<char*>(spdy::kHttp2ConnectionHeaderPrefix),
+        spdy::kHttp2ConnectionHeaderPrefixSize,
+        /* owns_buffer = */ false));
     AddWrite(&frames_.back());
 
     // Server advertises WebSockets over HTTP/2 support.
-    SettingsMap read_settings;
-    read_settings[SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
+    spdy::SettingsMap read_settings;
+    read_settings[spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
     frames_.push_back(spdy_util_.ConstructSpdySettings(read_settings));
     AddRead(&frames_.back());
 
     // Initial SETTINGS frame.
-    SettingsMap write_settings;
-    write_settings[SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
-    write_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
+    spdy::SettingsMap write_settings;
+    write_settings[spdy::SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
+    write_settings[spdy::SETTINGS_MAX_CONCURRENT_STREAMS] =
         kSpdyMaxConcurrentPushedStreams;
-    write_settings[SETTINGS_INITIAL_WINDOW_SIZE] = 6 * 1024 * 1024;
+    write_settings[spdy::SETTINGS_INITIAL_WINDOW_SIZE] = 6 * 1024 * 1024;
     frames_.push_back(spdy_util_.ConstructSpdySettings(write_settings));
     AddWrite(&frames_.back());
 
@@ -221,7 +221,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
     spdy_util_.UpdateWithStreamDestruction(1);
 
     // WebSocket request.
-    SpdyHeaderBlock request_headers = WebSocketHttp2Request(
+    spdy::SpdyHeaderBlock request_headers = WebSocketHttp2Request(
         socket_path, socket_host, kOrigin, extra_request_headers);
     frames_.push_back(spdy_util_.ConstructSpdyHeaders(
         3, std::move(request_headers), DEFAULT_PRIORITY, false));
@@ -229,7 +229,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
 
     if (reset_websocket_http2_stream_) {
       frames_.push_back(
-          spdy_util_.ConstructSpdyRstStream(3, ERROR_CODE_CANCEL));
+          spdy_util_.ConstructSpdyRstStream(3, spdy::ERROR_CODE_CANCEL));
       AddRead(&frames_.back());
     } else {
       // Response to WebSocket request.
@@ -259,7 +259,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
 
       // Client cancels HTTP/2 stream when request is destroyed.
       frames_.push_back(
-          spdy_util_.ConstructSpdyRstStream(3, ERROR_CODE_CANCEL));
+          spdy_util_.ConstructSpdyRstStream(3, spdy::ERROR_CODE_CANCEL));
       AddWrite(&frames_.back());
     }
 
@@ -271,7 +271,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
     url_request_context_host_.AddRawExpectations(std::move(socket_data));
 
     // Send first request.  This makes sure server's
-    // SETTINGS_ENABLE_CONNECT_PROTOCOL advertisement is read.
+    // spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL advertisement is read.
     TestURLRequestContext* context =
         url_request_context_host_.GetURLRequestContext();
     TestDelegate delegate;
@@ -349,12 +349,12 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
   }
 
  private:
-  void AddWrite(const SpdySerializedFrame* frame) {
+  void AddWrite(const spdy::SpdySerializedFrame* frame) {
     writes_.push_back(
         MockWrite(ASYNC, frame->data(), frame->size(), sequence_number_++));
   }
 
-  void AddRead(const SpdySerializedFrame* frame) {
+  void AddRead(const spdy::SpdySerializedFrame* frame) {
     reads_.push_back(
         MockRead(ASYNC, frame->data(), frame->size(), sequence_number_++));
   }
@@ -373,7 +373,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
   int sequence_number_;
 
   // Store mock HTTP/2 data.
-  std::vector<SpdySerializedFrame> frames_;
+  std::vector<spdy::SpdySerializedFrame> frames_;
 
   // Store MockRead and MockWrite objects that have pointers to above data.
   std::vector<MockRead> reads_;

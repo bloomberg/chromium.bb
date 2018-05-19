@@ -8,7 +8,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace spdy {
 namespace test {
 namespace {
 
@@ -44,4 +44,4 @@ TEST_F(SpdyMemSliceTest, MoveAssign) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace spdy

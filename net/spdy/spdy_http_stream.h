@@ -36,7 +36,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   static const size_t kRequestBodyBufferSize;
   // |spdy_session| must not be NULL.
   SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
-                 SpdyStreamId pushed_stream_id,
+                 spdy::SpdyStreamId pushed_stream_id,
                  NetLogSource source_dependency);
   ~SpdyHttpStream() override;
 
@@ -86,11 +86,11 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   // SpdyStream::Delegate implementation.
   void OnHeadersSent() override;
   void OnHeadersReceived(
-      const SpdyHeaderBlock& response_headers,
-      const SpdyHeaderBlock* pushed_request_headers) override;
+      const spdy::SpdyHeaderBlock& response_headers,
+      const spdy::SpdyHeaderBlock* pushed_request_headers) override;
   void OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) override;
   void OnDataSent() override;
-  void OnTrailers(const SpdyHeaderBlock& trailers) override;
+  void OnTrailers(const spdy::SpdyHeaderBlock& trailers) override;
   void OnClose(int status) override;
   NetLogSource source_dependency() const override;
 
@@ -140,7 +140,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   // The ID of the pushed stream if one is claimed by this request.
   // In this case, the request fails if it cannot use that pushed stream.
   // Otherwise set to kNoPushedStreamFound.
-  const SpdyStreamId pushed_stream_id_;
+  const spdy::SpdyStreamId pushed_stream_id_;
 
   bool is_reused_;
   SpdyStreamRequest stream_request_;
@@ -158,7 +158,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   // Set only when |stream_closed_| is true.
   int closed_stream_status_;
-  SpdyStreamId closed_stream_id_;
+  spdy::SpdyStreamId closed_stream_id_;
   bool closed_stream_has_load_timing_info_;
   LoadTimingInfo closed_stream_load_timing_info_;
   // After |stream_| has been closed, this keeps track of the total number of

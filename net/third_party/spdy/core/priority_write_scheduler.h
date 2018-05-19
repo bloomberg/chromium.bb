@@ -20,7 +20,7 @@
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/core/write_scheduler.h"
 
-namespace net {
+namespace spdy {
 
 namespace test {
 template <typename StreamIdType>
@@ -306,6 +306,6 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
   StreamInfoMap stream_infos_;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_PRIORITY_WRITE_SCHEDULER_H_

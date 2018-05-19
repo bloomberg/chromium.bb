@@ -72,20 +72,21 @@ class TestMockUpdateStreamSession : public MockQuicSpdySession {
   explicit TestMockUpdateStreamSession(QuicConnection* connection)
       : MockQuicSpdySession(connection) {}
 
-  void UpdateStreamPriority(QuicStreamId id, SpdyPriority priority) override {
+  void UpdateStreamPriority(QuicStreamId id,
+                            spdy::SpdyPriority priority) override {
     EXPECT_EQ(id, expected_stream_->id());
     EXPECT_EQ(expected_priority_, priority);
     EXPECT_EQ(expected_priority_, expected_stream_->priority());
   }
 
   void SetExpectedStream(QuicSpdyStream* stream) { expected_stream_ = stream; }
-  void SetExpectedPriority(SpdyPriority priority) {
+  void SetExpectedPriority(spdy::SpdyPriority priority) {
     expected_priority_ = priority;
   }
 
  private:
   QuicSpdyStream* expected_stream_;
-  SpdyPriority expected_priority_;
+  spdy::SpdyPriority expected_priority_;
 };
 
 class QuicSpdyStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
@@ -135,7 +136,8 @@ class QuicSpdyStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
     session_->ActivateStream(QuicWrapUnique(stream2_));
   }
 
-  QuicHeaderList ProcessHeaders(bool fin, const SpdyHeaderBlock& headers) {
+  QuicHeaderList ProcessHeaders(bool fin,
+                                const spdy::SpdyHeaderBlock& headers) {
     QuicHeaderList h = AsHeaderList(headers);
     stream_->OnStreamHeaderList(fin, h.uncompressed_header_bytes(), h);
     return h;
@@ -155,7 +157,7 @@ class QuicSpdyStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
   TestStream* stream_;
   TestStream* stream2_;
 
-  SpdyHeaderBlock headers_;
+  spdy::SpdyHeaderBlock headers_;
 };
 
 INSTANTIATE_TEST_CASE_P(Tests,
@@ -165,7 +167,7 @@ INSTANTIATE_TEST_CASE_P(Tests,
 TEST_P(QuicSpdyStreamTest, ProcessHeaderList) {
   Initialize(kShouldProcessData);
 
-  stream_->OnStreamHeadersPriority(kV3HighestPriority);
+  stream_->OnStreamHeadersPriority(spdy::kV3HighestPriority);
   ProcessHeaders(false, headers_);
   EXPECT_EQ("", stream_->data());
   EXPECT_FALSE(stream_->header_list().empty());
@@ -176,7 +178,7 @@ TEST_P(QuicSpdyStreamTest, ProcessTooLargeHeaderList) {
   Initialize(kShouldProcessData);
 
   QuicHeaderList headers;
-  stream_->OnStreamHeadersPriority(kV3HighestPriority);
+  stream_->OnStreamHeadersPriority(spdy::kV3HighestPriority);
 
   EXPECT_CALL(*session_,
               SendRstStream(stream_->id(), QUIC_HEADERS_TOO_LARGE, 0));
@@ -193,7 +195,7 @@ TEST_P(QuicSpdyStreamTest, ProcessHeaderListWithFin) {
     headers.OnHeader(p.first, p.second);
     total_bytes += p.first.size() + p.second.size();
   }
-  stream_->OnStreamHeadersPriority(kV3HighestPriority);
+  stream_->OnStreamHeadersPriority(spdy::kV3HighestPriority);
   stream_->OnStreamHeaderList(true, total_bytes, headers);
   EXPECT_EQ("", stream_->data());
   EXPECT_FALSE(stream_->header_list().empty());
@@ -678,16 +680,17 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersViaHeaderList) {
     total_bytes += p.first.size() + p.second.size();
   }
 
-  stream_->OnStreamHeadersPriority(kV3HighestPriority);
+  stream_->OnStreamHeadersPriority(spdy::kV3HighestPriority);
   stream_->OnStreamHeaderList(/*fin=*/false, total_bytes, headers);
   stream_->ConsumeHeaderList();
 
   // Receive trailing headers.
-  SpdyHeaderBlock trailers_block;
+  spdy::SpdyHeaderBlock trailers_block;
   trailers_block["key1"] = "value1";
   trailers_block["key2"] = "value2";
   trailers_block["key3"] = "value3";
-  SpdyHeaderBlock trailers_block_with_final_offset = trailers_block.Clone();
+  spdy::SpdyHeaderBlock trailers_block_with_final_offset =
+      trailers_block.Clone();
   trailers_block_with_final_offset[kFinalOffsetHeaderKey] = "0";
   total_bytes = 0;
   QuicHeaderList trailers;
@@ -718,7 +721,7 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithOffset) {
 
   const QuicString body = "this is the body";
   // Receive trailing headers.
-  SpdyHeaderBlock trailers_block;
+  spdy::SpdyHeaderBlock trailers_block;
   trailers_block["key1"] = "value1";
   trailers_block["key2"] = "value2";
   trailers_block["key3"] = "value3";
@@ -756,7 +759,7 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithoutOffset) {
 
   const QuicString body = "this is the body";
   // Receive trailing headers, without kFinalOffsetHeaderKey.
-  SpdyHeaderBlock trailers_block;
+  spdy::SpdyHeaderBlock trailers_block;
   trailers_block["key1"] = "value1";
   trailers_block["key2"] = "value2";
   trailers_block["key3"] = "value3";
@@ -784,7 +787,7 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithoutFin) {
   stream_->ConsumeHeaderList();
 
   // Receive trailing headers with FIN deliberately set to false.
-  SpdyHeaderBlock trailers_block;
+  spdy::SpdyHeaderBlock trailers_block;
   trailers_block["foo"] = "bar";
   auto trailers = AsHeaderList(trailers_block);
 
@@ -804,7 +807,7 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterHeadersWithFin) {
   stream_->ConsumeHeaderList();
 
   // Receive trailing headers after FIN already received.
-  SpdyHeaderBlock trailers_block;
+  spdy::SpdyHeaderBlock trailers_block;
   trailers_block["foo"] = "bar";
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA, _, _))
@@ -825,7 +828,7 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterBodyWithFin) {
   stream_->OnStreamFrame(frame);
 
   // Receive trailing headers after FIN already received.
-  SpdyHeaderBlock trailers_block;
+  spdy::SpdyHeaderBlock trailers_block;
   trailers_block["foo"] = "bar";
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA, _, _))
@@ -861,10 +864,10 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersSendsAFin) {
 
   // Write the initial headers, without a FIN.
   EXPECT_CALL(*session_, WriteHeadersMock(_, _, _, _, _));
-  stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
+  stream_->WriteHeaders(spdy::SpdyHeaderBlock(), /*fin=*/false, nullptr);
 
   // Writing trailers implicitly sends a FIN.
-  SpdyHeaderBlock trailers;
+  spdy::SpdyHeaderBlock trailers;
   trailers["trailer key"] = "trailer value";
   EXPECT_CALL(*session_, WriteHeadersMock(_, _, true, _, _));
   stream_->WriteTrailers(std::move(trailers), nullptr);
@@ -881,7 +884,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersFinalOffset) {
 
   // Write the initial headers.
   EXPECT_CALL(*session_, WriteHeadersMock(_, _, _, _, _));
-  stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
+  stream_->WriteHeaders(spdy::SpdyHeaderBlock(), /*fin=*/false, nullptr);
 
   // Write non-zero body data to force a non-zero final offset.
   const int kBodySize = 1 * 1024;  // 1 MB
@@ -889,9 +892,9 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersFinalOffset) {
 
   // The final offset field in the trailing headers is populated with the
   // number of body bytes written (including queued bytes).
-  SpdyHeaderBlock trailers;
+  spdy::SpdyHeaderBlock trailers;
   trailers["trailer key"] = "trailer value";
-  SpdyHeaderBlock trailers_with_offset(trailers.Clone());
+  spdy::SpdyHeaderBlock trailers_with_offset(trailers.Clone());
   trailers_with_offset[kFinalOffsetHeaderKey] =
       QuicTextUtils::Uint64ToString(kBodySize);
   EXPECT_CALL(*session_, WriteHeadersMock(_, _, true, _, _));
@@ -909,7 +912,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersClosesWriteSide) {
 
   // Write the initial headers.
   EXPECT_CALL(*session_, WriteHeadersMock(_, _, _, _, _));
-  stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
+  stream_->WriteHeaders(spdy::SpdyHeaderBlock(), /*fin=*/false, nullptr);
 
   // Write non-zero body data.
   const int kBodySize = 1 * 1024;  // 1 MB
@@ -919,7 +922,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersClosesWriteSide) {
   // Headers and body have been fully written, there is no queued data. Writing
   // trailers marks the end of this stream, and thus the write side is closed.
   EXPECT_CALL(*session_, WriteHeadersMock(_, _, true, _, _));
-  stream_->WriteTrailers(SpdyHeaderBlock(), nullptr);
+  stream_->WriteTrailers(spdy::SpdyHeaderBlock(), nullptr);
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
@@ -933,7 +936,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
 
   // Write the initial headers.
   EXPECT_CALL(*session_, WriteHeadersMock(_, _, _, _, _));
-  stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
+  stream_->WriteHeaders(spdy::SpdyHeaderBlock(), /*fin=*/false, nullptr);
 
   // Write non-zero body data, but only consume partially, ensuring queueing.
   const int kBodySize = 1 * 1024;  // 1 KB
@@ -945,7 +948,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
   // Writing trailers will send a FIN, but not close the write side of the
   // stream as there are queued bytes.
   EXPECT_CALL(*session_, WriteHeadersMock(_, _, true, _, _));
-  stream_->WriteTrailers(SpdyHeaderBlock(), nullptr);
+  stream_->WriteTrailers(spdy::SpdyHeaderBlock(), nullptr);
   EXPECT_TRUE(stream_->fin_sent());
   EXPECT_FALSE(stream_->write_side_closed());
 
@@ -965,12 +968,12 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersAfterFIN) {
 
   // Write the initial headers, with a FIN.
   EXPECT_CALL(*session_, WriteHeadersMock(_, _, _, _, _));
-  stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/true, nullptr);
+  stream_->WriteHeaders(spdy::SpdyHeaderBlock(), /*fin=*/true, nullptr);
   EXPECT_TRUE(stream_->fin_sent());
 
   // Writing Trailers should fail, as the FIN has already been sent.
   // populated with the number of body bytes written.
-  EXPECT_QUIC_BUG(stream_->WriteTrailers(SpdyHeaderBlock(), nullptr),
+  EXPECT_QUIC_BUG(stream_->WriteTrailers(spdy::SpdyHeaderBlock(), nullptr),
                   "Trailers cannot be sent after a FIN");
 }
 
@@ -1033,8 +1036,8 @@ TEST_P(QuicSpdyStreamTest, StreamBecomesZombieWithWriteThatCloses) {
 
 TEST_P(QuicSpdyStreamTest, OnPriorityFrame) {
   Initialize(kShouldProcessData);
-  stream_->OnPriorityFrame(kV3HighestPriority);
-  EXPECT_EQ(kV3HighestPriority, stream_->priority());
+  stream_->OnPriorityFrame(spdy::kV3HighestPriority);
+  EXPECT_EQ(spdy::kV3HighestPriority, stream_->priority());
 }
 
 TEST_P(QuicSpdyStreamTest, SetPriorityBeforeUpdateStreamPriority) {
@@ -1052,11 +1055,11 @@ TEST_P(QuicSpdyStreamTest, SetPriorityBeforeUpdateStreamPriority) {
   // if called within UpdateStreamPriority(). This expectation is enforced in
   // TestMockUpdateStreamSession::UpdateStreamPriority().
   session->SetExpectedStream(stream);
-  session->SetExpectedPriority(kV3HighestPriority);
-  stream->SetPriority(kV3HighestPriority);
+  session->SetExpectedPriority(spdy::kV3HighestPriority);
+  stream->SetPriority(spdy::kV3HighestPriority);
 
-  session->SetExpectedPriority(kV3LowestPriority);
-  stream->SetPriority(kV3LowestPriority);
+  session->SetExpectedPriority(spdy::kV3LowestPriority);
+  stream->SetPriority(spdy::kV3LowestPriority);
 }
 
 }  // namespace

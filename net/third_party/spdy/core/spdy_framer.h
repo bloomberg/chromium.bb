@@ -23,7 +23,7 @@
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 
 class HttpNetworkLayer;
 class HttpNetworkTransactionTest;
@@ -382,6 +382,6 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
   const CompressionOption compression_option_;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_SPDY_FRAMER_H_

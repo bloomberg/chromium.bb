@@ -7,10 +7,10 @@
 
 #include "base/strings/string_piece.h"
 
-namespace net {
+namespace spdy {
 
 using SpdyStringPieceImpl = base::StringPiece;
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_PLATFORM_IMPL_SPDY_STRING_PIECE_IMPL_H_

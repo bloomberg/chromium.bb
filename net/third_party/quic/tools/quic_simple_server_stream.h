@@ -46,7 +46,7 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
   // Make this stream start from as if it just finished parsing an incoming
   // request whose headers are equivalent to |push_request_headers|.
   // Doing so will trigger this toy stream to fetch response and send it back.
-  virtual void PushResponse(SpdyHeaderBlock push_request_headers);
+  virtual void PushResponse(spdy::SpdyHeaderBlock push_request_headers);
 
   // The response body of error responses.
   static const char* const kErrorResponseBody;
@@ -74,13 +74,13 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
   // for the body.
   void SendNotFoundResponse();
 
-  void SendHeadersAndBody(SpdyHeaderBlock response_headers,
+  void SendHeadersAndBody(spdy::SpdyHeaderBlock response_headers,
                           QuicStringPiece body);
-  void SendHeadersAndBodyAndTrailers(SpdyHeaderBlock response_headers,
+  void SendHeadersAndBodyAndTrailers(spdy::SpdyHeaderBlock response_headers,
                                      QuicStringPiece body,
-                                     SpdyHeaderBlock response_trailers);
+                                     spdy::SpdyHeaderBlock response_trailers);
 
-  SpdyHeaderBlock* request_headers() { return &request_headers_; }
+  spdy::SpdyHeaderBlock* request_headers() { return &request_headers_; }
 
   const QuicString& body() { return body_; }
 
@@ -88,7 +88,7 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
   friend class test::QuicSimpleServerStreamPeer;
 
   // The parsed headers received from the client.
-  SpdyHeaderBlock request_headers_;
+  spdy::SpdyHeaderBlock request_headers_;
   int64_t content_length_;
   QuicString body_;
 

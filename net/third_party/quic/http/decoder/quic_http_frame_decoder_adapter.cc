@@ -35,17 +35,17 @@
 #include "net/third_party/spdy/core/spdy_protocol.h"
 
 #if 0
-using ::ExtensionVisitorInterface;
-using ::HpackDecoderAdapter;
-using ::HpackHeaderTable;
-using ::ParseErrorCode;
-using ::ParseFrameType;
-using ::SpdyAltSvcWireFormat;
-using ::SpdyErrorCode;
-using ::SpdyFrameType;
-using ::SpdyFramerDebugVisitorInterface;
-using ::SpdyFramerVisitorInterface;
-using ::SpdyHeadersHandlerInterface;
+using ::spdy::ExtensionVisitorInterface;
+using ::spdy::HpackDecoderAdapter;
+using ::spdy::HpackHeaderTable;
+using ::spdy::ParseErrorCode;
+using ::spdy::ParseFrameType;
+using ::spdy::SpdyAltSvcWireFormat;
+using ::spdy::SpdyErrorCode;
+using ::spdy::SpdyFrameType;
+using ::spdy::SpdyFramerDebugVisitorInterface;
+using ::spdy::SpdyFramerVisitorInterface;
+using ::spdy::SpdyHeadersHandlerInterface;
 using ::SpdySettingsIds;
 #endif
 using base::nullopt;
@@ -65,8 +65,8 @@ bool IsPaddable(QuicHttpFrameType type) {
          type == QuicHttpFrameType::PUSH_PROMISE;
 }
 
-SpdyFrameType ToSpdyFrameType(QuicHttpFrameType type) {
-  return ParseFrameType(static_cast<uint8_t>(type));
+spdy::SpdyFrameType ToSpdyFrameType(QuicHttpFrameType type) {
+  return spdy::ParseFrameType(static_cast<uint8_t>(type));
 }
 
 uint64_t ToSpdyPingId(const QuicHttpPingFields& ping) {
@@ -138,12 +138,13 @@ QuicHttpDecoderAdapter::QuicHttpDecoderAdapter() {
 
 QuicHttpDecoderAdapter::~QuicHttpDecoderAdapter() {}
 
-void QuicHttpDecoderAdapter::set_visitor(SpdyFramerVisitorInterface* visitor) {
+void QuicHttpDecoderAdapter::set_visitor(
+    spdy::SpdyFramerVisitorInterface* visitor) {
   visitor_ = visitor;
 }
 
 void QuicHttpDecoderAdapter::set_debug_visitor(
-    SpdyFramerDebugVisitorInterface* debug_visitor) {
+    spdy::SpdyFramerDebugVisitorInterface* debug_visitor) {
   debug_visitor_ = debug_visitor;
 }
 
@@ -152,13 +153,13 @@ void QuicHttpDecoderAdapter::set_process_single_input_frame(bool v) {
 }
 
 void QuicHttpDecoderAdapter::set_extension_visitor(
-    ExtensionVisitorInterface* visitor) {
+    spdy::ExtensionVisitorInterface* visitor) {
   extension_ = visitor;
 }
 
 // Passes the call on to the HPQUIC_HTTP_ACK decoder.
 void QuicHttpDecoderAdapter::SetDecoderHeaderTableDebugVisitor(
-    std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor) {
+    std::unique_ptr<spdy::HpackHeaderTable::DebugVisitorInterface> visitor) {
   GetHpackDecoder()->SetHeaderTableDebugVisitor(std::move(visitor));
 }
 
@@ -252,7 +253,7 @@ bool QuicHttpDecoderAdapter::OnFrameHeader(const QuicHttpFrameHeader& header) {
     }
   }
 
-  SpdyFrameType frame_type = ToSpdyFrameType(header.type);
+  spdy::SpdyFrameType frame_type = ToSpdyFrameType(header.type);
   if (!IsValidHTTP2FrameStreamId(header.stream_id, frame_type)) {
     VLOG(1) << "The framer received an invalid streamID of " << header.stream_id
             << " for a frame of type " << header.type;
@@ -275,7 +276,7 @@ bool QuicHttpDecoderAdapter::OnFrameHeader(const QuicHttpFrameHeader& header) {
   }
 
   if (header.type == QuicHttpFrameType::DATA) {
-    // For some reason SpdyFramer still rejects invalid DATA frame flags.
+    // For some reason spdy::SpdyFramer still rejects invalid DATA frame flags.
     uint8_t valid_flags = QuicHttpFrameFlag::QUIC_HTTP_PADDED |
                           QuicHttpFrameFlag::QUIC_HTTP_END_STREAM;
     if (header.HasAnyFlags(~valid_flags)) {
@@ -422,8 +423,8 @@ void QuicHttpDecoderAdapter::OnRstStream(const QuicHttpFrameHeader& header,
                                          QuicHttpErrorCode http2_error_code) {
   DVLOG(1) << "OnRstStream: " << header << "; code=" << http2_error_code;
   if (IsOkToStartFrame(header) && HasRequiredStreamId(header)) {
-    SpdyErrorCode error_code =
-        ParseErrorCode(static_cast<uint32_t>(http2_error_code));
+    spdy::SpdyErrorCode error_code =
+        spdy::ParseErrorCode(static_cast<uint32_t>(http2_error_code));
     visitor()->OnRstStream(header.stream_id, error_code);
   }
 }
@@ -442,7 +443,7 @@ void QuicHttpDecoderAdapter::OnSetting(
     const QuicHttpSettingFields& setting_fields) {
   DVLOG(1) << "OnSetting: " << setting_fields;
   const uint16_t parameter = static_cast<uint16_t>(setting_fields.parameter);
-  SpdyKnownSettingsId setting_id;
+  spdy::SpdyKnownSettingsId setting_id;
   if (!ParseSettingsId(parameter, &setting_id)) {
     if (extension_ == nullptr) {
       DVLOG(1) << "Ignoring unknown setting id: " << setting_fields;
@@ -516,8 +517,8 @@ void QuicHttpDecoderAdapter::OnGoAwayStart(const QuicHttpFrameHeader& header,
   if (IsOkToStartFrame(header) && HasRequiredStreamIdZero(header)) {
     frame_header_ = header;
     has_frame_header_ = true;
-    SpdyErrorCode error_code =
-        ParseErrorCode(static_cast<uint32_t>(goaway.error_code));
+    spdy::SpdyErrorCode error_code =
+        spdy::ParseErrorCode(static_cast<uint32_t>(goaway.error_code));
     visitor()->OnGoAway(goaway.last_stream_id, error_code);
   }
 }
@@ -574,10 +575,10 @@ void QuicHttpDecoderAdapter::OnAltSvcValueData(const char* data, size_t len) {
 void QuicHttpDecoderAdapter::OnAltSvcEnd() {
   DVLOG(1) << "OnAltSvcEnd: origin.size(): " << alt_svc_origin_.size()
            << "; value.size(): " << alt_svc_value_.size();
-  SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
-  if (!SpdyAltSvcWireFormat::ParseHeaderFieldValue(alt_svc_value_,
-                                                   &altsvc_vector)) {
-    DLOG(ERROR) << "SpdyAltSvcWireFormat::ParseHeaderFieldValue failed.";
+  spdy::SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
+  if (!spdy::SpdyAltSvcWireFormat::ParseHeaderFieldValue(alt_svc_value_,
+                                                         &altsvc_vector)) {
+    DLOG(ERROR) << "spdy::SpdyAltSvcWireFormat::ParseHeaderFieldValue failed.";
     SetSpdyErrorAndNotify(SpdyFramerError::SPDY_INVALID_CONTROL_FRAME);
     return;
   }
@@ -912,9 +913,9 @@ void QuicHttpDecoderAdapter::ReportReceiveCompressedFrame(
   }
 }
 
-HpackDecoderAdapter* QuicHttpDecoderAdapter::GetHpackDecoder() {
+spdy::HpackDecoderAdapter* QuicHttpDecoderAdapter::GetHpackDecoder() {
   if (hpack_decoder_ == nullptr) {
-    hpack_decoder_ = SpdyMakeUnique<HpackDecoderAdapter>();
+    hpack_decoder_ = spdy::SpdyMakeUnique<spdy::HpackDecoderAdapter>();
   }
   return hpack_decoder_.get();
 }
@@ -929,7 +930,7 @@ void QuicHttpDecoderAdapter::CommonStartHpackBlock() {
     CorruptFrameHeader(&hpack_first_frame_header_);
   }
   on_hpack_fragment_called_ = false;
-  SpdyHeadersHandlerInterface* handler =
+  spdy::SpdyHeadersHandlerInterface* handler =
       visitor()->OnHeaderFrameStart(stream_id());
   if (handler == nullptr) {
     SPDY_BUG << "visitor_->OnHeaderFrameStart returned nullptr";
@@ -939,7 +940,7 @@ void QuicHttpDecoderAdapter::CommonStartHpackBlock() {
   GetHpackDecoder()->HandleControlFrameHeadersStart(handler);
 }
 
-// SpdyFramer calls HandleControlFrameHeadersData even if there are zero
+// spdy::SpdyFramer calls HandleControlFrameHeadersData even if there are zero
 // fragment bytes in the first frame, so do the same.
 void QuicHttpDecoderAdapter::MaybeAnnounceEmptyFirstHpackFragment() {
   if (!on_hpack_fragment_called_) {

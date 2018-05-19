@@ -11,8 +11,10 @@
 #include "net/http/http_stream.h"
 #include "net/spdy/multiplexed_session.h"
 
-namespace net {
+namespace spdy {
 class SpdyHeaderBlock;
+}  // namespace spdy
+namespace net {
 
 // Base class for SPDY and QUIC HttpStream subclasses.
 class NET_EXPORT_PRIVATE MultiplexedHttpStream : public HttpStream {
@@ -37,7 +39,8 @@ class NET_EXPORT_PRIVATE MultiplexedHttpStream : public HttpStream {
   void SetRequestHeadersCallback(RequestHeadersCallback callback) override;
 
  protected:
-  void DispatchRequestHeadersCallback(const SpdyHeaderBlock& spdy_headers);
+  void DispatchRequestHeadersCallback(
+      const spdy::SpdyHeaderBlock& spdy_headers);
 
   MultiplexedSessionHandle* session() { return session_.get(); }
   const MultiplexedSessionHandle* session() const { return session_.get(); }

@@ -34,9 +34,10 @@ class QuicSpdyClientBase : public QuicClientBase,
    public:
     ResponseListener() {}
     virtual ~ResponseListener() {}
-    virtual void OnCompleteResponse(QuicStreamId id,
-                                    const SpdyHeaderBlock& response_headers,
-                                    const std::string& response_body) = 0;
+    virtual void OnCompleteResponse(
+        QuicStreamId id,
+        const spdy::SpdyHeaderBlock& response_headers,
+        const std::string& response_body) = 0;
   };
 
   // The client uses these objects to keep track of any data to resend upon
@@ -49,7 +50,7 @@ class QuicSpdyClientBase : public QuicClientBase,
   class QuicDataToResend {
    public:
     // |headers| may be null, since it's possible to send data without headers.
-    QuicDataToResend(std::unique_ptr<SpdyHeaderBlock> headers,
+    QuicDataToResend(std::unique_ptr<spdy::SpdyHeaderBlock> headers,
                      QuicStringPiece body,
                      bool fin);
 
@@ -60,7 +61,7 @@ class QuicSpdyClientBase : public QuicClientBase,
     virtual void Resend() = 0;
 
    protected:
-    std::unique_ptr<SpdyHeaderBlock> headers_;
+    std::unique_ptr<spdy::SpdyHeaderBlock> headers_;
     QuicStringPiece body_;
     bool fin_;
 
@@ -86,12 +87,12 @@ class QuicSpdyClientBase : public QuicClientBase,
   void InitializeSession() override;
 
   // Sends an HTTP request and does not wait for response before returning.
-  void SendRequest(const SpdyHeaderBlock& headers,
+  void SendRequest(const spdy::SpdyHeaderBlock& headers,
                    QuicStringPiece body,
                    bool fin);
 
   // Sends an HTTP request and waits for response before returning.
-  void SendRequestAndWaitForResponse(const SpdyHeaderBlock& headers,
+  void SendRequestAndWaitForResponse(const spdy::SpdyHeaderBlock& headers,
                                      QuicStringPiece body,
                                      bool fin);
 
@@ -110,9 +111,9 @@ class QuicSpdyClientBase : public QuicClientBase,
     return &push_promise_index_;
   }
 
-  bool CheckVary(const SpdyHeaderBlock& client_request,
-                 const SpdyHeaderBlock& promise_request,
-                 const SpdyHeaderBlock& promise_response) override;
+  bool CheckVary(const spdy::SpdyHeaderBlock& client_request,
+                 const spdy::SpdyHeaderBlock& promise_request,
+                 const spdy::SpdyHeaderBlock& promise_response) override;
   void OnRendezvousResult(QuicSpdyStream*) override;
 
   // If the crypto handshake has not yet been confirmed, adds the data to the
@@ -126,7 +127,7 @@ class QuicSpdyClientBase : public QuicClientBase,
   size_t latest_response_code() const;
   const std::string& latest_response_headers() const;
   const std::string& preliminary_response_headers() const;
-  const SpdyHeaderBlock& latest_response_header_block() const;
+  const spdy::SpdyHeaderBlock& latest_response_header_block() const;
   const std::string& latest_response_body() const;
   const std::string& latest_response_trailers() const;
 
@@ -145,7 +146,7 @@ class QuicSpdyClientBase : public QuicClientBase,
   // If the crypto handshake has not yet been confirmed, adds the data to the
   // queue of data to resend if the client receives a stateless reject.
   // Otherwise, deletes the data.
-  void MaybeAddDataToResend(const SpdyHeaderBlock& headers,
+  void MaybeAddDataToResend(const spdy::SpdyHeaderBlock& headers,
                             QuicStringPiece body,
                             bool fin);
 
@@ -153,7 +154,7 @@ class QuicSpdyClientBase : public QuicClientBase,
 
   void ResendSavedData() override;
 
-  void AddPromiseDataToResend(const SpdyHeaderBlock& headers,
+  void AddPromiseDataToResend(const spdy::SpdyHeaderBlock& headers,
                               QuicStringPiece body,
                               bool fin);
 
@@ -161,7 +162,7 @@ class QuicSpdyClientBase : public QuicClientBase,
   // Specific QuicClient class for storing data to resend.
   class ClientQuicDataToResend : public QuicDataToResend {
    public:
-    ClientQuicDataToResend(std::unique_ptr<SpdyHeaderBlock> headers,
+    ClientQuicDataToResend(std::unique_ptr<spdy::SpdyHeaderBlock> headers,
                            QuicStringPiece body,
                            bool fin,
                            QuicSpdyClientBase* client)
@@ -192,7 +193,7 @@ class QuicSpdyClientBase : public QuicClientBase,
   // preliminary 100 Continue HTTP/2 headers from most recent response, if any.
   std::string preliminary_response_headers_;
   // HTTP/2 headers from most recent response.
-  SpdyHeaderBlock latest_response_header_block_;
+  spdy::SpdyHeaderBlock latest_response_header_block_;
   // Body of most recent response.
   std::string latest_response_body_;
   // HTTP/2 trailers from most recent response.

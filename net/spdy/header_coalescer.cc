@@ -53,7 +53,7 @@ void HeaderCoalescer::OnHeader(base::StringPiece key, base::StringPiece value) {
     error_seen_ = true;
 }
 
-SpdyHeaderBlock HeaderCoalescer::release_headers() {
+spdy::SpdyHeaderBlock HeaderCoalescer::release_headers() {
   DCHECK(headers_valid_);
   headers_valid_ = false;
   return std::move(headers_);

@@ -13,7 +13,7 @@
 
 // For simplicity, these tests do not create SpdySession instances
 // (necessary for a non-null WeakPtr<SpdySession>), instead they use nullptr.
-// Streams are identified by SpdyStreamId only.
+// Streams are identified by spdy::SpdyStreamId only.
 
 using ::testing::Return;
 using ::testing::_;
@@ -31,7 +31,7 @@ class TestDelegate : public Http2PushPromiseIndex::Delegate {
   explicit TestDelegate(const SpdySessionKey& key) : key_(key) {}
   ~TestDelegate() override {}
 
-  bool ValidatePushedStream(SpdyStreamId stream_id,
+  bool ValidatePushedStream(spdy::SpdyStreamId stream_id,
                             const GURL& url,
                             const HttpRequestInfo& request_info,
                             const SpdySessionKey& key) const override {
@@ -210,7 +210,7 @@ TEST_F(Http2PushPromiseIndexTest, FindStream) {
 // outparam to kNoPushedStreamFound for any values of inparams.
 TEST_F(Http2PushPromiseIndexTest, Empty) {
   base::WeakPtr<SpdySession> session;
-  SpdyStreamId stream_id = 2;
+  spdy::SpdyStreamId stream_id = 2;
   index_.ClaimPushedStream(key1_, url1_, HttpRequestInfo(), &session,
                            &stream_id);
   EXPECT_EQ(kNoPushedStreamFound, stream_id);
@@ -241,7 +241,7 @@ TEST_F(Http2PushPromiseIndexTest, FindMultipleStreamsWithDifferentUrl) {
 
   // No entry found for |url2_|.
   base::WeakPtr<SpdySession> session;
-  SpdyStreamId stream_id = 2;
+  spdy::SpdyStreamId stream_id = 2;
   index_.ClaimPushedStream(key1_, url2_, HttpRequestInfo(), &session,
                            &stream_id);
   EXPECT_EQ(kNoPushedStreamFound, stream_id);
@@ -300,7 +300,7 @@ TEST_F(Http2PushPromiseIndexTest, MultipleStreamsWithDifferentKeys) {
 
   // No entry found for |key2_|.
   base::WeakPtr<SpdySession> session;
-  SpdyStreamId stream_id = 2;
+  spdy::SpdyStreamId stream_id = 2;
   index_.ClaimPushedStream(key2_, url1_, HttpRequestInfo(), &session,
                            &stream_id);
   EXPECT_EQ(kNoPushedStreamFound, stream_id);
@@ -361,21 +361,21 @@ TEST_F(Http2PushPromiseIndexTest, MultipleMatchingStreams) {
   // ClaimPushedStream() makes no guarantee about which entry it returns if
   // there are multiple matches.
   base::WeakPtr<SpdySession> session;
-  SpdyStreamId stream_id1 = kNoPushedStreamFound;
+  spdy::SpdyStreamId stream_id1 = kNoPushedStreamFound;
   index_.ClaimPushedStream(key1_, url1_, HttpRequestInfo(), &session,
                            &stream_id1);
   EXPECT_NE(kNoPushedStreamFound, stream_id1);
 
   // First call to ClaimPushedStream() unregistered one of the entries.
   // Second call to ClaimPushedStream() must return the other entry.
-  SpdyStreamId stream_id2 = kNoPushedStreamFound;
+  spdy::SpdyStreamId stream_id2 = kNoPushedStreamFound;
   index_.ClaimPushedStream(key1_, url1_, HttpRequestInfo(), &session,
                            &stream_id2);
   EXPECT_NE(kNoPushedStreamFound, stream_id2);
   EXPECT_NE(stream_id1, stream_id2);
 
   // Two calls to ClaimPushedStream() unregistered both entries.
-  SpdyStreamId stream_id3 = 2;
+  spdy::SpdyStreamId stream_id3 = 2;
   index_.ClaimPushedStream(key1_, url1_, HttpRequestInfo(), &session,
                            &stream_id3);
   EXPECT_EQ(kNoPushedStreamFound, stream_id3);

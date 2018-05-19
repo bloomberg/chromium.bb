@@ -6,10 +6,11 @@
 
 namespace net {
 
-QuicBackendResponse::ServerPushInfo::ServerPushInfo(QuicUrl request_url,
-                                                    SpdyHeaderBlock headers,
-                                                    SpdyPriority priority,
-                                                    QuicString body)
+QuicBackendResponse::ServerPushInfo::ServerPushInfo(
+    QuicUrl request_url,
+    spdy::SpdyHeaderBlock headers,
+    spdy::SpdyPriority priority,
+    QuicString body)
     : request_url(request_url),
       headers(std::move(headers)),
       priority(priority),

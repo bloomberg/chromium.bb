@@ -7,7 +7,7 @@
 #include "net/third_party/spdy/core/spdy_protocol_test_utils.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 namespace test {
 
 // TODO(jamessynge): Where it makes sense in these functions, it would be nice
@@ -189,4 +189,4 @@ namespace test {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace spdy

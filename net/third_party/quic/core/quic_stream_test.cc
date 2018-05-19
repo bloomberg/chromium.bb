@@ -157,7 +157,7 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
   MockQuicConnection* connection_;
   std::unique_ptr<MockQuicSession> session_;
   TestStream* stream_;
-  SpdyHeaderBlock headers_;
+  spdy::SpdyHeaderBlock headers_;
   QuicWriteBlockedList* write_blocked_list_;
   uint32_t initial_flow_control_window_bytes_;
   QuicTime::Delta zero_;

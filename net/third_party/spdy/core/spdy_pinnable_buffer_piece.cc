@@ -6,7 +6,7 @@
 
 #include <new>
 
-namespace net {
+namespace spdy {
 
 SpdyPinnableBufferPiece::SpdyPinnableBufferPiece()
     : buffer_(nullptr), length_(0) {}
@@ -33,4 +33,4 @@ void SpdyPinnableBufferPiece::Swap(SpdyPinnableBufferPiece* other) {
   storage_.swap(other->storage_);
 }
 
-}  // namespace net
+}  // namespace spdy

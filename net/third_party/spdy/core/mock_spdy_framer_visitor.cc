@@ -4,7 +4,7 @@
 
 #include "net/third_party/spdy/core/mock_spdy_framer_visitor.h"
 
-namespace net {
+namespace spdy {
 
 namespace test {
 
@@ -16,4 +16,4 @@ MockSpdyFramerVisitor::~MockSpdyFramerVisitor() = default;
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace spdy

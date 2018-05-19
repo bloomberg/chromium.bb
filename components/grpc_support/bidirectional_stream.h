@@ -40,14 +40,15 @@ class BidirectionalStream : public net::BidirectionalStream::Delegate {
    public:
     virtual void OnStreamReady() = 0;
 
-    virtual void OnHeadersReceived(const net::SpdyHeaderBlock& response_headers,
-                                   const char* negotiated_protocol) = 0;
+    virtual void OnHeadersReceived(
+        const spdy::SpdyHeaderBlock& response_headers,
+        const char* negotiated_protocol) = 0;
 
     virtual void OnDataRead(char* data, int size) = 0;
 
     virtual void OnDataSent(const char* data) = 0;
 
-    virtual void OnTrailersReceived(const net::SpdyHeaderBlock& trailers) = 0;
+    virtual void OnTrailersReceived(const spdy::SpdyHeaderBlock& trailers) = 0;
 
     virtual void OnSucceeded() = 0;
 
@@ -171,10 +172,11 @@ class BidirectionalStream : public net::BidirectionalStream::Delegate {
 
   // net::BidirectionalStream::Delegate implementations:
   void OnStreamReady(bool request_headers_sent) override;
-  void OnHeadersReceived(const net::SpdyHeaderBlock& response_headers) override;
+  void OnHeadersReceived(
+      const spdy::SpdyHeaderBlock& response_headers) override;
   void OnDataRead(int bytes_read) override;
   void OnDataSent() override;
-  void OnTrailersReceived(const net::SpdyHeaderBlock& trailers) override;
+  void OnTrailersReceived(const spdy::SpdyHeaderBlock& trailers) override;
   void OnFailed(int error) override;
   // Helper method to derive OnSucceeded.
   void MaybeOnSucceded();

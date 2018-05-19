@@ -23,8 +23,8 @@ const char kExampleCount[] = "example-count";
 
 }  // namespace
 
-using net::HpackFuzzUtil;
-using net::SpdyString;
+using spdy::HpackFuzzUtil;
+using spdy::SpdyString;
 using std::map;
 
 // Generates a configurable number of header sets (using HpackFuzzUtil), and
@@ -44,7 +44,8 @@ int main(int argc, char** argv) {
                << " --" << kExampleCount << "=1000";
     return -1;
   }
-  SpdyString file_to_write = command_line.GetSwitchValueASCII(kFileToWrite);
+  spdy::SpdyString file_to_write =
+      command_line.GetSwitchValueASCII(kFileToWrite);
 
   int example_count = 0;
   base::StringToInt(command_line.GetSwitchValueASCII(kExampleCount),
@@ -57,16 +58,16 @@ int main(int argc, char** argv) {
 
   HpackFuzzUtil::GeneratorContext context;
   HpackFuzzUtil::InitializeGeneratorContext(&context);
-  net::HpackEncoder encoder(net::ObtainHpackHuffmanTable());
+  spdy::HpackEncoder encoder(spdy::ObtainHpackHuffmanTable());
 
   for (int i = 0; i != example_count; ++i) {
-    net::SpdyHeaderBlock headers =
+    spdy::SpdyHeaderBlock headers =
         HpackFuzzUtil::NextGeneratedHeaderSet(&context);
 
-    SpdyString buffer;
+    spdy::SpdyString buffer;
     CHECK(encoder.EncodeHeaderSet(headers, &buffer));
 
-    SpdyString prefix = HpackFuzzUtil::HeaderBlockPrefix(buffer.size());
+    spdy::SpdyString prefix = HpackFuzzUtil::HeaderBlockPrefix(buffer.size());
 
     CHECK_LT(0, file_out.WriteAtCurrentPos(prefix.data(), prefix.size()));
     CHECK_LT(0, file_out.WriteAtCurrentPos(buffer.data(), buffer.size()));

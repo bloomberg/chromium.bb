@@ -32,7 +32,7 @@
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 
 // A stream ID is a 31-bit entity.
 using SpdyStreamId = uint32_t;
@@ -1056,6 +1056,6 @@ size_t GetHeaderFrameSizeSansBlock(const SpdyHeadersIR& header_ir);
 size_t GetPushPromiseFrameSizeSansBlock(
     const SpdyPushPromiseIR& push_promise_ir);
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_SPDY_PROTOCOL_H_

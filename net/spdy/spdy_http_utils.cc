@@ -27,7 +27,7 @@ namespace {
 
 void AddSpdyHeader(const std::string& name,
                    const std::string& value,
-                   SpdyHeaderBlock* headers) {
+                   spdy::SpdyHeaderBlock* headers) {
   if (headers->find(name) == headers->end()) {
     (*headers)[name] = value;
   } else {
@@ -40,10 +40,11 @@ void AddSpdyHeader(const std::string& name,
 
 }  // namespace
 
-bool SpdyHeadersToHttpResponse(const SpdyHeaderBlock& headers,
+bool SpdyHeadersToHttpResponse(const spdy::SpdyHeaderBlock& headers,
                                HttpResponseInfo* response) {
   // The ":status" header is required.
-  SpdyHeaderBlock::const_iterator it = headers.find(kHttp2StatusHeader);
+  spdy::SpdyHeaderBlock::const_iterator it =
+      headers.find(spdy::kHttp2StatusHeader);
   if (it == headers.end())
     return false;
   std::string status = it->second.as_string();
@@ -87,14 +88,14 @@ bool SpdyHeadersToHttpResponse(const SpdyHeaderBlock& headers,
 
 void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
                                       const HttpRequestHeaders& request_headers,
-                                      SpdyHeaderBlock* headers) {
-  (*headers)[kHttp2MethodHeader] = info.method;
+                                      spdy::SpdyHeaderBlock* headers) {
+  (*headers)[spdy::kHttp2MethodHeader] = info.method;
   if (info.method == "CONNECT") {
-    (*headers)[kHttp2AuthorityHeader] = GetHostAndPort(info.url);
+    (*headers)[spdy::kHttp2AuthorityHeader] = GetHostAndPort(info.url);
   } else {
-    (*headers)[kHttp2AuthorityHeader] = GetHostAndOptionalPort(info.url);
-    (*headers)[kHttp2SchemeHeader] = info.url.scheme();
-    (*headers)[kHttp2PathHeader] = info.url.PathForRequest();
+    (*headers)[spdy::kHttp2AuthorityHeader] = GetHostAndOptionalPort(info.url);
+    (*headers)[spdy::kHttp2SchemeHeader] = info.url.scheme();
+    (*headers)[spdy::kHttp2PathHeader] = info.url.PathForRequest();
   }
 
   HttpRequestHeaders::Iterator it(request_headers);
@@ -112,12 +113,12 @@ void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
 void CreateSpdyHeadersFromHttpRequestForWebSocket(
     const GURL& url,
     const HttpRequestHeaders& request_headers,
-    SpdyHeaderBlock* headers) {
-  (*headers)[kHttp2MethodHeader] = "CONNECT";
-  (*headers)[kHttp2AuthorityHeader] = GetHostAndOptionalPort(url);
-  (*headers)[kHttp2SchemeHeader] = "https";
-  (*headers)[kHttp2PathHeader] = url.PathForRequest();
-  (*headers)[kHttp2ProtocolHeader] = "websocket";
+    spdy::SpdyHeaderBlock* headers) {
+  (*headers)[spdy::kHttp2MethodHeader] = "CONNECT";
+  (*headers)[spdy::kHttp2AuthorityHeader] = GetHostAndOptionalPort(url);
+  (*headers)[spdy::kHttp2SchemeHeader] = "https";
+  (*headers)[spdy::kHttp2PathHeader] = url.PathForRequest();
+  (*headers)[spdy::kHttp2ProtocolHeader] = "websocket";
 
   HttpRequestHeaders::Iterator it(request_headers);
   while (it.GetNext()) {
@@ -134,26 +135,26 @@ void CreateSpdyHeadersFromHttpRequestForWebSocket(
 static_assert(HIGHEST - LOWEST < 4 && HIGHEST - MINIMUM_PRIORITY < 6,
               "request priority incompatible with spdy");
 
-SpdyPriority ConvertRequestPriorityToSpdyPriority(
+spdy::SpdyPriority ConvertRequestPriorityToSpdyPriority(
     const RequestPriority priority) {
   DCHECK_GE(priority, MINIMUM_PRIORITY);
   DCHECK_LE(priority, MAXIMUM_PRIORITY);
-  return static_cast<SpdyPriority>(MAXIMUM_PRIORITY - priority +
-                                   kV3HighestPriority);
+  return static_cast<spdy::SpdyPriority>(MAXIMUM_PRIORITY - priority +
+                                         spdy::kV3HighestPriority);
 }
 
 NET_EXPORT_PRIVATE RequestPriority
-ConvertSpdyPriorityToRequestPriority(SpdyPriority priority) {
+ConvertSpdyPriorityToRequestPriority(spdy::SpdyPriority priority) {
   // Handle invalid values gracefully.
-  return ((priority - kV3HighestPriority) >
+  return ((priority - spdy::kV3HighestPriority) >
           (MAXIMUM_PRIORITY - MINIMUM_PRIORITY))
              ? IDLE
-             : static_cast<RequestPriority>(MAXIMUM_PRIORITY -
-                                            (priority - kV3HighestPriority));
+             : static_cast<RequestPriority>(
+                   MAXIMUM_PRIORITY - (priority - spdy::kV3HighestPriority));
 }
 
 NET_EXPORT_PRIVATE void ConvertHeaderBlockToHttpRequestHeaders(
-    const SpdyHeaderBlock& spdy_headers,
+    const spdy::SpdyHeaderBlock& spdy_headers,
     HttpRequestHeaders* http_headers) {
   for (const auto& it : spdy_headers) {
     base::StringPiece key = it.first;

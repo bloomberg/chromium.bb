@@ -143,23 +143,23 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                                 crypto_config,
                                 compressed_certs_cache,
                                 quic_simple_server_backend) {}
-  // Methods taking non-copyable types like SpdyHeaderBlock by value cannot be
-  // mocked directly.
+  // Methods taking non-copyable types like spdy::SpdyHeaderBlock by value
+  // cannot be mocked directly.
   size_t WritePushPromise(QuicStreamId original_stream_id,
                           QuicStreamId promised_stream_id,
-                          SpdyHeaderBlock headers) override {
+                          spdy::SpdyHeaderBlock headers) override {
     return WritePushPromiseMock(original_stream_id, promised_stream_id,
                                 headers);
   }
   MOCK_METHOD3(WritePushPromiseMock,
                size_t(QuicStreamId original_stream_id,
                       QuicStreamId promised_stream_id,
-                      const SpdyHeaderBlock& headers));
+                      const spdy::SpdyHeaderBlock& headers));
 
   size_t WriteHeaders(QuicStreamId stream_id,
-                      SpdyHeaderBlock headers,
+                      spdy::SpdyHeaderBlock headers,
                       bool fin,
-                      SpdyPriority priority,
+                      spdy::SpdyPriority priority,
                       QuicReferenceCountedPointer<QuicAckListenerInterface>
                           ack_listener) override {
     return WriteHeadersMock(stream_id, headers, fin, priority, ack_listener);
@@ -167,9 +167,9 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
   MOCK_METHOD5(
       WriteHeadersMock,
       size_t(QuicStreamId stream_id,
-             const SpdyHeaderBlock& headers,
+             const spdy::SpdyHeaderBlock& headers,
              bool fin,
-             SpdyPriority priority,
+             spdy::SpdyPriority priority,
              const QuicReferenceCountedPointer<QuicAckListenerInterface>&
                  ack_listener));
   MOCK_METHOD1(SendBlocked, void(QuicStreamId));
@@ -511,7 +511,7 @@ class QuicSimpleServerSessionServerPushTest
     config_.SetMaxStreamsPerConnection(kMaxStreamsForTest, kMaxStreamsForTest);
 
     QuicString request_url = "mail.google.com/";
-    SpdyHeaderBlock request_headers;
+    spdy::SpdyHeaderBlock request_headers;
     QuicString resource_host = "www.google.com";
     QuicString partial_push_resource_path = "/server_push_src";
     std::list<QuicBackendResponse::ServerPushInfo> push_resources;
@@ -525,7 +525,8 @@ class QuicSimpleServerSessionServerPushTest
       QuicString body(body_size, 'a');
       memory_cache_backend_.AddSimpleResponse(resource_host, path, 200, body);
       push_resources.push_back(QuicBackendResponse::ServerPushInfo(
-          resource_url, SpdyHeaderBlock(), QuicStream::kDefaultPriority, body));
+          resource_url, spdy::SpdyHeaderBlock(), QuicStream::kDefaultPriority,
+          body));
       // PUSH_PROMISED are sent for all the resources.
       EXPECT_CALL(*session_, WritePushPromiseMock(GetNthClientInitiatedId(0),
                                                   stream_id, _));

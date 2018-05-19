@@ -13,7 +13,7 @@
 #include "net/third_party/spdy/core/spdy_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace spdy {
 
 std::ostream& operator<<(std::ostream& os,
                          const SpdyStreamPrecedence precedence) {
@@ -268,4 +268,4 @@ TEST(SpdyDataIRTest, Construct) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace spdy

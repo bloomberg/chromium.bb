@@ -142,7 +142,7 @@ class HttpProxyClientSocketWrapperTest
         /*enable_socket_recv_optimization=*/false));
   }
 
-  void PopulateConnectRequestIR(SpdyHeaderBlock* block) {
+  void PopulateConnectRequestIR(spdy::SpdyHeaderBlock* block) {
     (*block)[":method"] = "CONNECT";
     (*block)[":authority"] = endpoint_host_port_.ToString();
     (*block)["user-agent"] = kUserAgent;
@@ -156,7 +156,7 @@ class HttpProxyClientSocketWrapperTest
 
   std::unique_ptr<QuicReceivedPacket> ConstructConnectRequestPacket(
       QuicPacketNumber packet_number) {
-    SpdyHeaderBlock block;
+    spdy::SpdyHeaderBlock block;
     PopulateConnectRequestIR(&block);
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, kClientDataStreamId1, kIncludeVersion, !kFin,
@@ -167,7 +167,7 @@ class HttpProxyClientSocketWrapperTest
   std::unique_ptr<QuicReceivedPacket> ConstructServerConnectReplyPacket(
       QuicPacketNumber packet_number,
       bool fin) {
-    SpdyHeaderBlock block;
+    spdy::SpdyHeaderBlock block;
     block[":status"] = "200";
 
     return server_maker_.MakeResponseHeadersPacket(

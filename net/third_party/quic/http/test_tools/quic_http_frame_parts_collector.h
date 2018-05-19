@@ -51,7 +51,7 @@ class QuicHttpFramePartsCollector : public FailingQuicHttpFrameDecoderListener {
   // In support of OnFrameHeader, set the header that we expect to be used in
   // the next call.
   // TODO(jamessynge): Remove ExpectFrameHeader et al. once done with supporting
-  // SpdyFramer's exact states.
+  // spdy::SpdyFramer's exact states.
   void ExpectFrameHeader(const QuicHttpFrameHeader& header);
 
   // For use in implementing On*Start methods of QuicHttpFrameDecoderListener,
@@ -95,7 +95,7 @@ class QuicHttpFramePartsCollector : public FailingQuicHttpFrameDecoderListener {
 
   // If expected header is set, verify that it matches the header param.
   // TODO(jamessynge): Remove TestExpectedHeader et al. once done
-  // with supporting SpdyFramer's exact states.
+  // with supporting spdy::SpdyFramer's exact states.
   void TestExpectedHeader(const QuicHttpFrameHeader& header);
 
   std::unique_ptr<QuicHttpFrameParts> current_frame_;
@@ -103,7 +103,7 @@ class QuicHttpFramePartsCollector : public FailingQuicHttpFrameDecoderListener {
   FailingQuicHttpFrameDecoderListener failing_listener_;
 
   // TODO(jamessynge): Remove expected_header_ et al. once done with supporting
-  // SpdyFramer's exact states.
+  // spdy::SpdyFramer's exact states.
   QuicHttpFrameHeader expected_header_;
   bool expected_header_set_ = false;
 };

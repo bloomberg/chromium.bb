@@ -4,4 +4,4 @@
 
 #include "net/third_party/spdy/platform/impl/spdy_flags_impl.h"
 
-namespace net {}  // namespace net
+namespace spdy {}  // namespace spdy

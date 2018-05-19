@@ -19,7 +19,7 @@
 
 // All section references below are to http://tools.ietf.org/html/rfc7541.
 
-namespace net {
+namespace spdy {
 
 namespace test {
 class HpackHeaderTablePeer;
@@ -175,6 +175,6 @@ class SPDY_EXPORT_PRIVATE HpackHeaderTable {
   DISALLOW_COPY_AND_ASSIGN(HpackHeaderTable);
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_HEADER_TABLE_H_

@@ -10,7 +10,7 @@
 #include "net/third_party/spdy/core/hpack/hpack_header_table.h"
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 
-namespace net {
+namespace spdy {
 
 struct HpackStaticEntry;
 
@@ -51,6 +51,6 @@ class SPDY_EXPORT_PRIVATE HpackStaticTable {
   HpackHeaderTable::NameToEntryMap static_name_index_;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_STATIC_TABLE_H_

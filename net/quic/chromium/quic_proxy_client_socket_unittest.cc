@@ -245,7 +245,7 @@ class QuicProxyClientSocketTest
     session_->StartReading();
   }
 
-  void PopulateConnectRequestIR(SpdyHeaderBlock* block) {
+  void PopulateConnectRequestIR(spdy::SpdyHeaderBlock* block) {
     (*block)[":method"] = "CONNECT";
     (*block)[":authority"] = endpoint_host_port_.ToString();
     (*block)["user-agent"] = kUserAgent;
@@ -294,7 +294,7 @@ class QuicProxyClientSocketTest
 
   std::unique_ptr<QuicReceivedPacket> ConstructConnectRequestPacket(
       QuicPacketNumber packet_number) {
-    SpdyHeaderBlock block;
+    spdy::SpdyHeaderBlock block;
     PopulateConnectRequestIR(&block);
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, kClientDataStreamId1, kIncludeVersion, !kFin,
@@ -304,7 +304,7 @@ class QuicProxyClientSocketTest
 
   std::unique_ptr<QuicReceivedPacket> ConstructConnectAuthRequestPacket(
       QuicPacketNumber packet_number) {
-    SpdyHeaderBlock block;
+    spdy::SpdyHeaderBlock block;
     PopulateConnectRequestIR(&block);
     block["proxy-authorization"] = "Basic Zm9vOmJhcg==";
     return client_maker_.MakeRequestHeadersPacket(
@@ -381,7 +381,7 @@ class QuicProxyClientSocketTest
   std::unique_ptr<QuicReceivedPacket> ConstructServerConnectReplyPacket(
       QuicPacketNumber packet_number,
       bool fin) {
-    SpdyHeaderBlock block;
+    spdy::SpdyHeaderBlock block;
     block[":status"] = "200";
 
     return server_maker_.MakeResponseHeadersPacket(
@@ -392,7 +392,7 @@ class QuicProxyClientSocketTest
   std::unique_ptr<QuicReceivedPacket> ConstructServerConnectAuthReplyPacket(
       QuicPacketNumber packet_number,
       bool fin) {
-    SpdyHeaderBlock block;
+    spdy::SpdyHeaderBlock block;
     block[":status"] = "407";
     block["proxy-authenticate"] = "Basic realm=\"MyRealm1\"";
     return server_maker_.MakeResponseHeadersPacket(
@@ -403,7 +403,7 @@ class QuicProxyClientSocketTest
   std::unique_ptr<QuicReceivedPacket> ConstructServerConnectRedirectReplyPacket(
       QuicPacketNumber packet_number,
       bool fin) {
-    SpdyHeaderBlock block;
+    spdy::SpdyHeaderBlock block;
     block[":status"] = "302";
     block["location"] = kRedirectUrl;
     block["set-cookie"] = "foo=bar";
@@ -415,7 +415,7 @@ class QuicProxyClientSocketTest
   std::unique_ptr<QuicReceivedPacket> ConstructServerConnectErrorReplyPacket(
       QuicPacketNumber packet_number,
       bool fin) {
-    SpdyHeaderBlock block;
+    spdy::SpdyHeaderBlock block;
     block[":status"] = "500";
 
     return server_maker_.MakeResponseHeadersPacket(
@@ -461,7 +461,7 @@ class QuicProxyClientSocketTest
   void AssertSyncReadEquals(const char* data, int len) {
     scoped_refptr<IOBuffer> buf(new IOBuffer(len));
     ASSERT_EQ(len, sock_->Read(buf.get(), len, CompletionCallback()));
-    ASSERT_EQ(SpdyString(data, len), SpdyString(buf->data(), len));
+    ASSERT_EQ(spdy::SpdyString(data, len), spdy::SpdyString(buf->data(), len));
     ASSERT_TRUE(sock_->IsConnected());
   }
 
@@ -475,7 +475,7 @@ class QuicProxyClientSocketTest
 
     EXPECT_EQ(len, read_callback_.WaitForResult());
     EXPECT_TRUE(sock_->IsConnected());
-    ASSERT_EQ(SpdyString(data, len), SpdyString(buf->data(), len));
+    ASSERT_EQ(spdy::SpdyString(data, len), spdy::SpdyString(buf->data(), len));
   }
 
   void AssertReadStarts(const char* data, int len) {
@@ -491,7 +491,8 @@ class QuicProxyClientSocketTest
 
     // Now the read will return.
     EXPECT_EQ(len, read_callback_.WaitForResult());
-    ASSERT_EQ(SpdyString(data, len), SpdyString(read_buf_->data(), len));
+    ASSERT_EQ(spdy::SpdyString(data, len),
+              spdy::SpdyString(read_buf_->data(), len));
   }
 
   const QuicTransportVersion version_;
@@ -1019,7 +1020,8 @@ TEST_P(QuicProxyClientSocketTest, MultipleReadsFromSameLargeFrame) {
   // Now attempt to do a read of more data than remains buffered
   scoped_refptr<IOBuffer> buf(new IOBuffer(kLen33));
   ASSERT_EQ(kLen3, sock_->Read(buf.get(), kLen33, CompletionCallback()));
-  ASSERT_EQ(SpdyString(kMsg3, kLen3), SpdyString(buf->data(), kLen3));
+  ASSERT_EQ(spdy::SpdyString(kMsg3, kLen3),
+            spdy::SpdyString(buf->data(), kLen3));
   ASSERT_TRUE(sock_->IsConnected());
 }
 

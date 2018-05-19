@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace spdy {
 namespace test {
 
 // This test verifies that ArrayOutputBuffer is initialized properly.
@@ -46,4 +46,4 @@ TEST(ArrayOutputBufferTest, WriteAndReset) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace spdy

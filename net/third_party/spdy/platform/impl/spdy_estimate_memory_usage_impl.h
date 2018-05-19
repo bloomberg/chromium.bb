@@ -9,13 +9,13 @@
 
 #include "base/trace_event/memory_usage_estimator.h"
 
-namespace net {
+namespace spdy {
 
 template <class T>
 size_t SpdyEstimateMemoryUsageImpl(const T& object) {
   return base::trace_event::EstimateMemoryUsage(object);
 }
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_PLATFORM_IMPL_SPDY_ESTIMATE_MEMORY_USAGE_IMPL_H_

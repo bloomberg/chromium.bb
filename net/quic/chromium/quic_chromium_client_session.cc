@@ -205,9 +205,9 @@ std::unique_ptr<base::Value> NetLogQuicClientSessionCallback(
 }
 
 std::unique_ptr<base::Value> NetLogQuicPushPromiseReceivedCallback(
-    const SpdyHeaderBlock* headers,
-    SpdyStreamId stream_id,
-    SpdyStreamId promised_stream_id,
+    const spdy::SpdyHeaderBlock* headers,
+    spdy::SpdyStreamId stream_id,
+    spdy::SpdyStreamId promised_stream_id,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
@@ -384,7 +384,7 @@ bool QuicChromiumClientSession::Handle::SharesSameSession(
 }
 
 int QuicChromiumClientSession::Handle::RendezvousWithPromised(
-    const SpdyHeaderBlock& headers,
+    const spdy::SpdyHeaderBlock& headers,
     const CompletionCallback& callback) {
   if (!session_)
     return ERR_CONNECTION_CLOSED;
@@ -490,9 +490,9 @@ bool QuicChromiumClientSession::Handle::WasEverUsed() const {
 }
 
 bool QuicChromiumClientSession::Handle::CheckVary(
-    const SpdyHeaderBlock& client_request,
-    const SpdyHeaderBlock& promise_request,
-    const SpdyHeaderBlock& promise_response) {
+    const spdy::SpdyHeaderBlock& client_request,
+    const spdy::SpdyHeaderBlock& promise_request,
+    const spdy::SpdyHeaderBlock& promise_response) {
   HttpRequestInfo promise_request_info;
   ConvertHeaderBlockToHttpRequestHeaders(promise_request,
                                          &promise_request_info.extra_headers);
@@ -904,19 +904,19 @@ void QuicChromiumClientSession::Initialize() {
 
 size_t QuicChromiumClientSession::WriteHeaders(
     QuicStreamId id,
-    SpdyHeaderBlock headers,
+    spdy::SpdyHeaderBlock headers,
     bool fin,
-    SpdyPriority priority,
+    spdy::SpdyPriority priority,
     QuicReferenceCountedPointer<QuicAckListenerInterface>
         ack_notifier_delegate) {
-  SpdyStreamId parent_stream_id = 0;
+  spdy::SpdyStreamId parent_stream_id = 0;
   int weight = 0;
   bool exclusive = false;
   if (headers_include_h2_stream_dependency_) {
     priority_dependency_state_.OnStreamCreation(id, priority, &parent_stream_id,
                                                 &weight, &exclusive);
   } else {
-    weight = Spdy3PriorityToHttp2Weight(priority);
+    weight = spdy::Spdy3PriorityToHttp2Weight(priority);
   }
   return WriteHeadersImpl(id, std::move(headers), fin, weight, parent_stream_id,
                           exclusive, std::move(ack_notifier_delegate));
@@ -932,7 +932,7 @@ void QuicChromiumClientSession::UnregisterStreamPriority(QuicStreamId id,
 
 void QuicChromiumClientSession::UpdateStreamPriority(
     QuicStreamId id,
-    SpdyPriority new_priority) {
+    spdy::SpdyPriority new_priority) {
   if (headers_include_h2_stream_dependency_) {
     auto updates = priority_dependency_state_.OnStreamUpdate(id, new_priority);
     for (auto update : updates) {
@@ -2766,9 +2766,10 @@ bool QuicChromiumClientSession::HasNonMigratableStreams() const {
   return false;
 }
 
-bool QuicChromiumClientSession::HandlePromised(QuicStreamId id,
-                                               QuicStreamId promised_id,
-                                               const SpdyHeaderBlock& headers) {
+bool QuicChromiumClientSession::HandlePromised(
+    QuicStreamId id,
+    QuicStreamId promised_id,
+    const spdy::SpdyHeaderBlock& headers) {
   bool result =
       QuicSpdyClientSessionBase::HandlePromised(id, promised_id, headers);
   if (result) {
@@ -2784,9 +2785,9 @@ bool QuicChromiumClientSession::HandlePromised(QuicStreamId id,
       // Even though the promised stream will not be created until after the
       // push promise headers are received, send a PRIORITY frame for the
       // promised stream ID. Send |kDefaultPriority| since that will be the
-      // initial SpdyPriority of the push promise stream when created.
-      const SpdyPriority priority = QuicStream::kDefaultPriority;
-      SpdyStreamId parent_stream_id = 0;
+      // initial spdy::SpdyPriority of the push promise stream when created.
+      const spdy::SpdyPriority priority = QuicStream::kDefaultPriority;
+      spdy::SpdyStreamId parent_stream_id = 0;
       int weight = 0;
       bool exclusive = false;
       priority_dependency_state_.OnStreamCreation(

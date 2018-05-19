@@ -40,7 +40,7 @@ void QuicSpdyClientSessionBase::OnCryptoHandshakeEvent(
 
 void QuicSpdyClientSessionBase::OnInitialHeadersComplete(
     QuicStreamId stream_id,
-    const SpdyHeaderBlock& response_headers) {
+    const spdy::SpdyHeaderBlock& response_headers) {
   // Note that the strong ordering of the headers stream means that
   // QuicSpdyClientStream::OnPromiseHeadersComplete must have already
   // been called (on the associated stream) if this is a promised
@@ -77,9 +77,10 @@ void QuicSpdyClientSessionBase::OnPromiseHeaderList(
   stream->OnPromiseHeaderList(promised_stream_id, frame_len, header_list);
 }
 
-bool QuicSpdyClientSessionBase::HandlePromised(QuicStreamId /* associated_id */,
-                                               QuicStreamId promised_id,
-                                               const SpdyHeaderBlock& headers) {
+bool QuicSpdyClientSessionBase::HandlePromised(
+    QuicStreamId /* associated_id */,
+    QuicStreamId promised_id,
+    const spdy::SpdyHeaderBlock& headers) {
   // Due to pathalogical packet re-ordering, it is possible that
   // frames for the promised stream have already arrived, and the
   // promised stream could be active or closed.

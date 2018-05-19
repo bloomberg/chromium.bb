@@ -19,7 +19,7 @@ Http2PushPromiseIndex::~Http2PushPromiseIndex() {
 
 bool Http2PushPromiseIndex::RegisterUnclaimedPushedStream(
     const GURL& url,
-    SpdyStreamId stream_id,
+    spdy::SpdyStreamId stream_id,
     Delegate* delegate) {
   DCHECK(!url.is_empty());
   DCHECK_GT(stream_id, kNoPushedStreamFound);
@@ -44,7 +44,7 @@ bool Http2PushPromiseIndex::RegisterUnclaimedPushedStream(
 
 bool Http2PushPromiseIndex::UnregisterUnclaimedPushedStream(
     const GURL& url,
-    SpdyStreamId stream_id,
+    spdy::SpdyStreamId stream_id,
     Delegate* delegate) {
   DCHECK(!url.is_empty());
   DCHECK_GT(stream_id, kNoPushedStreamFound);
@@ -69,8 +69,9 @@ size_t Http2PushPromiseIndex::CountStreamsForSession(
                        });
 }
 
-SpdyStreamId Http2PushPromiseIndex::FindStream(const GURL& url,
-                                               const Delegate* delegate) const {
+spdy::SpdyStreamId Http2PushPromiseIndex::FindStream(
+    const GURL& url,
+    const Delegate* delegate) const {
   // Find the entry with |url| for |delegate| if such exists (there can be at
   // most one such entry).  It is okay to cast away const from |delegate|,
   // because it is only used for lookup.
@@ -90,7 +91,7 @@ void Http2PushPromiseIndex::ClaimPushedStream(
     const GURL& url,
     const HttpRequestInfo& request_info,
     base::WeakPtr<SpdySession>* session,
-    SpdyStreamId* stream_id) {
+    spdy::SpdyStreamId* stream_id) {
   DCHECK(!url.is_empty());
 
   *session = nullptr;
@@ -118,8 +119,8 @@ size_t Http2PushPromiseIndex::EstimateMemoryUsage() const {
 
 size_t Http2PushPromiseIndex::UnclaimedPushedStream::EstimateMemoryUsage()
     const {
-  return base::trace_event::EstimateMemoryUsage(url) + sizeof(SpdyStreamId) +
-         sizeof(Delegate*);
+  return base::trace_event::EstimateMemoryUsage(url) +
+         sizeof(spdy::SpdyStreamId) + sizeof(Delegate*);
 }
 
 bool Http2PushPromiseIndex::CompareByUrl::operator()(

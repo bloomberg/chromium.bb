@@ -6,15 +6,16 @@
 
 #include <utility>
 
-namespace net {
+namespace spdy {
 
 SpdyMemSliceImpl::SpdyMemSliceImpl() = default;
 
-SpdyMemSliceImpl::SpdyMemSliceImpl(scoped_refptr<IOBufferWithSize> io_buffer)
+SpdyMemSliceImpl::SpdyMemSliceImpl(
+    scoped_refptr<net::IOBufferWithSize> io_buffer)
     : io_buffer_(std::move(io_buffer)) {}
 
 SpdyMemSliceImpl::SpdyMemSliceImpl(size_t length)
-    : io_buffer_(new IOBufferWithSize(length)) {}
+    : io_buffer_(new net::IOBufferWithSize(length)) {}
 
 SpdyMemSliceImpl::SpdyMemSliceImpl(SpdyMemSliceImpl&& other)
     : io_buffer_(std::move(other.io_buffer_)) {
@@ -37,4 +38,4 @@ size_t SpdyMemSliceImpl::length() const {
   return io_buffer_ != nullptr ? io_buffer_->size() : 0;
 }
 
-}  // namespace net
+}  // namespace spdy

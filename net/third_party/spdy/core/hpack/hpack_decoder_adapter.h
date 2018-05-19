@@ -24,7 +24,7 @@
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 namespace test {
 class HpackDecoderAdapterPeer;
 }  // namespace test
@@ -153,6 +153,6 @@ class SPDY_EXPORT_PRIVATE HpackDecoderAdapter {
   DISALLOW_COPY_AND_ASSIGN(HpackDecoderAdapter);
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_DECODER_ADAPTER_H_

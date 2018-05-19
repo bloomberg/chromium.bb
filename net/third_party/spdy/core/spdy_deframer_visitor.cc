@@ -24,7 +24,7 @@ using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 
-namespace net {
+namespace spdy {
 namespace test {
 
 // Specify whether to process headers as request or response in visitor-related
@@ -1038,4 +1038,4 @@ void DeframerCallbackCollector::OnError(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace spdy

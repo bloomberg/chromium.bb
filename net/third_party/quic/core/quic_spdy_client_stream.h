@@ -46,15 +46,19 @@ class QuicSpdyClientStream : public QuicSpdyStream {
 
   // Serializes the headers and body, sends it to the server, and
   // returns the number of bytes sent.
-  size_t SendRequest(SpdyHeaderBlock headers, QuicStringPiece body, bool fin);
+  size_t SendRequest(spdy::SpdyHeaderBlock headers,
+                     QuicStringPiece body,
+                     bool fin);
 
   // Returns the response data.
   const QuicString& data() { return data_; }
 
   // Returns whatever headers have been received for this stream.
-  const SpdyHeaderBlock& response_headers() { return response_headers_; }
+  const spdy::SpdyHeaderBlock& response_headers() { return response_headers_; }
 
-  const SpdyHeaderBlock& preliminary_headers() { return preliminary_headers_; }
+  const spdy::SpdyHeaderBlock& preliminary_headers() {
+    return preliminary_headers_;
+  }
 
   size_t header_bytes_read() const { return header_bytes_read_; }
 
@@ -68,7 +72,7 @@ class QuicSpdyClientStream : public QuicSpdyStream {
 
  private:
   // The parsed headers received from the server.
-  SpdyHeaderBlock response_headers_;
+  spdy::SpdyHeaderBlock response_headers_;
 
   // The parsed content-length, or -1 if none is specified.
   int64_t content_length_;
@@ -83,7 +87,7 @@ class QuicSpdyClientStream : public QuicSpdyStream {
   // that may arrive before the response headers when the request has
   // Expect: 100-continue.
   bool has_preliminary_headers_;
-  SpdyHeaderBlock preliminary_headers_;
+  spdy::SpdyHeaderBlock preliminary_headers_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSpdyClientStream);
 };

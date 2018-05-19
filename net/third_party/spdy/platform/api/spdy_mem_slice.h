@@ -10,7 +10,7 @@
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 #include "net/third_party/spdy/platform/impl/spdy_mem_slice_impl.h"
 
-namespace net {
+namespace spdy {
 
 // SpdyMemSlice is an internally reference counted data buffer used as the
 // source buffers for write operations. SpdyMemSlice implicitly maintains a
@@ -49,6 +49,6 @@ class SPDY_EXPORT_PRIVATE SpdyMemSlice {
   SpdyMemSliceImpl impl_;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_PLATFORM_API_SPDY_MEM_SLICE_H_

@@ -10,7 +10,7 @@
 #include "net/third_party/spdy/core/spdy_pinnable_buffer_piece.h"
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 
-namespace net {
+namespace spdy {
 
 // Reader class which simplifies reading contiguously from
 // from a disjoint buffer prefix & suffix.
@@ -40,6 +40,6 @@ class SPDY_EXPORT_PRIVATE SpdyPrefixedBufferReader {
   size_t suffix_length_;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_SPDY_PREFIXED_BUFFER_READER_H_

@@ -38,7 +38,7 @@ namespace {
 
 class HeadersArray : public bidirectional_stream_header_array {
  public:
-  explicit HeadersArray(const net::SpdyHeaderBlock& header_block);
+  explicit HeadersArray(const spdy::SpdyHeaderBlock& header_block);
   ~HeadersArray();
 
  private:
@@ -46,7 +46,7 @@ class HeadersArray : public bidirectional_stream_header_array {
   DISALLOW_COPY_AND_ASSIGN(HeadersArray);
 };
 
-HeadersArray::HeadersArray(const net::SpdyHeaderBlock& header_block)
+HeadersArray::HeadersArray(const spdy::SpdyHeaderBlock& header_block)
     : headers_strings_(header_block.size()) {
   // Count and headers are inherited from parent structure.
   count = capacity = header_block.size();
@@ -78,14 +78,14 @@ class BidirectionalStreamAdapter
 
   void OnStreamReady() override;
 
-  void OnHeadersReceived(const net::SpdyHeaderBlock& headers_block,
+  void OnHeadersReceived(const spdy::SpdyHeaderBlock& headers_block,
                          const char* negotiated_protocol) override;
 
   void OnDataRead(char* data, int size) override;
 
   void OnDataSent(const char* data) override;
 
-  void OnTrailersReceived(const net::SpdyHeaderBlock& trailers_block) override;
+  void OnTrailersReceived(const spdy::SpdyHeaderBlock& trailers_block) override;
 
   void OnSucceeded() override;
 
@@ -134,7 +134,7 @@ void BidirectionalStreamAdapter::OnStreamReady() {
 }
 
 void BidirectionalStreamAdapter::OnHeadersReceived(
-    const net::SpdyHeaderBlock& headers_block,
+    const spdy::SpdyHeaderBlock& headers_block,
     const char* negotiated_protocol) {
   DCHECK(c_callback_->on_response_headers_received);
   HeadersArray response_headers(headers_block);
@@ -153,7 +153,7 @@ void BidirectionalStreamAdapter::OnDataSent(const char* data) {
 }
 
 void BidirectionalStreamAdapter::OnTrailersReceived(
-    const net::SpdyHeaderBlock& trailers_block) {
+    const spdy::SpdyHeaderBlock& trailers_block) {
   DCHECK(c_callback_->on_response_trailers_received);
   HeadersArray response_trailers(trailers_block);
   c_callback_->on_response_trailers_received(c_stream(), &response_trailers);

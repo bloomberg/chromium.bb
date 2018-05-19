@@ -74,7 +74,7 @@ using net::ProofVerifierChromium;
 using net::QuicStringPiece;
 using net::QuicTextUtils;
 using net::QuicUrl;
-using net::SpdyHeaderBlock;
+using spdy::SpdyHeaderBlock;
 using net::TransportSecurityState;
 using std::cout;
 using std::cerr;
@@ -315,7 +315,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Construct a GET or POST request for supplied URL.
-  SpdyHeaderBlock header_block;
+  spdy::SpdyHeaderBlock header_block;
   header_block[":method"] = body.empty() ? "GET" : "POST";
   header_block[":scheme"] = url.scheme();
   header_block[":authority"] = url.HostPort();

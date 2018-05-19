@@ -463,7 +463,7 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   // An alternate server address the client could connect to.
   QuicFixedSocketAddress alternate_server_address_;
 
-  // Whether support HTTP/2 SETTINGS_MAX_HEADER_LIST_SIZE SETTINGS frame.
+  // Whether support HTTP/2 spdy::SETTINGS_MAX_HEADER_LIST_SIZE SETTINGS frame.
   QuicFixedUint32 support_max_header_list_size_;
 
   // Stateless reset token used in IETF public reset packet.

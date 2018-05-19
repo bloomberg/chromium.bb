@@ -23,36 +23,37 @@ class QUIC_EXPORT_PRIVATE SpdyUtils {
   // Returns true on success, false if parsing fails or content-length header is
   // missing.
   static bool ExtractContentLengthFromHeaders(int64_t* content_length,
-                                              SpdyHeaderBlock* headers);
+                                              spdy::SpdyHeaderBlock* headers);
 
-  // Copies a list of headers to a SpdyHeaderBlock.
+  // Copies a list of headers to a spdy::SpdyHeaderBlock.
   static bool CopyAndValidateHeaders(const QuicHeaderList& header_list,
                                      int64_t* content_length,
-                                     SpdyHeaderBlock* headers);
+                                     spdy::SpdyHeaderBlock* headers);
 
-  // Copies a list of headers to a SpdyHeaderBlock.
+  // Copies a list of headers to a spdy::SpdyHeaderBlock.
   static bool CopyAndValidateTrailers(const QuicHeaderList& header_list,
                                       size_t* final_byte_offset,
-                                      SpdyHeaderBlock* trailers);
+                                      spdy::SpdyHeaderBlock* trailers);
 
   // Returns a canonicalized URL composed from the :scheme, :authority, and
   // :path headers of a PUSH_PROMISE. Returns empty string if the headers do not
   // conform to HTTP/2 spec or if the ":method" header contains a forbidden
   // method for PUSH_PROMISE.
-  static QuicString GetPromisedUrlFromHeaders(const SpdyHeaderBlock& headers);
+  static QuicString GetPromisedUrlFromHeaders(
+      const spdy::SpdyHeaderBlock& headers);
 
   // Returns hostname, or empty std::string if missing.
   static QuicString GetPromisedHostNameFromHeaders(
-      const SpdyHeaderBlock& headers);
+      const spdy::SpdyHeaderBlock& headers);
 
   // Returns true if result of |GetPromisedUrlFromHeaders()| is non-empty
   // and is a well-formed URL.
-  static bool PromisedUrlIsValid(const SpdyHeaderBlock& headers);
+  static bool PromisedUrlIsValid(const spdy::SpdyHeaderBlock& headers);
 
   // Populates the fields of |headers| to make a GET request of |url|,
   // which must be fully-qualified.
   static bool PopulateHeaderBlockFromUrl(const QuicString url,
-                                         SpdyHeaderBlock* headers);
+                                         spdy::SpdyHeaderBlock* headers);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SpdyUtils);

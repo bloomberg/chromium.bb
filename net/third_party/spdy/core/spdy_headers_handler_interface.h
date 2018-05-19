@@ -10,7 +10,7 @@
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 
 // This interface defines how an object that accepts header data should behave.
 // It is used by both SpdyHeadersBlockParser and HpackDecoder.
@@ -34,6 +34,6 @@ class SPDY_EXPORT_PRIVATE SpdyHeadersHandlerInterface {
                                 size_t compressed_header_bytes) = 0;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_SPDY_HEADERS_HANDLER_INTERFACE_H_

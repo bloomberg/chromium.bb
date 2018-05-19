@@ -58,7 +58,7 @@ class HpackDecoderPeer {
 }  // namespace test
 }  // namespace http2
 
-namespace net {
+namespace spdy {
 namespace test {
 
 class HpackDecoderAdapterPeer {
@@ -1093,4 +1093,4 @@ TEST_P(HpackDecoderAdapterTest, Cookies) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace spdy

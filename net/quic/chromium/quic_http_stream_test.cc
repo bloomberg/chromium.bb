@@ -416,7 +416,7 @@ class QuicHttpStreamTest
       QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset) {
-    SpdyPriority priority =
+    spdy::SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(request_priority);
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, stream_id, should_include_version, fin, priority,
@@ -435,7 +435,7 @@ class QuicHttpStreamTest
       QuicStreamOffset* offset,
       size_t* spdy_headers_frame_length,
       const std::vector<std::string>& data_writes) {
-    SpdyPriority priority =
+    spdy::SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(request_priority);
     return client_maker_.MakeRequestHeadersAndMultipleDataFramesPacket(
         packet_number, stream_id, should_include_version, fin, priority,
@@ -454,7 +454,7 @@ class QuicHttpStreamTest
       QuicStreamOffset* header_stream_offset,
       QuicRstStreamErrorCode error_code,
       size_t bytes_written) {
-    SpdyPriority priority =
+    spdy::SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(request_priority);
     return client_maker_.MakeRequestHeadersAndRstPacket(
         packet_number, stream_id, should_include_version, fin, priority,
@@ -505,7 +505,7 @@ class QuicHttpStreamTest
   std::unique_ptr<QuicReceivedPacket> ConstructResponseTrailersPacket(
       QuicPacketNumber packet_number,
       bool fin,
-      SpdyHeaderBlock trailers,
+      spdy::SpdyHeaderBlock trailers,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset) {
     return server_maker_.MakeResponseHeadersPacket(
@@ -644,16 +644,16 @@ class QuicHttpStreamTest
   HttpRequestHeaders headers_;
   HttpResponseInfo response_;
   scoped_refptr<IOBufferWithSize> read_buffer_;
-  SpdyHeaderBlock request_headers_;
-  SpdyHeaderBlock response_headers_;
+  spdy::SpdyHeaderBlock request_headers_;
+  spdy::SpdyHeaderBlock response_headers_;
   string request_data_;
   string response_data_;
   QuicClientPushPromiseIndex push_promise_index_;
 
   // For server push testing
   std::unique_ptr<QuicHttpStream> promised_stream_;
-  SpdyHeaderBlock push_promise_;
-  SpdyHeaderBlock promised_response_;
+  spdy::SpdyHeaderBlock push_promise_;
+  spdy::SpdyHeaderBlock promised_response_;
   const QuicStreamId promise_id_;
   string promise_url_;
   const QuicStreamId stream_id_;
@@ -895,7 +895,7 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
   const char kResponseBody[] = "Hello world!";
   ProcessPacket(
       ConstructServerDataPacket(3, false, !kFin, /*offset=*/0, kResponseBody));
-  SpdyHeaderBlock trailers;
+  spdy::SpdyHeaderBlock trailers;
   size_t spdy_trailers_frame_length;
   trailers["foo"] = "bar";
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));

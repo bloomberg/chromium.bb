@@ -55,16 +55,17 @@ void HttpStreamFactory::ProcessAlternativeServices(
   std::string alternative_service_str;
   headers->GetNormalizedHeader(kAlternativeServiceHeader,
                                &alternative_service_str);
-  SpdyAltSvcWireFormat::AlternativeServiceVector alternative_service_vector;
-  if (!SpdyAltSvcWireFormat::ParseHeaderFieldValue(
+  spdy::SpdyAltSvcWireFormat::AlternativeServiceVector
+      alternative_service_vector;
+  if (!spdy::SpdyAltSvcWireFormat::ParseHeaderFieldValue(
           alternative_service_str, &alternative_service_vector)) {
     return;
   }
 
-  // Convert SpdyAltSvcWireFormat::AlternativeService entries
+  // Convert spdy::SpdyAltSvcWireFormat::AlternativeService entries
   // to net::AlternativeServiceInfo.
   AlternativeServiceInfoVector alternative_service_info_vector;
-  for (const SpdyAltSvcWireFormat::AlternativeService&
+  for (const spdy::SpdyAltSvcWireFormat::AlternativeService&
            alternative_service_entry : alternative_service_vector) {
     NextProto protocol =
         NextProtoFromString(alternative_service_entry.protocol_id);

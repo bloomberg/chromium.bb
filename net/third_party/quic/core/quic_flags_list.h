@@ -49,7 +49,7 @@ QUIC_FLAG(bool,
 // allow CHLO packets to be buffered until next iteration of the event loop.
 QUIC_FLAG(bool, FLAGS_quic_allow_chlo_buffering, true)
 
-// If true, GFE sends SETTINGS_MAX_HEADER_LIST_SIZE to the client at the
+// If true, GFE sends spdy::SETTINGS_MAX_HEADER_LIST_SIZE to the client at the
 // beginning of a connection.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_max_header_list_size, true)
 

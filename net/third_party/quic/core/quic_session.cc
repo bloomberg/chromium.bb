@@ -17,7 +17,7 @@
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-using net::SpdyPriority;
+using spdy::SpdyPriority;
 
 namespace net {
 
@@ -741,7 +741,7 @@ void QuicSession::OnCryptoHandshakeMessageReceived(
 
 void QuicSession::RegisterStreamPriority(QuicStreamId id,
                                          bool is_static,
-                                         SpdyPriority priority) {
+                                         spdy::SpdyPriority priority) {
   // Static streams do not need to be registered with the write blocked list,
   // since it has special handling for them.
   if (!write_blocked_streams()->register_static_streams() && is_static) {
@@ -761,7 +761,7 @@ void QuicSession::UnregisterStreamPriority(QuicStreamId id, bool is_static) {
 }
 
 void QuicSession::UpdateStreamPriority(QuicStreamId id,
-                                       SpdyPriority new_priority) {
+                                       spdy::SpdyPriority new_priority) {
   write_blocked_streams()->UpdateStreamPriority(id, new_priority);
 }
 

@@ -78,7 +78,8 @@ class MockQuicSession : public QuicSession {
   void set_writable(bool writable) { writable_ = writable; }
 
   // Tracks whether the stream is write blocked and its priority.
-  void RegisterReliableStream(QuicStreamId stream_id, SpdyPriority priority) {
+  void RegisterReliableStream(QuicStreamId stream_id,
+                              spdy::SpdyPriority priority) {
     write_blocked_streams()->RegisterStream(stream_id,
                                             /*is_static_stream=*/false,
                                             priority);

@@ -67,7 +67,7 @@ void MultiplexedHttpStream::SetRequestHeadersCallback(
 }
 
 void MultiplexedHttpStream::DispatchRequestHeadersCallback(
-    const SpdyHeaderBlock& spdy_headers) {
+    const spdy::SpdyHeaderBlock& spdy_headers) {
   if (!request_headers_callback_)
     return;
   HttpRawRequestHeaders raw_headers;

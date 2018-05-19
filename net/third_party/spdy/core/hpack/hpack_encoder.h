@@ -24,7 +24,7 @@
 // An HpackEncoder encodes header sets as outlined in
 // http://tools.ietf.org/html/rfc7541.
 
-namespace net {
+namespace spdy {
 
 class HpackHuffmanTable;
 
@@ -147,6 +147,6 @@ class SPDY_EXPORT_PRIVATE HpackEncoder {
   DISALLOW_COPY_AND_ASSIGN(HpackEncoder);
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_ENCODER_H_

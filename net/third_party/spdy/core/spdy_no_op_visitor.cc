@@ -6,7 +6,7 @@
 
 #include <type_traits>
 
-namespace net {
+namespace spdy {
 namespace test {
 
 SpdyNoOpVisitor::SpdyNoOpVisitor() {
@@ -26,4 +26,4 @@ bool SpdyNoOpVisitor::OnUnknownFrame(SpdyStreamId stream_id,
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace spdy

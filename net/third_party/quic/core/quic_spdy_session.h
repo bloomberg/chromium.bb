@@ -60,7 +60,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // Called by |headers_stream_| when headers with a priority have been
   // received for a stream.  This method will only be called for server streams.
   virtual void OnStreamHeadersPriority(QuicStreamId stream_id,
-                                       SpdyPriority priority);
+                                       spdy::SpdyPriority priority);
 
   // Called by |headers_stream_| when headers have been completely received
   // for a stream.  |fin| will be true if the fin flag was set in the headers
@@ -80,7 +80,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
 
   // Callbed by |headers_stream_| when a PRIORITY frame has been received for a
   // stream. This method will only be called for server streams.
-  virtual void OnPriorityFrame(QuicStreamId stream_id, SpdyPriority priority);
+  virtual void OnPriorityFrame(QuicStreamId stream_id,
+                               spdy::SpdyPriority priority);
 
   // Sends contents of |iov| to h2_deframer_, returns number of bytes processed.
   size_t ProcessHeaderData(const struct iovec& iov);
@@ -91,9 +92,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // we have seen ACKs for all packets resulting from this call.
   virtual size_t WriteHeaders(
       QuicStreamId id,
-      SpdyHeaderBlock headers,
+      spdy::SpdyHeaderBlock headers,
       bool fin,
-      SpdyPriority priority,
+      spdy::SpdyPriority priority,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
   // Writes a PRIORITY frame the to peer. Returns the size in bytes of the
@@ -109,9 +110,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // Return the size, in bytes, of the resulting PUSH_PROMISE frame.
   virtual size_t WritePushPromise(QuicStreamId original_stream_id,
                                   QuicStreamId promised_stream_id,
-                                  SpdyHeaderBlock headers);
+                                  spdy::SpdyHeaderBlock headers);
 
-  // Sends SETTINGS_MAX_HEADER_LIST_SIZE SETTINGS frame.
+  // Sends spdy::SETTINGS_MAX_HEADER_LIST_SIZE SETTINGS frame.
   size_t SendMaxHeaderListSize(size_t value);
 
   QuicHeadersStream* headers_stream() { return headers_stream_.get(); }
@@ -121,7 +122,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   bool server_push_enabled() const { return server_push_enabled_; }
 
   // Called by |QuicHeadersStream::UpdateEnableServerPush()| with
-  // value from SETTINGS_ENABLE_PUSH.
+  // value from spdy::SETTINGS_ENABLE_PUSH.
   void set_server_push_enabled(bool enable) { server_push_enabled_ = enable; }
 
   // Return true if this session wants to release headers stream's buffer
@@ -154,7 +155,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // this but mock the latter.
   size_t WriteHeadersImpl(
       QuicStreamId id,
-      SpdyHeaderBlock headers,
+      spdy::SpdyHeaderBlock headers,
       bool fin,
       int weight,
       QuicStreamId parent_stream_id,
@@ -180,7 +181,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // willing to use to encode header blocks.
   void UpdateHeaderEncoderTableSize(uint32_t value);
 
-  // Called when SETTINGS_ENABLE_PUSH is received, only supported on
+  // Called when spdy::SETTINGS_ENABLE_PUSH is received, only supported on
   // server side.
   void UpdateEnableServerPush(bool value);
 
@@ -209,18 +210,18 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // The following methods are called by the SimpleVisitor.
 
   // Called when a HEADERS frame has been received.
-  void OnHeaders(SpdyStreamId stream_id,
+  void OnHeaders(spdy::SpdyStreamId stream_id,
                  bool has_priority,
-                 SpdyPriority priority,
+                 spdy::SpdyPriority priority,
                  bool fin);
 
   // Called when a PUSH_PROMISE frame has been received.
-  void OnPushPromise(SpdyStreamId stream_id,
-                     SpdyStreamId promised_stream_id,
+  void OnPushPromise(spdy::SpdyStreamId stream_id,
+                     spdy::SpdyStreamId promised_stream_id,
                      bool end);
 
   // Called when a PRIORITY frame has been received.
-  void OnPriority(SpdyStreamId stream_id, SpdyPriority priority);
+  void OnPriority(spdy::SpdyStreamId stream_id, spdy::SpdyPriority priority);
 
   // Called when the complete list of headers is available.
   void OnHeaderList(const QuicHeaderList& header_list);
@@ -250,7 +251,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // TODO(rch): remove |use_h2_deframer_| and |hq_deframer_| when
   // FLAGS_quic_reloadable_flag_quic_enable_h2_deframer is deprecated.
   const bool use_h2_deframer_;
-  SpdyFramer spdy_framer_;
+  spdy::SpdyFramer spdy_framer_;
   http2::Http2DecoderAdapter h2_deframer_;
   QuicHttpDecoderAdapter hq_deframer_;
   std::unique_ptr<SpdyFramerVisitor> spdy_framer_visitor_;

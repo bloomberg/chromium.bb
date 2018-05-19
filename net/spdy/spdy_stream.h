@@ -90,8 +90,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
     // Called when response headers have been received.  In case of a pushed
     // stream, the pushed request headers are also passed.
     virtual void OnHeadersReceived(
-        const SpdyHeaderBlock& response_headers,
-        const SpdyHeaderBlock* pushed_request_headers) = 0;
+        const spdy::SpdyHeaderBlock& response_headers,
+        const spdy::SpdyHeaderBlock* pushed_request_headers) = 0;
 
     // Called when data is received.  |buffer| may be NULL, which signals EOF.
     // May cause the stream to be closed.
@@ -101,7 +101,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
     virtual void OnDataSent() = 0;
 
     // Called when trailers are received.
-    virtual void OnTrailers(const SpdyHeaderBlock& trailers) = 0;
+    virtual void OnTrailers(const spdy::SpdyHeaderBlock& trailers) = 0;
 
     // Called when SpdyStream is closed. No other delegate functions
     // will be called after this is called, and the delegate must not
@@ -149,8 +149,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   SpdyStreamType type() const { return type_; }
 
-  SpdyStreamId stream_id() const { return stream_id_; }
-  void set_stream_id(SpdyStreamId stream_id) { stream_id_ = stream_id; }
+  spdy::SpdyStreamId stream_id() const { return stream_id_; }
+  void set_stream_id(spdy::SpdyStreamId stream_id) { stream_id_ = stream_id; }
 
   const GURL& url() const { return url_; }
 
@@ -173,7 +173,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Called by the session to adjust this stream's send window size by
   // |delta_window_size|, which is the difference between the
-  // SETTINGS_INITIAL_WINDOW_SIZE in the most recent SETTINGS frame
+  // spdy::SETTINGS_INITIAL_WINDOW_SIZE in the most recent SETTINGS frame
   // and the previous initial send window size, possibly unstalling
   // this stream. Although |delta_window_size| may cause this stream's
   // send window size to go negative, it must not cause it to wrap
@@ -254,13 +254,13 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Called by SpdySession when headers are received for this stream.  May close
   // the stream.
-  void OnHeadersReceived(const SpdyHeaderBlock& response_headers,
+  void OnHeadersReceived(const spdy::SpdyHeaderBlock& response_headers,
                          base::Time response_time,
                          base::TimeTicks recv_first_byte_time);
 
   // Called by the SpdySession when a frame carrying request headers opening a
   // push stream is received. Stream transits to STATE_RESERVED_REMOTE state.
-  void OnPushPromiseHeadersReceived(SpdyHeaderBlock headers, GURL url);
+  void OnPushPromiseHeadersReceived(spdy::SpdyHeaderBlock headers, GURL url);
 
   // Called by the SpdySession when response data has been received
   // for this stream.  This callback may be called multiple times as
@@ -283,7 +283,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // written. |frame_size| is the total size of the logical frame in bytes,
   // including framing overhead.  For fragmented headers, this is the total size
   // of the HEADERS or PUSH_PROMISE frame and subsequent CONTINUATION frames.
-  void OnFrameWriteComplete(SpdyFrameType frame_type, size_t frame_size);
+  void OnFrameWriteComplete(spdy::SpdyFrameType frame_type, size_t frame_size);
 
   // HEADERS-specific write handler invoked by OnFrameWriteComplete().
   int OnHeadersSent();
@@ -325,7 +325,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // MORE_DATA_TO_SEND for bidirectional streams; for request/response streams,
   // it must be MORE_DATA_TO_SEND if the request has data to upload, or
   // NO_MORE_DATA_TO_SEND if not.
-  int SendRequestHeaders(SpdyHeaderBlock request_headers,
+  int SendRequestHeaders(spdy::SpdyHeaderBlock request_headers,
                          SpdySendStatus send_status);
 
   // Sends a DATA frame. The delegate will be notified via
@@ -394,8 +394,12 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
 
-  const SpdyHeaderBlock& request_headers() const { return request_headers_; }
-  const SpdyHeaderBlock& response_headers() const { return response_headers_; }
+  const spdy::SpdyHeaderBlock& request_headers() const {
+    return request_headers_;
+  }
+  const spdy::SpdyHeaderBlock& response_headers() const {
+    return response_headers_;
+  }
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
@@ -450,7 +454,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Produces the HEADERS frame for the stream. The stream must
   // already be activated.
-  std::unique_ptr<SpdySerializedFrame> ProduceHeadersFrame();
+  std::unique_ptr<spdy::SpdySerializedFrame> ProduceHeadersFrame();
 
   // Queues the send for next frame of the remaining data in
   // |pending_send_data_|. Must be called only when
@@ -459,13 +463,13 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Saves the given headers into |response_headers_| and calls
   // OnHeadersReceived() on the delegate if attached.
-  void SaveResponseHeaders(const SpdyHeaderBlock& response_headers);
+  void SaveResponseHeaders(const spdy::SpdyHeaderBlock& response_headers);
 
   static std::string DescribeState(State state);
 
   const SpdyStreamType type_;
 
-  SpdyStreamId stream_id_;
+  spdy::SpdyStreamId stream_id_;
   const GURL url_;
   RequestPriority priority_;
 
@@ -496,7 +500,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // The headers for the request to send.
   bool request_headers_valid_;
-  SpdyHeaderBlock request_headers_;
+  spdy::SpdyHeaderBlock request_headers_;
 
   // Data waiting to be sent, and the close state of the local endpoint
   // after the data is fully written.
@@ -513,7 +517,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // For cached responses, this time could be "far" in the past.
   base::Time request_time_;
 
-  SpdyHeaderBlock response_headers_;
+  spdy::SpdyHeaderBlock response_headers_;
   ResponseState response_state_;
   base::Time response_time_;
 

@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 
-namespace net {
+namespace spdy {
 
 HpackOutputStream::HpackOutputStream() : bit_offset_(0) {}
 
@@ -94,4 +94,4 @@ size_t HpackOutputStream::EstimateMemoryUsage() const {
   return SpdyEstimateMemoryUsage(buffer_);
 }
 
-}  // namespace net
+}  // namespace spdy

@@ -14,7 +14,7 @@
 
 using ::testing::ElementsAre;
 
-namespace net {
+namespace spdy {
 namespace test {
 
 class ValueProxyPeer {
@@ -250,4 +250,4 @@ TEST(SpdyHeaderBlockTest, TotalBytesUsed) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace spdy

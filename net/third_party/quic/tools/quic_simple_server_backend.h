@@ -7,9 +7,10 @@
 
 #include "net/third_party/quic/tools/quic_backend_response.h"
 
-namespace net {
-
+namespace spdy {
 class SpdyHeaderBlock;
+}  // namespace spdy
+namespace net {
 
 // This interface implements the functionality to fetch a response
 // from the backend (such as cache, http-proxy etc) to serve
@@ -45,9 +46,10 @@ class QuicSimpleServerBackend {
   // the |request_handler| with the HTTP response.
   // If the response has to be fetched over the network, the function
   // asynchronously calls |request_handler| with the HTTP response.
-  virtual void FetchResponseFromBackend(const SpdyHeaderBlock& request_headers,
-                                        const QuicString& request_body,
-                                        RequestHandler* request_handler) = 0;
+  virtual void FetchResponseFromBackend(
+      const spdy::SpdyHeaderBlock& request_headers,
+      const QuicString& request_body,
+      RequestHandler* request_handler) = 0;
   // Clears the state of the backend  instance
   virtual void CloseBackendResponseStream(RequestHandler* request_handler) = 0;
 };

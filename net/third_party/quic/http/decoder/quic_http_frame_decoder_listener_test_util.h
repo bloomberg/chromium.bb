@@ -24,7 +24,7 @@ class FailingQuicHttpFrameDecoderListener
   ~FailingQuicHttpFrameDecoderListener() override;
 
   // TODO(jamessynge): Remove OnFrameHeader once done with supporting
-  // SpdyFramer's exact states.
+  // spdy::SpdyFramer's exact states.
   bool OnFrameHeader(const QuicHttpFrameHeader& header) override;
   void OnDataStart(const QuicHttpFrameHeader& header) override;
   void OnDataPayload(const char* data, size_t len) override;
@@ -87,7 +87,7 @@ class LoggingQuicHttpFrameDecoderListener
   ~LoggingQuicHttpFrameDecoderListener() override;
 
   // TODO(jamessynge): Remove OnFrameHeader once done with supporting
-  // SpdyFramer's exact states.
+  // spdy::SpdyFramer's exact states.
   bool OnFrameHeader(const QuicHttpFrameHeader& header) override;
   void OnDataStart(const QuicHttpFrameHeader& header) override;
   void OnDataPayload(const char* data, size_t len) override;

@@ -24,7 +24,7 @@
 #include "net/third_party/spdy/core/spdy_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace net {
+namespace spdy {
 namespace test {
 
 // Verify the header entries in two SpdyFrameWithHeaderBlockIR instances
@@ -154,6 +154,6 @@ template <class E>
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_SPDY_PROTOCOL_TEST_UTILS_H_

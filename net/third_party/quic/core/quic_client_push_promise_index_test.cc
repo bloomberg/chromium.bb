@@ -69,7 +69,7 @@ class QuicClientPushPromiseIndexTest : public QuicTest {
   StrictMock<MockQuicConnection>* connection_;
   MockQuicSpdyClientSession session_;
   QuicClientPushPromiseIndex index_;
-  SpdyHeaderBlock request_;
+  spdy::SpdyHeaderBlock request_;
   QuicString url_;
   MockQuicClientPromisedInfo promised_;
   QuicClientPushPromiseIndex::TryHandle* handle_;

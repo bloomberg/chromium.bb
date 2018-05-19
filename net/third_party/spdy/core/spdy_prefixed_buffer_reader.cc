@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 
-namespace net {
+namespace spdy {
 
 SpdyPrefixedBufferReader::SpdyPrefixedBufferReader(const char* prefix,
                                                    size_t prefix_length,
@@ -81,4 +81,4 @@ bool SpdyPrefixedBufferReader::ReadN(size_t count,
   }
 }
 
-}  // namespace net
+}  // namespace spdy

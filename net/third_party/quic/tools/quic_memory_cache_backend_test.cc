@@ -23,7 +23,7 @@ class QuicMemoryCacheBackendTest : public QuicTest {
  protected:
   void CreateRequest(QuicString host,
                      QuicString path,
-                     SpdyHeaderBlock* headers) {
+                     spdy::SpdyHeaderBlock* headers) {
     (*headers)[":method"] = "GET";
     (*headers)[":path"] = path;
     (*headers)[":authority"] = host;
@@ -52,7 +52,7 @@ TEST_F(QuicMemoryCacheBackendTest, AddSimpleResponseGetResponse) {
   QuicString response_body("hello response");
   cache_.AddSimpleResponse("www.google.com", "/", 200, response_body);
 
-  SpdyHeaderBlock request_headers;
+  spdy::SpdyHeaderBlock request_headers;
   CreateRequest("www.google.com", "/", &request_headers);
   const Response* response = cache_.GetResponse("www.google.com", "/");
   ASSERT_TRUE(response);
@@ -66,13 +66,13 @@ TEST_F(QuicMemoryCacheBackendTest, AddResponse) {
   const QuicString kRequestPath = "/";
   const QuicString kResponseBody("hello response");
 
-  SpdyHeaderBlock response_headers;
+  spdy::SpdyHeaderBlock response_headers;
   response_headers[":version"] = "HTTP/1.1";
   response_headers[":status"] = "200";
   response_headers["content-length"] =
       QuicTextUtils::Uint64ToString(kResponseBody.size());
 
-  SpdyHeaderBlock response_trailers;
+  spdy::SpdyHeaderBlock response_trailers;
   response_trailers["key-1"] = "value-1";
   response_trailers["key-2"] = "value-2";
   response_trailers["key-3"] = "value-3";
@@ -130,7 +130,7 @@ TEST_F(QuicMemoryCacheBackendTest, DefaultResponse) {
   ASSERT_FALSE(response);
 
   // Add a default response.
-  SpdyHeaderBlock response_headers;
+  spdy::SpdyHeaderBlock response_headers;
   response_headers[":version"] = "HTTP/1.1";
   response_headers[":status"] = "200";
   response_headers["content-length"] = "0";
@@ -171,7 +171,7 @@ TEST_F(QuicMemoryCacheBackendTest, AddSimpleResponseWithServerPushResources) {
     QuicUrl resource_url(url);
     QuicString body =
         QuicStrCat("This is server push response body for ", path);
-    SpdyHeaderBlock response_headers;
+    spdy::SpdyHeaderBlock response_headers;
     response_headers[":version"] = "HTTP/1.1";
     response_headers[":status"] = "200";
     response_headers["content-length"] =
@@ -209,7 +209,7 @@ TEST_F(QuicMemoryCacheBackendTest, GetServerPushResourcesAndPushResponses) {
     QuicString url = scheme + "://" + request_host + path;
     QuicUrl resource_url(url);
     QuicString body = "This is server push response body for " + path;
-    SpdyHeaderBlock response_headers;
+    spdy::SpdyHeaderBlock response_headers;
     response_headers[":version"] = "HTTP/1.1";
     response_headers[":status"] = push_response_status[i];
     response_headers["content-length"] =

@@ -31,11 +31,11 @@ class ClosingDelegate : public SpdyStream::Delegate {
   // SpdyStream::Delegate implementation.
   void OnHeadersSent() override;
   void OnHeadersReceived(
-      const SpdyHeaderBlock& response_headers,
-      const SpdyHeaderBlock* pushed_request_headers) override;
+      const spdy::SpdyHeaderBlock& response_headers,
+      const spdy::SpdyHeaderBlock* pushed_request_headers) override;
   void OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) override;
   void OnDataSent() override;
-  void OnTrailers(const SpdyHeaderBlock& trailers) override;
+  void OnTrailers(const spdy::SpdyHeaderBlock& trailers) override;
   void OnClose(int status) override;
   NetLogSource source_dependency() const override;
 
@@ -55,11 +55,11 @@ class StreamDelegateBase : public SpdyStream::Delegate {
 
   void OnHeadersSent() override;
   void OnHeadersReceived(
-      const SpdyHeaderBlock& response_headers,
-      const SpdyHeaderBlock* pushed_request_headers) override;
+      const spdy::SpdyHeaderBlock& response_headers,
+      const spdy::SpdyHeaderBlock* pushed_request_headers) override;
   void OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) override;
   void OnDataSent() override;
-  void OnTrailers(const SpdyHeaderBlock& trailers) override;
+  void OnTrailers(const spdy::SpdyHeaderBlock& trailers) override;
   void OnClose(int status) override;
   NetLogSource source_dependency() const override;
 
@@ -76,7 +76,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
 
   // Returns the stream's ID. If called when the stream is closed,
   // returns the stream's ID when it was open.
-  SpdyStreamId stream_id() const { return stream_id_; }
+  spdy::SpdyStreamId stream_id() const { return stream_id_; }
 
   std::string GetResponseHeaderValue(const std::string& name) const;
   bool send_headers_completed() const { return send_headers_completed_; }
@@ -86,10 +86,10 @@ class StreamDelegateBase : public SpdyStream::Delegate {
 
  private:
   base::WeakPtr<SpdyStream> stream_;
-  SpdyStreamId stream_id_;
+  spdy::SpdyStreamId stream_id_;
   TestCompletionCallback callback_;
   bool send_headers_completed_;
-  SpdyHeaderBlock response_headers_;
+  spdy::SpdyHeaderBlock response_headers_;
   SpdyReadQueue received_data_queue_;
 };
 
@@ -110,8 +110,8 @@ class StreamDelegateSendImmediate : public StreamDelegateBase {
   ~StreamDelegateSendImmediate() override;
 
   void OnHeadersReceived(
-      const SpdyHeaderBlock& response_headers,
-      const SpdyHeaderBlock* pushed_request_headers) override;
+      const spdy::SpdyHeaderBlock& response_headers,
+      const spdy::SpdyHeaderBlock* pushed_request_headers) override;
 
  private:
   base::StringPiece data_;
@@ -138,8 +138,8 @@ class StreamDelegateCloseOnHeaders : public StreamDelegateBase {
   ~StreamDelegateCloseOnHeaders() override;
 
   void OnHeadersReceived(
-      const SpdyHeaderBlock& response_headers,
-      const SpdyHeaderBlock* pushed_request_headers) override;
+      const spdy::SpdyHeaderBlock& response_headers,
+      const spdy::SpdyHeaderBlock* pushed_request_headers) override;
 };
 
 }  // namespace test

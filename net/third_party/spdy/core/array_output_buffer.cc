@@ -4,7 +4,7 @@
 
 #include "net/third_party/spdy/core/array_output_buffer.h"
 
-namespace net {
+namespace spdy {
 
 void ArrayOutputBuffer::Next(char** data, int* size) {
   *data = current_;
@@ -20,4 +20,4 @@ uint64_t ArrayOutputBuffer::BytesFree() const {
   return capacity_;
 }
 
-}  // namespace net
+}  // namespace spdy

@@ -14,10 +14,13 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 
+namespace spdy {
+class SpdySerializedFrame;
+}  // namespace spdy
+
 namespace net {
 
 class IOBuffer;
-class SpdySerializedFrame;
 
 // SpdyBuffer is a class to hold data read from or to be written to a
 // SPDY connection. It is similar to a DrainableIOBuffer but is not
@@ -47,7 +50,7 @@ class NET_EXPORT_PRIVATE SpdyBuffer {
 
   // Construct with the data in the given frame. Assumes that data is
   // owned by |frame| or outlives it.
-  explicit SpdyBuffer(std::unique_ptr<SpdySerializedFrame> frame);
+  explicit SpdyBuffer(std::unique_ptr<spdy::SpdySerializedFrame> frame);
 
   // Construct with a copy of the given raw data. |data| must be
   // non-NULL and |size| must be non-zero.
@@ -89,9 +92,9 @@ class NET_EXPORT_PRIVATE SpdyBuffer {
  private:
   void ConsumeHelper(size_t consume_size, ConsumeSource consume_source);
 
-  // Ref-count the passed-in SpdySerializedFrame to support the semantics of
-  // |GetIOBufferForRemainingData()|.
-  typedef base::RefCountedData<std::unique_ptr<SpdySerializedFrame>>
+  // Ref-count the passed-in spdy::SpdySerializedFrame to support the semantics
+  // of |GetIOBufferForRemainingData()|.
+  typedef base::RefCountedData<std::unique_ptr<spdy::SpdySerializedFrame>>
       SharedFrame;
 
   class SharedFrameIOBuffer;

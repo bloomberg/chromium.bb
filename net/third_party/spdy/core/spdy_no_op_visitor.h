@@ -15,7 +15,7 @@
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 namespace test {
 
 class SpdyNoOpVisitor : public SpdyFramerVisitorInterface,
@@ -84,6 +84,6 @@ class SpdyNoOpVisitor : public SpdyFramerVisitorInterface,
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_SPDY_NO_OP_VISITOR_H_

@@ -14,7 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace spdy {
 namespace test {
 
 using std::map;
@@ -150,4 +150,4 @@ TEST(HpackFuzzUtilTest, FlipBitsMutatesBuffer) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace spdy

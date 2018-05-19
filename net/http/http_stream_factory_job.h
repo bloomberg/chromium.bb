@@ -500,7 +500,7 @@ class HttpStreamFactory::Job {
   // the ID of the claimed stream, and |existing_spdy_session_| points to that
   // SpdySession.  Otherwise |pushed_stream_id_| is set to kNoPushedStreamFound
   // (but |existing_spdy_session_| can still be non-null).
-  SpdyStreamId pushed_stream_id_;
+  spdy::SpdyStreamId pushed_stream_id_;
 
   // True if not connecting to an Https proxy for an Http url.
   const bool spdy_session_direct_;

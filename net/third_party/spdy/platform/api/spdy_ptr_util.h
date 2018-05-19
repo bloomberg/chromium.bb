@@ -10,7 +10,7 @@
 
 #include "net/third_party/spdy/platform/impl/spdy_ptr_util_impl.h"
 
-namespace net {
+namespace spdy {
 
 template <typename T, typename... Args>
 std::unique_ptr<T> SpdyMakeUnique(Args&&... args) {
@@ -22,6 +22,6 @@ std::unique_ptr<T> SpdyWrapUnique(T* ptr) {
   return SpdyWrapUniqueImpl<T>(ptr);
 }
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_PLATFORM_API_SPDY_PTR_UTIL_H_

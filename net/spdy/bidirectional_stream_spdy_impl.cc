@@ -207,8 +207,8 @@ void BidirectionalStreamSpdyImpl::OnHeadersSent() {
 }
 
 void BidirectionalStreamSpdyImpl::OnHeadersReceived(
-    const SpdyHeaderBlock& response_headers,
-    const SpdyHeaderBlock* pushed_request_headers) {
+    const spdy::SpdyHeaderBlock& response_headers,
+    const spdy::SpdyHeaderBlock* pushed_request_headers) {
   DCHECK(stream_);
 
   if (delegate_)
@@ -245,7 +245,8 @@ void BidirectionalStreamSpdyImpl::OnDataSent() {
     delegate_->OnDataSent();
 }
 
-void BidirectionalStreamSpdyImpl::OnTrailers(const SpdyHeaderBlock& trailers) {
+void BidirectionalStreamSpdyImpl::OnTrailers(
+    const spdy::SpdyHeaderBlock& trailers) {
   DCHECK(stream_);
   DCHECK(!stream_closed_);
 
@@ -286,7 +287,7 @@ NetLogSource BidirectionalStreamSpdyImpl::source_dependency() const {
 }
 
 int BidirectionalStreamSpdyImpl::SendRequestHeadersHelper() {
-  SpdyHeaderBlock headers;
+  spdy::SpdyHeaderBlock headers;
   HttpRequestInfo http_request_info;
   http_request_info.url = request_info_->url;
   http_request_info.method = request_info_->method;

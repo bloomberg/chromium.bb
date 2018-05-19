@@ -8,7 +8,7 @@
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/core/spdy_test_utils.h"
 
-namespace net {
+namespace spdy {
 namespace test {
 
 template <typename StreamIdType>
@@ -377,4 +377,4 @@ TEST_F(PriorityWriteSchedulerTest, GetLatestEventWithPrecedence) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace spdy

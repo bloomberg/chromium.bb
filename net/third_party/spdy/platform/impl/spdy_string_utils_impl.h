@@ -16,7 +16,7 @@
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 
 template <typename... Args>
 inline SpdyString SpdyStrCatImpl(const Args&... args) {
@@ -46,7 +46,7 @@ inline char SpdyHexDigitToIntImpl(char c) {
 }
 
 inline SpdyString SpdyHexDecodeImpl(SpdyStringPiece data) {
-  return HexDecode(data);
+  return net::HexDecode(data);
 }
 
 NET_EXPORT_PRIVATE bool SpdyHexDecodeToUInt32Impl(SpdyStringPiece data,
@@ -61,9 +61,9 @@ inline SpdyString SpdyHexEncodeUInt32AndTrimImpl(uint32_t data) {
 }
 
 inline SpdyString SpdyHexDumpImpl(SpdyStringPiece data) {
-  return HexDump(data);
+  return net::HexDump(data);
 }
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_PLATFORM_IMPL_SPDY_STRING_UTILS_IMPL_H_

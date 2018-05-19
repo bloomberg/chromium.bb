@@ -34,8 +34,8 @@ class SpdyWriteQueueTest : public ::testing::Test {};
 std::unique_ptr<SpdyBufferProducer> StringToProducer(const std::string& s) {
   auto data = std::make_unique<char[]>(s.size());
   std::memcpy(data.get(), s.data(), s.size());
-  auto frame =
-      std::make_unique<SpdySerializedFrame>(data.release(), s.size(), true);
+  auto frame = std::make_unique<spdy::SpdySerializedFrame>(data.release(),
+                                                           s.size(), true);
   auto buffer = std::make_unique<SpdyBuffer>(std::move(frame));
   return std::make_unique<SimpleBufferProducer>(std::move(buffer));
 }
@@ -72,7 +72,7 @@ class RequeingBufferProducer : public SpdyBufferProducer {
     auto buffer_producer =
         std::make_unique<SimpleBufferProducer>(std::move(buffer));
 
-    queue->Enqueue(MEDIUM, SpdyFrameType::RST_STREAM,
+    queue->Enqueue(MEDIUM, spdy::SpdyFrameType::RST_STREAM,
                    std::move(buffer_producer), base::WeakPtr<SpdyStream>(),
                    TRAFFIC_ANNOTATION_FOR_TESTS);
   }
@@ -120,35 +120,35 @@ TEST_F(SpdyWriteQueueTest, DequeuesByPriority) {
   std::unique_ptr<SpdyStream> stream_highest = MakeTestStream(HIGHEST);
 
   // A NULL stream should still work.
-  write_queue.Enqueue(LOW, SpdyFrameType::HEADERS, std::move(producer_low),
-                      base::WeakPtr<SpdyStream>(),
+  write_queue.Enqueue(LOW, spdy::SpdyFrameType::HEADERS,
+                      std::move(producer_low), base::WeakPtr<SpdyStream>(),
                       TRAFFIC_ANNOTATION_FOR_TESTS);
-  write_queue.Enqueue(MEDIUM, SpdyFrameType::HEADERS,
+  write_queue.Enqueue(MEDIUM, spdy::SpdyFrameType::HEADERS,
                       std::move(producer_medium), stream_medium->GetWeakPtr(),
                       TRAFFIC_ANNOTATION_FOR_TESTS);
-  write_queue.Enqueue(HIGHEST, SpdyFrameType::RST_STREAM,
+  write_queue.Enqueue(HIGHEST, spdy::SpdyFrameType::RST_STREAM,
                       std::move(producer_highest), stream_highest->GetWeakPtr(),
                       TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  SpdyFrameType frame_type = SpdyFrameType::DATA;
+  spdy::SpdyFrameType frame_type = spdy::SpdyFrameType::DATA;
   std::unique_ptr<SpdyBufferProducer> frame_producer;
   base::WeakPtr<SpdyStream> stream;
   MutableNetworkTrafficAnnotationTag traffic_annotation;
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream,
                                   &traffic_annotation));
-  EXPECT_EQ(SpdyFrameType::RST_STREAM, frame_type);
+  EXPECT_EQ(spdy::SpdyFrameType::RST_STREAM, frame_type);
   EXPECT_EQ("HIGHEST", ProducerToString(std::move(frame_producer)));
   EXPECT_EQ(stream_highest.get(), stream.get());
 
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream,
                                   &traffic_annotation));
-  EXPECT_EQ(SpdyFrameType::HEADERS, frame_type);
+  EXPECT_EQ(spdy::SpdyFrameType::HEADERS, frame_type);
   EXPECT_EQ("MEDIUM", ProducerToString(std::move(frame_producer)));
   EXPECT_EQ(stream_medium.get(), stream.get());
 
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream,
                                   &traffic_annotation));
-  EXPECT_EQ(SpdyFrameType::HEADERS, frame_type);
+  EXPECT_EQ(spdy::SpdyFrameType::HEADERS, frame_type);
   EXPECT_EQ("LOW", ProducerToString(std::move(frame_producer)));
   EXPECT_EQ(nullptr, stream.get());
 
@@ -169,35 +169,35 @@ TEST_F(SpdyWriteQueueTest, DequeuesFIFO) {
   std::unique_ptr<SpdyStream> stream2 = MakeTestStream(DEFAULT_PRIORITY);
   std::unique_ptr<SpdyStream> stream3 = MakeTestStream(DEFAULT_PRIORITY);
 
-  write_queue.Enqueue(DEFAULT_PRIORITY, SpdyFrameType::HEADERS,
+  write_queue.Enqueue(DEFAULT_PRIORITY, spdy::SpdyFrameType::HEADERS,
                       std::move(producer1), stream1->GetWeakPtr(),
                       TRAFFIC_ANNOTATION_FOR_TESTS);
-  write_queue.Enqueue(DEFAULT_PRIORITY, SpdyFrameType::HEADERS,
+  write_queue.Enqueue(DEFAULT_PRIORITY, spdy::SpdyFrameType::HEADERS,
                       std::move(producer2), stream2->GetWeakPtr(),
                       TRAFFIC_ANNOTATION_FOR_TESTS);
-  write_queue.Enqueue(DEFAULT_PRIORITY, SpdyFrameType::RST_STREAM,
+  write_queue.Enqueue(DEFAULT_PRIORITY, spdy::SpdyFrameType::RST_STREAM,
                       std::move(producer3), stream3->GetWeakPtr(),
                       TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  SpdyFrameType frame_type = SpdyFrameType::DATA;
+  spdy::SpdyFrameType frame_type = spdy::SpdyFrameType::DATA;
   std::unique_ptr<SpdyBufferProducer> frame_producer;
   base::WeakPtr<SpdyStream> stream;
   MutableNetworkTrafficAnnotationTag traffic_annotation;
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream,
                                   &traffic_annotation));
-  EXPECT_EQ(SpdyFrameType::HEADERS, frame_type);
+  EXPECT_EQ(spdy::SpdyFrameType::HEADERS, frame_type);
   EXPECT_EQ(1, ProducerToInt(std::move(frame_producer)));
   EXPECT_EQ(stream1.get(), stream.get());
 
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream,
                                   &traffic_annotation));
-  EXPECT_EQ(SpdyFrameType::HEADERS, frame_type);
+  EXPECT_EQ(spdy::SpdyFrameType::HEADERS, frame_type);
   EXPECT_EQ(2, ProducerToInt(std::move(frame_producer)));
   EXPECT_EQ(stream2.get(), stream.get());
 
   ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream,
                                   &traffic_annotation));
-  EXPECT_EQ(SpdyFrameType::RST_STREAM, frame_type);
+  EXPECT_EQ(spdy::SpdyFrameType::RST_STREAM, frame_type);
   EXPECT_EQ(3, ProducerToInt(std::move(frame_producer)));
   EXPECT_EQ(stream3.get(), stream.get());
 
@@ -217,27 +217,27 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStream) {
   for (int i = 0; i < 100; ++i) {
     base::WeakPtr<SpdyStream> stream =
         (((i % 3) == 0) ? stream1 : stream2)->GetWeakPtr();
-    write_queue.Enqueue(DEFAULT_PRIORITY, SpdyFrameType::HEADERS,
+    write_queue.Enqueue(DEFAULT_PRIORITY, spdy::SpdyFrameType::HEADERS,
                         IntToProducer(i), stream, TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   write_queue.RemovePendingWritesForStream(stream2->GetWeakPtr());
 
   for (int i = 0; i < 100; i += 3) {
-    SpdyFrameType frame_type = SpdyFrameType::DATA;
+    spdy::SpdyFrameType frame_type = spdy::SpdyFrameType::DATA;
     std::unique_ptr<SpdyBufferProducer> frame_producer;
     base::WeakPtr<SpdyStream> stream;
     MutableNetworkTrafficAnnotationTag traffic_annotation;
     ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream,
                                     &traffic_annotation));
-    EXPECT_EQ(SpdyFrameType::HEADERS, frame_type);
+    EXPECT_EQ(spdy::SpdyFrameType::HEADERS, frame_type);
     EXPECT_EQ(i, ProducerToInt(std::move(frame_producer)));
     EXPECT_EQ(stream1.get(), stream.get());
     EXPECT_EQ(MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
               traffic_annotation);
   }
 
-  SpdyFrameType frame_type = SpdyFrameType::DATA;
+  spdy::SpdyFrameType frame_type = spdy::SpdyFrameType::DATA;
   std::unique_ptr<SpdyBufferProducer> frame_producer;
   base::WeakPtr<SpdyStream> stream;
   MutableNetworkTrafficAnnotationTag traffic_annotation;
@@ -266,7 +266,7 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStreamsAfter) {
   };
 
   for (int i = 0; i < 100; ++i) {
-    write_queue.Enqueue(DEFAULT_PRIORITY, SpdyFrameType::HEADERS,
+    write_queue.Enqueue(DEFAULT_PRIORITY, spdy::SpdyFrameType::HEADERS,
                         IntToProducer(i), streams[i % arraysize(streams)],
                         TRAFFIC_ANNOTATION_FOR_TESTS);
   }
@@ -274,21 +274,21 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStreamsAfter) {
   write_queue.RemovePendingWritesForStreamsAfter(stream1->stream_id());
 
   for (int i = 0; i < 100; i += arraysize(streams)) {
-    SpdyFrameType frame_type = SpdyFrameType::DATA;
+    spdy::SpdyFrameType frame_type = spdy::SpdyFrameType::DATA;
     std::unique_ptr<SpdyBufferProducer> frame_producer;
     base::WeakPtr<SpdyStream> stream;
     MutableNetworkTrafficAnnotationTag traffic_annotation;
     ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream,
                                     &traffic_annotation))
         << "Unable to Dequeue i: " << i;
-    EXPECT_EQ(SpdyFrameType::HEADERS, frame_type);
+    EXPECT_EQ(spdy::SpdyFrameType::HEADERS, frame_type);
     EXPECT_EQ(i, ProducerToInt(std::move(frame_producer)));
     EXPECT_EQ(stream1.get(), stream.get());
     EXPECT_EQ(MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
               traffic_annotation);
   }
 
-  SpdyFrameType frame_type = SpdyFrameType::DATA;
+  spdy::SpdyFrameType frame_type = spdy::SpdyFrameType::DATA;
   std::unique_ptr<SpdyBufferProducer> frame_producer;
   base::WeakPtr<SpdyStream> stream;
   MutableNetworkTrafficAnnotationTag traffic_annotation;
@@ -303,14 +303,14 @@ TEST_F(SpdyWriteQueueTest, Clear) {
   SpdyWriteQueue write_queue;
 
   for (int i = 0; i < 100; ++i) {
-    write_queue.Enqueue(DEFAULT_PRIORITY, SpdyFrameType::HEADERS,
+    write_queue.Enqueue(DEFAULT_PRIORITY, spdy::SpdyFrameType::HEADERS,
                         IntToProducer(i), base::WeakPtr<SpdyStream>(),
                         TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   write_queue.Clear();
 
-  SpdyFrameType frame_type = SpdyFrameType::DATA;
+  spdy::SpdyFrameType frame_type = spdy::SpdyFrameType::DATA;
   std::unique_ptr<SpdyBufferProducer> frame_producer;
   base::WeakPtr<SpdyStream> stream;
   MutableNetworkTrafficAnnotationTag traffic_annotation;
@@ -320,11 +320,11 @@ TEST_F(SpdyWriteQueueTest, Clear) {
 
 TEST_F(SpdyWriteQueueTest, RequeingProducerWithoutReentrance) {
   SpdyWriteQueue queue;
-  queue.Enqueue(DEFAULT_PRIORITY, SpdyFrameType::HEADERS,
+  queue.Enqueue(DEFAULT_PRIORITY, spdy::SpdyFrameType::HEADERS,
                 std::make_unique<RequeingBufferProducer>(&queue),
                 base::WeakPtr<SpdyStream>(), TRAFFIC_ANNOTATION_FOR_TESTS);
   {
-    SpdyFrameType frame_type;
+    spdy::SpdyFrameType frame_type;
     std::unique_ptr<SpdyBufferProducer> producer;
     base::WeakPtr<SpdyStream> stream;
     MutableNetworkTrafficAnnotationTag traffic_annotation;
@@ -338,7 +338,7 @@ TEST_F(SpdyWriteQueueTest, RequeingProducerWithoutReentrance) {
   // |producer| was destroyed, and a buffer is re-queued.
   EXPECT_FALSE(queue.IsEmpty());
 
-  SpdyFrameType frame_type;
+  spdy::SpdyFrameType frame_type;
   std::unique_ptr<SpdyBufferProducer> producer;
   base::WeakPtr<SpdyStream> stream;
   MutableNetworkTrafficAnnotationTag traffic_annotation;
@@ -351,14 +351,14 @@ TEST_F(SpdyWriteQueueTest, RequeingProducerWithoutReentrance) {
 
 TEST_F(SpdyWriteQueueTest, ReentranceOnClear) {
   SpdyWriteQueue queue;
-  queue.Enqueue(DEFAULT_PRIORITY, SpdyFrameType::HEADERS,
+  queue.Enqueue(DEFAULT_PRIORITY, spdy::SpdyFrameType::HEADERS,
                 std::make_unique<RequeingBufferProducer>(&queue),
                 base::WeakPtr<SpdyStream>(), TRAFFIC_ANNOTATION_FOR_TESTS);
 
   queue.Clear();
   EXPECT_FALSE(queue.IsEmpty());
 
-  SpdyFrameType frame_type;
+  spdy::SpdyFrameType frame_type;
   std::unique_ptr<SpdyBufferProducer> producer;
   base::WeakPtr<SpdyStream> stream;
   MutableNetworkTrafficAnnotationTag traffic_annotation;
@@ -374,14 +374,14 @@ TEST_F(SpdyWriteQueueTest, ReentranceOnRemovePendingWritesAfter) {
   stream->set_stream_id(2);
 
   SpdyWriteQueue queue;
-  queue.Enqueue(DEFAULT_PRIORITY, SpdyFrameType::HEADERS,
+  queue.Enqueue(DEFAULT_PRIORITY, spdy::SpdyFrameType::HEADERS,
                 std::make_unique<RequeingBufferProducer>(&queue),
                 stream->GetWeakPtr(), TRAFFIC_ANNOTATION_FOR_TESTS);
 
   queue.RemovePendingWritesForStreamsAfter(1);
   EXPECT_FALSE(queue.IsEmpty());
 
-  SpdyFrameType frame_type;
+  spdy::SpdyFrameType frame_type;
   std::unique_ptr<SpdyBufferProducer> producer;
   base::WeakPtr<SpdyStream> weak_stream;
   MutableNetworkTrafficAnnotationTag traffic_annotation;
@@ -397,14 +397,14 @@ TEST_F(SpdyWriteQueueTest, ReentranceOnRemovePendingWritesForStream) {
   stream->set_stream_id(2);
 
   SpdyWriteQueue queue;
-  queue.Enqueue(DEFAULT_PRIORITY, SpdyFrameType::HEADERS,
+  queue.Enqueue(DEFAULT_PRIORITY, spdy::SpdyFrameType::HEADERS,
                 std::make_unique<RequeingBufferProducer>(&queue),
                 stream->GetWeakPtr(), TRAFFIC_ANNOTATION_FOR_TESTS);
 
   queue.RemovePendingWritesForStream(stream->GetWeakPtr());
   EXPECT_FALSE(queue.IsEmpty());
 
-  SpdyFrameType frame_type;
+  spdy::SpdyFrameType frame_type;
   std::unique_ptr<SpdyBufferProducer> producer;
   base::WeakPtr<SpdyStream> weak_stream;
   MutableNetworkTrafficAnnotationTag traffic_annotation;

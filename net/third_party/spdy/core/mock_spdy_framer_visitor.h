@@ -17,7 +17,7 @@
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace net {
+namespace spdy {
 
 namespace test {
 
@@ -101,6 +101,6 @@ class MockSpdyFramerVisitor : public SpdyFramerVisitorInterface {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_MOCK_SPDY_FRAMER_VISITOR_H_

@@ -50,9 +50,9 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   // fail to set a priority client-side, or cancel a stream before stripping the
   // priority from the wire server-side.  In either case, start out with a
   // priority in the middle.
-  static const SpdyPriority kDefaultPriority = 3;
+  static const spdy::SpdyPriority kDefaultPriority = 3;
   static_assert(kDefaultPriority ==
-                    (kV3LowestPriority + kV3HighestPriority) / 2,
+                    (spdy::kV3LowestPriority + spdy::kV3HighestPriority) / 2,
                 "Unexpected value of kDefaultPriority");
 
   // Creates a new stream with stream_id |id| associated with |session|. If
@@ -106,11 +106,11 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   virtual void CloseConnectionWithDetails(QuicErrorCode error,
                                           const QuicString& details);
 
-  SpdyPriority priority() const;
+  spdy::SpdyPriority priority() const;
 
   // Sets priority_ to priority.  This should only be called before bytes are
   // written to the server.
-  void SetPriority(SpdyPriority priority);
+  void SetPriority(spdy::SpdyPriority priority);
 
   // Returns true if this stream is still waiting for acks of sent data.
   // This will return false if all data has been acked, or if the stream
@@ -358,7 +358,7 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   // Pointer to the owning QuicSession object.
   QuicSession* session_;
   // The priority of the stream, once parsed.
-  SpdyPriority priority_;
+  spdy::SpdyPriority priority_;
   // Bytes read refers to payload bytes only: they do not include framing,
   // encryption overhead etc.
   uint64_t stream_bytes_read_;

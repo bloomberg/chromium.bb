@@ -16,8 +16,8 @@
 namespace net {
 
 // TODO(jamessynge): create http2_simple_types for types similar to
-// SpdyStreamId, but not for structures like QuicHttpFrameHeader. Then will be
-// able to move these stream id functions there.
+// spdy::SpdyStreamId, but not for structures like QuicHttpFrameHeader. Then
+// will be able to move these stream id functions there.
 constexpr uint32_t QuicHttpUint31Mask() {
   return 0x7fffffff;
 }

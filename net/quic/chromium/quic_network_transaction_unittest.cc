@@ -441,31 +441,31 @@ class QuicNetworkTransactionTest : public PlatformTest,
   }
 
   // Uses default QuicTestPacketMaker.
-  SpdyHeaderBlock GetRequestHeaders(const std::string& method,
-                                    const std::string& scheme,
-                                    const std::string& path) {
+  spdy::SpdyHeaderBlock GetRequestHeaders(const std::string& method,
+                                          const std::string& scheme,
+                                          const std::string& path) {
     return GetRequestHeaders(method, scheme, path, &client_maker_);
   }
 
   // Uses customized QuicTestPacketMaker.
-  SpdyHeaderBlock GetRequestHeaders(const std::string& method,
-                                    const std::string& scheme,
-                                    const std::string& path,
-                                    QuicTestPacketMaker* maker) {
+  spdy::SpdyHeaderBlock GetRequestHeaders(const std::string& method,
+                                          const std::string& scheme,
+                                          const std::string& path,
+                                          QuicTestPacketMaker* maker) {
     return maker->GetRequestHeaders(method, scheme, path);
   }
 
-  SpdyHeaderBlock ConnectRequestHeaders(const std::string& host_port) {
+  spdy::SpdyHeaderBlock ConnectRequestHeaders(const std::string& host_port) {
     return client_maker_.ConnectRequestHeaders(host_port);
   }
 
-  SpdyHeaderBlock GetResponseHeaders(const std::string& status) {
+  spdy::SpdyHeaderBlock GetResponseHeaders(const std::string& status) {
     return server_maker_.GetResponseHeaders(status);
   }
 
   // Appends alt_svc headers in the response headers.
-  SpdyHeaderBlock GetResponseHeaders(const std::string& status,
-                                     const std::string& alt_svc) {
+  spdy::SpdyHeaderBlock GetResponseHeaders(const std::string& status,
+                                           const std::string& alt_svc) {
     return server_maker_.GetResponseHeaders(status, alt_svc);
   }
 
@@ -522,7 +522,7 @@ class QuicNetworkTransactionTest : public PlatformTest,
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      SpdyHeaderBlock headers) {
+      spdy::SpdyHeaderBlock headers) {
     return ConstructClientRequestHeadersPacket(packet_number, stream_id,
                                                should_include_version, fin,
                                                std::move(headers), nullptr);
@@ -533,7 +533,7 @@ class QuicNetworkTransactionTest : public PlatformTest,
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      SpdyHeaderBlock headers,
+      spdy::SpdyHeaderBlock headers,
       QuicStreamOffset* offset) {
     return ConstructClientRequestHeadersPacket(packet_number, stream_id,
                                                should_include_version, fin,
@@ -545,7 +545,7 @@ class QuicNetworkTransactionTest : public PlatformTest,
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      SpdyHeaderBlock headers,
+      spdy::SpdyHeaderBlock headers,
       QuicStreamId parent_stream_id,
       QuicStreamOffset* offset) {
     return ConstructClientRequestHeadersPacket(
@@ -559,10 +559,10 @@ class QuicNetworkTransactionTest : public PlatformTest,
       bool should_include_version,
       bool fin,
       RequestPriority request_priority,
-      SpdyHeaderBlock headers,
+      spdy::SpdyHeaderBlock headers,
       QuicStreamId parent_stream_id,
       QuicStreamOffset* offset) {
-    SpdyPriority priority =
+    spdy::SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(request_priority);
     return client_maker_.MakeRequestHeadersPacketWithOffsetTracking(
         packet_number, stream_id, should_include_version, fin, priority,
@@ -576,12 +576,12 @@ class QuicNetworkTransactionTest : public PlatformTest,
       bool should_include_version,
       bool fin,
       RequestPriority request_priority,
-      SpdyHeaderBlock headers,
+      spdy::SpdyHeaderBlock headers,
       QuicStreamId parent_stream_id,
       QuicStreamOffset* offset,
       size_t* spdy_headers_frame_length,
       const std::vector<std::string>& data_writes) {
-    SpdyPriority priority =
+    spdy::SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(request_priority);
     return client_maker_.MakeRequestHeadersAndMultipleDataFramesPacket(
         packet_number, stream_id, should_include_version, fin, priority,
@@ -605,7 +605,7 @@ class QuicNetworkTransactionTest : public PlatformTest,
       QuicStreamId stream_id,
       QuicStreamId promised_stream_id,
       bool should_include_version,
-      SpdyHeaderBlock headers,
+      spdy::SpdyHeaderBlock headers,
       QuicStreamOffset* offset,
       QuicTestPacketMaker* maker) {
     return maker->MakePushPromisePacket(
@@ -618,7 +618,7 @@ class QuicNetworkTransactionTest : public PlatformTest,
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      SpdyHeaderBlock headers) {
+      spdy::SpdyHeaderBlock headers) {
     return ConstructServerResponseHeadersPacket(packet_number, stream_id,
                                                 should_include_version, fin,
                                                 std::move(headers), nullptr);
@@ -629,7 +629,7 @@ class QuicNetworkTransactionTest : public PlatformTest,
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      SpdyHeaderBlock headers,
+      spdy::SpdyHeaderBlock headers,
       QuicStreamOffset* offset) {
     return server_maker_.MakeResponseHeadersPacketWithOffsetTracking(
         packet_number, stream_id, should_include_version, fin,
@@ -1157,7 +1157,7 @@ TEST_P(QuicNetworkTransactionTest, LargeResponseHeaders) {
       ConstructClientRequestHeadersPacket(
           2, GetNthClientInitiatedStreamId(0), true, true,
           GetRequestHeaders("GET", "https", "/"), &header_stream_offset));
-  SpdyHeaderBlock response_headers = GetResponseHeaders("200 OK");
+  spdy::SpdyHeaderBlock response_headers = GetResponseHeaders("200 OK");
   response_headers["key1"] = std::string(30000, 'A');
   response_headers["key2"] = std::string(30000, 'A');
   response_headers["key3"] = std::string(30000, 'A');
@@ -1166,10 +1166,10 @@ TEST_P(QuicNetworkTransactionTest, LargeResponseHeaders) {
   response_headers["key6"] = std::string(30000, 'A');
   response_headers["key7"] = std::string(30000, 'A');
   response_headers["key8"] = std::string(30000, 'A');
-  SpdyHeadersIR headers_frame(GetNthClientInitiatedStreamId(0),
-                              std::move(response_headers));
-  SpdyFramer response_framer(SpdyFramer::ENABLE_COMPRESSION);
-  SpdySerializedFrame spdy_frame =
+  spdy::SpdyHeadersIR headers_frame(GetNthClientInitiatedStreamId(0),
+                                    std::move(response_headers));
+  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
+  spdy::SpdySerializedFrame spdy_frame =
       response_framer.SerializeFrame(headers_frame);
 
   QuicPacketNumber packet_number = 1;
@@ -1212,7 +1212,7 @@ TEST_P(QuicNetworkTransactionTest, TooLargeResponseHeaders) {
       ConstructClientRequestHeadersPacket(
           2, GetNthClientInitiatedStreamId(0), true, true,
           GetRequestHeaders("GET", "https", "/"), &header_stream_offset));
-  SpdyHeaderBlock response_headers = GetResponseHeaders("200 OK");
+  spdy::SpdyHeaderBlock response_headers = GetResponseHeaders("200 OK");
   response_headers["key1"] = std::string(30000, 'A');
   response_headers["key2"] = std::string(30000, 'A');
   response_headers["key3"] = std::string(30000, 'A');
@@ -1222,10 +1222,10 @@ TEST_P(QuicNetworkTransactionTest, TooLargeResponseHeaders) {
   response_headers["key7"] = std::string(30000, 'A');
   response_headers["key8"] = std::string(30000, 'A');
   response_headers["key9"] = std::string(30000, 'A');
-  SpdyHeadersIR headers_frame(GetNthClientInitiatedStreamId(0),
-                              std::move(response_headers));
-  SpdyFramer response_framer(SpdyFramer::ENABLE_COMPRESSION);
-  SpdySerializedFrame spdy_frame =
+  spdy::SpdyHeadersIR headers_frame(GetNthClientInitiatedStreamId(0),
+                                    std::move(response_headers));
+  spdy::SpdyFramer response_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
+  spdy::SpdySerializedFrame spdy_frame =
       response_framer.SerializeFrame(headers_frame);
 
   QuicPacketNumber packet_number = 1;
@@ -2125,7 +2125,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
   QuicStreamOffset header_stream_offset = 0;
-  SpdyPriority priority =
+  spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
@@ -2233,7 +2233,7 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
   QuicStreamOffset header_stream_offset = 0;
-  SpdyPriority priority =
+  spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
@@ -2347,7 +2347,7 @@ TEST_P(QuicNetworkTransactionTest,
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
   QuicStreamOffset header_stream_offset = 0;
-  SpdyPriority priority =
+  spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
@@ -2540,7 +2540,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
   QuicStreamOffset header_stream_offset = 0;
-  SpdyPriority priority =
+  spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
@@ -2672,7 +2672,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
   QuicStreamOffset header_stream_offset = 0;
-  SpdyPriority priority =
+  spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
@@ -2808,7 +2808,7 @@ TEST_P(QuicNetworkTransactionTest,
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
   QuicStreamOffset header_stream_offset = 0;
-  SpdyPriority priority =
+  spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
@@ -2940,7 +2940,7 @@ TEST_P(QuicNetworkTransactionTest,
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
   QuicStreamOffset header_stream_offset = 0;
-  SpdyPriority priority =
+  spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
@@ -3079,7 +3079,7 @@ TEST_P(QuicNetworkTransactionTest,
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
   QuicStreamOffset header_stream_offset = 0;
-  SpdyPriority priority =
+  spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
@@ -3294,7 +3294,7 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
   QuicStreamOffset header_stream_offset = 0;
-  SpdyPriority priority =
+  spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
@@ -5666,7 +5666,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullRequest) {
   QuicStreamOffset header_stream_offset = 0;
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
-  SpdyHeaderBlock headers(GetRequestHeaders("GET", "https", "/"));
+  spdy::SpdyHeaderBlock headers(GetRequestHeaders("GET", "https", "/"));
   headers["user-agent"] = "";
   headers["accept-encoding"] = "gzip, deflate";
   mock_quic_data.AddWrite(SYNCHRONOUS,
@@ -5729,7 +5729,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructInitialSettingsPacket(client_packet_number++,
                                                   &header_stream_offset));
-  SpdyHeaderBlock headers(GetRequestHeaders("GET", "https", "/"));
+  spdy::SpdyHeaderBlock headers(GetRequestHeaders("GET", "https", "/"));
   headers["user-agent"] = "";
   headers["accept-encoding"] = "gzip, deflate";
   mock_quic_data.AddWrite(
@@ -5987,9 +5987,10 @@ class QuicNetworkTransactionWithDestinationTest
       QuicStreamId parent_stream_id,
       QuicStreamOffset* offset,
       QuicTestPacketMaker* maker) {
-    SpdyPriority priority =
+    spdy::SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
-    SpdyHeaderBlock headers(maker->GetRequestHeaders("GET", "https", "/"));
+    spdy::SpdyHeaderBlock headers(
+        maker->GetRequestHeaders("GET", "https", "/"));
     return maker->MakeRequestHeadersPacketWithOffsetTracking(
         packet_number, stream_id, should_include_version, true, priority,
         std::move(headers), parent_stream_id, offset);
@@ -6009,7 +6010,7 @@ class QuicNetworkTransactionWithDestinationTest
       QuicStreamId stream_id,
       QuicStreamOffset* offset,
       QuicTestPacketMaker* maker) {
-    SpdyHeaderBlock headers(maker->GetResponseHeaders("200 OK"));
+    spdy::SpdyHeaderBlock headers(maker->GetResponseHeaders("200 OK"));
     return maker->MakeResponseHeadersPacketWithOffsetTracking(
         packet_number, stream_id, false, false, std::move(headers), offset);
   }
@@ -6462,7 +6463,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
 // valid URL with empty hostname, then X509Certificate::VerifyHostname() must
 // not be called (otherwise a DCHECK fails).
 TEST_P(QuicNetworkTransactionTest, QuicServerPushWithEmptyHostname) {
-  SpdyHeaderBlock pushed_request_headers;
+  spdy::SpdyHeaderBlock pushed_request_headers;
   pushed_request_headers[":authority"] = "";
   pushed_request_headers[":method"] = "GET";
   pushed_request_headers[":path"] = "/";
@@ -6618,21 +6619,21 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
 
   SpdyTestUtil spdy_util;
 
-  SpdySerializedFrame get_frame =
+  spdy::SpdySerializedFrame get_frame =
       spdy_util.ConstructSpdyGet("https://mail.example.org/", 1, LOWEST);
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientAckAndDataPacket(
           3, false, GetNthClientInitiatedStreamId(0), 1, 1, 1, false, 0,
           QuicStringPiece(get_frame.data(), get_frame.size())));
-  SpdySerializedFrame resp_frame =
+  spdy::SpdySerializedFrame resp_frame =
       spdy_util.ConstructSpdyGetReply(nullptr, 0, 1);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedStreamId(0), false, false, 0,
                  QuicStringPiece(resp_frame.data(), resp_frame.size())));
 
-  SpdySerializedFrame data_frame =
+  spdy::SpdySerializedFrame data_frame =
       spdy_util.ConstructSpdyDataFrame(1, "0123456789", true);
   mock_quic_data.AddRead(
       SYNCHRONOUS,
@@ -6861,7 +6862,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
 
   // GET request, response, and data over QUIC tunnel for second request
   SpdyTestUtil spdy_util;
-  SpdySerializedFrame get_frame =
+  spdy::SpdySerializedFrame get_frame =
       spdy_util.ConstructSpdyGet("https://different.example.org/", 1, LOWEST);
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
@@ -6869,14 +6870,14 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
           6, false, GetNthClientInitiatedStreamId(1), 4, 4, 1, false, 0,
           QuicStringPiece(get_frame.data(), get_frame.size())));
 
-  SpdySerializedFrame resp_frame =
+  spdy::SpdySerializedFrame resp_frame =
       spdy_util.ConstructSpdyGetReply(nullptr, 0, 1);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  5, GetNthClientInitiatedStreamId(1), false, false, 0,
                  QuicStringPiece(resp_frame.data(), resp_frame.size())));
 
-  SpdySerializedFrame data_frame =
+  spdy::SpdySerializedFrame data_frame =
       spdy_util.ConstructSpdyDataFrame(1, "0123456", true);
   mock_quic_data.AddRead(
       ASYNC,
@@ -7137,7 +7138,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyUserAgent) {
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
 
-  SpdyHeaderBlock headers = ConnectRequestHeaders("mail.example.org:443");
+  spdy::SpdyHeaderBlock headers = ConnectRequestHeaders("mail.example.org:443");
   headers["user-agent"] = "Chromium Ultra Awesome X Edition";
   mock_quic_data.AddWrite(SYNCHRONOUS,
                           ConstructClientRequestHeadersPacket(
@@ -7211,7 +7212,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyRequestPriority) {
 TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
   const base::string16 kBaz(base::ASCIIToUTF16("baz"));
   const base::string16 kFoo(base::ASCIIToUTF16("foo"));
-  const SpdyPriority default_priority =
+  const spdy::SpdyPriority default_priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::unique_ptr<QuicTestPacketMaker> client_maker;
@@ -7250,7 +7251,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
             client_maker->ConnectRequestHeaders("mail.example.org:443"), 0,
             &client_header_stream_offset));
 
-    SpdyHeaderBlock headers =
+    spdy::SpdyHeaderBlock headers =
         server_maker->GetResponseHeaders("407 Proxy Authentication Required");
     headers["proxy-authenticate"] = "Basic realm=\"MyRealm1\"";
     headers["content-length"] = "10";

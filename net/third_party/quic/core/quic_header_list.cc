@@ -39,7 +39,7 @@ void QuicHeaderList::OnHeader(QuicStringPiece name, QuicStringPiece value) {
   if (current_header_list_size_ < max_header_list_size_) {
     current_header_list_size_ += name.size();
     current_header_list_size_ += value.size();
-    current_header_list_size_ += kPerHeaderOverhead;
+    current_header_list_size_ += spdy::kPerHeaderOverhead;
     header_list_.emplace_back(QuicString(name), QuicString(value));
   }
 }

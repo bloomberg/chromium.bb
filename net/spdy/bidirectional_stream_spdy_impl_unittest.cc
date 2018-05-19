@@ -91,7 +91,8 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
     CHECK(!on_failed_called_);
   }
 
-  void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override {
+  void OnHeadersReceived(
+      const spdy::SpdyHeaderBlock& response_headers) override {
     CHECK(!on_failed_called_);
     CHECK(!not_expect_callback_);
     response_headers_ = response_headers.Clone();
@@ -116,7 +117,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
     on_data_sent_count_++;
   }
 
-  void OnTrailersReceived(const SpdyHeaderBlock& trailers) override {
+  void OnTrailersReceived(const spdy::SpdyHeaderBlock& trailers) override {
     CHECK(!on_failed_called_);
     trailers_ = trailers.Clone();
     if (run_until_completion_)
@@ -202,8 +203,10 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   const std::string& data_received() const { return data_received_; }
   int bytes_read() const { return bytes_read_; }
   int error() const { return error_; }
-  const SpdyHeaderBlock& response_headers() const { return response_headers_; }
-  const SpdyHeaderBlock& trailers() const { return trailers_; }
+  const spdy::SpdyHeaderBlock& response_headers() const {
+    return response_headers_;
+  }
+  const spdy::SpdyHeaderBlock& trailers() const { return trailers_; }
   int on_data_read_count() const { return on_data_read_count_; }
   int on_data_sent_count() const { return on_data_sent_count_; }
   bool on_failed_called() const { return on_failed_called_; }
@@ -219,8 +222,8 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   int read_buf_len_;
   std::string data_received_;
   std::unique_ptr<base::RunLoop> loop_;
-  SpdyHeaderBlock response_headers_;
-  SpdyHeaderBlock trailers_;
+  spdy::SpdyHeaderBlock response_headers_;
+  spdy::SpdyHeaderBlock trailers_;
   int error_;
   int bytes_read_;
   int on_data_read_count_;
@@ -286,15 +289,15 @@ class BidirectionalStreamSpdyImplTest : public testing::TestWithParam<bool>,
 };
 
 TEST_F(BidirectionalStreamSpdyImplTest, SimplePostRequest) {
-  SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize, LOW, nullptr, 0));
-  SpdySerializedFrame data_frame(spdy_util_.ConstructSpdyDataFrame(
+  spdy::SpdySerializedFrame data_frame(spdy_util_.ConstructSpdyDataFrame(
       1, base::StringPiece(kBodyData, kBodyDataSize), /*fin=*/true));
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(data_frame, 3),
   };
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
-  SpdySerializedFrame response_body_frame(
+  spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
+  spdy::SpdySerializedFrame response_body_frame(
       spdy_util_.ConstructSpdyDataFrame(1, /*fin=*/true));
   MockRead reads[] = {
       CreateMockRead(resp, 1),
@@ -334,20 +337,20 @@ TEST_F(BidirectionalStreamSpdyImplTest, SimplePostRequest) {
 }
 
 TEST_F(BidirectionalStreamSpdyImplTest, LoadTimingTwoRequests) {
-  SpdySerializedFrame req(
+  spdy::SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, /*stream_id=*/1, LOW));
-  SpdySerializedFrame req2(
+  spdy::SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyGet(nullptr, 0, /*stream_id=*/3, LOW));
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(req2, 2),
   };
-  SpdySerializedFrame resp(
+  spdy::SpdySerializedFrame resp(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, /*stream_id=*/1));
-  SpdySerializedFrame resp2(
+  spdy::SpdySerializedFrame resp2(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, /*stream_id=*/3));
-  SpdySerializedFrame resp_body(
+  spdy::SpdySerializedFrame resp_body(
       spdy_util_.ConstructSpdyDataFrame(/*stream_id=*/1, /*fin=*/true));
-  SpdySerializedFrame resp_body2(
+  spdy::SpdySerializedFrame resp_body2(
       spdy_util_.ConstructSpdyDataFrame(/*stream_id=*/3, /*fin=*/true));
   MockRead reads[] = {CreateMockRead(resp, 1), CreateMockRead(resp_body, 3),
                       CreateMockRead(resp2, 4), CreateMockRead(resp_body2, 5),
@@ -382,17 +385,17 @@ TEST_F(BidirectionalStreamSpdyImplTest, LoadTimingTwoRequests) {
 }
 
 TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterStreamFailed) {
-  SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOW, nullptr, 0));
-  SpdySerializedFrame rst(
-      spdy_util_.ConstructSpdyRstStream(1, ERROR_CODE_PROTOCOL_ERROR));
+  spdy::SpdySerializedFrame rst(
+      spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_PROTOCOL_ERROR));
 
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(rst, 2),
   };
 
   const char* const kExtraHeaders[] = {"X-UpperCase", "yes"};
-  SpdySerializedFrame resp(
+  spdy::SpdySerializedFrame resp(
       spdy_util_.ConstructSpdyGetReply(kExtraHeaders, 1, 1));
 
   MockRead reads[] = {
@@ -440,13 +443,13 @@ INSTANTIATE_TEST_CASE_P(BidirectionalStreamSpdyImplTests,
 // not crash when processing pending writes. See crbug.com/650438.
 TEST_P(BidirectionalStreamSpdyImplTest, RstWithNoErrorBeforeSendIsComplete) {
   bool is_test_sendv = GetParam();
-  SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOW, nullptr, 0));
   MockWrite writes[] = {CreateMockWrite(req, 0)};
 
-  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
-  SpdySerializedFrame rst(
-      spdy_util_.ConstructSpdyRstStream(1, ERROR_CODE_NO_ERROR));
+  spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
+  spdy::SpdySerializedFrame rst(
+      spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_NO_ERROR));
   MockRead reads[] = {CreateMockRead(resp, 1),
                       MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause.
                       CreateMockRead(rst, 3), MockRead(ASYNC, 0, 4)};

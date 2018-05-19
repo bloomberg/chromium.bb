@@ -16,11 +16,12 @@
 namespace net {
 
 // A helper class encapsulating the state and logic to set the priority fields
-// for HTTP/2 streams based on their SpdyPriority and the ordering of creation
-// and deletion of the streams. This implentation includes a gross hack in which
-// the HTTP/2 weight is set to a transformation of the SpdyPriority value
-// in order to support servers which do not honor HTTP/2 stream dependencies
-// and instead treat the weight value like a SPDY/3 priority.
+// for HTTP/2 streams based on their spdy::SpdyPriority and the ordering of
+// creation and deletion of the streams. This implentation includes a gross hack
+// in which the HTTP/2 weight is set to a transformation of the
+// spdy::SpdyPriority value in order to support servers which do not honor
+// HTTP/2 stream dependencies and instead treat the weight value like a SPDY/3
+// priority.
 // TODO(rch): Eliminate this gross hack when servers no longer act like this.
 class NET_EXPORT_PRIVATE Http2PriorityDependencies {
  public:
@@ -33,18 +34,18 @@ class NET_EXPORT_PRIVATE Http2PriorityDependencies {
   // the parent of this stream, |*exclusive| is set to whether that dependency
   // should be exclusive, and |*weight| is set to the relative weight for the
   // created stream given this priority.
-  void OnStreamCreation(SpdyStreamId id,
-                        SpdyPriority priority,
-                        SpdyStreamId* parent_stream_id,
+  void OnStreamCreation(spdy::SpdyStreamId id,
+                        spdy::SpdyPriority priority,
+                        spdy::SpdyStreamId* parent_stream_id,
                         int* weight,
                         bool* exclusive);
 
   // Called when a stream is destroyed.
-  void OnStreamDestruction(SpdyStreamId id);
+  void OnStreamDestruction(spdy::SpdyStreamId id);
 
   struct DependencyUpdate {
-    SpdyStreamId id;
-    SpdyStreamId parent_stream_id;
+    spdy::SpdyStreamId id;
+    spdy::SpdyStreamId parent_stream_id;
     int weight;
     bool exclusive;
   };
@@ -53,8 +54,8 @@ class NET_EXPORT_PRIVATE Http2PriorityDependencies {
   // dependency updates that should be sent to the server to describe
   // the requested priority change. The updates should be sent in the
   // given order.
-  std::vector<DependencyUpdate> OnStreamUpdate(SpdyStreamId id,
-                                               SpdyPriority new_priority);
+  std::vector<DependencyUpdate> OnStreamUpdate(spdy::SpdyStreamId id,
+                                               spdy::SpdyPriority new_priority);
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
@@ -68,10 +69,10 @@ class NET_EXPORT_PRIVATE Http2PriorityDependencies {
   // needed for (b).  The priority must be included in the map
   // entries so that deletion can determine which list in id_priority_lists_
   // to erase from.
-  using IdList = std::list<std::pair<SpdyStreamId, SpdyPriority>>;
-  using EntryMap = std::map<SpdyStreamId, IdList::iterator>;
+  using IdList = std::list<std::pair<spdy::SpdyStreamId, spdy::SpdyPriority>>;
+  using EntryMap = std::map<spdy::SpdyStreamId, IdList::iterator>;
 
-  IdList id_priority_lists_[kV3LowestPriority + 1];
+  IdList id_priority_lists_[spdy::kV3LowestPriority + 1];
 
   // Tracks the location of an id anywhere in the above vector of lists.
   // Iterators to list elements remain valid until those particular elements
@@ -81,17 +82,17 @@ class NET_EXPORT_PRIVATE Http2PriorityDependencies {
   // Finds the lowest-priority stream that has a priority >= |priority|.
   // Returns false if there are no such streams.
   // Otherwise, returns true and sets |*bound|.
-  bool PriorityLowerBound(SpdyPriority priority, IdList::iterator* bound);
+  bool PriorityLowerBound(spdy::SpdyPriority priority, IdList::iterator* bound);
 
   // Finds the stream just above |id| in the total order.
   // Returns false if there are no streams with a higher priority.
   // Otherwise, returns true and sets |*parent|.
-  bool ParentOfStream(SpdyStreamId id, IdList::iterator* parent);
+  bool ParentOfStream(spdy::SpdyStreamId id, IdList::iterator* parent);
 
   // Finds the stream just below |id| in the total order.
   // Returns false if there are no streams with a lower priority.
   // Otherwise, returns true and sets |*child|.
-  bool ChildOfStream(SpdyStreamId id, IdList::iterator* child);
+  bool ChildOfStream(spdy::SpdyStreamId id, IdList::iterator* child);
 };
 
 }  // namespace net

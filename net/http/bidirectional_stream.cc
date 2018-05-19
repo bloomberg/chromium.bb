@@ -37,7 +37,7 @@ namespace net {
 namespace {
 
 std::unique_ptr<base::Value> NetLogHeadersCallback(
-    const SpdyHeaderBlock* headers,
+    const spdy::SpdyHeaderBlock* headers,
     NetLogCaptureMode capture_mode) {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
@@ -238,7 +238,7 @@ void BidirectionalStream::OnStreamReady(bool request_headers_sent) {
 }
 
 void BidirectionalStream::OnHeadersReceived(
-    const SpdyHeaderBlock& response_headers) {
+    const spdy::SpdyHeaderBlock& response_headers) {
   HttpResponseInfo response_info;
   if (!SpdyHeadersToHttpResponse(response_headers, &response_info)) {
     DLOG(WARNING) << "Invalid headers";
@@ -306,7 +306,8 @@ void BidirectionalStream::OnDataSent() {
   delegate_->OnDataSent();
 }
 
-void BidirectionalStream::OnTrailersReceived(const SpdyHeaderBlock& trailers) {
+void BidirectionalStream::OnTrailersReceived(
+    const spdy::SpdyHeaderBlock& trailers) {
   if (net_log_.IsCapturing()) {
     net_log_.AddEvent(NetLogEventType::BIDIRECTIONAL_STREAM_RECV_TRAILERS,
                       base::Bind(&NetLogHeadersCallback, &trailers));

@@ -15,7 +15,7 @@
 // All section references below are to
 // http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
 
-namespace net {
+namespace spdy {
 
 // An HpackPrefix signifies |bits| stored in the top |bit_size| bits
 // of an octet.
@@ -89,6 +89,6 @@ SPDY_EXPORT_PRIVATE const HpackStaticTable& ObtainHpackStaticTable();
 // Pseudo-headers start with a colon.  (HTTP2 8.1.2.1., HPACK 3.1.)
 const char kPseudoHeaderPrefix = ':';
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_CONSTANTS_H_

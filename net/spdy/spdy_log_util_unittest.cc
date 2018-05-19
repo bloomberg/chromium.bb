@@ -20,7 +20,7 @@ TEST(SpdyLogUtilTest, ElideGoAwayDebugDataForNetLog) {
 }
 
 TEST(SpdyLogUtilTest, ElideSpdyHeaderBlockForNetLog) {
-  SpdyHeaderBlock headers;
+  spdy::SpdyHeaderBlock headers;
   headers["foo"] = "bar";
   headers["cookie"] = "name=value";
 

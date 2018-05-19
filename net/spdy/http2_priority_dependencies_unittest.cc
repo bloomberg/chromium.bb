@@ -35,20 +35,20 @@ class HttpPriorityDependencyTest : public PlatformTest {
 
   // Fixed priority values to use for testing.
   enum {
-    HIGHEST = kV3HighestPriority,
+    HIGHEST = spdy::kV3HighestPriority,
     MEDIUM = HIGHEST + 1,
     LOW = MEDIUM + 1,
-    LOWEST = kV3LowestPriority,
+    LOWEST = spdy::kV3LowestPriority,
   };
 
-  SpdyStreamId GetId() { return ++next_id_; }
+  spdy::SpdyStreamId GetId() { return ++next_id_; }
 
-  void TestStreamCreation(SpdyStreamId new_id,
-                          SpdyPriority priority,
-                          SpdyStreamId expected_parent_id) {
-    int expected_weight = Spdy3PriorityToHttp2Weight(priority);
+  void TestStreamCreation(spdy::SpdyStreamId new_id,
+                          spdy::SpdyPriority priority,
+                          spdy::SpdyStreamId expected_parent_id) {
+    int expected_weight = spdy::Spdy3PriorityToHttp2Weight(priority);
 
-    SpdyStreamId parent_id = 999u;
+    spdy::SpdyStreamId parent_id = 999u;
     int weight = -1;
     bool exclusive = false;
     dependency_state_.OnStreamCreation(new_id, priority, &parent_id, &weight,
@@ -65,13 +65,13 @@ class HttpPriorityDependencyTest : public PlatformTest {
   }
 
   struct ExpectedDependencyUpdate {
-    SpdyStreamId id;
-    SpdyStreamId parent_id;
+    spdy::SpdyStreamId id;
+    spdy::SpdyStreamId parent_id;
     int weight;
   };
 
-  void TestStreamUpdate(SpdyStreamId id,
-                        SpdyPriority new_priority,
+  void TestStreamUpdate(spdy::SpdyStreamId id,
+                        spdy::SpdyPriority new_priority,
                         std::vector<ExpectedDependencyUpdate> expected) {
     auto value = dependency_state_.OnStreamUpdate(id, new_priority);
     std::vector<Http2PriorityDependencies::DependencyUpdate> expected_value;
@@ -87,20 +87,20 @@ class HttpPriorityDependencyTest : public PlatformTest {
     }
   }
 
-  void OnStreamDestruction(SpdyStreamId id) {
+  void OnStreamDestruction(spdy::SpdyStreamId id) {
     dependency_state_.OnStreamDestruction(id);
   }
 
  private:
-  SpdyStreamId next_id_;
+  spdy::SpdyStreamId next_id_;
   Http2PriorityDependencies dependency_state_;
 };
 
 // Confirm dependencies correct for entries at the same priority.
 TEST_F(HttpPriorityDependencyTest, SamePriority) {
-  const SpdyStreamId first_id = GetId();
-  const SpdyStreamId second_id = GetId();
-  const SpdyStreamId third_id = GetId();
+  const spdy::SpdyStreamId first_id = GetId();
+  const spdy::SpdyStreamId second_id = GetId();
+  const spdy::SpdyStreamId third_id = GetId();
 
   TestStreamCreation(first_id, MEDIUM, 0u);
   TestStreamCreation(second_id, MEDIUM, first_id);
@@ -109,9 +109,9 @@ TEST_F(HttpPriorityDependencyTest, SamePriority) {
 
 // Confirm dependencies correct for entries at different priorities, increasing.
 TEST_F(HttpPriorityDependencyTest, DifferentPriorityIncreasing) {
-  const SpdyStreamId first_id = GetId();
-  const SpdyStreamId second_id = GetId();
-  const SpdyStreamId third_id = GetId();
+  const spdy::SpdyStreamId first_id = GetId();
+  const spdy::SpdyStreamId second_id = GetId();
+  const spdy::SpdyStreamId third_id = GetId();
 
   TestStreamCreation(first_id, LOWEST, 0u);
   TestStreamCreation(second_id, MEDIUM, 0u);
@@ -120,9 +120,9 @@ TEST_F(HttpPriorityDependencyTest, DifferentPriorityIncreasing) {
 
 // Confirm dependencies correct for entries at different priorities, increasing.
 TEST_F(HttpPriorityDependencyTest, DifferentPriorityDecreasing) {
-  const SpdyStreamId first_id = GetId();
-  const SpdyStreamId second_id = GetId();
-  const SpdyStreamId third_id = GetId();
+  const spdy::SpdyStreamId first_id = GetId();
+  const spdy::SpdyStreamId second_id = GetId();
+  const spdy::SpdyStreamId third_id = GetId();
 
   TestStreamCreation(first_id, HIGHEST, 0u);
   TestStreamCreation(second_id, MEDIUM, first_id);
@@ -132,9 +132,9 @@ TEST_F(HttpPriorityDependencyTest, DifferentPriorityDecreasing) {
 // Confirm dependencies correct if requests are completed between before
 // next creation.
 TEST_F(HttpPriorityDependencyTest, CompletionBeforeIssue) {
-  const SpdyStreamId first_id = GetId();
-  const SpdyStreamId second_id = GetId();
-  const SpdyStreamId third_id = GetId();
+  const spdy::SpdyStreamId first_id = GetId();
+  const spdy::SpdyStreamId second_id = GetId();
+  const spdy::SpdyStreamId third_id = GetId();
 
   TestStreamCreation(first_id, HIGHEST, 0u);
   OnStreamDestruction(first_id);
@@ -146,9 +146,9 @@ TEST_F(HttpPriorityDependencyTest, CompletionBeforeIssue) {
 // Confirm dependencies correct if some requests are completed between before
 // next creation.
 TEST_F(HttpPriorityDependencyTest, SomeCompletions) {
-  const SpdyStreamId first_id = GetId();
-  const SpdyStreamId second_id = GetId();
-  const SpdyStreamId third_id = GetId();
+  const spdy::SpdyStreamId first_id = GetId();
+  const spdy::SpdyStreamId second_id = GetId();
+  const spdy::SpdyStreamId third_id = GetId();
 
   TestStreamCreation(first_id, HIGHEST, 0u);
   TestStreamCreation(second_id, MEDIUM, first_id);
@@ -158,16 +158,16 @@ TEST_F(HttpPriorityDependencyTest, SomeCompletions) {
 
 // A more complex example parallel to a simple web page.
 TEST_F(HttpPriorityDependencyTest, Complex) {
-  const SpdyStreamId first_id = GetId();
-  const SpdyStreamId second_id = GetId();
-  const SpdyStreamId third_id = GetId();
-  const SpdyStreamId fourth_id = GetId();
-  const SpdyStreamId fifth_id = GetId();
-  const SpdyStreamId sixth_id = GetId();
-  const SpdyStreamId seventh_id = GetId();
-  const SpdyStreamId eighth_id = GetId();
-  const SpdyStreamId nineth_id = GetId();
-  const SpdyStreamId tenth_id = GetId();
+  const spdy::SpdyStreamId first_id = GetId();
+  const spdy::SpdyStreamId second_id = GetId();
+  const spdy::SpdyStreamId third_id = GetId();
+  const spdy::SpdyStreamId fourth_id = GetId();
+  const spdy::SpdyStreamId fifth_id = GetId();
+  const spdy::SpdyStreamId sixth_id = GetId();
+  const spdy::SpdyStreamId seventh_id = GetId();
+  const spdy::SpdyStreamId eighth_id = GetId();
+  const spdy::SpdyStreamId nineth_id = GetId();
+  const spdy::SpdyStreamId tenth_id = GetId();
 
   TestStreamCreation(first_id, HIGHEST, 0u);
   TestStreamCreation(second_id, MEDIUM, first_id);
@@ -191,7 +191,7 @@ TEST_F(HttpPriorityDependencyTest, Complex) {
 // Confirm dependencies correct after updates with just one stream.
 // All updates are no-ops.
 TEST_F(HttpPriorityDependencyTest, UpdateSingleStream) {
-  const SpdyStreamId id = GetId();
+  const spdy::SpdyStreamId id = GetId();
 
   TestStreamCreation(id, HIGHEST, 0);
 
@@ -204,17 +204,17 @@ TEST_F(HttpPriorityDependencyTest, UpdateSingleStream) {
 
 // Confirm dependencies correct after updates with three streams.
 TEST_F(HttpPriorityDependencyTest, UpdateThreeStreams) {
-  const SpdyStreamId first_id = GetId();
-  const SpdyStreamId second_id = GetId();
-  const SpdyStreamId third_id = GetId();
+  const spdy::SpdyStreamId first_id = GetId();
+  const spdy::SpdyStreamId second_id = GetId();
+  const spdy::SpdyStreamId third_id = GetId();
 
   TestStreamCreation(first_id, HIGHEST, 0);
   TestStreamCreation(second_id, MEDIUM, first_id);
   TestStreamCreation(third_id, LOWEST, second_id);
 
-  const int highest_weight = Spdy3PriorityToHttp2Weight(HIGHEST);
-  const int medium_weight = Spdy3PriorityToHttp2Weight(MEDIUM);
-  const int lowest_weight = Spdy3PriorityToHttp2Weight(LOWEST);
+  const int highest_weight = spdy::Spdy3PriorityToHttp2Weight(HIGHEST);
+  const int medium_weight = spdy::Spdy3PriorityToHttp2Weight(MEDIUM);
+  const int lowest_weight = spdy::Spdy3PriorityToHttp2Weight(LOWEST);
 
   std::vector<ExpectedDependencyUpdate> empty;
 
@@ -248,13 +248,13 @@ TEST_F(HttpPriorityDependencyTest, UpdateThreeStreams) {
 
 // A more complex example parallel to a simple web page with pushed responses.
 TEST_F(HttpPriorityDependencyTest, UpdateComplex) {
-  const SpdyStreamId first_id = GetId();
-  const SpdyStreamId second_id = GetId();  // pushed
-  const SpdyStreamId third_id = GetId();   // pushed
-  const SpdyStreamId fourth_id = GetId();
-  const SpdyStreamId fifth_id = GetId();
-  const SpdyStreamId sixth_id = GetId();
-  const SpdyStreamId seventh_id = GetId();
+  const spdy::SpdyStreamId first_id = GetId();
+  const spdy::SpdyStreamId second_id = GetId();  // pushed
+  const spdy::SpdyStreamId third_id = GetId();   // pushed
+  const spdy::SpdyStreamId fourth_id = GetId();
+  const spdy::SpdyStreamId fifth_id = GetId();
+  const spdy::SpdyStreamId sixth_id = GetId();
+  const spdy::SpdyStreamId seventh_id = GetId();
 
   TestStreamCreation(first_id, HIGHEST, 0u);
   TestStreamCreation(second_id, LOWEST, first_id);
@@ -264,9 +264,9 @@ TEST_F(HttpPriorityDependencyTest, UpdateComplex) {
   TestStreamCreation(sixth_id, MEDIUM, fifth_id);
   TestStreamCreation(seventh_id, LOW, sixth_id);
 
-  const int highest_weight = Spdy3PriorityToHttp2Weight(HIGHEST);
-  const int medium_weight = Spdy3PriorityToHttp2Weight(MEDIUM);
-  const int lowest_weight = Spdy3PriorityToHttp2Weight(LOWEST);
+  const int highest_weight = spdy::Spdy3PriorityToHttp2Weight(HIGHEST);
+  const int medium_weight = spdy::Spdy3PriorityToHttp2Weight(MEDIUM);
+  const int lowest_weight = spdy::Spdy3PriorityToHttp2Weight(LOWEST);
 
   // second matches a HIGHEST priority response.
   // 3 moves under 7

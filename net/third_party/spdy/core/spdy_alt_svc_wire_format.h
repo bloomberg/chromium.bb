@@ -17,7 +17,7 @@
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 
 namespace test {
 class SpdyAltSvcWireFormatPeer;
@@ -82,6 +82,6 @@ class SPDY_EXPORT_PRIVATE SpdyAltSvcWireFormat {
                                      uint32_t* value);
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_SPDY_ALT_SVC_WIRE_FORMAT_H_

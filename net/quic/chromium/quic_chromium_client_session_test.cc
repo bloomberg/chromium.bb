@@ -790,7 +790,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutNoResponse) {
           session_.get());
   EXPECT_TRUE(stream);
 
-  SpdyHeaderBlock promise_headers;
+  spdy::SpdyHeaderBlock promise_headers;
   promise_headers[":method"] = "GET";
   promise_headers[":authority"] = "www.example.org";
   promise_headers[":scheme"] = "https";
@@ -839,7 +839,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutWithResponse) {
           session_.get());
   EXPECT_TRUE(stream);
 
-  SpdyHeaderBlock promise_headers;
+  spdy::SpdyHeaderBlock promise_headers;
   promise_headers[":method"] = "GET";
   promise_headers[":authority"] = "www.example.org";
   promise_headers[":scheme"] = "https";
@@ -850,7 +850,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutWithResponse) {
   EXPECT_TRUE(session_->HandlePromised(
       stream->id(), GetNthServerInitiatedStreamId(0), promise_headers));
   session_->OnInitialHeadersComplete(GetNthServerInitiatedStreamId(0),
-                                     SpdyHeaderBlock());
+                                     spdy::SpdyHeaderBlock());
   // Read data on the pushed stream.
   QuicStreamFrame data(GetNthServerInitiatedStreamId(0), false, 0,
                        QuicStringPiece("SP"));
@@ -893,7 +893,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushWhenPendingValidation) {
           session_.get());
   EXPECT_TRUE(stream);
 
-  SpdyHeaderBlock promise_headers;
+  spdy::SpdyHeaderBlock promise_headers;
   promise_headers[":method"] = "GET";
   promise_headers[":authority"] = "www.example.org";
   promise_headers[":scheme"] = "https";
@@ -908,7 +908,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushWhenPendingValidation) {
   EXPECT_TRUE(promised);
 
   // Initiate rendezvous.
-  SpdyHeaderBlock client_request = promise_headers.Clone();
+  spdy::SpdyHeaderBlock client_request = promise_headers.Clone();
   TestPushPromiseDelegate delegate(/*match=*/true);
   promised->HandleClientRequest(client_request, &delegate);
 
@@ -947,7 +947,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushBeforeReceivingResponse) {
           session_.get());
   EXPECT_TRUE(stream);
 
-  SpdyHeaderBlock promise_headers;
+  spdy::SpdyHeaderBlock promise_headers;
   promise_headers[":method"] = "GET";
   promise_headers[":authority"] = "www.example.org";
   promise_headers[":scheme"] = "https";
@@ -997,7 +997,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
           session_.get());
   EXPECT_TRUE(stream);
 
-  SpdyHeaderBlock promise_headers;
+  spdy::SpdyHeaderBlock promise_headers;
   promise_headers[":method"] = "GET";
   promise_headers[":authority"] = "www.example.org";
   promise_headers[":scheme"] = "https";
@@ -1008,7 +1008,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
   EXPECT_TRUE(session_->HandlePromised(
       stream->id(), GetNthServerInitiatedStreamId(0), promise_headers));
   session_->OnInitialHeadersComplete(GetNthServerInitiatedStreamId(0),
-                                     SpdyHeaderBlock());
+                                     spdy::SpdyHeaderBlock());
   // Read data on the pushed stream.
   QuicStreamFrame data(GetNthServerInitiatedStreamId(0), false, 0,
                        QuicStringPiece("SP"));

@@ -76,7 +76,7 @@ class MockQuicClientSessionBase : public QuicSpdyClientSessionBase {
   MOCK_METHOD2(OnStreamHeaders,
                void(QuicStreamId stream_id, QuicStringPiece headers_data));
   MOCK_METHOD2(OnStreamHeadersPriority,
-               void(QuicStreamId stream_id, SpdyPriority priority));
+               void(QuicStreamId stream_id, spdy::SpdyPriority priority));
   MOCK_METHOD3(OnStreamHeadersComplete,
                void(QuicStreamId stream_id, bool fin, size_t frame_len));
   MOCK_METHOD2(OnPromiseHeaders,
@@ -86,12 +86,12 @@ class MockQuicClientSessionBase : public QuicSpdyClientSessionBase {
                     QuicStreamId promised_stream_id,
                     size_t frame_len));
   MOCK_CONST_METHOD0(IsCryptoHandshakeConfirmed, bool());
-  // Methods taking non-copyable types like SpdyHeaderBlock by value cannot be
-  // mocked directly.
+  // Methods taking non-copyable types like spdy::SpdyHeaderBlock by value
+  // cannot be mocked directly.
   size_t WriteHeaders(QuicStreamId id,
-                      SpdyHeaderBlock headers,
+                      spdy::SpdyHeaderBlock headers,
                       bool fin,
-                      SpdyPriority priority,
+                      spdy::SpdyPriority priority,
                       QuicReferenceCountedPointer<QuicAckListenerInterface>
                           ack_listener) override {
     return WriteHeadersMock(id, headers, fin, priority,
@@ -100,9 +100,9 @@ class MockQuicClientSessionBase : public QuicSpdyClientSessionBase {
   MOCK_METHOD5(
       WriteHeadersMock,
       size_t(QuicStreamId id,
-             const SpdyHeaderBlock& headers,
+             const spdy::SpdyHeaderBlock& headers,
              bool fin,
-             SpdyPriority priority,
+             spdy::SpdyPriority priority,
              const QuicReferenceCountedPointer<QuicAckListenerInterface>&
                  ack_listener));
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
@@ -212,19 +212,19 @@ class QuicChromiumClientStreamTest
               QuicStringPiece(buffer->data(), expected_data.length()));
   }
 
-  QuicHeaderList ProcessHeaders(const SpdyHeaderBlock& headers) {
+  QuicHeaderList ProcessHeaders(const spdy::SpdyHeaderBlock& headers) {
     QuicHeaderList h = AsHeaderList(headers);
     stream_->OnStreamHeaderList(false, h.uncompressed_header_bytes(), h);
     return h;
   }
 
-  QuicHeaderList ProcessTrailers(const SpdyHeaderBlock& headers) {
+  QuicHeaderList ProcessTrailers(const spdy::SpdyHeaderBlock& headers) {
     QuicHeaderList h = AsHeaderList(headers);
     stream_->OnStreamHeaderList(true, h.uncompressed_header_bytes(), h);
     return h;
   }
 
-  QuicHeaderList ProcessHeadersFull(const SpdyHeaderBlock& headers) {
+  QuicHeaderList ProcessHeadersFull(const spdy::SpdyHeaderBlock& headers) {
     QuicHeaderList h = ProcessHeaders(headers);
     TestCompletionCallback callback;
     EXPECT_EQ(static_cast<int>(h.uncompressed_header_bytes()),
@@ -253,8 +253,8 @@ class QuicChromiumClientStreamTest
   MockAlarmFactory alarm_factory_;
   MockQuicClientSessionBase session_;
   QuicChromiumClientStream* stream_;
-  SpdyHeaderBlock headers_;
-  SpdyHeaderBlock trailers_;
+  spdy::SpdyHeaderBlock headers_;
+  spdy::SpdyHeaderBlock trailers_;
   QuicClientPushPromiseIndex push_promise_index_;
 };
 
@@ -316,7 +316,7 @@ TEST_P(QuicChromiumClientStreamTest, Handle) {
       ERR_CONNECTION_CLOSED,
       handle_->WritevStreamData(buffers, lengths, true, callback.callback()));
 
-  SpdyHeaderBlock headers;
+  spdy::SpdyHeaderBlock headers;
   EXPECT_EQ(0, handle_->WriteHeaders(std::move(headers), true, nullptr));
 }
 
@@ -389,7 +389,7 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableAfterReadBody) {
 }
 
 TEST_P(QuicChromiumClientStreamTest, ProcessHeadersWithError) {
-  SpdyHeaderBlock bad_headers;
+  spdy::SpdyHeaderBlock bad_headers;
   bad_headers["NAME"] = "...";
   EXPECT_CALL(session_,
               SendRstStream(kTestStreamId, QUIC_BAD_APPLICATION_PAYLOAD, 0));
@@ -449,7 +449,7 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
             handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()));
   EXPECT_EQ(QuicStringPiece(data), QuicStringPiece(buffer->data(), data_len));
 
-  SpdyHeaderBlock trailers;
+  spdy::SpdyHeaderBlock trailers;
   trailers["bar"] = "foo";
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(data));
 
@@ -493,7 +493,7 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
       handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()),
       IsError(ERR_IO_PENDING));
 
-  SpdyHeaderBlock trailers;
+  spdy::SpdyHeaderBlock trailers;
   trailers["bar"] = "foo";
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(data));
   QuicHeaderList t = ProcessTrailers(trailers);
@@ -535,7 +535,7 @@ TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
   EXPECT_EQ(QuicStringPiece(data), QuicStringPiece(buffer->data(), data_len));
 
   // Deliver trailers. Delegate notification is posted asynchronously.
-  SpdyHeaderBlock trailers;
+  spdy::SpdyHeaderBlock trailers;
   trailers["bar"] = "foo";
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(data));
 

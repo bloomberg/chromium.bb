@@ -12,7 +12,7 @@
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
 
-namespace net {
+namespace spdy {
 
 namespace {
 
@@ -185,4 +185,4 @@ void HpackFuzzUtil::FlipBits(uint8_t* buffer,
   }
 }
 
-}  // namespace net
+}  // namespace spdy
