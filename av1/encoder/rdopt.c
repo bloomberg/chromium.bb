@@ -1758,8 +1758,8 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
     if (plane_dist) plane_dist[plane] = dist;
   }
 
-  *skip_txfm_sb = total_sse == 0;
-  *skip_sse_sb = total_sse << 4;
+  if (skip_txfm_sb) *skip_txfm_sb = total_sse == 0;
+  if (skip_sse_sb) *skip_sse_sb = total_sse << 4;
   *out_rate_sum = (int)rate_sum;
   *out_dist_sum = dist_sum;
 }
@@ -5090,6 +5090,22 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
       (mi_col + mi_size_wide[bsize] < xd->tile.mi_col_end);
 
   av1_invalid_rd_stats(rd_stats);
+
+  if (cpi->sf.model_based_prune_tx_search_level && ref_best_rd != INT64_MAX) {
+    int model_rate;
+    int64_t model_dist;
+    int model_skip;
+    model_rd_for_sb(cpi, bsize, x, xd, 0, 0, &model_rate, &model_dist,
+                    &model_skip, NULL, NULL, NULL, NULL);
+    const int64_t model_rd = RDCOST(x->rdmult, model_rate, model_dist);
+    // If the modeled rd is a lot worse than the best so far, breakout.
+    // TODO(debargha, urvang): Improve the model and make the check below
+    // tighter.
+    if (!model_skip &&
+        model_rd >
+            (4 - cpi->sf.model_based_prune_tx_search_level) * ref_best_rd)
+      return;
+  }
 
   const uint32_t hash = get_block_residue_hash(x, bsize);
   MB_RD_RECORD *mb_rd_record = &x->mb_rd_record;
