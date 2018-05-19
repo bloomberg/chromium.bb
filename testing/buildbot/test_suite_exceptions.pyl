@@ -659,6 +659,7 @@
       'Linux Tests (dbg)(1)(32)',
       # chromium.win
       'Win7 Tests (dbg)(1)',
+      'Win10 Tests x64 (dbg)',
       # chromium.memory
       'Linux ASan LSan Tests (1)',
       'Linux ASan Tests (sandboxed)',
@@ -932,6 +933,7 @@
       # On chromium.win, unclear why these only run on "Win7 Tests (1)".
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
+      'Win10 Tests x64 (dbg)',
       'Win7 Tests (dbg)(1)',
       # client.v8.chromium
       'Linux - Future (dbg)',
@@ -1242,6 +1244,8 @@
       'Linux Chromium OS ASan LSan Tests (1)',
       'Linux TSan Tests',
       'Mac ASan 64 Tests (1)',
+      # chromium.win
+      'Win10 Tests x64 (dbg)',
     ],
   },
   'filesystem_service_unittests': {
@@ -1480,6 +1484,8 @@
       'Mac10.11 Tests',
       # client.v8.chromium
       'Linux - Future (dbg)',
+      # chromium.win
+      'Win10 Tests x64 (dbg)',
     ],
   },
   'headless_unittests': {
@@ -1507,6 +1513,8 @@
       'Chromium Win 10 GCE Tests',
       # chromium.memory
       'Linux TSan Tests',
+      # chromium.win
+      'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
       # chromium.clang
