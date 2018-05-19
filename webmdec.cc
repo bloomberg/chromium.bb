@@ -11,6 +11,7 @@
 
 #include "./webmdec.h"
 
+#include <cassert>
 #include <cstring>
 #include <cstdio>
 
@@ -119,6 +120,7 @@ int file_is_webm(struct WebmInputContext *webm_ctx,
 
 int webm_read_frame(struct WebmInputContext *webm_ctx, uint8_t **buffer,
                     size_t *bytes_read, size_t *buffer_size) {
+  assert(webm_ctx->buffer == *buffer);
   // This check is needed for frame parallel decoding, in which case this
   // function could be called even after it has reached end of input stream.
   if (webm_ctx->reached_eos) {
@@ -180,10 +182,10 @@ int webm_read_frame(struct WebmInputContext *webm_ctx, uint8_t **buffer,
   if (frame.len > static_cast<long>(*buffer_size)) {
     delete[] * buffer;
     *buffer = new uint8_t[frame.len];
+    webm_ctx->buffer = *buffer;
     if (*buffer == NULL) {
       return -1;
     }
-    webm_ctx->buffer = *buffer;
     *buffer_size = frame.len;
   }
   *bytes_read = frame.len;
@@ -201,6 +203,7 @@ int webm_guess_framerate(struct WebmInputContext *webm_ctx,
   uint8_t *buffer = NULL;
   size_t buffer_size = 0;
   size_t bytes_read = 0;
+  assert(webm_ctx->buffer == NULL);
   while (webm_ctx->timestamp_ns < 1000000000 && i < 50) {
     if (webm_read_frame(webm_ctx, &buffer, &bytes_read, &buffer_size)) {
       break;
@@ -211,6 +214,7 @@ int webm_guess_framerate(struct WebmInputContext *webm_ctx,
   aom_ctx->framerate.denominator =
       static_cast<int>(webm_ctx->timestamp_ns / 1000);
   delete[] buffer;
+  webm_ctx->buffer = NULL;
 
   get_first_cluster(webm_ctx);
   webm_ctx->block = NULL;
