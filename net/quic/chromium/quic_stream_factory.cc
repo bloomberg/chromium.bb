@@ -784,6 +784,7 @@ QuicStreamFactory::QuicStreamFactory(
           NetworkChangeNotifier::AreNetworkHandlesSupported()),
       migrate_sessions_early_v2_(migrate_sessions_early_v2 &&
                                  migrate_sessions_on_network_change_v2_),
+      default_network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       max_time_on_non_default_network_(max_time_on_non_default_network),
       max_migrations_to_non_default_network_on_path_degrading_(
           max_migrations_to_non_default_network_on_path_degrading),
@@ -1284,6 +1285,7 @@ void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
       !migrate_sessions_on_network_change_v2_)
     return;
   DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
+  default_network_ = network;
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
                                                      "OnNetworkMadeDefault");
 
@@ -1468,6 +1470,18 @@ int QuicStreamFactory::CreateSession(const QuicSessionAliasKey& key,
                            key.session_key().socket_tag());
   if (rv != OK)
     return rv;
+
+  if (migrate_sessions_on_network_change_v2_) {
+    if (default_network_ == NetworkChangeNotifier::kInvalidNetworkHandle) {
+      // QuicStreamFactory may miss the default network signal before its
+      // creation, update |default_network_| when the first socket is bound
+      // to the default network.
+      default_network_ = socket->GetBoundNetwork();
+    } else {
+      UMA_HISTOGRAM_BOOLEAN("Net.QuicStreamFactory.DefaultNetworkMatch",
+                            default_network_ == socket->GetBoundNetwork());
+    }
+  }
 
   if (!helper_.get()) {
     helper_.reset(new QuicChromiumConnectionHelper(clock_, random_generator_));
