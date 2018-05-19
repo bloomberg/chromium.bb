@@ -683,7 +683,14 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_Hsts) {
 
 // Checks if the HSTS information from the last test is still available after a
 // restart.
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DISABLED_Hsts) {
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Hsts) {
+  // The network service must be cleanly shut down to guarantee HSTS information
+  // is flushed to disk, but that currently generally doesn't happen. See
+  // https://crbug.com/820996.
+  if (GetParam().network_service_state != NetworkServiceState::kDisabled &&
+      GetHttpCacheType() == StorageType::kDisk) {
+    return;
+  }
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath save_url_file_path = browser()->profile()->GetPath().Append(
       FILE_PATH_LITERAL("url_for_test.txt"));
