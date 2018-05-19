@@ -108,13 +108,9 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
         GetLayoutView().FirstFragment().LocalBorderBoxProperties();
   }
 
-  auto view_chunk_type = DisplayItem::PaintPhaseToDrawingType(
-      PaintPhase::kSelfBlockBackgroundOnly);
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    view_chunk_type = DisplayItem::kLayerChunkBackground;
-  else if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    view_chunk_type = kDocumentBackgroundType;
-
+  auto view_chunk_type = RuntimeEnabledFeatures::SlimmingPaintV2Enabled()
+                             ? DisplayItem::kLayerChunkBackground
+                             : kDocumentBackgroundType;
   auto chunk_background_type = DisplayItem::kLayerChunkBackground;
   auto chunk_foreground_type =
       DisplayItem::kLayerChunkNormalFlowAndPositiveZOrderChildren;

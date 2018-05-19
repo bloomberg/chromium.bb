@@ -3050,12 +3050,6 @@ TEST_F(WebViewTest, SelectionOnReadOnlyInput) {
 }
 
 TEST_F(WebViewTest, KeyDownScrollsHandled) {
-  // TODO(bokan): This test will fail without root-layer-scrolls but that's ok
-  // because it's already shipped and non-root-layer-scrolls is no longer
-  // supported. https://crbug.com/823365.
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
-
   RegisterMockedHttpURLLoad("content-width-1000.html");
 
   WebViewImpl* web_view =
@@ -5029,12 +5023,8 @@ TEST_F(WebViewTest, DeviceEmulationResetScrollbars) {
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   auto* frame_view = frame->GetFrameView();
   EXPECT_FALSE(frame_view->VisualViewportSuppliesScrollbars());
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    EXPECT_NE(nullptr,
-              frame_view->LayoutViewportScrollableArea()->VerticalScrollbar());
-  } else {
-    EXPECT_NE(nullptr, frame_view->VerticalScrollbar());
-  }
+  EXPECT_NE(nullptr,
+            frame_view->LayoutViewportScrollableArea()->VerticalScrollbar());
 
   WebDeviceEmulationParams params;
   params.screen_position = WebDeviceEmulationParams::kMobile;
@@ -5051,12 +5041,8 @@ TEST_F(WebViewTest, DeviceEmulationResetScrollbars) {
 
   // The view should once again provide the scrollbars.
   EXPECT_FALSE(frame_view->VisualViewportSuppliesScrollbars());
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    EXPECT_NE(nullptr,
-              frame_view->LayoutViewportScrollableArea()->VerticalScrollbar());
-  } else {
-    EXPECT_NE(nullptr, frame_view->VerticalScrollbar());
-  }
+  EXPECT_NE(nullptr,
+            frame_view->LayoutViewportScrollableArea()->VerticalScrollbar());
 }
 
 TEST_F(WebViewTest, SetZoomLevelWhilePluginFocused) {

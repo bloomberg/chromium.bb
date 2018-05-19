@@ -10596,12 +10596,6 @@ TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerDivOverScroll) {
 }
 
 TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerIFrameOverScroll) {
-  // TODO(bokan): This test will fail without root-layer-scrolls but that's ok
-  // because it's already shipped and non-root-layer-scrolls is no longer
-  // supported. https://crbug.com/823365.
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
-
   OverscrollWebViewClient client;
   RegisterMockedHttpURLLoad("overscroll/iframe-overscroll.html");
   RegisterMockedHttpURLLoad("overscroll/scrollable-iframe.html");
@@ -11426,19 +11420,9 @@ TEST_F(WebFrameTest, RootLayerMinimumHeight) {
   ASSERT_TRUE(invalidation_tracking);
   const auto& raster_invalidations = invalidation_tracking->Invalidations();
 
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    // With RLS we don't issue raster invalidation, because the content paints
-    // into the scrolling contents layer whose size hasn't changed.
-    EXPECT_TRUE(raster_invalidations.IsEmpty());
-  } else {
-    // The newly revealed content at the bottom of the screen should have been
-    // invalidated. There are additional invalidations for the position: fixed
-    // element.
-    EXPECT_GT(raster_invalidations.size(), 0u);
-    EXPECT_TRUE(raster_invalidations[0].rect.Contains(
-        IntRect(0, kViewportHeight - kBrowserControlsHeight, kViewportWidth,
-                kBrowserControlsHeight)));
-  }
+  // We don't issue raster invalidation, because the content paints into the
+  // scrolling contents layer whose size hasn't changed.
+  EXPECT_TRUE(raster_invalidations.IsEmpty());
 
   document->View()->SetTracksPaintInvalidations(false);
 }
@@ -12186,40 +12170,6 @@ TEST_F(WebFrameSimTest, NormalIFrameHasLayoutObjects) {
   EXPECT_FALSE(iframe_doc->documentElement()->GetLayoutObject());
 }
 
-TEST_F(WebFrameSimTest, ScrollOriginChangeUpdatesLayerPositions) {
-  // With RLS, scroll origin changes do not update layer positions.
-  // It's unclear why it was ever desirable to update layer positions,
-  // even without RLS, because the position adjustment in the PLC scroll
-  // layer was negated by the position adjustment in the content root layer.
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
-
-  WebView().Resize(WebSize(800, 600));
-  SimRequest main_resource("https://example.com/test.html", "text/html");
-
-  LoadURL("https://example.com/test.html");
-  main_resource.Complete(R"HTML(
-    <!DOCTYPE html>
-    <body dir='rtl'>
-      <div style='width:1px; height:1px; position:absolute; left:-10000px'>
-      </div>
-    </body>
-  )HTML");
-
-  Compositor().BeginFrame();
-  ScrollableArea* area = GetDocument().View()->LayoutViewportScrollableArea();
-  ASSERT_EQ(10000, area->ScrollOrigin().X());
-  ASSERT_EQ(10000, area->LayerForScrolling()->GetPosition().X());
-
-  // Removing the overflowing element removes all overflow so the scroll origin
-  // implicitly is reset to (0, 0).
-  GetDocument().QuerySelector("div")->remove();
-  Compositor().BeginFrame();
-
-  EXPECT_EQ(0, area->ScrollOrigin().X());
-  EXPECT_EQ(0, area->LayerForScrolling()->GetPosition().X());
-}
-
 TEST_F(WebFrameSimTest, RtlInitialScrollOffsetWithViewport) {
   WebView().GetSettings()->SetViewportEnabled(true);
   WebView().GetSettings()->SetViewportMetaEnabled(true);
@@ -12241,11 +12191,6 @@ TEST_F(WebFrameSimTest, RtlInitialScrollOffsetWithViewport) {
 }
 
 TEST_F(WebFrameSimTest, LayoutViewportExceedsLayoutOverflow) {
-  // This test fails without RLS (but doesn't cause visible paint clipping due
-  // to differences in composited layer geometry logic).
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
-
   WebView().GetSettings()->SetViewportEnabled(true);
   WebView().GetSettings()->SetViewportMetaEnabled(true);
 
