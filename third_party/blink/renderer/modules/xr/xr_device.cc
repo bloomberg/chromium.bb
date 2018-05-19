@@ -27,8 +27,8 @@ const char kExclusiveNotSupported[] =
 const char kNoOutputContext[] =
     "Non-exclusive sessions must be created with an outputContext.";
 
-const char kRequestNotInUserGesture[] =
-    "Exclusive sessions can only be requested during a user gesture.";
+const char kRequestRequiresUserActivation[] =
+    "The requested session requires user activation.";
 
 }  // namespace
 
@@ -128,7 +128,7 @@ ScriptPromise XRDevice::requestSession(
     if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
-          DOMException::Create(kSecurityError, kRequestNotInUserGesture));
+          DOMException::Create(kSecurityError, kRequestRequiresUserActivation));
     }
   }
 
@@ -138,7 +138,7 @@ ScriptPromise XRDevice::requestSession(
     if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
-          DOMException::Create(kSecurityError, kRequestNotInUserGesture));
+          DOMException::Create(kSecurityError, kRequestRequiresUserActivation));
     }
   }
 
