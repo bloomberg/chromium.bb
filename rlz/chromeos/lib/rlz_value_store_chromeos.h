@@ -26,10 +26,6 @@ namespace rlz_lib {
 // An implementation of RlzValueStore for ChromeOS.
 class RlzValueStoreChromeOS : public RlzValueStore {
  public:
-  // Ignore |kRlzEmbargoEndDateKey| if it's more than this many days in the
-  // future.
-  static const int kRlzEmbargoEndDateGarbageDateThresholdDays;
-
   // The maximum retry times allowed for |SetRlzPingSent|.
   static const int kMaxRetryCount;
 
@@ -62,15 +58,6 @@ class RlzValueStoreChromeOS : public RlzValueStore {
   bool ClearAllStatefulEvents(Product product) override;
 
   void CollectGarbage() override;
-
-  enum class EmbargoState {
-    kMissingOrMalformed,
-    kInvalid,
-    kNotPassed,
-    kPassed
-  };
-
-  static EmbargoState GetRlzEmbargoState();
 
  private:
   // Returns true if the |rlz_embargo_end_date| present in VPD has passed

@@ -16,10 +16,10 @@
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/system/factory_ping_embargo_check.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "rlz/chromeos/lib/rlz_value_store_chromeos.h"
 
 namespace chromeos {
 
@@ -193,16 +193,15 @@ AutoEnrollmentController::InitialEnrollmentRequirement
 AutoEnrollmentController::GetInitialEnrollmentRequirement() {
   system::StatisticsProvider* provider =
       system::StatisticsProvider::GetInstance();
-  rlz_lib::RlzValueStoreChromeOS::EmbargoState embargo_state =
-      rlz_lib::RlzValueStoreChromeOS::GetRlzEmbargoState();
-  if (embargo_state == rlz_lib::RlzValueStoreChromeOS::EmbargoState::kInvalid) {
+  system::FactoryPingEmbargoState embargo_state =
+      system::GetFactoryPingEmbargoState(provider);
+  if (embargo_state == system::FactoryPingEmbargoState::kInvalid) {
     LOG(WARNING)
         << "Skip Initial Enrollment Check due to invalid embargo date.";
     // TODO(pmarko): UMA Stat.
     return InitialEnrollmentRequirement::kNotRequired;
   }
-  if (embargo_state ==
-      rlz_lib::RlzValueStoreChromeOS::EmbargoState::kNotPassed) {
+  if (embargo_state == system::FactoryPingEmbargoState::kNotPassed) {
     VLOG(1) << "Skip Initial Enrollment Check due to not-passed embargo date.";
     return InitialEnrollmentRequirement::kNotRequired;
   }

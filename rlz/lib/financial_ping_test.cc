@@ -39,6 +39,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/system/factory_ping_embargo_check.h"
 #include "rlz/chromeos/lib/rlz_value_store_chromeos.h"
 #endif
 
@@ -352,9 +353,8 @@ TEST_F(FinancialPingTest, RlzEmbargoEndDate) {
   // |IsPingTime| is false.
   base::Time future_rlz_embargo_date =
       base::Time::NowFromSystemTime() +
-      base::TimeDelta::FromDays(rlz_lib::RlzValueStoreChromeOS::
-                                    kRlzEmbargoEndDateGarbageDateThresholdDays -
-                                1);
+      chromeos::system::kRlzEmbargoEndDateGarbageDateThreshold -
+      base::TimeDelta::FromDays(1);
   future_rlz_embargo_date.LocalExplode(&exploded);
   std::string future_rlz_embargo_date_value =
       ConvertExplodedToRlzEmbargoDate(exploded);
@@ -369,9 +369,8 @@ TEST_F(FinancialPingTest, RlzEmbargoEndDate) {
   // |IsPingTime| is true.
   future_rlz_embargo_date =
       base::Time::NowFromSystemTime() +
-      base::TimeDelta::FromDays(rlz_lib::RlzValueStoreChromeOS::
-                                    kRlzEmbargoEndDateGarbageDateThresholdDays +
-                                1);
+      chromeos::system::kRlzEmbargoEndDateGarbageDateThreshold +
+      base::TimeDelta::FromDays(1);
   future_rlz_embargo_date.LocalExplode(&exploded);
   future_rlz_embargo_date_value = ConvertExplodedToRlzEmbargoDate(exploded);
   statistics_provider_->SetMachineStatistic(

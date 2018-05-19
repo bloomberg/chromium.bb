@@ -518,6 +518,8 @@ component("chromeos") {
     "system/devicemode.h",
     "system/devicetype.cc",
     "system/devicetype.h",
+    "system/factory_ping_embargo_check.cc",
+    "system/factory_ping_embargo_check.h",
 
     # Used when running mash, both on Linux and on real devices.
     "system/fake_statistics_provider.cc",
@@ -767,6 +769,7 @@ test("chromeos_unittests") {
     "run_all_unittests.cc",
     "settings/timezone_settings_unittest.cc",
     "system/cpu_temperature_reader_unittest.cc",
+    "system/factory_ping_embargo_check_unittest.cc",
     "system/name_value_pairs_parser_unittest.cc",
     "system/version_loader_unittest.cc",
     "timezone/timezone_unittest.cc",
