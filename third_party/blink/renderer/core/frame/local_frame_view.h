@@ -640,6 +640,7 @@ class CORE_EXPORT LocalFrameView final
   IntRect ContentsToViewport(const IntRect&) const;
   IntPoint ContentsToViewport(const IntPoint&) const;
   IntPoint ViewportToContents(const IntPoint&) const;
+  FloatPoint ViewportToContents(const FloatPoint&) const;
   LayoutPoint ViewportToContents(const LayoutPoint&) const;
 
   // FIXME: Some external callers expect to get back a rect that's positioned

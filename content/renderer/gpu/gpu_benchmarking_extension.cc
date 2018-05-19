@@ -296,16 +296,13 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
   }
 
   if (gesture_source_type == SyntheticGestureParams::MOUSE_INPUT) {
-    // Ensure the mouse is centered and visible, in case it will
+    // Ensure the mouse is visible and move to start position, in case it will
     // trigger any hover or mousemove effects.
     context->web_view()->SetIsActive(true);
-    blink::WebRect content_rect =
-        context->render_view_impl()->GetWidget()->ViewRect();
     blink::WebMouseEvent mouseMove(blink::WebInputEvent::kMouseMove,
                                    blink::WebInputEvent::kNoModifiers,
                                    ui::EventTimeForNow());
-    mouseMove.SetPositionInWidget((content_rect.x + content_rect.width / 2.0),
-                                  (content_rect.y + content_rect.height / 2.0));
+    mouseMove.SetPositionInWidget(start_x, start_y);
     context->web_view()->HandleInputEvent(
         blink::WebCoalescedInputEvent(mouseMove));
     context->web_view()->SetCursorVisibilityState(true);

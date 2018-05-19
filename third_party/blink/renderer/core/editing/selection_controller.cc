@@ -461,7 +461,7 @@ static bool ShouldRespectSVGTextBoundaries(
 void SelectionController::UpdateSelectionForMouseDrag(
     const HitTestResult& hit_test_result,
     const LayoutPoint& drag_start_pos,
-    const IntPoint& last_known_mouse_position) {
+    const LayoutPoint& last_known_mouse_position) {
   if (!mouse_down_may_start_select_)
     return;
 
@@ -1041,7 +1041,7 @@ void SelectionController::HandleMouseDraggedEvent(
     const MouseEventWithHitTestResults& event,
     const IntPoint& mouse_down_pos,
     const LayoutPoint& drag_start_pos,
-    const IntPoint& last_known_mouse_position) {
+    const LayoutPoint& last_known_mouse_position) {
   TRACE_EVENT0("blink", "SelectionController::handleMouseDraggedEvent");
 
   if (!Selection().IsAvailable())
@@ -1060,7 +1060,7 @@ void SelectionController::HandleMouseDraggedEvent(
 
 void SelectionController::UpdateSelectionForMouseDrag(
     const LayoutPoint& drag_start_pos,
-    const IntPoint& last_known_mouse_position) {
+    const LayoutPoint& last_known_mouse_position) {
   LocalFrameView* view = frame_->View();
   if (!view)
     return;
@@ -1071,7 +1071,7 @@ void SelectionController::UpdateSelectionForMouseDrag(
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive |
                          HitTestRequest::kMove);
   HitTestResult result(request,
-                       view->RootFrameToContents(last_known_mouse_position));
+                       view->ViewportToContents(last_known_mouse_position));
   layout_view->HitTest(result);
   UpdateSelectionForMouseDrag(result, drag_start_pos,
                               last_known_mouse_position);

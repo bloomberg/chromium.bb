@@ -220,7 +220,9 @@ void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
   if (!controller)
     return;
   controller->StartMiddleClickAutoscroll(
-      layout_object->GetFrame(), mouse_event_manager_->LastKnownMousePosition(),
+      layout_object->GetFrame(),
+      frame_->GetPage()->GetVisualViewport().ViewportToRootFrame(
+          mouse_event_manager_->LastKnownMousePosition()),
       mouse_event_manager_->LastKnownMousePositionGlobal());
   mouse_event_manager_->InvalidateClick();
 }
@@ -294,8 +296,9 @@ bool EventHandler::BubblingScroll(ScrollDirection direction,
       mouse_event_manager_->MousePressNode());
 }
 
-IntPoint EventHandler::LastKnownMousePosition() const {
-  return mouse_event_manager_->LastKnownMousePosition();
+IntPoint EventHandler::LastKnownMousePositionInRootFrame() const {
+  return frame_->GetPage()->GetVisualViewport().ViewportToRootFrame(
+      mouse_event_manager_->LastKnownMousePosition());
 }
 
 IntPoint EventHandler::DragDataTransferLocationForTesting() {
@@ -344,9 +347,9 @@ void EventHandler::UpdateCursor() {
 
   HitTestRequest request(HitTestRequest::kReadOnly |
                          HitTestRequest::kAllowChildFrameContent);
-  HitTestResult result(request,
-                       view->RootFrameToContents(
-                           mouse_event_manager_->LastKnownMousePosition()));
+  HitTestResult result(
+      request,
+      view->ViewportToContents(mouse_event_manager_->LastKnownMousePosition()));
   layout_view->HitTest(result);
 
   if (LocalFrame* frame = result.InnerNodeFrame()) {
@@ -1959,7 +1962,7 @@ void EventHandler::HoverTimerFired(TimerBase*) {
     if (LocalFrameView* view = frame_->View()) {
       HitTestRequest request(HitTestRequest::kMove);
       HitTestResult result(request,
-                           view->RootFrameToContents(
+                           view->ViewportToContents(
                                mouse_event_manager_->LastKnownMousePosition()));
       layout_object->HitTest(result);
       frame_->GetDocument()->UpdateHoverActiveState(request,

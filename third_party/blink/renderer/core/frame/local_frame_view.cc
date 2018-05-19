@@ -1728,7 +1728,7 @@ void LocalFrameView::MarkViewportConstrainedObjectsForLayout(
 }
 
 IntPoint LocalFrameView::LastKnownMousePosition() const {
-  return frame_->GetEventHandler().LastKnownMousePosition();
+  return frame_->GetEventHandler().LastKnownMousePositionInRootFrame();
 }
 
 bool LocalFrameView::ShouldSetCursor() const {
@@ -4962,6 +4962,15 @@ LayoutPoint LocalFrameView::ViewportToContents(
       frame_->GetPage()->GetVisualViewport().ViewportToRootFrame(
           FloatPoint(point_in_viewport)));
   LayoutPoint point_in_frame = ConvertFromRootFrame(point_in_root_frame);
+  return FrameToContents(point_in_frame);
+}
+
+FloatPoint LocalFrameView::ViewportToContents(
+    const FloatPoint& point_in_viewport) const {
+  FloatPoint point_in_root_frame(
+      frame_->GetPage()->GetVisualViewport().ViewportToRootFrame(
+          point_in_viewport));
+  FloatPoint point_in_frame = ConvertFromRootFrame(point_in_root_frame);
   return FrameToContents(point_in_frame);
 }
 

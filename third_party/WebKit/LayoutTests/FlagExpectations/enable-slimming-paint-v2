@@ -1360,6 +1360,7 @@ Bug(none) fast/dom/viewport/viewport-dimensions-under-browser-zoom.html [ Crash 
 Bug(none) fast/dom/viewport/viewport-scale-inert.html [ Crash ]
 Bug(none) fast/dom/viewport/viewport-scrolling-element-inert.html [ Crash ]
 Bug(none) fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Crash ]
+Bug(none) fast/events/scroll-visual-viewport-send-boundary-events.html [ Crash ]
 Bug(none) fast/events/menu-key-context-menu-document-pinch-zoom.html [ Crash ]
 Bug(none) fast/events/page-scaled-mouse-click-iframe.html [ Crash ]
 Bug(none) fast/events/page-scaled-mouse-click.html [ Crash ]
