@@ -1316,6 +1316,30 @@ camera.views.Camera.prototype.createMediaRecorder_ = function(stream) {
 };
 
 /**
+ * Updates the video device id by the constraints or by the acquired stream.
+ *
+ * @param {!Object} constraints Constraints that acquires the current stream.
+ * @private
+ */
+camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
+  if (constraints.video.deviceId) {
+    // For non-default cameras fetch the deviceId from constraints.
+    // Works on all supported Chrome versions.
+    this.videoDeviceId_ = constraints.video.deviceId.exact;
+  } else {
+    // For default camera, obtain the deviceId from settings, which is
+    // a feature available only from 59. For older Chrome versions,
+    // it's impossible to detect the device id. As a result, if the
+    // default camera was changed to rear in chrome://settings, then
+    // toggling the camera may not work when pressed for the first time
+    // (the same camera would be opened).
+    var track = this.stream_.getVideoTracks()[0];
+    var trackSettings = track.getSettings && track.getSettings();
+    this.videoDeviceId_ = trackSettings && trackSettings.deviceId || null;
+  }
+};
+
+/**
  * Starts capturing with the specified constraints.
  *
  * @param {!Object} constraints Constraints passed to WebRTC.
@@ -1361,6 +1385,9 @@ camera.views.Camera.prototype.createMediaRecorder_ = function(stream) {
       this.stream_ = stream;
       document.body.classList.add('capturing');
       this.updateToolbar_();
+
+      this.updateVideoDeviceId_(constraints);
+      this.updateMirroring_();
       var onAnimationFrame = function() {
         this.onAnimationFrame_();
         requestAnimationFrame(onAnimationFrame);
@@ -1531,13 +1558,90 @@ camera.views.Camera.prototype.collectVideoDevices_ = function() {
 };
 
 /**
- * Stops the camera stream so it retries opening the camera stream
- * on new device or with new constraints.
+ * Sorts the video device ids by the current video device id.
+ * @return {!Promise<!Array<string>}
+ * @private
+ */
+camera.views.Camera.prototype.sortVideoDeviceIds_ = function() {
+  return this.videoDeviceIds_.then(function(deviceIds) {
+    if (deviceIds.length == 0) {
+      throw 'Device list empty.';
+    }
+
+    // Put the preferred camera first.
+    var sortedDeviceIds = deviceIds.slice(0).sort(function(a, b) {
+      if (a == b)
+        return 0;
+      if (a == this.videoDeviceId_)
+        return -1;
+      else
+        return 1;
+    }.bind(this));
+
+    // Prepended 'null' deviceId means the system default camera. Add it only
+    // when the app is launched (no video-device-id set).
+    if (this.videoDeviceId_ == null) {
+        sortedDeviceIds.unshift(null);
+    }
+    return sortedDeviceIds;
+  }.bind(this));
+};
+
+/**
+ * Stops the camera stream so it retries opening the camera stream on new
+ * device or with new constraints.
  */
 camera.views.Camera.prototype.stop_ = function() {
   // TODO(mtomasz): Prevent blink. Clear somehow the video tag.
   if (this.stream_)
     this.stream_.getVideoTracks()[0].stop();
+};
+
+/**
+ * Returns constraints-candidates with the specified device id.
+ * @param {string} deviceId Device id to be set in the constraints.
+ * @return {Array<Object>}
+ * @private
+ */
+camera.views.Camera.prototype.constraintsCandidates_ = function(deviceId) {
+  var videoConstraints = function() {
+    if (this.is_recording_mode_) {
+      // Video constraints for video recording are ordered by priority.
+      return [
+          {
+            aspectRatio: { ideal: 1.7777777778 },
+            width: { min: 1280 },
+            frameRate: { min: 24 }
+          },
+          {
+            width: { min: 640 },
+            frameRate: { min: 24 }
+          }];
+    } else {
+      // Video constraints for photo taking are ordered by priority.
+      return [
+          {
+            aspectRatio: { ideal: 1.3333333333 },
+            width: { min: 1280 },
+            frameRate: { min: 24 }
+          },
+          {
+            width: { min: 640 },
+            frameRate: { min: 24 }
+          }];
+    }
+  }.bind(this);
+
+  return videoConstraints().map(function(videoConstraint) {
+        // Each passed-in video-constraint will be modified here.
+        if (deviceId) {
+          videoConstraint.deviceId = { exact: deviceId };
+        } else {
+          // As a default camera use the one which is facing the user.
+          videoConstraint.facingMode = { exact: 'user' };
+        }
+        return { audio: this.is_recording_mode_, video: videoConstraint };
+      }.bind(this));
 };
 
 /**
@@ -1613,96 +1717,21 @@ camera.views.Camera.prototype.start_ = function() {
       return;
     }
     this.startWithConstraints_(
-        constraintsCandidates[index],
-        function() {
-          if (constraintsCandidates[index].video.deviceId) {
-            // For non-default cameras fetch the deviceId from constraints.
-            // Works on all supported Chrome versions.
-            this.videoDeviceId_ =
-                constraintsCandidates[index].video.deviceId.exact;
-          } else {
-            // For default camera, obtain the deviceId from settings, which is
-            // a feature available only from 59. For older Chrome versions,
-            // it's impossible to detect the device id. As a result, if the
-            // default camera was changed to rear in chrome://settings, then
-            // toggling the camera may not work when pressed for the first time
-            // (the same camera would be opened).
-            var track = this.stream_.getVideoTracks()[0];
-            var trackSettings = track.getSettings && track.getSettings();
-            this.videoDeviceId_ = trackSettings && trackSettings.deviceId ||
-                null;
-          }
-          this.updateMirroring_();
-          onSuccess();
-        }.bind(this),
-        function() {
+        constraintsCandidates[index], onSuccess, function() {
           // TODO(mtomasz): Workaround for crbug.com/383241.
           setTimeout(tryStartWithConstraints.bind(this, index + 1), 0);
         });
   }.bind(this);
 
-  this.videoDeviceIds_.then(function(deviceIds) {
-    if (deviceIds.length == 0) {
-      return Promise.reject("Device list empty.");
-    }
-
-    // Put the preferred camera first.
-    var sortedDeviceIds = deviceIds.slice(0).sort(function(a, b) {
-      if (a == b)
-        return 0;
-      if (a == this.videoDeviceId_)
-        return -1;
-      else
-        return 1;
-    }.bind(this));
-
-    // Prepended 'null' deviceId means the system default camera. Add it only
-    // when the app is launched (no deviceId_ set).
-    if (this.videoDeviceId_ == null) {
-        sortedDeviceIds.unshift(null);
-    }
+  this.sortVideoDeviceIds_().then(function(sortedDeviceIds) {
     sortedDeviceIds.forEach(function(deviceId) {
-      var videoConstraints;
-      if (this.is_recording_mode_) {
-        // Video constraints for video recording are ordered by priority.
-        videoConstraints = [
-            {
-              aspectRatio: { ideal: 1.7777777778 },
-              width: { min: 1280 },
-              frameRate: { min: 24 }
-            },
-            {
-              width: { min: 640 },
-              frameRate: { min: 24 }
-            }];
-      } else {
-        // Video constraints for photo taking are ordered by priority.
-        videoConstraints = [
-            {
-              aspectRatio: { ideal: 1.3333333333 },
-              width: { min: 1280 },
-              frameRate: { min: 24 }
-            },
-            {
-              width: { min: 640 },
-              frameRate: { min: 24 }
-            }];
-      }
-      constraintsCandidates = videoConstraints.map(function(videoConstraint) {
-        // Each passed-in video-constraint will be modified here.
-        if (deviceId) {
-          videoConstraint.deviceId = { exact: deviceId };
-        } else {
-          // As a default camera use the one which is facing the user.
-          videoConstraint.facingMode = { exact: 'user' };
-        }
-        return { audio: this.is_recording_mode_, video: videoConstraint };
-      }.bind(this));
+      constraintsCandidates = constraintsCandidates.concat(
+          this.constraintsCandidates_(deviceId));
     }.bind(this));
 
     tryStartWithConstraints(0);
   }.bind(this)).catch(function(error) {
-    console.error('Failed to initialize camera.', error);
+    console.error('Failed to start camera.', error);
     onFailure();
   });
 };
