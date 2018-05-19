@@ -77,6 +77,35 @@ class VirtualTimeTest : public SimTest {
 
 // http://crbug.com/633321
 #if defined(OS_ANDROID)
+#define MAYBE_DOMTimersFireInExpectedOrder DISABLED_DOMTimersFireInExpectedOrder
+#else
+#define MAYBE_DOMTimersFireInExpectedOrder DOMTimersFireInExpectedOrder
+#endif
+TEST_F(VirtualTimeTest, MAYBE_DOMTimersFireInExpectedOrder) {
+  WebView().Scheduler()->EnableVirtualTime();
+  WebView().Scheduler()->SetVirtualTimePolicy(
+      PageScheduler::VirtualTimePolicy::kAdvance);
+
+  ExecuteJavaScript(
+      "var run_order = [];"
+      "function timerFn(delay, value) {"
+      "  setTimeout(function() { run_order.push(value); }, delay);"
+      "};"
+      "var one_minute = 60 * 1000;"
+      "timerFn(one_minute * 4, 'a');"
+      "timerFn(one_minute * 2, 'b');"
+      "timerFn(one_minute, 'c');");
+
+  // Normally the JS runs pretty much instantly but the timer callbacks will
+  // take 4 mins to fire, but thanks to timer fast forwarding we can make them
+  // fire immediatly.
+
+  RunTasksForPeriod(60 * 1000 * 4);
+  EXPECT_EQ("c, b, a", ExecuteJavaScript("run_order.join(', ')"));
+}
+
+// http://crbug.com/633321
+#if defined(OS_ANDROID)
 #define MAYBE_SetInterval DISABLED_SetInterval
 #else
 #define MAYBE_SetInterval SetInterval
@@ -184,8 +213,49 @@ TEST_F(VirtualTimeTest,
   RunTasksForPeriod(10);
 }
 
+// http://crbug.com/633321
+#if defined(OS_ANDROID)
+#define MAYBE_DOMTimersSuspended DISABLED_DOMTimersSuspended
+#else
+#define MAYBE_DOMTimersSuspended DOMTimersSuspended
+#endif
+TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
+  WebView().Scheduler()->EnableVirtualTime();
+  WebView().Scheduler()->SetVirtualTimePolicy(
+      PageScheduler::VirtualTimePolicy::kAdvance);
+
+  // Schedule normal DOM timers to run at 1s and 1.001s in the future.
+  ExecuteJavaScript(
+      "var run_order = [];"
+      "setTimeout(() => { run_order.push(1); }, 1000);"
+      "setTimeout(() => { run_order.push(2); }, 1001);");
+
+  scoped_refptr<base::SingleThreadTaskRunner> runner =
+      Window().GetExecutionContext()->GetTaskRunner(TaskType::kJavascriptTimer);
+
+  // Schedule a task to suspend virtual time at the same point in time.
+  runner->PostDelayedTask(FROM_HERE,
+                          WTF::Bind(
+                              [](PageScheduler* scheduler) {
+                                scheduler->SetVirtualTimePolicy(
+                                    PageScheduler::VirtualTimePolicy::kPause);
+                              },
+                              WTF::Unretained(WebView().Scheduler())),
+                          TimeDelta::FromMilliseconds(1000));
+
+  // ALso schedule a third timer for the same point in time.
+  ExecuteJavaScript("setTimeout(() => { run_order.push(2); }, 1000);");
+
+  // The second DOM timer shouldn't have run because the virtual time budget
+  // expired.
+  test::RunPendingTasks();
+  EXPECT_EQ("1, 2", ExecuteJavaScript("run_order.join(', ')"));
+}
+
+#undef MAYBE_DOMTimersFireInExpectedOrder
 #undef MAYBE_SetInterval
 #undef MAYBE_AllowVirtualTimeToAdvance
 #undef MAYBE_VirtualTimeNotAllowedToAdvanceWhileResourcesLoading
+#undef MAYBE_DOMTimersSuspended
 }  // namespace virtual_time_test
 }  // namespace blink
