@@ -19,7 +19,6 @@
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/ports/name.h"
-#include "mojo/edk/system/ports/port_ref.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/edk/system/watch.h"
 #include "mojo/public/c/system/buffer.h"
@@ -61,7 +60,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
     DATA_PIPE_CONSUMER,
     SHARED_BUFFER,
     WATCHER,
-    INVITATION,
 
     // "Private" types (not exposed via the public interface):
     PLATFORM_HANDLE = -1,
@@ -129,11 +127,29 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
 
   virtual MojoResult EndWriteData(uint32_t num_bytes_written);
 
-  // Invitation API.
-  virtual MojoResult AttachMessagePipe(uint64_t name,
-                                       ports::PortRef remote_peer_port);
-  virtual MojoResult ExtractMessagePipe(uint64_t name,
-                                        MojoHandle* message_pipe_handle);
+  ///////////// Wait set API /////////////
+
+  // Adds a dispatcher to wait on. When the dispatcher satisfies |signals|, it
+  // will be returned in the next call to |GetReadyDispatchers()|. If
+  // |dispatcher| has been added, it must be removed before adding again,
+  // otherwise |MOJO_RESULT_ALREADY_EXISTS| will be returned.
+  virtual MojoResult AddWaitingDispatcher(
+      const scoped_refptr<Dispatcher>& dispatcher,
+      MojoHandleSignals signals,
+      uintptr_t context);
+
+  // Removes a dispatcher to wait on. If |dispatcher| has not been added,
+  // |MOJO_RESULT_NOT_FOUND| will be returned.
+  virtual MojoResult RemoveWaitingDispatcher(
+      const scoped_refptr<Dispatcher>& dispatcher);
+
+  // Returns a set of ready dispatchers. |*count| is the maximum number of
+  // dispatchers to return, and will contain the number of dispatchers returned
+  // in |dispatchers| on completion.
+  virtual MojoResult GetReadyDispatchers(uint32_t* count,
+                                         DispatcherVector* dispatchers,
+                                         MojoResult* results,
+                                         uintptr_t* contexts);
 
   ///////////// General-purpose API for all handle types /////////
 

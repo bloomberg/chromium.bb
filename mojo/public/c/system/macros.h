@@ -13,14 +13,8 @@
 //   MOJO_STATIC_ASSERT(sizeof(Foo) == 12, "Foo has invalid size");
 #if defined(__cplusplus)
 #define MOJO_STATIC_ASSERT(expr, msg) static_assert(expr, msg)
-#define MOJO_STATIC_ASSERT_FOR_32_BIT(expr, msg) \
-  static_assert(sizeof(void*) != 4 || (expr), msg)
-#define MOJO_STATIC_ASSERT_FOR_64_BIT(expr, msg) \
-  static_assert(sizeof(void*) != 8 || (expr), msg)
 #else
 #define MOJO_STATIC_ASSERT(expr, msg)
-#define MOJO_STATIC_ASSERT_FOR_32_BIT(expr, msg)
-#define MOJO_STATIC_ASSERT_FOR_64_BIT(expr, msg)
 #endif
 
 // Like the C++11 |alignof| operator.

@@ -9,8 +9,6 @@
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/c/system/platform_handle.h"
-#include "mojo/public/c/system/types.h"
 
 namespace mojo {
 namespace edk {
@@ -24,14 +22,6 @@ MOJO_SYSTEM_IMPL_EXPORT inline void CloseAllPlatformHandles(
        it != platform_handles->end(); ++it)
     it->CloseIfNecessary();
 }
-
-MOJO_SYSTEM_IMPL_EXPORT MojoResult MojoPlatformHandleToScopedPlatformHandle(
-    const MojoPlatformHandle* platform_handle,
-    ScopedPlatformHandle* out_handle);
-
-MOJO_SYSTEM_IMPL_EXPORT MojoResult
-ScopedPlatformHandleToMojoPlatformHandle(ScopedPlatformHandle handle,
-                                         MojoPlatformHandle* platform_handle);
 
 // Duplicates the given |PlatformHandle| (which must be valid). (Returns an
 // invalid |ScopedPlatformHandle| on failure.)

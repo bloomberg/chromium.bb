@@ -31,8 +31,6 @@ const char* GetNameForDispatcherType(Dispatcher::Type type) {
       return "watcher";
     case Dispatcher::Type::PLATFORM_HANDLE:
       return "platform_handle";
-    case Dispatcher::Type::INVITATION:
-      return "invitation";
   }
   NOTREACHED();
   return "unknown";
