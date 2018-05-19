@@ -1,0 +1,19 @@
+<!doctype html>
+<head>
+<script>
+// Note define() defines a module in the mojo module dependency
+// system. While we don't expose our module, the callback below only
+// fires after the requested modules have been loaded.
+define([
+    'headless/lib/embedder_test.mojom',
+    'content/public/renderer/frame_interfaces',
+    ], function(embedderMojom, frameInterfaces) {
+  var testEmbedderService = new embedderMojom.TestEmbedderServicePtr(
+      frameInterfaces.getInterface(embedderMojom.TestEmbedderService.name));
+
+  // Send a message to the embedder!
+  testEmbedderService.returnTestResult('page one');
+});
+</script>
+</head>
+<body><h1>Page one</h1></body>
