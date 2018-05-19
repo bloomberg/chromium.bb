@@ -2530,6 +2530,11 @@ bool RenderProcessHostImpl::IsSpareProcessKeptAtAllTimes() {
   if (!base::FeatureList::IsEnabled(features::kSpareRendererForSitePerProcess))
     return false;
 
+  // Spare renderer actually hurts performance on low-memory devices.  See
+  // https://crbug.com/843775 for more details.
+  if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 1077)
+    return false;
+
   return true;
 }
 
