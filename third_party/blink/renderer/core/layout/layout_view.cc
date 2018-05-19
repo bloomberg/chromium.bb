@@ -294,14 +294,10 @@ void LayoutView::UpdateLayout() {
   if (!GetDocument().Paginated())
     SetPageLogicalHeight(LayoutUnit());
 
-  // TODO(wangxianzhu): Move this into ViewPaintInvalidator when
-  // rootLayerScrolling is permanently enabled.
-  IncludeScrollbarsInRect include_scrollbars =
-      RuntimeEnabledFeatures::RootLayerScrollingEnabled() ? kIncludeScrollbars
-                                                          : kExcludeScrollbars;
+  // TODO(wangxianzhu): Move this into ViewPaintInvalidator.
   SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
-      OffsetWidth() != GetLayoutSize(include_scrollbars).Width(),
-      OffsetHeight() != GetLayoutSize(include_scrollbars).Height());
+      OffsetWidth() != GetLayoutSize(kIncludeScrollbars).Width(),
+      OffsetHeight() != GetLayoutSize(kIncludeScrollbars).Height());
 
   if (PageLogicalHeight() && ShouldUsePrintingLayout()) {
     min_preferred_logical_width_ = max_preferred_logical_width_ =
@@ -325,27 +321,6 @@ void LayoutView::UpdateLayout() {
   CheckLayoutState();
 #endif
   ClearNeedsLayout();
-}
-
-LayoutRect LayoutView::VisualOverflowRect() const {
-  // In root layer scrolling mode, the LayoutView performs overflow clipping
-  // like a regular scrollable div.
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return LayoutBlockFlow::VisualOverflowRect();
-
-  // In normal compositing mode, LayoutView doesn't actually apply clipping
-  // on its descendants. Instead their visual overflow is propagated to
-  // compositor()->m_rootContentLayer for accelerated scrolling.
-  return LayoutOverflowRect();
-}
-
-LayoutRect LayoutView::LocalVisualRectIgnoringVisibility() const {
-  // TODO(wangxianzhu): This is only required without rootLayerScrolls (though
-  // it is also correct but unnecessary with rootLayerScrolls) because of the
-  // special LayoutView overflow model.
-  LayoutRect rect = VisualOverflowRect();
-  rect.Unite(LayoutRect(rect.Location(), ViewRect().Size()));
-  return rect;
 }
 
 void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
@@ -781,18 +756,6 @@ int LayoutView::ViewLogicalHeight(
                                             : ViewWidth(scrollbar_inclusion);
 }
 
-int LayoutView::ViewLogicalWidthForBoxSizing() const {
-  return ViewLogicalWidth(RuntimeEnabledFeatures::RootLayerScrollingEnabled()
-                              ? kIncludeScrollbars
-                              : kExcludeScrollbars);
-}
-
-int LayoutView::ViewLogicalHeightForBoxSizing() const {
-  return ViewLogicalHeight(RuntimeEnabledFeatures::RootLayerScrollingEnabled()
-                               ? kIncludeScrollbars
-                               : kExcludeScrollbars);
-}
-
 LayoutUnit LayoutView::ViewLogicalHeightForPercentages() const {
   if (ShouldUsePrintingLayout())
     return PageLogicalHeight();
@@ -893,10 +856,6 @@ void LayoutView::UpdateFromStyle() {
     SetHasBoxDecorationBackground(true);
 }
 
-bool LayoutView::AllowsOverflowClip() const {
-  return RuntimeEnabledFeatures::RootLayerScrollingEnabled();
-}
-
 LayoutRect LayoutView::DebugRect() const {
   LayoutRect rect;
   LayoutBlock* block = ContainingBlock();
@@ -920,16 +879,6 @@ bool LayoutView::UpdateLogicalWidthAndColumnWidth() {
   // When we're printing, the size of LayoutView is changed outside of layout,
   // so we'll fail to detect any changes here. Just return true.
   return relayout_children || ShouldUsePrintingLayout();
-}
-
-bool LayoutView::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  // Frame scroll corner is painted using LayoutView as the display item client.
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-      (GetFrameView()->HorizontalScrollbar() ||
-       GetFrameView()->VerticalScrollbar()))
-    return false;
-
-  return LayoutBlockFlow::PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
 }
 
 void LayoutView::UpdateCounters() {
