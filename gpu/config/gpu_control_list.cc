@@ -44,8 +44,10 @@ bool ProcessVersionString(const std::string& version_string,
   bool all_zero = true;
   for (size_t i = 0; i < version->size(); ++i) {
     unsigned num = 0;
-    if (!base::StringToUint((*version)[i], &num))
-      return false;
+    if (!base::StringToUint((*version)[i], &num)) {
+      version->resize(i);
+      break;
+    }
     if (num)
       all_zero = false;
   }

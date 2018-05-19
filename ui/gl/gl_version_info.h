@@ -42,13 +42,6 @@ struct GL_EXPORT GLVersionInfo {
     return is_es || IsAtLeastGL(4, 1);
   }
 
-  static void ParseVersionString(const char* version_str,
-                                 unsigned* major_version,
-                                 unsigned* minor_version,
-                                 bool* is_es,
-                                 bool* is_es2,
-                                 bool* is_es3);
-
   bool is_es;
   bool is_angle;
   bool is_d3d;
@@ -60,11 +53,14 @@ struct GL_EXPORT GLVersionInfo {
   bool is_es3;
   bool is_desktop_core_profile;
   bool is_es3_capable;
+  std::string driver_vendor;
+  std::string driver_version;
 
  private:
   void Initialize(const char* version_str,
                   const char* renderer_str,
                   const ExtensionSet& extensions);
+  void ParseVersionString(const char* version_str);
   bool IsES3Capable(const ExtensionSet& extensions) const;
 
   DISALLOW_COPY_AND_ASSIGN(GLVersionInfo);

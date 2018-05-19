@@ -462,7 +462,7 @@ TEST_P(GLES2DecoderTest, GenQueriesEXTImmediateInvalidArgs) {
 TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
   InitState init;
   init.extensions = "GL_EXT_occlusion_query_boolean";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.has_alpha = true;
   init.request_alpha = true;
   init.bind_generates_resource = true;
@@ -696,7 +696,7 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
   init.extensions = "GL_EXT_occlusion_query_boolean"
                     " GL_ARB_sync"
                     " GL_ARB_timer_query";
-  init.gl_version = "opengl es 3.0";
+  init.gl_version = "OpenGL ES 3.0";
   init.has_alpha = true;
   init.request_alpha = true;
   init.bind_generates_resource = true;
@@ -749,7 +749,7 @@ TEST_P(GLES2DecoderManualInitTest, QueryReuseTest) {
     init.extensions = "GL_EXT_occlusion_query_boolean"
                       " GL_ARB_sync"
                       " GL_ARB_timer_query";
-    init.gl_version = "opengl es 3.0";
+    init.gl_version = "OpenGL ES 3.0";
     init.has_alpha = true;
     init.request_alpha = true;
     init.bind_generates_resource = true;
@@ -884,7 +884,7 @@ TEST_P(GLES2DecoderTest, SetDisjointValueSync) {
 TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   InitState init;
   init.extensions = "GL_EXT_occlusion_query_boolean GL_ARB_sync";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.has_alpha = true;
   init.request_alpha = true;
   init.bind_generates_resource = true;
@@ -956,7 +956,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
 TEST_P(GLES2DecoderManualInitTest, BeginInvalidTargetQueryFails) {
   InitState init;
   init.extensions = "";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.has_alpha = true;
   init.request_alpha = true;
   init.bind_generates_resource = true;
@@ -994,7 +994,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginInvalidTargetQueryFails) {
 TEST_P(GLES2DecoderManualInitTest, QueryCounterEXTTimeStamp) {
   InitState init;
   init.extensions = "GL_ARB_timer_query";
-  init.gl_version = "opengl es 3.0";
+  init.gl_version = "OpenGL ES 3.0";
   init.has_alpha = true;
   init.request_alpha = true;
   init.bind_generates_resource = true;
@@ -1027,7 +1027,7 @@ TEST_P(GLES2DecoderManualInitTest, QueryCounterEXTTimeStamp) {
 TEST_P(GLES2DecoderManualInitTest, InvalidTargetQueryCounterFails) {
   InitState init;
   init.extensions = "";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.has_alpha = true;
   init.request_alpha = true;
   init.bind_generates_resource = true;
