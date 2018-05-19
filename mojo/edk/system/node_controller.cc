@@ -992,6 +992,11 @@ void NodeController::OnRequestPortMerge(
   {
     base::AutoLock lock(reserved_ports_lock_);
     auto it = reserved_ports_.find(from_node);
+    // TODO(https://crbug.com/822034): We should send a notification back to the
+    // requestor so they can clean up their dangling port in this failure case.
+    // This requires changes to the internal protocol, which can't be made yet.
+    // Until this is done, pipes from |MojoExtractMessagePipeFromInvitation()|
+    // will never break if the given name was invalid.
     if (it == reserved_ports_.end()) {
       DVLOG(1) << "Ignoring port merge request from node " << from_node << ". "
                << "No ports reserved for that node.";

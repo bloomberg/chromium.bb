@@ -26,6 +26,7 @@ source_set("headers") {
     "core.h",
     "data_pipe.h",
     "functions.h",
+    "invitation.h",
     "macros.h",
     "message_pipe.h",
     "platform_handle.h",
