@@ -68,6 +68,17 @@ enum SCTCanBeCheckedForInclusion {
   // privacy to do an inclusion check over DNS in this scenario.
   NOT_AUDITED_NO_DNS_LOOKUP = 4,
 
+  // This SCT was not audited, because it was recently checked and the cached
+  // inclusion result can be used.
+  NOT_AUDITED_ALREADY_CHECKED = 5,
+
+  // This SCT is already pending an audit check, and thus can be
+  // de-duplicated.
+  NOT_AUDITED_ALREADY_PENDING_CHECK = 6,
+
+  // This SCT was not audited, as an Entry Leaf Hash could not be calculated.
+  NOT_AUDITED_INVALID_LEAF_HASH = 7,
+
   SCT_CAN_BE_CHECKED_MAX
 };
 

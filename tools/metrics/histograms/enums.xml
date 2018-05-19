@@ -40596,6 +40596,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Can be checked for inclusion"/>
   <int value="3" label="Queue is full"/>
   <int value="4" label="No DNS lookup performed"/>
+  <int value="5" label="Already checked"/>
+  <int value="6" label="Already waiting to be checked"/>
+  <int value="7" label="Unable to determine leaf hash"/>
 </enum>
 
 <enum name="SCTOrigin">
