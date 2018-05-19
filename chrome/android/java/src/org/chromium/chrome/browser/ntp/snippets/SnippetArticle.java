@@ -68,6 +68,11 @@ public class SnippetArticle implements OfflinableSuggestion {
     /** The thumbnail, fetched lazily when the RecyclerView wants to show the snippet. */
     private DiscardableReference<Drawable> mThumbnail;
 
+    /**
+     * The favicon of the publisher, fetched lazily when the RecyclerView wants to show the snippet.
+     */
+    private DiscardableReference<Drawable> mPublisherFavicon;
+
     /** The thumbnail dominant color. */
     private @ColorInt Integer mThumbnailDominantColor;
 
@@ -157,6 +162,20 @@ public class SnippetArticle implements OfflinableSuggestion {
      */
     public void clearThumbnail() {
         mThumbnail = null;
+    }
+
+    /**
+     * Returns the favicon of the publisher for this article, or {@code null} if it hasn't been
+     * fetched yet.
+     */
+    @Nullable
+    public Drawable getPublisherFavicon() {
+        return mPublisherFavicon == null ? null : mPublisherFavicon.get();
+    }
+
+    /** Sets he favicon of the publisher for this article. */
+    public void setPublisherFavicon(DiscardableReference<Drawable> favicon) {
+        mPublisherFavicon = favicon;
     }
 
     /**

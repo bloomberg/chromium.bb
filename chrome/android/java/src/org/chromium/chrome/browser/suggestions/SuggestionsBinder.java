@@ -181,12 +181,26 @@ public class SuggestionsBinder {
         mPublisherTextView.measure(widthSpec, heightSpec);
         int publisherFaviconSizePx = mPublisherTextView.getMeasuredHeight();
 
+        Drawable favicon = mSuggestion.getPublisherFavicon();
+        if (favicon != null) {
+            setFaviconOnView(favicon, publisherFaviconSizePx);
+            return;
+        }
+
         // Set the favicon of the publisher.
         // We start initialising with the default favicon to reserve the space and prevent the text
         // from moving later.
         setDefaultFaviconOnView(publisherFaviconSizePx);
-        Callback<Bitmap> faviconCallback =
-                bitmap -> setFaviconOnView(bitmap, publisherFaviconSizePx);
+        Callback<Bitmap> faviconCallback = bitmap -> {
+            Drawable drawable =
+                    new BitmapDrawable(mPublisherTextView.getContext().getResources(), bitmap);
+            // If the device has sufficient memory, store the favicon to skip the download task
+            // next time we display this snippet.
+            if (!SysUtils.isLowEndDevice() && mSuggestion != null) {
+                mSuggestion.setPublisherFavicon(mUiDelegate.getReferencePool().put(drawable));
+            }
+            setFaviconOnView(drawable, publisherFaviconSizePx);
+        };
 
         mImageFetcher.makeFaviconRequest(mSuggestion, publisherFaviconSizePx, faviconCallback);
     }
@@ -293,11 +307,6 @@ public class SuggestionsBinder {
         setFaviconOnView(
                 ApiCompatibilityUtils.getDrawable(
                         mPublisherTextView.getContext().getResources(), R.drawable.default_favicon),
-                faviconSizePx);
-    }
-
-    private void setFaviconOnView(Bitmap image, int faviconSizePx) {
-        setFaviconOnView(new BitmapDrawable(mPublisherTextView.getContext().getResources(), image),
                 faviconSizePx);
     }
 
