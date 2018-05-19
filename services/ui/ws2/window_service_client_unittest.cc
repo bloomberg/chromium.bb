@@ -153,7 +153,6 @@ TEST(WindowServiceClientTest, NewWindow) {
   ASSERT_TRUE(window);
   EXPECT_EQ("ChangeCompleted id=1 sucess=true",
             SingleChangeToDescription(*helper.changes()));
-  helper.changes()->clear();
 }
 
 TEST(WindowServiceClientTest, NewWindowWithProperties) {
@@ -167,7 +166,6 @@ TEST(WindowServiceClientTest, NewWindowWithProperties) {
   EXPECT_EQ("ChangeCompleted id=1 sucess=true",
             SingleChangeToDescription(*helper.changes()));
   EXPECT_TRUE(window->GetProperty(aura::client::kAlwaysOnTopKey));
-  helper.changes()->clear();
 }
 
 TEST(WindowServiceClientTest, NewTopLevelWindow) {
@@ -177,7 +175,6 @@ TEST(WindowServiceClientTest, NewTopLevelWindow) {
   ASSERT_TRUE(top_level);
   EXPECT_EQ("TopLevelCreated id=1 window_id=0,1 drawn=false",
             SingleChangeToDescription(*helper.changes()));
-  helper.changes()->clear();
 }
 
 TEST(WindowServiceClientTest, NewTopLevelWindowWithProperties) {
@@ -191,7 +188,6 @@ TEST(WindowServiceClientTest, NewTopLevelWindowWithProperties) {
   EXPECT_EQ("TopLevelCreated id=1 window_id=0,1 drawn=false",
             SingleChangeToDescription(*helper.changes()));
   EXPECT_TRUE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
-  helper.changes()->clear();
 }
 
 TEST(WindowServiceClientTest, SetTopLevelWindowBounds) {
@@ -202,7 +198,17 @@ TEST(WindowServiceClientTest, SetTopLevelWindowBounds) {
   const gfx::Rect bounds_from_client = gfx::Rect(1, 2, 300, 400);
   helper.helper()->SetWindowBounds(top_level, bounds_from_client, 2);
   EXPECT_EQ(bounds_from_client, top_level->bounds());
-  EXPECT_EQ("ChangeCompleted id=2 sucess=true",
+  ASSERT_EQ(2u, helper.changes()->size());
+  {
+    const Change& change = (*helper.changes())[0];
+    EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, change.type);
+    EXPECT_EQ(top_level->bounds(), change.bounds2);
+    EXPECT_TRUE(change.local_surface_id);
+    helper.changes()->erase(helper.changes()->begin());
+  }
+  // See comments in WindowServiceClient::SetBoundsImpl() for why this returns
+  // false.
+  EXPECT_EQ("ChangeCompleted id=2 sucess=false",
             SingleChangeToDescription(*helper.changes()));
   helper.changes()->clear();
 
@@ -231,7 +237,6 @@ TEST(WindowServiceClientTest, SetTopLevelWindowBounds) {
   // And because the layout manager changed the bounds the result is false.
   EXPECT_EQ("ChangeCompleted id=3 sucess=false",
             ChangeToDescription((*helper.changes())[1]));
-  helper.changes()->clear();
 }
 
 // Tests the ability of the client to change properties on the server.
@@ -257,7 +262,6 @@ TEST(WindowServiceClientTest, SetTopLevelWindowProperty) {
       "PropertyChanged window=0,1 key=prop:always_on_top "
       "value=0000000000000000",
       SingleChangeToDescription(*helper.changes()));
-  helper.changes()->clear();
 }
 
 TEST(WindowServiceClientTest, WindowToWindowData) {
