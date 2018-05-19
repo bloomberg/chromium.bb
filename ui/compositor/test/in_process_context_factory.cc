@@ -105,7 +105,8 @@ class DirectOutputSurface : public viz::OutputSurface {
 
     context_provider_->ContextSupport()->SignalSyncToken(
         sync_token, base::BindOnce(&DirectOutputSurface::OnSwapBuffersComplete,
-                                   weak_ptr_factory_.GetWeakPtr(), ++swap_id_));
+                                   weak_ptr_factory_.GetWeakPtr(), ++swap_id_,
+                                   frame.need_presentation_feedback));
   }
   uint32_t GetFramebufferCopyTextureFormat() override {
     auto* gl = static_cast<InProcessContextProvider*>(context_provider());
@@ -128,10 +129,13 @@ class DirectOutputSurface : public viz::OutputSurface {
   unsigned UpdateGpuFence() override { return 0; }
 
  private:
-  void OnSwapBuffersComplete(uint64_t swap_id) {
+  void OnSwapBuffersComplete(uint64_t swap_id,
+                             bool need_presentation_feedback) {
     client_->DidReceiveSwapBuffersAck(swap_id);
-    client_->DidReceivePresentationFeedback(swap_id,
-                                            gfx::PresentationFeedback());
+    if (need_presentation_feedback) {
+      client_->DidReceivePresentationFeedback(swap_id,
+                                              gfx::PresentationFeedback());
+    }
   }
 
   viz::OutputSurfaceClient* client_ = nullptr;

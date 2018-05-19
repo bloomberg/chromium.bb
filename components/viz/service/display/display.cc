@@ -39,13 +39,6 @@
 
 namespace viz {
 
-struct Display::PendingPresentedCallbacks {
-  PendingPresentedCallbacks(uint64_t swap_id, PresentedCallbacks callbacks)
-      : swap_id(swap_id), callbacks(std::move(callbacks)) {}
-  uint64_t swap_id = 0;
-  PresentedCallbacks callbacks;
-};
-
 Display::Display(
     SharedBitmapManager* bitmap_manager,
     const RendererSettings& settings,
@@ -68,13 +61,10 @@ Display::Display(
 }
 
 Display::~Display() {
-  for (auto& pending_callbacks : pending_presented_callbacks_) {
-    for (auto& callback : pending_callbacks.callbacks)
+  for (auto& callback_list : pending_presented_callbacks_) {
+    for (auto& callback : callback_list)
       std::move(callback).Run(base::TimeTicks(), base::TimeDelta(), 0);
   }
-
-  for (auto& callback : presented_callbacks_)
-    std::move(callback).Run(base::TimeTicks(), base::TimeDelta(), 0);
 
   // Only do this if Initialize() happened.
   if (client_) {
@@ -381,20 +371,22 @@ bool Display::DrawAndSwap() {
           scheduler_->current_frame_time(), 1);
     }
 
-    DLOG_IF(WARNING, !presented_callbacks_.empty())
-        << "DidReceiveSwapBuffersAck() is not called for the last SwapBuffers!";
+    std::vector<Surface::PresentedCallback> callbacks;
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
       Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
       Surface::PresentedCallback callback;
-      if (surface && surface->TakePresentedCallback(&callback))
-        presented_callbacks_.push_back(std::move(callback));
+      if (surface && surface->TakePresentedCallback(&callback)) {
+        callbacks.emplace_back(std::move(callback));
+      }
     }
+    bool need_presentation_feedback = !callbacks.empty();
+    if (need_presentation_feedback)
+      pending_presented_callbacks_.emplace_back(std::move(callbacks));
 
     ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
                                                  "Display::DrawAndSwap");
 
     cc::benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
-    bool need_presentation_feedback = !presented_callbacks_.empty();
     renderer_->SwapBuffers(std::move(frame.metadata.latency_info),
                            need_presentation_feedback);
     if (scheduler_)
@@ -444,12 +436,6 @@ bool Display::DrawAndSwap() {
 }
 
 void Display::DidReceiveSwapBuffersAck(uint64_t swap_id) {
-  DCHECK(pending_presented_callbacks_.empty() ||
-         pending_presented_callbacks_.back().swap_id < swap_id);
-  if (!presented_callbacks_.empty()) {
-    pending_presented_callbacks_.emplace_back(swap_id,
-                                              std::move(presented_callbacks_));
-  }
   if (scheduler_)
     scheduler_->DidReceiveSwapBuffersAck();
   if (renderer_)
@@ -471,17 +457,13 @@ void Display::DidReceiveCALayerParams(
 void Display::DidReceivePresentationFeedback(
     uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
-  if (pending_presented_callbacks_.empty())
-    return;
-  DCHECK_LE(swap_id, pending_presented_callbacks_.front().swap_id);
-  auto& pending_callbacks = pending_presented_callbacks_.front();
-  if (swap_id == pending_callbacks.swap_id) {
-    for (auto& callback : pending_callbacks.callbacks) {
-      std::move(callback).Run(feedback.timestamp, feedback.interval,
-                              feedback.flags);
-    }
-    pending_presented_callbacks_.pop_front();
+  DCHECK(!pending_presented_callbacks_.empty());
+  auto& callbacks = pending_presented_callbacks_.front();
+  for (auto& callback : callbacks) {
+    std::move(callback).Run(feedback.timestamp, feedback.interval,
+                            feedback.flags);
   }
+  pending_presented_callbacks_.pop_front();
 }
 
 void Display::DidFinishLatencyInfo(

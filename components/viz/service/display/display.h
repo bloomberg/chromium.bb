@@ -169,10 +169,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   SoftwareRenderer* software_renderer_ = nullptr;
   std::vector<ui::LatencyInfo> stored_latency_info_;
 
-  using PresentedCallbacks = std::vector<Surface::PresentedCallback>;
-  PresentedCallbacks presented_callbacks_;
-  struct PendingPresentedCallbacks;
-  base::circular_deque<PendingPresentedCallbacks> pending_presented_callbacks_;
+  base::circular_deque<std::vector<Surface::PresentedCallback>>
+      pending_presented_callbacks_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Display);
