@@ -9,6 +9,8 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
@@ -413,7 +415,11 @@ PaintCanvas* CanvasResourceProvider::Canvas() {
     cc::ImageProvider* image_provider = &*canvas_image_provider_;
 
     cc::SkiaPaintCanvas::ContextFlushes context_flushes;
-    if (IsAccelerated()) {
+    if (IsAccelerated() &&
+        !ContextProviderWrapper()
+             ->ContextProvider()
+             ->GetGpuFeatureInfo()
+             .IsWorkaroundEnabled(gpu::DISABLE_2D_CANVAS_AUTO_FLUSH)) {
       context_flushes.enable =
           CanvasHeuristicParameters::kEnableGrContextFlushes;
       context_flushes.max_draws_before_flush =

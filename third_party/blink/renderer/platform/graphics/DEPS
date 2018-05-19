@@ -18,6 +18,7 @@ include_rules = [
     "+cc",
     "+components/viz/common",
     "+components/viz/test/fake_external_begin_frame_source.h",
+    "+gpu/config",
     "+gpu/command_buffer/client/gles2_interface.h",
     "+gpu/command_buffer/client/gpu_memory_buffer_manager.h",
     "+gpu/command_buffer/common/gpu_memory_buffer_support.h",

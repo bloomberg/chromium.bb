@@ -2916,6 +2916,17 @@
       "features": [
         "max_msaa_sample_count_4"
       ]
+    },
+    {
+      "id": 269,
+      "cr_bugs": [841755],
+      "description": "glFlush error on Mac",
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "disable_2d_canvas_auto_flush"
+      ]
     }
   ]
 }
