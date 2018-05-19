@@ -11,6 +11,10 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_client.h"
 
+namespace aura {
+class ClientSurfaceEmbedder;
+}
+
 namespace ui {
 namespace ws2 {
 
@@ -19,17 +23,17 @@ namespace ws2 {
 class COMPONENT_EXPORT(WINDOW_SERVICE) WindowHostFrameSinkClient
     : public viz::HostFrameSinkClient {
  public:
-  WindowHostFrameSinkClient();
+  explicit WindowHostFrameSinkClient(
+      aura::ClientSurfaceEmbedder* client_surface_embedder);
   ~WindowHostFrameSinkClient() override;
-
-  // Called when the FrameSinkId of the window this is associated with changes.
-  void OnFrameSinkIdChanged();
 
   // viz::HostFrameSinkClient:
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
 
  private:
+  aura::ClientSurfaceEmbedder* client_surface_embedder_;
+
   DISALLOW_COPY_AND_ASSIGN(WindowHostFrameSinkClient);
 };
 

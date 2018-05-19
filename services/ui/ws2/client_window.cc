@@ -5,7 +5,6 @@
 #include "services/ui/ws2/client_window.h"
 
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "services/ui/ws2/window_host_frame_sink_client.h"
 #include "services/ui/ws2/window_service_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -220,29 +219,6 @@ ClientWindow* ClientWindow::Create(aura::Window* window,
 // static
 const ClientWindow* ClientWindow::GetMayBeNull(const aura::Window* window) {
   return window ? window->GetProperty(kClientWindowKey) : nullptr;
-}
-
-void ClientWindow::SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
-  frame_sink_id_ = frame_sink_id;
-  viz::HostFrameSinkManager* host_frame_sink_manager =
-      aura::Env::GetInstance()
-          ->context_factory_private()
-          ->GetHostFrameSinkManager();
-  if (!window_host_frame_sink_client_) {
-    window_host_frame_sink_client_ =
-        std::make_unique<WindowHostFrameSinkClient>();
-    host_frame_sink_manager->RegisterFrameSinkId(
-        frame_sink_id_, window_host_frame_sink_client_.get());
-    // TODO: need to unregister, and update on changes.
-    // TODO: figure what parts of the ancestors (and descendants) need to be
-    // registered.
-  }
-
-  host_frame_sink_manager->InvalidateFrameSinkId(frame_sink_id_);
-  host_frame_sink_manager->RegisterFrameSinkId(
-      frame_sink_id, window_host_frame_sink_client_.get());
-  window_->SetEmbedFrameSinkId(frame_sink_id_);
-  window_host_frame_sink_client_->OnFrameSinkIdChanged();
 }
 
 void ClientWindow::SetClientArea(

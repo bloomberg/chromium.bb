@@ -4,14 +4,18 @@
 
 #include "services/ui/ws2/client_root.h"
 
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ui/ws2/client_change.h"
 #include "services/ui/ws2/client_change_tracker.h"
 #include "services/ui/ws2/client_window.h"
+#include "services/ui/ws2/window_host_frame_sink_client.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 
 namespace ui {
@@ -38,14 +42,34 @@ ClientRoot::ClientRoot(WindowServiceClient* window_service_client,
 }
 
 ClientRoot::~ClientRoot() {
-  ClientWindow::GetMayBeNull(window_)->set_embedded_window_service_client(
-      nullptr);
+  ClientWindow* client_window = ClientWindow::GetMayBeNull(window_);
+  client_window->set_embedded_window_service_client(nullptr);
   window_->RemoveObserver(this);
+
+  viz::HostFrameSinkManager* host_frame_sink_manager =
+      aura::Env::GetInstance()
+          ->context_factory_private()
+          ->GetHostFrameSinkManager();
+  host_frame_sink_manager->InvalidateFrameSinkId(
+      client_window->frame_sink_id());
 }
 
-void ClientRoot::FrameSinkIdChanged() {
-  window_->SetEmbedFrameSinkId(
-      ClientWindow::GetMayBeNull(window_)->frame_sink_id());
+void ClientRoot::RegisterVizEmbeddingSupport() {
+  // This function should only be called once.
+  DCHECK(!window_host_frame_sink_client_);
+  window_host_frame_sink_client_ = std::make_unique<WindowHostFrameSinkClient>(
+      client_surface_embedder_.get());
+
+  viz::HostFrameSinkManager* host_frame_sink_manager =
+      aura::Env::GetInstance()
+          ->context_factory_private()
+          ->GetHostFrameSinkManager();
+  viz::FrameSinkId frame_sink_id =
+      ClientWindow::GetMayBeNull(window_)->frame_sink_id();
+  host_frame_sink_manager->RegisterFrameSinkId(
+      frame_sink_id, window_host_frame_sink_client_.get());
+  window_->SetEmbedFrameSinkId(frame_sink_id);
+
   UpdatePrimarySurfaceId();
 }
 
@@ -96,7 +120,7 @@ void ClientRoot::OnWindowBoundsChanged(aura::Window* window,
                                        ui::PropertyChangeReason reason) {
   UpdatePrimarySurfaceId();
   client_surface_embedder_->UpdateSizeAndGutters();
-  base::Optional<viz::LocalSurfaceId> surface_id = local_surface_id_;
+  base::Optional<viz::LocalSurfaceId> surface_id = GetLocalSurfaceId();
   // See comments in WindowServiceClient::SetWindowBoundsImpl() for details on
   // why this always notifies the client.
   window_service_client_->window_tree_client_->OnWindowBoundsChanged(

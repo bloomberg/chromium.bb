@@ -25,7 +25,6 @@ class EventHandler;
 
 namespace ws2 {
 
-class WindowHostFrameSinkClient;
 class WindowServiceClient;
 
 // Tracks any state associated with an aura::Window for the WindowService.
@@ -69,7 +68,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
     return embedded_window_service_client_;
   }
 
-  void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id);
+  void set_frame_sink_id(const viz::FrameSinkId& frame_sink_id) {
+    frame_sink_id_ = frame_sink_id;
+  }
   const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
   const std::vector<gfx::Rect>& additional_client_areas() const {
@@ -113,19 +114,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
   // |embedded_window_service_client_| is set appropriately.
   WindowServiceClient* embedded_window_service_client_ = nullptr;
 
-  // TODO(sky): wire this up, see ServerWindow::UpdateFrameSinkId(). This is
-  // initially the id supplied by the client (for locally created windows it is
-  // kWindowServerClientId for the high part and low part an ever increasing
-  // number). If the window is used as the embed root, then it changes to high
-  // part = id of client being embedded in and low part 0. If used as a
-  // top-level, it's changed to the id passed by the client requesting the
-  // top-level.
-  // TODO(sky): this likely needs to plug into values in aura::Window.
+  // This is initially the id supplied by the client (for locally created
+  // windows it is kWindowServerClientId for the high part and low part an ever
+  // increasing number). If the window is used as the embed root, then it
+  // changes to high part = id of client being embedded in and low part 0. If
+  // used as a top-level, it's changed to the id passed by the client
+  // requesting the top-level.
   viz::FrameSinkId frame_sink_id_;
-
-  // viz::HostFrameSinkClient registered with the HostFrameSinkManager for the
-  // window.
-  std::unique_ptr<WindowHostFrameSinkClient> window_host_frame_sink_client_;
 
   // Together |client_area_| and |additional_client_areas_| are used to specify
   // the client area. See SetClientArea() in mojom for details.
