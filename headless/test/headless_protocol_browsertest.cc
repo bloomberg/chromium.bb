@@ -35,8 +35,6 @@ class HeadlessProtocolBrowserTest
       public runtime::Observer {
  public:
   HeadlessProtocolBrowserTest() {
-    embedded_test_server()->ServeFilesFromSourceDirectory(
-        "third_party/WebKit/LayoutTests/http/tests/inspector-protocol");
     EXPECT_TRUE(embedded_test_server()->Start());
   }
 
@@ -50,7 +48,7 @@ class HeadlessProtocolBrowserTest
   }
 
   void RunDevTooledTest() override {
-    GURL test_url = embedded_test_server()->GetURL(test_folder_ + script_name_);
+    GURL test_url = embedded_test_server()->GetURL("/protocol/" + script_name_);
     devtools_client_->GetPage()->Navigate(
         embedded_test_server()
             ->GetURL("/protocol/inspector-protocol-test.html?test=" +
@@ -149,20 +147,11 @@ class HeadlessProtocolBrowserTest
 
  protected:
   bool test_finished_ = false;
-  std::string test_folder_;
   std::string script_name_;
 };
 
 #define HEADLESS_PROTOCOL_TEST(TEST_NAME, SCRIPT_NAME)             \
   IN_PROC_BROWSER_TEST_F(HeadlessProtocolBrowserTest, TEST_NAME) { \
-    test_folder_ = "/protocol/";                                   \
-    script_name_ = SCRIPT_NAME;                                    \
-    RunTest();                                                     \
-  }
-
-#define LAYOUT_PROTOCOL_TEST(TEST_NAME, SCRIPT_NAME)               \
-  IN_PROC_BROWSER_TEST_F(HeadlessProtocolBrowserTest, TEST_NAME) { \
-    test_folder_ = "/";                                            \
     script_name_ = SCRIPT_NAME;                                    \
     RunTest();                                                     \
   }
