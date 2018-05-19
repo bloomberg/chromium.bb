@@ -742,7 +742,7 @@ void TypedURLSyncBridge::LoadMetadata() {
                                      "TypedURLSyncMetadataDatabase."});
     return;
   }
-  change_processor()->ModelReadyToSync(this, std::move(batch));
+  change_processor()->ModelReadyToSync(std::move(batch));
 }
 
 void TypedURLSyncBridge::ClearErrorStats() {

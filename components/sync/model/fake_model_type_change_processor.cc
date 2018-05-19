@@ -47,7 +47,6 @@ void FakeModelTypeChangeProcessor::OnModelStarting(
     ModelTypeSyncBridge* bridge) {}
 
 void FakeModelTypeChangeProcessor::ModelReadyToSync(
-    ModelTypeSyncBridge* bridge,
     std::unique_ptr<MetadataBatch> batch) {}
 
 bool FakeModelTypeChangeProcessor::IsTrackingMetadata() {

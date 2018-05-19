@@ -459,7 +459,7 @@ void AutocompleteSyncBridge::LoadMetadata() {
         {FROM_HERE, "Failed reading autofill metadata from WebDatabase."});
     return;
   }
-  change_processor()->ModelReadyToSync(this, std::move(batch));
+  change_processor()->ModelReadyToSync(std::move(batch));
 }
 
 std::string AutocompleteSyncBridge::GetClientTag(

@@ -49,6 +49,7 @@ using syncer::IsEmptyMetadataBatch;
 using syncer::MetadataBatch;
 using syncer::MetadataChangeList;
 using syncer::MockModelTypeChangeProcessor;
+using testing::_;
 using testing::Contains;
 using testing::ElementsAre;
 using testing::Eq;
@@ -60,12 +61,11 @@ using testing::Not;
 using testing::NotNull;
 using testing::Pair;
 using testing::Pointee;
-using testing::UnorderedElementsAre;
 using testing::Return;
 using testing::SaveArg;
 using testing::SizeIs;
+using testing::UnorderedElementsAre;
 using testing::WithArg;
-using testing::_;
 
 const char kLocalSessionTag[] = "sessiontag1";
 
@@ -324,11 +324,10 @@ class SessionSyncBridgeTest : public ::testing::Test {
   std::unique_ptr<syncer::ClientTagBasedModelTypeProcessor> real_processor_;
 };
 
-TEST_F(SessionSyncBridgeTest, ShouldCallDoModelReadyToSyncWhenSyncEnabled) {
-  EXPECT_CALL(mock_processor(), DoModelReadyToSync(_, _)).Times(0);
+TEST_F(SessionSyncBridgeTest, ShouldCallModelReadyToSyncWhenSyncEnabled) {
+  EXPECT_CALL(mock_processor(), ModelReadyToSync(_)).Times(0);
   InitializeBridge();
-  EXPECT_CALL(mock_processor(),
-              DoModelReadyToSync(bridge(), IsEmptyMetadataBatch()));
+  EXPECT_CALL(mock_processor(), ModelReadyToSync(IsEmptyMetadataBatch()));
   StartSyncing();
 }
 
@@ -340,7 +339,7 @@ TEST_F(SessionSyncBridgeTest, ShouldDeferLocalEventDueToSessionRestore) {
   const int kTabId2 = 1000003;
 
   // No notifications expected until OnSessionRestoreComplete().
-  EXPECT_CALL(mock_processor(), DoPut(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
 
   AddWindow(kWindowId)->SetIsSessionRestoreInProgress(true);
   // Initial tab should be ignored (not exposed to processor) while session
@@ -362,7 +361,7 @@ TEST_F(SessionSyncBridgeTest, ShouldDeferLocalEventDueToSessionRestore) {
 
   // OnSessionRestoreComplete() should issue three Put() calls, one updating the
   // header and one for each of the two added tabs.
-  EXPECT_CALL(mock_processor(), DoPut(_, _, _)).Times(3);
+  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(3);
   bridge()->OnSessionRestoreComplete();
   EXPECT_THAT(GetAllData(), SizeIs(3));
 }
@@ -370,7 +369,7 @@ TEST_F(SessionSyncBridgeTest, ShouldDeferLocalEventDueToSessionRestore) {
 TEST_F(SessionSyncBridgeTest, ShouldCreateHeaderByDefault) {
   InitializeBridge();
 
-  EXPECT_CALL(mock_processor(), DoModelReadyToSync(_, IsEmptyMetadataBatch()));
+  EXPECT_CALL(mock_processor(), ModelReadyToSync(IsEmptyMetadataBatch()));
   StartSyncing();
 
   EXPECT_THAT(GetAllData(), SizeIs(1));
@@ -398,22 +397,22 @@ TEST_F(SessionSyncBridgeTest, ShouldExposeInitialLocalTabsToProcessor) {
       SessionStore::GetTabStorageKey(kLocalSessionTag, 1);
 
   EXPECT_CALL(mock_processor(),
-              DoPut(header_storage_key,
-                    EntityDataHasSpecifics(MatchesHeader(
-                        kLocalSessionTag, {kWindowId}, {kTabId1, kTabId2})),
-                    _));
+              Put(header_storage_key,
+                  EntityDataHasSpecifics(MatchesHeader(
+                      kLocalSessionTag, {kWindowId}, {kTabId1, kTabId2})),
+                  _));
   EXPECT_CALL(mock_processor(),
-              DoPut(tab_storage_key1,
-                    EntityDataHasSpecifics(
-                        MatchesTab(kLocalSessionTag, kWindowId, kTabId1,
-                                   /*tab_node_id=*/_, {"http://foo.com/"})),
-                    _));
+              Put(tab_storage_key1,
+                  EntityDataHasSpecifics(
+                      MatchesTab(kLocalSessionTag, kWindowId, kTabId1,
+                                 /*tab_node_id=*/_, {"http://foo.com/"})),
+                  _));
   EXPECT_CALL(mock_processor(),
-              DoPut(tab_storage_key2,
-                    EntityDataHasSpecifics(
-                        MatchesTab(kLocalSessionTag, kWindowId, kTabId2,
-                                   /*tab_node_id=*/_, {"http://bar.com/"})),
-                    _));
+              Put(tab_storage_key2,
+                  EntityDataHasSpecifics(
+                      MatchesTab(kLocalSessionTag, kWindowId, kTabId2,
+                                 /*tab_node_id=*/_, {"http://bar.com/"})),
+                  _));
 
   StartSyncing();
 
@@ -461,24 +460,24 @@ TEST_F(SessionSyncBridgeTest, ShouldReportLocalTabCreation) {
   // for tab update). During the first update, however, the tab is not syncable
   // and is hence skipped.
   testing::Expectation put_transient_header = EXPECT_CALL(
-      mock_processor(), DoPut(_,
-                              EntityDataHasSpecifics(MatchesHeader(
-                                  kLocalSessionTag, {kWindowId}, {kTabId1})),
-                              _));
+      mock_processor(), Put(_,
+                            EntityDataHasSpecifics(MatchesHeader(
+                                kLocalSessionTag, {kWindowId}, {kTabId1})),
+                            _));
   EXPECT_CALL(mock_processor(),
-              DoPut(_,
-                    EntityDataHasSpecifics(MatchesHeader(
-                        kLocalSessionTag, {kWindowId}, {kTabId1, kTabId2})),
-                    _))
+              Put(_,
+                  EntityDataHasSpecifics(MatchesHeader(
+                      kLocalSessionTag, {kWindowId}, {kTabId1, kTabId2})),
+                  _))
       .After(put_transient_header)
-      .WillOnce(SaveArg<0>(&header_storage_key));
+      .WillOnce(WithArg<0>(SaveArg<0>(&header_storage_key)));
   EXPECT_CALL(mock_processor(),
-              DoPut(_,
-                    EntityDataHasSpecifics(
-                        MatchesTab(kLocalSessionTag, kWindowId, kTabId2,
-                                   /*tab_node_id=*/_, {"http://bar.com/"})),
-                    _))
-      .WillOnce(SaveArg<0>(&tab_storage_key));
+              Put(_,
+                  EntityDataHasSpecifics(
+                      MatchesTab(kLocalSessionTag, kWindowId, kTabId2,
+                                 /*tab_node_id=*/_, {"http://bar.com/"})),
+                  _))
+      .WillOnce(WithArg<0>(SaveArg<0>(&tab_storage_key)));
 
   // Create the actual tab, now that we're syncing.
   AddTab(kWindowId, "http://bar.com/", kTabId2);
@@ -561,23 +560,23 @@ TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
   // When the bridge gets restarted, we expected tab IDs being updated, but the
   // rest of the information such as navigation URLs should be reused.
   EXPECT_CALL(mock_processor(),
-              DoPut(header_storage_key,
-                    EntityDataHasSpecifics(MatchesHeader(
-                        kLocalSessionTag, {kWindowId},
-                        {kTabIdAfterRestore1, kTabIdAfterRestore2})),
-                    _));
+              Put(header_storage_key,
+                  EntityDataHasSpecifics(MatchesHeader(
+                      kLocalSessionTag, {kWindowId},
+                      {kTabIdAfterRestore1, kTabIdAfterRestore2})),
+                  _));
   EXPECT_CALL(mock_processor(),
-              DoPut(tab_storage_key1,
-                    EntityDataHasSpecifics(MatchesTab(
-                        kLocalSessionTag, kWindowId, kTabIdAfterRestore1,
-                        kTabNodeId1, {"http://foo.com/"})),
-                    _));
+              Put(tab_storage_key1,
+                  EntityDataHasSpecifics(MatchesTab(
+                      kLocalSessionTag, kWindowId, kTabIdAfterRestore1,
+                      kTabNodeId1, {"http://foo.com/"})),
+                  _));
   EXPECT_CALL(mock_processor(),
-              DoPut(tab_storage_key2,
-                    EntityDataHasSpecifics(MatchesTab(
-                        kLocalSessionTag, kWindowId, kTabIdAfterRestore2,
-                        kTabNodeId2, {"http://bar.com/"})),
-                    _));
+              Put(tab_storage_key2,
+                  EntityDataHasSpecifics(MatchesTab(
+                      kLocalSessionTag, kWindowId, kTabIdAfterRestore2,
+                      kTabNodeId2, {"http://bar.com/"})),
+                  _));
 
   // Start the bridge again.
   InitializeBridge();
@@ -658,14 +657,14 @@ TEST_F(SessionSyncBridgeTest, ShouldRestoreTabbedDataIfNoWindowsDuringStartup) {
   // native ids, but the tab has the same sync id as before.
   EXPECT_CALL(
       mock_processor(),
-      DoPut(header_storage_key,
-            EntityDataHasSpecifics(MatchesHeader(kLocalSessionTag, _, _)), _));
+      Put(header_storage_key,
+          EntityDataHasSpecifics(MatchesHeader(kLocalSessionTag, _, _)), _));
   EXPECT_CALL(mock_processor(),
-              DoPut(tab_storage_key,
-                    EntityDataHasSpecifics(MatchesTab(
-                        kLocalSessionTag, /*window_id=*/_, /*tab_id=*/_,
-                        kTabNodeId, {"http://foo.com/", "http://bar.com/"})),
-                    _));
+              Put(tab_storage_key,
+                  EntityDataHasSpecifics(MatchesTab(
+                      kLocalSessionTag, /*window_id=*/_, /*tab_id=*/_,
+                      kTabNodeId, {"http://foo.com/", "http://bar.com/"})),
+                  _));
   AddWindow(kWindowId)->OverrideTabAt(0, tab);
   tab->Navigate("http://bar.com/");
 }
@@ -687,11 +686,10 @@ TEST_F(SessionSyncBridgeTest, ShouldDisableSyncAndReenable) {
                   MatchesHeader(kLocalSessionTag, {kWindowId}, {kTabId})));
   ASSERT_THAT(GetAllData(), Not(IsEmpty()));
 
-  EXPECT_CALL(mock_processor(), DoModelReadyToSync(_, _)).Times(0);
+  EXPECT_CALL(mock_processor(), ModelReadyToSync(_)).Times(0);
   real_processor()->DisableSync();
 
-  EXPECT_CALL(mock_processor(),
-              DoModelReadyToSync(bridge(), IsEmptyMetadataBatch()));
+  EXPECT_CALL(mock_processor(), ModelReadyToSync(IsEmptyMetadataBatch()));
   StartSyncing();
   ASSERT_THAT(GetData(header_storage_key),
               EntityDataHasSpecifics(
@@ -707,7 +705,7 @@ TEST_F(SessionSyncBridgeTest, ShouldMergeForeignSession) {
   const int kForeignTabNodeId = 2003;
 
   EXPECT_CALL(mock_processor(), UpdateStorageKey(_, _, _)).Times(0);
-  EXPECT_CALL(mock_processor(), DoPut(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
   InitializeBridge();
 
   const sync_pb::SessionSpecifics foreign_header =
@@ -719,8 +717,7 @@ TEST_F(SessionSyncBridgeTest, ShouldMergeForeignSession) {
 
   EXPECT_CALL(
       mock_processor(),
-      DoPut(_, EntityDataHasSpecifics(MatchesHeader(kLocalSessionTag, _, _)),
-            _));
+      Put(_, EntityDataHasSpecifics(MatchesHeader(kLocalSessionTag, _, _)), _));
   EXPECT_CALL(mock_foreign_sessions_updated_callback(), Run());
 
   StartSyncing({foreign_header, foreign_tab});
@@ -885,7 +882,7 @@ TEST_F(SessionSyncBridgeTest, ShouldIgnoreRemoteDeletionOfLocalTab) {
   ASSERT_FALSE(real_processor()->HasLocalChangesForTest());
 
   // Mimic receiving a remote deletion of both entities.
-  EXPECT_CALL(mock_processor(), DoPut(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
   real_processor()->OnUpdateReceived(state, {CreateTombstone(kLocalSessionTag),
                                              CreateTombstone(tab_client_tag1)});
 
@@ -911,29 +908,29 @@ TEST_F(SessionSyncBridgeTest, ShouldIgnoreRemoteDeletionOfLocalTab) {
   // Window creation already triggers a header update, which will be overriden
   // later below.
   testing::Expectation put_transient_header =
-      EXPECT_CALL(mock_processor(), DoPut(header_storage_key, _, _));
+      EXPECT_CALL(mock_processor(), Put(header_storage_key, _, _));
   AddWindow(kWindowId2);
 
   // In the current implementation, some of the updates are reported to the
   // processor twice, but that's OK because the processor can detect it.
   EXPECT_CALL(mock_processor(),
-              DoPut(header_storage_key,
-                    EntityDataHasSpecifics(MatchesHeader(
-                        kLocalSessionTag, ElementsAre(kWindowId1, kWindowId2),
-                        ElementsAre(kTabId1, kTabId2))),
-                    _))
+              Put(header_storage_key,
+                  EntityDataHasSpecifics(MatchesHeader(
+                      kLocalSessionTag, ElementsAre(kWindowId1, kWindowId2),
+                      ElementsAre(kTabId1, kTabId2))),
+                  _))
       .Times(2)
       .After(put_transient_header);
-  EXPECT_CALL(mock_processor(), DoPut(tab_storage_key1,
-                                      EntityDataHasSpecifics(MatchesTab(
-                                          kLocalSessionTag, kWindowId1, kTabId1,
-                                          kTabNodeId1, {"http://foo.com/"})),
-                                      _));
-  EXPECT_CALL(mock_processor(), DoPut(tab_storage_key2,
-                                      EntityDataHasSpecifics(MatchesTab(
-                                          kLocalSessionTag, kWindowId2, kTabId2,
-                                          kTabNodeId2, {"http://bar.com/"})),
-                                      _))
+  EXPECT_CALL(mock_processor(), Put(tab_storage_key1,
+                                    EntityDataHasSpecifics(MatchesTab(
+                                        kLocalSessionTag, kWindowId1, kTabId1,
+                                        kTabNodeId1, {"http://foo.com/"})),
+                                    _));
+  EXPECT_CALL(mock_processor(), Put(tab_storage_key2,
+                                    EntityDataHasSpecifics(MatchesTab(
+                                        kLocalSessionTag, kWindowId2, kTabId2,
+                                        kTabNodeId2, {"http://bar.com/"})),
+                                    _))
       .Times(2);
 
   AddTab(kWindowId2, "http://bar.com/", kTabId2);

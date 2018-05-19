@@ -201,7 +201,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   }
 
   void ModelReadyToSync() {
-    type_processor()->ModelReadyToSync(bridge(), db().CreateMetadataBatch());
+    type_processor()->ModelReadyToSync(db().CreateMetadataBatch());
   }
 
   void OnCommitDataLoaded() { bridge()->OnCommitDataLoaded(); }

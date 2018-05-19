@@ -44,7 +44,6 @@ void RecordingModelTypeChangeProcessor::UntrackEntity(
 }
 
 void RecordingModelTypeChangeProcessor::ModelReadyToSync(
-    ModelTypeSyncBridge* bridge,
     std::unique_ptr<MetadataBatch> batch) {
   std::swap(metadata_, batch);
 }
