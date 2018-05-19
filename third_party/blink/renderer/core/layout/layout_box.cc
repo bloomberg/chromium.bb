@@ -1061,19 +1061,12 @@ IntSize LayoutBox::CalculateAutoscrollDirection(
   if (!frame_view)
     return IntSize();
 
-  LayoutRect absolute_scrolling_box;
+  LayoutRect absolute_scrolling_box = LayoutRect(AbsoluteBoundingBoxRect());
 
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() && IsLayoutView()) {
-    absolute_scrolling_box =
-        LayoutRect(frame_view->VisibleContentRect(kExcludeScrollbars));
-  } else {
-    absolute_scrolling_box = LayoutRect(AbsoluteBoundingBoxRect());
-
-    // Exclude scrollbars so the border belt (activation area) starts from the
-    // scrollbar-content edge rather than the window edge.
-    ExcludeScrollbars(absolute_scrolling_box,
-                      kExcludeOverlayScrollbarSizeForHitTesting);
-  }
+  // Exclude scrollbars so the border belt (activation area) starts from the
+  // scrollbar-content edge rather than the window edge.
+  ExcludeScrollbars(absolute_scrolling_box,
+                    kExcludeOverlayScrollbarSizeForHitTesting);
 
   IntRect belt_box = View()->GetFrameView()->AbsoluteToRootFrame(
       PixelSnappedIntRect(absolute_scrolling_box));
@@ -2541,26 +2534,12 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
     LayoutSize container_offset =
         ancestor->OffsetFromAncestorContainer(container);
     transform_state.Move(-container_offset, accumulation);
-
-    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      // If the ancestor is fixed, then the rect is already in its coordinates
-      // so doesn't need viewport-adjusting.
-      if (ancestor->Style()->GetPosition() != EPosition::kFixed &&
-          container->IsLayoutView() && position == EPosition::kFixed) {
-        transform_state.Move(
-            ToLayoutView(container)->OffsetForFixedPosition(true),
-            accumulation);
-      }
-    }
-
     return true;
   }
 
   if (container->IsLayoutView()) {
     bool use_fixed_position_adjustment =
-        position == EPosition::kFixed &&
-        (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() ||
-         container == ancestor);
+        position == EPosition::kFixed && container == ancestor;
     return ToLayoutView(container)->MapToVisualRectInAncestorSpaceInternal(
         ancestor, transform_state, use_fixed_position_adjustment ? kIsFixed : 0,
         visual_rect_flags);

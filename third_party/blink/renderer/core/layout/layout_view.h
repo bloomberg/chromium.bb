@@ -224,9 +224,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
     layout_state_ = layout_state_->Next();
   }
 
-  LayoutRect VisualOverflowRect() const override;
-  LayoutRect LocalVisualRectIgnoringVisibility() const override;
-
   // Invalidates paint for the entire view, including composited descendants,
   // but not including child frames.
   // It is very likely you do not want to call this method.
@@ -271,16 +268,17 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 #endif
 
   void UpdateFromStyle() override;
-  bool AllowsOverflowClip() const override;
 
   bool ShouldUsePrintingLayout() const;
 
-  int ViewLogicalWidthForBoxSizing() const;
-  int ViewLogicalHeightForBoxSizing() const;
+  int ViewLogicalWidthForBoxSizing() const {
+    return ViewLogicalWidth(kIncludeScrollbars);
+  }
+  int ViewLogicalHeightForBoxSizing() const {
+    return ViewLogicalHeight(kIncludeScrollbars);
+  }
 
   bool UpdateLogicalWidthAndColumnWidth() override;
-
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
 
   UntracedMember<LocalFrameView> frame_view_;
 

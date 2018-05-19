@@ -113,21 +113,9 @@ void IntersectionGeometry::InitializeTargetRect() {
 }
 
 void IntersectionGeometry::InitializeRootRect() {
-  if (root_->IsLayoutView() &&
-      !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    root_rect_ = LayoutRect(root_->GetFrameView()->VisibleContentRect());
-    LOG(ERROR)
-        << "GM:"
-        << RuntimeEnabledFeatures::IntersectionObserverGeometryMapperEnabled();
-    root_->MapToVisualRectInAncestorSpace(
-        nullptr, root_rect_,
-        RuntimeEnabledFeatures::IntersectionObserverGeometryMapperEnabled()
-            ? kUseGeometryMapper
-            : kDefaultVisualRectFlags);
-  } else if (root_->IsLayoutView() && root_->GetDocument().IsInMainFrame()) {
-    // The main frame is a bit special (even after RLS) as the scrolling
-    // viewport can differ in size from the LayoutView itself. There's two
-    // situations this occurs in:
+  if (root_->IsLayoutView() && root_->GetDocument().IsInMainFrame()) {
+    // The main frame is a bit special as the scrolling viewport can differ in
+    // size from the LayoutView itself. There's two situations this occurs in:
     // 1) The ForceZeroLayoutHeight quirk setting is used in Android WebView for
     // compatibility and sets the initial-containing-block's (a.k.a.
     // LayoutView) height to 0. Thus, we can't use its size for intersection

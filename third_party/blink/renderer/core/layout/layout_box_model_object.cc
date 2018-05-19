@@ -819,11 +819,8 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
                           FloatQuad(), containing_block, flags)
                       .BoundingBox()
                       .Location());
-  LayoutBox* scroll_ancestor =
-      Layer()->AncestorOverflowLayer()->IsRootLayer() &&
-              !RuntimeEnabledFeatures::RootLayerScrollingEnabled()
-          ? nullptr
-          : &ToLayoutBox(Layer()->AncestorOverflowLayer()->GetLayoutObject());
+  LayoutBox& scroll_ancestor =
+      ToLayoutBox(Layer()->AncestorOverflowLayer()->GetLayoutObject());
 
   LayoutUnit max_container_width =
       containing_block->IsLayoutView()
@@ -840,16 +837,13 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   // transforms.
   FloatRect scroll_container_relative_padding_box_rect(
       containing_block->LayoutOverflowRect());
-  FloatSize scroll_container_border_offset;
-  if (scroll_ancestor) {
-    scroll_container_border_offset =
-        FloatSize(scroll_ancestor->BorderLeft(), scroll_ancestor->BorderTop());
-  }
-  if (containing_block != scroll_ancestor) {
+  FloatSize scroll_container_border_offset =
+      FloatSize(scroll_ancestor.BorderLeft(), scroll_ancestor.BorderTop());
+  if (containing_block != &scroll_ancestor) {
     FloatQuad local_quad(FloatRect(containing_block->PaddingBoxRect()));
     scroll_container_relative_padding_box_rect =
         containing_block
-            ->LocalToAncestorQuadWithoutTransforms(local_quad, scroll_ancestor,
+            ->LocalToAncestorQuadWithoutTransforms(local_quad, &scroll_ancestor,
                                                    flags)
             .BoundingBox();
 
@@ -857,12 +851,8 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
     // scroll position, so after mapping we add in the scroll position to get
     // the container's position within the ancestor scroller's unscrolled layout
     // overflow.
-    ScrollOffset scroll_offset(
-        scroll_ancestor
-            ? ToFloatSize(
-                  scroll_ancestor->GetScrollableArea()->ScrollPosition())
-            : FloatSize());
-    scroll_container_relative_padding_box_rect.Move(scroll_offset);
+    scroll_container_relative_padding_box_rect.Move(
+        ToFloatSize(scroll_ancestor.GetScrollableArea()->ScrollPosition()));
   }
   // Remove top-left border offset from overflow scroller.
   scroll_container_relative_padding_box_rect.Move(

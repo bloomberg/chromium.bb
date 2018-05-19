@@ -598,23 +598,9 @@ static void Write(WTF::TextStream& ts,
                   LayoutAsTextBehavior behavior = kLayoutAsTextBehaviorNormal,
                   const PaintLayer* marked_layer = nullptr) {
   IntRect adjusted_layout_bounds = PixelSnappedIntRect(layer_bounds);
-  IntRect adjusted_layout_bounds_with_scrollbars = adjusted_layout_bounds;
   IntRect adjusted_background_clip_rect =
       PixelSnappedIntRect(background_clip_rect);
   IntRect adjusted_clip_rect = PixelSnappedIntRect(clip_rect);
-
-  bool report_frame_scroll_info =
-      layer.GetLayoutObject().IsLayoutView() &&
-      !RuntimeEnabledFeatures::RootLayerScrollingEnabled();
-
-  if (report_frame_scroll_info) {
-    LayoutView& layout_view = ToLayoutView(layer.GetLayoutObject());
-
-    adjusted_layout_bounds_with_scrollbars.SetWidth(
-        layout_view.ViewWidth(kIncludeScrollbars));
-    adjusted_layout_bounds_with_scrollbars.SetHeight(
-        layout_view.ViewHeight(kIncludeScrollbars));
-  }
 
   if (marked_layer)
     ts << (marked_layer == &layer ? "*" : " ");
@@ -629,24 +615,19 @@ static void Write(WTF::TextStream& ts,
   if (behavior & kLayoutAsTextShowAddresses)
     ts << static_cast<const void*>(&layer) << " ";
 
-  ts << adjusted_layout_bounds_with_scrollbars;
+  ts << adjusted_layout_bounds;
 
   if (!adjusted_layout_bounds.IsEmpty()) {
     if (!adjusted_background_clip_rect.Contains(adjusted_layout_bounds))
       ts << " backgroundClip " << adjusted_background_clip_rect;
-    if (!adjusted_clip_rect.Contains(adjusted_layout_bounds_with_scrollbars))
+    if (!adjusted_clip_rect.Contains(adjusted_layout_bounds))
       ts << " clip " << adjusted_clip_rect;
   }
   if (layer.IsTransparent())
     ts << " transparent";
 
-  if (layer.GetLayoutObject().HasOverflowClip() || report_frame_scroll_info) {
-    ScrollableArea* scrollable_area;
-    if (report_frame_scroll_info)
-      scrollable_area = ToLayoutView(layer.GetLayoutObject()).GetFrameView();
-    else
-      scrollable_area = layer.GetScrollableArea();
-
+  if (layer.GetLayoutObject().HasOverflowClip()) {
+    ScrollableArea* scrollable_area = layer.GetScrollableArea();
     ScrollOffset adjusted_scroll_offset =
         scrollable_area->GetScrollOffset() +
         ToFloatSize(scrollable_area->ScrollOrigin());
