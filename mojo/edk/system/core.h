@@ -23,7 +23,6 @@
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/data_pipe.h"
-#include "mojo/public/c/system/invitation.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/platform_handle.h"
 #include "mojo/public/c/system/trap.h"
@@ -304,31 +303,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
       uint64_t* size,
       MojoSharedBufferGuid* guid,
       MojoPlatformSharedMemoryRegionAccessMode* access_mode);
-
-  // Invitation API.
-  MojoResult CreateInvitation(const MojoCreateInvitationOptions* options,
-                              MojoHandle* invitation_handle);
-  MojoResult AttachMessagePipeToInvitation(
-      MojoHandle invitation_handle,
-      uint64_t name,
-      const MojoAttachMessagePipeToInvitationOptions* options,
-      MojoHandle* message_pipe_handle);
-  MojoResult ExtractMessagePipeFromInvitation(
-      MojoHandle invitation_handle,
-      uint64_t name,
-      const MojoExtractMessagePipeFromInvitationOptions* options,
-      MojoHandle* message_pipe_handle);
-  MojoResult SendInvitation(
-      MojoHandle invitation_handle,
-      const MojoPlatformProcessHandle* process_handle,
-      const MojoInvitationTransportEndpoint* transport_endpoint,
-      MojoProcessErrorHandler error_handler,
-      uintptr_t error_handler_context,
-      const MojoSendInvitationOptions* options);
-  MojoResult AcceptInvitation(
-      const MojoInvitationTransportEndpoint* transport_endpoint,
-      const MojoAcceptInvitationOptions* options,
-      MojoHandle* invitation_handle);
 
   void GetActiveHandlesForTest(std::vector<MojoHandle>* handles);
 

@@ -285,49 +285,6 @@ MojoResult MojoUnwrapPlatformSharedMemoryRegionImpl(
       guid, access_mode);
 }
 
-MojoResult MojoCreateInvitationImpl(const MojoCreateInvitationOptions* options,
-                                    MojoHandle* invitation_handle) {
-  return g_core->CreateInvitation(options, invitation_handle);
-}
-
-MojoResult MojoAttachMessagePipeToInvitationImpl(
-    MojoHandle invitation_handle,
-    uint64_t name,
-    const MojoAttachMessagePipeToInvitationOptions* options,
-    MojoHandle* message_pipe_handle) {
-  return g_core->AttachMessagePipeToInvitation(invitation_handle, name, options,
-                                               message_pipe_handle);
-}
-
-MojoResult MojoExtractMessagePipeFromInvitationImpl(
-    MojoHandle invitation_handle,
-    uint64_t name,
-    const MojoExtractMessagePipeFromInvitationOptions* options,
-    MojoHandle* message_pipe_handle) {
-  return g_core->ExtractMessagePipeFromInvitation(invitation_handle, name,
-                                                  options, message_pipe_handle);
-}
-
-MojoResult MojoSendInvitationImpl(
-    MojoHandle invitation_handle,
-    const MojoPlatformProcessHandle* process_handle,
-    const MojoInvitationTransportEndpoint* transport_endpoint,
-    MojoProcessErrorHandler error_handler,
-    uintptr_t error_handler_context,
-    const MojoSendInvitationOptions* options) {
-  return g_core->SendInvitation(invitation_handle, process_handle,
-                                transport_endpoint, error_handler,
-                                error_handler_context, options);
-}
-
-MojoResult MojoAcceptInvitationImpl(
-    const MojoInvitationTransportEndpoint* transport_endpoint,
-    const MojoAcceptInvitationOptions* options,
-    MojoHandle* invitation_handle) {
-  return g_core->AcceptInvitation(transport_endpoint, options,
-                                  invitation_handle);
-}
-
 }  // extern "C"
 
 MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
@@ -366,12 +323,7 @@ MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
                              MojoWrapPlatformHandleImpl,
                              MojoUnwrapPlatformHandleImpl,
                              MojoWrapPlatformSharedMemoryRegionImpl,
-                             MojoUnwrapPlatformSharedMemoryRegionImpl,
-                             MojoCreateInvitationImpl,
-                             MojoAttachMessagePipeToInvitationImpl,
-                             MojoExtractMessagePipeFromInvitationImpl,
-                             MojoSendInvitationImpl,
-                             MojoAcceptInvitationImpl};
+                             MojoUnwrapPlatformSharedMemoryRegionImpl};
 
 }  // namespace
 

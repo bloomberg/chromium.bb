@@ -186,32 +186,6 @@ struct MojoSystemThunks {
       uint64_t* num_bytes,
       struct MojoSharedBufferGuid* guid,
       MojoPlatformSharedMemoryRegionAccessMode* access_mode);
-
-  // Invitation API.
-  MojoResult (*CreateInvitation)(
-      const struct MojoCreateInvitationOptions* options,
-      MojoHandle* invitation_handle);
-  MojoResult (*AttachMessagePipeToInvitation)(
-      MojoHandle invitation_handle,
-      uint64_t name,
-      const MojoAttachMessagePipeToInvitationOptions* options,
-      MojoHandle* message_pipe_handle);
-  MojoResult (*ExtractMessagePipeFromInvitation)(
-      MojoHandle invitation_handle,
-      uint64_t name,
-      const MojoExtractMessagePipeFromInvitationOptions* options,
-      MojoHandle* message_pipe_handle);
-  MojoResult (*SendInvitation)(
-      MojoHandle invitation_handle,
-      const struct MojoPlatformProcessHandle* process_handle,
-      const struct MojoInvitationTransportEndpoint* transport_endpoint,
-      MojoProcessErrorHandler error_handler,
-      uintptr_t error_handler_context,
-      const struct MojoSendInvitationOptions* options);
-  MojoResult (*AcceptInvitation)(
-      const struct MojoInvitationTransportEndpoint* transport_endpoint,
-      const struct MojoAcceptInvitationOptions* options,
-      MojoHandle* invitation_handle);
 };
 #pragma pack(pop)
 
