@@ -12,12 +12,15 @@
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/assistant/ui/suggestion_container_view.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -26,6 +29,7 @@ namespace ash {
 namespace {
 
 // Appearance.
+constexpr int kIconSizeDip = 32;
 constexpr int kPaddingDip = 14;
 constexpr int kPreferredWidthDip = 640;
 constexpr int kSpacingDip = 8;
@@ -37,11 +41,6 @@ constexpr int kTextPaddingVerticalDip = 4;
 // Typography.
 constexpr SkColor kTextColorHint = SkColorSetA(SK_ColorBLACK, 0x42);
 constexpr SkColor kTextColorPrimary = SkColorSetA(SK_ColorBLACK, 0xDE);
-
-// TODO(dmblack): Remove after removing placeholders.
-// Placeholder.
-constexpr SkColor kPlaceholderColor = SkColorSetA(SK_ColorBLACK, 0x1F);
-constexpr int kPlaceholderIconSizeDip = 32;
 
 // TODO(b/77638210): Replace with localized resource strings.
 constexpr char kDefaultPrompt[] = "Hi, how can I help?";
@@ -224,15 +223,12 @@ class InteractionContainer : public views::View {
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
-    // TODO(dmblack): Implement stateful icon. Icon will change state in
-    // correlation with speech recognition events.
-    // Icon placeholder.
-    views::View* icon_placeholder = new views::View();
-    icon_placeholder->SetBackground(std::make_unique<RoundRectBackground>(
-        kPlaceholderColor, kPlaceholderIconSizeDip / 2));
-    icon_placeholder->SetPreferredSize(
-        gfx::Size(kPlaceholderIconSizeDip, kPlaceholderIconSizeDip));
-    AddChildView(icon_placeholder);
+    // Icon.
+    views::ImageView* icon_view = new views::ImageView();
+    icon_view->SetImage(gfx::CreateVectorIcon(kAssistantIcon, kIconSizeDip));
+    icon_view->SetImageSize(gfx::Size(kIconSizeDip, kIconSizeDip));
+    icon_view->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
+    AddChildView(icon_view);
 
     // Interaction label.
     AddChildView(interaction_label_);
