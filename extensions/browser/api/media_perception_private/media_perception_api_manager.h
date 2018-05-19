@@ -98,6 +98,7 @@ class MediaPerceptionAPIManager
 
   // Callback with the mount point for a loaded component.
   void LoadComponentCallback(APISetAnalyticsComponentCallback callback,
+                             bool success,
                              const base::FilePath& mount_point);
 
   bool ComponentIsLoaded();

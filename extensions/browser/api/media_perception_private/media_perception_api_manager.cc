@@ -137,8 +137,9 @@ void MediaPerceptionAPIManager::SetAnalyticsComponent(
 
 void MediaPerceptionAPIManager::LoadComponentCallback(
     APISetAnalyticsComponentCallback callback,
+    bool success,
     const base::FilePath& mount_point) {
-  if (mount_point.empty()) {
+  if (!success) {
     std::move(callback).Run(GetFailedToInstallComponentState());
     return;
   }

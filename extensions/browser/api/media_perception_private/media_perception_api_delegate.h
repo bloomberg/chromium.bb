@@ -14,10 +14,9 @@ namespace extensions {
 class MediaPerceptionAPIDelegate {
  public:
   // Callback for loading a CrOS component. |mount_point| will contain a path to
-  // the loaded component, if installation succeeded. If the component failed to
-  // install, |mount_point| will be empty.
+  // the loaded component, if |success| is true (installation succeeded).
   using LoadCrOSComponentCallback =
-      base::OnceCallback<void(const base::FilePath& mount_point)>;
+      base::OnceCallback<void(bool success, const base::FilePath& mount_point)>;
 
   virtual ~MediaPerceptionAPIDelegate() {}
 
