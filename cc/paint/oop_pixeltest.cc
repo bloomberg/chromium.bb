@@ -11,6 +11,7 @@
 #include "cc/base/region.h"
 #include "cc/layers/recording_source.h"
 #include "cc/paint/display_item_list.h"
+#include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_text_blob_builder.h"
 #include "cc/raster/playback_image_provider.h"
@@ -1265,6 +1266,36 @@ TEST_F(OopPixelTest, DrawRecordShaderWithTextScaled) {
   display_item_list->push<ScaleOp>(2.f, 2.f);
   PaintFlags shader_flags;
   shader_flags.setShader(paint_record_shader);
+  display_item_list->push<DrawRectOp>(SkRect::MakeWH(50, 50), shader_flags);
+  display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
+  display_item_list->Finalize();
+
+  auto actual = Raster(display_item_list, options);
+  auto expected = RasterExpectedBitmap(display_item_list, options);
+  ExpectEquals(actual, expected);
+}
+
+TEST_F(OopPixelTest, DrawRecordFilterWithTextScaled) {
+  RasterOptions options;
+  options.resource_size = gfx::Size(100, 100);
+  options.content_size = options.resource_size;
+  options.full_raster_rect = gfx::Rect(options.content_size);
+  options.playback_rect = options.full_raster_rect;
+  options.color_space = gfx::ColorSpace::CreateSRGB();
+
+  auto paint_record = sk_make_sp<PaintOpBuffer>();
+  PaintFlags flags;
+  flags.setStyle(PaintFlags::kFill_Style);
+  flags.setColor(SK_ColorGREEN);
+  paint_record->push<DrawTextBlobOp>(buildTextBlob(), 0u, 0u, flags);
+  auto paint_record_filter =
+      sk_make_sp<RecordPaintFilter>(paint_record, SkRect::MakeWH(100, 100));
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<ScaleOp>(2.f, 2.f);
+  PaintFlags shader_flags;
+  shader_flags.setImageFilter(paint_record_filter);
   display_item_list->push<DrawRectOp>(SkRect::MakeWH(50, 50), shader_flags);
   display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
   display_item_list->Finalize();
