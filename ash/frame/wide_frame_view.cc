@@ -29,9 +29,13 @@ class WideFrameTargeter : public aura::WindowTargeter {
                        gfx::Rect* hit_test_rect_mouse,
                        gfx::Rect* hit_test_rect_touch) const override {
     if (header_view_->in_immersive_mode() && !header_view_->is_revealed()) {
-      *hit_test_rect_mouse = target->bounds();
+      aura::Window* source = header_view_->GetWidget()->GetNativeWindow();
+      *hit_test_rect_mouse = source->bounds();
+      aura::Window::ConvertRectToTarget(source, target->parent(),
+                                        hit_test_rect_mouse);
+      hit_test_rect_mouse->set_y(target->bounds().y());
       hit_test_rect_mouse->set_height(1);
-      hit_test_rect_mouse->SetRect(0, 0, 0, 0);
+      hit_test_rect_touch->SetRect(0, 0, 0, 0);
       return true;
     }
     return aura::WindowTargeter::GetHitTestRects(target, hit_test_rect_mouse,

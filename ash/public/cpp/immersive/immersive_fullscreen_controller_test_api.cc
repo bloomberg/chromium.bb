@@ -36,4 +36,8 @@ void ImmersiveFullscreenControllerTestApi::SetupForTest() {
   immersive_fullscreen_controller_->UpdateLocatedEventRevealedLock();
 }
 
+bool ImmersiveFullscreenControllerTestApi::IsTopEdgeHoverTimerRunning() const {
+  return immersive_fullscreen_controller_->top_edge_hover_timer_.IsRunning();
+}
+
 }  // namespace ash

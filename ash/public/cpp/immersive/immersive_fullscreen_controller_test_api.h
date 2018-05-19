@@ -22,6 +22,8 @@ class ImmersiveFullscreenControllerTestApi {
   // top-of-window views for the sake of testing.
   void SetupForTest();
 
+  bool IsTopEdgeHoverTimerRunning() const;
+
  private:
   ImmersiveFullscreenController* immersive_fullscreen_controller_;
 
