@@ -21,7 +21,7 @@ namespace net {
 // Crypto stream > Headers stream > Data streams by requested priority.
 class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
  private:
-  typedef PriorityWriteScheduler<QuicStreamId> QuicPriorityWriteScheduler;
+  typedef spdy::PriorityWriteScheduler<QuicStreamId> QuicPriorityWriteScheduler;
 
  public:
   explicit QuicWriteBlockedList(bool register_static_streams);
@@ -123,7 +123,7 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
     const auto id_and_precedence =
         priority_write_scheduler_.PopNextReadyStreamAndPrecedence();
     const QuicStreamId id = std::get<0>(id_and_precedence);
-    const SpdyPriority priority =
+    const spdy::SpdyPriority priority =
         std::get<1>(id_and_precedence).spdy3_priority();
 
     if (!priority_write_scheduler_.HasReadyStreams()) {
@@ -143,7 +143,7 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
 
   void RegisterStream(QuicStreamId stream_id,
                       bool is_static_stream,
-                      SpdyPriority priority) {
+                      spdy::SpdyPriority priority) {
     if (register_static_streams_ && is_static_stream) {
       DCHECK(!priority_write_scheduler_.StreamRegistered(stream_id));
       DCHECK(!QuicContainsKey(static_streams_, stream_id));
@@ -155,8 +155,8 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
       return;
     }
     DCHECK(!priority_write_scheduler_.StreamRegistered(stream_id));
-    priority_write_scheduler_.RegisterStream(stream_id,
-                                             SpdyStreamPrecedence(priority));
+    priority_write_scheduler_.RegisterStream(
+        stream_id, spdy::SpdyStreamPrecedence(priority));
   }
 
   void UnregisterStream(QuicStreamId stream_id, bool is_static) {
@@ -167,10 +167,11 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
     priority_write_scheduler_.UnregisterStream(stream_id);
   }
 
-  void UpdateStreamPriority(QuicStreamId stream_id, SpdyPriority new_priority) {
+  void UpdateStreamPriority(QuicStreamId stream_id,
+                            spdy::SpdyPriority new_priority) {
     DCHECK(!QuicContainsKey(static_streams_, stream_id));
     priority_write_scheduler_.UpdateStreamPrecedence(
-        stream_id, SpdyStreamPrecedence(new_priority));
+        stream_id, spdy::SpdyStreamPrecedence(new_priority));
   }
 
   void UpdateBytesForStream(QuicStreamId stream_id, size_t bytes) {
@@ -242,13 +243,13 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
   // batch writes for this priority level.  We will allow this stream to write
   // until it has written kBatchWriteSize bytes, it has no more data to write,
   // or a higher priority stream preempts.
-  QuicStreamId batch_write_stream_id_[kV3LowestPriority + 1];
+  QuicStreamId batch_write_stream_id_[spdy::kV3LowestPriority + 1];
   // Set to kBatchWriteSize when we set a new batch_write_stream_id_ for a given
   // priority.  This is decremented with each write the stream does until it is
   // done with its batch write.
-  int32_t bytes_left_for_batch_write_[kV3LowestPriority + 1];
+  int32_t bytes_left_for_batch_write_[spdy::kV3LowestPriority + 1];
   // Tracks the last priority popped for UpdateBytesForStream.
-  SpdyPriority last_priority_popped_;
+  spdy::SpdyPriority last_priority_popped_;
 
   bool crypto_stream_blocked_;
   bool headers_stream_blocked_;

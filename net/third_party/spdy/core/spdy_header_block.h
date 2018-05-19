@@ -19,7 +19,7 @@
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 
 namespace test {
 class SpdyHeaderBlockPeer;
@@ -82,8 +82,9 @@ class SPDY_EXPORT_PRIVATE SpdyHeaderBlock {
     size_t separator_size_ = 0;
   };
 
-  typedef linked_hash_map<SpdyStringPiece, HeaderValue, base::StringPieceHash>
-      MapType;
+  typedef net::
+      linked_hash_map<SpdyStringPiece, HeaderValue, base::StringPieceHash>
+          MapType;
 
  public:
   typedef std::pair<SpdyStringPiece, SpdyStringPiece> value_type;
@@ -184,8 +185,9 @@ class SPDY_EXPORT_PRIVATE SpdyHeaderBlock {
   ValueProxy operator[](const SpdyStringPiece key);
 
   // This object provides automatic conversions that allow SpdyHeaderBlock to be
-  // nearly a drop-in replacement for linked_hash_map<SpdyString, SpdyString>.
-  // It reads data from or writes data to a SpdyHeaderBlock::Storage.
+  // nearly a drop-in replacement for net::linked_hash_map<SpdyString,
+  // SpdyString>. It reads data from or writes data to a
+  // SpdyHeaderBlock::Storage.
   class SPDY_EXPORT_PRIVATE ValueProxy {
    public:
     ~ValueProxy();
@@ -249,6 +251,6 @@ SPDY_EXPORT_PRIVATE size_t Join(char* dst,
                                 const std::vector<SpdyStringPiece>& fragments,
                                 SpdyStringPiece separator);
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_SPDY_HEADER_BLOCK_H_

@@ -33,9 +33,9 @@ class QUIC_EXPORT_PRIVATE QuicClientPushPromiseIndex {
     // is honored.  If Vary is not present, return true.  If Vary is
     // present, return whether designated header fields of
     // |promise_request| and |client_request| match.
-    virtual bool CheckVary(const SpdyHeaderBlock& client_request,
-                           const SpdyHeaderBlock& promise_request,
-                           const SpdyHeaderBlock& promise_response) = 0;
+    virtual bool CheckVary(const spdy::SpdyHeaderBlock& client_request,
+                           const spdy::SpdyHeaderBlock& promise_request,
+                           const spdy::SpdyHeaderBlock& promise_response) = 0;
 
     // On rendezvous success, provides the promised |stream|.  Callee
     // does not inherit ownership of |stream|.  On rendezvous failure,
@@ -83,7 +83,7 @@ class QUIC_EXPORT_PRIVATE QuicClientPushPromiseIndex {
   // cancel the request if need be.  The caller does not inherit
   // ownership of |*handle|, and it ceases to be valid if the caller
   // invokes |handle->Cancel()| or if |delegate->OnReponse()| fires.
-  QuicAsyncStatus Try(const SpdyHeaderBlock& request,
+  QuicAsyncStatus Try(const spdy::SpdyHeaderBlock& request,
                       Delegate* delegate,
                       TryHandle** handle);
 

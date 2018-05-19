@@ -55,7 +55,7 @@ SpdySessionPool::SpdySessionPool(
     bool enable_ping_based_connection_checking,
     bool support_ietf_format_quic_altsvc,
     size_t session_max_recv_window_size,
-    const SettingsMap& initial_settings,
+    const spdy::SettingsMap& initial_settings,
     SpdySessionPool::TimeFunc time_func)
     : http_server_properties_(http_server_properties),
       transport_security_state_(transport_security_state),
@@ -497,8 +497,8 @@ void SpdySessionPool::DumpMemoryStats(
       num_active_sessions++;
   }
   total_size +=
-      base::trace_event::EstimateMemoryUsage(ObtainHpackHuffmanTable()) +
-      base::trace_event::EstimateMemoryUsage(ObtainHpackStaticTable()) +
+      base::trace_event::EstimateMemoryUsage(spdy::ObtainHpackHuffmanTable()) +
+      base::trace_event::EstimateMemoryUsage(spdy::ObtainHpackStaticTable()) +
       base::trace_event::EstimateMemoryUsage(push_promise_index_);
   base::trace_event::MemoryAllocatorDump* dump =
       pmd->CreateAllocatorDump(base::StringPrintf(

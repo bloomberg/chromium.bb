@@ -20,7 +20,7 @@ namespace net {
 SpdyWriteQueue::PendingWrite::PendingWrite() = default;
 
 SpdyWriteQueue::PendingWrite::PendingWrite(
-    SpdyFrameType frame_type,
+    spdy::SpdyFrameType frame_type,
     std::unique_ptr<SpdyBufferProducer> frame_producer,
     const base::WeakPtr<SpdyStream>& stream,
     const MutableNetworkTrafficAnnotationTag& traffic_annotation)
@@ -56,7 +56,7 @@ bool SpdyWriteQueue::IsEmpty() const {
 
 void SpdyWriteQueue::Enqueue(
     RequestPriority priority,
-    SpdyFrameType frame_type,
+    spdy::SpdyFrameType frame_type,
     std::unique_ptr<SpdyBufferProducer> frame_producer,
     const base::WeakPtr<SpdyStream>& stream,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
@@ -71,7 +71,7 @@ void SpdyWriteQueue::Enqueue(
 }
 
 bool SpdyWriteQueue::Dequeue(
-    SpdyFrameType* frame_type,
+    spdy::SpdyFrameType* frame_type,
     std::unique_ptr<SpdyBufferProducer>* frame_producer,
     base::WeakPtr<SpdyStream>* stream,
     MutableNetworkTrafficAnnotationTag* traffic_annotation) {
@@ -132,7 +132,7 @@ void SpdyWriteQueue::RemovePendingWritesForStream(
 }
 
 void SpdyWriteQueue::RemovePendingWritesForStreamsAfter(
-    SpdyStreamId last_good_stream_id) {
+    spdy::SpdyStreamId last_good_stream_id) {
   CHECK(!removing_writes_);
   removing_writes_ = true;
   std::vector<std::unique_ptr<SpdyBufferProducer>> erased_buffer_producers;

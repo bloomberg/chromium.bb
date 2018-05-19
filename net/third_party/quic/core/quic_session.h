@@ -203,13 +203,14 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Called by the stream on creation to set priority in the write blocked list.
   virtual void RegisterStreamPriority(QuicStreamId id,
                                       bool is_static,
-                                      SpdyPriority priority);
+                                      spdy::SpdyPriority priority);
   // Called by the stream on deletion to clear priority crom the write blocked
   // list.
   virtual void UnregisterStreamPriority(QuicStreamId id, bool is_static);
   // Called by the stream on SetPriority to update priority on the write blocked
   // list.
-  virtual void UpdateStreamPriority(QuicStreamId id, SpdyPriority new_priority);
+  virtual void UpdateStreamPriority(QuicStreamId id,
+                                    spdy::SpdyPriority new_priority);
 
   // Returns mutable config for this session. Returned config is owned
   // by QuicSession.

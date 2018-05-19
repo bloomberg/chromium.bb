@@ -16,7 +16,7 @@
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
 #include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
-namespace net {
+namespace spdy {
 namespace {
 
 // By default, linked_hash_map's internal map allocates space for 100 map
@@ -45,7 +45,7 @@ SpdyStringPiece SeparatorForKey(SpdyStringPiece key) {
 }  // namespace
 
 // This class provides a backing store for SpdyStringPieces. It previously used
-// custom allocation logic, but now uses an UnsafeArena instead. It has the
+// custom allocation logic, but now uses an net::UnsafeArena instead. It has the
 // property that SpdyStringPieces that refer to data in Storage are never
 // invalidated until the Storage is deleted or Clear() is called.
 //
@@ -95,7 +95,7 @@ class SpdyHeaderBlock::Storage {
   }
 
  private:
-  UnsafeArena arena_;
+  net::UnsafeArena arena_;
 
   DISALLOW_COPY_AND_ASSIGN(Storage);
 };
@@ -393,4 +393,4 @@ size_t Join(char* dst,
   return dst - original_dst;
 }
 
-}  // namespace net
+}  // namespace spdy

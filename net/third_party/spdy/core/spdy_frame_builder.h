@@ -18,7 +18,7 @@
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 
 // This class provides facilities for basic binary value packing
 // into Spdy frames.
@@ -138,6 +138,6 @@ class SPDY_EXPORT_PRIVATE SpdyFrameBuilder {
   size_t offset_;    // Position at which the latest frame begins.
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_SPDY_FRAME_BUILDER_H_

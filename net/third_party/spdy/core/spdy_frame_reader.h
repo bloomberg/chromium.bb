@@ -11,7 +11,7 @@
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 
 // Used for reading SPDY frames. Though there isn't really anything terribly
 // SPDY-specific here, it's a helper class that's useful when doing SPDY
@@ -125,6 +125,6 @@ class SPDY_EXPORT_PRIVATE SpdyFrameReader {
   size_t ofs_;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_SPDY_FRAME_READER_H_

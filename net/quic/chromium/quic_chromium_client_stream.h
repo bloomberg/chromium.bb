@@ -48,7 +48,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     // the headers arrive.
     // TODO(rch): Invoke |callback| when there is a stream or connection error
     // instead of calling OnClose() or OnError().
-    int ReadInitialHeaders(SpdyHeaderBlock* header_block,
+    int ReadInitialHeaders(spdy::SpdyHeaderBlock* header_block,
                            const CompletionCallback& callback);
 
     // Reads at most |buffer_len| bytes of body into |buffer| and returns the
@@ -66,7 +66,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     // the headers arrive.
     // TODO(rch): Invoke |callback| when there is a stream or connection error
     // instead of calling OnClose() or OnError().
-    int ReadTrailingHeaders(SpdyHeaderBlock* header_block,
+    int ReadTrailingHeaders(spdy::SpdyHeaderBlock* header_block,
                             const CompletionCallback& callback);
 
     // Writes |header_block| to the peer. Closes the write side if |fin| is
@@ -74,7 +74,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     // headers are ACK'd by the peer. Returns a net error code if there is
     // an error writing the headers, or the number of bytes written on
     // success. Will not return ERR_IO_PENDING.
-    int WriteHeaders(SpdyHeaderBlock header_block,
+    int WriteHeaders(spdy::SpdyHeaderBlock header_block,
                      bool fin,
                      QuicReferenceCountedPointer<QuicAckListenerInterface>
                          ack_notifier_delegate);
@@ -105,7 +105,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     void DisableConnectionMigration();
 
     // Sets the priority of the stream to |priority|.
-    void SetPriority(SpdyPriority priority);
+    void SetPriority(spdy::SpdyPriority priority);
 
     // Sends a RST_STREAM frame to the peer and closes the streams.
     void Reset(QuicRstStreamErrorCode error_code);
@@ -163,7 +163,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
 
     // Callback to be invoked when ReadHeaders completes asynchronously.
     CompletionCallback read_headers_callback_;
-    SpdyHeaderBlock* read_headers_buffer_;
+    spdy::SpdyHeaderBlock* read_headers_buffer_;
 
     // Callback to be invoked when ReadBody completes asynchronously.
     CompletionCallback read_body_callback_;
@@ -215,7 +215,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   void OnDataAvailable() override;
   void OnClose() override;
   void OnCanWrite() override;
-  size_t WriteHeaders(SpdyHeaderBlock header_block,
+  size_t WriteHeaders(spdy::SpdyHeaderBlock header_block,
                       bool fin,
                       QuicReferenceCountedPointer<QuicAckListenerInterface>
                           ack_listener) override;
@@ -256,9 +256,11 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   // True if this stream is the first data stream created on this session.
   bool IsFirstStream();
 
-  bool DeliverInitialHeaders(SpdyHeaderBlock* header_block, int* frame_len);
+  bool DeliverInitialHeaders(spdy::SpdyHeaderBlock* header_block,
+                             int* frame_len);
 
-  bool DeliverTrailingHeaders(SpdyHeaderBlock* header_block, int* frame_len);
+  bool DeliverTrailingHeaders(spdy::SpdyHeaderBlock* header_block,
+                              int* frame_len);
 
   using QuicSpdyStream::HasBufferedData;
   using QuicStream::sequencer;
@@ -285,7 +287,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   bool can_migrate_;
 
   // Stores the initial header if they arrive before the handle.
-  SpdyHeaderBlock initial_headers_;
+  spdy::SpdyHeaderBlock initial_headers_;
   // Length of the HEADERS frame containing initial headers.
   size_t initial_headers_frame_len_;
 

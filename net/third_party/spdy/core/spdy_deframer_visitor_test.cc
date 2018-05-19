@@ -21,7 +21,7 @@
 #include "net/third_party/spdy/core/spdy_test_utils.h"
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
 
-namespace net {
+namespace spdy {
 namespace test {
 namespace {
 
@@ -240,4 +240,4 @@ TEST_F(SpdyDeframerVisitorTest, DISABLED_AltSvcFrame) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace spdy

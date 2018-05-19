@@ -39,10 +39,12 @@ void QuicClientPromisedInfo::Init() {
       QuicTime::Delta::FromSeconds(kPushPromiseTimeoutSecs));
 }
 
-bool QuicClientPromisedInfo::OnPromiseHeaders(const SpdyHeaderBlock& headers) {
+bool QuicClientPromisedInfo::OnPromiseHeaders(
+    const spdy::SpdyHeaderBlock& headers) {
   // RFC7540, Section 8.2, requests MUST be safe [RFC7231], Section
   // 4.2.1.  GET and HEAD are the methods that are safe and required.
-  SpdyHeaderBlock::const_iterator it = headers.find(kHttp2MethodHeader);
+  spdy::SpdyHeaderBlock::const_iterator it =
+      headers.find(spdy::kHttp2MethodHeader);
   if (it == headers.end()) {
     QUIC_DVLOG(1) << "Promise for stream " << id_ << " has no method";
     Reset(QUIC_INVALID_PROMISE_METHOD);
@@ -69,8 +71,9 @@ bool QuicClientPromisedInfo::OnPromiseHeaders(const SpdyHeaderBlock& headers) {
   return true;
 }
 
-void QuicClientPromisedInfo::OnResponseHeaders(const SpdyHeaderBlock& headers) {
-  response_headers_ = QuicMakeUnique<SpdyHeaderBlock>(headers.Clone());
+void QuicClientPromisedInfo::OnResponseHeaders(
+    const spdy::SpdyHeaderBlock& headers) {
+  response_headers_ = QuicMakeUnique<spdy::SpdyHeaderBlock>(headers.Clone());
   if (client_request_delegate_) {
     // We already have a client request waiting.
     FinalValidation();
@@ -109,7 +112,7 @@ QuicAsyncStatus QuicClientPromisedInfo::FinalValidation() {
 }
 
 QuicAsyncStatus QuicClientPromisedInfo::HandleClientRequest(
-    const SpdyHeaderBlock& request_headers,
+    const spdy::SpdyHeaderBlock& request_headers,
     QuicClientPushPromiseIndex::Delegate* delegate) {
   if (session_->IsClosedStream(id_)) {
     // There was a RST on the response stream.

@@ -9,7 +9,7 @@
 #include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
-namespace net {
+namespace spdy {
 
 const size_t HpackEntry::kSizeOverhead = 32;
 
@@ -86,4 +86,4 @@ size_t HpackEntry::EstimateMemoryUsage() const {
   return SpdyEstimateMemoryUsage(name_) + SpdyEstimateMemoryUsage(value_);
 }
 
-}  // namespace net
+}  // namespace spdy

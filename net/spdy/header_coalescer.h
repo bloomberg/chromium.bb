@@ -13,7 +13,8 @@
 
 namespace net {
 
-class NET_EXPORT_PRIVATE HeaderCoalescer : public SpdyHeadersHandlerInterface {
+class NET_EXPORT_PRIVATE HeaderCoalescer
+    : public spdy::SpdyHeadersHandlerInterface {
  public:
   HeaderCoalescer(uint32_t max_header_list_size,
                   const NetLogWithSource& net_log);
@@ -25,7 +26,7 @@ class NET_EXPORT_PRIVATE HeaderCoalescer : public SpdyHeadersHandlerInterface {
   void OnHeaderBlockEnd(size_t uncompressed_header_bytes,
                         size_t compressed_header_bytes) override {}
 
-  SpdyHeaderBlock release_headers();
+  spdy::SpdyHeaderBlock release_headers();
   bool error_seen() const { return error_seen_; }
 
   // Returns the estimate of dynamically allocated memory in bytes.
@@ -35,7 +36,7 @@ class NET_EXPORT_PRIVATE HeaderCoalescer : public SpdyHeadersHandlerInterface {
   // Helper to add a header. Return true on success.
   bool AddHeader(base::StringPiece key, base::StringPiece value);
 
-  SpdyHeaderBlock headers_;
+  spdy::SpdyHeaderBlock headers_;
   bool headers_valid_ = true;
   size_t header_list_size_ = 0;
   bool error_seen_ = false;

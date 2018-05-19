@@ -48,7 +48,7 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
 
     QuicStringPiece path() { return path_; }
 
-    const SpdyHeaderBlock& spdy_headers() { return spdy_headers_; }
+    const spdy::SpdyHeaderBlock& spdy_headers() { return spdy_headers_; }
 
     QuicStringPiece body() { return body_; }
 
@@ -64,7 +64,7 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
     const QuicString file_name_string_;
     QuicString file_contents_;
     QuicStringPiece body_;
-    SpdyHeaderBlock spdy_headers_;
+    spdy::SpdyHeaderBlock spdy_headers_;
     QuicStringPiece x_original_url_;
     std::vector<QuicStringPiece> push_urls_;
 
@@ -105,15 +105,15 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
   // Add a response to the cache.
   void AddResponse(QuicStringPiece host,
                    QuicStringPiece path,
-                   SpdyHeaderBlock response_headers,
+                   spdy::SpdyHeaderBlock response_headers,
                    QuicStringPiece response_body);
 
   // Add a response, with trailers, to the cache.
   void AddResponse(QuicStringPiece host,
                    QuicStringPiece path,
-                   SpdyHeaderBlock response_headers,
+                   spdy::SpdyHeaderBlock response_headers,
                    QuicStringPiece response_body,
-                   SpdyHeaderBlock response_trailers);
+                   spdy::SpdyHeaderBlock response_trailers);
 
   // Simulate a special behavior at a particular path.
   void AddSpecialResponse(
@@ -137,7 +137,7 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
   bool InitializeBackend(const QuicString& cache_directory) override;
   bool IsBackendInitialized() const override;
   void FetchResponseFromBackend(
-      const SpdyHeaderBlock& request_headers,
+      const spdy::SpdyHeaderBlock& request_headers,
       const QuicString& request_body,
       QuicSimpleServerBackend::RequestHandler* quic_server_stream) override;
   void CloseBackendResponseStream(
@@ -147,9 +147,9 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
   void AddResponseImpl(QuicStringPiece host,
                        QuicStringPiece path,
                        QuicBackendResponse::SpecialResponseType response_type,
-                       SpdyHeaderBlock response_headers,
+                       spdy::SpdyHeaderBlock response_headers,
                        QuicStringPiece response_body,
-                       SpdyHeaderBlock response_trailers);
+                       spdy::SpdyHeaderBlock response_trailers);
 
   QuicString GetKey(QuicStringPiece host, QuicStringPiece path) const;
 

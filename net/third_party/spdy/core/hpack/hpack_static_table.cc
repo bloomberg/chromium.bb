@@ -10,7 +10,7 @@
 #include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 
 HpackStaticTable::HpackStaticTable() = default;
 
@@ -47,4 +47,4 @@ size_t HpackStaticTable::EstimateMemoryUsage() const {
          SpdyEstimateMemoryUsage(static_name_index_);
 }
 
-}  // namespace net
+}  // namespace spdy

@@ -23,7 +23,7 @@ class MockQuicClientPromisedInfo : public QuicClientPromisedInfo {
   ~MockQuicClientPromisedInfo() override;
 
   MOCK_METHOD2(HandleClientRequest,
-               QuicAsyncStatus(const SpdyHeaderBlock& headers,
+               QuicAsyncStatus(const spdy::SpdyHeaderBlock& headers,
                                QuicClientPushPromiseIndex::Delegate* delegate));
 };
 

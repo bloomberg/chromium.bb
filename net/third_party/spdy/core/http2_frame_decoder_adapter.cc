@@ -38,21 +38,21 @@
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
 #include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
-using ::net::ExtensionVisitorInterface;
-using ::net::HpackDecoderAdapter;
-using ::net::HpackHeaderTable;
-using ::net::ParseErrorCode;
-using ::net::ParseFrameType;
-using ::net::SpdyAltSvcWireFormat;
-using ::net::SpdyErrorCode;
-using ::net::SpdyEstimateMemoryUsage;
-using ::net::SpdyFrameType;
-using ::net::SpdyFramerDebugVisitorInterface;
-using ::net::SpdyFramerVisitorInterface;
-using ::net::SpdyHeadersHandlerInterface;
-using ::net::SpdyKnownSettingsId;
-using ::net::SpdyMakeUnique;
-using ::net::SpdySettingsId;
+using ::spdy::ExtensionVisitorInterface;
+using ::spdy::HpackDecoderAdapter;
+using ::spdy::HpackHeaderTable;
+using ::spdy::ParseErrorCode;
+using ::spdy::ParseFrameType;
+using ::spdy::SpdyAltSvcWireFormat;
+using ::spdy::SpdyErrorCode;
+using ::spdy::SpdyEstimateMemoryUsage;
+using ::spdy::SpdyFrameType;
+using ::spdy::SpdyFramerDebugVisitorInterface;
+using ::spdy::SpdyFramerVisitorInterface;
+using ::spdy::SpdyHeadersHandlerInterface;
+using ::spdy::SpdyKnownSettingsId;
+using ::spdy::SpdyMakeUnique;
+using ::spdy::SpdySettingsId;
 
 namespace http2 {
 namespace {
@@ -1017,11 +1017,11 @@ void Http2DecoderAdapter::CommonHpackFragmentEnd() {
 
 }  // namespace http2
 
-namespace net {
+namespace spdy {
 
 bool SpdyFramerVisitorInterface::OnGoAwayFrameData(const char* goaway_data,
                                                    size_t len) {
   return true;
 }
 
-}  // namespace net
+}  // namespace spdy

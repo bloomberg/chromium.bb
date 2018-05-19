@@ -30,10 +30,10 @@ std::string BufferToString(const SpdyBuffer& buffer) {
   return std::string(buffer.GetRemainingData(), buffer.GetRemainingSize());
 }
 
-// Construct a SpdyBuffer from a SpdySerializedFrame and make sure its data
-// points to the frame's underlying data.
+// Construct a SpdyBuffer from a spdy::SpdySerializedFrame and make sure its
+// data points to the frame's underlying data.
 TEST_F(SpdyBufferTest, FrameConstructor) {
-  SpdyBuffer buffer(std::make_unique<SpdySerializedFrame>(
+  SpdyBuffer buffer(std::make_unique<spdy::SpdySerializedFrame>(
       const_cast<char*>(kData), kDataSize, false /* owns_buffer */));
 
   EXPECT_EQ(kData, buffer.GetRemainingData());

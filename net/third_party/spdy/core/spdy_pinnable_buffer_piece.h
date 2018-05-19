@@ -12,7 +12,7 @@
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 
 class SpdyPrefixedBufferReader;
 
@@ -48,6 +48,6 @@ struct SPDY_EXPORT_PRIVATE SpdyPinnableBufferPiece {
   std::unique_ptr<char[]> storage_;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_SPDY_PINNABLE_BUFFER_PIECE_H_

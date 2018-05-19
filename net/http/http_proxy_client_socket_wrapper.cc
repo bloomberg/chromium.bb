@@ -659,7 +659,8 @@ int HttpProxyClientSocketWrapper::DoQuicProxyCreateStreamComplete(int result) {
   std::unique_ptr<QuicChromiumClientStream::Handle> quic_stream =
       quic_session_->ReleaseStream();
 
-  SpdyPriority spdy_priority = ConvertRequestPriorityToQuicPriority(priority_);
+  spdy::SpdyPriority spdy_priority =
+      ConvertRequestPriorityToQuicPriority(priority_);
   quic_stream->SetPriority(spdy_priority);
 
   transport_socket_.reset(new QuicProxyClientSocket(

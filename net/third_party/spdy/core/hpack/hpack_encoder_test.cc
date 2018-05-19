@@ -12,7 +12,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace spdy {
 
 using testing::ElementsAre;
 
@@ -200,7 +200,7 @@ class HpackEncoderTest : public ::testing::TestWithParam<bool> {
   const HpackEntry* cookie_a_;
   const HpackEntry* cookie_c_;
 
-  UnsafeArena headers_storage_;
+  net::UnsafeArena headers_storage_;
   std::vector<std::pair<SpdyStringPiece, SpdyStringPiece>> headers_observed_;
 
   HpackOutputStream expected_;
@@ -583,4 +583,4 @@ TEST_P(HpackEncoderTest, HeaderTableSizeUpdatesWithGreaterSize) {
 
 }  // namespace
 
-}  // namespace net
+}  // namespace spdy

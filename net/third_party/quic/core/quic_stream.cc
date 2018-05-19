@@ -13,7 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-using net::SpdyPriority;
+using spdy::SpdyPriority;
 
 namespace net {
 
@@ -43,7 +43,7 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
 }  // namespace
 
 // static
-const SpdyPriority QuicStream::kDefaultPriority;
+const spdy::SpdyPriority QuicStream::kDefaultPriority;
 
 QuicStream::QuicStream(QuicStreamId id, QuicSession* session, bool is_static)
     : sequencer_(this),
@@ -225,11 +225,11 @@ void QuicStream::CloseConnectionWithDetails(QuicErrorCode error,
       error, details, ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
 }
 
-SpdyPriority QuicStream::priority() const {
+spdy::SpdyPriority QuicStream::priority() const {
   return priority_;
 }
 
-void QuicStream::SetPriority(SpdyPriority priority) {
+void QuicStream::SetPriority(spdy::SpdyPriority priority) {
   DCHECK_EQ(0u, stream_bytes_written());
   priority_ = priority;
   session_->UpdateStreamPriority(id(), priority);

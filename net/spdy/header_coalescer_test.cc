@@ -51,7 +51,7 @@ TEST_F(HeaderCoalescerTest, CorrectHeaders) {
   header_coalescer_.OnHeader("baz", "qux");
   EXPECT_FALSE(header_coalescer_.error_seen());
 
-  SpdyHeaderBlock header_block = header_coalescer_.release_headers();
+  spdy::SpdyHeaderBlock header_block = header_coalescer_.release_headers();
   EXPECT_THAT(header_block,
               ElementsAre(Pair(":foo", "bar"), Pair("baz", "qux")));
 }
@@ -91,7 +91,7 @@ TEST_F(HeaderCoalescerTest, Append) {
   header_coalescer_.OnHeader("cookie", "qux");
   EXPECT_FALSE(header_coalescer_.error_seen());
 
-  SpdyHeaderBlock header_block = header_coalescer_.release_headers();
+  spdy::SpdyHeaderBlock header_block = header_coalescer_.release_headers();
   EXPECT_THAT(header_block,
               ElementsAre(Pair("foo", base::StringPiece("bar\0quux", 8)),
                           Pair("cookie", "baz; qux")));
@@ -125,7 +125,7 @@ TEST_F(HeaderCoalescerTest, HeaderNameValid) {
       "^_`|~");
   header_coalescer_.OnHeader(header_name, "foo");
   EXPECT_FALSE(header_coalescer_.error_seen());
-  SpdyHeaderBlock header_block = header_coalescer_.release_headers();
+  spdy::SpdyHeaderBlock header_block = header_coalescer_.release_headers();
   EXPECT_THAT(header_block, ElementsAre(Pair(header_name, "foo")));
 }
 

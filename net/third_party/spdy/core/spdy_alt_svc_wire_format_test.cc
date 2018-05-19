@@ -10,7 +10,7 @@
 
 using ::testing::_;
 
-namespace net {
+namespace spdy {
 
 namespace test {
 
@@ -574,4 +574,4 @@ TEST(SpdyAltSvcWireFormatTest, ParseIPLiteral) {
 
 }  // namespace
 
-}  // namespace net
+}  // namespace spdy

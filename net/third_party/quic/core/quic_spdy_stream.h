@@ -68,7 +68,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
 
   // Called by the session when headers with a priority have been received
   // for this stream.  This method will only be called for server streams.
-  virtual void OnStreamHeadersPriority(SpdyPriority priority);
+  virtual void OnStreamHeadersPriority(spdy::SpdyPriority priority);
 
   // Called by the session when decompressed headers have been completely
   // delivered to this stream.  If |fin| is true, then this stream
@@ -89,7 +89,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
 
   // Called by the session when a PRIORITY frame has been been received for this
   // stream. This method will only be called for server streams.
-  void OnPriorityFrame(SpdyPriority priority);
+  void OnPriorityFrame(spdy::SpdyPriority priority);
 
   // Override the base class to not discard response when receiving
   // QUIC_STREAM_NO_ERROR.
@@ -98,7 +98,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   // Writes the headers contained in |header_block| to the dedicated
   // headers stream.
   virtual size_t WriteHeaders(
-      SpdyHeaderBlock header_block,
+      spdy::SpdyHeaderBlock header_block,
       bool fin,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
@@ -111,7 +111,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   // Writes the trailers contained in |trailer_block| to the dedicated
   // headers stream. Trailers will always have the FIN set.
   virtual size_t WriteTrailers(
-      SpdyHeaderBlock trailer_block,
+      spdy::SpdyHeaderBlock trailer_block,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
   // Marks the trailers as consumed. This applies to the case where this object
@@ -131,7 +131,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
 
   // Returns true if header contains a valid 3-digit status and parse the status
   // code to |status_code|.
-  bool ParseHeaderStatusCode(const SpdyHeaderBlock& header,
+  bool ParseHeaderStatusCode(const spdy::SpdyHeaderBlock& header,
                              int* status_code) const;
 
   // Returns true when all data has been read from the peer, including the fin.
@@ -147,7 +147,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   bool trailers_decompressed() const { return trailers_decompressed_; }
 
   // Returns whatever trailers have been received for this stream.
-  const SpdyHeaderBlock& received_trailers() const {
+  const spdy::SpdyHeaderBlock& received_trailers() const {
     return received_trailers_;
   }
 
@@ -199,7 +199,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   // True if the trailers have been consumed.
   bool trailers_consumed_;
   // The parsed trailers received from the peer.
-  SpdyHeaderBlock received_trailers_;
+  spdy::SpdyHeaderBlock received_trailers_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSpdyStream);
 };

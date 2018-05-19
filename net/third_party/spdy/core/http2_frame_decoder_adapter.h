@@ -19,12 +19,12 @@
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 
 class SpdyFramerVisitorInterface;
 class ExtensionVisitorInterface;
 
-}  // namespace net
+}  // namespace spdy
 
 // TODO(dahollings): Perform various renames/moves suggested in cl/164660364.
 
@@ -88,24 +88,24 @@ class SPDY_EXPORT_PRIVATE Http2DecoderAdapter
   // else the framer will likely crash.  It is acceptable for the visitor
   // to do nothing.  If this is called multiple times, only the last visitor
   // will be used.
-  void set_visitor(net::SpdyFramerVisitorInterface* visitor);
-  net::SpdyFramerVisitorInterface* visitor() const { return visitor_; }
+  void set_visitor(spdy::SpdyFramerVisitorInterface* visitor);
+  spdy::SpdyFramerVisitorInterface* visitor() const { return visitor_; }
 
   // Set extension callbacks to be called from the framer or decoder. Optional.
   // If called multiple times, only the last visitor will be used.
-  void set_extension_visitor(net::ExtensionVisitorInterface* visitor);
+  void set_extension_visitor(spdy::ExtensionVisitorInterface* visitor);
 
   // Set debug callbacks to be called from the framer. The debug visitor is
   // completely optional and need not be set in order for normal operation.
   // If this is called multiple times, only the last visitor will be used.
-  void set_debug_visitor(net::SpdyFramerDebugVisitorInterface* debug_visitor);
-  net::SpdyFramerDebugVisitorInterface* debug_visitor() const {
+  void set_debug_visitor(spdy::SpdyFramerDebugVisitorInterface* debug_visitor);
+  spdy::SpdyFramerDebugVisitorInterface* debug_visitor() const {
     return debug_visitor_;
   }
 
   // Set debug callbacks to be called from the HPACK decoder.
   void SetDecoderHeaderTableDebugVisitor(
-      std::unique_ptr<net::HpackHeaderTable::DebugVisitorInterface> visitor);
+      std::unique_ptr<spdy::HpackHeaderTable::DebugVisitorInterface> visitor);
 
   // Sets whether or not ProcessInput returns after finishing a frame, or
   // continues processing additional frames. Normally ProcessInput processes
@@ -140,7 +140,7 @@ class SPDY_EXPORT_PRIVATE Http2DecoderAdapter
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
-  net::HpackDecoderAdapter* GetHpackDecoder();
+  spdy::HpackDecoderAdapter* GetHpackDecoder();
 
   bool HasError() const;
 
@@ -255,15 +255,15 @@ class SPDY_EXPORT_PRIVATE Http2DecoderAdapter
   // the callbacks.
   Http2FrameDecoderNoOpListener no_op_listener_;
 
-  net::SpdyFramerVisitorInterface* visitor_ = nullptr;
-  net::SpdyFramerDebugVisitorInterface* debug_visitor_ = nullptr;
+  spdy::SpdyFramerVisitorInterface* visitor_ = nullptr;
+  spdy::SpdyFramerDebugVisitorInterface* debug_visitor_ = nullptr;
 
   // If non-null, unknown frames and settings are passed to the extension.
-  net::ExtensionVisitorInterface* extension_ = nullptr;
+  spdy::ExtensionVisitorInterface* extension_ = nullptr;
 
   // The HPACK decoder to be used for this adapter. User is responsible for
   // clearing if the adapter is to be used for another connection.
-  std::unique_ptr<net::HpackDecoderAdapter> hpack_decoder_ = nullptr;
+  std::unique_ptr<spdy::HpackDecoderAdapter> hpack_decoder_ = nullptr;
 
   // The HTTP/2 frame decoder. Accessed via a unique_ptr to allow replacement
   // (e.g. in tests) when Reset() is called.
@@ -283,7 +283,7 @@ class SPDY_EXPORT_PRIVATE Http2DecoderAdapter
 
   // The limit on the size of received HTTP/2 payloads as specified in the
   // SETTINGS_MAX_FRAME_SIZE advertised to peer.
-  size_t recv_frame_size_limit_ = net::kHttp2DefaultFramePayloadLimit;
+  size_t recv_frame_size_limit_ = spdy::kHttp2DefaultFramePayloadLimit;
 
   // Has OnFrameHeader been called?
   bool decoded_frame_header_ = false;
@@ -323,7 +323,7 @@ class SPDY_EXPORT_PRIVATE Http2DecoderAdapter
 
 }  // namespace http2
 
-namespace net {
+namespace spdy {
 
 // Http2DecoderAdapter will use the given visitor implementing this
 // interface to deliver event callbacks as frames are decoded.
@@ -509,6 +509,6 @@ class SPDY_EXPORT_PRIVATE ExtensionVisitorInterface {
   virtual void OnFramePayload(const char* data, size_t len) = 0;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_HTTP2_FRAME_DECODER_ADAPTER_H_

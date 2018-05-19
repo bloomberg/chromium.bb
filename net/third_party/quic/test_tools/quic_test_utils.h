@@ -546,7 +546,7 @@ class MockQuicSession : public QuicSession {
   MOCK_METHOD2(OnStreamHeaders,
                void(QuicStreamId stream_id, QuicStringPiece headers_data));
   MOCK_METHOD2(OnStreamHeadersPriority,
-               void(QuicStreamId stream_id, SpdyPriority priority));
+               void(QuicStreamId stream_id, spdy::SpdyPriority priority));
   MOCK_METHOD3(OnStreamHeadersComplete,
                void(QuicStreamId stream_id, bool fin, size_t frame_len));
   MOCK_CONST_METHOD0(IsCryptoHandshakeConfirmed, bool());
@@ -597,7 +597,7 @@ class MockQuicSpdySession : public QuicSpdySession {
   QuicCryptoStream* GetMutableCryptoStream() override;
   const QuicCryptoStream* GetCryptoStream() const override;
   void SetCryptoStream(QuicCryptoStream* crypto_stream);
-  const SpdyHeaderBlock& GetWriteHeaders() { return write_headers_; }
+  const spdy::SpdyHeaderBlock& GetWriteHeaders() { return write_headers_; }
 
   // From QuicSession.
   MOCK_METHOD3(OnConnectionClosed,
@@ -623,7 +623,7 @@ class MockQuicSpdySession : public QuicSpdySession {
   MOCK_METHOD2(OnStreamHeaders,
                void(QuicStreamId stream_id, QuicStringPiece headers_data));
   MOCK_METHOD2(OnStreamHeadersPriority,
-               void(QuicStreamId stream_id, SpdyPriority priority));
+               void(QuicStreamId stream_id, spdy::SpdyPriority priority));
   MOCK_METHOD3(OnStreamHeadersComplete,
                void(QuicStreamId stream_id, bool fin, size_t frame_len));
   MOCK_METHOD4(OnStreamHeaderList,
@@ -643,22 +643,23 @@ class MockQuicSpdySession : public QuicSpdySession {
                     QuicStreamId promised_stream_id,
                     size_t frame_len,
                     const QuicHeaderList& header_list));
-  MOCK_METHOD2(OnPriorityFrame, void(QuicStreamId id, SpdyPriority priority));
+  MOCK_METHOD2(OnPriorityFrame,
+               void(QuicStreamId id, spdy::SpdyPriority priority));
 
-  // Methods taking non-copyable types like SpdyHeaderBlock by value cannot be
-  // mocked directly.
+  // Methods taking non-copyable types like spdy::SpdyHeaderBlock by value
+  // cannot be mocked directly.
   size_t WriteHeaders(QuicStreamId id,
-                      SpdyHeaderBlock headers,
+                      spdy::SpdyHeaderBlock headers,
                       bool fin,
-                      SpdyPriority priority,
+                      spdy::SpdyPriority priority,
                       QuicReferenceCountedPointer<QuicAckListenerInterface>
                           ack_listener) override;
   MOCK_METHOD5(
       WriteHeadersMock,
       size_t(QuicStreamId id,
-             const SpdyHeaderBlock& headers,
+             const spdy::SpdyHeaderBlock& headers,
              bool fin,
-             SpdyPriority priority,
+             spdy::SpdyPriority priority,
              const QuicReferenceCountedPointer<QuicAckListenerInterface>&
                  ack_listener));
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
@@ -670,7 +671,7 @@ class MockQuicSpdySession : public QuicSpdySession {
 
  private:
   std::unique_ptr<QuicCryptoStream> crypto_stream_;
-  SpdyHeaderBlock write_headers_;
+  spdy::SpdyHeaderBlock write_headers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockQuicSpdySession);
 };
@@ -710,9 +711,9 @@ class TestPushPromiseDelegate : public QuicClientPushPromiseIndex::Delegate {
   // fields match for promise request and client request.
   explicit TestPushPromiseDelegate(bool match);
 
-  bool CheckVary(const SpdyHeaderBlock& client_request,
-                 const SpdyHeaderBlock& promise_request,
-                 const SpdyHeaderBlock& promise_response) override;
+  bool CheckVary(const spdy::SpdyHeaderBlock& client_request,
+                 const spdy::SpdyHeaderBlock& promise_request,
+                 const spdy::SpdyHeaderBlock& promise_response) override;
 
   void OnRendezvousResult(QuicSpdyStream* stream) override;
 

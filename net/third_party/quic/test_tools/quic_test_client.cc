@@ -316,7 +316,7 @@ void QuicTestClient::SetUserAgentID(const string& user_agent_id) {
 }
 
 ssize_t QuicTestClient::SendRequest(const string& uri) {
-  SpdyHeaderBlock headers;
+  spdy::SpdyHeaderBlock headers;
   if (!PopulateHeaderBlockFromUrl(uri, &headers)) {
     return 0;
   }
@@ -333,7 +333,7 @@ void QuicTestClient::SendRequestsAndWaitForResponses(
 }
 
 ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
-    const SpdyHeaderBlock* headers,
+    const spdy::SpdyHeaderBlock* headers,
     QuicStringPiece body,
     bool fin,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
@@ -345,8 +345,8 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
       return 1;
     if (rv == QUIC_PENDING) {
       // May need to retry request if asynchronous rendezvous fails.
-      std::unique_ptr<SpdyHeaderBlock> new_headers(
-          new SpdyHeaderBlock(headers->Clone()));
+      std::unique_ptr<spdy::SpdyHeaderBlock> new_headers(
+          new spdy::SpdyHeaderBlock(headers->Clone()));
       push_promise_data_to_resend_ = QuicMakeUnique<TestClientDataToResend>(
           std::move(new_headers), body, fin, this, std::move(ack_listener));
       return 1;
@@ -364,7 +364,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
 
   ssize_t ret = 0;
   if (headers != nullptr) {
-    SpdyHeaderBlock spdy_headers(headers->Clone());
+    spdy::SpdyHeaderBlock spdy_headers(headers->Clone());
     if (spdy_headers[":authority"].as_string().empty()) {
       spdy_headers[":authority"] = client_->server_id().host();
     }
@@ -375,9 +375,9 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
     ret = body.length();
   }
   if (GetQuicReloadableFlag(enable_quic_stateless_reject_support)) {
-    std::unique_ptr<SpdyHeaderBlock> new_headers;
+    std::unique_ptr<spdy::SpdyHeaderBlock> new_headers;
     if (headers) {
-      new_headers = QuicMakeUnique<SpdyHeaderBlock>(headers->Clone());
+      new_headers = QuicMakeUnique<spdy::SpdyHeaderBlock>(headers->Clone());
     }
     std::unique_ptr<QuicSpdyClientBase::QuicDataToResend> data_to_resend(
         new TestClientDataToResend(std::move(new_headers), body, fin, this,
@@ -387,12 +387,12 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
   return ret;
 }
 
-ssize_t QuicTestClient::SendMessage(const SpdyHeaderBlock& headers,
+ssize_t QuicTestClient::SendMessage(const spdy::SpdyHeaderBlock& headers,
                                     QuicStringPiece body) {
   return SendMessage(headers, body, /*fin=*/true);
 }
 
-ssize_t QuicTestClient::SendMessage(const SpdyHeaderBlock& headers,
+ssize_t QuicTestClient::SendMessage(const spdy::SpdyHeaderBlock& headers,
                                     QuicStringPiece body,
                                     bool fin) {
   // Always force creation of a stream for SendMessage.
@@ -436,7 +436,7 @@ const string& QuicTestClient::response_body() const {
 }
 
 string QuicTestClient::SendCustomSynchronousRequest(
-    const SpdyHeaderBlock& headers,
+    const spdy::SpdyHeaderBlock& headers,
     const string& body) {
   // Clear connection state here and only track this synchronous request.
   ClearPerConnectionState();
@@ -452,7 +452,7 @@ string QuicTestClient::SendCustomSynchronousRequest(
 }
 
 string QuicTestClient::SendSynchronousRequest(const string& uri) {
-  SpdyHeaderBlock headers;
+  spdy::SpdyHeaderBlock headers;
   if (!PopulateHeaderBlockFromUrl(uri, &headers)) {
     return "";
   }
@@ -617,7 +617,7 @@ bool QuicTestClient::response_headers_complete() const {
   return response_headers_complete_;
 }
 
-const SpdyHeaderBlock* QuicTestClient::response_headers() const {
+const spdy::SpdyHeaderBlock* QuicTestClient::response_headers() const {
   for (std::pair<QuicStreamId, QuicSpdyClientStream*> stream : open_streams_) {
     size_t bytes_read =
         stream.second->stream_bytes_read() + stream.second->header_bytes_read();
@@ -629,7 +629,7 @@ const SpdyHeaderBlock* QuicTestClient::response_headers() const {
   return &response_headers_;
 }
 
-const SpdyHeaderBlock* QuicTestClient::preliminary_headers() const {
+const spdy::SpdyHeaderBlock* QuicTestClient::preliminary_headers() const {
   for (std::pair<QuicStreamId, QuicSpdyClientStream*> stream : open_streams_) {
     size_t bytes_read =
         stream.second->stream_bytes_read() + stream.second->header_bytes_read();
@@ -641,7 +641,7 @@ const SpdyHeaderBlock* QuicTestClient::preliminary_headers() const {
   return &preliminary_headers_;
 }
 
-const SpdyHeaderBlock& QuicTestClient::response_trailers() const {
+const spdy::SpdyHeaderBlock& QuicTestClient::response_trailers() const {
   return response_trailers_;
 }
 
@@ -706,9 +706,9 @@ void QuicTestClient::OnClose(QuicSpdyStream* stream) {
   open_streams_.erase(id);
 }
 
-bool QuicTestClient::CheckVary(const SpdyHeaderBlock& client_request,
-                               const SpdyHeaderBlock& promise_request,
-                               const SpdyHeaderBlock& promise_response) {
+bool QuicTestClient::CheckVary(const spdy::SpdyHeaderBlock& client_request,
+                               const spdy::SpdyHeaderBlock& promise_request,
+                               const spdy::SpdyHeaderBlock& promise_response) {
   return true;
 }
 
@@ -762,7 +762,7 @@ void QuicTestClient::WaitForWriteToFlush() {
 }
 
 QuicTestClient::TestClientDataToResend::TestClientDataToResend(
-    std::unique_ptr<SpdyHeaderBlock> headers,
+    std::unique_ptr<spdy::SpdyHeaderBlock> headers,
     QuicStringPiece body,
     bool fin,
     QuicTestClient* test_client,
@@ -795,10 +795,10 @@ QuicTestClient::PerStreamState::PerStreamState(
     QuicRstStreamErrorCode stream_error,
     bool response_complete,
     bool response_headers_complete,
-    const SpdyHeaderBlock& response_headers,
-    const SpdyHeaderBlock& preliminary_headers,
+    const spdy::SpdyHeaderBlock& response_headers,
+    const spdy::SpdyHeaderBlock& preliminary_headers,
     const string& response,
-    const SpdyHeaderBlock& response_trailers,
+    const spdy::SpdyHeaderBlock& response_trailers,
     uint64_t bytes_read,
     uint64_t bytes_written,
     int64_t response_body_size)
@@ -815,8 +815,9 @@ QuicTestClient::PerStreamState::PerStreamState(
 
 QuicTestClient::PerStreamState::~PerStreamState() = default;
 
-bool QuicTestClient::PopulateHeaderBlockFromUrl(const string& uri,
-                                                SpdyHeaderBlock* headers) {
+bool QuicTestClient::PopulateHeaderBlockFromUrl(
+    const string& uri,
+    spdy::SpdyHeaderBlock* headers) {
   string url;
   if (QuicTextUtils::StartsWith(uri, "https://") ||
       QuicTextUtils::StartsWith(uri, "http://")) {

@@ -22,7 +22,7 @@
 
 #define EXPECT_SPDY_BUG EXPECT_DFATAL
 
-namespace net {
+namespace spdy {
 
 inline bool operator==(SpdyStringPiece x,
                        const SpdyHeaderBlock::ValueProxy& y) {
@@ -74,6 +74,6 @@ class TestHeadersHandler : public SpdyHeadersHandlerInterface {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_SPDY_TEST_UTILS_H_

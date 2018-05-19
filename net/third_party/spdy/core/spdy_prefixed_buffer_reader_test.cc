@@ -9,7 +9,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace spdy {
 
 namespace test {
 
@@ -128,4 +128,4 @@ TEST_F(SpdyPrefixedBufferReaderTest, ReadMixed) {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace spdy

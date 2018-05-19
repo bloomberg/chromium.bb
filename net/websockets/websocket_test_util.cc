@@ -104,17 +104,17 @@ std::string WebSocketStandardResponse(const std::string& extra_headers) {
       extra_headers.c_str());
 }
 
-SpdyHeaderBlock WebSocketHttp2Request(
+spdy::SpdyHeaderBlock WebSocketHttp2Request(
     const std::string& path,
     const std::string& authority,
     const std::string& origin,
     const WebSocketExtraHeaders& extra_headers) {
-  SpdyHeaderBlock request_headers;
-  request_headers[kHttp2MethodHeader] = "CONNECT";
-  request_headers[kHttp2AuthorityHeader] = authority;
-  request_headers[kHttp2SchemeHeader] = "https";
-  request_headers[kHttp2PathHeader] = path;
-  request_headers[kHttp2ProtocolHeader] = "websocket";
+  spdy::SpdyHeaderBlock request_headers;
+  request_headers[spdy::kHttp2MethodHeader] = "CONNECT";
+  request_headers[spdy::kHttp2AuthorityHeader] = authority;
+  request_headers[spdy::kHttp2SchemeHeader] = "https";
+  request_headers[spdy::kHttp2PathHeader] = path;
+  request_headers[spdy::kHttp2ProtocolHeader] = "websocket";
   request_headers["pragma"] = "no-cache";
   request_headers["cache-control"] = "no-cache";
   request_headers["origin"] = origin;
@@ -130,10 +130,10 @@ SpdyHeaderBlock WebSocketHttp2Request(
   return request_headers;
 }
 
-SpdyHeaderBlock WebSocketHttp2Response(
+spdy::SpdyHeaderBlock WebSocketHttp2Response(
     const WebSocketExtraHeaders& extra_headers) {
-  SpdyHeaderBlock response_headers;
-  response_headers[kHttp2StatusHeader] = "200";
+  spdy::SpdyHeaderBlock response_headers;
+  response_headers[spdy::kHttp2StatusHeader] = "200";
   for (const auto& header : extra_headers) {
     response_headers[base::ToLowerASCII(header.first)] = header.second;
   }

@@ -482,9 +482,9 @@ void MockQuicSpdySession::SetCryptoStream(QuicCryptoStream* crypto_stream) {
 
 size_t MockQuicSpdySession::WriteHeaders(
     QuicStreamId id,
-    SpdyHeaderBlock headers,
+    spdy::SpdyHeaderBlock headers,
     bool fin,
-    SpdyPriority priority,
+    spdy::SpdyPriority priority,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   write_headers_ = std::move(headers);
   return WriteHeadersMock(id, write_headers_, fin, priority, ack_listener);
@@ -565,9 +565,9 @@ TestPushPromiseDelegate::TestPushPromiseDelegate(bool match)
     : match_(match), rendezvous_fired_(false), rendezvous_stream_(nullptr) {}
 
 bool TestPushPromiseDelegate::CheckVary(
-    const SpdyHeaderBlock& client_request,
-    const SpdyHeaderBlock& promise_request,
-    const SpdyHeaderBlock& promise_response) {
+    const spdy::SpdyHeaderBlock& client_request,
+    const spdy::SpdyHeaderBlock& promise_request,
+    const spdy::SpdyHeaderBlock& promise_response) {
   QUIC_DVLOG(1) << "match " << match_;
   return match_;
 }

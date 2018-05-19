@@ -159,7 +159,7 @@ void QuicMemoryCacheBackend::AddSimpleResponse(QuicStringPiece host,
                                                QuicStringPiece path,
                                                int response_code,
                                                QuicStringPiece body) {
-  SpdyHeaderBlock response_headers;
+  spdy::SpdyHeaderBlock response_headers;
   response_headers[":status"] = QuicTextUtils::Uint64ToString(response_code);
   response_headers["content-length"] =
       QuicTextUtils::Uint64ToString(body.length());
@@ -183,18 +183,19 @@ void QuicMemoryCacheBackend::AddDefaultResponse(QuicBackendResponse* response) {
 
 void QuicMemoryCacheBackend::AddResponse(QuicStringPiece host,
                                          QuicStringPiece path,
-                                         SpdyHeaderBlock response_headers,
+                                         spdy::SpdyHeaderBlock response_headers,
                                          QuicStringPiece response_body) {
   AddResponseImpl(host, path, QuicBackendResponse::REGULAR_RESPONSE,
                   std::move(response_headers), response_body,
-                  SpdyHeaderBlock());
+                  spdy::SpdyHeaderBlock());
 }
 
-void QuicMemoryCacheBackend::AddResponse(QuicStringPiece host,
-                                         QuicStringPiece path,
-                                         SpdyHeaderBlock response_headers,
-                                         QuicStringPiece response_body,
-                                         SpdyHeaderBlock response_trailers) {
+void QuicMemoryCacheBackend::AddResponse(
+    QuicStringPiece host,
+    QuicStringPiece path,
+    spdy::SpdyHeaderBlock response_headers,
+    QuicStringPiece response_body,
+    spdy::SpdyHeaderBlock response_trailers) {
   AddResponseImpl(host, path, QuicBackendResponse::REGULAR_RESPONSE,
                   std::move(response_headers), response_body,
                   std::move(response_trailers));
@@ -204,8 +205,8 @@ void QuicMemoryCacheBackend::AddSpecialResponse(
     QuicStringPiece host,
     QuicStringPiece path,
     SpecialResponseType response_type) {
-  AddResponseImpl(host, path, response_type, SpdyHeaderBlock(), "",
-                  SpdyHeaderBlock());
+  AddResponseImpl(host, path, response_type, spdy::SpdyHeaderBlock(), "",
+                  spdy::SpdyHeaderBlock());
 }
 
 QuicMemoryCacheBackend::QuicMemoryCacheBackend() : cache_initialized_(false) {}
@@ -258,7 +259,7 @@ bool QuicMemoryCacheBackend::InitializeBackend(
         return false;
       }
       push_resources.push_back(ServerPushInfo(url, response->headers().Clone(),
-                                              kV3LowestPriority,
+                                              spdy::kV3LowestPriority,
                                               (QuicString(response->body()))));
     }
     MaybeAddServerPushResources(resource_file->host(), resource_file->path(),
@@ -273,7 +274,7 @@ bool QuicMemoryCacheBackend::IsBackendInitialized() const {
 }
 
 void QuicMemoryCacheBackend::FetchResponseFromBackend(
-    const SpdyHeaderBlock& request_headers,
+    const spdy::SpdyHeaderBlock& request_headers,
     const QuicString& request_body,
     QuicSimpleServerBackend::RequestHandler* quic_stream) {
   const QuicBackendResponse* quic_response = nullptr;
@@ -322,9 +323,9 @@ void QuicMemoryCacheBackend::AddResponseImpl(
     QuicStringPiece host,
     QuicStringPiece path,
     SpecialResponseType response_type,
-    SpdyHeaderBlock response_headers,
+    spdy::SpdyHeaderBlock response_headers,
     QuicStringPiece response_body,
-    SpdyHeaderBlock response_trailers) {
+    spdy::SpdyHeaderBlock response_trailers) {
   QuicWriterMutexLock lock(&response_mutex_);
 
   DCHECK(!host.empty()) << "Host must be populated, e.g. \"www.google.com\"";

@@ -20,7 +20,8 @@
 namespace net {
 
 // A simple class that accumulates header pairs
-class QUIC_EXPORT_PRIVATE QuicHeaderList : public SpdyHeadersHandlerInterface {
+class QUIC_EXPORT_PRIVATE QuicHeaderList
+    : public spdy::SpdyHeadersHandlerInterface {
  public:
   typedef QuicDeque<std::pair<QuicString, QuicString>> ListType;
   typedef ListType::const_iterator const_iterator;

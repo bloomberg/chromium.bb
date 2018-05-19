@@ -25,7 +25,8 @@ void QuicSpdySessionPeer::SetHeadersStream(QuicSpdySession* session,
 }
 
 // static
-const SpdyFramer& QuicSpdySessionPeer::GetSpdyFramer(QuicSpdySession* session) {
+const spdy::SpdyFramer& QuicSpdySessionPeer::GetSpdyFramer(
+    QuicSpdySession* session) {
   return session->spdy_framer_;
 }
 
@@ -51,7 +52,7 @@ void QuicSpdySessionPeer::SetMaxUncompressedHeaderBytes(
 size_t QuicSpdySessionPeer::WriteHeadersImpl(
     QuicSpdySession* session,
     QuicStreamId id,
-    SpdyHeaderBlock headers,
+    spdy::SpdyHeaderBlock headers,
     bool fin,
     int weight,
     QuicStreamId parent_stream_id,

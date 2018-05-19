@@ -13,7 +13,7 @@ using ::http2::DecodeBuffer;
 using ::http2::HpackEntryType;
 using ::http2::HpackString;
 
-namespace net {
+namespace spdy {
 namespace {
 const size_t kMaxDecodeBufferSizeBytes = 32 * 1024;  // 32 KB
 }  // namespace
@@ -198,4 +198,4 @@ void HpackDecoderAdapter::ListenerAdapter::OnUseEntry(
   }
 }
 
-}  // namespace net
+}  // namespace spdy

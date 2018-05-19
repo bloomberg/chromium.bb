@@ -34,7 +34,7 @@
 using ::http2::Http2DecoderAdapter;
 using ::testing::_;
 
-namespace net {
+namespace spdy {
 
 namespace test {
 
@@ -4802,4 +4802,4 @@ TEST_P(SpdyFramerTest, SpdyFrameIRSize) {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace spdy

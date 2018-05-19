@@ -19,7 +19,7 @@
 // All section references below are to
 // http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
 
-namespace net {
+namespace spdy {
 
 // An HpackOutputStream handles all the low-level details of encoding
 // header fields.
@@ -73,6 +73,6 @@ class SPDY_EXPORT_PRIVATE HpackOutputStream {
   DISALLOW_COPY_AND_ASSIGN(HpackOutputStream);
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_OUTPUT_STREAM_H_

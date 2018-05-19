@@ -52,7 +52,7 @@ class QuicSimpleServerStreamPeer : public QuicSimpleServerStream {
   using QuicSimpleServerStream::SendErrorResponse;
   using QuicSimpleServerStream::SendResponse;
 
-  SpdyHeaderBlock* mutable_headers() { return &request_headers_; }
+  spdy::SpdyHeaderBlock* mutable_headers() { return &request_headers_; }
   void set_body(QuicString body) { body_ = std::move(body); }
 
   static void SendResponse(QuicSimpleServerStream* stream) {
@@ -71,7 +71,7 @@ class QuicSimpleServerStreamPeer : public QuicSimpleServerStream {
     return stream->content_length_;
   }
 
-  static SpdyHeaderBlock& headers(QuicSimpleServerStream* stream) {
+  static spdy::SpdyHeaderBlock& headers(QuicSimpleServerStream* stream) {
     return stream->request_headers_;
   }
 };
@@ -121,13 +121,13 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                     size_t frame_len,
                     const QuicHeaderList& header_list));
   MOCK_METHOD2(OnStreamHeadersPriority,
-               void(QuicStreamId stream_id, SpdyPriority priority));
-  // Methods taking non-copyable types like SpdyHeaderBlock by value cannot be
-  // mocked directly.
+               void(QuicStreamId stream_id, spdy::SpdyPriority priority));
+  // Methods taking non-copyable types like spdy::SpdyHeaderBlock by value
+  // cannot be mocked directly.
   size_t WriteHeaders(QuicStreamId id,
-                      SpdyHeaderBlock headers,
+                      spdy::SpdyHeaderBlock headers,
                       bool fin,
-                      SpdyPriority priority,
+                      spdy::SpdyPriority priority,
                       QuicReferenceCountedPointer<QuicAckListenerInterface>
                           ack_listener) override {
     return WriteHeadersMock(id, headers, fin, priority, ack_listener);
@@ -135,9 +135,9 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
   MOCK_METHOD5(
       WriteHeadersMock,
       size_t(QuicStreamId id,
-             const SpdyHeaderBlock& headers,
+             const spdy::SpdyHeaderBlock& headers,
              bool fin,
-             SpdyPriority priority,
+             spdy::SpdyPriority priority,
              const QuicReferenceCountedPointer<QuicAckListenerInterface>&
                  ack_listener));
   MOCK_METHOD3(SendRstStream,
@@ -145,12 +145,12 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                     QuicRstStreamErrorCode error,
                     QuicStreamOffset bytes_written));
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
-  // Matchers cannot be used on non-copyable types like SpdyHeaderBlock.
+  // Matchers cannot be used on non-copyable types like spdy::SpdyHeaderBlock.
   void PromisePushResources(
       const QuicString& request_url,
       const std::list<QuicBackendResponse::ServerPushInfo>& resources,
       QuicStreamId original_stream_id,
-      const SpdyHeaderBlock& original_request_headers) override {
+      const spdy::SpdyHeaderBlock& original_request_headers) override {
     original_request_headers_ = original_request_headers.Clone();
     PromisePushResourcesMock(request_url, resources, original_stream_id,
                              original_request_headers);
@@ -159,11 +159,11 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                void(const QuicString&,
                     const std::list<QuicBackendResponse::ServerPushInfo>&,
                     QuicStreamId,
-                    const SpdyHeaderBlock&));
+                    const spdy::SpdyHeaderBlock&));
 
   using QuicSession::ActivateStream;
 
-  SpdyHeaderBlock original_request_headers_;
+  spdy::SpdyHeaderBlock original_request_headers_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockQuicSimpleServerSession);
@@ -221,7 +221,7 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
     return (*stream_->mutable_headers())[key].as_string();
   }
 
-  SpdyHeaderBlock response_headers_;
+  spdy::SpdyHeaderBlock response_headers_;
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
   StrictMock<MockQuicConnection>* connection_;
@@ -306,7 +306,7 @@ TEST_P(QuicSimpleServerStreamTest, TestFramingExtraData) {
 
 TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus) {
   // Send an illegal response with response status not supported by HTTP/2.
-  SpdyHeaderBlock* request_headers = stream_->mutable_headers();
+  spdy::SpdyHeaderBlock* request_headers = stream_->mutable_headers();
   (*request_headers)[":path"] = "/bar";
   (*request_headers)[":authority"] = "www.google.com";
   (*request_headers)[":version"] = "HTTP/1.1";
@@ -336,7 +336,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus) {
 
 TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus2) {
   // Send an illegal response with response status not supported by HTTP/2.
-  SpdyHeaderBlock* request_headers = stream_->mutable_headers();
+  spdy::SpdyHeaderBlock* request_headers = stream_->mutable_headers();
   (*request_headers)[":path"] = "/bar";
   (*request_headers)[":authority"] = "www.google.com";
   (*request_headers)[":version"] = "HTTP/1.1";
@@ -372,7 +372,7 @@ TEST_P(QuicSimpleServerStreamTest, SendPushResponseWith404Response) {
 
   // Send a push response with response status 404, which will be regarded as
   // invalid server push response.
-  SpdyHeaderBlock* request_headers = promised_stream->mutable_headers();
+  spdy::SpdyHeaderBlock* request_headers = promised_stream->mutable_headers();
   (*request_headers)[":path"] = "/bar";
   (*request_headers)[":authority"] = "www.google.com";
   (*request_headers)[":version"] = "HTTP/1.1";
@@ -394,7 +394,7 @@ TEST_P(QuicSimpleServerStreamTest, SendPushResponseWith404Response) {
 
 TEST_P(QuicSimpleServerStreamTest, SendResponseWithValidHeaders) {
   // Add a request and response with valid headers.
-  SpdyHeaderBlock* request_headers = stream_->mutable_headers();
+  spdy::SpdyHeaderBlock* request_headers = stream_->mutable_headers();
   (*request_headers)[":path"] = "/bar";
   (*request_headers)[":authority"] = "www.google.com";
   (*request_headers)[":version"] = "HTTP/1.1";
@@ -428,14 +428,14 @@ TEST_P(QuicSimpleServerStreamTest, SendReponseWithPushResources) {
   QuicString request_path = "/foo";
   QuicString body = "Yummm";
   QuicBackendResponse::ServerPushInfo push_info(
-      QuicUrl(host, "/bar"), SpdyHeaderBlock(), QuicStream::kDefaultPriority,
-      "Push body");
+      QuicUrl(host, "/bar"), spdy::SpdyHeaderBlock(),
+      QuicStream::kDefaultPriority, "Push body");
   std::list<QuicBackendResponse::ServerPushInfo> push_resources;
   push_resources.push_back(push_info);
   memory_cache_backend_.AddSimpleResponseWithServerPushResources(
       host, request_path, 200, body, push_resources);
 
-  SpdyHeaderBlock* request_headers = stream_->mutable_headers();
+  spdy::SpdyHeaderBlock* request_headers = stream_->mutable_headers();
   (*request_headers)[":path"] = request_path;
   (*request_headers)[":authority"] = host;
   (*request_headers)[":version"] = "HTTP/1.1";
@@ -459,7 +459,7 @@ TEST_P(QuicSimpleServerStreamTest, SendReponseWithPushResources) {
 TEST_P(QuicSimpleServerStreamTest, PushResponseOnClientInitiatedStream) {
   // Calling PushResponse() on a client initialted stream is never supposed to
   // happen.
-  EXPECT_QUIC_BUG(stream_->PushResponse(SpdyHeaderBlock()),
+  EXPECT_QUIC_BUG(stream_->PushResponse(spdy::SpdyHeaderBlock()),
                   "Client initiated stream"
                   " shouldn't be used as promised stream.");
 }
@@ -478,7 +478,7 @@ TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
 
   const QuicString kHost = "www.foo.com";
   const QuicString kPath = "/bar";
-  SpdyHeaderBlock headers;
+  spdy::SpdyHeaderBlock headers;
   headers[":path"] = kPath;
   headers[":authority"] = kHost;
   headers[":version"] = "HTTP/1.1";
@@ -527,7 +527,7 @@ TEST_P(QuicSimpleServerStreamTest, TestSendErrorResponse) {
 TEST_P(QuicSimpleServerStreamTest, InvalidMultipleContentLength) {
   EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
 
-  SpdyHeaderBlock request_headers;
+  spdy::SpdyHeaderBlock request_headers;
   // \000 is a way to write the null byte when followed by a literal digit.
   header_list_.OnHeader("content-length", QuicStringPiece("11\00012", 5));
 
@@ -545,7 +545,7 @@ TEST_P(QuicSimpleServerStreamTest, InvalidMultipleContentLength) {
 TEST_P(QuicSimpleServerStreamTest, InvalidLeadingNullContentLength) {
   EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
 
-  SpdyHeaderBlock request_headers;
+  spdy::SpdyHeaderBlock request_headers;
   // \000 is a way to write the null byte when followed by a literal digit.
   header_list_.OnHeader("content-length", QuicStringPiece("\00012", 3));
 
@@ -561,7 +561,7 @@ TEST_P(QuicSimpleServerStreamTest, InvalidLeadingNullContentLength) {
 }
 
 TEST_P(QuicSimpleServerStreamTest, ValidMultipleContentLength) {
-  SpdyHeaderBlock request_headers;
+  spdy::SpdyHeaderBlock request_headers;
   // \000 is a way to write the null byte when followed by a literal digit.
   header_list_.OnHeader("content-length", QuicStringPiece("11\00011", 5));
 

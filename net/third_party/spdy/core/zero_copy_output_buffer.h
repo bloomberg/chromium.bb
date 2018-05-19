@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-namespace net {
+namespace spdy {
 
 class ZeroCopyOutputBuffer {
  public:
@@ -25,6 +25,6 @@ class ZeroCopyOutputBuffer {
   virtual uint64_t BytesFree() const = 0;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_ZERO_COPY_OUTPUT_BUFFER_H_

@@ -21,12 +21,14 @@
 #include "net/third_party/spdy/core/spdy_headers_handler_interface.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 
+namespace spdy {
+class SpdyFramerVisitorInterface;
+
+class ExtensionVisitorInterface;
+}  // namespace spdy
 namespace net {
 
-class SpdyFramerVisitorInterface;
-class ExtensionVisitorInterface;
-
-// Adapts SpdyFramer interface to use QuicHttpFrameDecoder.
+// Adapts spdy::SpdyFramer interface to use QuicHttpFrameDecoder.
 class SPDY_EXPORT_PRIVATE QuicHttpDecoderAdapter
     : public QuicHttpFrameDecoderListener {
  public:
@@ -60,24 +62,24 @@ class SPDY_EXPORT_PRIVATE QuicHttpDecoderAdapter
   // else the framer will likely crash.  It is acceptable for the visitor
   // to do nothing.  If this is called multiple times, only the last visitor
   // will be used.
-  void set_visitor(SpdyFramerVisitorInterface* visitor);
-  SpdyFramerVisitorInterface* visitor() const { return visitor_; }
+  void set_visitor(spdy::SpdyFramerVisitorInterface* visitor);
+  spdy::SpdyFramerVisitorInterface* visitor() const { return visitor_; }
 
   // Set extension callbacks to be called from the framer or decoder. Optional.
   // If called multiple times, only the last visitor will be used.
-  void set_extension_visitor(ExtensionVisitorInterface* visitor);
+  void set_extension_visitor(spdy::ExtensionVisitorInterface* visitor);
 
   // Set debug callbacks to be called from the framer. The debug visitor is
   // completely optional and need not be set in order for normal operation.
   // If this is called multiple times, only the last visitor will be used.
-  void set_debug_visitor(SpdyFramerDebugVisitorInterface* debug_visitor);
-  SpdyFramerDebugVisitorInterface* debug_visitor() const {
+  void set_debug_visitor(spdy::SpdyFramerDebugVisitorInterface* debug_visitor);
+  spdy::SpdyFramerDebugVisitorInterface* debug_visitor() const {
     return debug_visitor_;
   }
 
   // Set debug callbacks to be called from the HPQUIC_HTTP_ACK decoder.
   void SetDecoderHeaderTableDebugVisitor(
-      std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor);
+      std::unique_ptr<spdy::HpackHeaderTable::DebugVisitorInterface> visitor);
 
   // Sets whether or not ProcessInput returns after finishing a frame, or
   // continues processing additional frames. Normally ProcessInput processes
@@ -109,7 +111,7 @@ class SPDY_EXPORT_PRIVATE QuicHttpDecoderAdapter
   // has responded with an HTTP/1.1 (or earlier) response.
   bool probable_http_response() const;
 
-  HpackDecoderAdapter* GetHpackDecoder();
+  spdy::HpackDecoderAdapter* GetHpackDecoder();
 
   bool HasError() const;
 
@@ -199,7 +201,7 @@ class SPDY_EXPORT_PRIVATE QuicHttpDecoderAdapter
 
   void CommonStartHpackBlock();
 
-  // SpdyFramer calls HandleControlFrameHeadersData even if there are zero
+  // spdy::SpdyFramer calls HandleControlFrameHeadersData even if there are zero
   // fragment bytes in the first frame, so do the same.
   void MaybeAnnounceEmptyFirstHpackFragment();
   void CommonHpackFragmentEnd();
@@ -225,16 +227,16 @@ class SPDY_EXPORT_PRIVATE QuicHttpDecoderAdapter
   // the callbacks.
   QuicHttpFrameDecoderNoOpListener no_op_listener_;
 
-  SpdyFramerVisitorInterface* visitor_ = nullptr;
-  SpdyFramerDebugVisitorInterface* debug_visitor_ = nullptr;
+  spdy::SpdyFramerVisitorInterface* visitor_ = nullptr;
+  spdy::SpdyFramerDebugVisitorInterface* debug_visitor_ = nullptr;
 
   // If non-null, unknown frames and settings are passed to the extension.
-  ExtensionVisitorInterface* extension_ = nullptr;
+  spdy::ExtensionVisitorInterface* extension_ = nullptr;
 
   // The HPQUIC_HTTP_ACK decoder to be used for this adapter. User is
   // responsible for clearing if the adapter is to be used for another
   // connection.
-  std::unique_ptr<HpackDecoderAdapter> hpack_decoder_ = nullptr;
+  std::unique_ptr<spdy::HpackDecoderAdapter> hpack_decoder_ = nullptr;
 
   // The HTTP/2 frame decoder. Accessed via a unique_ptr to allow replacement
   // (e.g. in tests) when Reset() is called.
@@ -247,14 +249,14 @@ class SPDY_EXPORT_PRIVATE QuicHttpDecoderAdapter
   // SETTINGS frame as the first frame.
   QuicHttpFrameType expected_frame_type_;
 
-  // Attempt to duplicate the SpdyState and SpdyFramer::Error values that
-  // SpdyFramer sets. Values determined by getting tests to pass.
+  // Attempt to duplicate the SpdyState and spdy::SpdyFramer::Error values that
+  // spdy::SpdyFramer sets. Values determined by getting tests to pass.
   SpdyState spdy_state_;
   http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error_;
 
   // The limit on the size of received HTTP/2 payloads as specified in the
-  // SETTINGS_MAX_FRAME_SIZE advertised to peer.
-  size_t recv_frame_size_limit_ = kHttp2DefaultFramePayloadLimit;
+  // spdy::SETTINGS_MAX_FRAME_SIZE advertised to peer.
+  size_t recv_frame_size_limit_ = spdy::kHttp2DefaultFramePayloadLimit;
 
   // Has OnFrameHeader been called?
   bool decoded_frame_header_ = false;
@@ -274,10 +276,10 @@ class SPDY_EXPORT_PRIVATE QuicHttpDecoderAdapter
   bool on_headers_called_;
 
   // Has OnHpackFragment() already been called for current HPQUIC_HTTP_ACK
-  // block? SpdyFramer will pass an empty buffer to the HPQUIC_HTTP_ACK decoder
-  // if a HEADERS or PUSH_PROMISE has no HPQUIC_HTTP_ACK data in it (e.g. a
-  // HEADERS frame with only padding). Detect that condition and replicate the
-  // behavior using this field.
+  // block? spdy::SpdyFramer will pass an empty buffer to the HPQUIC_HTTP_ACK
+  // decoder if a HEADERS or PUSH_PROMISE has no HPQUIC_HTTP_ACK data in it
+  // (e.g. a HEADERS frame with only padding). Detect that condition and
+  // replicate the behavior using this field.
   bool on_hpack_fragment_called_;
 
   // Have we seen a frame header that appears to be an HTTP/1 response?

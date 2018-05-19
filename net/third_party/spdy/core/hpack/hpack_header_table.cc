@@ -11,7 +11,7 @@
 #include "net/third_party/spdy/core/hpack/hpack_static_table.h"
 #include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 
-namespace net {
+namespace spdy {
 
 size_t HpackHeaderTable::EntryHasher::operator()(
     const HpackEntry* entry) const {
@@ -272,4 +272,4 @@ size_t HpackHeaderTable::EstimateMemoryUsage() const {
          SpdyEstimateMemoryUsage(dynamic_name_index_);
 }
 
-}  // namespace net
+}  // namespace spdy

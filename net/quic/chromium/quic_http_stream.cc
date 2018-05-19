@@ -176,7 +176,8 @@ int QuicHttpStream::DoHandlePromiseComplete(int rv) {
 
   stream_ = quic_session()->ReleasePromisedStream();
 
-  SpdyPriority spdy_priority = ConvertRequestPriorityToQuicPriority(priority_);
+  spdy::SpdyPriority spdy_priority =
+      ConvertRequestPriorityToQuicPriority(priority_);
   stream_->SetPriority(spdy_priority);
 
   next_state_ = STATE_OPEN;
@@ -570,7 +571,7 @@ int QuicHttpStream::DoSetRequestPriority() {
   DCHECK(stream_);
   DCHECK(response_info_);
 
-  SpdyPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
+  spdy::SpdyPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
   stream_->SetPriority(priority);
   next_state_ = STATE_SEND_HEADERS;
   return OK;
@@ -591,7 +592,7 @@ int QuicHttpStream::DoSendHeaders() {
   if (rv > 0)
     headers_bytes_sent_ += rv;
 
-  request_headers_ = SpdyHeaderBlock();
+  request_headers_ = spdy::SpdyHeaderBlock();
   return rv;
 }
 
@@ -662,7 +663,8 @@ int QuicHttpStream::DoSendBodyComplete(int rv) {
   return OK;
 }
 
-int QuicHttpStream::ProcessResponseHeaders(const SpdyHeaderBlock& headers) {
+int QuicHttpStream::ProcessResponseHeaders(
+    const spdy::SpdyHeaderBlock& headers) {
   if (!SpdyHeadersToHttpResponse(headers, response_info_)) {
     DLOG(WARNING) << "Invalid headers";
     return ERR_QUIC_PROTOCOL_ERROR;

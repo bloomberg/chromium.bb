@@ -133,8 +133,8 @@ void WebSocketSpdyStreamAdapter::OnHeadersSent() {
 }
 
 void WebSocketSpdyStreamAdapter::OnHeadersReceived(
-    const SpdyHeaderBlock& response_headers,
-    const SpdyHeaderBlock* pushed_request_headers) {
+    const spdy::SpdyHeaderBlock& response_headers,
+    const spdy::SpdyHeaderBlock* pushed_request_headers) {
   if (delegate_)
     delegate_->OnHeadersReceived(response_headers);
 }
@@ -152,7 +152,8 @@ void WebSocketSpdyStreamAdapter::OnDataSent() {
   base::ResetAndReturn(&write_callback_).Run(write_length_);
 }
 
-void WebSocketSpdyStreamAdapter::OnTrailers(const SpdyHeaderBlock& trailers) {}
+void WebSocketSpdyStreamAdapter::OnTrailers(
+    const spdy::SpdyHeaderBlock& trailers) {}
 
 void WebSocketSpdyStreamAdapter::OnClose(int status) {
   DCHECK_GT(ERR_IO_PENDING, status);

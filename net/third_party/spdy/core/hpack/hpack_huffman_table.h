@@ -15,7 +15,7 @@
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 
 namespace test {
 class HpackHuffmanTablePeer;
@@ -72,6 +72,6 @@ class SPDY_EXPORT_PRIVATE HpackHuffmanTable {
   uint16_t failed_symbol_id_;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_HUFFMAN_TABLE_H_

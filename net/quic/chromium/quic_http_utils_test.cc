@@ -50,7 +50,7 @@ TEST(QuicHttpUtilsTest, FilterSupportedAltSvcVersions) {
 
   QuicTransportVersionVector supported_alt_svc_versions = {QUIC_VERSION_38,
                                                            QUIC_VERSION_41};
-  SpdyAltSvcWireFormat::AlternativeService altsvc;
+  spdy::SpdyAltSvcWireFormat::AlternativeService altsvc;
 
   altsvc.protocol_id = "quic";
   altsvc.version = alt_svc_versions_google;

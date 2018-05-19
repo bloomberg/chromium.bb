@@ -7,7 +7,7 @@
 
 #include "net/base/net_export.h"
 
-namespace net {
+namespace spdy {
 
 inline bool GetSpdyReloadableFlagImpl(bool flag) {
   return flag;
@@ -17,6 +17,6 @@ inline bool GetSpdyRestartFlagImpl(bool flag) {
   return flag;
 }
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_PLATFORM_IMPL_SPDY_FLAGS_IMPL_H_

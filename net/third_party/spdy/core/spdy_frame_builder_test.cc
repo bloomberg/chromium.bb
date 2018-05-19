@@ -9,7 +9,7 @@
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "testing/platform_test.h"
 
-namespace net {
+namespace spdy {
 
 namespace {
 
@@ -63,4 +63,4 @@ TEST(SpdyFrameBuilderTest, GetWritableOutputNegative) {
   EXPECT_EQ(nullptr, writable_buffer);
 }
 
-}  // namespace net
+}  // namespace spdy

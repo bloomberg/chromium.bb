@@ -71,8 +71,8 @@ const int kMss = 1430;
 // The 8 is the size of the SPDY frame header.
 const int kMaxSpdyFrameChunkSize = (2 * kMss) - 8;
 
-// Default value of SETTINGS_INITIAL_WINDOW_SIZE per protocol specification.
-// A session is always created with this initial window size.
+// Default value of spdy::SETTINGS_INITIAL_WINDOW_SIZE per protocol
+// specification. A session is always created with this initial window size.
 const int32_t kDefaultInitialWindowSize = 65535;
 
 // Maximum number of concurrent streams we will create, unless the server
@@ -86,8 +86,8 @@ const int kYieldAfterDurationMilliseconds = 20;
 
 // First and last valid stream IDs. As we always act as the client,
 // start at 1 for the first stream id.
-const SpdyStreamId kFirstStreamId = 1;
-const SpdyStreamId kLastStreamId = 0x7fffffff;
+const spdy::SpdyStreamId kFirstStreamId = 1;
+const spdy::SpdyStreamId kLastStreamId = 0x7fffffff;
 
 struct LoadTimingInfo;
 class NetLog;
@@ -117,7 +117,7 @@ enum SpdyProtocolErrorDetails {
   SPDY_ERROR_INTERNAL_FRAMER_ERROR = 41,
   SPDY_ERROR_INVALID_CONTROL_FRAME_SIZE = 37,
   SPDY_ERROR_OVERSIZED_PAYLOAD = 40,
-  // SpdyErrorCode mappings.
+  // spdy::SpdyErrorCode mappings.
   STATUS_CODE_NO_ERROR = 41,
   STATUS_CODE_PROTOCOL_ERROR = 11,
   STATUS_CODE_INTERNAL_ERROR = 16,
@@ -154,8 +154,8 @@ SpdyProtocolErrorDetails NET_EXPORT_PRIVATE MapFramerErrorToProtocolError(
 Error NET_EXPORT_PRIVATE
 MapFramerErrorToNetError(http2::Http2DecoderAdapter::SpdyFramerError error);
 SpdyProtocolErrorDetails NET_EXPORT_PRIVATE
-MapRstStreamStatusToProtocolError(SpdyErrorCode error_code);
-SpdyErrorCode NET_EXPORT_PRIVATE MapNetErrorToGoAwayStatus(Error err);
+MapRstStreamStatusToProtocolError(spdy::SpdyErrorCode error_code);
+spdy::SpdyErrorCode NET_EXPORT_PRIVATE MapNetErrorToGoAwayStatus(Error err);
 
 // There is an enum of the same name in tools/metrics/histograms/enums.xml.
 // Be sure to add new values there also.
@@ -186,8 +186,8 @@ enum class SpdyPushedStreamFate {
 // to be updated with new values, as do the mapping functions above.
 static_assert(17 == http2::Http2DecoderAdapter::LAST_ERROR,
               "SpdyProtocolErrorDetails / Spdy Errors mismatch");
-static_assert(13 == SpdyErrorCode::ERROR_CODE_MAX,
-              "SpdyProtocolErrorDetails / SpdyErrorCode mismatch");
+static_assert(13 == spdy::SpdyErrorCode::ERROR_CODE_MAX,
+              "SpdyProtocolErrorDetails / spdy::SpdyErrorCode mismatch");
 
 // A helper class used to manage a request to create a stream.
 class NET_EXPORT_PRIVATE SpdyStreamRequest {
@@ -270,7 +270,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
 };
 
 class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
-                               public SpdyFramerDebugVisitorInterface,
+                               public spdy::SpdyFramerDebugVisitorInterface,
                                public MultiplexedSession,
                                public HigherLayeredPool,
                                public Http2PushPromiseIndex::Delegate {
@@ -298,7 +298,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               bool support_ietf_format_quic_altsvc,
               bool is_trusted_proxy,
               size_t session_max_recv_window_size,
-              const SettingsMap& initial_settings,
+              const spdy::SettingsMap& initial_settings,
               TimeFunc time_func,
               ServerPushDelegate* push_delegate,
               NetLog* net_log);
@@ -335,7 +335,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // If a stream was found and the stream is still open, the priority
   // of that stream is updated to match |priority|.
   int GetPushedStream(const GURL& url,
-                      SpdyStreamId pushed_stream_id,
+                      spdy::SpdyStreamId pushed_stream_id,
                       RequestPriority priority,
                       SpdyStream** spdy_stream,
                       const NetLogWithSource& stream_net_log);
@@ -371,31 +371,32 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // |stream|. |stream| is guaranteed to be activated before the
   // producer is used to produce its frame.
   void EnqueueStreamWrite(const base::WeakPtr<SpdyStream>& stream,
-                          SpdyFrameType frame_type,
+                          spdy::SpdyFrameType frame_type,
                           std::unique_ptr<SpdyBufferProducer> producer);
 
   // Creates and returns a HEADERS frame for |stream_id|.
-  std::unique_ptr<SpdySerializedFrame> CreateHeaders(
-      SpdyStreamId stream_id,
+  std::unique_ptr<spdy::SpdySerializedFrame> CreateHeaders(
+      spdy::SpdyStreamId stream_id,
       RequestPriority priority,
-      SpdyControlFlags flags,
-      SpdyHeaderBlock headers,
+      spdy::SpdyControlFlags flags,
+      spdy::SpdyHeaderBlock headers,
       NetLogSource source_dependency);
 
   // Creates and returns a SpdyBuffer holding a data frame with the
   // given data. May return NULL if stalled by flow control.
-  std::unique_ptr<SpdyBuffer> CreateDataBuffer(SpdyStreamId stream_id,
+  std::unique_ptr<SpdyBuffer> CreateDataBuffer(spdy::SpdyStreamId stream_id,
                                                IOBuffer* data,
                                                int len,
-                                               SpdyDataFlags flags);
+                                               spdy::SpdyDataFlags flags);
 
   // Send PRIORITY frames according to the new priority of an existing stream.
-  void UpdateStreamPriority(SpdyStreamId stream_id, RequestPriority priority);
+  void UpdateStreamPriority(spdy::SpdyStreamId stream_id,
+                            RequestPriority priority);
 
   // Close the stream with the given ID, which must exist and be
   // active. Note that that stream may hold the last reference to the
   // session.
-  void CloseActiveStream(SpdyStreamId stream_id, int status);
+  void CloseActiveStream(spdy::SpdyStreamId stream_id, int status);
 
   // Close the given created stream, which must exist but not yet be
   // active. Note that |stream| may hold the last reference to the
@@ -405,12 +406,12 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Send a RST_STREAM frame with the given status code and close the
   // stream with the given ID, which must exist and be active. Note
   // that that stream may hold the last reference to the session.
-  void ResetStream(SpdyStreamId stream_id,
+  void ResetStream(spdy::SpdyStreamId stream_id,
                    int error,
                    const std::string& description);
 
   // Check if a stream is active.
-  bool IsStreamActive(SpdyStreamId stream_id) const;
+  bool IsStreamActive(spdy::SpdyStreamId stream_id) const;
 
   // The LoadState is used for informing the user of the current network
   // status, such as "resolving host", "connecting", etc.
@@ -431,7 +432,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Send a WINDOW_UPDATE frame for a stream. Called by a stream
   // whenever receive window size is increased.
-  void SendStreamWindowUpdate(SpdyStreamId stream_id,
+  void SendStreamWindowUpdate(spdy::SpdyStreamId stream_id,
                               uint32_t delta_window_size);
 
   // Accessors for the session's availability state.
@@ -460,7 +461,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // streams. Must be called only when |availability_state_| >=
   // STATE_GOING_AWAY. After this function, DcheckGoingAway() will
   // pass. May be called multiple times.
-  void StartGoingAway(SpdyStreamId last_good_stream_id, Error status);
+  void StartGoingAway(spdy::SpdyStreamId last_good_stream_id, Error status);
 
   // Must be called only when going away (i.e., DcheckGoingAway()
   // passes). If there are no more active streams and the session
@@ -490,7 +491,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // sets |socket_reused| to false only if |stream_id| is the ID of the first
   // stream using the session.  IsReused(), on the other hand, indicates if the
   // session has been used to send/receive data at all.
-  bool GetLoadTimingInfo(SpdyStreamId stream_id,
+  bool GetLoadTimingInfo(spdy::SpdyStreamId stream_id,
                          LoadTimingInfo* load_timing_info) const;
 
   // Returns true if session is currently active.
@@ -532,7 +533,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   bool CloseOneIdleConnection() override;
 
   // Http2PushPromiseIndex::Delegate implementation:
-  bool ValidatePushedStream(SpdyStreamId stream_id,
+  bool ValidatePushedStream(spdy::SpdyStreamId stream_id,
                             const GURL& url,
                             const HttpRequestInfo& request_info,
                             const SpdySessionKey& key) const override;
@@ -566,7 +567,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   using PendingStreamRequestQueue =
       base::circular_deque<base::WeakPtr<SpdyStreamRequest>>;
-  using ActiveStreamMap = std::map<SpdyStreamId, SpdyStream*>;
+  using ActiveStreamMap = std::map<spdy::SpdyStreamId, SpdyStream*>;
   using CreatedStreamSet = std::set<SpdyStream*>;
 
   enum AvailabilityState {
@@ -622,9 +623,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // possible.
   void ProcessPendingStreamRequests();
 
-  void TryCreatePushStream(SpdyStreamId stream_id,
-                           SpdyStreamId associated_stream_id,
-                           SpdyHeaderBlock headers);
+  void TryCreatePushStream(spdy::SpdyStreamId stream_id,
+                           spdy::SpdyStreamId associated_stream_id,
+                           spdy::SpdyHeaderBlock headers);
 
   // Close the stream pointed to by the given iterator. Note that that
   // stream may hold the last reference to the session.
@@ -643,14 +644,14 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Send a RST_STREAM frame with the given parameters. There should
   // either be no active stream with the given ID, or that active
   // stream should be closed shortly after this function is called.
-  void EnqueueResetStreamFrame(SpdyStreamId stream_id,
+  void EnqueueResetStreamFrame(spdy::SpdyStreamId stream_id,
                                RequestPriority priority,
-                               SpdyErrorCode error_code,
+                               spdy::SpdyErrorCode error_code,
                                const std::string& description);
 
   // Send a PRIORITY frame with the given parameters.
-  void EnqueuePriorityFrame(SpdyStreamId stream_id,
-                            SpdyStreamId dependency_id,
+  void EnqueuePriorityFrame(spdy::SpdyStreamId stream_id,
+                            spdy::SpdyStreamId dependency_id,
                             int weight,
                             bool exclusive);
 
@@ -709,12 +710,12 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void MaybeSendPrefacePing();
 
   // Send a single WINDOW_UPDATE frame.
-  void SendWindowUpdateFrame(SpdyStreamId stream_id,
+  void SendWindowUpdateFrame(spdy::SpdyStreamId stream_id,
                              uint32_t delta_window_size,
                              RequestPriority priority);
 
   // Send the PING frame.
-  void WritePingFrame(SpdyPingId unique_id, bool is_ack);
+  void WritePingFrame(spdy::SpdyPingId unique_id, bool is_ack);
 
   // Post a CheckPingStatus call after delay. Don't post if there is already
   // CheckPingStatus running.
@@ -725,18 +726,18 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void CheckPingStatus(base::TimeTicks last_check_time);
 
   // Get a new stream id.
-  SpdyStreamId GetNewStreamId();
+  spdy::SpdyStreamId GetNewStreamId();
 
   // Pushes the given frame with the given priority into the write
   // queue for the session.
   void EnqueueSessionWrite(RequestPriority priority,
-                           SpdyFrameType frame_type,
-                           std::unique_ptr<SpdySerializedFrame> frame);
+                           spdy::SpdyFrameType frame_type,
+                           std::unique_ptr<spdy::SpdySerializedFrame> frame);
 
   // Puts |producer| associated with |stream| onto the write queue
   // with the given priority.
   void EnqueueWrite(RequestPriority priority,
-                    SpdyFrameType frame_type,
+                    spdy::SpdyFrameType frame_type,
                     std::unique_ptr<SpdyBufferProducer> producer,
                     const base::WeakPtr<SpdyStream>& stream,
                     const NetworkTrafficAnnotationTag& traffic_annotation);
@@ -760,7 +761,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void RecordHistograms();
   void RecordProtocolErrorHistogram(SpdyProtocolErrorDetails details);
   static void RecordPushedStreamVaryResponseHeaderHistogram(
-      const SpdyHeaderBlock& headers);
+      const spdy::SpdyHeaderBlock& headers);
 
   // DCHECKs that |availability_state_| >= STATE_GOING_AWAY, that
   // there are no pending stream creation requests, and that there are
@@ -794,54 +795,57 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // pushed stream by GURL instead of stream ID could result in incorrect
   // behavior if a pushed stream was claimed but later another stream was pushed
   // for the same GURL.
-  void CancelPushedStreamIfUnclaimed(SpdyStreamId stream_id);
+  void CancelPushedStreamIfUnclaimed(spdy::SpdyStreamId stream_id);
 
   // BufferedSpdyFramerVisitorInterface:
   void OnError(
       http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error) override;
-  void OnStreamError(SpdyStreamId stream_id,
+  void OnStreamError(spdy::SpdyStreamId stream_id,
                      const std::string& description) override;
-  void OnPing(SpdyPingId unique_id, bool is_ack) override;
-  void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override;
-  void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                SpdyErrorCode error_code,
+  void OnPing(spdy::SpdyPingId unique_id, bool is_ack) override;
+  void OnRstStream(spdy::SpdyStreamId stream_id,
+                   spdy::SpdyErrorCode error_code) override;
+  void OnGoAway(spdy::SpdyStreamId last_accepted_stream_id,
+                spdy::SpdyErrorCode error_code,
                 base::StringPiece debug_data) override;
-  void OnDataFrameHeader(SpdyStreamId stream_id,
+  void OnDataFrameHeader(spdy::SpdyStreamId stream_id,
                          size_t length,
                          bool fin) override;
-  void OnStreamFrameData(SpdyStreamId stream_id,
+  void OnStreamFrameData(spdy::SpdyStreamId stream_id,
                          const char* data,
                          size_t len) override;
-  void OnStreamEnd(SpdyStreamId stream_id) override;
-  void OnStreamPadding(SpdyStreamId stream_id, size_t len) override;
+  void OnStreamEnd(spdy::SpdyStreamId stream_id) override;
+  void OnStreamPadding(spdy::SpdyStreamId stream_id, size_t len) override;
   void OnSettings() override;
   void OnSettingsAck() override;
-  void OnSetting(SpdySettingsId id, uint32_t value) override;
+  void OnSetting(spdy::SpdySettingsId id, uint32_t value) override;
   void OnSettingsEnd() override {}
-  void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override;
-  void OnPushPromise(SpdyStreamId stream_id,
-                     SpdyStreamId promised_stream_id,
-                     SpdyHeaderBlock headers) override;
-  void OnHeaders(SpdyStreamId stream_id,
+  void OnWindowUpdate(spdy::SpdyStreamId stream_id,
+                      int delta_window_size) override;
+  void OnPushPromise(spdy::SpdyStreamId stream_id,
+                     spdy::SpdyStreamId promised_stream_id,
+                     spdy::SpdyHeaderBlock headers) override;
+  void OnHeaders(spdy::SpdyStreamId stream_id,
                  bool has_priority,
                  int weight,
-                 SpdyStreamId parent_stream_id,
+                 spdy::SpdyStreamId parent_stream_id,
                  bool exclusive,
                  bool fin,
-                 SpdyHeaderBlock headers) override;
-  void OnAltSvc(SpdyStreamId stream_id,
+                 spdy::SpdyHeaderBlock headers) override;
+  void OnAltSvc(spdy::SpdyStreamId stream_id,
                 base::StringPiece origin,
-                const SpdyAltSvcWireFormat::AlternativeServiceVector&
+                const spdy::SpdyAltSvcWireFormat::AlternativeServiceVector&
                     altsvc_vector) override;
-  bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) override;
+  bool OnUnknownFrame(spdy::SpdyStreamId stream_id,
+                      uint8_t frame_type) override;
 
-  // SpdyFramerDebugVisitorInterface
-  void OnSendCompressedFrame(SpdyStreamId stream_id,
-                             SpdyFrameType type,
+  // spdy::SpdyFramerDebugVisitorInterface
+  void OnSendCompressedFrame(spdy::SpdyStreamId stream_id,
+                             spdy::SpdyFrameType type,
                              size_t payload_len,
                              size_t frame_len) override;
-  void OnReceiveCompressedFrame(SpdyStreamId stream_id,
-                                SpdyFrameType type,
+  void OnReceiveCompressedFrame(spdy::SpdyStreamId stream_id,
+                                spdy::SpdyFrameType type,
                                 size_t frame_len) override;
 
   // Called when bytes are consumed from a SpdyBuffer for a DATA frame
@@ -907,7 +911,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Returns the next stream to possibly resume, or 0 if the queue is
   // empty.
-  SpdyStreamId PopStreamToPossiblyResume();
+  spdy::SpdyStreamId PopStreamToPossiblyResume();
 
   // Whether Do{Read,Write}Loop() is in the call stack. Useful for
   // making sure we don't destroy ourselves prematurely in that case.
@@ -933,10 +937,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Non-null if there is a Read() pending.
   scoped_refptr<IOBuffer> read_buffer_;
 
-  SpdyStreamId stream_hi_water_mark_;  // The next stream id to use.
+  spdy::SpdyStreamId stream_hi_water_mark_;  // The next stream id to use.
 
   // Used to ensure the server increments push stream ids correctly.
-  SpdyStreamId last_accepted_push_stream_id_;
+  spdy::SpdyStreamId last_accepted_push_stream_id_;
 
   // Queue, for each priority, of pending stream requests that have
   // not yet been satisfied.
@@ -988,7 +992,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // The buffer we're currently writing.
   std::unique_ptr<SpdyBuffer> in_flight_write_;
   // The type of the frame in |in_flight_write_|.
-  SpdyFrameType in_flight_write_frame_type_;
+  spdy::SpdyFrameType in_flight_write_frame_type_;
   // The size of the frame in |in_flight_write_|.
   size_t in_flight_write_frame_size_;
   // The stream to notify when |in_flight_write_| has been written to
@@ -1016,7 +1020,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // (if |enable_sending_initial_data_| is true),
   // and also control SpdySession parameters like initial receive window size
   // and maximum HPACK dynamic table size.
-  const SettingsMap initial_settings_;
+  const spdy::SettingsMap initial_settings_;
 
   // Limits
   size_t max_concurrent_streams_;
@@ -1032,7 +1036,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   int64_t pings_in_flight_;
 
   // This is the next ping_id (unique_id) to be sent in PING frame.
-  SpdyPingId next_ping_id_;
+  spdy::SpdyPingId next_ping_id_;
 
   // This is the last time we have sent a PING.
   base::TimeTicks last_ping_sent_time_;
@@ -1082,7 +1086,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // A queue of stream IDs that have been send-stalled at some point
   // in the past.
-  base::circular_deque<SpdyStreamId> stream_send_unstall_queue_[NUM_PRIORITIES];
+  base::circular_deque<spdy::SpdyStreamId>
+      stream_send_unstall_queue_[NUM_PRIORITIES];
 
   NetLogWithSource net_log_;
 
@@ -1101,7 +1106,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   const bool is_trusted_proxy_;
 
   // True if the server has advertised WebSocket support via
-  // SETTINGS_ENABLE_CONNECT_PROTOCOL, see
+  // spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL, see
   // https://tools.ietf.org/html/draft-ietf-httpbis-h2-websockets-00.
   bool support_websocket_;
 

@@ -80,7 +80,7 @@ void QuicSpdyClientStream::OnPromiseHeaderList(
     const QuicHeaderList& header_list) {
   header_bytes_read_ += frame_len;
   int64_t content_length = -1;
-  SpdyHeaderBlock promise_headers;
+  spdy::SpdyHeaderBlock promise_headers;
   if (!SpdyUtils::CopyAndValidateHeaders(header_list, &content_length,
                                          &promise_headers)) {
     QUIC_DLOG(ERROR) << "Failed to parse promise headers: "
@@ -127,7 +127,7 @@ void QuicSpdyClientStream::OnDataAvailable() {
   }
 }
 
-size_t QuicSpdyClientStream::SendRequest(SpdyHeaderBlock headers,
+size_t QuicSpdyClientStream::SendRequest(spdy::SpdyHeaderBlock headers,
                                          QuicStringPiece body,
                                          bool fin) {
   QuicConnection::ScopedPacketFlusher flusher(

@@ -20,8 +20,11 @@
 
 namespace net {
 struct BidirectionalStreamRequestInfo;
-class SpdyHeaderBlock;
 }  // namespace net
+
+namespace spdy {
+class SpdyHeaderBlock;
+}
 
 namespace cronet {
 
@@ -139,10 +142,11 @@ class CronetBidirectionalStreamAdapter
  private:
   // net::BidirectionalStream::Delegate implementations:
   void OnStreamReady(bool request_headers_sent) override;
-  void OnHeadersReceived(const net::SpdyHeaderBlock& response_headers) override;
+  void OnHeadersReceived(
+      const spdy::SpdyHeaderBlock& response_headers) override;
   void OnDataRead(int bytes_read) override;
   void OnDataSent() override;
-  void OnTrailersReceived(const net::SpdyHeaderBlock& trailers) override;
+  void OnTrailersReceived(const spdy::SpdyHeaderBlock& trailers) override;
   void OnFailed(int error) override;
 
   void StartOnNetworkThread(
@@ -157,7 +161,7 @@ class CronetBidirectionalStreamAdapter
   // Gets headers as a Java array.
   base::android::ScopedJavaLocalRef<jobjectArray> GetHeadersArray(
       JNIEnv* env,
-      const net::SpdyHeaderBlock& header_block);
+      const spdy::SpdyHeaderBlock& header_block);
   // Helper method to report metrics to the Java layer.
   void MaybeReportMetrics();
   CronetURLRequestContextAdapter* const context_;

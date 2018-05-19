@@ -25,10 +25,10 @@ std::string ElideGoAwayDebugDataForNetLog(NetLogCaptureMode capture_mode,
 }
 
 std::unique_ptr<base::ListValue> ElideSpdyHeaderBlockForNetLog(
-    const SpdyHeaderBlock& headers,
+    const spdy::SpdyHeaderBlock& headers,
     NetLogCaptureMode capture_mode) {
   auto headers_list = std::make_unique<base::ListValue>();
-  for (SpdyHeaderBlock::const_iterator it = headers.begin();
+  for (spdy::SpdyHeaderBlock::const_iterator it = headers.begin();
        it != headers.end(); ++it) {
     headers_list->AppendString(
         it->first.as_string() + ": " +
@@ -39,11 +39,11 @@ std::unique_ptr<base::ListValue> ElideSpdyHeaderBlockForNetLog(
 }
 
 std::unique_ptr<base::Value> SpdyHeaderBlockNetLogCallback(
-    const SpdyHeaderBlock* headers,
+    const spdy::SpdyHeaderBlock* headers,
     NetLogCaptureMode capture_mode) {
   auto dict = std::make_unique<base::DictionaryValue>();
   auto headers_dict = std::make_unique<base::DictionaryValue>();
-  for (SpdyHeaderBlock::const_iterator it = headers->begin();
+  for (spdy::SpdyHeaderBlock::const_iterator it = headers->begin();
        it != headers->end(); ++it) {
     headers_dict->SetKey(
         it->first.as_string(),

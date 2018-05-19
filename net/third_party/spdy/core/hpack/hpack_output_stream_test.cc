@@ -8,7 +8,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace spdy {
 
 namespace {
 
@@ -273,4 +273,4 @@ TEST(HpackOutputStreamTest, BoundedTakeString) {
 
 }  // namespace
 
-}  // namespace net
+}  // namespace spdy

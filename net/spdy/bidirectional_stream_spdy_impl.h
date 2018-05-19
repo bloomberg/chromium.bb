@@ -27,11 +27,14 @@ namespace base {
 class Timer;
 }  // namespace base
 
+namespace spdy {
+class SpdyHeaderBlock;
+}  // namespace spdy
+
 namespace net {
 
 class IOBuffer;
 class NetLogWithSource;
-class SpdyHeaderBlock;
 
 class NET_EXPORT_PRIVATE BidirectionalStreamSpdyImpl
     : public BidirectionalStreamImpl,
@@ -63,11 +66,11 @@ class NET_EXPORT_PRIVATE BidirectionalStreamSpdyImpl
   // SpdyStream::Delegate implementation:
   void OnHeadersSent() override;
   void OnHeadersReceived(
-      const SpdyHeaderBlock& response_headers,
-      const SpdyHeaderBlock* pushed_request_headers) override;
+      const spdy::SpdyHeaderBlock& response_headers,
+      const spdy::SpdyHeaderBlock* pushed_request_headers) override;
   void OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) override;
   void OnDataSent() override;
-  void OnTrailers(const SpdyHeaderBlock& trailers) override;
+  void OnTrailers(const spdy::SpdyHeaderBlock& trailers) override;
   void OnClose(int status) override;
   NetLogSource source_dependency() const override;
 

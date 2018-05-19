@@ -8,7 +8,7 @@
 #include "net/third_party/spdy/core/spdy_frame_reader.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 
-namespace net {
+namespace spdy {
 
 SpdyFrameReader::SpdyFrameReader(const char* data, const size_t len)
     : data_(data), len_(len), ofs_(0) {}
@@ -200,4 +200,4 @@ void SpdyFrameReader::OnFailure() {
   ofs_ = len_;
 }
 
-}  // namespace net
+}  // namespace spdy

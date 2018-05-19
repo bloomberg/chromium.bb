@@ -24,7 +24,7 @@
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
 #include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
-namespace net {
+namespace spdy {
 
 namespace {
 
@@ -1297,4 +1297,4 @@ size_t SpdyFramer::EstimateMemoryUsage() const {
   return SpdyEstimateMemoryUsage(hpack_encoder_);
 }
 
-}  // namespace net
+}  // namespace spdy

@@ -15,7 +15,7 @@
 #include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
 
-namespace net {
+namespace spdy {
 
 class HpackEncoder::RepresentationIterator {
  public:
@@ -362,4 +362,4 @@ std::unique_ptr<HpackEncoder::ProgressiveEncoder> HpackEncoder::EncodeHeaderSet(
   return SpdyMakeUnique<Encoderator>(header_set, this);
 }
 
-}  // namespace net
+}  // namespace spdy

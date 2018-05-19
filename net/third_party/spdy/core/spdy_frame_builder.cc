@@ -14,7 +14,7 @@
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/core/zero_copy_output_buffer.h"
 
-namespace net {
+namespace spdy {
 
 SpdyFrameBuilder::SpdyFrameBuilder(size_t size)
     : buffer_(new char[size]), capacity_(size), length_(0), offset_(0) {}
@@ -180,4 +180,4 @@ bool SpdyFrameBuilder::CanWrite(size_t length) const {
   return true;
 }
 
-}  // namespace net
+}  // namespace spdy

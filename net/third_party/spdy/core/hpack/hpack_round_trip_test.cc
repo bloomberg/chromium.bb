@@ -14,7 +14,7 @@
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace spdy {
 namespace test {
 
 namespace {
@@ -226,4 +226,4 @@ TEST_P(HpackRoundTripTest, RandomizedExamples) {
 }  // namespace
 
 }  // namespace test
-}  // namespace net
+}  // namespace spdy

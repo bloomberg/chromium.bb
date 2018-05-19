@@ -21,18 +21,19 @@ namespace {
 // Bound on largest frame any SPDY version has allowed.
 const size_t kMaxSpdyFrameSize = 0x00ffffff;
 
-// Makes a SpdySerializedFrame with |size| bytes of data copied from |data|.
-// |data| must be non-NULL and |size| must be positive.
-std::unique_ptr<SpdySerializedFrame> MakeSpdySerializedFrame(const char* data,
-                                                             size_t size) {
+// Makes a spdy::SpdySerializedFrame with |size| bytes of data copied from
+// |data|. |data| must be non-NULL and |size| must be positive.
+std::unique_ptr<spdy::SpdySerializedFrame> MakeSpdySerializedFrame(
+    const char* data,
+    size_t size) {
   DCHECK(data);
   CHECK_GT(size, 0u);
   CHECK_LE(size, kMaxSpdyFrameSize);
 
   auto frame_data = std::make_unique<char[]>(size);
   std::memcpy(frame_data.get(), data, size);
-  return std::make_unique<SpdySerializedFrame>(frame_data.release(), size,
-                                               true /* owns_buffer */);
+  return std::make_unique<spdy::SpdySerializedFrame>(frame_data.release(), size,
+                                                     true /* owns_buffer */);
 }
 
 }  // namespace
@@ -58,7 +59,7 @@ class SpdyBuffer::SharedFrameIOBuffer : public IOBuffer {
   DISALLOW_COPY_AND_ASSIGN(SharedFrameIOBuffer);
 };
 
-SpdyBuffer::SpdyBuffer(std::unique_ptr<SpdySerializedFrame> frame)
+SpdyBuffer::SpdyBuffer(std::unique_ptr<spdy::SpdySerializedFrame> frame)
     : shared_frame_(new SharedFrame(std::move(frame))), offset_(0) {}
 
 // The given data may not be strictly a SPDY frame; we (ab)use

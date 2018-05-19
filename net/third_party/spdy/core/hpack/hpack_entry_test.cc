@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace spdy {
 
 namespace {
 
@@ -119,4 +119,4 @@ TEST_F(HpackEntryTest, IndexUpdate) {
 
 }  // namespace
 
-}  // namespace net
+}  // namespace spdy

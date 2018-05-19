@@ -22,14 +22,15 @@ void RecordAltSvcFormat(AltSvcFormat format) {
 
 };  // namespace
 
-SpdyPriority ConvertRequestPriorityToQuicPriority(
+spdy::SpdyPriority ConvertRequestPriorityToQuicPriority(
     const RequestPriority priority) {
   DCHECK_GE(priority, MINIMUM_PRIORITY);
   DCHECK_LE(priority, MAXIMUM_PRIORITY);
-  return static_cast<SpdyPriority>(HIGHEST - priority);
+  return static_cast<spdy::SpdyPriority>(HIGHEST - priority);
 }
 
-RequestPriority ConvertQuicPriorityToRequestPriority(SpdyPriority priority) {
+RequestPriority ConvertQuicPriorityToRequestPriority(
+    spdy::SpdyPriority priority) {
   // Handle invalid values gracefully.
   return (priority >= 5) ? IDLE
                          : static_cast<RequestPriority>(HIGHEST - priority);
@@ -37,8 +38,8 @@ RequestPriority ConvertQuicPriorityToRequestPriority(SpdyPriority priority) {
 
 std::unique_ptr<base::Value> QuicRequestNetLogCallback(
     QuicStreamId stream_id,
-    const SpdyHeaderBlock* headers,
-    SpdyPriority priority,
+    const spdy::SpdyHeaderBlock* headers,
+    spdy::SpdyPriority priority,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(
       static_cast<base::DictionaryValue*>(
@@ -49,7 +50,7 @@ std::unique_ptr<base::Value> QuicRequestNetLogCallback(
 }
 
 QuicTransportVersionVector FilterSupportedAltSvcVersions(
-    const SpdyAltSvcWireFormat::AlternativeService& quic_alt_svc,
+    const spdy::SpdyAltSvcWireFormat::AlternativeService& quic_alt_svc,
     const QuicTransportVersionVector& supported_versions,
     bool support_ietf_format_quic_altsvc) {
   QuicTransportVersionVector supported_alt_svc_versions;

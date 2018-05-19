@@ -411,7 +411,7 @@ QuicStream* QuartcSession::CreateIncomingDynamicStream(QuicStreamId id) {
 
 std::unique_ptr<QuartcStream> QuartcSession::CreateDataStream(
     QuicStreamId id,
-    SpdyPriority priority) {
+    spdy::SpdyPriority priority) {
   if (crypto_stream_ == nullptr || !crypto_stream_->encryption_established()) {
     // Encryption not active so no stream created
     return nullptr;

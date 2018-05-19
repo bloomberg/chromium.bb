@@ -18,14 +18,14 @@ class QuicBackendResponse {
   // comprising a response for the push request.
   struct ServerPushInfo {
     ServerPushInfo(QuicUrl request_url,
-                   SpdyHeaderBlock headers,
-                   SpdyPriority priority,
+                   spdy::SpdyHeaderBlock headers,
+                   spdy::SpdyPriority priority,
                    QuicString body);
     ServerPushInfo(const ServerPushInfo& other);
 
     QuicUrl request_url;
-    SpdyHeaderBlock headers;
-    SpdyPriority priority;
+    spdy::SpdyHeaderBlock headers;
+    spdy::SpdyPriority priority;
     QuicString body;
   };
 
@@ -45,16 +45,18 @@ class QuicBackendResponse {
   ~QuicBackendResponse();
 
   SpecialResponseType response_type() const { return response_type_; }
-  const SpdyHeaderBlock& headers() const { return headers_; }
-  const SpdyHeaderBlock& trailers() const { return trailers_; }
+  const spdy::SpdyHeaderBlock& headers() const { return headers_; }
+  const spdy::SpdyHeaderBlock& trailers() const { return trailers_; }
   const QuicStringPiece body() const { return QuicStringPiece(body_); }
 
   void set_response_type(SpecialResponseType response_type) {
     response_type_ = response_type;
   }
 
-  void set_headers(SpdyHeaderBlock headers) { headers_ = std::move(headers); }
-  void set_trailers(SpdyHeaderBlock trailers) {
+  void set_headers(spdy::SpdyHeaderBlock headers) {
+    headers_ = std::move(headers);
+  }
+  void set_trailers(spdy::SpdyHeaderBlock trailers) {
     trailers_ = std::move(trailers);
   }
   void set_body(QuicStringPiece body) {
@@ -63,8 +65,8 @@ class QuicBackendResponse {
 
  private:
   SpecialResponseType response_type_;
-  SpdyHeaderBlock headers_;
-  SpdyHeaderBlock trailers_;
+  spdy::SpdyHeaderBlock headers_;
+  spdy::SpdyHeaderBlock trailers_;
   QuicString body_;
 };
 

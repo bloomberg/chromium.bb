@@ -64,7 +64,7 @@ class NET_EXPORT SpdySessionPool
                   bool enable_ping_based_connection_checking,
                   bool support_ietf_format_quic_altsvc,
                   size_t session_max_recv_window_size,
-                  const SettingsMap& initial_settings,
+                  const spdy::SettingsMap& initial_settings,
                   SpdySessionPool::TimeFunc time_func);
   ~SpdySessionPool() override;
 
@@ -273,7 +273,7 @@ class NET_EXPORT SpdySessionPool
   // (if |enable_sending_initial_data_| is true),
   // and also control SpdySession parameters like initial receive window size
   // and maximum HPACK dynamic table size.
-  const SettingsMap initial_settings_;
+  const spdy::SettingsMap initial_settings_;
 
   // TODO(xunjieli): Merge these two.
   SpdySessionRequestMap spdy_session_request_map_;

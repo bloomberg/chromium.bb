@@ -11,7 +11,7 @@
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 
-namespace net {
+namespace spdy {
 
 // Abstract superclass for classes that decide which SPDY or HTTP/2 stream to
 // write next. Concrete subclasses implement various scheduling policies:
@@ -146,6 +146,6 @@ class SPDY_EXPORT_PRIVATE WriteScheduler {
   virtual size_t NumReadyStreams() const = 0;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_WRITE_SCHEDULER_H_

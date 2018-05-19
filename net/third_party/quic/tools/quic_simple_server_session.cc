@@ -67,13 +67,13 @@ void QuicSimpleServerSession::PromisePushResources(
     const QuicString& request_url,
     const std::list<QuicBackendResponse::ServerPushInfo>& resources,
     QuicStreamId original_stream_id,
-    const SpdyHeaderBlock& original_request_headers) {
+    const spdy::SpdyHeaderBlock& original_request_headers) {
   if (!server_push_enabled()) {
     return;
   }
 
   for (QuicBackendResponse::ServerPushInfo resource : resources) {
-    SpdyHeaderBlock headers = SynthesizePushRequestHeaders(
+    spdy::SpdyHeaderBlock headers = SynthesizePushRequestHeaders(
         request_url, resource, original_request_headers);
     highest_promised_stream_id_ += 2;
     SendPushPromise(original_stream_id, highest_promised_stream_id_,
@@ -145,13 +145,13 @@ void QuicSimpleServerSession::HandleRstOnValidNonexistentStream(
   }
 }
 
-SpdyHeaderBlock QuicSimpleServerSession::SynthesizePushRequestHeaders(
+spdy::SpdyHeaderBlock QuicSimpleServerSession::SynthesizePushRequestHeaders(
     QuicString request_url,
     QuicBackendResponse::ServerPushInfo resource,
-    const SpdyHeaderBlock& original_request_headers) {
+    const spdy::SpdyHeaderBlock& original_request_headers) {
   QuicUrl push_request_url = resource.request_url;
 
-  SpdyHeaderBlock spdy_headers = original_request_headers.Clone();
+  spdy::SpdyHeaderBlock spdy_headers = original_request_headers.Clone();
   // :authority could be different from original request.
   spdy_headers[":authority"] = push_request_url.host();
   spdy_headers[":path"] = push_request_url.path();
@@ -171,7 +171,7 @@ SpdyHeaderBlock QuicSimpleServerSession::SynthesizePushRequestHeaders(
 
 void QuicSimpleServerSession::SendPushPromise(QuicStreamId original_stream_id,
                                               QuicStreamId promised_stream_id,
-                                              SpdyHeaderBlock headers) {
+                                              spdy::SpdyHeaderBlock headers) {
   QUIC_DLOG(INFO) << "stream " << original_stream_id
                   << " send PUSH_PROMISE for promised stream "
                   << promised_stream_id;
@@ -198,7 +198,8 @@ void QuicSimpleServerSession::HandlePromisedPushRequests() {
 
     promised_stream->SetPriority(promised_info.priority);
 
-    SpdyHeaderBlock request_headers(std::move(promised_info.request_headers));
+    spdy::SpdyHeaderBlock request_headers(
+        std::move(promised_info.request_headers));
 
     promised_streams_.pop_front();
     promised_stream->PushResponse(std::move(request_headers));

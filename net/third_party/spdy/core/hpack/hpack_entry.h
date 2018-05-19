@@ -15,7 +15,7 @@
 // All section references below are to
 // http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-08
 
-namespace net {
+namespace spdy {
 
 // A structure for an entry in the static table (3.3.1)
 // and the header table (3.3.2).
@@ -104,6 +104,6 @@ class SPDY_EXPORT_PRIVATE HpackEntry {
   int64_t time_added_;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_ENTRY_H_

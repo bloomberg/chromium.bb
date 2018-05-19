@@ -74,7 +74,7 @@ std::string WebSocketStandardRequestWithCookies(
 std::string WebSocketStandardResponse(const std::string& extra_headers);
 
 // Generates a handshake request header block when using WebSockets over HTTP/2.
-SpdyHeaderBlock WebSocketHttp2Request(
+spdy::SpdyHeaderBlock WebSocketHttp2Request(
     const std::string& path,
     const std::string& authority,
     const std::string& origin,
@@ -82,7 +82,7 @@ SpdyHeaderBlock WebSocketHttp2Request(
 
 // Generates a handshake response header block when using WebSockets over
 // HTTP/2.
-SpdyHeaderBlock WebSocketHttp2Response(
+spdy::SpdyHeaderBlock WebSocketHttp2Response(
     const WebSocketExtraHeaders& extra_headers);
 
 // This class provides a convenient way to construct a MockClientSocketFactory

@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/spdy_utils.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-using net::SpdyHeaderBlock;
+using spdy::SpdyHeaderBlock;
 
 namespace net {
 
@@ -28,7 +28,7 @@ QuicClientPromisedInfo* QuicClientPushPromiseIndex::GetPromised(
 }
 
 QuicAsyncStatus QuicClientPushPromiseIndex::Try(
-    const SpdyHeaderBlock& request,
+    const spdy::SpdyHeaderBlock& request,
     QuicClientPushPromiseIndex::Delegate* delegate,
     TryHandle** handle) {
   QuicString url(SpdyUtils::GetPromisedUrlFromHeaders(request));

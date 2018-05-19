@@ -92,14 +92,14 @@ class SessionOpeningDelegate : public SpdyStream::Delegate {
   void OnHeadersSent() override {}
 
   void OnHeadersReceived(
-      const SpdyHeaderBlock& response_headers,
-      const SpdyHeaderBlock* pushed_request_headers) override {}
+      const spdy::SpdyHeaderBlock& response_headers,
+      const spdy::SpdyHeaderBlock* pushed_request_headers) override {}
 
   void OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) override {}
 
   void OnDataSent() override {}
 
-  void OnTrailers(const SpdyHeaderBlock& trailers) override {}
+  void OnTrailers(const spdy::SpdyHeaderBlock& trailers) override {}
 
   void OnClose(int status) override {
     ignore_result(CreateFakeSpdySession(spdy_session_pool_, key_));
@@ -698,7 +698,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
-  SpdySerializedFrame req(
+  spdy::SpdySerializedFrame req(
       spdy_util.ConstructSpdyGet("http://www.example.org", 1, MEDIUM));
   MockWrite writes[] = {CreateMockWrite(req, 1)};
 
@@ -724,7 +724,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
   test::StreamDelegateDoNothing delegateA(spdy_streamA);
   spdy_streamA->SetDelegate(&delegateA);
 
-  SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(urlA.spec()));
+  spdy::SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(urlA.spec()));
   spdy_streamA->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
 
   base::RunLoop().RunUntilIdle();  // Allow headers to write.
@@ -808,7 +808,8 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
 TEST_F(SpdySessionPoolTest, HandleIPAddressChangeThenShutdown) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
   SpdyTestUtil spdy_util;
-  SpdySerializedFrame req(spdy_util.ConstructSpdyGet(kDefaultUrl, 1, MEDIUM));
+  spdy::SpdySerializedFrame req(
+      spdy_util.ConstructSpdyGet(kDefaultUrl, 1, MEDIUM));
   MockWrite writes[] = {CreateMockWrite(req, 1)};
   StaticSocketDataProvider data(reads, writes);
 
@@ -831,7 +832,7 @@ TEST_F(SpdySessionPoolTest, HandleIPAddressChangeThenShutdown) {
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
-  SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
+  spdy::SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
   spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
 
   base::RunLoop().RunUntilIdle();
@@ -858,12 +859,13 @@ TEST_F(SpdySessionPoolTest, HandleIPAddressChangeThenShutdown) {
 // Regression test for https://crbug.com/789791.
 TEST_F(SpdySessionPoolTest, HandleGracefulGoawayThenShutdown) {
   SpdyTestUtil spdy_util;
-  SpdySerializedFrame goaway(spdy_util.ConstructSpdyGoAway(
-      0x7fffffff, ERROR_CODE_NO_ERROR, "Graceful shutdown."));
+  spdy::SpdySerializedFrame goaway(spdy_util.ConstructSpdyGoAway(
+      0x7fffffff, spdy::ERROR_CODE_NO_ERROR, "Graceful shutdown."));
   MockRead reads[] = {
       MockRead(ASYNC, ERR_IO_PENDING, 1), CreateMockRead(goaway, 2),
       MockRead(ASYNC, ERR_IO_PENDING, 3), MockRead(ASYNC, OK, 4)};
-  SpdySerializedFrame req(spdy_util.ConstructSpdyGet(kDefaultUrl, 1, MEDIUM));
+  spdy::SpdySerializedFrame req(
+      spdy_util.ConstructSpdyGet(kDefaultUrl, 1, MEDIUM));
   MockWrite writes[] = {CreateMockWrite(req, 0)};
   SequencedSocketData data(reads, writes);
 
@@ -886,7 +888,7 @@ TEST_F(SpdySessionPoolTest, HandleGracefulGoawayThenShutdown) {
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
-  SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
+  spdy::SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
   spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
 
   // Send headers.
@@ -1001,16 +1003,19 @@ TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebsocket) {
 
   SpdyTestUtil spdy_util;
 
-  SpdySerializedFrame req(spdy_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
-  SpdySerializedFrame settings_ack(spdy_util.ConstructSpdySettingsAck());
+  spdy::SpdySerializedFrame req(
+      spdy_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
+  spdy::SpdySerializedFrame settings_ack(spdy_util.ConstructSpdySettingsAck());
   MockWrite writes[] = {CreateMockWrite(req, 0),
                         CreateMockWrite(settings_ack, 2)};
 
-  SettingsMap settings;
-  settings[SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
-  SpdySerializedFrame settings_frame(spdy_util.ConstructSpdySettings(settings));
-  SpdySerializedFrame resp(spdy_util.ConstructSpdyGetReply(nullptr, 0, 1));
-  SpdySerializedFrame body(spdy_util.ConstructSpdyDataFrame(1, true));
+  spdy::SettingsMap settings;
+  settings[spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
+  spdy::SpdySerializedFrame settings_frame(
+      spdy_util.ConstructSpdySettings(settings));
+  spdy::SpdySerializedFrame resp(
+      spdy_util.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body(spdy_util.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {CreateMockRead(settings_frame, 1),
                       CreateMockRead(resp, 3), CreateMockRead(body, 4),
                       MockRead(ASYNC, ERR_IO_PENDING, 5),
@@ -1046,7 +1051,7 @@ TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebsocket) {
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
-  SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
+  spdy::SpdyHeaderBlock headers(spdy_util.ConstructGetHeaderBlock(url.spec()));
   spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
 
   base::RunLoop().RunUntilIdle();

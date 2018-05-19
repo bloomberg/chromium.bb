@@ -95,7 +95,7 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
 
   // Callback for stream_->ReadInitialHeaders()
   void OnReadResponseHeadersComplete(int result);
-  int ProcessResponseHeaders(const SpdyHeaderBlock& headers);
+  int ProcessResponseHeaders(const spdy::SpdyHeaderBlock& headers);
 
   int DoLoop(int last_io_result);
   int DoGenerateAuthToken();
@@ -130,7 +130,7 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   HttpRequestInfo request_;
   HttpResponseInfo response_;
 
-  SpdyHeaderBlock response_header_block_;
+  spdy::SpdyHeaderBlock response_header_block_;
 
   // The hostname and port of the endpoint.  This is not necessarily the one
   // specified by the URL, due to Alternate-Protocol or fixed testing ports.

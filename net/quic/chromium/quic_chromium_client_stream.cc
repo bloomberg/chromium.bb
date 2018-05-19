@@ -142,7 +142,7 @@ void QuicChromiumClientStream::Handle::InvokeCallbacksOnClose(int error) {
 }
 
 int QuicChromiumClientStream::Handle::ReadInitialHeaders(
-    SpdyHeaderBlock* header_block,
+    spdy::SpdyHeaderBlock* header_block,
     const CompletionCallback& callback) {
   ScopedBoolSaver saver(&may_invoke_callbacks_, false);
   if (!stream_)
@@ -179,7 +179,7 @@ int QuicChromiumClientStream::Handle::ReadBody(
 }
 
 int QuicChromiumClientStream::Handle::ReadTrailingHeaders(
-    SpdyHeaderBlock* header_block,
+    spdy::SpdyHeaderBlock* header_block,
     const CompletionCallback& callback) {
   ScopedBoolSaver saver(&may_invoke_callbacks_, false);
   if (!stream_)
@@ -195,7 +195,7 @@ int QuicChromiumClientStream::Handle::ReadTrailingHeaders(
 }
 
 int QuicChromiumClientStream::Handle::WriteHeaders(
-    SpdyHeaderBlock header_block,
+    spdy::SpdyHeaderBlock header_block,
     bool fin,
     QuicReferenceCountedPointer<QuicAckListenerInterface>
         ack_notifier_delegate) {
@@ -253,7 +253,8 @@ void QuicChromiumClientStream::Handle::DisableConnectionMigration() {
     stream_->DisableConnectionMigration();
 }
 
-void QuicChromiumClientStream::Handle::SetPriority(SpdyPriority priority) {
+void QuicChromiumClientStream::Handle::SetPriority(
+    spdy::SpdyPriority priority) {
   if (stream_)
     stream_->SetPriority(priority);
 }
@@ -419,7 +420,7 @@ void QuicChromiumClientStream::OnInitialHeadersComplete(
     const QuicHeaderList& header_list) {
   QuicSpdyStream::OnInitialHeadersComplete(fin, frame_len, header_list);
 
-  SpdyHeaderBlock header_block;
+  spdy::SpdyHeaderBlock header_block;
   int64_t length = -1;
   if (!SpdyUtils::CopyAndValidateHeaders(header_list, &length, &header_block)) {
     DLOG(ERROR) << "Failed to parse header list: " << header_list.DebugString();
@@ -457,7 +458,7 @@ void QuicChromiumClientStream::OnPromiseHeaderList(
     QuicStreamId promised_id,
     size_t frame_len,
     const QuicHeaderList& header_list) {
-  SpdyHeaderBlock promise_headers;
+  spdy::SpdyHeaderBlock promise_headers;
   int64_t content_length = -1;
   if (!SpdyUtils::CopyAndValidateHeaders(header_list, &content_length,
                                          &promise_headers)) {
@@ -505,7 +506,7 @@ void QuicChromiumClientStream::OnCanWrite() {
 }
 
 size_t QuicChromiumClientStream::WriteHeaders(
-    SpdyHeaderBlock header_block,
+    spdy::SpdyHeaderBlock header_block,
     bool fin,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   if (!session()->IsCryptoHandshakeConfirmed()) {
@@ -623,8 +624,9 @@ void QuicChromiumClientStream::NotifyHandleOfTrailingHeadersAvailable() {
   handle_->OnTrailingHeadersAvailable();
 }
 
-bool QuicChromiumClientStream::DeliverInitialHeaders(SpdyHeaderBlock* headers,
-                                                     int* frame_len) {
+bool QuicChromiumClientStream::DeliverInitialHeaders(
+    spdy::SpdyHeaderBlock* headers,
+    int* frame_len) {
   if (initial_headers_.empty())
     return false;
 
@@ -638,8 +640,9 @@ bool QuicChromiumClientStream::DeliverInitialHeaders(SpdyHeaderBlock* headers,
   return true;
 }
 
-bool QuicChromiumClientStream::DeliverTrailingHeaders(SpdyHeaderBlock* headers,
-                                                      int* frame_len) {
+bool QuicChromiumClientStream::DeliverTrailingHeaders(
+    spdy::SpdyHeaderBlock* headers,
+    int* frame_len) {
   if (received_trailers().empty())
     return false;
 

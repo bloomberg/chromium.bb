@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace net {
+namespace spdy {
 
 bool SpdyHexDecodeToUInt32Impl(SpdyStringPiece data, uint32_t* out) {
   if (data.empty() || data.size() > 8u)
@@ -17,4 +17,4 @@ bool SpdyHexDecodeToUInt32Impl(SpdyStringPiece data, uint32_t* out) {
   return base::HexStringToUInt(data_padded, out);
 }
 
-}  // namespace net
+}  // namespace spdy

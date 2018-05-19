@@ -114,7 +114,8 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
     loop_->Quit();
   }
 
-  void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override {
+  void OnHeadersReceived(
+      const spdy::SpdyHeaderBlock& response_headers) override {
     CHECK(!on_failed_called_);
     CHECK(!not_expect_callback_);
 
@@ -144,7 +145,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
     loop_->Quit();
   }
 
-  void OnTrailersReceived(const SpdyHeaderBlock& trailers) override {
+  void OnTrailersReceived(const spdy::SpdyHeaderBlock& trailers) override {
     CHECK(!on_failed_called_);
     CHECK(!not_expect_callback_);
 
@@ -274,8 +275,10 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   // Const getters for internal states.
   const std::string& data_received() const { return data_received_; }
   int error() const { return error_; }
-  const SpdyHeaderBlock& response_headers() const { return response_headers_; }
-  const SpdyHeaderBlock& trailers() const { return trailers_; }
+  const spdy::SpdyHeaderBlock& response_headers() const {
+    return response_headers_;
+  }
+  const spdy::SpdyHeaderBlock& trailers() const { return trailers_; }
   int on_data_read_count() const { return on_data_read_count_; }
   int on_data_sent_count() const { return on_data_sent_count_; }
   bool on_failed_called() const { return on_failed_called_; }
@@ -292,8 +295,8 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   std::unique_ptr<base::Timer> timer_;
   std::string data_received_;
   std::unique_ptr<base::RunLoop> loop_;
-  SpdyHeaderBlock response_headers_;
-  SpdyHeaderBlock trailers_;
+  spdy::SpdyHeaderBlock response_headers_;
+  spdy::SpdyHeaderBlock trailers_;
   NextProto next_proto_;
   int64_t received_bytes_;
   int64_t sent_bytes_;
@@ -337,10 +340,11 @@ class DeleteStreamDelegate : public TestDelegateBase {
       DeleteStream();
   }
 
-  void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override {
+  void OnHeadersReceived(
+      const spdy::SpdyHeaderBlock& response_headers) override {
     // Make a copy of |response_headers| before the stream is deleted, since
     // the headers are owned by the stream.
-    SpdyHeaderBlock headers_copy = response_headers.Clone();
+    spdy::SpdyHeaderBlock headers_copy = response_headers.Clone();
     if (phase_ == ON_HEADERS_RECEIVED)
       DeleteStream();
     TestDelegateBase::OnHeadersReceived(headers_copy);
@@ -355,12 +359,12 @@ class DeleteStreamDelegate : public TestDelegateBase {
     TestDelegateBase::OnDataRead(bytes_read);
   }
 
-  void OnTrailersReceived(const SpdyHeaderBlock& trailers) override {
+  void OnTrailersReceived(const spdy::SpdyHeaderBlock& trailers) override {
     DCHECK_NE(ON_HEADERS_RECEIVED, phase_);
     DCHECK_NE(ON_DATA_READ, phase_);
     // Make a copy of |response_headers| before the stream is deleted, since
     // the headers are owned by the stream.
-    SpdyHeaderBlock trailers_copy = trailers.Clone();
+    spdy::SpdyHeaderBlock trailers_copy = trailers.Clone();
     if (phase_ == ON_TRAILERS_RECEIVED)
       DeleteStream();
     TestDelegateBase::OnTrailersReceived(trailers_copy);
@@ -529,7 +533,8 @@ class BidirectionalStreamQuicImplTest
     request_headers_ = client_maker_.GetRequestHeaders(method, "http", path);
   }
 
-  SpdyHeaderBlock ConstructResponseHeaders(const std::string& response_code) {
+  spdy::SpdyHeaderBlock ConstructResponseHeaders(
+      const std::string& response_code) {
     return server_maker_.GetResponseHeaders(response_code);
   }
 
@@ -603,7 +608,7 @@ class BidirectionalStreamQuicImplTest
       QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset) {
-    SpdyPriority priority =
+    spdy::SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(request_priority);
     std::unique_ptr<QuicReceivedPacket> packet(
         client_maker_.MakeRequestHeadersPacket(
@@ -623,7 +628,7 @@ class BidirectionalStreamQuicImplTest
       QuicStreamOffset* header_stream_offset,
       size_t* spdy_headers_frame_length,
       const std::vector<std::string>& data) {
-    SpdyPriority priority =
+    spdy::SpdyPriority priority =
         ConvertRequestPriorityToQuicPriority(request_priority);
     std::unique_ptr<QuicReceivedPacket> packet(
         client_maker_.MakeRequestHeadersAndMultipleDataFramesPacket(
@@ -638,7 +643,7 @@ class BidirectionalStreamQuicImplTest
   std::unique_ptr<QuicReceivedPacket> ConstructResponseHeadersPacket(
       QuicPacketNumber packet_number,
       bool fin,
-      SpdyHeaderBlock response_headers,
+      spdy::SpdyHeaderBlock response_headers,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset) {
     return ConstructResponseHeadersPacketInner(
@@ -650,7 +655,7 @@ class BidirectionalStreamQuicImplTest
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool fin,
-      SpdyHeaderBlock response_headers,
+      spdy::SpdyHeaderBlock response_headers,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset) {
     return server_maker_.MakeResponseHeadersPacket(
@@ -661,7 +666,7 @@ class BidirectionalStreamQuicImplTest
   std::unique_ptr<QuicReceivedPacket> ConstructResponseTrailersPacket(
       QuicPacketNumber packet_number,
       bool fin,
-      SpdyHeaderBlock trailers,
+      spdy::SpdyHeaderBlock trailers,
       size_t* spdy_headers_frame_length,
       QuicStreamOffset* offset) {
     return server_maker_.MakeResponseHeadersPacket(
@@ -793,7 +798,7 @@ class BidirectionalStreamQuicImplTest
   HttpRequestHeaders headers_;
   HttpResponseInfo response_;
   scoped_refptr<IOBufferWithSize> read_buffer_;
-  SpdyHeaderBlock request_headers_;
+  spdy::SpdyHeaderBlock request_headers_;
   const QuicConnectionId connection_id_;
   const QuicStreamId stream_id_;
   QuicTestPacketMaker client_maker_;
@@ -848,7 +853,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
 
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
@@ -874,7 +879,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   TestCompletionCallback cb2;
   EXPECT_THAT(delegate->ReadData(cb2.callback()), IsError(ERR_IO_PENDING));
 
-  SpdyHeaderBlock trailers;
+  spdy::SpdyHeaderBlock trailers;
   size_t spdy_trailers_frame_length;
   trailers["foo"] = "bar";
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
@@ -1045,7 +1050,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
   ProcessPacket(ConstructResponseHeadersPacket(
@@ -1074,7 +1079,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   delegate->WaitUntilNextCallback(kOnDataSent);
 
   size_t spdy_trailers_frame_length;
-  SpdyHeaderBlock trailers;
+  spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   // Server sends trailers.
@@ -1146,7 +1151,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
   ProcessPacket(ConstructResponseHeadersPacket(
@@ -1172,7 +1177,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   delegate->WaitUntilNextCallback(kOnDataSent);
 
   size_t spdy_trailers_frame_length;
-  SpdyHeaderBlock trailers;
+  spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   // Server sends trailers.
@@ -1247,7 +1252,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
   ProcessPacket(ConstructResponseHeadersPacket(
@@ -1276,7 +1281,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   delegate->WaitUntilNextCallback(kOnDataSent);
 
   size_t spdy_trailers_frame_length;
-  SpdyHeaderBlock trailers;
+  spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   // Server sends trailers.
@@ -1411,7 +1416,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
   ProcessPacket(ConstructResponseHeadersPacket(
@@ -1431,7 +1436,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   EXPECT_EQ(static_cast<int>(strlen(kResponseBody)), cb.WaitForResult());
 
   size_t spdy_trailers_frame_length;
-  SpdyHeaderBlock trailers;
+  spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   // Server sends trailers.
@@ -1494,7 +1499,7 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
   ProcessPacket(ConstructResponseHeadersPacket(
@@ -1514,7 +1519,7 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
   EXPECT_EQ(static_cast<int>(strlen(kResponseBody)), cb.WaitForResult());
 
   size_t spdy_trailers_frame_length;
-  SpdyHeaderBlock trailers;
+  spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   // Server sends trailers.
@@ -1571,7 +1576,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
   size_t spdy_response_headers_frame_length;
   ProcessPacket(
       ConstructResponseHeadersPacket(2, !kFin, std::move(response_headers),
@@ -1707,7 +1712,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
 
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
@@ -1766,7 +1771,7 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
 
   size_t spdy_response_headers_frame_length;
   QuicStreamOffset offset = 0;
@@ -1932,7 +1937,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamAfterReadData) {
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
   size_t spdy_response_headers_frame_length;
   ProcessPacket(
       ConstructResponseHeadersPacket(2, !kFin, std::move(response_headers),
@@ -1988,7 +1993,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnHeadersReceived) {
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
 
   size_t spdy_response_headers_frame_length;
   ProcessPacket(ConstructResponseHeadersPacket(
@@ -2035,7 +2040,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
 
   size_t spdy_response_headers_frame_length;
   ProcessPacket(ConstructResponseHeadersPacket(
@@ -2100,7 +2105,7 @@ TEST_P(BidirectionalStreamQuicImplTest, AsyncFinRead) {
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
 
   size_t spdy_response_headers_frame_length;
   ProcessPacket(ConstructResponseHeadersPacket(
@@ -2159,7 +2164,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   ProcessPacket(ConstructServerAckPacket(1, 0, 0, 0));
 
   // Server sends the response headers.
-  SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+  spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
 
   QuicStreamOffset offset = 0;
   size_t spdy_response_headers_frame_length;
@@ -2183,7 +2188,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   EXPECT_EQ(std::string(kResponseBody), delegate->data_received());
 
   size_t spdy_trailers_frame_length;
-  SpdyHeaderBlock trailers;
+  spdy::SpdyHeaderBlock trailers;
   trailers["foo"] = "bar";
   trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   // Server sends trailers.

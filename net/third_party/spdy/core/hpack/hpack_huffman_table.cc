@@ -13,7 +13,7 @@
 #include "net/third_party/spdy/core/hpack/hpack_output_stream.h"
 #include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 
-namespace net {
+namespace spdy {
 
 namespace {
 
@@ -148,4 +148,4 @@ size_t HpackHuffmanTable::EstimateMemoryUsage() const {
          SpdyEstimateMemoryUsage(length_by_id_);
 }
 
-}  // namespace net
+}  // namespace spdy

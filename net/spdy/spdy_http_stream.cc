@@ -35,11 +35,11 @@ namespace net {
 namespace {
 
 bool ValidatePushedHeaders(const HttpRequestInfo& request_info,
-                           const SpdyHeaderBlock& pushed_request_headers,
-                           const SpdyHeaderBlock& pushed_response_headers,
+                           const spdy::SpdyHeaderBlock& pushed_request_headers,
+                           const spdy::SpdyHeaderBlock& pushed_response_headers,
                            const HttpResponseInfo& pushed_response_info) {
-  SpdyHeaderBlock::const_iterator status_it =
-      pushed_response_headers.find(kHttp2StatusHeader);
+  spdy::SpdyHeaderBlock::const_iterator status_it =
+      pushed_response_headers.find(spdy::kHttp2StatusHeader);
   DCHECK(status_it != pushed_response_headers.end());
   // 206 Partial Content and 416 Requested Range Not Satisfiable are range
   // responses.
@@ -52,7 +52,7 @@ bool ValidatePushedHeaders(const HttpRequestInfo& request_info,
                                 SpdyPushedStreamFate::kClientRequestNotRange);
       return false;
     }
-    SpdyHeaderBlock::const_iterator pushed_request_range_it =
+    spdy::SpdyHeaderBlock::const_iterator pushed_request_range_it =
         pushed_request_headers.find("range");
     if (pushed_request_range_it == pushed_request_headers.end()) {
       // Pushed request is not a range request.
@@ -97,7 +97,7 @@ bool ValidatePushedHeaders(const HttpRequestInfo& request_info,
 const size_t SpdyHttpStream::kRequestBodyBufferSize = 1 << 14;  // 16KB
 
 SpdyHttpStream::SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
-                               SpdyStreamId pushed_stream_id,
+                               spdy::SpdyStreamId pushed_stream_id,
                                NetLogSource source_dependency)
     : MultiplexedHttpStream(
           std::make_unique<MultiplexedSessionHandle>(spdy_session)),
@@ -334,7 +334,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     return ERR_IO_PENDING;
   }
 
-  SpdyHeaderBlock headers;
+  spdy::SpdyHeaderBlock headers;
   CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers, &headers);
   stream_->net_log().AddEvent(
       NetLogEventType::HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS,
@@ -369,8 +369,8 @@ void SpdyHttpStream::OnHeadersSent() {
 }
 
 void SpdyHttpStream::OnHeadersReceived(
-    const SpdyHeaderBlock& response_headers,
-    const SpdyHeaderBlock* pushed_request_headers) {
+    const spdy::SpdyHeaderBlock& response_headers,
+    const spdy::SpdyHeaderBlock* pushed_request_headers) {
   DCHECK(!response_headers_complete_);
   response_headers_complete_ = true;
 
@@ -441,7 +441,7 @@ void SpdyHttpStream::OnDataSent() {
 }
 
 // TODO(xunjieli): Maybe do something with the trailers. crbug.com/422958.
-void SpdyHttpStream::OnTrailers(const SpdyHeaderBlock& trailers) {}
+void SpdyHttpStream::OnTrailers(const spdy::SpdyHeaderBlock& trailers) {}
 
 void SpdyHttpStream::OnClose(int status) {
   DCHECK(stream_);

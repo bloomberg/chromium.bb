@@ -27,7 +27,7 @@ class Http2PushPromiseIndexPeer;
 }  // namespace test
 
 // Value returned by ClaimPushedStream() and FindStream() if no stream is found.
-const SpdyStreamId kNoPushedStreamFound = 0;
+const spdy::SpdyStreamId kNoPushedStreamFound = 0;
 
 // This class manages unclaimed pushed streams (push promises) from the receipt
 // of PUSH_PROMISE frame until they are matched to a request.
@@ -46,7 +46,7 @@ class NET_EXPORT Http2PushPromiseIndex {
 
     // Return true if a pushed stream with |url| can be used for a request with
     // |key|.
-    virtual bool ValidatePushedStream(SpdyStreamId stream_id,
+    virtual bool ValidatePushedStream(spdy::SpdyStreamId stream_id,
                                       const GURL& url,
                                       const HttpRequestInfo& request_info,
                                       const SpdySessionKey& key) const = 0;
@@ -68,14 +68,14 @@ class NET_EXPORT Http2PushPromiseIndex {
   // Returns true if there is no unclaimed pushed stream with the same URL for
   // the same Delegate, in which case the stream is registered.
   bool RegisterUnclaimedPushedStream(const GURL& url,
-                                     SpdyStreamId stream_id,
+                                     spdy::SpdyStreamId stream_id,
                                      Delegate* delegate) WARN_UNUSED_RESULT;
 
   // Tries to unregister a Delegate with an unclaimed pushed stream for |url|
   // with given |stream_id|.
   // Returns true if this exact entry is found, in which case it is removed.
   bool UnregisterUnclaimedPushedStream(const GURL& url,
-                                       SpdyStreamId stream_id,
+                                       spdy::SpdyStreamId stream_id,
                                        Delegate* delegate) WARN_UNUSED_RESULT;
 
   // Returns the number of pushed streams registered for |delegate|.
@@ -83,7 +83,8 @@ class NET_EXPORT Http2PushPromiseIndex {
 
   // Returns the stream ID of the entry registered for |delegate| with |url|,
   // or kNoPushedStreamFound if no such entry exists.
-  SpdyStreamId FindStream(const GURL& url, const Delegate* delegate) const;
+  spdy::SpdyStreamId FindStream(const GURL& url,
+                                const Delegate* delegate) const;
 
   // If there exists a session compatible with |key| that has an unclaimed push
   // stream for |url|, then sets |*session| and |*stream| to one such session
@@ -95,7 +96,7 @@ class NET_EXPORT Http2PushPromiseIndex {
                          const GURL& url,
                          const HttpRequestInfo& request_info,
                          base::WeakPtr<SpdySession>* session,
-                         SpdyStreamId* stream_id);
+                         spdy::SpdyStreamId* stream_id);
 
   // Return the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
@@ -107,7 +108,7 @@ class NET_EXPORT Http2PushPromiseIndex {
   struct NET_EXPORT UnclaimedPushedStream {
     GURL url;
     Delegate* delegate;
-    SpdyStreamId stream_id;
+    spdy::SpdyStreamId stream_id;
     size_t EstimateMemoryUsage() const;
   };
 

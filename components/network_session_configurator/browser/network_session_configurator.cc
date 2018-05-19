@@ -80,9 +80,9 @@ void ConfigureTCPFastOpenParams(const base::CommandLine& command_line,
   }
 }
 
-net::SettingsMap GetHttp2Settings(
+spdy::SettingsMap GetHttp2Settings(
     const VariationParameters& http2_trial_params) {
-  net::SettingsMap http2_settings;
+  spdy::SettingsMap http2_settings;
 
   const std::string settings_string =
       GetVariationParam(http2_trial_params, "http2_settings");
@@ -100,7 +100,7 @@ net::SettingsMap GetHttp2Settings(
     uint32_t value;
     if (!base::StringToUint(key_value.second, &value))
       continue;
-    http2_settings[static_cast<net::SpdyKnownSettingsId>(key)] = value;
+    http2_settings[static_cast<spdy::SpdyKnownSettingsId>(key)] = value;
   }
 
   return http2_settings;

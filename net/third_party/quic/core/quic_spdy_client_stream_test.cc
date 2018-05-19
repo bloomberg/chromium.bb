@@ -89,7 +89,7 @@ class QuicSpdyClientStreamTest : public QuicTest {
   MockQuicSpdyClientSession session_;
   std::unique_ptr<QuicSpdyClientStream> stream_;
   std::unique_ptr<StreamVisitor> stream_visitor_;
-  SpdyHeaderBlock headers_;
+  spdy::SpdyHeaderBlock headers_;
   QuicString body_;
 };
 
@@ -171,7 +171,7 @@ TEST_F(QuicSpdyClientStreamTest, ReceivingTrailers) {
   // Send trailers before sending the body. Even though a FIN has been received
   // the stream should not be closed, as it does not yet have all the data bytes
   // promised by the final offset field.
-  SpdyHeaderBlock trailer_block;
+  spdy::SpdyHeaderBlock trailer_block;
   trailer_block["trailer key"] = "trailer value";
   trailer_block[kFinalOffsetHeaderKey] =
       QuicTextUtils::Uint64ToString(body_.size());

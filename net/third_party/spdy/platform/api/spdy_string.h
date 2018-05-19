@@ -7,10 +7,10 @@
 
 #include "net/third_party/spdy/platform/impl/spdy_string_impl.h"
 
-namespace net {
+namespace spdy {
 
 using SpdyString = SpdyStringImpl;
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_PLATFORM_API_SPDY_STRING_H_

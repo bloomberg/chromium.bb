@@ -858,22 +858,25 @@ class TestBidirectionalDelegate : public BidirectionalStreamImpl::Delegate {
  public:
   void WaitUntilDone() { loop_.Run(); }
 
-  const SpdyHeaderBlock& response_headers() const { return response_headers_; }
+  const spdy::SpdyHeaderBlock& response_headers() const {
+    return response_headers_;
+  }
 
  private:
   void OnStreamReady(bool request_headers_sent) override {}
-  void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override {
+  void OnHeadersReceived(
+      const spdy::SpdyHeaderBlock& response_headers) override {
     response_headers_ = response_headers.Clone();
     loop_.Quit();
   }
   void OnDataRead(int bytes_read) override { NOTREACHED(); }
   void OnDataSent() override { NOTREACHED(); }
-  void OnTrailersReceived(const SpdyHeaderBlock& trailers) override {
+  void OnTrailersReceived(const spdy::SpdyHeaderBlock& trailers) override {
     NOTREACHED();
   }
   void OnFailed(int error) override { NOTREACHED(); }
   base::RunLoop loop_;
-  SpdyHeaderBlock response_headers_;
+  spdy::SpdyHeaderBlock response_headers_;
 };
 
 // Helper class to encapsulate MockReads and MockWrites for QUIC.
@@ -2456,7 +2459,7 @@ INSTANTIATE_TEST_CASE_P(
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplQuicAlternative) {
   MockQuicData mock_quic_data;
-  SpdyPriority priority =
+  spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
@@ -2587,7 +2590,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplHttpJobFailsQuicJobSucceeds) {
   // Set up Quic data.
   MockQuicData mock_quic_data;
-  SpdyPriority priority =
+  spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
@@ -2867,7 +2870,7 @@ TEST_F(HttpStreamFactoryTest, Tag) {
 TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   // Prepare mock QUIC data for a first session establishment.
   MockQuicData mock_quic_data;
-  SpdyPriority priority =
+  spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;

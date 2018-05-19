@@ -95,8 +95,8 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
   // received.
   LoadTimingInfo::ConnectTiming connect_timing_;
 
-  SpdyHeaderBlock initial_headers_;
-  SpdyHeaderBlock trailing_headers_;
+  spdy::SpdyHeaderBlock initial_headers_;
+  spdy::SpdyHeaderBlock trailing_headers_;
 
   // User provided read buffer for ReadData() response.
   scoped_refptr<IOBuffer> read_buffer_;

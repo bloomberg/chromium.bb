@@ -557,7 +557,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   bool estimate_initial_rtt;
 
   // If true, client headers will include HTTP/2 stream dependency info
-  // derived from SpdyPriority.
+  // derived from spdy::SpdyPriority.
   bool headers_include_h2_stream_dependency_;
 
   // Local address of socket that was created in CreateSession.

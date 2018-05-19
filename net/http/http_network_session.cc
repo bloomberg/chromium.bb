@@ -75,21 +75,23 @@ namespace {
 // Keep all HTTP2 parameters in |http2_settings|, even the ones that are not
 // implemented, to be sent to the server.
 // Set default values for settings that |http2_settings| does not specify.
-SettingsMap AddDefaultHttp2Settings(SettingsMap http2_settings) {
+spdy::SettingsMap AddDefaultHttp2Settings(spdy::SettingsMap http2_settings) {
   // Set default values only if |http2_settings| does not have
   // a value set for given setting.
-  SettingsMap::iterator it = http2_settings.find(SETTINGS_HEADER_TABLE_SIZE);
+  spdy::SettingsMap::iterator it =
+      http2_settings.find(spdy::SETTINGS_HEADER_TABLE_SIZE);
   if (it == http2_settings.end())
-    http2_settings[SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
+    http2_settings[spdy::SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
 
-  it = http2_settings.find(SETTINGS_MAX_CONCURRENT_STREAMS);
+  it = http2_settings.find(spdy::SETTINGS_MAX_CONCURRENT_STREAMS);
   if (it == http2_settings.end())
-    http2_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
+    http2_settings[spdy::SETTINGS_MAX_CONCURRENT_STREAMS] =
         kSpdyMaxConcurrentPushedStreams;
 
-  it = http2_settings.find(SETTINGS_INITIAL_WINDOW_SIZE);
+  it = http2_settings.find(spdy::SETTINGS_INITIAL_WINDOW_SIZE);
   if (it == http2_settings.end())
-    http2_settings[SETTINGS_INITIAL_WINDOW_SIZE] = kSpdyStreamMaxRecvWindowSize;
+    http2_settings[spdy::SETTINGS_INITIAL_WINDOW_SIZE] =
+        kSpdyStreamMaxRecvWindowSize;
 
   return http2_settings;
 }

@@ -60,7 +60,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyClientSessionBase
   // needed to detect promised server push streams, as part of
   // client-request to push-stream rendezvous.
   void OnInitialHeadersComplete(QuicStreamId stream_id,
-                                const SpdyHeaderBlock& response_headers);
+                                const spdy::SpdyHeaderBlock& response_headers);
 
   // Called by |QuicSpdyClientStream| on receipt of PUSH_PROMISE, does
   // some session level validation and creates the
@@ -69,7 +69,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyClientSessionBase
   // stream and returns false otherwise.
   virtual bool HandlePromised(QuicStreamId associated_id,
                               QuicStreamId promised_id,
-                              const SpdyHeaderBlock& headers);
+                              const spdy::SpdyHeaderBlock& headers);
 
   // For cross-origin server push, this should verify the server is
   // authoritative per [RFC2818], Section 3.  Roughly, subjectAltName

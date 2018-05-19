@@ -10,7 +10,7 @@
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
 #include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
-namespace net {
+namespace spdy {
 
 const char* const kHttp2ConnectionHeaderPrefix =
     "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n";
@@ -568,4 +568,4 @@ size_t GetPushPromiseFrameSizeSansBlock(
   return min_size;
 }
 
-}  // namespace net
+}  // namespace spdy

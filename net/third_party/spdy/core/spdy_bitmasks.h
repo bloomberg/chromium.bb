@@ -5,7 +5,7 @@
 #ifndef NET_THIRD_PARTY_SPDY_CORE_SPDY_BITMASKS_H_
 #define NET_THIRD_PARTY_SPDY_CORE_SPDY_BITMASKS_H_
 
-namespace net {
+namespace spdy {
 
 // StreamId mask from the SpdyHeader
 const unsigned int kStreamIdMask = 0x7fffffff;
@@ -13,6 +13,6 @@ const unsigned int kStreamIdMask = 0x7fffffff;
 // Mask the lower 24 bits.
 const unsigned int kLengthMask = 0xffffff;
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_SPDY_BITMASKS_H_

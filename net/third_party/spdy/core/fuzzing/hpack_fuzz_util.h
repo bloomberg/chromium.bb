@@ -17,7 +17,7 @@
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
-namespace net {
+namespace spdy {
 
 class SPDY_EXPORT_PRIVATE HpackFuzzUtil {
  public:
@@ -86,6 +86,6 @@ class SPDY_EXPORT_PRIVATE HpackFuzzUtil {
                        size_t flip_per_thousand);
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_FUZZING_HPACK_FUZZ_UTIL_H_

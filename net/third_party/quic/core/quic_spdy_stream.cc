@@ -41,7 +41,7 @@ QuicSpdyStream::QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session)
 QuicSpdyStream::~QuicSpdyStream() {}
 
 size_t QuicSpdyStream::WriteHeaders(
-    SpdyHeaderBlock header_block,
+    spdy::SpdyHeaderBlock header_block,
     bool fin,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   size_t bytes_written = spdy_session_->WriteHeaders(
@@ -62,7 +62,7 @@ void QuicSpdyStream::WriteOrBufferBody(
 }
 
 size_t QuicSpdyStream::WriteTrailers(
-    SpdyHeaderBlock trailer_block,
+    spdy::SpdyHeaderBlock trailer_block,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   if (fin_sent()) {
     QUIC_BUG << "Trailers cannot be sent after a FIN, on stream " << id();
@@ -132,7 +132,7 @@ void QuicSpdyStream::ConsumeHeaderList() {
   }
 }
 
-void QuicSpdyStream::OnStreamHeadersPriority(SpdyPriority priority) {
+void QuicSpdyStream::OnStreamHeadersPriority(spdy::SpdyPriority priority) {
   DCHECK_EQ(Perspective::IS_SERVER, session()->connection()->perspective());
   SetPriority(priority);
 }
@@ -222,7 +222,7 @@ void QuicSpdyStream::OnTrailingHeadersComplete(
       QuicStreamFrame(id(), fin, final_byte_offset, QuicStringPiece()));
 }
 
-void QuicSpdyStream::OnPriorityFrame(SpdyPriority priority) {
+void QuicSpdyStream::OnPriorityFrame(spdy::SpdyPriority priority) {
   DCHECK_EQ(Perspective::IS_SERVER, session()->connection()->perspective());
   SetPriority(priority);
 }
@@ -264,9 +264,10 @@ bool QuicSpdyStream::FinishedReadingHeaders() const {
   return headers_decompressed_ && header_list_.empty();
 }
 
-bool QuicSpdyStream::ParseHeaderStatusCode(const SpdyHeaderBlock& header,
+bool QuicSpdyStream::ParseHeaderStatusCode(const spdy::SpdyHeaderBlock& header,
                                            int* status_code) const {
-  SpdyHeaderBlock::const_iterator it = header.find(kHttp2StatusHeader);
+  spdy::SpdyHeaderBlock::const_iterator it =
+      header.find(spdy::kHttp2StatusHeader);
   if (it == header.end()) {
     return false;
   }

@@ -8,7 +8,7 @@
 #include <cstddef>
 #include "net/third_party/spdy/core/zero_copy_output_buffer.h"
 
-namespace net {
+namespace spdy {
 
 class ArrayOutputBuffer : public ZeroCopyOutputBuffer {
  public:
@@ -40,6 +40,6 @@ class ArrayOutputBuffer : public ZeroCopyOutputBuffer {
   int64_t capacity_ = 0;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_CORE_ARRAY_OUTPUT_BUFFER_H_

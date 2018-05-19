@@ -27,14 +27,14 @@ NET_EXPORT_PRIVATE std::string ElideGoAwayDebugDataForNetLog(
     NetLogCaptureMode capture_mode,
     base::StringPiece debug_data);
 
-// Given a SpdyHeaderBlock, return its base::ListValue representation.
+// Given a spdy::SpdyHeaderBlock, return its base::ListValue representation.
 NET_EXPORT_PRIVATE std::unique_ptr<base::ListValue>
-ElideSpdyHeaderBlockForNetLog(const SpdyHeaderBlock& headers,
+ElideSpdyHeaderBlockForNetLog(const spdy::SpdyHeaderBlock& headers,
                               NetLogCaptureMode capture_mode);
 
-// Converts a SpdyHeaderBlock into NetLog event parameters.
+// Converts a spdy::SpdyHeaderBlock into NetLog event parameters.
 NET_EXPORT_PRIVATE std::unique_ptr<base::Value> SpdyHeaderBlockNetLogCallback(
-    const SpdyHeaderBlock* headers,
+    const spdy::SpdyHeaderBlock* headers,
     NetLogCaptureMode capture_mode);
 
 }  // namespace net

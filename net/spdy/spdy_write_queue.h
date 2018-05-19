@@ -37,7 +37,7 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
   // is non-NULL, its priority must be equal to |priority|, and it
   // must remain non-NULL until the write is dequeued or removed.
   void Enqueue(RequestPriority priority,
-               SpdyFrameType frame_type,
+               spdy::SpdyFrameType frame_type,
                std::unique_ptr<SpdyBufferProducer> frame_producer,
                const base::WeakPtr<SpdyStream>& stream,
                const NetworkTrafficAnnotationTag& traffic_annotation);
@@ -46,7 +46,7 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
   // enqueued the earliest and its associated stream. Returns true and
   // fills in |frame_type|, |frame_producer|, and |stream| if
   // successful -- otherwise, just returns false.
-  bool Dequeue(SpdyFrameType* frame_type,
+  bool Dequeue(spdy::SpdyFrameType* frame_type,
                std::unique_ptr<SpdyBufferProducer>* frame_producer,
                base::WeakPtr<SpdyStream>* stream,
                MutableNetworkTrafficAnnotationTag* traffic_annotation);
@@ -57,7 +57,8 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
 
   // Removes all pending writes for streams after |last_good_stream_id|
   // and streams with no stream id.
-  void RemovePendingWritesForStreamsAfter(SpdyStreamId last_good_stream_id);
+  void RemovePendingWritesForStreamsAfter(
+      spdy::SpdyStreamId last_good_stream_id);
 
   // Removes all pending writes.
   void Clear();
@@ -68,7 +69,7 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
  private:
   // A struct holding a frame producer and its associated stream.
   struct PendingWrite {
-    SpdyFrameType frame_type;
+    spdy::SpdyFrameType frame_type;
     std::unique_ptr<SpdyBufferProducer> frame_producer;
     base::WeakPtr<SpdyStream> stream;
     MutableNetworkTrafficAnnotationTag traffic_annotation;
@@ -76,7 +77,7 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
     bool has_stream;
 
     PendingWrite();
-    PendingWrite(SpdyFrameType frame_type,
+    PendingWrite(spdy::SpdyFrameType frame_type,
                  std::unique_ptr<SpdyBufferProducer> frame_producer,
                  const base::WeakPtr<SpdyStream>& stream,
                  const MutableNetworkTrafficAnnotationTag& traffic_annotation);

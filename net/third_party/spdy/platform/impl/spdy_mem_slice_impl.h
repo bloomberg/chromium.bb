@@ -9,7 +9,7 @@
 #include "net/base/io_buffer.h"
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 
-namespace net {
+namespace spdy {
 
 // SpdyMemSliceImpl wraps a reference counted MemSlice and only provides partial
 // interfaces of MemSlice.
@@ -20,7 +20,7 @@ class SPDY_EXPORT_PRIVATE SpdyMemSliceImpl {
 
   // Constructs a SpdyMemSliceImpl by adding a reference to the data held in
   // |io_buffer|, which should be passed by value.
-  explicit SpdyMemSliceImpl(scoped_refptr<IOBufferWithSize> io_buffer);
+  explicit SpdyMemSliceImpl(scoped_refptr<net::IOBufferWithSize> io_buffer);
 
   // Constructs a SpdyMemSliceImpl with reference count 1 to a newly allocated
   // data buffer of |length| bytes.
@@ -42,9 +42,9 @@ class SPDY_EXPORT_PRIVATE SpdyMemSliceImpl {
   size_t length() const;
 
  private:
-  scoped_refptr<IOBufferWithSize> io_buffer_;
+  scoped_refptr<net::IOBufferWithSize> io_buffer_;
 };
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_PLATFORM_IMPL_SPDY_MEM_SLICE_IMPL_H_

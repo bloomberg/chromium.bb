@@ -13,7 +13,7 @@
 #include "net/third_party/spdy/core/hpack/hpack_static_table.h"
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
 
-namespace net {
+namespace spdy {
 
 namespace {
 
@@ -413,4 +413,4 @@ const HpackStaticTable& ObtainHpackStaticTable() {
   return *SharedHpackStaticTable::GetInstance()->table;
 }
 
-}  // namespace net
+}  // namespace spdy

@@ -9,13 +9,13 @@
 
 #include "net/third_party/spdy/platform/impl/spdy_estimate_memory_usage_impl.h"
 
-namespace net {
+namespace spdy {
 
 template <class T>
 size_t SpdyEstimateMemoryUsage(const T& object) {
   return SpdyEstimateMemoryUsageImpl(object);
 }
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_PLATFORM_API_SPDY_ESTIMATE_MEMORY_USAGE_H_

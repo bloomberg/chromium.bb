@@ -15,7 +15,7 @@
 #include "base/sys_byteorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace spdy {
 namespace test {
 
 SpdyString HexDumpWithMarks(const unsigned char* data,
@@ -116,4 +116,4 @@ void TestHeadersHandler::OnHeaderBlockEnd(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace spdy

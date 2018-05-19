@@ -109,7 +109,7 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     size_t spdy_session_max_recv_window_size;
     // HTTP/2 connection settings.
     // Unknown settings will still be sent to the server.
-    SettingsMap http2_settings;
+    spdy::SettingsMap http2_settings;
     // Source of time for SPDY connections.
     SpdySessionPool::TimeFunc time_func;
     // Whether to enable HTTP/2 Alt-Svc entries.

@@ -353,7 +353,7 @@ int SpdyProxyClientSocket::DoSendRequest() {
       base::Bind(&HttpRequestHeaders::NetLogCallback,
                  base::Unretained(&request_.extra_headers), &request_line));
 
-  SpdyHeaderBlock headers;
+  spdy::SpdyHeaderBlock headers;
   CreateSpdyHeadersFromHttpRequest(request_, request_.extra_headers, &headers);
 
   return spdy_stream_->SendRequestHeaders(std::move(headers),
@@ -397,7 +397,7 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
 
       redirect_has_load_timing_info_ =
           spdy_stream_->GetLoadTimingInfo(&redirect_load_timing_info_);
-      // Note that this triggers a ERROR_CODE_CANCEL.
+      // Note that this triggers a spdy::ERROR_CODE_CANCEL.
       spdy_stream_->DetachDelegate();
       next_state_ = STATE_DISCONNECTED;
       return ERR_HTTPS_PROXY_TUNNEL_RESPONSE;
@@ -425,8 +425,8 @@ void SpdyProxyClientSocket::OnHeadersSent() {
 }
 
 void SpdyProxyClientSocket::OnHeadersReceived(
-    const SpdyHeaderBlock& response_headers,
-    const SpdyHeaderBlock* pushed_request_headers) {
+    const spdy::SpdyHeaderBlock& response_headers,
+    const spdy::SpdyHeaderBlock* pushed_request_headers) {
   // If we've already received the reply, existing headers are too late.
   // TODO(mbelshe): figure out a way to make HEADERS frames useful after the
   //                initial response.
@@ -475,7 +475,7 @@ void SpdyProxyClientSocket::OnDataSent()  {
                                 std::move(write_callback_), rv));
 }
 
-void SpdyProxyClientSocket::OnTrailers(const SpdyHeaderBlock& trailers) {
+void SpdyProxyClientSocket::OnTrailers(const spdy::SpdyHeaderBlock& trailers) {
   // |spdy_stream_| is of type SPDY_BIDIRECTIONAL_STREAM, so trailers are
   // combined with response headers and this method will not be calld.
   NOTREACHED();

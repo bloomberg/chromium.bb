@@ -17,7 +17,7 @@
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 #include "net/third_party/spdy/platform/impl/spdy_string_utils_impl.h"
 
-namespace net {
+namespace spdy {
 
 template <typename... Args>
 inline SpdyString SpdyStrCat(const Args&... args) {
@@ -63,6 +63,6 @@ inline SpdyString SpdyHexDump(SpdyStringPiece data) {
   return SpdyHexDumpImpl(data);
 }
 
-}  // namespace net
+}  // namespace spdy
 
 #endif  // NET_THIRD_PARTY_SPDY_PLATFORM_API_SPDY_STRING_UTILS_H_

@@ -11,11 +11,12 @@ Http2PriorityDependencies::Http2PriorityDependencies() = default;
 
 Http2PriorityDependencies::~Http2PriorityDependencies() = default;
 
-void Http2PriorityDependencies::OnStreamCreation(SpdyStreamId id,
-                                                 SpdyPriority priority,
-                                                 SpdyStreamId* parent_stream_id,
-                                                 int* weight,
-                                                 bool* exclusive) {
+void Http2PriorityDependencies::OnStreamCreation(
+    spdy::SpdyStreamId id,
+    spdy::SpdyPriority priority,
+    spdy::SpdyStreamId* parent_stream_id,
+    int* weight,
+    bool* exclusive) {
   if (entry_by_stream_id_.find(id) != entry_by_stream_id_.end())
     return;
 
@@ -27,7 +28,7 @@ void Http2PriorityDependencies::OnStreamCreation(SpdyStreamId id,
   // which currently interpret the weight field like an old SPDY priority value.
   // As long as those servers need to be supported, weight should be set to
   // a value those servers will interpret correctly.
-  *weight = Spdy3PriorityToHttp2Weight(priority);
+  *weight = spdy::Spdy3PriorityToHttp2Weight(priority);
 
   // Dependent on the lowest-priority stream that has a priority >= |priority|.
   IdList::iterator parent;
@@ -41,9 +42,9 @@ void Http2PriorityDependencies::OnStreamCreation(SpdyStreamId id,
   entry_by_stream_id_[id] = it;
 }
 
-bool Http2PriorityDependencies::PriorityLowerBound(SpdyPriority priority,
+bool Http2PriorityDependencies::PriorityLowerBound(spdy::SpdyPriority priority,
                                                    IdList::iterator* bound) {
-  for (int i = priority; i >= kV3HighestPriority; --i) {
+  for (int i = priority; i >= spdy::kV3HighestPriority; --i) {
     if (!id_priority_lists_[i].empty()) {
       *bound = id_priority_lists_[i].end();
       --(*bound);
@@ -53,12 +54,12 @@ bool Http2PriorityDependencies::PriorityLowerBound(SpdyPriority priority,
   return false;
 }
 
-bool Http2PriorityDependencies::ParentOfStream(SpdyStreamId id,
+bool Http2PriorityDependencies::ParentOfStream(spdy::SpdyStreamId id,
                                                IdList::iterator* parent) {
   EntryMap::iterator entry = entry_by_stream_id_.find(id);
   DCHECK(entry != entry_by_stream_id_.end());
 
-  SpdyPriority priority = entry->second->second;
+  spdy::SpdyPriority priority = entry->second->second;
   IdList::iterator curr = entry->second;
   if (curr != id_priority_lists_[priority].begin()) {
     *parent = curr;
@@ -68,18 +69,18 @@ bool Http2PriorityDependencies::ParentOfStream(SpdyStreamId id,
 
   // |id| is at the head of its priority list, so its parent is the last
   // entry of the next-highest priority band.
-  if (priority == kV3HighestPriority) {
+  if (priority == spdy::kV3HighestPriority) {
     return false;
   }
   return PriorityLowerBound(priority - 1, parent);
 }
 
-bool Http2PriorityDependencies::ChildOfStream(SpdyStreamId id,
+bool Http2PriorityDependencies::ChildOfStream(spdy::SpdyStreamId id,
                                               IdList::iterator* child) {
   EntryMap::iterator entry = entry_by_stream_id_.find(id);
   DCHECK(entry != entry_by_stream_id_.end());
 
-  SpdyPriority priority = entry->second->second;
+  spdy::SpdyPriority priority = entry->second->second;
   *child = entry->second;
   ++(*child);
   if (*child != id_priority_lists_[priority].end()) {
@@ -88,7 +89,7 @@ bool Http2PriorityDependencies::ChildOfStream(SpdyStreamId id,
 
   // |id| is at the end of its priority list, so its child is the stream
   // at the front of the next-lowest priority band.
-  for (int i = priority + 1; i <= kV3LowestPriority; ++i) {
+  for (int i = priority + 1; i <= spdy::kV3LowestPriority; ++i) {
     if (!id_priority_lists_[i].empty()) {
       *child = id_priority_lists_[i].begin();
       return true;
@@ -99,8 +100,8 @@ bool Http2PriorityDependencies::ChildOfStream(SpdyStreamId id,
 }
 
 std::vector<Http2PriorityDependencies::DependencyUpdate>
-Http2PriorityDependencies::OnStreamUpdate(SpdyStreamId id,
-                                          SpdyPriority new_priority) {
+Http2PriorityDependencies::OnStreamUpdate(spdy::SpdyStreamId id,
+                                          spdy::SpdyPriority new_priority) {
   std::vector<DependencyUpdate> result;
   result.reserve(2);
 
@@ -109,7 +110,7 @@ Http2PriorityDependencies::OnStreamUpdate(SpdyStreamId id,
     return result;
   }
 
-  SpdyPriority old_priority = curr_entry->second->second;
+  spdy::SpdyPriority old_priority = curr_entry->second->second;
   if (old_priority == new_priority) {
     return result;
   }
@@ -135,7 +136,7 @@ Http2PriorityDependencies::OnStreamUpdate(SpdyStreamId id,
     // |old_parent|.
     IdList::iterator old_child;
     if (ChildOfStream(id, &old_child)) {
-      int weight = Spdy3PriorityToHttp2Weight(old_child->second);
+      int weight = spdy::Spdy3PriorityToHttp2Weight(old_child->second);
       if (old_has_parent) {
         result.push_back({old_child->first, old_parent->first, weight, true});
       } else {
@@ -143,7 +144,7 @@ Http2PriorityDependencies::OnStreamUpdate(SpdyStreamId id,
       }
     }
 
-    int weight = Spdy3PriorityToHttp2Weight(new_priority);
+    int weight = spdy::Spdy3PriorityToHttp2Weight(new_priority);
     // |id| moves to be dependent on |new_parent|.
     if (new_has_parent) {
       result.push_back({id, new_parent->first, weight, true});
@@ -163,7 +164,7 @@ Http2PriorityDependencies::OnStreamUpdate(SpdyStreamId id,
   return result;
 }
 
-void Http2PriorityDependencies::OnStreamDestruction(SpdyStreamId id) {
+void Http2PriorityDependencies::OnStreamDestruction(spdy::SpdyStreamId id) {
   EntryMap::iterator emit = entry_by_stream_id_.find(id);
   if (emit == entry_by_stream_id_.end())
     return;
