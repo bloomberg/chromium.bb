@@ -280,7 +280,7 @@ class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
 
   void SetUp() override {
     InitState init;
-    init.gl_version = "opengl es 2.0";
+    init.gl_version = "OpenGL ES 2.0";
     init.bind_generates_resource = true;
     InitDecoder(init);
     SetupDefaultProgram();

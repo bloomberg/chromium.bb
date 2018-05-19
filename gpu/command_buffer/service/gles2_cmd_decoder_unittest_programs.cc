@@ -549,7 +549,7 @@ TEST_P(GLES2DecoderManualInitTest, GetShaderPrecisionFormatSucceeds) {
   // Force ES underlying implementation to ensure we check the shader precision
   // format.
   InitState init;
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
 

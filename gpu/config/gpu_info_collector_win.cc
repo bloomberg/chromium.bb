@@ -463,14 +463,4 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   return false;
 }
 
-void CollectDriverInfoGL(GPUInfo* gpu_info) {
-  TRACE_EVENT0("gpu", "CollectDriverInfoGL");
-
-  if (!gpu_info->driver_version.empty())
-    return;
-
-  RE2::PartialMatch(gpu_info->gl_version, "([\\d\\.]+)$",
-                    &gpu_info->driver_version);
-}
-
 }  // namespace gpu

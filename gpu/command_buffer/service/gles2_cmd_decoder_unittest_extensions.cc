@@ -187,7 +187,7 @@ class GLES2DecoderTestWithCHROMIUMPathRendering : public GLES2DecoderTest {
 
   void SetUp() override {
     InitState init;
-    init.gl_version = "opengl es 3.1";
+    init.gl_version = "OpenGL ES 3.1";
     init.has_alpha = true;
     init.has_depth = true;
     init.request_alpha = true;
@@ -485,7 +485,7 @@ class GLES2DecoderTestWithBlendEquationAdvanced : public GLES2DecoderTest {
   GLES2DecoderTestWithBlendEquationAdvanced() = default;
   void SetUp() override {
     InitState init;
-    init.gl_version = "opengl es 2.0";
+    init.gl_version = "OpenGL ES 2.0";
     init.has_alpha = true;
     init.has_depth = true;
     init.request_alpha = true;
@@ -507,7 +507,7 @@ class GLES2DecoderTestWithEXTMultisampleCompatibility
 
   void SetUp() override {
     InitState init;
-    init.gl_version = "opengl es 3.1";
+    init.gl_version = "OpenGL ES 3.1";
     init.has_alpha = true;
     init.has_depth = true;
     init.request_alpha = true;
@@ -526,7 +526,7 @@ class GLES2DecoderTestWithBlendFuncExtended : public GLES2DecoderTest {
   GLES2DecoderTestWithBlendFuncExtended() = default;
   void SetUp() override {
     InitState init;
-    init.gl_version = "opengl es 3.0";
+    init.gl_version = "OpenGL ES 3.0";
     init.has_alpha = true;
     init.has_depth = true;
     init.request_alpha = true;
@@ -546,7 +546,7 @@ class GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples
   GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples() = default;
   void SetUp() override {
     InitState init;
-    init.gl_version = "opengl es 3.1";
+    init.gl_version = "OpenGL ES 3.1";
     init.has_alpha = true;
     init.has_depth = true;
     init.request_alpha = true;
@@ -1729,7 +1729,7 @@ class GLES2DecoderTestWithCHROMIUMRasterTransport : public GLES2DecoderTest {
   GLES2DecoderTestWithCHROMIUMRasterTransport() = default;
   void SetUp() override {
     InitState init;
-    init.gl_version = "opengl es 2.0";
+    init.gl_version = "OpenGL ES 2.0";
     init.has_alpha = true;
     init.has_depth = true;
     init.request_alpha = true;
@@ -1750,7 +1750,7 @@ class GLES3DecoderTestWithEXTWindowRectangles : public GLES3DecoderTest {
   void SetUp() override {
     InitState init;
     init.context_type = CONTEXT_TYPE_OPENGLES3;
-    init.gl_version = "opengl es 3.0";
+    init.gl_version = "OpenGL ES 3.0";
     init.has_alpha = true;
     init.has_depth = true;
     init.request_alpha = true;

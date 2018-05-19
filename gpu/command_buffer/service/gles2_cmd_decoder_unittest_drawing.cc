@@ -2057,7 +2057,7 @@ TEST_P(GLES2DecoderWithShaderTest, DrawClearsAfterRenderbufferStorageInFBO) {
 
 TEST_P(GLES2DecoderManualInitTest, DrawArraysClearsAfterTexImage2DNULLCubemap) {
   InitState init;
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.has_alpha = true;
   init.has_depth = true;
   init.request_alpha = true;
@@ -2256,7 +2256,7 @@ TEST_P(GLES2DecoderWithShaderTest,
 TEST_P(GLES2DecoderManualInitTest, DrawClearsDepthTexture) {
   InitState init;
   init.extensions = "GL_ANGLE_depth_texture";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.has_alpha = true;
   init.has_depth = true;
   init.request_alpha = true;

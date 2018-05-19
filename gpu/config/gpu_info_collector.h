@@ -45,9 +45,6 @@ GPU_EXPORT void RecordGpuSupportedRuntimeVersionHistograms(GPUInfo* gpu_info);
 // Create a GL context and collect GL strings and versions.
 GPU_EXPORT bool CollectGraphicsInfoGL(GPUInfo* gpu_info);
 
-// Each platform stores the driver version on the GL_VERSION string differently
-GPU_EXPORT void CollectDriverInfoGL(GPUInfo* gpu_info);
-
 // If more than one GPUs are identified, and GL strings are available,
 // identify the active GPU based on GL strings.
 GPU_EXPORT void IdentifyActiveGPU(GPUInfo* gpu_info);

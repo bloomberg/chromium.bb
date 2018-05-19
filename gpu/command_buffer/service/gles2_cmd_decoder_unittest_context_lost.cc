@@ -102,7 +102,7 @@ class GLES2DecoderLostContextTest : public GLES2DecoderManualInitTest {
  protected:
   void Init(bool has_robustness) {
     InitState init;
-    init.gl_version = "opengl es 2.0";
+    init.gl_version = "OpenGL ES 2.0";
     if (has_robustness)
       init.extensions = "GL_KHR_robustness";
     InitDecoder(init);
@@ -112,7 +112,7 @@ class GLES2DecoderLostContextTest : public GLES2DecoderManualInitTest {
     gpu::GpuDriverBugWorkarounds workarounds;
     workarounds.use_virtualized_gl_contexts = true;
     InitState init;
-    init.gl_version = "opengl es 2.0";
+    init.gl_version = "OpenGL ES 2.0";
     init.extensions = "GL_KHR_robustness";
     InitDecoderWithWorkarounds(init, workarounds);
   }
