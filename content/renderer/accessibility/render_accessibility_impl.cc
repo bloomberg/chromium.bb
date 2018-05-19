@@ -454,7 +454,10 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     if (plugin_tree_source_)
       event_msg.update.has_tree_data = true;
 
-    if (!serializer_.SerializeChanges(obj, &event_msg.update)) {
+    if (event_msgs.size() == 0)
+      serializer_.BeginSerializingChanges(&event_msg.update);
+
+    if (!serializer_.SerializeOneChange(obj)) {
       VLOG(1) << "Failed to serialize one accessibility event.";
       continue;
     }
@@ -480,6 +483,9 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
             << " on node id " << event_msg.id
             << "\n" << event_msg.update.ToString();
   }
+
+  if (event_msgs.size())
+    serializer_.FinishSerializingChanges();
 
   Send(new AccessibilityHostMsg_Events(routing_id(), event_msgs, reset_token_,
                                        ack_token_));
