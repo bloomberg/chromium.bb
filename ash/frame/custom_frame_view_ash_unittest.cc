@@ -13,6 +13,7 @@
 #include "ash/frame/wide_frame_view.h"
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
+#include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -26,6 +27,8 @@
 #include "base/containers/flat_set.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
@@ -631,13 +634,15 @@ TEST_F(CustomFrameViewAshTest, CustomButtonModel) {
 TEST_F(CustomFrameViewAshTest, WideFrame) {
   auto* delegate = new CustomFrameTestWidgetDelegate();
   std::unique_ptr<views::Widget> widget = CreateTestWidget(
-      delegate, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 400, 500));
+      delegate, kShellWindowId_DefaultContainer, gfx::Rect(100, 0, 400, 500));
 
   CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
   HeaderView* header_view =
       static_cast<HeaderView*>(custom_frame_view->GetHeaderView());
 
   WideFrameView* wide_frame_view = WideFrameView::Create(widget.get());
+  wide_frame_view->GetWidget()->Show();
+
   HeaderView* wide_header_view = wide_frame_view->header_view();
   display::Screen* screen = display::Screen::GetScreen();
 
@@ -666,6 +671,25 @@ TEST_F(CustomFrameViewAshTest, WideFrame) {
   // The height should be ~(33 *.5)
   wide_header_view->SetVisibleFraction(0.5);
   EXPECT_NEAR(16, wide_header_view->GetPreferredOnScreenHeight(), 1);
+
+  // Make sure the frame can be revaled outside of the target window.
+  EXPECT_FALSE(ImmersiveFullscreenControllerTestApi(&controller)
+                   .IsTopEdgeHoverTimerRunning());
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(gfx::Point(10, 0));
+  generator.MoveMouseBy(1, 0);
+  EXPECT_TRUE(ImmersiveFullscreenControllerTestApi(&controller)
+                  .IsTopEdgeHoverTimerRunning());
+
+  generator.MoveMouseTo(gfx::Point(10, 10));
+  generator.MoveMouseBy(1, 0);
+  EXPECT_FALSE(ImmersiveFullscreenControllerTestApi(&controller)
+                   .IsTopEdgeHoverTimerRunning());
+
+  generator.MoveMouseTo(gfx::Point(600, 0));
+  generator.MoveMouseBy(1, 0);
+  EXPECT_TRUE(ImmersiveFullscreenControllerTestApi(&controller)
+                  .IsTopEdgeHoverTimerRunning());
 
   controller.SetEnabled(ImmersiveFullscreenController::WINDOW_TYPE_OTHER,
                         false);

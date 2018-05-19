@@ -119,6 +119,7 @@
 -ImmersiveFullscreenControllerTest.OnMouseEvent
 -ImmersiveFullscreenControllerTest.RevealViaGestureChildConsumesEvents
 -ImmersiveFullscreenControllerTest.Transient
+-CustomFrameViewAshTest.WideFrame
 
 # Input event or IME problem, keystrokes not delivered to password field.
 # http://crbug.com/725257
