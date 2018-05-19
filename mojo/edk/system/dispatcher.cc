@@ -98,22 +98,13 @@ MojoResult Dispatcher::EndWriteData(uint32_t num_bytes_written) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::AddWaitingDispatcher(
-    const scoped_refptr<Dispatcher>& dispatcher,
-    MojoHandleSignals signals,
-    uintptr_t context) {
+MojoResult Dispatcher::AttachMessagePipe(uint64_t name,
+                                         ports::PortRef remote_peer_port) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::RemoveWaitingDispatcher(
-    const scoped_refptr<Dispatcher>& dispatcher) {
-  return MOJO_RESULT_INVALID_ARGUMENT;
-}
-
-MojoResult Dispatcher::GetReadyDispatchers(uint32_t* count,
-                                           DispatcherVector* dispatchers,
-                                           MojoResult* results,
-                                           uintptr_t* contexts) {
+MojoResult Dispatcher::ExtractMessagePipe(uint64_t name,
+                                          MojoHandle* message_pipe_handle) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 

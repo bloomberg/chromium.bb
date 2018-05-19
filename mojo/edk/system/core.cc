@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -28,6 +29,7 @@
 #include "mojo/edk/system/data_pipe_consumer_dispatcher.h"
 #include "mojo/edk/system/data_pipe_producer_dispatcher.h"
 #include "mojo/edk/system/handle_signals_state.h"
+#include "mojo/edk/system/invitation_dispatcher.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "mojo/edk/system/platform_handle_dispatcher.h"
 #include "mojo/edk/system/platform_shared_memory_mapping.h"
@@ -51,96 +53,24 @@ const uint32_t kMaxHandlesPerMessage = 1024 * 1024;
 // pipes too; for now we just use a constant. This only affects bootstrap pipes.
 const uint64_t kUnknownPipeIdForDebug = 0x7f7f7f7f7f7f7f7fUL;
 
-MojoResult MojoPlatformHandleToScopedPlatformHandle(
-    const MojoPlatformHandle* platform_handle,
-    ScopedPlatformHandle* out_handle) {
-  if (platform_handle->struct_size != sizeof(MojoPlatformHandle))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  if (platform_handle->type == MOJO_PLATFORM_HANDLE_TYPE_INVALID) {
-    out_handle->reset();
-    return MOJO_RESULT_OK;
-  }
-
-  PlatformHandle handle;
-  switch (platform_handle->type) {
-#if defined(OS_FUCHSIA)
-    case MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE:
-      handle = PlatformHandle::ForHandle(platform_handle->value);
-      break;
-    case MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR:
-      handle = PlatformHandle::ForFd(platform_handle->value);
-      break;
-
-#elif defined(OS_POSIX)
-    case MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR:
-      handle.handle = static_cast<int>(platform_handle->value);
-      break;
-#endif
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-    case MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT:
-      handle.type = PlatformHandle::Type::MACH;
-      handle.port = static_cast<mach_port_t>(platform_handle->value);
-      break;
-#endif
-
-#if defined(OS_WIN)
-    case MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE:
-      handle.handle = reinterpret_cast<HANDLE>(platform_handle->value);
-      break;
-#endif
-
-    default:
-      return MOJO_RESULT_INVALID_ARGUMENT;
-  }
-
-  out_handle->reset(handle);
-  return MOJO_RESULT_OK;
-}
-
-MojoResult ScopedPlatformHandleToMojoPlatformHandle(
-    ScopedPlatformHandle handle,
-    MojoPlatformHandle* platform_handle) {
-  if (platform_handle->struct_size != sizeof(MojoPlatformHandle))
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  if (!handle.is_valid()) {
-    platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_INVALID;
-    return MOJO_RESULT_OK;
-  }
-
-#if defined(OS_FUCHSIA)
-  if (handle.get().is_valid_fd()) {
-    platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR;
-    platform_handle->value = handle.release().as_fd();
-  } else {
-    platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE;
-    platform_handle->value = handle.release().as_handle();
-  }
-#elif defined(OS_POSIX)
-  switch (handle.get().type) {
-    case PlatformHandle::Type::POSIX:
-      platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR;
-      platform_handle->value = static_cast<uint64_t>(handle.release().handle);
-      break;
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-    case PlatformHandle::Type::MACH:
-      platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT;
-      platform_handle->value = static_cast<uint64_t>(handle.release().port);
-      break;
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
-    default:
-      return MOJO_RESULT_INVALID_ARGUMENT;
-  }
-#elif defined(OS_WIN)
-  platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE;
-  platform_handle->value = reinterpret_cast<uint64_t>(handle.release().handle);
-#endif  // defined(OS_WIN)
-
-  return MOJO_RESULT_OK;
+void RunMojoProcessErrorHandler(scoped_refptr<base::TaskRunner> task_runner,
+                                MojoProcessErrorHandler handler,
+                                uintptr_t context,
+                                const std::string& error) {
+  // Run the handler asynchronously to ensure no Mojo core reentrancy.
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](MojoProcessErrorHandler handler, uintptr_t context,
+             const std::string& error) {
+            MojoProcessErrorDetails details;
+            details.struct_size = sizeof(details);
+            DCHECK(base::IsValueInRangeForNumericType<uint32_t>(error.size()));
+            details.error_message_length = static_cast<uint32_t>(error.size());
+            details.error_message = error.data();
+            handler(context, &details);
+          },
+          handler, context, error));
 }
 
 }  // namespace
@@ -1214,6 +1144,222 @@ MojoResult Core::UnwrapPlatformSharedMemoryRegion(
     return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
+  return MOJO_RESULT_OK;
+}
+
+MojoResult Core::CreateInvitation(const MojoCreateInvitationOptions* options,
+                                  MojoHandle* invitation_handle) {
+  if (options && options->struct_size < sizeof(*options))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (!invitation_handle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  *invitation_handle = AddDispatcher(new InvitationDispatcher);
+  if (*invitation_handle == MOJO_HANDLE_INVALID)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+
+  return MOJO_RESULT_OK;
+}
+
+MojoResult Core::AttachMessagePipeToInvitation(
+    MojoHandle invitation_handle,
+    uint64_t name,
+    const MojoAttachMessagePipeToInvitationOptions* options,
+    MojoHandle* message_pipe_handle) {
+  if (options && options->struct_size < sizeof(*options))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (!message_pipe_handle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  scoped_refptr<Dispatcher> dispatcher = GetDispatcher(invitation_handle);
+  if (!dispatcher || dispatcher->GetType() != Dispatcher::Type::INVITATION)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  auto* invitation_dispatcher =
+      static_cast<InvitationDispatcher*>(dispatcher.get());
+
+  RequestContext request_context;
+
+  ports::PortRef remote_peer_port;
+  MojoHandle local_handle = CreatePartialMessagePipe(&remote_peer_port);
+  if (local_handle == MOJO_HANDLE_INVALID)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+
+  MojoResult result = invitation_dispatcher->AttachMessagePipe(
+      name, std::move(remote_peer_port));
+  if (result != MOJO_RESULT_OK) {
+    Close(local_handle);
+    return result;
+  }
+
+  *message_pipe_handle = local_handle;
+  return MOJO_RESULT_OK;
+}
+
+MojoResult Core::ExtractMessagePipeFromInvitation(
+    MojoHandle invitation_handle,
+    uint64_t name,
+    const MojoExtractMessagePipeFromInvitationOptions* options,
+    MojoHandle* message_pipe_handle) {
+  if (options && options->struct_size < sizeof(*options))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (!message_pipe_handle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  RequestContext request_context;
+
+  scoped_refptr<Dispatcher> dispatcher = GetDispatcher(invitation_handle);
+  if (!dispatcher || dispatcher->GetType() != Dispatcher::Type::INVITATION)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  auto* invitation_dispatcher =
+      static_cast<InvitationDispatcher*>(dispatcher.get());
+  // First attempt to extract from the invitation object itself. This is for
+  // cases where this creation was created in-process.
+  MojoResult extract_result =
+      invitation_dispatcher->ExtractMessagePipe(name, message_pipe_handle);
+  if (extract_result == MOJO_RESULT_OK ||
+      extract_result == MOJO_RESULT_RESOURCE_EXHAUSTED) {
+    return extract_result;
+  }
+
+  // Otherwise the invitation was created by a remote process, and we have to
+  // asynchronously pair a new pipe handle with its attachment. See the other
+  // |ExtractMessagePipeFromInvitation()| method.
+  //
+  // TODO(https://crbug.com/844231): Stop stringifying attachment names. This
+  // can be done once the old EDK invitation API is removed.
+  const std::string stringified_name = base::NumberToString(name);
+  *message_pipe_handle = ExtractMessagePipeFromInvitation(stringified_name);
+  if (*message_pipe_handle == MOJO_HANDLE_INVALID)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  return MOJO_RESULT_OK;
+}
+
+MojoResult Core::SendInvitation(
+    MojoHandle invitation_handle,
+    const MojoPlatformProcessHandle* process_handle,
+    const MojoInvitationTransportEndpoint* transport_endpoint,
+    MojoProcessErrorHandler error_handler,
+    uintptr_t error_handler_context,
+    const MojoSendInvitationOptions* options) {
+  if (options && options->struct_size < sizeof(*options))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  base::ProcessHandle target_process = base::kNullProcessHandle;
+  if (process_handle) {
+    if (process_handle->struct_size < sizeof(*process_handle))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+#if defined(OS_WIN)
+    target_process = reinterpret_cast<base::ProcessHandle>(
+        static_cast<uintptr_t>(process_handle->value));
+#else
+    target_process = static_cast<base::ProcessHandle>(process_handle->value);
+#endif
+  }
+
+  ProcessErrorCallback process_error_callback;
+  if (error_handler) {
+    process_error_callback = base::BindRepeating(
+        &RunMojoProcessErrorHandler, GetNodeController()->io_task_runner(),
+        error_handler, error_handler_context);
+  } else if (default_process_error_callback_) {
+    process_error_callback = default_process_error_callback_;
+  }
+
+  if (!transport_endpoint)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (transport_endpoint->struct_size < sizeof(*transport_endpoint))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (transport_endpoint->num_platform_handles == 0)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (!transport_endpoint->platform_handles)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  scoped_refptr<Dispatcher> dispatcher = GetDispatcher(invitation_handle);
+  if (!dispatcher || dispatcher->GetType() != Dispatcher::Type::INVITATION)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  auto* invitation_dispatcher =
+      static_cast<InvitationDispatcher*>(dispatcher.get());
+
+  ScopedPlatformHandle endpoint_handle;
+  MojoResult result = MojoPlatformHandleToScopedPlatformHandle(
+      &transport_endpoint->platform_handles[0], &endpoint_handle);
+  if (result != MOJO_RESULT_OK || !endpoint_handle.is_valid())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  // At this point everything else has been validated, so we can take ownership
+  // of the dispatcher.
+  {
+    base::AutoLock lock(handles_->GetLock());
+    scoped_refptr<Dispatcher> removed_dispatcher;
+    MojoResult result = handles_->GetAndRemoveDispatcher(invitation_handle,
+                                                         &removed_dispatcher);
+    if (result != MOJO_RESULT_OK) {
+      // Release ownership of the endpoint platform handle, per the API
+      // contract. The caller retains ownership on failure.
+      ignore_result(endpoint_handle.release());
+      return result;
+    }
+    DCHECK_EQ(removed_dispatcher.get(), invitation_dispatcher);
+  }
+
+  ConnectionParams connection_params(TransportProtocol::kLegacy,
+                                     std::move(endpoint_handle));
+
+  // TODO(https://crbug.com/844231): Stop stringifying attachment names. This
+  // can be done once the old EDK invitation API is removed.
+  std::vector<std::pair<std::string, ports::PortRef>> attached_ports;
+  InvitationDispatcher::PortMapping attached_port_map =
+      invitation_dispatcher->TakeAttachedPorts();
+  invitation_dispatcher->Close();
+  for (auto& entry : attached_port_map) {
+    attached_ports.emplace_back(base::NumberToString(entry.first),
+                                std::move(entry.second));
+  }
+
+  RequestContext request_context;
+  GetNodeController()->SendBrokerClientInvitation(
+      target_process, std::move(connection_params), attached_ports,
+      process_error_callback);
+
+  return MOJO_RESULT_OK;
+}
+
+MojoResult Core::AcceptInvitation(
+    const MojoInvitationTransportEndpoint* transport_endpoint,
+    const MojoAcceptInvitationOptions* options,
+    MojoHandle* invitation_handle) {
+  if (options && options->struct_size < sizeof(*options))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (!transport_endpoint)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (transport_endpoint->struct_size < sizeof(*transport_endpoint))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (transport_endpoint->num_platform_handles == 0)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (!transport_endpoint->platform_handles)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (!invitation_handle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  *invitation_handle = AddDispatcher(new InvitationDispatcher);
+  if (*invitation_handle == MOJO_HANDLE_INVALID)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+
+  ScopedPlatformHandle endpoint_handle;
+  MojoResult result = MojoPlatformHandleToScopedPlatformHandle(
+      &transport_endpoint->platform_handles[0], &endpoint_handle);
+  if (result != MOJO_RESULT_OK) {
+    Close(*invitation_handle);
+    *invitation_handle = MOJO_HANDLE_INVALID;
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  }
+
+  RequestContext request_context;
+  ConnectionParams connection_params(TransportProtocol::kLegacy,
+                                     std::move(endpoint_handle));
+  GetNodeController()->AcceptBrokerClientInvitation(
+      std::move(connection_params));
   return MOJO_RESULT_OK;
 }
 
