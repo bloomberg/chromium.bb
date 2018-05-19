@@ -48,6 +48,26 @@ public final class UrlFormatter {
     }
 
     /**
+     * Builds a String representation of <code>uri</code> suitable for display to the user,
+     * omitting the HTTP scheme, the username and password, trailing slash on a bare hostname,
+     * and converting %20 to spaces.
+     *
+     * The IDN hostname is turned to Unicode if the Unicode representation is deemed safe.
+     * For more information, see <code>url_formatter::FormatUrl(const GURL&)</code>.
+     *
+     * Example:
+     *  - "http://user:password@example.com/%20test" -> "example.com/ test"
+     *  - "http://user:password@example.com/" -> "example.com"
+     *  - "http://www.xn--frgbolaget-q5a.se" -> "www.färgbolaget.se"
+     *
+     * @param uri URI to format.
+     * @return Formatted URL.
+     */
+    public static String formatUrlForDisplayOmitHTTPScheme(String uri) {
+        return nativeFormatUrlForDisplayOmitHTTPScheme(uri);
+    }
+
+    /**
      * Builds a String representation of <code>uri</code> suitable for copying to the clipboard.
      * It does not omit any components, and it performs normal escape decoding. Spaces are left
      * escaped. The IDN hostname is turned to Unicode if the Unicode representation is deemed safe.
@@ -90,6 +110,7 @@ public final class UrlFormatter {
 
     private static native String nativeFixupUrl(String url);
     private static native String nativeFormatUrlForDisplayOmitScheme(String url);
+    private static native String nativeFormatUrlForDisplayOmitHTTPScheme(String url);
     private static native String nativeFormatUrlForCopy(String url);
     private static native String nativeFormatUrlForSecurityDisplay(String url);
     private static native String nativeFormatUrlForSecurityDisplayOmitScheme(String url);

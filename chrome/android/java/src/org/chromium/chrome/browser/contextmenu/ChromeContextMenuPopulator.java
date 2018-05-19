@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content_public.common.ContentUrlConstants;
 
@@ -275,7 +276,15 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         String titleText = "";
         if (!TextUtils.isEmpty(params.getLinkUrl())
                 && !params.getLinkUrl().equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
-            titleText = params.getLinkUrl();
+            // The context menu can be created without native library
+            // being loaded. Only use native URL formatting methods
+            // if the native libraries have been loaded.
+            if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                            .isStartupSuccessfullyCompleted()) {
+                titleText = UrlFormatter.formatUrlForDisplayOmitHTTPScheme(params.getLinkUrl());
+            } else {
+                titleText = params.getLinkUrl();
+            }
         } else if (!TextUtils.isEmpty(params.getTitleText())) {
             titleText = params.getTitleText();
         }
