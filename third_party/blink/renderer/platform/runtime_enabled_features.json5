@@ -534,7 +534,7 @@
     {
       name: "FramebustingNeedsSameOriginOrUserGesture",
       settable_from_internals: true,
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FramesTimingFunction",
