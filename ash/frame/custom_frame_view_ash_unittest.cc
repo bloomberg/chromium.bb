@@ -9,6 +9,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/frame/default_frame_header.h"
 #include "ash/frame/header_view.h"
 #include "ash/frame/wide_frame_view.h"
 #include "ash/public/cpp/ash_layout_constants.h"
@@ -778,6 +779,29 @@ TEST_P(CustomFrameViewAshFrameColorTest, KFrameInactiveColor) {
   EXPECT_EQ(active_color, new_color);
   EXPECT_EQ(new_color,
             delegate->custom_frame_view()->GetInactiveFrameColorForTest());
+}
+
+// Verify that CustomFrameViewAsh updates the active color based on the
+// ash::kFrameActiveColorKey window property.
+TEST_P(CustomFrameViewAshFrameColorTest, WideFrameInitialColor) {
+  TestWidgetDelegate* delegate = new TestWidgetDelegate(GetParam());
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
+  aura::Window* window = widget->GetNativeWindow();
+  SkColor active_color = window->GetProperty(ash::kFrameActiveColorKey);
+  SkColor inactive_color = window->GetProperty(ash::kFrameInactiveColorKey);
+  constexpr SkColor new_active_color = SK_ColorWHITE;
+  constexpr SkColor new_inactive_color = SK_ColorBLACK;
+  EXPECT_NE(active_color, new_active_color);
+  EXPECT_NE(inactive_color, new_inactive_color);
+  window->SetProperty(ash::kFrameActiveColorKey, new_active_color);
+  window->SetProperty(ash::kFrameInactiveColorKey, new_inactive_color);
+
+  WideFrameView* wide_frame_view = WideFrameView::Create(widget.get());
+  HeaderView* wide_header_view = wide_frame_view->header_view();
+  DefaultFrameHeader* header = static_cast<DefaultFrameHeader*>(
+      wide_header_view->GetFrameHeaderForTest());
+  EXPECT_EQ(new_active_color, header->active_frame_color_for_testing());
+  EXPECT_EQ(new_inactive_color, header->inactive_frame_color_for_testing());
 }
 
 // Run frame color tests with and without custom wm::WindowStateDelegate.

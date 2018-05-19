@@ -13,6 +13,7 @@
 #include "ash/frame/default_frame_header.h"
 #include "ash/frame/frame_border_hit_test.h"
 #include "ash/frame/header_view.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/window_properties.h"
@@ -282,12 +283,7 @@ CustomFrameViewAsh::CustomFrameViewAsh(
   // |header_view_| is set as the non client view's overlay view so that it can
   // overlay the web contents in immersive fullscreen.
   frame->non_client_view()->SetOverlayView(overlay_view_);
-  frame_window->SetProperty(aura::client::kTopViewColor,
-                            DefaultFrameHeader::GetDefaultFrameColor());
-  frame_window->SetProperty(ash::kFrameActiveColorKey,
-                            DefaultFrameHeader::GetDefaultFrameColor());
-  frame_window->SetProperty(ash::kFrameInactiveColorKey,
-                            DefaultFrameHeader::GetDefaultFrameColor());
+  frame_window->SetProperty(aura::client::kTopViewColor, kDefaultFrameColor);
   frame_window->AddObserver(this);
 
   // A delegate for a more complex way of fullscreening the window may already

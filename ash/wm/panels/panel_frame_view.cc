@@ -7,6 +7,7 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_frame_header.h"
 #include "ash/frame/frame_border_hit_test.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/shell.h"
 #include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/window_util.h"
@@ -54,7 +55,7 @@ void PanelFrameView::InitFrameHeader() {
   frame_header_ =
       std::make_unique<DefaultFrameHeader>(this, caption_button_container_);
   GetWidgetWindow()->SetProperty(aura::client::kTopViewColor,
-                                 DefaultFrameHeader::GetDefaultFrameColor());
+                                 kDefaultFrameColor);
 
   if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
     window_icon_ = new views::ImageView();

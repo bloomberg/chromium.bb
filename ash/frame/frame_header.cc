@@ -133,11 +133,6 @@ void FrameHeader::AnimationProgressed(const gfx::Animation* animation) {
   view_->SchedulePaintInRect(GetPaintedBounds());
 }
 
-// static
-SkColor FrameHeader::GetDefaultFrameColor() {
-  return SkColorSetRGB(0xFD, 0xFE, 0xFF);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // FrameHeader, protected:
 

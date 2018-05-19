@@ -91,7 +91,10 @@ HeaderView::HeaderView(views::Widget* target_widget,
                        caption_button_container_);
     frame_header_ = std::move(frame_header);
   }
-
+  aura::Window* window = target_widget->GetNativeWindow();
+  frame_header_->SetFrameColors(
+      window->GetProperty(ash::kFrameActiveColorKey),
+      window->GetProperty(ash::kFrameInactiveColorKey));
   window_observer_.Add(target_widget_->GetNativeWindow());
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }

@@ -74,9 +74,6 @@ class ASH_EXPORT FrameHeader : public gfx::AnimationDelegate {
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
-  // The default frame color for both active and inactive.
-  static SkColor GetDefaultFrameColor();
-
  protected:
   FrameHeader();
 
