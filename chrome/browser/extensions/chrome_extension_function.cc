@@ -29,11 +29,6 @@ void ChromeAsyncExtensionFunction::SetError(const std::string& error) {
   error_ = error;
 }
 
-content::WebContents*
-ChromeAsyncExtensionFunction::GetAssociatedWebContentsDeprecated() {
-  return chrome_details_.GetAssociatedWebContentsDeprecated();
-}
-
 const std::string& ChromeAsyncExtensionFunction::GetError() const {
   return error_.empty() ? UIThreadExtensionFunction::GetError() : error_;
 }

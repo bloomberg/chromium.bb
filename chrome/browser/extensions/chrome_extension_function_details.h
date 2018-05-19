@@ -12,10 +12,6 @@ class Browser;
 class Profile;
 class UIThreadExtensionFunction;
 
-namespace content {
-class WebContents;
-}
-
 // Provides Chrome-specific details to UIThreadExtensionFunction
 // implementations.
 class ChromeExtensionFunctionDetails {
@@ -49,10 +45,6 @@ class ChromeExtensionFunctionDetails {
   // returning "any" browser), and almost never the right thing to use. Instead,
   // use ExtensionFunction::GetSenderWebContents(). We should get rid of this.
   Browser* GetCurrentBrowser() const;
-
-  // Do not use.
-  // See comments on ExtensionFunction::GetAssociatedWebContentsDeprecated().
-  content::WebContents* GetAssociatedWebContentsDeprecated();
 
   // Find a UI surface to display any UI (like a permission prompt) for the
   // extension calling this function. This will check, in order of preference,
