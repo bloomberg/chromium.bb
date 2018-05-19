@@ -575,6 +575,24 @@ public class DownloadManagerUi
 
         // Build and show text bubble.
         View anchorView = mToolbar.findViewById(R.id.settings_menu_id);
+
+        // Show the setting text bubble after the root view is attached to window.
+        if (mToolbar.isAttachedToWindow()) {
+            showDownloadSettingsInProductHelp(tracker, anchorView);
+        } else {
+            mToolbar.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(View v) {
+                    showDownloadSettingsInProductHelp(tracker, anchorView);
+                    mToolbar.removeOnAttachStateChangeListener(this);
+                }
+                @Override
+                public void onViewDetachedFromWindow(View v) {}
+            });
+        }
+    }
+
+    private void showDownloadSettingsInProductHelp(final Tracker tracker, View anchorView) {
         TextBubble textBubble =
                 new TextBubble(mActivity, (View) mToolbar, R.string.iph_download_settings_text,
                         R.string.iph_download_settings_accessibility_text,
