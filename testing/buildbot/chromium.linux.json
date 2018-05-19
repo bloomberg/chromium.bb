@@ -11,12 +11,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "angle_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "base_unittests"
       },
       {
@@ -111,12 +105,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "crypto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "gcm_unit_tests"
       },
       {
         "swarming": {
@@ -238,12 +226,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "angle_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "base_unittests"
       },
       {
@@ -344,12 +326,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "crypto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "gcm_unit_tests"
       },
       {
         "swarming": {
@@ -664,12 +640,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "angle_unittests"
       },
       {
         "swarming": {
@@ -1146,12 +1116,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "nacl_helper_nonsfi_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "nacl_loader_unittests"
       },
       {
@@ -1487,12 +1451,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "angle_unittests"
       },
       {
         "swarming": {
@@ -1964,12 +1922,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "nacl_helper_nonsfi_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "nacl_loader_unittests"
       },
       {
@@ -2208,12 +2160,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "angle_unittests"
       },
       {
         "swarming": {
@@ -2567,12 +2513,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "nacl_helper_nonsfi_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "nacl_loader_unittests"
       },
       {
@@ -2785,17 +2725,6 @@
           ]
         },
         "test": "accessibility_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "angle_unittests"
       },
       {
         "swarming": {
@@ -3620,17 +3549,6 @@
           ]
         },
         "test": "mojo_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "nacl_helper_nonsfi_unittests"
       },
       {
         "swarming": {
