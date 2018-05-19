@@ -55,7 +55,7 @@ class TestingResourceCoordinatorRenderProcessProbe
       auto& render_process_info = render_process_info_map_entry.second;
       if (render_process_info.last_gather_cycle_active !=
               current_gather_cycle_ ||
-          render_process_info.cpu_usage.is_zero()) {
+          render_process_info.cpu_usage < 0.0) {
         return false;
       }
     }
@@ -143,17 +143,10 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
   EXPECT_GE(2u, initial_size);  // If a spare RenderProcessHost is present.
   EXPECT_TRUE(probe.AllMeasurementsAreAtCurrentCycle());
   EXPECT_EQ(initial_size, probe.last_measurement_batch()->measurements.size());
-
-  // The CPU measurement is cumulative since the start of process, but it could
-  // be zero due to the measurement granularity of the OS.
-  std::map<uint32_t, base::TimeDelta> cpu_usage_map;
-  for (const auto& measurement : probe.last_measurement_batch()->measurements) {
-    EXPECT_LE(base::TimeDelta(), measurement->cpu_usage);
-    EXPECT_TRUE(
-        cpu_usage_map
-            .insert(std::make_pair(measurement->pid, measurement->cpu_usage))
-            .second);
-  }
+  // A quirk of the process_metrics implementation is that the first CPU
+  // measurement returns zero.
+  for (const auto& measurement : probe.last_measurement_batch()->measurements)
+    EXPECT_EQ(0.0, measurement->cpu_usage);
 
   // There is an inherent race in memory measurement that may cause failures
   // which will result in zero private footprint returns. To work around this,
@@ -185,13 +178,11 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
 
   size_t info_map_size = info_map.size();
   probe.StartGatherCycleAndWait();
-  // Verify that CPU usage is monotonically increasing, though the measurement
-  // granulatity is such on some OSes that a zero difference is almost certain.
-  for (const auto& measurement : probe.last_measurement_batch()->measurements) {
-    if (cpu_usage_map.find(measurement->pid) != cpu_usage_map.end()) {
-      EXPECT_LT(cpu_usage_map[measurement->pid], measurement->cpu_usage);
-    }
-  }
+  // The second and subsequent CPU measurements should return some data,
+  // although the measurement granularity on some OSen is such that zero returns
+  // are almost certain.
+  for (const auto& measurement : probe.last_measurement_batch()->measurements)
+    EXPECT_LE(0.0, measurement->cpu_usage);
 
   AtLeastOneMemoryMeasurementIsNonZero(probe.last_measurement_batch());
 

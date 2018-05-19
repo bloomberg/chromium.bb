@@ -140,14 +140,12 @@ void ResourceCoordinatorRenderProcessProbe::
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(is_gathering_);
 
-  base::TimeTicks collection_start_time = base::TimeTicks::Now();
-
   // Dispatch the memory collection request.
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestGlobalDump(
           base::BindRepeating(&ResourceCoordinatorRenderProcessProbe::
                                   ProcessGlobalMemoryDumpAndDispatchOnIOThread,
-                              base::Unretained(this), collection_start_time));
+                              base::Unretained(this)));
 
   RenderProcessInfoMap::iterator iter = render_process_info_map_.begin();
   while (iter != render_process_info_map_.end()) {
@@ -157,7 +155,7 @@ void ResourceCoordinatorRenderProcessProbe::
     // not current then it is assumed dead and should not be measured anymore.
     if (render_process_info.last_gather_cycle_active == current_gather_cycle_) {
       render_process_info.cpu_usage =
-          render_process_info.metrics->GetCumulativeCPUUsage();
+          render_process_info.metrics->GetPlatformIndependentCPUUsage();
       ++iter;
     } else {
       render_process_info_map_.erase(iter++);
@@ -168,12 +166,14 @@ void ResourceCoordinatorRenderProcessProbe::
 
 void ResourceCoordinatorRenderProcessProbe::
     ProcessGlobalMemoryDumpAndDispatchOnIOThread(
-        base::TimeTicks collection_start_time,
         bool global_success,
         std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump) {
   // Create the measurement batch.
   mojom::ProcessResourceMeasurementBatchPtr batch =
       mojom::ProcessResourceMeasurementBatch::New();
+
+  // TODO(siggi): Add start/end times. This will need some support from
+  //     the memory_instrumentation code.
 
   // Start by adding the render process hosts we know about to the batch.
   for (const auto& render_process_info_map_entry : render_process_info_map_) {
@@ -212,13 +212,6 @@ void ResourceCoordinatorRenderProcessProbe::
     // We should only get a nullptr in case of failure.
     DCHECK(!global_success);
   }
-
-  // TODO(siggi): Because memory dump requests may be combined with earlier,
-  //     in-progress requests, this is an upper bound for the start time.
-  //     It would be more accurate to get the start time from the memory dump
-  //     and use the minimum of the two here.
-  batch->batch_started_time = collection_start_time;
-  batch->batch_ended_time = base::TimeTicks::Now();
 
   bool should_restart = DispatchMetrics(std::move(batch));
   content::BrowserThread::PostTask(
