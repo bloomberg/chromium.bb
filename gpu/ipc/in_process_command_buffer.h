@@ -188,11 +188,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void SetUpdateVSyncParametersCallback(
       const UpdateVSyncParametersCallback& callback);
 
-  using PresentationCallback =
-      base::Callback<void(uint64_t swap_id,
-                          const gfx::PresentationFeedback& feedback)>;
-  void SetPresentationCallback(const PresentationCallback& callback);
-
   void DidSwapBuffersCompleteOnOriginThread(SwapBuffersCompleteParams params);
   void BufferPresentedOnOriginThread(uint64_t swap_id,
                                      uint32_t flags,
@@ -403,7 +398,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   base::queue<std::unique_ptr<GpuTask>> task_queue_;
 
   UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;
-  PresentationCallback presentation_callback_;
 
   // Params pushed each time we call OnSwapBuffers, and popped when a buffer
   // is presented or a swap completed.

@@ -104,15 +104,20 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
 
   // ContextSupport implementation.
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
-  void Swap(uint32_t flags, SwapCompletedCallback swap_completed) override;
+  void Swap(uint32_t flags,
+            SwapCompletedCallback complete_callback,
+            PresentationCallback presentation_callback) override;
   void SwapWithBounds(const std::vector<gfx::Rect>& rects,
                       uint32_t flags,
-                      SwapCompletedCallback swap_completed) override;
+                      SwapCompletedCallback swap_completed,
+                      PresentationCallback presentation_callback) override;
   void PartialSwapBuffers(const gfx::Rect& sub_buffer,
                           uint32_t flags,
-                          SwapCompletedCallback swap_completed) override;
+                          SwapCompletedCallback swap_completed,
+                          PresentationCallback presentation_callback) override;
   void CommitOverlayPlanes(uint32_t flags,
-                           SwapCompletedCallback swap_completed) override;
+                           SwapCompletedCallback swap_completed,
+                           PresentationCallback presentation_callback) override;
   void ScheduleOverlayPlane(int plane_z_order,
                             gfx::OverlayTransform plane_transform,
                             unsigned overlay_texture_id,
@@ -341,6 +346,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   void OnGpuControlErrorMessage(const char* message, int32_t id) final;
   void OnGpuControlSwapBuffersCompleted(
       const SwapBuffersCompleteParams& params) final;
+  void OnSwapBufferPresented(uint64_t swap_id,
+                             const gfx::PresentationFeedback& feedback) final;
 
   bool IsChromiumFramebufferMultisampleAvailable();
 
@@ -595,7 +602,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
 
   PixelStoreParams GetUnpackParameters(Dimension dimension);
 
-  uint64_t PrepareNextSwapId(SwapCompletedCallback callback);
+  uint64_t PrepareNextSwapId(SwapCompletedCallback complete_callback,
+                             PresentationCallback present_callback);
 
   GLES2Util util_;
   GLES2CmdHelper* helper_;
@@ -750,6 +758,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   uint64_t swap_id_ = 0;
   // A map of swap IDs to callbacks to run when that ID completes.
   base::flat_map<uint64_t, SwapCompletedCallback> pending_swap_callbacks_;
+  base::flat_map<uint64_t, PresentationCallback>
+      pending_presentation_callbacks_;
 
   base::WeakPtrFactory<GLES2Implementation> weak_ptr_factory_;
 

@@ -61,8 +61,6 @@ class GLInProcessContextImpl
   void SetUpdateVSyncParametersCallback(
       const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback)
       override;
-  void SetPresentationCallback(
-      const InProcessCommandBuffer::PresentationCallback& callback) override;
   void SetLock(base::Lock* lock) override;
 
  private:
@@ -108,11 +106,6 @@ gles2::GLES2Implementation* GLInProcessContextImpl::GetImplementation() {
 void GLInProcessContextImpl::SetUpdateVSyncParametersCallback(
     const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback) {
   command_buffer_->SetUpdateVSyncParametersCallback(callback);
-}
-
-void GLInProcessContextImpl::SetPresentationCallback(
-    const InProcessCommandBuffer::PresentationCallback& callback) {
-  command_buffer_->SetPresentationCallback(callback);
 }
 
 void GLInProcessContextImpl::SetLock(base::Lock* lock) {

@@ -37,8 +37,6 @@ GLOutputSurface::GLOutputSurface(
   context_provider->SetUpdateVSyncParametersCallback(
       base::BindRepeating(&GLOutputSurface::OnVSyncParametersUpdated,
                           weak_ptr_factory_.GetWeakPtr()));
-  context_provider->SetPresentationCallback(base::BindRepeating(
-      &GLOutputSurface::OnPresentation, weak_ptr_factory_.GetWeakPtr()));
 }
 
 GLOutputSurface::~GLOutputSurface() {
@@ -90,8 +88,6 @@ void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK(context_provider_);
 
   uint32_t flags = 0;
-  if (frame.need_presentation_feedback)
-    flags |= gpu::SwapBuffersFlags::kPresentationFeedback;
   if (synthetic_begin_frame_source_)
     flags |= gpu::SwapBuffersFlags::kVSyncParams;
 
@@ -101,12 +97,21 @@ void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   auto swap_callback = base::BindOnce(
       &GLOutputSurface::OnGpuSwapBuffersCompleted,
       weak_ptr_factory_.GetWeakPtr(), std::move(frame.latency_info));
+  gpu::ContextSupport::PresentationCallback presentation_callback;
+  if (frame.need_presentation_feedback) {
+    flags |= gpu::SwapBuffersFlags::kPresentationFeedback;
+    presentation_callback = base::BindOnce(&GLOutputSurface::OnPresentation,
+                                           weak_ptr_factory_.GetWeakPtr());
+  }
+
   set_draw_rectangle_for_frame_ = false;
   if (frame.sub_buffer_rect) {
     context_provider_->ContextSupport()->PartialSwapBuffers(
-        *frame.sub_buffer_rect, flags, std::move(swap_callback));
+        *frame.sub_buffer_rect, flags, std::move(swap_callback),
+        std::move(presentation_callback));
   } else {
-    context_provider_->ContextSupport()->Swap(flags, std::move(swap_callback));
+    context_provider_->ContextSupport()->Swap(flags, std::move(swap_callback),
+                                              std::move(presentation_callback));
   }
 }
 

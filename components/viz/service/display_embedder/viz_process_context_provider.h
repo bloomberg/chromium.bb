@@ -68,9 +68,6 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
       const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
           callback);
 
-  void SetPresentationCallback(
-      const gpu::InProcessCommandBuffer::PresentationCallback& callback);
-
  protected:
   friend class base::RefCountedThreadSafe<VizProcessContextProvider>;
   ~VizProcessContextProvider() override;

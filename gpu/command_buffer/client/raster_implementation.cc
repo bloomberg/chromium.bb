@@ -311,6 +311,12 @@ void RasterImplementation::OnGpuControlSwapBuffersCompleted(
   NOTREACHED();
 }
 
+void RasterImplementation::OnSwapBufferPresented(
+    uint64_t swap_id,
+    const gfx::PresentationFeedback& feedback) {
+  NOTREACHED();
+}
+
 void RasterImplementation::SetAggressivelyFreeResources(
     bool aggressively_free_resources) {
   TRACE_EVENT1("gpu", "RasterImplementation::SetAggressivelyFreeResources",
@@ -326,28 +332,33 @@ void RasterImplementation::SetAggressivelyFreeResources(
   }
 }
 
-void RasterImplementation::Swap(uint32_t /* flags */,
-                                SwapCompletedCallback /* swap_completed */) {
+void RasterImplementation::Swap(
+    uint32_t /* flags */,
+    SwapCompletedCallback /* swap_completed */,
+    PresentationCallback /* presentation_callback */) {
   NOTREACHED();
 }
 
 void RasterImplementation::SwapWithBounds(
     const std::vector<gfx::Rect>& /* rects */,
     uint32_t /* flags */,
-    SwapCompletedCallback /* swap_completed */) {
+    SwapCompletedCallback /* swap_completed */,
+    PresentationCallback /* presentation_callback */) {
   NOTREACHED();
 }
 
 void RasterImplementation::PartialSwapBuffers(
     const gfx::Rect& /* sub_buffer */,
     uint32_t /* flags */,
-    SwapCompletedCallback /* swap_completed */) {
+    SwapCompletedCallback /* swap_completed */,
+    PresentationCallback /* presentation_callback */) {
   NOTREACHED();
 }
 
 void RasterImplementation::CommitOverlayPlanes(
     uint32_t /* flags */,
-    SwapCompletedCallback /* swap_completed */) {
+    SwapCompletedCallback /* swap_completed */,
+    PresentationCallback /* presentation_callback */) {
   NOTREACHED();
 }
 

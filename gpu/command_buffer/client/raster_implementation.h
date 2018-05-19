@@ -122,15 +122,20 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 
   // ContextSupport implementation.
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
-  void Swap(uint32_t flags, SwapCompletedCallback swap_completed) override;
+  void Swap(uint32_t flags,
+            SwapCompletedCallback swap_completed,
+            PresentationCallback present_callback) override;
   void SwapWithBounds(const std::vector<gfx::Rect>& rects,
                       uint32_t flags,
-                      SwapCompletedCallback swap_completed) override;
+                      SwapCompletedCallback swap_completed,
+                      PresentationCallback present_callback) override;
   void PartialSwapBuffers(const gfx::Rect& sub_buffer,
                           uint32_t flags,
-                          SwapCompletedCallback swap_completed) override;
+                          SwapCompletedCallback swap_completed,
+                          PresentationCallback present_callback) override;
   void CommitOverlayPlanes(uint32_t flags,
-                           SwapCompletedCallback swap_completed) override;
+                           SwapCompletedCallback swap_completed,
+                           PresentationCallback present_callback) override;
   void ScheduleOverlayPlane(int plane_z_order,
                             gfx::OverlayTransform plane_transform,
                             unsigned overlay_texture_id,
@@ -196,6 +201,8 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   void OnGpuControlErrorMessage(const char* message, int32_t id) final;
   void OnGpuControlSwapBuffersCompleted(
       const SwapBuffersCompleteParams& params) final;
+  void OnSwapBufferPresented(uint64_t swap_id,
+                             const gfx::PresentationFeedback& feedback) final;
 
   // Gets the GLError through our wrapper.
   GLenum GetGLError();

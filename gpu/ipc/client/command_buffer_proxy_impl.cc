@@ -292,12 +292,6 @@ void CommandBufferProxyImpl::SetUpdateVSyncParametersCallback(
   update_vsync_parameters_completion_callback_ = callback;
 }
 
-void CommandBufferProxyImpl::SetPresentationCallback(
-    const PresentationCallback& callback) {
-  CheckLock();
-  presentation_callback_ = callback;
-}
-
 void CommandBufferProxyImpl::SetNeedsVSync(bool needs_vsync) {
   CheckLock();
   base::AutoLock lock(last_state_lock_);
@@ -819,9 +813,8 @@ void CommandBufferProxyImpl::OnSwapBuffersCompleted(
 void CommandBufferProxyImpl::OnBufferPresented(
     uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
-  if (presentation_callback_)
-    presentation_callback_.Run(swap_id, feedback);
-
+  if (gpu_control_client_)
+    gpu_control_client_->OnSwapBufferPresented(swap_id, feedback);
   if (update_vsync_parameters_completion_callback_ &&
       feedback.flags & gfx::PresentationFeedback::kVSync &&
       feedback.timestamp != base::TimeTicks() &&

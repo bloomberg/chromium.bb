@@ -348,6 +348,16 @@ void GLES2Implementation::OnGpuControlSwapBuffersCompleted(
   pending_swap_callbacks_.erase(found);
 }
 
+void GLES2Implementation::OnSwapBufferPresented(
+    uint64_t swap_id,
+    const gfx::PresentationFeedback& feedback) {
+  auto found = pending_presentation_callbacks_.find(swap_id);
+  if (found == pending_presentation_callbacks_.end())
+    return;
+  std::move(found->second).Run(swap_id, feedback);
+  pending_presentation_callbacks_.erase(found);
+}
+
 void GLES2Implementation::FreeSharedMemory(void* mem) {
   mapped_memory_->FreePendingToken(mem, helper_->InsertToken());
 }
@@ -2336,9 +2346,14 @@ PixelStoreParams GLES2Implementation::GetUnpackParameters(Dimension dimension) {
 }
 
 uint64_t GLES2Implementation::PrepareNextSwapId(
-    SwapCompletedCallback callback) {
+    SwapCompletedCallback completion_callback,
+    PresentationCallback presentation_callback) {
   uint64_t swap_id = swap_id_++;
-  pending_swap_callbacks_.emplace(swap_id, std::move(callback));
+  pending_swap_callbacks_.emplace(swap_id, std::move(completion_callback));
+  if (!presentation_callback.is_null()) {
+    pending_presentation_callbacks_.emplace(swap_id,
+                                            std::move(presentation_callback));
+  }
   return swap_id;
 }
 
@@ -4649,13 +4664,18 @@ GLenum GLES2Implementation::GetGraphicsResetStatusKHR() {
 }
 
 void GLES2Implementation::Swap(uint32_t flags,
-                               SwapCompletedCallback swap_completed) {
-  SwapBuffers(PrepareNextSwapId(std::move(swap_completed)), flags);
+                               SwapCompletedCallback complete_callback,
+                               PresentationCallback presentation_callback) {
+  SwapBuffers(PrepareNextSwapId(std::move(complete_callback),
+                                std::move(presentation_callback)),
+              flags);
 }
 
-void GLES2Implementation::SwapWithBounds(const std::vector<gfx::Rect>& rects,
-                                         uint32_t flags,
-                                         SwapCompletedCallback swap_completed) {
+void GLES2Implementation::SwapWithBounds(
+    const std::vector<gfx::Rect>& rects,
+    uint32_t flags,
+    SwapCompletedCallback swap_completed,
+    PresentationCallback presentation_callback) {
   std::vector<int> rects_data(rects.size() * 4);
   for (size_t i = 0; i < rects.size(); ++i) {
     rects_data[i * 4 + 0] = rects[i].x();
@@ -4663,24 +4683,31 @@ void GLES2Implementation::SwapWithBounds(const std::vector<gfx::Rect>& rects,
     rects_data[i * 4 + 2] = rects[i].width();
     rects_data[i * 4 + 3] = rects[i].height();
   }
-  SwapBuffersWithBoundsCHROMIUM(PrepareNextSwapId(std::move(swap_completed)),
-                                rects.size(), rects_data.data(), flags);
+  SwapBuffersWithBoundsCHROMIUM(
+      PrepareNextSwapId(std::move(swap_completed),
+                        std::move(presentation_callback)),
+      rects.size(), rects_data.data(), flags);
 }
 
 void GLES2Implementation::PartialSwapBuffers(
     const gfx::Rect& sub_buffer,
     uint32_t flags,
-    SwapCompletedCallback swap_completed) {
-  PostSubBufferCHROMIUM(PrepareNextSwapId(std::move(swap_completed)),
+    SwapCompletedCallback swap_completed,
+    PresentationCallback presentation_callback) {
+  PostSubBufferCHROMIUM(PrepareNextSwapId(std::move(swap_completed),
+                                          std::move(presentation_callback)),
                         sub_buffer.x(), sub_buffer.y(), sub_buffer.width(),
                         sub_buffer.height(), flags);
 }
 
 void GLES2Implementation::CommitOverlayPlanes(
     uint32_t flags,
-    SwapCompletedCallback swap_completed) {
-  CommitOverlayPlanesCHROMIUM(PrepareNextSwapId(std::move(swap_completed)),
-                              flags);
+    SwapCompletedCallback swap_completed,
+    PresentationCallback presentation_callback) {
+  CommitOverlayPlanesCHROMIUM(
+      PrepareNextSwapId(std::move(swap_completed),
+                        std::move(presentation_callback)),
+      flags);
 }
 
 static GLenum GetGLESOverlayTransform(gfx::OverlayTransform plane_transform) {

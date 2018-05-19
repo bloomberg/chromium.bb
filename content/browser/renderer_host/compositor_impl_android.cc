@@ -364,14 +364,20 @@ class AndroidOutputSurface : public viz::OutputSurface {
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(frame.latency_info), frame.size);
     uint32_t flags = 0;
-    if (frame.need_presentation_feedback)
+    gpu::ContextSupport::PresentationCallback presentation_callback;
+    if (frame.need_presentation_feedback) {
       flags |= gpu::SwapBuffersFlags::kPresentationFeedback;
+      presentation_callback =
+          base::BindOnce(&AndroidOutputSurface::OnPresentation,
+                         weak_ptr_factory_.GetWeakPtr());
+    }
     if (frame.sub_buffer_rect) {
       DCHECK(frame.sub_buffer_rect->IsEmpty());
       context_provider_->ContextSupport()->CommitOverlayPlanes(
-          flags, std::move(callback));
+          flags, std::move(callback), std::move(presentation_callback));
     } else {
-      context_provider_->ContextSupport()->Swap(flags, std::move(callback));
+      context_provider_->ContextSupport()->Swap(
+          flags, std::move(callback), std::move(presentation_callback));
     }
   }
 
@@ -379,8 +385,6 @@ class AndroidOutputSurface : public viz::OutputSurface {
     DCHECK(client);
     DCHECK(!client_);
     client_ = client;
-    GetCommandBufferProxy()->SetPresentationCallback(base::BindRepeating(
-        &AndroidOutputSurface::OnPresentation, weak_ptr_factory_.GetWeakPtr()));
   }
 
   void EnsureBackbuffer() override {}
