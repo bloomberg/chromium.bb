@@ -81,28 +81,24 @@ void CSSParser::ParseSheetForInspector(const CSSParserContext* context,
                                                     observer);
 }
 
-MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
-    MutableCSSPropertyValueSet* declaration,
-    CSSPropertyID unresolved_property,
-    const String& string,
-    bool important,
-    SecureContextMode secure_context_mode) {
+bool CSSParser::ParseValue(MutableCSSPropertyValueSet* declaration,
+                           CSSPropertyID unresolved_property,
+                           const String& string,
+                           bool important,
+                           SecureContextMode secure_context_mode) {
   return ParseValue(declaration, unresolved_property, string, important,
                     secure_context_mode,
                     static_cast<StyleSheetContents*>(nullptr));
 }
 
-MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
-    MutableCSSPropertyValueSet* declaration,
-    CSSPropertyID unresolved_property,
-    const String& string,
-    bool important,
-    SecureContextMode secure_context_mode,
-    StyleSheetContents* style_sheet) {
+bool CSSParser::ParseValue(MutableCSSPropertyValueSet* declaration,
+                           CSSPropertyID unresolved_property,
+                           const String& string,
+                           bool important,
+                           SecureContextMode secure_context_mode,
+                           StyleSheetContents* style_sheet) {
   if (string.IsEmpty()) {
-    bool did_parse = false;
-    bool did_change = false;
-    return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
+    return false;
   }
 
   CSSPropertyID resolved_property = resolveCSSPropertyID(unresolved_property);
@@ -110,10 +106,9 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
   CSSValue* value = CSSParserFastPaths::MaybeParseValue(resolved_property,
                                                         string, parser_mode);
   if (value) {
-    bool did_parse = true;
-    bool did_change = declaration->SetProperty(CSSPropertyValue(
+    declaration->SetProperty(CSSPropertyValue(
         CSSProperty::Get(resolved_property), *value, important));
-    return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
+    return true;
   }
   CSSParserContext* context;
   if (style_sheet) {
@@ -126,7 +121,7 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
                     context);
 }
 
-MutableCSSPropertyValueSet::SetResult CSSParser::ParseValueForCustomProperty(
+bool CSSParser::ParseValueForCustomProperty(
     MutableCSSPropertyValueSet* declaration,
     const AtomicString& property_name,
     const PropertyRegistry* registry,
@@ -137,9 +132,7 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValueForCustomProperty(
     bool is_animation_tainted) {
   DCHECK(CSSVariableParser::IsValidVariableName(property_name));
   if (value.IsEmpty()) {
-    bool did_parse = false;
-    bool did_change = false;
-    return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
+    return false;
   }
   CSSParserMode parser_mode = declaration->CssParserMode();
   CSSParserContext* context;
@@ -154,12 +147,11 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValueForCustomProperty(
                                            is_animation_tainted);
 }
 
-MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
-    MutableCSSPropertyValueSet* declaration,
-    CSSPropertyID unresolved_property,
-    const String& string,
-    bool important,
-    const CSSParserContext* context) {
+bool CSSParser::ParseValue(MutableCSSPropertyValueSet* declaration,
+                           CSSPropertyID unresolved_property,
+                           const String& string,
+                           bool important,
+                           const CSSParserContext* context) {
   return CSSParserImpl::ParseValue(declaration, unresolved_property, string,
                                    important, context);
 }

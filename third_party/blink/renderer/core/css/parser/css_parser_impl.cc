@@ -65,12 +65,11 @@ CSSParserImpl::CSSParserImpl(const CSSParserContext* context,
                              StyleSheetContents* style_sheet)
     : context_(context), style_sheet_(style_sheet), observer_(nullptr) {}
 
-MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseValue(
-    MutableCSSPropertyValueSet* declaration,
-    CSSPropertyID unresolved_property,
-    const String& string,
-    bool important,
-    const CSSParserContext* context) {
+bool CSSParserImpl::ParseValue(MutableCSSPropertyValueSet* declaration,
+                               CSSPropertyID unresolved_property,
+                               const String& string,
+                               bool important,
+                               const CSSParserContext* context) {
   CSSParserImpl parser(context);
   StyleRule::RuleType rule_type = StyleRule::kStyle;
   if (declaration->CssParserMode() == kCSSViewportRuleMode)
@@ -81,23 +80,20 @@ MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseValue(
   // TODO(crbug.com/661854): Use streams instead of ranges
   parser.ConsumeDeclarationValue(CSSParserTokenRange(tokenizer.TokenizeToEOF()),
                                  unresolved_property, important, rule_type);
-  bool did_parse = false;
-  bool did_change = false;
-  if (!parser.parsed_properties_.IsEmpty()) {
-    did_parse = true;
-    did_change = declaration->AddParsedProperties(parser.parsed_properties_);
+  if (parser.parsed_properties_.IsEmpty()) {
+    return false;
   }
-  return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
+  declaration->AddParsedProperties(parser.parsed_properties_);
+  return true;
 }
 
-MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseVariableValue(
-    MutableCSSPropertyValueSet* declaration,
-    const AtomicString& property_name,
-    const PropertyRegistry* registry,
-    const String& value,
-    bool important,
-    const CSSParserContext* context,
-    bool is_animation_tainted) {
+bool CSSParserImpl::ParseVariableValue(MutableCSSPropertyValueSet* declaration,
+                                       const AtomicString& property_name,
+                                       const PropertyRegistry* registry,
+                                       const String& value,
+                                       bool important,
+                                       const CSSParserContext* context,
+                                       bool is_animation_tainted) {
   CSSParserImpl parser(context);
   CSSTokenizer tokenizer(value);
   // TODO(crbug.com/661854): Use streams instead of ranges
@@ -105,25 +101,23 @@ MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseVariableValue(
   const CSSParserTokenRange range(tokens);
   parser.ConsumeVariableValue(range, property_name, important,
                               is_animation_tainted);
-  bool did_parse = false;
-  bool did_change = false;
-  if (!parser.parsed_properties_.IsEmpty()) {
-    const CSSCustomPropertyDeclaration* parsed_declaration =
-        ToCSSCustomPropertyDeclaration(parser.parsed_properties_[0].Value());
-    if (parsed_declaration->Value() && registry) {
-      const PropertyRegistration* registration =
-          registry->Registration(property_name);
-      // TODO(timloh): This is a bit wasteful, we parse the registered property
-      // to validate but throw away the result.
-      if (registration &&
-          !registration->Syntax().Parse(range, context, is_animation_tainted)) {
-        return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
-      }
+  if (parser.parsed_properties_.IsEmpty())
+    return false;
+
+  const CSSCustomPropertyDeclaration* parsed_declaration =
+      ToCSSCustomPropertyDeclaration(parser.parsed_properties_[0].Value());
+  if (parsed_declaration->Value() && registry) {
+    const PropertyRegistration* registration =
+        registry->Registration(property_name);
+    // TODO(timloh): This is a bit wasteful, we parse the registered property
+    // to validate but throw away the result.
+    if (registration &&
+        !registration->Syntax().Parse(range, context, is_animation_tainted)) {
+      return false;
     }
-    did_parse = true;
-    did_change = declaration->AddParsedProperties(parser.parsed_properties_);
   }
-  return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
+  declaration->AddParsedProperties(parser.parsed_properties_);
+  return true;
 }
 
 static inline void FilterProperties(
@@ -216,7 +210,8 @@ bool CSSParserImpl::ParseDeclarationList(
                    seen_properties, seen_custom_properties);
   if (unused_entries)
     results.EraseAt(0, unused_entries);
-  return declaration->AddParsedProperties(results);
+  declaration->AddParsedProperties(results);
+  return true;
 }
 
 StyleRuleBase* CSSParserImpl::ParseRule(const String& string,
