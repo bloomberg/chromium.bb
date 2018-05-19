@@ -64,7 +64,8 @@ class OffscreenBrowserCompositorOutputSurface
   unsigned UpdateGpuFence() override;
 
   void OnSwapBuffersComplete(const std::vector<ui::LatencyInfo>& latency_info,
-                             uint64_t swap_id);
+                             uint64_t swap_id,
+                             bool need_presentation_feedback);
 
   viz::OutputSurfaceClient* client_ = nullptr;
   gfx::Size reshape_size_;

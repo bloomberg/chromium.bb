@@ -45,7 +45,7 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
   unsigned UpdateGpuFence() override;
 
  private:
-  void SwapBuffersCallback(uint64_t swap_id);
+  void SwapBuffersCallback(uint64_t swap_id, bool need_presentation_feedback);
 
   OutputSurfaceClient* client_ = nullptr;
   base::TimeDelta refresh_interval_;

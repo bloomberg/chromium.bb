@@ -47,7 +47,8 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
 
  private:
   void SwapBuffersCallback(uint64_t swap_id,
-                           const std::vector<ui::LatencyInfo>& latency_info);
+                           const std::vector<ui::LatencyInfo>& latency_info,
+                           bool need_presentation_feedback);
   void UpdateVSyncCallback(const base::TimeTicks timebase,
                            const base::TimeDelta interval);
 
