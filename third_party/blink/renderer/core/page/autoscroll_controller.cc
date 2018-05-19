@@ -317,8 +317,9 @@ void AutoscrollController::Animate() {
   EventHandler& event_handler =
       autoscroll_layout_object_->GetFrame()->GetEventHandler();
   IntSize offset = autoscroll_layout_object_->CalculateAutoscrollDirection(
-      event_handler.LastKnownMousePosition());
-  IntPoint selection_point = event_handler.LastKnownMousePosition() + offset;
+      event_handler.LastKnownMousePositionInRootFrame());
+  IntPoint selection_point =
+      event_handler.LastKnownMousePositionInRootFrame() + offset;
   switch (autoscroll_type_) {
     case kAutoscrollForDragAndDrop:
       ScheduleMainThreadAnimation();

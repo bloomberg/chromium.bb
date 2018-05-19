@@ -55,7 +55,7 @@ class CORE_EXPORT SelectionController final
   void HandleMouseDraggedEvent(const MouseEventWithHitTestResults&,
                                const IntPoint&,
                                const LayoutPoint&,
-                               const IntPoint&);
+                               const LayoutPoint&);
   bool HandleMouseReleaseEvent(const MouseEventWithHitTestResults&,
                                const LayoutPoint&);
   bool HandlePasteGlobalSelection(const WebMouseEvent&);
@@ -63,10 +63,10 @@ class CORE_EXPORT SelectionController final
   void HandleGestureTwoFingerTap(const GestureEventWithHitTestResults&);
   void HandleGestureLongTap(const GestureEventWithHitTestResults&);
 
-  void UpdateSelectionForMouseDrag(const LayoutPoint&, const IntPoint&);
+  void UpdateSelectionForMouseDrag(const LayoutPoint&, const LayoutPoint&);
   void UpdateSelectionForMouseDrag(const HitTestResult&,
                                    const LayoutPoint&,
-                                   const IntPoint&);
+                                   const LayoutPoint&);
   void SendContextMenuEvent(const MouseEventWithHitTestResults&,
                             const LayoutPoint&);
   void PassMousePressEventToSubframe(const MouseEventWithHitTestResults&);

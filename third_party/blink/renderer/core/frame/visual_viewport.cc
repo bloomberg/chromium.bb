@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -306,6 +307,9 @@ bool VisualViewport::DidSetScaleOrLocation(float scale,
 
   if (!values_changed)
     return false;
+
+  MainFrame()->GetEventHandler().DispatchFakeMouseMoveEventSoon(
+      MouseEventManager::FakeMouseMoveReason::kDuringScroll);
 
   probe::didChangeViewport(MainFrame());
   MainFrame()->Loader().SaveScrollState();

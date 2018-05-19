@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/events/drag_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -370,11 +371,9 @@ void MouseEventManager::FakeMouseMoveEventTimerFired(TimerBase* timer) {
                                       last_known_mouse_position_,
                                       last_known_mouse_global_position_, button,
                                       0, modifiers, CurrentTimeTicks());
-  // TODO(dtapuska): Update m_lastKnowMousePosition to be viewport coordinates.
-  fake_mouse_move_event.SetFrameScale(1);
   Vector<WebMouseEvent> coalesced_events;
-  frame_->GetEventHandler().HandleMouseMoveEvent(fake_mouse_move_event,
-                                                 coalesced_events);
+  frame_->GetEventHandler().HandleMouseMoveEvent(
+      TransformWebMouseEvent(view, fake_mouse_move_event), coalesced_events);
 }
 
 void MouseEventManager::CancelFakeMouseMoveEvent() {
@@ -613,7 +612,7 @@ FloatPoint MouseEventManager::LastKnownMousePositionGlobal() {
 
 void MouseEventManager::SetLastKnownMousePosition(const WebMouseEvent& event) {
   is_mouse_position_unknown_ = event.GetType() == WebInputEvent::kMouseLeave;
-  last_known_mouse_position_ = event.PositionInRootFrame();
+  last_known_mouse_position_ = event.PositionInWidget();
   last_known_mouse_global_position_ = event.PositionInScreen();
 }
 
@@ -653,8 +652,7 @@ void MouseEventManager::DispatchFakeMouseMoveEventSoonInQuad(
   if (!view)
     return;
 
-  if (!quad.ContainsPoint(
-          view->RootFrameToContents(last_known_mouse_position_)))
+  if (!quad.ContainsPoint(view->ViewportToContents(last_known_mouse_position_)))
     return;
 
   DispatchFakeMouseMoveEventSoon(
@@ -740,7 +738,7 @@ void MouseEventManager::UpdateSelectionForMouseDrag() {
   frame_->GetEventHandler()
       .GetSelectionController()
       .UpdateSelectionForMouseDrag(drag_start_pos_,
-                                   FlooredIntPoint(last_known_mouse_position_));
+                                   LayoutPoint(last_known_mouse_position_));
 }
 
 bool MouseEventManager::HandleDragDropIfPossible(
@@ -852,7 +850,7 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
 
   frame_->GetEventHandler().GetSelectionController().HandleMouseDraggedEvent(
       event, mouse_down_pos_, drag_start_pos_,
-      FlooredIntPoint(last_known_mouse_position_));
+      LayoutPoint(last_known_mouse_position_));
 
   // The call into HandleMouseDraggedEvent may have caused a re-layout,
   // so get the LayoutObject again.
@@ -1136,7 +1134,7 @@ bool MouseEventManager::HandleSvgPanIfNeeded(bool is_release_event) {
     return false;
   svg_pan_ = !is_release_event;
   frame_->GetDocument()->AccessSVGExtensions().UpdatePan(
-      frame_->View()->RootFrameToContents(last_known_mouse_position_));
+      frame_->View()->ViewportToContents(last_known_mouse_position_));
   return true;
 }
 
