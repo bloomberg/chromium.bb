@@ -11,9 +11,9 @@
 #include "net/third_party/quic/test_tools/simulator/simulator.h"
 #include "net/third_party/quic/test_tools/simulator/switch.h"
 
+using ::testing::_;
 using ::testing::NiceMock;
 using ::testing::Return;
-using ::testing::_;
 
 namespace net {
 namespace simulator {
@@ -132,6 +132,9 @@ TEST_F(QuicEndpointTest, TwoWayTransmission) {
                           Perspective::IS_SERVER, 42);
   auto link_a = Link(&endpoint_a, switch_.port(1));
   auto link_b = Link(&endpoint_b, switch_.port(2));
+
+  endpoint_a.RecordTrace();
+  endpoint_b.RecordTrace();
 
   endpoint_a.AddBytesToTransfer(1024 * 1024);
   endpoint_b.AddBytesToTransfer(1024 * 1024);
