@@ -17,7 +17,6 @@ class ClipPaintPropertyNode;
 class ScrollPaintPropertyNode;
 class LayoutPoint;
 
-typedef bool TestParamRootLayerScrolling;
 class PaintPropertyTreeBuilderTest : public PaintControllerPaintTest {
  public:
   PaintPropertyTreeBuilderTest()
@@ -26,16 +25,14 @@ class PaintPropertyTreeBuilderTest : public PaintControllerPaintTest {
  protected:
   void LoadTestData(const char* file_name);
 
-  // The following helpers return paint property nodes associated with the main
-  // LocalFrameView, accounting for differences from the RootLayerScrolls
-  // setting.
-  const TransformPaintPropertyNode* FramePreTranslation(
-      const LocalFrameView* = nullptr);
-  const TransformPaintPropertyNode* FrameScrollTranslation(
-      const LocalFrameView* = nullptr);
-  const ClipPaintPropertyNode* FrameContentClip(
-      const LocalFrameView* = nullptr);
-  const ScrollPaintPropertyNode* FrameScroll(const LocalFrameView* = nullptr);
+  // These helpers return paint property nodes associated with a document (the
+  // main frame's document if not otherwise specified).
+  const TransformPaintPropertyNode* DocPreTranslation(
+      const Document* = nullptr);
+  const TransformPaintPropertyNode* DocScrollTranslation(
+      const Document* = nullptr);
+  const ClipPaintPropertyNode* DocContentClip(const Document* = nullptr);
+  const ScrollPaintPropertyNode* DocScroll(const Document* = nullptr);
 
   // Return the local border box's paint offset. For more details, see
   // ObjectPaintProperties::localBorderBoxProperties().

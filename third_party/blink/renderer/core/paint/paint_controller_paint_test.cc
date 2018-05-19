@@ -155,7 +155,7 @@ TEST_P(PaintControllerPaintTestForSPv2, FrameScrollingContents) {
   auto& div1 = *GetLayoutObjectByElementId("div1");
 
   // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
-  // small for RootLayerScrolling.
+  // small?
   EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 3,
                       TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
                       TestDisplayItem(GetLayoutView(), kScrollHitTestType),
@@ -166,7 +166,7 @@ TEST_P(PaintControllerPaintTestForSPv2, FrameScrollingContents) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
-  // small for RootLayerScrolling.
+  // small?
   EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 2,
                       TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
                       TestDisplayItem(GetLayoutView(), kScrollHitTestType));
