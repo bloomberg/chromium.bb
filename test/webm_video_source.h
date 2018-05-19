@@ -28,7 +28,7 @@ class WebMVideoSource : public CompressedVideoSource {
   explicit WebMVideoSource(const std::string &file_name)
       : file_name_(file_name), aom_ctx_(new AvxInputContext()),
         webm_ctx_(new WebmInputContext()), buf_(NULL), buf_sz_(0), frame_sz_(0),
-        frame_(0), end_of_file_(false) {}
+        frame_number_(0), end_of_file_(false) {}
 
   virtual ~WebMVideoSource() {
     if (aom_ctx_->file != NULL) fclose(aom_ctx_->file);
@@ -50,7 +50,7 @@ class WebMVideoSource : public CompressedVideoSource {
   }
 
   virtual void Next() {
-    ++frame_;
+    ++frame_number_;
     FillFrame();
   }
 
@@ -69,7 +69,7 @@ class WebMVideoSource : public CompressedVideoSource {
       const int status =
           webm_read_frame(webm_ctx_, &buf_, &frame_sz_, &buf_sz_);
       ASSERT_GE(status, 0) << "webm_read_frame failed";
-      ++frame_;
+      ++frame_number_;
       if (status == 1) {
         end_of_file_ = true;
       }
@@ -78,16 +78,16 @@ class WebMVideoSource : public CompressedVideoSource {
 
   virtual const uint8_t *cxdata() const { return end_of_file_ ? NULL : buf_; }
   virtual size_t frame_size() const { return frame_sz_; }
-  virtual unsigned int frame_number() const { return frame_; }
+  virtual unsigned int frame_number() const { return frame_number_; }
 
  protected:
   std::string file_name_;
   AvxInputContext *aom_ctx_;
   WebmInputContext *webm_ctx_;
-  uint8_t *buf_;
+  uint8_t *buf_;  // Owned by webm_ctx_ and freed when webm_ctx_ is freed.
   size_t buf_sz_;
   size_t frame_sz_;
-  unsigned int frame_;
+  unsigned int frame_number_;
   bool end_of_file_;
 };
 
