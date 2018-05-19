@@ -18,6 +18,7 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/file_url_loader_factory.h"
+#include "content/browser/fileapi/file_system_url_loader_factory.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
@@ -1265,6 +1266,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info;
   network::mojom::URLLoaderFactoryRequest proxied_factory_request;
+  auto* partition = static_cast<StoragePartitionImpl*>(storage_partition);
   if (frame_tree_node) {
     // |frame_tree_node| may be null in some unit test environments.
     GetContentClient()
@@ -1290,9 +1292,15 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       proxied_factory_request = std::move(factory_request);
       proxied_factory_info = std::move(factory_info);
     }
+
+    const std::string storage_domain;
+    non_network_url_loader_factories_[url::kFileSystemScheme] =
+        CreateFileSystemURLLoaderFactory(frame_tree_node->current_frame_host(),
+                                         /*is_navigation=*/true,
+                                         partition->GetFileSystemContext(),
+                                         storage_domain);
   }
 
-  auto* partition = static_cast<StoragePartitionImpl*>(storage_partition);
   non_network_url_loader_factories_[url::kFileScheme] =
       std::make_unique<FileURLLoaderFactory>(
           partition->browser_context()->GetPath(),

@@ -36,6 +36,7 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/file_url_loader_factory.h"
+#include "content/browser/fileapi/file_system_url_loader_factory.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -3588,6 +3589,7 @@ void RenderFrameHostImpl::CommitNavigation(
       (!is_same_document || is_first_navigation)) {
     subresource_loader_factories =
         std::make_unique<URLLoaderFactoryBundleInfo>();
+    BrowserContext* browser_context = GetSiteInstance()->GetBrowserContext();
     // NOTE: On Network Service navigations, we want to ensure that a frame is
     // given everything it will need to load any accessible subresources. We
     // however only do this for cross-document navigations, because the
@@ -3595,7 +3597,7 @@ void RenderFrameHostImpl::CommitNavigation(
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
     StoragePartitionImpl* storage_partition =
         static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
-            GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
+            browser_context, GetSiteInstance()));
     if (subresource_loader_params &&
         subresource_loader_params->loader_factory_info.is_valid()) {
       // If the caller has supplied a default URLLoaderFactory override (for
@@ -3643,13 +3645,29 @@ void RenderFrameHostImpl::CommitNavigation(
     if (common_params.url.SchemeIsFile()) {
       // Only file resources can load file subresources
       auto file_factory = std::make_unique<FileURLLoaderFactory>(
-          GetProcess()->GetBrowserContext()->GetPath(),
+          browser_context->GetPath(),
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BACKGROUND,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
       non_network_url_loader_factories_.emplace(url::kFileScheme,
                                                 std::move(file_factory));
     }
+
+    StoragePartition* partition =
+        BrowserContext::GetStoragePartition(browser_context, GetSiteInstance());
+    std::string storage_domain;
+    if (site_instance_) {
+      std::string partition_name;
+      bool in_memory;
+      GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+          browser_context, site_instance_->GetSiteURL(), true, &storage_domain,
+          &partition_name, &in_memory);
+    }
+    non_network_url_loader_factories_.emplace(
+        url::kFileSystemScheme,
+        content::CreateFileSystemURLLoaderFactory(
+            this, /*is_navigation=*/false, partition->GetFileSystemContext(),
+            storage_domain));
 
     GetContentClient()
         ->browser()

@@ -3,7 +3,6 @@
 
 Bug(none) external/wpt/clear-site-data/storage.https.html [ Failure ]
 Bug(none) external/wpt/clear-site-data/navigation.https.html [ Timeout ]
-Bug(none) external/wpt/content-security-policy/generic/filesystem-urls-match-filesystem.sub.html [ Failure ]
 Bug(none) external/wpt/content-security-policy/inside-worker/dedicated-script.html [ Failure Timeout ]
 Bug(none) external/wpt/content-security-policy/inside-worker/dedicated-inheritance.html [ Failure ]
 Bug(none) external/wpt/html/browsers/offline/appcache/workers/appcache-worker.html [ Timeout ]
@@ -22,7 +21,6 @@ Bug(none) http/tests/security/contentSecurityPolicy/cascade/same-origin-with-own
 Bug(none) http/tests/security/cors-rfc1918 [ Crash Timeout ]
 Bug(none) http/tests/security/mime-type-execute-as-html-01.html [ Failure ]
 Bug(none) http/tests/security/mime-type-execute-as-html-04.html [ Failure ]
-Bug(none) http/tests/security/mixedContent/filesystem-url-in-iframe.html [ Failure Timeout ]
 Bug(none) http/tests/security/powerfulFeatureRestrictions/old-powerful-features-on-insecure-origin.html [ Pass Timeout ]
 
 # Cross-Origin Read Blocking is not implemented.
