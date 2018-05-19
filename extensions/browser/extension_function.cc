@@ -564,15 +564,6 @@ void UIThreadExtensionFunction::SetRenderFrameHost(
       render_frame_host ? new RenderFrameHostTracker(this) : nullptr);
 }
 
-content::WebContents*
-UIThreadExtensionFunction::GetAssociatedWebContentsDeprecated() {
-  content::WebContents* web_contents = NULL;
-  if (dispatcher())
-    web_contents = dispatcher()->GetAssociatedWebContents();
-
-  return web_contents;
-}
-
 content::WebContents* UIThreadExtensionFunction::GetSenderWebContents() {
   return render_frame_host_ ?
       content::WebContents::FromRenderFrameHost(render_frame_host_) : nullptr;

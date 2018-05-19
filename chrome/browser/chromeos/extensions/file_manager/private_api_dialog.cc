@@ -7,9 +7,12 @@
 #include <stddef.h>
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_function_dispatcher.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
 using content::BrowserThread;
@@ -18,11 +21,29 @@ namespace extensions {
 
 namespace {
 
+// TODO(https://crbug.com/844654): This should be using something more
+// deterministic.
+content::WebContents* GetAssociatedWebContentsDeprecated(
+    ChromeAsyncExtensionFunction* function) {
+  if (function->dispatcher()) {
+    content::WebContents* web_contents =
+        function->dispatcher()->GetAssociatedWebContents();
+    if (web_contents)
+      return web_contents;
+  }
+
+  Browser* browser =
+      ChromeExtensionFunctionDetails(function).GetCurrentBrowser();
+  if (!browser)
+    return nullptr;
+  return browser->tab_strip_model()->GetActiveWebContents();
+}
+
 // Computes the routing ID for SelectFileDialogExtension from the |function|.
 SelectFileDialogExtension::RoutingID GetFileDialogRoutingID(
     ChromeAsyncExtensionFunction* function) {
   return SelectFileDialogExtension::GetRoutingIDFromWebContents(
-      function->GetAssociatedWebContentsDeprecated());
+      GetAssociatedWebContentsDeprecated(function));
 }
 
 }  // namespace

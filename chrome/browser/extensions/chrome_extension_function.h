@@ -11,10 +11,6 @@
 
 class Profile;
 
-namespace content {
-class WebContents;
-}
-
 // A chrome specific analog to AsyncExtensionFunction. This has access to a
 // chrome Profile.
 //
@@ -29,8 +25,6 @@ class ChromeAsyncExtensionFunction : public UIThreadExtensionFunction {
 
   void SetError(const std::string& error);
 
-  // ExtensionFunction:
-  content::WebContents* GetAssociatedWebContentsDeprecated() override;
   const std::string& GetError() const override;
 
  protected:

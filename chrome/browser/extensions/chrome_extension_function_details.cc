@@ -70,21 +70,6 @@ Browser* ChromeExtensionFunctionDetails::GetCurrentBrowser() const {
   return NULL;
 }
 
-content::WebContents*
-ChromeExtensionFunctionDetails::GetAssociatedWebContentsDeprecated() {
-  if (function_->dispatcher()) {
-    content::WebContents* web_contents =
-        function_->dispatcher()->GetAssociatedWebContents();
-    if (web_contents)
-      return web_contents;
-  }
-
-  Browser* browser = GetCurrentBrowser();
-  if (!browser)
-    return NULL;
-  return browser->tab_strip_model()->GetActiveWebContents();
-}
-
 gfx::NativeWindow ChromeExtensionFunctionDetails::GetNativeWindowForUI() {
   // Try to use WindowControllerList first because WebContents's
   // GetTopLevelNativeWindow() can't return the top level window when the tab
