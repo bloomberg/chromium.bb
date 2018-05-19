@@ -1096,8 +1096,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // should have been one.
     if (root_view != touchscreen_gesture_target_.target &&
         !rwhi->is_in_touchscreen_gesture_scroll()) {
-      cc::TouchAction target_allowed_touch_action =
-          cc::TouchAction::kTouchActionAuto;
+      base::Optional<cc::TouchAction> target_allowed_touch_action;
       if (touchscreen_gesture_target_.target) {
         target_allowed_touch_action =
             (static_cast<RenderWidgetHostImpl*>(
@@ -1105,7 +1104,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
                 ->input_router()
                 ->AllowedTouchAction();
       }
-      if (target_allowed_touch_action &
+      if (target_allowed_touch_action.value() &
           cc::TouchAction::kTouchActionPinchZoom) {
         gesture_pinch_did_send_scroll_begin_ = true;
         SendGestureScrollBegin(root_view, gesture_event);

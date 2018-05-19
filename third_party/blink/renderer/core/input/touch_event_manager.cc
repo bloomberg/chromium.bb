@@ -547,14 +547,12 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
 
   TouchAction effective_touch_action =
       TouchActionUtil::ComputeEffectiveTouchAction(*touch_node);
-  if (effective_touch_action != TouchAction::kTouchActionAuto) {
-    frame_->GetPage()->GetChromeClient().SetTouchAction(frame_,
-                                                        effective_touch_action);
+  frame_->GetPage()->GetChromeClient().SetTouchAction(frame_,
+                                                      effective_touch_action);
 
-    // Combine the current touch action sequence with the touch action
-    // for the current finger press.
-    current_touch_action_ &= effective_touch_action;
-  }
+  // Combine the current touch action sequence with the touch action
+  // for the current finger press.
+  current_touch_action_ &= effective_touch_action;
 }
 
 void TouchEventManager::HandleTouchPoint(
