@@ -612,12 +612,6 @@ void LocalFrameView::SetFrameRect(const IntRect& unclamped_frame_rect) {
 
   UpdateParentScrollableAreaSet();
 
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    // The overflow clip property depends on the frame size and the pre
-    // translation property depends on the frame location.
-    SetNeedsPaintPropertyUpdate();
-  }
-
   if (auto* layout_view = GetLayoutView())
     layout_view->SetMayNeedPaintInvalidation();
 
@@ -1372,11 +1366,9 @@ void LocalFrameView::UpdateLayout() {
 
 void LocalFrameView::SetNeedsPaintPropertyUpdate() {
   needs_paint_property_update_ = true;
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    if (auto* layout_view = this->GetLayoutView()) {
-      layout_view->SetNeedsPaintPropertyUpdate();
-      return;
-    }
+  if (auto* layout_view = this->GetLayoutView()) {
+    layout_view->SetNeedsPaintPropertyUpdate();
+    return;
   }
   if (LayoutObject* owner = GetFrame().OwnerLayoutObject())
     owner->SetNeedsPaintPropertyUpdate();
@@ -4864,11 +4856,6 @@ void LocalFrameView::ScrollContents(const IntSize& scroll_delta) {
   if (!ScrollContentsFastPath(-scroll_delta))
     ScrollContentsSlowPath();
 
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    // Need to update scroll translation property.
-    SetNeedsPaintPropertyUpdate();
-  }
-
   // This call will move children with native FrameViews (plugins) and
   // invalidate them as well.
   FrameRectsChanged();
@@ -5372,11 +5359,6 @@ void LocalFrameView::Show() {
     }
     SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
     UpdateParentScrollableAreaSet();
-    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      // The existance of scrolling properties depends on visibility through
-      // isScrollable() so ensure properties are updated if visibility changes.
-      SetNeedsPaintPropertyUpdate();
-    }
     if (IsParentVisible()) {
       ForAllChildViewsAndPlugins(
           [](EmbeddedContentView& embedded_content_view) {
@@ -5401,11 +5383,6 @@ void LocalFrameView::Hide() {
     }
     SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
     UpdateParentScrollableAreaSet();
-    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      // The existance of scrolling properties depends on visibility through
-      // isScrollable() so ensure properties are updated if visibility changes.
-      SetNeedsPaintPropertyUpdate();
-    }
   }
 }
 
@@ -5868,14 +5845,16 @@ MainThreadScrollingReasons LocalFrameView::GetMainThreadScrollingReasons()
 
 String LocalFrameView::MainThreadScrollingReasonsAsText() {
   MainThreadScrollingReasons reasons = main_thread_scrolling_reasons_;
+  // TODO(pdr): We should also use the property tree main thread scrolling
+  // reasons when RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled is true.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
 
     // Slimming paint v2 stores main thread scrolling reasons on property
     // trees instead of in |main_thread_scrolling_reasons_|.
-    if (const auto* scroll_translation = this->ScrollTranslation()) {
-      reasons =
-          scroll_translation->ScrollNode()->GetMainThreadScrollingReasons();
+    if (const auto* scroll =
+            GetLayoutView()->FirstFragment().PaintProperties()->Scroll()) {
+      reasons = scroll->GetMainThreadScrollingReasons();
     }
   } else {
     DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kCompositingClean);

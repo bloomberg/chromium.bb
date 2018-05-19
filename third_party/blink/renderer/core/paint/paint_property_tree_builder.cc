@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
@@ -49,248 +48,21 @@ PaintPropertyTreeBuilderFragmentContext::
       ScrollPaintPropertyNode::Root();
 }
 
-// Returns true if we are printing which was initiated by the frame. We should
-// ignore clipping and scroll transform on contents. WebLocalFrameImpl will
-// issue artificial page clip for each page, and always print from the origin
-// of the contents for which no scroll offset should be applied.
-static bool IsPrintingRootFrame(const LocalFrame& frame) {
-  if (!frame.GetDocument()->Printing())
-    return false;
-
-  const auto* parent_frame = frame.Tree().Parent();
-  if (!parent_frame)
-    return true;
-  // TODO(crbug.com/455764): The local frame may be not the root frame of
-  // printing when it's printing under a remote frame.
-  if (!parent_frame->IsLocalFrame())
-    return true;
-
-  // If the parent frame is printing, this frame should clip normally.
-  return !ToLocalFrame(parent_frame)->GetDocument()->Printing();
-}
-
-static bool IsPrintingRootLayoutView(const LayoutObject& object) {
-  return object.IsLayoutView() && IsPrintingRootFrame(*object.GetFrame());
-}
-
-// True if a new property was created, false if an existing one was updated.
-static bool UpdatePreTranslation(
-    LocalFrameView& frame_view,
-    scoped_refptr<const TransformPaintPropertyNode> parent,
-    const TransformationMatrix& matrix,
-    const FloatPoint3D& origin) {
-  TransformPaintPropertyNode::State state{matrix, origin};
-  DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
-  if (auto* existing_pre_translation = frame_view.PreTranslation()) {
-    existing_pre_translation->Update(std::move(parent), std::move(state));
-    return false;
-  }
-  frame_view.SetPreTranslation(
-      TransformPaintPropertyNode::Create(std::move(parent), std::move(state)));
-  return true;
-}
-
-// True if a new property was created, false if an existing one was updated.
-static bool UpdateContentClip(
-    LocalFrameView& frame_view,
-    scoped_refptr<const ClipPaintPropertyNode> parent,
-    scoped_refptr<const TransformPaintPropertyNode> local_transform_space,
-    const FloatRoundedRect& clip_rect,
-    bool& clip_changed) {
-  DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
-  if (auto* existing_content_clip = frame_view.ContentClip()) {
-    if (existing_content_clip->ClipRect() != clip_rect)
-      clip_changed = true;
-    existing_content_clip->Update(
-        std::move(parent), ClipPaintPropertyNode::State{
-                               std::move(local_transform_space), clip_rect});
-    return false;
-  }
-  frame_view.SetContentClip(ClipPaintPropertyNode::Create(
-      std::move(parent), ClipPaintPropertyNode::State{
-                             std::move(local_transform_space), clip_rect}));
-  clip_changed = true;
-  return true;
-}
-
-static MainThreadScrollingReasons GetMainThreadScrollingReasons(
-    const LocalFrameView& frame_view,
-    MainThreadScrollingReasons ancestor_reasons) {
-  auto reasons = ancestor_reasons;
-  if (!frame_view.GetFrame().GetSettings()->GetThreadedScrollingEnabled())
-    reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
-  if (frame_view.HasBackgroundAttachmentFixedObjects())
-    reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
-  return reasons;
-}
-
-// True if a new property was created or a main thread scrolling reason changed
-// (which can affect descendants), false if an existing one was updated.
-static bool UpdateScroll(LocalFrameView& frame_view,
-                         PaintPropertyTreeBuilderFragmentContext& context) {
-  DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
-  ScrollPaintPropertyNode::State state;
-  state.container_rect = IntRect(IntPoint(), frame_view.VisibleContentSize());
-  state.contents_rect =
-      IntRect(-frame_view.ScrollOrigin(), frame_view.ContentsSize());
-  state.user_scrollable_horizontal =
-      frame_view.UserInputScrollable(kHorizontalScrollbar);
-  state.user_scrollable_vertical =
-      frame_view.UserInputScrollable(kVerticalScrollbar);
-  auto ancestor_reasons =
-      context.current.scroll->GetMainThreadScrollingReasons();
-  state.main_thread_scrolling_reasons =
-      GetMainThreadScrollingReasons(frame_view, ancestor_reasons);
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    state.compositor_element_id = frame_view.GetCompositorElementId();
-
-  if (auto* existing_scroll = frame_view.ScrollNode()) {
-    auto existing_reasons = existing_scroll->GetMainThreadScrollingReasons();
-    existing_scroll->Update(context.current.scroll, std::move(state));
-    return existing_reasons != state.main_thread_scrolling_reasons;
-  }
-  frame_view.SetScrollNode(ScrollPaintPropertyNode::Create(
-      context.current.scroll, std::move(state)));
-  return true;
-}
-
-// True if a new property was created, false if an existing one was updated.
-static bool UpdateScrollTranslation(
-    LocalFrameView& frame_view,
-    scoped_refptr<const TransformPaintPropertyNode> parent,
-    const TransformationMatrix& matrix,
-    scoped_refptr<ScrollPaintPropertyNode> scroll) {
-  DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
-  // TODO(pdr): Set the correct compositing reasons here.
-  TransformPaintPropertyNode::State state;
-  state.matrix = matrix;
-  state.scroll = std::move(scroll);
-  if (auto* existing_scroll_translation = frame_view.ScrollTranslation()) {
-    existing_scroll_translation->Update(std::move(parent), std::move(state));
-    return false;
-  }
-  frame_view.SetScrollTranslation(
-      TransformPaintPropertyNode::Create(std::move(parent), std::move(state)));
-  return true;
-}
-
-void FrameViewPaintPropertyTreeBuilder::Update(
+void PaintPropertyTreeBuilder::SetupContextForFrame(
     LocalFrameView& frame_view,
     PaintPropertyTreeBuilderContext& full_context) {
   if (full_context.fragments.IsEmpty())
     full_context.fragments.push_back(PaintPropertyTreeBuilderFragmentContext());
 
   PaintPropertyTreeBuilderFragmentContext& context = full_context.fragments[0];
-
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    // With root layer scrolling, the LayoutView (a LayoutObject) properties are
-    // updated like other objects (see updatePropertiesAndContextForSelf and
-    // updatePropertiesAndContextForChildren) instead of needing LayoutView-
-    // specific property updates here.
-    context.current.paint_offset.MoveBy(frame_view.Location());
-    context.current.rendering_context_id = 0;
-    context.current.should_flatten_inherited_transform = true;
-    context.absolute_position = context.current;
-    full_context.container_for_absolute_position = nullptr;
-    full_context.container_for_fixed_position = nullptr;
-    context.fixed_position = context.current;
-    context.fixed_position.fixed_position_children_fixed_to_root = true;
-    return;
-  } else {
-    context.current.paint_offset_root = frame_view.GetLayoutView();
-  }
-
-#if DCHECK_IS_ON()
-  FindFrameViewPropertiesNeedingUpdateScope check_scope(
-      &frame_view, full_context.is_actually_needed);
-#endif
-
-  if (frame_view.NeedsPaintPropertyUpdate() ||
-      full_context.force_subtree_update) {
-    TransformationMatrix frame_translate;
-    frame_translate.Translate(
-        frame_view.X() + context.current.paint_offset.X(),
-        frame_view.Y() + context.current.paint_offset.Y());
-    bool property_added_or_removed = UpdatePreTranslation(
-        frame_view, context.current.transform, frame_translate, FloatPoint3D());
-
-    bool is_printing_root = IsPrintingRootFrame(frame_view.GetFrame());
-
-    FloatRoundedRect content_clip(
-        is_printing_root
-            ? LayoutRect::InfiniteIntRect()
-            : IntRect(IntPoint(), frame_view.VisibleContentSize()));
-    property_added_or_removed |= UpdateContentClip(
-        frame_view, context.current.clip, frame_view.PreTranslation(),
-        content_clip, full_context.clip_changed);
-
-    if (!is_printing_root && frame_view.IsScrollable()) {
-      property_added_or_removed |= UpdateScroll(frame_view, context);
-    } else if (frame_view.ScrollNode()) {
-      // Ensure pre-existing properties are cleared if there is no scrolling.
-      frame_view.SetScrollNode(nullptr);
-      property_added_or_removed = true;
-    }
-
-    // A scroll translation node is created for static offset (e.g., overflow
-    // hidden with scroll offset) or cases that scroll and have a scroll node.
-    ScrollOffset scroll_offset = frame_view.GetScrollOffset();
-    if (!is_printing_root &&
-        (frame_view.IsScrollable() || !scroll_offset.IsZero())) {
-      TransformationMatrix frame_scroll;
-      frame_scroll.Translate(-scroll_offset.Width(), -scroll_offset.Height());
-      property_added_or_removed |=
-          UpdateScrollTranslation(frame_view, frame_view.PreTranslation(),
-                                  frame_scroll, frame_view.ScrollNode());
-    } else if (frame_view.ScrollTranslation()) {
-      // Ensure pre-existing properties are cleared if there is no scrolling.
-      frame_view.SetScrollTranslation(nullptr);
-      property_added_or_removed = true;
-    }
-    full_context.painting_layer = frame_view.GetLayoutView()->Layer();
-
-    if (property_added_or_removed) {
-      full_context.force_subtree_update = true;
-      // We need to update property tree states of paint chunks.
-      if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-        frame_view.GetLayoutView()->Layer()->SetNeedsRepaint();
-    }
-  }
-
-  // Initialize the context for current, absolute and fixed position cases.
-  // They are the same, except that scroll translation does not apply to
-  // fixed position descendants.
-  const auto* fixed_transform_node = frame_view.PreTranslation()
-                                         ? frame_view.PreTranslation()
-                                         : context.current.transform;
-  auto* fixed_scroll_node = context.current.scroll;
-  DCHECK(frame_view.PreTranslation());
-  context.current.transform = frame_view.PreTranslation();
-  DCHECK(frame_view.ContentClip());
-  context.current.clip = frame_view.ContentClip();
-  if (const auto* scroll_node = frame_view.ScrollNode())
-    context.current.scroll = scroll_node;
-  if (const auto* scroll_translation = frame_view.ScrollTranslation())
-    context.current.transform = scroll_translation;
-  context.current.paint_offset = LayoutPoint();
+  context.current.paint_offset.MoveBy(frame_view.Location());
   context.current.rendering_context_id = 0;
   context.current.should_flatten_inherited_transform = true;
   context.absolute_position = context.current;
   full_context.container_for_absolute_position = nullptr;
   full_context.container_for_fixed_position = nullptr;
   context.fixed_position = context.current;
-  context.fixed_position.transform = fixed_transform_node;
-  context.fixed_position.scroll = fixed_scroll_node;
   context.fixed_position.fixed_position_children_fixed_to_root = true;
-
-  std::unique_ptr<PropertyTreeState> contents_state(new PropertyTreeState(
-      context.current.transform, context.current.clip, context.current_effect));
-  frame_view.SetTotalPropertyTreeStateForContents(std::move(contents_state));
-
-#if DCHECK_IS_ON()
-  PaintPropertyTreePrinter::UpdateDebugNames(frame_view);
-#endif
 }
 
 namespace {
@@ -444,10 +216,9 @@ static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
   const LayoutBoxModelObject& box_model = ToLayoutBoxModelObject(object);
 
   if (box_model.IsLayoutView()) {
-    // Root layer scrolling always creates a translation node for LayoutView to
-    // ensure fixed and absolute contexts use the correct transform space.
-    // Otherwise we have created all needed property nodes on the FrameView.
-    return RuntimeEnabledFeatures::RootLayerScrollingEnabled();
+    // A translation node for LayoutView is always created to ensure fixed and
+    // absolute contexts use the correct transform space.
+    return true;
   }
 
   if (box_model.HasLayer() && box_model.Layer()->PaintsWithTransform(
@@ -515,8 +286,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
 
   paint_offset_translation =
       ApplyPaintOffsetTranslation(object_, context_.current.paint_offset);
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-      object_.IsLayoutView()) {
+  if (object_.IsLayoutView()) {
     context_.absolute_position.paint_offset = context_.current.paint_offset;
     context_.fixed_position.paint_offset = context_.current.paint_offset;
   }
@@ -538,8 +308,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
     OnUpdate(properties_->UpdatePaintOffsetTranslation(
         context_.current.transform, std::move(state)));
     context_.current.transform = properties_->PaintOffsetTranslation();
-    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-        object_.IsLayoutView()) {
+    if (object_.IsLayoutView()) {
       context_.absolute_position.transform =
           properties_->PaintOffsetTranslation();
       context_.fixed_position.transform = properties_->PaintOffsetTranslation();
@@ -1109,6 +878,30 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
   }
 }
 
+// Returns true if we are printing which was initiated by the frame. We should
+// ignore clipping and scroll transform on contents. WebLocalFrameImpl will
+// issue artificial page clip for each page, and always print from the origin
+// of the contents for which no scroll offset should be applied.
+static bool IsPrintingRootLayoutView(const LayoutObject& object) {
+  if (!object.IsLayoutView())
+    return false;
+
+  const auto& frame = *object.GetFrame();
+  if (!frame.GetDocument()->Printing())
+    return false;
+
+  const auto* parent_frame = frame.Tree().Parent();
+  if (!parent_frame)
+    return true;
+  // TODO(crbug.com/455764): The local frame may be not the root frame of
+  // printing when it's printing under a remote frame.
+  if (!parent_frame->IsLocalFrame())
+    return true;
+
+  // If the parent frame is printing, this frame should clip normally.
+  return !ToLocalFrame(parent_frame)->GetDocument()->Printing();
+}
+
 static bool NeedsOverflowClip(const LayoutObject& object) {
   // Though a SVGForeignObject is a LayoutBox, its overflow clip logic is
   // special because it doesn't create a PaintLayer.
@@ -1382,8 +1175,13 @@ static MainThreadScrollingReasons GetMainThreadScrollingReasons(
   // scrolling reasons such as opacity and transform which violate this.
   if (!object.IsLayoutView())
     return ancestor_reasons;
-  return GetMainThreadScrollingReasons(*object.GetFrameView(),
-                                       ancestor_reasons);
+
+  auto reasons = ancestor_reasons;
+  if (!object.GetFrame()->GetSettings()->GetThreadedScrollingEnabled())
+    reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
+  if (object.GetFrameView()->HasBackgroundAttachmentFixedObjects())
+    reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+  return reasons;
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
@@ -1481,17 +1279,15 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
   }
 
   if (object_.IsLayoutView()) {
-    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      const auto* initial_fixed_transform = context_.fixed_position.transform;
-      const auto* initial_fixed_scroll = context_.fixed_position.scroll;
+    const auto* initial_fixed_transform = context_.fixed_position.transform;
+    const auto* initial_fixed_scroll = context_.fixed_position.scroll;
 
-      context_.fixed_position = context_.current;
-      context_.fixed_position.fixed_position_children_fixed_to_root = true;
+    context_.fixed_position = context_.current;
+    context_.fixed_position.fixed_position_children_fixed_to_root = true;
 
-      // Fixed position transform and scroll nodes should not be affected.
-      context_.fixed_position.transform = initial_fixed_transform;
-      context_.fixed_position.scroll = initial_fixed_scroll;
-    }
+    // Fixed position transform and scroll nodes should not be affected.
+    context_.fixed_position.transform = initial_fixed_transform;
+    context_.fixed_position.scroll = initial_fixed_scroll;
   } else if (object_.CanContainFixedPositionObjects()) {
     context_.fixed_position = context_.current;
     context_.fixed_position.fixed_position_children_fixed_to_root = false;
@@ -1908,7 +1704,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForChildren() {
 
 }  // namespace
 
-void ObjectPaintPropertyTreeBuilder::InitFragmentPaintProperties(
+void PaintPropertyTreeBuilder::InitFragmentPaintProperties(
     FragmentData& fragment,
     bool needs_paint_properties,
     const LayoutPoint& pagination_offset,
@@ -1923,7 +1719,7 @@ void ObjectPaintPropertyTreeBuilder::InitFragmentPaintProperties(
   fragment.SetLogicalTopInFlowThread(logical_top_in_flow_thread);
 }
 
-void ObjectPaintPropertyTreeBuilder::InitSingleFragmentFromParent(
+void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
     bool needs_paint_properties) {
   FragmentData& first_fragment =
       object_.GetMutableForPainting().FirstFragment();
@@ -1959,7 +1755,7 @@ void ObjectPaintPropertyTreeBuilder::InitSingleFragmentFromParent(
   }
 }
 
-void ObjectPaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {
+void PaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
@@ -2004,7 +1800,7 @@ void ObjectPaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {
   }
 }
 
-void ObjectPaintPropertyTreeBuilder::UpdateRepeatingPaintOffsetAdjustment() {
+void PaintPropertyTreeBuilder::UpdateRepeatingPaintOffsetAdjustment() {
   if (!context_.is_repeating_in_flow_thread)
     return;
 
@@ -2022,7 +1818,7 @@ void ObjectPaintPropertyTreeBuilder::UpdateRepeatingPaintOffsetAdjustment() {
 
 // TODO(wangxianzhu): For now this works for horizontal-bt writing mode only.
 // Need to support vertical writing modes.
-void ObjectPaintPropertyTreeBuilder::
+void PaintPropertyTreeBuilder::
     UpdateRepeatingTableHeaderPaintOffsetAdjustment() {
   const auto& section = ToLayoutTableSection(object_);
   DCHECK(section.IsRepeatingHeaderGroup());
@@ -2073,7 +1869,7 @@ void ObjectPaintPropertyTreeBuilder::
   }
 }
 
-void ObjectPaintPropertyTreeBuilder::
+void PaintPropertyTreeBuilder::
     UpdateRepeatingTableFooterPaintOffsetAdjustment() {
   const auto& section = ToLayoutTableSection(object_);
   DCHECK(section.IsRepeatingFooterGroup());
@@ -2171,7 +1967,7 @@ static LayoutUnit FragmentLogicalTopInParentFlowThread(
 // Find from parent contexts with matching |logical_top_in_flow_thread|, if any,
 // to allow for correct property tree parenting of fragments.
 PaintPropertyTreeBuilderFragmentContext
-ObjectPaintPropertyTreeBuilder::ContextForFragment(
+PaintPropertyTreeBuilder::ContextForFragment(
     const base::Optional<LayoutRect>& fragment_clip,
     LayoutUnit logical_top_in_flow_thread) const {
   const auto& parent_fragments = context_.fragments;
@@ -2283,7 +2079,7 @@ ObjectPaintPropertyTreeBuilder::ContextForFragment(
   return context;
 }
 
-void ObjectPaintPropertyTreeBuilder::CreateFragmentContextsInFlowThread(
+void PaintPropertyTreeBuilder::CreateFragmentContextsInFlowThread(
     bool needs_paint_properties) {
   // We need at least the fragments for all fragmented objects, which store
   // their local border box properties and paint invalidation data (such
@@ -2384,7 +2180,7 @@ void ObjectPaintPropertyTreeBuilder::CreateFragmentContextsInFlowThread(
     object_.GetMutableForPainting().SetSubtreeNeedsPaintPropertyUpdate();
 }
 
-void ObjectPaintPropertyTreeBuilder::
+void PaintPropertyTreeBuilder::
     CreateFragmentContextsForRepeatingFixedPosition() {
   DCHECK(object_.IsFixedPositionObjectInPagedMedia());
 
@@ -2403,8 +2199,8 @@ void ObjectPaintPropertyTreeBuilder::
   }
 }
 
-void ObjectPaintPropertyTreeBuilder::
-    CreateFragmentDataForRepeatingFixedPosition(bool needs_paint_properties) {
+void PaintPropertyTreeBuilder::CreateFragmentDataForRepeatingFixedPosition(
+    bool needs_paint_properties) {
   DCHECK(context_.is_repeating_fixed_position);
 
   FragmentData* fragment_data = nullptr;
@@ -2420,7 +2216,7 @@ void ObjectPaintPropertyTreeBuilder::
   fragment_data->ClearNextFragment();
 }
 
-bool ObjectPaintPropertyTreeBuilder::UpdateFragments() {
+bool PaintPropertyTreeBuilder::UpdateFragments() {
   bool had_paint_properties = object_.FirstFragment().PaintProperties();
   // Note: It is important to short-circuit on object_.StyleRef().ClipPath()
   // because NeedsClipPathClip() and NeedsEffect() requires the clip path
@@ -2479,14 +2275,13 @@ bool ObjectPaintPropertyTreeBuilder::UpdateFragments() {
   return needs_paint_properties != had_paint_properties;
 }
 
-bool ObjectPaintPropertyTreeBuilder::ObjectTypeMightNeedPaintProperties()
-    const {
+bool PaintPropertyTreeBuilder::ObjectTypeMightNeedPaintProperties() const {
   return object_.IsBoxModelObject() || object_.IsSVG() ||
          context_.painting_layer->EnclosingPaginationLayer() ||
          context_.is_repeating_fixed_position;
 }
 
-void ObjectPaintPropertyTreeBuilder::UpdatePaintingLayer() {
+void PaintPropertyTreeBuilder::UpdatePaintingLayer() {
   bool changed_painting_layer = false;
   if (object_.HasLayer() &&
       ToLayoutBoxModelObject(object_).HasSelfPaintingLayer()) {
@@ -2502,7 +2297,7 @@ void ObjectPaintPropertyTreeBuilder::UpdatePaintingLayer() {
   DCHECK(context_.painting_layer == object_.PaintingLayer());
 }
 
-bool ObjectPaintPropertyTreeBuilder::UpdateForSelf() {
+bool PaintPropertyTreeBuilder::UpdateForSelf() {
   UpdatePaintingLayer();
 
   bool property_added_or_removed = false;
@@ -2531,7 +2326,7 @@ bool ObjectPaintPropertyTreeBuilder::UpdateForSelf() {
   return property_changed;
 }
 
-bool ObjectPaintPropertyTreeBuilder::UpdateForChildren() {
+bool PaintPropertyTreeBuilder::UpdateForChildren() {
   if (!ObjectTypeMightNeedPaintProperties())
     return false;
 

@@ -34,7 +34,6 @@ class FrameViewPropertyTreePrinter
   using Traits = PropertyTreePrinterTraits<PropertyTreeNode>;
 
   void CollectNodes(const LocalFrameView& frame_view) {
-    Traits::AddFrameViewProperties(frame_view, *this);
     if (LayoutView* layout_view = frame_view.GetLayoutView())
       CollectNodes(*layout_view);
     for (Frame* child = frame_view.GetFrame().Tree().FirstChild(); child;
@@ -57,19 +56,11 @@ class FrameViewPropertyTreePrinter
       CollectNodes(*child);
     }
   }
-
 };
 
 template <>
 class PropertyTreePrinterTraits<TransformPaintPropertyNode> {
  public:
-  static void AddFrameViewProperties(
-      const LocalFrameView& frame_view,
-      PropertyTreePrinter<TransformPaintPropertyNode>& printer) {
-    printer.AddNode(frame_view.PreTranslation());
-    printer.AddNode(frame_view.ScrollTranslation());
-  }
-
   static void AddObjectPaintProperties(
       const LayoutObject& object,
       const ObjectPaintProperties& properties,
@@ -85,12 +76,6 @@ class PropertyTreePrinterTraits<TransformPaintPropertyNode> {
 template <>
 class PropertyTreePrinterTraits<ClipPaintPropertyNode> {
  public:
-  static void AddFrameViewProperties(
-      const LocalFrameView& frame_view,
-      PropertyTreePrinter<ClipPaintPropertyNode>& printer) {
-    printer.AddNode(frame_view.ContentClip());
-  }
-
   static void AddObjectPaintProperties(
       const LayoutObject& object,
       const ObjectPaintProperties& properties,
@@ -108,10 +93,6 @@ class PropertyTreePrinterTraits<ClipPaintPropertyNode> {
 template <>
 class PropertyTreePrinterTraits<EffectPaintPropertyNode> {
  public:
-  static void AddFrameViewProperties(
-      const LocalFrameView& frame_view,
-      PropertyTreePrinter<EffectPaintPropertyNode>& printer) {}
-
   static void AddObjectPaintProperties(
       const LayoutObject& object,
       const ObjectPaintProperties& properties,
@@ -125,12 +106,6 @@ class PropertyTreePrinterTraits<EffectPaintPropertyNode> {
 template <>
 class PropertyTreePrinterTraits<ScrollPaintPropertyNode> {
  public:
-  static void AddFrameViewProperties(
-      const LocalFrameView& frame_view,
-      PropertyTreePrinter<ScrollPaintPropertyNode>& printer) {
-    printer.AddNode(frame_view.ScrollNode());
-  }
-
   static void AddObjectPaintProperties(
       const LayoutObject& object,
       const ObjectPaintProperties& properties,
@@ -156,13 +131,6 @@ void SetDebugName(const PropertyTreeNode* node,
 }  // namespace
 
 namespace PaintPropertyTreePrinter {
-
-void UpdateDebugNames(const LocalFrameView& frame_view) {
-  SetDebugName(frame_view.PreTranslation(), "PreTranslation (FrameView)");
-  SetDebugName(frame_view.ScrollTranslation(), "ScrollTranslation (FrameView)");
-  SetDebugName(frame_view.ContentClip(), "ContentClip (FrameView)");
-  SetDebugName(frame_view.ScrollNode(), "Scroll (FrameView)");
-}
 
 void UpdateDebugNames(const LayoutObject& object,
                       ObjectPaintProperties& properties) {

@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
@@ -65,19 +64,6 @@ void FramePainter::Paint(GraphicsContext& context,
     return;
 
   if (should_paint_contents) {
-    // TODO(pdr): Creating frame paint properties here will not be needed once
-    // settings()->rootLayerScrolls() is enabled.
-    base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-        !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      const auto* contents_state =
-          frame_view_->TotalPropertyTreeStateForContents();
-      DCHECK(contents_state);
-      scoped_paint_chunk_properties.emplace(
-          context.GetPaintController(), *contents_state,
-          *GetFrameView().GetLayoutView(), DisplayItem::kUninitializedType);
-    }
-
     TransformRecorder transform_recorder(
         context, *GetFrameView().GetLayoutView(),
         AffineTransform::Translation(
@@ -98,16 +84,6 @@ void FramePainter::Paint(GraphicsContext& context,
         GetFrameView().VisibleContentSize(kIncludeScrollbars));
     scroll_view_dirty_rect.Intersect(visible_area_with_scrollbars);
     scroll_view_dirty_rect.MoveBy(-frame_view_location);
-
-    base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-        !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      scoped_paint_chunk_properties.emplace(
-          context.GetPaintController(),
-          GetFrameView().PreContentClipProperties(),
-          *GetFrameView().GetLayoutView(),
-          DisplayItem::kScrollOverflowControls);
-    }
 
     TransformRecorder transform_recorder(
         context, *GetFrameView().GetLayoutView(),
