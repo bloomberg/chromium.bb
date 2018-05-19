@@ -38,6 +38,8 @@ void AddLocalizedString(content::WebUIDataSource* source,
 content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIBookmarksHost);
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources 'self';");
 
   // Localized strings (alphabetical order).
   AddLocalizedString(source, "addBookmarkTitle",

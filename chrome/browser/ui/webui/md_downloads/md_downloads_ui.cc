@@ -41,6 +41,8 @@ namespace {
 content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadsHost);
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources 'self';");
 
   source->AddLocalizedString("title", IDS_DOWNLOAD_TITLE);
   source->AddLocalizedString("searchResultsFor", IDS_SEARCH_RESULTS);

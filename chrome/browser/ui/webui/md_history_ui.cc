@@ -52,6 +52,8 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
                                                       bool use_test_title) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryHost);
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources 'self';");
 
   // Localized strings (alphabetical order).
   source->AddLocalizedString("bookmarked", IDS_HISTORY_ENTRY_BOOKMARKED);
