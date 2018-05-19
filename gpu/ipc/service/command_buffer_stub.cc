@@ -421,6 +421,16 @@ void CommandBufferStub::ScheduleDelayedWork(base::TimeDelta delay) {
   if (last_idle_time_.is_null())
     last_idle_time_ = current_time;
 
+  // IsScheduled() returns true after passing all unschedule fences
+  // and this is when we can start performing idle work. Idle work
+  // is done synchronously so we can set delay to 0 and instead poll
+  // for more work at the rate idle work is performed. This also ensures
+  // that idle work is done as efficiently as possible without any
+  // unnecessary delays.
+  if (command_buffer_->scheduled() && decoder_context_->HasMoreIdleWork()) {
+    delay = base::TimeDelta();
+  }
+
   process_delayed_work_time_ = current_time + delay;
   channel_->task_runner()->PostDelayedTask(
       FROM_HERE, base::Bind(&CommandBufferStub::PollWork, AsWeakPtr()), delay);
