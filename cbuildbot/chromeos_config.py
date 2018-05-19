@@ -759,13 +759,13 @@ _waterfall_config_map = {
         'oak-full',
         'tael-full',
         'tatl-full',
+    ]),
 
+    waterfall.WATERFALL_SWARMING: frozenset([
         # ASAN.
         'amd64-generic-asan',
         'amd64-generic-fuzzer',
-    ]),
 
-    waterfall.WATERFALL_INTERNAL: frozenset([
         # Firmware Builders.
         'link-depthcharge-full-firmware',
         'betty-asan',
@@ -3964,7 +3964,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       ],
       display_label=config_lib.DISPLAY_LABEL_UTILITY,
       build_type=constants.CHROOT_BUILDER_TYPE,
-      active_waterfall=waterfall.WATERFALL_EXTERNAL,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       builder_class_name='sdk_builders.ChrootSdkBuilder',
       use_sdk=False,
@@ -4056,7 +4056,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       builder_class_name='test_builders.VMInformationalBuilder',
       vm_tests=getInfoVMTest(),
       vm_tests_override=getInfoVMTest(),
-      active_waterfall=constants.WATERFALL_INTERNAL,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
       vm_test_report_to_dashboards=True,
   )
 
@@ -4127,7 +4127,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_timeout=60 * 60,
       description='Build Chromium OS infra Go binaries',
       doc='https://goto.google.com/cros-infra-go-packaging',
-      active_waterfall=waterfall.WATERFALL_EXTERNAL,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
 
