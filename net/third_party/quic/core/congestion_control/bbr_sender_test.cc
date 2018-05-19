@@ -134,6 +134,7 @@ class BbrSenderTest : public QuicTest {
         kInitialCongestionWindowPackets, kDefaultMaxCongestionWindowPackets,
         &random_);
     QuicConnectionPeer::SetSendAlgorithm(endpoint->connection(), sender);
+    endpoint->RecordTrace();
     return sender;
   }
 

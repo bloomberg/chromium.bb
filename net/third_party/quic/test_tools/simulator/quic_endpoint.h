@@ -11,6 +11,7 @@
 #include "net/third_party/quic/core/quic_default_packet_writer.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_stream_frame_data_producer.h"
+#include "net/third_party/quic/core/quic_trace_visitor.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/test_tools/simple_session_notifier.h"
 #include "net/third_party/quic/test_tools/simulator/link.h"
@@ -59,6 +60,9 @@ class QuicEndpoint : public Endpoint,
   // UnconstrainedPortInterface method.  Called whenever the endpoint receives a
   // packet.
   void AcceptPacket(std::unique_ptr<Packet> packet) override;
+
+  // Enables logging of the connection trace at the end of the unit test.
+  void RecordTrace();
 
   // Begin Endpoint implementation.
   UnconstrainedPortInterface* GetRxPort() override;
@@ -174,6 +178,7 @@ class QuicEndpoint : public Endpoint,
   QuicIntervalSet<QuicStreamOffset> offsets_received_;
 
   std::unique_ptr<test::SimpleSessionNotifier> notifier_;
+  std::unique_ptr<QuicTraceVisitor> trace_visitor_;
 };
 
 // Multiplexes multiple connections at the same host on the network.

@@ -10,6 +10,8 @@
 #include "net/third_party/quic/core/quic_data_writer.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
+#include "net/third_party/quic/platform/api/quic_test_output.h"
+#include "net/third_party/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quic/test_tools/simulator/simulator.h"
 
@@ -112,7 +114,17 @@ QuicEndpoint::QuicEndpoint(Simulator* simulator,
   connection_.SetFromConfig(config);
 }
 
-QuicEndpoint::~QuicEndpoint() {}
+QuicEndpoint::~QuicEndpoint() {
+  if (trace_visitor_ != nullptr) {
+    const char* perspective_prefix =
+        connection_.perspective() == Perspective::IS_CLIENT ? "C" : "S";
+
+    string identifier =
+        QuicStrCat(perspective_prefix, connection_.connection_id());
+    QuicRecordTestOutput(identifier,
+                         trace_visitor_->trace()->SerializeAsString());
+  }
+}
 
 QuicByteCount QuicEndpoint::bytes_received() const {
   QuicByteCount total = 0;
@@ -151,6 +163,11 @@ void QuicEndpoint::AddBytesToTransfer(QuicByteCount bytes) {
 
   bytes_to_transfer_ += bytes;
   WriteStreamData();
+}
+
+void QuicEndpoint::RecordTrace() {
+  trace_visitor_ = QuicMakeUnique<QuicTraceVisitor>(&connection_);
+  connection_.set_debug_visitor(trace_visitor_.get());
 }
 
 void QuicEndpoint::AcceptPacket(std::unique_ptr<Packet> packet) {
