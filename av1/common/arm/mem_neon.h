@@ -55,16 +55,51 @@ static INLINE void load_u8_8x4(const uint8_t *s, const ptrdiff_t p,
   *s3 = vld1_u8(s);
 }
 
-static INLINE void load_s16_8x8(const uint8_t *s, const ptrdiff_t p,
-                                uint8x8_t *const s0, uint8x8_t *const s1,
-                                uint8x8_t *const s2, uint8x8_t *const s3) {
-  *s0 = vld1_u8(s);
+static INLINE void load_u16_4x4(const uint16_t *s, const ptrdiff_t p,
+                                uint16x4_t *const s0, uint16x4_t *const s1,
+                                uint16x4_t *const s2, uint16x4_t *const s3) {
+  *s0 = vld1_u16(s);
   s += p;
-  *s1 = vld1_u8(s);
+  *s1 = vld1_u16(s);
   s += p;
-  *s2 = vld1_u8(s);
+  *s2 = vld1_u16(s);
   s += p;
-  *s3 = vld1_u8(s);
+  *s3 = vld1_u16(s);
+  s += p;
+}
+
+static INLINE void load_s16_4x8(const int16_t *s, ptrdiff_t p,
+                                int16x4_t *const s0, int16x4_t *const s1,
+                                int16x4_t *const s2, int16x4_t *const s3,
+                                int16x4_t *const s4, int16x4_t *const s5,
+                                int16x4_t *const s6, int16x4_t *const s7) {
+  *s0 = vld1_s16(s);
+  s += p;
+  *s1 = vld1_s16(s);
+  s += p;
+  *s2 = vld1_s16(s);
+  s += p;
+  *s3 = vld1_s16(s);
+  s += p;
+  *s4 = vld1_s16(s);
+  s += p;
+  *s5 = vld1_s16(s);
+  s += p;
+  *s6 = vld1_s16(s);
+  s += p;
+  *s7 = vld1_s16(s);
+}
+
+static INLINE void load_s16_4x4(const int16_t *s, ptrdiff_t p,
+                                int16x4_t *const s0, int16x4_t *const s1,
+                                int16x4_t *const s2, int16x4_t *const s3) {
+  *s0 = vld1_s16(s);
+  s += p;
+  *s1 = vld1_s16(s);
+  s += p;
+  *s2 = vld1_s16(s);
+  s += p;
+  *s3 = vld1_s16(s);
 }
 
 static INLINE void store_u8_8x8(uint8_t *s, ptrdiff_t p, const uint8x8_t s0,
@@ -111,6 +146,18 @@ static INLINE void store_u16_8x8(uint16_t *s, ptrdiff_t dst_stride,
   vst1q_u16(s, s7);
 }
 
+static INLINE void store_u16_4x4(uint16_t *s, ptrdiff_t dst_stride,
+                                 const uint16x4_t s0, const uint16x4_t s1,
+                                 const uint16x4_t s2, const uint16x4_t s3) {
+  vst1_u16(s, s0);
+  s += dst_stride;
+  vst1_u16(s, s1);
+  s += dst_stride;
+  vst1_u16(s, s2);
+  s += dst_stride;
+  vst1_u16(s, s3);
+}
+
 static INLINE void store_u16_8x4(uint16_t *s, ptrdiff_t dst_stride,
                                  const uint16x8_t s0, const uint16x8_t s1,
                                  const uint16x8_t s2, const uint16x8_t s3) {
@@ -121,6 +168,28 @@ static INLINE void store_u16_8x4(uint16_t *s, ptrdiff_t dst_stride,
   vst1q_u16(s, s2);
   s += dst_stride;
   vst1q_u16(s, s3);
+}
+
+static INLINE void store_s16_8x8(int16_t *s, ptrdiff_t dst_stride,
+                                 const int16x8_t s0, const int16x8_t s1,
+                                 const int16x8_t s2, const int16x8_t s3,
+                                 const int16x8_t s4, const int16x8_t s5,
+                                 const int16x8_t s6, const int16x8_t s7) {
+  vst1q_s16(s, s0);
+  s += dst_stride;
+  vst1q_s16(s, s1);
+  s += dst_stride;
+  vst1q_s16(s, s2);
+  s += dst_stride;
+  vst1q_s16(s, s3);
+  s += dst_stride;
+  vst1q_s16(s, s4);
+  s += dst_stride;
+  vst1q_s16(s, s5);
+  s += dst_stride;
+  vst1q_s16(s, s6);
+  s += dst_stride;
+  vst1q_s16(s, s7);
 }
 
 #endif  // AV1_COMMON_ARM_MEM_NEON_H_

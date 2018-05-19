@@ -60,6 +60,7 @@ class AV1JntConvolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
 
  protected:
   void RunCheckOutput(convolve_2d_func test_impl);
+  void RunSpeedTest(convolve_2d_func test_impl);
 
   libaom_test::ACMRandom rnd_;
 };

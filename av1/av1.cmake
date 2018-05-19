@@ -234,7 +234,8 @@ set(AOM_AV1_COMMON_INTRIN_NEON ${AOM_AV1_COMMON_INTRIN_NEON}
     "${AOM_ROOT}/av1/common/arm/convolve_neon.h"
     "${AOM_ROOT}/av1/common/arm/mem_neon.h"
     "${AOM_ROOT}/av1/common/arm/transpose_neon.h"
-    "${AOM_ROOT}/av1/common/arm/wiener_convolve_neon.c")
+    "${AOM_ROOT}/av1/common/arm/wiener_convolve_neon.c"
+    "${AOM_ROOT}/av1/common/arm/jnt_convolve_neon.c")
 
 set(AOM_AV1_COMMON_INTRIN_SSE2 ${AOM_AV1_COMMON_INTRIN_SSE2}
     "${AOM_ROOT}/av1/common/x86/convolve_2d_sse2.c")

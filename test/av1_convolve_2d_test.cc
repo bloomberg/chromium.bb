@@ -76,6 +76,7 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_NEON
 
 TEST_P(AV1JntConvolve2DTest, CheckOutput) { RunCheckOutput(GET_PARAM(0)); }
+TEST_P(AV1JntConvolve2DTest, DISABLED_Speed) { RunSpeedTest(GET_PARAM(0)); }
 
 INSTANTIATE_TEST_CASE_P(
     C_COPY, AV1JntConvolve2DTest,
@@ -124,6 +125,11 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_AVX2
 #endif  // HAVE_SSE4_1
 #endif  // HAVE_SSE2
+#if HAVE_NEON
+INSTANTIATE_TEST_CASE_P(
+    NEON, AV1JntConvolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_2d_neon, 1, 1));
+#endif  // HAVE_NEON
 
 TEST_P(AV1HighbdConvolve2DSrTest, CheckOutput) { RunCheckOutput(GET_PARAM(1)); }
 TEST_P(AV1HighbdConvolve2DSrTest, DISABLED_Speed) {

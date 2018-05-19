@@ -299,6 +299,59 @@ void AV1JntConvolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
     }
   }
 }
+
+void AV1JntConvolve2DTest::RunSpeedTest(convolve_2d_func test_impl) {
+  const int w = kMaxSize, h = kMaxSize;
+  const int has_subx = GET_PARAM(1);
+  const int has_suby = GET_PARAM(2);
+  const int block_idx = GET_PARAM(3);
+
+  int subx = 0, suby = 0;
+  uint8_t input[kMaxSize * kMaxSize];
+  DECLARE_ALIGNED(32, CONV_BUF_TYPE, output[MAX_SB_SQUARE]);
+  DECLARE_ALIGNED(16, uint8_t, output8[MAX_SB_SQUARE]);
+  int hfilter = EIGHTTAP_REGULAR, vfilter = EIGHTTAP_REGULAR;
+  for (int i = 0; i < h; ++i)
+    for (int j = 0; j < w; ++j) input[i * w + j] = rnd_.Rand8();
+  for (int i = 0; i < MAX_SB_SQUARE; ++i) {
+    output[i] = rnd_.Rand16();
+    output8[i] = rnd_.Rand8();
+  }
+
+  const int out_w = block_size_wide[block_idx];
+  const int out_h = block_size_high[block_idx];
+  const int num_loops = 1000000000 / (out_w + out_h);
+  const int do_average = 0;
+
+  InterpFilterParams filter_params_x =
+      av1_get_interp_filter_params_with_block_size((InterpFilter)hfilter,
+                                                   out_w);
+  InterpFilterParams filter_params_y =
+      av1_get_interp_filter_params_with_block_size((InterpFilter)vfilter,
+                                                   out_h);
+
+  ConvolveParams conv_params =
+      get_conv_params_no_round(0, do_average, 0, output, MAX_SB_SIZE, 1, 8);
+
+  conv_params.use_jnt_comp_avg = 0;
+
+  // Choose random locations within the source block
+  const int offset_r = 3 + rnd_.PseudoUniform(h - out_h - 7);
+  const int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);
+
+  aom_usec_timer timer;
+  aom_usec_timer_start(&timer);
+
+  for (int i = 0; i < num_loops; ++i)
+    test_impl(input + offset_r * w + offset_c, w, output8, MAX_SB_SIZE, out_w,
+              out_h, &filter_params_x, &filter_params_y, subx, suby,
+              &conv_params);
+
+  aom_usec_timer_mark(&timer);
+  const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
+  printf("%d,%d convolve %3dx%-3d: %7.2f us\n", has_subx, has_suby, out_w,
+         out_h, 1000.0 * elapsed_time / num_loops);
+}
 }  // namespace AV1Convolve2D
 
 namespace AV1HighbdConvolve2D {
