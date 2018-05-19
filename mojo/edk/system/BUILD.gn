@@ -52,6 +52,7 @@ source_set("test_sources") {
   if (!is_ios) {
     sources += [
       "data_pipe_unittest.cc",
+      "invitation_unittest.cc",
       "multiprocess_message_pipe_unittest.cc",
       "platform_wrapper_unittest.cc",
     ]
