@@ -79,8 +79,11 @@ class CrOSComponentManager {
     COMPATIBILITY_CHECK_FAILED = 4,  // Compatibility check failed.
     ERROR_MAX
   };
+  // LoadCallback will always return the load result in |error|. If used in
+  // conjunction with the |kMount| policy below, return the mounted FilePath in
+  // |path|, or an empty |path| otherwise.
   using LoadCallback =
-      base::OnceCallback<void(Error error, const base::FilePath&)>;
+      base::OnceCallback<void(Error error, const base::FilePath& path)>;
   enum class MountPolicy {
     kMount,
     kDontMount,
@@ -98,8 +101,7 @@ class CrOSComponentManager {
 
   void SetDelegate(Delegate* delegate);
 
-  // Installs a component and keeps it up-to-date. |load_callback| returns the
-  // mount point path.
+  // Installs a component and keeps it up-to-date.
   void Load(const std::string& name,
             MountPolicy mount_policy,
             LoadCallback load_callback);

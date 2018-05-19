@@ -39,7 +39,9 @@ void OnLoadComponent(
     MediaPerceptionAPIDelegate::LoadCrOSComponentCallback load_callback,
     component_updater::CrOSComponentManager::Error error,
     const base::FilePath& mount_point) {
-  std::move(load_callback).Run(mount_point);
+  std::move(load_callback)
+      .Run(error == component_updater::CrOSComponentManager::Error::NONE,
+           mount_point);
 }
 
 }  // namespace
