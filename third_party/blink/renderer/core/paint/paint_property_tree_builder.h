@@ -155,24 +155,17 @@ struct PaintPropertyTreeBuilderContext {
   LayoutRect repeating_bounding_box_in_flow_thread;
 };
 
-// |FrameViewPaintPropertyTreeBuilder| and |ObjectPaintPropertyTreeBuilder|
-// create paint property tree nodes for special things in the layout tree.
-// Special things include but not limit to: overflow clip, transform, fixed-pos,
-// animation, mask, filter, ... etc.
-// It expects to be invoked for each layout tree node in DOM order during
-// InPrePaint phase.
-
-class FrameViewPaintPropertyTreeBuilder {
+// Creates paint property tree nodes for non-local effects in the layout tree.
+// Non-local effects include but are not limited to: overflow clip, transform,
+// fixed-pos, animation, mask, filters, etc. It expects to be invoked for each
+// layout tree node in DOM order during the PrePaint lifecycle phase.
+class PaintPropertyTreeBuilder {
  public:
-  // Update the paint properties for a frame view and ensure the context is up
-  // to date.
-  static void Update(LocalFrameView&, PaintPropertyTreeBuilderContext&);
-};
+  static void SetupContextForFrame(LocalFrameView&,
+                                   PaintPropertyTreeBuilderContext&);
 
-class ObjectPaintPropertyTreeBuilder {
- public:
-  ObjectPaintPropertyTreeBuilder(const LayoutObject& object,
-                                 PaintPropertyTreeBuilderContext& context)
+  PaintPropertyTreeBuilder(const LayoutObject& object,
+                           PaintPropertyTreeBuilderContext& context)
       : object_(object), context_(context) {}
 
   // Update the paint properties that affect this object (e.g., properties like

@@ -18,7 +18,6 @@ class ObjectPaintProperties;
 
 namespace PaintPropertyTreePrinter {
 
-void UpdateDebugNames(const LocalFrameView&);
 void UpdateDebugNames(const LayoutObject&, ObjectPaintProperties&);
 
 }  // namespace PaintPropertyTreePrinter

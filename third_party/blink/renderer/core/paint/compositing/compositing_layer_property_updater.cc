@@ -98,17 +98,10 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
     // any control clips on the squashing layer's object which should not apply
     // on squashed layers.
     const auto* clipping_container = paint_layer->ClippingContainer();
-    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      state.SetClip(
-          clipping_container
-              ? clipping_container->FirstFragment().ContentsProperties().Clip()
-              : ClipPaintPropertyNode::Root());
-    } else {
-      state.SetClip(
-          clipping_container
-              ? clipping_container->FirstFragment().ContentsProperties().Clip()
-              : paint_layer->GetLayoutObject().GetFrameView()->ContentClip());
-    }
+    state.SetClip(
+        clipping_container
+            ? clipping_container->FirstFragment().ContentsProperties().Clip()
+            : ClipPaintPropertyNode::Root());
     squashing_layer->SetLayerState(
         state,
         snapped_paint_offset + mapping->SquashingLayerOffsetFromLayoutObject());
@@ -149,25 +142,6 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
         state, snapped_paint_offset +
                    child_clipping_mask_layer->OffsetFromLayoutObject());
   }
-}
-
-void CompositingLayerPropertyUpdater::Update(const LocalFrameView& frame_view) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
-      RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
-
-  auto SetOverflowControlLayerState =
-      [&frame_view](GraphicsLayer* graphics_layer) {
-        if (graphics_layer) {
-          graphics_layer->SetLayerState(
-              frame_view.PreContentClipProperties(),
-              IntPoint(graphics_layer->OffsetFromLayoutObject()));
-        }
-      };
-  SetOverflowControlLayerState(frame_view.LayerForHorizontalScrollbar());
-  SetOverflowControlLayerState(frame_view.LayerForVerticalScrollbar());
-  SetOverflowControlLayerState(frame_view.LayerForScrollCorner());
 }
 
 }  // namespace blink

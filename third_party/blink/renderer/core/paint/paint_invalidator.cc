@@ -358,51 +358,6 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
   }
 }
 
-namespace {
-
-// This is a helper to handle paint invalidation for frames in
-// non-RootLayerScrolling mode.
-// It undoes LocalFrameView's content clip and scroll for paint invalidation of
-// frame scroll controls to which the content clip and scroll don't apply.
-class ScopedUndoFrameViewContentClipAndScroll {
- public:
-  ScopedUndoFrameViewContentClipAndScroll(
-      const LocalFrameView& frame_view,
-      const PaintPropertyTreeBuilderFragmentContext& tree_builder_context)
-      : tree_builder_context_(
-            const_cast<PaintPropertyTreeBuilderFragmentContext&>(
-                tree_builder_context)),
-        saved_context_(tree_builder_context_.current) {
-    DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
-
-    if (const auto* scroll_node = frame_view.ScrollNode()) {
-      DCHECK_EQ(scroll_node, saved_context_.scroll);
-      tree_builder_context_.current.scroll = saved_context_.scroll->Parent();
-    }
-    if (const auto* scroll_translation = frame_view.ScrollTranslation()) {
-      DCHECK_EQ(scroll_translation, saved_context_.transform);
-      tree_builder_context_.current.transform =
-          saved_context_.transform->Parent();
-    }
-    DCHECK_EQ(frame_view.PreTranslation(),
-              tree_builder_context_.current.transform);
-
-    DCHECK_EQ(frame_view.ContentClip(), saved_context_.clip);
-    tree_builder_context_.current.clip = saved_context_.clip->Parent();
-  }
-
-  ~ScopedUndoFrameViewContentClipAndScroll() {
-    tree_builder_context_.current = saved_context_;
-  }
-
- private:
-  PaintPropertyTreeBuilderFragmentContext& tree_builder_context_;
-  PaintPropertyTreeBuilderFragmentContext::ContainingBlockContext
-      saved_context_;
-};
-
-}  // namespace
-
 void PaintInvalidator::UpdatePaintInvalidationContainer(
     const LayoutObject& object,
     PaintInvalidatorContext& context) {
@@ -540,13 +495,6 @@ void PaintInvalidator::InvalidatePaint(
     context.tree_builder_context_actually_needed_ =
         tree_builder_context->is_actually_needed;
 #endif
-  }
-
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    base::Optional<ScopedUndoFrameViewContentClipAndScroll> undo;
-    if (tree_builder_context)
-      undo.emplace(frame_view, *context.tree_builder_context_);
-    frame_view.InvalidatePaintOfScrollControlsIfNeeded(context);
   }
 }
 

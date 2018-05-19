@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
-#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar.h"
@@ -781,51 +780,8 @@ class CORE_EXPORT LocalFrameView final
 
   void BeginLifecycleUpdates();
 
-  void SetPreTranslation(
-      scoped_refptr<TransformPaintPropertyNode> pre_translation) {
-    pre_translation_ = std::move(pre_translation);
-  }
-  TransformPaintPropertyNode* PreTranslation() const {
-    return pre_translation_.get();
-  }
-  void SetScrollNode(scoped_refptr<ScrollPaintPropertyNode> scroll_node) {
-    scroll_node_ = std::move(scroll_node);
-  }
-  ScrollPaintPropertyNode* ScrollNode() const { return scroll_node_.get(); }
-  void SetScrollTranslation(
-      scoped_refptr<TransformPaintPropertyNode> scroll_translation) {
-    scroll_translation_ = std::move(scroll_translation);
-  }
-  TransformPaintPropertyNode* ScrollTranslation() const {
-    return scroll_translation_.get();
-  }
-  void SetContentClip(scoped_refptr<ClipPaintPropertyNode> content_clip) {
-    content_clip_ = std::move(content_clip);
-  }
-  ClipPaintPropertyNode* ContentClip() const { return content_clip_.get(); }
-
-  // The property tree state that should be used for painting contents. These
-  // properties are either created by this LocalFrameView or are inherited from
-  // an ancestor.
-  void SetTotalPropertyTreeStateForContents(
-      std::unique_ptr<PropertyTreeState> state) {
-    total_property_tree_state_for_contents_ = std::move(state);
-  }
-  const PropertyTreeState* TotalPropertyTreeStateForContents() const {
-    return total_property_tree_state_for_contents_.get();
-  }
-
-  // The property tree state that should be used for painting scrollbars etc.
-  // for which no content clip or scroll should be applied.
-  PropertyTreeState PreContentClipProperties() const {
-    DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
-    DCHECK(total_property_tree_state_for_contents_);
-    return PropertyTreeState(
-        PreTranslation(),
-        total_property_tree_state_for_contents_->Clip()->Parent(),
-        total_property_tree_state_for_contents_->Effect());
-  }
-
+  // TODO(pdr): Remove the paint property update bits from LocalFrameView in
+  // favor of using LayoutView.
   // Paint properties (e.g., m_preTranslation, etc.) are built from the
   // LocalFrameView's state (e.g., x(), y(), etc.) as well as inherited context.
   // When these inputs change, setNeedsPaintPropertyUpdate will cause a paint
@@ -1279,23 +1235,6 @@ class CORE_EXPORT LocalFrameView final
   bool subtree_throttled_;
   bool lifecycle_updates_throttled_;
 
-  // The hierarchy of transform subtree created by a LocalFrameView.
-  // [ preTranslation ]               The offset from LocalFrameView::FrameRect.
-  //     |                            Establishes viewport.
-  //     +---[ scrollTranslation ]    Frame scrolling.
-  // TODO(trchen): These will not be needed once settings->rootLayerScrolls() is
-  // enabled.
-  scoped_refptr<TransformPaintPropertyNode> pre_translation_;
-  scoped_refptr<TransformPaintPropertyNode> scroll_translation_;
-  scoped_refptr<ScrollPaintPropertyNode> scroll_node_;
-  // The content clip clips the document (= LayoutView) but not the scrollbars.
-  // TODO(trchen): This will not be needed once settings->rootLayerScrolls() is
-  // enabled.
-  scoped_refptr<ClipPaintPropertyNode> content_clip_;
-  // The property tree state that should be used for painting contents. These
-  // properties are either created by this LocalFrameView or are inherited from
-  // an ancestor.
-  std::unique_ptr<PropertyTreeState> total_property_tree_state_for_contents_;
   // Whether the paint properties need to be updated. For more details, see
   // LocalFrameView::needsPaintPropertyUpdate().
   bool needs_paint_property_update_;
