@@ -22,6 +22,7 @@ class Window;
 namespace ui {
 namespace ws2 {
 
+class WindowHostFrameSinkClient;
 class WindowServiceClient;
 
 // WindowServiceClient creates a ClientRoot for each window the client is
@@ -37,8 +38,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
              bool is_top_level);
   ~ClientRoot() override;
 
-  // Called when the FrameSinkId associated with the window changes.
-  void FrameSinkIdChanged();
+  // Registers the necessary state needed for embedding in viz.
+  void RegisterVizEmbeddingSupport();
 
   aura::Window* window() { return window_; }
 
@@ -65,8 +66,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   gfx::Size last_surface_size_in_pixels_;
   viz::LocalSurfaceId local_surface_id_;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
-  // TODO: it may make more sense for this to be owned by WindowData.
   std::unique_ptr<aura::ClientSurfaceEmbedder> client_surface_embedder_;
+  // viz::HostFrameSinkClient registered with the HostFrameSinkManager for the
+  // window.
+  std::unique_ptr<WindowHostFrameSinkClient> window_host_frame_sink_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientRoot);
 };

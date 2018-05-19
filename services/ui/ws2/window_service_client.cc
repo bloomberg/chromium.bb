@@ -139,11 +139,10 @@ ClientRoot* WindowServiceClient::CreateClientRoot(
 
     // Reset the frame sink id locally (after calling OnEmbed()). This is
     // needed so that the id used by the client matches the id used locally.
-    client_window->SetFrameSinkId(ClientWindowId(client_id_, 0));
+    client_window->set_frame_sink_id(ClientWindowId(client_id_, 0));
   }
 
-  // TODO(sky): centralize FrameSinkId management.
-  client_root->FrameSinkIdChanged();
+  client_root->RegisterVizEmbeddingSupport();
 
   // Requests for top-levels don't get OnFrameSinkIdAllocated().
   if (!is_top_level) {
@@ -894,7 +893,7 @@ void WindowServiceClient::NewTopLevelWindow(
   const bool is_top_level = true;
   aura::Window* top_level = AddClientCreatedWindow(
       client_window_id, is_top_level, std::move(top_level_ptr));
-  ClientWindow::GetMayBeNull(top_level)->SetFrameSinkId(client_window_id);
+  ClientWindow::GetMayBeNull(top_level)->set_frame_sink_id(client_window_id);
   const int64_t display_id =
       display::Screen::GetScreen()->GetDisplayNearestWindow(top_level).id();
   // This passes null for the mojom::WindowTreePtr because the client has

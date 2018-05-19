@@ -10,15 +10,15 @@
 namespace ui {
 namespace ws2 {
 
-WindowHostFrameSinkClient::WindowHostFrameSinkClient() = default;
+WindowHostFrameSinkClient::WindowHostFrameSinkClient(
+    aura::ClientSurfaceEmbedder* client_surface_embedder)
+    : client_surface_embedder_(client_surface_embedder) {}
 
 WindowHostFrameSinkClient::~WindowHostFrameSinkClient() {}
 
-void WindowHostFrameSinkClient::OnFrameSinkIdChanged() {}
-
 void WindowHostFrameSinkClient::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  NOTIMPLEMENTED();
+  client_surface_embedder_->SetFallbackSurfaceInfo(surface_info);
 }
 
 void WindowHostFrameSinkClient::OnFrameTokenChanged(uint32_t frame_token) {
