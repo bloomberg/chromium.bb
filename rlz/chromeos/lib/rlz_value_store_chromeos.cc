@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/system/factory_ping_embargo_check.h"
 #include "chromeos/system/statistics_provider.h"
 #include "rlz/lib/financial_ping.h"
 #include "rlz/lib/lib_values.h"
@@ -85,9 +86,6 @@ std::string GetKeyName(const std::string& key, Product product) {
 }
 
 }  // namespace
-
-const int RlzValueStoreChromeOS::kRlzEmbargoEndDateGarbageDateThresholdDays =
-    14;
 
 const int RlzValueStoreChromeOS::kMaxRetryCount = 3;
 
@@ -292,42 +290,11 @@ void RlzValueStoreChromeOS::CollectGarbage() {
 }
 
 // static
-RlzValueStoreChromeOS::EmbargoState
-RlzValueStoreChromeOS::GetRlzEmbargoState() {
-  chromeos::system::StatisticsProvider* stats =
-      chromeos::system::StatisticsProvider::GetInstance();
-
-  std::string rlz_embargo_end_date;
-  if (!stats->GetMachineStatistic(chromeos::system::kRlzEmbargoEndDateKey,
-                                  &rlz_embargo_end_date)) {
-    // |rlz_embargo_end_date| only exists on new devices that have not yet
-    // launched.
-    return EmbargoState::kMissingOrMalformed;
-  }
-  base::Time parsed_time;
-  if (!base::Time::FromUTCString(rlz_embargo_end_date.c_str(), &parsed_time)) {
-    LOG(ERROR) << "|rlz_embargo_end_date| exists but cannot be parsed.";
-    return EmbargoState::kMissingOrMalformed;
-  }
-
-  if (parsed_time - base::Time::Now() >=
-      base::TimeDelta::FromDays(
-          RlzValueStoreChromeOS::kRlzEmbargoEndDateGarbageDateThresholdDays)) {
-    // If |rlz_embargo_end_date| is more than this many days in the future,
-    // ignore it. Because it indicates that the device is not connected to an
-    // ntp server in the factory, and its internal clock could be off when the
-    // date is written.
-    // TODO(pmarko): UMA stat for how often this happens.
-    return EmbargoState::kInvalid;
-  }
-
-  return base::Time::Now() > parsed_time ? EmbargoState::kPassed
-                                         : EmbargoState::kNotPassed;
-}
-
-// static
 bool RlzValueStoreChromeOS::HasRlzEmbargoEndDatePassed() {
-  return GetRlzEmbargoState() != EmbargoState::kNotPassed;
+  chromeos::system::StatisticsProvider* statistics_provider =
+      chromeos::system::StatisticsProvider::GetInstance();
+  return chromeos::system::GetFactoryPingEmbargoState(statistics_provider) !=
+         chromeos::system::FactoryPingEmbargoState::kNotPassed;
 }
 
 void RlzValueStoreChromeOS::ReadStore() {
