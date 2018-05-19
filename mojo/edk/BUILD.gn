@@ -82,7 +82,6 @@ template("core_impl_source_set") {
       "system/platform_handle_dispatcher.h",
       "system/platform_shared_memory_mapping.h",
       "system/request_context.h",
-      "system/scoped_process_handle.h",
       "system/shared_buffer_dispatcher.h",
       "system/user_message_impl.h",
     ]
@@ -123,7 +122,6 @@ template("core_impl_source_set") {
       "system/platform_handle_dispatcher.cc",
       "system/platform_shared_memory_mapping.cc",
       "system/request_context.cc",
-      "system/scoped_process_handle.cc",
       "system/shared_buffer_dispatcher.cc",
       "system/user_message_impl.cc",
       "system/watch.cc",
