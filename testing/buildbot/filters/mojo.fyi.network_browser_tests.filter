@@ -6,17 +6,14 @@
 # See https://crbug.com/769401
 
 # Uncategorized timeouts or test failures.
--ChromeSecurityExploitBrowserTest.CreateFilesystemURLInExtensionOrigin
 -DisabledSignInIsolationBrowserTest.SyntheticTrial
 -DomainReliabilityBrowserTest.Upload
 -EnabledSignInIsolationBrowserTest.SyntheticTrial
 -ExtensionUnloadBrowserTest.UnloadWithContentScripts
--MediaGalleriesPlatformAppBrowserTest.ToURL
 -NetInternalsTest.netInternalsSessionBandwidthSucceed
 -NewlibPackagedAppTest.SuccessfulLoad
 -PolicyTest.DefaultCookiesSetting
 -PreviewsOptimizationGuideBrowserTest.NoScriptPreviewsEnabledByWhitelist
--ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed
 -ProfileWindowBrowserTest.GuestClearsCookies
 -ProxySettingsApiTest.ProxyEventsInvalidProxy
 -RegisterProtocolHandlerBrowserTest.CustomHandler
@@ -243,7 +240,6 @@
 
 # Fails because of missing support to navigate to filesystem: URLs.
 # https://crbug.com/797292
--ProcessManagerBrowserTest.NestedURLNavigationsToExtensionBlocked
 -ProcessManagerBrowserTest.NestedURLDownloadsToExtensionAllowed
 -SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl/0
 -SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl/1

@@ -18,6 +18,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/network/public/cpp/features.h"
@@ -112,12 +113,21 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
     WebUIControllerFactory::RegisterFactory(&factory_);
   }
 
-  bool CheckCanLoadHttp() {
-    GURL test_url = embedded_test_server()->GetURL("/echo");
+  bool ExecuteScript(const std::string& script) {
+    bool xhr_result = false;
+    // The JS call will fail if disallowed because the process will be killed.
+    bool execute_result =
+        ExecuteScriptAndExtractBool(shell(), script, &xhr_result);
+    return xhr_result && execute_result;
+  }
+
+  bool FetchResource(const GURL& url) {
+    if (!url.is_valid())
+      return false;
     std::string script(
         "var xhr = new XMLHttpRequest();"
         "xhr.open('GET', '");
-    script += test_url.spec() +
+    script += url.spec() +
               "', true);"
               "xhr.onload = function (e) {"
               "  if (xhr.readyState === 4) {"
@@ -128,11 +138,11 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
               "  window.domAutomationController.send(false);"
               "};"
               "xhr.send(null)";
-    bool xhr_result = false;
-    // The JS call will fail if disallowed because the process will be killed.
-    bool execute_result =
-        ExecuteScriptAndExtractBool(shell(), script, &xhr_result);
-    return xhr_result && execute_result;
+    return ExecuteScript(script);
+  }
+
+  bool CheckCanLoadHttp() {
+    return FetchResource(embedded_test_server()->GetURL("/echo"));
   }
 
   void SetUpOnMainThread() override {
@@ -144,6 +154,7 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
     // Since we assume exploited renderer process, it can bypass the same origin
     // policy at will. Simulate that by passing the disable-web-security flag.
     command_line->AppendSwitch(switches::kDisableWebSecurity);
+    IsolateAllSitesForTesting(command_line);
   }
 
  private:
@@ -168,6 +179,20 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, NoWebUIBindingsHttp) {
   GURL test_url("chrome://webui/nobinding/");
   NavigateToURL(shell(), test_url);
   ASSERT_TRUE(CheckCanLoadHttp());
+}
+
+// Verifies the filesystem URLLoaderFactory's check, using
+// ChildProcessSecurityPolicyImpl::CanRequestURL is properly rejected.
+IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
+                       FileSystemBindingsCorrectOrigin) {
+  GURL test_url("chrome://webui/nobinding/");
+  NavigateToURL(shell(), test_url);
+
+  // Note: must be filesystem scheme (obviously).
+  //       file: is not a safe web scheme (see IsWebSafeScheme),
+  //       and /etc/passwd fails the CanCommitURL check.
+  GURL file_url("filesystem:file:///etc/passwd");
+  EXPECT_FALSE(FetchResource(file_url));
 }
 
 class NetworkServiceInProcessBrowserTest : public ContentBrowserTest {
