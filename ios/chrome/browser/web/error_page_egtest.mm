@@ -23,9 +23,9 @@
 #endif
 
 namespace {
-// Returns ERR_INTERNET_DISCONNECTED error message.
+// Returns ERR_CONNECTION_CLOSED error message.
 std::string GetErrorMessage() {
-  return net::ErrorToShortString(net::ERR_INTERNET_DISCONNECTED);
+  return net::ErrorToShortString(net::ERR_CONNECTION_CLOSED);
 }
 NSString* GetNSErrorMessage() {
   return base::SysUTF8ToNSString(GetErrorMessage());
@@ -59,7 +59,7 @@ NSString* GetNSErrorMessage() {
 
 // Loads the URL which fails to load, then sucessfully reloads the page.
 - (void)testReloadErrorPage {
-  // No response leads to ERR_INTERNET_DISCONNECTED error.
+  // No response leads to ERR_CONNECTION_CLOSED error.
   self.serverRespondsWithContent = NO;
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo-query?foo")];
   if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
@@ -81,7 +81,7 @@ NSString* GetNSErrorMessage() {
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo-query?foo")];
   [ChromeEarlGrey waitForWebViewContainingText:"foo"];
 
-  // Reload the page, no response leads to ERR_INTERNET_DISCONNECTED error.
+  // Reload the page, no response leads to ERR_CONNECTION_CLOSED error.
   self.serverRespondsWithContent = NO;
   [ChromeEarlGrey reload];
   if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
@@ -150,7 +150,7 @@ NSString* GetNSErrorMessage() {
 // Loads the URL which redirects to unresponsive server.
 // TODO(crbug.com/840489): Remove this test.
 - (void)testRedirectToFailingURL {
-  // No response leads to ERR_INTERNET_DISCONNECTED error.
+  // No response leads to ERR_CONNECTION_CLOSED error.
   self.serverRespondsWithContent = NO;
   [ChromeEarlGrey
       loadURL:self.testServer->GetURL("/server-redirect?echo-query")];
