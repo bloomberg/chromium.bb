@@ -451,7 +451,7 @@
         'skip_cipd_packages': True,
         'skip_output_links': True,
         'test_suites': {
-          'gtest_tests': 'chromium_android_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_android_gtests',
         },
       },
       'x86 Cloud Tester': {
@@ -522,47 +522,47 @@
     'machines': {
       'CFI Linux (icall)': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
       'CFI Linux ToT': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
       'CrWinAsan': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'CrWinAsan(dll)': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'CrWinAsanCov': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'CrWinClangLLD': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'CrWinClangLLD64': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'CrWinClngLLD64dbg': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'CrWinClngLLDdbg': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTAndroid': {
@@ -619,12 +619,12 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'chromium_android_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_android_gtests',
         },
       },
       'ToTLinux': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
           'scripts': 'check_gn_headers_script',
         },
       },
@@ -638,17 +638,17 @@
           'all',
         ],
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
       'ToTLinuxMSan': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
       'ToTLinuxThinLTO': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
         'use_swarming': False,
       },
@@ -657,70 +657,68 @@
           'all',
         ],
         'test_suites': {
-          # no "_and_gl":gl_unittests doesn't pass yet,
-          # crbug.com/https://crbug.com/815183
-          'gtest_tests': 'chromium_linux_clang_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
       'ToTMac': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_clang_gtests',
+          'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
       'ToTMacASan': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_clang_gtests',
+          'gtest_tests': 'chromium_mac_gtests',
         },
       },
       'ToTWin': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWin(dbg)': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWin(dll)': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWin64': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWin64(dbg)': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWin64(dll)': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWinCFI': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWinCFI64': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWinLibcxx64': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWinThinLTO64': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'linux-win_cross-rel': {
@@ -732,14 +730,12 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'UBSanVptr Linux': {
         'test_suites': {
-          # no "_and_gl":gl_unittests doesn't pass yet,
-          # crbug.com/https://crbug.com/815183
-          'gtest_tests': 'chromium_linux_clang_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
     },
@@ -847,12 +843,12 @@
       },
       'CFI Linux (icall)': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
       'CFI Linux ToT': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
       'linux-annotator-rel': {
@@ -862,7 +858,7 @@
       },
       'mac-views-rel': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_fyi_gtests',
+          'gtest_tests': 'chromium_mac_gtests',
         },
         'args': [
           '--enable-features=ViewsBrowserWindows',
@@ -870,26 +866,26 @@
       },
       'Chromium Mac 10.11': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_fyi_gtests',
+          'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
         'use_swarming': False,
       },
       'Chromium Mac 10.11 Force Mac Toolchain': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_fyi_gtests',
+          'gtest_tests': 'chromium_mac_gtests',
         },
         'use_swarming': False,
       },
       'Chromium Mac 10.13': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_fyi_gtests',
+          'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
       'Chromium Win 10 GCE Tests': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_fyi_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'Dummy WebKit Mac10.13': {
@@ -1142,19 +1138,17 @@
         'test_suites': {
           # TODO(kbr): it's weird that this has the most in common with the
           # clang testers' test suites.
-          'gtest_tests': 'chromium_android_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_android_gtests',
         },
       },
       'Out of Process Profiling Linux': {
         'test_suites': {
-          # TODO(kbr): it's weird that this has the most in common with the
-          # clang testers' test suites.
-          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
       'Out of Process Profiling Mac': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_fyi_gtests',
+          'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
@@ -1162,7 +1156,7 @@
         'test_suites': {
           # TODO(kbr): it's weird that this has the most in common with the
           # clang testers' test suites.
-          'gtest_tests': 'chromium_win_clang_gtests',
+          'gtest_tests': 'chromium_win_gtests',
         },
       },
       'Site Isolation Android': {
@@ -1203,7 +1197,7 @@
           'vr_testapp',
         ],
         'test_suites': {
-          'gtest_tests': 'vr_platform_specific_non_clang_win_chromium_gtests',
+          'gtest_tests': 'vr_platform_specific_chromium_gtests',
         },
       },
       'WebKit Linux layout_ng Dummy Builder': {
@@ -1619,7 +1613,7 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'chromium_android_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_android_gtests',
         },
       },
       'Linux ASan LSan Tests (1)': {
