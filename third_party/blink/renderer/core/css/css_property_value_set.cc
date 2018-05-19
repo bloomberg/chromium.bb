@@ -360,10 +360,11 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
   }
 
   // When replacing an existing property value, this moves the property to the
-  // end of the list. Firefox preserves the position, and MSIE moves the
-  // property to the beginning.
-  return CSSParser::ParseValue(this, unresolved_property, value, important,
-                               secure_context_mode, context_style_sheet);
+  // end of the list.
+  bool parsed_and_changed =
+      CSSParser::ParseValue(this, unresolved_property, value, important,
+                            secure_context_mode, context_style_sheet);
+  return SetResult{parsed_and_changed, parsed_and_changed};
 }
 
 MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
@@ -377,11 +378,12 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
   if (value.IsEmpty()) {
     bool did_parse = true;
     bool did_change = RemoveProperty(custom_property_name);
-    return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
+    return SetResult{did_parse, did_change};
   }
-  return CSSParser::ParseValueForCustomProperty(
+  bool parsed_and_changed = CSSParser::ParseValueForCustomProperty(
       this, custom_property_name, registry, value, important,
       secure_context_mode, context_style_sheet, is_animation_tainted);
+  return SetResult{parsed_and_changed, parsed_and_changed};
 }
 
 void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
@@ -402,31 +404,22 @@ void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
   }
 }
 
-bool MutableCSSPropertyValueSet::SetProperty(const CSSPropertyValue& property,
+void MutableCSSPropertyValueSet::SetProperty(const CSSPropertyValue& property,
                                              CSSPropertyValue* slot) {
-  const AtomicString& name =
-      (property.Id() == CSSPropertyVariable)
-          ? ToCSSCustomPropertyDeclaration(property.Value())->GetName()
-          : g_null_atom;
-  CSSPropertyValue* to_replace =
-      slot ? slot : FindCSSPropertyWithID(property.Id(), name);
-  if (to_replace && *to_replace == property)
-    return false;
-  if (to_replace) {
-    *to_replace = property;
-    return true;
+  if (property.Id() == CSSPropertyVariable) {
+    RemoveProperty(ToCSSCustomPropertyDeclaration(property.Value())->GetName());
+  } else {
+    RemoveProperty(property.Id());
   }
   property_vector_.push_back(property);
-  return true;
 }
 
-bool MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
+void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
                                              CSSValueID identifier,
                                              bool important) {
   SetProperty(CSSPropertyValue(CSSProperty::Get(property_id),
                                *CSSIdentifierValue::Create(identifier),
                                important));
-  return true;
 }
 
 void MutableCSSPropertyValueSet::ParseDeclarationList(
@@ -447,21 +440,20 @@ void MutableCSSPropertyValueSet::ParseDeclarationList(
   CSSParser::ParseDeclarationList(context, this, style_declaration);
 }
 
-bool MutableCSSPropertyValueSet::AddParsedProperties(
+void MutableCSSPropertyValueSet::AddParsedProperties(
     const HeapVector<CSSPropertyValue, 256>& properties) {
-  bool changed = false;
   property_vector_.ReserveCapacity(property_vector_.size() + properties.size());
   for (unsigned i = 0; i < properties.size(); ++i)
-    changed |= SetProperty(properties[i]);
-  return changed;
+    SetProperty(properties[i]);
 }
 
 bool MutableCSSPropertyValueSet::AddRespectingCascade(
     const CSSPropertyValue& property) {
   // Only add properties that have no !important counterpart present
-  if (!PropertyIsImportant(property.Id()) || property.IsImportant())
-    return SetProperty(property);
-  return false;
+  if (PropertyIsImportant(property.Id()) && !property.IsImportant())
+    return false;
+  SetProperty(property);
+  return true;
 }
 
 String CSSPropertyValueSet::AsText() const {

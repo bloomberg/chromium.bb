@@ -227,7 +227,7 @@ class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
   unsigned PropertyCount() const { return property_vector_.size(); }
 
   // Returns whether this style set was changed.
-  bool AddParsedProperties(const HeapVector<CSSPropertyValue, 256>&);
+  void AddParsedProperties(const HeapVector<CSSPropertyValue, 256>&);
   bool AddRespectingCascade(const CSSPropertyValue&);
 
   struct SetResult {
@@ -250,10 +250,10 @@ class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
   void SetProperty(CSSPropertyID, const CSSValue&, bool important = false);
 
   // These do not. FIXME: This is too messy, we can do better.
-  bool SetProperty(CSSPropertyID,
+  void SetProperty(CSSPropertyID,
                    CSSValueID identifier,
                    bool important = false);
-  bool SetProperty(const CSSPropertyValue&, CSSPropertyValue* slot = nullptr);
+  void SetProperty(const CSSPropertyValue&, CSSPropertyValue* slot = nullptr);
 
   template <typename T>  // CSSPropertyID or AtomicString
   bool RemoveProperty(T property, String* return_text = nullptr);

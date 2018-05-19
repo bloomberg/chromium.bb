@@ -71,20 +71,18 @@ class CSSParserImpl {
     static RangeOffset Ignore() { return {0, 0}; }
   };
 
-  static MutableCSSPropertyValueSet::SetResult ParseValue(
-      MutableCSSPropertyValueSet*,
-      CSSPropertyID,
-      const String&,
-      bool important,
-      const CSSParserContext*);
-  static MutableCSSPropertyValueSet::SetResult ParseVariableValue(
-      MutableCSSPropertyValueSet*,
-      const AtomicString& property_name,
-      const PropertyRegistry*,
-      const String&,
-      bool important,
-      const CSSParserContext*,
-      bool is_animation_tainted);
+  static bool ParseValue(MutableCSSPropertyValueSet*,
+                         CSSPropertyID,
+                         const String&,
+                         bool important,
+                         const CSSParserContext*);
+  static bool ParseVariableValue(MutableCSSPropertyValueSet*,
+                                 const AtomicString& property_name,
+                                 const PropertyRegistry*,
+                                 const String&,
+                                 bool important,
+                                 const CSSParserContext*,
+                                 bool is_animation_tainted);
   static ImmutableCSSPropertyValueSet* ParseInlineStyleDeclaration(
       const String&,
       Element*);

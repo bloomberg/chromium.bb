@@ -2934,7 +2934,6 @@ crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-prel
 crbug.com/626703 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-003a.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-004a.html [ Failure ]
-crbug.com/626703 external/wpt/css/cssom/cssstyledeclaration-mutationrecord-001.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-008.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-006.html [ Failure ]
@@ -4385,9 +4384,6 @@ crbug.com/778745 http/tests/inspector-protocol/cachestorage/read-cached-response
 
 # Sheriff failures 2017-10-24
 crbug.com/773122 crbug.com/777813 [ Win ] fast/text/font-ascent-mac.html [ Failure Pass ]
-
-# Sheriff failures 2017-11-07
-crbug.com/782067 [ Mac10.10 Mac10.11 ] fast/css/no-recalc-on-no-op-inline-style-changes.html [ Pass Failure ]
 
 # Sheriff failures 2017-11-13
 crbug.com/783800 imagecapture/MediaStreamTrack-applyConstraints.html [ Pass Failure ]
