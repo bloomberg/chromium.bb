@@ -36,6 +36,9 @@ constexpr int kDefaultLargeCursorSize = 64;
 // The default wait time between last mouse movement and sending autoclick.
 constexpr int kDefaultAutoclickDelayMs = 1000;
 
+// The default frame color.
+constexpr SkColor kDefaultFrameColor = SkColorSetRGB(0xFD, 0xFE, 0xFF);
+
 }  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_ASH_CONSTANTS_H_

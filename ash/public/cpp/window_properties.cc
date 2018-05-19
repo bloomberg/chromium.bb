@@ -4,6 +4,7 @@
 
 #include "ash/public/cpp/window_properties.h"
 
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_state_type.h"
@@ -95,12 +96,11 @@ DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowStateType,
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kShelfIDKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kShelfItemTypeKey, TYPE_UNDEFINED);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kShowInOverviewKey, true);
-DEFINE_UI_CLASS_PROPERTY_KEY(SkColor,
-                             kFrameActiveColorKey,
-                             SK_ColorTRANSPARENT);
+
+DEFINE_UI_CLASS_PROPERTY_KEY(SkColor, kFrameActiveColorKey, kDefaultFrameColor);
 DEFINE_UI_CLASS_PROPERTY_KEY(SkColor,
                              kFrameInactiveColorKey,
-                             SK_ColorTRANSPARENT);
+                             kDefaultFrameColor);
 DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowPinType,
                              kWindowPinTypeKey,
                              mojom::WindowPinType::NONE);

@@ -660,7 +660,7 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
             IsForExperimentalHostedAppBrowser(browser)) {
       SkColor active_color = ash::FrameCaptionButton::GetButtonColor(
           ash::FrameCaptionButton::ColorMode::kDefault,
-          ash::DefaultFrameHeader::GetDefaultFrameColor());
+          ash::kDefaultFrameColor);
 
       // Hosted apps apply a theme color if specified by the extension.
       base::Optional<SkColor> theme_color =

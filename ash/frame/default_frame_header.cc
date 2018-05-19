@@ -7,6 +7,7 @@
 #include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/frame_header_util.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -59,8 +60,8 @@ namespace ash {
 DefaultFrameHeader::DefaultFrameHeader(
     views::View* header_view,
     FrameCaptionButtonContainerView* caption_button_container)
-    : active_frame_color_(GetDefaultFrameColor()),
-      inactive_frame_color_(GetDefaultFrameColor()) {
+    : active_frame_color_(kDefaultFrameColor),
+      inactive_frame_color_(kDefaultFrameColor) {
   DCHECK(header_view);
   DCHECK(caption_button_container);
   set_view(header_view);
