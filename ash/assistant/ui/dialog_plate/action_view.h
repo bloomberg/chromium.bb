@@ -17,6 +17,7 @@ namespace ash {
 
 class ActionView;
 class AssistantController;
+class LogoView;
 
 // Listener which receives notification of action view events.
 class ActionViewListener {
@@ -28,9 +29,8 @@ class ActionViewListener {
   virtual ~ActionViewListener() = default;
 };
 
-// TODO(dmblack): Wire up LogoView once implemented.
-// A stateful view belonging to DialogPlate which delivers notification of press
-// events.
+// A stateful view belonging to DialogPlate which indicates current user input
+// modality and delivers notification of press events.
 class ActionView : public views::View,
                    public AssistantInteractionModelObserver {
  public:
@@ -42,7 +42,6 @@ class ActionView : public views::View,
   gfx::Size CalculatePreferredSize() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnPaintBackground(gfx::Canvas* canvas) override;
 
   // AssistantInteractionModelObserver:
   void OnInputModalityChanged(InputModality input_modality) override;
@@ -56,10 +55,7 @@ class ActionView : public views::View,
   ActionViewListener* listener_;
 
   views::ImageView* keyboard_action_view_;  // Owned by view hierarchy.
-
-  // TODO(dmblack): Remove after LogoView is implemented.
-  // Temporarily used to represent state.
-  SkColor color_;
+  LogoView* voice_action_view_;             // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(ActionView);
 };

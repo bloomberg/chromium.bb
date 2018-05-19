@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/ui/dialog_plate/logo_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
@@ -19,13 +19,7 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kPreferredSizeDip = 24;
-
-// TODO(dmblack): Remove after LogoView is implemented.
-// Temporary colors to represent states.
-constexpr SkColor kKeyboardColor = SK_ColorTRANSPARENT;
-constexpr SkColor kMicOpenColor = SkColorSetRGB(0xDD, 0x51, 0x44);     // Red
-constexpr SkColor kMicClosedColor = SkColorSetA(SK_ColorBLACK, 0x1F);  // Grey
+constexpr int kPreferredSizeDip = 20;
 
 }  // namespace
 
@@ -33,15 +27,14 @@ ActionView::ActionView(AssistantController* assistant_controller,
                        ActionViewListener* listener)
     : assistant_controller_(assistant_controller),
       listener_(listener),
-      keyboard_action_view_(new views::ImageView()) {
+      keyboard_action_view_(new views::ImageView()),
+      voice_action_view_(new LogoView()) {
   InitLayout();
+  UpdateState();
 
   // The Assistant controller indirectly owns the view hierarchy to which
   // ActionView belongs so is guaranteed to outlive it.
   assistant_controller_->AddInteractionModelObserver(this);
-
-  // Set initial state.
-  UpdateState();
 }
 
 ActionView::~ActionView() {
@@ -55,25 +48,19 @@ gfx::Size ActionView::CalculatePreferredSize() const {
 void ActionView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
+  gfx::Size size = gfx::Size(kPreferredSizeDip, kPreferredSizeDip);
+
   // Keyboard action.
   keyboard_action_view_->SetImage(
       gfx::CreateVectorIcon(kSendIcon, kPreferredSizeDip, gfx::kGoogleBlue500));
-  keyboard_action_view_->SetImageSize(
-      gfx::Size(kPreferredSizeDip, kPreferredSizeDip));
-  keyboard_action_view_->SetPreferredSize(
-      gfx::Size(kPreferredSizeDip, kPreferredSizeDip));
+  keyboard_action_view_->SetImageSize(size);
+  keyboard_action_view_->SetPreferredSize(size);
   AddChildView(keyboard_action_view_);
 
-  // TODO(dmblack): Add once LogoView has been implemented.
   // Voice action.
-}
-
-// TODO(dmblack): Remove after LogoView is implemented.
-void ActionView::OnPaintBackground(gfx::Canvas* canvas) {
-  cc::PaintFlags flags;
-  flags.setAntiAlias(true);
-  flags.setColor(color_);
-  canvas->DrawRoundRect(GetContentsBounds(), kPreferredSizeDip / 2, flags);
+  voice_action_view_->SetImageSize(size);
+  voice_action_view_->SetPreferredSize(size);
+  AddChildView(voice_action_view_);
 }
 
 void ActionView::OnGestureEvent(ui::GestureEvent* event) {
@@ -100,9 +87,6 @@ void ActionView::OnMicStateChanged(MicState mic_state) {
   UpdateState();
 }
 
-// TODO(dmblack): Currently state is being indicated by painting a different
-// background color. This will be replaced once the stateful LogoView has been
-// implemented (b/78191547).
 void ActionView::UpdateState() {
   const AssistantInteractionModel* interaction_model =
       assistant_controller_->interaction_model();
@@ -114,25 +98,22 @@ void ActionView::UpdateState() {
     return;
 
   if (input_modality == InputModality::kKeyboard) {
+    voice_action_view_->SetVisible(false);
     keyboard_action_view_->SetVisible(true);
-    color_ = kKeyboardColor;
-    SchedulePaint();
     return;
   }
 
-  // TODO(dmblack): Make voice action view visible once it has been added.
-  keyboard_action_view_->SetVisible(false);
-
   switch (interaction_model->mic_state()) {
     case MicState::kClosed:
-      color_ = kMicClosedColor;
+      voice_action_view_->SetState(LogoView::State::kMic);
       break;
     case MicState::kOpen:
-      color_ = kMicOpenColor;
+      voice_action_view_->SetState(LogoView::State::kListening);
       break;
   }
 
-  SchedulePaint();
+  keyboard_action_view_->SetVisible(false);
+  voice_action_view_->SetVisible(true);
 }
 
 }  // namespace ash

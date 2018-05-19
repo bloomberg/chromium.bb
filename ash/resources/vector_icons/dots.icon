@@ -1,0 +1,16 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+CANVAS_DIMENSIONS, 36,
+PATH_COLOR_ARGB, 0xFF, 0x42, 0x85, 0xF4,
+CIRCLE, 6, 18, 2,
+NEW_PATH,
+PATH_COLOR_ARGB, 0xFF, 0xEA, 0x43, 0x35,
+CIRCLE, 14, 18, 2,
+NEW_PATH,
+PATH_COLOR_ARGB, 0xFF, 0xFB, 0xBC, 0x05,
+CIRCLE, 22, 18, 2,
+NEW_PATH,
+PATH_COLOR_ARGB, 0xFF, 0x34, 0xA8, 0x53,
+CIRCLE, 30, 18, 2
