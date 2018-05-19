@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "content/public/test/browser_test.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_browser.h"
@@ -179,5 +180,20 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeSessionStorage,
 HEADLESS_PROTOCOL_TEST(VirtualTimeStarvation,
                        "emulation/virtual-time-starvation.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimeVideo, "emulation/virtual-time-video.js");
+
+// http://crbug.com/633321
+#if defined(OS_ANDROID)
+#define MAYBE_VirtualTimeTimerOrder DISABLED_VirtualTimeTimerOrder
+#define MAYBE_VirtualTimeTimerSuspend DISABLED_VirtualTimeTimerSuspend
+#else
+#define MAYBE_VirtualTimeTimerOrder VirtualTimeTimerOrder
+#define MAYBE_VirtualTimeTimerSuspend VirtualTimeTimerSuspend
+#endif
+HEADLESS_PROTOCOL_TEST(MAYBE_VirtualTimeTimerSuspend,
+                       "emulation/virtual-time-timer-suspended.js");
+HEADLESS_PROTOCOL_TEST(MAYBE_VirtualTimeTimerOrder,
+                       "emulation/virtual-time-timer-order.js");
+#undef MAYBE_VirtualTimeTimerOrder
+#undef MAYBE_VirtualTimeTimerSuspend
 
 }  // namespace headless
