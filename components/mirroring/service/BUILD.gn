@@ -53,6 +53,7 @@ source_set("service") {
     ":interface",
     "//crypto",
     "//media",
+    "//media/capture:capture_base",
     "//media/capture/mojom:video_capture",
     "//media/cast:common",
     "//media/cast:net",

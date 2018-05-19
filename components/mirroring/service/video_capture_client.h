@@ -27,7 +27,8 @@ namespace mirroring {
 // received through the media::mojom::VideoCaptureObserver interface.
 class VideoCaptureClient : public media::mojom::VideoCaptureObserver {
  public:
-  explicit VideoCaptureClient(media::mojom::VideoCaptureHostPtr host);
+  VideoCaptureClient(const media::VideoCaptureParams& params,
+                     media::mojom::VideoCaptureHostPtr host);
   ~VideoCaptureClient() override;
 
   using FrameDeliverCallback = base::RepeatingCallback<void(
@@ -65,6 +66,7 @@ class VideoCaptureClient : public media::mojom::VideoCaptureObserver {
   void OnClientBufferFinished(int buffer_id,
                               double consumer_resource_utilization);
 
+  const media::VideoCaptureParams params_;
   const media::mojom::VideoCaptureHostPtr video_capture_host_;
 
   // Called when capturing failed to start.

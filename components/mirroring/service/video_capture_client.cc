@@ -14,8 +14,10 @@ namespace {
 constexpr int kDeviceId = 0;
 }  // namespace
 
-VideoCaptureClient::VideoCaptureClient(media::mojom::VideoCaptureHostPtr host)
-    : video_capture_host_(std::move(host)),
+VideoCaptureClient::VideoCaptureClient(const media::VideoCaptureParams& params,
+                                       media::mojom::VideoCaptureHostPtr host)
+    : params_(params),
+      video_capture_host_(std::move(host)),
       binding_(this),
       weak_factory_(this) {
   DCHECK(video_capture_host_);
@@ -36,8 +38,7 @@ void VideoCaptureClient::Start(FrameDeliverCallback deliver_callback,
 
   media::mojom::VideoCaptureObserverPtr observer;
   binding_.Bind(mojo::MakeRequest(&observer));
-  video_capture_host_->Start(kDeviceId, 0, media::VideoCaptureParams(),
-                             std::move(observer));
+  video_capture_host_->Start(kDeviceId, 0, params_, std::move(observer));
 }
 
 void VideoCaptureClient::Stop() {
@@ -63,7 +64,7 @@ void VideoCaptureClient::Resume(FrameDeliverCallback deliver_callback) {
     return;
   }
   frame_deliver_callback_ = std::move(deliver_callback);
-  video_capture_host_->Resume(kDeviceId, 0, media::VideoCaptureParams());
+  video_capture_host_->Resume(kDeviceId, 0, params_);
 }
 
 void VideoCaptureClient::RequestRefreshFrame() {
