@@ -67,29 +67,6 @@ class SystemCoordinationUnitImplTest : public CoordinationUnitTestHarness {
   base::SimpleTestTickClock clock_;
 };
 
-mojom::ProcessResourceMeasurementBatchPtr CreateMeasurementBatch(
-    base::TimeTicks start_end_time,
-    size_t num_processes,
-    base::TimeDelta additional_cpu_time) {
-  mojom::ProcessResourceMeasurementBatchPtr batch =
-      mojom::ProcessResourceMeasurementBatch::New();
-  batch->batch_started_time = start_end_time;
-  batch->batch_ended_time = start_end_time;
-
-  for (size_t i = 1; i <= num_processes; ++i) {
-    mojom::ProcessResourceMeasurementPtr measurement =
-        mojom::ProcessResourceMeasurement::New();
-    measurement->pid = i;
-    measurement->cpu_usage =
-        base::TimeDelta::FromMicroseconds(i) + additional_cpu_time;
-    measurement->private_footprint_kb = static_cast<uint32_t>(i);
-
-    batch->measurements.push_back(std::move(measurement));
-  }
-
-  return batch;
-}
-
 }  // namespace
 
 TEST_F(SystemCoordinationUnitImplTest, OnProcessCPUUsageReady) {
@@ -111,46 +88,51 @@ TEST_F(SystemCoordinationUnitImplTest, DistributeMeasurementBatch) {
   EXPECT_EQ(0u, observer.system_event_seen_count());
 
   // Build and dispatch a measurement batch.
-  base::TimeTicks start_time = base::TimeTicks::Now();
+  mojom::ProcessResourceMeasurementBatchPtr batch =
+      mojom::ProcessResourceMeasurementBatch::New();
+
+  for (size_t i = 1; i <= 3; ++i) {
+    mojom::ProcessResourceMeasurementPtr measurement =
+        mojom::ProcessResourceMeasurement::New();
+    measurement->pid = i;
+    measurement->cpu_usage = static_cast<double>(i);
+    measurement->private_footprint_kb = static_cast<uint32_t>(i);
+
+    batch->measurements.push_back(std::move(measurement));
+  }
   EXPECT_EQ(0U, observer.process_property_change_seen_count());
-  cu_graph.system->DistributeMeasurementBatch(
-      CreateMeasurementBatch(start_time, 3, base::TimeDelta()));
+  cu_graph.system->DistributeMeasurementBatch(std::move(batch));
   // EXPECT_EQ(2U, observer.process_property_change_seen_count());
   EXPECT_EQ(1u, observer.system_event_seen_count());
 
-  // The first measurement batch results in a zero CPU usage for the processes.
+  // Validate that the measurements were distributed to the process CUs.
   int64_t cpu_usage;
   EXPECT_TRUE(cu_graph.process->GetProperty(mojom::PropertyType::kCPUUsage,
                                             &cpu_usage));
-  EXPECT_EQ(0, cpu_usage);
+  EXPECT_EQ(1000, cpu_usage);
   EXPECT_EQ(1u, cu_graph.process->private_footprint_kb());
 
   EXPECT_TRUE(cu_graph.other_process->GetProperty(
       mojom::PropertyType::kCPUUsage, &cpu_usage));
-  EXPECT_EQ(0, cpu_usage);
+  EXPECT_EQ(2000, cpu_usage);
   EXPECT_EQ(2u, cu_graph.other_process->private_footprint_kb());
-
-  // Dispatch another batch, and verify the CPUUsage is appropriately updated.
-  cu_graph.system->DistributeMeasurementBatch(
-      CreateMeasurementBatch(start_time + base::TimeDelta::FromMicroseconds(1),
-                             3, base::TimeDelta::FromMicroseconds(1)));
-  EXPECT_TRUE(cu_graph.process->GetProperty(mojom::PropertyType::kCPUUsage,
-                                            &cpu_usage));
-  EXPECT_EQ(100000, cpu_usage);
-  EXPECT_TRUE(cu_graph.other_process->GetProperty(
-      mojom::PropertyType::kCPUUsage, &cpu_usage));
-  EXPECT_EQ(100000, cpu_usage);
 
   // Now test that a measurement batch that leaves out a process clears the
   // properties of that process.
-  cu_graph.system->DistributeMeasurementBatch(
-      CreateMeasurementBatch(start_time + base::TimeDelta::FromMicroseconds(2),
-                             1, base::TimeDelta::FromMicroseconds(31)));
+  batch = mojom::ProcessResourceMeasurementBatch::New();
+  mojom::ProcessResourceMeasurementPtr measurement =
+      mojom::ProcessResourceMeasurement::New();
+  measurement->pid = 1;
+  measurement->cpu_usage = 30.0;
+  measurement->private_footprint_kb = 30u;
+  batch->measurements.push_back(std::move(measurement));
+
+  cu_graph.system->DistributeMeasurementBatch(std::move(batch));
 
   EXPECT_TRUE(cu_graph.process->GetProperty(mojom::PropertyType::kCPUUsage,
                                             &cpu_usage));
-  EXPECT_EQ(3000000, cpu_usage);
-  EXPECT_EQ(1u, cu_graph.process->private_footprint_kb());
+  EXPECT_EQ(30000, cpu_usage);
+  EXPECT_EQ(30u, cu_graph.process->private_footprint_kb());
 
   EXPECT_TRUE(cu_graph.other_process->GetProperty(
       mojom::PropertyType::kCPUUsage, &cpu_usage));

@@ -6,7 +6,6 @@
 #define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_SYSTEM_COORDINATION_UNIT_IMPL_H_
 
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 
 namespace resource_coordinator {
@@ -29,8 +28,6 @@ class SystemCoordinationUnitImpl
       mojom::ProcessResourceMeasurementBatchPtr measurement_batch) override;
 
  private:
-  base::TimeTicks last_measurement_batch_time_;
-
   // CoordinationUnitInterface implementation:
   void OnEventReceived(mojom::Event event) override;
   void OnPropertyChanged(mojom::PropertyType property_type,
