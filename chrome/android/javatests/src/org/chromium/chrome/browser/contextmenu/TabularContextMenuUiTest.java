@@ -11,6 +11,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.is;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -143,17 +146,22 @@ public class TabularContextMenuUiTest {
         final List<? extends ContextMenuItem> item =
                 CollectionUtil.newArrayList(ChromeContextMenuItem.ADD_TO_CONTACTS,
                         ChromeContextMenuItem.CALL, ChromeContextMenuItem.COPY_LINK_ADDRESS);
-        final String expectedUrl = "http://google.com";
+        final String createdUrl = "http://google.com";
+        final String expectedUrlWithFormatUrlForDisplayOmitHTTPScheme = "google.com";
         View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
                 return dialog.createContextMenuPageUi(mActivityTestRule.getActivity(),
-                        new MockMenuParams(expectedUrl), Collections.unmodifiableList(item), false);
+                        new MockMenuParams(createdUrl), Collections.unmodifiableList(item), false);
             }
         });
 
         TextView textView = (TextView) view.findViewById(R.id.context_header_text);
-        Assert.assertEquals(expectedUrl, String.valueOf(textView.getText()));
+        // URL in the header of the context menu can be rendered with
+        // or without formatUrlForDisplayWithOmitHTTPScheme (depends on it,
+        // if JNI code is loaded or not) and expected URL can look differently.
+        Assert.assertThat(String.valueOf(textView.getText()),
+                anyOf(is(createdUrl), is(expectedUrlWithFormatUrlForDisplayOmitHTTPScheme)));
     }
 
     @Test
