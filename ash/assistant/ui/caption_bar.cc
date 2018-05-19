@@ -5,12 +5,10 @@
 #include "ash/assistant/ui/caption_bar.h"
 
 #include "ash/public/cpp/vector_icons/vector_icons.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -20,7 +18,6 @@ namespace {
 
 // Appearance.
 constexpr int kCaptionButtonSizeDip = 12;
-constexpr int kIconSizeDip = 24;
 constexpr int kPaddingDip = 14;
 constexpr int kPreferredHeightDip = 48;
 
@@ -75,18 +72,8 @@ void CaptionBar::InitLayout() {
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
-  // Icon.
-  views::ImageView* icon_view = new views::ImageView();
-  icon_view->SetImage(gfx::CreateVectorIcon(kAssistantIcon, kIconSizeDip));
-  icon_view->SetImageSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  icon_view->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  AddChildView(icon_view);
-
-  // Spacer.
-  views::View* spacer = new views::View();
-  AddChildView(spacer);
-
-  layout_manager->SetFlexForView(spacer, 1);
+  layout_manager->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_END);
 
   // Close.
   AddChildView(new CaptionButton(this));
