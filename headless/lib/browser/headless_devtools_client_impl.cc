@@ -111,10 +111,7 @@ void HeadlessDevToolsClientImpl::SendRawDevToolsMessage(
     NOTREACHED() << "Badly formed message " << json_message;
     return;
   }
-  DCHECK_EQ((id_value->GetInt() % 2), 1)
-      << "Raw devtools messages must have an odd ID.";
 #endif
-
   agent_host_->DispatchProtocolMessage(this, json_message);
 }
 
