@@ -645,9 +645,7 @@ void DevToolsURLInterceptorRequestJob::Start() {
 }
 
 void DevToolsURLInterceptorRequestJob::Kill() {
-  if (sub_request_)
-    sub_request_->Cancel();
-
+  sub_request_.reset();
   URLRequestJob::Kill();
 }
 
