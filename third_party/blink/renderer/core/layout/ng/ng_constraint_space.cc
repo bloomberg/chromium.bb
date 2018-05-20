@@ -35,6 +35,7 @@ NGConstraintSpace::NGConstraintSpace(
     bool is_new_fc,
     bool is_anonymous,
     bool use_first_line_style,
+    bool should_force_clearance,
     NGFloatTypes adjoining_floats,
     const NGMarginStrut& margin_strut,
     const NGBfcOffset& bfc_offset,
@@ -60,6 +61,7 @@ NGConstraintSpace::NGConstraintSpace(
       is_new_fc_(is_new_fc),
       is_anonymous_(is_anonymous),
       use_first_line_style_(use_first_line_style),
+      should_force_clearance_(should_force_clearance),
       adjoining_floats_(adjoining_floats),
       writing_mode_(static_cast<unsigned>(writing_mode)),
       is_orthogonal_writing_mode_root_(is_orthogonal_writing_mode_root),
@@ -227,6 +229,7 @@ bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
          separate_leading_fragmentainer_margins_ ==
              other.separate_leading_fragmentainer_margins_ &&
          is_anonymous_ == other.is_anonymous_ &&
+         should_force_clearance_ == other.should_force_clearance_ &&
          adjoining_floats_ == other.adjoining_floats_ &&
          writing_mode_ == other.writing_mode_ &&
          direction_ == other.direction_ &&

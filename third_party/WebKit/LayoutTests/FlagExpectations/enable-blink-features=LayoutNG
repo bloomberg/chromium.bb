@@ -654,7 +654,6 @@ crbug.com/591099 fast/block/basic/quirk-percent-height-table-cell.html [ Failure
 crbug.com/591099 fast/block/block-width-recalc-with-relative-height.html [ Failure ]
 crbug.com/591099 fast/block/float-avoids-padding-inline-ancestors.html [ Crash ]
 crbug.com/810335 fast/block/float/003.html [ Failure ]
-crbug.com/591099 fast/block/float/element-clears-float-without-clearance.html [ Failure ]
 crbug.com/591099 fast/block/float/float-in-float-hit-testing.html [ Pass ]
 crbug.com/591099 fast/block/float/float-in-float-painting.html [ Failure ]
 crbug.com/591099 fast/block/float/floats-offset-image-strict-line-height.html [ Failure ]

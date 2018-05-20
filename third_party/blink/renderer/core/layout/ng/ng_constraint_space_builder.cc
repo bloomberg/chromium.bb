@@ -32,6 +32,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(WritingMode writing_mode,
       is_new_fc_(false),
       is_anonymous_(false),
       use_first_line_style_(false),
+      should_force_clearance_(false),
       adjoining_floats_(kFloatTypeNone),
       text_direction_(static_cast<unsigned>(TextDirection::kLtr)),
       exclusion_space_(nullptr) {}
@@ -223,9 +224,9 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
         is_intermediate_layout_,
         static_cast<NGFragmentationType>(fragmentation_type_),
         separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
-        use_first_line_style_, adjoining_floats_, margin_strut, bfc_offset,
-        floats_bfc_offset, exclusion_space, clearance_offset,
-        baseline_requests_));
+        use_first_line_style_, should_force_clearance_, adjoining_floats_,
+        margin_strut, bfc_offset, floats_bfc_offset, exclusion_space,
+        clearance_offset, baseline_requests_));
   }
   return base::AdoptRef(new NGConstraintSpace(
       out_writing_mode, true, static_cast<TextDirection>(text_direction_),
@@ -236,9 +237,9 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
       is_fixed_size_inline_, true, is_shrink_to_fit_, is_intermediate_layout_,
       static_cast<NGFragmentationType>(fragmentation_type_),
       separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
-      use_first_line_style_, adjoining_floats_, margin_strut, bfc_offset,
-      floats_bfc_offset, exclusion_space, clearance_offset,
-      baseline_requests_));
+      use_first_line_style_, should_force_clearance_, adjoining_floats_,
+      margin_strut, bfc_offset, floats_bfc_offset, exclusion_space,
+      clearance_offset, baseline_requests_));
 }
 
 }  // namespace blink

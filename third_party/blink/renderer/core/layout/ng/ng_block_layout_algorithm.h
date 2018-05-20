@@ -40,6 +40,7 @@ struct NGInflowChildData {
   NGBfcOffset bfc_offset_estimate;
   NGMarginStrut margin_strut;
   NGBoxStrut margins;
+  bool force_clearance;
 };
 
 // A class for general block layout (e.g. a <div> with no special style).
@@ -76,7 +77,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // @return Estimated BFC offset for the "to be layout" child.
   NGInflowChildData ComputeChildData(const NGPreviousInflowPosition&,
                                      NGLayoutInputNode,
-                                     const NGBreakToken* child_break_token);
+                                     const NGBreakToken* child_break_token,
+                                     bool force_clearance);
 
   NGPreviousInflowPosition ComputeInflowPosition(
       const NGPreviousInflowPosition& previous_inflow_position,
