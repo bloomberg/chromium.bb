@@ -55,14 +55,19 @@ void NinjaCreateBundleTargetWriter::Run() {
   if (!EnsureAllToolsAvailable(target_))
     return;
 
+  // Stamp users are CopyBundleData, CompileAssetsCatalog, CodeSigning and
+  // StampForTarget.
+  size_t num_stamp_uses = 4;
+  std::vector<OutputFile> order_only_deps = WriteInputDepsStampAndGetDep(
+      std::vector<const Target*>(), num_stamp_uses);
+
   std::string code_signing_rule_name = WriteCodeSigningRuleDefinition();
 
   std::vector<OutputFile> output_files;
-  WriteCopyBundleDataSteps(&output_files);
-  WriteCompileAssetsCatalogStep(&output_files);
-  WriteCodeSigningStep(code_signing_rule_name, &output_files);
+  WriteCopyBundleDataSteps(order_only_deps, &output_files);
+  WriteCompileAssetsCatalogStep(order_only_deps, &output_files);
+  WriteCodeSigningStep(code_signing_rule_name, order_only_deps, &output_files);
 
-  std::vector<OutputFile> order_only_deps;
   for (const auto& pair : target_->data_deps())
     order_only_deps.push_back(pair.ptr->dependency_output_file());
   WriteStampForTarget(output_files, order_only_deps);
@@ -111,13 +116,15 @@ std::string NinjaCreateBundleTargetWriter::WriteCodeSigningRuleDefinition() {
 }
 
 void NinjaCreateBundleTargetWriter::WriteCopyBundleDataSteps(
+    const std::vector<OutputFile>& order_only_deps,
     std::vector<OutputFile>* output_files) {
   for (const BundleFileRule& file_rule : target_->bundle_data().file_rules())
-    WriteCopyBundleFileRuleSteps(file_rule, output_files);
+    WriteCopyBundleFileRuleSteps(file_rule, order_only_deps, output_files);
 }
 
 void NinjaCreateBundleTargetWriter::WriteCopyBundleFileRuleSteps(
     const BundleFileRule& file_rule,
+    const std::vector<OutputFile>& order_only_deps,
     std::vector<OutputFile>* output_files) {
   // Note that we don't write implicit deps for copy steps. "copy_bundle_data"
   // steps as this is most likely implemented using hardlink in the common case.
@@ -132,11 +139,18 @@ void NinjaCreateBundleTargetWriter::WriteCopyBundleFileRuleSteps(
     out_ << ": " << GetNinjaRulePrefixForToolchain(settings_)
          << Toolchain::ToolTypeToName(Toolchain::TYPE_COPY_BUNDLE_DATA) << " ";
     path_output_.WriteFile(out_, source_file);
+
+    if (!order_only_deps.empty()) {
+      out_ << " ||";
+      path_output_.WriteFiles(out_, order_only_deps);
+    }
+
     out_ << std::endl;
   }
 }
 
 void NinjaCreateBundleTargetWriter::WriteCompileAssetsCatalogStep(
+    const std::vector<OutputFile>& order_only_deps,
     std::vector<OutputFile>* output_files) {
   if (target_->bundle_data().assets_catalog_sources().empty() &&
       target_->bundle_data().partial_info_plist().is_null())
@@ -168,8 +182,12 @@ void NinjaCreateBundleTargetWriter::WriteCompileAssetsCatalogStep(
     out_ << "build ";
     path_output_.WriteFile(out_, partial_info_plist);
     out_ << ": " << GetNinjaRulePrefixForToolchain(settings_)
-         << Toolchain::ToolTypeToName(Toolchain::TYPE_STAMP) << std::endl;
-
+         << Toolchain::ToolTypeToName(Toolchain::TYPE_STAMP);
+    if (!order_only_deps.empty()) {
+      out_ << " ||";
+      path_output_.WriteFiles(out_, order_only_deps);
+    }
+    out_ << std::endl;
     return;
   }
 
@@ -200,6 +218,12 @@ void NinjaCreateBundleTargetWriter::WriteCompileAssetsCatalogStep(
 
   out_ << " | ";
   path_output_.WriteFile(out_, input_dep);
+
+  if (!order_only_deps.empty()) {
+    out_ << " ||";
+    path_output_.WriteFiles(out_, order_only_deps);
+  }
+
   out_ << std::endl;
 
   out_ << "  product_type = " << target_->bundle_data().product_type()
@@ -239,12 +263,13 @@ NinjaCreateBundleTargetWriter::WriteCompileAssetsCatalogInputDepsStamp(
 
 void NinjaCreateBundleTargetWriter::WriteCodeSigningStep(
     const std::string& code_signing_rule_name,
+    const std::vector<OutputFile>& order_only_deps,
     std::vector<OutputFile>* output_files) {
   if (code_signing_rule_name.empty())
     return;
 
   OutputFile code_signing_input_stamp_file =
-      WriteCodeSigningInputDepsStamp(output_files);
+      WriteCodeSigningInputDepsStamp(order_only_deps, output_files);
   DCHECK(!code_signing_input_stamp_file.value().empty());
 
   out_ << "build";
@@ -266,6 +291,7 @@ void NinjaCreateBundleTargetWriter::WriteCodeSigningStep(
 }
 
 OutputFile NinjaCreateBundleTargetWriter::WriteCodeSigningInputDepsStamp(
+    const std::vector<OutputFile>& order_only_deps,
     std::vector<OutputFile>* output_files) {
   std::vector<SourceFile> code_signing_input_files;
   code_signing_input_files.push_back(
@@ -279,30 +305,9 @@ OutputFile NinjaCreateBundleTargetWriter::WriteCodeSigningInputDepsStamp(
         output_file.AsSourceFile(settings_->build_settings()));
   }
 
-  std::vector<const Target*> dependencies;
-  for (const auto& label_target_pair : target_->private_deps()) {
-    if (label_target_pair.ptr->output_type() == Target::BUNDLE_DATA)
-      continue;
-    dependencies.push_back(label_target_pair.ptr);
-  }
-  for (const auto& label_target_pair : target_->public_deps()) {
-    if (label_target_pair.ptr->output_type() == Target::BUNDLE_DATA)
-      continue;
-    dependencies.push_back(label_target_pair.ptr);
-  }
-
   DCHECK(!code_signing_input_files.empty());
-  if (code_signing_input_files.size() == 1 && dependencies.empty())
+  if (code_signing_input_files.size() == 1 && order_only_deps.empty())
     return OutputFile(settings_->build_settings(), code_signing_input_files[0]);
-
-  // Remove possible duplicates (if a target is listed in both deps and
-  // public_deps.
-  std::sort(dependencies.begin(), dependencies.end(),
-            [](const Target* lhs, const Target* rhs) -> bool {
-              return lhs->label() < rhs->label();
-            });
-  dependencies.erase(std::unique(dependencies.begin(), dependencies.end()),
-                     dependencies.end());
 
   OutputFile code_signing_input_stamp_file =
       GetBuildDirForTargetAsOutputFile(target_, BuildDirType::OBJ);
@@ -318,9 +323,9 @@ OutputFile NinjaCreateBundleTargetWriter::WriteCodeSigningInputDepsStamp(
     out_ << " ";
     path_output_.WriteFile(out_, source);
   }
-  for (const Target* target : dependencies) {
-    out_ << " ";
-    path_output_.WriteFile(out_, target->dependency_output_file());
+  if (!order_only_deps.empty()) {
+    out_ << " ||";
+    path_output_.WriteFiles(out_, order_only_deps);
   }
   out_ << std::endl;
   return code_signing_input_stamp_file;
