@@ -49,8 +49,11 @@ void DisconnectWindowServer() {
   // launchservicesd to get an ASN. By setting this flag, HIServices skips
   // that.
   SetApplicationIsDaemon(true);
-  // Tell LaunchServices to continue without a connection to the daemon.
-  _LSSetApplicationLaunchServicesServerConnectionStatus(0, nullptr);
+  // Tell LaunchServices no connections are ever allowed.
+  _LSSetApplicationLaunchServicesServerConnectionStatus(
+      0, ^bool(CFDictionaryRef options) {
+        return false;
+      });
 }
 
 // You are about to read a pretty disgusting hack. In a static initializer,
