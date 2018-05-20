@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
+#include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_controller_client.h"
@@ -242,10 +243,14 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
     // interstitial, showing the new one will automatically hide the old one.
     content::NavigationEntry* entry =
         unsafe_resource.GetNavigationEntryForResource();
-    SafeBrowsingBlockingPage* blocking_page =
-        CreateBlockingPage(ui_manager, web_contents,
-                           entry ? entry->GetURL() : GURL(), unsafe_resource);
+    GURL main_fram_url = entry ? entry->GetURL() : GURL();
+    SafeBrowsingBlockingPage* blocking_page = CreateBlockingPage(
+        ui_manager, web_contents, main_fram_url, unsafe_resource);
     blocking_page->Show();
+    MaybeTriggerSecurityInterstitialShownEvent(
+        web_contents, main_fram_url,
+        GetThreatTypeStringForInterstitial(unsafe_resource.threat_type),
+        /*net_error_code=*/0);
   }
 }
 

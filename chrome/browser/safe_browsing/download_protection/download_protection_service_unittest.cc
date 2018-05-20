@@ -30,7 +30,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
@@ -39,6 +38,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
 #include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/test_extension_event_observer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/safe_browsing_private.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
@@ -215,43 +215,6 @@ std::string GetBodyFromRequest(const network::ResourceRequest& request) {
   CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
   return std::string(element.bytes(), element.length());
 }
-
-std::unique_ptr<KeyedService> BuildSafeBrowsingPrivateEventRouter(
-    content::BrowserContext* context) {
-  return std::unique_ptr<KeyedService>(
-      new extensions::SafeBrowsingPrivateEventRouter(context));
-}
-
-class DangerousDownloadOpenEventObserver
-    : public extensions::TestEventRouter::EventObserver {
- public:
-  explicit DangerousDownloadOpenEventObserver(
-      extensions::TestEventRouter* event_router)
-      : event_router_(event_router) {
-    event_router->AddEventObserver(this);
-  }
-
-  ~DangerousDownloadOpenEventObserver() override = default;
-
-  // Removes |event_args_| from |*this| and returns them.
-  base::Value PassEventArgs() { return std::move(event_args_); }
-
-  // extensions::TestEventRouter::EventObserver:
-  void OnBroadcastEvent(const extensions::Event& event) override {
-    if (event.event_name == OnDangerousDownloadOpened::kEventName) {
-      event_args_ = event.event_args->Clone();
-    }
-  }
-
-  extensions::TestEventRouter* event_router() { return event_router_; }
-
- private:
-  // The arguments passed for the last observed event.
-  base::Value event_args_;
-  extensions::TestEventRouter* event_router_;
-
-  DISALLOW_COPY_AND_ASSIGN(DangerousDownloadOpenEventObserver);
-};
 
 }  // namespace
 
@@ -2557,7 +2520,7 @@ TEST_F(DownloadProtectionServiceTest, VerifyDangerousDownloadOpenedAPICall) {
   target_path = target_path.AppendASCII("filepath");
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(target_path));
 
-  DangerousDownloadOpenEventObserver event_observer(test_event_router_);
+  TestExtensionEventObserver event_observer(test_event_router_);
   content::DownloadItemUtils::AttachInfo(&item, profile_.get(), nullptr);
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
   ASSERT_EQ(1, test_event_router_->GetEventCount(

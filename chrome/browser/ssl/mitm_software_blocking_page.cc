@@ -70,6 +70,7 @@ MITMSoftwareBlockingPage::MITMSoftwareBlockingPage(
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
     : SSLBlockingPageBase(
           web_contents,
+          cert_error,
           CertificateErrorReport::INTERSTITIAL_MITM_SOFTWARE,
           ssl_info,
           request_url,

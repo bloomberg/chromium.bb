@@ -12,6 +12,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
@@ -186,6 +187,20 @@ void SafeBrowsingUIManager::SendSerializedThreatDetails(
   }
 }
 
+void SafeBrowsingUIManager::OnBlockingPageDone(
+    const std::vector<UnsafeResource>& resources,
+    bool proceed,
+    content::WebContents* web_contents,
+    const GURL& main_frame_url) {
+  BaseUIManager::OnBlockingPageDone(resources, proceed, web_contents,
+                                    main_frame_url);
+  if (proceed && resources.size() > 0) {
+    MaybeTriggerSecurityInterstitialProceededEvent(
+        web_contents, main_frame_url,
+        GetThreatTypeStringForInterstitial(resources[0].threat_type),
+        /*net_error_code=*/0);
+  }
+}
 // Static.
 GURL SafeBrowsingUIManager::GetMainFrameWhitelistUrlForResourceForTesting(
     const security_interstitials::UnsafeResource& resource) {

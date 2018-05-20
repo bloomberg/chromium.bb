@@ -9,6 +9,7 @@
 #include "base/callback_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
+#include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
@@ -70,6 +71,7 @@ BadClockBlockingPage::BadClockBlockingPage(
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
     : SSLBlockingPageBase(
           web_contents,
+          cert_error,
           CertificateErrorReport::INTERSTITIAL_CLOCK,
           ssl_info,
           request_url,

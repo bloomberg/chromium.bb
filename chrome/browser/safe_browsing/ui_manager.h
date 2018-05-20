@@ -65,6 +65,13 @@ class SafeBrowsingUIManager : public BaseUIManager {
   // protocol buffer, so the service can send it over.
   void SendSerializedThreatDetails(const std::string& serialized) override;
 
+  // Calls |BaseUIManager::OnBlockingPageDone()| and triggers
+  // |OnSecurityInterstitialProceeded| event if |proceed| is true.
+  void OnBlockingPageDone(const std::vector<UnsafeResource>& resources,
+                          bool proceed,
+                          content::WebContents* web_contents,
+                          const GURL& main_frame_url) override;
+
   // Report hits to unsafe contents (malware, phishing, unsafe download URL)
   // to the server. Can only be called on UI thread.  The hit report will
   // only be sent if the user has enabled SBER and is not in incognito mode.

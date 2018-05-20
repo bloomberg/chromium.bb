@@ -76,6 +76,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
     : SSLBlockingPageBase(
           web_contents,
+          cert_error,
           CertificateErrorReport::INTERSTITIAL_CAPTIVE_PORTAL,
           ssl_info,
           request_url,

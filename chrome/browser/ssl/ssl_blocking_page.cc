@@ -136,6 +136,7 @@ SSLBlockingPage::SSLBlockingPage(
     bool is_superfish,
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
     : SSLBlockingPageBase(web_contents,
+                          cert_error,
                           is_superfish
                               ? CertificateErrorReport::INTERSTITIAL_SUPERFISH
                               : CertificateErrorReport::INTERSTITIAL_SSL,

@@ -69,10 +69,6 @@ class SSLBlockingPage : public SSLBlockingPageBase {
   static bool IsOverridable(int options_mask);
 
  protected:
-  friend class policy::PolicyTest_SSLErrorOverridingDisallowed_Test;
-  friend class SSLUITestBase;
-  friend class InterstitialAccessibilityBrowserTest;
-
   SSLBlockingPage(
       content::WebContents* web_contents,
       int cert_error,
@@ -101,6 +97,11 @@ class SSLBlockingPage : public SSLBlockingPageBase {
       base::DictionaryValue* load_time_data) override;
 
  private:
+  friend class policy::PolicyTest_SSLErrorOverridingDisallowed_Test;
+  friend class SSLUITestBase;
+  friend class InterstitialAccessibilityBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(SSLBlockingPageTest,
+                           VerifySecurityInterstitialExtensionEvents);
   void NotifyDenyCertificate();
 
   base::Callback<void(content::CertificateRequestResultType)> callback_;

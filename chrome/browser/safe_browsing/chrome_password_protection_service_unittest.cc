@@ -8,8 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
+#include "chrome/browser/safe_browsing/test_extension_event_observer.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
@@ -75,12 +75,6 @@ std::unique_ptr<KeyedService> BuildFakeUserEventService(
   return std::make_unique<syncer::FakeUserEventService>();
 }
 
-std::unique_ptr<KeyedService> BuildSafeBrowsingPrivateEventRouter(
-    content::BrowserContext* context) {
-  return std::unique_ptr<KeyedService>(
-      new extensions::SafeBrowsingPrivateEventRouter(context));
-}
-
 constexpr struct {
   // The response from the password protection service.
   PasswordProtectionService::RequestOutcome request_outcome;
@@ -111,39 +105,6 @@ constexpr struct {
      PasswordReuseLookup::REQUEST_FAILURE}};
 
 }  // namespace
-
-class PasswordProtectionEventObserver
-    : public extensions::TestEventRouter::EventObserver {
- public:
-  explicit PasswordProtectionEventObserver(
-      extensions::TestEventRouter* event_router)
-      : event_router_(event_router) {
-    event_router->AddEventObserver(this);
-  }
-
-  ~PasswordProtectionEventObserver() override = default;
-
-  // Removes |event_args_| from |*this| and returns them.
-  base::Value PassEventArgs() { return std::move(event_args_); }
-
-  // extensions::TestEventRouter::EventObserver:
-  void OnBroadcastEvent(const extensions::Event& event) override {
-    if (event.event_name ==
-            OnPolicySpecifiedPasswordReuseDetected::kEventName ||
-        event.event_name == OnPolicySpecifiedPasswordChanged::kEventName) {
-      event_args_ = event.event_args->Clone();
-    }
-  }
-
-  extensions::TestEventRouter* event_router() { return event_router_; }
-
- private:
-  // The arguments passed for the last observed event.
-  base::Value event_args_;
-  extensions::TestEventRouter* event_router_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordProtectionEventObserver);
-};
 
 class MockChromePasswordProtectionService
     : public ChromePasswordProtectionService {
@@ -770,7 +731,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyOnPolicySpecifiedPasswordChangedEvent) {
-  PasswordProtectionEventObserver event_observer(test_event_router_);
+  TestExtensionEventObserver event_observer(test_event_router_);
   base::test::ScopedFeatureList scoped_features;
   scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
 
@@ -802,7 +763,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyOnPolicySpecifiedPasswordReuseDetectedEventForPasswordReuse) {
-  PasswordProtectionEventObserver event_observer(test_event_router_);
+  TestExtensionEventObserver event_observer(test_event_router_);
   base::test::ScopedFeatureList scoped_features;
   scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
   SigninManagerBase* signin_manager =
@@ -840,7 +801,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyOnPolicySpecifiedPasswordReuseDetectedEventForPhishingReuse) {
-  PasswordProtectionEventObserver event_observer(test_event_router_);
+  TestExtensionEventObserver event_observer(test_event_router_);
   base::test::ScopedFeatureList scoped_features;
   scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
   SigninManagerBase* signin_manager =
