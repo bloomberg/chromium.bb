@@ -5,9 +5,11 @@
 #include "content/browser/renderer_host/render_widget_targeter.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/browser/renderer_host/input/one_shot_timeout_monitor.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/events/blink/blink_event_util.h"
 
@@ -88,10 +90,12 @@ RenderWidgetTargetResult::RenderWidgetTargetResult(
 RenderWidgetTargetResult::RenderWidgetTargetResult(
     RenderWidgetHostViewBase* in_view,
     bool in_should_query_view,
-    base::Optional<gfx::PointF> in_location)
+    base::Optional<gfx::PointF> in_location,
+    bool in_latched_target)
     : view(in_view),
       should_query_view(in_should_query_view),
-      target_location(in_location) {}
+      target_location(in_location),
+      latched_target(in_latched_target) {}
 
 RenderWidgetTargetResult::~RenderWidgetTargetResult() = default;
 
@@ -146,6 +150,7 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
 
   RenderWidgetHostViewBase* target = result.view;
   auto* event_ptr = &event;
+  async_depth_ = 0;
   // TODO(kenrb, wjmaclean): Asynchronous hit tests don't work properly with
   // GuestViews, so rely on the synchronous result.
   // See https://crbug.com/802378.
@@ -159,7 +164,8 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
     QueryClient(root_view, root_view, *event_ptr, latency,
                 ComputeEventLocation(event), nullptr, gfx::PointF());
   } else {
-    FoundTarget(root_view, target, *event_ptr, latency, result.target_location);
+    FoundTarget(root_view, target, *event_ptr, latency, result.target_location,
+                result.latched_target);
   }
 }
 
@@ -178,25 +184,25 @@ void RenderWidgetTargeter::QueryClient(
   DCHECK(!request_in_flight_);
 
   request_in_flight_ = true;
+  async_depth_++;
   auto* target_client = target->host()->input_target_client();
   TracingUmaTracker tracker("Event.AsyncTargeting.ResponseTime",
                             "input,latency");
-    async_hit_test_timeout_.reset(new OneShotTimeoutMonitor(
-        base::BindOnce(
-            &RenderWidgetTargeter::AsyncHitTestTimedOut,
-            weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
-            target->GetWeakPtr(), target_location,
-            last_request_target ? last_request_target->GetWeakPtr() : nullptr,
-            last_target_location, ui::WebInputEventTraits::Clone(event),
-            latency),
-        async_hit_test_timeout_delay_));
-    target_client->FrameSinkIdAt(
-        gfx::ToCeiledPoint(target_location),
-        base::BindOnce(
-            &RenderWidgetTargeter::FoundFrameSinkId,
-            weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
-            target->GetWeakPtr(), ui::WebInputEventTraits::Clone(event),
-            latency, ++last_request_id_, target_location, std::move(tracker)));
+  async_hit_test_timeout_.reset(new OneShotTimeoutMonitor(
+      base::BindOnce(
+          &RenderWidgetTargeter::AsyncHitTestTimedOut,
+          weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
+          target->GetWeakPtr(), target_location,
+          last_request_target ? last_request_target->GetWeakPtr() : nullptr,
+          last_target_location, ui::WebInputEventTraits::Clone(event), latency),
+      async_hit_test_timeout_delay_));
+  target_client->FrameSinkIdAt(
+      gfx::ToCeiledPoint(target_location),
+      base::BindOnce(&RenderWidgetTargeter::FoundFrameSinkId,
+                     weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
+                     target->GetWeakPtr(),
+                     ui::WebInputEventTraits::Clone(event), latency,
+                     ++last_request_id_, target_location, std::move(tracker)));
 }
 
 void RenderWidgetTargeter::FlushEventQueue() {
@@ -242,7 +248,7 @@ void RenderWidgetTargeter::FoundFrameSinkId(
   // asking the clients until a client claims an event for itself.
   if (view == target.get() ||
       unresponsive_views_.find(view) != unresponsive_views_.end()) {
-    FoundTarget(root_view.get(), view, *event, latency, target_location);
+    FoundTarget(root_view.get(), view, *event, latency, target_location, false);
   } else {
     gfx::PointF location = target_location;
     target->TransformPointToCoordSpaceForView(location, view, &location);
@@ -256,7 +262,13 @@ void RenderWidgetTargeter::FoundTarget(
     RenderWidgetHostViewBase* target,
     const blink::WebInputEvent& event,
     const ui::LatencyInfo& latency,
-    const base::Optional<gfx::PointF>& target_location) {
+    const base::Optional<gfx::PointF>& target_location,
+    bool latched_target) {
+  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
+      !latched_target) {
+    UMA_HISTOGRAM_COUNTS_100("Event.AsyncTargeting.AsyncClientDepth",
+                             async_depth_);
+  }
   // RenderWidgetHostViewMac can be deleted asynchronously, in which case the
   // View will be valid but there will no longer be a RenderWidgetHostImpl.
   if (!root_view || !root_view->GetRenderWidgetHost())
@@ -290,10 +302,10 @@ void RenderWidgetTargeter::AsyncHitTestTimedOut(
     // renderer fails to process it.
     FoundTarget(current_request_root_view.get(),
                 current_request_root_view.get(), *event, latency,
-                current_target_location);
+                current_target_location, false);
   } else {
     FoundTarget(current_request_root_view.get(), last_request_target.get(),
-                *event, latency, last_target_location);
+                *event, latency, last_target_location, false);
   }
 }
 
