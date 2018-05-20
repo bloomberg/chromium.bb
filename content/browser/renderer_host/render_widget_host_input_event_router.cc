@@ -200,6 +200,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
     const blink::WebMouseEvent& event) const {
   RenderWidgetHostViewBase* target = nullptr;
   bool needs_transform_point = true;
+  bool latched_target = true;
   if (root_view->IsMouseLocked()) {
     target = root_view->host()->delegate()->GetMouseLockWidget()->GetView();
   }
@@ -219,11 +220,12 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
 
   gfx::PointF transformed_point;
   if (!target) {
+    latched_target = false;
     auto result = FindViewAtLocation(
         root_view, event.PositionInWidget(), event.PositionInScreen(),
         viz::EventSource::MOUSE, &transformed_point);
     if (result.should_query_view) {
-      return {result.view, true, transformed_point};
+      return {result.view, true, transformed_point, latched_target};
     }
     target = result.view;
     // |transformed_point| is already transformed.
@@ -234,10 +236,10 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
     if (!root_view->TransformPointToCoordSpaceForView(
             event.PositionInWidget(), target, &transformed_point,
             viz::EventSource::MOUSE)) {
-      return {nullptr, false, base::nullopt};
+      return {nullptr, false, base::nullopt, latched_target};
     }
   }
-  return {target, false, transformed_point};
+  return {target, false, transformed_point, latched_target};
 }
 
 RenderWidgetTargetResult
@@ -251,9 +253,9 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
     if (!root_view->TransformPointToCoordSpaceForView(
             event.PositionInWidget(), target, &transformed_point,
             viz::EventSource::MOUSE)) {
-      return {nullptr, false, base::nullopt};
+      return {nullptr, false, base::nullopt, true};
     }
-    return {target, false, transformed_point};
+    return {target, false, transformed_point, true};
   }
 
   if (root_view->wheel_scroll_latching_enabled()) {
@@ -261,17 +263,17 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
       auto result = FindViewAtLocation(
           root_view, event.PositionInWidget(), event.PositionInScreen(),
           viz::EventSource::MOUSE, &transformed_point);
-      return {result.view, result.should_query_view, transformed_point};
+      return {result.view, result.should_query_view, transformed_point, false};
     }
     // For non-begin events, the target found for the previous phaseBegan is
     // used.
-    return {nullptr, false, base::nullopt};
+    return {nullptr, false, base::nullopt, true};
   }
 
   auto result = FindViewAtLocation(root_view, event.PositionInWidget(),
                                    event.PositionInScreen(),
                                    viz::EventSource::MOUSE, &transformed_point);
-  return {result.view, result.should_query_view, transformed_point};
+  return {result.view, result.should_query_view, transformed_point, false};
 }
 
 RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
@@ -284,7 +286,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
   // hit testing.
   if (owner_map_.size() <= 1) {
     *transformed_point = point;
-    return {root_view, false, *transformed_point};
+    return {root_view, false, *transformed_point, false};
   }
 
   viz::FrameSinkId frame_sink_id;
@@ -293,7 +295,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     viz::HitTestQuery* query = GetHitTestQuery(GetHostFrameSinkManager(),
                                                root_view->GetRootFrameSinkId());
     if (!query)
-      return {root_view, false, base::nullopt};
+      return {root_view, false, base::nullopt, false};
     // |point_in_screen| is in the coordinate space of of the screen, but the
     // display HitTestQuery does a hit test in the coordinate space of the root
     // window. The following translation should account for that discrepancy.
@@ -334,7 +336,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     *transformed_point = point;
   }
 
-  return {view, query_renderer, *transformed_point};
+  return {view, query_renderer, *transformed_point, false};
 }
 
 void RenderWidgetHostInputEventRouter::RouteMouseEvent(
@@ -527,7 +529,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindTouchEventTarget(
   // Tests may call this without an initial TouchStart, so check event type
   // explicitly here.
   if (active_touches_ || event.GetType() != blink::WebInputEvent::kTouchStart)
-    return {nullptr, false, base::nullopt};
+    return {nullptr, false, base::nullopt, true};
 
   active_touches_ += CountChangedTouchPoints(event);
   gfx::PointF original_point = gfx::PointF(event.touches[0].PositionInWidget());
@@ -1044,7 +1046,7 @@ RenderWidgetHostInputEventRouter::FindTouchscreenGestureEventTarget(
   // target we could just return nullptr for pinch events, but since we know
   // where they are going we return the correct target.
   if (blink::WebInputEvent::IsPinchGestureEventType(gesture_event.GetType()))
-    return {root_view, false, gesture_event.PositionInWidget()};
+    return {root_view, false, gesture_event.PositionInWidget(), true};
 
   // Android sends gesture events that have no corresponding touch sequence, so
   // these we hit-test explicitly.
@@ -1059,7 +1061,7 @@ RenderWidgetHostInputEventRouter::FindTouchscreenGestureEventTarget(
 
   // Remaining gesture events will defer to the gesture event target queue
   // during dispatch.
-  return {nullptr, false, base::nullopt};
+  return {nullptr, false, base::nullopt, true};
 }
 
 bool RenderWidgetHostInputEventRouter::IsViewInMap(
@@ -1249,7 +1251,7 @@ RenderWidgetHostInputEventRouter::FindTouchpadGestureEventTarget(
     const blink::WebGestureEvent& event) const {
   if (event.GetType() != blink::WebInputEvent::kGesturePinchBegin &&
       event.GetType() != blink::WebInputEvent::kGestureFlingStart) {
-    return {nullptr, false, base::nullopt};
+    return {nullptr, false, base::nullopt, true};
   }
 
   gfx::PointF transformed_point;
