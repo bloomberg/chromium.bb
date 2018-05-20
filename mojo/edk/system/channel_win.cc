@@ -235,10 +235,13 @@ class ChannelWin : public Channel,
       Channel::MessagePtr message = std::move(outgoing_messages_.front());
       outgoing_messages_.pop_front();
 
-      // Clear any handles so they don't get closed on destruction.
+      // Invalidate all the scoped handles so we don't attempt to close them.
+      // Note that we don't simply release these objects because they also own
+      // an internal process handle (in |owning_process|) which *does* need to
+      // be closed.
       std::vector<ScopedPlatformHandle> handles = message->TakeHandles();
       for (auto& handle : handles)
-        ignore_result(handle.release());
+        handle.get().handle = INVALID_HANDLE_VALUE;
 
       // Overlapped WriteFile() to a pipe should always fully complete.
       if (message->data_num_bytes() != bytes_written)

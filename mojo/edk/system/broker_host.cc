@@ -26,7 +26,7 @@ BrokerHost::BrokerHost(base::ProcessHandle client_process,
     : process_error_callback_(process_error_callback)
 #if defined(OS_WIN)
       ,
-      client_process_(client_process)
+      client_process_(ScopedProcessHandle::CloneFrom(client_process))
 #endif
 {
   CHECK(platform_handle.is_valid());
@@ -52,7 +52,7 @@ bool BrokerHost::PrepareHandlesForClient(
     std::vector<ScopedPlatformHandle>* handles) {
 #if defined(OS_WIN)
   if (!Channel::Message::RewriteHandles(base::GetCurrentProcessHandle(),
-                                        client_process_, handles)) {
+                                        client_process_.get(), handles)) {
     // NOTE: We only log an error here. We do not signal a logical error or
     // prevent any message from being sent. The client should handle unexpected
     // invalid handles appropriately.
