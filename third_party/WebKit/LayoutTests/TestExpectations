@@ -362,7 +362,6 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/float-in-float-hit-t
 crbug.com/635619 virtual/layout_ng/fast/block/float/assert-when-moving-float.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/assert-when-moving-float-2.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/clear-intruding-floats-when-moving-to-inline-parent-3.html [ Failure Crash Pass ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/element-clears-float-without-clearance.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-at-start-of-clean-lines-that-are-subsequently-dirtied-vertical-rl.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/floats-and-text-indent.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-at-start-of-clean-lines-that-are-subsequently-dirtied.html [ Failure ]

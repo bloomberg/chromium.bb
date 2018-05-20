@@ -76,6 +76,11 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetClearanceOffset(LayoutUnit clearance_offset);
 
+  NGConstraintSpaceBuilder& SetShouldForceClearance() {
+    should_force_clearance_ = true;
+    return *this;
+  }
+
   NGConstraintSpaceBuilder& SetExclusionSpace(
       const NGExclusionSpace& exclusion_space);
 
@@ -113,6 +118,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   unsigned is_new_fc_ : 1;
   unsigned is_anonymous_ : 1;
   unsigned use_first_line_style_ : 1;
+  unsigned should_force_clearance_ : 1;
   unsigned adjoining_floats_ : 2;  // NGFloatTypes
   unsigned text_direction_ : 1;
 

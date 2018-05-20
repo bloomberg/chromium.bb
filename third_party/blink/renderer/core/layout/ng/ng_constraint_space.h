@@ -203,6 +203,28 @@ class CORE_EXPORT NGConstraintSpace final
   }
   LayoutUnit ClearanceOffset() const { return clearance_offset_; }
 
+  // Return true if the fragment needs to have clearance applied to it,
+  // regardless of its hypothetical position. The fragment will then go exactly
+  // below the relevant floats. This happens when a cleared child gets separated
+  // from floats that would otherwise be adjoining; example:
+  //
+  // <div id="container">
+  //   <div id="float" style="float:left; width:100px; height:100px;"></div>
+  //   <div id="clearee" style="clear:left; margin-top:12345px;">text</div>
+  // </div>
+  //
+  // Clearance separates #clearee from #container, and #float is positioned at
+  // the block-start content edge of #container. Without clearance, margins
+  // would have been adjoining and the large margin on #clearee would have
+  // pulled both #container and #float along with it. No margin, no matter how
+  // large, would ever be able to pull #clearee below the float then. But we
+  // have clearance, the margins are separated, and in this case we know that we
+  // have clearance even before we have laid out (because of the adjoing
+  // float). So it would just be wrong to check for clearance when we position
+  // #clearee. Nothing can prevent clearance here. A large margin on the cleared
+  // child will be canceled out with negative clearance.
+  bool ShouldForceClearance() const { return should_force_clearance_; }
+
   const Vector<NGBaselineRequest>& BaselineRequests() const {
     return baseline_requests_;
   }
@@ -234,6 +256,7 @@ class CORE_EXPORT NGConstraintSpace final
                     bool is_new_fc,
                     bool is_anonymous,
                     bool use_first_line_style,
+                    bool should_force_clearance,
                     NGFloatTypes adjoining_floats,
                     const NGMarginStrut& margin_strut,
                     const NGBfcOffset& bfc_offset,
@@ -266,6 +289,7 @@ class CORE_EXPORT NGConstraintSpace final
 
   unsigned is_anonymous_ : 1;
   unsigned use_first_line_style_ : 1;
+  unsigned should_force_clearance_ : 1;
   unsigned adjoining_floats_ : 2;  //  NGFloatTypes
 
   unsigned writing_mode_ : 3;
