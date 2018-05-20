@@ -100,9 +100,11 @@ public class AwVariationsSeedFetcher extends JobService {
 
         ComponentName thisComponent = new ComponentName(
                 ContextUtils.getApplicationContext(), AwVariationsSeedFetcher.class);
-        JobInfo.Builder builder = new JobInfo.Builder(JOB_ID, thisComponent);
-        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
-        if (scheduler.schedule(builder.build()) != JobScheduler.RESULT_SUCCESS) {
+        JobInfo job = new JobInfo.Builder(JOB_ID, thisComponent)
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setRequiresCharging(true)
+                .build();
+        if (scheduler.schedule(job) != JobScheduler.RESULT_SUCCESS) {
             Log.e(TAG, "Failed to schedule job");
         }
     }
