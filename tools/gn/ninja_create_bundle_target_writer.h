@@ -28,18 +28,23 @@ class NinjaCreateBundleTargetWriter : public NinjaTargetWriter {
   // Writes the steps to copy files into the bundle.
   //
   // The list of newly created files will be added to |output_files|.
-  void WriteCopyBundleDataSteps(std::vector<OutputFile>* output_files);
+  void WriteCopyBundleDataSteps(const std::vector<OutputFile>& order_only_deps,
+                                std::vector<OutputFile>* output_files);
 
   // Writes the step to copy files BundleFileRule into the bundle.
   //
   // The list of newly created files will be added to |output_files|.
-  void WriteCopyBundleFileRuleSteps(const BundleFileRule& file_rule,
-                                    std::vector<OutputFile>* output_files);
+  void WriteCopyBundleFileRuleSteps(
+      const BundleFileRule& file_rule,
+      const std::vector<OutputFile>& order_only_deps,
+      std::vector<OutputFile>* output_files);
 
   // Writes the step to compile assets catalogs.
   //
   // The list of newly created files will be added to |output_files|.
-  void WriteCompileAssetsCatalogStep(std::vector<OutputFile>* output_files);
+  void WriteCompileAssetsCatalogStep(
+      const std::vector<OutputFile>& order_only_deps,
+      std::vector<OutputFile>* output_files);
 
   // Writes the stamp file for the assets catalog compilation input
   // dependencies.
@@ -52,10 +57,12 @@ class NinjaCreateBundleTargetWriter : public NinjaTargetWriter {
   // code signing may depends on the full bundle structure, this step will
   // depends on all files generated via other rules.
   void WriteCodeSigningStep(const std::string& code_signing_rule_name,
+                            const std::vector<OutputFile>& order_only_deps,
                             std::vector<OutputFile>* output_files);
 
   // Writes the stamp file for the code signing input dependencies.
   OutputFile WriteCodeSigningInputDepsStamp(
+      const std::vector<OutputFile>& order_only_deps,
       std::vector<OutputFile>* output_files);
 
   DISALLOW_COPY_AND_ASSIGN(NinjaCreateBundleTargetWriter);
