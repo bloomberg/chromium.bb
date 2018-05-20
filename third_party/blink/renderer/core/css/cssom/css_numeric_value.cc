@@ -205,7 +205,9 @@ CSSNumericValue* CSSNumericValue::parse(const String& css_text,
                                         ExceptionState& exception_state) {
   CSSTokenizer tokenizer(css_text);
   CSSParserTokenStream stream(tokenizer);
+  stream.ConsumeWhitespace();
   auto range = stream.ConsumeUntilPeekedTypeIs<>();
+  stream.ConsumeWhitespace();
   if (!stream.AtEnd()) {
     exception_state.ThrowDOMException(kSyntaxError, "Invalid math expression");
     return nullptr;
@@ -215,7 +217,7 @@ CSSNumericValue* CSSNumericValue::parse(const String& css_text,
     case kNumberToken:
     case kPercentageToken:
     case kDimensionToken: {
-      const auto token = range.Consume();
+      const auto token = range.ConsumeIncludingWhitespace();
       if (!range.AtEnd())
         break;
       return CSSUnitValue::Create(token.NumericValue(), token.GetUnitType());
