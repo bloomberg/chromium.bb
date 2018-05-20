@@ -185,6 +185,24 @@
         },
         'os_type': 'android',
       },
+      'android-marshmallow-arm64-rel': {
+        'additional_compile_targets': [
+          'monochrome_static_initializers',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+          'isolated_scripts': 'marshmallow_isolated_scripts',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'MMB29Q',
+              'device_type': 'bullhead',
+            },
+          ],
+        },
+        'os_type': 'android',
+      },
       'KitKat Phone Tester (dbg)': {
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',

@@ -56,6 +56,7 @@
       'KitKat Phone Tester (rel)': 'android_release_bot_minimal_symbols',
       'Marshmallow Phone Tester (rel)': 'android_release_bot_minimal_symbols_arm64',
       'android-kitkat-arm-rel': 'android_release_bot_minimal_symbols',
+      'android-marshmallow-arm64-rel': 'android_release_bot_minimal_symbols_arm64',
     },
 
     'chromium.android.fyi': {
@@ -536,6 +537,7 @@
 
     'tryserver.chromium.android': {
       'android-kitkat-arm-rel': 'android_release_trybot',
+      'android-marshmallow-arm64-rel': 'android_release_trybot_arm64_no_symbols',
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',
       'android_binary_size': 'official_goma_minimal_symbols_android',
