@@ -751,7 +751,6 @@ test("headless_browsertests") {
     "lib/headless_browser_context_browsertest.cc",
     "lib/headless_devtools_client_browsertest.cc",
     "lib/headless_web_contents_browsertest.cc",
-    "lib/virtual_time_browsertest.cc",
     "public/util/compositor_controller_browsertest.cc",
     "public/util/testing/fake_managed_dispatch_url_request_job.cc",
     "public/util/testing/fake_managed_dispatch_url_request_job.h",
