@@ -40072,6 +40072,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="RESULT_FROM_CACHE"/>
   <int value="10" label="DEPRECATED: NOT_HTTP_URL"/>
   <int value="11" label="SCHEME_NOT_SUPPORTED"/>
+  <int value="12" label="WHITELISTED_BY_POLICY"/>
 </enum>
 
 <enum name="SBClientDownloadCheckDownloadStats">

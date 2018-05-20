@@ -594,6 +594,8 @@ jumbo_split_static_library("browser") {
     "internal_auth.h",
     "interstitials/chrome_metrics_helper.cc",
     "interstitials/chrome_metrics_helper.h",
+    "interstitials/enterprise_util.cc",
+    "interstitials/enterprise_util.h",
     "intranet_redirect_detector.cc",
     "intranet_redirect_detector.h",
     "invalidation/profile_invalidation_provider_factory.cc",

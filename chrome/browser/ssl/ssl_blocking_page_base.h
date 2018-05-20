@@ -27,6 +27,7 @@ class SSLBlockingPageBase
  public:
   SSLBlockingPageBase(
       content::WebContents* web_contents,
+      int cert_error,
       CertificateErrorReport::InterstitialReason interstitial_reason,
       const net::SSLInfo& ssl_info,
       const GURL& request_url,

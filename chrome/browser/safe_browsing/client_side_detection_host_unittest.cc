@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/proto/csd.pb.h"
@@ -1232,6 +1233,23 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckValidCached) {
   fake_phishing_detector_.CheckMessage(NULL);
   // Showing a phishing warning will invalidate all the weak pointers which
   // means we will not extract malware features.
+  ExpectShouldClassifyForMalwareResult(false);
+}
+
+TEST_F(ClientSideDetectionHostTest, TestPreClassificationWhitelistedByPolicy) {
+  // Configures enterprise whitelist.
+  ListPrefUpdate update(mock_profile_->GetPrefs(),
+                        prefs::kSafeBrowsingWhitelistDomains);
+  update->AppendString("example.com");
+
+  GURL url("http://example.com/");
+  ExpectPreClassificationChecks(url, &kFalse, &kFalse, NULL, NULL, NULL, NULL,
+                                NULL);
+
+  NavigateAndCommit(url);
+  WaitAndCheckPreClassificationChecks();
+
+  fake_phishing_detector_.CheckMessage(NULL);
   ExpectShouldClassifyForMalwareResult(false);
 }
 

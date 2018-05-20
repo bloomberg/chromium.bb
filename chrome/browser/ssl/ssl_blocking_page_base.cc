@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ssl/ssl_blocking_page_base.h"
 
+#include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 
 SSLBlockingPageBase::SSLBlockingPageBase(
     content::WebContents* web_contents,
+    int cert_error,
     CertificateErrorReport::InterstitialReason interstitial_reason,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
@@ -31,7 +33,10 @@ SSLBlockingPageBase::SSLBlockingPageBase(
                                interstitial_reason,
                                overridable,
                                time_triggered,
-                               controller()->metrics_helper())) {}
+                               controller()->metrics_helper())) {
+  MaybeTriggerSecurityInterstitialShownEvent(web_contents, request_url,
+                                             "SSL_ERROR", cert_error);
+}
 
 SSLBlockingPageBase::~SSLBlockingPageBase() {}
 

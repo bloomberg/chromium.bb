@@ -25,6 +25,10 @@ void SafeBrowsingPrivateEventRouter::OnPolicySpecifiedPasswordReuseDetected(
     const GURL& url,
     const std::string& user_name,
     bool is_phishing_url) {
+  // |event_router_| can be null in tests.
+  if (!event_router_)
+    return;
+
   api::safe_browsing_private::PolicySpecifiedPasswordReuse params;
   params.url = url.spec();
   params.user_name = user_name;
@@ -43,6 +47,10 @@ void SafeBrowsingPrivateEventRouter::OnPolicySpecifiedPasswordReuseDetected(
 
 void SafeBrowsingPrivateEventRouter::OnPolicySpecifiedPasswordChanged(
     const std::string& user_name) {
+  // |event_router_| can be null in tests.
+  if (!event_router_)
+    return;
+
   auto event_value = std::make_unique<base::ListValue>();
   event_value->Append(std::make_unique<base::Value>(user_name));
   auto extension_event = std::make_unique<Event>(
@@ -57,6 +65,10 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadOpened(
     const std::string& file_name,
     const std::string& download_digest_sha256,
     const std::string& user_name) {
+  // |event_router_| can be null in tests.
+  if (!event_router_)
+    return;
+
   api::safe_browsing_private::DangerousDownloadInfo params;
   params.url = url.spec();
   params.file_name = file_name;
@@ -77,6 +89,10 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialShown(
     const std::string& reason,
     int net_error_code,
     const std::string& user_name) {
+  // |event_router_| can be null in tests.
+  if (!event_router_)
+    return;
+
   api::safe_browsing_private::InterstitialInfo params;
   params.url = url.spec();
   params.reason = reason;
@@ -101,6 +117,10 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialProceeded(
     const std::string& reason,
     int net_error_code,
     const std::string& user_name) {
+  // |event_router_| can be null in tests.
+  if (!event_router_)
+    return;
+
   api::safe_browsing_private::InterstitialInfo params;
   params.url = url.spec();
   params.reason = reason;

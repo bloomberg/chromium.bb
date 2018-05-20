@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
+#include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
@@ -160,6 +161,8 @@ void SSLErrorControllerClient::GoBack() {
 }
 
 void SSLErrorControllerClient::Proceed() {
+  MaybeTriggerSecurityInterstitialProceededEvent(web_contents_, request_url_,
+                                                 "SSL_ERROR", cert_error_);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Hosted Apps should not be allowed to run if there is a problem with their
   // certificate. So, when users click proceed on an interstitial, move the tab
