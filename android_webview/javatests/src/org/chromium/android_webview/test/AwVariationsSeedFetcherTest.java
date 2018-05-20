@@ -96,6 +96,8 @@ public class AwVariationsSeedFetcherTest {
             Assert.assertEquals("Job scheduled with wrong ID", JOB_ID, job.getId());
             Assert.assertEquals("Job scheduled with wrong network type",
                     JobInfo.NETWORK_TYPE_ANY, job.getNetworkType());
+            Assert.assertTrue("Job scheduled without charging requirement",
+                    job.isRequireCharging());
             mJob = job;
             return JobScheduler.RESULT_SUCCESS;
         }
@@ -191,7 +193,9 @@ public class AwVariationsSeedFetcherTest {
             ComponentName component = new ComponentName(
                     ContextUtils.getApplicationContext(), AwVariationsSeedFetcher.class);
             JobInfo job = new JobInfo.Builder(JOB_ID, component)
-                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).build();
+                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                    .setRequiresCharging(true)
+                    .build();
             mScheduler.schedule(job);
             AwVariationsSeedFetcher.scheduleIfNeeded();
             // Check that our job object hasn't been replaced (meaning that scheduleIfNeeded didn't
