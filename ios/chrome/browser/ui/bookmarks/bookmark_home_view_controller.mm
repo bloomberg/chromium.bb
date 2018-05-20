@@ -17,6 +17,7 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
@@ -1406,6 +1407,18 @@ const CGFloat kShadowRadius = 12.0f;
 
 #pragma mark - Context Menu
 
+- (void)prepareAlertControllerForDisplay:(UIAlertController*)alert {
+  if (!experimental_flags::IsBookmarksUIRebootEnabled()) {
+    return;
+  }
+
+  UIPopoverPresentationController* presentationController =
+      alert.popoverPresentationController;
+  presentationController.sourceView = self.navigationController.toolbar;
+  CGFloat midX = CGRectGetMidX(self.navigationController.toolbar.bounds);
+  presentationController.sourceRect = CGRectMake(midX, 0, 1, 1);
+}
+
 - (UIAlertController*)contextMenuForMultipleBookmarkURLs:
     (const std::set<const bookmarks::BookmarkNode*>)nodes {
   __weak BookmarkHomeViewController* weakSelf = self;
@@ -1414,6 +1427,7 @@ const CGFloat kShadowRadius = 12.0f;
                        message:nil
                 preferredStyle:UIAlertControllerStyleActionSheet];
   alert.view.accessibilityIdentifier = @"bookmark_context_menu";
+  [self prepareAlertControllerForDisplay:alert];
 
   UIAlertAction* cancelAction =
       [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
@@ -1460,6 +1474,7 @@ const CGFloat kShadowRadius = 12.0f;
                        message:nil
                 preferredStyle:UIAlertControllerStyleActionSheet];
   alert.view.accessibilityIdentifier = @"bookmark_context_menu";
+  [self prepareAlertControllerForDisplay:alert];
 
   UIAlertAction* cancelAction =
       [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
@@ -1518,6 +1533,7 @@ const CGFloat kShadowRadius = 12.0f;
                        message:nil
                 preferredStyle:UIAlertControllerStyleActionSheet];
   alert.view.accessibilityIdentifier = @"bookmark_context_menu";
+  [self prepareAlertControllerForDisplay:alert];
 
   UIAlertAction* cancelAction =
       [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
@@ -1555,6 +1571,7 @@ const CGFloat kShadowRadius = 12.0f;
                        message:nil
                 preferredStyle:UIAlertControllerStyleActionSheet];
   alert.view.accessibilityIdentifier = @"bookmark_context_menu";
+  [self prepareAlertControllerForDisplay:alert];
 
   UIAlertAction* cancelAction =
       [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
