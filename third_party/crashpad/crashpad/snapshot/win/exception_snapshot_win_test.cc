@@ -163,7 +163,13 @@ void TestCrashingChild(TestPaths::Architecture architecture) {
   EXPECT_EQ(child.WaitForExit(), EXCEPTION_BREAKPOINT);
 }
 
-TEST(ExceptionSnapshotWinTest, ChildCrash) {
+#if defined(ADDRESS_SANITIZER)
+// https://crbug.com/845011
+#define MAYBE_ChildCrash DISABLED_ChildCrash
+#else
+#define MAYBE_ChildCrash ChildCrash
+#endif
+TEST(ExceptionSnapshotWinTest, MAYBE_ChildCrash) {
   TestCrashingChild(TestPaths::Architecture::kDefault);
 }
 
@@ -268,7 +274,13 @@ void TestDumpWithoutCrashingChild(TestPaths::Architecture architecture) {
   EXPECT_EQ(child.WaitForExit(), 0u);
 }
 
-TEST(SimulateCrash, ChildDumpWithoutCrashing) {
+#if defined(ADDRESS_SANITIZER)
+// https://crbug.com/845011
+#define MAYBE_ChildDumpWithoutCrashing DISABLED_ChildDumpWithoutCrashing
+#else
+#define MAYBE_ChildDumpWithoutCrashing ChildDumpWithoutCrashing
+#endif
+TEST(SimulateCrash, MAYBE_ChildDumpWithoutCrashing) {
   TestDumpWithoutCrashingChild(TestPaths::Architecture::kDefault);
 }
 
