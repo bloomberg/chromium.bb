@@ -19,9 +19,6 @@ const base::Feature kKeyboardShortcutViewer{"KeyboardShortcutViewer",
 const base::Feature kNewOverviewAnimations{"NewOverviewAnimations",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kNewOverviewUi{"NewOverviewUi",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kOverviewSwipeToClose{"OverviewSwipeToClose",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 

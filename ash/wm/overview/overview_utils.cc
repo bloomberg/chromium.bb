@@ -105,13 +105,8 @@ bool IsNewOverviewAnimationsEnabled() {
   return base::FeatureList::IsEnabled(features::kNewOverviewAnimations);
 }
 
-bool IsNewOverviewUi() {
-  return base::FeatureList::IsEnabled(features::kNewOverviewUi);
-}
-
 bool IsOverviewSwipeToCloseEnabled() {
-  return base::FeatureList::IsEnabled(features::kNewOverviewUi) &&
-         base::FeatureList::IsEnabled(features::kOverviewSwipeToClose);
+  return base::FeatureList::IsEnabled(features::kOverviewSwipeToClose);
 }
 
 void FadeOutWidgetOnExit(std::unique_ptr<views::Widget> widget,

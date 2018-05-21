@@ -1935,9 +1935,6 @@ extern const char kAshEnableKeyboardShortcutViewerDescription[];
 extern const char kAshEnableMirroredScreenName[];
 extern const char kAshEnableMirroredScreenDescription[];
 
-extern const char kAshEnableNewOverviewUiName[];
-extern const char kAshEnableNewOverviewUiDescription[];
-
 extern const char kAshEnableNewOverviewAnimationsName[];
 extern const char kAshEnableNewOverviewAnimationsDescription[];
 

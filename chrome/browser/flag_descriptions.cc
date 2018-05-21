@@ -3150,10 +3150,6 @@ const char kAshEnableMirroredScreenDescription[] =
     "Enable the mirrored screen mode. This mode flips the screen image "
     "horizontally.";
 
-const char kAshEnableNewOverviewUiName[] = "Enable new overview UI.";
-const char kAshEnableNewOverviewUiDescription[] =
-    "Enables the new overview mode UI.";
-
 const char kAshEnableNewOverviewAnimationsName[] =
     "Enable new overview animations.";
 const char kAshEnableNewOverviewAnimationsDescription[] =

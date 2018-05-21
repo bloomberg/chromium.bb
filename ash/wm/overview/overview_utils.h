@@ -32,11 +32,6 @@ bool CanCoverAvailableWorkspace(aura::Window* window);
 // become obsolete. See https://crbug.com/801465.
 bool IsNewOverviewAnimationsEnabled();
 
-// Returns true if overview mode should use the new ui.
-// TODO(sammiequon): Remove this function when the old overview mode ui becomes
-// obsolete. See https://crbug.com/782320.
-bool IsNewOverviewUi();
-
 bool IsOverviewSwipeToCloseEnabled();
 
 // Fades |widget| to opacity zero with animation settings depending on

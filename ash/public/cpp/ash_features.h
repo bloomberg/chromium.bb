@@ -31,11 +31,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kKeyboardShortcutViewer;
 // https://crbug.com/801465.
 ASH_PUBLIC_EXPORT extern const base::Feature kNewOverviewAnimations;
 
-// Enables the new overview animations.
-// TODO(sammiequon): Remove this after the feature is fully launched.
-// https://crbug.com/821608.
-ASH_PUBLIC_EXPORT extern const base::Feature kNewOverviewUi;
-
 // Enables swipe to close in overview mode.
 // TODO(sammiequon): Remove this after the feature is fully launched.
 // https://crbug.com/828646.

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -78,9 +77,6 @@ constexpr SkColor kCloseButtonColor = SK_ColorWHITE;
 // Label background color once in overview mode.
 constexpr SkColor kLabelBackgroundColor = SkColorSetARGB(25, 255, 255, 255);
 
-// Label background color when exiting overview mode.
-constexpr SkColor kLabelExitColor = SkColorSetARGB(255, 90, 90, 90);
-
 // Corner radius for the selection tiles.
 static int kLabelBackgroundRadius = 2;
 
@@ -121,11 +117,6 @@ constexpr float kPreCloseScale = 0.02f;
 // title.
 constexpr gfx::Size kIconSize = gfx::Size(24, 24);
 
-// Values for the old overview ui.
-// TODO(crbug.com/782320): Delete these values when the old ui becomes obsolete.
-constexpr int kOldHeaderHeightDp = 32;
-constexpr int kOldHorizontalLabelPaddingDp = 8;
-
 constexpr int kCloseButtonInkDropInsetDp = 2;
 
 // Shift the close button by |kCloseButtonOffsetDp| so that its image aligns
@@ -156,8 +147,6 @@ constexpr int kSwipeToCloseCloseTranslationDp = 96;
 // animate in, as tablet mode windows have no title bars. Exceptions are windows
 // that are not maximized, minimized or snapped.
 bool UseTabletModeAnimations(aura::Window* original_window) {
-  if (!IsNewOverviewUi())
-    return false;
 
   wm::WindowState* state = wm::GetWindowState(original_window);
   return Shell::Get()
@@ -293,17 +282,13 @@ class ShieldButton : public views::Button {
 WindowSelectorItem::OverviewCloseButton::OverviewCloseButton(
     views::ButtonListener* listener)
     : views::ImageButton(listener) {
-  if (IsNewOverviewUi())
-    SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
+  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
 
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(IsNewOverviewUi() ? kOverviewWindowCloseIcon
-                                                   : kWindowControlCloseIcon,
-                                 kCloseButtonColor));
+           gfx::CreateVectorIcon(kOverviewWindowCloseIcon, kCloseButtonColor));
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
-  const int length = IsNewOverviewUi() ? kHeaderHeightDp : kOldHeaderHeightDp;
-  SetMinimumImageSize(gfx::Size(length, length));
+  SetMinimumImageSize(gfx::Size(kHeaderHeightDp, kHeaderHeightDp));
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
   SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
 }
@@ -532,16 +517,12 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
     background_->AddChildView(title_label_);
     listener_button_->AddChildView(background_);
     AddChildView(listener_button_);
-    if (IsNewOverviewUi()) {
-      // Do not make |close_button_| a child of |background_| because
-      // |close_button_|'s hit radius should extend outside the bounds of
-      // |background_|.
-      close_button_->SetPaintToLayer();
-      close_button_->layer()->SetFillsBoundsOpaquely(false);
-      AddChildView(close_button_);
-    } else {
-      background_->AddChildView(close_button_);
-    }
+    // Do not make |close_button_| a child of |background_| because
+    // |close_button_|'s hit radius should extend outside the bounds of
+    // |background_|.
+    close_button_->SetPaintToLayer();
+    close_button_->layer()->SetFillsBoundsOpaquely(false);
+    AddChildView(close_button_);
 
     // Use |cannot_snap_container_| to specify the padding surrounding
     // |cannot_snap_label_| and to give the label rounded corners.
@@ -616,12 +597,10 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
     background_bounds.set_height(visible_height);
     background_->SetBoundsRect(background_bounds);
 
-    const int label_padding = IsNewOverviewUi() ? kHorizontalLabelPaddingDp
-                                                : kOldHorizontalLabelPaddingDp;
     bounds = background_bounds;
-    bounds.Inset(
-        label_padding + (image_view_ ? image_view_->size().width() : 0), 0,
-        label_padding + visible_height, 0);
+    bounds.Inset(kHorizontalLabelPaddingDp +
+                     (image_view_ ? image_view_->size().width() : 0),
+                 0, kHorizontalLabelPaddingDp + visible_height, 0);
     title_label_->SetBoundsRect(bounds);
 
     if (image_view_) {
@@ -634,11 +613,9 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
     // Align the close button so that the right edge of its image is aligned
     // with the right edge of the overview window, but the right edge of its
     // touch target exceeds it.
-    bounds.set_x(
-        bounds.width() - visible_height +
-        (IsNewOverviewUi() ? kCloseButtonOffsetDp + kWindowSelectorMargin : 0));
-    if (IsNewOverviewUi())
-      bounds.set_y(kWindowSelectorMargin);
+    bounds.set_x(bounds.width() - visible_height + kCloseButtonOffsetDp +
+                 kWindowSelectorMargin);
+    bounds.set_y(kWindowSelectorMargin);
     bounds.set_width(visible_height);
     close_button_->SetBoundsRect(bounds);
   }
@@ -831,12 +808,6 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   UpdateBackdropBounds();
 }
 
-void WindowSelectorItem::SetSelected(bool selected) {
-  selected_ = selected;
-  if (!IsNewOverviewUi())
-    background_view_->AnimateBackgroundOpacity(selected ? 0.f : kHeaderOpacity);
-}
-
 void WindowSelectorItem::SendAccessibleSelectionEvent() {
   caption_container_view_->listener_button()->NotifyAccessibilityEvent(
       ax::mojom::Event::kSelection, true);
@@ -906,16 +877,12 @@ void WindowSelectorItem::UpdateCannotSnapWarningVisibility() {
 }
 
 void WindowSelectorItem::OnSelectorItemDragStarted(WindowSelectorItem* item) {
-  if (!IsNewOverviewUi())
-    return;
   caption_container_view_->SetCloseButtonVisibility(false);
   if (item == this)
     caption_container_view_->SetTitleLabelVisibility(false);
 }
 
 void WindowSelectorItem::OnSelectorItemDragEnded() {
-  if (!IsNewOverviewUi())
-    return;
   caption_container_view_->SetCloseButtonVisibility(true);
   caption_container_view_->SetTitleLabelVisibility(true);
 }
@@ -1128,8 +1095,6 @@ void WindowSelectorItem::OnDragAnimationCompleted() {
 
 void WindowSelectorItem::SetShadowBounds(
     base::Optional<gfx::Rect> bounds_in_screen) {
-  if (!IsNewOverviewUi())
-    return;
 
   // Shadow is normally turned off during animations and reapplied when they
   // are finished. On destruction, |shadow_| is cleaned up before
@@ -1155,10 +1120,6 @@ void WindowSelectorItem::SetShadowBounds(
 
 void WindowSelectorItem::SetOpacity(float opacity) {
   item_widget_->SetOpacity(opacity);
-  if (background_view_ && !IsNewOverviewUi()) {
-    background_view_->AnimateBackgroundOpacity(
-        selected_ ? 0.f : kHeaderOpacity * opacity);
-  }
   transform_window_.SetOpacity(opacity);
 }
 
@@ -1246,8 +1207,7 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
 void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   background_view_ = new RoundedContainerView(this, kLabelBackgroundRadius,
                                               transform_window_.GetTopColor());
-  if (IsNewOverviewUi())
-    background_view_->set_color(SK_ColorTRANSPARENT);
+  background_view_->set_color(SK_ColorTRANSPARENT);
 
   // |background_view_| will get added as a child to CaptionContainerView.
   views::Widget::InitParams params_label;
@@ -1283,16 +1243,14 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   // higher resolution. If it does not exist, use the window icon. If neither
   // exist, display nothing.
   views::ImageView* image_view = nullptr;
-  if (IsNewOverviewUi()) {
-    gfx::ImageSkia* icon = GetWindow()->GetProperty(aura::client::kAppIconKey);
-    if (!icon || icon->size().IsEmpty())
-      icon = GetWindow()->GetProperty(aura::client::kWindowIconKey);
-    if (icon && !icon->size().IsEmpty()) {
-      image_view = new views::ImageView();
-      image_view->SetImage(gfx::ImageSkiaOperations::CreateResizedImage(
-          *icon, skia::ImageOperations::RESIZE_BEST, kIconSize));
-      image_view->SetSize(kIconSize);
-    }
+  gfx::ImageSkia* icon = GetWindow()->GetProperty(aura::client::kAppIconKey);
+  if (!icon || icon->size().IsEmpty())
+    icon = GetWindow()->GetProperty(aura::client::kWindowIconKey);
+  if (icon && !icon->size().IsEmpty()) {
+    image_view = new views::ImageView();
+    image_view->SetImage(gfx::ImageSkiaOperations::CreateResizedImage(
+        *icon, skia::ImageOperations::RESIZE_BEST, kIconSize));
+    image_view->SetSize(kIconSize);
   }
 
   label_view_ = new views::Label(title);
@@ -1303,14 +1261,12 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   // background color is opaque or transparent to decide whether to use
   // subpixel rendering. Does not actually set the label's background color.
   label_view_->SetBackgroundColor(kLabelBackgroundColor);
-  if (IsNewOverviewUi()) {
-    label_view_->SetFontList(gfx::FontList().Derive(
-        kLabelFontDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
+  label_view_->SetFontList(gfx::FontList().Derive(
+      kLabelFontDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
 
-    shadow_ = std::make_unique<ui::Shadow>();
-    shadow_->Init(kShadowElevation);
-    item_widget_->GetLayer()->Add(shadow_->layer());
-  }
+  shadow_ = std::make_unique<ui::Shadow>();
+  shadow_->Init(kShadowElevation);
+  item_widget_->GetLayer()->Add(shadow_->layer());
 
   cannot_snap_label_view_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_ASH_SPLIT_VIEW_CANNOT_SNAP));
@@ -1364,8 +1320,6 @@ void WindowSelectorItem::UpdateHeaderLayout(
         // Animate the color of |background_view_| once the fade in animation of
         // |item_widget_| ends.
         layer_animation_settings.AddObserver(background_view_);
-        if (!IsNewOverviewUi())
-          background_view_->set_color(kLabelBackgroundColor);
       } else if (mode == HeaderFadeInMode::kExit) {
         // Make the header visible above the window. It will be faded out when
         // the Shutdown() is called.
@@ -1374,8 +1328,6 @@ void WindowSelectorItem::UpdateHeaderLayout(
             animation_type == OverviewAnimationType::OVERVIEW_ANIMATION_NONE
                 ? 0
                 : kExitFadeInMilliseconds);
-        if (!IsNewOverviewUi())
-          background_view_->set_color(kLabelExitColor);
       }
     }
     if (!label_view_->visible()) {
