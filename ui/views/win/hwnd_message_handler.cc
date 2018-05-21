@@ -239,6 +239,12 @@ ui::EventType GetTouchEventType(POINTER_FLAGS pointer_flags) {
   return ui::ET_TOUCH_MOVED;
 }
 
+bool IsHitTestOnResizeHandle(LRESULT hittest) {
+  return hittest == HTRIGHT || hittest == HTLEFT || hittest == HTTOP ||
+         hittest == HTBOTTOM || hittest == HTTOPLEFT || hittest == HTTOPRIGHT ||
+         hittest == HTBOTTOMLEFT || hittest == HTBOTTOMRIGHT;
+}
+
 const int kTouchDownContextResetTimeout = 500;
 
 // Windows does not flag synthesized mouse messages from touch or pen in all
@@ -2699,25 +2705,28 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
                                                      WPARAM w_param,
                                                      LPARAM l_param,
                                                      bool track_mouse) {
-  // We handle touch events on Windows Aura. Windows generates synthesized
-  // mouse messages in response to touch which we should ignore. However touch
-  // messages are only received for the client area. We need to ignore the
-  // synthesized mouse messages for all points in the client area and places
-  // which return HTNOWHERE.
-  // TODO(ananta)
-  // Windows does not reliably set the touch flag on mouse messages. Look into
-  // a better way of identifying mouse messages originating from touch.
-  if ((message != WM_MOUSEWHEEL && message != WM_MOUSEHWHEEL) &&
-      (ui::IsMouseEventFromTouch(message))) {
-    LPARAM l_param_ht = l_param;
-    // For mouse events (except wheel events), location is in window coordinates
-    // and should be converted to screen coordinates for WM_NCHITTEST.
-    POINT screen_point = CR_POINT_INITIALIZER_FROM_LPARAM(l_param_ht);
-    MapWindowPoints(hwnd(), HWND_DESKTOP, &screen_point, 1);
-    l_param_ht = MAKELPARAM(screen_point.x, screen_point.y);
-
-    LRESULT hittest = SendMessage(hwnd(), WM_NCHITTEST, 0, l_param_ht);
-    if (hittest == HTCLIENT || hittest == HTNOWHERE)
+  // We handle touch events in Aura. Windows generates synthesized mouse
+  // messages whenever there's a touch, but it doesn't give us the actual touch
+  // messages if it thinks the touch point is in non-client space.
+  if (message != WM_MOUSEWHEEL && message != WM_MOUSEHWHEEL &&
+      ui::IsMouseEventFromTouch(message)) {
+    LRESULT hittest = SendMessage(hwnd(), WM_NCHITTEST, 0, l_param);
+    // Always DefWindowProc on the titlebar. We could let the event fall through
+    // and the special handling in HandleMouseInputForCaption would take care of
+    // this, but in the touch case Windows does a better job.
+    if (hittest == HTCAPTION || hittest == HTSYSMENU)
+      SetMsgHandled(FALSE);
+    // We must let Windows handle the caption buttons if it's drawing them, or
+    // they won't work.
+    if (delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN &&
+        (hittest == HTCLOSE || hittest == HTMINBUTTON ||
+         hittest == HTMAXBUTTON)) {
+      SetMsgHandled(FALSE);
+    }
+    // Let resize events fall through. Ignore everything else, as we're either
+    // letting Windows handle it above or we've already handled the equivalent
+    // touch message.
+    if (!IsHitTestOnResizeHandle(hittest))
       return 0;
   }
 
