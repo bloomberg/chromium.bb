@@ -436,6 +436,8 @@ jumbo_source_set("browser") {
     "background_fetch/storage/get_developer_ids_task.h",
     "background_fetch/storage/get_metadata_task.cc",
     "background_fetch/storage/get_metadata_task.h",
+    "background_fetch/storage/get_settled_fetches_task.cc",
+    "background_fetch/storage/get_settled_fetches_task.h",
     "background_fetch/storage/mark_registration_for_deletion_task.cc",
     "background_fetch/storage/mark_registration_for_deletion_task.h",
     "background_fetch/storage/mark_request_complete_task.cc",
