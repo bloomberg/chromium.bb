@@ -299,6 +299,16 @@ DnsResponse::Result DnsResponse::ParseToAddressList(
   DnsRecordParser parser = Parser();
   DnsResourceRecord record;
   unsigned ancount = answer_count();
+  // NXDOMAIN or NODATA cases respectively.
+  if (rcode() == dns_protocol::kRcodeNXDOMAIN ||
+      (ancount == 0 && rcode() == dns_protocol::kRcodeNOERROR)) {
+    unsigned nscount = base::NetToHost16(header()->nscount);
+    for (unsigned i = 0; i < nscount; ++i) {
+      if (parser.ReadRecord(&record) && record.type == dns_protocol::kTypeSOA)
+        ttl_sec = std::min(ttl_sec, record.ttl);
+    }
+  }
+
   for (unsigned i = 0; i < ancount; ++i) {
     if (!parser.ReadRecord(&record))
       return DNS_MALFORMED_RESPONSE;
@@ -329,8 +339,6 @@ DnsResponse::Result DnsResponse::ParseToAddressList(
                     record.rdata.length()));
     }
   }
-
-  // TODO(szym): Extract TTL for NODATA results. http://crbug.com/115051
 
   // getcanonname in eglibc returns the first owner name of an A or AAAA RR.
   // If the response passed all the checks so far, then |expected_name| is it.

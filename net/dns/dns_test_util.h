@@ -159,11 +159,12 @@ class MockTransactionFactory;
 
 struct MockDnsClientRule {
   enum ResultType {
-    FAIL,     // Fail asynchronously with ERR_NAME_NOT_RESOLVED.
-    TIMEOUT,  // Fail asynchronously with ERR_DNS_TIMEOUT.
-    EMPTY,    // Return an empty response.
-    OK,       // Return an IP address (the accompanying IP is an argument in the
-              // Result structure, or understood as localhost when unspecified).
+    NODOMAIN,  // Fail asynchronously with ERR_NAME_NOT_RESOLVED and NXDOMAIN.
+    FAIL,      // Fail asynchronously with ERR_NAME_NOT_RESOLVED.
+    TIMEOUT,   // Fail asynchronously with ERR_DNS_TIMEOUT.
+    EMPTY,     // Return an empty response.
+    OK,  // Return an IP address (the accompanying IP is an argument in the
+         // Result structure, or understood as localhost when unspecified).
   };
 
   struct Result {
