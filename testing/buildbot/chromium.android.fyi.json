@@ -3294,6 +3294,54 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
+            "boringssl_crypto_tests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "coho"
+            }
+          ]
+        },
+        "test": "boringssl_crypto_tests"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "boringssl_ssl_tests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "coho"
+            }
+          ]
+        },
+        "test": "boringssl_ssl_tests"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
             "breakpad_unittests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
@@ -3882,6 +3930,30 @@
           ]
         },
         "test": "latency_unittests"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "libjingle_xmpp_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "coho"
+            }
+          ]
+        },
+        "test": "libjingle_xmpp_unittests"
       },
       {
         "args": [

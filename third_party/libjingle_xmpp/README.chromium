@@ -25,3 +25,4 @@ Local Modifications:
   third_party/libjingle_xmpp/xmpp, and third_party/libjingle_xmpp/task_runner
   are updated to reflect the new absolute paths to their own and webrtc's
   headers.
+* disabled unstarted_task_test.DoNotDeleteTask2 under ASan

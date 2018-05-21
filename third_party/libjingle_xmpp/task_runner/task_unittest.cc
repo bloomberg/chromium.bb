@@ -525,7 +525,13 @@ TEST(unstarted_task_test, DoNotDeleteTask1) {
   // Never run the tasks
 }
 
-TEST(unstarted_task_test, DoNotDeleteTask2) {
+#if defined(ADDRESS_SANITIZER)
+// https://crbug.com/843731
+#define MAYBE_DoNotDeleteTask2 DISABLED_DoNotDeleteTask2
+#else
+#define MAYBE_DoNotDeleteTask2 DoNotDeleteTask2
+#endif
+TEST(unstarted_task_test, MAYBE_DoNotDeleteTask2) {
   // This test ensures that we don't
   // crash if a taskrunner is delete with a
   // task that has never been started.
