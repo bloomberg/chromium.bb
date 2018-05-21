@@ -49,21 +49,24 @@ ScriptRunner::ScriptRunner(Document* document)
 #endif
 }
 
-void ScriptRunner::QueueScriptForExecution(ScriptLoader* script_loader,
-                                           AsyncExecutionType execution_type) {
+void ScriptRunner::QueueScriptForExecution(ScriptLoader* script_loader) {
   DCHECK(script_loader);
+  PendingScript* pending_script =
+      script_loader->GetPendingScriptIfControlledByScriptRunner();
+  DCHECK(pending_script);
   document_->IncrementLoadEventDelayCount();
-  switch (execution_type) {
-    case kAsync:
+  switch (pending_script->GetSchedulingType()) {
+    case ScriptSchedulingType::kAsync:
       pending_async_scripts_.insert(script_loader);
       TryStream(script_loader);
       break;
 
-    case kInOrder:
+    case ScriptSchedulingType::kInOrder:
       pending_in_order_scripts_.push_back(script_loader);
       number_of_in_order_scripts_with_pending_notification_++;
       break;
-    case kNone:
+
+    default:
       NOTREACHED();
       break;
   }
@@ -109,11 +112,13 @@ void ScriptRunner::ScheduleReadyInOrderScripts() {
   }
 }
 
-void ScriptRunner::NotifyScriptReady(ScriptLoader* script_loader,
-                                     AsyncExecutionType execution_type) {
+void ScriptRunner::NotifyScriptReady(ScriptLoader* script_loader) {
   SECURITY_CHECK(script_loader);
-  switch (execution_type) {
-    case kAsync:
+  PendingScript* pending_script =
+      script_loader->GetPendingScriptIfControlledByScriptRunner();
+  DCHECK(pending_script);
+  switch (pending_script->GetSchedulingType()) {
+    case ScriptSchedulingType::kAsync:
       // SECURITY_CHECK() makes us crash in a controlled way in error cases
       // where the ScriptLoader is associated with the wrong ScriptRunner
       // (otherwise we'd cause a use-after-free in ~ScriptRunner when it tries
@@ -127,14 +132,15 @@ void ScriptRunner::NotifyScriptReady(ScriptLoader* script_loader,
       TryStreamAny();
       break;
 
-    case kInOrder:
+    case ScriptSchedulingType::kInOrder:
       SECURITY_CHECK(number_of_in_order_scripts_with_pending_notification_ > 0);
       number_of_in_order_scripts_with_pending_notification_--;
 
       ScheduleReadyInOrderScripts();
 
       break;
-    case kNone:
+
+    default:
       NOTREACHED();
       break;
   }
@@ -189,13 +195,13 @@ void ScriptRunner::MovePendingScript(ScriptRunner* new_runner,
                                      ScriptLoader* script_loader) {
   auto it = pending_async_scripts_.find(script_loader);
   if (it != pending_async_scripts_.end()) {
-    new_runner->QueueScriptForExecution(script_loader, kAsync);
+    new_runner->QueueScriptForExecution(script_loader);
     pending_async_scripts_.erase(it);
     document_->DecrementLoadEventDelayCount();
     return;
   }
   if (RemovePendingInOrderScript(script_loader)) {
-    new_runner->QueueScriptForExecution(script_loader, kInOrder);
+    new_runner->QueueScriptForExecution(script_loader);
     document_->DecrementLoadEventDelayCount();
   }
 }
@@ -204,7 +210,10 @@ bool ScriptRunner::ExecuteInOrderTask() {
   if (in_order_scripts_to_execute_soon_.IsEmpty())
     return false;
 
-  DCHECK(!in_order_scripts_to_execute_soon_.front()->IsAsync())
+  DCHECK_EQ(in_order_scripts_to_execute_soon_.front()
+                ->GetPendingScriptIfControlledByScriptRunner()
+                ->GetSchedulingType(),
+            ScriptSchedulingType::kInOrder)
       << "In-order scripts queue should not contain any async script.";
 
   in_order_scripts_to_execute_soon_.TakeFirst()->Execute();
@@ -291,7 +300,7 @@ bool ScriptRunner::DoTryStream(ScriptLoader* script_loader) {
   if (!pending_script)
     return false;
 
-  DCHECK(script_loader->IsAsync());
+  DCHECK_EQ(pending_script->GetSchedulingType(), ScriptSchedulingType::kAsync);
 
 #ifndef NDEBUG
   bool was_already_streaming = pending_script->IsCurrentlyStreaming();

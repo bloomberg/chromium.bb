@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/script/pending_script.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
+#include "third_party/blink/renderer/core/script/script_scheduling_type.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
@@ -93,7 +94,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // Gets a PendingScript for external script whose fetch is started in
   // FetchClassicScript()/FetchModuleScriptTree().
   // This should be called only once.
-  PendingScript* TakePendingScript();
+  PendingScript* TakePendingScript(ScriptSchedulingType);
 
   // The entry point only for ScriptRunner that wraps ExecuteScriptBlock().
   virtual void Execute();
@@ -116,12 +117,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   void SetFetchDocWrittenScriptDeferIdle();
 
-  // IsAsync only makes sense for scripts controlled by ScriptRunner.
-  bool IsAsync() const {
-    DCHECK_NE(async_exec_type_, ScriptRunner::kNone);
-    return async_exec_type_ == ScriptRunner::kAsync;
-  }
-
   // Only makes sense for scripts controlled by ScriptRunner.
   // To support script streaming, the ScriptRunner
   // may need to access the PendingScript. This breaks the intended layering, so
@@ -133,10 +128,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
                bool created_by_parser,
                bool is_evaluated,
                bool created_during_document_write);
-
-  void SetAsyncExecTypeForTesting(ScriptRunner::AsyncExecutionType type) {
-    async_exec_type_ = type;
-  }
 
  private:
   bool IgnoresLoadRequest() const;
@@ -211,8 +202,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   bool will_execute_when_document_finished_parsing_;
 
   const bool created_during_document_write_;
-
-  ScriptRunner::AsyncExecutionType async_exec_type_;
 
   // A PendingScript is first created in PrepareScript() and stored in
   // |prepared_pending_script_|.

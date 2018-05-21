@@ -114,4 +114,24 @@ void PendingScript::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_);
 }
 
+bool PendingScript::IsControlledByScriptRunner() const {
+  switch (scheduling_type_) {
+    case ScriptSchedulingType::kNotSet:
+      NOTREACHED();
+      return false;
+
+    case ScriptSchedulingType::kDefer:
+    case ScriptSchedulingType::kParserBlocking:
+    case ScriptSchedulingType::kParserBlockingInline:
+    case ScriptSchedulingType::kImmediate:
+      return false;
+
+    case ScriptSchedulingType::kInOrder:
+    case ScriptSchedulingType::kAsync:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace blink

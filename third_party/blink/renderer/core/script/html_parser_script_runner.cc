@@ -433,7 +433,8 @@ void HTMLParserScriptRunner::RequestParsingBlockingScript(
   // the Document of the parser that created the element. (There can only be one
   // such script per Document at a time.) ...</spec>
   CHECK(!ParserBlockingScript());
-  parser_blocking_script_ = script_loader->TakePendingScript();
+  parser_blocking_script_ =
+      script_loader->TakePendingScript(ScriptSchedulingType::kParserBlocking);
   if (!ParserBlockingScript())
     return;
 
@@ -452,7 +453,8 @@ void HTMLParserScriptRunner::RequestParsingBlockingScript(
 // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
 void HTMLParserScriptRunner::RequestDeferredScript(
     ScriptLoader* script_loader) {
-  PendingScript* pending_script = script_loader->TakePendingScript();
+  PendingScript* pending_script =
+      script_loader->TakePendingScript(ScriptSchedulingType::kDefer);
   if (!pending_script)
     return;
 
@@ -525,7 +527,8 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
         // the element. (There can only be one such script per Document at a
         // time.) ...</spec>
         CHECK(!parser_blocking_script_);
-        parser_blocking_script_ = script_loader->TakePendingScript();
+        parser_blocking_script_ = script_loader->TakePendingScript(
+            ScriptSchedulingType::kParserBlockingInline);
       } else {
         // <spec label="PS" step="25.F">Otherwise
         //
@@ -537,8 +540,9 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
         if (parser_blocking_script_)
           parser_blocking_script_->Dispose();
         parser_blocking_script_ = nullptr;
-        DoExecuteScript(script_loader->TakePendingScript(),
-                        DocumentURLForScriptExecution(document_));
+        DoExecuteScript(
+            script_loader->TakePendingScript(ScriptSchedulingType::kImmediate),
+            DocumentURLForScriptExecution(document_));
       }
     } else {
       // [PS] Step 25.B.
