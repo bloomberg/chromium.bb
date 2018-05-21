@@ -46,7 +46,7 @@ void AppListTestViewDelegate::OpenSearchResult(const std::string& result_id,
   ++open_search_result_count_;
 }
 
-void AppListTestViewDelegate::Dismiss() {
+void AppListTestViewDelegate::DismissAppList() {
   ++dismiss_count_;
 }
 

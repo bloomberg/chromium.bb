@@ -34,7 +34,7 @@ class DemoAppListViewDelegate : public app_list::test::AppListTestViewDelegate {
   app_list::AppListView* InitView(gfx::NativeWindow window_context);
 
   // Overridden from AppListViewDelegate:
-  void Dismiss() override;
+  void DismissAppList() override;
   void ViewClosing() override;
 
  private:
@@ -68,7 +68,7 @@ app_list::AppListView* DemoAppListViewDelegate::InitView(
   return view_;
 }
 
-void DemoAppListViewDelegate::Dismiss() {
+void DemoAppListViewDelegate::DismissAppList() {
   view_->GetWidget()->Close();
 }
 

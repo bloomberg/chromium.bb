@@ -79,7 +79,6 @@ class AppListModelUpdater {
   virtual void SetItemIsInstalling(const std::string& id, bool is_installing) {}
   virtual void SetItemPercentDownloaded(const std::string& id,
                                         int32_t percent_downloaded) {}
-  virtual void ActivateChromeItem(const std::string& id, int event_flags) {}
 
   virtual void SetSearchResultMetadata(
       const std::string& id,
@@ -93,6 +92,7 @@ class AppListModelUpdater {
   virtual void SetSearchResultBadgeIcon(const std::string& id,
                                         const gfx::ImageSkia& badge_icon) {}
   virtual void NotifySearchResultItemInstalled(const std::string& id) {}
+  virtual void ActivateChromeItem(const std::string& id, int event_flags) {}
 
   // For AppListModel:
   virtual ChromeAppListItem* FindItem(const std::string& id) = 0;
