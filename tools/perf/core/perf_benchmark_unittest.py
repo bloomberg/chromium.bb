@@ -7,6 +7,7 @@ import shutil
 import tempfile
 import unittest
 
+from telemetry import decorators
 from telemetry.testing import options_for_unittests
 
 from core import perf_benchmark
@@ -32,6 +33,7 @@ class PerfBenchmarkTest(unittest.TestCase):
     self.assertEqual(num_expected_matches, len(ruleset_data_to_copy))
 
 
+  @decorators.Disabled('chromeos')  # http://crbug.com/844863
   def testVariationArgs(self):
     benchmark = perf_benchmark.PerfBenchmark()
     options = options_for_unittests.GetCopy()
