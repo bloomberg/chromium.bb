@@ -94,6 +94,7 @@ _PEPPER_INTERFACES = [
 
 
 # Capabilities selected with glEnable
+# on_change:    string of C++ code that is executed when the state is changed.
 _CAPABILITY_FLAGS = [
   {'name': 'blend'},
   {'name': 'cull_face'},

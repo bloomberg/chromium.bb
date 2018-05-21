@@ -1725,7 +1725,6 @@ _NAMED_TYPE_INFO = {
 #               bind function.
 # states:       array of states that get set by this function corresponding to
 #               the given arguments
-# on_change:    string of C++ code that is executed when the function is called.
 # no_gl:        no GL function is called.
 # valid_args:   A dictionary of argument indices to args to use in unit tests
 #               when they can not be automatically determined.
@@ -1926,6 +1925,7 @@ _FUNCTION_INFO = {
   },
   'CopyBufferSubData': {
     'decoder_func': 'DoCopyBufferSubData',
+    'impl_func': False,
     'unit_test': False,
     'es3': True,
   },
