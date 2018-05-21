@@ -24,6 +24,14 @@ function mediaControls(videoElement) {
   return element;
 }
 
+function buttonPanelElement(videoElement) {
+  var controlID = '-internal-media-controls-button-panel';
+  var element = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);
+  if (!element)
+    throw 'Failed to find media controls button panel';
+  return element;
+}
+
 function castButton(videoElement) {
     var controlID = '-internal-media-controls-cast-button';
     var button = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);

@@ -9,13 +9,34 @@
 async_test(t => {
   const video = document.querySelector('video');
   const controls = mediaControls(video);
-  const immersiveModeCSSClass = "immersive-mode";
+  const immersiveModeCSSClass = 'immersive-mode';
 
   window.onload = t.step_func_done(() => {
     assert_false(controls.classList.contains(immersiveModeCSSClass));
     enableImmersiveMode(t);
     assert_true(controls.classList.contains(immersiveModeCSSClass));
+    checkThatVRCSSRulesAreRespected();
   });
+
+
+  function checkThatVRCSSRulesAreRespected() {
+    // Check a few styles to make sure VR rules are not being overridden.
+    const muteButtonStyle = getComputedStyle(muteButton(video));
+    const overflowButtonStyle = getComputedStyle(overflowButton(video));
+    const buttonPanelStyle = getComputedStyle(buttonPanelElement(video));
+    const timelineStyle = getComputedStyle(timelineElement(video));
+    const thumbStyle = getComputedStyle(timelineThumb(video));
+    const overlayPlayButtonStyle = getComputedStyle(mediaControlsOverlayPlayButtonInternal(video));
+
+    assert_equals('43px', muteButtonStyle.height, 'Mute button height is respected');
+    assert_equals('43px', overflowButtonStyle.width, 'Overflow button width is respected');
+    assert_equals('43px', buttonPanelStyle.height, 'Button panel height is respected');
+    assert_equals('535px', buttonPanelStyle['max-width'], 'Button panel max-width is respected');
+    assert_equals('5px', timelineStyle.height, 'Timeline height is respected');
+    assert_equals('471px', timelineStyle['max-width'], 'Timeline max-width is respected');
+    assert_equals('16px', thumbStyle.width, 'Thumb width is respected');
+    assert_equals('64px', overlayPlayButtonStyle.height, 'Overlay play button height is respected');
+  }
 });
 </script>
 </html>
