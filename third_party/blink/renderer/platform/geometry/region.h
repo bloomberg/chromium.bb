@@ -38,6 +38,12 @@ class Region;
 
 namespace blink {
 
+// A region class based on the paper "Scanline Coherent Shape Algebra"
+// by Jonathan E. Steinhart from the book "Graphics Gems II".
+//
+// This implementation uses two vectors instead of linked list, and
+// also compresses regions when possible.
+
 class PLATFORM_EXPORT Region {
   DISALLOW_NEW();
 
@@ -65,6 +71,8 @@ class PLATFORM_EXPORT Region {
   // Returns true if the query region intersects any part of this region.
   bool Intersects(const Region&) const;
 
+  double Area() const;
+
 #ifndef NDEBUG
   void Dump() const;
 #endif
@@ -77,6 +85,13 @@ class PLATFORM_EXPORT Region {
     int y;
     size_t segment_index;
   };
+
+  // Shape composed of non-overlapping rectangles implied by segments [x, max_x)
+  // within spans [y, max_y).
+  //
+  // Segment iteration returns x and max_x for each segment in a span, in order.
+  // Span iteration returns y via the Span object; spans are adjacent, so max_y
+  // is the next Span's y value. (The last Span contains no segments.)
 
   class Shape {
     DISALLOW_NEW();
@@ -133,7 +148,10 @@ class PLATFORM_EXPORT Region {
 
     bool CanCoalesce(SegmentIterator begin, SegmentIterator end);
 
+    // Stores all segments for all spans, in order.  Each Span's segment_index
+    // identifies the start of its segments within this vector.
     Vector<int, 32> segments_;
+
     Vector<Span, 16> spans_;
 
     friend bool operator==(const Shape&, const Shape&);
