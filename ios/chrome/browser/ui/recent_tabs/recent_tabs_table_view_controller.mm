@@ -224,42 +224,21 @@ const int kRelativeTimeMaxHours = 4;
 - (void)addRecentlyClosedTabItems {
   if (!self.tabRestoreService)
     return;
-
-  // Note that std:list<> can only be accessed sequentially, which is
-  // suboptimal when using Cocoa table APIs. This list doesn't appear
-  // to get very long, so it probably won't matter for perf.
   for (auto iter = self.tabRestoreService->entries().begin();
        iter != self.tabRestoreService->entries().end(); ++iter) {
-    DCHECK(iter->get());
     const sessions::TabRestoreService::Entry* entry = iter->get();
     DCHECK(entry);
-    // Use the page's title for the label, or its URL if title is empty.
-    NSString* entryTitle;
-    GURL entryURL;
-    switch (entry->type) {
-      case sessions::TabRestoreService::TAB: {
-        const sessions::TabRestoreService::Tab* tab =
-            static_cast<const sessions::TabRestoreService::Tab*>(entry);
-        const sessions::SerializedNavigationEntry& entry =
-            tab->navigations[tab->current_navigation_index];
-          entryTitle = base::SysUTF16ToNSString(entry.title());
-          entryURL = entry.virtual_url();
-          break;
-      }
-      case sessions::TabRestoreService::WINDOW: {
-        // Only TAB type is handled.
-        NOTREACHED()
-            << "Window type should not have been stored in TabRestoreService.";
-        break;
-      }
-    }
+    DCHECK_EQ(sessions::TabRestoreService::TAB, entry->type);
+    const sessions::TabRestoreService::Tab* tab =
+        static_cast<const sessions::TabRestoreService::Tab*>(entry);
+    const sessions::SerializedNavigationEntry& navigationEntry =
+        tab->navigations[tab->current_navigation_index];
 
     // Configure and add the Item.
     TableViewURLItem* recentlyClosedTab =
         [[TableViewURLItem alloc] initWithType:ItemTypeRecentlyClosed];
-
-    recentlyClosedTab.title = entryTitle;
-    recentlyClosedTab.URL = entryURL;
+    recentlyClosedTab.title = base::SysUTF16ToNSString(navigationEntry.title());
+    recentlyClosedTab.URL = navigationEntry.virtual_url();
     [self.tableViewModel addItem:recentlyClosedTab
          toSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
   }
