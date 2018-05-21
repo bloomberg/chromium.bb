@@ -95,12 +95,4 @@ const CompactHTMLToken::Attribute* CompactHTMLToken::GetAttributeItem(
   return nullptr;
 }
 
-bool CompactHTMLToken::IsSafeToSendToAnotherThread() const {
-  for (const Attribute& attribute : attributes_) {
-    if (!attribute.IsSafeToSendToAnotherThread())
-      return false;
-  }
-  return data_.IsSafeToSendToAnotherThread();
-}
-
 }  // namespace blink

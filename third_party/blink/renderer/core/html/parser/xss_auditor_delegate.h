@@ -53,7 +53,6 @@ class XSSInfo {
   }
 
   String BuildConsoleError() const;
-  bool IsSafeToSendToAnotherThread() const;
 
   String original_url_;
   bool did_block_entire_page_;

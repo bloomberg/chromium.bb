@@ -67,8 +67,6 @@ class CORE_EXPORT PreloadRequest {
         referrer_policy, referrer_source, is_image_set));
   }
 
-  bool IsSafeToSendToAnotherThread() const;
-
   Resource* Start(Document*, CSSPreloaderResourceClient*);
 
   void SetDefer(FetchParameters::DeferOption defer) { defer_ = defer; }

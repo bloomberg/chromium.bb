@@ -53,19 +53,12 @@ class CORE_EXPORT CompactHTMLToken {
     // We don't create a new 8-bit String because it doesn't save memory.
     const String& Value8BitIfNecessary() const { return value_; }
 
-    bool IsSafeToSendToAnotherThread() const {
-      return name_.IsSafeToSendToAnotherThread() &&
-             value_.IsSafeToSendToAnotherThread();
-    }
-
    private:
     String name_;
     String value_;
   };
 
   CompactHTMLToken(const HTMLToken*, const TextPosition&);
-
-  bool IsSafeToSendToAnotherThread() const;
 
   HTMLToken::TokenType GetType() const {
     return static_cast<HTMLToken::TokenType>(type_);

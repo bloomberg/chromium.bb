@@ -68,28 +68,6 @@ static_assert(kOutstandingTokenLimit > kPendingTokenLimit,
 
 using namespace HTMLNames;
 
-#if DCHECK_IS_ON()
-
-static void CheckThatTokensAreSafeToSendToAnotherThread(
-    const CompactHTMLTokenStream* tokens) {
-  for (size_t i = 0; i < tokens->size(); ++i)
-    DCHECK(tokens->at(i).IsSafeToSendToAnotherThread());
-}
-
-static void CheckThatPreloadsAreSafeToSendToAnotherThread(
-    const PreloadRequestStream& preloads) {
-  for (size_t i = 0; i < preloads.size(); ++i)
-    DCHECK(preloads[i]->IsSafeToSendToAnotherThread());
-}
-
-static void CheckThatXSSInfosAreSafeToSendToAnotherThread(
-    const XSSInfoStream& infos) {
-  for (size_t i = 0; i < infos.size(); ++i)
-    DCHECK(infos[i]->IsSafeToSendToAnotherThread());
-}
-
-#endif
-
 base::WeakPtr<BackgroundHTMLParser> BackgroundHTMLParser::Create(
     std::unique_ptr<Configuration> config,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner) {
@@ -159,9 +137,7 @@ void BackgroundHTMLParser::UpdateDocument(const String& decoded_data) {
     last_seen_encoding_data_ = encoding_data;
 
     xss_auditor_->SetEncoding(encoding_data.Encoding());
-    RunOnMainThread(
-        &HTMLDocumentParser::DidReceiveEncodingDataFromBackgroundParser,
-        parser_, encoding_data);
+    parser_->DidReceiveEncodingDataFromBackgroundParser(encoding_data);
   }
 
   if (decoded_data.IsEmpty())
@@ -289,12 +265,6 @@ void BackgroundHTMLParser::EnqueueTokenizedChunk() {
   if (pending_tokens_.IsEmpty())
     return;
 
-#if DCHECK_IS_ON()
-  CheckThatTokensAreSafeToSendToAnotherThread(&pending_tokens_);
-  CheckThatPreloadsAreSafeToSendToAnotherThread(pending_preloads_);
-  CheckThatXSSInfosAreSafeToSendToAnotherThread(pending_xss_infos_);
-#endif
-
   auto chunk = std::make_unique<HTMLDocumentParser::TokenizedChunk>();
   TRACE_EVENT_WITH_FLOW0("blink,loading",
                          "BackgroundHTMLParser::sendTokensToMainThread",
@@ -317,23 +287,6 @@ void BackgroundHTMLParser::EnqueueTokenizedChunk() {
 
   if (parser_)
     parser_->EnqueueTokenizedChunk(std::move(chunk));
-}
-
-// If the background parser is already running on the main thread, then it is
-// not necessary to post a task to the main thread to run asynchronously. The
-// main parser deals with chunking up its own work.
-// TODO(csharrison): This is a pretty big hack because we don't actually need a
-// CrossThreadClosure in these cases. This is just experimental.
-template <typename FunctionType, typename... Ps>
-void BackgroundHTMLParser::RunOnMainThread(FunctionType function,
-                                           Ps&&... parameters) {
-  if (IsMainThread()) {
-    WTF::Bind(std::move(function), std::forward<Ps>(parameters)...).Run();
-  } else {
-    PostCrossThreadTask(
-        *loading_task_runner_, FROM_HERE,
-        CrossThreadBind(std::move(function), std::forward<Ps>(parameters)...));
-  }
 }
 
 }  // namespace blink
