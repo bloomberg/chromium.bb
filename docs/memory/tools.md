@@ -26,7 +26,7 @@ If that seems like a lot of tools and complexity, it is [but there's a reason](#
 -----------
 ## <a name="global-memory-dumps"> Global Memory Dumps
 Many Chrome subsystems implement the
-[`trace_event::MemoryDumpProvider`](../../ase/trace_event/memory_dump_provider.h)
+[`trace_event::MemoryDumpProvider`](../../base/trace_event/memory_dump_provider.h)
 interface to provide self-reported stats detailing their memory usage. The
 Global Memory Dump view provides a snapshot-oriented view of these subsystems
 that can be collected and viewed via the chrome://tracing infrastructure.
@@ -123,7 +123,7 @@ TODO(awong): Write about options to script and the flame graph.
 Heap dumps provide extremely detailed data about object allocations and is
 useful for finding code locations that are generating a large number of live
 allocations. Data is tracked and recorded using the [Out-of-process Heap
-Profiler (OOPHP)](../../src/components/services/heap_profiling/README.md).
+Profiler (OOPHP)](../../components/services/heap_profiling/README.md).
 
 For the Browser and GPU process, this often quickly finds objects that leak over
 time.
@@ -138,7 +138,7 @@ looking similar due to the nature of DOM node allocation.
     `VirtualAlloc()`) will not be tracked.
   * Utility processes are currently not profiled.
   * Allocations are only recorded after the
-    [HeapProfilingService](../../src/components/services/heap_profiling/heap_profiling_service.h)
+    [HeapProfilingService](../../components/services/heap_profiling/heap_profiling_service.h)
     has spun up the profiling process and created a connection to the target
     process. The HeapProfilingService is a mojo service that can be configured to
     start early in browser startup but it still takes time to spin up and early

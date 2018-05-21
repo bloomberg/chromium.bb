@@ -1,7 +1,7 @@
 # Chromoting Android Hacking
 
 This guide, which is meant to accompany the
-[compilation guide](chromoting_build_instructions.md), explains the process of
+[compilation guide](old_chromoting_build_instructions.md), explains the process of
 viewing the logs and debugging the CRD Android client. I'll assume you've
 already built the APK as described in the aforementioned guide, that you're in
 the `src/` directory, and that your binary is at

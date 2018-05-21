@@ -10,14 +10,14 @@ For its telemetry benchmarks, WebRTC uses the
 [WebRTC GitHub project](https://github.com/webrtc).
 
 These are downloaded by the
-[`update_webrtc_cases`](../../../tools/perf/page_sets/update_webrtc_cases)
+[`update_webrtc_cases`](../../../../tools/perf/page_sets/update_webrtc_cases)
 script into the
-[`webrtc_cases`](../../../tools/perf/page_sets/webrtc_cases/)
+[`webrtc_cases`](../../../../tools/perf/page_sets/webrtc_cases/)
 directory, and then referenced in
-[`webrtc_cases.py`](../../../tools/perf/page_sets/webrtc_cases.py),
+[`webrtc_cases.py`](../../../../tools/perf/page_sets/webrtc_cases.py),
 which controls the user interactions and duration of the test.
 
-The [`webrtc.py`](../../../tools/perf/benchmarks/webrtc.py)
+The [`webrtc.py`](../../../../tools/perf/benchmarks/webrtc.py)
 benchmark specifies which metrics should be collected for the
 test pages, and extra options that we pass to the test to fake the real camera
 and skip assing permission to get access to the video and audio from the user.
@@ -36,7 +36,7 @@ To collect traces and compute metrics you can run the following command
 
 You can filter the pages you want to test using the `--story-tag-filter` flag
 with the tags specified in
-[`webrtc_cases.py`](../../../tools/perf/page_sets/webrtc_cases.py#127).
+[`webrtc_cases.py`](../../../../tools/perf/page_sets/webrtc_cases.py#127).
 
 For example, to run only the *multiple-peerconnections* test page, you can use
 the following command:
@@ -63,7 +63,7 @@ gh-pages branch.**
  See the *[multiple-peerconnections](https://github.com/webrtc/test-pages/tree/gh-pages/src/multiple-peerconnections)*
  test page for an example.
 
-2. **Edit the [`update_webrtc_cases_script`](../../../tools/perf/page_sets/update_webrtc_cases#21)
+2. **Edit the [`update_webrtc_cases_script`](../../../../tools/perf/page_sets/update_webrtc_cases#21)
 to reference the page you added, and run it.**
 
  This will download the `index.html` file and the `main.js` file into the
@@ -76,11 +76,11 @@ to reference the page you added, and run it.**
 interactions.**
 
  See the
- [`MultiplePeerConnections`](../../../tools/perf/page_sets/webrtc_cases.py#101)
+ [`MultiplePeerConnections`](../../../../tools/perf/page_sets/webrtc_cases.py#101)
  class for example.
 
 4. **Add the story to the `WebrtcPageSet` class.**
 
- See [here](../../../tools/perf/page_sets/webrtc_cases.py#127) for example.
+ See [here](../../../../tools/perf/page_sets/webrtc_cases.py#127) for example.
 
 5. **Submit your changes as a CL**
