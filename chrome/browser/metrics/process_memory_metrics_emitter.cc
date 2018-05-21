@@ -4,12 +4,14 @@
 
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 
+#include "base/compiler_specific.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/audio_service_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -293,6 +295,20 @@ void EmitGpuMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
   builder.Record(ukm_recorder);
 }
 
+void EmitAudioServiceMemoryMetrics(
+    const GlobalMemoryDump::ProcessDump& pmd,
+    ukm::SourceId ukm_source_id,
+    ukm::UkmRecorder* ukm_recorder,
+    const base::Optional<base::TimeDelta>& uptime,
+    bool record_uma) {
+  Memory_Experimental builder(ukm_source_id);
+  builder.SetProcessType(static_cast<int64_t>(
+      memory_instrumentation::mojom::ProcessType::UTILITY));
+  EmitProcessUkm(pmd, "AudioService", uptime, record_uma, &builder);
+
+  builder.Record(ukm_recorder);
+}
+
 }  // namespace
 
 ProcessMemoryMetricsEmitter::ProcessMemoryMetricsEmitter()
@@ -474,8 +490,15 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
                              record_uma);
         break;
       }
-      case memory_instrumentation::mojom::ProcessType::UTILITY:
+      case memory_instrumentation::mojom::ProcessType::UTILITY: {
+        if (pmd.pid() == content::GetProcessIdForAudioService())
+          EmitAudioServiceMemoryMetrics(
+              pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
+              GetProcessUptime(now, pmd.pid()), record_uma);
+        break;
+      }
       case memory_instrumentation::mojom::ProcessType::PLUGIN:
+        FALLTHROUGH;
       case memory_instrumentation::mojom::ProcessType::OTHER:
         break;
     }
