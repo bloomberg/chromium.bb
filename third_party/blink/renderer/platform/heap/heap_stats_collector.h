@@ -91,7 +91,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     }
 
     ~InternalScope() {
-      TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("blink_gc"), ToString(id_));
+      TRACE_EVENT_END0(TraceCategory(), ToString(id_));
       tracer_->IncreaseScopeTime(
           id_, WTF::CurrentTimeTicksInMilliseconds() - start_time_);
     }
