@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
@@ -104,6 +105,7 @@ class BrowserDownloadServiceTest : public PlatformTest {
   std::unique_ptr<BrowserDownloadService> service_;
   web::TestWebState web_state_;
   base::test::ScopedFeatureList feature_list_;
+  base::HistogramTester histogram_tester_;
 };
 
 // Tests that BrowserDownloadService downloads the task using
@@ -118,6 +120,10 @@ TEST_F(BrowserDownloadServiceTest, PkPassMimeType) {
   ASSERT_EQ(1U, pass_kit_tab_helper()->tasks().size());
   EXPECT_EQ(task_ptr, pass_kit_tab_helper()->tasks()[0].get());
   ASSERT_TRUE(download_manager_tab_helper()->tasks().empty());
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadMimeType",
+      static_cast<base::HistogramBase::Sample>(DownloadMimeTypeResult::PkPass),
+      1);
 }
 
 // Tests that BrowserDownloadService uses DownloadManagerTabHelper for PDF Mime
@@ -132,4 +138,27 @@ TEST_F(BrowserDownloadServiceTest, PdfMimeType) {
   ASSERT_TRUE(pass_kit_tab_helper()->tasks().empty());
   ASSERT_EQ(1U, download_manager_tab_helper()->tasks().size());
   EXPECT_EQ(task_ptr, download_manager_tab_helper()->tasks()[0].get());
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadMimeType",
+      static_cast<base::HistogramBase::Sample>(DownloadMimeTypeResult::Other),
+      1);
+}
+
+// Tests that BrowserDownloadService uses DownloadManagerTabHelper for Mobile
+// Config Mime Type.
+TEST_F(BrowserDownloadServiceTest, iOSMobileConfigMimeType) {
+  ASSERT_TRUE(download_controller()->GetDelegate());
+  auto task = std::make_unique<web::FakeDownloadTask>(
+      GURL(kUrl), "application/x-apple-aspen-config");
+  web::DownloadTask* task_ptr = task.get();
+  download_controller()->GetDelegate()->OnDownloadCreated(
+      download_controller(), &web_state_, std::move(task));
+  ASSERT_TRUE(pass_kit_tab_helper()->tasks().empty());
+  ASSERT_EQ(1U, download_manager_tab_helper()->tasks().size());
+  EXPECT_EQ(task_ptr, download_manager_tab_helper()->tasks()[0].get());
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadMimeType",
+      static_cast<base::HistogramBase::Sample>(
+          DownloadMimeTypeResult::iOSMobileConfig),
+      1);
 }

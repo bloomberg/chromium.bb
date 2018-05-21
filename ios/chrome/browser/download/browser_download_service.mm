@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/download/browser_download_service.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #include "ios/chrome/browser/download/pass_kit_mime_type.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
@@ -15,6 +16,19 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Returns DownloadMimeTypeResult for the given MIME type.
+DownloadMimeTypeResult GetUmaResult(const std::string& mime_type) {
+  if (mime_type == kPkPassMimeType)
+    return DownloadMimeTypeResult::PkPass;
+
+  if (mime_type == "application/x-apple-aspen-config")
+    return DownloadMimeTypeResult::iOSMobileConfig;
+
+  return DownloadMimeTypeResult::Other;
+}
+}  // namespace
 
 BrowserDownloadService::BrowserDownloadService(
     web::DownloadController* download_controller)
@@ -34,6 +48,9 @@ void BrowserDownloadService::OnDownloadCreated(
     web::DownloadController* download_controller,
     web::WebState* web_state,
     std::unique_ptr<web::DownloadTask> task) {
+  UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadMimeType",
+                            GetUmaResult(task->GetMimeType()));
+
   if (task->GetMimeType() == kPkPassMimeType) {
     PassKitTabHelper* tab_helper = PassKitTabHelper::FromWebState(web_state);
     if (tab_helper) {

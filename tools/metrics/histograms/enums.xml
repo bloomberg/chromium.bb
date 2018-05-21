@@ -10874,6 +10874,14 @@ Called by update_net_error_codes.py.-->
   <int value="9" label="WHITELISTED_BY_POLICY"/>
 </enum>
 
+<enum name="DownloadMimeTypeResult">
+  <int value="0" label="Other">MIME type other than those listed below.</int>
+  <int value="1" label="PK pass">application/vnd.apple.pkpass MIME type.</int>
+  <int value="2" label="iOS mobile config">
+    application/x-apple-aspen-config MIME type.
+  </int>
+</enum>
+
 <enum name="DownloadNotificationForegroundLifecycle">
   <int value="0" label="START"/>
   <int value="1" label="UPDATE"/>
