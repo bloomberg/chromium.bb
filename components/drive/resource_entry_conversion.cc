@@ -94,6 +94,17 @@ bool ConvertFileResourceToResourceEntry(
       input.last_viewed_by_me_date().ToInternalValue());
   file_info->set_creation_time(input.created_date().ToInternalValue());
 
+  // Set the capabilities.
+  const google_apis::FileResourceCapabilities& capabilities =
+      input.capabilities();
+  converted.mutable_capabilities_info()->set_can_copy(capabilities.can_copy());
+  converted.mutable_capabilities_info()->set_can_delete(
+      capabilities.can_delete());
+  converted.mutable_capabilities_info()->set_can_rename(
+      capabilities.can_rename());
+  converted.mutable_capabilities_info()->set_can_add_children(
+      capabilities.can_add_children());
+
   if (input.IsDirectory()) {
     file_info->set_is_directory(true);
   } else {
@@ -149,6 +160,16 @@ void ConvertTeamDriveResourceToResourceEntry(
   out_entry->set_base_name(input.name());
   out_entry->set_resource_id(input.id());
   out_entry->set_parent_local_id(util::kDriveTeamDrivesDirLocalId);
+
+  // Set all the capabilities.
+  const google_apis::TeamDriveCapabilities& capabilities = input.capabilities();
+  out_entry->mutable_capabilities_info()->set_can_copy(capabilities.can_copy());
+  out_entry->mutable_capabilities_info()->set_can_delete(
+      capabilities.can_delete_team_drive());
+  out_entry->mutable_capabilities_info()->set_can_rename(
+      capabilities.can_rename_team_drive());
+  out_entry->mutable_capabilities_info()->set_can_add_children(
+      capabilities.can_add_children());
 }
 
 void ConvertResourceEntryToFileInfo(const ResourceEntry& entry,

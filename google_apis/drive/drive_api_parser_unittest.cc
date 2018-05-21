@@ -212,6 +212,25 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_EQ(GURL("http://open_with_link/url"),
             file1.open_with_links()[0].open_url);
 
+  const FileResourceCapabilities& capabilities = file1.capabilities();
+  EXPECT_FALSE(capabilities.can_add_children());
+  EXPECT_TRUE(capabilities.can_change_restricted_download());
+  EXPECT_TRUE(capabilities.can_comment());
+  EXPECT_TRUE(capabilities.can_copy());
+  EXPECT_TRUE(capabilities.can_delete());
+  EXPECT_TRUE(capabilities.can_download());
+  EXPECT_TRUE(capabilities.can_edit());
+  EXPECT_FALSE(capabilities.can_list_children());
+  EXPECT_TRUE(capabilities.can_move_item_into_team_drive());
+  EXPECT_FALSE(capabilities.can_move_team_drive_item());
+  EXPECT_TRUE(capabilities.can_read_revisions());
+  EXPECT_FALSE(capabilities.can_read_team_drive());
+  EXPECT_FALSE(capabilities.can_remove_children());
+  EXPECT_TRUE(capabilities.can_rename());
+  EXPECT_TRUE(capabilities.can_share());
+  EXPECT_TRUE(capabilities.can_trash());
+  EXPECT_TRUE(capabilities.can_untrash());
+
   // Check file 2 (a Google Document)
   const FileResource& file2 = *filelist->items()[1];
   EXPECT_EQ("Test Google Document", file2.title());

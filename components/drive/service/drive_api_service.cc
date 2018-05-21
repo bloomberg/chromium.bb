@@ -124,14 +124,15 @@ const char kFileListFields[] =
     "imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
     "parents(id,parentLink),alternateLink,"
-    "modifiedDate,lastViewedByMeDate,shared,modifiedByMeDate),nextLink";
+    "modifiedDate,lastViewedByMeDate,shared,modifiedByMeDate,capabilities),"
+    "nextLink";
 const char kChangeListFields[] =
     "kind,items(type,file(kind,id,title,createdDate,sharedWithMeDate,"
     "mimeType,md5Checksum,fileSize,labels/trashed,labels/starred,"
     "imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
     "parents(id,parentLink),alternateLink,modifiedDate,"
-    "lastViewedByMeDate,shared,modifiedByMeDate),"
+    "lastViewedByMeDate,shared,modifiedByMeDate,capabilities),"
     "teamDrive(kind,id,name,capabilities),teamDriveId,"
     "deleted,id,fileId,modificationDate),nextLink,"
     "largestChangeId,newStartPageToken";

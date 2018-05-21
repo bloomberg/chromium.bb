@@ -36,6 +36,23 @@ message Property {
   optional Visibility visibility = 3;
 }
 
+// Capabilities (current permissions) info for an entry.
+message CapabilitiesInfo {
+  // Whether the current user can copy this file. For a Team Drive root, whether
+  // the current user can copy files in this Team Drive.
+  optional bool can_copy = 1;
+  // Whether the current user can delete this file. For a Team Drive root,
+  // whether the current user can delete the Team Drive.
+  optional bool can_delete = 2;
+  // Whether the current user can rename this file. For a Team Drive root,
+  // whether the current user can rename the Team Drive.
+  optional bool can_rename = 3;
+  // Whether the current user can add children to this folder. For a Team Drive
+  // root, whether the current user can add children to folders in this Team
+  // Drive. This is always false when the item is not a folder or a Team Drive.
+  optional bool can_add_children = 4;
+}
+
 // File specific info, which is a part of ResourceEntry.
 message FileSpecificInfo {
   // The argument with ID 1 (thumbnail_url) had been used, but got deleted.
@@ -130,6 +147,9 @@ message ResourceEntry {
   // ancestor is shared (to the user from / by the user to) other accounts.
   optional bool shared = 17;
 
+  // The capabilities (current permissions) for this file/folder/team drive.
+  optional CapabilitiesInfo capabilities_info = 24;
+
   // File specific information, such as MD5.
   optional FileSpecificInfo file_specific_info = 9;
 
@@ -177,7 +197,7 @@ message ResourceEntry {
 message ResourceMetadataHeader {
   // Monotonically increasing version number, which is changed when
   // incompatible change is made to the DB format. kDBVersion in
-  // drive_resource_metadata_storage.h defines the current version.
+  // resource_metadata_storage.h defines the current version.
   optional int32 version = 1;
 
   // TODO(slangley): Remove changestamp once migration code can be removed.

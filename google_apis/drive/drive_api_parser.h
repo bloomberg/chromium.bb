@@ -327,6 +327,8 @@ class AppList {
 
 // Capabilities of a Team Drive indicate the permissions granted to the user
 // for the Team Drive and items within the Team Drive.
+// See "capabilities" in
+// https://developers.google.com/drive/v2/reference/teamdrives#resource.
 class TeamDriveCapabilities {
  public:
   TeamDriveCapabilities();
@@ -579,6 +581,67 @@ class ImageMediaMetadata {
   int rotation_;
 };
 
+// Capabilities of a file resource indicate the permissions granted to the user
+// for the file (or items within the folder).
+// See "capabilities" in
+// https://developers.google.com/drive/v2/reference/files#resource.
+class FileResourceCapabilities {
+ public:
+  FileResourceCapabilities();
+  FileResourceCapabilities(const FileResourceCapabilities& src);
+  ~FileResourceCapabilities();
+
+  // Registers the mapping between JSON field names and the members in this
+  // class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<FileResourceCapabilities>* converter);
+
+  // Creates a FileResourceCapabilities from parsed JSON.
+  static std::unique_ptr<FileResourceCapabilities> CreateFrom(
+      const base::Value& value);
+
+  bool can_add_children() const { return can_add_children_; }
+  bool can_change_restricted_download() const {
+    return can_change_restricted_download_;
+  }
+  bool can_comment() const { return can_comment_; }
+  bool can_copy() const { return can_copy_; }
+  bool can_delete() const { return can_delete_; }
+  bool can_download() const { return can_download_; }
+  bool can_edit() const { return can_edit_; }
+  bool can_list_children() const { return can_list_children_; }
+  bool can_move_item_into_team_drive() const {
+    return can_move_item_into_team_drive_;
+  }
+  bool can_move_team_drive_item() const { return can_move_team_drive_item_; }
+  bool can_read_revisions() const { return can_read_revisions_; }
+  bool can_read_team_drive() const { return can_read_team_drive_; }
+  bool can_remove_children() const { return can_remove_children_; }
+  bool can_rename() const { return can_rename_; }
+  bool can_share() const { return can_share_; }
+  bool can_trash() const { return can_trash_; }
+  bool can_untrash() const { return can_untrash_; }
+
+ private:
+  bool can_add_children_;
+  bool can_change_restricted_download_;
+  bool can_comment_;
+  bool can_copy_;
+  bool can_delete_;
+  bool can_download_;
+  bool can_edit_;
+  bool can_list_children_;
+  bool can_move_item_into_team_drive_;
+  bool can_move_team_drive_item_;
+  bool can_read_revisions_;
+  bool can_read_team_drive_;
+  bool can_remove_children_;
+  bool can_rename_;
+  bool can_share_;
+  bool can_trash_;
+  bool can_untrash_;
+};
+
 // FileResource represents a file or folder metadata in Drive.
 // https://developers.google.com/drive/v2/reference/files
 class FileResource {
@@ -725,6 +788,8 @@ class FileResource {
   std::vector<OpenWithLink>* mutable_open_with_links() {
     return &open_with_links_;
   }
+  // Capabilities the current user has on this file resource.
+  const FileResourceCapabilities& capabilities() const { return capabilities_; }
 
  private:
   friend class base::internal::RepeatedMessageConverter<FileResource>;
@@ -753,6 +818,7 @@ class FileResource {
   GURL share_link_;
   std::vector<ParentReference> parents_;
   std::vector<OpenWithLink> open_with_links_;
+  FileResourceCapabilities capabilities_;
 };
 
 // FileList represents a collection of files and folders.
