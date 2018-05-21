@@ -56,6 +56,9 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   // returned object is null.
   InputEvent PopInputEvent();
 
+  // Removes all InputEvents from |input_events_|.
+  void ClearInputEvents();
+
   std::queue<ObservedPointerEvent>& observed_pointer_events() {
     return observed_pointer_events_;
   }

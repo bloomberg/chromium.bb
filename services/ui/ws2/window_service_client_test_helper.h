@@ -79,6 +79,8 @@ class WindowServiceClientTestHelper {
   void SetEventTargetingPolicy(aura::Window* window,
                                mojom::EventTargetingPolicy policy);
 
+  Id TransportIdForWindow(aura::Window* window);
+
  private:
   ClientWindowId ClientWindowIdForWindow(aura::Window* window);
 

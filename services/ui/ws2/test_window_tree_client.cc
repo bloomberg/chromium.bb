@@ -40,6 +40,10 @@ TestWindowTreeClient::InputEvent TestWindowTreeClient::PopInputEvent() {
   return event;
 }
 
+void TestWindowTreeClient::ClearInputEvents() {
+  input_events_ = std::queue<InputEvent>();
+}
+
 TestWindowTreeClient::ObservedPointerEvent
 TestWindowTreeClient::PopObservedPointerEvent() {
   if (observed_pointer_events_.empty())
