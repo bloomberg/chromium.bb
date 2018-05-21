@@ -138,17 +138,17 @@ class MockOfflinePageModel : public StubOfflinePageModel {
   }
 
   // PostTask instead of just running callback to simpulate the real class.
-  void GetAllPages(const MultipleOfflinePageItemCallback& callback) override {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&MockOfflinePageModel::GetAllPagesImpl,
-                                      base::Unretained(this), callback));
+  void GetAllPages(MultipleOfflinePageItemCallback callback) override {
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&MockOfflinePageModel::GetAllPagesImpl,
+                                  base::Unretained(this), std::move(callback)));
   }
 
-  void GetAllPagesImpl(const MultipleOfflinePageItemCallback& callback) {
+  void GetAllPagesImpl(MultipleOfflinePageItemCallback callback) {
     std::vector<OfflinePageItem> result;
     for (const auto& page : pages)
       result.push_back(page.second);
-    callback.Run(result);
+    std::move(callback).Run(result);
   }
 
   void DeletePageAndNotifyAdapter(const std::string& guid) {

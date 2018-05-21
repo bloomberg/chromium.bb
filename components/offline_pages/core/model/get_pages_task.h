@@ -38,27 +38,27 @@ class GetPagesTask : public Task {
   // Creates |GetPagesTask| reading all pages from DB.
   static std::unique_ptr<GetPagesTask> CreateTaskMatchingAllPages(
       OfflinePageMetadataStoreSQL* store,
-      const MultipleOfflinePageItemCallback& callback);
+      MultipleOfflinePageItemCallback callback);
 
   // Creates |GetPagesTask| reading pages matching provided |client_ids| from
   // DB.
   static std::unique_ptr<GetPagesTask> CreateTaskMatchingClientIds(
       OfflinePageMetadataStoreSQL* store,
-      const MultipleOfflinePageItemCallback& callback,
+      MultipleOfflinePageItemCallback callback,
       const std::vector<ClientId>& client_ids);
 
   // Creates |GetPagesTask| reading pages belonging to provided |name_space|
   // from DB.
   static std::unique_ptr<GetPagesTask> CreateTaskMatchingNamespace(
       OfflinePageMetadataStoreSQL* store,
-      const MultipleOfflinePageItemCallback& callback,
+      MultipleOfflinePageItemCallback callback,
       const std::string& name_space);
 
   // Creates |GetPagesTask| reading pages removed on cache reset from DB.
   static std::unique_ptr<GetPagesTask>
   CreateTaskMatchingPagesRemovedOnCacheReset(
       OfflinePageMetadataStoreSQL* store,
-      const MultipleOfflinePageItemCallback& callback,
+      MultipleOfflinePageItemCallback callback,
       ClientPolicyController* policy_controller);
 
   // Creates |GetPagesTask| reading pages in namespaces supported by downloads
@@ -66,14 +66,14 @@ class GetPagesTask : public Task {
   static std::unique_ptr<GetPagesTask>
   CreateTaskMatchingPagesSupportedByDownloads(
       OfflinePageMetadataStoreSQL* store,
-      const MultipleOfflinePageItemCallback& callback,
+      MultipleOfflinePageItemCallback callback,
       ClientPolicyController* policy_controller);
 
   // Creates |GetPagesTask| reading pages matching provided |request_origin|
   // from DB.
   static std::unique_ptr<GetPagesTask> CreateTaskMatchingRequestOrigin(
       OfflinePageMetadataStoreSQL* store,
-      const MultipleOfflinePageItemCallback& callback,
+      MultipleOfflinePageItemCallback callback,
       const std::string& request_origin);
 
   // Creates |GetPagesTask| reading pages matching provided |url| from DB.
@@ -82,7 +82,7 @@ class GetPagesTask : public Task {
   // is necessary.
   static std::unique_ptr<GetPagesTask> CreateTaskMatchingUrl(
       OfflinePageMetadataStoreSQL* store,
-      const MultipleOfflinePageItemCallback& callback,
+      MultipleOfflinePageItemCallback callback,
       const GURL& url);
 
   // Creates |GetPagesTask| reading a single page matching provided |offline_id|
@@ -113,7 +113,7 @@ class GetPagesTask : public Task {
   // and creation time (descending).
   static std::unique_ptr<GetPagesTask> CreateTaskSelectingItemsMarkedForUpgrade(
       OfflinePageMetadataStoreSQL* store,
-      const MultipleOfflinePageItemCallback& callback);
+      MultipleOfflinePageItemCallback callback);
 
   ~GetPagesTask() override;
 
@@ -123,7 +123,7 @@ class GetPagesTask : public Task {
  private:
   GetPagesTask(OfflinePageMetadataStoreSQL* store,
                DbWorkCallback db_work_callback,
-               const MultipleOfflinePageItemCallback& callback);
+               MultipleOfflinePageItemCallback callback);
 
   void ReadRequests();
   void CompleteWithResult(ReadResult result);

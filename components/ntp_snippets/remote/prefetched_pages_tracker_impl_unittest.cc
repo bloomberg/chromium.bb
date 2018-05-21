@@ -34,7 +34,7 @@ class MockOfflinePageModel : public offline_pages::StubOfflinePageModel {
 
   MOCK_METHOD2(GetPagesByNamespace,
                void(const std::string& name_space,
-                    const MultipleOfflinePageItemCallback& callback));
+                    MultipleOfflinePageItemCallback callback));
 };
 
 OfflinePageItem CreateOfflinePageItem(const GURL& url,
@@ -184,12 +184,15 @@ TEST_F(PrefetchedPagesTrackerImplTest,
   EXPECT_CALL(
       *mock_offline_page_model(),
       GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
-      .WillOnce(SaveArg<1>(&offline_pages_callback));
+      .WillOnce([&](const std::string& name_space,
+                    MultipleOfflinePageItemCallback callback) {
+        offline_pages_callback = std::move(callback);
+      });
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
   tracker.Initialize(base::BindOnce([] {}));
 
   ASSERT_FALSE(tracker.IsInitialized());
-  offline_pages_callback.Run(std::vector<OfflinePageItem>());
+  std::move(offline_pages_callback).Run(std::vector<OfflinePageItem>());
   EXPECT_TRUE(tracker.IsInitialized());
 }
 
@@ -198,14 +201,17 @@ TEST_F(PrefetchedPagesTrackerImplTest, ShouldCallCallbackAfterInitialization) {
   EXPECT_CALL(
       *mock_offline_page_model(),
       GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
-      .WillOnce(SaveArg<1>(&offline_pages_callback));
+      .WillOnce([&](const std::string& name_space,
+                    MultipleOfflinePageItemCallback callback) {
+        offline_pages_callback = std::move(callback);
+      });
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
 
   base::MockCallback<base::OnceCallback<void()>>
       mock_initialization_completed_callback;
   tracker.Initialize(mock_initialization_completed_callback.Get());
   EXPECT_CALL(mock_initialization_completed_callback, Run());
-  offline_pages_callback.Run(std::vector<OfflinePageItem>());
+  std::move(offline_pages_callback).Run(std::vector<OfflinePageItem>());
 }
 
 TEST_F(PrefetchedPagesTrackerImplTest,
@@ -214,7 +220,10 @@ TEST_F(PrefetchedPagesTrackerImplTest,
   EXPECT_CALL(
       *mock_offline_page_model(),
       GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
-      .WillOnce(SaveArg<1>(&offline_pages_callback));
+      .WillOnce([&](const std::string& name_space,
+                    MultipleOfflinePageItemCallback callback) {
+        offline_pages_callback = std::move(callback);
+      });
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
 
   base::MockCallback<base::OnceCallback<void()>>
@@ -224,7 +233,7 @@ TEST_F(PrefetchedPagesTrackerImplTest,
   tracker.Initialize(second_mock_initialization_completed_callback.Get());
   EXPECT_CALL(first_mock_initialization_completed_callback, Run());
   EXPECT_CALL(second_mock_initialization_completed_callback, Run());
-  offline_pages_callback.Run(std::vector<OfflinePageItem>());
+  std::move(offline_pages_callback).Run(std::vector<OfflinePageItem>());
 }
 
 TEST_F(PrefetchedPagesTrackerImplTest,
@@ -233,11 +242,14 @@ TEST_F(PrefetchedPagesTrackerImplTest,
   EXPECT_CALL(
       *mock_offline_page_model(),
       GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
-      .WillOnce(SaveArg<1>(&offline_pages_callback));
+      .WillOnce([&](const std::string& name_space,
+                    MultipleOfflinePageItemCallback callback) {
+        offline_pages_callback = std::move(callback);
+      });
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
   tracker.Initialize(base::BindOnce([] {}));
 
-  offline_pages_callback.Run(std::vector<OfflinePageItem>());
+  std::move(offline_pages_callback).Run(std::vector<OfflinePageItem>());
 
   base::MockCallback<base::OnceCallback<void()>>
       mock_initialization_completed_callback;

@@ -56,7 +56,8 @@ void GetPagesTaskTest::OnGetPageDone(const OfflinePageItem* page) {
 }
 
 MultipleOfflinePageItemCallback GetPagesTaskTest::get_pages_callback() {
-  return base::Bind(&GetPagesTaskTest::OnGetPagesDone, base::Unretained(this));
+  return base::BindOnce(&GetPagesTaskTest::OnGetPagesDone,
+                        base::Unretained(this));
 }
 
 SingleOfflinePageItemCallback GetPagesTaskTest::get_single_page_callback() {

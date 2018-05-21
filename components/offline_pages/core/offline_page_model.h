@@ -169,7 +169,7 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
       const DeletePageCallback& callback) = 0;
 
   // Gets all offline pages.
-  virtual void GetAllPages(const MultipleOfflinePageItemCallback& callback) = 0;
+  virtual void GetAllPages(MultipleOfflinePageItemCallback callback) = 0;
 
   // Returns zero or one offline pages associated with a specified |offline_id|.
   virtual void GetPageByOfflineId(
@@ -185,32 +185,31 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
   // Retrieves all pages associated with any of |client_ids|.
   virtual void GetPagesByClientIds(
       const std::vector<ClientId>& client_ids,
-      const MultipleOfflinePageItemCallback& callback) = 0;
+      MultipleOfflinePageItemCallback callback) = 0;
 
   // Returns the offline pages that are related to |url|. |url_search_mode|
   // controls how the url match is done. See URLSearchMode for more details.
-  virtual void GetPagesByURL(
-      const GURL& url,
-      URLSearchMode url_search_mode,
-      const MultipleOfflinePageItemCallback& callback) = 0;
+  virtual void GetPagesByURL(const GURL& url,
+                             URLSearchMode url_search_mode,
+                             MultipleOfflinePageItemCallback callback) = 0;
 
   // Returns the offline pages that belong in |name_space|.
   virtual void GetPagesByNamespace(
       const std::string& name_space,
-      const MultipleOfflinePageItemCallback& callback) = 0;
+      MultipleOfflinePageItemCallback callback) = 0;
 
   // Returns the offline pages that are removed when cache is reset.
   virtual void GetPagesRemovedOnCacheReset(
-      const MultipleOfflinePageItemCallback& callback) = 0;
+      MultipleOfflinePageItemCallback callback) = 0;
 
   // Returns the offline pages that are visible in download manager UI.
   virtual void GetPagesSupportedByDownloads(
-      const MultipleOfflinePageItemCallback& callback) = 0;
+      MultipleOfflinePageItemCallback callback) = 0;
 
   // Retrieves all pages associated with the |request_origin|.
   virtual void GetPagesByRequestOrigin(
       const std::string& request_origin,
-      const MultipleOfflinePageItemCallback& callback) = 0;
+      MultipleOfflinePageItemCallback callback) = 0;
 
   // Returns zero or one offline pages associated with a specified |digest|.
   virtual void GetPageBySizeAndDigest(

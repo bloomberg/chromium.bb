@@ -55,8 +55,8 @@ void PrefetchedPagesTrackerImpl::Initialize(
     if (initialization_completed_callbacks_.size() == 1) {
       offline_page_model_->GetPagesByNamespace(
           offline_pages::kSuggestedArticlesNamespace,
-          base::BindRepeating(&PrefetchedPagesTrackerImpl::OfflinePagesLoaded,
-                              weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(&PrefetchedPagesTrackerImpl::OfflinePagesLoaded,
+                         weak_ptr_factory_.GetWeakPtr()));
     }
   }
 }

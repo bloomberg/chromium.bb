@@ -440,9 +440,8 @@ void DownloadUIAdapter::LoadCache() {
   if (state_ != State::NOT_LOADED)
     return;
   state_ = State::LOADING_PAGES;
-  model_->GetAllPages(
-      base::BindRepeating(&DownloadUIAdapter::OnOfflinePagesLoaded,
-                          weak_ptr_factory_.GetWeakPtr()));
+  model_->GetAllPages(base::BindOnce(&DownloadUIAdapter::OnOfflinePagesLoaded,
+                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 // TODO(dimich): Start clearing this cache on UI close. Also, after OpenItem can

@@ -27,18 +27,18 @@ FakeOfflinePageModel::~FakeOfflinePageModel() = default;
 
 void FakeOfflinePageModel::GetPagesByNamespace(
     const std::string& name_space,
-    const MultipleOfflinePageItemCallback& callback) {
+    MultipleOfflinePageItemCallback callback) {
   MultipleOfflinePageItemResult filtered_result;
   for (auto& item : items_) {
     if (item.client_id.name_space == name_space) {
       filtered_result.emplace_back(item);
     }
   }
-  callback.Run(filtered_result);
+  std::move(callback).Run(filtered_result);
 }
 
 void FakeOfflinePageModel::GetPagesSupportedByDownloads(
-    const MultipleOfflinePageItemCallback& callback) {
+    MultipleOfflinePageItemCallback callback) {
   ClientPolicyController controller;
   MultipleOfflinePageItemResult filtered_result;
   for (auto& item : items_) {
@@ -46,12 +46,12 @@ void FakeOfflinePageModel::GetPagesSupportedByDownloads(
       filtered_result.emplace_back(item);
     }
   }
-  callback.Run(filtered_result);
+  std::move(callback).Run(filtered_result);
 }
 
 void FakeOfflinePageModel::GetAllPages(
-    const MultipleOfflinePageItemCallback& callback) {
-  callback.Run(items_);
+    MultipleOfflinePageItemCallback callback) {
+  std::move(callback).Run(items_);
 }
 
 const std::vector<OfflinePageItem>& FakeOfflinePageModel::items() {

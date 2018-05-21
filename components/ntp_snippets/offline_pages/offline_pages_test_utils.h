@@ -19,13 +19,13 @@ class FakeOfflinePageModel : public offline_pages::StubOfflinePageModel {
 
   void GetPagesByNamespace(
       const std::string& name_space,
-      const offline_pages::MultipleOfflinePageItemCallback& callback) override;
+      offline_pages::MultipleOfflinePageItemCallback callback) override;
 
   void GetPagesSupportedByDownloads(
-      const offline_pages::MultipleOfflinePageItemCallback& callback) override;
+      offline_pages::MultipleOfflinePageItemCallback callback) override;
 
   void GetAllPages(
-      const offline_pages::MultipleOfflinePageItemCallback& callback) override;
+      offline_pages::MultipleOfflinePageItemCallback callback) override;
 
   const std::vector<offline_pages::OfflinePageItem>& items();
   std::vector<offline_pages::OfflinePageItem>* mutable_items();
