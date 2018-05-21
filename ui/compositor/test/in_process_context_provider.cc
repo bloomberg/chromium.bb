@@ -109,6 +109,8 @@ gpu::ContextResult InProcessContextProvider::BindToCurrentThread() {
 
   cache_controller_ = std::make_unique<viz::ContextCacheController>(
       context_->GetImplementation(), base::ThreadTaskRunnerHandle::Get());
+  if (support_locking_)
+    cache_controller_->SetLock(GetLock());
 
   std::string unique_context_name =
       base::StringPrintf("%s-%p", debug_name_.c_str(), context_.get());
