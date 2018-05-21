@@ -8,6 +8,7 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -151,7 +152,7 @@ void AddStreamObject(int stream_index,
                      base::Value::ListStorage* stream_list) {
   base::Value stream(base::Value::Type::DICTIONARY);
   stream.SetKey("index", base::Value(stream_index));
-  stream.SetKey("codecName", base::Value(codec_name));
+  stream.SetKey("codecName", base::Value(base::ToLowerASCII(codec_name)));
   stream.SetKey("rtpProfile", base::Value("cast"));
   const bool is_audio =
       (config.rtp_payload_type <= media::cast::RtpPayloadType::AUDIO_LAST);
