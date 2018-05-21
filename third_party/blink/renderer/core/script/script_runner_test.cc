@@ -24,8 +24,9 @@ namespace blink {
 
 class MockPendingScript : public PendingScript {
  public:
-  static MockPendingScript* Create(ScriptSchedulingType scheduling_type) {
-    return new MockPendingScript(scheduling_type);
+  static MockPendingScript* Create(ScriptElementBase* element,
+                                   ScriptSchedulingType scheduling_type) {
+    return new MockPendingScript(element, scheduling_type);
   }
   ~MockPendingScript() override {}
 
@@ -80,8 +81,9 @@ class MockPendingScript : public PendingScript {
   MOCK_CONST_METHOD0(CheckState, void());
 
  private:
-  MockPendingScript(ScriptSchedulingType scheduling_type)
-      : PendingScript(nullptr, TextPosition()) {
+  MockPendingScript(ScriptElementBase* element,
+                    ScriptSchedulingType scheduling_type)
+      : PendingScript(element, TextPosition()) {
     SetSchedulingType(scheduling_type);
   }
 
@@ -92,19 +94,12 @@ class MockPendingScript : public PendingScript {
 
 class MockScriptLoader final : public ScriptLoader {
  public:
-  static MockScriptLoader* CreateInOrder() {
-    auto* loader = new MockScriptLoader();
-    MockPendingScript* pending_script =
-        MockPendingScript::Create(ScriptSchedulingType::kInOrder);
-    loader->mock_pending_script_ = pending_script;
-    return loader;
+  static MockScriptLoader* CreateInOrder(Document* document) {
+    return Create(document, ScriptSchedulingType::kInOrder);
   }
-  static MockScriptLoader* CreateAsync() {
-    auto* loader = new MockScriptLoader();
-    MockPendingScript* pending_script =
-        MockPendingScript::Create(ScriptSchedulingType::kAsync);
-    loader->mock_pending_script_ = pending_script;
-    return loader;
+
+  static MockScriptLoader* CreateAsync(Document* document) {
+    return Create(document, ScriptSchedulingType::kAsync);
   }
 
   ~MockScriptLoader() override {}
@@ -118,8 +113,22 @@ class MockScriptLoader final : public ScriptLoader {
   }
 
  private:
-  explicit MockScriptLoader()
-      : ScriptLoader(MockScriptElementBase::Create(), false, false, false) {}
+  explicit MockScriptLoader(ScriptElementBase* element)
+      : ScriptLoader(element, false, false, false) {}
+
+  static MockScriptLoader* Create(Document* document,
+                                  ScriptSchedulingType scheduling_type) {
+    MockScriptElementBase* element = MockScriptElementBase::Create();
+    auto* loader = new MockScriptLoader(element);
+    EXPECT_CALL(*element, Loader()).WillRepeatedly(Return(loader));
+    EXPECT_CALL(*element, GetDocument())
+        .WillRepeatedly(testing::ReturnRef(*document));
+    MockPendingScript* pending_script =
+        MockPendingScript::Create(element, scheduling_type);
+    EXPECT_CALL(*pending_script, IsExternal()).WillRepeatedly(Return(true));
+    loader->mock_pending_script_ = pending_script;
+    return loader;
+  }
 
   Member<MockPendingScript> mock_pending_script_;
 };
@@ -161,7 +170,7 @@ class ScriptRunnerTest : public testing::Test {
 };
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_Async) {
-  auto* script_loader = MockScriptLoader::CreateAsync();
+  auto* script_loader = MockScriptLoader::CreateAsync(document_);
 
   script_runner_->QueueScriptForExecution(script_loader);
   NotifyScriptReady(script_loader);
@@ -171,7 +180,7 @@ TEST_F(ScriptRunnerTest, QueueSingleScript_Async) {
 }
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder) {
-  auto* script_loader = MockScriptLoader::CreateInOrder();
+  auto* script_loader = MockScriptLoader::CreateInOrder(document_);
   script_runner_->QueueScriptForExecution(script_loader);
 
   EXPECT_CALL(*script_loader, Execute());
@@ -182,9 +191,9 @@ TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder) {
 }
 
 TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder) {
-  auto* script_loader1 = MockScriptLoader::CreateInOrder();
-  auto* script_loader2 = MockScriptLoader::CreateInOrder();
-  auto* script_loader3 = MockScriptLoader::CreateInOrder();
+  auto* script_loader1 = MockScriptLoader::CreateInOrder(document_);
+  auto* script_loader2 = MockScriptLoader::CreateInOrder(document_);
+  auto* script_loader3 = MockScriptLoader::CreateInOrder(document_);
 
   HeapVector<Member<MockScriptLoader>> script_loaders;
   script_loaders.push_back(script_loader1);
@@ -211,11 +220,11 @@ TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder) {
 }
 
 TEST_F(ScriptRunnerTest, QueueMixedScripts) {
-  auto* script_loader1 = MockScriptLoader::CreateInOrder();
-  auto* script_loader2 = MockScriptLoader::CreateInOrder();
-  auto* script_loader3 = MockScriptLoader::CreateInOrder();
-  auto* script_loader4 = MockScriptLoader::CreateAsync();
-  auto* script_loader5 = MockScriptLoader::CreateAsync();
+  auto* script_loader1 = MockScriptLoader::CreateInOrder(document_);
+  auto* script_loader2 = MockScriptLoader::CreateInOrder(document_);
+  auto* script_loader3 = MockScriptLoader::CreateInOrder(document_);
+  auto* script_loader4 = MockScriptLoader::CreateAsync(document_);
+  auto* script_loader5 = MockScriptLoader::CreateAsync(document_);
 
   script_runner_->QueueScriptForExecution(script_loader1);
   script_runner_->QueueScriptForExecution(script_loader2);
@@ -252,9 +261,9 @@ TEST_F(ScriptRunnerTest, QueueMixedScripts) {
 }
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_Async) {
-  auto* script_loader1 = MockScriptLoader::CreateAsync();
-  auto* script_loader2 = MockScriptLoader::CreateAsync();
-  auto* script_loader3 = MockScriptLoader::CreateAsync();
+  auto* script_loader1 = MockScriptLoader::CreateAsync(document_);
+  auto* script_loader2 = MockScriptLoader::CreateAsync(document_);
+  auto* script_loader3 = MockScriptLoader::CreateAsync(document_);
 
   script_runner_->QueueScriptForExecution(script_loader1);
   script_runner_->QueueScriptForExecution(script_loader2);
@@ -292,9 +301,9 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_Async) {
 }
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_InOrder) {
-  auto* script_loader1 = MockScriptLoader::CreateInOrder();
-  auto* script_loader2 = MockScriptLoader::CreateInOrder();
-  auto* script_loader3 = MockScriptLoader::CreateInOrder();
+  auto* script_loader1 = MockScriptLoader::CreateInOrder(document_);
+  auto* script_loader2 = MockScriptLoader::CreateInOrder(document_);
+  auto* script_loader3 = MockScriptLoader::CreateInOrder(document_);
 
   script_runner_->QueueScriptForExecution(script_loader1);
   NotifyScriptReady(script_loader1);
@@ -337,7 +346,7 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts) {
     script_loaders[i] = nullptr;
 
   for (int i = 0; i < 20; i++) {
-    script_loaders[i] = MockScriptLoader::CreateAsync();
+    script_loaders[i] = MockScriptLoader::CreateAsync(document_);
 
     script_runner_->QueueScriptForExecution(script_loaders[i]);
 
@@ -368,9 +377,9 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts) {
 }
 
 TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder) {
-  auto* script_loader1 = MockScriptLoader::CreateInOrder();
-  auto* script_loader2 = MockScriptLoader::CreateInOrder();
-  auto* script_loader3 = MockScriptLoader::CreateInOrder();
+  auto* script_loader1 = MockScriptLoader::CreateInOrder(document_);
+  auto* script_loader2 = MockScriptLoader::CreateInOrder(document_);
+  auto* script_loader3 = MockScriptLoader::CreateInOrder(document_);
 
   script_runner_->QueueScriptForExecution(script_loader1);
   script_runner_->QueueScriptForExecution(script_loader2);
@@ -400,9 +409,9 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder) {
 }
 
 TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async) {
-  auto* script_loader1 = MockScriptLoader::CreateAsync();
-  auto* script_loader2 = MockScriptLoader::CreateAsync();
-  auto* script_loader3 = MockScriptLoader::CreateAsync();
+  auto* script_loader1 = MockScriptLoader::CreateAsync(document_);
+  auto* script_loader2 = MockScriptLoader::CreateAsync(document_);
+  auto* script_loader3 = MockScriptLoader::CreateAsync(document_);
 
   script_runner_->QueueScriptForExecution(script_loader1);
   script_runner_->QueueScriptForExecution(script_loader2);
@@ -432,8 +441,8 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async) {
 }
 
 TEST_F(ScriptRunnerTest, LateNotifications) {
-  auto* script_loader1 = MockScriptLoader::CreateInOrder();
-  auto* script_loader2 = MockScriptLoader::CreateInOrder();
+  auto* script_loader1 = MockScriptLoader::CreateInOrder(document_);
+  auto* script_loader2 = MockScriptLoader::CreateInOrder(document_);
 
   script_runner_->QueueScriptForExecution(script_loader1);
   script_runner_->QueueScriptForExecution(script_loader2);
@@ -457,8 +466,10 @@ TEST_F(ScriptRunnerTest, LateNotifications) {
 }
 
 TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner) {
-  Persistent<MockScriptLoader> script_loader1 = MockScriptLoader::CreateAsync();
-  Persistent<MockScriptLoader> script_loader2 = MockScriptLoader::CreateAsync();
+  Persistent<MockScriptLoader> script_loader1 =
+      MockScriptLoader::CreateAsync(document_);
+  Persistent<MockScriptLoader> script_loader2 =
+      MockScriptLoader::CreateAsync(document_);
 
   script_runner_->QueueScriptForExecution(script_loader1);
   script_runner_->QueueScriptForExecution(script_loader2);
@@ -479,14 +490,14 @@ TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner) {
 }
 
 TEST_F(ScriptRunnerTest, TryStreamWhenEnqueingScript) {
-  auto* script_loader1 = MockScriptLoader::CreateAsync();
+  auto* script_loader1 = MockScriptLoader::CreateAsync(document_);
   script_loader1->GetPendingScriptIfControlledByScriptRunner()->SetIsReady(
       true);
   script_runner_->QueueScriptForExecution(script_loader1);
 }
 
 TEST_F(ScriptRunnerTest, DontExecuteWhileStreaming) {
-  auto* script_loader = MockScriptLoader::CreateAsync();
+  auto* script_loader = MockScriptLoader::CreateAsync(document_);
 
   // Enqueue script.
   script_runner_->QueueScriptForExecution(script_loader);
