@@ -11,7 +11,7 @@
   "use_clang_coverage=true" and "is_component_build=false" GN flags to args.gn
   file in your build output directory (e.g. out/coverage).
 
-  Example usage:
+  * Example usage:
 
   gn gen out/coverage --args='use_clang_coverage=true is_component_build=false'
   gclient runhooks
@@ -28,7 +28,7 @@
   If you want to run tests that try to draw to the screen but don't have a
   display connected, you can run tests in headless mode with xvfb.
 
-  Sample flow for running a test target with xvfb (e.g. unit_tests):
+  * Sample flow for running a test target with xvfb (e.g. unit_tests):
 
   python tools/code_coverage/coverage.py unit_tests -b out/coverage \\
       -o out/report -c 'python testing/xvfb.py out/coverage/unit_tests'
@@ -36,7 +36,7 @@
   If you are building a fuzz target, you need to add "use_libfuzzer=true" GN
   flag as well.
 
-  Sample workflow for a fuzz target (e.g. pdfium_fuzzer):
+  * Sample workflow for a fuzz target (e.g. pdfium_fuzzer):
 
   python tools/code_coverage/coverage.py pdfium_fuzzer \\
       -b out/coverage -o out/report \\
@@ -47,6 +47,14 @@
     <corpus_dir> - directory containing samples files for this format.
     <runs> - number of times to fuzz target function. Should be 0 when you just
              want to see the coverage on corpus and don't want to fuzz at all.
+
+  * Sample workflow for running Blink web tests:
+
+  python tools/code_coverage/coverage.py blink_tests \\
+      -wt -b out/coverage -o out/report -f third_party/blink
+
+  If you need to pass arguments to run_web_tests.py, use
+    -wt='arguments to run_web_tests.py e.g. test directories'
 
   For more options, please refer to tools/code_coverage/coverage.py -h.
 
@@ -61,6 +69,7 @@ import sys
 import argparse
 import json
 import logging
+import multiprocessing
 import os
 import re
 import shlex
@@ -81,16 +90,15 @@ sys.path.append(
 import jinja2
 from collections import defaultdict
 
-# Absolute path to the root of the checkout.
-SRC_ROOT_PATH = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))
-
 # Absolute path to the code coverage tools binary. These paths can be
 # overwritten by user specified coverage tool paths.
 LLVM_BUILD_DIR = clang_update.LLVM_BUILD_DIR
 LLVM_BIN_DIR = os.path.join(LLVM_BUILD_DIR, 'bin')
 LLVM_COV_PATH = os.path.join(LLVM_BIN_DIR, 'llvm-cov')
 LLVM_PROFDATA_PATH = os.path.join(LLVM_BIN_DIR, 'llvm-profdata')
+
+# Absolute path to the root of the checkout.
+SRC_ROOT_PATH = None
 
 # Build directory, the value is parsed from command line arguments.
 BUILD_DIR = None
@@ -353,7 +361,7 @@ def _ConfigureLogging(args):
 def _ConfigureLLVMCoverageTools(args):
   """Configures llvm coverage tools."""
   if args.coverage_tools_dir:
-    llvm_bin_dir = os.path.abspath(args.coverage_tools_dir)
+    llvm_bin_dir = _GetFullPath(args.coverage_tools_dir)
     global LLVM_COV_PATH
     global LLVM_PROFDATA_PATH
     LLVM_COV_PATH = os.path.join(llvm_bin_dir, 'llvm-cov')
@@ -680,7 +688,7 @@ def _CalculatePerComponentCoverageSummary(component_to_directories,
 
   for component in component_to_directories:
     for directory in component_to_directories[component]:
-      absolute_directory_path = os.path.abspath(directory)
+      absolute_directory_path = _GetFullPath(directory)
       if absolute_directory_path in per_directory_coverage_summary:
         per_component_coverage_summary[component].AddSummary(
             per_directory_coverage_summary[absolute_directory_path])
@@ -739,7 +747,7 @@ def _GenerateCoverageInHtmlForComponent(
                                                 'Path')
 
   for dir_path in component_to_directories[component_name]:
-    dir_absolute_path = os.path.abspath(dir_path)
+    dir_absolute_path = _GetFullPath(dir_path)
     if dir_absolute_path not in per_directory_coverage_summary:
       # Any directory without an excercised file shouldn't be included into the
       # report.
@@ -820,7 +828,7 @@ def _CleanUpOutputDir():
 def _GetCoverageHtmlReportPathForFile(file_path):
   """Given a file path, returns the corresponding html report path."""
   assert os.path.isfile(file_path), '"%s" is not a file.' % file_path
-  html_report_path = os.extsep.join([os.path.abspath(file_path), 'html'])
+  html_report_path = os.extsep.join([_GetFullPath(file_path), 'html'])
 
   # '+' is used instead of os.path.join because both of them are absolute paths
   # and os.path.join ignores the first path.
@@ -832,7 +840,7 @@ def _GetCoverageHtmlReportPathForDirectory(dir_path):
   """Given a directory path, returns the corresponding html report path."""
   assert os.path.isdir(dir_path), '"%s" is not a directory.' % dir_path
   html_report_path = os.path.join(
-      os.path.abspath(dir_path), DIRECTORY_COVERAGE_HTML_REPORT_NAME)
+      _GetFullPath(dir_path), DIRECTORY_COVERAGE_HTML_REPORT_NAME)
 
   # '+' is used instead of os.path.join because both of them are absolute paths
   # and os.path.join ignores the first path.
@@ -985,13 +993,10 @@ def _GetTargetProfDataPathsByExecutingCommands(targets, commands):
         # On iOS platform, due to lack of write permissions, profraw files are
         # generated outside of the OUTPUT_DIR, and the exact paths are contained
         # in the output of the command execution.
-        output = _ExecuteIOSCommand(target, command)
+        output = _ExecuteIOSCommand(command, output_file_path)
       else:
         # On other platforms, profraw files are generated inside the OUTPUT_DIR.
-        output = _ExecuteCommand(target, command)
-
-      with open(output_file_path, 'w') as output_file:
-        output_file.write(output)
+        output = _ExecuteCommand(target, command, output_file_path)
 
       profraw_file_paths = []
       if _IsIOS():
@@ -1028,7 +1033,17 @@ def _GetTargetProfDataPathsByExecutingCommands(targets, commands):
   return profdata_file_paths
 
 
-def _ExecuteCommand(target, command):
+def _GetEnvironmentVars(profraw_file_path):
+  """Return environment vars for subprocess, given a profraw file path."""
+  env = os.environ.copy()
+  env.update({
+      'LLVM_PROFILE_FILE': profraw_file_path,
+      'PATH': _GetPathWithLLVMSymbolizerDir()
+  })
+  return env
+
+
+def _ExecuteCommand(target, command, output_file_path):
   """Runs a single command and generates a profraw data file."""
   # Per Clang "Source-based Code Coverage" doc:
   #
@@ -1058,20 +1073,16 @@ def _ExecuteCommand(target, command):
 
   try:
     # Some fuzz targets or tests may write into stderr, redirect it as well.
-    output = subprocess.check_output(
-        shlex.split(command),
-        stderr=subprocess.STDOUT,
-        env={
-            'LLVM_PROFILE_FILE': expected_profraw_file_path,
-            'PATH': _GetPathWithLLVMSymbolizerDir()
-        })
+    with open(output_file_path, 'wb') as output_file_handle:
+      subprocess.check_call(
+          shlex.split(command),
+          stdout=output_file_handle,
+          stderr=subprocess.STDOUT,
+          env=_GetEnvironmentVars(expected_profraw_file_path))
   except subprocess.CalledProcessError as e:
-    output = e.output
-    logging.warning(
-        'Command: "%s" exited with non-zero return code. Output:\n%s', command,
-        output)
+    logging.warning('Command: "%s" exited with non-zero return code.', command)
 
-  return output
+  return open(output_file_path, 'rb').read()
 
 
 def _IsFuzzerTarget(target):
@@ -1082,7 +1093,7 @@ def _IsFuzzerTarget(target):
   return use_libfuzzer and target.endswith('_fuzzer')
 
 
-def _ExecuteIOSCommand(target, command):
+def _ExecuteIOSCommand(command, output_file_path):
   """Runs a single iOS command and generates a profraw data file.
 
   iOS application doesn't have write access to folders outside of the app, so
@@ -1100,18 +1111,18 @@ def _ExecuteIOSCommand(target, command):
       OUTPUT_DIR, os.extsep.join(['iossim', PROFRAW_FILE_EXTENSION]))
 
   try:
-    output = subprocess.check_output(
-        shlex.split(command),
-        env={
-            'LLVM_PROFILE_FILE': iossim_profraw_file_path,
-            'PATH': _GetPathWithLLVMSymbolizerDir()
-        })
+    with open(output_file_path, 'wb') as output_file_handle:
+      subprocess.check_call(
+          shlex.split(command),
+          stdout=output_file_handle,
+          stderr=subprocess.STDOUT,
+          env=_GetEnvironmentVars(iossim_profraw_file_path))
   except subprocess.CalledProcessError as e:
     # iossim emits non-zero return code even if tests run successfully, so
     # ignore the return code.
-    output = e.output
+    pass
 
-  return output
+  return open(output_file_path, 'rb').read()
 
 
 def _GetProfrawDataFileByParsingOutput(output):
@@ -1283,7 +1294,6 @@ def _GetBinaryPath(command):
           <iossim_arguments> -c <app_arguments>
           out/Coverage-iphonesimulator/url_unittests.app"
 
-
   Args:
     command: A command used to run a target.
 
@@ -1321,8 +1331,8 @@ def _VerifyTargetExecutablesAreInBuildDirectory(commands):
   the given build directory."""
   for command in commands:
     binary_path = _GetBinaryPath(command)
-    binary_absolute_path = os.path.abspath(os.path.normpath(binary_path))
-    assert binary_absolute_path.startswith(BUILD_DIR), (
+    binary_absolute_path = _GetFullPath(binary_path)
+    assert binary_absolute_path.startswith(BUILD_DIR + os.sep), (
         'Target executable "%s" in command: "%s" is outside of '
         'the given build directory: "%s".' % (binary_path, command, BUILD_DIR))
 
@@ -1433,6 +1443,41 @@ def _GetBinaryPathsFromTargets(targets, build_dir):
   return binary_paths
 
 
+def _GetFullPath(path):
+  """Return full absolute path."""
+  return (os.path.abspath(
+      os.path.realpath(os.path.expandvars(os.path.expanduser(path)))))
+
+
+def _GetCommandForWebTests(arguments):
+  """Return command to run for blink web tests."""
+  command_list = [
+      'python', 'testing/xvfb.py', 'python',
+      'third_party/blink/tools/run_web_tests.py',
+      '--additional-driver-flag=--no-sandbox',
+      '--disable-breakpad', '--no-show-results',
+      '--child-processes=%d' % max(1, int(multiprocessing.cpu_count() / 2)),
+      '--target=%s' % os.path.basename(BUILD_DIR), '--time-out-ms=30000'
+  ]
+  if arguments.strip():
+    command_list.append(arguments)
+  return ' '.join(command_list)
+
+
+def _GetBinaryPathForWebTests():
+  """Return binary path used to run blink web tests."""
+  host_platform = _GetHostPlatform()
+  if host_platform == 'win':
+    return os.path.join(BUILD_DIR, 'content_shell.exe')
+  elif host_platform == 'linux':
+    return os.path.join(BUILD_DIR, 'content_shell')
+  elif host_platform == 'mac':
+    return os.path.join(BUILD_DIR, 'Content Shell.app', 'Contents', 'MacOS',
+                        'Content Shell')
+  else:
+    assert False, 'This platform is not supported for web tests.'
+
+
 def _ParseCommandArguments():
   """Adds and parses relevant arguments for tool comands.
 
@@ -1466,6 +1511,15 @@ def _ParseCommandArguments():
       'only one command, when specifying commands, one should assume the '
       'current working directory is the root of the checkout. This option is '
       'incompatible with -p/--profdata-file option.')
+
+  arg_parser.add_argument(
+      '-wt',
+      '--web-tests',
+      nargs='?',
+      type=str,
+      const=' ',
+      required=False,
+      help='Run blink web tests. Support passing arguments to run_web_tests.py')
 
   arg_parser.add_argument(
       '-p',
@@ -1547,6 +1601,9 @@ def Main():
     return
 
   # Change directory to source root to aid in relative paths calculations.
+  global SRC_ROOT_PATH
+  SRC_ROOT_PATH = _GetFullPath(
+      os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))
   os.chdir(SRC_ROOT_PATH)
 
   args = _ParseCommandArguments()
@@ -1554,13 +1611,14 @@ def Main():
   _ConfigureLLVMCoverageTools(args)
 
   global BUILD_DIR
-  BUILD_DIR = os.path.abspath(args.build_dir)
+  BUILD_DIR = _GetFullPath(args.build_dir)
   global OUTPUT_DIR
-  OUTPUT_DIR = os.path.abspath(args.output_dir)
+  OUTPUT_DIR = _GetFullPath(args.output_dir)
 
-  assert args.command or args.profdata_file, (
+  assert args.web_tests or args.command or args.profdata_file, (
       'Need to either provide commands to run using -c/--command option OR '
-      'provide prof-data file as input using -p/--profdata-file option.')
+      'provide prof-data file as input using -p/--profdata-file option OR '
+      'run web tests using -wt/--run-web-tests.')
 
   assert not args.command or (len(args.targets) == len(args.command)), (
       'Number of targets must be equal to the number of test commands.')
@@ -1579,8 +1637,18 @@ def Main():
   if not os.path.exists(_GetCoverageReportRootDirPath()):
     os.makedirs(_GetCoverageReportRootDirPath())
 
-  # Get profdate file and list of binary paths.
-  if args.command:
+  # Get .profdata file and list of binary paths.
+  if args.web_tests:
+    commands = [_GetCommandForWebTests(args.web_tests)]
+    profdata_file_path = _CreateCoverageProfileDataForTargets(
+        args.targets, commands, args.jobs)
+    binary_paths = [_GetBinaryPathForWebTests()]
+  elif args.command:
+    for i in range(len(args.command)):
+      assert not 'run_web_tests.py' in args.command[i], (
+          'run_web_tests.py is not supported via --command argument. '
+          'Please use --run-web-tests argument instead.')
+
     # A list of commands are provided. Run them to generate profdata file, and
     # create a list of binary paths from parsing commands.
     _VerifyTargetExecutablesAreInBuildDirectory(args.command)
@@ -1626,7 +1694,7 @@ def Main():
   _OverwriteHtmlReportsIndexFile()
   _CleanUpOutputDir()
 
-  html_index_file_path = 'file://' + os.path.abspath(_GetHtmlIndexPath())
+  html_index_file_path = 'file://' + _GetFullPath(_GetHtmlIndexPath())
   logging.info('Index file for html report is generated as: "%s".',
                html_index_file_path)
 
