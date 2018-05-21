@@ -253,8 +253,13 @@ int StaleHostResolver::RequestImpl::Start(
       base::Bind(&StaleHostResolver::RequestImpl::OnNetworkRequestComplete,
                  base::Unretained(this)),
       &network_request_, net_log);
-  DCHECK_EQ(net::ERR_IO_PENDING, network_rv);
-  return net::ERR_IO_PENDING;
+  // Network resolver has returned synchronously (for example by resolving from
+  // /etc/hosts).
+  if (network_rv != net::ERR_IO_PENDING) {
+    RecordSynchronousRequest();
+    return HandleResult(network_rv, network_addresses_);
+  }
+  return network_rv;
 }
 
 void StaleHostResolver::RequestImpl::ChangeRequestPriority(
