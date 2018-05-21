@@ -11,6 +11,8 @@
 
 namespace ash {
 
+class NotificationCounterView;
+class QuietModeView;
 class UnifiedSystemTrayBubble;
 class UnifiedSystemTrayModel;
 
@@ -59,15 +61,19 @@ class UnifiedSystemTray : public TrayBackgroundView {
   // Forwarded from UiDelegate.
   void ShowBubbleInternal(bool show_by_click);
   void HideBubbleInternal();
+  void UpdateNotificationInternal();
 
-  std::unique_ptr<UiDelegate> ui_delegate_;
+  const std::unique_ptr<UiDelegate> ui_delegate_;
 
   std::unique_ptr<NetworkStateDelegate> network_state_delegate_;
 
   std::unique_ptr<UnifiedSystemTrayBubble> bubble_;
 
   // Model class that stores UnifiedSystemTray's UI specific variables.
-  std::unique_ptr<UnifiedSystemTrayModel> model_;
+  const std::unique_ptr<UnifiedSystemTrayModel> model_;
+
+  NotificationCounterView* const notification_counter_item_;
+  QuietModeView* const quiet_mode_view_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTray);
 };
