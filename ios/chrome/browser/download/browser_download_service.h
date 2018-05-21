@@ -17,6 +17,20 @@ class DownloadTask;
 class WebState;
 }  // namespace web
 
+// Enum for the Download.IOSDownloadMimeType UMA histogram to report the
+// MIME type of the download task.
+// Note: This enum is used to back an UMA histogram, and should be treated as
+// append-only.
+enum class DownloadMimeTypeResult {
+  // MIME type other than those listed below.
+  Other = 0,
+  // application/vnd.apple.pkpass MIME type.
+  PkPass = 1,
+  // application/x-apple-aspen-config MIME type.
+  iOSMobileConfig = 2,
+  kMaxValue = iOSMobileConfig,
+};
+
 // Keyed Service which acts as web::DownloadController delegate and routes
 // download tasks to the appropriate TabHelper for download.
 class BrowserDownloadService : public KeyedService,
