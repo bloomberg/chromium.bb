@@ -3474,6 +3474,25 @@ TEST_F(WebContentsImplTest, MediaWakeLock) {
   EXPECT_TRUE(has_video_wake_lock());
   EXPECT_FALSE(has_audio_wake_lock());
 
+  // Send the video in Picture-in-Picture mode, power blocker should still be
+  // on.
+  rfh->OnMessageReceived(
+      MediaPlayerDelegateHostMsg_OnPictureInPictureSourceChanged(
+          0, kPlayerAudioVideoId));
+  EXPECT_TRUE(has_video_wake_lock());
+  EXPECT_FALSE(has_audio_wake_lock());
+
+  // Hiding the window should keep the power blocker.
+  contents()->WasHidden();
+  EXPECT_TRUE(has_video_wake_lock());
+  EXPECT_FALSE(has_audio_wake_lock());
+
+  // Leaving Picture-in-Picture should reset the power blocker.
+  rfh->OnMessageReceived(MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded(
+      0, kPlayerAudioVideoId, 1 /* request_id */));
+  EXPECT_FALSE(has_video_wake_lock());
+  EXPECT_FALSE(has_audio_wake_lock());
+
   // Crash the renderer.
   main_test_rfh()->GetProcess()->SimulateCrash();
 

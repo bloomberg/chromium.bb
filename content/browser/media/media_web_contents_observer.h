@@ -89,9 +89,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
     return has_audio_wake_lock_for_testing_;
   }
 
-  bool has_video_wake_lock_for_testing() const {
-    return has_video_wake_lock_for_testing_;
-  }
+  bool has_video_wake_lock_for_testing() const { return has_video_wake_lock_; }
 
  protected:
   MediaSessionControllersManager* session_controllers_manager() {
@@ -131,12 +129,10 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   device::mojom::WakeLock* GetAudioWakeLock();
   device::mojom::WakeLock* GetVideoWakeLock();
 
+  // WakeLock related methods for audio and video.
   void LockAudio();
-  void LockVideo();
-
   void CancelAudioLock();
-  void CancelVideoLock();
-  void MaybeCancelVideoLock();
+  void UpdateVideoLock();
 
   // Helper methods for adding or removing player entries in |player_map|.
   void AddMediaPlayerEntry(const MediaPlayerId& id,
@@ -162,7 +158,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   base::Optional<MediaPlayerId> pip_player_;
   base::Optional<bool> picture_in_picture_allowed_in_fullscreen_;
   bool has_audio_wake_lock_for_testing_ = false;
-  bool has_video_wake_lock_for_testing_ = false;
+  bool has_video_wake_lock_ = false;
 
   MediaSessionControllersManager session_controllers_manager_;
 
