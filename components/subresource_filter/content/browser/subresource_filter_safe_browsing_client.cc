@@ -37,7 +37,9 @@ SubresourceFilterSafeBrowsingClient::SubresourceFilterSafeBrowsingClient(
     : database_manager_(std::move(database_manager)),
       throttle_(std::move(throttle)),
       io_task_runner_(std::move(io_task_runner)),
-      throttle_task_runner_(std::move(throttle_task_runner)) {}
+      throttle_task_runner_(std::move(throttle_task_runner)) {
+  DCHECK(database_manager_);
+}
 
 SubresourceFilterSafeBrowsingClient::~SubresourceFilterSafeBrowsingClient() {}
 

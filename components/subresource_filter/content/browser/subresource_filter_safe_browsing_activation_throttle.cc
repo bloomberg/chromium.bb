@@ -59,21 +59,17 @@ SubresourceFilterSafeBrowsingActivationThrottle::
             database_manager)
     : NavigationThrottle(handle),
       io_task_runner_(std::move(io_task_runner)),
-      // The throttle can be created without a valid database manager. If so, it
-      // becomes a pass-through throttle and should never defer.
-      database_client_(database_manager
-                           ? new SubresourceFilterSafeBrowsingClient(
-                                 std::move(database_manager),
-                                 AsWeakPtr(),
-                                 io_task_runner_,
-                                 base::ThreadTaskRunnerHandle::Get())
-                           : nullptr,
+      database_client_(new SubresourceFilterSafeBrowsingClient(
+                           std::move(database_manager),
+                           AsWeakPtr(),
+                           io_task_runner_,
+                           base::ThreadTaskRunnerHandle::Get()),
                        base::OnTaskRunnerDeleter(io_task_runner_)),
       client_(client) {
   DCHECK(handle->IsInMainFrame());
 
   CheckCurrentUrl();
-  DCHECK(!database_client_ || !check_results_.empty());
+  DCHECK(!check_results_.empty());
 }
 
 SubresourceFilterSafeBrowsingActivationThrottle::
@@ -124,15 +120,13 @@ SubresourceFilterSafeBrowsingActivationThrottle::
 content::NavigationThrottle::ThrottleCheckResult
 SubresourceFilterSafeBrowsingActivationThrottle::WillRedirectRequest() {
   CheckCurrentUrl();
-  DCHECK(!database_client_ || !check_results_.empty());
   return PROCEED;
 }
 
 content::NavigationThrottle::ThrottleCheckResult
 SubresourceFilterSafeBrowsingActivationThrottle::WillProcessResponse() {
-  DCHECK(!database_client_ || !check_results_.empty());
   // No need to defer the navigation if the check already happened.
-  if (!database_client_ || HasFinishedAllSafeBrowsingChecks()) {
+  if (HasFinishedAllSafeBrowsingChecks()) {
     NotifyResult();
     return PROCEED;
   }
@@ -169,8 +163,7 @@ void SubresourceFilterSafeBrowsingActivationThrottle::OnCheckUrlResultOnUI(
 }
 
 void SubresourceFilterSafeBrowsingActivationThrottle::CheckCurrentUrl() {
-  if (!database_client_)
-    return;
+  DCHECK(database_client_);
   check_start_times_.push_back(base::TimeTicks::Now());
   check_results_.emplace_back();
   size_t id = check_results_.size() - 1;
@@ -184,20 +177,18 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult");
   // Compute the matched list and notify observers of the check result.
-  DCHECK(!database_client_ || !check_results_.empty());
+  DCHECK(!check_results_.empty());
   ActivationList matched_list = ActivationList::NONE;
   bool warning = false;
-  if (!check_results_.empty()) {
-    const auto& check_result = check_results_.back();
-    DCHECK(check_result.finished);
-    matched_list = GetListForThreatTypeAndMetadata(
-        check_result.threat_type, check_result.threat_metadata, &warning);
-    SubresourceFilterObserverManager::FromWebContents(
-        navigation_handle()->GetWebContents())
-        ->NotifySafeBrowsingCheckComplete(navigation_handle(),
-                                          check_result.threat_type,
-                                          check_result.threat_metadata);
-  }
+  const auto& check_result = check_results_.back();
+  DCHECK(check_result.finished);
+  matched_list = GetListForThreatTypeAndMetadata(
+      check_result.threat_type, check_result.threat_metadata, &warning);
+  SubresourceFilterObserverManager::FromWebContents(
+      navigation_handle()->GetWebContents())
+      ->NotifySafeBrowsingCheckComplete(navigation_handle(),
+                                        check_result.threat_type,
+                                        check_result.threat_metadata);
 
   Configuration matched_configuration;
   ActivationDecision activation_decision = ActivationDecision::UNKNOWN;

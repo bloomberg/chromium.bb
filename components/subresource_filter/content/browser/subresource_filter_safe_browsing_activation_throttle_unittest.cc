@@ -337,9 +337,6 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
     fake_safe_browsing_database_->RemoveAllBlacklistedUrls();
   }
 
-  // With a null database the throttle becomes pass-through.
-  void UsePassThroughThrottle() { fake_safe_browsing_database_ = nullptr; }
-
   void RunUntilIdle() {
     base::RunLoop().RunUntilIdle();
     test_io_task_runner_->RunUntilIdle();
@@ -472,26 +469,6 @@ class SubresourceFilterSafeBrowsingActivationThrottleScopeTest
   DISALLOW_COPY_AND_ASSIGN(
       SubresourceFilterSafeBrowsingActivationThrottleScopeTest);
 };
-
-TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
-       PassThroughThrottle) {
-  UsePassThroughThrottle();
-  SimulateNavigateAndCommit({GURL(kURL), GURL(kRedirectURL)}, main_rfh());
-  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-            *observer()->GetPageActivationForLastCommittedLoad());
-
-  scoped_configuration()->ResetConfiguration(
-      Configuration(ActivationLevel::ENABLED, ActivationScope::ALL_SITES));
-  SimulateNavigateAndCommit({GURL(kURL), GURL(kRedirectURL)}, main_rfh());
-  EXPECT_EQ(ActivationDecision::ACTIVATED,
-            *observer()->GetPageActivationForLastCommittedLoad());
-
-  scoped_configuration()->ResetConfiguration(
-      Configuration(ActivationLevel::ENABLED, ActivationScope::NO_SITES));
-  SimulateNavigateAndCommit({GURL(kURL), GURL(kRedirectURL)}, main_rfh());
-  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-            *observer()->GetPageActivationForLastCommittedLoad());
-}
 
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, NoConfigs) {
   scoped_configuration()->ResetConfiguration(std::vector<Configuration>());
