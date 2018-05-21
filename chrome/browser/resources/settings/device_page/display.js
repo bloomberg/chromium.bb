@@ -177,6 +177,9 @@ Polymer({
 
     /** @private */
     nightLightScheduleSubLabel_: String,
+
+    /** @private */
+    logicalResolutionText_: String,
   },
 
   observers: [
@@ -386,6 +389,9 @@ Polymer({
     this.currentSelectedModeIndex_ =
         this.getSelectedModeIndex_(selectedDisplay);
     this.set('selectedModePref_.value', this.currentSelectedModeIndex_);
+
+    this.updateLogicalResolutionText_(
+        /** @type {number} */ (this.selectedZoomPref_.value) / 100.0);
   },
 
   /**
@@ -566,6 +572,47 @@ Polymer({
     else if (mode.isNative)
       return this.i18n('displayResolutionTextNative', widthStr, heightStr);
     return this.i18n('displayResolutionText', widthStr, heightStr);
+  },
+
+  /**
+   * Updates the logical resolution text to be used for the display size section
+   * @param {number} zoomFactor Current zoom factor applied on the selected
+   *    display.
+   * @private
+   */
+  updateLogicalResolutionText_: function(zoomFactor) {
+    if (!this.showDisplayZoomSetting_ || !this.selectedDisplay.isInternal) {
+      this.logicalResolutionText_ = '';
+      return;
+    }
+    const mode = this.selectedDisplay.modes[
+        /** @type {number} */ (this.selectedModePref_.value)];
+    const deviceScaleFactor = mode.deviceScaleFactor;
+    const inverseZoomFactor = 1.0 / zoomFactor;
+    let logicalResolutionStrId = 'displayZoomLogicalResolutionText';
+    if (Math.abs(deviceScaleFactor - inverseZoomFactor) < 0.001)
+      logicalResolutionStrId = 'displayZoomNativeLogicalResolutionNativeText';
+    else if (Math.abs(inverseZoomFactor - 1.0) < 0.001)
+      logicalResolutionStrId = 'displayZoomLogicalResolutionDefaultText';
+    const widthStr =
+        Math.round(mode.widthInNativePixels / (deviceScaleFactor * zoomFactor))
+            .toString();
+    const heightStr =
+        Math.round(mode.heightInNativePixels / (deviceScaleFactor * zoomFactor))
+            .toString();
+    this.logicalResolutionText_ =
+        this.i18n(logicalResolutionStrId, widthStr, heightStr);
+  },
+
+  /**
+   * Handles the event where the display size slider is being dragged, i.e. the
+   * mouse or tap has not been released.
+   * @param {!Event} e
+   * @private
+   */
+  onDisplaySizeSliderDrag_: function(e) {
+    this.updateLogicalResolutionText_(
+        /** @type {number} */ (e.detail.value) / 100.0);
   },
 
   /**

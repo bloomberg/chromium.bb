@@ -7,6 +7,8 @@
  * display-size-slider is used to change the value of a pref via a slider
  * control. This specific slider is used instead of the settings-slider due to
  * its implementation of the tool tip that displays the current slider value.
+ * This component fires a |immediate-value-changed| event while the dragging is
+ * active. This event includes the immediate value of the slider.
  */
 
 /**
@@ -121,6 +123,10 @@ Polymer({
       this.setAttribute('aria-valuenow', this.ticks[this.index].value);
       this.setAttribute(
           'aria-valuetext', this.getLabelForIndex_(this.ticks, this.index));
+      if (this.dragging) {
+        this.fire(
+            'immediate-value-changed', {value: this.ticks[newIndex].value});
+      }
     }
   },
 
@@ -336,6 +342,7 @@ Polymer({
       eventOffsetFromOriginX = barWidth - eventOffsetFromOriginX;
     const tickWidth = barWidth / (this.ticks.length - 1);
     let newTickIndex = Math.round(eventOffsetFromOriginX / tickWidth);
+    this._setDragging(true);
     this.startIndex_ = this.index;
 
     // Update the index but dont update the pref until mouse is released.
@@ -347,6 +354,8 @@ Polymer({
    * @private
    */
   onBarUp_: function() {
+    if (this.dragging)
+      this._setDragging(false);
     if (this.startIndex_ != this.index)
       this.clampIndexAndUpdatePref_(this.index);
   },
@@ -480,5 +489,4 @@ Polymer({
     this.updateIndex_();
   },
 });
-
 })();

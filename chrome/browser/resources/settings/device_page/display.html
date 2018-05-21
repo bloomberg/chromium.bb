@@ -161,11 +161,16 @@
           <div class="start text-area layout vertical">
             <div>$i18n{displayZoomTitle}</div>
             <div class="secondary self-start">$i18n{displayZoomSublabel}</div>
+            <div class="secondary self-start"
+                hidden$="[[!logicalResolutionText_]]">
+              [[logicalResolutionText_]]
+            </div>
           </div>
           <display-size-slider id="displaySizeSlider"
               ticks="[[zoomValues_]]" pref="{{selectedZoomPref_}}"
               min-label="$i18n{displaySizeSliderMinLabel}"
-              max-label="$i18n{displaySizeSliderMaxLabel}">
+              max-label="$i18n{displaySizeSliderMaxLabel}"
+              on-immediate-value-changed="onDisplaySizeSliderDrag_">
           </display-size-slider>
         </div>
 
