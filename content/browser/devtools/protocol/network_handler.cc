@@ -1588,12 +1588,17 @@ void NetworkHandler::NavigationRequestWillBeSent(
 void NetworkHandler::RequestSent(const std::string& request_id,
                                  const std::string& loader_id,
                                  const network::ResourceRequest& request,
-                                 const char* initiator_type) {
+                                 const char* initiator_type,
+                                 const base::Optional<GURL>& initiator_url) {
   if (!enabled_)
     return;
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
   for (net::HttpRequestHeaders::Iterator it(request.headers); it.GetNext();)
     headers_dict->setString(it.name(), it.value());
+  std::unique_ptr<Network::Initiator> initiator =
+      Network::Initiator::Create().SetType(initiator_type).Build();
+  if (initiator_url)
+    initiator->SetUrl(initiator_url->spec());
   frontend_->RequestWillBeSent(
       request_id, loader_id, StripFragment(request.url),
       Network::Request::Create()
@@ -1605,8 +1610,7 @@ void NetworkHandler::RequestSent(const std::string& request_id,
           .Build(),
       base::TimeTicks::Now().ToInternalValue() /
           static_cast<double>(base::Time::kMicrosecondsPerSecond),
-      base::Time::Now().ToDoubleT(),
-      Network::Initiator::Create().SetType(initiator_type).Build(),
+      base::Time::Now().ToDoubleT(), std::move(initiator),
       std::unique_ptr<Network::Response>(),
       std::string(Page::ResourceTypeEnum::Other),
       Maybe<std::string>() /* frame_id */, request.has_user_gesture);

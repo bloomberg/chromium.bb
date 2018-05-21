@@ -108,7 +108,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       FrameTreeNode* frame_tree_node,
       const base::UnguessableToken& request_id,
       const base::UnguessableToken& loader_id,
-      const network::ResourceRequest& request);
+      const network::ResourceRequest& request,
+      const GURL& signed_exchange_url);
   static void OnSignedExchangeCertificateResponseReceived(
       FrameTreeNode* frame_tree_node,
       const base::UnguessableToken& request_id,
