@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/attribute_collection.h"
+#include "third_party/blink/renderer/core/dom/character_data.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_type.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -30,6 +31,7 @@
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_debugger_agent.h"
+#include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
@@ -38,11 +40,16 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
+#include "v8/include/v8-inspector.h"
 
 namespace blink {
 
 using protocol::Maybe;
 using protocol::Response;
+
+namespace DOMSnapshotAgentState {
+static const char kDomSnapshotAgentEnabled[] = "DOMSnapshotAgentEnabled";
+};
 
 namespace {
 
@@ -113,6 +120,78 @@ InspectorDOMSnapshotAgent::InspectorDOMSnapshotAgent(
       dom_debugger_agent_(dom_debugger_agent) {}
 
 InspectorDOMSnapshotAgent::~InspectorDOMSnapshotAgent() = default;
+
+bool InspectorDOMSnapshotAgent::Enabled() const {
+  return state_->booleanProperty(
+      DOMSnapshotAgentState::kDomSnapshotAgentEnabled, false);
+}
+
+void InspectorDOMSnapshotAgent::GetOriginUrl(String* origin_url_ptr,
+                                             const Node* node) {
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  ThreadDebugger* debugger = ThreadDebugger::From(isolate);
+  if (!isolate || !isolate->InContext() || !debugger) {
+    origin_url_ptr = nullptr;
+    return;
+  }
+  // First try searching in one frame, since grabbing full trace is
+  // expensive.
+  auto trace = debugger->GetV8Inspector()->captureStackTrace(false);
+  if (!trace) {
+    origin_url_ptr = nullptr;
+    return;
+  }
+  if (!trace->firstNonEmptySourceURL().length())
+    trace = debugger->GetV8Inspector()->captureStackTrace(true);
+  String origin_url = ToCoreString(trace->firstNonEmptySourceURL());
+  if (origin_url.IsEmpty()) {
+    // Fall back to document url.
+    origin_url = node->GetDocument().Url().GetString();
+  }
+  *origin_url_ptr = origin_url;
+}
+
+void InspectorDOMSnapshotAgent::CharacterDataModified(
+    CharacterData* character_data) {
+  String origin_url;
+  GetOriginUrl(&origin_url, character_data);
+  if (origin_url)
+    origin_url_map_->insert(DOMNodeIds::IdForNode(character_data), origin_url);
+}
+
+void InspectorDOMSnapshotAgent::DidInsertDOMNode(Node* node) {
+  String origin_url;
+  GetOriginUrl(&origin_url, node);
+  if (origin_url)
+    origin_url_map_->insert(DOMNodeIds::IdForNode(node), origin_url);
+}
+
+void InspectorDOMSnapshotAgent::InnerEnable() {
+  state_->setBoolean(DOMSnapshotAgentState::kDomSnapshotAgentEnabled, true);
+  origin_url_map_ = std::make_unique<OriginUrlMap>();
+  instrumenting_agents_->addInspectorDOMSnapshotAgent(this);
+}
+
+void InspectorDOMSnapshotAgent::Restore() {
+  if (!Enabled())
+    return;
+  InnerEnable();
+}
+
+Response InspectorDOMSnapshotAgent::enable() {
+  if (!Enabled())
+    InnerEnable();
+  return Response::OK();
+}
+
+Response InspectorDOMSnapshotAgent::disable() {
+  if (!Enabled())
+    return Response::Error("DOM snapshot agent hasn't been enabled.");
+  state_->setBoolean(DOMSnapshotAgentState::kDomSnapshotAgentEnabled, false);
+  origin_url_map_.reset();
+  instrumenting_agents_->removeInspectorDOMSnapshotAgent(this);
+  return Response::OK();
+}
 
 Response InspectorDOMSnapshotAgent::getSnapshot(
     std::unique_ptr<protocol::Array<String>> style_whitelist,
@@ -200,6 +279,17 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
           .setNodeValue(node_value)
           .setBackendNodeId(DOMNodeIds::IdForNode(node))
           .build();
+  if (origin_url_map_ &&
+      origin_url_map_->Contains(owned_value->getBackendNodeId())) {
+    String origin_url = origin_url_map_->at(owned_value->getBackendNodeId());
+    // In common cases, it is implicit that a child node would have the same
+    // origin url as its parent, so no need to mark twice.
+    if (!node->parentNode() || origin_url_map_->at(DOMNodeIds::IdForNode(
+                                   node->parentNode())) != origin_url) {
+      owned_value->setOriginURL(
+          origin_url_map_->at(owned_value->getBackendNodeId()));
+    }
+  }
   protocol::DOMSnapshot::DOMNode* value = owned_value.get();
   int index = dom_nodes_->length();
   dom_nodes_->addItem(std::move(owned_value));

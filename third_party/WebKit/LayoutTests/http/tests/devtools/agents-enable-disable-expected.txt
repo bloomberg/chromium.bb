@@ -3,6 +3,7 @@ Test that each agent could be enabled/disabled separately.
 Animation.disable finished successfully
 CSS.disable finished successfully
 DOM.disable finished successfully
+DOMSnapshot.disable finished with error DOM snapshot agent hasn't been enabled.
 DOMStorage.disable finished successfully
 Database.disable finished successfully
 Debugger.disable finished successfully
@@ -25,6 +26,9 @@ CSS.disable finished successfully
 
 DOM.enable finished successfully
 DOM.disable finished successfully
+
+DOMSnapshot.enable finished successfully
+DOMSnapshot.disable finished successfully
 
 DOMStorage.enable finished successfully
 DOMStorage.disable finished successfully

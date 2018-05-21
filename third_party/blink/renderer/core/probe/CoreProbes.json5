@@ -80,6 +80,12 @@
         "willSendXMLHttpOrFetchNetworkRequest",
       ]
     },
+    DOMSnapshot: {
+      probes: [
+        "characterDataModified",
+        "didInsertDOMNode",
+     ]
+    },
     Emulation: {
       probes: [
         "frameStartedLoading",
