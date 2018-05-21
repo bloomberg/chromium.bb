@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class Worklet;
+
 // Implementation of the "pending tasks struct":
 // https://drafts.css-houdini.org/worklets/#pending-tasks-struct
 //
@@ -22,7 +24,11 @@ namespace blink {
 class CORE_EXPORT WorkletPendingTasks final
     : public GarbageCollected<WorkletPendingTasks> {
  public:
-  WorkletPendingTasks(int counter, ScriptPromiseResolver*);
+  WorkletPendingTasks(Worklet*, ScriptPromiseResolver*);
+
+  // This must be called after the construction and before decrementing the
+  // counter.
+  void InitializeCounter(int counter);
 
   // Sets |counter_| to -1 and rejects the promise.
   void Abort();
@@ -30,7 +36,7 @@ class CORE_EXPORT WorkletPendingTasks final
   // Decrements |counter_| and resolves the promise if the counter becomes 0.
   void DecrementCounter();
 
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(resolver_); }
+  virtual void Trace(blink::Visitor*);
 
  private:
   // The number of pending tasks. -1 indicates these tasks are aborted and
@@ -38,6 +44,8 @@ class CORE_EXPORT WorkletPendingTasks final
   int counter_;
 
   Member<ScriptPromiseResolver> resolver_;
+
+  Member<Worklet> worklet_;
 };
 
 }  // namespace blink
