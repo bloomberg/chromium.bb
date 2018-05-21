@@ -54,9 +54,9 @@ base::Optional<SignedExchangeHeader> GenerateHeaderAndParse(
 
 }  // namespace
 
-TEST(SignedExchangeHeaderTest, ParseHeaderLength) {
+TEST(SignedExchangeHeaderTest, ParseEncodedLength) {
   constexpr struct {
-    uint8_t bytes[SignedExchangeHeader::kEncodedHeaderLengthInBytes];
+    uint8_t bytes[SignedExchangeHeader::kEncodedLengthInBytes];
     size_t expected;
   } kTestCases[] = {
       {{0x00, 0x00, 0x01}, 1u}, {{0x01, 0xe2, 0x40}, 123456u},
@@ -65,7 +65,7 @@ TEST(SignedExchangeHeaderTest, ParseHeaderLength) {
   int test_element_index = 0;
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(testing::Message() << "testing case " << test_element_index++);
-    EXPECT_EQ(SignedExchangeHeader::ParseHeadersLength(test_case.bytes),
+    EXPECT_EQ(SignedExchangeHeader::ParseEncodedLength(test_case.bytes),
               test_case.expected);
   }
 }
@@ -80,14 +80,14 @@ TEST(SignedExchangeHeaderTest, ParseGoldenFile) {
   ASSERT_TRUE(base::ReadFileToString(test_htxg_path, &contents));
   auto* contents_bytes = reinterpret_cast<const uint8_t*>(contents.data());
 
-  ASSERT_GT(contents.size(), SignedExchangeHeader::kEncodedHeaderLengthInBytes);
-  size_t header_size = SignedExchangeHeader::ParseHeadersLength(base::make_span(
-      contents_bytes, SignedExchangeHeader::kEncodedHeaderLengthInBytes));
+  ASSERT_GT(contents.size(), SignedExchangeHeader::kEncodedLengthInBytes);
+  size_t header_size = SignedExchangeHeader::ParseEncodedLength(base::make_span(
+      contents_bytes, SignedExchangeHeader::kEncodedLengthInBytes));
   ASSERT_GT(contents.size(),
-            SignedExchangeHeader::kEncodedHeaderLengthInBytes + header_size);
+            SignedExchangeHeader::kEncodedLengthInBytes + header_size);
 
   const auto cbor_bytes = base::make_span<const uint8_t>(
-      contents_bytes + SignedExchangeHeader::kEncodedHeaderLengthInBytes,
+      contents_bytes + SignedExchangeHeader::kEncodedLengthInBytes,
       header_size);
   const base::Optional<SignedExchangeHeader> header =
       SignedExchangeHeader::Parse(cbor_bytes, nullptr /* devtools_proxy */);
