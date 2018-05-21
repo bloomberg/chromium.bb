@@ -37,12 +37,14 @@ public class ShortcutHelperTest {
         String url12 = "http://www.google.com:8000/maps/au/index.html?q=maps#fragment/";
         String url13 = "https://www.google.com/maps/au/north/?q=maps#fragment";
         String url14 = "https://www.google.com/maps/au/north?q=maps#fragment";
+        String url15 = "https://www.google.com/a=b/c";
 
         String url2_scope = "https://www.google.com/";
         String url4_scope = "https://www.google.com/maps/";
         String url8_scope = "https://www.google.com/maps/au/";
         String url10_scope = "https://www.google.com/maps/au/north/";
         String url12_scope = "http://www.google.com:8000/maps/au/";
+        String url15_scope = "https://www.google.com/a=b/";
 
         assertEquals(url2_scope, ShortcutHelper.getScopeFromUrl(url1));
         assertEquals(url2_scope, ShortcutHelper.getScopeFromUrl(url2));
@@ -58,5 +60,6 @@ public class ShortcutHelperTest {
         assertEquals(url12_scope, ShortcutHelper.getScopeFromUrl(url12));
         assertEquals(url10_scope, ShortcutHelper.getScopeFromUrl(url13));
         assertEquals(url8_scope, ShortcutHelper.getScopeFromUrl(url14));
+        assertEquals(url15_scope, ShortcutHelper.getScopeFromUrl(url15));
     }
 }
