@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
@@ -58,7 +59,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Child view controllers.
 @property(nonatomic, strong) GridViewController* regularTabsViewController;
 @property(nonatomic, strong) GridViewController* incognitoTabsViewController;
-@property(nonatomic, strong) UIViewController* remoteTabsViewController;
 // Other UI components.
 @property(nonatomic, weak) UIScrollView* scrollView;
 @property(nonatomic, weak) UIView* scrollContentView;
@@ -108,7 +108,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (self = [super init]) {
     _regularTabsViewController = [[GridViewController alloc] init];
     _incognitoTabsViewController = [[GridViewController alloc] init];
-    _remoteTabsViewController = [[UIViewController alloc] init];
+    _remoteTabsViewController = [[RecentTabsTableViewController alloc] init];
   }
   return self;
 }
@@ -167,6 +167,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
   self.incognitoTabsViewController.gridView.contentInset = contentInset;
   self.regularTabsViewController.gridView.contentInset = contentInset;
+  self.remoteTabsViewController.tableView.contentInset = contentInset;
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -287,6 +288,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.incognitoTabsViewController.imageDataSource =
       incognitoTabsImageDataSource;
   _incognitoTabsImageDataSource = incognitoTabsImageDataSource;
+}
+
+- (id<RecentTabsTableConsumer>)remoteTabsConsumer {
+  return self.remoteTabsViewController;
 }
 
 #pragma mark - TabGridPaging
@@ -424,11 +429,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Adds the remote tabs view controller as a contained view controller, and
 // sets constraints.
 - (void)setupRemoteTabsViewController {
-  // TODO(crbug.com/804588) : Create remote tabs.
   UIView* contentView = self.scrollContentView;
   UIViewController* viewController = self.remoteTabsViewController;
   viewController.view.translatesAutoresizingMaskIntoConstraints = NO;
-  viewController.view.backgroundColor = [UIColor greenColor];
   [self addChildViewController:viewController];
   [contentView addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];

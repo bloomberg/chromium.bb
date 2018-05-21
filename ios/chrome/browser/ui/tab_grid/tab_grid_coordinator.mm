@@ -10,6 +10,8 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_adaptor.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
@@ -37,6 +39,8 @@
 @property(nonatomic, strong) TabGridMediator* regularTabsMediator;
 // Mediator for incognito Tabs.
 @property(nonatomic, strong) TabGridMediator* incognitoTabsMediator;
+// Mediator for remote Tabs.
+@property(nonatomic, strong) RecentTabsMediator* remoteTabsMediator;
 @end
 
 @implementation TabGridCoordinator
@@ -53,6 +57,7 @@
 @synthesize transitionHandler = _transitionHandler;
 @synthesize regularTabsMediator = _regularTabsMediator;
 @synthesize incognitoTabsMediator = _incognitoTabsMediator;
+@synthesize remoteTabsMediator = _remoteTabsMediator;
 
 - (instancetype)initWithWindow:(nullable UIWindow*)window
     applicationCommandEndpoint:
@@ -120,7 +125,7 @@
   mainViewController.transitioningDelegate = self.transitionHandler;
   mainViewController.tabPresentationDelegate = self;
   _mainViewController = mainViewController;
-  self.window.rootViewController = self.mainViewController;
+
   self.adaptor = [[TabGridAdaptor alloc] init];
   self.adaptor.tabGridViewController = self.mainViewController;
   self.adaptor.adaptedDispatcher =
@@ -139,15 +144,30 @@
   mainViewController.incognitoTabsDelegate = self.incognitoTabsMediator;
   mainViewController.regularTabsImageDataSource = self.regularTabsMediator;
   mainViewController.incognitoTabsImageDataSource = self.incognitoTabsMediator;
+
+  // TODO(crbug.com/845192) : Remove RecentTabsTableViewController dependency on
+  // ChromeBrowserState so that we don't need to expose the view controller.
+  mainViewController.remoteTabsViewController.browserState =
+      _regularTabModel.browserState;
+  self.remoteTabsMediator = [[RecentTabsMediator alloc] init];
+
   // Once the mediators are set up, stop keeping pointers to the tab models used
   // to initialize them.
   _regularTabModel = nil;
   _incognitoTabModel = nil;
+
+  self.window.rootViewController = self.mainViewController;
 }
 
 - (void)stop {
   [self.dispatcher stopDispatchingForProtocol:@protocol(BrowserCommands)];
   [self.dispatcher stopDispatchingForProtocol:@protocol(ApplicationCommands)];
+
+  // TODO(crbug.com/845192) : RecentTabsTableViewController behaves like a
+  // coordinator and that should be factored out.
+  [self.mainViewController.remoteTabsViewController dismissModals];
+  [self.remoteTabsMediator disconnect];
+  self.remoteTabsMediator = nil;
 }
 
 #pragma mark - ViewControllerSwapping

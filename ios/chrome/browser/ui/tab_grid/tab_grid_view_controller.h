@@ -13,6 +13,8 @@
 @protocol GridConsumer;
 @protocol GridCommands;
 @protocol GridImageDataSource;
+@protocol RecentTabsTableConsumer;
+@class RecentTabsTableViewController;
 
 // Delegate protocol for an object that can handle presenting ("opening") tabs
 // from the tab grid.
@@ -32,6 +34,7 @@
 // Consumers send updates from the model layer to the UI layer.
 @property(nonatomic, readonly) id<GridConsumer> regularTabsConsumer;
 @property(nonatomic, readonly) id<GridConsumer> incognitoTabsConsumer;
+@property(nonatomic, readonly) id<RecentTabsTableConsumer> remoteTabsConsumer;
 
 // Delegates send updates from the UI layer to the model layer.
 @property(nonatomic, weak) id<GridCommands> regularTabsDelegate;
@@ -40,6 +43,13 @@
 // Data sources provide lazy access to heavy-weight resources.
 @property(nonatomic, weak) id<GridImageDataSource> regularTabsImageDataSource;
 @property(nonatomic, weak) id<GridImageDataSource> incognitoTabsImageDataSource;
+
+// The view controller for remote tabs.
+// TODO(crbug.com/845192) : This was only exposed in the public interface so
+// that TabGridViewController does not need to know about model objects. The
+// model objects used in this view controller should be factored out.
+@property(nonatomic, strong)
+    RecentTabsTableViewController* remoteTabsViewController;
 
 @end
 
