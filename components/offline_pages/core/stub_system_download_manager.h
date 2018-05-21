@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OFFLINE_PAGES_CORE_SYSTEM_DOWNLOAD_MANAGER_STUB_H_
-#define COMPONENTS_OFFLINE_PAGES_CORE_SYSTEM_DOWNLOAD_MANAGER_STUB_H_
+#ifndef COMPONENTS_OFFLINE_PAGES_CORE_STUB_SYSTEM_DOWNLOAD_MANAGER_H_
+#define COMPONENTS_OFFLINE_PAGES_CORE_STUB_SYSTEM_DOWNLOAD_MANAGER_H_
 
 #include "components/offline_pages/core/system_download_manager.h"
 
 namespace offline_pages {
 
 // Stub replacement for the DownloadManager to be used by unit tests.
-class SystemDownloadManagerStub : public SystemDownloadManager {
+class StubSystemDownloadManager : public SystemDownloadManager {
  public:
-  SystemDownloadManagerStub(int64_t download_id, bool installed);
-  ~SystemDownloadManagerStub() override;
+  StubSystemDownloadManager(int64_t download_id, bool installed);
+  ~StubSystemDownloadManager() override;
 
   bool IsDownloadManagerInstalled() override;
 
@@ -51,4 +51,4 @@ class SystemDownloadManagerStub : public SystemDownloadManager {
 
 }  // namespace offline_pages
 
-#endif  // COMPONENTS_OFFLINE_PAGES_CORE_SYSTEM_DOWNLOAD_MANAGER_STUB_H_
+#endif  // COMPONENTS_OFFLINE_PAGES_CORE_STUB_SYSTEM_DOWNLOAD_MANAGER_H_
