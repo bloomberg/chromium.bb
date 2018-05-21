@@ -150,7 +150,6 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
 
   // Overridden from views::View.
   gfx::Size CalculatePreferredSize() const override;
-  gfx::Size GetMaximumSize() const override;
   int GetHeightForWidth(int width) const override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;

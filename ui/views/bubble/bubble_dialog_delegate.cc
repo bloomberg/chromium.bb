@@ -31,6 +31,22 @@ namespace views {
 
 namespace {
 
+// The frame view for bubble dialog widgets. These are not user-sizable so have
+// simplified logic for minimum and maximum sizes to avoid repeated calls to
+// CalculatePreferredSize().
+class BubbleDialogFrameView : public BubbleFrameView {
+ public:
+  explicit BubbleDialogFrameView(const gfx::Insets& title_margins)
+      : BubbleFrameView(title_margins, gfx::Insets()) {}
+
+  // View:
+  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
+  gfx::Size GetMaximumSize() const override { return gfx::Size(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BubbleDialogFrameView);
+};
+
 // Create a widget to host the bubble.
 Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
   Widget* bubble_widget = new Widget();
@@ -114,7 +130,7 @@ ClientView* BubbleDialogDelegateView::CreateClientView(Widget* widget) {
 
 NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
     Widget* widget) {
-  BubbleFrameView* frame = new BubbleFrameView(title_margins_, gfx::Insets());
+  BubbleFrameView* frame = new BubbleDialogFrameView(title_margins_);
 
   frame->set_footnote_margins(
       LayoutProvider::Get()->GetInsetsMetric(INSETS_DIALOG_SUBSECTION));
@@ -275,6 +291,17 @@ ax::mojom::Role BubbleDialogDelegateView::GetAccessibleWindowRole() const {
   // readers announce the contents of the bubble dialog as soon as it appears,
   // as long as we also fire |ax::mojom::Event::kAlert|.
   return ax::mojom::Role::kAlertDialog;
+}
+
+gfx::Size BubbleDialogDelegateView::GetMinimumSize() const {
+  // Note that although BubbleDialogFrameView will never invoke this, a subclass
+  // may override CreateNonClientFrameView() to provide a NonClientFrameView
+  // that does. See http://crbug.com/844359.
+  return gfx::Size();
+}
+
+gfx::Size BubbleDialogDelegateView::GetMaximumSize() const {
+  return gfx::Size();
 }
 
 void BubbleDialogDelegateView::OnNativeThemeChanged(
