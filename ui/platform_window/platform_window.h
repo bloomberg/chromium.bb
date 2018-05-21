@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/platform_window/platform_window_delegate.h"
 
 namespace gfx {
 class Point;
@@ -51,6 +52,7 @@ class PlatformWindow {
   virtual void Maximize() = 0;
   virtual void Minimize() = 0;
   virtual void Restore() = 0;
+  virtual PlatformWindowState GetPlatformWindowState() const = 0;
 
   virtual void SetCursor(PlatformCursor cursor) = 0;
 

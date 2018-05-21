@@ -199,13 +199,16 @@ void WaylandWindow::Maximize() {
 
 void WaylandWindow::Minimize() {
   DCHECK(xdg_surface_);
+  DCHECK(!is_minimizing_);
+  // Wayland doesn't explicitly say if a window is minimized. Instead, it
+  // notifies that the window is not activated. But there are many cases, when
+  // the window is not minimized and deactivated. In order to properly record
+  // the minimized state, mark this window as being minimized. And as soon as a
+  // configuration event comes, check if the window has been deactivated and has
+  // |is_minimizing_| set.
+  is_minimizing_ = true;
   xdg_surface_->SetMinimized();
   connection_->ScheduleFlush();
-
-  // Wayland doesn't say if a window is minimized. Handle this case manually
-  // here. We can track if the window was unminimized once wayland sends the
-  // window is activated, and the previous state was minimized.
-  state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
 }
 
 void WaylandWindow::Restore() {
@@ -217,6 +220,10 @@ void WaylandWindow::Restore() {
 
   xdg_surface_->UnSetMaximized();
   connection_->ScheduleFlush();
+}
+
+PlatformWindowState WaylandWindow::GetPlatformWindowState() const {
+  return state_;
 }
 
 void WaylandWindow::SetCursor(PlatformCursor cursor) {
@@ -271,14 +278,22 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
                                            bool is_activated) {
   // Propagate the window state information to the client.
   PlatformWindowState old_state = state_;
-  if (IsMinimized() && !is_activated)
+  // There are two cases, which must be handled for the minimized state.
+  // The first one is the case, when the surface goes into the minimized state
+  // (check comment in WaylandWindow::Minimize), and the second case is when the
+  // surface still has been minimized, but another cofiguration event with
+  // !is_activated comes. For this, check if the WaylandWindow has been
+  // minimized before and !is_activated is sent.
+  if ((is_minimizing_ || IsMinimized()) && !is_activated) {
+    is_minimizing_ = false;
     state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
-  else if (is_fullscreen)
+  } else if (is_fullscreen) {
     state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
-  else if (is_maximized)
+  } else if (is_maximized) {
     state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_MAXIMIZED;
-  else
+  } else {
     state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL;
+  }
 
   // Update state before notifying delegate.
   const bool did_active_change = is_active_ != is_activated;

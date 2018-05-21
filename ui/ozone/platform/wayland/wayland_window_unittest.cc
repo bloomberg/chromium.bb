@@ -128,15 +128,28 @@ TEST_P(WaylandWindowTest, Minimize) {
   Sync();
 
   EXPECT_CALL(*GetXdgSurface(), SetMinimized());
-  // The state of the window must retain minimized, which means we are not
-  // notified about the state, because 1) minimized state was set manually
-  // in WaylandWindow, and it has been confirmed in a back call from the server,
-  // which resulted in the same state as before.
-  EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(0);
+  // Wayland compositor doesn't notify clients about minimized state, but rather
+  // if a window is not activated. Thus, a WaylandWindow marks itself as being
+  // minimized and as soon as a configuration event with not activated state
+  // comes, its state is changed to minimized. This EXPECT_CALL ensures this
+  // behaviour.
+  EXPECT_CALL(delegate_,
+              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_MINIMIZED)));
   window_->Minimize();
   // Reinitialize wl_array, which removes previous old states.
   wl_array_init(&states);
   SendConfigureEvent(0, 0, 2, &states);
+  Sync();
+
+  // Send one additional empty configuration event (which means the surface is
+  // not maximized, fullscreen or activated) to ensure, WaylandWindow stays in
+  // the same minimized state and doesn't notify its delegate.
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(0);
+  SendConfigureEvent(0, 0, 3, &states);
+  Sync();
+
+  // And one last time to ensure the behaviour.
+  SendConfigureEvent(0, 0, 4, &states);
   Sync();
 }
 

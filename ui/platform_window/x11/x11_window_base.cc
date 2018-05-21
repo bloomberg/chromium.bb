@@ -257,6 +257,10 @@ void X11WindowBase::Restore() {
   }
 }
 
+PlatformWindowState X11WindowBase::GetPlatformWindowState() const {
+  return state_;
+}
+
 void X11WindowBase::MoveCursorTo(const gfx::Point& location) {
   XWarpPointer(xdisplay_, x11::None, xroot_window_, 0, 0, 0, 0,
                bounds_.x() + location.x(), bounds_.y() + location.y());
@@ -403,10 +407,6 @@ void X11WindowBase::OnWMStateUpdated() {
 
   if (old_state != state_)
     delegate_->OnWindowStateChanged(state_);
-}
-
-bool X11WindowBase::IsMinimized() const {
-  return state_ == ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
 }
 
 bool X11WindowBase::IsMaximized() const {
