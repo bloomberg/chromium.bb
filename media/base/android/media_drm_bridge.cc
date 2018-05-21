@@ -332,22 +332,23 @@ std::vector<uint8_t> MediaDrmBridge::GetUUID(const std::string& key_system) {
 // static
 scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
     const std::vector<uint8_t>& scheme_uuid,
+    const std::string& origin_id,
     SecurityLevel security_level,
+    bool requires_media_crypto,
     std::unique_ptr<MediaDrmStorageBridge> storage,
     const CreateFetcherCB& create_fetcher_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
-    const SessionExpirationUpdateCB& session_expiration_update_cb,
-    const std::string& origin_id) {
+    const SessionExpirationUpdateCB& session_expiration_update_cb) {
   // All paths requires the MediaDrmApis.
   DCHECK(AreMediaDrmApisAvailable());
   DCHECK(!scheme_uuid.empty());
 
   scoped_refptr<MediaDrmBridge> media_drm_bridge(new MediaDrmBridge(
-      scheme_uuid, origin_id, security_level, std::move(storage),
-      create_fetcher_cb, session_message_cb, session_closed_cb,
-      session_keys_change_cb, session_expiration_update_cb));
+      scheme_uuid, origin_id, security_level, requires_media_crypto,
+      std::move(storage), create_fetcher_cb, session_message_cb,
+      session_closed_cb, session_keys_change_cb, session_expiration_update_cb));
 
   if (media_drm_bridge->j_media_drm_.is_null())
     return nullptr;
@@ -364,19 +365,21 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
   DVLOG(1) << __func__;
 
   // Sessions won't be used so decoding capability is not required.
-  if (!AreMediaDrmApisAvailable()) {
+  if (!AreMediaDrmApisAvailable())
     return nullptr;
-  }
 
   UUID scheme_uuid = GetKeySystemManager()->GetUUID(key_system);
-  if (scheme_uuid.empty()) {
+  if (scheme_uuid.empty())
     return nullptr;
-  }
+
+  // When created without session support, MediaCrypto is not needed.
+  const bool requires_media_crypto = false;
 
   return CreateInternal(
-      scheme_uuid, security_level, std::make_unique<MediaDrmStorageBridge>(),
-      create_fetcher_cb, SessionMessageCB(), SessionClosedCB(),
-      SessionKeysChangeCB(), SessionExpirationUpdateCB(), origin_id);
+      scheme_uuid, origin_id, security_level, requires_media_crypto,
+      std::make_unique<MediaDrmStorageBridge>(), create_fetcher_cb,
+      SessionMessageCB(), SessionClosedCB(), SessionKeysChangeCB(),
+      SessionExpirationUpdateCB());
 }
 
 void MediaDrmBridge::SetServerCertificate(
@@ -807,6 +810,7 @@ MediaDrmBridge::MediaDrmBridge(
     const std::vector<uint8_t>& scheme_uuid,
     const std::string& origin_id,
     SecurityLevel security_level,
+    bool requires_media_crypto,
     std::unique_ptr<MediaDrmStorageBridge> storage,
     const CreateFetcherCB& create_fetcher_cb,
     const SessionMessageCB& session_message_cb,
@@ -854,7 +858,7 @@ MediaDrmBridge::MediaDrmBridge(
   // Note: OnMediaCryptoReady() could be called in this call.
   j_media_drm_.Reset(Java_MediaDrmBridge_create(
       env, j_scheme_uuid, j_security_origin, j_security_level,
-      reinterpret_cast<intptr_t>(this),
+      requires_media_crypto, reinterpret_cast<intptr_t>(this),
       reinterpret_cast<intptr_t>(storage_.get())));
 }
 

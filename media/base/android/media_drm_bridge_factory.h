@@ -41,9 +41,16 @@ class MEDIA_EXPORT MediaDrmBridgeFactory : public CdmFactory {
               const CdmCreatedCB& cdm_created_cb) final;
 
  private:
+  // Callback for Initialize() on |storage_|.
   void OnStorageInitialized();
-  scoped_refptr<MediaDrmBridge> CreateMediaDrmBridge(
-      const std::string& origin_id);
+
+  // Creates |media_drm_bridge_|, and call SetMediaCryptoReadyCB() to wait for
+  // MediaCrypto to be ready.
+  void CreateMediaDrmBridge(const std::string& origin_id);
+
+  // Callback for SetMediaCryptoReadyCB() on |media_drm_bridge_|.
+  void OnMediaCryptoReady(JavaObjectPtr media_crypto,
+                          bool requires_secure_video_codec);
 
   CreateFetcherCB create_fetcher_cb_;
   CreateStorageCB create_storage_cb_;
@@ -63,6 +70,7 @@ class MEDIA_EXPORT MediaDrmBridgeFactory : public CdmFactory {
   CdmCreatedOnceCB cdm_created_cb_;
 
   std::unique_ptr<MediaDrmStorageBridge> storage_;
+  scoped_refptr<MediaDrmBridge> media_drm_bridge_;
 
   base::WeakPtrFactory<MediaDrmBridgeFactory> weak_factory_;
 
