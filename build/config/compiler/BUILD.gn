@@ -485,6 +485,19 @@ config("compiler") {
     cflags += [ "-fmerge-all-constants" ]
   }
 
+  if (use_lld) {
+    # TODO(thakis): Make the driver pass --color-diagnostics to the linker
+    # if -fcolor-diagnostics is passed to it, and pass -fcolor-diagnostics
+    # in ldflags instead.
+    if (is_win) {
+      # On Windows, we call the linker directly, instead of calling it through
+      # the driver.
+      ldflags += [ "--color-diagnostics" ]
+    } else {
+      ldflags += [ "-Wl,--color-diagnostics" ]
+    }
+  }
+
   if (is_clang && !is_nacl && current_toolchain == host_toolchain &&
       target_os != "chromeos") {
     cflags += [
