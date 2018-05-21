@@ -192,4 +192,27 @@ TEST_F(WebMStreamParserTest, ColourElement) {
   EXPECT_EQ(mmdata.luminance_min, 30);
 }
 
+TEST_F(WebMStreamParserTest, ColourElementWithUnspecifiedRange) {
+  EXPECT_MEDIA_LOG(testing::HasSubstr("Estimating WebM block duration"))
+      .Times(testing::AnyNumber());
+  StreamParser::InitParameters params(kInfiniteDuration);
+  params.detected_audio_track_count = 0;
+  params.detected_video_track_count = 1;
+  params.detected_text_track_count = 0;
+  ParseWebMFile("colour_unspecified_range.webm", params);
+  EXPECT_EQ(media_tracks_->tracks().size(), 1u);
+
+  const auto& video_track = media_tracks_->tracks()[0];
+  EXPECT_EQ(video_track->type(), MediaTrack::Video);
+
+  const VideoDecoderConfig& video_config =
+      media_tracks_->getVideoConfig(video_track->bytestream_track_id());
+
+  VideoColorSpace expected_color_space(VideoColorSpace::PrimaryID::SMPTEST428_1,
+                                       VideoColorSpace::TransferID::LOG,
+                                       VideoColorSpace::MatrixID::RGB,
+                                       gfx::ColorSpace::RangeID::INVALID);
+  EXPECT_EQ(video_config.color_space_info(), expected_color_space);
+}
+
 }  // namespace media
