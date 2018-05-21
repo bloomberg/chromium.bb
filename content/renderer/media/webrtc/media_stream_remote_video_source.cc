@@ -94,21 +94,22 @@ RemoteVideoSourceDelegate::~RemoteVideoSourceDelegate() {
 
 namespace {
 void DoNothing(const scoped_refptr<rtc::RefCountInterface>& ref) {}
-}  // anonymous
+}  // namespace
 
 void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     const webrtc::VideoFrame& incoming_frame) {
-  const base::TimeDelta incoming_timestamp = base::TimeDelta::FromMicroseconds(
-      incoming_frame.timestamp_us());
+  const bool render_immediately = incoming_frame.timestamp_us() == 0;
+  const base::TimeDelta incoming_timestamp =
+      render_immediately
+          ? base::TimeTicks::Now() - base::TimeTicks()
+          : base::TimeDelta::FromMicroseconds(incoming_frame.timestamp_us());
   const base::TimeTicks render_time =
-      base::TimeTicks() + incoming_timestamp + time_diff_;
-
-  CHECK_NE(media::kNoTimestamp, incoming_timestamp);
+      render_immediately ? base::TimeTicks() + incoming_timestamp
+                         : base::TimeTicks() + incoming_timestamp + time_diff_;
   if (start_timestamp_ == media::kNoTimestamp)
     start_timestamp_ = incoming_timestamp;
   const base::TimeDelta elapsed_timestamp =
       incoming_timestamp - start_timestamp_;
-
   TRACE_EVENT2("webrtc", "RemoteVideoSourceDelegate::RenderFrame",
                "Ideal Render Instant", render_time.ToInternalValue(),
                "Timestamp", elapsed_timestamp.InMicroseconds());
@@ -165,8 +166,12 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
         media::VideoFrameMetadata::ROTATION,
         WebRTCToMediaVideoRotation(incoming_frame.rotation()));
   }
-  video_frame->metadata()->SetTimeTicks(
-      media::VideoFrameMetadata::REFERENCE_TIME, render_time);
+  // Run render smoothness algorithm only when we don't have to render
+  // immediately.
+  if (!render_immediately) {
+    video_frame->metadata()->SetTimeTicks(
+        media::VideoFrameMetadata::REFERENCE_TIME, render_time);
+  }
 
   io_task_runner_->PostTask(
       FROM_HERE,
