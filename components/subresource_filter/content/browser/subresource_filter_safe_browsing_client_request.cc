@@ -46,7 +46,13 @@ SubresourceFilterSafeBrowsingClientRequest::
 void SubresourceFilterSafeBrowsingClientRequest::Start(const GURL& url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   start_time_ = base::TimeTicks::Now();
+
+  // Just return SAFE if the database is not supported.
+  // TODO(csharrison): Remove CanCheckSubresourceFilter now that V4 has fully
+  // shipped.
   bool synchronous_finish =
+      !database_manager_->IsSupported() ||
+      !database_manager_->CanCheckSubresourceFilter() ||
       database_manager_->CheckUrlForSubresourceFilter(url, this);
   if (synchronous_finish) {
     request_completed_ = true;

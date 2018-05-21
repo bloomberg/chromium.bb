@@ -37,21 +37,6 @@
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeSubresourceFilterClient);
 
-namespace {
-
-scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> GetDatabaseManager() {
-  safe_browsing::SafeBrowsingService* safe_browsing_service =
-      g_browser_process->safe_browsing_service();
-  bool has_supported_manager =
-      safe_browsing_service &&
-      safe_browsing_service->database_manager()->IsSupported() &&
-      safe_browsing_service->database_manager()->CanCheckSubresourceFilter();
-  return has_supported_manager ? safe_browsing_service->database_manager()
-                               : nullptr;
-}
-
-}  // namespace
-
 ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {
@@ -69,14 +54,16 @@ ChromeSubresourceFilterClient::~ChromeSubresourceFilterClient() {}
 void ChromeSubresourceFilterClient::MaybeAppendNavigationThrottles(
     content::NavigationHandle* navigation_handle,
     std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles) {
-  if (navigation_handle->IsInMainFrame()) {
+  safe_browsing::SafeBrowsingService* safe_browsing_service =
+      g_browser_process->safe_browsing_service();
+  if (navigation_handle->IsInMainFrame() && safe_browsing_service) {
     throttles->push_back(
         std::make_unique<subresource_filter::
                              SubresourceFilterSafeBrowsingActivationThrottle>(
             navigation_handle, this,
             content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::IO),
-            GetDatabaseManager()));
+            safe_browsing_service->database_manager()));
   }
 
   auto* driver_factory =
