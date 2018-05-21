@@ -207,31 +207,42 @@ bool SVGImage::HasIntrinsicDimensions() const {
   return !ConcreteObjectSize(FloatSize()).IsEmpty();
 }
 
-FloatSize SVGImage::ConcreteObjectSize(
-    const FloatSize& default_object_size) const {
+bool SVGImage::HasIntrinsicSizingInfo() const {
+  SVGSVGElement* svg = SvgRootElement(page_.Get());
+  return svg && svg->GetLayoutObject();
+}
+
+bool SVGImage::GetIntrinsicSizingInfo(
+    IntrinsicSizingInfo& intrinsic_sizing_info) const {
   SVGSVGElement* svg = SvgRootElement(page_.Get());
   if (!svg)
-    return FloatSize();
+    return false;
 
   LayoutSVGRoot* layout_object = ToLayoutSVGRoot(svg->GetLayoutObject());
   if (!layout_object)
+    return false;
+
+  layout_object->ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
+  return true;
+}
+
+FloatSize SVGImage::ConcreteObjectSize(
+    const FloatSize& default_object_size) const {
+  IntrinsicSizingInfo intrinsic_sizing_info;
+  if (!GetIntrinsicSizingInfo(intrinsic_sizing_info))
     return FloatSize();
 
-  IntrinsicSizingInfo intrinsic_sizing_info;
-  layout_object->ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
-
   // https://www.w3.org/TR/css3-images/#default-sizing
-
   if (intrinsic_sizing_info.has_width && intrinsic_sizing_info.has_height)
     return intrinsic_sizing_info.size;
 
+  // We're not using an intrinsic aspect ratio to resolve a missing
+  // intrinsic width or height when preserveAspectRatio is none.
+  // (Ref: crbug.com/584172)
+  SVGSVGElement* svg = SvgRootElement(page_.Get());
   if (svg->preserveAspectRatio()->CurrentValue()->Align() ==
-      SVGPreserveAspectRatio::kSvgPreserveaspectratioNone) {
-    // TODO(davve): The intrinsic aspect ratio is not used to resolve a missing
-    // intrinsic width or height when preserveAspectRatio is none. It's unclear
-    // whether this is correct. See crbug.com/584172.
+      SVGPreserveAspectRatio::kSvgPreserveaspectratioNone)
     return default_object_size;
-  }
 
   if (intrinsic_sizing_info.has_width) {
     if (intrinsic_sizing_info.aspect_ratio.IsEmpty())
@@ -540,13 +551,6 @@ void SVGImage::DrawInternal(PaintCanvas* canvas,
   // animations if preceded by calls to resetAnimation or stopAnimation
   // respectively.
   StartAnimation();
-}
-
-LayoutReplaced* SVGImage::EmbeddedReplacedContent() const {
-  SVGSVGElement* root_element = SvgRootElement(page_.Get());
-  if (!root_element)
-    return nullptr;
-  return ToLayoutSVGRoot(root_element->GetLayoutObject());
 }
 
 void SVGImage::ScheduleTimelineRewind() {
