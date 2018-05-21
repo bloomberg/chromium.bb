@@ -72,14 +72,16 @@ public class OriginVerifier {
     /** Small helper class to post a result of origin verification. */
     private class VerifiedCallback implements Runnable {
         private final boolean mResult;
+        private final Boolean mOnline;
 
-        public VerifiedCallback(boolean result) {
-            this.mResult = result;
+        public VerifiedCallback(boolean result, Boolean online) {
+            mResult = result;
+            mOnline = online;
         }
 
         @Override
         public void run() {
-            originVerified(mResult);
+            originVerified(mResult, mOnline);
         }
     }
 
@@ -146,8 +148,12 @@ public class OriginVerifier {
          * @param packageName The package name for the origin verification query for this result.
          * @param origin The origin that was declared on the query for this result.
          * @param verified Whether the given origin was verified to correspond to the given package.
+         * @param online Whether the device could connect to the internet to perform verification.
+         *               Will be {@code null} if internet was not required for check (eg
+         *               verification had already been attempted this Chrome lifetime and the
+         *               result was cached or the origin was not https).
          */
-        void onOriginVerified(String packageName, Origin origin, boolean verified);
+        void onOriginVerified(String packageName, Origin origin, boolean verified, Boolean online);
     }
 
     /**
@@ -182,7 +188,7 @@ public class OriginVerifier {
         if (!TextUtils.isEmpty(disableDalUrl)
                 && mOrigin.equals(new Origin(disableDalUrl))) {
             Log.i(TAG, "Verification skipped for %s due to command line flag.", origin);
-            ThreadUtils.runOnUiThread(new VerifiedCallback(true));
+            ThreadUtils.runOnUiThread(new VerifiedCallback(true, null));
             return;
         }
 
@@ -192,7 +198,7 @@ public class OriginVerifier {
             Log.i(TAG, "Verification failed for %s as not https.", origin);
             BrowserServicesMetrics.recordVerificationResult(
                     BrowserServicesMetrics.VERIFICATION_RESULT_HTTPS_FAILURE);
-            ThreadUtils.runOnUiThread(new VerifiedCallback(false));
+            ThreadUtils.runOnUiThread(new VerifiedCallback(false, null));
             return;
         }
 
@@ -201,7 +207,7 @@ public class OriginVerifier {
             Log.i(TAG, "Verification succeeded for %s, it was cached.", origin);
             BrowserServicesMetrics.recordVerificationResult(
                     BrowserServicesMetrics.VERIFICATION_RESULT_CACHED_SUCCESS);
-            ThreadUtils.runOnUiThread(new VerifiedCallback(true));
+            ThreadUtils.runOnUiThread(new VerifiedCallback(true, null));
             return;
         }
         if (mNativeOriginVerifier != 0) cleanUp();
@@ -230,7 +236,7 @@ public class OriginVerifier {
         if (!requestSent) {
             BrowserServicesMetrics.recordVerificationResult(
                     BrowserServicesMetrics.VERIFICATION_RESULT_REQUEST_FAILURE);
-            ThreadUtils.runOnUiThread(new VerifiedCallback(false));
+            ThreadUtils.runOnUiThread(new VerifiedCallback(false, false));
         }
     }
 
@@ -307,12 +313,12 @@ public class OriginVerifier {
             case RelationshipCheckResult.SUCCESS:
                 BrowserServicesMetrics.recordVerificationResult(
                         BrowserServicesMetrics.VERIFICATION_RESULT_ONLINE_SUCCESS);
-                originVerified(true);
+                originVerified(true, true);
                 break;
             case RelationshipCheckResult.FAILURE:
                 BrowserServicesMetrics.recordVerificationResult(
                         BrowserServicesMetrics.VERIFICATION_RESULT_ONLINE_FAILURE);
-                originVerified(false);
+                originVerified(false, true);
                 break;
             case RelationshipCheckResult.NO_CONNECTION:
                 Log.i(TAG, "Device is offline, checking saved verification result.");
@@ -324,7 +330,7 @@ public class OriginVerifier {
     }
 
     /** Deal with the result of an Origin check. Will be called on UI Thread. */
-    private void originVerified(boolean originVerified) {
+    private void originVerified(boolean originVerified, Boolean online) {
         Log.i(TAG, "Verification %s.", (originVerified ? "succeeded" : "failed"));
         if (originVerified) {
             addVerifiedOriginForPackage(mPackageName, mOrigin, mRelation);
@@ -334,7 +340,9 @@ public class OriginVerifier {
         // successfully verified result that fails on a subsequent check.
         saveVerificationResult(originVerified);
 
-        if (mListener != null) mListener.onOriginVerified(mPackageName, mOrigin, originVerified);
+        if (mListener != null) {
+            mListener.onOriginVerified(mPackageName, mOrigin, originVerified, online);
+        }
         cleanUp();
     }
 
@@ -369,7 +377,7 @@ public class OriginVerifier {
                     ? BrowserServicesMetrics.VERIFICATION_RESULT_OFFLINE_SUCCESS
                     : BrowserServicesMetrics.VERIFICATION_RESULT_OFFLINE_FAILURE);
 
-            originVerified(verified);
+            originVerified(verified, false);
         }
     }
 

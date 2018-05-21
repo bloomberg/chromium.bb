@@ -190,7 +190,8 @@ public class PostMessageHandler
     }
 
     @Override
-    public void onOriginVerified(String packageName, Origin origin, boolean result) {
+    public void onOriginVerified(String packageName, Origin origin, boolean result,
+            Boolean online) {
         if (!result) return;
         initializeWithPostMessageUri(
                 OriginVerifier.getPostMessageUriFromVerifiedOrigin(packageName, origin));

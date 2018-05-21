@@ -51,7 +51,8 @@ public class OriginVerifierTest {
 
     private class TestOriginVerificationListener implements OriginVerificationListener {
         @Override
-        public void onOriginVerified(String packageName, Origin origin, boolean verified) {
+        public void onOriginVerified(String packageName, Origin origin, boolean verified,
+                Boolean online) {
             mLastPackageName = packageName;
             mLastOrigin = origin;
             mLastVerified = verified;
