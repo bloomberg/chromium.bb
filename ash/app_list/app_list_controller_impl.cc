@@ -17,10 +17,12 @@
 #include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "extensions/common/constants.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
@@ -57,11 +59,9 @@ namespace ash {
 // TODO(hejq): Get rid of AppListPresenterDelegateFactory and pass in
 // ash::AppListPresenterDelegate directly.
 AppListControllerImpl::AppListControllerImpl()
-    : view_delegate_(this),
-      presenter_(
-          std::make_unique<AppListPresenterDelegateFactory>(
-              std::make_unique<ViewDelegateFactoryImpl>(&view_delegate_)),
-          this),
+    : presenter_(std::make_unique<AppListPresenterDelegateFactory>(
+                     std::make_unique<ViewDelegateFactoryImpl>(this)),
+                 this),
       keyboard_observer_(this),
       is_home_launcher_enabled_(app_list::features::IsHomeLauncherEnabled()) {
   model_.AddObserver(this);
@@ -101,6 +101,14 @@ void AppListControllerImpl::SetClient(mojom::AppListClientPtr client_ptr) {
 void AppListControllerImpl::BindRequest(
     mojom::AppListControllerRequest request) {
   bindings_.AddBinding(this, std::move(request));
+}
+
+app_list::AppListModel* AppListControllerImpl::GetModel() {
+  return &model_;
+}
+
+app_list::SearchModel* AppListControllerImpl::GetSearchModel() {
+  return &search_model_;
 }
 
 void AppListControllerImpl::AddItem(AppListItemMetadataPtr item_data) {
@@ -511,6 +519,11 @@ void AppListControllerImpl::OnTabletModeEnded() {
   DismissAppList();
 }
 
+void AppListControllerImpl::OnWallpaperColorsChanged() {
+  if (IsVisible())
+    presenter_.GetView()->OnWallpaperColorsChanged();
+}
+
 void AppListControllerImpl::OnKeyboardAvailabilityChanged(
     const bool is_available) {
   onscreen_keyboard_shown_ = is_available;
@@ -539,12 +552,35 @@ bool AppListControllerImpl::IsHomeLauncherEnabledInTabletMode() const {
 // Methods of |client_|:
 
 void AppListControllerImpl::StartSearch(const base::string16& raw_query) {
+  last_raw_query_ = raw_query;
   if (client_)
     client_->StartSearch(raw_query);
 }
 
 void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
                                              int event_flags) {
+  app_list::SearchResult* result = search_model_.FindSearchResult(result_id);
+  if (!result)
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION(app_list::kSearchResultOpenDisplayTypeHistogram,
+                            result->display_type(),
+                            ash::SearchResultDisplayType::kLast);
+
+  // Record the search metric if the SearchResult is not a suggested app.
+  if (result->display_type() != ash::SearchResultDisplayType::kRecommendation) {
+    // Count AppList.Search here because it is composed of search + action.
+    base::RecordAction(base::UserMetricsAction("AppList_OpenSearchResult"));
+
+    UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLength,
+                             last_raw_query_.size());
+
+    if (result->distance_from_origin() >= 0) {
+      UMA_HISTOGRAM_COUNTS_100(app_list::kSearchResultDistanceFromOrigin,
+                               result->distance_from_origin());
+    }
+  }
+
   if (client_)
     client_->OpenSearchResult(result_id, event_flags);
 }
@@ -584,6 +620,11 @@ void AppListControllerImpl::ViewClosing() {
     client_->ViewClosing();
 }
 
+void AppListControllerImpl::GetWallpaperProminentColors(
+    GetWallpaperProminentColorsCallback callback) {
+  Shell::Get()->wallpaper_controller()->GetWallpaperColors(std::move(callback));
+}
+
 void AppListControllerImpl::ActivateItem(const std::string& id,
                                          int event_flags) {
   if (client_)
@@ -602,6 +643,12 @@ void AppListControllerImpl::ContextMenuItemSelected(const std::string& id,
                                                     int event_flags) {
   if (client_)
     client_->ContextMenuItemSelected(id, command_id, event_flags);
+}
+
+void AppListControllerImpl::ShowWallpaperContextMenu(
+    const gfx::Point& onscreen_location,
+    ui::MenuSourceType source_type) {
+  ShellPort::Get()->ShowContextMenu(onscreen_location, source_type);
 }
 
 void AppListControllerImpl::OnVisibilityChanged(bool visible) {

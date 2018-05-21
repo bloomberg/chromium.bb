@@ -248,15 +248,12 @@ AppListView::AppListView(AppListViewDelegate* delegate)
   CHECK(delegate);
 
   display_observer_.Add(display::Screen::GetScreen());
-  delegate_->AddObserver(this);
   // Enable arrow key in FocusManager. Arrow left/right and up/down triggers
   // the same focus movement as tab/shift+tab.
   views::FocusManager::set_arrow_key_traversal_enabled(true);
 }
 
 AppListView::~AppListView() {
-  delegate_->RemoveObserver(this);
-
   animation_observer_.reset();
   // Remove child views first to ensure no remaining dependencies on delegate_.
   RemoveAllChildViews(true);
@@ -307,7 +304,7 @@ void AppListView::ShowWhenReady() {
 
 void AppListView::Dismiss() {
   app_list_main_view_->Close();
-  delegate_->Dismiss();
+  delegate_->DismissAppList();
   SetState(AppListViewState::CLOSED);
   GetWidget()->Deactivate();
 }
@@ -1058,6 +1055,11 @@ void AppListView::OnTabletModeChanged(bool started) {
   }
 }
 
+void AppListView::OnWallpaperColorsChanged() {
+  SetBackgroundShieldColor();
+  search_box_view_->OnWallpaperColorsChanged();
+}
+
 bool AppListView::HandleScroll(int offset, ui::EventType type) {
   // Ignore 0-offset events to prevent spurious dismissal, see crbug.com/806338
   // The system generates 0-offset ET_SCROLL_FLING_CANCEL events during simple
@@ -1385,10 +1387,6 @@ float AppListView::GetAppListBackgroundOpacityDuringDragging() {
 void AppListView::GetWallpaperProminentColors(
     AppListViewDelegate::GetWallpaperProminentColorsCallback callback) {
   delegate_->GetWallpaperProminentColors(std::move(callback));
-}
-
-void AppListView::OnWallpaperColorsChanged() {
-  SetBackgroundShieldColor();
 }
 
 void AppListView::SetBackgroundShieldColor() {

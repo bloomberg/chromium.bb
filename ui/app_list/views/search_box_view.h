@@ -9,8 +9,8 @@
 
 #include "ash/app_list/model/search/search_box_model_observer.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_view_delegate.h"
-#include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/chromeos/search_box/search_box_view_base.h"
 
 namespace views {
@@ -29,8 +29,7 @@ class SearchModel;
 // Textfield. The text and selection model part could be set to change the
 // contents and selection model of the Textfield.
 class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
-                                      public SearchBoxModelObserver,
-                                      public AppListViewDelegateObserver {
+                                      public SearchBoxModelObserver {
  public:
   SearchBoxView(search_box::SearchBoxViewDelegate* delegate,
                 AppListViewDelegate* view_delegate,
@@ -72,6 +71,9 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   // Updates the opacity of the searchbox.
   void UpdateOpacity();
 
+  // Called when the wallpaper colors change.
+  void OnWallpaperColorsChanged();
+
  private:
   // Gets the wallpaper prominent colors.
   void GetWallpaperProminentColors(
@@ -95,9 +97,6 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   void SelectionModelChanged() override;
   void Update() override;
   void SearchEngineChanged() override;
-
-  // Overridden from AppListViewDelegateObserver:
-  void OnWallpaperColorsChanged() override;
 
   AppListViewDelegate* view_delegate_;  // Not owned.
   SearchModel* search_model_ = nullptr;  // Owned by the profile-keyed service.

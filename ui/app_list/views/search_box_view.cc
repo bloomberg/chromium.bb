@@ -80,12 +80,10 @@ SearchBoxView::SearchBoxView(search_box::SearchBoxViewDelegate* delegate,
       app_list_view_(app_list_view),
       weak_ptr_factory_(this) {
   set_is_tablet_mode(app_list_view->is_tablet_mode());
-  view_delegate_->AddObserver(this);
 }
 
 SearchBoxView::~SearchBoxView() {
   search_model_->search_box()->RemoveObserver(this);
-  view_delegate_->RemoveObserver(this);
 }
 
 void SearchBoxView::ClearSearch() {

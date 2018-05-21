@@ -60,7 +60,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                                            int command_id,
                                            int event_flags) override {}
   void ViewShown(int64_t display_id) override {}
-  void Dismiss() override;
+  void DismissAppList() override;
   void ViewClosing() override {}
   void GetWallpaperProminentColors(
       GetWallpaperProminentColorsCallback callback) override {}
@@ -70,9 +70,6 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void ContextMenuItemSelected(const std::string& id,
                                int command_id,
                                int event_flags) override {}
-  void AddObserver(app_list::AppListViewDelegateObserver* observer) override {}
-  void RemoveObserver(
-      app_list::AppListViewDelegateObserver* observer) override {}
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override {}
 

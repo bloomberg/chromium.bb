@@ -90,8 +90,6 @@ component("ash") {
     "app_list/app_list_presenter_delegate_factory.h",
     "app_list/app_list_presenter_impl.cc",
     "app_list/app_list_presenter_impl.h",
-    "app_list/app_list_view_delegate_mash.cc",
-    "app_list/app_list_view_delegate_mash.h",
     "ash_export.h",
     "ash_service.cc",
     "ash_service.h",

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/app_list/app_list_presenter_impl.h"
-#include "ash/app_list/app_list_view_delegate_mash.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_model_observer.h"
 #include "ash/app_list/model/app_list_view_state.h"
@@ -26,6 +25,7 @@
 #include "components/sync/model/string_ordinal.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ui {
@@ -45,6 +45,7 @@ class ASH_EXPORT AppListControllerImpl
     : public mojom::AppListController,
       public SessionObserver,
       public app_list::AppListModelObserver,
+      public app_list::AppListViewDelegate,
       public ash::ShellObserver,
       public TabletModeObserver,
       public keyboard::KeyboardControllerObserver,
@@ -58,8 +59,6 @@ class ASH_EXPORT AppListControllerImpl
   // Binds the mojom::AppListController interface request to this object.
   void BindRequest(mojom::AppListControllerRequest request);
 
-  app_list::AppListModel* model() { return &model_; }
-  app_list::SearchModel* search_model() { return &search_model_; }
   app_list::AppListPresenterImpl* presenter() { return &presenter_; }
 
   // mojom::AppListController:
@@ -136,27 +135,34 @@ class ASH_EXPORT AppListControllerImpl
                      base::TimeTicks event_time_stamp);
   app_list::AppListViewState GetAppListViewState();
 
-  // Methods of |client_|:
-  void StartSearch(const base::string16& raw_query);
-  void OpenSearchResult(const std::string& result_id, int event_flags);
+  // app_list::AppListViewDelegate:
+  app_list::AppListModel* GetModel() override;
+  app_list::SearchModel* GetSearchModel() override;
+  void StartSearch(const base::string16& raw_query) override;
+  void OpenSearchResult(const std::string& result_id, int event_flags) override;
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
-                                int event_flags);
+                                int event_flags) override;
   using GetContextMenuModelCallback =
-      AppListViewDelegateMash::GetContextMenuModelCallback;
-  void GetSearchResultContextMenuModel(const std::string& result_id,
-                                       GetContextMenuModelCallback callback);
+      AppListViewDelegate::GetContextMenuModelCallback;
+  void GetSearchResultContextMenuModel(
+      const std::string& result_id,
+      GetContextMenuModelCallback callback) override;
   void SearchResultContextMenuItemSelected(const std::string& result_id,
                                            int command_id,
-                                           int event_flags);
-  void ViewShown(int64_t display_id);
-  void ViewClosing();
-  void ActivateItem(const std::string& id, int event_flags);
+                                           int event_flags) override;
+  void ViewShown(int64_t display_id) override;
+  void ViewClosing() override;
+  void GetWallpaperProminentColors(
+      GetWallpaperProminentColorsCallback callback) override;
+  void ActivateItem(const std::string& id, int event_flags) override;
   void GetContextMenuModel(const std::string& id,
-                           GetContextMenuModelCallback callback);
+                           GetContextMenuModelCallback callback) override;
   void ContextMenuItemSelected(const std::string& id,
                                int command_id,
-                               int event_flags);
+                               int event_flags) override;
+  void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
+                                ui::MenuSourceType source_type) override;
   void OnVisibilityChanged(bool visible);
   void OnTargetVisibilityChanged(bool visible);
   void StartVoiceInteractionSession();
@@ -178,6 +184,7 @@ class ASH_EXPORT AppListControllerImpl
   void OnKeyboardAvailabilityChanged(const bool is_available) override;
 
   // WallpaperControllerObserver:
+  void OnWallpaperColorsChanged() override;
   void OnWallpaperPreviewStarted() override;
   void OnWallpaperPreviewEnded() override;
 
@@ -196,9 +203,10 @@ class ASH_EXPORT AppListControllerImpl
   // in overview mode.
   void UpdateHomeLauncherVisibility();
 
+  base::string16 last_raw_query_;
+
   mojom::AppListClientPtr client_;
 
-  AppListViewDelegateMash view_delegate_;
   app_list::AppListModel model_;
   app_list::SearchModel search_model_;
 

@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_view_delegate.h"
-#include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -51,8 +50,7 @@ class AppListViewTestApi;
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
 class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
-                                    public display::DisplayObserver,
-                                    public AppListViewDelegateObserver {
+                                    public display::DisplayObserver {
  public:
   // Number of the size of shelf. Used to determine the opacity of items in the
   // app list during dragging.
@@ -140,6 +138,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);
+
+  // Called when the wallpaper colors change.
+  void OnWallpaperColorsChanged();
 
   // Handles scroll events from various sources.
   bool HandleScroll(int offset, ui::EventType type);
@@ -303,9 +304,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Gets app list background opacity during dragging.
   float GetAppListBackgroundOpacityDuringDragging();
-
-  // Overridden from AppListViewDelegateObserver:
-  void OnWallpaperColorsChanged() override;
 
   void GetWallpaperProminentColors(
       AppListViewDelegate::GetWallpaperProminentColorsCallback callback);
