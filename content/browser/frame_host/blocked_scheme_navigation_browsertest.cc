@@ -223,8 +223,10 @@ class BlockedSchemeNavigationBrowserTest
         "  fs.root.getFile('%s', {create: true}, entry => {"
         "    entry.createWriter(w => {"
         "      w.write(new Blob([contents], {type: '%s'}));"
+        "      w.onwrite = function(evt) {"
+        "        domAutomationController.send(entry.toURL());"
+        "      }"
         "    });"
-        "    domAutomationController.send(entry.toURL());"
         "  });"
         "});";
     std::string filesystem_url_string;
