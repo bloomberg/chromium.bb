@@ -2395,6 +2395,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "angle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "app_shell_unittests"
       },
       {
@@ -6619,6 +6625,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "angle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "base_unittests"
       },
       {
@@ -6791,6 +6803,12 @@
   },
   "linux-blink-heap-verification": {
     "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "angle_unittests"
+      },
       {
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -6979,6 +6997,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "angle_unittests"
       },
       {
         "swarming": {
