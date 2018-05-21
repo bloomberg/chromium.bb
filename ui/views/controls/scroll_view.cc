@@ -214,6 +214,14 @@ ScrollView::ScrollView()
     more_content_bottom_->SetPaintToLayer();
   }
   UpdateBackground();
+
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    focus_ring_ = FocusRing::Install(this);
+    focus_ring_->SetHasFocusPredicate([](View* view) -> bool {
+      auto* v = static_cast<ScrollView*>(view);
+      return v->draw_focus_indicator_;
+    });
+  }
 }
 
 ScrollView::~ScrollView() {
@@ -327,17 +335,10 @@ void ScrollView::SetHasFocusIndicator(bool has_focus_indicator) {
     return;
   draw_focus_indicator_ = has_focus_indicator;
 
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    DCHECK_EQ(draw_focus_indicator_, !focus_ring_);
-    if (has_focus_indicator) {
-      focus_ring_ = FocusRing::Install(this);
-    } else {
-      FocusRing::Uninstall(this);
-      focus_ring_ = nullptr;
-    }
-  } else {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    focus_ring_->SchedulePaint();
+  else
     UpdateBorder();
-  }
   SchedulePaint();
 }
 

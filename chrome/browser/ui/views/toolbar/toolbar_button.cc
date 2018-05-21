@@ -39,7 +39,7 @@ ToolbarButton::ToolbarButton(Profile* profile,
   SetInkDropMode(InkDropMode::ON);
   SetFocusPainter(nullptr);
   SetLeadingMargin(0);
-  set_install_focus_ring_on_focus(views::PlatformStyle::kPreferFocusRings);
+  SetInstallFocusRingOnFocus(views::PlatformStyle::kPreferFocusRings);
 
   if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);

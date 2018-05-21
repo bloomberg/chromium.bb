@@ -126,21 +126,6 @@ bool ShouldUseFocusRingView(bool show_focus_ring) {
          ChromePlatformStyle::ShouldOmniboxUseFocusRing();
 }
 
-// Installs a focus ring on the LocationBarView if it's focused and returns it.
-views::View* InstallFocusRing(LocationBarView* view) {
-  if (!view->HasFocus())
-    return nullptr;
-  return views::FocusRing::Install(
-      view, view->GetColor(OmniboxPart::LOCATION_BAR_FOCUS_RING),
-      view->GetBorderRadius());
-}
-
-views::View* UninstallFocusRing(LocationBarView* view) {
-  // This should be a no-op if the focus ring doesn't exist.
-  views::FocusRing::Uninstall(view);
-  return nullptr;
-}
-
 // Helper function to create a rounded rect background (no stroke).
 std::unique_ptr<views::Background> CreateRoundRectBackground(SkColor bg_color,
                                                              float radius) {
@@ -312,7 +297,7 @@ bool LocationBarView::IsRounded() {
   return ui::MaterialDesignController::IsNewerMaterialUi();
 }
 
-float LocationBarView::GetBorderRadius() {
+float LocationBarView::GetBorderRadius() const {
   return IsRounded() ? ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
                            views::EMPHASIS_HIGH, size())
                      : GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS);
@@ -369,8 +354,16 @@ void LocationBarView::SetImeInlineAutocompletion(const base::string16& text) {
 
 void LocationBarView::SetShowFocusRect(bool show) {
   show_focus_rect_ = show;
-  focus_ring_ = ShouldUseFocusRingView(show) ? InstallFocusRing(this)
-                                             : UninstallFocusRing(this);
+  if (ShouldUseFocusRingView(show)) {
+    focus_ring_ = views::FocusRing::Install(this);
+    focus_ring_->SetPath(GetFocusRingPath());
+    focus_ring_->SetHasFocusPredicate([](View* view) -> bool {
+      auto* v = static_cast<LocationBarView*>(view);
+      return v->omnibox_view_->HasFocus();
+    });
+  } else {
+    focus_ring_.reset();
+  }
   SchedulePaint();
 }
 
@@ -758,20 +751,11 @@ int LocationBarView::GetAvailableTextHeight() {
   return std::max(0, GetLayoutConstant(LOCATION_BAR_HEIGHT) -
                          2 * GetTotalVerticalPadding());
 }
-
-void LocationBarView::OnOmniboxFocused() {
-  if (ShouldUseFocusRingView(show_focus_rect_))
-    focus_ring_ = InstallFocusRing(this);
-
-  if (IsRounded())
-    RefreshBackground();
-}
-
-void LocationBarView::OnOmniboxBlurred() {
-  focus_ring_ = UninstallFocusRing(this);
-
-  if (IsRounded())
-    RefreshBackground();
+SkPath LocationBarView::GetFocusRingPath() const {
+  SkPath path;
+  path.addRRect(SkRRect::MakeRectXY(RectToSkRect(GetLocalBounds()),
+                                    GetBorderRadius(), GetBorderRadius()));
+  return path;
 }
 
 // static
@@ -1137,6 +1121,9 @@ void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (popup->IsOpen())
     popup->UpdatePopupAppearance();
   RefreshBackground();
+  // Update the focus rect if needed.
+  if (!bounds().IsEmpty())
+    SetShowFocusRect(show_focus_rect_);
 }
 
 void LocationBarView::OnFocus() {
@@ -1228,6 +1215,22 @@ void LocationBarView::OnPopupVisibilityChanged() {
 
 const ToolbarModel* LocationBarView::GetToolbarModel() const {
   return delegate_->GetToolbarModel();
+}
+
+void LocationBarView::OnOmniboxFocused() {
+  if (focus_ring_)
+    focus_ring_->SchedulePaint();
+
+  if (IsRounded())
+    RefreshBackground();
+}
+
+void LocationBarView::OnOmniboxBlurred() {
+  if (focus_ring_)
+    focus_ring_->SchedulePaint();
+
+  if (IsRounded())
+    RefreshBackground();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

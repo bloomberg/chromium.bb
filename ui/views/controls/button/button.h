@@ -13,6 +13,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/ink_drop_state.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/painter.h"
 
 namespace views {
@@ -143,9 +144,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void set_has_ink_drop_action_on_click(bool has_ink_drop_action_on_click) {
     has_ink_drop_action_on_click_ = has_ink_drop_action_on_click;
   }
-  void set_install_focus_ring_on_focus(bool install_focus_ring_on_focus) {
-    install_focus_ring_on_focus_ = install_focus_ring_on_focus;
-  }
+  void SetInstallFocusRingOnFocus(bool install_focus_ring_on_focus);
 
   void SetHotTracked(bool is_hot_tracked);
   bool IsHotTracked() const;
@@ -287,16 +286,15 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // ink_drop_delegate().
   bool has_ink_drop_action_on_click_ = false;
 
-  // Whether the button should draw a focus ring on focus, rather than
-  // the hover state.
-  bool install_focus_ring_on_focus_ = false;
-
   // When true, the ink drop ripple and hover will be hidden prior to showing
   // the context menu.
   bool hide_ink_drop_when_showing_context_menu_ = true;
 
   // The color of the ripple and hover.
   SkColor ink_drop_base_color_;
+
+  // The focus ring for this Button.
+  std::unique_ptr<FocusRing> focus_ring_;
 
   std::unique_ptr<Painter> focus_painter_;
 

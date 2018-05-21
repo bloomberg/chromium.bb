@@ -157,15 +157,14 @@ void RadioButton::SetChecked(bool checked) {
   Checkbox::SetChecked(checked);
 }
 
-void RadioButton::PaintFocusRing(View* view,
-                                 gfx::Canvas* canvas,
-                                 const cc::PaintFlags& flags) {
-  canvas->DrawCircle(gfx::RectF(view->GetLocalBounds()).CenterPoint(),
-                     image()->width() / 2, flags);
-}
-
 const gfx::VectorIcon& RadioButton::GetVectorIcon() const {
   return checked() ? kRadioButtonActiveIcon : kRadioButtonNormalIcon;
+}
+
+SkPath RadioButton::GetFocusRingPath() const {
+  SkPath path;
+  path.addOval(gfx::RectToSkRect(image()->bounds()));
+  return path;
 }
 
 }  // namespace views

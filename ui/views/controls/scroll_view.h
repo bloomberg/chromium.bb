@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
 
 namespace gfx {
@@ -246,11 +247,11 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // it overflows.
   bool draw_overflow_indicator_ = true;
 
-  // Focus ring, if one is installed.
-  View* focus_ring_ = nullptr;
-
   // Set to true if the scroll with layers feature is enabled.
   const bool scroll_with_layers_enabled_;
+
+  // The focus ring for this ScrollView.
+  std::unique_ptr<FocusRing> focus_ring_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollView);
 };

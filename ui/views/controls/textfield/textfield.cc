@@ -232,16 +232,6 @@ bool IsControlKeyModifier(int flags) {
 #endif
 }
 
-void InstallOrUpdateFocusRing(Textfield* textfield) {
-  if (textfield->invalid()) {
-    FocusRing::Install(textfield,
-                       textfield->GetNativeTheme()->GetSystemColor(
-                           ui::NativeTheme::kColorId_AlertSeverityHigh));
-  } else {
-    FocusRing::Install(textfield);
-  }
-}
-
 }  // namespace
 
 // static
@@ -307,6 +297,9 @@ Textfield::Textfield()
   GetRenderText()->SetFontList(GetDefaultFontList());
   UpdateBorder();
   SetFocusBehavior(FocusBehavior::ALWAYS);
+
+  if (use_focus_ring_)
+    focus_ring_ = FocusRing::Install(this);
 
 #if !defined(OS_MACOSX)
   // Do not map accelerators on Mac. E.g. They might not reflect custom
@@ -604,9 +597,8 @@ void Textfield::SetInvalid(bool invalid) {
     return;
   invalid_ = invalid;
   UpdateBorder();
-
-  if (use_focus_ring_ && HasFocus())
-    InstallOrUpdateFocusRing(this);
+  if (focus_ring_)
+    focus_ring_->SetInvalid(invalid);
 }
 
 void Textfield::ClearEditHistory() {
@@ -652,8 +644,9 @@ const char* Textfield::GetClassName() const {
 }
 
 void Textfield::SetBorder(std::unique_ptr<Border> b) {
-  FocusRing::Uninstall(this);
   use_focus_ring_ = false;
+  if (focus_ring_)
+    focus_ring_.reset();
   View::SetBorder(std::move(b));
 }
 
@@ -1119,8 +1112,6 @@ void Textfield::OnFocus() {
   OnCaretBoundsChanged();
   if (ShouldBlinkCursor())
     StartBlinkingCursor();
-  if (use_focus_ring_)
-    InstallOrUpdateFocusRing(this);
   SchedulePaint();
   View::OnFocus();
 }
@@ -1147,8 +1138,6 @@ void Textfield::OnBlur() {
 
   DestroyTouchSelection();
 
-  if (use_focus_ring_)
-    FocusRing::Uninstall(this);
   SchedulePaint();
   View::OnBlur();
 
@@ -1169,9 +1158,6 @@ void Textfield::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   render_text->set_selection_background_focused_color(
       GetSelectionBackgroundColor());
   cursor_view_.layer()->SetColor(GetTextColor());
-
-  if (use_focus_ring_ && HasFocus())
-    InstallOrUpdateFocusRing(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

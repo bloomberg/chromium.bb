@@ -116,11 +116,6 @@ void ButtonStickerSheet::CreateExampleView(View* container) {
   AddLabelledRowToGridLayout(layout, "Pressed", {primary, secondary});
   MakeButtonsInState(&primary, &secondary, this, Button::STATE_DISABLED);
   AddLabelledRowToGridLayout(layout, "Disabled", {primary, secondary});
-
-  MakeButtonsInState(&primary, &secondary, this, Button::STATE_NORMAL);
-  primary->OnFocus();
-  secondary->OnFocus();
-  AddLabelledRowToGridLayout(layout, "Focused", {primary, secondary});
 }
 
 void ButtonStickerSheet::ButtonPressed(Button* button, const ui::Event& event) {
