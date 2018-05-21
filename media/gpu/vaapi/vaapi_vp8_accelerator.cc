@@ -42,15 +42,13 @@ scoped_refptr<VP8Picture> VaapiVP8Accelerator::CreateVP8Picture() {
 }
 
 bool VaapiVP8Accelerator::SubmitDecode(
-    const scoped_refptr<VP8Picture>& pic,
-    const Vp8FrameHeader* frame_hdr,
-    const scoped_refptr<VP8Picture>& last_frame,
-    const scoped_refptr<VP8Picture>& golden_frame,
-    const scoped_refptr<VP8Picture>& alt_frame) {
+    scoped_refptr<VP8Picture> pic,
+    const Vp8ReferenceFrameVector& reference_frames) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VAIQMatrixBufferVP8 iq_matrix_buf;
   memset(&iq_matrix_buf, 0, sizeof(VAIQMatrixBufferVP8));
 
+  const auto& frame_hdr = pic->frame_hdr;
   const Vp8SegmentationHeader& sgmnt_hdr = frame_hdr->segmentation_hdr;
   const Vp8QuantizationHeader& quant_hdr = frame_hdr->quantization_hdr;
   static_assert(arraysize(iq_matrix_buf.quantization_index) == kMaxMBSegments,
@@ -98,6 +96,7 @@ bool VaapiVP8Accelerator::SubmitDecode(
   pic_param.frame_width = frame_hdr->width;
   pic_param.frame_height = frame_hdr->height;
 
+  const auto last_frame = reference_frames.GetFrame(Vp8RefType::VP8_FRAME_LAST);
   if (last_frame) {
     pic_param.last_ref_frame =
         last_frame->AsVaapiVP8Picture()->GetVASurfaceID();
@@ -105,6 +104,8 @@ bool VaapiVP8Accelerator::SubmitDecode(
     pic_param.last_ref_frame = VA_INVALID_SURFACE;
   }
 
+  const auto golden_frame =
+      reference_frames.GetFrame(Vp8RefType::VP8_FRAME_GOLDEN);
   if (golden_frame) {
     pic_param.golden_ref_frame =
         golden_frame->AsVaapiVP8Picture()->GetVASurfaceID();
@@ -112,6 +113,8 @@ bool VaapiVP8Accelerator::SubmitDecode(
     pic_param.golden_ref_frame = VA_INVALID_SURFACE;
   }
 
+  const auto alt_frame =
+      reference_frames.GetFrame(Vp8RefType::VP8_FRAME_ALTREF);
   if (alt_frame) {
     pic_param.alt_ref_frame = alt_frame->AsVaapiVP8Picture()->GetVASurfaceID();
   } else {

@@ -6,7 +6,7 @@
 
 namespace media {
 
-VP8Picture::VP8Picture() = default;
+VP8Picture::VP8Picture() : frame_hdr(new Vp8FrameHeader()) {}
 
 VP8Picture::~VP8Picture() = default;
 

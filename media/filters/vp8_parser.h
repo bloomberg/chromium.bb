@@ -88,24 +88,33 @@ struct Vp8EntropyHeader {
 };
 
 const size_t kMaxDCTPartitions = 8;
+const size_t kNumVp8ReferenceBuffers = 3;
+
+enum Vp8RefType : size_t {
+  VP8_FRAME_LAST = 0,
+  VP8_FRAME_GOLDEN = 1,
+  VP8_FRAME_ALTREF = 2,
+};
 
 struct MEDIA_EXPORT Vp8FrameHeader {
   Vp8FrameHeader();
 
   enum FrameType { KEYFRAME = 0, INTERFRAME = 1 };
-  bool IsKeyframe() const { return key_frame == KEYFRAME; }
+  bool IsKeyframe() const { return frame_type == KEYFRAME; }
 
   enum GoldenRefreshMode {
+    NO_GOLDEN_REFRESH = 0,
     COPY_LAST_TO_GOLDEN = 1,
     COPY_ALT_TO_GOLDEN = 2,
   };
 
   enum AltRefreshMode {
+    NO_ALT_REFRESH = 0,
     COPY_LAST_TO_ALT = 1,
     COPY_GOLDEN_TO_ALT = 2,
   };
 
-  FrameType key_frame;
+  FrameType frame_type;
   uint8_t version;
   bool is_experimental;
   bool show_frame;

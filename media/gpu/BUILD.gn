@@ -334,6 +334,8 @@ source_set("common") {
       "vp8_decoder.h",
       "vp8_picture.cc",
       "vp8_picture.h",
+      "vp8_reference_frame_vector.cc",
+      "vp8_reference_frame_vector.h",
       "vp9_decoder.cc",
       "vp9_decoder.h",
       "vp9_picture.cc",

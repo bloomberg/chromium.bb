@@ -317,11 +317,8 @@ class V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator
   // VP8Decoder::VP8Accelerator implementation.
   scoped_refptr<VP8Picture> CreateVP8Picture() override;
 
-  bool SubmitDecode(const scoped_refptr<VP8Picture>& pic,
-                    const Vp8FrameHeader* frame_hdr,
-                    const scoped_refptr<VP8Picture>& last_frame,
-                    const scoped_refptr<VP8Picture>& golden_frame,
-                    const scoped_refptr<VP8Picture>& alt_frame) override;
+  bool SubmitDecode(scoped_refptr<VP8Picture> pic,
+                    const Vp8ReferenceFrameVector& reference_frames) override;
 
   bool OutputPicture(const scoped_refptr<VP8Picture>& pic) override;
 
@@ -2634,16 +2631,14 @@ static void FillV4L2Vp8EntropyHeader(
 }
 
 bool V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator::SubmitDecode(
-    const scoped_refptr<VP8Picture>& pic,
-    const Vp8FrameHeader* frame_hdr,
-    const scoped_refptr<VP8Picture>& last_frame,
-    const scoped_refptr<VP8Picture>& golden_frame,
-    const scoped_refptr<VP8Picture>& alt_frame) {
+    scoped_refptr<VP8Picture> pic,
+    const Vp8ReferenceFrameVector& reference_frames) {
   struct v4l2_ctrl_vp8_frame_hdr v4l2_frame_hdr;
   memset(&v4l2_frame_hdr, 0, sizeof(v4l2_frame_hdr));
 
+  const auto& frame_hdr = pic->frame_hdr;
+  v4l2_frame_hdr.key_frame = frame_hdr->frame_type;
 #define FHDR_TO_V4L2_FHDR(a) v4l2_frame_hdr.a = frame_hdr->a
-  FHDR_TO_V4L2_FHDR(key_frame);
   FHDR_TO_V4L2_FHDR(version);
   FHDR_TO_V4L2_FHDR(width);
   FHDR_TO_V4L2_FHDR(horizontal_scale);
@@ -2699,6 +2694,7 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator::SubmitDecode(
       VP8PictureToV4L2DecodeSurface(pic);
   std::vector<scoped_refptr<V4L2DecodeSurface>> ref_surfaces;
 
+  const auto last_frame = reference_frames.GetFrame(Vp8RefType::VP8_FRAME_LAST);
   if (last_frame) {
     scoped_refptr<V4L2DecodeSurface> last_frame_surface =
         VP8PictureToV4L2DecodeSurface(last_frame);
@@ -2708,6 +2704,8 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator::SubmitDecode(
     v4l2_frame_hdr.last_frame = VIDEO_MAX_FRAME;
   }
 
+  const auto golden_frame =
+      reference_frames.GetFrame(Vp8RefType::VP8_FRAME_GOLDEN);
   if (golden_frame) {
     scoped_refptr<V4L2DecodeSurface> golden_frame_surface =
         VP8PictureToV4L2DecodeSurface(golden_frame);
@@ -2717,6 +2715,8 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator::SubmitDecode(
     v4l2_frame_hdr.golden_frame = VIDEO_MAX_FRAME;
   }
 
+  const auto alt_frame =
+      reference_frames.GetFrame(Vp8RefType::VP8_FRAME_ALTREF);
   if (alt_frame) {
     scoped_refptr<V4L2DecodeSurface> alt_frame_surface =
         VP8PictureToV4L2DecodeSurface(alt_frame);
