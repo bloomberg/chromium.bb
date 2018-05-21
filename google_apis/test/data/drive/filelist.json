@@ -61,7 +61,26 @@
    "lastModifyingUserName": "Test User",
    "editable": true,
    "shared": false,
-   "writersCanShare": true
+   "writersCanShare": true,
+   "capabilities": {
+     "canAddChildren": false,
+     "canChangeRestrictedDownload": true,
+     "canComment": true,
+     "canCopy": true,
+     "canDelete": true,
+     "canDownload": true,
+     "canEdit": true,
+     "canListChildren": false,
+     "canMoveItemIntoTeamDrive": true,
+     "canMoveTeamDriveItem": false,
+     "canReadRevisions": true,
+     "canReadTeamDrive": false,
+     "canRemoveChildren": false,
+     "canRename": true,
+     "canShare": true,
+     "canTrash": true,
+     "canUntrash": true
+   }
   },
   {
    "kind": "drive#file",

@@ -493,7 +493,7 @@ bool UpgradeOldDBVersion15(leveldb::DB* resource_map) {
   return resource_map->Write(leveldb::WriteOptions(), &batch).ok();
 }
 
-bool UpgradeOldDBVersion16(leveldb::DB* resource_map) {
+bool UpgradeOldDBVersions16To17(leveldb::DB* resource_map) {
   // From 15->16, the field |alternate_url| was moved from FileSpecificData
   // to ResourceEntry. Since it isn't saved for directories, we need to do a
   // full fetch to get the |alternate_url| fetched for each directory.
@@ -627,10 +627,11 @@ bool ResourceMetadataStorage::UpgradeOldDB(
     case 15:
       return UpgradeOldDBVersion15(resource_map.get());
     case 16:
-      return UpgradeOldDBVersion16(resource_map.get());
+    case 17:
+      return UpgradeOldDBVersions16To17(resource_map.get());
     case kDBVersion:
       static_assert(
-          kDBVersion == 17,
+          kDBVersion == 18,
           "database version and this function must be updated together");
       return true;
     default:
