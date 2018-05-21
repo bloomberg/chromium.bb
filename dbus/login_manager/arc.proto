@@ -29,6 +29,16 @@ message UpgradeArcContainerRequest {
     SKIP_SETUP_COPY_ON_INIT = 2;
   }
 
+  enum SupervisionTransition {
+    // No transition necessary.
+    NO_TRANSITION = 0;
+    // Child user is transitioning to regular account, need to lift supervision.
+    CHILD_TO_REGULAR = 1;
+    // Regular user is transitioning to child account, need to enable
+    // supervision.
+    REGULAR_TO_CHILD = 2;
+  }
+
   // Account ID of the user to start ARC for. This must be the same as the
   // one given in StartSession.
   required string account_id = 1;
@@ -43,5 +53,9 @@ message UpgradeArcContainerRequest {
   // Optional mode for packages cache tests.
   optional PackageCacheMode packages_cache_mode = 4 [default = DEFAULT];
 
-  // Next ID to use: 5
+  // Option to notify ARC that it should transition from a supervised state to
+  // a non-supervised state, and vice-versa.
+  optional SupervisionTransition supervision_transition = 5;
+
+  // Next ID to use: 6
 }
