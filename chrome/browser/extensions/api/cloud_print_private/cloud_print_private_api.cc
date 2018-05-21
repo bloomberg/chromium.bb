@@ -9,6 +9,7 @@
 
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/cloud_print_private.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/network_interfaces.h"
@@ -44,31 +45,30 @@ CloudPrintPrivateSetupConnectorFunction::
     ~CloudPrintPrivateSetupConnectorFunction() {
 }
 
-bool CloudPrintPrivateSetupConnectorFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+CloudPrintPrivateSetupConnectorFunction::Run() {
   using api::cloud_print_private::SetupConnector::Params;
   std::unique_ptr<Params> params(Params::Create(*args_));
   if (CloudPrintTestsDelegate::Get()) {
     CloudPrintTestsDelegate::Get()->SetupConnector(
         params->user_email, params->robot_email, params->credentials,
         params->user_settings);
-    SendResponse(true);
-    return true;
+    return RespondNow(NoArguments());
   }
 
   base::Value user_settings_value =
       base::Value::FromUniquePtrValue(params->user_settings.ToValue());
 
   CloudPrintProxyService* service =
-      CloudPrintProxyServiceFactory::GetForProfile(GetProfile());
+      CloudPrintProxyServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context()));
   if (!service) {
-    error_ = kErrorIncognito;
-    return false;
+    return RespondNow(Error(kErrorIncognito));
   }
   service->EnableForUserWithRobot(params->credentials, params->robot_email,
                                   params->user_email,
                                   std::move(user_settings_value));
-  SendResponse(true);
-  return true;
+  return RespondNow(NoArguments());
 }
 
 CloudPrintPrivateGetHostNameFunction::CloudPrintPrivateGetHostNameFunction() {
@@ -77,13 +77,11 @@ CloudPrintPrivateGetHostNameFunction::CloudPrintPrivateGetHostNameFunction() {
 CloudPrintPrivateGetHostNameFunction::~CloudPrintPrivateGetHostNameFunction() {
 }
 
-bool CloudPrintPrivateGetHostNameFunction::RunAsync() {
-  SetResult(std::make_unique<base::Value>(
+ExtensionFunction::ResponseAction CloudPrintPrivateGetHostNameFunction::Run() {
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
       CloudPrintTestsDelegate::Get()
           ? CloudPrintTestsDelegate::Get()->GetHostName()
-          : net::GetHostName()));
-  SendResponse(true);
-  return true;
+          : net::GetHostName())));
 }
 
 CloudPrintPrivateGetPrintersFunction::CloudPrintPrivateGetPrintersFunction() {
@@ -94,25 +92,28 @@ CloudPrintPrivateGetPrintersFunction::~CloudPrintPrivateGetPrintersFunction() {
 
 void CloudPrintPrivateGetPrintersFunction::SendResults(
     const std::vector<std::string>& printers) {
-  results_ = api::cloud_print_private::GetPrinters::Results::Create(printers);
-  SendResponse(true);
+  Respond(ArgumentList(
+      api::cloud_print_private::GetPrinters::Results::Create(printers)));
 }
 
-bool CloudPrintPrivateGetPrintersFunction::RunAsync() {
+ExtensionFunction::ResponseAction CloudPrintPrivateGetPrintersFunction::Run() {
   if (CloudPrintTestsDelegate::Get()) {
-    SendResults(CloudPrintTestsDelegate::Get()->GetPrinters());
-    return true;
+    return RespondNow(
+        ArgumentList(api::cloud_print_private::GetPrinters::Results::Create(
+            CloudPrintTestsDelegate::Get()->GetPrinters())));
   }
 
   CloudPrintProxyService* service =
-      CloudPrintProxyServiceFactory::GetForProfile(GetProfile());
-  if (!service) {
-    error_ = kErrorIncognito;
-    return false;
-  }
+      CloudPrintProxyServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context()));
+  if (!service)
+    return RespondNow(Error(kErrorIncognito));
+
+  // TODO(https://crbug.com/845250): CloudPrintProxyService::GetPrinters() may
+  // not invoke the callback, which means this function may never respond.
   service->GetPrinters(
       base::Bind(&CloudPrintPrivateGetPrintersFunction::SendResults, this));
-  return true;
+  return RespondLater();
 }
 
 
@@ -122,13 +123,11 @@ CloudPrintPrivateGetClientIdFunction::CloudPrintPrivateGetClientIdFunction() {
 CloudPrintPrivateGetClientIdFunction::~CloudPrintPrivateGetClientIdFunction() {
 }
 
-bool CloudPrintPrivateGetClientIdFunction::RunAsync() {
-  SetResult(std::make_unique<base::Value>(
+ExtensionFunction::ResponseAction CloudPrintPrivateGetClientIdFunction::Run() {
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
       CloudPrintTestsDelegate::Get()
           ? CloudPrintTestsDelegate::Get()->GetClientId()
-          : google_apis::GetOAuth2ClientID(google_apis::CLIENT_CLOUD_PRINT)));
-  SendResponse(true);
-  return true;
+          : google_apis::GetOAuth2ClientID(google_apis::CLIENT_CLOUD_PRINT))));
 }
 
 }  // namespace extensions
