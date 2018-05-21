@@ -103,8 +103,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Set title for the surface.
   void SetTitle(const base::string16& title);
 
-  const base::string16& frame_title() const { return frame_title_; }
-
   // Set icon for the surface.
   void SetIcon(const gfx::ImageSkia& icon);
 
@@ -188,6 +186,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   bool CanMaximize() const override;
   bool CanMinimize() const override;
   base::string16 GetWindowTitle() const override;
+  bool ShouldShowWindowTitle() const override;
   gfx::ImageSkia GetWindowIcon() override;
   void WindowClosing() override;
   views::Widget* GetWidget() override;
@@ -311,8 +310,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   bool shadow_bounds_changed_ = false;
   std::unique_ptr<ash::WindowResizer> resizer_;
   base::string16 title_;
-  // The title string shown in the window frame (title bar).
-  base::string16 frame_title_;
+  // The debug title string shown in the window frame (title bar).
+  base::string16 extra_title_;
   std::unique_ptr<ui::CompositorLock> configure_compositor_lock_;
   ConfigureCallback configure_callback_;
   // TODO(oshima): Remove this once the transition to new drag/resize

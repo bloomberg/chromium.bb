@@ -343,10 +343,6 @@ gfx::Rect CustomFrameViewAsh::GetClientBoundsForWindowBounds(
   return client_bounds;
 }
 
-base::string16 CustomFrameViewAsh::GetFrameTitle() const {
-  return frame_->widget_delegate()->GetWindowTitle();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh, views::NonClientFrameView overrides:
 

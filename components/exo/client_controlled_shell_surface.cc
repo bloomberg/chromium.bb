@@ -472,7 +472,7 @@ void ClientControlledShellSurface::SetExtraTitle(
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetExtraTitle",
                "extra_title", base::UTF16ToUTF8(extra_title));
   // The extra title is used in the window frame.
-  frame_title_ = extra_title;
+  extra_title_ = extra_title;
   if (widget_)
     widget_->UpdateWindowTitle();
 }
