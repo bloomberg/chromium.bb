@@ -765,18 +765,24 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
-  if (name == "mountFakeUsb") {
+  if (name.find("mountFakeUsb") == 0) {
     usb_volume_ = std::make_unique<FakeTestVolume>(
         "fake-usb", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
         chromeos::DEVICE_TYPE_USB);
+
+    if (name != "mountFakeUsbEmpty")
+      ASSERT_TRUE(usb_volume_->PrepareTestEntries(profile()));
+
     ASSERT_TRUE(usb_volume_->Mount(profile()));
     return;
   }
 
-  if (name == "mountFakeMtp") {
+  if (name.find("mountFakeMtp") == 0) {
     mtp_volume_ = std::make_unique<FakeTestVolume>(
         "fake-mtp", VOLUME_TYPE_MTP, chromeos::DEVICE_TYPE_UNKNOWN);
-    ASSERT_TRUE(mtp_volume_->PrepareTestEntries(profile()));
+
+    if (name != "mountFakeMtpEmpty")
+      ASSERT_TRUE(mtp_volume_->PrepareTestEntries(profile()));
 
     ASSERT_TRUE(mtp_volume_->Mount(profile()));
     return;

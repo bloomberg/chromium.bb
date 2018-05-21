@@ -351,6 +351,7 @@
 -FileDisplay/FilesAppBrowserTest.Test/fileDisplayDownloads
 -FileDisplay/FilesAppBrowserTest.Test/fileDisplayDownloads_GuestMode
 -FileDisplay/FilesAppBrowserTest.Test/fileDisplayMtp
+-FileDisplay/FilesAppBrowserTest.Test/fileDisplayUsb
 -FileDisplay/FilesAppBrowserTest.Test/fileSearch
 -FileDisplay/FilesAppBrowserTest.Test/fileSearchCaseInsensitive
 -FileDisplay/FilesAppBrowserTest.Test/fileSearchNotFound
