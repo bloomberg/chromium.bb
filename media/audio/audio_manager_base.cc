@@ -545,6 +545,16 @@ std::string AudioManagerBase::GetGroupIDInput(
   return GetGroupIDOutput(output_device_id);
 }
 
+void AudioManagerBase::CloseAllInputStreams() {
+  for (auto iter = input_streams_.begin(); iter != input_streams_.end();) {
+    // Note: Closing the stream will invalidate the iterator.
+    // Increment the iterator before closing the stream.
+    AudioInputStream* stream = *iter++;
+    stream->Close();
+  }
+  CHECK(input_streams_.empty());
+}
+
 std::string AudioManagerBase::GetDefaultInputDeviceID() {
   return std::string();
 }

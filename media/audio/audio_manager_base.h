@@ -166,6 +166,9 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   virtual std::string GetGroupIDOutput(const std::string& output_device_id);
   virtual std::string GetGroupIDInput(const std::string& input_device_id);
 
+  // Closes all currently open input streams.
+  void CloseAllInputStreams();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AudioManagerTest, AudioDebugRecording);
 

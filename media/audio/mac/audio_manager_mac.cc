@@ -525,20 +525,7 @@ void AudioManagerMac::ShutdownOnAudioThread() {
   // Even if tasks to close the streams are enqueued, they would not run
   // leading to CHECKs getting hit in the destructor about open streams. Close
   // them explicitly here. crbug.com/608049.
-  for (auto iter = basic_input_streams_.begin();
-       iter != basic_input_streams_.end();) {
-    // Note: Closing the stream will invalidate the iterator.
-    // Increment the iterator before closing the stream.
-    AudioInputStream* stream = *iter++;
-    stream->Close();
-  }
-  for (auto iter = low_latency_input_streams_.begin();
-       iter != low_latency_input_streams_.end();) {
-    // Note: Closing the stream will invalidate the iterator.
-    // Increment the iterator before closing the stream.
-    AudioInputStream* stream = *iter++;
-    stream->Close();
-  }
+  CloseAllInputStreams();
   CHECK(basic_input_streams_.empty());
   CHECK(low_latency_input_streams_.empty());
 
