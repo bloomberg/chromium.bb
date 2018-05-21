@@ -121,6 +121,10 @@
       }
     }
   },
+  "errorMsgTakePhotoFailed": {
+    "message": "Unable to take picture.",
+    "description": "Error message shown when failing to take photo."
+  },
   "errorMsgRecordStartFailed": {
     "message": "Unable to start recording.",
     "description": "Error message shown when failing to start recording video."

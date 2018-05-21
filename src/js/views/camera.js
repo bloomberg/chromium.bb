@@ -54,6 +54,20 @@ camera.views.Camera = function(context, router) {
   this.mediaRecorder_ = null;
 
   /**
+   * ImageCapture object to capture still photos.
+   * @type {ImageCapture}
+   * @private
+   */
+  this.imageCapture_ = null;
+
+  /**
+   * Promise that gets the photo capabilities of the current image-capture.
+   * @type {Promise<PhotoCapabilities>}
+   * @private
+   */
+  this.photoCapabilities_ = null;
+
+  /**
    * Last frame time, used to detect new frames of <video>.
    * @type {number}
    * @private
@@ -596,12 +610,25 @@ camera.views.Camera.prototype.onInactivate = function() {
  */
 camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
   if (this.is_recording_mode_ && this.mediaRecorder_ == null) {
-    // Create a media recorder before proceeding to record video.
-    this.mediaRecorder_ = this.createMediaRecorder_(this.stream_);
     if (this.mediaRecorder_ == null) {
+      // Create a media recorder before proceeding to record video.
+      this.mediaRecorder_ = this.createMediaRecorder_(this.stream_);
+      if (this.mediaRecorder_ == null) {
         this.showToastMessage_(chrome.i18n.getMessage(
             'errorMsgRecordStartFailed'));
         return;
+      }
+    }
+  } else {
+    if (this.imageCapture_ == null) {
+      // Create a image-capture before proceeding to take photo.
+      const track = this.stream_ && this.stream_.getVideoTracks()[0];
+      this.imageCapture_ = !track ? null : new ImageCapture(track);
+      if (this.imageCapture_ == null) {
+        this.showToastMessage_(chrome.i18n.getMessage(
+            'errorMsgTakePhotoFailed'));
+        return;
+      }
     }
   }
   this.takePicture_();
@@ -1191,12 +1218,45 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) 
       takePictureButton.classList.add('flash');
       this.updateButtonLabel_(takePictureButton, 'recordVideoStopButton');
     } else {
-      this.mainCanvas_.toBlob(function(blob) {
-        // Play a shutter sound.
-        this.shutterSound_.currentTime = 0;
-        this.shutterSound_.play();
-        addPicture(blob, camera.models.Gallery.PictureType.STILL);
-      }.bind(this), 'image/jpeg');
+      if (camera.util.isChromeVersionAbove(68)) {
+        // "var" is not used here because we don't want this variable to be
+        // moved to the beginning of the function.
+        let getPhotoCapabilities = function() {
+          if (this.photoCapabilities_ == null) {
+             this.photoCapabilities_ =
+                this.imageCapture_.getPhotoCapabilities();
+          }
+          return this.photoCapabilities_;
+        }.bind(this);
+
+        getPhotoCapabilities().then(photoCapabilities => {
+          // The photo to be taken should have the same aspect ratio with the
+          // preview.
+          var photoSettings = {
+              imageWidth: photoCapabilities.imageWidth.max,
+              imageHeight: photoCapabilities.imageHeight.max
+          };
+          return this.imageCapture_.takePhoto(photoSettings);
+        }).then(blob => {
+          // Play a shutter sound.
+          this.shutterSound_.currentTime = 0;
+          this.shutterSound_.play();
+          addPicture(blob, camera.models.Gallery.PictureType.STILL);
+        }).catch(error => {
+          this.showToastMessage_(
+              chrome.i18n.getMessage('errorMsgTakePhotoFailed'));
+        });
+      } else {
+        // Since the takePhoto() API has not been implemented on CrOS until 68,
+        // we need to grab frame of preview as photo for older versions.
+        // TODO(shenghao): Remove this after min chrome version raises to 68.
+        this.mainCanvas_.toBlob(function(blob) {
+          // Play a shutter sound.
+          this.shutterSound_.currentTime = 0;
+          this.shutterSound_.play();
+          addPicture(blob, camera.models.Gallery.PictureType.STILL);
+        }.bind(this), 'image/jpeg');
+      }
     }
   }.bind(this), 0);
 };
@@ -1312,9 +1372,9 @@ camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
           if (this.taking_) {
             this.endTakePicture_();
           }
-          if (this.mediaRecorder_) {
-            this.mediaRecorder_ = null;
-          }
+          this.mediaRecorder_ = null;
+          this.imageCapture_ = null;
+          this.photoCapabilities_ = null;
           // Try reconnecting the camera to capture new streams.
           document.body.classList.remove('capturing');
           this.updateToolbar_();

@@ -158,6 +158,17 @@ camera.util.isBoard = function(name, callback) {
 };
 
 /**
+ * Returns true if current installed Chrome version is larger than or equal to
+ * the given version.
+ * @param {number} minVersion the version to be compared with.
+ * @return {boolean}
+ */
+camera.util.isChromeVersionAbove = function(minVersion) {
+  var match = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+  return (match ? parseInt(match[2], 10) : 0) >= minVersion;
+};
+
+/**
  * Sets localized aria attributes for TTS on the entire document. Uses the
  * dedicated i18n-aria-label attribute as a strings identifier. If it is not
  * found, then i18n-label is used as a fallback.
