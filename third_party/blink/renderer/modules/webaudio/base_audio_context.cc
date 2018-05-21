@@ -199,6 +199,12 @@ void BaseAudioContext::ContextDestroyed(ExecutionContext*) {
 }
 
 bool BaseAudioContext::HasPendingActivity() const {
+  // As long as AudioWorklet has a pending task from worklet script loading,
+  // the BaseAudioContext needs to stay.
+  if (audioWorklet() && audioWorklet()->HasPendingTasks()) {
+    return true;
+  }
+
   // There's no pending activity if the audio context has been cleared.
   return !is_cleared_;
 }

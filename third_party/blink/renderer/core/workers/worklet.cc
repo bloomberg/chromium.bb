@@ -29,6 +29,7 @@ Worklet::Worklet(Document* document)
 Worklet::~Worklet() {
   for (const auto& proxy : proxies_)
     proxy->WorkletObjectDestroyed();
+  DCHECK(!HasPendingTasks());
 }
 
 // Implementation of the first half of the "addModule(moduleURL, options)"
@@ -65,6 +66,9 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
     return promise;
   }
 
+  WorkletPendingTasks* pending_tasks =  new WorkletPendingTasks(this, resolver);
+  pending_tasks_set_.insert(pending_tasks);
+
   // Step 5: "Return promise, and then continue running this algorithm in
   // parallel."
   // |kInternalLoading| is used here because this is a part of script module
@@ -73,7 +77,7 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
       ->GetTaskRunner(TaskType::kInternalLoading)
       ->PostTask(FROM_HERE, WTF::Bind(&Worklet::FetchAndInvokeScript,
                                       WrapPersistent(this), module_url_record,
-                                      options, WrapPersistent(resolver)));
+                                      options, WrapPersistent(pending_tasks)));
   return promise;
 }
 
@@ -82,6 +86,16 @@ void Worklet::ContextDestroyed(ExecutionContext* execution_context) {
   module_responses_map_->Dispose();
   for (const auto& proxy : proxies_)
     proxy->TerminateWorkletGlobalScope();
+}
+
+bool Worklet::HasPendingTasks() const {
+  return pending_tasks_set_.size() > 0;
+}
+
+void Worklet::FinishPendingTasks(WorkletPendingTasks* pending_tasks) {
+  DCHECK(IsMainThread());
+  DCHECK(pending_tasks_set_.Contains(pending_tasks));
+  pending_tasks_set_.erase(pending_tasks);
 }
 
 WorkletGlobalScopeProxy* Worklet::FindAvailableGlobalScope() {
@@ -94,7 +108,7 @@ WorkletGlobalScopeProxy* Worklet::FindAvailableGlobalScope() {
 // https://drafts.css-houdini.org/worklets/#dom-worklet-addmodule
 void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
                                    const WorkletOptions& options,
-                                   ScriptPromiseResolver* resolver) {
+                                   WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());
   if (!GetExecutionContext())
     return;
@@ -133,8 +147,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
 
   // Step 11: "Let pendingTaskStruct be a new pending tasks struct with counter
   // initialized to the length of worklet's WorkletGlobalScopes."
-  WorkletPendingTasks* pending_tasks =
-      new WorkletPendingTasks(GetNumberOfGlobalScopes(), resolver);
+  pending_tasks->InitializeCounter(GetNumberOfGlobalScopes());
 
   // Step 12: "For each workletGlobalScope in the worklet's
   // WorkletGlobalScopes, queue a task on the workletGlobalScope to fetch and
@@ -157,6 +170,7 @@ size_t Worklet::SelectGlobalScope() {
 void Worklet::Trace(blink::Visitor* visitor) {
   visitor->Trace(proxies_);
   visitor->Trace(module_responses_map_);
+  visitor->Trace(pending_tasks_set_);
   ScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }

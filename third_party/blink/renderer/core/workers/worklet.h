@@ -18,7 +18,6 @@
 namespace blink {
 
 class Document;
-class ScriptPromiseResolver;
 
 // This is the base implementation of Worklet interface defined in the spec:
 // https://drafts.css-houdini.org/worklets/#worklet
@@ -44,6 +43,13 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
 
+  // Returns true if there is ongoing module loading tasks. BaseAudioContext
+  // uses this check to keep itself alive until pending tasks are resolved.
+  bool HasPendingTasks() const;
+
+  // Called by WorkletPendingTasks to notify the Worklet.
+  void FinishPendingTasks(WorkletPendingTasks*);
+
   void Trace(blink::Visitor*) override;
 
  protected:
@@ -61,7 +67,7 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
  private:
   virtual void FetchAndInvokeScript(const KURL& module_url_record,
                                     const WorkletOptions&,
-                                    ScriptPromiseResolver*);
+                                    WorkletPendingTasks*);
 
   // Returns true if there are no global scopes or additional global scopes are
   // necessary. CreateGlobalScope() will be called in that case. Each worklet
@@ -86,6 +92,9 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
   // on their insertion order. Access to this map should be thread-safe."
   // https://drafts.css-houdini.org/worklets/#module-responses-map
   Member<WorkletModuleResponsesMap> module_responses_map_;
+
+  // Keeps track of pending tasks from addModule() call.
+  HeapHashSet<Member<WorkletPendingTasks>> pending_tasks_set_;
 
   DISALLOW_COPY_AND_ASSIGN(Worklet);
 };
