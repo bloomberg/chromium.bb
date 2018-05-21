@@ -15,8 +15,7 @@
 example_tests=$(ls -r $(dirname $0)/*.sh)
 
 # List of script names to exclude.
-exclude_list="best_encode decode_to_md5 examples run_encodes tools_common \
-              decode_with_drops"
+exclude_list="best_encode examples run_encodes tools_common"
 
 # Filter out the scripts in $exclude_list.
 for word in ${exclude_list}; do
