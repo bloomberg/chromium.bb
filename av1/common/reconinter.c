@@ -84,14 +84,11 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                    pre_buf->stride, dst, p_col, p_row, w, h, dst_stride,
                    pd->subsampling_x, pd->subsampling_y, conv_params);
   } else if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    highbd_inter_predictor(src, src_stride, dst, dst_stride,
-                           subpel_params->subpel_x, subpel_params->subpel_y, sf,
-                           w, h, conv_params, interp_filters, subpel_params->xs,
-                           subpel_params->ys, xd->bd);
+    highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_params, sf,
+                           w, h, conv_params, interp_filters, xd->bd);
   } else {
-    inter_predictor(src, src_stride, dst, dst_stride, subpel_params->subpel_x,
-                    subpel_params->subpel_y, sf, w, h, conv_params,
-                    interp_filters, subpel_params->xs, subpel_params->ys);
+    inter_predictor(src, src_stride, dst, dst_stride, subpel_params, sf, w, h,
+                    conv_params, interp_filters);
   }
 }
 

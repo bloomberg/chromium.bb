@@ -35,65 +35,6 @@
 extern "C" {
 #endif
 
-static INLINE int has_scale(int xs, int ys) {
-  return xs != SCALE_SUBPEL_SHIFTS || ys != SCALE_SUBPEL_SHIFTS;
-}
-
-static INLINE void inter_predictor(const uint8_t *src, int src_stride,
-                                   uint8_t *dst, int dst_stride, int subpel_x,
-                                   int subpel_y, const struct scale_factors *sf,
-                                   int w, int h, ConvolveParams *conv_params,
-                                   InterpFilters interp_filters, int xs,
-                                   int ys) {
-  assert(conv_params->do_average == 0 || conv_params->do_average == 1);
-  assert(sf);
-  if (has_scale(xs, ys)) {
-    av1_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
-                           interp_filters, subpel_x, xs, subpel_y, ys, 1,
-                           conv_params, sf);
-  } else {
-    subpel_x >>= SCALE_EXTRA_BITS;
-    subpel_y >>= SCALE_EXTRA_BITS;
-    xs >>= SCALE_EXTRA_BITS;
-    ys >>= SCALE_EXTRA_BITS;
-    assert(subpel_x < SUBPEL_SHIFTS);
-    assert(subpel_y < SUBPEL_SHIFTS);
-    assert(xs <= SUBPEL_SHIFTS);
-    assert(ys <= SUBPEL_SHIFTS);
-    av1_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
-                           interp_filters, subpel_x, xs, subpel_y, ys, 0,
-                           conv_params, sf);
-  }
-}
-
-static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
-                                          uint8_t *dst, int dst_stride,
-                                          int subpel_x, int subpel_y,
-                                          const struct scale_factors *sf, int w,
-                                          int h, ConvolveParams *conv_params,
-                                          InterpFilters interp_filters, int xs,
-                                          int ys, int bd) {
-  assert(conv_params->do_average == 0 || conv_params->do_average == 1);
-  assert(sf);
-  if (has_scale(xs, ys)) {
-    av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
-                                  interp_filters, subpel_x, xs, subpel_y, ys, 1,
-                                  conv_params, sf, bd);
-  } else {
-    subpel_x >>= SCALE_EXTRA_BITS;
-    subpel_y >>= SCALE_EXTRA_BITS;
-    xs >>= SCALE_EXTRA_BITS;
-    ys >>= SCALE_EXTRA_BITS;
-    assert(subpel_x < SUBPEL_SHIFTS);
-    assert(subpel_y < SUBPEL_SHIFTS);
-    assert(xs <= SUBPEL_SHIFTS);
-    assert(ys <= SUBPEL_SHIFTS);
-    av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
-                                  interp_filters, subpel_x, xs, subpel_y, ys, 0,
-                                  conv_params, sf, bd);
-  }
-}
-
 // Set to (1 << 5) if the 32-ary codebooks are used for any bock size
 #define MAX_WEDGE_TYPES (1 << 4)
 
@@ -151,6 +92,63 @@ struct build_prediction_ctxt {
   int *tmp_stride;
   int mb_to_far_edge;
 };
+
+static INLINE int has_scale(int xs, int ys) {
+  return xs != SCALE_SUBPEL_SHIFTS || ys != SCALE_SUBPEL_SHIFTS;
+}
+
+static INLINE void revert_scale_extra_bits(SubpelParams *sp) {
+  sp->subpel_x >>= SCALE_EXTRA_BITS;
+  sp->subpel_y >>= SCALE_EXTRA_BITS;
+  sp->xs >>= SCALE_EXTRA_BITS;
+  sp->ys >>= SCALE_EXTRA_BITS;
+  assert(sp->subpel_x < SUBPEL_SHIFTS);
+  assert(sp->subpel_y < SUBPEL_SHIFTS);
+  assert(sp->xs <= SUBPEL_SHIFTS);
+  assert(sp->ys <= SUBPEL_SHIFTS);
+}
+
+static INLINE void inter_predictor(const uint8_t *src, int src_stride,
+                                   uint8_t *dst, int dst_stride,
+                                   const SubpelParams *subpel_params,
+                                   const struct scale_factors *sf, int w, int h,
+                                   ConvolveParams *conv_params,
+                                   InterpFilters interp_filters) {
+  assert(conv_params->do_average == 0 || conv_params->do_average == 1);
+  assert(sf);
+  if (has_scale(subpel_params->xs, subpel_params->ys)) {
+    av1_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
+                           interp_filters, subpel_params->subpel_x,
+                           subpel_params->xs, subpel_params->subpel_y,
+                           subpel_params->ys, 1, conv_params, sf);
+  } else {
+    SubpelParams sp = *subpel_params;
+    revert_scale_extra_bits(&sp);
+    av1_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
+                           interp_filters, sp.subpel_x, sp.xs, sp.subpel_y,
+                           sp.ys, 0, conv_params, sf);
+  }
+}
+
+static INLINE void highbd_inter_predictor(
+    const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
+    const SubpelParams *subpel_params, const struct scale_factors *sf, int w,
+    int h, ConvolveParams *conv_params, InterpFilters interp_filters, int bd) {
+  assert(conv_params->do_average == 0 || conv_params->do_average == 1);
+  assert(sf);
+  if (has_scale(subpel_params->xs, subpel_params->ys)) {
+    av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
+                                  interp_filters, subpel_params->subpel_x,
+                                  subpel_params->xs, subpel_params->subpel_y,
+                                  subpel_params->ys, 1, conv_params, sf, bd);
+  } else {
+    SubpelParams sp = *subpel_params;
+    revert_scale_extra_bits(&sp);
+    av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
+                                  interp_filters, sp.subpel_x, sp.xs,
+                                  sp.subpel_y, sp.ys, 0, conv_params, sf, bd);
+  }
+}
 
 void av1_modify_neighbor_predictor_for_obmc(MB_MODE_INFO *mbmi);
 int av1_skip_u4x4_pred_in_obmc(BLOCK_SIZE bsize,
