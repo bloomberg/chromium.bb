@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/media_export.h"
 #include "media/base/video_frame.h"
@@ -24,10 +25,13 @@ namespace media {
 // Holds one or more NALUs as a raw bitstream buffer in H.264 Annex-B format.
 // Note that this class currently does NOT insert emulation prevention
 // three-byte sequences (spec 7.3.1).
-class MEDIA_EXPORT H264BitstreamBuffer {
+// Refcounted as these buffers may be used as arguments to multiple codec jobs
+// (e.g. a buffer containing an H.264 SPS NALU may be used as an argument to all
+// jobs that use parameters contained in that SPS).
+class MEDIA_EXPORT H264BitstreamBuffer
+    : public base::RefCountedThreadSafe<H264BitstreamBuffer> {
  public:
   H264BitstreamBuffer();
-  ~H264BitstreamBuffer();
 
   // Discard all data and reset the buffer for reuse.
   void Reset();
@@ -66,14 +70,17 @@ class MEDIA_EXPORT H264BitstreamBuffer {
 
   // Return number of full bytes in the stream. Note that FinishNALU() has to
   // be called to flush cached bits, or the return value will not include them.
-  size_t BytesInBuffer();
+  size_t BytesInBuffer() const;
 
   // Return a pointer to the stream. FinishNALU() must be called before
   // accessing the stream, otherwise some bits may still be cached and not
   // in the buffer.
-  uint8_t* data();
+  const uint8_t* data() const;
 
  private:
+  friend class base::RefCountedThreadSafe<H264BitstreamBuffer>;
+  ~H264BitstreamBuffer();
+
   FRIEND_TEST_ALL_PREFIXES(H264BitstreamBufferAppendBitsTest,
                            AppendAndVerifyBits);
 
@@ -116,6 +123,8 @@ class MEDIA_EXPORT H264BitstreamBuffer {
 
   // Buffer for stream data.
   uint8_t* data_;
+
+  DISALLOW_COPY_AND_ASSIGN(H264BitstreamBuffer);
 };
 
 }  // namespace media

@@ -1014,10 +1014,8 @@ void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
   VLOGF(2) << "bitrate=" << bitrate << ", framerate=" << framerate;
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
 
-  if (bitrate < 1)
-    bitrate = 1;
-  if (framerate < 1)
-    framerate = 1;
+  DCHECK_GT(bitrate, 0u);
+  DCHECK_GT(framerate, 0u);
 
   std::vector<struct v4l2_ext_control> ctrls;
   struct v4l2_ext_control ctrl;

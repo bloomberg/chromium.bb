@@ -8,24 +8,24 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <list>
 #include <memory>
 
 #include "base/containers/queue.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/threading/thread.h"
 #include "media/filters/h264_bitstream_buffer.h"
-#include "media/gpu/h264_dpb.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/vaapi/accelerated_video_encoder.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/video/video_encode_accelerator.h"
 
 namespace media {
 
+class VaapiEncodeJob;
 // A VideoEncodeAccelerator implementation that uses VA-API
-// (http://www.freedesktop.org/wiki/Software/vaapi) for HW-accelerated
-// video encode.
+// (https://01.org/vaapi) for HW-accelerated video encode.
 class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
     : public VideoEncodeAccelerator {
  public:
@@ -48,36 +48,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   void Flush(FlushCallback flush_callback) override;
 
  private:
-  // Reference picture list.
-  typedef std::list<scoped_refptr<VASurface>> RefPicList;
-
-  // Encode job for one frame. Created when an input frame is awaiting and
-  // enough resources are available to proceed. Once the job is prepared and
-  // submitted to the hardware, it awaits on the submitted_encode_jobs_ queue
-  // for an output bitstream buffer to become available. Once one is ready,
-  // the encoded bytes are downloaded to it and job resources are released
-  // and become available for reuse.
-  struct EncodeJob {
-    // Input surface for video frame data.
-    scoped_refptr<VASurface> input_surface;
-    // Surface for a reconstructed picture, which is used for reference
-    // for subsequent frames.
-    scoped_refptr<VASurface> recon_surface;
-    // Buffer that will contain output bitstream for this frame.
-    VABufferID coded_buffer;
-    // Reference surfaces required to encode this picture. We keep references
-    // to them here, because we may discard some of them from ref_pic_list*
-    // before the HW job is done.
-    RefPicList reference_surfaces;
-    // True if this job will produce a keyframe. Used to report
-    // to BitstreamBufferReady().
-    bool keyframe;
-    // Source timestamp.
-    base::TimeDelta timestamp;
-
-    EncodeJob();
-    ~EncodeJob();
-  };
+  class H264Accelerator;
 
   // Encoder state.
   enum State {
@@ -91,98 +62,87 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // Holds output buffers coming from the client ready to be filled.
   struct BitstreamBufferRef;
 
+  //
   // Tasks for each of the VEA interface calls to be executed on the
   // encoder thread.
-  void InitializeTask();
-  void EncodeTask(const scoped_refptr<VideoFrame>& frame, bool force_keyframe);
+  //
+  void InitializeTask(const gfx::Size& visible_size,
+                      VideoCodecProfile profile,
+                      uint32_t bitrate);
+
+  // Enqueues |frame| onto the queue of pending inputs and attempts to continue
+  // encoding.
+  void EncodeTask(scoped_refptr<VideoFrame> frame, bool force_keyframe);
+
+  // Maps |buffer_ref|, push it onto the available_bitstream_buffers_, and
+  // attempts to return any pending encoded data in it, if any.
   void UseOutputBitstreamBufferTask(
       std::unique_ptr<BitstreamBufferRef> buffer_ref);
+
   void RequestEncodingParametersChangeTask(uint32_t bitrate,
                                            uint32_t framerate);
   void DestroyTask();
   void FlushTask();
 
-  // Prepare and schedule an encode job if we have an input to encode
-  // and enough resources to proceed.
-  void EncodeFrameTask();
+  // Checks if sufficient resources for a new encode job with |frame| as input
+  // are available, and if so, claims them by associating them with
+  // a VaapiEncodeJob, and returns the newly-created job, nullptr otherwise.
+  scoped_refptr<VaapiEncodeJob> CreateEncodeJob(scoped_refptr<VideoFrame> frame,
+                                                bool force_keyframe);
 
-  // Fill current_sps_/current_pps_ with current values.
-  void UpdateSPS();
-  void UpdatePPS();
-  void UpdateRates(uint32_t bitrate, uint32_t framerate);
+  // Continues encoding frames as long as input_queue_ is not empty, and we are
+  // able to create new EncodeJobs.
+  void EncodePendingInputs();
 
-  // Generate packed SPS and PPS in packed_sps_/packed_pps_, using
-  // values in current_sps_/current_pps_.
-  void GeneratePackedSPS();
-  void GeneratePackedPPS();
+  // Uploads image data from |frame| to |va_surface_id|.
+  void UploadFrame(scoped_refptr<VideoFrame> frame, VASurfaceID va_surface_id);
 
-  // Check if we have sufficient resources for a new encode job, claim them and
-  // fill current_encode_job_ with them.
-  // Return false if we cannot start a new job yet, true otherwise.
-  bool PrepareNextJob(base::TimeDelta timestamp);
-
-  // Begin a new frame, making it a keyframe if |force_keyframe| is true,
-  // updating current_pic_.
-  void BeginFrame(bool force_keyframe);
-
-  // End current frame, updating reference picture lists and storing current
-  // job in the jobs awaiting completion on submitted_encode_jobs_.
-  void EndFrame();
-
-  // Submit parameters for the current frame to the hardware.
-  bool SubmitFrameParameters();
-  // Submit keyframe headers to the hardware if the current frame is a keyframe.
-  bool SubmitHeadersIfNeeded();
-
-  // Upload image data from |frame| to the input surface for current job.
-  bool UploadFrame(const scoped_refptr<VideoFrame>& frame);
-
-  // Execute encode in hardware. This does not block and will return before
+  // Executes encode in hardware. This does not block and may return before
   // the job is finished.
-  bool ExecuteEncode();
+  void ExecuteEncode(VASurfaceID va_surface_id);
 
   // Callback that returns a no longer used VASurfaceID to
   // available_va_surface_ids_ for reuse.
   void RecycleVASurfaceID(VASurfaceID va_surface_id);
 
-  // Tries to return a bitstream buffer if both a submitted job awaits to
-  // be completed and we have bitstream buffers from the client available
-  // to download the encoded data to.
+  // Returns a bitstream buffer to the client if both a previously executed job
+  // awaits to be completed and we have bitstream buffers available to download
+  // the encoded data into.
   void TryToReturnBitstreamBuffer();
 
-  // Puts the encoder into en error state and notifies client about the error.
+  // Downloads encoded data produced as a result of running |encode_job| into
+  // |buffer|, and returns it to the client.
+  void ReturnBitstreamBuffer(scoped_refptr<VaapiEncodeJob> encode_job,
+                             std::unique_ptr<BitstreamBufferRef> buffer);
+
+  // Puts the encoder into en error state and notifies the client
+  // about the error.
   void NotifyError(Error error);
 
-  // Sets the encoder state on the correct thread.
+  // Sets the encoder state to |state| on the correct thread.
   void SetState(State state);
+
+  // Submits |buffer| of |type| to the driver.
+  void SubmitBuffer(VABufferType type,
+                    scoped_refptr<base::RefCountedBytes> buffer);
+
+  // Submits a VAEncMiscParameterBuffer |buffer| of type |type| to the driver.
+  void SubmitVAEncMiscParamBuffer(VAEncMiscParameterType type,
+                                  scoped_refptr<base::RefCountedBytes> buffer);
+
+  // Submits a H264BitstreamBuffer |buffer| to the driver.
+  void SubmitH264BitstreamBuffer(scoped_refptr<H264BitstreamBuffer> buffer);
 
   // VaapiWrapper is the owner of all HW resources (surfaces and buffers)
   // and will free them on destruction.
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
   // Input profile and sizes.
-  VideoCodecProfile profile_;
+  VideoCodec codec_;
   gfx::Size visible_size_;
-  gfx::Size coded_size_;  // Macroblock-aligned.
-  // Width/height in macroblocks.
-  unsigned int mb_width_;
-  unsigned int mb_height_;
+  gfx::Size coded_size_;
 
-  // Maximum size of the reference list 0.
-  unsigned int max_ref_idx_l0_size_;
-
-  // Initial QP.
-  unsigned int qp_;
-
-  // IDR frame period.
-  unsigned int idr_period_;
-  // I frame period.
-  unsigned int i_period_;
-  // IP period, i.e. how often do we need to have either an I or a P frame in
-  // the stream. Period of 1 means we can have no B frames.
-  unsigned int ip_period_;
-
-  // Size in bytes required for input bitstream buffers.
+  // Size in bytes required for output bitstream buffers.
   size_t output_buffer_byte_size_;
 
   // All of the members below must be accessed on the encoder_thread_,
@@ -191,34 +151,8 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // Encoder state. Encode tasks will only run in kEncoding state.
   State state_;
 
-  // frame_num to be used for the next frame.
-  unsigned int frame_num_;
-  // idr_pic_id to be used for the next frame.
-  unsigned int idr_pic_id_;
-
-  // Current bitrate in bps.
-  unsigned int bitrate_;
-  // Current fps.
-  unsigned int framerate_;
-  // CPB size in bits, i.e. bitrate in kbps * window size in ms/1000.
-  unsigned int cpb_size_;
-  // True if the parameters have changed and we need to submit a keyframe
-  // with updated parameters.
-  bool encoding_parameters_changed_;
-
-  // Job currently being prepared for encode.
-  std::unique_ptr<EncodeJob> current_encode_job_;
-
-  // Current SPS, PPS and their packed versions. Packed versions are their NALUs
-  // in AnnexB format *without* emulation prevention three-byte sequences
-  // (those will be added by the driver).
-  H264SPS current_sps_;
-  H264BitstreamBuffer packed_sps_;
-  H264PPS current_pps_;
-  H264BitstreamBuffer packed_pps_;
-
-  // Picture currently being prepared for encode.
-  scoped_refptr<H264Picture> current_pic_;
+  // Encoder instance managing video codec state and preparing encode jobs.
+  std::unique_ptr<AcceleratedVideoEncoder> encoder_;
 
   // VA surfaces available for reuse.
   std::vector<VASurfaceID> available_va_surface_ids_;
@@ -226,22 +160,18 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // VA buffers for coded frames.
   std::vector<VABufferID> available_va_buffer_ids_;
 
-  // Currently active reference surfaces.
-  RefPicList ref_pic_list0_;
-
   // Callback via which finished VA surfaces are returned to us.
   VASurface::ReleaseCB va_surface_release_cb_;
 
-  // VideoFrames passed from the client, waiting to be encoded.
-  base::queue<std::unique_ptr<InputFrameRef>> encoder_input_queue_;
+  // Queue of input frames to be encoded.
+  base::queue<std::unique_ptr<InputFrameRef>> input_queue_;
 
-  // BitstreamBuffers mapped, ready to be filled.
+  // BitstreamBuffers mapped, ready to be filled with encoded stream data.
   base::queue<std::unique_ptr<BitstreamBufferRef>> available_bitstream_buffers_;
 
-  // Jobs submitted for encode, awaiting bitstream buffers to become available.
-  // A pending flush command, indicated by a null job, will be also put in the
-  // queue.
-  base::queue<std::unique_ptr<EncodeJob>> submitted_encode_jobs_;
+  // Jobs submitted to driver for encode, awaiting bitstream buffers to become
+  // available.
+  base::queue<scoped_refptr<VaapiEncodeJob>> submitted_encode_jobs_;
 
   // Encoder thread. All tasks are executed on it.
   base::Thread encoder_thread_;

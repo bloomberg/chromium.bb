@@ -53,6 +53,10 @@ action("libva_generate_stubs") {
 source_set("vaapi") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
   sources = [
+    "accelerated_video_encoder.cc",
+    "accelerated_video_encoder.h",
+    "h264_encoder.cc",
+    "h264_encoder.h",
     "va_surface.cc",
     "va_surface.h",
     "vaapi_common.cc",
