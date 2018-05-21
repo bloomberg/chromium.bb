@@ -259,7 +259,7 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
         .WillRepeatedly(
             Invoke(this, &PipelineIntegrationTestBase::CheckDuration));
   }
-  EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(AtMost(1));
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(AnyNumber());
   EXPECT_CALL(*this, OnVideoOpacityChange(_)).WillRepeatedly(Return());
   EXPECT_CALL(*this, OnAudioDecoderChange(_)).Times(AnyNumber());
   EXPECT_CALL(*this, OnVideoDecoderChange(_)).Times(AnyNumber());
@@ -599,7 +599,7 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
   EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
       .Times(AnyNumber());
   EXPECT_CALL(*this, OnDurationChange()).Times(AnyNumber());
-  EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(AtMost(1));
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(AnyNumber());
   EXPECT_CALL(*this, OnVideoOpacityChange(_)).Times(AtMost(1));
   EXPECT_CALL(*this, OnAudioDecoderChange(_)).Times(AnyNumber());
   EXPECT_CALL(*this, OnVideoDecoderChange(_)).Times(AnyNumber());
