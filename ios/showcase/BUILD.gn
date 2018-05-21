@@ -28,6 +28,7 @@ group("features") {
     "//ios/showcase/bubble",
     "//ios/showcase/content_suggestions",
     "//ios/showcase/payments",
+    "//ios/showcase/recent_tabs",
     "//ios/showcase/settings",
     "//ios/showcase/tab_grid",
     "//ios/showcase/text_badge_view",

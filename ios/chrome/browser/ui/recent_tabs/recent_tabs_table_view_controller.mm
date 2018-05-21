@@ -439,7 +439,7 @@ const int kRelativeTimeMaxHours = 4;
 
 - (void)addSigninPromoViewItem {
   // Init|_signinPromoViewMediator| if nil.
-  if (!self.signinPromoViewMediator) {
+  if (!self.signinPromoViewMediator && self.browserState) {
     self.signinPromoViewMediator = [[SigninPromoViewMediator alloc]
         initWithBrowserState:self.browserState
                  accessPoint:signin_metrics::AccessPoint::
