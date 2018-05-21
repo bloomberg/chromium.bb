@@ -163,10 +163,6 @@ net::URLRequestContextGetter* FakeProfile::GetRequestContextForExtensions() {
   return nullptr;
 }
 
-net::SSLConfigService* FakeProfile::GetSSLConfigService() {
-  return nullptr;
-}
-
 bool FakeProfile::IsSameProfile(Profile* profile) {
   return false;
 }

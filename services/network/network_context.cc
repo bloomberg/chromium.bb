@@ -65,6 +65,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/resource_scheduler_client.h"
 #include "services/network/restricted_cookie_manager.h"
+#include "services/network/ssl_config_service_mojo.h"
 #include "services/network/throttling/network_conditions.h"
 #include "services/network/throttling/throttling_controller.h"
 #include "services/network/throttling/throttling_network_transaction_factory.h"
@@ -673,6 +674,10 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
 
     builder->EnableHttpCache(cache_params);
   }
+
+  builder->set_ssl_config_service(base::MakeRefCounted<SSLConfigServiceMojo>(
+      std::move(network_context_params->initial_ssl_config),
+      std::move(network_context_params->ssl_config_client_request)));
 
   if (!network_context_params->initial_proxy_config &&
       !network_context_params->proxy_config_client_request.is_pending()) {

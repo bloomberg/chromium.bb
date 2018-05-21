@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,6 +23,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_config_service.h"
 
@@ -69,95 +69,58 @@ std::vector<uint16_t> ParseCipherSuites(
   return cipher_suites;
 }
 
-// Returns the SSL protocol version (as a uint16_t) represented by a string.
-// Returns 0 if the string is invalid.
-uint16_t SSLProtocolVersionFromString(const std::string& version_str) {
-  uint16_t version = 0;  // Invalid.
+// Writes the SSL protocol version represented by a string to |version|. Returns
+// false if the string is not recognized.
+bool SSLProtocolVersionFromString(const std::string& version_str,
+                                  network::mojom::SSLVersion* version) {
   if (version_str == switches::kSSLVersionTLSv1) {
-    version = net::SSL_PROTOCOL_VERSION_TLS1;
-  } else if (version_str == switches::kSSLVersionTLSv11) {
-    version = net::SSL_PROTOCOL_VERSION_TLS1_1;
-  } else if (version_str == switches::kSSLVersionTLSv12) {
-    version = net::SSL_PROTOCOL_VERSION_TLS1_2;
-  } else if (version_str == switches::kSSLVersionTLSv13) {
-    version = net::SSL_PROTOCOL_VERSION_TLS1_3;
+    *version = network::mojom::SSLVersion::kTLS1;
+    return true;
   }
-  return version;
+  if (version_str == switches::kSSLVersionTLSv11) {
+    *version = network::mojom::SSLVersion::kTLS11;
+    return true;
+  }
+  if (version_str == switches::kSSLVersionTLSv12) {
+    *version = network::mojom::SSLVersion::kTLS12;
+    return true;
+  }
+  if (version_str == switches::kSSLVersionTLSv13) {
+    *version = network::mojom::SSLVersion::kTLS13;
+    return true;
+  }
+  return false;
 }
 
 const char kTLS13VariantExperimentName[] = "TLS13Variant";
 
 ////////////////////////////////////////////////////////////////////////////////
-//  SSLConfigServicePref
-
-// An SSLConfigService which stores a cached version of the current SSLConfig
-// prefs, which are updated by SSLConfigServiceManagerPref when the prefs
-// change.
-class SSLConfigServicePref : public net::SSLConfigService {
- public:
-  explicit SSLConfigServicePref(
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
-
-  // Store SSL config settings in |config|. Must only be called from IO thread.
-  void GetSSLConfig(net::SSLConfig* config) override;
-
- private:
-  // Allow the pref watcher to update our internal state.
-  friend class SSLConfigServiceManagerPref;
-
-  ~SSLConfigServicePref() override {}
-
-  // This method is posted to the IO thread from the browser thread to carry the
-  // new config information.
-  void SetNewSSLConfig(const net::SSLConfig& new_config);
-
-  // Cached value of prefs, should only be accessed from IO thread.
-  net::SSLConfig cached_config_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLConfigServicePref);
-};
-
-SSLConfigServicePref::SSLConfigServicePref(
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-    : io_task_runner_(io_task_runner) {}
-
-void SSLConfigServicePref::GetSSLConfig(net::SSLConfig* config) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  *config = cached_config_;
-}
-
-void SSLConfigServicePref::SetNewSSLConfig(const net::SSLConfig& new_config) {
-  net::SSLConfig orig_config = cached_config_;
-  cached_config_ = new_config;
-  ProcessConfigUpdate(orig_config, new_config);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 //  SSLConfigServiceManagerPref
 
-// The manager for holding and updating an SSLConfigServicePref instance.
+// The manager for holding and updating one or more
+// network::mojom::SSLConfigClients.
 class SSLConfigServiceManagerPref : public SSLConfigServiceManager {
  public:
-  SSLConfigServiceManagerPref(
-      PrefService* local_state,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+  explicit SSLConfigServiceManagerPref(PrefService* local_state);
   ~SSLConfigServiceManagerPref() override {}
 
   // Register local_state SSL preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  net::SSLConfigService* Get() override;
+  void AddToNetworkContextParams(
+      network::mojom::NetworkContextParams* network_context_params) override;
+
+  void FlushForTesting() override;
 
  private:
   // Callback for preference changes.  This will post the changes to the IO
   // thread with SetNewSSLConfig.
   void OnPreferenceChanged(PrefService* prefs, const std::string& pref_name);
 
-  // Store SSL config settings in |config|, directly from the preferences. Must
-  // only be called from UI thread.
-  void GetSSLConfigFromPrefs(net::SSLConfig* config);
+  // Returns the current SSLConfig settings from preferences. Assumes
+  // |disabled_cipher_suites_| is up-to-date, but reads all other settings from
+  // live prefs.
+  network::mojom::SSLConfigPtr GetSSLConfigFromPrefs() const;
 
   // Processes changes to the disabled cipher suites preference, updating the
   // cached list of parsed SSL/TLS cipher suites that are disabled.
@@ -165,7 +128,7 @@ class SSLConfigServiceManagerPref : public SSLConfigServiceManager {
 
   PrefChangeRegistrar local_state_change_registrar_;
 
-  // The local_state prefs (should only be accessed from UI thread)
+  // The local_state prefs.
   BooleanPrefMember rev_checking_enabled_;
   BooleanPrefMember rev_checking_required_local_anchors_;
   BooleanPrefMember sha1_local_anchors_enabled_;
@@ -177,18 +140,13 @@ class SSLConfigServiceManagerPref : public SSLConfigServiceManager {
   // The cached list of disabled SSL cipher suites.
   std::vector<uint16_t> disabled_cipher_suites_;
 
-  scoped_refptr<SSLConfigServicePref> ssl_config_service_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  mojo::InterfacePtrSet<network::mojom::SSLConfigClient> ssl_config_client_set_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLConfigServiceManagerPref);
 };
 
 SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
-    PrefService* local_state,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-    : ssl_config_service_(new SSLConfigServicePref(io_task_runner)),
-      io_task_runner_(io_task_runner) {
+    PrefService* local_state) {
   DCHECK(local_state);
 
   const std::string tls13_variant =
@@ -235,11 +193,8 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
   local_state_change_registrar_.Add(prefs::kCipherSuiteBlacklist,
                                     local_state_callback);
 
+  // Populate |disabled_cipher_suites_| with the initial pref value.
   OnDisabledCipherSuitesChange(local_state);
-
-  // Initialize from UI thread.  This is okay as there shouldn't be anything on
-  // the IO thread trying to access it yet.
-  GetSSLConfigFromPrefs(&ssl_config_service_->cached_config_);
 }
 
 // static
@@ -259,8 +214,17 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kCipherSuiteBlacklist);
 }
 
-net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
-  return ssl_config_service_.get();
+void SSLConfigServiceManagerPref::AddToNetworkContextParams(
+    network::mojom::NetworkContextParams* network_context_params) {
+  network_context_params->initial_ssl_config = GetSSLConfigFromPrefs();
+  network::mojom::SSLConfigClientPtr ssl_config_client;
+  network_context_params->ssl_config_client_request =
+      mojo::MakeRequest(&ssl_config_client);
+  ssl_config_client_set_.AddPtr(std::move(ssl_config_client));
+}
+
+void SSLConfigServiceManagerPref::FlushForTesting() {
+  ssl_config_client_set_.FlushForTesting();
 }
 
 void SSLConfigServiceManagerPref::OnPreferenceChanged(
@@ -270,18 +234,21 @@ void SSLConfigServiceManagerPref::OnPreferenceChanged(
   if (pref_name_in == prefs::kCipherSuiteBlacklist)
     OnDisabledCipherSuitesChange(prefs);
 
-  net::SSLConfig new_config;
-  GetSSLConfigFromPrefs(&new_config);
+  network::mojom::SSLConfigPtr new_config = GetSSLConfigFromPrefs();
+  network::mojom::SSLConfig* raw_config = new_config.get();
 
-  // Post a task to |io_loop| with the new configuration, so it can
-  // update |cached_config_|.
-  io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SSLConfigServicePref::SetNewSSLConfig,
-                                ssl_config_service_, new_config));
+  ssl_config_client_set_.ForAllPtrs(
+      [raw_config](network::mojom::SSLConfigClient* client) {
+        // Mojo calls consume all InterfacePtrs passed to them, so have to
+        // clone the config for each call.
+        client->OnSSLConfigUpdated(raw_config->Clone());
+      });
 }
 
-void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
-    net::SSLConfig* config) {
+network::mojom::SSLConfigPtr
+SSLConfigServiceManagerPref::GetSSLConfigFromPrefs() const {
+  network::mojom::SSLConfigPtr config = network::mojom::SSLConfig::New();
+
   // rev_checking_enabled was formerly a user-settable preference, but now
   // it is managed-only.
   if (rev_checking_enabled_.IsManaged())
@@ -296,25 +263,27 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   std::string version_min_str = ssl_version_min_.GetValue();
   std::string version_max_str = ssl_version_max_.GetValue();
   std::string tls13_variant_str = tls13_variant_.GetValue();
-  config->version_min = net::kDefaultSSLVersionMin;
-  config->version_max = net::kDefaultSSLVersionMax;
-  uint16_t version_min = SSLProtocolVersionFromString(version_min_str);
-  uint16_t version_max = SSLProtocolVersionFromString(version_max_str);
-  if (version_min) {
+
+  network::mojom::SSLVersion version_min;
+  if (SSLProtocolVersionFromString(version_min_str, &version_min))
     config->version_min = version_min;
-  }
-  if (version_max && version_max >= net::SSL_PROTOCOL_VERSION_TLS1_2) {
+
+  network::mojom::SSLVersion version_max;
+  if (SSLProtocolVersionFromString(version_max_str, &version_max) &&
+      version_max >= network::mojom::SSLVersion::kTLS12) {
     config->version_max = version_max;
   }
 
   if (tls13_variant_str == switches::kTLS13VariantDisabled) {
-    if (config->version_max > net::SSL_PROTOCOL_VERSION_TLS1_2)
-      config->version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
+    if (config->version_max > network::mojom::SSLVersion::kTLS12)
+      config->version_max = network::mojom::SSLVersion::kTLS12;
   } else if (tls13_variant_str == switches::kTLS13VariantDraft23) {
-    config->tls13_variant = net::kTLS13VariantDraft23;
+    config->tls13_variant = network::mojom::TLS13Variant::kDraft23;
   }
 
   config->disabled_cipher_suites = disabled_cipher_suites_;
+
+  return config;
 }
 
 void SSLConfigServiceManagerPref::OnDisabledCipherSuitesChange(
@@ -331,9 +300,8 @@ void SSLConfigServiceManagerPref::OnDisabledCipherSuitesChange(
 
 // static
 SSLConfigServiceManager* SSLConfigServiceManager::CreateDefaultManager(
-    PrefService* local_state,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
-  return new SSLConfigServiceManagerPref(local_state, io_task_runner);
+    PrefService* local_state) {
+  return new SSLConfigServiceManagerPref(local_state);
 }
 
 // static

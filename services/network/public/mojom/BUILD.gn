@@ -90,6 +90,7 @@ mojom("mojom") {
     "request_context_frame_type.mojom",
     "restricted_cookie_manager.mojom",
     "signed_tree_head.mojom",
+    "ssl_config.mojom",
     "tcp_socket.mojom",
     "tls_socket.mojom",
     "url_loader.mojom",

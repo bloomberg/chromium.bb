@@ -17,6 +17,8 @@
 -ProfileWindowBrowserTest.GuestClearsCookies
 -ProxySettingsApiTest.ProxyEventsInvalidProxy
 -RegisterProtocolHandlerBrowserTest.CustomHandler
+-SSLUITest.TestBadHTTPSDownload/0
+-SSLUITest.TestBadHTTPSDownload/1
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
 -WebstoreInstallerBrowserTest.SimultaneousInstall
 -WebViewTest.WebViewInBackgroundPage
@@ -133,13 +135,8 @@
 -IOThreadBrowserTestWithHangingPacRequest.Shutdown
 -ProxySettingsApiTest.ProxyEventsParseError
 
-# https://bugs.chromium.org/p/chromium/issues/detail?id=755309
--SSLUITest.SHA1PrefsCanEnable/0
--SSLUITest.SHA1PrefsCanEnable/1
--SSLUITest.TestBadHTTPSDownload/0
--SSLUITest.TestBadHTTPSDownload/1
--SSLUITest.TestHTTPSOCSPOk/0
--SSLUITest.TestHTTPSOCSPOk/1
+# SetURLRequestContextForNSSHttpIO / SetGlobalCertNetFetcher are not called
+# in the network process.
 -SSLUITest.TestHTTPSOCSPRevoked/0
 -SSLUITest.TestHTTPSOCSPRevoked/1
 

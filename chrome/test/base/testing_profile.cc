@@ -843,12 +843,6 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
   return extensions_request_context_.get();
 }
 
-net::SSLConfigService* TestingProfile::GetSSLConfigService() {
-  if (!GetRequestContext())
-    return NULL;
-  return GetRequestContext()->GetURLRequestContext()->ssl_config_service();
-}
-
 content::ResourceContext* TestingProfile::GetResourceContext() {
   if (!resource_context_)
     resource_context_ = new content::MockResourceContext();

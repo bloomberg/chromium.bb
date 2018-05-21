@@ -12,6 +12,29 @@
 
 namespace net {
 
+namespace {
+
+// Checks if the config-service managed fields in two SSLConfigs are the same.
+bool SSLConfigsAreEqual(const net::SSLConfig& config1,
+                        const net::SSLConfig& config2) {
+  return std::tie(config1.rev_checking_enabled,
+                  config1.rev_checking_required_local_anchors,
+                  config1.sha1_local_anchors_enabled,
+                  config1.symantec_enforcement_disabled, config1.version_min,
+                  config1.version_max, config1.tls13_variant,
+                  config1.disabled_cipher_suites, config1.channel_id_enabled,
+                  config1.false_start_enabled, config1.require_ecdhe) ==
+         std::tie(config2.rev_checking_enabled,
+                  config2.rev_checking_required_local_anchors,
+                  config2.sha1_local_anchors_enabled,
+                  config2.symantec_enforcement_disabled, config2.version_min,
+                  config2.version_max, config2.tls13_variant,
+                  config2.disabled_cipher_suites, config2.channel_id_enabled,
+                  config2.false_start_enabled, config2.require_ecdhe);
+}
+
+}  // namespace
+
 SSLConfigService::SSLConfigService()
     : observer_list_(base::ObserverListPolicy::EXISTING_ONLY) {}
 
@@ -72,27 +95,18 @@ void SSLConfigService::NotifySSLConfigChange() {
     observer.OnSSLConfigChanged();
 }
 
+bool SSLConfigService::SSLConfigsAreEqualForTesting(
+    const net::SSLConfig& config1,
+    const net::SSLConfig& config2) {
+  return SSLConfigsAreEqual(config1, config2);
+}
+
 SSLConfigService::~SSLConfigService() = default;
 
 void SSLConfigService::ProcessConfigUpdate(const SSLConfig& old_config,
                                            const SSLConfig& new_config) {
-  bool config_changed =
-      std::tie(old_config.rev_checking_enabled,
-               old_config.rev_checking_required_local_anchors,
-               old_config.sha1_local_anchors_enabled,
-               old_config.symantec_enforcement_disabled, old_config.version_min,
-               old_config.version_max, old_config.tls13_variant,
-               old_config.disabled_cipher_suites, old_config.channel_id_enabled,
-               old_config.false_start_enabled, old_config.require_ecdhe) !=
-      std::tie(new_config.rev_checking_enabled,
-               new_config.rev_checking_required_local_anchors,
-               new_config.sha1_local_anchors_enabled,
-               new_config.symantec_enforcement_disabled, new_config.version_min,
-               new_config.version_max, new_config.tls13_variant,
-               new_config.disabled_cipher_suites, new_config.channel_id_enabled,
-               new_config.false_start_enabled, new_config.require_ecdhe);
-
-  if (config_changed)
+  // Do nothing if the configuration hasn't changed.
+  if (!SSLConfigsAreEqual(old_config, new_config))
     NotifySSLConfigChange();
 }
 

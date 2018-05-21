@@ -16,6 +16,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/default_network_context_params.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
@@ -153,7 +155,9 @@ void SystemNetworkContextManager::SetUp(
   *is_quic_allowed = is_quic_allowed_;
 }
 
-SystemNetworkContextManager::SystemNetworkContextManager() {
+SystemNetworkContextManager::SystemNetworkContextManager()
+    : ssl_config_service_manager_(SSLConfigServiceManager::CreateDefaultManager(
+          g_browser_process->local_state())) {
   const base::Value* value =
       g_browser_process->policy_service()
           ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
@@ -185,6 +189,16 @@ void SystemNetworkContextManager::DisableQuic() {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&DisableQuicOnIOThread, io_thread));
+}
+
+void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(
+    network::mojom::NetworkContextParams* network_context_params) {
+  ssl_config_service_manager_->AddToNetworkContextParams(
+      network_context_params);
+}
+
+void SystemNetworkContextManager::FlushSSLConfigManagerForTesting() {
+  ssl_config_service_manager_->FlushForTesting();
 }
 
 void SystemNetworkContextManager::FlushProxyConfigMonitorForTesting() {

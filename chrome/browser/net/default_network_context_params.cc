@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
@@ -69,6 +70,13 @@ network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
       local_state->GetBoolean(prefs::kQuickCheckEnabled);
   network_context_params->dangerously_allow_pac_access_to_secure_urls =
       !local_state->GetBoolean(prefs::kPacHttpsUrlStrippingEnabled);
+
+  // Use the SystemNetworkContextManager to populate and update SSL
+  // configuration. The SystemNetworkContextManager is owned by the
+  // BrowserProcess itself, so will only be destroyed on shutdown, at which
+  // point, all NetworkContexts will be destroyed as well.
+  g_browser_process->system_network_context_manager()
+      ->AddSSLConfigToNetworkContextParams(network_context_params.get());
 
 #if !defined(OS_ANDROID)
   // CT is only enabled on Desktop platforms for now.

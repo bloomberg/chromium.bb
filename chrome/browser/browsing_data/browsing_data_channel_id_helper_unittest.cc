@@ -28,11 +28,17 @@ class BrowsingDataChannelIDHelperTest
   void SetUp() override {
     testing_profile_.reset(new TestingProfile());
 
-    testing_profile_->GetSSLConfigService()->AddObserver(this);
+    testing_profile_->GetRequestContext()
+        ->GetURLRequestContext()
+        ->ssl_config_service()
+        ->AddObserver(this);
   }
 
   void TearDown() override {
-    testing_profile_->GetSSLConfigService()->RemoveObserver(this);
+    testing_profile_->GetRequestContext()
+        ->GetURLRequestContext()
+        ->ssl_config_service()
+        ->RemoveObserver(this);
   }
 
   void CreateChannelIDsForTest() {

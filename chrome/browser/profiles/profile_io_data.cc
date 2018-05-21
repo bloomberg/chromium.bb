@@ -431,7 +431,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->cookie_settings = CookieSettingsFactory::GetForProfile(profile);
   params->host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  params->ssl_config_service = profile->GetSSLConfigService();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   params->extension_info_map =
@@ -1048,8 +1047,6 @@ void ProfileIOData::Init(
   // Create the main request context.
   std::unique_ptr<network::URLRequestContextBuilderMojo> builder =
       std::make_unique<network::URLRequestContextBuilderMojo>();
-
-  builder->set_ssl_config_service(profile_params_->ssl_config_service);
 
   ChromeNetworkDelegate* chrome_network_delegate_unowned = nullptr;
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {

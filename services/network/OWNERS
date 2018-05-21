@@ -13,6 +13,8 @@ per-file cross_origin_read_blocking*=lukasza@chromium.org
 
 per-file manifest.json=set noparent
 per-file manifest.json=file://ipc/SECURITY_OWNERS
+per-file *_type_converter*.*=set noparent
+per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
 
 per-file network_sandbox_hook_linux.*.cc=file://sandbox/OWNERS
 per-file network_sandbox_win.*=file://sandbox/win/OWNERS
