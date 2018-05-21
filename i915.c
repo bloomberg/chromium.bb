@@ -101,10 +101,6 @@ static int i915_add_kms_item(struct driver *drv, const struct kms_item *item)
 			combo->use_flags |= item->use_flags & ~BO_USE_CURSOR;
 		}
 
-		/* If we can scanout NV12, we support all tiling modes. */
-		if (item->format == DRM_FORMAT_NV12)
-			combo->use_flags |= item->use_flags;
-
 		if (combo->metadata.modifier == item->modifier)
 			combo->use_flags |= item->use_flags;
 	}
@@ -181,11 +177,6 @@ static int i915_add_combinations(struct driver *drv)
 	drv_add_combinations(drv, tileable_texture_source_formats,
 			     ARRAY_SIZE(tileable_texture_source_formats), &metadata,
 			     texture_use_flags);
-
-	/* Support y-tiled NV12 for libva */
-	const uint32_t nv12_format = DRM_FORMAT_NV12;
-	drv_add_combinations(drv, &nv12_format, 1, &metadata,
-			     BO_USE_TEXTURE | BO_USE_HW_VIDEO_DECODER);
 
 	kms_items = drv_query_kms(drv);
 	if (!kms_items)
