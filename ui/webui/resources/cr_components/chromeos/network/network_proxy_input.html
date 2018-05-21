@@ -36,16 +36,14 @@
     <div id="container">
       <div id="label">[[label]]</div>
       <paper-input-container id="host" no-label-float disabled$="[[!editable]]">
-        <iron-input slot="input">
-          <input value="{{value.Host}}" disabled$="[[!editable]]"
-              on-change="onValueChange_">
+        <iron-input slot="input" bind-value="{{value.Host}}">
+          <input disabled$="[[!editable]]" on-change="onValueChange_">
         </iron-input>
       </paper-input-container>
       <div>[[i18n('networkProxyPort')]]</div>
       <paper-input-container id="port" no-label-float disabled$="[[!editable]]">
-        <iron-input slot="input">
-          <input value="{{value.Port}}" disabled$="[[!editable]]"
-              on-change="onValueChange_">
+        <iron-input slot="input" bind-value="{{value.Port}}">
+          <input disabled$="[[!editable]]" on-change="onValueChange_">
         </iron-input>
       </paper-input-container>
     </div>
