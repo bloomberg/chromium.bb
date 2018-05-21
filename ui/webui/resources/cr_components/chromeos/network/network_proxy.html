@@ -127,7 +127,9 @@
           useSharedProxies)]]">
         <div>[[i18n('networkProxyExceptionList')]]</div>
         <network-proxy-exclusions on-proxy-change="onProxyExclusionsChange_"
-            exclusions="{{proxy_.ExcludeDomains}}">
+            exclusions="{{proxy_.ExcludeDomains}}"
+            editable="[[isEditable_('ExcludeDomains', networkProperties,
+                editable, useSharedProxies)]]">
         </network-proxy-exclusions>
         <div class="layout horizontal">
           <paper-input-container no-label-float class="flex">
