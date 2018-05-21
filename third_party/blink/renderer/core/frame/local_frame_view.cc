@@ -3487,16 +3487,11 @@ void LocalFrameView::PaintTree() {
 
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     GraphicsContext context(*paint_controller_);
+    // With BlinkGenPropertyTrees, |PaintRootGraphicsLayer| is the ancestor of
+    // all drawable layers (see: PaintLayerCompositor::PaintRootGraphicsLayer)
+    // so we do not need to collect scrollbars separately.
     CollectDrawableLayersForLayerListRecursively(
         context, layout_view->Compositor()->PaintRootGraphicsLayer());
-    if (viewport_scrollable_area_) {
-      CollectDrawableLayersForLayerListRecursively(
-          context, viewport_scrollable_area_->LayerForHorizontalScrollbar());
-      CollectDrawableLayersForLayerListRecursively(
-          context, viewport_scrollable_area_->LayerForVerticalScrollbar());
-      CollectDrawableLayersForLayerListRecursively(
-          context, viewport_scrollable_area_->LayerForScrollCorner());
-    }
     paint_controller_->CommitNewDisplayItems();
   }
 
