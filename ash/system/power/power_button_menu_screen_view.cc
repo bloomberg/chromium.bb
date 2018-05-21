@@ -19,6 +19,8 @@
 
 namespace ash {
 
+constexpr int PowerButtonMenuView::kMenuViewTransformDistanceDp;
+
 namespace {
 
 // Color of the fullscreen background shield.
@@ -34,6 +36,21 @@ gfx::Size GetPrimaryDisplayLandscapeSize() {
   gfx::Rect bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   return gfx::Size(std::max(bounds.width(), bounds.height()),
                    std::min(bounds.width(), bounds.height()));
+}
+
+// Adjust the menu's |actual_position| to be at least kMenuTransformDistanceDp
+// from the edge of the display. |menu_size| means the width or height of the
+// menu and |actual_position| is x-coordinate or y-coordinate of the menu.
+// |display_edge| is the width or height of the display in landscape_primary
+// orientation depending on the power button's posotion.
+int AdjustMenuEdgeForDisplaySize(int actual_position,
+                                 int display_edge,
+                                 int menu_size) {
+  return std::min(display_edge -
+                      PowerButtonMenuView::kMenuViewTransformDistanceDp -
+                      menu_size,
+                  std::max(PowerButtonMenuView::kMenuViewTransformDistanceDp,
+                           actual_position));
 }
 
 }  // namespace
@@ -193,10 +210,12 @@ void PowerButtonMenuScreenView::InitializeMenuBoundsOrigins() {
   const gfx::Size landscape_size = GetPrimaryDisplayLandscapeSize();
   int display_width = landscape_size.width();
   int display_height = landscape_size.height();
+  int display_edge_for_adjust = landscape_size.height();
 
   if (power_button_position_ == PowerButtonPosition::TOP ||
       power_button_position_ == PowerButtonPosition::BOTTOM) {
     std::swap(display_width, display_height);
+    display_edge_for_adjust = landscape_size.width();
   }
 
   int power_button_offset = display_height * power_button_offset_percentage_;
@@ -254,25 +273,33 @@ void PowerButtonMenuScreenView::InitializeMenuBoundsOrigins() {
   menu_bounds_origins_.insert(std::make_pair(
       left_screen_orientation,
       gfx::Point(PowerButtonMenuView::kMenuViewTransformDistanceDp,
-                 left_power_button_y - menu_size.height() / 2)));
+                 AdjustMenuEdgeForDisplaySize(
+                     left_power_button_y - menu_size.height() / 2,
+                     display_edge_for_adjust, menu_size.height()))));
 
   menu_bounds_origins_.insert(std::make_pair(
       right_screen_orientation,
       gfx::Point(display_width -
                      PowerButtonMenuView::kMenuViewTransformDistanceDp -
                      menu_size.width(),
-                 right_power_button_y - menu_size.height() / 2)));
+                 AdjustMenuEdgeForDisplaySize(
+                     right_power_button_y - menu_size.height() / 2,
+                     display_edge_for_adjust, menu_size.height()))));
 
   // Power button position offset from the top when the button is at the top
   // is always zero.
   menu_bounds_origins_.insert(std::make_pair(
       top_screen_orientation,
-      gfx::Point(top_power_button_x - menu_size.width() / 2,
+      gfx::Point(AdjustMenuEdgeForDisplaySize(
+                     top_power_button_x - menu_size.width() / 2,
+                     display_edge_for_adjust, menu_size.width()),
                  PowerButtonMenuView::kMenuViewTransformDistanceDp)));
 
   menu_bounds_origins_.insert(std::make_pair(
       bottom_screen_orientation,
-      gfx::Point(bottom_power_button_x - menu_size.width() / 2,
+      gfx::Point(AdjustMenuEdgeForDisplaySize(
+                     bottom_power_button_x - menu_size.width() / 2,
+                     display_edge_for_adjust, menu_size.width()),
                  display_width -
                      PowerButtonMenuView::kMenuViewTransformDistanceDp -
                      menu_size.height())));
