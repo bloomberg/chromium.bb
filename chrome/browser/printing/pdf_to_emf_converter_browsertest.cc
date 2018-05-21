@@ -202,20 +202,12 @@ class PdfToEmfConverterBrowserTest : public InProcessBrowserTest {
   bool GetEmfData() {
     base::ScopedAllowBlockingForTesting allow_blocking;
 
-    // Need to save the EMF to a file as LazyEmf::GetDataAsVector() is not
-    // implemented.
-    base::FilePath emf_file_path;
-    if (!base::CreateTemporaryFile(&emf_file_path))
+    std::vector<char> buffer;
+    if (!current_emf_file_->GetDataAsVector(&buffer))
       return false;
 
-    base::File emf_file(emf_file_path, base::File::Flags::FLAG_CREATE_ALWAYS |
-                                           base::File::Flags::FLAG_WRITE);
-    bool ret = current_emf_file_->SaveTo(&emf_file);
-    emf_file.Close();
-    if (ret)
-      ret = base::ReadFileToString(emf_file_path, &actual_current_emf_data_);
-    base::DeleteFile(emf_file_path, false);
-    return ret && !actual_current_emf_data_.empty();
+    actual_current_emf_data_.assign(buffer.data(), buffer.size());
+    return !actual_current_emf_data_.empty();
   }
 
   const base::FilePath test_data_dir_;

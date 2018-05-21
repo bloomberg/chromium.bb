@@ -4,6 +4,8 @@
 
 #include "chrome/services/printing/pdf_to_emf_converter_factory.h"
 
+#include <utility>
+
 #include "chrome/services/printing/pdf_to_emf_converter.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -19,12 +21,12 @@ PdfToEmfConverterFactory::PdfToEmfConverterFactory() = default;
 PdfToEmfConverterFactory::~PdfToEmfConverterFactory() = default;
 
 void PdfToEmfConverterFactory::CreateConverter(
-    mojo::ScopedHandle pdf_file_in,
+    base::ReadOnlySharedMemoryRegion pdf_region,
     const PdfRenderSettings& render_settings,
     mojom::PdfToEmfConverterClientPtr client,
     CreateConverterCallback callback) {
   auto converter = std::make_unique<PdfToEmfConverter>(
-      std::move(pdf_file_in), render_settings, std::move(client));
+      std::move(pdf_region), render_settings, std::move(client));
   uint32_t page_count = converter->total_page_count();
   mojom::PdfToEmfConverterPtr converter_ptr;
   mojo::MakeStrongBinding(std::move(converter),

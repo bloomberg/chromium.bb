@@ -5,6 +5,8 @@
 #ifndef CHROME_SERVICES_PRINTING_PDF_TO_EMF_CONVERTER_FACTORY_H_
 #define CHROME_SERVICES_PRINTING_PDF_TO_EMF_CONVERTER_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/services/printing/public/mojom/pdf_to_emf_converter.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -24,7 +26,7 @@ class PdfToEmfConverterFactory : public mojom::PdfToEmfConverterFactory {
 
  private:
   // mojom::PdfToEmfConverterFactory implementation.
-  void CreateConverter(mojo::ScopedHandle pdf_file_in,
+  void CreateConverter(base::ReadOnlySharedMemoryRegion pdf_region,
                        const PdfRenderSettings& render_settings,
                        mojom::PdfToEmfConverterClientPtr client,
                        CreateConverterCallback callback) override;
