@@ -94,7 +94,7 @@ class GPUInfoCollectorTest
       case kMockedMacOSX: {
         test_values_.gpu.vendor_id = 0x10de;
         test_values_.gpu.device_id = 0x0640;
-        test_values_.driver_vendor = "NVIDIA";
+        test_values_.driver_vendor = "";  // not implemented
         test_values_.driver_version = "1.6.18";
         test_values_.pixel_shader_version = "1.20";
         test_values_.vertex_shader_version = "1.20";
@@ -244,6 +244,148 @@ TEST_P(GPUInfoCollectorTest, CollectGraphicsInfoGL) {
   EXPECT_EQ(test_values_.gl_renderer, gpu_info.gl_renderer);
   EXPECT_EQ(test_values_.gl_vendor, gpu_info.gl_vendor);
   EXPECT_EQ(test_values_.gl_extensions, gpu_info.gl_extensions);
+}
+
+class CollectDriverInfoGLTest : public testing::Test {
+ public:
+  CollectDriverInfoGLTest() = default;
+  ~CollectDriverInfoGLTest() override = default;
+
+  void SetUp() override {}
+  void TearDown() override {}
+};
+
+TEST_F(CollectDriverInfoGLTest, CollectDriverInfoGL) {
+  // clang-format off
+  const struct {
+    const char* driver_vendor;
+    const char* driver_version;
+    const char* gl_renderer;
+    const char* gl_vendor;
+    const char* gl_version;
+    const char* expected_driver_vendor;
+    const char* expected_driver_version;
+  } kTestStrings[] = {
+#if defined(OS_ANDROID)
+    {"Unknown",
+     "-1",
+     "Adreno (TM) 320",
+     "Qualcomm",
+     "OpenGL ES 2.0 V@14.0 AU@04.02 (CL@3206)",
+     "Unknown",
+     "14.0"},
+    {"Unknown",
+     "-1",
+     "Adreno (TM) 420",
+     "Qualcomm",
+     "OpenGL ES 3.0 V@84.0 AU@ (CL@)",
+     "Unknown",
+     "84.0"},
+    {"Unknown",
+     "-1",
+     "PowerVR Rogue G6430",
+     "Imagination Technologies",
+     "OpenGL ES 3.1 build 1.4@3283119",
+     "Unknown",
+     "1.4"},
+    {"Unknown",
+     "-1",
+     "Mali-T604",
+     "ARM",
+     "OpenGL ES 3.1",
+     "Unknown",
+     "0"},
+    {"Unknown",
+     "-1",
+     "NVIDIA Tegra",
+     "NVIDIA Corporation",
+     "OpenGL ES 3.1 NVIDIA 343.00",
+     "Unknown",
+     "343.00"},
+    {"Unknown",
+     "-1",
+     "NVIDIA Tegra 3",
+     "NVIDIA Corporation",
+     "OpenGL ES 2.0 14.01003",
+     "Unknown",
+     "14.01003"},
+    {"Unknown",
+     "-1",
+     "random GPU",
+     "random vendor",
+     "OpenGL ES 2.0 with_long_version_string=1.2.3.4",
+     NULL,
+     "1.2"},
+    {"Unknown",
+     "-1",
+     "random GPU",
+     "random vendor",
+     "OpenGL ES 2.0 with_short_version_string=1",
+     NULL,
+     "0"},
+    {"Unknown",
+     "-1",
+     "random GPU",
+     "random vendor",
+     "OpenGL ES 2.0 with_no_version_string",
+     NULL,
+     "0"},
+#elif defined(OS_MACOSX)
+    {"Unknown",
+     "-1",
+     "Intel Iris Pro OpenGL Engine",
+     "Intel Inc.",
+     "2.1 INTEL-10.6.20",
+     "Unknown",
+     "10.6.20"},
+#elif defined(OS_LINUX)
+    {"",
+     "",
+     "Quadro K2000/PCIe/SSE2",
+     "NVIDIA Corporation",
+     "4.4.0 NVIDIA 331.79",
+     "NVIDIA",
+     "331.79"},
+    {"",
+     "",
+     "Gallium 0.4 on NVE7",
+     "nouveau",
+     "3.3 (Core Profile) Mesa 10.5.9",
+     "Mesa",
+     "10.5.9"},
+    {"",
+     "",
+     "Mesa DRI Intel(R) Haswell Mobile",
+     "Intel Open Source Technology Center",
+     "OpenGL ES 3.0 Mesa 12.1.0-devel (git-ed9dd3b)",
+     "Mesa",
+     "12.1.0"},
+    {"ATI / AMD",
+     "15.201.1151",
+     "ASUS R5 230 Series",
+     "ATI Technologies Inc.",
+     "4.5.13399 Compatibility Profile Context 14.0",
+     "ATI / AMD",
+     "15.201.1151"},
+#endif
+    {NULL, NULL, NULL, NULL, NULL, NULL, NULL}
+  };
+  // clang-format on
+
+  for (int i = 0; kTestStrings[i].gl_renderer != NULL; ++i) {
+    GPUInfo gpu_info;
+    const auto& testStrings = kTestStrings[i];
+    gpu_info.driver_vendor = testStrings.driver_vendor;
+    gpu_info.driver_version = testStrings.driver_version;
+    gpu_info.gl_renderer = testStrings.gl_renderer;
+    gpu_info.gl_vendor = testStrings.gl_vendor;
+    gpu_info.gl_version = testStrings.gl_version;
+    CollectDriverInfoGL(&gpu_info);
+    EXPECT_EQ(testStrings.expected_driver_version, gpu_info.driver_version);
+    if (testStrings.expected_driver_vendor) {
+      EXPECT_EQ(testStrings.expected_driver_vendor, gpu_info.driver_vendor);
+    }
+  }
 }
 
 TEST(MultiGPUsTest, IdentifyActiveGPU0) {

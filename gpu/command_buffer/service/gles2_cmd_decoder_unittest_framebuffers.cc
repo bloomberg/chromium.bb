@@ -63,7 +63,7 @@ class GLES2DecoderTestWithExtensionsOnGLES2 : public GLES2DecoderTest {
   void Init(const char* extensions) {
     InitState init;
     init.extensions = extensions;
-    init.gl_version = "OpenGL ES 2.0";
+    init.gl_version = "opengl es 2.0";
     init.has_alpha = true;
     init.has_depth = true;
     init.request_alpha = true;
@@ -1259,7 +1259,7 @@ TEST_P(GLES2DecoderTest, ReadPixelsInvalidArgs) {
 TEST_P(GLES2DecoderManualInitTest, ReadPixelsAsyncError) {
   InitState init;
   init.extensions = "GL_ARB_sync";
-  init.gl_version = "OpenGL ES 3.0";
+  init.gl_version = "opengl es 3.0";
   init.has_alpha = true;
   init.request_alpha = true;
   init.bind_generates_resource = true;
@@ -1314,7 +1314,7 @@ class GLES2ReadPixelsAsyncTest : public GLES2DecoderManualInitTest {
   void SetUp() override {
     InitState init;
     init.extensions = "GL_ARB_sync";
-    init.gl_version = "OpenGL ES 3.0";
+    init.gl_version = "opengl es 3.0";
     init.has_alpha = true;
     init.request_alpha = true;
     init.bind_generates_resource = true;
@@ -1779,7 +1779,7 @@ TEST_P(GLES2DecoderManualInitTest, ActualStencilDoesNotMatchRequestedStencil) {
 TEST_P(GLES2DecoderManualInitTest, PackedDepthStencilReportsCorrectValues) {
   InitState init;
   init.extensions = "GL_OES_packed_depth_stencil";
-  init.gl_version = "OpenGL ES 2.0";
+  init.gl_version = "opengl es 2.0";
   init.has_depth = true;
   init.has_stencil = true;
   init.request_depth = true;
@@ -1821,7 +1821,7 @@ TEST_P(GLES2DecoderManualInitTest, PackedDepthStencilReportsCorrectValues) {
 TEST_P(GLES2DecoderManualInitTest, PackedDepthStencilNoRequestedStencil) {
   InitState init;
   init.extensions = "GL_OES_packed_depth_stencil";
-  init.gl_version = "OpenGL ES 2.0";
+  init.gl_version = "opengl es 2.0";
   init.has_depth = true;
   init.has_stencil = true;
   init.request_depth = true;
@@ -1862,7 +1862,7 @@ TEST_P(GLES2DecoderManualInitTest, PackedDepthStencilNoRequestedStencil) {
 TEST_P(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferDepth) {
   InitState init;
   init.extensions = "GL_OES_packed_depth_stencil";
-  init.gl_version = "OpenGL ES 2.0";
+  init.gl_version = "opengl es 2.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   DoBindRenderbuffer(
@@ -1932,7 +1932,7 @@ TEST_P(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferDepth) {
 TEST_P(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferStencil) {
   InitState init;
   init.extensions = "GL_OES_packed_depth_stencil";
-  init.gl_version = "OpenGL ES 2.0";
+  init.gl_version = "opengl es 2.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   DoBindRenderbuffer(
@@ -3295,7 +3295,7 @@ TEST_P(GLES2DecoderTest, DrawBuffersEXTMainFramebuffer) {
 
 TEST_P(GLES2DecoderManualInitTest, InvalidateFramebufferBinding) {
   InitState init;
-  init.gl_version = "OpenGL ES 3.0";
+  init.gl_version = "opengl es 3.0";
   InitDecoder(init);
 
   // EXPECT_EQ can't be used to compare function pointers
@@ -3346,7 +3346,7 @@ TEST_P(GLES2DecoderTest, ClearBackbufferBitsOnFlipSwap) {
 TEST_P(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {
   InitState init;
   init.extensions = "GL_EXT_discard_framebuffer";
-  init.gl_version = "OpenGL ES 2.0";
+  init.gl_version = "opengl es 2.0";
   InitDecoder(init);
 
   // EXPECT_EQ can't be used to compare function pointers
@@ -3389,7 +3389,7 @@ TEST_P(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {
 TEST_P(GLES2DecoderManualInitTest, ClearBackbufferBitsOnDiscardFramebufferEXT) {
   InitState init;
   init.extensions = "GL_EXT_discard_framebuffer";
-  init.gl_version = "OpenGL ES 2.0";
+  init.gl_version = "opengl es 2.0";
   InitDecoder(init);
 
   // EXPECT_EQ can't be used to compare function pointers.
@@ -3550,7 +3550,7 @@ TEST_P(GLES2DecoderManualInitTest,
        DiscardedAttachmentsEXTMarksFramebufferIncomplete) {
   InitState init;
   init.extensions = "GL_EXT_discard_framebuffer";
-  init.gl_version = "OpenGL ES 2.0";
+  init.gl_version = "opengl es 2.0";
   init.has_alpha = true;
   init.bind_generates_resource = true;
   InitDecoder(init);

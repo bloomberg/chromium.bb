@@ -22,4 +22,9 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   return false;
 }
 
+void CollectDriverInfoGL(GPUInfo* gpu_info) {
+  // TODO(crbug.com/707031): Implement this.
+  NOTIMPLEMENTED();
+}
+
 }  // namespace gpu
