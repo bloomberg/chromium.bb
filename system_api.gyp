@@ -232,7 +232,7 @@
       'variables': {
         'gen_go': 1,
         'proto_in_dir': 'dbus/vm_concierge',
-        'proto_out_dir': 'go/src/chromiumos/system_api/vm_concierge',
+        'proto_out_dir': 'go/src/chromiumos/system_api/vm_concierge_proto',
       },
       'sources': [
         '<(proto_in_dir)/service.proto',

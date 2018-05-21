@@ -7,7 +7,7 @@ option optimize_for = LITE_RUNTIME;
 
 // This file defines messages used for starting, stopping, and managing VMs.
 package vm_tools.concierge;
-option go_package = "vm_concierge";
+option go_package = "vm_concierge_proto";
 
 // Specification of the key components of a VM.
 message VirtualMachineSpec {
