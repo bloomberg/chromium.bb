@@ -16,6 +16,7 @@ import android.widget.EditText;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.url_formatter.UrlFormatter;
 
 /**
@@ -32,7 +33,11 @@ public class HomepageEditor extends Fragment implements TextWatcher {
             Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mHomepageManager = HomepageManager.getInstance();
-        getActivity().setTitle(R.string.options_homepage_edit_title);
+        if (FeatureUtilities.isNewTabPageButtonEnabled()) {
+            getActivity().setTitle(R.string.options_startup_page_edit_title);
+        } else {
+            getActivity().setTitle(R.string.options_homepage_edit_title);
+        }
         View v = inflater.inflate(R.layout.homepage_editor, container, false);
 
         mHomepageUrlEdit = (EditText) v.findViewById(R.id.homepage_url_edit);
