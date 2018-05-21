@@ -199,12 +199,16 @@ class Json5File(object):
             raise Exception("Unknown value: '%s'\nValid values: %s, \
                 Please change your value to a valid value" % (value, valid_values))
 
+    def merge_from(self, doc):
+        self._process(doc)
+
 
 class Writer(object):
     # Subclasses should override.
     class_name = None
     default_metadata = None
     default_parameters = None
+    snake_case_source_files = False
 
     def __init__(self, json5_files, output_dir):
         self._input_files = copy.copy(json5_files)
