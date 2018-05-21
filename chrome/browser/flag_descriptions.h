@@ -1633,8 +1633,44 @@ extern const char kArcUsbHostDescription[];
 extern const char kArcVpnName[];
 extern const char kArcVpnDescription[];
 
+extern const char kAshDisableLoginDimAndBlurName[];
+extern const char kAshDisableLoginDimAndBlurDescription[];
+
+extern const char kAshDisableSmoothScreenRotationName[];
+extern const char kAshDisableSmoothScreenRotationDescription[];
+
+extern const char kAshEnableDisplayMoveWindowAccelsName[];
+extern const char kAshEnableDisplayMoveWindowAccelsDescription[];
+
+extern const char kAshEnableKeyboardShortcutViewerName[];
+extern const char kAshEnableKeyboardShortcutViewerDescription[];
+
+extern const char kAshEnableMirroredScreenName[];
+extern const char kAshEnableMirroredScreenDescription[];
+
+extern const char kAshEnableNewOverviewAnimationsName[];
+extern const char kAshEnableNewOverviewAnimationsDescription[];
+
+extern const char kAshEnablePersistentWindowBoundsName[];
+extern const char kAshEnablePersistentWindowBoundsDescription[];
+
+extern const char kAshEnableTrilinearFilteringName[];
+extern const char kAshEnableTrilinearFilteringDescription[];
+
 extern const char kAshEnableUnifiedDesktopName[];
 extern const char kAshEnableUnifiedDesktopDescription[];
+
+extern const char kAshShelfColorName[];
+extern const char kAshShelfColorDescription[];
+
+extern const char kAshShelfColorScheme[];
+extern const char kAshShelfColorSchemeDescription[];
+extern const char kAshShelfColorSchemeLightVibrant[];
+extern const char kAshShelfColorSchemeNormalVibrant[];
+extern const char kAshShelfColorSchemeDarkVibrant[];
+extern const char kAshShelfColorSchemeLightMuted[];
+extern const char kAshShelfColorSchemeNormalMuted[];
+extern const char kAshShelfColorSchemeDarkMuted[];
 
 extern const char kBulkPrintersName[];
 extern const char kBulkPrintersDescription[];
@@ -1660,17 +1696,17 @@ extern const char kCrostiniFilesDescription[];
 extern const char kDisableLockScreenAppsName[];
 extern const char kDisableLockScreenAppsDescription[];
 
+extern const char kDisableNetworkSettingsConfigName[];
+extern const char kDisableNetworkSettingsConfigDescription[];
+
+extern const char kDisableSystemTimezoneAutomaticDetectionName[];
+extern const char kDisableSystemTimezoneAutomaticDetectionDescription[];
+
 extern const char kDisableTabletAutohideTitlebarsName[];
 extern const char kDisableTabletAutohideTitlebarsDescription[];
 
 extern const char kDisableTabletSplitViewName[];
 extern const char kDisableTabletSplitViewDescription[];
-
-extern const char kEnablePerUserTimezoneName[];
-extern const char kEnablePerUserTimezoneDescription[];
-
-extern const char kDisableSystemTimezoneAutomaticDetectionName[];
-extern const char kDisableSystemTimezoneAutomaticDetectionDescription[];
 
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
@@ -1690,14 +1726,26 @@ extern const char kEnableEncryptionMigrationDescription[];
 extern const char kEnableFloatingVirtualKeyboardName[];
 extern const char kEnableFloatingVirtualKeyboardDescription[];
 
+extern const char kEnableFullscreenHandwritingVirtualKeyboardName[];
+extern const char kEnableFullscreenHandwritingVirtualKeyboardDescription[];
+
+extern const char kEnableHomeLauncherName[];
+extern const char kEnableHomeLauncherDescription[];
+
 extern const char kEnableImeMenuName[];
 extern const char kEnableImeMenuDescription[];
 
+extern const char kEnableNewWallpaperPickerName[];
+extern const char kEnableNewWallpaperPickerDescription[];
+
+extern const char kEnablePerUserTimezoneName[];
+extern const char kEnablePerUserTimezoneDescription[];
+
+extern const char kEnableSettingsShortcutSearchName[];
+extern const char kEnableSettingsShortcutSearchDescription[];
+
 extern const char kEnableStylusVirtualKeyboardName[];
 extern const char kEnableStylusVirtualKeyboardDescription[];
-
-extern const char kEnableFullscreenHandwritingVirtualKeyboardName[];
-extern const char kEnableFullscreenHandwritingVirtualKeyboardDescription[];
 
 extern const char kEnableUnifiedMultiDeviceSettingsName[];
 extern const char kEnableUnifiedMultiDeviceSettingsDescription[];
@@ -1707,9 +1755,6 @@ extern const char kEnableUnifiedMultiDeviceSetupDescription[];
 
 extern const char kEnableZipArchiverPackerName[];
 extern const char kEnableZipArchiverPackerDescription[];
-
-extern const char kZipArchiverUnpackerName[];
-extern const char kZipArchiverUnpackerDescription[];
 
 extern const char kEolNotificationName[];
 extern const char kEolNotificationDescription[];
@@ -1729,12 +1774,6 @@ extern const char kFirstRunUiTransitionsDescription[];
 extern const char kForceEnableStylusToolsName[];
 extern const char kForceEnableStylusToolsDescription[];
 
-extern const char kUiModeName[];
-extern const char kUiModeDescription[];
-extern const char kUiModeTablet[];
-extern const char kUiModeClamshell[];
-extern const char kUiModeAuto[];
-
 extern const char kGestureEditingName[];
 extern const char kGestureEditingDescription[];
 
@@ -1746,6 +1785,11 @@ extern const char kInputViewDescription[];
 
 extern const char kLockScreenNotificationName[];
 extern const char kLockScreenNotificationDescription[];
+
+extern const char kMaterialDesignInkDropAnimationSpeedName[];
+extern const char kMaterialDesignInkDropAnimationSpeedDescription[];
+extern const char kMaterialDesignInkDropAnimationFast[];
+extern const char kMaterialDesignInkDropAnimationSlow[];
 
 extern const char kMemoryPressureThresholdName[];
 extern const char kMemoryPressureThresholdDescription[];
@@ -1769,14 +1813,14 @@ extern const char kNativeSmbDescription[];
 extern const char kNetworkPortalNotificationName[];
 extern const char kNetworkPortalNotificationDescription[];
 
-extern const char kDisableNetworkSettingsConfigName[];
-extern const char kDisableNetworkSettingsConfigDescription[];
-
 extern const char kNewKoreanImeName[];
 extern const char kNewKoreanImeDescription[];
 
 extern const char kNewZipUnpackerName[];
 extern const char kNewZipUnpackerDescription[];
+
+extern const char kOfficeEditingComponentAppName[];
+extern const char kOfficeEditingComponentAppDescription[];
 
 extern const char kPhysicalKeyboardAutocorrectName[];
 extern const char kPhysicalKeyboardAutocorrectDescription[];
@@ -1791,8 +1835,24 @@ extern const char kQuickUnlockPinSigninDescription[];
 extern const char kQuickUnlockFingerprint[];
 extern const char kQuickUnlockFingerprintDescription[];
 
-extern const char kOfficeEditingComponentAppName[];
-extern const char kOfficeEditingComponentAppDescription[];
+extern const char kShowTapsName[];
+extern const char kShowTapsDescription[];
+
+extern const char kShowTapsAppName[];
+extern const char kShowTapsAppDescription[];
+
+extern const char kShowTouchHudName[];
+extern const char kShowTouchHudDescription[];
+
+extern const char kUiShowCompositedLayerBordersName[];
+extern const char kUiShowCompositedLayerBordersDescription[];
+extern const char kUiShowCompositedLayerBordersRenderPass[];
+extern const char kUiShowCompositedLayerBordersSurface[];
+extern const char kUiShowCompositedLayerBordersLayer[];
+extern const char kUiShowCompositedLayerBordersAll[];
+
+extern const char kUiSlowAnimationsName[];
+extern const char kUiSlowAnimationsDescription[];
 
 extern const char kTeamDrivesName[];
 extern const char kTeamDrivesDescription[];
@@ -1805,6 +1865,12 @@ extern const char kTouchscreenCalibrationDescription[];
 
 extern const char kUiDevToolsName[];
 extern const char kUiDevToolsDescription[];
+
+extern const char kUiModeName[];
+extern const char kUiModeDescription[];
+extern const char kUiModeTablet[];
+extern const char kUiModeClamshell[];
+extern const char kUiModeAuto[];
 
 extern const char kUseMashName[];
 extern const char kUseMashDescription[];
@@ -1827,11 +1893,8 @@ extern const char kVoiceInputDescription[];
 extern const char kWakeOnPacketsName[];
 extern const char kWakeOnPacketsDescription[];
 
-extern const char kEnableHomeLauncherName[];
-extern const char kEnableHomeLauncherDescription[];
-
-extern const char kEnableSettingsShortcutSearchName[];
-extern const char kEnableSettingsShortcutSearchDescription[];
+extern const char kZipArchiverUnpackerName[];
+extern const char kZipArchiverUnpackerDescription[];
 
 #endif  // #if defined(OS_CHROMEOS)
 
@@ -1917,73 +1980,6 @@ extern const char kPnaclSubzeroName[];
 extern const char kPnaclSubzeroDescription[];
 
 #endif  // BUILDFLAG(ENABLE_NACL)
-
-#if defined(OS_CHROMEOS)
-
-extern const char kAshDisableLoginDimAndBlurName[];
-extern const char kAshDisableLoginDimAndBlurDescription[];
-
-extern const char kAshDisableSmoothScreenRotationName[];
-extern const char kAshDisableSmoothScreenRotationDescription[];
-
-extern const char kAshEnableDisplayMoveWindowAccelsName[];
-extern const char kAshEnableDisplayMoveWindowAccelsDescription[];
-
-extern const char kAshEnableKeyboardShortcutViewerName[];
-extern const char kAshEnableKeyboardShortcutViewerDescription[];
-
-extern const char kAshEnableMirroredScreenName[];
-extern const char kAshEnableMirroredScreenDescription[];
-
-extern const char kAshEnableNewOverviewAnimationsName[];
-extern const char kAshEnableNewOverviewAnimationsDescription[];
-
-extern const char kAshEnablePersistentWindowBoundsName[];
-extern const char kAshEnablePersistentWindowBoundsDescription[];
-
-extern const char kAshEnableTrilinearFilteringName[];
-extern const char kAshEnableTrilinearFilteringDescription[];
-
-extern const char kAshShelfColorName[];
-extern const char kAshShelfColorDescription[];
-
-extern const char kAshShelfColorScheme[];
-extern const char kAshShelfColorSchemeDescription[];
-extern const char kAshShelfColorSchemeLightVibrant[];
-extern const char kAshShelfColorSchemeNormalVibrant[];
-extern const char kAshShelfColorSchemeDarkVibrant[];
-extern const char kAshShelfColorSchemeLightMuted[];
-extern const char kAshShelfColorSchemeNormalMuted[];
-extern const char kAshShelfColorSchemeDarkMuted[];
-
-extern const char kEnableNewWallpaperPickerName[];
-extern const char kEnableNewWallpaperPickerDescription[];
-
-extern const char kMaterialDesignInkDropAnimationSpeedName[];
-extern const char kMaterialDesignInkDropAnimationSpeedDescription[];
-extern const char kMaterialDesignInkDropAnimationFast[];
-extern const char kMaterialDesignInkDropAnimationSlow[];
-
-extern const char kShowTapsName[];
-extern const char kShowTapsDescription[];
-
-extern const char kShowTapsAppName[];
-extern const char kShowTapsAppDescription[];
-
-extern const char kShowTouchHudName[];
-extern const char kShowTouchHudDescription[];
-
-extern const char kUiShowCompositedLayerBordersName[];
-extern const char kUiShowCompositedLayerBordersDescription[];
-extern const char kUiShowCompositedLayerBordersRenderPass[];
-extern const char kUiShowCompositedLayerBordersSurface[];
-extern const char kUiShowCompositedLayerBordersLayer[];
-extern const char kUiShowCompositedLayerBordersAll[];
-
-extern const char kUiSlowAnimationsName[];
-extern const char kUiSlowAnimationsDescription[];
-
-#endif  // defined(OS_CHROMEOS)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
