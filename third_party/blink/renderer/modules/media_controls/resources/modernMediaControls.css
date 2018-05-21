@@ -829,14 +829,14 @@ video::-internal-media-controls-scrubbing-message {
 /**
  * VR styling.
  */
-.immersive-mode input[pseudo="-webkit-media-controls-timeline" i],
-.immersive-mode div[pseudo="-internal-media-controls-button-panel" i] {
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i],
+video::-webkit-media-controls.immersive-mode div[pseudo="-internal-media-controls-button-panel" i] {
   padding-left: 32px;
   padding-right: 32px;
 }
 
 /* Timeline sizing does not include padding in max width. */
-.immersive-mode input[pseudo="-webkit-media-controls-timeline" i] {
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i] {
   max-width: 471px;
   height: 5px;
   margin-bottom: 20px;
@@ -845,11 +845,11 @@ video::-internal-media-controls-scrubbing-message {
 }
 
 /* Button panel sizing does include padding in max width. */
-.immersive-mode div[pseudo="-internal-media-controls-button-panel" i] {
+video::-webkit-media-controls.immersive-mode div[pseudo="-internal-media-controls-button-panel" i] {
   max-width: 535px; /* 471px + 64px padding. */
 }
 
-.immersive-mode div[pseudo="-webkit-media-controls-panel" i] {
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-panel" i] {
   /* Centering the button panel and timeline within the controls. */
   text-align: -webkit-center;
 
@@ -859,50 +859,50 @@ video::-internal-media-controls-scrubbing-message {
     repeat-x bottom left;
 }
 
-.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
-.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
-.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background,
-.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background,
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
   height: 5px;
 }
 
-.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   border-radius: 8px;
   margin-top: -5px;
 }
 
-.immersive-mode input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
   width: 64px;
   height: 64px;
   border-radius: 32px;
   background-size: 36px;
 }
 
-.immersive-mode input[pseudo="-webkit-media-controls-mute-button" i],
-.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i],
-.immersive-mode input[pseudo="-internal-media-controls-overflow-button" i] {
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-mute-button" i],
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i],
+video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-controls-overflow-button" i] {
   width: 43px;
   height: 43px;
   min-width: 43px;
   margin-left: 5px;
 }
 
-.immersive-mode div[pseudo="-internal-media-controls-button-panel" i] {
+video::-webkit-media-controls.immersive-mode div[pseudo="-internal-media-controls-button-panel" i] {
   height: 43px;
 }
 
 /* Hover highlighting. */
-.immersive-mode input[pseudo="-webkit-media-controls-mute-button" i]:hover,
-.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i]:hover,
-.immersive-mode input[pseudo="-internal-media-controls-overflow-button" i]:hover {
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-mute-button" i]:hover,
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i]:hover,
+video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-controls-overflow-button" i]:hover {
   background-color: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) {
-  .immersive-mode div[pseudo="-webkit-media-controls-panel" i] {
+  video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-panel" i] {
     background:
       -webkit-image-set(url('default_200_percent/modern/vr_gradient_bg.png') 1x)
       repeat-x bottom left auto 198px;
