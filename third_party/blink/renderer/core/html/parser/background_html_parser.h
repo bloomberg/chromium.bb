@@ -61,9 +61,8 @@ class BackgroundHTMLParser {
     std::unique_ptr<TextResourceDecoder> decoder;
   };
 
-  // The returned BackgroundHTMLParser should only be used on the parser
-  // thread: it must first be initialized by calling init(), and free by
-  // calling stop().
+  // The returned BackgroundHTMLParser must first be initialized by calling
+  // init(), and free by calling stop().
   static base::WeakPtr<BackgroundHTMLParser> Create(
       std::unique_ptr<Configuration>,
       scoped_refptr<base::SingleThreadTaskRunner>);
@@ -105,9 +104,6 @@ class BackgroundHTMLParser {
 
   void EnqueueTokenizedChunk();
   void UpdateDocument(const String& decoded_data);
-
-  template <typename FunctionType, typename... Ps>
-  void RunOnMainThread(FunctionType, Ps&&...);
 
   BackgroundHTMLInputStream input_;
   HTMLSourceTracker source_tracker_;

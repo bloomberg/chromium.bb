@@ -66,10 +66,6 @@ String XSSInfo::BuildConsoleError() const {
   return message.ToString();
 }
 
-bool XSSInfo::IsSafeToSendToAnotherThread() const {
-  return original_url_.IsSafeToSendToAnotherThread();
-}
-
 XSSAuditorDelegate::XSSAuditorDelegate(Document* document)
     : document_(document), did_send_notifications_(false) {
   DCHECK(IsMainThread());
