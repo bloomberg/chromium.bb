@@ -46,6 +46,10 @@
 -HostedAppNonClientFrameViewAshTest.*
 -ImmersiveModeControllerAshHostedAppBrowserTest.*
 
+# Fix immersive fullscreen mode in mash. https://crbug.com/844748.
+-ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInAppImmersiveMode*
+-ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInBrowserImmersiveMode*
+
 # ash::Shell access from ChromeViewsDelegate::CreateDefaultNonClientFrameView()
 # e.g. from chromeos::CaptivePortalWindowProxy::Show().
 # See https://crbug.com/838974
