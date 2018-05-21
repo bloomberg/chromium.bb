@@ -18,6 +18,20 @@ using PendingState = offline_items_collection::PendingState;
 
 namespace {
 
+const std::string GetDisplayName(const offline_pages::OfflinePageItem& page) {
+  if (!page.title.empty())
+    return base::UTF16ToUTF8(page.title);
+
+  std::string host = page.url.host();
+  return host.empty() ? page.url.spec() : host;
+}
+
+const std::string GetDisplayName(
+    const offline_pages::SavePageRequest& request) {
+  std::string host = request.url().host();
+  return host.empty() ? request.url().spec() : host;
+}
+
 const std::string GetMimeType() {
   return offline_pages::IsOfflinePagesSharingEnabled() ? "multipart/related"
                                                        : "text/html";
@@ -32,7 +46,7 @@ OfflineItem OfflineItemConversions::CreateOfflineItem(
     bool is_suggested) {
   OfflineItem item;
   item.id = ContentId(kOfflinePageNamespace, page.client_id.id);
-  item.title = base::UTF16ToUTF8(page.title);
+  item.title = GetDisplayName(page);
   item.filter = OfflineItemFilter::FILTER_PAGE;
   item.state = OfflineItemState::COMPLETE;
   item.total_size_bytes = page.file_size;
@@ -54,6 +68,7 @@ OfflineItem OfflineItemConversions::CreateOfflineItem(
     const SavePageRequest& request) {
   OfflineItem item;
   item.id = ContentId(kOfflinePageNamespace, request.client_id().id);
+  item.title = GetDisplayName(request);
   item.filter = OfflineItemFilter::FILTER_PAGE;
   item.creation_time = request.creation_time();
   item.total_size_bytes = -1L;

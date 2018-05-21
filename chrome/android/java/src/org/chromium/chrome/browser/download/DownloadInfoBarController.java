@@ -35,7 +35,6 @@ import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
-import org.chromium.components.url_formatter.UrlFormatter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -559,7 +558,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
             boolean singleDownloadCompleted =
                     itemCount == 1 && offlineItemState == OfflineItemState.COMPLETE;
             if (singleDownloadCompleted) {
-                info.message = getDisplayName(itemToShow);
+                info.message = itemToShow.title;
                 info.id = itemToShow.id;
                 info.link = getContext().getString(R.string.open_downloaded_label);
                 info.hasAnimation = true;
@@ -757,16 +756,6 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         }
 
         return downloadCount;
-    }
-
-    private String getDisplayName(OfflineItem item) {
-        if (LegacyHelpers.isLegacyOfflinePage(item.id)) {
-            // TODO(shaktisahu): Set the title in offline page backend.
-            if (!TextUtils.isEmpty(item.title)) return item.title;
-            return UrlFormatter.formatUrlForSecurityDisplay(item.pageUrl, false);
-        }
-
-        return item.title;
     }
 
     /**
