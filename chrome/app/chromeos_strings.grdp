@@ -2987,41 +2987,6 @@
     Aw, Snap! There was an error during renaming.
   </message>
 
-  <!-- Extensions Kiosk apps -->
-  <message name="IDS_EXTENSIONS_ADD_KIOSK_APP_BUTTON" desc="Label of the button to bring up kiosk management overlay on chrome extensions page.">
-    Manage kiosk applications...
-  </message>
-  <message name="IDS_EXTENSIONS_KIOSK_OVERLAY_TITLE" desc="The title text of the kiosk settings overlay.">
-    Manage Kiosk Applications
-  </message>
-  <message name="IDS_EXTENSIONS_KIOSK_ADD_APP" desc="Label above the application id text input in the kiosk settings overlay.">
-    Add kiosk application:
-  </message>
-  <message name="IDS_EXTENSIONS_KIOSK_ADD_APP_HINT" desc="Placeholder hint in  the application id text input in the kiosk settings overlay.">
-    Enter application id or webstore URL.
-  </message>
-  <message name="IDS_EXTENSIONS_KIOSK_ENABLE_AUTO_LAUNCH" desc="Text for a button that enables an application to auto launch on startup in the kiosk settings overlay.">
-    Set to auto-launch
-  </message>
-  <message name="IDS_EXTENSIONS_KIOSK_DISABLE_AUTO_LAUNCH" desc="Text for a button that disables an application to auto launch on startup in the kiosk settings overlay.">
-    Disable auto-launch
-  </message>
-  <message name="IDS_EXTENSIONS_KIOSK_AUTO_LAUNCH" desc="Text shows besides an application that is set to auto launch on start up in the kiosk settings overlay.">
-    (auto-launched)
-  </message>
-  <message name="IDS_EXTENSIONS_KIOSK_INVALID_APP" desc="Text shows besides an application that is not valid in the kiosk settings overlay.">
-    Invalid application.
-  </message>
-  <message name="IDS_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_LABEL" desc="Label text for a checkbox to disable kiosk application launch bail out shortcut.">
-    Permanently keep this device in kiosk mode.
-  </message>
-  <message name="IDS_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_BOLD" desc="Bold text of the warning dialog for disabling kiosk application launch bail out shortcut.">
-    Are you sure you want to permanently keep this device in kiosk mode?
-  </message>
-  <message name="IDS_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_FORMAT" desc="Warning text of disabling kiosk application launch bail out shortcut.">
-    The only way to undo this is to re-install <ph name="IDS_SHORT_PRODUCT_OS_NAME">$1<ex>Chrome OS</ex></ph>.
-  </message>
-
   <!-- Keyboard overlay UI -->
   <message name="IDS_KEYBOARD_OVERLAY_TITLE" desc="The title of the keyboard overlay.">
     Keyboard Overlay

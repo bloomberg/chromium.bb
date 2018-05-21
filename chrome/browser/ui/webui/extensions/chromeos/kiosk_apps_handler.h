@@ -18,10 +18,6 @@ namespace base {
 class ListValue;
 }
 
-namespace content {
-class WebUIDataSource;
-}
-
 namespace chromeos {
 
 class KioskAppManager;
@@ -32,8 +28,6 @@ class KioskAppsHandler : public content::WebUIMessageHandler,
  public:
   explicit KioskAppsHandler(OwnerSettingsServiceChromeOS* service);
   ~KioskAppsHandler() override;
-
-  void GetLocalizedValues(content::WebUIDataSource* source);
 
   // content::WebUIMessageHandler overrides:
   void RegisterMessages() override;
