@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
+#include "third_party/blink/renderer/core/script/script_scheduling_type.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -118,6 +119,16 @@ class CORE_EXPORT PendingScript
 
   void Dispose();
 
+  ScriptSchedulingType GetSchedulingType() const {
+    DCHECK_NE(scheduling_type_, ScriptSchedulingType::kNotSet);
+    return scheduling_type_;
+  }
+  bool IsControlledByScriptRunner() const;
+  void SetSchedulingType(ScriptSchedulingType scheduling_type) {
+    DCHECK_EQ(scheduling_type_, ScriptSchedulingType::kNotSet);
+    scheduling_type_ = scheduling_type;
+  }
+
  protected:
   PendingScript(ScriptElementBase*, const TextPosition& starting_position);
 
@@ -136,6 +147,8 @@ class CORE_EXPORT PendingScript
 
   TextPosition starting_position_;  // Only used for inline script tags.
   double parser_blocking_load_start_time_;
+
+  ScriptSchedulingType scheduling_type_ = ScriptSchedulingType::kNotSet;
 
   WebScopedVirtualTimePauser virtual_time_pauser_;
   Member<PendingScriptClient> client_;

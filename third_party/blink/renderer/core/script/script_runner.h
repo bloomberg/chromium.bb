@@ -49,19 +49,14 @@ class CORE_EXPORT ScriptRunner final
     return new ScriptRunner(document);
   }
 
-  // Async scripts may either execute asynchronously (as their load
-  // completes), or 'in order'. See
-  // http://www.html5rocks.com/en/tutorials/speed/script-loading/ for more
-  // information.
-  enum AsyncExecutionType { kNone, kAsync, kInOrder };
-  void QueueScriptForExecution(ScriptLoader*, AsyncExecutionType);
+  void QueueScriptForExecution(ScriptLoader*);
   bool HasPendingScripts() const {
     return !pending_in_order_scripts_.IsEmpty() ||
            !pending_async_scripts_.IsEmpty();
   }
   void Suspend();
   void Resume();
-  void NotifyScriptReady(ScriptLoader*, AsyncExecutionType);
+  void NotifyScriptReady(ScriptLoader*);
   void NotifyScriptStreamerFinished();
 
   static void MovePendingScript(Document&, Document&, ScriptLoader*);

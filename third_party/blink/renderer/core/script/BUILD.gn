@@ -47,6 +47,7 @@ blink_core_sources("script") {
     "script_module_resolver_impl.h",
     "script_runner.cc",
     "script_runner.h",
+    "script_scheduling_type.h",
     "worker_modulator_impl.cc",
     "worker_modulator_impl.h",
     "worklet_modulator_impl.cc",

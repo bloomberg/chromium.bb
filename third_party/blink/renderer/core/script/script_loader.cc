@@ -70,8 +70,7 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
       start_line_number_(WTF::OrdinalNumber::BeforeFirst()),
       will_be_parser_executed_(false),
       will_execute_when_document_finished_parsing_(false),
-      created_during_document_write_(created_during_document_write),
-      async_exec_type_(ScriptRunner::kNone) {
+      created_during_document_write_(created_during_document_write) {
   // <spec
   // href="https://html.spec.whatwg.org/multipage/scripting.html#already-started">
   // ... The cloning steps for script elements must set the "already started"
@@ -614,12 +613,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // that will execute in order as soon as possible associated with the node
     // document of the script element at the time the prepare a script algorithm
     // started. ...</spec>
-    pending_script_ = TakePendingScript();
-    async_exec_type_ = ScriptRunner::kInOrder;
+    pending_script_ = TakePendingScript(ScriptSchedulingType::kInOrder);
     // TODO(hiroshige): Here |contextDocument| is used as "node document"
     // while Step 14 uses |elementDocument| as "node document". Fix this.
-    context_document->GetScriptRunner()->QueueScriptForExecution(
-        this, async_exec_type_);
+    context_document->GetScriptRunner()->QueueScriptForExecution(this);
     // Note that watchForLoad can immediately call pendingScriptFinished.
     pending_script_->WatchForLoad(this);
     // The part "When the script is ready..." is implemented in
@@ -641,12 +638,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // element at the time the prepare a script algorithm started. When the
     // script is ready, execute the script block and then remove the element
     // from the set of scripts that will execute as soon as possible.</spec>
-    pending_script_ = TakePendingScript();
-    async_exec_type_ = ScriptRunner::kAsync;
+    pending_script_ = TakePendingScript(ScriptSchedulingType::kAsync);
     // TODO(hiroshige): Here |contextDocument| is used as "node document"
     // while Step 14 uses |elementDocument| as "node document". Fix this.
-    context_document->GetScriptRunner()->QueueScriptForExecution(
-        this, async_exec_type_);
+    context_document->GetScriptRunner()->QueueScriptForExecution(this);
     // Note that watchForLoad can immediately call pendingScriptFinished.
     pending_script_->WatchForLoad(this);
     // The part "When the script is ready..." is implemented in
@@ -698,7 +693,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   KURL script_url = (!element_document.IsInDocumentWrite() && parser_inserted_)
                         ? element_document.Url()
                         : KURL();
-  ExecuteScriptBlock(TakePendingScript(), script_url);
+  ExecuteScriptBlock(TakePendingScript(ScriptSchedulingType::kImmediate),
+                     script_url);
   return true;
 }
 
@@ -734,16 +730,20 @@ void ScriptLoader::FetchModuleScriptTree(const KURL& url,
       element_, module_tree_client, is_external_script_);
 }
 
-PendingScript* ScriptLoader::TakePendingScript() {
+PendingScript* ScriptLoader::TakePendingScript(
+    ScriptSchedulingType scheduling_type) {
   CHECK(prepared_pending_script_);
+  DCHECK_NE(scheduling_type, ScriptSchedulingType::kNotSet);
+
   PendingScript* pending_script = prepared_pending_script_;
   prepared_pending_script_ = nullptr;
+  pending_script->SetSchedulingType(scheduling_type);
   return pending_script;
 }
 
 void ScriptLoader::Execute() {
   DCHECK(!will_be_parser_executed_);
-  DCHECK(async_exec_type_ != ScriptRunner::kNone);
+  DCHECK(pending_script_->IsControlledByScriptRunner());
   DCHECK(pending_script_->IsExternalOrModule());
   PendingScript* pending_script = pending_script_;
   pending_script_ = nullptr;
@@ -898,7 +898,7 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
   // m_willBeParserExecuted is false for inline scripts, and we want to
   // include inline script execution time as part of parser blocked script
   // execution time.
-  if (async_exec_type_ == ScriptRunner::kNone) {
+  if (!pending_script->IsControlledByScriptRunner()) {
     DocumentParserTiming::From(element_->GetDocument())
         .RecordParserBlockedOnScriptExecutionDuration(
             CurrentTimeTicksInSeconds() - script_exec_start_time,
@@ -915,7 +915,7 @@ void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
   DCHECK(!will_be_parser_executed_);
   DCHECK_EQ(pending_script_, pending_script);
   DCHECK_EQ(pending_script_->GetScriptType(), GetScriptType());
-  DCHECK(async_exec_type_ != ScriptRunner::kNone);
+  DCHECK(pending_script->IsControlledByScriptRunner());
 
   Document* context_document = element_->GetDocument().ContextDocument();
   if (!context_document) {
@@ -923,8 +923,7 @@ void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
     return;
   }
 
-  context_document->GetScriptRunner()->NotifyScriptReady(this,
-                                                         async_exec_type_);
+  context_document->GetScriptRunner()->NotifyScriptReady(this);
   pending_script_->StopWatchingForLoad();
 }
 
@@ -962,8 +961,8 @@ bool ScriptLoader::IsScriptForEventSupported() const {
 }
 
 PendingScript* ScriptLoader::GetPendingScriptIfControlledByScriptRunner() {
-  DCHECK_NE(async_exec_type_, ScriptRunner::kNone);
   DCHECK(pending_script_);
+  DCHECK(pending_script_->IsControlledByScriptRunner());
   return pending_script_;
 }
 
