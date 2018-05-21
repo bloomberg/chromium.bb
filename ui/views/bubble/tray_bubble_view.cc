@@ -381,13 +381,8 @@ base::string16 TrayBubbleView::GetAccessibleWindowTitle() const {
 }
 
 gfx::Size TrayBubbleView::CalculatePreferredSize() const {
+  DCHECK_LE(preferred_width_, params_.max_width);
   return gfx::Size(preferred_width_, GetHeightForWidth(preferred_width_));
-}
-
-gfx::Size TrayBubbleView::GetMaximumSize() const {
-  gfx::Size size = GetPreferredSize();
-  size.set_width(params_.max_width);
-  return size;
 }
 
 int TrayBubbleView::GetHeightForWidth(int width) const {
