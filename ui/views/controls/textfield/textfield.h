@@ -28,6 +28,7 @@
 #include "ui/gfx/selection_model.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/context_menu_controller.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/textfield/textfield_model.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/selection_controller.h"
@@ -487,6 +488,9 @@ class VIEWS_EXPORT Textfield : public View,
   // a pointer event.
   void RequestFocusWithPointer(ui::EventPointerType pointer_type);
 
+  // Returns the color to use for the FocusRing, if one is present.
+  SkColor GetFocusRingColor() const;
+
   // The text model.
   std::unique_ptr<TextfieldModel> model_;
 
@@ -611,6 +615,9 @@ class VIEWS_EXPORT Textfield : public View,
   // How this textfield was focused.
   ui::TextInputClient::FocusReason focus_reason_ =
       ui::TextInputClient::FOCUS_REASON_NONE;
+
+  // The focus ring for this TextField.
+  std::unique_ptr<FocusRing> focus_ring_;
 
   // Used to bind callback functions to this object.
   base::WeakPtrFactory<Textfield> weak_ptr_factory_;

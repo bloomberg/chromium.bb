@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/style/typography.h"
 
 namespace views {
@@ -42,8 +43,6 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void OnPaintBackground(gfx::Canvas* canvas) override;
 
   // LabelButton:
-  void OnFocus() override;
-  void OnBlur() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   std::unique_ptr<InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;

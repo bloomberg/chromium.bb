@@ -77,6 +77,7 @@ MdTextButton* MdTextButton::Create(ButtonListener* listener,
   MdTextButton* button = new MdTextButton(listener, button_context);
   button->SetText(text);
   button->SetFocusForPlatform();
+
   return button;
 }
 
@@ -107,16 +108,6 @@ void MdTextButton::OnPaintBackground(gfx::Canvas* canvas) {
     SkScalar alpha = hover_animation().CurrentValueBetween(0, kHoverAlpha);
     canvas->FillRect(GetLocalBounds(), SkColorSetA(SK_ColorBLACK, alpha));
   }
-}
-
-void MdTextButton::OnFocus() {
-  LabelButton::OnFocus();
-  FocusRing::Install(this);
-}
-
-void MdTextButton::OnBlur() {
-  LabelButton::OnBlur();
-  FocusRing::Uninstall(this);
 }
 
 void MdTextButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -194,6 +185,7 @@ MdTextButton::MdTextButton(ButtonListener* listener, int button_context)
       DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH);
   SetMinSize(gfx::Size(minimum_width, 0));
   SetFocusPainter(nullptr);
+  SetInstallFocusRingOnFocus(true);
   label()->SetAutoColorReadabilityEnabled(false);
   set_request_focus_on_press(false);
 

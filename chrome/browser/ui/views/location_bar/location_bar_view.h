@@ -33,6 +33,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/drag_controller.h"
 
 class CommandUpdater;
@@ -116,7 +117,7 @@ class LocationBarView : public LocationBar,
   static bool IsRounded();
 
   // Returns the location bar border radius in DIPs.
-  float GetBorderRadius();
+  float GetBorderRadius() const;
 
   // Initializes the LocationBarView.
   void Init();
@@ -396,6 +397,9 @@ class LocationBarView : public LocationBar,
   // which is the vertical edge thickness plus the padding next to it.
   static int GetTotalVerticalPadding();
 
+  // Returns the path to draw this LocationBarView's focus ring around.
+  SkPath GetFocusRingPath() const;
+
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser
   // window, so this may be NULL.
@@ -473,9 +477,6 @@ class LocationBarView : public LocationBar,
   // focused. Used when the toolbar is in full keyboard accessibility mode.
   bool show_focus_rect_ = false;
 
-  // The focus ring view.
-  views::View* focus_ring_ = nullptr;
-
   // Tracks this preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;
 
@@ -488,6 +489,9 @@ class LocationBarView : public LocationBar,
   // whether to animate security level transitions.
   security_state::SecurityLevel last_update_security_level_ =
       security_state::NONE;
+
+  // The focus ring, if one is in use.
+  std::unique_ptr<views::FocusRing> focus_ring_;
 
   // Used to scope the lifetime of asynchronous icon fetch callbacks to the
   // lifetime of the object. Weak pointers issued by this factory are

@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/focus_ring.h"
 
 namespace views {
 
@@ -38,10 +39,8 @@ class VIEWS_EXPORT RadioButton : public Checkbox {
 
   // Overridden from Checkbox:
   void SetChecked(bool checked) override;
-  void PaintFocusRing(View* view,
-                      gfx::Canvas* canvas,
-                      const cc::PaintFlags& flags) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  SkPath GetFocusRingPath() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RadioButton);

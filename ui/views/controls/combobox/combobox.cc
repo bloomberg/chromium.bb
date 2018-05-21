@@ -284,16 +284,6 @@ void PaintArrowButton(
                         x, 0, arrow_button_images[0]->width(), height);
 }
 
-void InstallOrUpdateFocusRing(Combobox* combobox) {
-  if (combobox->invalid()) {
-    FocusRing::Install(combobox,
-                       combobox->GetNativeTheme()->GetSystemColor(
-                           ui::NativeTheme::kColorId_AlertSeverityHigh));
-  } else {
-    FocusRing::Install(combobox);
-  }
-}
-
 }  // namespace
 
 // static
@@ -472,6 +462,9 @@ Combobox::Combobox(ui::ComboboxModel* model, Style style)
     arrow_image_ = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_MENU_DROPARROW);
   }
+
+  if (UseMd())
+    focus_ring_ = FocusRing::Install(this);
 }
 
 Combobox::~Combobox() {
@@ -543,8 +536,9 @@ void Combobox::SetInvalid(bool invalid) {
 
   invalid_ = invalid;
 
-  if (HasFocus() && UseMd())
-    InstallOrUpdateFocusRing(this);
+  if (focus_ring_)
+    focus_ring_->SetInvalid(invalid);
+
   UpdateBorder();
   SchedulePaint();
 }
@@ -581,9 +575,6 @@ void Combobox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
           theme->GetSystemColor(
               ui::NativeTheme::kColorId_TextfieldDefaultBackground),
           FocusableBorder::kCornerRadiusDp)));
-
-  if (HasFocus())
-    InstallOrUpdateFocusRing(this);
 }
 
 int Combobox::GetRowCount() {
@@ -756,8 +747,6 @@ void Combobox::OnFocus() {
   View::OnFocus();
   // Border renders differently when focused.
   SchedulePaint();
-  if (UseMd())
-    InstallOrUpdateFocusRing(this);
 }
 
 void Combobox::OnBlur() {
@@ -768,7 +757,6 @@ void Combobox::OnBlur() {
     selector_->OnViewBlur();
   // Border renders differently when focused.
   SchedulePaint();
-  FocusRing::Uninstall(this);
 }
 
 void Combobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {

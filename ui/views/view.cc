@@ -51,6 +51,7 @@
 #include "ui/views/drag_controller.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/view_observer.h"
+#include "ui/views/view_tracker.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/views_switches.h"
 #include "ui/views/widget/native_widget_private.h"
@@ -1797,10 +1798,19 @@ void View::OnBlur() {
 void View::Focus() {
   OnFocus();
   ScrollViewToVisible();
+
+  for (ViewObserver& observer : observers_)
+    observer.OnViewFocused(this);
 }
 
 void View::Blur() {
+  ViewTracker tracker(this);
   OnBlur();
+
+  if (tracker.view()) {
+    for (ViewObserver& observer : observers_)
+      observer.OnViewBlurred(this);
+  }
 }
 
 // Tooltips --------------------------------------------------------------------

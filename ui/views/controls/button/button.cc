@@ -146,6 +146,13 @@ void Button::SetAnimationDuration(int duration) {
   hover_animation_.SetSlideDuration(duration);
 }
 
+void Button::SetInstallFocusRingOnFocus(bool install) {
+  if (install)
+    focus_ring_ = FocusRing::Install(this);
+  else
+    focus_ring_.reset();
+}
+
 void Button::SetHotTracked(bool is_hot_tracked) {
   if (state_ != STATE_DISABLED)
     SetState(is_hot_tracked ? STATE_HOVERED : STATE_NORMAL);
@@ -425,8 +432,6 @@ void Button::OnFocus() {
   InkDropHostView::OnFocus();
   if (focus_painter_)
     SchedulePaint();
-  if (install_focus_ring_on_focus_)
-    FocusRing::Install(this);
 }
 
 void Button::OnBlur() {
@@ -442,13 +447,11 @@ void Button::OnBlur() {
   }
   if (focus_painter_)
     SchedulePaint();
-  if (install_focus_ring_on_focus_)
-    FocusRing::Uninstall(this);
 }
 
 std::unique_ptr<InkDrop> Button::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
-  ink_drop->SetShowHighlightOnFocus(!install_focus_ring_on_focus_);
+  ink_drop->SetShowHighlightOnFocus(!focus_ring_);
   ink_drop->SetAutoHighlightModeForPlatform();
   return std::move(ink_drop);
 }

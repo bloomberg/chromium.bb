@@ -44,6 +44,12 @@ class VIEWS_EXPORT ViewObserver {
   // Called from ~View.
   virtual void OnViewIsDeleting(View* observed_view) {}
 
+  // Called immediately after |observed_view| has gained focus.
+  virtual void OnViewFocused(View* observed_view) {}
+
+  // Called immediately after |observed_view| has lost focus.
+  virtual void OnViewBlurred(View* observed_view) {}
+
  protected:
   virtual ~ViewObserver() {}
 };

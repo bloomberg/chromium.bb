@@ -98,14 +98,10 @@ void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void PageActionIconView::OnFocus() {
   InkDropHostView::OnFocus();
-  if (views::PlatformStyle::kPreferFocusRings)
-    views::FocusRing::Install(this);
 }
 
 void PageActionIconView::OnBlur() {
   InkDropHostView::OnFocus();
-  if (views::PlatformStyle::kPreferFocusRings)
-    views::FocusRing::Uninstall(this);
 }
 
 bool PageActionIconView::GetTooltipText(const gfx::Point& p,
@@ -124,6 +120,14 @@ gfx::Size PageActionIconView::CalculatePreferredSize() const {
 
 void PageActionIconView::Layout() {
   image_->SetBoundsRect(GetContentsBounds());
+  if (views::PlatformStyle::kPreferFocusRings) {
+    focus_ring_ = views::FocusRing::Install(this);
+    if (LocationBarView::IsRounded()) {
+      SkPath path;
+      path.addOval(gfx::RectToSkRect(GetLocalBounds()));
+      focus_ring_->SetPath(path);
+    }
+  }
 }
 
 bool PageActionIconView::OnMousePressed(const ui::MouseEvent& event) {
@@ -181,7 +185,7 @@ bool PageActionIconView::OnKeyReleased(const ui::KeyEvent& event) {
 void PageActionIconView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   View::ViewHierarchyChanged(details);
-  if (details.is_add && GetNativeTheme())
+  if (details.is_add && details.child == this && GetNativeTheme())
     UpdateIcon();
 }
 

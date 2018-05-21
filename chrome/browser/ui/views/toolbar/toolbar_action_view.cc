@@ -68,7 +68,7 @@ ToolbarActionView::ToolbarActionView(
   view_controller_->SetDelegate(this);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   set_drag_controller(delegate_);
-  set_install_focus_ring_on_focus(views::PlatformStyle::kPreferFocusRings);
+  SetInstallFocusRingOnFocus(views::PlatformStyle::kPreferFocusRings);
 
   set_context_menu_controller(this);
 
