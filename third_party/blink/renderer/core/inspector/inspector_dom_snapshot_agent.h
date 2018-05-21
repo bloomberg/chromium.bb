@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/DOMSnapshot.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -14,6 +15,7 @@
 
 namespace blink {
 
+class CharacterData;
 class Document;
 class Element;
 class InspectedFrames;
@@ -32,6 +34,10 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   ~InspectorDOMSnapshotAgent() override;
   void Trace(blink::Visitor*) override;
 
+  void Restore() override;
+
+  protocol::Response enable() override;
+  protocol::Response disable() override;
   protocol::Response getSnapshot(
       std::unique_ptr<protocol::Array<String>> style_whitelist,
       protocol::Maybe<bool> include_event_listeners,
@@ -44,8 +50,15 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
       std::unique_ptr<protocol::Array<protocol::DOMSnapshot::ComputedStyle>>*
           computed_styles) override;
 
+  bool Enabled() const;
+
+  // InspectorInstrumentation API.
+  void CharacterDataModified(CharacterData*);
+  void DidInsertDOMNode(Node*);
+
  private:
   InspectorDOMSnapshotAgent(InspectedFrames*, InspectorDOMDebuggerAgent*);
+  void InnerEnable();
 
   // Adds a DOMNode for the given Node to |dom_nodes_| and returns its index.
   int VisitNode(Node*,
@@ -86,6 +99,8 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   void TraversePaintLayerTree(Document*);
   void VisitPaintLayer(PaintLayer*);
 
+  void GetOriginUrl(String*, const Node*);
+
   struct VectorStringHashTraits;
   using ComputedStylesMap = WTF::HashMap<Vector<String>,
                                          int,
@@ -93,6 +108,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
                                          VectorStringHashTraits>;
   using CSSPropertyWhitelist = Vector<std::pair<String, CSSPropertyID>>;
   using PaintOrderMap = WTF::HashMap<PaintLayer*, int>;
+  using OriginUrlMap = WTF::HashMap<DOMNodeId, String>;
 
   // State of current snapshot.
   std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DOMNode>> dom_nodes_;
@@ -108,6 +124,9 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   // Maps a PaintLayer to its paint order index.
   std::unique_ptr<PaintOrderMap> paint_order_map_;
   int next_paint_order_index_ = 0;
+  // Maps a backend node id to the url of the script (if any) that generates
+  // the corresponding node.
+  std::unique_ptr<OriginUrlMap> origin_url_map_;
 
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorDOMDebuggerAgent> dom_debugger_agent_;
