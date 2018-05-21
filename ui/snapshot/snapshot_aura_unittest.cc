@@ -184,13 +184,7 @@ class SnapshotAuraTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SnapshotAuraTest);
 };
 
-#if defined(THREAD_SANITIZER)
-// https://crbug.com/845173
-#define MAYBE_FullScreenWindow DISABLED_FullScreenWindow
-#else
-#define MAYBE_FullScreenWindow FullScreenWindow
-#endif
-TEST_F(SnapshotAuraTest, MAYBE_FullScreenWindow) {
+TEST_F(SnapshotAuraTest, FullScreenWindow) {
   SetupTestWindow(root_window()->bounds());
   WaitForDraw();
 
