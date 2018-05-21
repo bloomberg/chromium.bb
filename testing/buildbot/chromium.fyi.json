@@ -4252,8 +4252,7 @@
             {
               "device_type": "coho"
             }
-          ],
-          "shards": 10
+          ]
         },
         "test": "content_browsertests"
       },
@@ -4275,8 +4274,7 @@
             {
               "device_type": "coho"
             }
-          ],
-          "shards": 3
+          ]
         },
         "test": "content_unittests"
       },
@@ -4486,8 +4484,7 @@
             {
               "device_type": "coho"
             }
-          ],
-          "shards": 4
+          ]
         },
         "test": "net_unittests"
       },
@@ -4586,8 +4583,7 @@
             {
               "device_type": "coho"
             }
-          ],
-          "shards": 5
+          ]
         },
         "test": "unit_tests"
       },

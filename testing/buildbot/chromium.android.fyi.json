@@ -3565,8 +3565,7 @@
             {
               "device_type": "coho"
             }
-          ],
-          "shards": 3
+          ]
         },
         "test": "content_unittests"
       },
@@ -4052,7 +4051,8 @@
               "device_type": "coho"
             }
           ],
-          "shards": 4
+          "hard_timeout": 1800,
+          "shards": 3
         },
         "test": "net_unittests"
       },
@@ -4244,8 +4244,7 @@
             {
               "device_type": "coho"
             }
-          ],
-          "shards": 5
+          ]
         },
         "test": "unit_tests"
       },
@@ -4317,8 +4316,7 @@
             {
               "device_type": "coho"
             }
-          ],
-          "shards": 7
+          ]
         },
         "test": "webview_instrumentation_test_apk"
       },
