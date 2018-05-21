@@ -26,8 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_STRING_TRUNCATOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_STRING_TRUNCATOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_STRING_TRUNCATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_STRING_TRUNCATOR_H_
 
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -43,9 +43,8 @@ class PLATFORM_EXPORT StringTruncator {
  public:
   static String CenterTruncate(const String&, float max_width, const Font&);
   static String RightTruncate(const String&, float max_width, const Font&);
-  static float Width(const String&, const Font&);
 };
 
 }  // namespace blink
 
-#endif  // !defined(StringTruncator_h)
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_STRING_TRUNCATOR_H_
