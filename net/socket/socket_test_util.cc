@@ -1830,7 +1830,6 @@ int MockUDPClientSocket::CompleteRead() {
   CompletionOnceCallback callback = std::move(pending_read_callback_);
   pending_read_buf_ = NULL;
   pending_read_buf_len_ = 0;
-  pending_read_callback_.Reset();
 
   int result = read_data_.result;
   DCHECK(result != ERR_IO_PENDING);

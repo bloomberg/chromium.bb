@@ -494,7 +494,6 @@ void SpdyProxyClientSocket::OnClose(int status)  {
 
   base::WeakPtr<SpdyProxyClientSocket> weak_ptr = weak_factory_.GetWeakPtr();
   CompletionOnceCallback write_callback = std::move(write_callback_);
-  write_callback_.Reset();
   write_buffer_len_ = 0;
 
   // If we're in the middle of connecting, we need to make sure
