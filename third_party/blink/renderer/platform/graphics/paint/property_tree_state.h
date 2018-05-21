@@ -58,6 +58,10 @@ class PLATFORM_EXPORT PropertyTreeState {
   String ToTreeString() const;
 #endif
 
+  // Returns memory usage of the transform & clip caches of this state plus
+  // ancestors.
+  size_t CacheMemoryUsageInBytes() const;
+
  private:
   const TransformPaintPropertyNode* transform_;
   const ClipPaintPropertyNode* clip_;

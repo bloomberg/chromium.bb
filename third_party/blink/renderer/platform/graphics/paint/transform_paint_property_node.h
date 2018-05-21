@@ -143,6 +143,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 
   std::unique_ptr<JSONObject> ToJSON() const;
 
+  // Returns memory usage of the transform cache of this node plus ancestors.
+  size_t CacheMemoryUsageInBytes() const;
+
  private:
   TransformPaintPropertyNode(
       scoped_refptr<const TransformPaintPropertyNode> parent,
