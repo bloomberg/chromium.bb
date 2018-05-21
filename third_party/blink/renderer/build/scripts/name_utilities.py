@@ -29,8 +29,11 @@
 import os.path
 import re
 
+from blinkbuild.name_style_converter import tokenize_name
+
 
 # Acronyms are kept as all caps.
+# TODO(tkent): Remove this. crbug.com/843927
 ACRONYMS = [
     '2D',
     '2G',
@@ -75,6 +78,7 @@ def lower_first(name):
 
     E.g., 'SetURL' becomes 'setURL', but 'URLFoo' becomes 'urlFoo'.
     """
+    # TODO(tkent): Remove dependency to ACRONYMS. crbug.com/843927
     for acronym in ACRONYMS:
         if name.startswith(acronym):
             return name.replace(acronym, acronym.lower(), 1)
@@ -85,6 +89,7 @@ def upper_first(name):
     """Return name with first letter or initial acronym uppercased.
        The acronym must have a capital letter following it to be considered.
     """
+    # TODO(tkent): Remove dependency to ACRONYMS. crbug.com/843927
     for acronym in ACRONYMS:
         if name.startswith(acronym.lower()):
             if len(name) == len(acronym) or name[len(acronym)].isupper():
@@ -146,17 +151,11 @@ def enum_for_css_property_alias(property_name):
 # API below instead.
 
 
-def split_name(name):
-    """Splits a name in some format to a list of words"""
-    return re.findall('|'.join(ACRONYMS) + r'|(?:[A-Z][a-z]*)|[a-z]+|(?:\d+[a-z]*)',
-                      upper_first_letter(name))
-
-
 def join_names(*names):
     """Given a list of names, join them into a single space-separated name."""
     result = []
     for name in names:
-        result.extend(split_name(name))
+        result.extend(tokenize_name(name))
     return ' '.join(result)
 
 
@@ -170,7 +169,8 @@ def naming_style(f):
         names = name_or_names if isinstance(name_or_names, list) else [name_or_names]
         words = []
         for name in names:
-            words.extend(split_name(name))
+            if name:
+                words.extend(tokenize_name(name))
         return f(words)
     return inner
 

@@ -14,6 +14,7 @@ scripts_for_json5_files = [
   # dependency for whole jinja2 package
   "//third_party/jinja2/__init__.py",
   "//third_party/markupsafe/__init__.py",  # jinja2 dep
+  "$_scripts_dir/blinkbuild/name_style_converter.py",
   "$_scripts_dir/hasher.py",
   "$_scripts_dir/json5_generator.py",
   "$_scripts_dir/license.py",
