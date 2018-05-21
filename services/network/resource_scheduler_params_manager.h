@@ -26,7 +26,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerParamsManager {
     ParamsForNetworkQuality();
 
     ParamsForNetworkQuality(size_t max_delayable_requests,
-                            double non_delayable_weight);
+                            double non_delayable_weight,
+                            bool delay_requests_on_multiplexed_connections);
 
     // The maximum number of delayable requests allowed.
     size_t max_delayable_requests;
@@ -34,6 +35,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerParamsManager {
     // The weight of a non-delayable request when counting the effective number
     // of non-delayable requests in-flight.
     double non_delayable_weight;
+
+    // True if requests to servers that support prioritization (e.g.,
+    // H2/SPDY/QUIC) should be delayed similar to other HTTP 1.1 requests.
+    bool delay_requests_on_multiplexed_connections;
   };
 
   ResourceSchedulerParamsManager();
@@ -58,6 +63,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerParamsManager {
       net::EffectiveConnectionType effective_connection_type) const;
 
  private:
+  // Reads the experiments params for DelayRequestsOnMultiplexedConnections
+  // finch experiment, modifies |result| based on the experiment params, and
+  // returns the modified |result|.
+  static ParamsForNetworkQualityContainer
+  GetParamsForDelayRequestsOnMultiplexedConnections(
+      ParamsForNetworkQualityContainer result);
+
   // Reads experiment parameters and populates
   // |params_for_network_quality_container_|. It looks for configuration
   // parameters with sequential numeric suffixes, and stops looking after the

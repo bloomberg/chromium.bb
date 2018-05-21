@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
@@ -27,7 +28,6 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
   void ReadConfigTestHelper(size_t num_ranges) {
     const char kTrialName[] = "TrialName";
     const char kGroupName[] = "GroupName";
-    const char kThrottleDelayable[] = "ThrottleDelayable";
 
     base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
     base::test::ScopedFeatureList scoped_feature_list;
@@ -53,8 +53,8 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
     std::unique_ptr<base::FeatureList> feature_list(
         std::make_unique<base::FeatureList>());
     feature_list->RegisterFieldTrialOverride(
-        kThrottleDelayable, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-        field_trial);
+        features::kThrottleDelayable.name,
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
     scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 
     ResourceSchedulerParamsManager resource_scheduler_params_manager;
@@ -97,6 +97,10 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
                            .GetParamsForEffectiveConnectionType(
                                effective_connection_type)
                            .non_delayable_weight);
+        EXPECT_FALSE(
+            resource_scheduler_params_manager
+                .GetParamsForEffectiveConnectionType(effective_connection_type)
+                .delay_requests_on_multiplexed_connections);
         return;
 
       case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
@@ -109,6 +113,10 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
                            .GetParamsForEffectiveConnectionType(
                                effective_connection_type)
                            .non_delayable_weight);
+        EXPECT_FALSE(
+            resource_scheduler_params_manager
+                .GetParamsForEffectiveConnectionType(effective_connection_type)
+                .delay_requests_on_multiplexed_connections);
         return;
       case net::EFFECTIVE_CONNECTION_TYPE_LAST:
         NOTREACHED();
@@ -133,6 +141,144 @@ TEST_F(ResourceSchedulerParamsManagerTest, VerifyAllDefaultParams) {
   }
 }
 
+// Verify that the params are parsed correctly when
+// kDelayRequestsOnMultiplexedConnections is enabled.
+TEST_F(ResourceSchedulerParamsManagerTest,
+       DelayRequestsOnMultiplexedConnections) {
+  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+  const std::string kTrialName = "TrialFoo";
+  const std::string kGroupName = "GroupFoo";  // Value not used
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  scoped_refptr<base::FieldTrial> trial =
+      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+  std::map<std::string, std::string> params;
+  params["MaxEffectiveConnectionType"] = "2G";
+  ASSERT_TRUE(
+      base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
+          kTrialName, kGroupName, params));
+
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->RegisterFieldTrialOverride(
+      features::kDelayRequestsOnMultiplexedConnections.name,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
+  ResourceSchedulerParamsManager resource_scheduler_params_manager;
+
+  for (int effective_connection_type = net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+       effective_connection_type < net::EFFECTIVE_CONNECTION_TYPE_LAST;
+       ++effective_connection_type) {
+    net::EffectiveConnectionType ect =
+        static_cast<net::EffectiveConnectionType>(effective_connection_type);
+    if (effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G ||
+        effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_2G) {
+      EXPECT_EQ(8u, resource_scheduler_params_manager
+                        .GetParamsForEffectiveConnectionType(ect)
+                        .max_delayable_requests);
+      EXPECT_EQ(3.0, resource_scheduler_params_manager
+                         .GetParamsForEffectiveConnectionType(ect)
+                         .non_delayable_weight);
+      EXPECT_TRUE(resource_scheduler_params_manager
+                      .GetParamsForEffectiveConnectionType(ect)
+                      .delay_requests_on_multiplexed_connections);
+
+    } else {
+      VerifyDefaultParams(
+          resource_scheduler_params_manager,
+          static_cast<net::EffectiveConnectionType>(effective_connection_type));
+    }
+  }
+}
+
+// Verify that the params are parsed correctly when
+// kDelayRequestsOnMultiplexedConnections and kThrottleDelayable are enabled.
+TEST_F(ResourceSchedulerParamsManagerTest, MultipleFieldTrialsEnabled) {
+  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+  const std::string kTrialNameMultiplex = "TrialMultiplex";
+  const std::string kTrialNameThrottleDelayable = "TrialThrottleDelayable";
+  const std::string kGroupName = "GroupFoo";  // Value not used
+
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  // Configure kDelayRequestsOnMultiplexedConnections experiment params.
+  std::map<std::string, std::string> params_multiplex;
+  params_multiplex["MaxEffectiveConnectionType"] = "3G";
+  scoped_refptr<base::FieldTrial> trial_multiplex =
+      base::FieldTrialList::CreateFieldTrial(kTrialNameMultiplex, kGroupName);
+  ASSERT_TRUE(
+      base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
+          kTrialNameMultiplex, kGroupName, params_multiplex));
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->RegisterFieldTrialOverride(
+      features::kDelayRequestsOnMultiplexedConnections.name,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial_multiplex.get());
+
+  // Configure kThrottleDelayable experiment params.
+  std::map<std::string, std::string> params_throttle_delayable;
+  params_throttle_delayable["EffectiveConnectionType1"] = "3G";
+  params_throttle_delayable["MaxDelayableRequests1"] = "12";
+  params_throttle_delayable["NonDelayableWeight1"] = "3.0";
+  params_throttle_delayable["EffectiveConnectionType2"] = "4G";
+  params_throttle_delayable["MaxDelayableRequests2"] = "14";
+  params_throttle_delayable["NonDelayableWeight2"] = "4.0";
+  ASSERT_TRUE(base::AssociateFieldTrialParams(
+      kTrialNameThrottleDelayable, kGroupName, params_throttle_delayable));
+  base::FieldTrial* trial_throttle_delayable =
+      base::FieldTrialList::CreateFieldTrial(kTrialNameThrottleDelayable,
+                                             kGroupName);
+  feature_list->RegisterFieldTrialOverride(
+      features::kThrottleDelayable.name,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial_throttle_delayable);
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
+  ResourceSchedulerParamsManager resource_scheduler_params_manager;
+
+  // Verify the parsed params.
+  for (int effective_connection_type = net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+       effective_connection_type < net::EFFECTIVE_CONNECTION_TYPE_LAST;
+       ++effective_connection_type) {
+    net::EffectiveConnectionType ect =
+        static_cast<net::EffectiveConnectionType>(effective_connection_type);
+    if (effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G ||
+        effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_2G) {
+      EXPECT_EQ(8u, resource_scheduler_params_manager
+                        .GetParamsForEffectiveConnectionType(ect)
+                        .max_delayable_requests);
+      EXPECT_EQ(3.0, resource_scheduler_params_manager
+                         .GetParamsForEffectiveConnectionType(ect)
+                         .non_delayable_weight);
+      EXPECT_TRUE(resource_scheduler_params_manager
+                      .GetParamsForEffectiveConnectionType(ect)
+                      .delay_requests_on_multiplexed_connections);
+
+    } else if (effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_3G) {
+      EXPECT_EQ(12u, resource_scheduler_params_manager
+                         .GetParamsForEffectiveConnectionType(ect)
+                         .max_delayable_requests);
+      EXPECT_EQ(3.0, resource_scheduler_params_manager
+                         .GetParamsForEffectiveConnectionType(ect)
+                         .non_delayable_weight);
+      EXPECT_TRUE(resource_scheduler_params_manager
+                      .GetParamsForEffectiveConnectionType(ect)
+                      .delay_requests_on_multiplexed_connections);
+    } else if (effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_4G) {
+      EXPECT_EQ(14u, resource_scheduler_params_manager
+                         .GetParamsForEffectiveConnectionType(ect)
+                         .max_delayable_requests);
+      EXPECT_EQ(4.0, resource_scheduler_params_manager
+                         .GetParamsForEffectiveConnectionType(ect)
+                         .non_delayable_weight);
+      EXPECT_FALSE(resource_scheduler_params_manager
+                       .GetParamsForEffectiveConnectionType(ect)
+                       .delay_requests_on_multiplexed_connections);
+    } else {
+      VerifyDefaultParams(resource_scheduler_params_manager, ect);
+    }
+  }
+}
+
 // Test that a configuration with bad strings does not break the parser, and
 // the parser stops reading the configuration after it encounters the first
 // missing index.
@@ -140,7 +286,6 @@ TEST_F(ResourceSchedulerParamsManagerTest, ReadInvalidConfigTest) {
   base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
   const char kTrialName[] = "TrialName";
   const char kGroupName[] = "GroupName";
-  const char kThrottleDelayable[] = "ThrottleDelayable";
 
   base::test::ScopedFeatureList scoped_feature_list;
   std::map<std::string, std::string> params;
@@ -162,8 +307,8 @@ TEST_F(ResourceSchedulerParamsManagerTest, ReadInvalidConfigTest) {
   std::unique_ptr<base::FeatureList> feature_list(
       std::make_unique<base::FeatureList>());
   feature_list->RegisterFieldTrialOverride(
-      kThrottleDelayable, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-      field_trial);
+      features::kThrottleDelayable.name,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
   scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 
   ResourceSchedulerParamsManager resource_scheduler_params_manager;

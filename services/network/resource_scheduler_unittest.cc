@@ -76,8 +76,9 @@ void ConfigureYieldFieldTrial(
   params["MaxRequestsBeforeYieldingParam"] =
       base::IntToString(max_requests_before_yielding);
   params["MaxYieldMs"] = base::IntToString(max_yield_ms);
-  base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-      kTrialName, kGroupName, params);
+  ASSERT_TRUE(
+      base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
+          kTrialName, kGroupName, params));
 
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->RegisterFieldTrialOverride(
@@ -349,14 +350,34 @@ class ResourceSchedulerTest : public testing::Test {
     }
   }
 
+  void ConfigureDelayRequestsOnMultiplexedConnectionsFieldTrial() {
+    std::map<net::EffectiveConnectionType,
+             ResourceSchedulerParamsManager::ParamsForNetworkQuality>
+        params_for_network_quality_container;
+    ResourceSchedulerParamsManager::ParamsForNetworkQuality params_slow_2g(
+        8, 3.0, true);
+    ResourceSchedulerParamsManager::ParamsForNetworkQuality params_2g(8, 3.0,
+                                                                      true);
+
+    params_for_network_quality_container
+        [net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G] = params_slow_2g;
+    params_for_network_quality_container[net::EFFECTIVE_CONNECTION_TYPE_2G] =
+        params_2g;
+
+    resource_scheduler_params_manager_ =
+        std::make_unique<ResourceSchedulerParamsManager>(
+            params_for_network_quality_container);
+  }
+
   void InitializeThrottleDelayableExperiment(bool lower_delayable_count_enabled,
                                              double non_delayable_weight) {
     std::map<net::EffectiveConnectionType,
              ResourceSchedulerParamsManager::ParamsForNetworkQuality>
         params_for_network_quality_container;
-    ResourceSchedulerParamsManager::ParamsForNetworkQuality params_slow_2g(8,
-                                                                           3.0);
-    ResourceSchedulerParamsManager::ParamsForNetworkQuality params_3g(10, 0.0);
+    ResourceSchedulerParamsManager::ParamsForNetworkQuality params_slow_2g(
+        8, 3.0, false);
+    ResourceSchedulerParamsManager::ParamsForNetworkQuality params_3g(10, 0.0,
+                                                                      false);
 
     if (lower_delayable_count_enabled) {
       params_slow_2g.max_delayable_requests = 2;
@@ -716,6 +737,57 @@ TEST_F(ResourceSchedulerTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(low2->started());
   EXPECT_TRUE(low_spdy->started());
+}
+
+// Verify that requests to SPDY servers are delayed when
+// |delay_requests_on_multiplexed_connections| is true.
+TEST_F(ResourceSchedulerTest,
+       OneLowLoadsUntilBodyInsertedEvenSpdyWhenDelayableSlowConnection) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  ConfigureDelayRequestsOnMultiplexedConnectionsFieldTrial();
+
+  const struct {
+    net::EffectiveConnectionType effective_connection_type;
+    bool expected_spdy_delayed;
+  } tests[] = {
+      {net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN, false},
+      {net::EFFECTIVE_CONNECTION_TYPE_OFFLINE, false},
+      {net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G, true},
+      {net::EFFECTIVE_CONNECTION_TYPE_2G, true},
+      {net::EFFECTIVE_CONNECTION_TYPE_3G, false},
+  };
+  for (const auto& test : tests) {
+    network_quality_estimator_.set_effective_connection_type(
+        test.effective_connection_type);
+
+    InitializeScheduler();
+    http_server_properties_.SetSupportsSpdy(
+        url::SchemeHostPort("https", "spdyhost", 443), true);
+    std::unique_ptr<TestRequest> high(
+        NewRequest("http://host/high", net::HIGHEST));
+    std::unique_ptr<TestRequest> low(
+        NewRequest("http://host/low", net::LOWEST));
+    std::unique_ptr<TestRequest> low2(
+        NewRequest("http://host/low", net::LOWEST));
+    std::unique_ptr<TestRequest> low_spdy(
+        NewRequest("https://spdyhost/low", net::LOWEST));
+    EXPECT_TRUE(high->started());
+    EXPECT_TRUE(low->started());
+    // Only 1 low priority non-spdy request should be allowed.
+    EXPECT_FALSE(low2->started());
+    // SPDY proxy low-priority requests are started only if connection quality
+    // is fast.
+    EXPECT_NE(test.expected_spdy_delayed, low_spdy->started());
+
+    if (test.expected_spdy_delayed) {
+      // When body tag is inserted, low priority requests should be unthrottled.
+      scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
+      high.reset();
+      base::RunLoop().RunUntilIdle();
+      EXPECT_TRUE(low2->started());
+      EXPECT_TRUE(low_spdy->started());
+    }
+  }
 }
 
 TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenNotDelayable) {
@@ -1347,6 +1419,57 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
   EXPECT_TRUE(low2->started());
 }
 
+// Similar to NewSpdyHostInDelayableRequests test above, but tests the behavior
+// when |delay_requests_on_multiplexed_connections| is true.
+TEST_F(ResourceSchedulerTest,
+       NewDelayableSpdyHostInDelayableRequestsSlowConnection) {
+  ConfigureDelayRequestsOnMultiplexedConnectionsFieldTrial();
+  network_quality_estimator_.set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  InitializeScheduler();
+
+  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
+  // Maximum number of delayable requests allowed when effective connection type
+  // is 2G.
+  const int max_delayable_requests_per_client_ect_2g = 8;
+
+  std::unique_ptr<TestRequest> low1_spdy(
+      NewRequest("http://spdyhost1:8080/low", net::LOWEST));
+  EXPECT_TRUE(low1_spdy->started());
+  // Cancel a request after we learn the server supports SPDY.
+  std::vector<std::unique_ptr<TestRequest>> lows;
+  for (int i = 0; i < max_delayable_requests_per_client_ect_2g - 1; ++i) {
+    string url = "http://host" + base::IntToString(i) + "/low";
+    lows.push_back(NewRequest(url.c_str(), net::LOWEST));
+    EXPECT_TRUE(lows.back()->started());
+  }
+  std::unique_ptr<TestRequest> low1(NewRequest("http://host/low", net::LOWEST));
+  EXPECT_FALSE(low1->started());
+  http_server_properties_.SetSupportsSpdy(
+      url::SchemeHostPort("http", "spdyhost1", 8080), true);
+  low1_spdy.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(low1->started());
+
+  low1.reset();
+  base::RunLoop().RunUntilIdle();
+  std::unique_ptr<TestRequest> low2_spdy(
+      NewRequest("http://spdyhost2:8080/low", net::IDLE));
+  // Reprioritize a request after we learn the server supports SPDY.
+  EXPECT_TRUE(low2_spdy->started());
+  http_server_properties_.SetSupportsSpdy(
+      url::SchemeHostPort("http", "spdyhost2", 8080), true);
+  ChangeRequestPriority(low2_spdy.get(), net::LOWEST);
+  base::RunLoop().RunUntilIdle();
+  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  EXPECT_FALSE(low2->started());
+
+  // SPDY requests are not started either.
+  std::unique_ptr<TestRequest> low3_spdy(
+      NewRequest("http://spdyhost1:8080/low", net::LOWEST));
+  EXPECT_FALSE(low3_spdy->started());
+}
+
 TEST_F(ResourceSchedulerTest, NewDelayableSpdyHostInDelayableRequests) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(kPrioritySupportedRequestsDelayable,
@@ -1954,6 +2077,155 @@ TEST_F(ResourceSchedulerTest, MultipleInstances_2) {
   }
 
   another_scheduler.OnClientDeleted(kChildId, kRouteId);
+}
+
+// Verify that when |delay_requests_on_multiplexed_connections| is true, spdy
+// hosts are not subject to kMaxNumDelayableRequestsPerHostPerClient limit, but
+// are still subject to kDefaultMaxNumDelayableRequestsPerClient limit.
+TEST_F(ResourceSchedulerTest,
+       MaxRequestsPerHostForSpdyWhenDelayableSlowConnections) {
+  ConfigureDelayRequestsOnMultiplexedConnectionsFieldTrial();
+  network_quality_estimator_.set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  InitializeScheduler();
+  http_server_properties_.SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), true);
+
+  // Should be in sync with resource_scheduler.cc for effective connection type
+  // of 2G.
+  const size_t kDefaultMaxNumDelayableRequestsPerClient = 8;
+
+  ASSERT_LT(kMaxNumDelayableRequestsPerHostPerClient,
+            kDefaultMaxNumDelayableRequestsPerClient);
+
+  // Body has been reached. Up to kDefaultMaxNumDelayableRequestsPerClient
+  // delayable requests would be allowed in-flight.
+  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
+
+  // Add more than kMaxNumDelayableRequestsPerHostPerClient low-priority
+  // requests. They should all be allowed.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i) {
+    requests.push_back(NewRequest("https://spdyhost/low", net::LOWEST));
+    EXPECT_TRUE(requests[i]->started());
+  }
+
+  // Requests to SPDY servers should not be subject to
+  // kMaxNumDelayableRequestsPerHostPerClient limit. They should only be subject
+  // to kDefaultMaxNumDelayableRequestsPerClient limit.
+  for (size_t i = kMaxNumDelayableRequestsPerHostPerClient + 1;
+       i < kDefaultMaxNumDelayableRequestsPerClient + 1; i++) {
+    EXPECT_EQ(i, requests.size());
+    requests.push_back(NewRequest("https://spdyhost/low", net::LOWEST));
+    EXPECT_EQ(i < kDefaultMaxNumDelayableRequestsPerClient,
+              requests[i]->started());
+  }
+}
+
+// Verify that when |delay_requests_on_multiplexed_connections| is false, spdy
+// hosts are not subject to kMaxNumDelayableRequestsPerHostPerClient or
+// kDefaultMaxNumDelayableRequestsPerClient limits.
+TEST_F(ResourceSchedulerTest,
+       MaxRequestsPerHostForSpdyWhenDelayableFastConnections) {
+  ConfigureDelayRequestsOnMultiplexedConnectionsFieldTrial();
+  network_quality_estimator_.set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_4G);
+
+  InitializeScheduler();
+  http_server_properties_.SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), true);
+
+  // Should be in sync with resource_scheduler.cc for effective connection type
+  // of 4G.
+  const size_t kDefaultMaxNumDelayableRequestsPerClient = 10;
+
+  ASSERT_LT(kMaxNumDelayableRequestsPerHostPerClient,
+            kDefaultMaxNumDelayableRequestsPerClient);
+
+  // Body has been reached. Up to kDefaultMaxNumDelayableRequestsPerClient
+  // delayable requests would be allowed in-flight.
+  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
+
+  // Add more than kDefaultMaxNumDelayableRequestsPerClient low-priority
+  // requests. They should all be allowed.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (size_t i = 0; i < kDefaultMaxNumDelayableRequestsPerClient + 1; ++i) {
+    requests.push_back(NewRequest("https://spdyhost/low", net::LOWEST));
+    EXPECT_TRUE(requests[i]->started());
+  }
+}
+
+// Verify that when |delay_requests_on_multiplexed_connections| is true,
+// non-spdy hosts are still subject to kMaxNumDelayableRequestsPerHostPerClient
+// limit.
+TEST_F(ResourceSchedulerTest,
+       MaxRequestsPerHostForNonSpdyWhenDelayableSlowConnections) {
+  ConfigureDelayRequestsOnMultiplexedConnectionsFieldTrial();
+  network_quality_estimator_.set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  InitializeScheduler();
+
+  // Body has been reached.
+  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
+
+  // Add more than kMaxNumDelayableRequestsPerHostPerClient delayable requests.
+  // They should not all be allowed.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
+    requests.push_back(NewRequest("https://non_spdyhost/low", net::LOWEST));
+
+  // kMaxNumDelayableRequestsPerHostPerClient should apply for non-spdy host.
+  for (size_t i = 0; i < requests.size(); ++i) {
+    EXPECT_EQ(i < kMaxNumDelayableRequestsPerHostPerClient,
+              requests[i]->started());
+  }
+}
+
+// Verify that when |delay_requests_on_multiplexed_connections| is true,
+// non-spdy requests are still subject to
+// kDefaultMaxNumDelayableRequestsPerClient limit.
+TEST_F(ResourceSchedulerTest,
+       DelayableRequestLimitSpdyDelayableSlowConnections) {
+  ConfigureDelayRequestsOnMultiplexedConnectionsFieldTrial();
+  network_quality_estimator_.set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  InitializeScheduler();
+  // The limit will matter only once the page has a body, since delayable
+  // requests are not loaded before that.
+  scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
+  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
+
+  // Throw in one high priority request to ensure that it does not matter once
+  // a body exists.
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  EXPECT_TRUE(high->started());
+
+  // Should be in sync with resource_scheduler.cc for effective connection type
+  // (ECT) 2G. For ECT of 2G, number of low priority requests allowed are:
+  // 8 - 3 * count of high priority requests in flight. That expression computes
+  // to 8 - 3 * 1  = 5.
+  const int max_low_priority_requests_allowed = 5;
+
+  std::vector<std::unique_ptr<TestRequest>> lows_singlehost;
+  // Queue up to the maximum limit. Use different host names to prevent the
+  // per host limit from kicking in.
+  for (int i = 0; i < max_low_priority_requests_allowed; ++i) {
+    // Keep unique hostnames to prevent the per host limit from kicking in.
+    std::string url = "http://host" + base::IntToString(i) + "/low";
+    lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
+    EXPECT_TRUE(lows_singlehost[i]->started()) << i;
+  }
+
+  std::unique_ptr<TestRequest> last_singlehost(
+      NewRequest("http://host/last", net::LOWEST));
+
+  // Last should not start because the maximum requests that can be in-flight
+  // have already started.
+  EXPECT_FALSE(last_singlehost->started());
 }
 
 }  // unnamed namespace

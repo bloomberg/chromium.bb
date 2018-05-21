@@ -117,7 +117,8 @@ const char* RequestStartTriggerString(RequestStartTrigger trigger) {
 }  // namespace
 
 // The maximum number of requests to allow be in-flight at any point in time per
-// host.
+// host. This limit does not apply to hosts that support request prioritization
+// when |delay_requests_on_multiplexed_connections| is true.
 static const size_t kMaxNumDelayableRequestsPerHostPerClient = 6;
 
 // The maximum number of delayable requests to allow to be in-flight at any
@@ -409,6 +410,13 @@ class ResourceScheduler::Client {
       // so the shceduler works always with the normal mode.
       deprecated_has_html_body_ = true;
     }
+    // Must not run the conflicting experiments together.
+    DCHECK(!params_for_network_quality_
+                .delay_requests_on_multiplexed_connections ||
+           !resource_scheduler->priority_requests_delayable());
+    DCHECK(!params_for_network_quality_
+                .delay_requests_on_multiplexed_connections ||
+           !resource_scheduler->head_priority_requests_delayable());
   }
 
   ~Client() {}
@@ -679,7 +687,9 @@ class ResourceScheduler::Client {
                kDelayablePriorityThreshold) {
       if (resource_scheduler_->priority_requests_delayable() ||
           (resource_scheduler_->head_priority_requests_delayable() &&
-           !deprecated_has_html_body_)) {
+           !deprecated_has_html_body_) ||
+          params_for_network_quality_
+              .delay_requests_on_multiplexed_connections) {
         // Resources below the delayable priority threshold that are considered
         // delayable.
         attributes |= kAttributeDelayable;
@@ -699,7 +709,28 @@ class ResourceScheduler::Client {
   }
 
   bool ReachedMaxRequestsPerHostPerClient(
-      const net::HostPortPair& active_request_host) const {
+      const net::HostPortPair& active_request_host,
+      bool supports_priority) const {
+    // This method should not be called for requests to origins that support
+    // prioritization (aka multiplexing) unless one of the experiments to
+    // throttle priority requests is enabled.
+    DCHECK(
+        !supports_priority ||
+        params_for_network_quality_.delay_requests_on_multiplexed_connections ||
+        resource_scheduler_->priority_requests_delayable() ||
+        resource_scheduler_->head_priority_requests_delayable());
+
+    // kMaxNumDelayableRequestsPerHostPerClient limit does not apply to servers
+    // that support request priorities when
+    // |delay_requests_on_multiplexed_connections| is true. If
+    // |delay_requests_on_multiplexed_connections| is false, then
+    // kMaxNumDelayableRequestsPerHostPerClient limit still applies to other
+    // experiments that delay priority requests.
+    if (supports_priority &&
+        params_for_network_quality_.delay_requests_on_multiplexed_connections) {
+      return false;
+    }
+
     size_t same_host_count = 0;
     for (RequestSet::const_iterator it = in_flight_requests_.begin();
          it != in_flight_requests_.end(); ++it) {
@@ -804,20 +835,22 @@ class ResourceScheduler::Client {
     bool priority_delayable =
         resource_scheduler_->priority_requests_delayable() ||
         (resource_scheduler_->head_priority_requests_delayable() &&
-         !deprecated_has_html_body_);
+         !deprecated_has_html_body_) ||
+        params_for_network_quality_.delay_requests_on_multiplexed_connections;
+
+    url::SchemeHostPort scheme_host_port(url_request.url());
+    bool supports_priority = url_request.context()
+                                 ->http_server_properties()
+                                 ->SupportsRequestPriority(scheme_host_port);
 
     if (!priority_delayable) {
       if (using_spdy_proxy_ && url_request.url().SchemeIs(url::kHttpScheme))
         return ShouldStartOrYieldRequest(request);
 
-      url::SchemeHostPort scheme_host_port(url_request.url());
-
-      net::HttpServerProperties& http_server_properties =
-          *url_request.context()->http_server_properties();
       // TODO(willchan): We should really improve this algorithm as described in
       // https://crbug.com/164101. Also, theoretically we should not count a
       // request-priority capable request against the delayable requests limit.
-      if (http_server_properties.SupportsRequestPriority(scheme_host_port))
+      if (supports_priority)
         return ShouldStartOrYieldRequest(request);
     }
 
@@ -835,7 +868,7 @@ class ResourceScheduler::Client {
       return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
     }
 
-    if (ReachedMaxRequestsPerHostPerClient(host_port_pair)) {
+    if (ReachedMaxRequestsPerHostPerClient(host_port_pair, supports_priority)) {
       // There may be other requests for other hosts that may be allowed,
       // so keep checking.
       return DO_NOT_START_REQUEST_AND_KEEP_SEARCHING;
