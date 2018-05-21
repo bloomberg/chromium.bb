@@ -129,6 +129,10 @@ void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
                                         int blk_row, int blk_col, int eob,
                                         int reduced_tx_set);
 
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+void av1_inter_mode_data_init();
+#endif
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

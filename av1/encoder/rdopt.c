@@ -503,6 +503,96 @@ typedef struct InterModeSearchState {
 } InterModeSearchState;
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
+
+#define INTER_MODE_RD_STATS_DUMP 0
+
+typedef struct InterModeRdModel {
+  int ready;
+  double a;
+  double b;
+  double dist_mean;
+} InterModeRdModel;
+
+InterModeRdModel inter_mode_rd_models[BLOCK_SIZES_ALL];
+
+#define INTER_MODE_RD_DATA_OVERALL_SIZE 2000
+static int inter_mode_data_idx = 0;
+static int64_t inter_mode_data_sse[INTER_MODE_RD_DATA_OVERALL_SIZE];
+static int64_t inter_mode_data_dist[INTER_MODE_RD_DATA_OVERALL_SIZE];
+static int inter_mode_data_residue_cost[INTER_MODE_RD_DATA_OVERALL_SIZE];
+
+void av1_inter_mode_data_init() {
+  inter_mode_data_idx = 0;
+  for (int i = 0; i < BLOCK_SIZES_ALL; ++i) {
+    InterModeRdModel *md = &inter_mode_rd_models[i];
+    md->ready = 0;
+  }
+}
+
+static void inter_mode_data_fit(BLOCK_SIZE bsize) {
+  InterModeRdModel *md = &inter_mode_rd_models[bsize];
+  double my = 0;
+  double mx = 0;
+  double dx = 0;
+  double dxy = 0;
+  double dist_mean = 0;
+  for (int i = 0; i < inter_mode_data_idx; ++i) {
+    const double sse = inter_mode_data_sse[i];
+    const double dist = inter_mode_data_dist[i];
+    const double residue_cost = inter_mode_data_residue_cost[i];
+    const double ld = (sse - dist) / residue_cost;
+    dist_mean += dist;
+    my += ld;
+    mx += sse;
+    dx += sse * sse;
+    dxy += sse * ld;
+  }
+  dist_mean = dist_mean / inter_mode_data_idx;
+  my = my / inter_mode_data_idx;
+  mx = mx / inter_mode_data_idx;
+  dx = sqrt(dx / inter_mode_data_idx);
+  dxy = dxy / inter_mode_data_idx;
+
+  md->dist_mean = dist_mean;
+  md->a = (dxy - mx * my) / (dx * dx - mx * mx);
+  md->b = my - md->a * mx;
+  md->ready = 1;
+}
+
+static void inter_mode_data_push(BLOCK_SIZE bsize, int64_t sse, int64_t dist,
+                                 int residue_cost) {
+  if (residue_cost == 0) return;
+  InterModeRdModel *md = &inter_mode_rd_models[bsize];
+  if (md->ready) {
+    return;
+  }
+  if (bsize != BLOCK_4X4) return;
+  if (inter_mode_data_idx < INTER_MODE_RD_DATA_OVERALL_SIZE) {
+    inter_mode_data_sse[inter_mode_data_idx] = sse;
+    inter_mode_data_dist[inter_mode_data_idx] = dist;
+    inter_mode_data_residue_cost[inter_mode_data_idx] = residue_cost;
+    ++inter_mode_data_idx;
+  }
+  if (inter_mode_data_idx == INTER_MODE_RD_DATA_OVERALL_SIZE) {
+    // TODO(angiebird): find an adative way to do the fitting
+    inter_mode_data_fit(bsize);
+  }
+}
+
+static int64_t get_est_rd(BLOCK_SIZE bsize, int rdmult, int64_t sse,
+                          int curr_cost) {
+  InterModeRdModel *md = &inter_mode_rd_models[bsize];
+  if (md->ready) {
+    const double est_ld = md->a * sse + md->b;
+    const double est_residue_cost = (sse - md->dist_mean) / est_ld;
+    const int est_cost = (int)round(est_residue_cost) + curr_cost;
+    const int64_t int64_dist_mean = (int64_t)round(md->dist_mean);
+    const int64_t est_rd = RDCOST(rdmult, est_cost, int64_dist_mean);
+    return est_rd;
+  }
+  return 0;
+}
+
 #define INTER_MODE_RD_DATA_SIZE 300
 
 typedef struct InterModeRdData {
@@ -8477,6 +8567,22 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     rd_stats->rate += compmode_interinter_cost;
 
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+    (void)inter_mode_rd_vector;
+    const int mv_cost = ref_mv_cost + rate_mv;
+    const int curr_cost = mv_cost + args->single_comp_cost +
+                          args->ref_frame_cost + compmode_interinter_cost;
+#if !INTER_MODE_RD_STATS_DUMP
+    const int64_t est_rd =
+        get_est_rd(mbmi->sb_type, x->rdmult, skip_sse_sb, curr_cost);
+    if (est_rd > ref_best_rd) {
+      restore_dst_buf(xd, orig_dst, num_planes);
+      early_terminate = INT64_MAX;
+      continue;
+    }
+#endif  // !INTER_MODE_RD_STATS_DUMP
+#endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
+
     if (search_jnt_comp) {
       if (cpi->sf.jnt_comp_fast_tx_search && comp_idx == 0) {
         // TODO(chengchen): this speed feature introduces big loss.
@@ -8498,13 +8604,16 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       }
       if (ret_val != INT64_MAX) {
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-        const int mv_cost = ref_mv_cost + rate_mv;
+        const int residue_cost = rd_stats_y->rate + rd_stats_uv->rate;
+        inter_mode_data_push(mbmi->sb_type, rd_stats->sse, rd_stats->dist,
+                             residue_cost);
+#if INTER_MODE_RD_STATS_DUMP
         inter_mode_rd_vector_push(
             inter_mode_rd_vector, this_mode, mbmi, mbmi_ext, rd_stats->sse,
             rd_stats->dist, args->single_comp_cost + compmode_interinter_cost,
-            args->ref_frame_cost, mv_cost,
-            rd_stats_y->rate + rd_stats_uv->rate);
-#endif
+            args->ref_frame_cost, mv_cost, residue_cost);
+#endif  // INTER_MODE_RD_STATS_DUMP
+#endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
         int64_t tmp_rd;
         const int skip_ctx = av1_get_skip_context(xd);
         if (RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist) <
@@ -8534,14 +8643,17 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                refs, rate_mv, &orig_dst);
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
       if (ret_val != INT64_MAX) {
-        const int mv_cost = ref_mv_cost + rate_mv;
+        const int residue_cost = rd_stats_y->rate + rd_stats_uv->rate;
+        inter_mode_data_push(mbmi->sb_type, rd_stats->sse, rd_stats->dist,
+                             residue_cost);
+#if INTER_MODE_RD_STATS_DUMP
         inter_mode_rd_vector_push(
             inter_mode_rd_vector, this_mode, mbmi, mbmi_ext, rd_stats->sse,
             rd_stats->dist, args->single_comp_cost + compmode_interinter_cost,
-            args->ref_frame_cost, mv_cost,
-            rd_stats_y->rate + rd_stats_uv->rate);
+            args->ref_frame_cost, mv_cost, residue_cost);
+#endif  // INTER_MODE_RD_STATS_DUMP
       }
-#endif
+#endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
       restore_dst_buf(xd, orig_dst, num_planes);
       if (ret_val != 0) return ret_val;
     }
@@ -10333,7 +10445,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     if (x->skip && !comp_pred) break;
   }
 
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS && INTER_MODE_RD_STATS_DUMP
   inter_mode_rd_vector_dump(&inter_mode_rd_vector);
 #endif
 
