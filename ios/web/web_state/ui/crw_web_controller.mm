@@ -4097,14 +4097,25 @@ registerLoadRequestForURL:(const GURL&)requestURL
   GURL openerURL =
       referrer.length ? GURL(base::SysNSStringToUTF8(referrer)) : _documentURL;
 
-  // TODO(crbug.com/809706): Remove the usage of userIsInteracting and replace
-  // with another boolean that is only true for user java script execution.
-  bool isUserInitiatedNavigationAction =
-      web::GetNavigationActionInitiationType(action) ==
-      web::NavigationActionInitiationType::kUserInitiated;
-  WebState* childWebState = _webStateImpl->CreateNewWebState(
-      requestURL, openerURL,
-      isUserInitiatedNavigationAction || [self userIsInteracting]);
+  bool initiatedByUser = web::GetNavigationActionInitiationType(action) ==
+                         web::NavigationActionInitiationType::kUserInitiated;
+  if (action.navigationType == WKNavigationTypeLinkActivated) {
+    // Link with target="_blank" navigation. |initiatedByUser| reliably
+    // indicates the presence of the user gesture.
+  } else {
+    DCHECK(action.navigationType == WKNavigationTypeOther ||
+           action.navigationType == WKNavigationTypeFormSubmitted)
+        << "unexpected navigation type: " << action.navigationType;
+    // Form submission with target="_blank" or window.open() navigation (with or
+    // without user gesture). There is no reliable way to tell if there was a
+    // user gesture, so this code checks if user has recently tapped on web
+    // view. TODO(crbug.com/809706): Remove the usage of -userIsInteracting when
+    // rdar://19989909 is fixed.
+    initiatedByUser = initiatedByUser || [self userIsInteracting];
+  }
+
+  WebState* childWebState =
+      _webStateImpl->CreateNewWebState(requestURL, openerURL, initiatedByUser);
   if (!childWebState)
     return nil;
 

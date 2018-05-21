@@ -11,12 +11,15 @@
 #import "base/test/ios/wait_util.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/settings_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/web/public/test/earl_grey/web_view_actions.h"
+#import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,21 +28,24 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::TapWebViewElementWithId;
 using web::test::HttpServer;
+using web::WebViewInWebState;
 
 namespace {
 // URL of the file-based page supporting these tests.
 const char kTestURL[] =
     "http://ios/testing/data/http_server_files/window_open.html";
-// Returns the text used for the blocked popup infobar when |blocked_count|
-// popups are blocked.
-NSString* GetBlockedPopupInfobarText(size_t blocked_count) {
-  return base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
-      IDS_IOS_POPUPS_BLOCKED_MOBILE,
-      base::UTF8ToUTF16(base::StringPrintf("%" PRIuS, blocked_count))));
+
+// Returns matcher for Blocked Popup infobar.
+id<GREYMatcher> PopupBlocker() {
+  NSString* blockerText = base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
+      IDS_IOS_POPUPS_BLOCKED_MOBILE, base::UTF8ToUTF16("1")));
+  return grey_accessibilityLabel(blockerText);
 }
+
 }  // namespace
 
 // Test case for opening child windows by DOM.
@@ -85,10 +91,10 @@ NSString* GetBlockedPopupInfobarText(size_t blocked_count) {
   NSError* error = nil;
   ExecuteJavaScript(@"sessionStorage.setItem('key', 'value');", &error);
   GREYAssert(!error, @"Error during script execution: %@", error);
+  const char ID[] = "webScenarioWindowOpenSameURLWithBlankTarget";
+  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+      performAction:web::WebViewTapElement(GetCurrentWebState(), ID)];
 
-  GREYAssert(
-      TapWebViewElementWithId("webScenarioWindowOpenSameURLWithBlankTarget"),
-      @"Failed to tap \"webScenarioWindowOpenSameURLWithBlankTarget\"");
   [ChromeEarlGrey waitForMainTabCount:2];
   [ChromeEarlGrey waitForWebViewContainingText:"Expected result"];
 
@@ -97,25 +103,33 @@ NSString* GetBlockedPopupInfobarText(size_t blocked_count) {
   GREYAssert([value isEqual:@"value"], @"sessionStorage is not shared");
 }
 
-// Tests a link with target="_blank".
+// Tests tapping a link with target="_blank".
 - (void)testLinkWithBlankTarget {
+  const char ID[] = "webScenarioWindowOpenRegularLink";
+  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+      performAction:web::WebViewTapElement(GetCurrentWebState(), ID)];
+  [ChromeEarlGrey waitForMainTabCount:2];
+}
+
+// Tests executing script that clicks a link with target="_blank".
+- (void)testLinkWithBlankTargetWithoutUserGesture {
   GREYAssert(TapWebViewElementWithId("webScenarioWindowOpenRegularLink"),
              @"Failed to tap \"webScenarioWindowOpenRegularLink\"");
-  [ChromeEarlGrey waitForMainTabCount:2];
+  [ChromeEarlGrey waitForElementWithMatcherSufficientlyVisible:PopupBlocker()];
+  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 // Tests a link with target="_blank" multiple times.
 - (void)testLinkWithBlankTargetMultipleTimes {
-  GREYAssert(
-      TapWebViewElementWithId("webScenarioWindowOpenRegularLinkMultipleTimes"),
-      @"Failed to tap \"webScenarioWindowOpenRegularLinkMultipleTimes\"");
+  const char ID[] = "webScenarioWindowOpenRegularLinkMultipleTimes";
+  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+      performAction:web::WebViewTapElement(GetCurrentWebState(), ID)];
   [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::OpenNewTab();
   [ChromeEarlGrey waitForMainTabCount:3];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
-  GREYAssert(
-      TapWebViewElementWithId("webScenarioWindowOpenRegularLinkMultipleTimes"),
-      @"Failed to tap \"webScenarioWindowOpenRegularLinkMultipleTimes\"");
+  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+      performAction:web::WebViewTapElement(GetCurrentWebState(), ID)];
   [ChromeEarlGrey waitForMainTabCount:4];
 }
 
@@ -167,8 +181,9 @@ NSString* GetBlockedPopupInfobarText(size_t blocked_count) {
 // Tests that opening a window with target=_blank which closes itself after 1
 // second delay.
 - (void)testLinkWithBlankTargetWithDelayedClose {
-  GREYAssert(TapWebViewElementWithId("webScenarioWindowOpenWithDelayedClose"),
-             @"Failed to tap \"webScenarioWindowOpenWithDelayedClose\"");
+  const char ID[] = "webScenarioWindowOpenWithDelayedClose";
+  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+      performAction:web::WebViewTapElement(GetCurrentWebState(), ID)];
   [ChromeEarlGrey waitForMainTabCount:2];
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(1));
   [ChromeEarlGrey waitForMainTabCount:1];
@@ -223,9 +238,9 @@ NSString* GetBlockedPopupInfobarText(size_t blocked_count) {
 // <a href="data:text/html,<script>window.location='about:newtab';</script>"
 //    target="_blank">
 - (void)testWindowOpenWithAboutNewTabScript {
-  GREYAssert(
-      TapWebViewElementWithId("webScenarioWindowOpenWithAboutNewTabScript"),
-      @"Failed to tap \"webScenarioWindowOpenWithAboutNewTabScript\"");
+  const char ID[] = "webScenarioWindowOpenWithAboutNewTabScript";
+  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+      performAction:web::WebViewTapElement(GetCurrentWebState(), ID)];
   [ChromeEarlGrey waitForMainTabCount:2];
   [[EarlGrey selectElementWithMatcher:OmniboxText("about:newtab")]
       assertWithMatcher:grey_notNil()];
@@ -244,8 +259,7 @@ NSString* GetBlockedPopupInfobarText(size_t blocked_count) {
   chrome_test_util::SetContentSettingsBlockPopups(CONTENT_SETTING_BLOCK);
   GREYAssert(TapWebViewElementWithId("webScenarioOpenWindowAndInjectPopup"),
              @"Failed to tap \"webScenarioOpenWindowAndInjectPopup\"");
-  NSString* infobarText = GetBlockedPopupInfobarText(1);
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(infobarText)]
+  [[EarlGrey selectElementWithMatcher:PopupBlocker()]
       assertWithMatcher:grey_notNil()];
   [ChromeEarlGrey waitForMainTabCount:2];
 }
