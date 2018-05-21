@@ -18,11 +18,14 @@
 #include "ash/host/root_window_transformer.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -98,7 +101,7 @@ aura::Window* GetWindow(AshWindowTreeHost* ash_host) {
 
 bool ShouldUpdateMirrorWindowController() {
   return aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL ||
-         !base::FeatureList::IsEnabled(features::kMash);
+         !base::FeatureList::IsEnabled(::features::kMash);
 }
 
 }  // namespace
@@ -531,10 +534,25 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
 
     // Show the shelf if the original WTH had a visible system
     // tray. It may or may not be visible depending on OOBE state.
-    ash::SystemTray* old_tray =
-        RootWindowController::ForWindow(to_delete->AsWindowTreeHost()->window())
-            ->GetSystemTray();
-    ash::SystemTray* new_tray = ash::Shell::Get()->GetPrimarySystemTray();
+    RootWindowController* old_root_window_controller =
+        RootWindowController::ForWindow(
+            to_delete->AsWindowTreeHost()->window());
+    RootWindowController* new_root_window_controller =
+        ash::Shell::Get()->GetPrimaryRootWindowController();
+    TrayBackgroundView* old_tray =
+        features::IsSystemTrayUnifiedEnabled()
+            ? static_cast<TrayBackgroundView*>(
+                  old_root_window_controller->GetStatusAreaWidget()
+                      ->unified_system_tray())
+            : static_cast<TrayBackgroundView*>(
+                  old_root_window_controller->GetSystemTray());
+    TrayBackgroundView* new_tray =
+        features::IsSystemTrayUnifiedEnabled()
+            ? static_cast<TrayBackgroundView*>(
+                  new_root_window_controller->GetStatusAreaWidget()
+                      ->unified_system_tray())
+            : static_cast<TrayBackgroundView*>(
+                  new_root_window_controller->GetSystemTray());
     if (old_tray->GetWidget()->IsVisible()) {
       new_tray->SetVisible(true);
       new_tray->GetWidget()->Show();
