@@ -167,6 +167,7 @@ public class ChildProcessLauncherHelper {
     // This is the current computed importance from all the inputs from setPriority.
     // The initial value is MODERATE since a newly created connection has moderate bindings.
     private @ChildProcessImportance int mEffectiveImportance = ChildProcessImportance.MODERATE;
+    private boolean mForeground;
 
     @CalledByNative
     private static FileDescriptorInfo makeFdInfo(
@@ -477,13 +478,14 @@ public class ChildProcessLauncherHelper {
         }
 
         // Add first and remove second.
-        if (newEffectiveImportance == ChildProcessImportance.IMPORTANT
-                && mEffectiveImportance != ChildProcessImportance.IMPORTANT) {
+        if (foreground && !mForeground) {
             BindingManager manager = getBindingManager();
             if (mUseBindingManager && manager != null) {
                 manager.increaseRecency(connection);
             }
         }
+        mForeground = foreground;
+
         if (mEffectiveImportance != newEffectiveImportance) {
             switch (newEffectiveImportance) {
                 case ChildProcessImportance.NORMAL:
