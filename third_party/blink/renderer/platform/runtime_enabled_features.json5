@@ -113,6 +113,10 @@
       settable_from_internals: true,
     },
     {
+      // Flag set by the media::kAutoplayIgnoreWebAudio feature flag.
+      name: "AutoplayIgnoresWebAudio",
+    },
+    {
       name: "AutoplayMutedVideos",
       settable_from_internals: true,
     },

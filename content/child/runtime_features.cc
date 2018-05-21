@@ -452,6 +452,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnableOriginTrialControlledFeatures(false);
   }
 
+  WebRuntimeFeatures::EnableAutoplayIgnoresWebAudio(
+      base::FeatureList::IsEnabled(media::kAutoplayIgnoreWebAudio));
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   for (const std::string& feature :

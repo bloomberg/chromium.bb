@@ -191,6 +191,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableOffMainThreadWebSocket(bool);
   BLINK_PLATFORM_EXPORT static void EnableExperimentalProductivityFeatures(
       bool);
+  BLINK_PLATFORM_EXPORT static void EnableAutoplayIgnoresWebAudio(bool);
 
  private:
   WebRuntimeFeatures();
