@@ -41,13 +41,12 @@ class StubOfflinePageModel : public OfflinePageModel {
       const std::vector<ClientId>& client_ids,
       const std::string& origin,
       const DeletePageCallback& callback) override;
-  void GetPagesByClientIds(
-      const std::vector<ClientId>& client_ids,
-      const MultipleOfflinePageItemCallback& callback) override;
+  void GetPagesByClientIds(const std::vector<ClientId>& client_ids,
+                           MultipleOfflinePageItemCallback callback) override;
   void DeleteCachedPagesByURLPredicate(
       const UrlPredicate& predicate,
       const DeletePageCallback& callback) override;
-  void GetAllPages(const MultipleOfflinePageItemCallback& callback) override;
+  void GetAllPages(MultipleOfflinePageItemCallback callback) override;
   void GetOfflineIdsForClientId(
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) override;
@@ -58,21 +57,20 @@ class StubOfflinePageModel : public OfflinePageModel {
                      const SingleOfflinePageItemCallback& callback) override;
   void GetPagesByURL(const GURL& url,
                      URLSearchMode url_search_mode,
-                     const MultipleOfflinePageItemCallback& callback) override;
+                     MultipleOfflinePageItemCallback callback) override;
   void GetPagesByRequestOrigin(
       const std::string& origin,
-      const MultipleOfflinePageItemCallback& callback) override;
+      MultipleOfflinePageItemCallback callback) override;
   void GetPageBySizeAndDigest(
       int64_t file_size,
       const std::string& digest,
       const SingleOfflinePageItemCallback& callback) override;
   void GetPagesRemovedOnCacheReset(
-      const MultipleOfflinePageItemCallback& callback) override;
-  void GetPagesByNamespace(
-      const std::string& name_space,
-      const MultipleOfflinePageItemCallback& callback) override;
+      MultipleOfflinePageItemCallback callback) override;
+  void GetPagesByNamespace(const std::string& name_space,
+                           MultipleOfflinePageItemCallback callback) override;
   void GetPagesSupportedByDownloads(
-      const MultipleOfflinePageItemCallback& callback) override;
+      MultipleOfflinePageItemCallback callback) override;
   void StoreThumbnail(const OfflinePageThumbnail& thumb) override;
   void GetThumbnailByOfflineId(int64_t offline_id,
                                GetThumbnailCallback callback) override;

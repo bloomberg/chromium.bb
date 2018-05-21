@@ -316,76 +316,77 @@ GetPagesTask::ReadResult::~ReadResult() {}
 // static
 std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingAllPages(
     OfflinePageMetadataStoreSQL* store,
-    const MultipleOfflinePageItemCallback& callback) {
-  return std::unique_ptr<GetPagesTask>(
-      new GetPagesTask(store, base::BindOnce(&ReadAllPagesSync), callback));
+    MultipleOfflinePageItemCallback callback) {
+  return base::WrapUnique(new GetPagesTask(
+      store, base::BindOnce(&ReadAllPagesSync), std::move(callback)));
 }
 
 // static
 std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingClientIds(
     OfflinePageMetadataStoreSQL* store,
-    const MultipleOfflinePageItemCallback& callback,
+    MultipleOfflinePageItemCallback callback,
     const std::vector<ClientId>& client_ids) {
   // Creates an instance of GetPagesTask, which wraps the client_ids argument in
   // a OnceClosure. It will then be used to execute.
-  return std::unique_ptr<GetPagesTask>(new GetPagesTask(
-      store, base::BindOnce(&ReadPagesByClientIdsSync, client_ids), callback));
+  return base::WrapUnique(new GetPagesTask(
+      store, base::BindOnce(&ReadPagesByClientIdsSync, client_ids),
+      std::move(callback)));
 }
 
 // static
 std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingNamespace(
     OfflinePageMetadataStoreSQL* store,
-    const MultipleOfflinePageItemCallback& callback,
+    MultipleOfflinePageItemCallback callback,
     const std::string& name_space) {
   std::vector<std::string> namespaces = {name_space};
-  return std::unique_ptr<GetPagesTask>(new GetPagesTask(
+  return base::WrapUnique(new GetPagesTask(
       store, base::BindOnce(&ReadPagesByMultipleNamespacesSync, namespaces),
-      callback));
+      std::move(callback)));
 }
 
 // static
 std::unique_ptr<GetPagesTask>
 GetPagesTask::CreateTaskMatchingPagesRemovedOnCacheReset(
     OfflinePageMetadataStoreSQL* store,
-    const MultipleOfflinePageItemCallback& callback,
+    MultipleOfflinePageItemCallback callback,
     ClientPolicyController* policy_controller) {
-  return std::unique_ptr<GetPagesTask>(new GetPagesTask(
+  return base::WrapUnique(new GetPagesTask(
       store,
       base::BindOnce(&ReadPagesByMultipleNamespacesSync,
                      policy_controller->GetNamespacesRemovedOnCacheReset()),
-      callback));
+      std::move(callback)));
 }
 
 // static
 std::unique_ptr<GetPagesTask>
 GetPagesTask::CreateTaskMatchingPagesSupportedByDownloads(
     OfflinePageMetadataStoreSQL* store,
-    const MultipleOfflinePageItemCallback& callback,
+    MultipleOfflinePageItemCallback callback,
     ClientPolicyController* policy_controller) {
-  return std::unique_ptr<GetPagesTask>(new GetPagesTask(
+  return base::WrapUnique(new GetPagesTask(
       store,
       base::BindOnce(&ReadPagesByMultipleNamespacesSync,
                      policy_controller->GetNamespacesSupportedByDownload()),
-      callback));
+      std::move(callback)));
 }
 
 // static
 std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingRequestOrigin(
     OfflinePageMetadataStoreSQL* store,
-    const MultipleOfflinePageItemCallback& callback,
+    MultipleOfflinePageItemCallback callback,
     const std::string& request_origin) {
-  return std::unique_ptr<GetPagesTask>(new GetPagesTask(
+  return base::WrapUnique(new GetPagesTask(
       store, base::BindOnce(&ReadPagesByRequestOriginSync, request_origin),
-      callback));
+      std::move(callback)));
 }
 
 // static
 std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingUrl(
     OfflinePageMetadataStoreSQL* store,
-    const MultipleOfflinePageItemCallback& callback,
+    MultipleOfflinePageItemCallback callback,
     const GURL& url) {
-  return std::unique_ptr<GetPagesTask>(new GetPagesTask(
-      store, base::BindOnce(&ReadPagesByUrlSync, url), callback));
+  return base::WrapUnique(new GetPagesTask(
+      store, base::BindOnce(&ReadPagesByUrlSync, url), std::move(callback)));
 }
 
 // static
@@ -393,9 +394,9 @@ std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingOfflineId(
     OfflinePageMetadataStoreSQL* store,
     const SingleOfflinePageItemCallback& callback,
     int64_t offline_id) {
-  return std::unique_ptr<GetPagesTask>(
-      new GetPagesTask(store, base::BindOnce(&ReadPagesByOfflineId, offline_id),
-                       base::Bind(&WrapInMultipleItemsCallback, callback)));
+  return base::WrapUnique(new GetPagesTask(
+      store, base::BindOnce(&ReadPagesByOfflineId, offline_id),
+      base::BindRepeating(&WrapInMultipleItemsCallback, callback)));
 }
 
 // static
@@ -403,9 +404,9 @@ std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingGuid(
     OfflinePageMetadataStoreSQL* store,
     const SingleOfflinePageItemCallback& callback,
     const std::string& guid) {
-  return base::WrapUnique(
-      new GetPagesTask(store, base::BindOnce(&ReadPagesByGuid, guid),
-                       base::Bind(&WrapInMultipleItemsCallback, callback)));
+  return base::WrapUnique(new GetPagesTask(
+      store, base::BindOnce(&ReadPagesByGuid, guid),
+      base::BindRepeating(&WrapInMultipleItemsCallback, callback)));
 }
 
 // static
@@ -414,26 +415,26 @@ std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingSizeAndDigest(
     const SingleOfflinePageItemCallback& callback,
     int64_t file_size,
     const std::string& digest) {
-  return std::unique_ptr<GetPagesTask>(new GetPagesTask(
+  return base::WrapUnique(new GetPagesTask(
       store, base::BindOnce(&ReadPagesBySizeAndDigest, file_size, digest),
-      base::Bind(&WrapInMultipleItemsCallback, callback)));
+      base::BindRepeating(&WrapInMultipleItemsCallback, callback)));
 }
 
 // static
 std::unique_ptr<GetPagesTask>
 GetPagesTask::CreateTaskSelectingItemsMarkedForUpgrade(
     OfflinePageMetadataStoreSQL* store,
-    const MultipleOfflinePageItemCallback& callback) {
-  return std::unique_ptr<GetPagesTask>(new GetPagesTask(
-      store, base::BindOnce(&SelectItemsForUpgrade), callback));
+    MultipleOfflinePageItemCallback callback) {
+  return base::WrapUnique(new GetPagesTask(
+      store, base::BindOnce(&SelectItemsForUpgrade), std::move(callback)));
 }
 
 GetPagesTask::GetPagesTask(OfflinePageMetadataStoreSQL* store,
                            DbWorkCallback db_work_callback,
-                           const MultipleOfflinePageItemCallback& callback)
+                           MultipleOfflinePageItemCallback callback)
     : store_(store),
       db_work_callback_(std::move(db_work_callback)),
-      callback_(callback),
+      callback_(std::move(callback)),
       weak_ptr_factory_(this) {
   DCHECK(store_);
   DCHECK(!callback_.is_null());
@@ -452,7 +453,7 @@ void GetPagesTask::ReadRequests() {
 }
 
 void GetPagesTask::CompleteWithResult(ReadResult result) {
-  callback_.Run(result.pages);
+  std::move(callback_).Run(result.pages);
   TaskComplete();
 }
 

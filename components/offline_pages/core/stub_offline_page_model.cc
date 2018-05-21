@@ -38,12 +38,12 @@ void StubOfflinePageModel::DeletePagesByClientIdsAndOrigin(
     const DeletePageCallback& callback) {}
 void StubOfflinePageModel::GetPagesByClientIds(
     const std::vector<ClientId>& client_ids,
-    const MultipleOfflinePageItemCallback& callback) {}
+    MultipleOfflinePageItemCallback callback) {}
 void StubOfflinePageModel::DeleteCachedPagesByURLPredicate(
     const UrlPredicate& predicate,
     const DeletePageCallback& callback) {}
 void StubOfflinePageModel::GetAllPages(
-    const MultipleOfflinePageItemCallback& callback) {}
+    MultipleOfflinePageItemCallback callback) {}
 void StubOfflinePageModel::GetOfflineIdsForClientId(
     const ClientId& client_id,
     const MultipleOfflineIdCallback& callback) {}
@@ -56,21 +56,21 @@ void StubOfflinePageModel::GetPageByGuid(
 void StubOfflinePageModel::GetPagesByURL(
     const GURL& url,
     URLSearchMode url_search_mode,
-    const MultipleOfflinePageItemCallback& callback) {}
+    MultipleOfflinePageItemCallback callback) {}
 void StubOfflinePageModel::GetPagesByRequestOrigin(
     const std::string& origin,
-    const MultipleOfflinePageItemCallback& callback) {}
+    MultipleOfflinePageItemCallback callback) {}
 void StubOfflinePageModel::GetPageBySizeAndDigest(
     int64_t file_size,
     const std::string& digest,
     const SingleOfflinePageItemCallback& callback) {}
 void StubOfflinePageModel::GetPagesRemovedOnCacheReset(
-    const MultipleOfflinePageItemCallback& callback) {}
+    MultipleOfflinePageItemCallback callback) {}
 void StubOfflinePageModel::GetPagesByNamespace(
     const std::string& name_space,
-    const MultipleOfflinePageItemCallback& callback) {}
+    MultipleOfflinePageItemCallback callback) {}
 void StubOfflinePageModel::GetPagesSupportedByDownloads(
-    const MultipleOfflinePageItemCallback& callback) {}
+    MultipleOfflinePageItemCallback callback) {}
 void StubOfflinePageModel::StoreThumbnail(const OfflinePageThumbnail& thumb) {}
 void StubOfflinePageModel::GetThumbnailByOfflineId(
     int64_t offline_id,

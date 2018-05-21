@@ -99,30 +99,28 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       const UrlPredicate& predicate,
       const DeletePageCallback& callback) override;
 
-  void GetAllPages(const MultipleOfflinePageItemCallback& callback) override;
+  void GetAllPages(MultipleOfflinePageItemCallback callback) override;
   void GetPageByOfflineId(
       int64_t offline_id,
       const SingleOfflinePageItemCallback& callback) override;
   void GetPageByGuid(const std::string& guid,
                      const SingleOfflinePageItemCallback& callback) override;
-  void GetPagesByClientIds(
-      const std::vector<ClientId>& client_ids,
-      const MultipleOfflinePageItemCallback& callback) override;
+  void GetPagesByClientIds(const std::vector<ClientId>& client_ids,
+                           MultipleOfflinePageItemCallback callback) override;
   void GetPagesByURL(const GURL& url,
                      URLSearchMode url_search_mode,
-                     const MultipleOfflinePageItemCallback& callback) override;
-  void GetPagesByNamespace(
-      const std::string& name_space,
-      const MultipleOfflinePageItemCallback& callback) override;
+                     MultipleOfflinePageItemCallback callback) override;
+  void GetPagesByNamespace(const std::string& name_space,
+                           MultipleOfflinePageItemCallback callback) override;
   // Get all pages in the namespaces that will be removed on cache reset.
   void GetPagesRemovedOnCacheReset(
-      const MultipleOfflinePageItemCallback& callback) override;
+      MultipleOfflinePageItemCallback callback) override;
   // Get all pages in the namespaces that are shown in download ui.
   void GetPagesSupportedByDownloads(
-      const MultipleOfflinePageItemCallback& callback) override;
+      MultipleOfflinePageItemCallback callback) override;
   void GetPagesByRequestOrigin(
       const std::string& request_origin,
-      const MultipleOfflinePageItemCallback& callback) override;
+      MultipleOfflinePageItemCallback callback) override;
   void GetPageBySizeAndDigest(
       int64_t file_size,
       const std::string& digest,

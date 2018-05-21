@@ -439,8 +439,8 @@ void OfflinePageBridge::GetAllPages(
   ScopedJavaGlobalRef<jobject> j_callback_ref;
   j_callback_ref.Reset(env, j_callback_obj);
 
-  offline_page_model_->GetAllPages(base::Bind(&MultipleOfflinePageItemCallback,
-                                              j_result_ref, j_callback_ref));
+  offline_page_model_->GetAllPages(base::BindOnce(
+      &MultipleOfflinePageItemCallback, j_result_ref, j_callback_ref));
 }
 
 void OfflinePageBridge::GetPageByOfflineId(
@@ -536,8 +536,8 @@ void OfflinePageBridge::GetPagesByClientId(
   std::vector<ClientId> client_ids =
       getClientIdsFromObjectArrays(env, j_namespaces_array, j_ids_array);
   offline_page_model_->GetPagesByClientIds(
-      client_ids, base::Bind(&MultipleOfflinePageItemCallback, j_result_ref,
-                             j_callback_ref));
+      client_ids, base::BindOnce(&MultipleOfflinePageItemCallback, j_result_ref,
+                                 j_callback_ref));
 }
 
 void OfflinePageBridge::GetPagesByRequestOrigin(
@@ -555,8 +555,8 @@ void OfflinePageBridge::GetPagesByRequestOrigin(
   std::string request_origin = ConvertJavaStringToUTF8(env, j_request_origin);
 
   offline_page_model_->GetPagesByRequestOrigin(
-      request_origin, base::Bind(&MultipleOfflinePageItemCallback, j_result_ref,
-                                 j_callback_ref));
+      request_origin, base::BindOnce(&MultipleOfflinePageItemCallback,
+                                     j_result_ref, j_callback_ref));
 }
 
 void OfflinePageBridge::GetPagesByNamespace(
@@ -573,8 +573,8 @@ void OfflinePageBridge::GetPagesByNamespace(
   std::string name_space = ConvertJavaStringToUTF8(env, j_namespace);
 
   offline_page_model_->GetPagesByNamespace(
-      name_space, base::Bind(&MultipleOfflinePageItemCallback, j_result_ref,
-                             j_callback_ref));
+      name_space, base::BindOnce(&MultipleOfflinePageItemCallback, j_result_ref,
+                                 j_callback_ref));
 }
 
 void OfflinePageBridge::SelectPageForOnlineUrl(

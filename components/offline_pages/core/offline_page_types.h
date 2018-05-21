@@ -102,7 +102,7 @@ typedef base::Callback<void(const MultipleOfflineIdResult&)>
     MultipleOfflineIdCallback;
 typedef base::Callback<void(const OfflinePageItem*)>
     SingleOfflinePageItemCallback;
-typedef base::Callback<void(const MultipleOfflinePageItemResult&)>
+typedef base::OnceCallback<void(const MultipleOfflinePageItemResult&)>
     MultipleOfflinePageItemCallback;
 typedef base::Callback<bool(const GURL&)> UrlPredicate;
 typedef base::Callback<void(int64_t)> SizeInBytesCallback;
