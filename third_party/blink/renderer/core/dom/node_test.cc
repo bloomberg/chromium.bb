@@ -40,7 +40,9 @@ class NodeTest : public EditingTestBase {
   }
 
   LayoutObject* ReattachLayoutTreeForNode(Node& node) {
+    node.LazyReattachIfAttached();
     GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+    GetDocument().documentElement()->RecalcStyle(kNoChange);
     PushSelectorFilterAncestors(
         GetDocument().EnsureStyleResolver().GetSelectorFilter(), node);
     Node::AttachContext context;
