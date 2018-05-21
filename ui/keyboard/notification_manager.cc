@@ -99,8 +99,8 @@ bool NotificationManager::ShouldSendWorkspaceDisplacementBoundsNotification(
       CanonicalizeEmptyRectangles(new_bounds));
 }
 
-const gfx::Rect NotificationManager::CanonicalizeEmptyRectangles(
-    const gfx::Rect rect) const {
+gfx::Rect NotificationManager::CanonicalizeEmptyRectangles(
+    const gfx::Rect& rect) const {
   if (rect.IsEmpty()) {
     return gfx::Rect();
   }

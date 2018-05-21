@@ -19,7 +19,7 @@ class KEYBOARD_EXPORT ContainerFullscreenBehavior
   ~ContainerFullscreenBehavior() override;
 
   // ContainerFullWidthBehavior overrides
-  const gfx::Rect AdjustSetBoundsRequest(
+  gfx::Rect AdjustSetBoundsRequest(
       const gfx::Rect& display_bounds,
       const gfx::Rect& requested_bounds_in_screen_coords) override;
   void SetCanonicalBounds(aura::Window* container,

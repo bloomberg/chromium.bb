@@ -30,7 +30,7 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
   virtual ~KeyboardControllerObserver() {}
 
   // Called when the keyboard is shown or closed.
-  virtual void OnKeyboardAvailabilityChanged(const bool is_available) {}
+  virtual void OnKeyboardAvailabilityChanged(bool is_available) {}
 
   // Called when the keyboard bounds are changing.
   virtual void OnKeyboardVisibleBoundsChanged(const gfx::Rect& new_bounds) {}
@@ -60,7 +60,7 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
   virtual void OnKeyboardHidden() {}
 
   // Called when the state changed.
-  virtual void OnStateChanged(const KeyboardControllerState state) {}
+  virtual void OnStateChanged(KeyboardControllerState state) {}
 
   // Called when the virtual keyboard IME config changed.
   virtual void OnKeyboardConfigChanged() {}
