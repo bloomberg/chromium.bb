@@ -215,31 +215,17 @@ void MediaControlOverlayPlayButtonElement::MaybeJump(int seconds) {
 }
 
 void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::click) {
+  if (ShouldCausePlayPause(event)) {
+    event->SetDefaultHandled();
+    MaybePlayPause();
+  } else if (event->type() == EventTypeNames::click) {
     event->SetDefaultHandled();
 
-    // Double tap to navigate should only be available on modern controls.
-    if (!MediaControlsImpl::IsModern() || !event->IsMouseEvent()) {
-      MaybePlayPause();
-      return;
-    }
-
-    // If the event doesn't have position data we should just default to
-    // play/pause.
-    // TODO(beccahughes): Move to PointerEvent.
+    DCHECK(event->IsMouseEvent());
     MouseEvent* mouse_event = ToMouseEvent(event);
-    if (!mouse_event->HasPosition()) {
-      MaybePlayPause();
-      return;
-    }
+    DCHECK(mouse_event->HasPosition());
 
-    // If the click happened on the internal button or a margin around it then
-    // we should play/pause.
-    if (IsPointInRect(*internal_button_->getBoundingClientRect(),
-                      kInnerButtonTouchPaddingSize, mouse_event->clientX(),
-                      mouse_event->clientY())) {
-      MaybePlayPause();
-    } else if (!tap_timer_.IsActive()) {
+    if (!tap_timer_.IsActive()) {
       // If there was not a previous touch and this was outside of the button
       // then we should toggle visibility with a small unnoticeable delay in
       // case their is a second tap.
@@ -274,14 +260,37 @@ void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
       }
 
       tap_was_touch_event_.reset();
-      event->SetDefaultHandled();
     }
   }
   MediaControlInputElement::DefaultEventHandler(event);
 }
 
 bool MediaControlOverlayPlayButtonElement::KeepEventInNode(Event* event) {
-  return MediaControlElementsHelper::IsUserInteractionEvent(event);
+  return ShouldCausePlayPause(event);
+}
+
+bool MediaControlOverlayPlayButtonElement::ShouldCausePlayPause(
+    Event* event) const {
+  // Only click events cause a play/pause.
+  if (event->type() != EventTypeNames::click)
+    return false;
+
+  // Double tap to navigate should only be available on modern controls.
+  if (!MediaControlsImpl::IsModern() || !event->IsMouseEvent())
+    return true;
+
+  // If the event doesn't have position data we should just default to
+  // play/pause.
+  // TODO(beccahughes): Move to PointerEvent.
+  MouseEvent* mouse_event = ToMouseEvent(event);
+  if (!mouse_event->HasPosition())
+    return true;
+
+  // If the click happened on the internal button or a margin around it then
+  // we should play/pause.
+  return IsPointInRect(*internal_button_->getBoundingClientRect(),
+                       kInnerButtonTouchPaddingSize, mouse_event->clientX(),
+                       mouse_event->clientY());
 }
 
 WebSize MediaControlOverlayPlayButtonElement::GetSizeOrDefault() const {

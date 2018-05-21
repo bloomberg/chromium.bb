@@ -175,7 +175,8 @@ void MediaControlPanelElement::DefaultEventHandler(Event* event) {
 }
 
 bool MediaControlPanelElement::KeepEventInNode(Event* event) {
-  return MediaControlElementsHelper::IsUserInteractionEvent(event);
+  return !MediaControlsImpl::IsModern() &&
+         MediaControlElementsHelper::IsUserInteractionEvent(event);
 }
 
 void MediaControlPanelElement::DidBecomeVisible() {

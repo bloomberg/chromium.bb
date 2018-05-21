@@ -81,6 +81,7 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
   void DefaultEventHandler(Event*) override;
   bool KeepEventInNode(Event*) override;
 
+  bool ShouldCausePlayPause(Event*) const;
   void MaybePlayPause();
   void MaybeJump(int);
 

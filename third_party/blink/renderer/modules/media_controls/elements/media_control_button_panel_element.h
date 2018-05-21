@@ -18,6 +18,9 @@ class MediaControlsImpl;
 class MediaControlButtonPanelElement final : public MediaControlDivElement {
  public:
   explicit MediaControlButtonPanelElement(MediaControlsImpl&);
+
+ private:
+  bool KeepEventInNode(Event*) override;
 };
 
 }  // namespace blink
