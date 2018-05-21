@@ -344,7 +344,20 @@ bool BrowserNonClientFrameView::DoesIntersectRect(const views::View* target,
     return false;
   }
 
+  bool should_leave_to_top_container = false;
+#if defined(OS_CHROMEOS)
+  if (browser_view()->immersive_mode_controller()->IsRevealed()) {
+    // In immersive mode, the caption buttons container is reparented to the
+    // TopContainerView and hence |rect| should not be claimed here.
+    // See BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted().
+    should_leave_to_top_container = true;
+  }
+#endif  // defined(OS_CHROMEOS)
+
   if (!browser_view()->IsTabStripVisible()) {
+    if (should_leave_to_top_container)
+      return false;
+
     // Claim |rect| if it is above the top of the topmost client area view.
     return rect.y() < GetTopInset(false);
   }
@@ -377,6 +390,9 @@ bool BrowserNonClientFrameView::DoesIntersectRect(const views::View* target,
     // Claim |rect| if it is in a non-tab portion of the tabstrip.
     return tabstrip->IsRectInWindowCaption(rect_in_tabstrip_coords);
   }
+
+  if (should_leave_to_top_container)
+    return false;
 
   // We claim |rect| because it is above the bottom of the tabstrip, but
   // not in the tabstrip itself. In particular, the avatar label/button is left

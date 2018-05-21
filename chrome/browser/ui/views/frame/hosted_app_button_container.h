@@ -88,7 +88,6 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
 
   // ImmersiveModeController::Observer:
   void OnImmersiveRevealStarted() override;
-  void OnImmersiveFullscreenExited() override;
 
   // The containing browser view.
   BrowserView* browser_view_;

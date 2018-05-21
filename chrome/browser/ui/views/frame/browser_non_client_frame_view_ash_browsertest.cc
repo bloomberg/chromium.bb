@@ -73,6 +73,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/widget/widget.h"
@@ -524,15 +525,16 @@ class ImmersiveModeBrowserViewTest
   void PreRunTestOnMainThread() override {
     InProcessBrowserTest::PreRunTestOnMainThread();
     aura::test::EnvTestHelper().SetAlwaysUseLastMouseLocation(true);
-    auto* immersive_mode_controller =
-        browser_view()->immersive_mode_controller();
-    scoped_observer_.Add(immersive_mode_controller);
-
     ash::ImmersiveFullscreenControllerTestApi(
-        static_cast<ImmersiveModeControllerAsh*>(immersive_mode_controller)
+        static_cast<ImmersiveModeControllerAsh*>(
+            browser_view()->immersive_mode_controller())
             ->controller())
         .SetupForTest();
     BrowserView::SetDisableRevealerDelayForTesting(true);
+  }
+
+  void InitializeObserver() {
+    scoped_observer_.Add(browser_view()->immersive_mode_controller());
   }
 
   void RunTest(int command, int expected_index) {
@@ -580,6 +582,7 @@ class ImmersiveModeBrowserViewTest
 // IDC_SELECT_LAST_TAB when the browser is in immersive fullscreen mode.
 IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
                        TabNavigationAcceleratorsFullscreenBrowser) {
+  InitializeObserver();
   // Make sure that the focus is on the webcontents rather than on the omnibox,
   // because if the focus is on the omnibox, the tab strip will remain revealed
   // in the immerisve fullscreen mode and will interfere with this test waiting
@@ -614,6 +617,99 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
                                     {IDC_SELECT_PREVIOUS_TAB, 0}};
   for (const auto& datum : test_data)
     RunTest(datum.command, datum.expected_index);
+}
+
+IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
+                       TestCaptionButtonsReceiveEventsInBrowserImmersiveMode) {
+  // Make sure that the focus is on the webcontents rather than on the omnibox,
+  // because if the focus is on the omnibox, the tab strip will remain revealed
+  // in the immerisve fullscreen mode and will interfere with this test waiting
+  // for the revealer to be dismissed.
+  browser()->tab_strip_model()->GetActiveWebContents()->Focus();
+
+  // Toggle fullscreen mode.
+  chrome::ToggleFullscreenMode(browser());
+  EXPECT_TRUE(browser_view()->immersive_mode_controller()->IsEnabled());
+
+  EXPECT_TRUE(browser()->window()->IsFullscreen());
+  EXPECT_FALSE(browser()->window()->IsMaximized());
+  EXPECT_FALSE(browser_view()->immersive_mode_controller()->IsRevealed());
+
+  std::unique_ptr<ImmersiveRevealedLock> revealed_lock(
+      browser_view()->immersive_mode_controller()->GetRevealedLock(
+          ImmersiveModeController::ANIMATE_REVEAL_NO));
+  EXPECT_TRUE(browser_view()->immersive_mode_controller()->IsRevealed());
+
+  // Clicking the "restore" caption button should exit the immersive mode.
+  aura::Window* window = browser()->window()->GetNativeWindow();
+  aura::Window* root = window->GetRootWindow();
+  ui::test::EventGenerator event_generator(root, window);
+  gfx::Size button_size =
+      ash::GetAshLayoutSize(ash::AshLayoutSize::kBrowserCaptionMaximized);
+  gfx::Point point_in_restore_button(
+      window->GetBoundsInRootWindow().top_right());
+  point_in_restore_button.Offset(-2 * button_size.width(),
+                                 button_size.height() / 2);
+
+  event_generator.MoveMouseTo(point_in_restore_button);
+  EXPECT_TRUE(browser_view()->immersive_mode_controller()->IsRevealed());
+  event_generator.ClickLeftButton();
+
+  EXPECT_FALSE(browser_view()->immersive_mode_controller()->IsEnabled());
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
+}
+
+IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
+                       TestCaptionButtonsReceiveEventsInAppImmersiveMode) {
+  browser()->window()->Close();
+
+  // Open a new app window.
+  Browser::CreateParams params = Browser::CreateParams::CreateForApp(
+      "test_browser_app", true /* trusted_source */, gfx::Rect(0, 0, 300, 300),
+      browser()->profile(), true);
+  params.initial_show_state = ui::SHOW_STATE_DEFAULT;
+  Browser* browser = new Browser(params);
+  AddBlankTabAndShow(browser);
+  ASSERT_TRUE(browser->is_app());
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+
+  ash::ImmersiveFullscreenControllerTestApi(
+      static_cast<ImmersiveModeControllerAsh*>(
+          browser_view->immersive_mode_controller())
+          ->controller())
+      .SetupForTest();
+
+  // Toggle fullscreen mode.
+  chrome::ToggleFullscreenMode(browser);
+  EXPECT_TRUE(browser_view->immersive_mode_controller()->IsEnabled());
+  EXPECT_FALSE(browser_view->IsTabStripVisible());
+
+  EXPECT_TRUE(browser->window()->IsFullscreen());
+  EXPECT_FALSE(browser->window()->IsMaximized());
+  EXPECT_FALSE(browser_view->immersive_mode_controller()->IsRevealed());
+
+  std::unique_ptr<ImmersiveRevealedLock> revealed_lock(
+      browser_view->immersive_mode_controller()->GetRevealedLock(
+          ImmersiveModeController::ANIMATE_REVEAL_NO));
+  EXPECT_TRUE(browser_view->immersive_mode_controller()->IsRevealed());
+
+  // Clicking the "restore" caption button should exit the immersive mode.
+  aura::Window* window = browser->window()->GetNativeWindow();
+  aura::Window* root = window->GetRootWindow();
+  ui::test::EventGenerator event_generator(root, window);
+  gfx::Size button_size =
+      ash::GetAshLayoutSize(ash::AshLayoutSize::kBrowserCaptionMaximized);
+  gfx::Point point_in_restore_button(
+      window->GetBoundsInRootWindow().top_right());
+  point_in_restore_button.Offset(-2 * button_size.width(),
+                                 button_size.height() / 2);
+
+  event_generator.MoveMouseTo(point_in_restore_button);
+  EXPECT_TRUE(browser_view->immersive_mode_controller()->IsRevealed());
+  event_generator.ClickLeftButton();
+
+  EXPECT_FALSE(browser_view->immersive_mode_controller()->IsEnabled());
+  EXPECT_FALSE(browser->window()->IsFullscreen());
 }
 
 namespace {
