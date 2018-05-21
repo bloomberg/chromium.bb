@@ -49,6 +49,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
 
  private:
   class H264Accelerator;
+  class VP8Accelerator;
 
   // Encoder state.
   enum State {

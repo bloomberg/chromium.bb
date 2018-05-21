@@ -23,11 +23,8 @@ class VaapiVP8Accelerator : public VP8Decoder::VP8Accelerator {
 
   // VP8Decoder::VP8Accelerator implementation.
   scoped_refptr<VP8Picture> CreateVP8Picture() override;
-  bool SubmitDecode(const scoped_refptr<VP8Picture>& pic,
-                    const Vp8FrameHeader* frame_hdr,
-                    const scoped_refptr<VP8Picture>& last_frame,
-                    const scoped_refptr<VP8Picture>& golden_frame,
-                    const scoped_refptr<VP8Picture>& alt_frame) override;
+  bool SubmitDecode(scoped_refptr<VP8Picture> picture,
+                    const Vp8ReferenceFrameVector& reference_frames) override;
   bool OutputPicture(const scoped_refptr<VP8Picture>& pic) override;
 
  private:

@@ -85,6 +85,8 @@ source_set("vaapi") {
     "vaapi_vp9_accelerator.h",
     "vaapi_wrapper.cc",
     "vaapi_wrapper.h",
+    "vp8_encoder.cc",
+    "vp8_encoder.h",
   ]
   sources += get_target_outputs(":libva_generate_stubs")
 

@@ -12,6 +12,7 @@
 
 #include <va/va.h>
 #include <va/va_enc_h264.h>
+#include <va/va_enc_vp8.h>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -28,6 +29,8 @@
 #include "media/gpu/shared_memory_region.h"
 #include "media/gpu/vaapi/h264_encoder.h"
 #include "media/gpu/vaapi/vaapi_common.h"
+#include "media/gpu/vaapi/vp8_encoder.h"
+#include "media/gpu/vp8_reference_frame_vector.h"
 
 #define VLOGF(level) VLOG(level) << __func__ << "(): "
 #define DVLOGF(level) DVLOG(level) << __func__ << "(): "
@@ -157,7 +160,28 @@ class VaapiVideoEncodeAccelerator::H264Accelerator
       const std::list<scoped_refptr<H264Picture>>& ref_pic_list1) override;
 
  private:
-  VaapiVideoEncodeAccelerator* vea_;
+  VaapiVideoEncodeAccelerator* const vea_;
+};
+
+class VaapiVideoEncodeAccelerator::VP8Accelerator
+    : public VP8Encoder::Accelerator {
+ public:
+  explicit VP8Accelerator(VaapiVideoEncodeAccelerator* vea) : vea_(vea) {}
+
+  ~VP8Accelerator() override = default;
+
+  // VP8Encoder::Accelerator implementation.
+  scoped_refptr<VP8Picture> GetPicture(
+      AcceleratedVideoEncoder::EncodeJob* job) override;
+
+  bool SubmitFrameParameters(
+      AcceleratedVideoEncoder::EncodeJob* job,
+      const media::VP8Encoder::EncodeParams& encode_params,
+      scoped_refptr<VP8Picture> pic,
+      const Vp8ReferenceFrameVector& ref_frames) override;
+
+ private:
+  VaapiVideoEncodeAccelerator* const vea_;
 };
 
 VaapiVideoEncodeAccelerator::VaapiVideoEncodeAccelerator()
@@ -196,7 +220,7 @@ bool VaapiVideoEncodeAccelerator::Initialize(
   client_ = client_ptr_factory_->GetWeakPtr();
 
   codec_ = VideoCodecProfileToVideoCodec(output_profile);
-  if (codec_ != kCodecH264) {
+  if (codec_ != kCodecH264 && codec_ != kCodecVP8) {
     DVLOGF(1) << "Unsupported profile: " << GetProfileName(output_profile);
     return false;
   }
@@ -261,6 +285,11 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const gfx::Size& visible_size,
     case kCodecH264:
       encoder_ = std::make_unique<H264Encoder>(
           std::make_unique<H264Accelerator>(this));
+      break;
+
+    case kCodecVP8:
+      encoder_ =
+          std::make_unique<VP8Encoder>(std::make_unique<VP8Accelerator>(this));
       break;
 
     default:
@@ -885,6 +914,169 @@ bool VaapiVideoEncodeAccelerator::H264Accelerator::SubmitPackedHeaders(
   job->AddSetupCallback(
       base::BindOnce(&VaapiVideoEncodeAccelerator::SubmitH264BitstreamBuffer,
                      base::Unretained(vea_), packed_pps));
+
+  return true;
+}
+
+scoped_refptr<VP8Picture>
+VaapiVideoEncodeAccelerator::VP8Accelerator::GetPicture(
+    AcceleratedVideoEncoder::EncodeJob* job) {
+  return base::MakeRefCounted<VaapiVP8Picture>(
+      job->AsVaapiEncodeJob()->reconstructed_surface());
+}
+
+bool VaapiVideoEncodeAccelerator::VP8Accelerator::SubmitFrameParameters(
+    AcceleratedVideoEncoder::EncodeJob* job,
+    const media::VP8Encoder::EncodeParams& encode_params,
+    scoped_refptr<VP8Picture> pic,
+    const Vp8ReferenceFrameVector& ref_frames) {
+  VAEncSequenceParameterBufferVP8 seq_param = {};
+
+  const auto& frame_header = pic->frame_hdr;
+  seq_param.frame_width = frame_header->width;
+  seq_param.frame_height = frame_header->height;
+  seq_param.frame_width_scale = frame_header->horizontal_scale;
+  seq_param.frame_height_scale = frame_header->vertical_scale;
+  seq_param.error_resilient = 1;
+  seq_param.bits_per_second = encode_params.bitrate_bps;
+  seq_param.intra_period = encode_params.kf_period_frames;
+
+  VAEncPictureParameterBufferVP8 pic_param = {};
+
+  pic_param.reconstructed_frame = pic->AsVaapiVP8Picture()->GetVASurfaceID();
+  DCHECK_NE(pic_param.reconstructed_frame, VA_INVALID_ID);
+
+  auto last_frame = ref_frames.GetFrame(Vp8RefType::VP8_FRAME_LAST);
+  pic_param.ref_last_frame =
+      last_frame ? last_frame->AsVaapiVP8Picture()->GetVASurfaceID()
+                 : VA_INVALID_ID;
+  auto golden_frame = ref_frames.GetFrame(Vp8RefType::VP8_FRAME_GOLDEN);
+  pic_param.ref_gf_frame =
+      golden_frame ? golden_frame->AsVaapiVP8Picture()->GetVASurfaceID()
+                   : VA_INVALID_ID;
+  auto alt_frame = ref_frames.GetFrame(Vp8RefType::VP8_FRAME_ALTREF);
+  pic_param.ref_arf_frame =
+      alt_frame ? alt_frame->AsVaapiVP8Picture()->GetVASurfaceID()
+                : VA_INVALID_ID;
+  pic_param.coded_buf = job->AsVaapiEncodeJob()->coded_buffer_id();
+  DCHECK_NE(pic_param.coded_buf, VA_INVALID_ID);
+
+  if (frame_header->IsKeyframe())
+    pic_param.ref_flags.bits.force_kf = true;
+
+  pic_param.pic_flags.bits.frame_type = frame_header->frame_type;
+  pic_param.pic_flags.bits.version = frame_header->version;
+  pic_param.pic_flags.bits.show_frame = frame_header->show_frame;
+  pic_param.pic_flags.bits.loop_filter_type = frame_header->loopfilter_hdr.type;
+  pic_param.pic_flags.bits.num_token_partitions =
+      frame_header->num_of_dct_partitions;
+  pic_param.pic_flags.bits.segmentation_enabled =
+      frame_header->segmentation_hdr.segmentation_enabled;
+  pic_param.pic_flags.bits.update_mb_segmentation_map =
+      frame_header->segmentation_hdr.update_mb_segmentation_map;
+  pic_param.pic_flags.bits.update_segment_feature_data =
+      frame_header->segmentation_hdr.update_segment_feature_data;
+
+  pic_param.pic_flags.bits.loop_filter_adj_enable =
+      frame_header->loopfilter_hdr.loop_filter_adj_enable;
+
+  pic_param.pic_flags.bits.refresh_entropy_probs =
+      frame_header->refresh_entropy_probs;
+  pic_param.pic_flags.bits.refresh_golden_frame =
+      frame_header->refresh_golden_frame;
+  pic_param.pic_flags.bits.refresh_alternate_frame =
+      frame_header->refresh_alternate_frame;
+  pic_param.pic_flags.bits.refresh_last = frame_header->refresh_last;
+  pic_param.pic_flags.bits.copy_buffer_to_golden =
+      frame_header->copy_buffer_to_golden;
+  pic_param.pic_flags.bits.copy_buffer_to_alternate =
+      frame_header->copy_buffer_to_alternate;
+  pic_param.pic_flags.bits.sign_bias_golden = frame_header->sign_bias_golden;
+  pic_param.pic_flags.bits.sign_bias_alternate =
+      frame_header->sign_bias_alternate;
+  pic_param.pic_flags.bits.mb_no_coeff_skip = frame_header->mb_no_skip_coeff;
+  if (frame_header->IsKeyframe())
+    pic_param.pic_flags.bits.forced_lf_adjustment = true;
+
+  static_assert(
+      arraysize(pic_param.loop_filter_level) ==
+              arraysize(pic_param.ref_lf_delta) &&
+          arraysize(pic_param.ref_lf_delta) ==
+              arraysize(pic_param.mode_lf_delta) &&
+          arraysize(pic_param.ref_lf_delta) ==
+              arraysize(frame_header->loopfilter_hdr.ref_frame_delta) &&
+          arraysize(pic_param.mode_lf_delta) ==
+              arraysize(frame_header->loopfilter_hdr.mb_mode_delta),
+      "Invalid loop filter array sizes");
+
+  for (size_t i = 0; i < base::size(pic_param.loop_filter_level); ++i) {
+    pic_param.loop_filter_level[i] = frame_header->loopfilter_hdr.level;
+    pic_param.ref_lf_delta[i] = frame_header->loopfilter_hdr.ref_frame_delta[i];
+    pic_param.mode_lf_delta[i] = frame_header->loopfilter_hdr.mb_mode_delta[i];
+  }
+
+  pic_param.sharpness_level = frame_header->loopfilter_hdr.sharpness_level;
+  pic_param.clamp_qindex_high = encode_params.max_qp;
+  pic_param.clamp_qindex_low = encode_params.min_qp;
+
+  VAQMatrixBufferVP8 qmatrix_buf = {};
+  for (size_t i = 0; i < base::size(qmatrix_buf.quantization_index); ++i)
+    qmatrix_buf.quantization_index[i] = frame_header->quantization_hdr.y_ac_qi;
+
+  qmatrix_buf.quantization_index_delta[0] =
+      frame_header->quantization_hdr.y_dc_delta;
+  qmatrix_buf.quantization_index_delta[1] =
+      frame_header->quantization_hdr.y2_dc_delta;
+  qmatrix_buf.quantization_index_delta[2] =
+      frame_header->quantization_hdr.y2_ac_delta;
+  qmatrix_buf.quantization_index_delta[3] =
+      frame_header->quantization_hdr.uv_dc_delta;
+  qmatrix_buf.quantization_index_delta[4] =
+      frame_header->quantization_hdr.uv_ac_delta;
+
+  VAEncMiscParameterRateControl rate_control_param = {};
+  rate_control_param.bits_per_second = encode_params.bitrate_bps;
+  rate_control_param.target_percentage = kTargetBitratePercentage;
+  rate_control_param.window_size = encode_params.cpb_window_size_ms;
+  rate_control_param.initial_qp = encode_params.initial_qp;
+  rate_control_param.rc_flags.bits.disable_frame_skip = true;
+
+  VAEncMiscParameterFrameRate framerate_param = {};
+  framerate_param.framerate = encode_params.framerate;
+
+  VAEncMiscParameterHRD hrd_param = {};
+  hrd_param.buffer_size = encode_params.cpb_size_bits;
+  hrd_param.initial_buffer_fullness = hrd_param.buffer_size / 2;
+
+  job->AddSetupCallback(
+      base::BindOnce(&VaapiVideoEncodeAccelerator::SubmitBuffer,
+                     base::Unretained(vea_), VAEncSequenceParameterBufferType,
+                     MakeRefCountedBytes(&seq_param, sizeof(seq_param))));
+
+  job->AddSetupCallback(
+      base::BindOnce(&VaapiVideoEncodeAccelerator::SubmitBuffer,
+                     base::Unretained(vea_), VAEncPictureParameterBufferType,
+                     MakeRefCountedBytes(&pic_param, sizeof(pic_param))));
+
+  job->AddSetupCallback(
+      base::BindOnce(&VaapiVideoEncodeAccelerator::SubmitBuffer,
+                     base::Unretained(vea_), VAQMatrixBufferType,
+                     MakeRefCountedBytes(&qmatrix_buf, sizeof(qmatrix_buf))));
+
+  job->AddSetupCallback(base::BindOnce(
+      &VaapiVideoEncodeAccelerator::SubmitVAEncMiscParamBuffer,
+      base::Unretained(vea_), VAEncMiscParameterTypeRateControl,
+      MakeRefCountedBytes(&rate_control_param, sizeof(rate_control_param))));
+
+  job->AddSetupCallback(base::BindOnce(
+      &VaapiVideoEncodeAccelerator::SubmitVAEncMiscParamBuffer,
+      base::Unretained(vea_), VAEncMiscParameterTypeFrameRate,
+      MakeRefCountedBytes(&framerate_param, sizeof(framerate_param))));
+
+  job->AddSetupCallback(
+      base::BindOnce(&VaapiVideoEncodeAccelerator::SubmitVAEncMiscParamBuffer,
+                     base::Unretained(vea_), VAEncMiscParameterTypeHRD,
+                     MakeRefCountedBytes(&hrd_param, sizeof(hrd_param))));
 
   return true;
 }
