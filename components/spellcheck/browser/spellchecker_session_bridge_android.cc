@@ -139,4 +139,8 @@ SpellCheckerSessionBridge::SpellingRequest::SpellingRequest(
     RequestTextCheckCallback callback)
     : text_(text), callback_(std::move(callback)) {}
 
-SpellCheckerSessionBridge::SpellingRequest::~SpellingRequest() {}
+SpellCheckerSessionBridge::SpellingRequest::~SpellingRequest() {
+  // Ensure that we don't clear an uncalled RequestTextCheckCallback
+  if (callback_)
+    std::move(callback_).Run(std::vector<SpellCheckResult>());
+}
