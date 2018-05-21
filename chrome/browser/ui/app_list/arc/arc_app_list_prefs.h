@@ -135,9 +135,6 @@ class ArcAppListPrefs : public KeyedService,
         const std::vector<uint8_t>& icon_png_data) {}
     // Notifies that task has been destroyed.
     virtual void OnTaskDestroyed(int32_t task_id) {}
-    virtual void OnTaskOrientationLockRequestedDeprecated(
-        int32_t task_id,
-        const arc::mojom::OrientationLockDeprecated orientation_lock) {}
     // Notifies that task has been activated and moved to the front.
     virtual void OnTaskSetActive(int32_t task_id) {}
 
@@ -326,9 +323,6 @@ class ArcAppListPrefs : public KeyedService,
       const std::string& label,
       const std::vector<uint8_t>& icon_png_data) override;
   void OnTaskDestroyed(int32_t task_id) override;
-  void OnTaskOrientationLockRequestedDeprecated(
-      int32_t task_id,
-      const arc::mojom::OrientationLockDeprecated orientation_lock) override;
   void OnTaskSetActive(int32_t task_id) override;
   void OnNotificationsEnabledChanged(const std::string& package_name,
                                      bool enabled) override;

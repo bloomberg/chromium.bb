@@ -1371,12 +1371,6 @@ void ArcAppListPrefs::OnTaskDestroyed(int32_t task_id) {
     observer.OnTaskDestroyed(task_id);
 }
 
-void ArcAppListPrefs::OnTaskOrientationLockRequestedDeprecated(
-    int32_t task_id,
-    const arc::mojom::OrientationLockDeprecated orientation_lock) {
-  VLOG(2) << "Stale client called OnTaskOrientationLockRequested.";
-}
-
 void ArcAppListPrefs::OnTaskSetActive(int32_t task_id) {
   for (auto& observer : observer_list_)
     observer.OnTaskSetActive(task_id);
