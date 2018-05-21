@@ -2154,6 +2154,11 @@ void Element::RecalcStyle(StyleRecalcChange change) {
     if (ParentComputedStyle()) {
       change = RecalcOwnStyle(change);
     } else if (NeedsAttach()) {
+      if (!CanParticipateInFlatTree()) {
+        // Recalculate style for reattachment of Shadow DOM v0 <content>
+        // fallback.
+        RecalcShadowIncludingDescendantStylesForReattach();
+      }
       SetNeedsReattachLayoutTree();
       change = kReattach;
     }

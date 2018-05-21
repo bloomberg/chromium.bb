@@ -1840,6 +1840,7 @@ jumbo_source_set("unit_tests") {
     "html/forms/step_range_test.cc",
     "html/forms/text_control_element_test.cc",
     "html/forms/type_ahead_test.cc",
+    "html/html_content_element_test.cc",
     "html/html_dimension_test.cc",
     "html/html_embed_element_test.cc",
     "html/html_frame_element_test.cc",
