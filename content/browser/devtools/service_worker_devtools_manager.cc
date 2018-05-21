@@ -188,7 +188,8 @@ void ServiceWorkerDevToolsManager::NavigationPreloadRequestSent(
   for (auto* network :
        protocol::NetworkHandler::ForAgentHost(it->second.get())) {
     network->RequestSent(request_id, std::string(), request,
-                         protocol::Network::Initiator::TypeEnum::Preload);
+                         protocol::Network::Initiator::TypeEnum::Preload,
+                         base::nullopt /* initiator_url */);
   }
 }
 

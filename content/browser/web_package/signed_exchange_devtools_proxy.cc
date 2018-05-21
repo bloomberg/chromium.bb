@@ -32,13 +32,14 @@ void CertificateRequestSentOnUI(
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
     const base::UnguessableToken& request_id,
     const base::UnguessableToken& loader_id,
-    const network::ResourceRequest& request) {
+    const network::ResourceRequest& request,
+    const GURL& signed_exchange_url) {
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter.Run());
   if (!frame_tree_node)
     return;
   RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateRequestSent(
-      frame_tree_node, request_id, loader_id, request);
+      frame_tree_node, request_id, loader_id, request, signed_exchange_url);
 }
 
 void CertificateResponseReceivedOnUI(
@@ -125,7 +126,7 @@ void SignedExchangeDevToolsProxy::CertificateRequestSent(
       base::BindOnce(
           &CertificateRequestSentOnUI, frame_tree_node_id_getter_, request_id,
           devtools_navigation_token_ ? *devtools_navigation_token_ : request_id,
-          request));
+          request, outer_request_url_));
 }
 
 void SignedExchangeDevToolsProxy::CertificateResponseReceived(
