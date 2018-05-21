@@ -137,12 +137,12 @@ void H264BitstreamBuffer::FinishNALU() {
     FlushReg();
 }
 
-size_t H264BitstreamBuffer::BytesInBuffer() {
+size_t H264BitstreamBuffer::BytesInBuffer() const {
   DCHECK_FINISHED();
   return pos_;
 }
 
-uint8_t* H264BitstreamBuffer::data() {
+const uint8_t* H264BitstreamBuffer::data() const {
   DCHECK(data_);
   DCHECK_FINISHED();
 

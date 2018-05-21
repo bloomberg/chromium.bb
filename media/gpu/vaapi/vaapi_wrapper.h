@@ -132,7 +132,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // DestroyPendingBuffers() is used to cancel a pending job.
   bool SubmitVAEncMiscParamBuffer(VAEncMiscParameterType misc_param_type,
                                   size_t size,
-                                  void* buffer);
+                                  const void* buffer);
 
   // Cancel and destroy all buffers queued to the HW codec via SubmitBuffer().
   // Useful when a pending job is to be cancelled (on reset or error).

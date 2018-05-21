@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 
@@ -398,6 +399,11 @@ void RTCVideoEncoder::Impl::RequestEncodingParametersChange(
   // Check for overflow converting bitrate (kilobits/sec) to bits/sec.
   if (IsBitrateTooHigh(bitrate))
     return;
+
+  // This is a workaround to zero being temporarily provided, as part of the
+  // initial setup, by WebRTC.
+  bitrate = std::max(1u, bitrate);
+  framerate = std::max(1u, framerate);
 
   if (video_encoder_)
     video_encoder_->RequestEncodingParametersChange(bitrate * 1000, framerate);
