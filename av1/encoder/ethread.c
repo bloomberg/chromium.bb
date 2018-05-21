@@ -142,9 +142,8 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
       thread_data->td->mb.wsrc_buf = thread_data->td->wsrc_buf;
       thread_data->td->mb.mask_buf = thread_data->td->mask_buf;
     }
-    if (thread_data->td->counts != &cpi->common.counts) {
-      memcpy(thread_data->td->counts, &cpi->common.counts,
-             sizeof(cpi->common.counts));
+    if (thread_data->td->counts != &cpi->counts) {
+      memcpy(thread_data->td->counts, &cpi->counts, sizeof(cpi->counts));
     }
 
     if (i < num_workers - 1)
@@ -177,9 +176,21 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
     cpi->intrabc_used |= thread_data->td->intrabc_used_this_tile;
     // Accumulate counters.
     if (i < cpi->num_workers - 1) {
-      av1_accumulate_frame_counts(&cm->counts, thread_data->td->counts);
+      av1_accumulate_frame_counts(&cpi->counts, thread_data->td->counts);
       accumulate_rd_opt(&cpi->td, thread_data->td);
       cpi->td.mb.txb_split_count += thread_data->td->mb.txb_split_count;
     }
   }
+}
+
+// Accumulate frame counts. FRAME_COUNTS consist solely of 'unsigned int'
+// members, so we treat it as an array, and sum over the whole length.
+void av1_accumulate_frame_counts(FRAME_COUNTS *acc_counts,
+                                 const FRAME_COUNTS *counts) {
+  unsigned int *const acc = (unsigned int *)acc_counts;
+  const unsigned int *const cnt = (const unsigned int *)counts;
+
+  const unsigned int n_counts = sizeof(FRAME_COUNTS) / sizeof(unsigned int);
+
+  for (unsigned int i = 0; i < n_counts; i++) acc[i] += cnt[i];
 }

@@ -1068,7 +1068,7 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   update_film_grain_parameters(cpi, oxcf);
 
   // Single thread case: use counts in common.
-  cpi->td.counts = &cm->counts;
+  cpi->td.counts = &cpi->counts;
 
   // change includes all joint functionality
   av1_change_config(cpi, oxcf);
@@ -5039,7 +5039,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   update_reference_frames(cpi);
 
 #if CONFIG_ENTROPY_STATS
-  av1_accumulate_frame_counts(&aggregate_fc, &cm->counts);
+  av1_accumulate_frame_counts(&aggregate_fc, &cpi->counts);
 #endif  // CONFIG_ENTROPY_STATS
 
   if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {

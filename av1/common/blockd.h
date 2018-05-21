@@ -494,7 +494,6 @@ typedef struct macroblockd {
   uint8_t bmode_blocks_wl;
   uint8_t bmode_blocks_hl;
 
-  FRAME_COUNTS *counts;
   TileInfo tile;
 
   int mi_stride;

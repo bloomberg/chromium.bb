@@ -26,7 +26,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include "./aom_config.h"
-#include "av1/common/entropymode.h"
+#include "av1/encoder/encoder.h"
 
 #define SPACES_PER_TAB 2
 #define CDF_MAX_SIZE 16

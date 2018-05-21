@@ -28,6 +28,7 @@ typedef struct {
 
 struct AV1_COMP;
 struct ThreadData;
+struct FRAME_COUNTS;
 
 struct tokenize_b_args {
   const struct AV1_COMP *cpi;
@@ -57,7 +58,7 @@ int av1_cost_color_map(const MACROBLOCK *const x, int plane, BLOCK_SIZE bsize,
 void av1_tokenize_color_map(const MACROBLOCK *const x, int plane,
                             TOKENEXTRA **t, BLOCK_SIZE bsize, TX_SIZE tx_size,
                             COLOR_MAP_TYPE type, int allow_update_cdf,
-                            FRAME_COUNTS *counts);
+                            struct FRAME_COUNTS *counts);
 
 static INLINE int av1_get_tx_eob(const struct segmentation *seg, int segment_id,
                                  TX_SIZE tx_size) {

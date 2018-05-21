@@ -20,7 +20,6 @@ extern "C" {
 #endif
 
 struct AV1Common;
-struct FRAME_COUNTS;
 
 typedef struct AV1LfMTInfo {
   int mi_row;
@@ -61,9 +60,6 @@ void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                               int plane_end, int partial_frame,
                               AVxWorker *workers, int num_workers,
                               AV1LfSync *lf_sync);
-
-void av1_accumulate_frame_counts(struct FRAME_COUNTS *acc_counts,
-                                 struct FRAME_COUNTS *counts);
 
 #ifdef __cplusplus
 }  // extern "C"

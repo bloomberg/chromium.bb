@@ -362,16 +362,3 @@ void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   loop_filter_rows_mt(frame, cm, xd, start_mi_row, end_mi_row, plane_start,
                       plane_end, workers, num_workers, lf_sync);
 }
-
-// Accumulate frame counts. FRAME_COUNTS consist solely of 'unsigned int'
-// members, so we treat it as an array, and sum over the whole length.
-void av1_accumulate_frame_counts(FRAME_COUNTS *acc_counts,
-                                 FRAME_COUNTS *counts) {
-  unsigned int *const acc = (unsigned int *)acc_counts;
-  const unsigned int *const cnt = (unsigned int *)counts;
-
-  const unsigned int n_counts = sizeof(FRAME_COUNTS) / sizeof(unsigned int);
-  unsigned int i;
-
-  for (i = 0; i < n_counts; i++) acc[i] += cnt[i];
-}

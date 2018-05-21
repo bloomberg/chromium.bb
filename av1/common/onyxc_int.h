@@ -454,7 +454,6 @@ typedef struct AV1Common {
   unsigned int frame_context_idx; /* Context to use/update */
   int fb_of_context_type[REF_FRAMES];
   int primary_ref_frame;
-  FRAME_COUNTS counts;
 
   unsigned int frame_offset;
 
