@@ -334,7 +334,6 @@ class DnsUDPAttempt : public DnsAttempt {
     }
     if (response_->flags() & dns_protocol::kFlagTC)
       return ERR_DNS_SERVER_REQUIRES_TCP;
-    // TODO(szym): Extract TTL for NXDOMAIN results. http://crbug.com/115051
     if (response_->rcode() == dns_protocol::kRcodeNXDOMAIN)
       return ERR_NAME_NOT_RESOLVED;
     if (response_->rcode() != dns_protocol::kRcodeNOERROR)
@@ -1256,7 +1255,7 @@ class DnsTransactionImpl : public DnsTransaction,
           if (!qnames_.empty())
             qnames_.pop_front();
           if (qnames_.empty()) {
-            return AttemptResult(ERR_NAME_NOT_RESOLVED, NULL);
+            return result;
           } else {
             result = StartQuery();
           }
