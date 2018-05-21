@@ -167,8 +167,11 @@ const int kRelativeTimeMaxHours = 4;
   tapGesture.delegate = self;
   [self.tableView addGestureRecognizer:tapGesture];
 
-  self.faviconLoader =
-      IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
+  // TODO(crbug.com/845192) : Remove dependency on browserState.
+  if (self.browserState) {
+    self.faviconLoader =
+        IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
+  }
 
   // If the NavigationBar is not translucent, set
   // |self.extendedLayoutIncludesOpaqueBars| to YES in order to avoid a top
@@ -817,7 +820,6 @@ const int kRelativeTimeMaxHours = 4;
   ProceduralBlock openHistory = ^{
     [weakSelf.dispatcher showHistory];
   };
-  DCHECK(self.handsetCommandHandler);
   [self.handsetCommandHandler dismissRecentTabsWithCompletion:openHistory];
 }
 
