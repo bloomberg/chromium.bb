@@ -366,7 +366,6 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
 // NativeAppWindow implementation:
 void ChromeNativeAppWindowViewsAuraAsh::SetFullscreen(int fullscreen_types) {
   ChromeNativeAppWindowViewsAura::SetFullscreen(fullscreen_types);
-
   if (immersive_fullscreen_controller_.get()) {
     UpdateImmersiveMode();
 
@@ -389,6 +388,7 @@ void ChromeNativeAppWindowViewsAuraAsh::SetFullscreen(int fullscreen_types) {
         fullscreen_types != AppWindow::FULLSCREEN_TYPE_OS;
     widget()->GetNativeWindow()->SetProperty(ash::kHideShelfWhenFullscreenKey,
                                              should_hide_shelf);
+    widget()->non_client_view()->Layout();
   }
 }
 
@@ -430,6 +430,7 @@ void ChromeNativeAppWindowViewsAuraAsh::SetActivateOnPointer(
 void ChromeNativeAppWindowViewsAuraAsh::OnTabletModeToggled(bool enabled) {
   tablet_mode_enabled_ = enabled;
   UpdateImmersiveMode();
+  widget()->non_client_view()->Layout();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

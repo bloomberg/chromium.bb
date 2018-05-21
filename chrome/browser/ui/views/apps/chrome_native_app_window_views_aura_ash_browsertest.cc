@@ -31,13 +31,21 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   ASSERT_TRUE(window != nullptr);
   ASSERT_TRUE(window->immersive_fullscreen_controller_.get() != nullptr);
   EXPECT_FALSE(window->immersive_fullscreen_controller_->IsEnabled());
+  constexpr int kFrameHeight = 32;
+
+  views::ClientView* client_view =
+      window->widget()->non_client_view()->client_view();
+  EXPECT_EQ(kFrameHeight, client_view->bounds().y());
 
   // Verify that when fullscreen is toggled on, immersive mode is enabled and
   // that when fullscreen is toggled off, immersive mode is disabled.
   app_window->OSFullscreen();
   EXPECT_TRUE(window->immersive_fullscreen_controller_->IsEnabled());
+  EXPECT_EQ(0, client_view->bounds().y());
+
   app_window->Restore();
   EXPECT_FALSE(window->immersive_fullscreen_controller_->IsEnabled());
+  EXPECT_EQ(kFrameHeight, client_view->bounds().y());
 
   // Verify that since the auto hide title bars in tablet mode feature turned
   // on, immersive mode is enabled once tablet mode is entered, and disabled
@@ -47,9 +55,12 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   tablet_mode_controller->EnableTabletModeWindowManager(true);
   tablet_mode_controller->FlushForTesting();
   EXPECT_TRUE(window->immersive_fullscreen_controller_->IsEnabled());
+  EXPECT_EQ(0, client_view->bounds().y());
+
   tablet_mode_controller->EnableTabletModeWindowManager(false);
   tablet_mode_controller->FlushForTesting();
   EXPECT_FALSE(window->immersive_fullscreen_controller_->IsEnabled());
+  EXPECT_EQ(kFrameHeight, client_view->bounds().y());
 
   // Verify that the window was fullscreened before entering tablet mode, it
   // will remain fullscreened after exiting tablet mode.
