@@ -5,8 +5,8 @@
 // https://wicg.github.io/webusb/#usbisochronousouttransferresult
 
 [
-    RuntimeEnabled=WebUSB,
-    Constructor(sequence<USBIsochronousOutTransferPacket> packets)
+    Constructor(sequence<USBIsochronousOutTransferPacket> packets),
+    Exposed(DedicatedWorker WebUSBOnDedicatedAndSharedWorkers, SharedWorker WebUSBOnDedicatedAndSharedWorkers, Window WebUSB)
 ] interface USBIsochronousOutTransferResult {
     readonly attribute FrozenArray<USBIsochronousOutTransferPacket> packets;
 };

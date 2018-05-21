@@ -5,8 +5,8 @@
 // https://wicg.github.io/webusb/#usbisochronousouttransferpacket
 
 [
-    RuntimeEnabled=WebUSB,
-    Constructor(USBTransferStatus status, optional unsigned long bytesWritten = 0)
+    Constructor(USBTransferStatus status, optional unsigned long bytesWritten = 0),
+    Exposed(DedicatedWorker WebUSBOnDedicatedAndSharedWorkers, SharedWorker WebUSBOnDedicatedAndSharedWorkers, Window WebUSB)
 ] interface USBIsochronousOutTransferPacket {
     readonly attribute unsigned long bytesWritten;
     readonly attribute USBTransferStatus status;
