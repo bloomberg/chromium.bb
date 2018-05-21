@@ -268,6 +268,8 @@ blink_core_sources("layout") {
     "line/line_breaker.h",
     "line/line_info.h",
     "line/line_layout_state.h",
+    "line/line_orientation_utils.cc",
+    "line/line_orientation_utils.h",
     "line/line_width.cc",
     "line/line_width.h",
     "line/root_inline_box.cc",
