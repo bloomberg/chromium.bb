@@ -245,7 +245,12 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
   // http://crbug.com/34970: some IMEs get confused if we change the text
   // composed by them. To avoid this problem, we should check the IME status and
   // update the text only when the IME is not composing text.
-  if (find_text_->text() != find_text && !find_text_->IsIMEComposing()) {
+  //
+  // Find Bar hosts with global find pasteboards are expected to preserve the
+  // find text contents after clearing the find results as the normal
+  // prepopulation code does not run.
+  if (find_text_->text() != find_text && !find_text_->IsIMEComposing() &&
+      (!find_bar_host_->HasGlobalFindPasteboard() || !find_text.empty())) {
     find_text_->SetText(find_text);
     find_text_->SelectAll(true);
   }
