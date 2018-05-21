@@ -1944,6 +1944,15 @@ void RenderFrameImpl::OnDeleteFrame() {
   // See https://crbug.com/569683 for details.
   in_browser_initiated_detach_ = true;
 
+  bool is_closing = render_view_->closing();
+  base::debug::Alias(&is_closing);
+  // It is an error to tell a main RenderFrame to cleanup itself, unless the
+  // RenderFrame is provisonal. But since WebView::Close() is deferred (see
+  // RenderWidget::OnClose, which posts a non-nestable task for the actual
+  // WebWidget::Close() invocation), perhaps this is happening somehow...
+  if (is_main_frame_ && !frame_->IsProvisional())
+    CHECK(false);
+
   // This will result in a call to RenderFrameImpl::frameDetached, which
   // deletes the object. Do not access |this| after detach.
   frame_->Detach();
