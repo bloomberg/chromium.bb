@@ -81,6 +81,9 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
 // the promise resolves, the payment sheet displays the payment details and the
 // Buy button is enabled.
 - (void)testBuyWithResolvingPromise {
+  // TODO(crbug.com/833562): re-enable when fixed.
+  EARL_GREY_TEST_DISABLED(@"Test currently failing within suite.");
+
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)];
 
   // Disable EarlGrey's synchronization.
