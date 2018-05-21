@@ -299,10 +299,6 @@
     'webview_instrumentation_test_apk': {},
   },
 
-  'angle_gtests': {
-    'angle_unittests': {},
-  },
-
   'aura_gtests': {
     'aura_unittests': {},
     'compositor_unittests': {},
@@ -449,6 +445,7 @@
   },
 
   'chromium_gtests': {
+    'angle_unittests': {},
     'base_unittests': {},
     'blink_heap_unittests': {},
     'cacheinvalidation_unittests': {},
@@ -1812,7 +1809,6 @@
   'chromium_android_clang_and_gl_gtests': [
     'android_clang_and_fyi_specific_gtests',
     'android_specific_chromium_gtests',
-    'angle_gtests',
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
@@ -1872,7 +1868,6 @@
   ],
 
   'chromium_linux_clang_gtests': [
-    'angle_gtests',
     'aura_gtests',
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
@@ -1894,7 +1889,6 @@
   ],
 
   'chromium_linux_clang_and_gl_gtests': [
-    'angle_gtests',
     'aura_gtests',
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
@@ -2019,7 +2013,6 @@
   ],
 
   'chromium_mac_clang_gtests': [
-    'angle_gtests',
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
@@ -2035,7 +2028,6 @@
   ],
 
   'chromium_mac_fyi_gtests': [
-    'angle_gtests',
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
@@ -2100,7 +2092,6 @@
   ],
 
   'chromium_memory_linux_asan_gtests': [
-    'angle_gtests',
     'aura_gtests',
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
@@ -2137,7 +2128,6 @@
 
   'chromium_win_10_fast_ring_gtests': [
     # Same as chromium_win_clang_gtests but with interactive_ui_tests.
-    'angle_gtests',
     'aura_gtests',
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
@@ -2151,7 +2141,6 @@
   ],
 
   'chromium_win_clang_gtests': [
-    'angle_gtests',
     'aura_gtests',
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
