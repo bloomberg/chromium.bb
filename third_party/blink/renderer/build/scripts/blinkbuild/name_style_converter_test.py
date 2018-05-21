@@ -108,6 +108,8 @@ class SmartTokenizerTest(unittest.TestCase):
         self.assertEqual(tokenize_name('IsXHTMLDocument'), ['Is', 'XHTML', 'Document'])
         self.assertEqual(tokenize_name('isHTMLDocument'), ['is', 'HTML', 'Document'])
 
+        self.assertEqual(tokenize_name('matrix3d'), ['matrix', '3d'])
+
     def test_ignoring_characters(self):
         self.assertEqual(tokenize_name('Animation.idl'), ['Animation', 'idl'])
         self.assertEqual(tokenize_name('-webkit-appearance'), ['webkit', 'appearance'])

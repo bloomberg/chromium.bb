@@ -62,7 +62,7 @@ _TOKEN_PATTERNS = [
     # The following pattern captures only 'FOO' in 'FOOElement'.
     '[A-Z]+(?![a-z])',
     # '2D' '3D', but not '2Dimension'
-    '[0-9]D$',
+    '[0-9][Dd]$',
     '[0-9]+',
 ]
 
