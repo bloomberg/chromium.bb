@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/text/string_truncator.h"
+#include "third_party/blink/renderer/platform/fonts/string_truncator.h"
 
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
@@ -99,11 +99,6 @@ static unsigned RightTruncateToBuffer(const String& string,
   buffer[keep_length] = kHorizontalEllipsisCharacter;
 
   return truncated_length;
-}
-
-static float StringWidth(const Font& renderer, const String& string) {
-  TextRun run(string);
-  return renderer.Width(run);
 }
 
 static float StringWidth(const Font& renderer,
@@ -212,10 +207,6 @@ String StringTruncator::RightTruncate(const String& string,
                                       float max_width,
                                       const Font& font) {
   return TruncateString(string, max_width, font, RightTruncateToBuffer);
-}
-
-float StringTruncator::Width(const String& string, const Font& font) {
-  return StringWidth(font, string);
 }
 
 }  // namespace blink
