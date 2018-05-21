@@ -549,6 +549,10 @@ void MenuController::AddNestedDelegate(
   delegate_ = delegate;
 }
 
+bool MenuController::IsContextMenu() const {
+  return state_.context_menu;
+}
+
 bool MenuController::OnMousePressed(SubmenuView* source,
                                     const ui::MouseEvent& event) {
   // We should either have no current_mouse_event_target_, or should have a

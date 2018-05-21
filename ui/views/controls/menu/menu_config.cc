@@ -58,7 +58,7 @@ MenuConfig::MenuConfig()
       check_selected_combobox_item(false),
       show_delay(400),
       corner_radius(0),
-      combobox_corner_radius(0),
+      auxiliary_corner_radius(0),
       touchable_corner_radius(8),
       touchable_anchor_offset(8),
       touchable_menu_height(36),
@@ -75,8 +75,8 @@ MenuConfig::~MenuConfig() {}
 int MenuConfig::CornerRadiusForMenu(const MenuController* controller) const {
   if (controller && controller->use_touchable_layout())
     return touchable_corner_radius;
-  if (controller && controller->is_combobox())
-    return combobox_corner_radius;
+  if (controller && (controller->is_combobox() || controller->IsContextMenu()))
+    return auxiliary_corner_radius;
   return corner_radius;
 }
 
