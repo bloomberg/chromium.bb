@@ -1285,8 +1285,8 @@ void Shell::Init(ui::ContextFactory* context_factory,
   // GetShellConnector() is null in unit tests.
   // TODO(jamescook): Make this work in ash_shell_with_content.
   if (shell_delegate_->GetShellConnector() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowTapsApp)) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowTaps) &&
+      features::IsShowTapsAppEnabled()) {
     shell_delegate_->GetShellConnector()->StartService(
         touch_hud::mojom::kServiceName);
   }

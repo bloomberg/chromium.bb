@@ -2914,6 +2914,10 @@ const char kShowTapsDescription[] =
     "when projecting or mirroring the display. Similar to the Android OS "
     "developer option.";
 
+const char kShowTapsAppName[] = "Show taps with mojo app";
+const char kShowTapsAppDescription[] =
+    "Use the out-of-process touch HUD mojo app to show tap points.";
+
 const char kShowTouchHudName[] = "Show HUD for touch points";
 const char kShowTouchHudDescription[] =
     "Shows a trail of colored dots for the last few touch points. Pressing "

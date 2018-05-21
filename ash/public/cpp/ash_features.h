@@ -41,6 +41,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kOverviewSwipeToClose;
 // https://crbug.com/805046.
 ASH_PUBLIC_EXPORT extern const base::Feature kPersistentWindowBounds;
 
+// Enables the mojo app implementation of 'Show taps'.
+ASH_PUBLIC_EXPORT extern const base::Feature kShowTapsApp;
+
 // Enables new system menu.
 ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayUnified;
 
@@ -57,6 +60,8 @@ ASH_PUBLIC_EXPORT bool IsDockedMagnifierEnabled();
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerEnabled();
 
 ASH_PUBLIC_EXPORT bool IsPersistentWindowBoundsEnabled();
+
+ASH_PUBLIC_EXPORT bool IsShowTapsAppEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSystemTrayUnifiedEnabled();
 

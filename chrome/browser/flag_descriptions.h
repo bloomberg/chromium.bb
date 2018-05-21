@@ -1967,6 +1967,9 @@ extern const char kMaterialDesignInkDropAnimationSlow[];
 extern const char kShowTapsName[];
 extern const char kShowTapsDescription[];
 
+extern const char kShowTapsAppName[];
+extern const char kShowTapsAppDescription[];
+
 extern const char kShowTouchHudName[];
 extern const char kShowTouchHudDescription[];
 

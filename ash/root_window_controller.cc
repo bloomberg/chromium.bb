@@ -18,6 +18,7 @@
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -544,7 +545,7 @@ void RootWindowController::InitTouchHuds() {
 
   // TouchHudProjection manages its own lifetime.
   if (command_line->HasSwitch(switches::kShowTaps) &&
-      !command_line->HasSwitch(switches::kShowTapsApp)) {
+      !features::IsShowTapsAppEnabled()) {
     touch_hud_projection_ = new TouchHudProjection(GetRootWindow());
   }
 }
