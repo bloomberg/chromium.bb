@@ -5,6 +5,8 @@
 #include "chrome/services/printing/pdf_to_emf_converter.h"
 
 #include <algorithm>
+#include <limits>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
@@ -62,12 +64,18 @@ void RegisterConverterClient(mojom::PdfToEmfConverterClientPtr client) {
 }  // namespace
 
 PdfToEmfConverter::PdfToEmfConverter(
-    mojo::ScopedHandle pdf_file_in,
-    const printing::PdfRenderSettings& pdf_render_settings,
+    base::ReadOnlySharedMemoryRegion pdf_region,
+    const PdfRenderSettings& pdf_render_settings,
     mojom::PdfToEmfConverterClientPtr client)
     : pdf_render_settings_(pdf_render_settings) {
   RegisterConverterClient(std::move(client));
+  SetPrintMode();
+  LoadPdf(std::move(pdf_region));
+}
 
+PdfToEmfConverter::~PdfToEmfConverter() = default;
+
+void PdfToEmfConverter::SetPrintMode() {
   chrome_pdf::SetPDFUseGDIPrinting(pdf_render_settings_.mode ==
                                    PdfRenderSettings::Mode::GDI_TEXT);
   int printing_mode;
@@ -86,38 +94,31 @@ PdfToEmfConverter::PdfToEmfConverter(
       printing_mode = chrome_pdf::PrintingMode::kEmf;
   }
   chrome_pdf::SetPDFUsePrintMode(printing_mode);
-
-  base::PlatformFile pdf_file;
-  if (mojo::UnwrapPlatformFile(std::move(pdf_file_in), &pdf_file) !=
-      MOJO_RESULT_OK) {
-    LOG(ERROR) << "Invalid PDF file passed to PdfToEmfConverter.";
-    return;
-  }
-  LoadPdf(base::File(pdf_file));
 }
 
-PdfToEmfConverter::~PdfToEmfConverter() = default;
+void PdfToEmfConverter::LoadPdf(base::ReadOnlySharedMemoryRegion pdf_region) {
+  if (!pdf_region.IsValid()) {
+    LOG(ERROR) << "Invalid PDF passed to PdfToEmfConverter.";
+    return;
+  }
 
-void PdfToEmfConverter::LoadPdf(base::File pdf_file) {
-  int64_t length64 = pdf_file.GetLength();
-  if (length64 <= 0 || length64 > std::numeric_limits<int>::max())
+  size_t size = pdf_region.GetSize();
+  if (size <= 0 || size > std::numeric_limits<int>::max())
     return;
 
-  int length = static_cast<int>(length64);
-  pdf_data_.resize(length);
-  if (length != pdf_file.Read(0, pdf_data_.data(), pdf_data_.size()))
+  pdf_mapping_ = pdf_region.Map();
+  if (!pdf_mapping_.IsValid())
     return;
 
   int page_count = 0;
-  chrome_pdf::GetPDFDocInfo(&pdf_data_.front(), pdf_data_.size(), &page_count,
-                            nullptr);
+  chrome_pdf::GetPDFDocInfo(pdf_mapping_.memory(), size, &page_count, nullptr);
   total_page_count_ = page_count;
 }
 
-bool PdfToEmfConverter::RenderPdfPageToMetafile(int page_number,
-                                                base::File output_file,
-                                                float* scale_factor,
-                                                bool postscript) {
+base::ReadOnlySharedMemoryRegion PdfToEmfConverter::RenderPdfPageToMetafile(
+    int page_number,
+    bool postscript,
+    float* scale_factor) {
   Emf metafile;
   metafile.Init();
 
@@ -142,38 +143,50 @@ bool PdfToEmfConverter::RenderPdfPageToMetafile(int page_number,
   }
 
   // The underlying metafile is of type Emf and ignores the arguments passed
-  // to StartPage.
+  // to StartPage().
   metafile.StartPage(gfx::Size(), gfx::Rect(), 1);
   int offset_x = postscript ? pdf_render_settings_.offsets.x() : 0;
   int offset_y = postscript ? pdf_render_settings_.offsets.y() : 0;
 
+  base::ReadOnlySharedMemoryRegion invalid_emf_region;
   if (!chrome_pdf::RenderPDFPageToDC(
-          &pdf_data_.front(), pdf_data_.size(), page_number, metafile.context(),
-          pdf_render_settings_.dpi.width(), pdf_render_settings_.dpi.height(),
+          pdf_mapping_.memory(), pdf_mapping_.size(), page_number,
+          metafile.context(), pdf_render_settings_.dpi.width(),
+          pdf_render_settings_.dpi.height(),
           pdf_render_settings_.area.x() - offset_x,
           pdf_render_settings_.area.y() - offset_y,
           pdf_render_settings_.area.width(), pdf_render_settings_.area.height(),
           true, false, true, true, pdf_render_settings_.autorotate,
           pdf_render_settings_.use_color)) {
-    return false;
+    return invalid_emf_region;
   }
   metafile.FinishPage();
   metafile.FinishDocument();
-  return metafile.SaveTo(&output_file);
+
+  mojo::ScopedSharedBufferHandle emf_handle =
+      mojo::SharedBufferHandle::Create(metafile.GetDataSize());
+  mojo::ScopedSharedBufferHandle readonly_handle;
+  if (emf_handle.is_valid()) {
+    mojo::ScopedSharedBufferMapping emf_mapping =
+        emf_handle->Map(metafile.GetDataSize());
+    if (emf_mapping &&
+        metafile.GetData(emf_mapping.get(), metafile.GetDataSize())) {
+      readonly_handle =
+          emf_handle->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
+    }
+  }
+  if (!readonly_handle.is_valid())
+    return invalid_emf_region;
+
+  return mojo::UnwrapReadOnlySharedMemoryRegion(std::move(readonly_handle));
 }
 
 void PdfToEmfConverter::ConvertPage(uint32_t page_number,
-                                    mojo::ScopedHandle emf_file_out,
                                     ConvertPageCallback callback) {
+  static constexpr float kInvalidScaleFactor = 0;
+  base::ReadOnlySharedMemoryRegion invalid_emf_region;
   if (page_number >= total_page_count_) {
-    std::move(callback).Run(/*success=*/false, /*scale_factor=*/0.0);
-    return;
-  }
-
-  base::PlatformFile emf_file;
-  if (mojo::UnwrapPlatformFile(std::move(emf_file_out), &emf_file) !=
-      MOJO_RESULT_OK) {
-    std::move(callback).Run(/*success=*/false, /*scale_factor=*/0.0);
+    std::move(callback).Run(std::move(invalid_emf_region), kInvalidScaleFactor);
     return;
   }
 
@@ -181,9 +194,9 @@ void PdfToEmfConverter::ConvertPage(uint32_t page_number,
   bool postscript =
       pdf_render_settings_.mode == PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2 ||
       pdf_render_settings_.mode == PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3;
-  bool success = RenderPdfPageToMetafile(page_number, base::File(emf_file),
-                                         &scale_factor, postscript);
-  std::move(callback).Run(success, scale_factor);
+  base::ReadOnlySharedMemoryRegion emf_region =
+      RenderPdfPageToMetafile(page_number, postscript, &scale_factor);
+  std::move(callback).Run(std::move(emf_region), scale_factor);
 }
 
 }  // namespace printing

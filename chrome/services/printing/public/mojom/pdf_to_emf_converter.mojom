@@ -5,6 +5,7 @@
 module printing.mojom;
 
 import "chrome/services/printing/public/mojom/pdf_render_settings.mojom";
+import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 
 // This set of interfaces is used to convert PDF files to EMF.
@@ -22,12 +23,14 @@ interface PdfToEmfConverterClient {
 };
 
 interface PdfToEmfConverter {
-  ConvertPage(uint32 page_number, handle emf_file_out) =>
-      (bool success, float scale_factor);
+  ConvertPage(uint32 page_number) =>
+      (mojo_base.mojom.ReadOnlySharedMemoryRegion? emf_region,
+       float scale_factor);
 };
 
 interface PdfToEmfConverterFactory {
-  CreateConverter(handle pdf_file_in, PdfRenderSettings render_settings,
-         PdfToEmfConverterClient client) => (PdfToEmfConverter converter,
-            uint32 page_count);
+  CreateConverter(mojo_base.mojom.ReadOnlySharedMemoryRegion pdf_region,
+                  PdfRenderSettings render_settings,
+                  PdfToEmfConverterClient client) =>
+      (PdfToEmfConverter converter, uint32 page_count);
 };

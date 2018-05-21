@@ -18,7 +18,6 @@
 
 namespace base {
 class CommandLine;
-class File;
 class FilePath;
 class SingleThreadTaskRunner;
 }  // namespace base
@@ -84,9 +83,10 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
     friend class base::RefCountedThreadSafe<Client>;
     friend class ServiceUtilityProcessHost;
 
-    // Invoked when a metafile file is ready.
-    // Returns true if metafile successfully loaded from |file|.
-    bool MetafileAvailable(float scale_factor, base::File file);
+    // Invoked when a metafile is ready.
+    // Returns true if metafile successfully loaded from |emf_region|.
+    bool MetafileAvailable(float scale_factor,
+                           base::ReadOnlySharedMemoryRegion emf_region);
 
     DISALLOW_COPY_AND_ASSIGN(Client);
   };
@@ -143,7 +143,9 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   void OnRenderPDFPagesToMetafilesPageCount(
       printing::mojom::PdfToEmfConverterPtr converter,
       uint32_t page_count);
-  void OnRenderPDFPagesToMetafilesPageDone(bool success, float scale_factor);
+  void OnRenderPDFPagesToMetafilesPageDone(
+      base::ReadOnlySharedMemoryRegion emf_region,
+      float scale_factor);
 
   // IPC Messages handlers:
   void OnGetPrinterCapsAndDefaultsSucceeded(

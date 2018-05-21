@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "base/files/file.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "chrome/services/printing/public/mojom/pdf_to_emf_converter.mojom.h"
 #include "printing/pdf_render_settings.h"
 
@@ -16,7 +16,7 @@ namespace printing {
 
 class PdfToEmfConverter : public mojom::PdfToEmfConverter {
  public:
-  PdfToEmfConverter(mojo::ScopedHandle pdf_file_in,
+  PdfToEmfConverter(base::ReadOnlySharedMemoryRegion pdf_region,
                     const PdfRenderSettings& render_settings,
                     mojom::PdfToEmfConverterClientPtr client);
   ~PdfToEmfConverter() override;
@@ -25,19 +25,17 @@ class PdfToEmfConverter : public mojom::PdfToEmfConverter {
 
  private:
   // mojom::PdfToEmfConverter implementation.
-  void ConvertPage(uint32_t page_number,
-                   mojo::ScopedHandle emf_file_out,
-                   ConvertPageCallback callback) override;
+  void ConvertPage(uint32_t page_number, ConvertPageCallback callback) override;
 
-  void LoadPdf(base::File pdf_file);
-  bool RenderPdfPageToMetafile(int page_number,
-                               base::File output_file,
-                               float* scale_factor,
-                               bool postscript);
+  void SetPrintMode();
+  void LoadPdf(base::ReadOnlySharedMemoryRegion pdf_region);
+  base::ReadOnlySharedMemoryRegion RenderPdfPageToMetafile(int page_number,
+                                                           bool postscript,
+                                                           float* scale_factor);
 
   uint32_t total_page_count_ = 0;
   PdfRenderSettings pdf_render_settings_;
-  std::vector<char> pdf_data_;
+  base::ReadOnlySharedMemoryMapping pdf_mapping_;
 
   DISALLOW_COPY_AND_ASSIGN(PdfToEmfConverter);
 };
