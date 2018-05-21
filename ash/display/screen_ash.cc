@@ -27,8 +27,7 @@ namespace ash {
 
 namespace {
 
-// We need to keep this in order for unittests to tell if
-// the object in display::Screen::GetScreenByType is for shutdown.
+// Intentionally leaked in production.
 display::Screen* screen_for_shutdown = nullptr;
 
 display::DisplayManager* GetDisplayManager() {
@@ -200,6 +199,14 @@ void ScreenAsh::CreateScreenForShutdown() {
   delete screen_for_shutdown;
   screen_for_shutdown = new ScreenForShutdown(display::Screen::GetScreen());
   display::Screen::SetScreenInstance(screen_for_shutdown);
+}
+
+// static
+void ScreenAsh::DeleteScreenForShutdown() {
+  if (display::Screen::GetScreen() == screen_for_shutdown)
+    display::Screen::SetScreenInstance(nullptr);
+  delete screen_for_shutdown;
+  screen_for_shutdown = nullptr;
 }
 
 }  // namespace ash
