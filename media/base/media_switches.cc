@@ -320,6 +320,12 @@ const base::Feature kLowDelayVideoRenderingOnLiveStream{
     "low-delay-video-rendering-on-live-stream",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Whether the autoplay policy should ignore Web Audio. When ignored, the
+// autoplay policy will be hardcoded to be the legacy one on based on the
+// platform
+const base::Feature kAutoplayIgnoreWebAudio{"AutoplayIgnoreWebAudio",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Lock the screen orientation when a video goes fullscreen.
 const base::Feature kVideoFullscreenOrientationLock{

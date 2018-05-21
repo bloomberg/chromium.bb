@@ -520,4 +520,8 @@ void WebRuntimeFeatures::EnableDisplayCutoutViewportFit(bool enable) {
   RuntimeEnabledFeatures::SetDisplayCutoutViewportFitEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableAutoplayIgnoresWebAudio(bool enable) {
+  RuntimeEnabledFeatures::SetAutoplayIgnoresWebAudioEnabled(enable);
+}
+
 }  // namespace blink

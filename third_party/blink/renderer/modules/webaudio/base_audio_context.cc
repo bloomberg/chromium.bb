@@ -684,13 +684,19 @@ Document* BaseAudioContext::GetDocument() const {
 }
 
 AutoplayPolicy::Type BaseAudioContext::GetAutoplayPolicy() const {
-// The policy is different on Android compared to Desktop.
+  if (RuntimeEnabledFeatures::AutoplayIgnoresWebAudioEnabled()) {
+// When ignored, the policy is different on Android compared to Desktop.
 #if defined(OS_ANDROID)
-  return AutoplayPolicy::Type::kUserGestureRequired;
+    return AutoplayPolicy::Type::kUserGestureRequired;
 #else
-  // Force no user gesture required on desktop.
-  return AutoplayPolicy::Type::kNoUserGestureRequired;
+    // Force no user gesture required on desktop.
+    return AutoplayPolicy::Type::kNoUserGestureRequired;
 #endif
+  }
+
+  Document* document = GetDocument();
+  DCHECK(document);
+  return AutoplayPolicy::GetAutoplayPolicyForDocument(*document);
 }
 
 bool BaseAudioContext::AreAutoplayRequirementsFulfilled() const {
