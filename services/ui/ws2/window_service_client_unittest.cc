@@ -65,6 +65,8 @@ class WindowServiceTestHelper {
     ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
                                          &context_factory_private);
     aura_test_helper_.SetUp(context_factory, context_factory_private);
+    scoped_capture_client_ = std::make_unique<wm::ScopedCaptureClient>(
+        aura_test_helper_.root_window());
     service_ = std::make_unique<WindowService>(&delegate_, nullptr);
     delegate_.set_top_level_parent(aura_test_helper_.root_window());
 
@@ -79,6 +81,7 @@ class WindowServiceTestHelper {
   ~WindowServiceTestHelper() {
     window_service_client_.reset();
     service_.reset();
+    scoped_capture_client_.reset();
     aura_test_helper_.TearDown();
     ui::TerminateContextFactoryForTests();
   }
@@ -108,6 +111,7 @@ class WindowServiceTestHelper {
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::UI};
   aura::test::AuraTestHelper aura_test_helper_;
+  std::unique_ptr<wm::ScopedCaptureClient> scoped_capture_client_;
   TestWindowServiceDelegate delegate_;
   std::unique_ptr<WindowService> service_;
   TestWindowTreeClient window_tree_client_;
@@ -583,6 +587,35 @@ TEST(WindowServiceClientTest, CaptureNotificationForTopLevel) {
   capture_controller->ReleaseCapture(top_level);
   EXPECT_EQ("OnCaptureChanged new_window=null old_window=0,11",
             SingleChangeToDescription(*(helper.changes())));
+}
+
+TEST(WindowServiceClientTest, EventsGoToCaptureWindow) {
+  WindowServiceTestHelper helper;
+  aura::Window* window = helper.helper()->NewWindow(1);
+  aura::Window* top_level = helper.helper()->NewTopLevelWindow(2);
+  top_level->AddChild(window);
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  window->Show();
+  top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window->SetBounds(gfx::Rect(10, 10, 90, 90));
+  // Left press on the top-level, leaving mouse down.
+  test::EventGenerator event_generator(helper.root());
+  event_generator.MoveMouseTo(5, 5);
+  event_generator.PressLeftButton();
+  helper.window_tree_client()->ClearInputEvents();
+
+  // Set capture on |window|.
+  EXPECT_TRUE(helper.helper()->SetCapture(window));
+  EXPECT_TRUE(helper.window_tree_client()->input_events().empty());
+
+  // Move mouse, should go to |window|.
+  event_generator.MoveMouseTo(6, 6);
+  auto drag_event = helper.window_tree_client()->PopInputEvent();
+  EXPECT_EQ(helper.helper()->TransportIdForWindow(window),
+            drag_event.window_id);
+  EXPECT_EQ("POINTER_MOVED -4,-4",
+            LocatedEventToEventTypeAndLocation(drag_event.event.get()));
 }
 
 TEST(WindowServiceClientTest, DeleteWindow) {

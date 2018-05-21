@@ -36,8 +36,7 @@ aura::Window* WindowServiceClientTestHelper::NewWindow(
 
 void WindowServiceClientTestHelper::DeleteWindow(aura::Window* window) {
   const int change_id = 1u;
-  window_service_client_->DeleteWindow(
-      change_id, window_service_client_->TransportIdForWindow(window));
+  window_service_client_->DeleteWindow(change_id, TransportIdForWindow(window));
 }
 
 aura::Window* WindowServiceClientTestHelper::NewTopLevelWindow(
@@ -65,17 +64,15 @@ void WindowServiceClientTestHelper::SetWindowBounds(aura::Window* window,
                                                     uint32_t change_id) {
   base::Optional<viz::LocalSurfaceId> local_surface_id;
   window_service_client_->SetWindowBounds(
-      change_id, window_service_client_->TransportIdForWindow(window), bounds,
-      local_surface_id);
+      change_id, TransportIdForWindow(window), bounds, local_surface_id);
 }
 
 void WindowServiceClientTestHelper::SetClientArea(
     aura::Window* window,
     const gfx::Insets& insets,
     base::Optional<std::vector<gfx::Rect>> additional_client_areas) {
-  window_service_client_->SetClientArea(
-      window_service_client_->TransportIdForWindow(window), insets,
-      additional_client_areas);
+  window_service_client_->SetClientArea(TransportIdForWindow(window), insets,
+                                        additional_client_areas);
 }
 
 void WindowServiceClientTestHelper::SetWindowProperty(
@@ -84,8 +81,7 @@ void WindowServiceClientTestHelper::SetWindowProperty(
     const std::vector<uint8_t>& value,
     uint32_t change_id) {
   window_service_client_->SetWindowProperty(
-      change_id, window_service_client_->TransportIdForWindow(window), name,
-      value);
+      change_id, TransportIdForWindow(window), name, value);
 }
 
 WindowServiceClient* WindowServiceClientTestHelper::Embed(
@@ -95,7 +91,7 @@ WindowServiceClient* WindowServiceClientTestHelper::Embed(
     uint32_t embed_flags) {
   if (!window_service_client_->EmbedImpl(
           window_service_client_->MakeClientWindowId(
-              window_service_client_->TransportIdForWindow(window)),
+              TransportIdForWindow(window)),
           std::move(client_ptr), client, embed_flags)) {
     return nullptr;
   }
@@ -106,14 +102,18 @@ WindowServiceClient* WindowServiceClientTestHelper::Embed(
 void WindowServiceClientTestHelper::SetEventTargetingPolicy(
     aura::Window* window,
     mojom::EventTargetingPolicy policy) {
-  window_service_client_->SetEventTargetingPolicy(
-      window_service_client_->TransportIdForWindow(window), policy);
+  window_service_client_->SetEventTargetingPolicy(TransportIdForWindow(window),
+                                                  policy);
+}
+
+Id WindowServiceClientTestHelper::TransportIdForWindow(aura::Window* window) {
+  return window_service_client_->TransportIdForWindow(window);
 }
 
 ClientWindowId WindowServiceClientTestHelper::ClientWindowIdForWindow(
     aura::Window* window) {
   return window_service_client_->MakeClientWindowId(
-      window_service_client_->TransportIdForWindow(window));
+      TransportIdForWindow(window));
 }
 
 }  // namespace ws2

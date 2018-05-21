@@ -84,20 +84,28 @@ class ClientWindowEventHandler : public ui::EventHandler {
  public:
   explicit ClientWindowEventHandler(ClientWindow* client_window)
       : client_window_(client_window) {
-    client_window->window()->AddPreTargetHandler(
-        this, ui::EventTarget::Priority::kSystem);
+    window()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
   }
   ~ClientWindowEventHandler() override {
-    client_window_->window()->RemovePreTargetHandler(this);
+    window()->RemovePreTargetHandler(this);
   }
 
   ClientWindow* client_window() { return client_window_; }
+  aura::Window* window() { return client_window_->window(); }
 
   // ui::EventHandler:
   void OnEvent(ui::Event* event) override {
     // Because we StopPropagation() in the pre-phase an event should never be
     // received for other phases.
     DCHECK_EQ(event->phase(), EP_PRETARGET);
+
+    if (static_cast<aura::Window*>(event->target()) != window()) {
+      // As ClientWindow is a EP_PRETARGET EventHandler it gets events *before*
+      // descendants. Ignore all such events, and only process when
+      // window() is the the target.
+      return;
+    }
+
     // Events typically target the embedded client. Exceptions include when the
     // embedder intercepts events, or the window is a top-level and the event is
     // in the non-client area.
@@ -107,7 +115,7 @@ class ClientWindowEventHandler : public ui::EventHandler {
                        ? owning
                        : embedded;
     DCHECK(client);
-    client->SendEventToClient(client_window_->window(), *event);
+    client->SendEventToClient(window(), *event);
 
     // The event was forwarded to the remote client. We don't want it handled
     // locally too.
@@ -144,6 +152,13 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
       return;
     }
 
+    if (static_cast<aura::Window*>(event->target()) != window()) {
+      // As TopLevelEventHandler is a EP_PRETARGET EventHandler it gets events
+      // *before* descendants. Ignore all such events, and only process when
+      // window() is the the target.
+      return;
+    }
+
     if (!event->IsLocatedEvent()) {
       ClientWindowEventHandler::OnEvent(event);
       return;
@@ -163,7 +178,7 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
         if (event->type() == ui::ET_MOUSE_PRESSED) {
           mouse_down_state_ = std::make_unique<MouseDownState>();
           mouse_down_state_->in_non_client_area = IsLocationInNonClientArea(
-              client_window()->window(), event->AsLocatedEvent()->location());
+              window(), event->AsLocatedEvent()->location());
           if (mouse_down_state_->in_non_client_area)
             return;  // Don't send presses to client.
           stop_propagation = true;
@@ -182,8 +197,8 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
         stop_propagation = true;
       }
     }
-    client_window()->owning_window_service_client()->SendEventToClient(
-        client_window()->window(), *event);
+    client_window()->owning_window_service_client()->SendEventToClient(window(),
+                                                                       *event);
     if (stop_propagation)
       event->StopPropagation();
   }
