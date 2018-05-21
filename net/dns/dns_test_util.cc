@@ -237,10 +237,6 @@ void MockDnsClient::SetConfig(const DnsConfig& config) {
 }
 
 const DnsConfig* MockDnsClient::GetConfig() const {
-  if (!config_.IsValid())
-    printf("invalid config\n");
-  else
-    printf("valid config\n");
   return config_.IsValid() ? &config_ : NULL;
 }
 
