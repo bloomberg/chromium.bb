@@ -1059,6 +1059,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=1",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "latency_unittests"
       },
       {
@@ -1221,6 +1231,16 @@
           "can_use_on_swarming_builders": true
         },
         "test": "skia_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=1",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "snapshot_unittests"
       },
       {
         "args": [
@@ -1630,6 +1650,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "latency_unittests"
       },
       {
@@ -1733,6 +1759,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "skia_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "snapshot_unittests"
       },
       {
         "swarming": {
@@ -2049,6 +2081,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -2508,6 +2546,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "latency_unittests"
       },
       {
@@ -2933,6 +2977,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "latency_unittests"
       },
       {
@@ -3030,6 +3080,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "skia_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "snapshot_unittests"
       },
       {
         "swarming": {
@@ -3328,6 +3384,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "latency_unittests"
       },
       {
@@ -3426,6 +3488,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "skia_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "snapshot_unittests"
       },
       {
         "swarming": {
@@ -3770,6 +3838,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "skia_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "snapshot_unittests"
       },
       {
         "swarming": {

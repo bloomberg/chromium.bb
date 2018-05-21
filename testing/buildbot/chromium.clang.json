@@ -254,6 +254,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "latency_unittests"
       },
       {
@@ -685,6 +691,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "latency_unittests"
       },
       {
@@ -1074,6 +1086,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -1471,6 +1489,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "libjingle_xmpp_unittests"
       },
       {
@@ -1851,6 +1875,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -2248,6 +2278,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "libjingle_xmpp_unittests"
       },
       {
@@ -2635,6 +2671,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -3032,6 +3074,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "libjingle_xmpp_unittests"
       },
       {
@@ -3419,6 +3467,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -6923,6 +6977,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "latency_unittests"
       },
       {
@@ -7344,6 +7404,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "latency_unittests"
       },
       {
@@ -7748,6 +7814,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -8162,6 +8234,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "latency_unittests"
       },
       {
@@ -8561,6 +8639,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -9781,6 +9865,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "libjingle_xmpp_unittests"
       },
       {
@@ -10168,6 +10258,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -10565,6 +10661,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "libjingle_xmpp_unittests"
       },
       {
@@ -10952,6 +11054,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -11349,6 +11457,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "libjingle_xmpp_unittests"
       },
       {
@@ -11736,6 +11850,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -12133,6 +12253,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "libjingle_xmpp_unittests"
       },
       {
@@ -12520,6 +12646,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -12917,6 +13049,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "libjingle_xmpp_unittests"
       },
       {
@@ -13304,6 +13442,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -13702,6 +13846,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -14240,6 +14390,17 @@
           ]
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
