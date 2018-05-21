@@ -1895,6 +1895,7 @@ jumbo_source_set("unit_tests") {
     "layout/api/selection_state_test.cc",
     "layout/collapsed_border_value_test.cc",
     "layout/custom/layout_worklet_test.cc",
+    "layout/jank_tracker_test.cc",
     "layout/layout_block_test.cc",
     "layout/layout_box_model_object_test.cc",
     "layout/layout_box_test.cc",

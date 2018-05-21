@@ -240,7 +240,8 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       needs_focus_on_fragment_(false),
       main_thread_scrolling_reasons_(0),
       paint_frame_count_(0),
-      unique_id_(NewUniqueObjectId()) {
+      unique_id_(NewUniqueObjectId()),
+      jank_tracker_(this) {
   Init();
 }
 

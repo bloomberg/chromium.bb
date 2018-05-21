@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/frame/frame_view_auto_size_info.h"
 #include "third_party/blink/renderer/core/frame/layout_subtree_root_list.h"
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
+#include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
 #include "third_party/blink/renderer/core/layout/scroll_anchor.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -920,6 +921,7 @@ class CORE_EXPORT LocalFrameView final
   ScrollingCoordinatorContext* GetScrollingContext() const;
 
   void ScrollAndFocusFragmentAnchor();
+  JankTracker& GetJankTracker() { return jank_tracker_; }
 
  protected:
   // Scroll the content via the compositor.
@@ -1289,6 +1291,7 @@ class CORE_EXPORT LocalFrameView final
   size_t paint_frame_count_;
 
   UniqueObjectId unique_id_;
+  JankTracker jank_tracker_;
 
   FRIEND_TEST_ALL_PREFIXES(WebViewTest, DeviceEmulationResetScrollbars);
 };
