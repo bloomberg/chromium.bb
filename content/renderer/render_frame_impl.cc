@@ -2952,11 +2952,10 @@ void RenderFrameImpl::CommitNavigation(
           common_params, request_params, std::move(url_loader_client_endpoints),
           head);
 
-      // Load the request.
-      frame_->Load(request, load_type, item_for_history_navigation,
-                   blink::kWebHistoryDifferentDocumentLoad, is_client_redirect,
-                   devtools_navigation_token);
-      // The load of the URL can result in this frame being removed. Use a
+      frame_->CommitNavigation(request, load_type, item_for_history_navigation,
+                               blink::kWebHistoryDifferentDocumentLoad,
+                               is_client_redirect, devtools_navigation_token);
+      // The commit can result in this frame being removed. Use a
       // WeakPtr as an easy way to detect whether this has occured. If so, this
       // method should return immediately and not touch any part of the object,
       // otherwise it will result in a use-after-free bug.

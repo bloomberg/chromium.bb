@@ -902,15 +902,21 @@ void WebLocalFrameImpl::Reload(WebFrameLoadType load_type) {
   // TODO(clamy): Remove this function once RenderFrame calls load for all
   // requests.
   DCHECK(GetFrame());
-  DCHECK(IsReloadLoadType(static_cast<FrameLoadType>(load_type)));
-  ResourceRequest request = GetFrame()->Loader().ResourceRequestForReload(
-      static_cast<FrameLoadType>(load_type));
+  FrameLoadType frame_load_type = static_cast<FrameLoadType>(load_type);
+  DCHECK(IsReloadLoadType(frame_load_type));
+  ResourceRequest request =
+      GetFrame()->Loader().ResourceRequestForReload(frame_load_type);
   if (request.IsNull())
     return;
   request.SetRequestorOrigin(GetFrame()->GetDocument()->GetSecurityOrigin());
-  Load(WrappedResourceRequest(request), load_type, WebHistoryItem(),
-       kWebHistoryDifferentDocumentLoad, false,
-       base::UnguessableToken::Create());
+  if (GetTextFinder())
+    GetTextFinder()->ClearActiveFindMatch();
+
+  GetFrame()->Loader().StartNavigation(
+      FrameLoadRequest(nullptr, request, /*frame_name=*/AtomicString(),
+                       kCheckContentSecurityPolicy,
+                       base::UnguessableToken::Create()),
+      frame_load_type);
 }
 
 void WebLocalFrameImpl::ReloadImage(const WebNode& web_node) {
@@ -924,11 +930,19 @@ void WebLocalFrameImpl::ReloadLoFiImages() {
 }
 
 void WebLocalFrameImpl::LoadRequest(const WebURLRequest& request) {
-  // TODO(clamy): Remove this function once RenderFrame calls load for all
-  // requests.
-  Load(request, WebFrameLoadType::kStandard, WebHistoryItem(),
-       kWebHistoryDifferentDocumentLoad, false,
-       base::UnguessableToken::Create());
+  // TODO(clamy): Remove this function once RenderFrame calls CommitNavigation
+  // for all requests.
+  DCHECK(GetFrame());
+  DCHECK(!request.IsNull());
+  DCHECK(!request.Url().ProtocolIs("javascript"));
+  if (GetTextFinder())
+    GetTextFinder()->ClearActiveFindMatch();
+
+  GetFrame()->Loader().StartNavigation(
+      FrameLoadRequest(
+          nullptr, request.ToResourceRequest(), /*frame_name=*/AtomicString(),
+          kCheckContentSecurityPolicy, base::UnguessableToken::Create()),
+      kFrameLoadTypeStandard);
 }
 
 void WebLocalFrameImpl::CheckCompleted() {
@@ -2028,7 +2042,7 @@ bool WebLocalFrameImpl::DispatchBeforeUnloadEvent(bool is_reload) {
   return GetFrame()->Loader().ShouldClose(is_reload);
 }
 
-void WebLocalFrameImpl::Load(
+void WebLocalFrameImpl::CommitNavigation(
     const WebURLRequest& request,
     WebFrameLoadType web_frame_load_type,
     const WebHistoryItem& item,
@@ -2049,7 +2063,7 @@ void WebLocalFrameImpl::Load(
   if (is_client_redirect)
     frame_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
   HistoryItem* history_item = item;
-  GetFrame()->Loader().Load(
+  GetFrame()->Loader().CommitNavigation(
       frame_request, static_cast<FrameLoadType>(web_frame_load_type),
       history_item, static_cast<HistoryLoadType>(web_history_load_type));
 }
@@ -2152,7 +2166,7 @@ void WebLocalFrameImpl::LoadData(const WebData& data,
   if (is_client_redirect)
     frame_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
 
-  GetFrame()->Loader().Load(
+  GetFrame()->Loader().CommitNavigation(
       frame_request, static_cast<FrameLoadType>(web_frame_load_type),
       history_item, static_cast<HistoryLoadType>(web_history_load_type));
 }

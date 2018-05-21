@@ -27,7 +27,7 @@ class FrameTest : public PageTestBase {
     const KURL& url = KURL(NullURL(), destinationUrl);
     FrameLoadRequest request(nullptr, ResourceRequest(url),
                              SubstituteData(SharedBuffer::Create()));
-    GetDocument().GetFrame()->Loader().Load(request);
+    GetDocument().GetFrame()->Loader().CommitNavigation(request);
     if (user_activated) {
       GetDocument()
           .GetFrame()

@@ -49,7 +49,7 @@ class PingLoaderTest : public PageTestBase {
   void SetDocumentURL(const KURL& url) {
     FrameLoadRequest request(nullptr, ResourceRequest(url),
                              SubstituteData(SharedBuffer::Create()));
-    GetFrame().Loader().Load(request);
+    GetFrame().Loader().CommitNavigation(request);
     blink::test::RunPendingTasks();
     ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
   }

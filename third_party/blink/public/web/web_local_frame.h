@@ -196,9 +196,10 @@ class WebLocalFrame : public WebFrame {
   // Note: this may lead to the destruction of the frame.
   virtual bool DispatchBeforeUnloadEvent(bool is_reload) = 0;
 
-  // Load the given URL. For history navigations, a valid WebHistoryItem
-  // should be given, as well as a WebHistoryLoadType.
-  virtual void Load(
+  // Commits a cross-document navigation in the frame. For history navigations,
+  // a valid WebHistoryItem should be provided.
+  // TODO(dgozman): return mojom::CommitResult.
+  virtual void CommitNavigation(
       const WebURLRequest&,
       WebFrameLoadType,
       const WebHistoryItem&,
@@ -208,7 +209,7 @@ class WebLocalFrame : public WebFrame {
 
   // Commits a same-document navigation in the frame. For history navigations, a
   // valid WebHistoryItem should be provided. Returns CommitResult::Ok if the
-  // load committed.
+  // navigation has actually committed.
   virtual mojom::CommitResult CommitSameDocumentNavigation(
       const WebURL&,
       WebFrameLoadType,
@@ -218,19 +219,21 @@ class WebLocalFrame : public WebFrame {
   // Loads a JavaScript URL in the frame.
   virtual void LoadJavaScriptURL(const WebURL&) = 0;
 
-  // This method is short-hand for calling LoadData, where mime_type is
-  // "text/html" and text_encoding is "UTF-8".
+  // This method is short-hand for calling CommitDataNavigation, where mime_type
+  // is "text/html" and text_encoding is "UTF-8".
+  // TODO(dgozman): rename to CommitHTMLStringNavigation.
   virtual void LoadHTMLString(const WebData& html,
                               const WebURL& base_url,
                               const WebURL& unreachable_url = WebURL(),
                               bool replace = false) = 0;
 
-  // Loads the given data with specific mime type and optional text
+  // Navigates to the given data with specific mime type and optional text
   // encoding.  For HTML data, baseURL indicates the security origin of
   // the document and is used to resolve links.  If specified,
   // unreachableURL is reported via WebDocumentLoader::unreachableURL.  If
   // replace is false, then this data will be loaded as a normal
   // navigation.  Otherwise, the current history item will be replaced.
+  // TODO(dgozman): rename to CommitDataNavigation.
   virtual void LoadData(const WebData&,
                         const WebString& mime_type,
                         const WebString& text_encoding,
@@ -752,6 +755,8 @@ class WebLocalFrame : public WebFrame {
   virtual void Reload(WebFrameLoadType) = 0;
 
   // Load the given URL.
+  // TODO(dgozman): rename to StartNavigation and audit usages. Most of them
+  // actually want to CommitNavigation.
   virtual void LoadRequest(const WebURLRequest&) = 0;
 
   // Check whether loading has completed based on subframe state, etc.
