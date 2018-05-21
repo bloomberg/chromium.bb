@@ -9,29 +9,6 @@ module arc.mojom;
 import "components/arc/common/gfx.mojom";
 import "components/arc/common/scale_factor.mojom";
 
-// Describes OrientationLock request.
-// Note: ChromeOS currently assumes the internal panel is always landscape.
-// All rotation angles mentioned here are measured clockwise.
-// DEPRECATED: OrientationLock passed by Wayland instead.
-[Extensible]
-enum OrientationLockDeprecated {
-  NONE = 0,
-  // Rotated 90 or 270 deg.
-  PORTRAIT = 1,
-  // Rotated 0 or 180 deg.
-  LANDSCAPE = 2,
-  // Keep the current orientation.
-  CURRENT = 3,
-  // Rotated 90 deg.
-  PORTRAIT_PRIMARY = 4,
-  // Rotated 0 deg.
-  LANDSCAPE_PRIMARY = 5,
-  // Rotated 270 deg.
-  PORTRAIT_SECONDARY = 6,
-  // Rotated 180 deg.
-  LANDSCAPE_SECONDARY = 7,
-};
-
 // Describes installation result.
 struct InstallationResult {
   string package_name;
@@ -45,8 +22,6 @@ struct AppInfo {
   string activity;
   [MinVersion=2] bool sticky;  // true if the app cannot be uninstalled
   [MinVersion=7] bool notifications_enabled;
-  // DEPRECATED: OrientationLock passed by Wayland instead.
-  [MinVersion=12] OrientationLockDeprecated orientation_lock_deprecated;
 };
 
 // Describes ARC package.
@@ -248,11 +223,6 @@ interface AppHost {
 
   // Notifies that task has been destroyed.
   [MinVersion=4] OnTaskDestroyed@5(int32 task_id);
-
-  // Notifies that task requested orientation lock.
-  // DEPRECATED: OrientationLock passed by Wayland instead.
-  [MinVersion=12] OnTaskOrientationLockRequestedDeprecated@12(
-        int32 task_id, OrientationLockDeprecated lock);
 
   // Notifies that task has been activated.
   [MinVersion=4] OnTaskSetActive@6(int32 task_id);

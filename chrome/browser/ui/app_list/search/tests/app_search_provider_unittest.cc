@@ -104,8 +104,6 @@ class AppSearchProviderTest : public AppListTestBase {
     app_info.activity = activity;
     app_info.sticky = false;
     app_info.notifications_enabled = false;
-    app_info.orientation_lock_deprecated =
-        arc::mojom::OrientationLockDeprecated::NONE;
     arc_test_.app_instance()->SendAppAdded(app_info);
     return ArcAppListPrefs::GetAppId(package, activity);
   }
