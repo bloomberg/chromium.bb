@@ -329,6 +329,19 @@ NGPhysicalOffsetRect NGPhysicalFragment::VisualRectWithContents() const {
   return {{}, Size()};
 }
 
+NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflow() const {
+  switch (Type()) {
+    case NGPhysicalFragment::kFragmentBox:
+      return {{}, Size()};
+    case NGPhysicalFragment::kFragmentText:
+      return {{}, Size()};
+    case NGPhysicalFragment::kFragmentLineBox:
+      return ToNGPhysicalLineBoxFragment(*this).ScrollableOverflow();
+  }
+  NOTREACHED();
+  return {{}, Size()};
+}
+
 void NGPhysicalFragment::PropagateContentsVisualRect(
     NGPhysicalOffsetRect* parent_visual_rect) const {
   NGPhysicalOffsetRect visual_rect = VisualRectWithContents();

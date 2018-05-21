@@ -396,6 +396,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 
 ### virtual/layout_ng/overflow
 crbug.com/724701 virtual/layout_ng/overflow/overflow-basic-004.html [ Failure ]
+crbug.com/724701 virtual/layout_ng/overflow/overflow-inline-001.html [ Failure ]
 
 ### single pixel underline Mac failures
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/001.html [ Failure ]

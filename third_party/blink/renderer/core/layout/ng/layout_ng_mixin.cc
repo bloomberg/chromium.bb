@@ -68,12 +68,14 @@ void LayoutNGMixin<Base>::AddOverflowFromChildren() {
           physical_fragment->Style().OverflowY() != EOverflow::kHidden;
       if (has_width || has_height) {
         for (const auto& child : physical_fragment->Children()) {
-          NGPhysicalOffsetRect child_rect(child->Offset(), child->Size());
+          NGPhysicalOffsetRect child_overflow_rect =
+              child->ScrollableOverflow();
+          child_overflow_rect.offset += child->Offset();
           if (!has_width)
-            child_rect.size.width = LayoutUnit();
+            child_overflow_rect.size.width = LayoutUnit();
           if (!has_height)
-            child_rect.size.height = LayoutUnit();
-          Base::AddLayoutOverflow(child_rect.ToLayoutFlippedRect(
+            child_overflow_rect.size.height = LayoutUnit();
+          Base::AddLayoutOverflow(child_overflow_rect.ToLayoutFlippedRect(
               physical_fragment->Style(), physical_fragment->Size()));
         }
       }
