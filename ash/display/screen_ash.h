@@ -51,6 +51,9 @@ class ASH_EXPORT ScreenAsh : public display::Screen {
   // Create a screen instance to be used during shutdown.
   static void CreateScreenForShutdown();
 
+  // Test helpers may need to clean up the ScreenForShutdown between tests.
+  static void DeleteScreenForShutdown();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenAsh);
 };

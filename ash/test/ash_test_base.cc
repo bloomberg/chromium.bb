@@ -12,6 +12,7 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/display/extended_mouse_warp_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/display/screen_ash.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -146,6 +147,10 @@ AshTestBase::~AshTestBase() {
       << "You have overridden TearDown but never called AshTestBase::TearDown";
   if (AshTestHelper::config() != Config::CLASSIC)
     aura::Env::GetInstance()->RemoveObserver(this);
+
+  // Ensure the next test starts with a null display::Screen. Done here because
+  // some tests use Screen in their TearDown() overrides.
+  ScreenAsh::DeleteScreenForShutdown();
 }
 
 void AshTestBase::SetUp() {
