@@ -95,6 +95,12 @@ class TaskQueueManagerPerfTest : public testing::Test {
       queues_.push_back(manager_->CreateTaskQueue<TestTaskQueue>(
           TaskQueue::Spec("test").SetTimeDomain(virtual_time_domain_.get())));
     }
+
+    delayed_task_closure_ = BindRepeating(
+        &TaskQueueManagerPerfTest::TestDelayedTask, Unretained(this));
+
+    immediate_task_closure_ = BindRepeating(
+        &TaskQueueManagerPerfTest::TestImmediateTask, Unretained(this));
   }
 
   void TestDelayedTask() {
@@ -124,11 +130,38 @@ class TaskQueueManagerPerfTest : public testing::Test {
       // Simulate a mix of short and longer delays.
       unsigned int delay =
           num_tasks_to_post_ % 2 ? 1 : (10 + num_tasks_to_post_ % 10);
-      queues_[queue]->PostDelayedTask(
-          FROM_HERE,
-          BindOnce(&TaskQueueManagerPerfTest::TestDelayedTask,
-                   Unretained(this)),
-          TimeDelta::FromMilliseconds(delay));
+      queues_[queue]->PostDelayedTask(FROM_HERE, delayed_task_closure_,
+                                      TimeDelta::FromMilliseconds(delay));
+      num_tasks_in_flight_++;
+      num_tasks_to_post_--;
+    }
+  }
+
+  void TestImmediateTask() {
+    if (--num_tasks_to_run_ == 0) {
+      run_loop_->QuitWhenIdle();
+      return;
+    }
+
+    num_tasks_in_flight_--;
+    // NOTE there are only up to max_tasks_in_flight_ pending delayed tasks at
+    // any one time.  Thanks to the lower_num_tasks_to_post going to zero if
+    // there are a lot of tasks in flight, the total number of task in flight at
+    // any one time is very variable.
+    unsigned int lower_num_tasks_to_post =
+        num_tasks_in_flight_ < (max_tasks_in_flight_ / 2) ? 1 : 0;
+    unsigned int max_tasks_to_post =
+        num_tasks_to_post_ % 2 ? lower_num_tasks_to_post : 10;
+    for (unsigned int i = 0;
+         i < max_tasks_to_post && num_tasks_in_flight_ < max_tasks_in_flight_ &&
+         num_tasks_to_post_ > 0;
+         i++) {
+      // Choose a queue weighted towards queue 0.
+      unsigned int queue = num_tasks_to_post_ % (num_queues_ + 1);
+      if (queue == num_queues_) {
+        queue = 0;
+      }
+      queues_[queue]->PostTask(FROM_HERE, immediate_task_closure_);
       num_tasks_in_flight_++;
       num_tasks_to_post_--;
     }
@@ -139,6 +172,13 @@ class TaskQueueManagerPerfTest : public testing::Test {
     num_tasks_to_post_ = num_tasks_to_run;
     num_tasks_to_run_ = num_tasks_to_run;
     TestDelayedTask();
+  }
+
+  void ResetAndCallTestImmediateTask(unsigned int num_tasks_to_run) {
+    num_tasks_in_flight_ = 1;
+    num_tasks_to_post_ = num_tasks_to_run;
+    num_tasks_to_run_ = num_tasks_to_run;
+    TestImmediateTask();
   }
 
   void Benchmark(const std::string& trace, const RepeatingClosure& test_task) {
@@ -168,6 +208,8 @@ class TaskQueueManagerPerfTest : public testing::Test {
   std::unique_ptr<RunLoop> run_loop_;
   std::unique_ptr<VirtualTimeDomain> virtual_time_domain_;
   std::vector<scoped_refptr<SingleThreadTaskRunner>> queues_;
+  RepeatingClosure delayed_task_closure_;
+  RepeatingClosure immediate_task_closure_;
   // TODO(alexclarke): parameterize so we can measure with and without a
   // TaskTimeObserver.
   TestTaskTimeObserver test_task_time_observer_;
@@ -218,6 +260,54 @@ TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_ThirtyTwoQueues) {
   Benchmark(
       "run 10000 delayed tasks with eight queues",
       BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
+                    Unretained(this), 10000));
+}
+
+TEST_F(TaskQueueManagerPerfTest, RunTenThousandImmediateTasks_OneQueue) {
+  if (!ThreadTicks::IsSupported())
+    return;
+  Initialize(1u);
+
+  max_tasks_in_flight_ = 200;
+  Benchmark(
+      "run 10000 immediate tasks with one queue",
+      BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestImmediateTask,
+                    Unretained(this), 10000));
+}
+
+TEST_F(TaskQueueManagerPerfTest, RunTenThousandImmediateTasks_FourQueues) {
+  if (!ThreadTicks::IsSupported())
+    return;
+  Initialize(4u);
+
+  max_tasks_in_flight_ = 200;
+  Benchmark(
+      "run 10000 immediate tasks with four queues",
+      BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestImmediateTask,
+                    Unretained(this), 10000));
+}
+
+TEST_F(TaskQueueManagerPerfTest, RunTenThousandImmediateTasks_EightQueues) {
+  if (!ThreadTicks::IsSupported())
+    return;
+  Initialize(8u);
+
+  max_tasks_in_flight_ = 200;
+  Benchmark(
+      "run 10000 immediate tasks with eight queues",
+      BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestImmediateTask,
+                    Unretained(this), 10000));
+}
+
+TEST_F(TaskQueueManagerPerfTest, RunTenThousandImmediateTasks_ThirtyTwoQueues) {
+  if (!ThreadTicks::IsSupported())
+    return;
+  Initialize(32u);
+
+  max_tasks_in_flight_ = 200;
+  Benchmark(
+      "run 10000 immediate tasks with eight queues",
+      BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestImmediateTask,
                     Unretained(this), 10000));
 }
 
