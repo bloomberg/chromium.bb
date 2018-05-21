@@ -43,8 +43,20 @@ InlineFlowBoxPainter::InlineFlowBoxPainter(const InlineFlowBox& flow_box)
           flow_box.GetLineLayoutItem().StyleRef(),
           flow_box.GetLineLayoutItem().StyleRef(flow_box.IsFirstLineStyle())),
       inline_flow_box_(flow_box),
-      box_painter_(
-          BoxModelObjectPainter(*GetBoxModelObject(flow_box), &flow_box)) {}
+      box_model_painter_(
+          BoxModelObjectPainter(*GetBoxModelObject(flow_box), &flow_box)) {
+  object_has_multiple_boxes_ = inline_flow_box_.PrevForSameLayoutObject() ||
+                               inline_flow_box_.NextForSameLayoutObject();
+  bool force_include_logical_edges =
+      (!inline_flow_box_.PrevForSameLayoutObject() &&
+       !inline_flow_box_.NextForSameLayoutObject()) ||
+      !inline_flow_box_.Parent();
+  include_logical_left_edge_for_box_shadow_ =
+      force_include_logical_edges || inline_flow_box_.IncludeLogicalLeftEdge();
+  include_logical_right_edge_for_box_shadow_ =
+      force_include_logical_edges || inline_flow_box_.IncludeLogicalRightEdge();
+  box_painter_ = &box_model_painter_;
+}
 
 void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
                                  const LayoutPoint& paint_offset,
@@ -79,22 +91,6 @@ void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
         !curr->BoxModelObject().HasSelfPaintingLayer())
       curr->Paint(child_info, paint_offset, line_top, line_bottom);
   }
-}
-
-inline bool InlineFlowBoxPainter::ShouldForceIncludeLogicalEdges() const {
-  return (!inline_flow_box_.PrevForSameLayoutObject() &&
-          !inline_flow_box_.NextForSameLayoutObject()) ||
-         !inline_flow_box_.Parent();
-}
-
-bool InlineFlowBoxPainter::IncludeLogicalLeftEdgeForBoxShadow() const {
-  return ShouldForceIncludeLogicalEdges() ||
-         inline_flow_box_.IncludeLogicalLeftEdge();
-}
-
-bool InlineFlowBoxPainter::IncludeLogicalRightEdgeForBoxShadow() const {
-  return ShouldForceIncludeLogicalEdges() ||
-         inline_flow_box_.IncludeLogicalRightEdge();
 }
 
 static LayoutRect ClipRectForNinePieceImageStrip(const InlineFlowBox& box,
@@ -353,11 +349,6 @@ LayoutRect InlineFlowBoxPainter::FrameRectClampedToLineTopAndBottomIfNeeded()
     }
   }
   return rect;
-}
-
-bool InlineFlowBoxPainter::InlineBoxHasMultipleFragments() const {
-  return inline_flow_box_.PrevForSameLayoutObject() ||
-         inline_flow_box_.NextForSameLayoutObject();
 }
 
 }  // namespace blink

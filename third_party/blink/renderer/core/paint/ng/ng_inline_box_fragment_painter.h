@@ -35,12 +35,6 @@ class NGInlineBoxFragmentPainter : public InlineBoxPainterBase {
   LayoutRect PaintRectForImageStrip(const LayoutRect&,
                                     TextDirection direction) const override;
 
-  BoxPainterBase& BoxPainter() override { return box_painter_; }
-
-  bool InlineBoxHasMultipleFragments() const override;
-  bool IncludeLogicalLeftEdgeForBoxShadow() const override;
-  bool IncludeLogicalRightEdgeForBoxShadow() const override;
-
   BorderPaintingType GetBorderPaintType(
       const LayoutRect& adjusted_frame_rect,
       IntRect& adjusted_clip_rect) const override;
@@ -50,9 +44,8 @@ class NGInlineBoxFragmentPainter : public InlineBoxPainterBase {
                                    const LayoutPoint& paint_offset);
 
   const NGPaintFragment& inline_box_fragment_;
-  NGBoxFragmentPainter box_painter_;
+  NGBoxFragmentPainter ng_box_painter_;
   NGBorderEdges border_edges_;
-  bool object_has_multiple_fragments_;
 };
 
 }  // namespace blink

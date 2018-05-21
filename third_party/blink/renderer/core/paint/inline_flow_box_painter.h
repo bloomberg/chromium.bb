@@ -37,23 +37,18 @@ class InlineFlowBoxPainter : public InlineBoxPainterBase {
  protected:
   LayoutRect PaintRectForImageStrip(const LayoutRect&,
                                     TextDirection) const override;
-  bool InlineBoxHasMultipleFragments() const override;
-  BoxPainterBase& BoxPainter() override { return box_painter_; }
 
  private:
   void PaintBackgroundBorderShadow(const PaintInfo&,
                                    const LayoutPoint& paint_offset);
   void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
-  inline bool ShouldForceIncludeLogicalEdges() const;
-  bool IncludeLogicalLeftEdgeForBoxShadow() const override;
-  bool IncludeLogicalRightEdgeForBoxShadow() const override;
 
   BorderPaintingType GetBorderPaintType(
       const LayoutRect& adjusted_frame_rect,
       IntRect& adjusted_clip_rect) const override;
 
   const InlineFlowBox& inline_flow_box_;
-  BoxModelObjectPainter box_painter_;
+  BoxModelObjectPainter box_model_painter_;
 };
 
 }  // namespace blink

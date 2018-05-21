@@ -67,9 +67,6 @@ class InlineBoxPainterBase {
 
   virtual LayoutRect PaintRectForImageStrip(const LayoutRect&,
                                             TextDirection direction) const = 0;
-  virtual bool InlineBoxHasMultipleFragments() const = 0;
-  virtual bool IncludeLogicalLeftEdgeForBoxShadow() const = 0;
-  virtual bool IncludeLogicalRightEdgeForBoxShadow() const = 0;
 
   enum BorderPaintingType {
     kDontPaintBorders,
@@ -80,9 +77,6 @@ class InlineBoxPainterBase {
       const LayoutRect& adjusted_frame_rect,
       IntRect& adjusted_clip_rect) const = 0;
 
-  // FIXME(eae): Make const
-  virtual BoxPainterBase& BoxPainter() = 0;
-
   const ImageResourceObserver& image_observer_;
   Member<const Document> document_;
   Member<Node> node_;
@@ -92,6 +86,11 @@ class InlineBoxPainterBase {
 
   // Style taking ::first-line into account.
   const ComputedStyle& line_style_;
+
+  bool object_has_multiple_boxes_;
+  bool include_logical_left_edge_for_box_shadow_;
+  bool include_logical_right_edge_for_box_shadow_;
+  BoxPainterBase* box_painter_;
 };
 
 }  // namespace blink

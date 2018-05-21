@@ -80,9 +80,9 @@ void InlineBoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
   bool has_fill_image = img && img->CanRender();
 
   if ((!has_fill_image && !style_.HasBorderRadius()) ||
-      !InlineBoxHasMultipleFragments()) {
-    BoxPainter().PaintFillLayer(paint_info, c, fill_layer, paint_rect,
-                                kBackgroundBleedNone, geometry, op, false);
+      !object_has_multiple_boxes_) {
+    box_painter_->PaintFillLayer(paint_info, c, fill_layer, paint_rect,
+                                 kBackgroundBleedNone, geometry, op, false);
     return;
   }
 
@@ -93,25 +93,25 @@ void InlineBoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
 
   GraphicsContextStateSaver state_saver(paint_info.context);
   paint_info.context.Clip(PixelSnappedIntRect(paint_rect));
-  BoxPainter().PaintFillLayer(paint_info, c, fill_layer, rect,
-                              kBackgroundBleedNone, geometry, op, true,
-                              paint_rect.Size());
+  box_painter_->PaintFillLayer(paint_info, c, fill_layer, rect,
+                               kBackgroundBleedNone, geometry, op, true,
+                               paint_rect.Size());
 }
 
 void InlineBoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
                                                 const ComputedStyle& s,
                                                 const LayoutRect& paint_rect) {
-  BoxPainterBase::PaintNormalBoxShadow(info, paint_rect, s,
-                                       IncludeLogicalLeftEdgeForBoxShadow(),
-                                       IncludeLogicalRightEdgeForBoxShadow());
+  BoxPainterBase::PaintNormalBoxShadow(
+      info, paint_rect, s, include_logical_left_edge_for_box_shadow_,
+      include_logical_right_edge_for_box_shadow_);
 }
 
 void InlineBoxPainterBase::PaintInsetBoxShadow(const PaintInfo& info,
                                                const ComputedStyle& s,
                                                const LayoutRect& paint_rect) {
   BoxPainterBase::PaintInsetBoxShadowWithBorderRect(
-      info, paint_rect, s, IncludeLogicalLeftEdgeForBoxShadow(),
-      IncludeLogicalRightEdgeForBoxShadow());
+      info, paint_rect, s, include_logical_left_edge_for_box_shadow_,
+      include_logical_right_edge_for_box_shadow_);
 }
 
 }  // namespace blink
