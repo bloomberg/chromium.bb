@@ -2,13 +2,23 @@ rootWebArea
 ++genericContainer invalidState=true
 ++++staticText name='invalid=true'
 ++++++inlineTextBox name='invalid=true'
-++genericContainer invalidState=spelling
-++++staticText name='invalid=spelling'
-++++++inlineTextBox name='invalid=spelling'
-++genericContainer invalidState=grammar
-++++staticText name='invalid=grammar'
-++++++inlineTextBox name='invalid=grammar'
-++genericContainer
+++textField
+++++staticText name='An '
+++++++inlineTextBox name='An '
+++++genericContainer invalidState=spelling
+++++++staticText name='eror'
+++++++++inlineTextBox name='eror'
+++++staticText name=' via invalid=spelling'
+++++++inlineTextBox name=' via invalid=spelling'
+++textField
+++++staticText name='An '
+++++++inlineTextBox name='An '
+++++genericContainer invalidState=grammar
+++++++staticText name='errors'
+++++++++inlineTextBox name='errors'
+++++staticText name=' via invalid=grammar'
+++++++inlineTextBox name=' via invalid=grammar'
+++genericContainer invalidState=false
 ++++staticText name='invalid=false'
 ++++++inlineTextBox name='invalid=false'
 ++genericContainer
