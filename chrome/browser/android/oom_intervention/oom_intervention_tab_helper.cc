@@ -14,6 +14,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/common/oom_intervention/oom_intervention_types.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(OomInterventionTabHelper);
 
@@ -102,6 +103,9 @@ OomInterventionTabHelper::OomInterventionTabHelper(
       renderer_memory_workload_threshold_(GetRendererMemoryWorkloadThreshold()),
       weak_ptr_factory_(this) {
   OutOfMemoryReporter::FromWebContents(web_contents)->AddObserver(this);
+  shared_metrics_buffer_ = base::UnsafeSharedMemoryRegion::Create(
+      sizeof(blink::OomInterventionMetrics));
+  metrics_mapping_ = shared_metrics_buffer_.Map();
 }
 
 OomInterventionTabHelper::~OomInterventionTabHelper() = default;
@@ -300,9 +304,9 @@ void OomInterventionTabHelper::StartDetectionInRenderer() {
   DCHECK(!binding_.is_bound());
   blink::mojom::OomInterventionHostPtr host;
   binding_.Bind(mojo::MakeRequest(&host));
-  intervention_->StartDetection(std::move(host),
-                                renderer_memory_workload_threshold_,
-                                trigger_intervention);
+  intervention_->StartDetection(
+      std::move(host), shared_metrics_buffer_.Duplicate(),
+      renderer_memory_workload_threshold_, trigger_intervention);
 }
 
 void OomInterventionTabHelper::OnNearOomDetected() {

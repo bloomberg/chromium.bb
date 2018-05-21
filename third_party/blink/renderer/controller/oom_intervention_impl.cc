@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
 
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/blink/common/oom_intervention/oom_intervention_types.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -53,9 +54,11 @@ OomInterventionImpl::~OomInterventionImpl() = default;
 
 void OomInterventionImpl::StartDetection(
     mojom::blink::OomInterventionHostPtr host,
+    base::UnsafeSharedMemoryRegion shared_metrics_buffer,
     uint64_t memory_workload_threshold,
     bool trigger_intervention) {
   host_ = std::move(host);
+  shared_metrics_buffer_ = shared_metrics_buffer.Map();
   memory_workload_threshold_ = memory_workload_threshold;
   trigger_intervention_ = trigger_intervention;
 
@@ -76,6 +79,13 @@ void OomInterventionImpl::Check(TimerBase*) {
       pauser_.reset(new ScopedPagePauser);
     }
   }
+
+  // No memory barrier is used to write to this memory to avoid overhead. It is
+  // ok if browser reads slightly stale metrics since it is updated every
+  // second.
+  OomInterventionMetrics* metrics_shm =
+      static_cast<OomInterventionMetrics*>(shared_metrics_buffer_.memory());
+  metrics_shm->current_blink_usage_kb = workload / 1024;
 }
 
 }  // namespace blink
