@@ -23,6 +23,7 @@ import time
 
 from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import sync_stages
+from chromite.lib import boto_compat
 from chromite.lib import build_summary
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -367,8 +368,14 @@ def Cbuildbot(buildroot, depot_tools_path, argv):
   logging.info('Adding depot_tools into PATH: %s', depot_tools_path)
   extra_env = {'PATH': PrependPath(depot_tools_path)}
 
-  result = cros_build_lib.RunCommand(
-      cmd, extra_env=extra_env, error_code_ok=True, cwd=buildroot)
+  # Apply boto cert fix for branch builders only.
+  # TODO(crbug.com/845304): Remove once underlying boto issues are resolved.
+  fix_boto = (os.environ.get('BUILDBOT_MASTERNAME') == 'chromeos.branch')
+
+  with boto_compat.FixBotoCerts(activate=fix_boto):
+    result = cros_build_lib.RunCommand(
+        cmd, extra_env=extra_env, error_code_ok=True, cwd=buildroot)
+
   return result.returncode
 
 
