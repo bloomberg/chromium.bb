@@ -70,6 +70,8 @@ class BrowsingDataRemover {
     DATA_TYPE_WEB_SQL = 1 << 4,
     DATA_TYPE_SERVICE_WORKERS = 1 << 5,
     DATA_TYPE_CACHE_STORAGE = 1 << 6,
+    // This is also persisted, keep with storage datatypes.
+    DATA_TYPE_BACKGROUND_FETCH = 1 << 14,
 
     // Used to request the deletion of embedder-specific storage datatypes.
     DATA_TYPE_EMBEDDER_DOM_STORAGE = 1 << 7,
@@ -77,13 +79,11 @@ class BrowsingDataRemover {
     // DOM-accessible storage (https://www.w3.org/TR/clear-site-data/#storage).
     // Has the same effect as selecting all storage datatypes listed above
     // and ones defined by the embedder.
-    DATA_TYPE_DOM_STORAGE = DATA_TYPE_APP_CACHE | DATA_TYPE_FILE_SYSTEMS |
-                            DATA_TYPE_INDEXED_DB |
-                            DATA_TYPE_LOCAL_STORAGE |
-                            DATA_TYPE_WEB_SQL |
-                            DATA_TYPE_SERVICE_WORKERS |
-                            DATA_TYPE_CACHE_STORAGE |
-                            DATA_TYPE_EMBEDDER_DOM_STORAGE,
+    DATA_TYPE_DOM_STORAGE =
+        DATA_TYPE_APP_CACHE | DATA_TYPE_FILE_SYSTEMS | DATA_TYPE_INDEXED_DB |
+        DATA_TYPE_LOCAL_STORAGE | DATA_TYPE_WEB_SQL |
+        DATA_TYPE_SERVICE_WORKERS | DATA_TYPE_CACHE_STORAGE |
+        DATA_TYPE_EMBEDDER_DOM_STORAGE | DATA_TYPE_BACKGROUND_FETCH,
 
     // Other datatypes.
     DATA_TYPE_COOKIES = 1 << 8,
@@ -100,7 +100,7 @@ class BrowsingDataRemover {
     // deleting COOKIES and CHANNEL IDs, BrowsingDataRemover should skip
     // storage backends whose deletion would cause closing network connections.
     // TODO(crbug.com/798760): Remove when fixed.
-    DATA_TYPE_AVOID_CLOSING_CONNECTIONS = 1 << 14,
+    DATA_TYPE_AVOID_CLOSING_CONNECTIONS = 1 << 15,
 
     // Embedders can add more datatypes beyond this point.
     DATA_TYPE_CONTENT_END = DATA_TYPE_AVOID_CLOSING_CONNECTIONS,

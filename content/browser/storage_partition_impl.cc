@@ -328,6 +328,8 @@ int StoragePartitionImpl::GenerateQuotaClientMask(uint32_t remove_mask) {
     quota_client_mask |= storage::QuotaClient::kServiceWorker;
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_CACHE_STORAGE)
     quota_client_mask |= storage::QuotaClient::kServiceWorkerCache;
+  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_BACKGROUND_FETCH)
+    quota_client_mask |= storage::QuotaClient::kBackgroundFetch;
 
   return quota_client_mask;
 }

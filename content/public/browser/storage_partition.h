@@ -125,6 +125,7 @@ class CONTENT_EXPORT StoragePartition {
     REMOVE_DATA_MASK_SERVICE_WORKERS = 1 << 7,
     REMOVE_DATA_MASK_CACHE_STORAGE = 1 << 8,
     REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA = 1 << 9,
+    REMOVE_DATA_MASK_BACKGROUND_FETCH = 1 << 10,
     REMOVE_DATA_MASK_ALL = 0xFFFFFFFF,
 
     // Corresponds to storage::kStorageTypeTemporary.

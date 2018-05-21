@@ -12,16 +12,21 @@
 namespace content {
 
 CacheStorageQuotaClient::CacheStorageQuotaClient(
-    base::WeakPtr<CacheStorageManager> cache_manager)
-    : cache_manager_(cache_manager) {
-}
+    base::WeakPtr<CacheStorageManager> cache_manager,
+    CacheStorageOwner owner)
+    : cache_manager_(cache_manager), owner_(owner) {}
 
-CacheStorageQuotaClient::~CacheStorageQuotaClient() {
-}
+CacheStorageQuotaClient::~CacheStorageQuotaClient() {}
 
 storage::QuotaClient::ID CacheStorageQuotaClient::id() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return kServiceWorkerCache;
+  switch (owner_) {
+    case CacheStorageOwner::kCacheAPI:
+      return kServiceWorkerCache;
+    case CacheStorageOwner::kBackgroundFetch:
+      return kBackgroundFetch;
+  }
+  NOTREACHED();
 }
 
 void CacheStorageQuotaClient::OnQuotaManagerDestroyed() {
@@ -38,7 +43,7 @@ void CacheStorageQuotaClient::GetOriginUsage(const url::Origin& origin,
     return;
   }
 
-  cache_manager_->GetOriginUsage(origin, std::move(callback));
+  cache_manager_->GetOriginUsage(origin, owner_, std::move(callback));
 }
 
 void CacheStorageQuotaClient::GetOriginsForType(blink::mojom::StorageType type,
@@ -50,7 +55,7 @@ void CacheStorageQuotaClient::GetOriginsForType(blink::mojom::StorageType type,
     return;
   }
 
-  cache_manager_->GetOrigins(std::move(callback));
+  cache_manager_->GetOrigins(owner_, std::move(callback));
 }
 
 void CacheStorageQuotaClient::GetOriginsForHost(blink::mojom::StorageType type,
@@ -63,7 +68,7 @@ void CacheStorageQuotaClient::GetOriginsForHost(blink::mojom::StorageType type,
     return;
   }
 
-  cache_manager_->GetOriginsForHost(host, std::move(callback));
+  cache_manager_->GetOriginsForHost(host, owner_, std::move(callback));
 }
 
 void CacheStorageQuotaClient::DeleteOriginData(const url::Origin& origin,
@@ -81,7 +86,7 @@ void CacheStorageQuotaClient::DeleteOriginData(const url::Origin& origin,
     return;
   }
 
-  cache_manager_->DeleteOriginData(origin, std::move(callback));
+  cache_manager_->DeleteOriginData(origin, owner_, std::move(callback));
 }
 
 bool CacheStorageQuotaClient::DoesSupport(

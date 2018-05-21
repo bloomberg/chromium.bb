@@ -63,6 +63,31 @@ namespace cache_storage_manager_unittest {
 
 using blink::mojom::StorageType;
 
+class MockCacheStorageQuotaManagerProxy : public MockQuotaManagerProxy {
+ public:
+  MockCacheStorageQuotaManagerProxy(MockQuotaManager* quota_manager,
+                                    base::SingleThreadTaskRunner* task_runner)
+      : MockQuotaManagerProxy(quota_manager, task_runner) {}
+
+  void RegisterClient(QuotaClient* client) override {
+    registered_clients_.push_back(client);
+  }
+
+  void SimulateQuotaManagerDestroyed() override {
+    for (auto* client : registered_clients_) {
+      client->OnQuotaManagerDestroyed();
+    }
+    registered_clients_.clear();
+  }
+
+ private:
+  ~MockCacheStorageQuotaManagerProxy() override {
+    DCHECK(registered_clients_.empty());
+  }
+
+  std::vector<QuotaClient*> registered_clients_;
+};
+
 bool IsIndexFileCurrent(const base::FilePath& cache_dir) {
   base::File::Info info;
   const base::FilePath index_path =
@@ -234,7 +259,7 @@ class CacheStorageManagerTest : public testing::Test {
     mock_quota_manager_->SetQuota(origin2_.GetURL(), StorageType::kTemporary,
                                   1024 * 1024 * 100);
 
-    quota_manager_proxy_ = new MockQuotaManagerProxy(
+    quota_manager_proxy_ = new MockCacheStorageQuotaManagerProxy(
         mock_quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
 
     cache_manager_ = CacheStorageManager::Create(
@@ -505,10 +530,12 @@ class CacheStorageManagerTest : public testing::Test {
         origin, CacheStorageOwner::kCacheAPI);
   }
 
-  int64_t GetOriginUsage(const url::Origin& origin) {
+  int64_t GetOriginUsage(
+      const url::Origin& origin,
+      CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
     base::RunLoop loop;
     cache_manager_->GetOriginUsage(
-        origin,
+        origin, owner,
         base::BindOnce(&CacheStorageManagerTest::UsageCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
@@ -520,11 +547,12 @@ class CacheStorageManagerTest : public testing::Test {
     run_loop->Quit();
   }
 
-  std::vector<CacheStorageUsageInfo> GetAllOriginsUsage() {
+  std::vector<CacheStorageUsageInfo> GetAllOriginsUsage(
+      CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
     base::RunLoop loop;
     cache_manager_->GetAllOriginsUsage(
-        base::Bind(&CacheStorageManagerTest::AllOriginsUsageCallback,
-                   base::Unretained(this), base::Unretained(&loop)));
+        owner, base::Bind(&CacheStorageManagerTest::AllOriginsUsageCallback,
+                          base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
     return callback_all_origins_usage_;
   }
@@ -589,7 +617,7 @@ class CacheStorageManagerTest : public testing::Test {
 
   scoped_refptr<MockSpecialStoragePolicy> quota_policy_;
   scoped_refptr<MockQuotaManager> mock_quota_manager_;
-  scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<MockCacheStorageQuotaManagerProxy> quota_manager_proxy_;
   std::unique_ptr<CacheStorageManager> cache_manager_;
 
   CacheStorageCacheHandle callback_cache_handle_;
@@ -1315,6 +1343,55 @@ TEST_P(CacheStorageManagerTestP, GetAllOriginsUsage) {
   }
 }
 
+TEST_P(CacheStorageManagerTestP, GetAllOriginsUsageDifferentOwners) {
+  EXPECT_EQ(0ULL, GetAllOriginsUsage(CacheStorageOwner::kCacheAPI).size());
+  EXPECT_EQ(0ULL,
+            GetAllOriginsUsage(CacheStorageOwner::kBackgroundFetch).size());
+
+  // Put one entry in a cache of owner 1.
+  EXPECT_TRUE(Open(origin1_, "foo", CacheStorageOwner::kCacheAPI));
+  EXPECT_TRUE(
+      CachePut(callback_cache_handle_.value(), GURL("http://example.com/foo")));
+
+  // Put two entries (of identical size) in two origins in a cache of owner 2.
+  EXPECT_TRUE(Open(origin1_, "foo", CacheStorageOwner::kBackgroundFetch));
+  EXPECT_TRUE(
+      CachePut(callback_cache_handle_.value(), GURL("http://example.com/foo")));
+  EXPECT_TRUE(Open(origin2_, "foo", CacheStorageOwner::kBackgroundFetch));
+  EXPECT_TRUE(
+      CachePut(callback_cache_handle_.value(), GURL("http://example.com/bar")));
+
+  std::vector<CacheStorageUsageInfo> usage_cache =
+      GetAllOriginsUsage(CacheStorageOwner::kCacheAPI);
+  EXPECT_EQ(1ULL, usage_cache.size());
+  std::vector<CacheStorageUsageInfo> usage_bgf =
+      GetAllOriginsUsage(CacheStorageOwner::kBackgroundFetch);
+  EXPECT_EQ(2ULL, usage_bgf.size());
+
+  int origin1_index =
+      url::Origin::Create(usage_bgf[0].origin) == origin1_ ? 0 : 1;
+  int origin2_index =
+      url::Origin::Create(usage_bgf[1].origin) == origin2_ ? 1 : 0;
+  EXPECT_NE(origin1_index, origin2_index);
+
+  EXPECT_EQ(usage_cache[0].origin, origin1_.GetURL());
+  EXPECT_EQ(usage_bgf[origin1_index].origin, origin1_.GetURL());
+  EXPECT_EQ(usage_bgf[origin2_index].origin, origin2_.GetURL());
+
+  EXPECT_EQ(usage_cache[0].total_size_bytes,
+            usage_bgf[origin1_index].total_size_bytes);
+
+  if (MemoryOnly()) {
+    EXPECT_TRUE(usage_cache[0].last_modified.is_null());
+    EXPECT_TRUE(usage_bgf[origin1_index].last_modified.is_null());
+    EXPECT_TRUE(usage_bgf[origin2_index].last_modified.is_null());
+  } else {
+    EXPECT_FALSE(usage_cache[0].last_modified.is_null());
+    EXPECT_FALSE(usage_bgf[origin1_index].last_modified.is_null());
+    EXPECT_FALSE(usage_bgf[origin2_index].last_modified.is_null());
+  }
+}
+
 TEST_F(CacheStorageManagerTest, GetAllOriginsUsageWithOldIndex) {
   // Write a single value (V1) to the cache.
   const GURL kFooURL = origin1_.GetURL().Resolve("foo");
@@ -1774,8 +1851,8 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
 
   void SetUp() override {
     CacheStorageManagerTest::SetUp();
-    quota_client_.reset(
-        new CacheStorageQuotaClient(cache_manager_->AsWeakPtr()));
+    quota_client_.reset(new CacheStorageQuotaClient(
+        cache_manager_->AsWeakPtr(), CacheStorageOwner::kCacheAPI));
   }
 
   void QuotaUsageCallback(base::RunLoop* run_loop, int64_t usage) {
@@ -1882,8 +1959,10 @@ TEST_P(CacheStorageQuotaClientTestP, QuotaGetOriginsForType) {
 TEST_P(CacheStorageQuotaClientTestP, QuotaGetOriginsForTypeDifferentOwners) {
   EXPECT_EQ(0u, QuotaGetOriginsForType());
   EXPECT_TRUE(Open(origin1_, "foo"));
+  // The |quota_client_| is registered for CacheStorageOwner::kCacheAPI, so this
+  // Open is ignored.
   EXPECT_TRUE(Open(origin2_, "bar", CacheStorageOwner::kBackgroundFetch));
-  EXPECT_EQ(2u, QuotaGetOriginsForType());
+  EXPECT_EQ(1u, QuotaGetOriginsForType());
 }
 
 TEST_P(CacheStorageQuotaClientTestP, QuotaGetOriginsForHost) {
@@ -1942,7 +2021,8 @@ TEST_F(CacheStorageQuotaClientDiskOnlyTest, QuotaDeleteUnloadedOriginData) {
   // Create a new CacheStorageManager that hasn't yet loaded the origin.
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   cache_manager_ = CacheStorageManager::Create(cache_manager_.get());
-  quota_client_.reset(new CacheStorageQuotaClient(cache_manager_->AsWeakPtr()));
+  quota_client_.reset(new CacheStorageQuotaClient(
+      cache_manager_->AsWeakPtr(), CacheStorageOwner::kCacheAPI));
 
   EXPECT_TRUE(QuotaDeleteOriginData(origin1_));
   EXPECT_EQ(0, QuotaGetOriginUsage(origin1_));
