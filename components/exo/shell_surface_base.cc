@@ -111,10 +111,6 @@ class CustomFrameView : public ash::CustomFrameViewAsh {
   ~CustomFrameView() override {}
 
   // Overridden from ash::CustomFrameViewAsh:
-  base::string16 GetFrameTitle() const override {
-    return static_cast<ShellSurfaceBase*>(GetWidget()->widget_delegate())
-        ->frame_title();
-  }
   void SetShouldPaintHeader(bool paint) override {
     if (visible()) {
       CustomFrameViewAsh::SetShouldPaintHeader(paint);
@@ -912,7 +908,17 @@ bool ShellSurfaceBase::CanMinimize() const {
 }
 
 base::string16 ShellSurfaceBase::GetWindowTitle() const {
-  return title_;
+  if (extra_title_.empty())
+    return title_;
+
+  // TODO(estade): revisit how the extra title is shown in the window frame and
+  // other surfaces like overview mode.
+  return title_ + base::ASCIIToUTF16(" (") + extra_title_ +
+         base::ASCIIToUTF16(")");
+}
+
+bool ShellSurfaceBase::ShouldShowWindowTitle() const {
+  return !extra_title_.empty();
 }
 
 gfx::ImageSkia ShellSurfaceBase::GetWindowIcon() {

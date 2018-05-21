@@ -88,9 +88,6 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   gfx::Rect GetClientBoundsForWindowBounds(
       const gfx::Rect& window_bounds) const;
 
-  // Returns the title string which should be shown in the frame.
-  virtual base::string16 GetFrameTitle() const;
-
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
   gfx::Rect GetWindowBoundsForClientBounds(

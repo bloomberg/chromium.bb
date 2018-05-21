@@ -249,12 +249,9 @@ TEST_F(ShellSurfaceTest, SetTitle) {
   // have the specified title.
   EXPECT_EQ(base::ASCIIToUTF16("test"),
             shell_surface->GetWidget()->GetNativeWindow()->GetTitle());
-  const ash::CustomFrameViewAsh* frame =
-      static_cast<const ash::CustomFrameViewAsh*>(
-          shell_surface->GetWidget()->non_client_view()->frame_view());
-  // Frame's title is the string to be shown in the title bar. This should be
-  // empty.
-  EXPECT_EQ(base::string16(), frame->GetFrameTitle());
+  // The titlebar shouldn't show the title.
+  EXPECT_FALSE(
+      shell_surface->GetWidget()->widget_delegate()->ShouldShowWindowTitle());
 }
 
 TEST_F(ShellSurfaceTest, SetApplicationId) {
