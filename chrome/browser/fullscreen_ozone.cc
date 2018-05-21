@@ -13,6 +13,7 @@ bool IsFullScreenMode() {
     return false;
   }
 
-  NOTREACHED() << "For Ozone builds, only mash launch is supported for now.";
+  // TODO: https://crbug.com/843018
+  NOTIMPLEMENTED();
   return false;
 }

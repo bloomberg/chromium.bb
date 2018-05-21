@@ -121,6 +121,10 @@ void WinWindow::Minimize() {}
 
 void WinWindow::Restore() {}
 
+PlatformWindowState WinWindow::GetPlatformWindowState() const {
+  return PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN;
+}
+
 void WinWindow::SetCursor(PlatformCursor cursor) {
   ::SetCursor(cursor);
 }

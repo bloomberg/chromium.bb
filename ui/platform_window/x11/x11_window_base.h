@@ -44,6 +44,7 @@ class X11_WINDOW_EXPORT X11WindowBase : public PlatformWindow {
   void Maximize() override;
   void Minimize() override;
   void Restore() override;
+  PlatformWindowState GetPlatformWindowState() const override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
   PlatformImeController* GetPlatformImeController() override;
@@ -70,7 +71,6 @@ class X11_WINDOW_EXPORT X11WindowBase : public PlatformWindow {
   // Called when WM_STATE property is changed.
   void OnWMStateUpdated();
 
-  bool IsMinimized() const;
   bool IsMaximized() const;
   bool IsFullscreen() const;
 

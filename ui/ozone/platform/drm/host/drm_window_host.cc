@@ -113,6 +113,10 @@ void DrmWindowHost::Minimize() {
 void DrmWindowHost::Restore() {
 }
 
+PlatformWindowState DrmWindowHost::GetPlatformWindowState() const {
+  return PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN;
+}
+
 void DrmWindowHost::SetCursor(PlatformCursor cursor) {
   cursor_->SetCursor(widget_, cursor);
 }

@@ -69,6 +69,10 @@ void StubWindow::Minimize() {
 void StubWindow::Restore() {
 }
 
+PlatformWindowState StubWindow::GetPlatformWindowState() const {
+  return PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN;
+}
+
 void StubWindow::SetCursor(PlatformCursor cursor) {
 }
 
