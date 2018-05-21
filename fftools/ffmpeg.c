@@ -120,8 +120,14 @@ const char *const forced_keyframes_const_names[] = {
     NULL
 };
 
+typedef struct BenchmarkTimeStamps {
+    int64_t real_usec;
+    int64_t user_usec;
+    int64_t sys_usec;
+} BenchmarkTimeStamps;
+
 static void do_video_stats(OutputStream *ost, int frame_size);
-static int64_t getutime(void);
+static BenchmarkTimeStamps get_benchmark_time_stamps(void);
 static int64_t getmaxrss(void);
 static int ifilter_has_all_input_formats(FilterGraph *fg);
 
@@ -133,7 +139,7 @@ static int64_t decode_error_stat[2];
 
 static int want_sdp = 1;
 
-static int current_time;
+static BenchmarkTimeStamps current_time;
 AVIOContext *progress_avio = NULL;
 
 static uint8_t *subtitle_out;
@@ -653,7 +659,7 @@ static void abort_codec_experimental(AVCodec *c, int encoder)
 static void update_benchmark(const char *fmt, ...)
 {
     if (do_benchmark_all) {
-        int64_t t = getutime();
+        BenchmarkTimeStamps t = get_benchmark_time_stamps();
         va_list va;
         char buf[1024];
 
@@ -661,7 +667,11 @@ static void update_benchmark(const char *fmt, ...)
             va_start(va, fmt);
             vsnprintf(buf, sizeof(buf), fmt, va);
             va_end(va);
-            av_log(NULL, AV_LOG_INFO, "bench: %8"PRIu64" %s \n", t - current_time, buf);
+            av_log(NULL, AV_LOG_INFO,
+                   "bench: %8" PRIu64 " user %8" PRIu64 " sys %8" PRIu64 " real %s \n",
+                   t.user_usec - current_time.user_usec,
+                   t.sys_usec - current_time.sys_usec,
+                   t.real_usec - current_time.real_usec, buf);
         }
         current_time = t;
     }
@@ -1696,7 +1706,7 @@ static void print_report(int is_last_report, int64_t timer_start, int64_t cur_ti
             av_bprintf(&buf, "frame=%5d fps=%3.*f q=%3.1f ",
                      frame_number, fps < 9.95, fps, q);
             av_bprintf(&buf_script, "frame=%d\n", frame_number);
-            av_bprintf(&buf_script, "fps=%.1f\n", fps);
+            av_bprintf(&buf_script, "fps=%.2f\n", fps);
             av_bprintf(&buf_script, "stream_%d_%d_q=%.1f\n",
                        ost->file_index, ost->index, q);
             if (is_last_report)
@@ -3379,6 +3389,12 @@ static int init_output_stream_encode(OutputStream *ost)
             enc_ctx->bits_per_raw_sample = frame_bits_per_raw_sample;
         }
 
+        if (ost->top_field_first == 0) {
+            enc_ctx->field_order = AV_FIELD_BB;
+        } else if (ost->top_field_first == 1) {
+            enc_ctx->field_order = AV_FIELD_TT;
+        }
+
         if (ost->forced_keyframes) {
             if (!strncmp(ost->forced_keyframes, "expr:", 5)) {
                 ret = av_expr_parse(&ost->forced_keyframes_pexpr, ost->forced_keyframes+5,
@@ -4715,23 +4731,30 @@ static int transcode(void)
     return ret;
 }
 
-
-static int64_t getutime(void)
+static BenchmarkTimeStamps get_benchmark_time_stamps(void)
 {
+    BenchmarkTimeStamps time_stamps = { av_gettime_relative() };
 #if HAVE_GETRUSAGE
     struct rusage rusage;
 
     getrusage(RUSAGE_SELF, &rusage);
-    return (rusage.ru_utime.tv_sec * 1000000LL) + rusage.ru_utime.tv_usec;
+    time_stamps.user_usec =
+        (rusage.ru_utime.tv_sec * 1000000LL) + rusage.ru_utime.tv_usec;
+    time_stamps.sys_usec =
+        (rusage.ru_stime.tv_sec * 1000000LL) + rusage.ru_stime.tv_usec;
 #elif HAVE_GETPROCESSTIMES
     HANDLE proc;
     FILETIME c, e, k, u;
     proc = GetCurrentProcess();
     GetProcessTimes(proc, &c, &e, &k, &u);
-    return ((int64_t) u.dwHighDateTime << 32 | u.dwLowDateTime) / 10;
+    time_stamps.user_usec =
+        ((int64_t)u.dwHighDateTime << 32 | u.dwLowDateTime) / 10;
+    time_stamps.sys_usec =
+        ((int64_t)k.dwHighDateTime << 32 | k.dwLowDateTime) / 10;
 #else
-    return av_gettime_relative();
+    time_stamps.user_usec = time_stamps.sys_usec = 0;
 #endif
+    return time_stamps;
 }
 
 static int64_t getmaxrss(void)
@@ -4759,7 +4782,7 @@ static void log_callback_null(void *ptr, int level, const char *fmt, va_list vl)
 int main(int argc, char **argv)
 {
     int i, ret;
-    int64_t ti;
+    BenchmarkTimeStamps ti;
 
     init_dynload();
 
@@ -4811,12 +4834,18 @@ int main(int argc, char **argv)
             want_sdp = 0;
     }
 
-    current_time = ti = getutime();
+    current_time = ti = get_benchmark_time_stamps();
     if (transcode() < 0)
         exit_program(1);
-    ti = getutime() - ti;
     if (do_benchmark) {
-        av_log(NULL, AV_LOG_INFO, "bench: utime=%0.3fs\n", ti / 1000000.0);
+        int64_t utime, stime, rtime;
+        current_time = get_benchmark_time_stamps();
+        utime = current_time.user_usec - ti.user_usec;
+        stime = current_time.sys_usec  - ti.sys_usec;
+        rtime = current_time.real_usec - ti.real_usec;
+        av_log(NULL, AV_LOG_INFO,
+               "bench: utime=%0.3fs stime=%0.3fs rtime=%0.3fs\n",
+               utime / 1000000.0, stime / 1000000.0, rtime / 1000000.0);
     }
     av_log(NULL, AV_LOG_DEBUG, "%"PRIu64" frames successfully decoded, %"PRIu64" decoding errors\n",
            decode_error_stat[0], decode_error_stat[1]);

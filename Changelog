@@ -3,6 +3,11 @@ releases are sorted from youngest to oldest.
 
 version <next>:
 - deblock filter
+- tmix filter
+- amplify filter
+- fftdnoiz filter
+- aderivative and aintegral audio filters
+- pal75bars and pal100bars video filter sources
 
 
 version 4.0:
@@ -58,6 +63,7 @@ version 4.0:
 - Haivision SRT protocol via libsrt
 - segafilm muxer
 - vfrdet filter
+- SRCNN filter
 
 
 version 3.4:

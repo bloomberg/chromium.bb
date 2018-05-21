@@ -1028,6 +1028,8 @@ static int vaapi_map_from_drm(AVHWFramesContext *src_fc, AVFrame *dst,
             va_rt_format = vaapi_format_map[i].rt_format;
     }
 
+    av_assert0(i < FF_ARRAY_ELEMS(vaapi_format_map));
+
     buffer_handle = desc->objects[0].fd;
     buffer_desc.pixel_format = va_fourcc;
     buffer_desc.width        = src_fc->width;
@@ -1164,6 +1166,7 @@ fail:
 }
 #endif
 
+#if VA_CHECK_VERSION(0, 36, 0)
 typedef struct VAAPIDRMImageBufferMapping {
     VAImage      image;
     VABufferInfo buffer_info;
@@ -1323,6 +1326,7 @@ fail:
     av_freep(&mapping);
     return err;
 }
+#endif
 
 static int vaapi_map_to_drm(AVHWFramesContext *hwfc, AVFrame *dst,
                             const AVFrame *src, int flags)
@@ -1333,7 +1337,10 @@ static int vaapi_map_to_drm(AVHWFramesContext *hwfc, AVFrame *dst,
     if (err != AVERROR(ENOSYS))
         return err;
 #endif
+#if VA_CHECK_VERSION(0, 36, 0)
     return vaapi_map_to_drm_abh(hwfc, dst, src, flags);
+#endif
+    return AVERROR(ENOSYS);
 }
 
 #endif /* CONFIG_LIBDRM */
