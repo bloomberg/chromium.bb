@@ -143,6 +143,8 @@ class VIEWS_EXPORT MenuController
   void set_is_combobox(bool is_combobox) { is_combobox_ = is_combobox; }
   bool is_combobox() const { return is_combobox_; }
 
+  bool IsContextMenu() const;
+
   // Various events, forwarded from the submenu.
   //
   // NOTE: the coordinates of the events are in that of the

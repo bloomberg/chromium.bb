@@ -168,8 +168,9 @@ struct VIEWS_EXPORT MenuConfig {
   // Radius of the rounded corners of the menu border. Must be >= 0.
   int corner_radius;
 
-  // Radius of combobox rounded corners. Must be >= 0.
-  int combobox_corner_radius;
+  // Radius of "auxiliary" rounded corners - comboboxes and context menus.
+  // Must be >= 0.
+  int auxiliary_corner_radius;
 
   // Radius of the rounded corners of the touchable menu border
   int touchable_corner_radius;

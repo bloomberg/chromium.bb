@@ -37,7 +37,7 @@ void InitMaterialMenuConfig(views::MenuConfig* config) {
   config->use_outer_border = false;
   config->icons_in_label = true;
   config->corner_radius = 8;
-  config->combobox_corner_radius = 4;
+  config->auxiliary_corner_radius = 4;
 }
 
 }  // namespace
