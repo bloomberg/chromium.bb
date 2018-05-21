@@ -11,7 +11,7 @@
 
 // Utility functions used by encoder binaries.
 
-#include "encoder_util.h"
+#include "examples/encoder_util.h"
 
 #include <assert.h>
 #include <string.h>

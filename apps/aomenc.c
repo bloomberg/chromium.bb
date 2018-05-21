@@ -9,7 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "aomenc.h"
+#include "apps/aomenc.h"
+
 #include "./aom_config.h"
 
 #include <assert.h>
