@@ -676,6 +676,19 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_MDAT) {
   TestSimplePlayback("bear-640x360-v_frag-cenc-mdat.mp4", kMp4Avc1VideoOnly);
 }
 
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Encryption_CBCS) {
+  if (CurrentSourceType() != SrcType::MSE) {
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    return;
+  }
+
+#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
+  TestSimplePlayback("bear-640x360-v_frag-cbcs.mp4", kMp4Avc1VideoOnly);
+#else
+  DVLOG(0) << "Skipping test; 'cbcs' decryption not supported.";
+#endif
+}
+
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
                        Playback_EncryptedVideo_MP4_ClearAudio_WEBM) {
   TestDifferentContainers(EncryptedContainer::ENCRYPTED_MP4,
