@@ -2829,10 +2829,6 @@ crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.ht
 crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/fetch/corb/img-html-correctly-labeled.sub.html [ Failure ]
-crbug.com/626703 external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
-crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
-crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/corb/img-html-correctly-labeled.sub.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-element-userSpaceOnUse-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-polygon-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-polygon-007.html [ Failure ]
