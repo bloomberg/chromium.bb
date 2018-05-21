@@ -993,19 +993,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   // referenced_surfaces_.
   referenced_surfaces_.insert(surface->surface_id());
   for (const auto& surface_info : child_surfaces) {
-    if (will_draw) {
-      if (!surface_info.fallback_id ||
-          surface_info.fallback_id->frame_sink_id() !=
-              surface_info.primary_id.frame_sink_id()) {
-        damage_ranges_[surface_info.primary_id.frame_sink_id()] =
-            std::make_pair(surface_info.primary_id.local_surface_id(),
-                           surface_info.primary_id.local_surface_id());
-      } else if (surface_info.fallback_id != surface_info.primary_id) {
-        damage_ranges_[surface_info.primary_id.frame_sink_id()] =
-            std::make_pair(surface_info.fallback_id->local_surface_id(),
-                           surface_info.primary_id.local_surface_id());
-      }
-    }
     Surface* child_surface = manager_->GetSurfaceForId(surface_info.primary_id);
     gfx::Rect surface_damage;
     if (!child_surface || !child_surface->HasActiveFrame()) {
@@ -1186,7 +1173,6 @@ CompositorFrame SurfaceAggregator::Aggregate(
 
   valid_surfaces_.clear();
   has_cached_render_passes_ = false;
-  damage_ranges_.clear();
   PrewalkResult prewalk_result;
   root_damage_rect_ =
       PrewalkTree(surface, false, 0, true /* will_draw */, &prewalk_result);
@@ -1282,28 +1268,6 @@ void SurfaceAggregator::SetOutputColorSpace(
   output_color_space_ = output_color_space.IsValid()
                             ? output_color_space
                             : gfx::ColorSpace::CreateSRGB();
-}
-
-void SurfaceAggregator::SurfaceDamaged(const SurfaceId& surface_id,
-                                       bool* is_display_damaged) {
-  if (previous_contained_surfaces_.count(surface_id)) {
-    Surface* surface = manager_->GetSurfaceForId(surface_id);
-    if (surface) {
-      DCHECK(surface->HasActiveFrame());
-      if (surface->GetActiveFrame().resource_list.empty())
-        ReleaseResources(surface_id);
-    }
-    *is_display_damaged = true;
-    return;
-  }
-  auto it = damage_ranges_.find(surface_id.frame_sink_id());
-  if (it == damage_ranges_.end()) {
-    *is_display_damaged = false;
-    return;
-  }
-  *is_display_damaged = (it->second.second == surface_id.local_surface_id()) ||
-                        (it->second.second > surface_id.local_surface_id() &&
-                         surface_id.local_surface_id() > it->second.first);
 }
 
 }  // namespace viz
