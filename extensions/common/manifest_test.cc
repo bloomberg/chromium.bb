@@ -21,29 +21,33 @@ namespace extensions {
 namespace {
 
 // |manifest_path| is an absolute path to a manifest file.
-std::unique_ptr<base::DictionaryValue> LoadManifestFile(
-    const base::FilePath& manifest_path,
-    std::string* error) {
+base::Value LoadManifestFile(const base::FilePath& manifest_path,
+                             std::string* error) {
   base::FilePath extension_path = manifest_path.DirName();
 
   EXPECT_TRUE(base::PathExists(manifest_path)) <<
       "Couldn't find " << manifest_path.value();
 
   JSONFileValueDeserializer deserializer(manifest_path);
-  std::unique_ptr<base::DictionaryValue> manifest =
-      base::DictionaryValue::From(deserializer.Deserialize(NULL, error));
+  std::unique_ptr<base::Value> manifest =
+      deserializer.Deserialize(nullptr, error);
+
+  if (!manifest || !manifest->is_dict())
+    return base::Value();
 
   // Most unit tests don't need localization, and they'll fail if we try to
   // localize them, since their manifests don't have a default_locale key.
   // Only localize manifests that indicate they want to be localized.
   // Calling LocalizeExtension at this point mirrors file_util::LoadExtension.
-  if (manifest &&
-      manifest_path.value().find(FILE_PATH_LITERAL("localized")) !=
-      std::string::npos)
-    extension_l10n_util::LocalizeExtension(extension_path, manifest.get(),
+  if (manifest_path.value().find(FILE_PATH_LITERAL("localized")) !=
+      std::string::npos) {
+    base::DictionaryValue* manifest_dictionary = nullptr;
+    manifest->GetAsDictionary(&manifest_dictionary);
+    extension_l10n_util::LocalizeExtension(extension_path, manifest_dictionary,
                                            error);
+  }
 
-  return manifest;
+  return base::Value(std::move(*manifest));
 }
 
 }  // namespace
@@ -57,47 +61,35 @@ ManifestTest::~ManifestTest() {
 
 // Helper class that simplifies creating methods that take either a filename
 // to a manifest or the manifest itself.
-ManifestTest::ManifestData::ManifestData(const char* name)
-    : name_(name), manifest_(nullptr) {}
+ManifestTest::ManifestData::ManifestData(base::StringPiece name)
+    : name_(name.as_string()) {}
 
-// This does not take ownership of |manifest|.
-ManifestTest::ManifestData::ManifestData(base::DictionaryValue* manifest,
-                                          const char* name)
-    : name_(name), manifest_(manifest) {
-  CHECK(manifest_) << "Manifest NULL";
+ManifestTest::ManifestData::ManifestData(base::Value manifest,
+                                         base::StringPiece name)
+    : name_(name.as_string()), manifest_(std::move(manifest)) {
+  CHECK(manifest_.is_dict()) << "Manifest must be a dictionary. " << name_;
 }
 
-ManifestTest::ManifestData::ManifestData(
-    std::unique_ptr<base::DictionaryValue> manifest)
-    : manifest_(manifest.get()), manifest_holder_(std::move(manifest)) {
-  CHECK(manifest_) << "Manifest NULL";
-}
+ManifestTest::ManifestData::ManifestData(ManifestData&& other) = default;
 
-ManifestTest::ManifestData::ManifestData(
-    std::unique_ptr<base::DictionaryValue> manifest,
-    const char* name)
-    : name_(name),
-      manifest_(manifest.get()),
-      manifest_holder_(std::move(manifest)) {
-  CHECK(manifest_) << "Manifest NULL";
-}
+ManifestTest::ManifestData::ManifestData(base::Value* manifest,
+                                         const char* name)
+    : ManifestData(manifest->Clone(), name) {}
 
-ManifestTest::ManifestData::ManifestData(const ManifestData& m) {
-  NOTREACHED();
-}
+ManifestTest::ManifestData::ManifestData(std::unique_ptr<base::Value> manifest,
+                                         const char* name)
+    : ManifestData(base::Value(std::move(*manifest)), name) {}
 
 ManifestTest::ManifestData::~ManifestData() {
 }
 
-base::DictionaryValue* ManifestTest::ManifestData::GetManifest(
+const base::Value& ManifestTest::ManifestData::GetManifest(
     const base::FilePath& test_data_dir,
     std::string* error) const {
-  if (manifest_)
-    return manifest_;
-
-  base::FilePath manifest_path = test_data_dir.AppendASCII(name_);
-  manifest_holder_ = LoadManifestFile(manifest_path, error);
-  manifest_ = manifest_holder_.get();
+  if (manifest_.is_none()) {
+    base::FilePath manifest_path = test_data_dir.AppendASCII(name_);
+    manifest_ = LoadManifestFile(manifest_path, error);
+  }
   return manifest_;
 }
 
@@ -111,9 +103,8 @@ base::FilePath ManifestTest::GetTestDataDir() {
   return path.AppendASCII("manifest_tests");
 }
 
-std::unique_ptr<base::DictionaryValue> ManifestTest::LoadManifest(
-    char const* manifest_name,
-    std::string* error) {
+base::Value ManifestTest::LoadManifest(char const* manifest_name,
+                                       std::string* error) {
   base::FilePath manifest_path = GetTestDataDir().AppendASCII(manifest_name);
   return LoadManifestFile(manifest_path, error);
 }
@@ -124,11 +115,15 @@ scoped_refptr<Extension> ManifestTest::LoadExtension(
     extensions::Manifest::Location location,
     int flags) {
   base::FilePath test_data_dir = GetTestDataDir();
-  base::DictionaryValue* value = manifest.GetManifest(test_data_dir, error);
-  if (!value)
-    return NULL;
-  return Extension::Create(test_data_dir.DirName(), location, *value, flags,
-      GetTestExtensionID(), error);
+  const base::Value& value = manifest.GetManifest(test_data_dir, error);
+  if (value.is_none())
+    return nullptr;
+  DCHECK(value.is_dict());
+  const base::DictionaryValue* dictionary_manifest = nullptr;
+  value.GetAsDictionary(&dictionary_manifest);
+  return Extension::Create(test_data_dir.DirName(), location,
+                           *dictionary_manifest, flags, GetTestExtensionID(),
+                           error);
 }
 
 scoped_refptr<Extension> ManifestTest::LoadAndExpectSuccess(

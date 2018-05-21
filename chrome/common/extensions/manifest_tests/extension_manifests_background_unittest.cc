@@ -32,12 +32,11 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPermission) {
 
 TEST_F(ExtensionManifestBackgroundTest, BackgroundScripts) {
   std::string error;
-  std::unique_ptr<base::DictionaryValue> manifest =
-      LoadManifest("background_scripts.json", &error);
-  ASSERT_TRUE(manifest.get());
+  base::Value manifest = LoadManifest("background_scripts.json", &error);
+  ASSERT_TRUE(manifest.is_dict());
 
   scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess(ManifestData(manifest.get(), "")));
+      LoadAndExpectSuccess(ManifestData(&manifest, "")));
   ASSERT_TRUE(extension.get());
   const std::vector<std::string>& background_scripts =
       BackgroundInfo::GetBackgroundScripts(extension.get());
@@ -50,8 +49,8 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundScripts) {
       std::string("/") + kGeneratedBackgroundPageFilename,
       BackgroundInfo::GetBackgroundURL(extension.get()).path());
 
-  manifest->SetString("background.page", "monkey.html");
-  LoadAndExpectError(ManifestData(manifest.get(), ""),
+  manifest.SetPath({"background", "page"}, base::Value("monkey.html"));
+  LoadAndExpectError(ManifestData(&manifest, ""),
                      errors::kInvalidBackgroundCombination);
 }
 
@@ -79,20 +78,19 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
   ScopedCurrentChannel current_channel(version_info::Channel::DEV);
 
   std::string error;
-  std::unique_ptr<base::DictionaryValue> manifest(
-      LoadManifest("background_page.json", &error));
-  ASSERT_TRUE(manifest.get());
-  manifest->SetBoolean(keys::kBackgroundPersistent, false);
-  manifest->SetInteger(keys::kManifestVersion, 2);
+  base::Value manifest = LoadManifest("background_page.json", &error);
+  ASSERT_FALSE(manifest.is_none());
+  manifest.SetPath({"background", "persistent"}, base::Value(false));
+  manifest.SetKey(keys::kManifestVersion, base::Value(2));
   scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess(ManifestData(manifest.get(), "")));
+      LoadAndExpectSuccess(ManifestData(&manifest, "")));
   ASSERT_TRUE(extension.get());
   EXPECT_TRUE(BackgroundInfo::HasLazyBackgroundPage(extension.get()));
 
-  auto permissions = std::make_unique<base::ListValue>();
-  permissions->AppendString("webRequest");
-  manifest->Set(keys::kPermissions, std::move(permissions));
-  LoadAndExpectError(ManifestData(manifest.get(), ""),
+  base::Value permissions(base::Value::Type::LIST);
+  permissions.GetList().push_back(base::Value("webRequest"));
+  manifest.SetKey(keys::kPermissions, std::move(permissions));
+  LoadAndExpectError(ManifestData(&manifest, ""),
                      errors::kWebRequestConflictsWithLazyBackground);
 }
 
