@@ -61,6 +61,10 @@ class XCTestLogParser(object):
     self._retry_message = re.compile('RETRYING FAILED TESTS:')
     self.retrying_failed = False
 
+    self._system_alert_present_message = re.compile(
+        r'\bSystem alert view is present, so skipping all tests\b')
+    self.system_alert_present = False
+
     self.TEST_STATUS_MAP = {
       'OK': TEST_SUCCESS_LABEL,
       'failed': TEST_FAILURE_LABEL,
@@ -160,6 +164,10 @@ class XCTestLogParser(object):
     """Returns True if all tests completed and no tests failed unexpectedly."""
     return self.completed
 
+  def SystemAlertPresent(self):
+    """Returns a bool indicating whether a system alert is shown on device."""
+    return self.system_alert_present
+
   def ProcessLine(self, line):
     """This is called once with each line of the test log."""
 
@@ -202,6 +210,13 @@ class XCTestLogParser(object):
     results = self._test_passed.match(line)
     if results:
       self.completed = True
+      self._current_test = ''
+      return
+
+    # Is it a line declaring a system alert is shown on the device?
+    results = self._system_alert_present_message.search(line)
+    if results:
+      self.system_alert_present = True
       self._current_test = ''
       return
 

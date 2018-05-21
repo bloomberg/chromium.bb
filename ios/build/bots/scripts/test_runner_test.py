@@ -240,6 +240,23 @@ class SimulatorTestRunnerTest(TestCase):
     self.assertIn('d/4', result.passed_tests)
     self.assertIn('e/5', result.passed_tests)
 
+  def test_run_with_system_alert(self):
+    """Ensures SystemAlertPresentError is raised when warning 'System alert
+      view is present, so skipping all tests' is in the output."""
+    with self.assertRaises(test_runner.SystemAlertPresentError):
+      tr = test_runner.SimulatorTestRunner(
+        'fake-app',
+        'fake-iossim',
+        'platform',
+        'os',
+        'xcode-version',
+        'xcode-build',
+        'out-dir',
+      )
+      tr.xctest_path = 'fake.xctest'
+      cmd = ['echo', 'System alert view is present, so skipping all tests!']
+      result = tr._run(cmd=cmd)
+
   def test_get_launch_command(self):
     """Ensures launch command is correct with test_filters, test sharding and
       test_cases."""
