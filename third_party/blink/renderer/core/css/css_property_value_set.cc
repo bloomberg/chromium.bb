@@ -404,8 +404,7 @@ void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
   }
 }
 
-void MutableCSSPropertyValueSet::SetProperty(const CSSPropertyValue& property,
-                                             CSSPropertyValue* slot) {
+void MutableCSSPropertyValueSet::SetProperty(const CSSPropertyValue& property) {
   if (property.Id() == CSSPropertyVariable) {
     RemoveProperty(ToCSSCustomPropertyDeclaration(property.Value())->GetName());
   } else {
@@ -465,15 +464,8 @@ void MutableCSSPropertyValueSet::MergeAndOverrideOnConflict(
   unsigned size = other->PropertyCount();
   for (unsigned n = 0; n < size; ++n) {
     PropertyReference to_merge = other->PropertyAt(n);
-    // TODO(leviw): This probably doesn't work correctly with Custom Properties
-    CSSPropertyValue* old = FindCSSPropertyWithID(to_merge.Id());
-    if (old) {
-      SetProperty(
-          CSSPropertyValue(to_merge.PropertyMetadata(), to_merge.Value()), old);
-    } else {
-      property_vector_.push_back(
-          CSSPropertyValue(to_merge.PropertyMetadata(), to_merge.Value()));
-    }
+    SetProperty(
+        CSSPropertyValue(to_merge.PropertyMetadata(), to_merge.Value()));
   }
 }
 
