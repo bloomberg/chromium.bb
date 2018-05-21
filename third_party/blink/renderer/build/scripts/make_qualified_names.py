@@ -35,6 +35,7 @@ import json5_generator
 import name_utilities
 import template_expander
 
+from aria_properties import ARIAReader
 from json5_generator import Json5File
 
 
@@ -60,15 +61,29 @@ class MakeQualifiedNamesWriter(json5_generator.Writer):
     def __init__(self, json5_file_paths, output_dir):
         super(MakeQualifiedNamesWriter, self).__init__(None, output_dir)
         self._input_files = copy.copy(json5_file_paths)
-        assert len(json5_file_paths) <= 2, 'MakeQualifiedNamesWriter requires at most 2 in files, got %d.' % len(json5_file_paths)
+        assert len(json5_file_paths) <= 3, 'MakeQualifiedNamesWriter requires at most 3 in files, got %d.' % len(json5_file_paths)
 
-        if len(json5_file_paths) == 2:
-            self.tags_json5_file = Json5File.load_from_files(
-                [json5_file_paths.pop(0)], self.default_metadata, self.default_parameters)
+        # Input files are in a strict order with more optional files *first*:
+        # 1) ARIA properties
+        # 2) Tags
+        # 3) Attributes
+
+        if len(json5_file_paths) >= 3:
+            aria_json5_filename = json5_file_paths.pop(0)
+            self.aria_reader = ARIAReader(aria_json5_filename)
+        else:
+            self.aria_reader = None
+
+        if len(json5_file_paths) >= 2:
+            tags_json5_filename = json5_file_paths.pop(0)
+            self.tags_json5_file = Json5File.load_from_files([tags_json5_filename], self.default_metadata, self.default_parameters)
         else:
             self.tags_json5_file = None
 
         self.attrs_json5_file = Json5File.load_from_files([json5_file_paths.pop()], self.default_metadata, self.default_parameters)
+
+        if self.aria_reader is not None:
+            self.attrs_json5_file.merge_from(self.aria_reader.attributes_list())
 
         self.namespace = self._metadata('namespace')
 
