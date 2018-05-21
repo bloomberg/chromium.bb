@@ -20,7 +20,6 @@ import time
 from xml.etree import ElementTree
 from xml.dom import minidom
 
-from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import patch_series
@@ -1101,18 +1100,6 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
 
   def ManifestCheckout(self, next_manifest):
     """Checks out the repository to the given manifest."""
-    lkgm_version = self._GetLKGMVersionFromManifest(next_manifest)
-    chroot_manager = chroot_lib.ChrootManager(self._build_root)
-
-    # Make sure the chroot version is valid.
-    using_fresh_chroot = chroot_manager.EnsureChrootAtVersion(lkgm_version)
-    metrics.Counter(constants.MON_CHROOT_USED).increment(
-        fields={'build_config': self._run.config.name,
-                'used_fresh_chroot': using_fresh_chroot})
-
-    # Clear the chroot version as we are in the middle of building it.
-    chroot_manager.ClearChrootVersion()
-
     # Sync to the provided manifest on slaves. On the master, we're
     # already synced to this manifest, so self.skip_sync is set and
     # this is a no-op.

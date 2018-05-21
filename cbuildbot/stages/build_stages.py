@@ -12,7 +12,6 @@ import glob
 import os
 
 from chromite.cbuildbot import cbuildbot_run
-from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import goma_util
 from chromite.cbuildbot import repository
@@ -433,10 +432,6 @@ class InitSDKStage(generic_stages.BuilderStage):
       except failures_lib.BuildScriptFailure:
         logging.PrintBuildbotStepText('Replacing broken chroot')
         logging.PrintBuildbotStepWarnings()
-      else:
-        # Clear the chroot manifest version as we are in the middle of building.
-        chroot_manager = chroot_lib.ChrootManager(self._build_root)
-        chroot_manager.ClearChrootVersion()
 
     if not os.path.isdir(chroot_path) or replace:
       use_sdk = (self._run.config.use_sdk and not self._run.options.nosdk)
