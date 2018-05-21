@@ -113,12 +113,14 @@ aom_codec_err_t aom_read_obu_header(uint8_t *buffer, size_t buffer_length,
   return parse_result;
 }
 
-int aom_get_num_layers_from_operating_point_idc(
+aom_codec_err_t aom_get_num_layers_from_operating_point_idc(
     int operating_point_idc, unsigned int *number_spatial_layers,
     unsigned int *number_temporal_layers) {
   // derive number of spatial/temporal layers from operating_point_idc
 
-  if (!number_spatial_layers || !number_temporal_layers) return -1;
+  if (!number_spatial_layers || !number_temporal_layers)
+    return AOM_CODEC_INVALID_PARAM;
+
   if (operating_point_idc == 0) {
     *number_temporal_layers = 1;
     *number_spatial_layers = 1;
@@ -134,11 +136,7 @@ int aom_get_num_layers_from_operating_point_idc(
     }
   }
 
-  if (*number_spatial_layers > MAX_NUM_SPATIAL_LAYERS ||
-      *number_temporal_layers > MAX_NUM_TEMPORAL_LAYERS)
-    return -1;
-
-  return 0;
+  return AOM_CODEC_OK;
 }
 
 static int is_obu_in_current_operating_point(AV1Decoder *pbi,
@@ -228,9 +226,12 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
     operating_point = 0;
   pbi->current_operating_point =
       seq_params->operating_point_idc[operating_point];
-  aom_get_num_layers_from_operating_point_idc(pbi->current_operating_point,
-                                              &cm->number_spatial_layers,
-                                              &cm->number_temporal_layers);
+  if (aom_get_num_layers_from_operating_point_idc(
+          pbi->current_operating_point, &cm->number_spatial_layers,
+          &cm->number_temporal_layers) != AOM_CODEC_OK) {
+    cm->error.error_code = AOM_CODEC_ERROR;
+    return 0;
+  }
 
   read_sequence_header(cm, rb);
 
@@ -607,6 +608,8 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       case OBU_SEQUENCE_HEADER:
         if (!seq_header_received) {
           decoded_payload_size = read_sequence_header_obu(pbi, &rb);
+          if (cm->error.error_code != AOM_CODEC_OK) return;
+
           seq_header_size = decoded_payload_size;
           seq_header_received = 1;
         } else {

@@ -39,7 +39,7 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
                                 const uint8_t *data_end,
                                 const uint8_t **p_data_end);
 
-int aom_get_num_layers_from_operating_point_idc(
+aom_codec_err_t aom_get_num_layers_from_operating_point_idc(
     int operating_point_idc, unsigned int *num_spatial_layers,
     unsigned int *num_temporal_layers);
 

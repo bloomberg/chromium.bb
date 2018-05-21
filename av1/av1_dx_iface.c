@@ -155,9 +155,9 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
   return AOM_CODEC_OK;
 }
 
-static void parse_operating_points(struct aom_read_bit_buffer *rb,
-                                   int is_reduced_header,
-                                   aom_codec_stream_info_t *si) {
+static aom_codec_err_t parse_operating_points(struct aom_read_bit_buffer *rb,
+                                              int is_reduced_header,
+                                              aom_codec_stream_info_t *si) {
   if (is_reduced_header) {
     aom_rb_read_literal(rb, LEVEL_BITS);  // level
   } else {
@@ -180,10 +180,14 @@ static void parse_operating_points(struct aom_read_bit_buffer *rb,
 #endif  // !CONFIG_BUFFER_MODEL
     }
 
-    aom_get_num_layers_from_operating_point_idc(operating_point_idc0,
-                                                &si->number_spatial_layers,
-                                                &si->number_temporal_layers);
+    if (aom_get_num_layers_from_operating_point_idc(
+            operating_point_idc0, &si->number_spatial_layers,
+            &si->number_temporal_layers) != AOM_CODEC_OK) {
+      return AOM_CODEC_ERROR;
+    }
   }
+
+  return AOM_CODEC_OK;
 }
 
 static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
@@ -245,7 +249,10 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
     return AOM_CODEC_UNSUP_BITSTREAM;
   }
 
-  parse_operating_points(&rb, reduced_still_picture_hdr, si);
+  if (parse_operating_points(&rb, reduced_still_picture_hdr, si) !=
+      AOM_CODEC_OK) {
+    return AOM_CODEC_ERROR;
+  }
 
   int num_bits_width = aom_rb_read_literal(&rb, 4) + 1;
   int num_bits_height = aom_rb_read_literal(&rb, 4) + 1;
