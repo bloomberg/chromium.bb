@@ -420,12 +420,26 @@ void VisualViewport::InitializeScrollbars() {
 
   if (VisualViewportSuppliesScrollbars() &&
       !GetPage().GetSettings().GetHideScrollbars()) {
-    if (!overlay_scrollbar_horizontal_->Parent())
+    if (!overlay_scrollbar_horizontal_->Parent()) {
       inner_viewport_container_layer_->AddChild(
           overlay_scrollbar_horizontal_.get());
-    if (!overlay_scrollbar_vertical_->Parent())
+      if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+        // TODO(pdr): The viewport overlay scrollbars do not have the correct
+        // paint properties. See: https://crbug.com/836910
+        overlay_scrollbar_horizontal_->SetLayerState(
+            PropertyTreeState(PropertyTreeState::Root()), IntPoint());
+      }
+    }
+    if (!overlay_scrollbar_vertical_->Parent()) {
       inner_viewport_container_layer_->AddChild(
           overlay_scrollbar_vertical_.get());
+      if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+        // TODO(pdr): The viewport overlay scrollbars do not have the correct
+        // paint properties. See: https://crbug.com/836910
+        overlay_scrollbar_vertical_->SetLayerState(
+            PropertyTreeState(PropertyTreeState::Root()), IntPoint());
+      }
+    }
 
     SetupScrollbar(kHorizontalScrollbar);
     SetupScrollbar(kVerticalScrollbar);

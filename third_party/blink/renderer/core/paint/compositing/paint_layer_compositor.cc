@@ -892,11 +892,21 @@ GraphicsLayer* PaintLayerCompositor::RootGraphicsLayer() const {
 }
 
 GraphicsLayer* PaintLayerCompositor::PaintRootGraphicsLayer() const {
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    // Start painting at the inner viewport container layer which is an ancestor
+    // of both the main contents layers and the scrollbar layers.
+    if (IsMainFrame() && GetVisualViewport().ContainerLayer())
+      return GetVisualViewport().ContainerLayer();
+
+    return RootGraphicsLayer();
+  }
+
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
       ParentForContentLayers() && ParentForContentLayers()->Children().size()) {
     DCHECK_EQ(ParentForContentLayers()->Children().size(), 1U);
     return ParentForContentLayers()->Children()[0];
   }
+
   return RootGraphicsLayer();
 }
 
