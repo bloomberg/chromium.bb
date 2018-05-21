@@ -22,6 +22,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verifier.h"
+#include "net/dns/dns_hosts.h"
+#include "net/dns/dns_test_util.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/http/http_network_session.h"
 #include "net/log/net_log.h"
@@ -44,6 +46,7 @@ const char kHostname[] = "example.com";
 const char kCacheAddress[] = "1.1.1.1";
 const char kNetworkAddress[] = "2.2.2.2";
 const char kUninitializedAddress[] = "3.3.3.3";
+const char kHostsAddress[] = "4.4.4.4";
 const int kCacheEntryTTLSec = 300;
 
 const int kNoStaleDelaySec = 0;
@@ -65,6 +68,15 @@ net::AddressList MakeAddressList(const char* ip_address_str) {
   net::AddressList address_list;
   address_list.push_back(net::IPEndPoint(address, 0u));
   return address_list;
+}
+
+std::unique_ptr<net::DnsClient> CreateMockDnsClientForHosts() {
+  net::DnsConfig config;
+  config.nameservers.push_back(net::IPEndPoint());
+  net::ParseHosts("4.4.4.4 example.com", &config.hosts);
+
+  return std::make_unique<net::MockDnsClient>(config,
+                                              net::MockDnsClientRuleList());
 }
 
 class MockHostResolverProc : public net::HostResolverProc {
@@ -113,7 +125,7 @@ class StaleHostResolverTest : public testing::Test {
     options_.allow_other_network = allow_other_network;
   }
 
-  void CreateResolver() {
+  void CreateResolverWithDnsClient(std::unique_ptr<net::DnsClient> dns_client) {
     DCHECK(!resolver_);
 
     std::unique_ptr<net::HostResolverImpl> inner_resolver(
@@ -121,11 +133,14 @@ class StaleHostResolverTest : public testing::Test {
 
     net::HostResolverImpl::ProcTaskParams proc_params(mock_proc_.get(), 1u);
     inner_resolver->set_proc_params_for_test(proc_params);
+    inner_resolver->SetDnsClient(std::move(dns_client));
 
     stale_resolver_ = std::make_unique<StaleHostResolver>(
         std::move(inner_resolver), options_);
     resolver_ = stale_resolver_.get();
   }
+
+  void CreateResolver() { CreateResolverWithDnsClient(nullptr); }
 
   void DestroyResolver() {
     DCHECK(stale_resolver_);
@@ -303,6 +318,18 @@ TEST_F(StaleHostResolverTest, Network) {
   EXPECT_EQ(net::OK, resolve_error());
   EXPECT_EQ(1u, resolve_addresses().size());
   EXPECT_EQ(kNetworkAddress, resolve_addresses()[0].ToStringWithoutPort());
+}
+
+TEST_F(StaleHostResolverTest, Hosts) {
+  CreateResolverWithDnsClient(CreateMockDnsClientForHosts());
+
+  Resolve();
+  WaitForResolve();
+
+  EXPECT_TRUE(resolve_complete());
+  EXPECT_EQ(net::OK, resolve_error());
+  EXPECT_EQ(1u, resolve_addresses().size());
+  EXPECT_EQ(kHostsAddress, resolve_addresses()[0].ToStringWithoutPort());
 }
 
 TEST_F(StaleHostResolverTest, FreshCache) {
