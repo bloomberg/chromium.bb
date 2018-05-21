@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Iespējot ierīces attālu apstiprināšanu</translation>
 <translation id="1062407476771304334">Aizstāt</translation>
 <translation id="1079801999187584280">Neatļaut izstrādātāju rīku lietošanu</translation>
-<translation id="109166998561583554">Apdraudēta paroles aizsardzība — konta atzīmēšanas aktivizēšana</translation>
 <translation id="1093082332347834239">Ja šis iestatījums ir iespējots, attālās palīdzības saimniekdators darbosies norises gaitā ar <ph name="UIACCESS_PERMISSION_NAME" /> atļaujām. Tādējādi attālie lietotāji varēs veikt darbības ar privileģētajiem logiem lokālā lietotāja darbvirsmā.
 
           Ja šis iestatījums ir atspējots vai nav konfigurēts, attālās palīdzības saimniekdators darbosies lietotāja kontekstā un attālie lietotāji nevarēs veikt darbības ar privileģētajiem logiem darbvirsmā.</translation>
@@ -107,7 +106,6 @@
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultJavaScriptSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" /> klientiem):</translation>
-<translation id="1457305643416399820">Apdraudēta paroles aizsardzība — konta atzīmēšana izslēgta</translation>
 <translation id="1464848559468748897">Kontrolējiet lietotāju rīcību daudzprofilu sesijā <ph name="PRODUCT_OS_NAME" /> ierīcēs.
 
       Ja politikai ir izvēlēts iestatījums “MultiProfileUserBehaviorUnrestricted”, lietotājs var būt gan primārais, gan sekundārais lietotājs daudzprofilu sesijā.
@@ -328,6 +326,13 @@
 <translation id="2082205219176343977">Konfigurējiet ierīcē minimālo atļauto Chrome versiju.</translation>
 <translation id="209586405398070749">Stabila versija</translation>
 <translation id="2098658257603918882">Iespējo lietošanas un ar avārijām saistītu datu ziņošanu</translation>
+<translation id="2111016292707172233">Izmantojot šo politiku, pārlūka <ph name="PRODUCT_NAME" /> satura skatā var iespējot funkciju “Pieskarties, lai meklētu”.
+
+      Ja šis iestatījums ir iespējots, funkcija “Pieskarties, lai meklētu” ir pieejama lietotājam un lietotājs to var ieslēgt vai izslēgt.
+
+      Ja šis iestatījums ir atspējots, funkcija “Pieskarties, lai meklētu” ir pilnībā atspējota.
+
+      Ja šai politikai nav iestatīta vērtība, ir spēkā tādi paši iestatījumi kā gadījumos, kad politika ir iespējota (skatiet iepriekš sniegto aprakstu).</translation>
 <translation id="2113068765175018713">Ierobežot ierīces darbspējas laiku, veicot automātisku atsāknēšanu</translation>
 <translation id="2127599828444728326">Paziņojumu atļaušana šajās vietnēs</translation>
 <translation id="2131902621292742709">Aizkave līdz ekrāna aptumšošanai, ja ierīce darbojas ar akumulatora jaudu</translation>
@@ -482,12 +487,6 @@
 <translation id="2386362615870139244">Atļauja bloķēt ekrāna aktivizēšanu</translation>
 <translation id="2411817661175306360">Paroles aizsardzības brīdinājums ir izslēgts.</translation>
 <translation id="2411919772666155530">Bloķēt paziņojumus šajās vietnēs</translation>
-<translation id="2415979855753196119">Izmantojot šo politiku, varat kontrolēt, kad aktivizēt atzīmes pievienošanu kontam par apdraudētu paroles aizsardzību. Pievienot kontam atzīmi par apdraudētu paroles aizsardzību nozīmē informēt Google, ka pastāv attiecīgā konta uzlaušanas risks.
-
-      Ja šai politikai ir iestatīta vērtība “PasswordProtectionRiskOff”, netiks aktivizēta atzīmes pievienošana kontam ar apdraudētu paroles aizsardzību.
-      Ja šai politikai ir iestatīta vērtība “PasswordProtectionRiskOnPasswordReuse”, atzīmes pievienošana kontam ar apdraudētu paroles aizsardzību tiks aktivizēta, kad lietotājs atkārtoti izmantos savu Google paroli baltajā sarakstā iekļautā vietnē.
-      Ja šai politikai ir iestatīta vērtība “PasswordProtectionRiskOnPhishingReuse”, atzīmes pievienošana kontam ar apdraudētu paroles aizsardzību tiks aktivizēta, kad lietotājs atkārtoti izmantos savu Google paroli pikšķerēšanas vietnē.
-      Ja šai politikai nav iestatīta vērtība, atzīmes pievienošana kontam ar apdraudētu paroles aizsardzību tiks aktivizēta, kad lietotājs atkārtoti izmantos savu Google paroli pikšķerēšanas vietnē, taču lietotājs varēs mainīt šo iestatījumu.</translation>
 <translation id="2418507228189425036">Atspējo pārlūka <ph name="PRODUCT_NAME" /> vēstures saglabāšanu un neļauj lietotājiem mainīt šo iestatījumu.
 
       Ja šis iestatījums ir iespējots, pārlūkošanas vēsture nav saglabāta. Ar šo iestatījumu arī tiek atspējota ciļņu sinhronizācija.
@@ -921,6 +920,7 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 <translation id="3646859102161347133">Ekrāna lupas veida iestatīšana</translation>
 <translation id="3653237928288822292">Noklusējuma meklētājprogrammas ikona</translation>
 <translation id="3660562134618097814">SAML identitātes nodrošinātāja sīkfailu pārsūtīšana pieteikšanās laikā</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Vienas rindas lauks ir novecojis, un to ir plānots noņemt. Lūdzu, sāciet lietot tālāk esošo vairākrindu tekstlodziņu.)</translation>
 <translation id="3709266154059827597">Konfigurē paplašinājumu instalēšanas melno sarakstu</translation>
 <translation id="3711895659073496551">Darbības apturēšana</translation>
 <translation id="3715569262675717862">Uz klientu sertifikātiem balstīta autentifikācija</translation>
@@ -1029,6 +1029,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Norāda paplašinājumus, kas tiek automātiski instalēti demonstrācijas lietotājam ierīcēs, kurās atvērts mazumtirdzniecības režīms. Šie paplašinājumi tiek saglabāti ierīcē, un pēc instalēšanas tos var instalēt bezsaistē.
 
       Katrā saraksta ierakstā ir ietverta vārdnīca, kurai laukā “extension-id” ir jāiekļauj paplašinājuma ID, bet laukā “update-url”  — tā atjaunināšanas URL.</translation>
+<translation id="3874773863217952418">Iespējot funkciju “Pieskarties, lai meklētu”</translation>
 <translation id="3877517141460819966">Integrētais divfaktoru autentificēšanas režīms</translation>
 <translation id="388237772682176890">Šī politika ir novecojusi versijā M53 un noņemta no versijas M54, jo ir noņemts protokola SPDY/3.1 atbalsts.
 
@@ -1297,6 +1298,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Šablonu piemērus skatiet šeit: https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Atvērt vietrāžu URL sarakstu</translation>
+<translation id="4680936297850947973">Novecojis versijā M68. Tā vietā izmantojiet iestatījumu DefaultPopupsSetting.
+
+      Detalizēts skaidrojums ir sniegts vietnē https://www.chromestatus.com/features/5675755719622656.
+      Ja šī politika ir iespējota, vietnēs drīkst vienlaikus pārvietoties un atvērt jaunus logus/cilnes.
+      Ja šī politika ir atspējota, vietnēs nedrīkst vienlaikus pārvietoties un atvērt jaunus logus/cilnes.</translation>
 <translation id="4680961954980851756">Iespējo automātisko aizpildi</translation>
 <translation id="4722122254122249791">Iespējot izolāciju noteiktām vietnēm</translation>
 <translation id="4722399051042571387">Ja ir konfigurēta vērtība “false”, tiek novērsta nedrošu un viegli uzminamu PIN iestatīšana.
@@ -1587,7 +1593,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ņemiet vērā: ja platformā tiek atbalstīti politikas paziņojumi, tiks iestatīts atsvaidzināšanas aizkaves laiks 24 stundas (ignorējot visas noklusējuma vērtības un šīs politikas vērtību), jo ir paredzēts, ka ar politikas paziņojumiem atsvaidzināšana tiks veikta piespiedu kārtā katru reizi, kad tiks mainīta politika, un biežāka atsvaidzināšana nebūs nepieciešama.</translation>
 <translation id="5530347722229944744">Bloķēt iespējami bīstamas lejupielādes</translation>
-<translation id="5530586312297447592">Apdraudēta paroles aizsardzība — konta atzīmēšana aktivizēta, atkārtoti izmantojot paroli pikšķerēšanas lapā</translation>
 <translation id="5535973522252703021">Kerberos deleģējamo serveru baltais saraksts</translation>
 <translation id="555077880566103058">Atļauja visām vietnēm automātiski izpildīt spraudni <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Šī politika neietekmē Android lietotnes.</translation>
@@ -1958,7 +1963,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Šai politikai pievienotie vietrāžu URL modeļi nedrīkst būt pretrunā ar tiem modeļiem, kas ir konfigurēti, izmantojot politiku “WebUsbAskForUrls”. Nav noteikts, kurai no divām politikām ir priekšroka gadījumos, ja vietrādis URL atbilst abām politikām.</translation>
 <translation id="6689792153960219308">Ziņošana par aparatūras statusu</translation>
-<translation id="6698071416141001300">Apdraudēta paroles aizsardzība — konta atzīmēšana aktivizēta, atkārtoti izmantojot paroli</translation>
 <translation id="6699880231565102694">Divu faktoru autentifikācijas iespējošana attālās piekļuves saimniekdatoriem</translation>
 <translation id="6724842112053619797">Ja iespējosiet šo iestatījumu, <ph name="PRODUCT_NAME" /> profilos saglabātie iestatījumi, piemēram, grāmatzīmes, automātiskās aizpildes dati, paroles, tiks saglabāti arī failā, kas tiks glabāts viesabonēšanas lietotāju profilu mapē vai vietā, ko norādījis administrators, izmantojot politiku “<ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />”. Iespējojot šo politiku, tiek atspējota sinhronizācija mākonī.
 

@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Activa el testimoni remot per al dispositiu.</translation>
 <translation id="1062407476771304334">Substitueix</translation>
 <translation id="1079801999187584280">No permetis l'ús de les Eines per a desenvolupadors</translation>
-<translation id="109166998561583554">Activador que controla com la protecció de contrasenyes marca els comptes en perill</translation>
 <translation id="1093082332347834239">Si s'activa aquesta opció de configuració, l'amfitrió d'assistència remota s'executarà en un procés amb permisos <ph name="UIACCESS_PERMISSION_NAME" />. Això permetrà que els usuaris remots interaccionin amb les finestres amb privilegis restringits a l'ordinador de l'usuari local.
 
           Si es desactiva o no es configura, l'amfitrió d'assistència remota s'executarà al context de l'usuari i els usuaris remots no podran interaccionar amb les finestres amb privilegis restringits a l'ordinador.</translation>
@@ -97,7 +96,7 @@
 
       Si aquesta política s'estableix en "DeveloperToolsDisallowedForForceInstalledExtensions" (valor 0, que és l'opció predeterminada per a usuaris d'empresa), es podrà accedir en general a les Eines per a desenvolupadors i a la Consola de JavaScript, però no s'hi podrà accedir quan les extensions estiguin instal·lades per la política d'empresa.
       Si aquesta política s'estableix en "DeveloperToolsAllowed" (valor 1, que és l'opció predeterminada per a usuaris no gestionats), es podrà accedir en qualsevol context a les Eines per a desenvolupadors i a la Consola de JavaScript, i es podran utilitzar en tots els contextos, fins i tot en extensions instal·lades per la política d'empresa.
-      Si aquesta política s'estableix en "DeveloperToolsDisallowed" (valor 2), no es podrà accedir a les Eines per a desenvolupadors i ja no es podran inspeccionar els elements del lloc web. Es desactivaran totes les dreceres de teclat i les entrades de menú o de menú contextual per obrir les Eines per a desenvolupadors o la Consola de JavaScript.
+      Si aquesta política s'estableix en "DeveloperToolsDisallowed" (valor 2), no es podrà accedir a les Eines per a desenvolupadors i ja no es podran inspeccionar els elements del lloc web. Es desactivaran totes les dreceres de teclat i les entrades de menú o de menú contextual que obrin les Eines per a desenvolupadors o la Consola de JavaScript.
       Si la política heretada DeveloperToolsDisabled s'estableix en "true", el valor d'aquesta política s'ignorarà i les Eines per a desenvolupadors es desactivaran.</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Adreça o URL del servidor intermediari</translation>
@@ -105,7 +104,6 @@
 <translation id="1438739959477268107">Configuració predeterminada de generació de claus</translation>
 <translation id="1454846751303307294">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què no està permès executar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultJavaScriptSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="1456822151187621582">Windows (clients amb <ph name="PRODUCT_OS_NAME" />):</translation>
-<translation id="1457305643416399820">El marcatge de la protecció de contrasenyes als comptes en perill està desactivat</translation>
 <translation id="1464848559468748897">Controla el comportament de l'usuari en una sessió multiperfil en dispositius <ph name="PRODUCT_OS_NAME" />.
 
       Si aquesta política es defineix com a MultiProfileUserBehaviorUnrestricted, l'usuari pot ser l'usuari principal o el secundari en una sessió multiperfil.
@@ -317,6 +315,13 @@
 <translation id="2082205219176343977">Configura la versió mínima de Chrome que es permet al dispositiu.</translation>
 <translation id="209586405398070749">Canal estable</translation>
 <translation id="2098658257603918882">Activa la creació d'informes d'ús i de dades relacionades amb bloqueigs</translation>
+<translation id="2111016292707172233">Permet que la funció Tocar per cercar estigui disponible a la visualització de contingut de <ph name="PRODUCT_NAME" />.
+
+      Si activeu aquesta opció, l'usuari tindrà a la seva disposició la funció Tocar per cercar i podrà activar-la i desactivar-la.
+
+      Si desactiveu aquesta opció, la funció Tocar per cercar estarà totalment desactivada.
+
+      Deixar aquesta política sense establir és igual que activar l'opció, amb el funcionament descrit abans.</translation>
 <translation id="2113068765175018713">Limita el temps d'activitat del dispositiu mitjançant el reinici automàtic</translation>
 <translation id="2127599828444728326">Permet les notificacions en aquests llocs</translation>
 <translation id="2131902621292742709">Retard d'atenuació de pantalla quan s'utilitza bateria</translation>
@@ -461,12 +466,6 @@
 <translation id="2386362615870139244">Permet els bloquejos d'activació de la pantalla</translation>
 <translation id="2411817661175306360">L'advertiment sobre la protecció de contrasenyes està desactivat</translation>
 <translation id="2411919772666155530">Bloqueja les notificacions d'aquests llocs</translation>
-<translation id="2415979855753196119">Permet controlar si s'activa el marcatge de la protecció de contrasenyes als comptes en perill, és a dir, si s'informa Google que el compte corre el risc que el pirategin.
-
-      Si aquesta política s'estableix en "PasswordProtectionRiskOff", no s'activarà el marcatge de la protecció de contrasenyes als comptes en perill.
-      Si aquesta política s'estableix en "PasswordProtectionRiskOnPasswordReuse", el marcatge de la protecció de contrasenyes als comptes en perill s'activarà quan l'usuari reutilitzi la contrasenya de Google en un lloc web que no estigui inclòs a la llista blanca.
-      Si aquesta política s'estableix en "PasswordProtectionRiskOnPhishingReuse", el marcatge de la protecció de contrasenyes als comptes en perill s'activarà quan l'usuari reutilitzi la contrasenya de Google en un lloc web de pesca.
-      Si aquesta política es deixa sense establir, el marcatge de la protecció de contrasenyes als comptes en perill s'activarà quan l'usuari reutilitzi la contrasenya de Google en un lloc web de pesca, però l'usuari podrà canviar-ho.</translation>
 <translation id="2418507228189425036">Desactiva l'emmagatzematge de l'historial del navegador a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció.
 
       Si aquesta opció s'activa, l'historial de navegació no es desa (i també es desactiva la sincronització de pestanyes).
@@ -884,6 +883,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3646859102161347133">Defineix el tipus de lupa</translation>
 <translation id="3653237928288822292">Icona del proveïdor de cerca predeterminat</translation>
 <translation id="3660562134618097814">Transfereix les galetes del proveïdor d'identitat SAML durant l'inici de sessió</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> El camp d'una sola línia ja no està disponible i se suprimirà en el futur. Comença a utilitzar el quadre de text amb diverses línies que hi ha més avall.</translation>
 <translation id="3709266154059827597">Configura la llista negra d'instal·lació d'extensions</translation>
 <translation id="3711895659073496551">Suspèn</translation>
 <translation id="3715569262675717862">Autenticació basada en certificats del client</translation>
@@ -985,6 +985,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
      Especifica les extensions que s'instal·len automàticament per a l'usuari de la demostració en els dispositius en mode de venda. Aquestes extensions es desen al dispositiu i es poden instal·lar fora de línia, després de la instal·lació.
 
       Cada entrada de la llista conté un diccionari que ha d'incloure l'identificador de l'extensió al camp "extension-id" i l'URL d'actualització al camp "update-url".</translation>
+<translation id="3874773863217952418">Activa Tocar per cercar</translation>
 <translation id="3877517141460819966">Mode d'autenticació de dos factors integrat</translation>
 <translation id="388237772682176890">Aquesta política es considera obsoleta a M53 i s'ha suprimit a M54, perquè el protocol SPDY/3.1 ja no s'admet.
 
@@ -1241,6 +1242,11 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Per veure patrons d'exemple, consulteu l'enllaç https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Obre una llista d'URL</translation>
+<translation id="4680936297850947973">Aquesta política es considera obsoleta a M68. Substitueix-la per DefaultPopupsSetting.
+
+      Per veure l'explicació completa, consulta https://www.chromestatus.com/features/5675755719622656.
+      Si aquesta política està activada, els llocs web podran navegar i obrir finestres o pestanyes noves simultàniament.
+      Si aquesta política està desactivada o no s'estableix, els llocs web no podran navegar i obrir finestres o pestanyes noves simultàniament.</translation>
 <translation id="4680961954980851756">Activa Emplenament automàtic</translation>
 <translation id="4722122254122249791">Activa l'aïllament de llocs web per a orígens especificats</translation>
 <translation id="4722399051042571387">Si s'estableix com a "false", els usuaris no podran definir codis PIN poc segurs i fàcils d'esbrinar.
@@ -1500,7 +1506,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Tingues en compte que, si la plataforma admet notificacions sobre polítiques, el retard d'actualització s'establirà en 24 hores (i s'ignoraran tots els valors predeterminats i el valor d'aquesta política), ja que es preveu que aquestes notificacions forcin una actualització automàtica cada vegada que canviï la política. Per tant, serà innecessari fer actualitzacions més freqüents.</translation>
 <translation id="5530347722229944744">Bloqueja baixades potencialment perilloses</translation>
-<translation id="5530586312297447592">El marcatge de la protecció de contrasenyes als comptes en perill s'activa quan es reutilitza una contrasenya en una pàgina de pesca</translation>
 <translation id="5535973522252703021">Llista blanca del servidor de delegacions Kerberos</translation>
 <translation id="555077880566103058">Permet que tots els llocs executin el connector <ph name="FLASH_PLUGIN_NAME" /> automàticament</translation>
 <translation id="5559079916187891399">Aquesta política no té cap efecte a les aplicacions per a Android.</translation>
@@ -1790,7 +1795,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Desactiva les Eines per a desenvolupadors i la Consola de JavaScript.
 
-      Si actives aquesta opció de configuració, ja no es podrà accedir a les Eines per a desenvolupadors ni inspeccionar els elements del lloc web. Es desactivaran les tecles de drecera i les entrades als menús o als menús contextuals per obrir les Eines per a desenvolupadors o la Consola de JavaScript. Si aquesta opció es desactiva o no es defineix, l'usuari podrà utilitzar les Eines per a desenvolupadors i la Consola de JavaScript.
+      Si actives aquesta opció de configuració, ja no es podrà accedir a les Eines per a desenvolupadors ni inspeccionar els elements del lloc web. Es desactivaran les tecles de drecera i les entrades als menús o als menús contextuals que obrin les Eines per a desenvolupadors o la Consola de JavaScript.
 
       Si aquesta opció es desactiva o no s'estableix, l'usuari podrà utilitzar les Eines per a desenvolupadors i la Consola de JavaScript.</translation>
 <translation id="653608967792832033">Indica el temps sense activitat per part de l'usuari després del qual la pantalla es bloqueja quan el dispositiu funciona amb bateria.
@@ -1856,7 +1861,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbAskForUrls. No s'ha especificat quina de les dues polítiques té prioritat si un URL coincideix amb totes dues.</translation>
 <translation id="6689792153960219308">Informa de l'estat del maquinari</translation>
-<translation id="6698071416141001300">El marcatge de la protecció de contrasenyes als comptes en perill s'activa quan es reutilitza una contrasenya</translation>
 <translation id="6699880231565102694">Activació de l'autenticació de dos factors per als amfitrions d'accés remot</translation>
 <translation id="6724842112053619797">Si actives aquesta opció de configuració, les opcions de configuració emmagatzemades als perfils que hi ha a <ph name="PRODUCT_NAME" />, com ara les adreces d'interès, les dades d'Emplenament automàtic o les contrasenyes, entre d'altres, també s'introduiran en un fitxer emmagatzemat a la carpeta Itinerància del perfil de l'usuari o a la ubicació especificada per l'administrador a la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. En activar aquesta política, es desactiva la sincronització en núvol.
 

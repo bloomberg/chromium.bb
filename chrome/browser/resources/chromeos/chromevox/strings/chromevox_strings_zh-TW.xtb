@@ -17,6 +17,7 @@
 <translation id="1082209053475788238">沒有上一個第 6 階標題。</translation>
 <translation id="1088219014394087294">沒有標題。</translation>
 <translation id="1106741348836243114">開啟或關閉音效回饋 (聽覺標示)。</translation>
+<translation id="1108651818222110612">副標題</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1124771028211010580">目前的顯示樣式為並排。</translation>
 <translation id="113582498867142724">「<ph name="TAG" />」集 (共 <ph name="NUM" /> 個項目)</translation>
@@ -27,12 +28,14 @@
 <translation id="1167230103353892028"><ph name="NAME" />，選單項目 (含子選單)</translation>
 <translation id="1177863135347784049">自訂</translation>
 <translation id="1188858454923323853">補充</translation>
+<translation id="1195238899008218998">後記</translation>
 <translation id="1201402288615127009">繼續</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox：為 Chrome 提供語音朗讀功能</translation>
 <translation id="1225437811932752266">恭喜！你已順利學完基本的 ChromeVox 使用方法。提醒你，你隨時可以按下搜尋鍵 + 句號鍵開啟 ChromeVox 指令選單。如要進一步瞭解 ChromeVox 和 Chrome 作業系統，請參閱下列文章。
 如要結束教學課程，請使用 ChromeVox 找到 [關閉] 按鈕，按一下即可結束。</translation>
 <translation id="1229276918471378188">上一個跳轉</translation>
+<translation id="1236794971743289975">章節附註</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">下一個第 6 階標題</translation>
 <translation id="1275718070701477396">已選取</translation>
@@ -52,6 +55,7 @@
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">區域</translation>
 <translation id="1452236308086741652"><ph name="VALUE" />，密碼文字方塊</translation>
+<translation id="146450394670219700">圖形物件</translation>
 <translation id="1467432559032391204">向左</translation>
 <translation id="1474557363159888097">沒有上一個錨點。</translation>
 <translation id="1480046233931937785">製作人員名單</translation>
@@ -108,6 +112,7 @@
 <translation id="2010555995361223825">ChromeVox 選單</translation>
 <translation id="2045490512405922022">未勾選</translation>
 <translation id="20601713649439366">沒有上一個數學運算式。</translation>
+<translation id="2063539687800151747">題詞</translation>
 <translation id="207477615537953741">語意轉譯功能已關閉</translation>
 <translation id="2086961585857038472">下一個字詞</translation>
 <translation id="2089387485033699258">en</translation>
@@ -118,6 +123,7 @@
 <translation id="2121067395472282800">快捷鍵：<ph name="KEY" /></translation>
 <translation id="2138345533858834403">在畫面頂端的 ChromeVox 面板
         模擬可更新點字顯示器的輸出結果。</translation>
+<translation id="2163782704988363449">勘誤表</translation>
 <translation id="2169714232367507776">按一下目前的項目</translation>
 <translation id="2179452035581866348">ChromeVox 會使用音效提供必要資訊和額外資訊。只要瞭解各種音效所代表的意義，即可善用這些音效加快瀏覽速度。熟悉這種操作模式後，你可以選擇關閉詳細語音說明，完全靠音效就能掌握關於網頁的各項必要資訊。完整的音效及其意義清單如下。</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{右括弧}other{# 個右括弧}}</translation>
@@ -139,6 +145,7 @@
 <translation id="241124561063364910">然後按下</translation>
 <translation id="2416512023405990736">未勾選的核取方塊</translation>
 <translation id="2417569100218200841">內容資訊</translation>
+<translation id="2417948780551741035">章節附註</translation>
 <translation id="2422937916923936891">選單項目核取方塊</translation>
 <translation id="2428534162001909979">指令選單</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -161,6 +168,7 @@
 <translation id="2637227747952042642">數學</translation>
 <translation id="2639750663247012216">ChromeVox 輔助鍵</translation>
 <translation id="2644542693584024604">拼字錯誤</translation>
+<translation id="2661530546602071611">聲明</translation>
 <translation id="2673280813984708147">正在編輯</translation>
 <translation id="267442004702508783">重新整理</translation>
 <translation id="2684412629217766642">關閉 ChromeVox 教學課程</translation>
@@ -173,6 +181,7 @@
 <translation id="2732718972699418926">AM</translation>
 <translation id="2749275490991666823">已勾選</translation>
 <translation id="27527859628328957">跳至下一個可選擇的項目</translation>
+<translation id="276402504937943375">目錄</translation>
 <translation id="2770781857296573485">輸入群組探索</translation>
 <translation id="2777845298774924149">結束</translation>
 <translation id="2781264313200109999">連結開頭</translation>
@@ -189,6 +198,7 @@
 <translation id="2844995807198708617">內容選單</translation>
 <translation id="2849332794118375855">沒有下一個核取方塊。</translation>
 <translation id="2864481629947106776">上一個連結</translation>
+<translation id="2867808975387772810">參考書目</translation>
 <translation id="2873259058405069099">前往表格開頭</translation>
 <translation id="288178314850623291">使用跳轉指令可直接在特定類型的元素之間移動。如要跳到下一個標題，請按下搜尋鍵 + H 鍵；如要跳到下一個標題，請按下搜尋鍵 + Shift 鍵 + H 鍵。</translation>
 <translation id="2894654529758326923">資訊</translation>
@@ -318,7 +328,9 @@
 <translation id="3514822174137761109">{COUNT,plural, =1{插入符號}other{# 個插入符號}}</translation>
 <translation id="352577523970648069">可編輯的文字欄位</translation>
 <translation id="3568702578574425662"><ph name="NAME" />，未勾選的核取方塊</translation>
+<translation id="3589661172894441357">詞彙解釋</translation>
 <translation id="3599054940393788245">非數學內部</translation>
+<translation id="360241989769010433">鳴謝</translation>
 <translation id="3616113530831147358">音訊</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{反引號}other{# 個反引號}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
@@ -348,6 +360,7 @@
 <translation id="3909320334364316587">上一個第 6 階標題</translation>
 <translation id="3914173277599553213">必要</translation>
 <translation id="3914732343065571127">ChromeVox 指令參考</translation>
+<translation id="3930498801443296724">重要引述</translation>
 <translation id="3962990492275676168">從目前位置開始朗讀</translation>
 <translation id="4004802134384979325">已勾選</translation>
 <translation id="4006140876663370126">圖片</translation>
@@ -402,6 +415,7 @@
 <translation id="4373197658375206385">沒有上一個非連結項目。</translation>
 <translation id="4376316291247992553">以點字模式檢視圖形</translation>
 <translation id="4378308539633073595">向前捲動</translation>
+<translation id="4384583879834880242">問與答</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">重設</translation>
 <translation id="4457472090507035117">選取目前的語音：</translation>
@@ -423,6 +437,7 @@
 <translation id="4601367666219428522">「<ph name="TABLENAME" />」表格 <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">忽略下一個按鍵</translation>
 <translation id="461613135510474570">句子</translation>
+<translation id="4623097797855662355">版權頁標記</translation>
 <translation id="463135993322337640">按下 ChromeVox 的 O 鍵、N 鍵，即可瞭解最新功能</translation>
 <translation id="4647836961514597010">顏色選擇器</translation>
 <translation id="4652110509054054146">使用搜尋鍵加向左鍵或向右鍵取代 Home 鍵或 End 鍵，使用搜尋鍵加 Control 鍵加向左鍵或向右鍵取代 Control 鍵加 Home 鍵或 End 鍵，使用搜尋鍵加向上鍵或向下鍵取代 Page Up 鍵或 Page Down 鍵。</translation>
@@ -457,6 +472,7 @@
 <translation id="4877261390094455813">輸入搜尋查詢。</translation>
 <translation id="4886524826165775965">第 <ph name="INDEX" /> 個，共 <ph name="TOTAL" /> 個</translation>
 <translation id="489907760999452556">內部連結</translation>
+<translation id="492295894462528572">前言</translation>
 <translation id="495170559598752135">動作</translation>
 <translation id="4953585991029886728">編輯文字</translation>
 <translation id="4954534434583049121">上一個區塊引述</translation>
@@ -491,6 +507,7 @@
 <translation id="5111640677200759579">欄標題</translation>
 <translation id="5136967254288895616">沒有上一個連結。</translation>
 <translation id="513774504516943387">連結</translation>
+<translation id="5158275234811857234">封面</translation>
 <translation id="517143700877085897">，未選取</translation>
 <translation id="5183440668879371625">上一行點字</translation>
 <translation id="5184944171021383281">沒有下一個表單欄位。</translation>
@@ -501,6 +518,7 @@
 <translation id="5263344797180442561">第 2 階</translation>
 <translation id="528468243742722775">結束</translation>
 <translation id="5291783959063340370">物件</translation>
+<translation id="5302089807023311274">參考書目資料</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />，分頁</translation>
 <translation id="5310788376443009632">已移除：</translation>
 <translation id="5320727453979144100">固定模式已啟用</translation>
@@ -508,6 +526,7 @@
 <translation id="532371086589123547"><ph name="VALUE" />，文字方塊</translation>
 <translation id="5330443287809544590"><ph name="NAME" />，連結</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
+<translation id="5349770431644471053">反向連結</translation>
 <translation id="536031132345979795">在連續朗讀時向後跳過</translation>
 <translation id="5368000168321181111">聽覺標示已關閉</translation>
 <translation id="5374320867641260420">沒有下一個按鈕。</translation>
@@ -523,6 +542,7 @@
 <translation id="5446809554778706307">沒有焦點。按下 Ctrl + T 鍵即可開啟新分頁。</translation>
 <translation id="5451268436205074266">點 <ph name="DOT" /></translation>
 <translation id="5455441614648621694">互補</translation>
+<translation id="5462510922370980473">頁面清單</translation>
 <translation id="5485036206801896268">沒有上一個圖形。</translation>
 <translation id="5486947920110100234">沒有下一個跳躍點。</translation>
 <translation id="549602578321198708">單字</translation>
@@ -548,6 +568,7 @@
 <translation id="5623778242535476823">rbtn</translation>
 <translation id="5623842676595125836">記錄</translation>
 <translation id="5628125749885014029">第 4 階</translation>
+<translation id="5632083598315326067">圖形符號</translation>
 <translation id="5637871198229500030">沒有上一個表格。</translation>
 <translation id="5653397561111110475">使用 Chromebook 觸控螢幕協助工具功能</translation>
 <translation id="5655682562155942719">跳躍指令</translation>
@@ -567,10 +588,12 @@
 <translation id="5732189279857692565">這是第二個標題。請按下搜尋鍵 + H 鍵或搜尋鍵 + Shift 鍵 + H 鍵，前往下一個標題</translation>
 <translation id="5748623122140342504">上一個第 5 階標題</translation>
 <translation id="5750633686117194034">你尚未按下任何輔助鍵。請按住一或多個輔助鍵，完成後即可將手指移開，此時系統會透過語音說明按鍵已成功設定。如要結束，請按下 Tab 鍵。</translation>
+<translation id="5760594853119905566">附錄</translation>
 <translation id="5788275253279308023">無痕式視窗「<ph name="TITLE" />」分頁</translation>
 <translation id="5806206155699461681">增強特定網站 (例如 Google 搜尋)。</translation>
 <translation id="5819072574982403430">樹狀目錄項目</translation>
 <translation id="5826479389509458994">第 <ph name="ROW" /> 列，第 <ph name="COL" /> 欄</translation>
+<translation id="5847883414085148048">獻辭</translation>
 <translation id="5850707923114094062">向後平移</translation>
 <translation id="5851548754964597211">分頁清單</translation>
 <translation id="5859752971144398932">結束從網頁中尋找。</translation>
@@ -581,6 +604,7 @@
 <translation id="5887397643266327462">點字字幕已啟用。</translation>
 <translation id="5891934789323004067">表格</translation>
 <translation id="5899860758576822363">ChromeVox 朗讀時調降音訊的播放音量</translation>
+<translation id="5921587111466148855">章節</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{等號}other{# 個等號}}</translation>
 <translation id="5939518447894949180">重設</translation>
 <translation id="5948123859135882163">切換數學運算式的轉譯方式 (選擇結構化轉譯或語意轉譯)</translation>
@@ -589,6 +613,7 @@
 <translation id="5963413905009737549">區段</translation>
 <translation id="5968607524793740041">顯示內容選單</translation>
 <translation id="5983179082906765664">增加導覽精細度</translation>
+<translation id="5992285135956208197">圖形文件</translation>
 <translation id="5999630716831179808">語音</translation>
 <translation id="6006050241733874051">表單</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{反斜線}other{# 個反斜線}}</translation>
@@ -637,6 +662,7 @@
 <translation id="6444046323172968959">警示對話方塊</translation>
 <translation id="6459511626086141404">一般按鍵對應配置</translation>
 <translation id="6468049171101508116">下一個按鈕</translation>
+<translation id="646954774886932461">索引</translation>
 <translation id="6493991254603208962">調低亮度</translation>
 <translation id="6508059270146105198">將點字顯示畫面移至頁面底部</translation>
 <translation id="6536864053412760904">MathML 符記</translation>
@@ -646,12 +672,14 @@
 <translation id="6587021927234520429">沒有下一個第 4 階標題。</translation>
 <translation id="6601344353291556895">啟用詳細說明。</translation>
 <translation id="6615602925644411249">在網頁中尋找。</translation>
+<translation id="6628427060004938651">分輯</translation>
 <translation id="6633350132811819843">沒有下一個表格。</translation>
 <translation id="6637586476836377253">記錄</translation>
 <translation id="6657128831881431364">進度列</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">文件</translation>
 <translation id="6688209025607531203">非強制回應警示</translation>
+<translation id="6696967141280706829">前言</translation>
 <translation id="6697092096875747123">上一個下拉式方塊</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{驚嘆號}other{# 個驚嘆號}}</translation>
 <translation id="6710213216561001401">返回</translation>
@@ -666,6 +694,7 @@
 <translation id="6787839852456839824">鍵盤快速鍵</translation>
 <translation id="6793101435925451627">清單方塊</translation>
 <translation id="6833103209700200188">頁尾</translation>
+<translation id="6858047746862060282">序言</translation>
 <translation id="6871161210040114857">不區分大小寫。</translation>
 <translation id="6877435256196695200">沒有下一個圖形。</translation>
 <translation id="6897341342232909480">左移</translation>
@@ -675,12 +704,21 @@
 <translation id="6911965441508464308">上方沒有儲存格。</translation>
 <translation id="6919104639734799681">顯示表格清單</translation>
 <translation id="6964088412282673743">沒有上一個控制項。</translation>
+<translation id="6994042831499278539">詞彙解釋參考資料</translation>
 <translation id="6996566555547746822">下一個下拉式方塊</translation>
+<translation id="700202842116345659">參考書目</translation>
 <translation id="7005146664810010831">找不到網址</translation>
 <translation id="7010712454773919705">ChromeVox 輔助鍵</translation>
 <translation id="7031651751836475482">清單項目</translation>
 <translation id="7037042857287298941">上一個清單</translation>
 <translation id="7041173719775863268">結束選取</translation>
+<translation id="7048792632163898198">以下這些快速鍵並非 ChromeVox 指令，但仍然很實用，可協助你善用 Chrome。
+如要前往下一個操作項目 (例如按鈕和連結)，請按下 Tab 鍵；如要返回上一個操作項目，請按下 Shift+Tab 鍵。
+如要進入 Chrome 瀏覽器的網址方塊 (又稱為網址列)，請按下 Control+L 鍵。
+如要自動開啟並前往新分頁，請按下 Control+T 鍵 (游標會移至網址列)。
+如要關閉分頁，請按下 Control+W 鍵。
+如要移至下一個開啟的分頁，請使用 Control+Tab 鍵。
+如要開啟 Chrome 瀏覽器選單，請按下 Alt+F 鍵。</translation>
 <translation id="7086377898680121060">調高亮度</translation>
 <translation id="7095834689119144465">編輯文字時僅限輸入數字</translation>
 <translation id="7096001299300236431">上一個媒體元素</translation>
@@ -688,6 +726,7 @@
 <translation id="712735679809149106">字詞語音回應</translation>
 <translation id="713824876195128146">下一個區塊引述</translation>
 <translation id="7143034430156387447">在 6 點與 8 點點字之間切換</translation>
+<translation id="7157306005867877619">摘要</translation>
 <translation id="7161425887892204659">相符文字結尾</translation>
 <translation id="7161771961008409533">彈出式按鈕</translation>
 <translation id="7165714724802225287">目前的顯示樣式為交錯。</translation>
@@ -706,6 +745,7 @@
 <translation id="725969808843520477">下一個圓形按鈕</translation>
 <translation id="7269119382257320590">無標點符號</translation>
 <translation id="7273174640290488576">空白行</translation>
+<translation id="7274770952766771364">附註參考資料</translation>
 <translation id="7285387653379749618">表格</translation>
 <translation id="7289186959554153431">標題 3</translation>
 <translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
@@ -727,6 +767,7 @@
 <translation id="7420313809195758138">優先顯示項目的關聯內容，再顯示其他資訊 (例如名稱)。</translation>
 <translation id="7425395583360211003">歸位字元</translation>
 <translation id="7434509671034404296">開發人員選項</translation>
+<translation id="743783356331413498">範例</translation>
 <translation id="7439060726180460871">目錄</translation>
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">分頁</translation>
@@ -740,10 +781,12 @@
 <translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">朗讀目前網頁的網址</translation>
 <translation id="7609363189280667021">選擇啟用或停用點字說明文字</translation>
+<translation id="761303759119251275">參與名單</translation>
 <translation id="762020119231868829">暫停所有正在播放媒體的小工具</translation>
 <translation id="7625690649919402823">下一個表格</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)，第 <ph name="GRADE" /> 級</translation>
 <translation id="7641134354185483015">沒有上一個第 3 階標題。</translation>
+<translation id="7647456547678091388">提示</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />，<ph name="NAME" />，文字方塊</translation>
 <translation id="7663318257180412551">標題 2</translation>
 <translation id="7674576868851035240">下一個連結</translation>
@@ -756,6 +799,7 @@
 <translation id="7770823902658038748"><ph name="VALUE" />，<ph name="NAME" />，密碼文字方塊</translation>
 <translation id="7773125101284285285">底線結尾</translation>
 <translation id="7776293189010177726">開啟 ChromeVox 選單</translation>
+<translation id="7800558923657349506">結語</translation>
 <translation id="7805247615045262757">預設導覽</translation>
 <translation id="7805768142964895445">狀態</translation>
 <translation id="7810781339813764006">下一個群組</translation>
@@ -777,8 +821,10 @@
 <translation id="8007540374018858731">第 3 階</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{引號}other{# 個引號}}</translation>
 <translation id="8017588669690167134">關閉語音功能</translation>
+<translation id="801990297710781303">註腳</translation>
 <translation id="8033827949643255796">已選取</translation>
 <translation id="8035962149453661158">最大值：<ph name="X" /></translation>
+<translation id="8037651341025652929">結論</translation>
 <translation id="8042761080832772327">編輯文字，搜尋項目</translation>
 <translation id="8049189770492311300">計時器</translation>
 <translation id="8065607967589909823">所選項目是</translation>
@@ -795,6 +841,7 @@
 <translation id="820417203470636242">空白儲存格。</translation>
 <translation id="820469951249669083">前往下一列</translation>
 <translation id="8215202828671303819">多重選取</translation>
+<translation id="826825447994856889">簡介</translation>
 <translation id="826991282343985864">第 $1 列，第 $2 欄</translation>
 <translation id="8276439074553447000">跳至上一個可選擇的項目</translation>
 <translation id="8278417001922463147">沒有上一篇文章。</translation>
@@ -869,6 +916,7 @@
 <translation id="9043969572162476692">百分之 <ph name="NUM" /></translation>
 <translation id="9061884144798498064">選取 8 點點字表：</translation>
 <translation id="9065283790526219006">含彈出式元件</translation>
+<translation id="9067522039955793016">分頁符號</translation>
 <translation id="9077213568694924680">已從所選範圍中移除</translation>
 <translation id="9082874451376019682">沒有上一個滑桿。</translation>
 <translation id="9087707351856729768">輸入文字即可自動完成。</translation>

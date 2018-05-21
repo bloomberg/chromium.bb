@@ -60,6 +60,7 @@
 <translation id="1506061864768559482">Wyszukiwarka</translation>
 <translation id="1513352483775369820">Zakładki i historia online</translation>
 <translation id="1513858653616922153">Usuń hasło</translation>
+<translation id="1516229014686355813">Funkcja Kliknij, by wyszukać wysyła zaznaczone słowo i bieżącą stronę jako kontekst do wyszukiwarki Google. Możesz ją wyłączyć w <ph name="BEGIN_LINK" />ustawieniach<ph name="END_LINK" />.</translation>
 <translation id="1539064842193522527">Link otwarty w Chrome</translation>
 <translation id="1549000191223877751">Przenieś do innego okna</translation>
 <translation id="1553358976309200471">Zaktualizuj Chrome</translation>
@@ -314,6 +315,9 @@
 <translation id="4002066346123236978">Tytuł</translation>
 <translation id="4042870126885713738">Pokazuj podpowiedzi, gdy nie można znaleźć adresu internetowego lub nawiązać połączenia</translation>
 <translation id="4046123991198612571">Następny utwór</translation>
+<translation id="4048707525896921369">Poznaj tematy w witrynach bez opuszczania strony. Funkcja Kliknij, by wyszukać kopiuje słowo wraz z kontekstem i wkleja je w wyszukiwarce Google. Dzięki temu otrzymujesz definicje, grafiki, wyniki wyszukiwania i inne informacje.
+
+Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć. Aby doprecyzować wyszukiwanie, przesuń panel do samej góry i kliknij pole wyszukiwania.</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Informacje prawne</translation>
 <translation id="4084682180776658562">Dodaj do zakładek</translation>
@@ -327,7 +331,7 @@
 <translation id="4113030288477039509">Zarządzany przez administratora</translation>
 <translation id="4116038641877404294">Pobierz strony, by przeglądać je w trybie offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d zakładka}few{%1$d zakładki}many{%1$d zakładek}other{%1$d zakładki}}</translation>
-<translation id="4165986682804962316">Ustawienia witryny</translation>
+<translation id="4165986682804962316">Ustawienia witryn</translation>
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
 <translation id="4181841719683918333">Języki</translation>
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>

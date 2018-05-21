@@ -546,6 +546,7 @@
 <translation id="4759118997339041434">Saisie automatique des cartes de paiement désactivée</translation>
 <translation id="4764776831041365478">Il se peut que la page Web à l'adresse <ph name="URL" /> soit temporairement inaccessible ou qu'elle ait été déplacée de façon permanente à une autre adresse Web.</translation>
 <translation id="4771973620359291008">Une erreur inconnue s'est produite.</translation>
+<translation id="4785689107224900852">Passer à cet onglet</translation>
 <translation id="4792143361752574037">Un problème est survenu lors de l'accès aux fichiers de session. L'enregistrement sur disque est actuellement désactivé. Veuillez actualiser la page pour réessayer.</translation>
 <translation id="4800132727771399293">Veuillez vérifier la date d'expiration et le code CVC, puis réessayez.</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>

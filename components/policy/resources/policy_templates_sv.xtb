@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Aktivera fjärrattestering för enheten</translation>
 <translation id="1062407476771304334">Ersätt</translation>
 <translation id="1079801999187584280">Tillåt inte använding av Utvecklarverktyg</translation>
-<translation id="109166998561583554">Lösenordsskyddets utlösare för när en varning om att kontot är utsatt för risk ska visas</translation>
 <translation id="1093082332347834239">Om inställningen är aktiverad körs fjärrhjälpsvärden i en process med behörigheter för <ph name="UIACCESS_PERMISSION_NAME" />. Det innebär att fjärranvändare kan interagera med fönster som öppnats med högre behörighet på den lokala användarens dator.
 
           Om inställningen är inaktiverad eller inte konfigurerad körs fjärrhjälpsvärden i användarens kontext och fjärranvändare kan inte interagera med fönster som öppnats med högre behörighet på datorn.</translation>
@@ -107,7 +106,6 @@
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultJavaScriptSetting om den har ställts in. Annars används användarens personliga konfiguration.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />-klienter):</translation>
-<translation id="1457305643416399820">Lösenordsskyddets varningar om att kontot är utsatt för risk har inaktiverats</translation>
 <translation id="1464848559468748897">Kontrollera användarbeteendet i en session med flera profiler på <ph name="PRODUCT_OS_NAME" />-enheter.
 
       Om MultiProfileUserBehaviorUnrestricted har angetts som policy kan användaren vara antingen en primär eller en sekundär användare i en session med flera profiler.
@@ -330,6 +328,13 @@
 <translation id="2082205219176343977">Konfigurera lägsta tillåtna Chrome-version för enheten.</translation>
 <translation id="209586405398070749">Stabil kanal</translation>
 <translation id="2098658257603918882">Aktivera rapportering av användning och kraschrelaterade data</translation>
+<translation id="2111016292707172233">Aktiverar tillgången till Tryck för att söka i innehållsvyn i <ph name="PRODUCT_NAME" />.
+
+      Om inställningen aktiveras blir Tryck för att söka tillgängligt för användaren som sedan kan välja att aktivera eller inaktivera funktionen.
+
+      Om du inaktiverar inställningen inaktiveras Tryck för att söka helt och hållet.
+
+      Om principen inte ges något värde innebär det att den är aktiverad (se beskrivningen ovan).</translation>
 <translation id="2113068765175018713">Begränsa enhetens upptid genom att starta om automatiskt</translation>
 <translation id="2127599828444728326">Tillåt meddelanden på dessa webbplatser</translation>
 <translation id="2131902621292742709">Skärmdämpningstid när enheten drivs av batteriet</translation>
@@ -481,12 +486,6 @@
 <translation id="2386362615870139244">Tillåt skärmaktiveringslås</translation>
 <translation id="2411817661175306360">Lösenordsskyddets varningar har inaktiverats</translation>
 <translation id="2411919772666155530">Blockera meddelanden på dessa webbplatser</translation>
-<translation id="2415979855753196119">Låter dig styra vad som utlöser varningar om att ett konto är utsatt för risk från lösenordsskyddet. En varning om att kontot är utsatt för risk innebär att Google får kännedom om att kontot löper risk att bli kapat.
-
-      När principen är inställd på PasswordProtectionRiskOff aktiveras inga varningar om att kontot är utsatt för risk.
-      När principen är inställd på PasswordProtectionRiskOnPasswordReuse utlöses en varning om att kontot är utsatt för risk när någon återanvänder sitt lösenord för Google på en webbplats som inte står med på vitlistan.
-      När principen är inställd på PasswordProtectionRiskOnPhishingReuse utlöses en varning om att kontot är utsatt för risk när någon återanvänder sitt lösenord för Google på en webbplats som används för nätfiske.
-      Om principen har lämnats utan inställning utlöses en varning om att kontot är utsatt för risk när någon återanvänder sitt lösenord för Google på en webbplats som används för nätfiske, men användaren kan ändra detta.</translation>
 <translation id="2418507228189425036">Policyn gör att webbhistoriken inte sparas i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
 
       Om inställningen är aktiverad sparas ingen webbhistorik. Inställningen inaktiverar även fliksynkronisering.
@@ -923,6 +922,7 @@
 <translation id="3646859102161347133">Ange typen av skärmförstorare</translation>
 <translation id="3653237928288822292">Ikon för standardsökleverantör</translation>
 <translation id="3660562134618097814">Överför SAML-cookies från identitetsleverantörer vid inloggning</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Enradsfältet har fasats ut och tas snart bort. Börja använda flerradsfältet i stället.)</translation>
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
 <translation id="3711895659073496551">Stäng av</translation>
 <translation id="3715569262675717862">Autentisering utifrån klientcertifikat</translation>
@@ -1034,6 +1034,7 @@
       Anger tillägg som installeras automatiskt för demoanvändaren för enheter i återförsäljarläge. Dessa tillägg sparas i enheten och kan installeras offline efter installationen.
 
       Varje post i listan innehåller en ordbok som måste innehålla tilläggets ID i fältet extension-id och dess uppdateringsadress i fältet update-url.</translation>
+<translation id="3874773863217952418">Aktivera Tryck för att söka</translation>
 <translation id="3877517141460819966">Läget för integrerad tvåfaktorsautentisering</translation>
 <translation id="388237772682176890">Den här principen har fasats ut i M53 och tagits bort från M54, eftersom stödet för SPDY/3.1 har tagits bort.
 
@@ -1302,6 +1303,11 @@
 
           Exempel på mönster finns på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Öppna följande sidor</translation>
+<translation id="4680936297850947973">Har fasats ut i M68. Använd DefaultPopupsSetting i stället.
+
+      En fullständig förklaring finns på https://www.chromestatus.com/features/5675755719622656.
+      Om den här principen är aktiverad kan webbplatser navigera och öppna nya fönster eller flikar samtidigt.
+      Om den här principen är inaktiverad eller inte anges kan webbplatser inte navigera och öppna nya fönster eller flikar samtidigt.</translation>
 <translation id="4680961954980851756">Aktivera Autofyll</translation>
 <translation id="4722122254122249791">Aktivera webbplatsisolering för enskilda ursprung</translation>
 <translation id="4722399051042571387">Om inställningen har konfigurerats som falsk kan inte användare ange pinkoder som är osäkra och lätta att gissa.
@@ -1590,7 +1596,6 @@
 
       Observera att om plattformen stöder policymeddelanden används 24 timmar som uppdateringsfördröjning (och alla standardvärden och detta principvärde ignoreras), eftersom uppdateringar då sker automatiskt så fort policyn förändras. Det gör tätare uppdateringar överflödiga.</translation>
 <translation id="5530347722229944744">Blockera potentiellt farliga nedladdningar</translation>
-<translation id="5530586312297447592">Lösenordsskyddets varningar om att kontot är utsatt för risk utlöses av att lösenordet återanvänds på en sida med nätfiske</translation>
 <translation id="5535973522252703021">Vitlista  för Kerberos-delegeringsserver</translation>
 <translation id="555077880566103058">Tillåt att pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> körs på alla webbplatser</translation>
 <translation id="5559079916187891399">Den här principen gäller inte Android-appar.</translation>
@@ -1966,7 +1971,6 @@
 
           Webbadressmönstren i den här principen får inte överlappa dem som konfigurerats via WebUsbAskForUrls. Det är inte definierat vilken av principerna som ska ha företräde om en webbadress matchar båda.</translation>
 <translation id="6689792153960219308">Rapportera maskinvarustatus</translation>
-<translation id="6698071416141001300">Lösenordsskyddets varningar om att kontot är utsatt för risk utlöses av att lösenordet återanvänds</translation>
 <translation id="6699880231565102694">Aktivera tvåfaktorsautentisering för fjärråtkomstvärdar</translation>
 <translation id="6724842112053619797">Om du aktiverar den här inställningen skrivs även inställningar för <ph name="PRODUCT_NAME" />-profiler (exempelvis bokmärken, autofylluppgifter och lösenord) till en fil som lagras i användarprofilmappen för roaming eller en plats som anges av administratören i principen <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Molnsynkronisering inaktiveras när principen aktiveras.
 

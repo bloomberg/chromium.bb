@@ -14,6 +14,7 @@
 <translation id="127345590676626841">Chrome 會自動更新，隨時讓你使用最新版本。完成這項下載作業後，Chrome 會重新啟動，自動為你進行更新。</translation>
 <translation id="1302523850133262269">請稍候，Chrome 正在安裝最新的系統更新。</translation>
 <translation id="137466361146087520">Google Chrome 測試版</translation>
+<translation id="1388971155537343688">正在啟動 Chrome</translation>
 <translation id="1393853151966637042">前往 Chrome 說明頁面</translation>
 <translation id="1399397803214730675">這台電腦已安裝較新的 Google Chrome 版本，如果軟體無法順利運作，請解除安裝 Google Chrome，然後再試一次。</translation>
 <translation id="1434626383986940139">Chrome Canary 應用程式</translation>
@@ -171,6 +172,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="573759479754913123">關於 Chrome 作業系統</translation>
 <translation id="5774845247549698882">Chrome 作業系統的介面文字已設為這種語言</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary 版</translation>
+<translation id="5804318322022881572">無法啟動 Chrome，請再試一次。</translation>
 <translation id="5855036575689098185">你電腦上執行的軟體與 Google Chrome 不相容。</translation>
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="5895138241574237353">重新啟動</translation>
@@ -225,6 +227,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7589360514048265910">我們已不支援 Mac OS X 10.9，因此這部電腦不會再收到 Google Chrome 更新。</translation>
 <translation id="7592736734348559088">你的帳戶登入詳細資料尚未更新，因此 Google Chrome 無法同步處理你的資料。</translation>
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
+<translation id="7651907282515937834">Chrome Enterprise 標誌</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>
 <translation id="7756122083761163394">這位使用者的瀏覽資料將從這個裝置上刪除。如要還原資料，請以「$2」的身分登入 Chrome。</translation>
 <translation id="7761834446675418963">按一下你的名稱即可開啟 Chrome 並開始瀏覽。</translation>

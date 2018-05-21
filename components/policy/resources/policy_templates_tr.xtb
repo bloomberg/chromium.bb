@@ -29,7 +29,6 @@
 <translation id="1062011392452772310">Cihaz için uzaktan doğrulamayı etkinleştir</translation>
 <translation id="1062407476771304334">Değiştir</translation>
 <translation id="1079801999187584280">Geliştirici Araçları'nın kullanımına izin verme</translation>
-<translation id="109166998561583554">Şifre koruma hizmetinin risk altındaki hesabı işaretleme tetikleyicisi</translation>
 <translation id="1093082332347834239">Bu ayar etkinleştirilirse uzaktan yardım ana makinesi bir işlemde <ph name="UIACCESS_PERMISSION_NAME" /> izinleriyle çalıştırılır. Bu durum, uzak kullanıcıların yerel kullanıcının masaüstünde yükseltilmiş pencerelerle etkileşimde bulunmasına olanak tanır.
 
           Bu ayar devre dışı bırakılır veya yapılandırılmazsa uzaktan yardım ana makinesi, kullanıcının içeriğinde çalışır ve uzak kullanıcılar, masaüstündeki yükseltilmiş pencerelerle etkileşimde bulunamaz.</translation>
@@ -97,7 +96,7 @@
 <translation id="1424081297104898791">Geliştirici Araçları'nın kullanılabileceği yerleri kontrol etmenize olanak tanır.
 
       Bu politika "DeveloperToolsDisallowedForForceInstalledExtensions" (kurumsal kullanıcılar için varsayılan değer olan 0 değeri) olarak ayarlanırsa, Geliştirici Araçları ve JavaScript konsoluna genel olarak erişilebilir ancak kurumsal politikaya göre yüklenen uzantıların bağlamında bunlara erişim sağlanamaz.
-      Bu politika "DeveloperToolsAllowed" (yönetilmeyen kullanıcılar için varsayılan değer olan 1 değeri) olarak ayarlanırsa, Geliştirici Araçları ve JavaScript konsoluna erişilebilir ve bunlar kurumsal politikaya göre yüklenen uzantılar bağlamı dahil tüm bağlamlarda kullanılır.
+      Bu politika "DeveloperToolsAllowed" (yönetilmeyen kullanıcılar için varsayılan değer olan 1 değeri) olarak ayarlanırsa, Geliştirici Araçları ve JavaScript konsoluna erişilebilir ve bunlar kurumsal politikaya göre yüklenen uzantılar bağlamı dahil tüm bağlamlarda kullanılabilir.
       Bu politika "DeveloperToolsDisallowed" (2 değeri) olarak ayarlanırsa Geliştirici Araçları'na erişilemez ve web sitesi öğeleri bundan sonra incelenemez. Geliştirici Araçları veya JavaScript Konsolu'nu açmaya yönelik klavye kısayolları ve menü ya da içerik menüsü girişleri devre dışı bırakılır.
       Eski DeveloperToolsDisabled politikası true (doğru) değerine ayarlanırsa bu politikanın değeri yoksayılır ve Geliştirici Araçları devre dışı bırakılır.</translation>
 <translation id="1426410128494586442">Evet</translation>
@@ -108,7 +107,6 @@
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultJavaScriptSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" /> istemcileri):</translation>
-<translation id="1457305643416399820">Şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği kapalı</translation>
 <translation id="1464848559468748897"><ph name="PRODUCT_OS_NAME" /> cihazlarda çoklu profil içeren oturumdaki kullanıcı davranışını denetle.
 
       Bu politika "MultiProfileUserBehaviorUnrestricted" olarak ayarlanırsa, kullanıcı çoklu profil içeren bir oturumda birincil veya ikincil kullanıcı olabilir.
@@ -332,6 +330,13 @@
 <translation id="2082205219176343977">Cihaz için izin verilen minimum Chrome sürümünü yapılandır.</translation>
 <translation id="209586405398070749">Mevcut ürün kanalı</translation>
 <translation id="2098658257603918882">Kullanım ve kilitlenme ile ilgili verilerin raporlanmasını etkinleştir</translation>
+<translation id="2111016292707172233"><ph name="PRODUCT_NAME" /> ürününün içerik görünümünde Dokun ve Ara özelliğinin kullanılabilmesini sağlar.
+
+      Bu ayarı etkinleştirirseniz, kullanıcı Dokun ve Ara özelliğini kullanabilir ve özelliği istediği gibi açıp kapatabilir.
+
+      Bu özelliği devre dışı bırakırsanız, Dokun ve Ara özelliği tümüyle devre dışı kalır.
+
+      Bu politika ayarlanmadan bırakılırsa, etkinleştirilmiş gibi görev görür (yukarıdaki açıklamaya bakın).</translation>
 <translation id="2113068765175018713">Otomatik bir şekilde yeniden başlatarak cihazın açık kalma süresini sınırlandır</translation>
 <translation id="2127599828444728326">Bu sitelerde bildirimlere izin ver</translation>
 <translation id="2131902621292742709">Pil gücüyle çalışırken ekran karartma gecikmesi</translation>
@@ -480,12 +485,6 @@
 <translation id="2386362615870139244">Ekran uyandırma kilitlerine izin ver</translation>
 <translation id="2411817661175306360">Şifre koruma uyarısı kapalı</translation>
 <translation id="2411919772666155530">Bu sitelerde bildirimleri engelle</translation>
-<translation id="2415979855753196119">Şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliğinin tetiklenmesini kontrol etmenize olanak tanır. Şifre koruma hizmetinin risk altındaki hesabı işaretlemesi, Google'ın bu hesabın ele geçirilme riski taşıdığı konusunda bilgilendirilmesi anlamına gelir.
-
-      Bu politika "PasswordProtectionRiskOff" olarak ayarlanırsa, şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği tetiklenmez.
-      Bu politika "PasswordProtectionRiskOnPasswordReuse" olarak ayarlanırsa, şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği, kullanıcı Google şifresini beyaz listede olmayan bir sitede yeniden kullandığında tetiklenir.
-      Bu politika "PasswordProtectionRiskOnPhishingReuse" olarak ayarlanırsa, şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği, kullanıcı Google şifresini kimlik avı sitelerinde yeniden kullandığında tetiklenir.
-      Bu politika ayarlanmadan bırakılırsa, şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği, kullanıcı Google şifresini kimlik avı sitelerinde yeniden kullandığında tetiklenir ama kullanıcı, bu ayarı değiştirebilir.</translation>
 <translation id="2418507228189425036"><ph name="PRODUCT_NAME" /> ürününde tarayıcı geçmişini kaydetmeyi devre dışı bırakır ve kullanıcıların bu ayarı değiştirmesine izin vermez.
 
       Bu ayar etkinleştirilirse tarama geçmişi kaydedilmez. Bu ayar aynı zamanda sekme senkronizasyonunu da devre dışı bırakır.
@@ -919,6 +918,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3646859102161347133">Ekran büyüteci türünü ayarla</translation>
 <translation id="3653237928288822292">Varsayılan arama sağlayıcı simgesi</translation>
 <translation id="3660562134618097814">Giriş sırasında SAML IdP çerezlerini aktar</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Tek satırlı alanlar artık kullanılmamaktadır ve yakında kaldırılacaktır. Lütfen aşağıdaki çok satırlı metin kutusunu kullanın.)</translation>
 <translation id="3709266154059827597">Uzantı kurulum kara listesini yapılandır</translation>
 <translation id="3711895659073496551">Askıya al</translation>
 <translation id="3715569262675717862">İstemci sertifikalarına dayalı kimlik doğrulama</translation>
@@ -1021,6 +1021,7 @@ Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edil
       Perakende modundaki cihazlar için Demo kullanıcı adına otomatik olarak yüklenmiş uzantıları listeler. Bu uzantılar cihaza kaydedilir ve yüklemeden sonra çevrimdışıyken yüklenebilir.
 
       Her bir liste girişi, 'extension-id' alanında uzantı kimliği ve 'update-url' alanında güncelleme URL'si bulunması gereken bir sözlük içerir.</translation>
+<translation id="3874773863217952418">Dokun ve Ara'yı Etkinleştir</translation>
 <translation id="3877517141460819966">Entegre iki etmenli kimlik doğrulama modu</translation>
 <translation id="388237772682176890">SPDY/3.1 desteği kaldırıldığı için bu politika M53 sürümünde kullanımdan kaldırılmış ve M54 sürümünde üründen çıkarılmıştır.
  
@@ -1290,6 +1291,11 @@ politikayı geçersiz kılamaz.
 
           Örnek kalıplar için https://www.chromium.org/developers/how-tos/chrome-frame-getting-started adresine bakın.</translation>
 <translation id="467449052039111439">URL listesi aç</translation>
+<translation id="4680936297850947973">M68 sürümünde kullanımdan kaldırılmıştır. Bunun yerine DefaultPopupsSetting politikasını kullanın.
+
+      Tam açıklama için https://www.chromestatus.com/features/5675755719622656 adresine bakın.
+      Bu politika etkinleştirilirse sitelerin eşzamanlı olarak gezinmesine ve yeni pencereler/sekmeler açmasına izin verilir.
+      Bu politika devre dışı bırakılır veya ayarlanmazsa sitelerin eşzamanlı olarak gezinmesine ve yeni bir pencere/sekme açmasına izin verilmez.</translation>
 <translation id="4680961954980851756">Otomatik Doldurmayı etkinleştir</translation>
 <translation id="4722122254122249791">Site İzolasyonu'nu belirtilen kaynaklar için etkinleştirme</translation>
 <translation id="4722399051042571387">False (yanlış) değerinde, kullanıcılar zayıf ve kolayca tahmin edilebilecek PIN'ler ayarlayamaz.
@@ -1537,7 +1543,7 @@ politikayı geçersiz kılamaz.
 
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşebilir.</translation>
 <translation id="5423197884968724595">Android WebView kısıtlama adı:</translation>
-<translation id="5442026853063570579">Ayrıca bu politika Android Geliştirici Seçenekleri'ne erişimi de kontrol eder. Bu politikayı "DeveloperToolsDisallowed" (2 değeri) olarak ayarlarsanız kullanıcılar Geliştirici Seçenekleri'ne erişemez. Bu politikayı başka bir seçeneğe ayarlar veya ayarlamadan bırakırsanız kullanıcılar, Android ayarları uygulamasında derleme numarasına yedi kez dokunarak Geliştirici Seçenekleri'ne erişebilir.</translation>
+<translation id="5442026853063570579">Bu politika Android Geliştirici Seçenekleri'ne erişimi de kontrol eder. Bu politikayı "DeveloperToolsDisallowed" (2 değeri) olarak ayarlarsanız kullanıcılar Geliştirici Seçenekleri'ne erişemez. Bu politikayı başka bir seçeneğe ayarlar veya ayarlamadan bırakırsanız kullanıcılar, Android ayarları uygulamasında derleme numarasına yedi kez dokunarak Geliştirici Seçenekleri'ne erişebilir.</translation>
 <translation id="5447306928176905178">Bellek bilgilerini (JS yığın boyutu) sayfada raporlamayı etkinleştir (kullanımdan kaldırıldı)</translation>
 <translation id="5457065417344056871">Tarayıcıda misafir modunu etkinleştir</translation>
 <translation id="5457924070961220141"><ph name="PRODUCT_FRAME_NAME" /> yüklendiğinde varsayılan HTML oluşturucusunu yapılandırabilmenizi sağlar.
@@ -1574,7 +1580,6 @@ politikayı geçersiz kılamaz.
 
       Platform politika bildirimlerini destekliyorsa yenileme gecikmesinin 24 saate ayarlanacağını (tüm varsayılanların ve bu politikanın değerinin yoksayılacağını) unutmayın. Bunun nedeni, politika değiştiğinde politika bildirimlerinin otomatik olarak bir yenilemeyi zorlamasının beklenmesi ve bu yüzden, daha sık yenileme yapılmasına gerek olmamasıdır.</translation>
 <translation id="5530347722229944744">Tehlikeli olabilecek indirmeleri engelle</translation>
-<translation id="5530586312297447592">Şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği, kimlik avı sayfasında şifre yeniden kullanımıyla tetiklendi</translation>
 <translation id="5535973522252703021">Kerberos yetki sunucusu beyaz listesi</translation>
 <translation id="555077880566103058">Tüm sitelerin otomatik olarak <ph name="FLASH_PLUGIN_NAME" /> eklentisini çalıştırmasına izin ver</translation>
 <translation id="5559079916187891399">Bu politikanın Android uygulamaları üzerinde hiçbir etkisi yoktur.</translation>
@@ -1948,7 +1953,6 @@ politikayı geçersiz kılamaz.
 
           Bu politikadaki URL kalıpları WebUsbAskForUrls aracılığıyla yapılandırılan URL kalıplarıyla çakışmamalıdır. Bir URL her ikisiyle de eşleşirse bu iki politikadan hangisinin öncelikli olacağı belirsizdir.</translation>
 <translation id="6689792153960219308">Donanım durumunu bildir</translation>
-<translation id="6698071416141001300">Şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği, şifre yeniden kullanımıyla tetiklendi</translation>
 <translation id="6699880231565102694">Uzaktan erişim ana makineleri için iki öğeli kimlik doğrulamayı etkinleştir</translation>
 <translation id="6724842112053619797">Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" /> profillerinde depolanan yer işaretleri, otomatik doldurma verileri, şifreler gibi ayarlar Dolaşım kullanıcı profili klasöründe veya Yönetici tarafından <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> politikası aracılığıyla belirlenen bir konumda depolanan bir dosyaya daha yazılır. Bu politikanın etkinleştirilmesi halinde bulut senkronizasyonu devre dışı bırakılır.
 

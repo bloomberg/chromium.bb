@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Įgalinti nuotolinį įrenginio patvirtinimą</translation>
 <translation id="1062407476771304334">Pakeisti</translation>
 <translation id="1079801999187584280">Neleisti naudoti kūrėjo įrankių</translation>
-<translation id="109166998561583554">Paskyros, kuriai iškilo pavojus, žymėjimo dėl slaptažodžio apsaugos aktyviklis</translation>
 <translation id="1093082332347834239">Jei šis nustatymas įgalintas, nuotolinės pagalbos prieglobos serveris bus vykdomas su „<ph name="UIACCESS_PERMISSION_NAME" />“ leidimais. Taip nuotoliniai naudotojai galės sąveikauti su pakeltais langais vietiniame naudotojo staliniame kompiuteryje.
 
           Jei šis nustatymas išjungtas arba nesukonfigūruotas, nuotolinės pagalbos prieglobos serveris bus vykdomas naudotojo kontekste ir nuotoliniai naudotojai negalės sąveikauti su pakeltais langais staliniame kompiuteryje.</translation>
@@ -107,7 +106,6 @@
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis „JavaScript“ nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="1456822151187621582">„Windows“ („<ph name="PRODUCT_OS_NAME" />“ klientai):</translation>
-<translation id="1457305643416399820">Paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos išjungtas</translation>
 <translation id="1464848559468748897">Kontroliuokite naudotojų elgseną kelių profilių sesijoje „<ph name="PRODUCT_OS_NAME" />“ įrenginiuose.
 
       Jei ši politika nustatyta į „MultiProfileUserBehaviorUnrestricted“, naudotojas gali būti pirminiu arba antriniu kelių profilių sesijos naudotoju.
@@ -329,6 +327,13 @@
 <translation id="2082205219176343977">Konfigūruoti mažiausią leistiną įrenginio „Chrome“ versiją.</translation>
 <translation id="209586405398070749">Stabilus kanalas</translation>
 <translation id="2098658257603918882">Įgalinti naudojimo ir su strigtimis susijusių duomenų ataskaitų kūrimą</translation>
+<translation id="2111016292707172233">Įgalinamas Paieškos palietus pasiekiamumas „<ph name="PRODUCT_NAME" />“ turinio rodinyje.
+
+      Jei įgalinsite šį nustatymą, naudotojams bus pasiekiama Paieška palietus ir jie galės įjungti arba išjungti funkciją.
+
+      Jei šį nustatymą išjungsite, Paieška palietus bus visiškai išjungta.
+
+      Jei ši politika nenustatyta, ji bus tarsi įgalinta. Žr. anksčiau pateiktą aprašą.</translation>
 <translation id="2113068765175018713">Apriboti įrenginio veiksenos laiką automatiškai įkeliant operacinę sistemą iš naujo</translation>
 <translation id="2127599828444728326">Leisti pranešimus šiose svetainėse</translation>
 <translation id="2131902621292742709">Ekrano pritemdymo delsa, kai naudojama akumuliatoriaus energija</translation>
@@ -481,12 +486,6 @@
 <translation id="2386362615870139244">Leisti ekrano pažadinimo užraktus</translation>
 <translation id="2411817661175306360">Įspėjimas dėl slaptažodžio apsaugos išjungtas</translation>
 <translation id="2411919772666155530">Blokuoti pranešimus šiose svetainėse</translation>
-<translation id="2415979855753196119">Leidžiama valdyti paskyros, kuriai iškilo pavojus, žymėjimo dėl slaptažodžio apsaugos suaktyvinimą. Paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos – tai „Google“ informavimas, kad ši paskyra gali būti užgrobta.
-
-      Jei ši politika nustatyta kaip „PasswordProtectionRiskOff“, nesuaktyvinamas joks paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos.
-      Jei ši politika nustatyta kaip „PasswordProtectionRiskOnPasswordReuse“, paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas, kai naudotojas pakartotinai naudoja „Google“ slaptažodį bet kurioje svetainėje, kuri neįtraukta į baltąjį sąrašą.
-      Jei ši politika nustatyta kaip „PasswordProtectionRiskOnPhishingReuse“, paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas, kai naudotojas pakartotinai naudoja „Google“ slaptažodį sukčiavimo svetainėje.
-      Jei ši politika nenustatyta, paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas, kai naudotojas pakartotinai naudoja „Google“ slaptažodį sukčiavimo svetainėje, bet naudotojas gali pakeisti šį nustatymą.</translation>
 <translation id="2418507228189425036">„<ph name="PRODUCT_NAME" />“ neleidžiama išsaugoti naršyklės istorijos ir naudotojams keisti šio nustatymo.
 
       Jei įgalinsite šį nustatymą, naršymo istorija nebus išsaugoma. Be to, nustačius šį nustatymą išjungiamas skirtukų sinchronizavimas.
@@ -922,6 +921,7 @@
 <translation id="3646859102161347133">Nustatyti ekrano didinimo tipą</translation>
 <translation id="3653237928288822292">Numatytojo paieškos teikėjo piktograma</translation>
 <translation id="3660562134618097814">„SAML IdP“ slapukų perkėlimas prisijungiant</translation>
+<translation id="3702647575225525306">„<ph name="POLICY_NAME" />“ (Vienos eilutės laukelis nebenaudojamas ir ateityje bus pašalintas. Pradėkite naudoti toliau pateiktą kelių eilučių teksto laukelį.)</translation>
 <translation id="3709266154059827597">Konfigūruoti plėtinių diegimo juodąjį sąrašą</translation>
 <translation id="3711895659073496551">Laikinai sustabdyti</translation>
 <translation id="3715569262675717862">Autentifikavimas atsižvelgiant į klientų sertifikatus</translation>
@@ -1033,6 +1033,7 @@
       Nurodomi plėtiniai, kurie automatiškai įdiegiami demonstracinės versijos naudotojui (-ai) įrenginiuose mažmeninės prekybos režimu. Šie plėtiniai išsaugomi įrenginyje ir juos galima įdiegti neprisijungus, baigus diegimą.
 
       Kiekviename sąrašo įraše yra žodynas, į kurį turi būti įtrauktas plėtinio ID lauke „extension-id“ (plėtinio ID) ir naujinio URL lauke „update-url“ (naujinio URL).</translation>
+<translation id="3874773863217952418">Įgalinti Paiešką palietus</translation>
 <translation id="3877517141460819966">Integruotas tapatybės nustatymo dviem veiksniais režimas</translation>
 <translation id="388237772682176890">Ši politika nebenaudojama M53 ir pašalinta iš M54, nes nebeteikiamas SPDY/3.1 palaikymas.
 
@@ -1301,6 +1302,11 @@
 
           Šablonų pavyzdžių pateikiama apsilankius adresu https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Atidaryti URL sąrašą</translation>
+<translation id="4680936297850947973">Nebenaudojama M68. Naudokite numatytąjį iššokančiųjų langų nustatymą.
+
+      Visas paaiškinimas pateiktas adresu https://www.chromestatus.com/features/5675755719622656.
+      Jei ši politika įgalinta, svetainėms bus leidžiama vienu metu naršyti ir atidaryti naujus langus / skirtukus.
+      Jei ši politika išjungta arba nenustatyta, svetainėms nebus leidžiama vienu metu naršyti ir atidaryti naujų langų / skirtukų.</translation>
 <translation id="4680961954980851756">Įgalinti automatinį pildymą</translation>
 <translation id="4722122254122249791">Įgalinti konkrečių šaltinių svetainių atskyrimą</translation>
 <translation id="4722399051042571387">Jei ši politika nustatyta į „false“, naudotojai negalės nustatyti PIN kodų, kurie yra nesaugūs ir lengvai atspėjami.
@@ -1589,7 +1595,6 @@
 
       Atminkite, kad jei platformoje palaikomi politikos pranešimai, atnaujinimo delsa bus nustatyta į 24 val. (bus nepaisoma visų numatytųjų nustatymų ir šios politikos vertės), nes tikimasi, kad politikos pranešimai automatiškai suaktyvins atnaujinimą kaskart, kai politika bus pakeista, todėl nereikės dažniau atnaujinti.</translation>
 <translation id="5530347722229944744">Blokuoti potencialiai pavojingus atsisiuntimus</translation>
-<translation id="5530586312297447592">Paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas pakartotinai naudojant slaptažodį sukčiavimo puslapyje</translation>
 <translation id="5535973522252703021">„Kerberos“ nukreipimo serverio baltasis sąrašas</translation>
 <translation id="555077880566103058">Leisti visoms svetainėms automatiškai paleisti papildinį „<ph name="FLASH_PLUGIN_NAME" />“</translation>
 <translation id="5559079916187891399">Ši politika neturi įtakos „Android“ programoms.</translation>
@@ -1963,7 +1968,6 @@
 
           Šios politikos URL šablonai negali būti nesuderinami su tais, kurie sukonfigūruoti naudojant „WebUsbAskForUrls“. Nenurodyta, kuri iš dviejų politikų turi pirmenybę, jei URL atitinka jas abi.</translation>
 <translation id="6689792153960219308">Aparatinės įrangos būsenos ataskaitos pateikimas</translation>
-<translation id="6698071416141001300">Paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas pakartotinai naudojant slaptažodį</translation>
 <translation id="6699880231565102694">Įgalinti nuotolinės prieigos prieglobų autentifikavimą dviem veiksniais</translation>
 <translation id="6724842112053619797">Jei įgalinsite šį nustatymą, saugomą „<ph name="PRODUCT_NAME" />“ profiliuose, pvz., žymėse, automatinio pildymo duomenyse, slaptažodžiuose ir kt., išsaugoti nustatymai taip pat bus įrašyti į failą, saugomą tarptinklinio ryšio naudotojo profilio aplanke arba administratoriaus nurodytoje vietoje pagal „<ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />“ politiką. Sinchronizavimas debesyje automatiškai išjungiamas, kai įgalinama ši politika.
 

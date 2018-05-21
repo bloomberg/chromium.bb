@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">Wi-Fi je izklopljen.</translation>
 <translation id="1864454756846565995">Naprava USB-C (vrata zadaj)</translation>
 <translation id="1882897271359938046">Zrcaljenje na <ph name="DISPLAY_NAME" /></translation>
+<translation id="1885785240814121742">Odklepanje s prstnim odtisom</translation>
 <translation id="1919743966458266018">Bližnjica za odpiranje upravitelja opravil je spremenjena. Uporabite <ph name="NEW_SHORTCUT" /> namesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Samodejni kliki</translation>
 <translation id="1928739107511554905">Če želite prejeti posodobitev, uporabite zaslon na dotik, da znova zaženete Chromebook s priklopljeno tipkovnico.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">Zaklepanje tipk</translation>
 <translation id="2509468283778169019">Tipka CAPS LOCK je vklopljena</translation>
 <translation id="2532589005999780174">Visokokontrastni način</translation>
+<translation id="2575685495496069081">Prijava z več računi je onemogočena</translation>
 <translation id="2597972630681408282">Nočna svetloba: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Kartica SIM je zaklenjena</translation>
 <translation id="2653659639078652383">Pošlji</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">Zajem območja</translation>
 <translation id="371370241367527062">Sprednji mikrofon</translation>
 <translation id="3771549900096082774">Visokokontrastni način</translation>
+<translation id="3773700760453577392">Skrbnik je prepovedal prijavo z več računi za <ph name="USER_EMAIL" />. Če želite nadaljevati, morajo biti odjavljeni vsi uporabniki.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Zakleni</translation>
 <translation id="3798670284305777884">Zvočnik (vgrajeni)</translation>

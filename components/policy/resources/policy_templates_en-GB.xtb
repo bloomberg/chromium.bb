@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Enable remote attestation for the device</translation>
 <translation id="1062407476771304334">Replace</translation>
 <translation id="1079801999187584280">Disallow usage of the Developer Tools</translation>
-<translation id="109166998561583554">Password protection at-risk account flagging trigger</translation>
 <translation id="1093082332347834239">If this setting is enabled, the remote assistance host will be run in a process with <ph name="UIACCESS_PERMISSION_NAME" /> permissions. This will allow remote users to interact with elevated windows on the local user's desktop.
 
           If this setting is disabled or not configured, the remote assistance host will run in the user's context and remote users cannot interact with elevated windows on the desktop.</translation>
@@ -107,7 +106,6 @@
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" /> clients):</translation>
-<translation id="1457305643416399820">Password protection at-risk account flagging is off</translation>
 <translation id="1464848559468748897">Control the user behaviour in a multi-profile session on <ph name="PRODUCT_OS_NAME" /> devices.
 
       If this policy is set to 'Multi-ProfileUserBehaviourUnrestricted', the user can be either the primary or secondary user in a multi-profile session.
@@ -329,6 +327,13 @@
 <translation id="2082205219176343977">Configure minimum allowed Chrome version for the device.</translation>
 <translation id="209586405398070749">Stable channel</translation>
 <translation id="2098658257603918882">Enable reporting of usage and crash-related data</translation>
+<translation id="2111016292707172233">Enables the availability of Tap to Search in <ph name="PRODUCT_NAME" />'s content view.
+
+      If you enable this setting, Tap to Search will be available to the user and they can choose to turn the feature on or off.
+
+      If you disable this setting, Tap to Search will be disabled completely.
+
+      If this policy is left not set, it is equivalent to being enabled, see description above.</translation>
 <translation id="2113068765175018713">Limit device uptime by automatically rebooting</translation>
 <translation id="2127599828444728326">Allow notifications on these sites</translation>
 <translation id="2131902621292742709">Screen dim delay when running on battery power</translation>
@@ -481,12 +486,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2386362615870139244">Allow screen wake locks</translation>
 <translation id="2411817661175306360">Password protection warning is off</translation>
 <translation id="2411919772666155530">Block notifications from these sites</translation>
-<translation id="2415979855753196119">Allows you to control the triggering of password protection at-risk account flagging. Password protection at-risk account flagging means informing Google that this account is at risk of being hijacked.
-
-      If this policy is set to 'PasswordProtectionRiskOff', no password protection at-risk account flagging will be triggered.
-      If this policy is set to 'PasswordProtectionRiskOnPasswordReuse', password protection at-risk account flagging will be triggered when the user reuses their Google password on a non-whitelisted site.
-      If this policy is set to 'PasswordProtectionRiskOnPhishingReuse', password protection at-risk account flagging will be triggered when the user reuses their Google password on a phishing site.
-      If this policy is left unset, password protection at-risk account flagging will be triggered when the user reuses their Google password on a phishing site, but the user will be able to change this setting.</translation>
 <translation id="2418507228189425036">Disables saving browser history in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
 
       If this setting is enabled, browsing history is not saved. This setting also disables tab syncing.
@@ -922,6 +921,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3646859102161347133">Set screen magnifier type</translation>
 <translation id="3653237928288822292">Default search provider icon</translation>
 <translation id="3660562134618097814">Transfer SAML IdP cookies during login</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (The single-line field is deprecated and will be removed in the future. Please start using the multi-line text box below.)</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="3711895659073496551">Suspend</translation>
 <translation id="3715569262675717862">Authentication based on client certificates</translation>
@@ -1033,6 +1033,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Lists extensions that are automatically installed for the Demo user, for devices in retail mode. These extensions are saved in the device and can be installed while offline, after the installation.
 
       Each list entry contains a dictionary that must include the extension ID in the 'extension-id' field, and its update URL in the 'update-url' field.</translation>
+<translation id="3874773863217952418">Enable Tap to Search</translation>
 <translation id="3877517141460819966">Integrated second factor authentication mode</translation>
 <translation id="388237772682176890">This policy is deprecated in M53 and removed in M54, because SPDY/3.1 support is removed.
 
@@ -1301,6 +1302,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           For example patterns see https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Open a list of URLs</translation>
+<translation id="4680936297850947973">Deprecated in M68. Use DefaultPopupsSetting instead.
+
+      For a full explanation, see https://www.chromestatus.com/features/5675755719622656.
+      If this policy is enabled, sites will be allowed to simultaneously navigate and open new windows/tabs.
+      If this policy is disabled or not set, sites will be disallowed from simultaneously navigating and opening a new window/tab.</translation>
 <translation id="4680961954980851756">Enable AutoFill</translation>
 <translation id="4722122254122249791">Enable Site Isolation for specified origins</translation>
 <translation id="4722399051042571387">If false, users will be unable to set PINs which are weak and easy to guess.
@@ -1590,7 +1596,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       Note that if the platform supports policy notifications, the refresh delay will be set to 24 hours (ignoring all defaults and the value of this policy) because it is expected that policy notifications will force a refresh automatically whenever policy changes, making more frequent refreshes unnecessary.</translation>
 <translation id="5530347722229944744">Block potentially dangerous downloads</translation>
-<translation id="5530586312297447592">Password protection at-risk account flagging is triggered by password reuse on phishing page</translation>
 <translation id="5535973522252703021">Kerberos delegation server whitelist</translation>
 <translation id="555077880566103058">Allow all sites to automatically run the <ph name="FLASH_PLUGIN_NAME" /> plug-in</translation>
 <translation id="5559079916187891399">This policy has no effect on Android apps.</translation>
@@ -1961,7 +1966,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           URL patterns in this policy should not clash with ones configured via WebUsbAskForUrls. It is unspecified which of the two policies takes precedence if a URL matches with both.</translation>
 <translation id="6689792153960219308">Report hardware status</translation>
-<translation id="6698071416141001300">Password protection at-risk account flagging is triggered by password reuse</translation>
 <translation id="6699880231565102694">Enable two-factor authentication for remote access hosts</translation>
 <translation id="6724842112053619797">If you enable this setting, the settings stored in <ph name="PRODUCT_NAME" /> profiles like bookmarks, auto-fill data, passwords, etc. will also be written to a file stored in the roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> policy. Enabling this policy disables cloud sync.
 

@@ -60,6 +60,7 @@
 <translation id="1506061864768559482">Hakukone</translation>
 <translation id="1513352483775369820">Kirjanmerkit ja verkkohistoria</translation>
 <translation id="1513858653616922153">Poista salasana</translation>
+<translation id="1516229014686355813">Napauttamalla hakeminen lähettää valitun sanan ja nykyisen sivun Google Haulle hakukontekstina. Voit poistaa ominaisuuden käytöstä <ph name="BEGIN_LINK" />asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="1539064842193522527">Linkki avattu Chromessa</translation>
 <translation id="1549000191223877751">Siirrä toiseen ikkunaan</translation>
 <translation id="1553358976309200471">Päivitä Chrome</translation>
@@ -314,6 +315,9 @@
 <translation id="4002066346123236978">Nimi</translation>
 <translation id="4042870126885713738">Näytä ehdotuksia, jos verkko-osoitetta ei tunnisteta tai yhteyttä ei voi muodostaa.</translation>
 <translation id="4046123991198612571">Seuraava kappale</translation>
+<translation id="4048707525896921369">Lue lisätietoja verkkosivujen aiheista poistumatta sivulta. Napauttamalla hakeminen lähettää sanan ja sen asiayhteyden Google Hakuun ja palauttaa määritelmiä, kuvia, hakutuloksia ja muita tietoja.
+
+Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua liu'uttamalla paneeli yläasentoon ja napauttamalla hakukenttää.</translation>
 <translation id="4056223980640387499">Seepia</translation>
 <translation id="4062305924942672200">Oikeudelliset tiedot</translation>
 <translation id="4084682180776658562">Kirjanmerkki</translation>

@@ -60,6 +60,7 @@
 <translation id="1506061864768559482">Поисковая система</translation>
 <translation id="1513352483775369820">Закладки и история поиска</translation>
 <translation id="1513858653616922153">Удалить пароль</translation>
+<translation id="1516229014686355813">Быстрый поиск отправляет в Google выбранное слово, а также – в качестве контекста – текущую страницу. Отключить эту функцию можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
 <translation id="1539064842193522527">Ссылка открыта в Chrome</translation>
 <translation id="1549000191223877751">Перейти к другому окну</translation>
 <translation id="1553358976309200471">Обновить Chrome</translation>
@@ -314,6 +315,9 @@
 <translation id="4002066346123236978">Название</translation>
 <translation id="4042870126885713738">Предлагать альтернативы, если веб-адрес недоступен или с ним не удается установить соединение</translation>
 <translation id="4046123991198612571">Следующий трек</translation>
+<translation id="4048707525896921369">Ищите картинки, определения и другую информацию, не покидая выбранную страницу. Просто выберите слово, и оно будет отправлено в Google Поиск вместе с контекстом.
+
+Чтобы задать новый поисковый запрос, нажмите на нужное слово и не отпускайте палец. Чтобы уточнить запрос, прокрутите панель вверх и коснитесь окна поиска.</translation>
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4062305924942672200">Юридическая информация</translation>
 <translation id="4084682180776658562">Закладка</translation>
@@ -517,7 +521,7 @@
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5777170031995031090">Укажите, как Google может использовать историю просмотров для персонализации Поиска, Рекламы и других сервисов.</translation>
 <translation id="5779929835642192302">Доступны подходящие варианты</translation>
-<translation id="5793665092639000975">Использовано <ph name="SPACE_USED" /> из <ph name="SPACE_AVAILABLE" /></translation>
+<translation id="5793665092639000975">Использовано: <ph name="SPACE_USED" /> из <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# час назад}one{# час назад}few{# часа назад}many{# часов назад}other{# часа назад}}</translation>
 <translation id="5817918615728894473">Подключить</translation>

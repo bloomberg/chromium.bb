@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Slå på ekstern attestasjon for enheten</translation>
 <translation id="1062407476771304334">Erstatt</translation>
 <translation id="1079801999187584280">Ikke tillat bruk av utviklerverktøy</translation>
-<translation id="109166998561583554">Utløser for rapportering av kontoer der passordbeskyttelsen kan være kompromittert</translation>
 <translation id="1093082332347834239">Hvis denne innstillingen er slått på, kjøres verten for fjernhjelp i en prosess med <ph name="UIACCESS_PERMISSION_NAME" />-tillatelser. Dette tillater at eksterne brukere kommuniserer via uthevede vinduer i på skrivebordet til den lokale brukeren.
 
           Hvis denne innstillingen er slått av eller ikke er angitt, kjøres verten for fjernhjelp i brukerens kontekst. Eksterne brukere kan i så fall ikke kommunisere via uthevede vinduer på skrivebordet.</translation>
@@ -106,7 +105,6 @@
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultJavaScriptSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />-klienter):</translation>
-<translation id="1457305643416399820">Rapportering av kontoer der passordbeskyttelsen kan være kompromittert, er slått av</translation>
 <translation id="1464848559468748897">Kontrollér brukeratferden i flerprofiløkter på <ph name="PRODUCT_OS_NAME" />-enheter.
 
       Hvis denne innstillingen angis til «MultiProfileUserBehaviorUnrestricted», kan brukeren enten være en primær eller sekundær bruker i en flerprofiløkt.
@@ -470,12 +468,6 @@
 <translation id="2386362615870139244">Tillat låser for skjermaktivering</translation>
 <translation id="2411817661175306360">Advarsler om passordbeskyttelse er slått av</translation>
 <translation id="2411919772666155530">Blokkér varsler på disse nettstedene</translation>
-<translation id="2415979855753196119">Lar deg styre hva som utløser rapportering av kontoer der passordbeskyttelsen kan være kompromittert, som innebærer at Google informeres om at denne kontoen står i fare for å bli kapret.
-
-      Hvis denne regelen er angitt som «PasswordProtectionRiskOff», blir det ikke utløst noen rapportering av kontoer der passordbeskyttelsen kan være kompromittert.
-      Hvis denne regelen er angitt som «PasswordProtectionRiskOnPasswordReuse», blir det utløst rapportering av kontoer der passordbeskyttelsen kan være kompromittert, når brukerne bruker Google-passord om igjen på nettsteder som ikke er på godkjenningslisten.
-      Hvis denne regelen er angitt som «PasswordProtectionRiskOnPhishingReuse», blir det utløst rapportering av kontoer der passordbeskyttelsen kan være kompromittert, når brukerne bruker Google-passord om igjen på nettsteder som driver med nettfisking.
-      Hvis denne regelen ikke er angitt, blir det utløst rapportering av kontoer der passordbeskyttelsen kan være kompromittert, når brukerne bruker Google-passord om igjen på nettsteder som driver med nettfisking, men brukerne kan endre denne innstillingen.</translation>
 <translation id="2418507228189425036">Slår av lagringen av nettleserloggen i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
 
       Hvis denne innstillingen er slått på, lagres ikke nettleserloggen, og fanesynkronisering blir slått av.
@@ -1550,7 +1542,6 @@
 
       Merk: Hvis plattformen støtter varsler om brudd på reglene, angis forsinkelsen for ny innlasting til 24 timer (dette ignorerer alle standarder og verdien denne regelen er satt til), fordi det forventes at varsler om brudd på reglene fremtvinger ny innlasting automatisk når regelen endres. Dette gjør at det ikke er nødvendig med hyppige nye innlastinger.</translation>
 <translation id="5530347722229944744">Blokkér potensielt farlige nedlastinger</translation>
-<translation id="5530586312297447592">Rapportering av kontoer der passordbeskyttelsen kan være kompromittert, utløses ved gjenbruk av passord på nettfiskingssider</translation>
 <translation id="5535973522252703021">Godkjenningsliste for delegasjonstjener for Kerberos</translation>
 <translation id="555077880566103058">Tillat at <ph name="FLASH_PLUGIN_NAME" />-programtillegget kan kjøres automatisk på alle nettsteder</translation>
 <translation id="5559079916187891399">Denne regelen har ingen innvirkning på Android-apper.</translation>
@@ -1925,7 +1916,6 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
           Nettadressemønstre i denne regelen må ikke kollidere med de som er konfigurert via WebUsbAskForUrls. Det er ikke spesifisert hvilken av reglene som har prioritet hvis en nettadresse samsvarer med begge.</translation>
 <translation id="6689792153960219308">Rapportér maskinvarestatus</translation>
-<translation id="6698071416141001300">Rapportering av kontoer der passordbeskyttelsen kan være kompromittert, utløses ved gjenbruk av passord</translation>
 <translation id="6699880231565102694">Aktiver to-delt autentisering for verter med ekstern adgang</translation>
 <translation id="6724842112053619797">Hvis du slår på denne innstillingen, blir innstillingene som er lagret i <ph name="PRODUCT_NAME" />-profiler (for eksempel bokmerker, autofylldata, passord også videre), også skrevet til en fil som lagres i mappen for roaming-brukerprofilen, eller på et sted som bestemmes av administratoren via regelen <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Når du slår på denne regelen, deaktiveres skysynkronisering.
 

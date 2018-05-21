@@ -410,7 +410,6 @@
 <translation id="1611584202130317952">تمت مقاطعة سير إدارة الحسابات. يُرجى المحاولة مرة أخرى أو الاتصال بمالك أو مشرف الجهاز.</translation>
 <translation id="1611649489706141841">للأمام</translation>
 <translation id="1611704746353331382">‏تصدير الإشارات المرجعية إلى ملف HTML...</translation>
-<translation id="1612129875274679969">تشغيل هذا الجهاز في وضع الكشك دائمًا.</translation>
 <translation id="161460670679785907">يتعذَّر رصد هاتفك.</translation>
 <translation id="1616206807336925449">لا تتطلب هذه الإضافة أذونات خاصة.</translation>
 <translation id="1616298854599875024">تعذَّر استيراد الإضافة "<ph name="IMPORT_NAME" />" لأنها ليست وحدة مشتركة.</translation>
@@ -793,7 +792,6 @@
 <translation id="221872881068107022">عكس التمرير</translation>
 <translation id="2220529011494928058">الإبلاغ عن مشكلة</translation>
 <translation id="2220572644011485463">رقم التعريف الشخصي أو كلمة المرور</translation>
-<translation id="2222641695352322289">الوسيلة الوحيدة للتراجع عن هذا هي إعادة تثبيت <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="2224444042887712269">ينتمي هذا الإعداد إلى <ph name="OWNER_EMAIL" />.</translation>
 <translation id="2224551243087462610">تعديل اسم المجلد</translation>
 <translation id="2226449515541314767">‏تم حظر هذا الموقع من التحكم تحكمًا كاملاً في أجهزة MIDI.</translation>
@@ -1169,7 +1167,6 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2783298271312924866">تم التنزيل</translation>
 <translation id="2783321960289401138">جارٍ إنشاء اختصار...</translation>
-<translation id="2783661497142353826">إدارة تطبيقات الكشك</translation>
 <translation id="2783829359200813069">اختيار أنواع التشفير</translation>
 <translation id="2784407158394623927">جارٍ تفعيل خدمة بيانات الجوال.</translation>
 <translation id="2785873697295365461">أدوات وصف الملفات</translation>
@@ -1322,7 +1319,6 @@
 <translation id="3015992588037997514">‏هل يظهر هذا الرمز على شاشة Chromebox؟</translation>
 <translation id="3016641847947582299">تم تحديث المُكوّن</translation>
 <translation id="3016780570757425217">معرفة موقعك</translation>
-<translation id="302014277942214887">‏أدخل معرف التطبيق أو عنوان URL للسوق الإلكتروني.</translation>
 <translation id="3020183492814296499">الاختصارات</translation>
 <translation id="3020990233660977256">الرقم التسلسلي: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021678814754966447">عرض م&amp;صدر الإطار</translation>
@@ -1978,7 +1974,6 @@
 <translation id="4034042927394659004">تقليل سطوع المفاتيح</translation>
 <translation id="4034824040120875894">الطابعة</translation>
 <translation id="4035758313003622889">مدير الم&amp;هام</translation>
-<translation id="4036758022112812315">‏يمكنك تمييز ما تريد سماعه ثم الضغط على زر "البحث + S"، أو الضغط مع الاستمرار على زر "البحث" ثم النقر أو السحب لاختيار المحتوى.</translation>
 <translation id="4037084878352560732">حصان</translation>
 <translation id="4037889604535939429">تعديل الشخص</translation>
 <translation id="4042264909745389898">‏بنود نظام التشغيل Google Chrome</translation>
@@ -3212,7 +3207,6 @@
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{لضمان مواصلة تصفّح الويب، يُرجى الطلب من المُشرف إزالة هذا التطبيق.}zero{لضمان مواصلة تصفّح الويب، يُرجى الطلب من المُشرف إزالة هذه التطبيقات.}two{لضمان مواصلة تصفّح الويب، يُرجى الطلب من المُشرف إزالة هذين التطبيقين.}few{لضمان مواصلة تصفّح الويب، يُرجى الطلب من المُشرف إزالة هذه التطبيقات.}many{لضمان مواصلة تصفّح الويب، يُرجى الطلب من المُشرف إزالة هذه التطبيقات.}other{لضمان مواصلة تصفّح الويب، يُرجى الطلب من المُشرف إزالة هذه التطبيقات.}}</translation>
 <translation id="5993332328670040093">لن يتم قياس استخدام البيانات بعد ذلك.</translation>
 <translation id="6002458620803359783">الأصوات المُفضَّلة</translation>
-<translation id="600424552813877586">التطبيق غير صالح.</translation>
 <translation id="6005695835120147974">موجّه الوسائط</translation>
 <translation id="6006484371116297560">كلاسيكي</translation>
 <translation id="6007237601604674381">تعذّر النقل. <ph name="ERROR_MESSAGE" /></translation>
@@ -3497,7 +3491,6 @@
           <ph name="TIME" /></translation>
 <translation id="6431347207794742960">سيعمل <ph name="PRODUCT_NAME" /> على إعداد التحديثات التلقائية لجميع مستخدمي هذا الكمبيوتر.</translation>
 <translation id="6434309073475700221">إلغاء</translation>
-<translation id="6435285122322546452">إدارة تطبيقات الكشك...</translation>
 <translation id="6436164536244065364">عرض في السوق الإلكتروني</translation>
 <translation id="6438234780621650381">إعادة ضبط الإعدادات</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> - تشغيل الصوت</translation>
@@ -4551,7 +4544,6 @@
 <translation id="8037357227543935929">الطلب (تلقائي)</translation>
 <translation id="803771048473350947">ملف</translation>
 <translation id="8038111231936746805">(تلقائي)</translation>
-<translation id="8041535018532787664">‏إضافة تطبيق Kiosk:</translation>
 <translation id="8044899503464538266">بطيء</translation>
 <translation id="8045253504249021590">‏تم إيقاف المزامنة عبر لوحة تحكم Google.</translation>
 <translation id="8045923671629973368">‏إدخال معرّف التطبيق أو عنوان URL للسوق الإلكتروني</translation>

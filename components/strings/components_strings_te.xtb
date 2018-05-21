@@ -263,7 +263,7 @@
 <translation id="2742870351467570537">ఎంచుకున్న అంశాలను తీసివేయండి</translation>
 <translation id="277133753123645258">రవాణా పద్ధతి</translation>
 <translation id="277499241957683684">పరికరం రికార్డ్ లేదు</translation>
-<translation id="2781030394888168909">MacOSని ఎగుమతి చేయి</translation>
+<translation id="2781030394888168909">MacOS ఫార్మాట్‌లో ఎగుమతి చేయి</translation>
 <translation id="2784949926578158345">కనెక్షన్ మళ్ళీ సెట్ చెయ్యబడింది.</translation>
 <translation id="2788784517760473862">ఆమోదించబడిన క్రెడిట్ కార్డ్‌లు</translation>
 <translation id="2794233252405721443">సైట్ బ్లాక్ చేయబడింది</translation>
@@ -546,6 +546,7 @@
 <translation id="4759118997339041434">చెల్లింపు స్వీయపూరణ నిలిపివేయబడింది</translation>
 <translation id="4764776831041365478"><ph name="URL" /> వద్ద వెబ్‌పేజీ తాత్కాలికంగా తెరుచుకోవటం లేదు లేదా అది క్రొత్త వెబ్ చిరునామాకు శాశ్వతంగా తరలించబడి ఉండవచ్చు.</translation>
 <translation id="4771973620359291008">తెలియని లోపం ఒకటి ఏర్పడింది.</translation>
+<translation id="4785689107224900852">ఈ టాబ్‌కు మారండి</translation>
 <translation id="4792143361752574037">సెషన్ ఫైల్‌లను యాక్సెస్ చేస్తున్నప్పుడు సమస్య ఏర్పడింది. ప్రస్తుతానికి డిస్క్‌లో సేవ్ చేయడం నిలిపివేయబడింది. దయచేసి మళ్లీ ప్రయత్నించడం కోసం పేజీని తిరిగి లోడ్ చేయండి.</translation>
 <translation id="4800132727771399293">మీ గడువు ముగింపు తేదీ మరియు CVCని తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>

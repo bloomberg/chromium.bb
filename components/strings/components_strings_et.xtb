@@ -20,7 +20,7 @@
 <translation id="1110994991967754504">Valige luba üksuse <ph name="PERMISSION_NAME" /> jaoks</translation>
 <translation id="1111153019813902504">Hiljuti kasutatud järjehoidjad</translation>
 <translation id="1113869188872983271">&amp;Võta korrastamine tagasi</translation>
-<translation id="1125573121925420732">Sel ajal kui veebisaidid värskendavad turvafunktsioone, võivad sageli ilmuda hoiatused. Olukord peaks varsti lahenema.</translation>
+<translation id="1125573121925420732">Sel ajal kui veebisaidid värskendavad turvafunktsioone, võite sageli hoiatusi näha. See olukord peaks varsti lahenema.</translation>
 <translation id="1126551341858583091">Kohaliku salvestusruumi maht on <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Reegli vahemälu töötab probleemideta</translation>
 <translation id="1150979032973867961">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, arvuti operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
@@ -546,6 +546,7 @@
 <translation id="4759118997339041434">Makse automaatne täitmine on keelatud</translation>
 <translation id="4764776831041365478">Veebileht aadressil <ph name="URL" /> võib olla ajutiselt maas või jäädavalt uuele veebiaadressile teisaldatud.</translation>
 <translation id="4771973620359291008">Tekkis tundmatu viga.</translation>
+<translation id="4785689107224900852">Lülitage sellele vahelehele</translation>
 <translation id="4792143361752574037">Seansi failidele juurdepääsemisel ilmnes probleem. Kettale salvestamine on praegu keelatud. Veel kord proovimiseks laadige leht uuesti.</translation>
 <translation id="4800132727771399293">Kontrollige aegumiskuupäeva ja CVC-d ning proovige uuesti</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>

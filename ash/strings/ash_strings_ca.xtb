@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">La Wi-Fi està desactivada.</translation>
 <translation id="1864454756846565995">Dispositiu USB-C (port posterior)</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME" /></translation>
+<translation id="1885785240814121742">Desbloqueja amb l'empremta digital</translation>
 <translation id="1919743966458266018">La drecera per obrir el gestor de tasques ha canviat. Utilitzeu <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clics automàtics</translation>
 <translation id="1928739107511554905">Per obtenir l'actualització, utilitza la pantalla tàctil per reiniciar Chromebook amb el teclat connectat.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">Tecles permanents</translation>
 <translation id="2509468283778169019">BLOQ MAJ està activat.</translation>
 <translation id="2532589005999780174">Mode d'alt contrast</translation>
+<translation id="2575685495496069081">L'inici de sessió múltiple s'ha desactivat</translation>
 <translation id="2597972630681408282">Llum nocturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La targeta SIM està bloquejada</translation>
 <translation id="2653659639078652383">Envia</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">Captura una part</translation>
 <translation id="371370241367527062">Micròfon frontal</translation>
 <translation id="3771549900096082774">Mode d'alt contrast</translation>
+<translation id="3773700760453577392">Un administrador ha desactivat l'inici de sessió múltiple per a <ph name="USER_EMAIL" />. Tots els usuaris han de tancar la sessió per continuar.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloqueja</translation>
 <translation id="3798670284305777884">Altaveu (intern)</translation>

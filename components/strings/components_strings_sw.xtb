@@ -20,7 +20,7 @@
 <translation id="1110994991967754504">Chagua ruhusa ya <ph name="PERMISSION_NAME" /></translation>
 <translation id="1111153019813902504">Alamisho za hivi majuzi</translation>
 <translation id="1113869188872983271">Tendua kupanga upya</translation>
-<translation id="1125573121925420732">Huenda onyo zikawa za kawaida wakati tovuti zinasasisha usalama wake. Hali hii itaboreshwa hivi karibuni.</translation>
+<translation id="1125573121925420732">Huenda onyo zikawa nyingi wakati tovuti zinasasisha usalama. Hali hii itaboreshwa hivi karibuni.</translation>
 <translation id="1126551341858583091">Ukubwa kwenye nafasi ya hifadhi ya ndani ya kifaa ni <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Akiba ya sera ni SAWA</translation>
 <translation id="1150979032973867961">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama hakiaminiwi na mfumo wa uendeshaji wa kompyuta yako. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
@@ -511,7 +511,7 @@
 <translation id="4415426530740016218">Anwani ya Mahali pa Kuchukulia Bidhaa</translation>
 <translation id="4424024547088906515">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama hakiaminiwi na Chrome. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> haikukubali cheti chako cha kuingia katika akaunti, au huenda hukutoa cheti.</translation>
-<translation id="4434045419905280838">Madirisha ibukizi na kuelekezwa kwingine</translation>
+<translation id="4434045419905280838">Madirisha ibukizi/kuelekeza kwingine</translation>
 <translation id="443673843213245140">Matumizi ya proksi yamelemazwa lakini usanidi wa proksi wazi umebainishwa.</translation>
 <translation id="445100540951337728">Kadi za malipo zinazokubaliwa</translation>
 <translation id="4506176782989081258">Hitilafu ya uthibitishaji: <ph name="VALIDATION_ERROR" /></translation>
@@ -546,6 +546,7 @@
 <translation id="4759118997339041434">Kujaza maelezo ya kadi ya mikopo kiotomatiki kumezimwa</translation>
 <translation id="4764776831041365478">Ukurasa wa wavuti ulio <ph name="URL" /> unaweza kuwa haupatikani kwa muda au unaweza kuwa umehamishwa kabisa hadi anwani mpya ya wavuti.</translation>
 <translation id="4771973620359291008">Hitilafu isiyojulikana imetokea.</translation>
+<translation id="4785689107224900852">Badili utumie kichupo hiki</translation>
 <translation id="4792143361752574037">Hitilafu imetokea wakati wa kufikia faili za kipindi. Kuhifadhia kwenye diski kwa sasa kumezimwa. Tafadhali pakia ukurasa upya na ujaribu tena.</translation>
 <translation id="4800132727771399293">Angalia tarehe yako ya kuisha muda na CVC na ujaribu tena</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>

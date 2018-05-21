@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Mengaktifkan pengesahan jarak jauh untuk perangkat tersebut</translation>
 <translation id="1062407476771304334">Ganti</translation>
 <translation id="1079801999187584280">Larang penggunaan Developer Tools</translation>
-<translation id="109166998561583554">Pemicu laporan perlindungan sandi pada akun yang berisiko</translation>
 <translation id="1093082332347834239">Jika setelan ini diaktifkan, host bantuan jarak jauh akan dijalankan dalam proses dengan izin <ph name="UIACCESS_PERMISSION_NAME" />.  Hal ini akan memungkinkan pengguna jarak jauh untuk berinteraksi dengan jendela yang berada jauh di desktop pengguna lokal.
 
           Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, host bantuan jarak jauh akan dijalankan dalam konteks pengguna dan pengguna jarak jauh tidak dapat berinteraksi dengan jendela yang berada jauh di desktop.</translation>
@@ -105,7 +104,6 @@
 <translation id="1438739959477268107">Setelan pembuatan kunci default</translation>
 <translation id="1454846751303307294">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menjalankan JavaScript. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultJavaScriptSetting', jika disetel, ataupun dari konfigurasi pribadi pengguna.</translation>
 <translation id="1456822151187621582">Windows (klien <ph name="PRODUCT_OS_NAME" />):</translation>
-<translation id="1457305643416399820">Laporan perlindungan sandi pada akun yang berisiko nonaktif</translation>
 <translation id="1464848559468748897">Mengontrol perilaku pengguna di sesi multi profil di perangkat <ph name="PRODUCT_OS_NAME" />.
 
       Jika kebijakan ini disetel ke 'MultiProfileUserBehaviorUnrestricted', pengguna dapat menjadi pengguna utama atau sekunder di sesi multi profil.
@@ -321,6 +319,13 @@
 <translation id="2082205219176343977">Mengonfigurasi versi minimum Chrome yang diizinkan untuk perangkat.</translation>
 <translation id="209586405398070749">Saluran stabil</translation>
 <translation id="2098658257603918882">Aktifkan laporan data penggunaan dan yang terkait kerusakan</translation>
+<translation id="2111016292707172233">Mengaktifkan ketersediaan Tap untuk Menelusuri di tampilan konten <ph name="PRODUCT_NAME" />.
+
+Jika Anda mengaktifkan setelan ini, Tap untuk Menelusuri akan tersedia untuk pengguna dan mereka dapat memilih untuk mengaktifkan atau menonaktifkannya.
+
+Jika Anda menonaktifkan setelan ini, Tap untuk Menelusuri akan dinonaktifkan sepenuhnya.
+
+Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat deskripsi di atas.</translation>
 <translation id="2113068765175018713">Membatasi waktu operasi perangkat dengan melakukan booting ulang secara otomatis</translation>
 <translation id="2127599828444728326">Izinkan pemberitahuan di situs ini</translation>
 <translation id="2131902621292742709">Penundaan peredupan layar saat menggunakan daya baterai</translation>
@@ -457,12 +462,6 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 <translation id="2386362615870139244">Izinkan penguncian layar saat bangun</translation>
 <translation id="2411817661175306360">Peringatan perlindungan sandi nonaktif</translation>
 <translation id="2411919772666155530">Mencekal pemberitahuan di situs ini</translation>
-<translation id="2415979855753196119">Memungkinkan Anda mengontrol pemicu laporan perlindungan sandi pada akun yang berisiko. Laporan perlindungan sandi pada akun yang berisiko artinya memberi tahu Google bahwa akun ini berisiko dibajak.
-
-      Jika kebijakan ini disetel ke 'PasswordProtectionRiskOff', tidak ada pemicu laporan perlindungan sandi pada akun yang berisiko.
-      Jika kebijakan ini disetel ke 'PasswordProtectionRiskOnPasswordReuse', laporan perlindungan sandi pada akun yang berisiko akan dipicu saat pengguna menggunakan kembali sandi Google di situs yang tidak diizinkan.
-      Jika kebijakan ini disetel ke 'PasswordProtectionRiskOnPhishingReuse', laporan perlindungan sandi pada akun yang berisiko akan dipicu saat pengguna menggunakan kembali sandi Google di situs phishing.
-      Jika kebijakan ini dibiarkan tidak disetel, laporan perlindungan sandi pada akun yang berisiko akan dipicu saat pengguna menggunakan kembali sandi Google di situs phishing, namun pengguna dapat mengubah setelan ini.</translation>
 <translation id="2418507228189425036">Menonaktifkan penyimpanan histori browser di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
 
       Jika setelan ini diaktifkan, histori penjelajahan tidak disimpan. Setelan ini juga menonaktifkan sinkronisasi tab.
@@ -877,6 +876,7 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 <translation id="3646859102161347133">Menyetel jenis lup</translation>
 <translation id="3653237928288822292">Ikon penyedia penelusuran default</translation>
 <translation id="3660562134618097814">Transfer cookie SAML IdP saat proses masuk.</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Kolom 1 baris sudah tidak digunakan lagi dan akan dihapus di masa mendatang. Mulai gunakan kotak teks multibaris di bawah.)</translation>
 <translation id="3709266154059827597">Konfigurasikan daftar hitam pemasangan ekstensi</translation>
 <translation id="3711895659073496551">Tangguhkan</translation>
 <translation id="3715569262675717862">Autentikasi berdasarkan sertifikat klien</translation>
@@ -981,6 +981,7 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
       Mendaftar ekstensi yang dipasang secara otomatis untuk pengguna Demo, untuk perangkat dalam mode ritel. Ekstensi ini disimpan dalam perangkat dan dapat dipasang saat offline, setelah pemasangan.
 
       Setiap entri cantuman berisi kamus yang harus menyertakan ID ekstensi dalam bidang 'extension-id', dan URL pembaruannya dalam bidang 'update-url'.</translation>
+<translation id="3874773863217952418">Aktifkan Tap untuk Menelusuri</translation>
 <translation id="3877517141460819966">Mode autentikasi faktor kedua yang terintegrasi</translation>
 <translation id="388237772682176890">Kebijakan ini sudah tidak digunakan di M53 dan dihapus di M54, karena dukungan SPDY/3.1 telah dihapus.
 
@@ -1237,6 +1238,11 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 
           Untuk melihat contoh pola, buka https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Buka daftar URL</translation>
+<translation id="4680936297850947973">Tidak digunakan lagi di M68. Sebagai gantinya, gunakan DefaultPopupsSetting.
+
+Untuk penjelasan selengkapnya, lihat https://www.chromestatus.com/features/5675755719622656.
+Jika kebijakan ini diaktifkan, situs akan diizinkan untuk menavigasi dan membuka jendela/tab baru secara bersamaan.
+Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat menavigasi dan membuka jendela/tab baru secara bersamaan.</translation>
 <translation id="4680961954980851756">Aktifkan IsiOtomatis</translation>
 <translation id="4722122254122249791">Aktifkan Isolasi Situs untuk asal yang ditetapkan</translation>
 <translation id="4722399051042571387">Jika "false", pengguna tidak dapat menyetel PIN yang lemah dan mudah ditebak.
@@ -1499,7 +1505,6 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 
       Perlu diperhatikan jika platform mendukung pemberitahuan kebijakan, jeda penyegaran akan disetel menjadi 24 jam (dengan mengabaikan semua setelan default dan nilai kebijakan ini) karena pemberitahuan kebijakan diperkirakan akan memaksa penyegaran otomatis setiap kali kebijakan berubah, menghasilkan lebih banyak penyegaran yang tidak diperlukan.</translation>
 <translation id="5530347722229944744">Blokir download yang berpotensi berbahaya</translation>
-<translation id="5530586312297447592">Laporan perlindungan sandi pada akun yang berisiko dipicu oleh penggunaan ulang sandi di halaman phishing</translation>
 <translation id="5535973522252703021">Daftar putih server delegasi Kerberos</translation>
 <translation id="555077880566103058">Izinkan semua situs menjalankan plugin <ph name="FLASH_PLUGIN_NAME" /> secara otomatis</translation>
 <translation id="5559079916187891399">Kebijakan ini tidak memengaruhi aplikasi Android.</translation>
@@ -1856,7 +1861,6 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 
           Pola URL di kebijakan ini tidak boleh bertentangan dengan pola URL yang dikonfigurasi melalui WebUsbAskForUrls. Tidak ditentukan yang mana di antara kedua kebijakan ini yang diprioritaskan jika URL cocok dengan keduanya.</translation>
 <translation id="6689792153960219308">Melaporkan status hardware</translation>
-<translation id="6698071416141001300">Laporan perlindungan sandi pada akun yang berisiko dipicu oleh penggunaan ulang sandi</translation>
 <translation id="6699880231565102694">Mengaktifkan autentikasi dua faktor untuk hosting akses jarak jauh</translation>
 <translation id="6724842112053619797">Jika Anda mengaktifkan setelan ini, setelan yang disimpan di profil <ph name="PRODUCT_NAME" /> seperti bookmark, data IsiOtomatis, sandi, dan informasi lainnya juga akan ditulis ke file yang disimpan di folder profil pengguna Roaming atau lokasi yang ditentukan oleh Administrator melalui kebijakan <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Mengaktifkan kebijakan ini akan menonaktifkan sinkronisasi cloud.
 

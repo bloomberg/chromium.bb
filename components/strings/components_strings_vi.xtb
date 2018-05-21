@@ -20,7 +20,7 @@
 <translation id="1110994991967754504">Chọn quyền cho <ph name="PERMISSION_NAME" /></translation>
 <translation id="1111153019813902504">Dấu trang gần đây</translation>
 <translation id="1113869188872983271">&amp;Hoàn tác sắp xếp lại</translation>
-<translation id="1125573121925420732">Thông thường sẽ có cảnh báo khi các trang web cập nhật khả năng bảo mật của mình. Chẳng bao lâu nữa, cảnh báo sẽ biến mất.</translation>
+<translation id="1125573121925420732">Cảnh báo hiển thị khi trang web cập nhật bảo mật là điều bình thường. Việc này sẽ sớm được cải tiến.</translation>
 <translation id="1126551341858583091">Kích thước trên bộ nhớ cục bộ là <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Bộ nhớ đệm chính sách OK</translation>
 <translation id="1150979032973867961">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành máy tính của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
@@ -546,6 +546,7 @@
 <translation id="4759118997339041434">Đã tắt tự động điền thanh toán</translation>
 <translation id="4764776831041365478">Trang web tại <ph name="URL" /> có thể tạm thời không hoạt động hay được chuyển vĩnh viễn sang địa chỉ web mới.</translation>
 <translation id="4771973620359291008">Xảy ra lỗi chưa biết.</translation>
+<translation id="4785689107224900852">Chuyển sang tab này</translation>
 <translation id="4792143361752574037">Đã xảy ra sự cố khi truy cập vào các tệp phiên. Tính năng lưu vào ổ đĩa hiện bị vô hiệu hóa. Vui lòng tải lại trang để thử lại.</translation>
 <translation id="4800132727771399293">Kiểm tra ngày hết hạn và CVC của bạn rồi thử lại</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>

@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Omogući daljinsku ovjeru za uređaj</translation>
 <translation id="1062407476771304334">Zamijeni</translation>
 <translation id="1079801999187584280">Onemogući upotrebu Alata za razvojne programere</translation>
-<translation id="109166998561583554">Okidač koji upravlja time na koji način usluga zaštite zaporkom označava račun kao ugrožen</translation>
 <translation id="1093082332347834239">Ako se omogući ta postavka, host daljinske pomoći pokrenut će se u procesu s dopuštenjima <ph name="UIACCESS_PERMISSION_NAME" />. To će udaljenim korisnicima omogućiti interakciju s privilegiranim prozorima na računalu lokalnog korisnika.
 
           Ako je ta postavka onemogućena ili nije konfigurirana, host daljinske pomoći pokrenut će se u kontekstu korisnika i udaljeni korisnici neće moći pristupiti privilegiranim prozorima na računalu.</translation>
@@ -105,7 +104,6 @@
 <translation id="1438739959477268107">Zadana postavka za generiranje ključeva</translation>
 <translation id="1454846751303307294">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije kojima nije dopušteno pokretanje JavaScripta. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultJavaScriptSetting", ako je postavljeno, odnosno iz osobne konfiguracije korisnika, ako nije.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" /> klijenti):</translation>
-<translation id="1457305643416399820">Isključeno je označavanje računa čija je zaštita zaporkom ugrožena</translation>
 <translation id="1464848559468748897">Upravlja ponašanjem korisnika u sesiji s više profila na uređajima sa sustavom <ph name="PRODUCT_OS_NAME" />.
 
       Ako se to pravilo postavi na "MultiProfileUserBehaviorUnrestricted", korisnik može biti primarni ili sekundarni korisnik u sesiji s više profila.
@@ -321,6 +319,13 @@
 <translation id="2082205219176343977">Konfiguriraj najmanju dopuštenu verziju Chromea za uređaj.</translation>
 <translation id="209586405398070749">Stabilan kanal</translation>
 <translation id="2098658257603918882">Omogući izvješćivanje o upotrebi i podatke o rušenjima programa</translation>
+<translation id="2111016292707172233">Omogućuje dostupnost značajke Dodirnite za pretraživanje u prikazu sadržaja preglednika <ph name="PRODUCT_NAME" />.
+
+      Ako omogućite tu postavku, korisniku će biti dostupna značajka Dodirnite za pretraživanje i moći će je samostalno uključiti ili isključiti.
+
+      Ako onemogućite tu postavku, značajka Dodirnite za pretraživanje bit će u potpunosti isključena.
+
+      Ako se pravilo ne postavi, to ima jednak učinak kao da se omogući. Pogledajte prethodni opis.</translation>
 <translation id="2113068765175018713">Ograničavanje vremena rada uređaja automatskim ponovnim pokretanjem sustava</translation>
 <translation id="2127599828444728326">Dopuštanje obavijesti na ovim web-lokacijama</translation>
 <translation id="2131902621292742709">Odgoda zatamnjivanja zaslona za vrijeme baterijskog napajanja</translation>
@@ -465,12 +470,6 @@
 <translation id="2386362615870139244">Dopusti blokiranja aktivacije zaslona</translation>
 <translation id="2411817661175306360">Upozorenje o zaštiti zaporkom isključeno je</translation>
 <translation id="2411919772666155530">Blokiranje obavijesti na ovim web-lokacijama</translation>
-<translation id="2415979855753196119">Omogućuje vam da odredite okidač na temelju kojeg će zaštita zaporke označiti račun koji je ugrožen. Označavanjem računa čija je zaštita zaporkom ugrožena Google se informira o mogućoj opasnosti od napada otmičara za taj račun.
-
-      Ako se to pravilo postavi na "PasswordProtectionRiskOff", označavanje računa čija je zaštita zaporkom ugrožena neće se aktivirati.
-      Ako se pravilo postavi na "PasswordProtectionRiskOnPasswordReuse", označavanje računa čija je zaštita zaporkom ugrožena aktivirat će se kada korisnik pokuša ponovo upotrijebiti svoju zaporku za Google na web-lokaciji koja nije dopuštena.
-      Ako se pravilo postavi na "PasswordProtectionRiskOnPhishingReuse", označavanje računa čija je zaštita zaporkom ugrožena aktivirat će se kada korisnik ponovo upotrijebi svoju zaporku za Google na web-lokaciji za krađu identiteta.
-      Ako se to pravilo ne postavi, označavanje računa čija je zaštita zaporkom ugrožena aktivirat će se kada korisnik ponovo upotrijebi svoju zaporku za Google na web-lokaciji za krađu identiteta, ali će korisnik moći promijeniti tu postavku.</translation>
 <translation id="2418507228189425036">Onemogućuje spremanje povijesti preglednika u pregledniku <ph name="PRODUCT_NAME" /> i korisnicima onemogućuje promjenu te postavke.
 
       Ako je postavka omogućena, povijest pregledavanja ne sprema se. Ta postavka onemogućuje i sinkroniziranje kartica.
@@ -887,6 +886,7 @@
 <translation id="3646859102161347133">Postavljanje vrste povećala</translation>
 <translation id="3653237928288822292">Ikona zadanog davatelja usluga pretraživanja</translation>
 <translation id="3660562134618097814">Prenesi kolačiće SAML IdP-a tijekom prijave</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Polje s jednim retkom obustavljeno je i uklonit će se. Počnite upotrebljavati tekstni okvir s više redaka u nastavku.)</translation>
 <translation id="3709266154059827597">Konfiguriraj crnu listu instalacije proširenja</translation>
 <translation id="3711895659073496551">Obustavi</translation>
 <translation id="3715569262675717862">Autentifikacija na temelju korisničkih certifikata</translation>
@@ -990,6 +990,7 @@
       Navodi proširenja koja se automatski instaliraju za korisnike demo verzije, za uređaje u prodajnom načinu. Ta se proširenja spremaju na uređaj i mogu se instalirati izvanmrežno, nakon instalacije.
 
       Svaki unos popisa sadrži rječnik koji mora uključivati ID proširenja u polju "extension-id" i njegov URL za ažuriranje u polju "update-url".</translation>
+<translation id="3874773863217952418">Omogući značajku Dodirnite za pretraživanje</translation>
 <translation id="3877517141460819966">Integrirani način dvostruke autentifikacije</translation>
 <translation id="388237772682176890">To je pravilo obustavljeno u verziji M53 i uklonjeno u verziji M54 jer je uklonjena podrška za SPDY/3.1.
 
@@ -1246,6 +1247,11 @@
 
           Primjere uzoraka pogledajte na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Otvori popis URL-ova</translation>
+<translation id="4680936297850947973">Obustavljeno u verziji M68. Umjesto toga upotrijebite DefaultPopupsSetting.
+
+      Cijelo objašnjenje pročitajte na stranici https://www.chromestatus.com/features/5675755719622656.
+      Ako se to pravilo omogući, web-lokacijama će se omogućiti istovremena navigacija i otvaranje novih prozora ili kartica.
+      Ako se to pravilo onemogući ili se ne postavi, web-lokacijama će se onemogućiti istovremena navigacija i otvaranje novih prozora ili kartica.</translation>
 <translation id="4680961954980851756">Omogući Automatsko popunjavanje</translation>
 <translation id="4722122254122249791">Omogući izolaciju web-lokacije za određene izvore</translation>
 <translation id="4722399051042571387">Ako se postavi na False, korisnici neće moći postavljati PIN-ove koji su slabi ili ih je lako odgonetnuti.
@@ -1514,7 +1520,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       Ako platforma podržava obavijesti o pravilima, odgoda osvježavanja postavit će se na 24 sata (sve zadane postavke i vrijednost ovog pravila zanemarit će se) jer se očekuje da će obavijesti o pravilima automatski nametnuti osvježavanje nakon svake promjene pravila, zbog čega su češća osvježavanja nepotrebna.</translation>
 <translation id="5530347722229944744">Blokiraj potencijalno opasna preuzimanja</translation>
-<translation id="5530586312297447592">Označavanje računa čija je zaštita zaporkom ugrožena aktivira se ponovnom upotrebom zaporke na stranici za krađu identiteta</translation>
 <translation id="5535973522252703021">Bijela lista Kerberos poslužitelja za ovlašćivanje</translation>
 <translation id="555077880566103058">Dopusti svim web-lokacijama pokretanje dodatka <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">To pravilo nema utjecaja na Android aplikacije.</translation>
@@ -1871,7 +1876,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
           Uzorci URL-ova u ovom pravilu ne smiju biti u sukobu s uzorcima konfiguriranim u pravilu "WebUsbBlockedForUrls". Ako za URL postoje podudaranja u oba pravila, nije određeno koje će od njih imati prednost.</translation>
 <translation id="6689792153960219308">Izvješćivanje o statusu hardvera</translation>
-<translation id="6698071416141001300">Označavanje računa čija je zaštita zaporkom ugrožena aktivira se ponovnom upotrebom zaporke</translation>
 <translation id="6699880231565102694">Omogući autentifikaciju s dva čimbenika za hostove daljinskog pristupa</translation>
 <translation id="6724842112053619797">Ako omogućite tu postavku, postavke pohranjene u <ph name="PRODUCT_NAME" /> profilima kao što su oznake, podaci za automatsko popunjavanje, zaporke itd. također će se bilježiti u datoteku pohranjenu u mapu korisničkog profila na Roamingu ili na lokaciju koju je odredio administrator pomoću pravila <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Omogućivanjem tog pravila onemogućuje se sinkronizacija u oblaku.
 

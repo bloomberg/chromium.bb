@@ -10,28 +10,34 @@
 <translation id="1188858454923323853">додатково</translation>
 <translation id="1206619573307042055">область виділення</translation>
 <translation id="1206693055195146388">повзунок</translation>
+<translation id="1211441953136645838">кінцева виноска</translation>
 <translation id="1281252709823657822">діалогове вікно</translation>
+<translation id="1335095011850992622">подяки</translation>
 <translation id="1342835525016946179">стаття</translation>
 <translation id="1359897965706325498">банер</translation>
 <translation id="1589122976691792535">регіон</translation>
 <translation id="1591562245178063882">Цей місяць</translation>
 <translation id="1637811476055996098">Вибрати файли</translation>
+<translation id="1650423536718072820">цитата</translation>
 <translation id="1729654308190250600">Введіть електронну адресу.</translation>
 <translation id="1758486001363313524">Інші...</translation>
 <translation id="1806710327868736751">вікно сповіщення</translation>
 <translation id="1821985195704844674">сітка дерева</translation>
 <translation id="1822429046913737220">д.п./п.п.</translation>
 <translation id="1832974991323546415">відтворити на віддаленому пристрої</translation>
+<translation id="1907737156431278478">приклад</translation>
 <translation id="1921819250265091946">дд</translation>
 <translation id="1930711995431081526">статус</translation>
 <translation id="1938124657309484470">Має бути <ph name="MAXIMUM_DATE_OR_TIME" /> або раніша дата.</translation>
 <translation id="1993104285338243655">Змінено на дзеркалювання</translation>
 <translation id="2060505056492490888">Символ "<ph name="DOT" />" у "<ph name="INVALIDDOMAIN" />" використано неправильно.</translation>
 <translation id="2148716181193084225">Сьогодні</translation>
+<translation id="2158401438286456825">список сторінок</translation>
 <translation id="2226276347425096477">Скоротіть текст до такої кількості символів або менше: <ph name="MAX_CHARACTERS" /> (наразі використано символів: <ph name="CURRENT_LENGTH" />).</translation>
 <translation id="2247351761944213033">Тиждень <ph name="WEEKNUMBER" />, <ph name="YEAR" /> р.</translation>
 <translation id="2277199496770840904">Композиція <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">прапорець</translation>
+<translation id="2311842470354187719">розрив сторінки</translation>
 <translation id="2335594187091864976">засіб вибору дати й часу</translation>
 <translation id="248395913932153421">День</translation>
 <translation id="2507943997699731163">Заповніть це поле.</translation>
@@ -40,6 +46,7 @@
 <translation id="2572483411312390101">відтворити</translation>
 <translation id="2613802280814924224">Введіть дійсне значення. Найближче дійсне значення: <ph name="VALID_VALUE" />.</translation>
 <translation id="2653659639078652383">Надіслати</translation>
+<translation id="2657045182931379222">графічний об’єкт</translation>
 <translation id="2674318244760992338">нижній колонтитул</translation>
 <translation id="2709516037105925701">Автозаповнення</translation>
 <translation id="2723001399770238859">аудіо</translation>
@@ -70,30 +77,40 @@
 <translation id="3822383571486410024">У тексті має бути на менше <ph name="MIN_CHARACTERS" /> символів (ви ввели <ph name="CURRENT_LENGTH" /> символів).</translation>
 <translation id="383465348367842624">Частина перед знаком "<ph name="ATSIGN" />" не може містити символ "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="3846214748874656680">Вийти з повноекранного режиму</translation>
+<translation id="3920932319529768807">висновок</translation>
 <translation id="3924558731517983934">додаток</translation>
+<translation id="3944740393230681990">пролог</translation>
 <translation id="3960700977367013758">смуга прокрутки</translation>
 <translation id="4103419683916926126">Мілісекунди</translation>
 <translation id="4151657705144244502">зображення</translation>
+<translation id="4193965531860883258">передмова</translation>
 <translation id="4201051445878709314">Показати попередній місяць</translation>
 <translation id="421884353938374759">вибір кольору</translation>
 <translation id="4248100235867064564">панель меню</translation>
 <translation id="4254339807215791271">інформація про вміст</translation>
 <translation id="4360991593054037559">Введіть дійсне значення. Два найближчі дійсні значення: <ph name="VALID_VALUE_LOW" /> і <ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4384583879834880242">Запитання</translation>
 <translation id="4413860115965805769">кнопка меню</translation>
+<translation id="4446524499724042288">посилання на глосарій</translation>
 <translation id="4522570452068850558">Деталі</translation>
 <translation id="4597532268155981612">форма</translation>
 <translation id="4661075872484491155">дерево</translation>
 <translation id="4664250907885839816">Частина після знака "<ph name="ATSIGN" />" не може містити символ "<ph name="INVALIDCHARACTER" />".</translation>
+<translation id="4668956016107839909">додаток</translation>
+<translation id="4742539557769756338">обкладинка</translation>
 <translation id="4757246831282535685">панель вкладок</translation>
 <translation id="4763480195061959176">відео</translation>
 <translation id="479989351350248267">пошук</translation>
 <translation id="4812940957355064477">Введіть число.</translation>
+<translation id="4912536737030637138">бібліографічний запис</translation>
 <translation id="4975562563186953947">Вибрано <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Увімкнути звук</translation>
 <translation id="49969490063480558">Введіть частину електронної адреси після знака "<ph name="ATSIGN" />". Електронна адреса "<ph name="INVALIDADDRESS" />" неповна.</translation>
 <translation id="5034860022980953847">індикатор перебігу</translation>
+<translation id="5093189678851173835">епіграф</translation>
 <translation id="5117590920725113268">Показати наступний місяць</translation>
 <translation id="512758898067543763">заголовок рядка</translation>
+<translation id="5143125788380636750">епілог</translation>
 <translation id="5153163864850940242">Це відео відтворюється в режимі "Картинка в картинці"</translation>
 <translation id="5164977714490026579">Значення має бути більшим або дорівнювати <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> Пб</translation>
@@ -107,9 +124,11 @@
 <translation id="5546461542133609677">увімкнути звук</translation>
 <translation id="561939826962581046">час</translation>
 <translation id="5630795885300617244">Двічі торкніться ліворуч або праворуч, щоб пропустити 10 с</translation>
+<translation id="5631759159893697722">автореферат</translation>
 <translation id="5641012560118721995">призупинити відтворення</translation>
 <translation id="5643186887447432888">кнопка</translation>
 <translation id="5677946354068040947">більше опцій</translation>
+<translation id="576709008726043716">вступ</translation>
 <translation id="57838592816432529">Вимкнути звук</translation>
 <translation id="5860033963881614850">Вимк.</translation>
 <translation id="588258955323874662">Повноекранний режим</translation>
@@ -120,9 +139,13 @@
 <translation id="6015796118275082299">Рік</translation>
 <translation id="6023896073578205740">вікно списку</translation>
 <translation id="6101327004457443354">увімкнути звукову доріжку</translation>
+<translation id="6150588977291308318">бібліографія</translation>
 <translation id="6164829606128959761">вимірювач</translation>
+<translation id="6166809985690652833">післямова</translation>
+<translation id="6213469881011901533">глосарій</translation>
 <translation id="6398862346408813489">Показати панель вибору місяців</translation>
 <translation id="6404546809543547843">повзунок часу відтворення аудіо</translation>
+<translation id="6453774872122745852">слова подяки</translation>
 <translation id="648732519525291180">засіб вибору часу</translation>
 <translation id="6550675742724504774">Параметри</translation>
 <translation id="658823671542763450">увійти в повноекранний режим</translation>
@@ -135,22 +158,31 @@
 <translation id="6755330956360078551">підказка</translation>
 <translation id="6790428901817661496">Відтворити</translation>
 <translation id="6820355525329141109">Не вдалося завантажити плагін.</translation>
+<translation id="6820615603175220800">посилання на бібліографію</translation>
 <translation id="6843725295806269523">вимкнути звук</translation>
 <translation id="6853785296079745596">сховати приховані субтирти</translation>
 <translation id="6885760532393684712">каталог</translation>
+<translation id="689129560213475294">емблема видавництва</translation>
 <translation id="6934078000481955284">цитата</translation>
 <translation id="6941933287844615239">завантажити медіафайл</translation>
 <translation id="6989848892321993519">У тексті має бути не менше стількох символів: <ph name="MIN_CHARACTERS" />. Наразі ви ввели 1 символ.</translation>
 <translation id="709897737746224366">Виберіть потрібний формат.</translation>
+<translation id="7139483182332611405">передмова</translation>
 <translation id="7223624360433298498">минуло часу</translation>
 <translation id="7263440858009898357">Виберіть елемент зі списку.</translation>
 <translation id="727747134524199931">заголовок стовпця</translation>
+<translation id="7353453495576941748">подяка</translation>
 <translation id="7364796246159120393">Вибрати файл</translation>
 <translation id="739024184232394898">Інші...</translation>
+<translation id="7405738980073107433">кінцеві виноски</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
 <translation id="7491962110804786152">вкладка</translation>
 <translation id="7514365320538308">Завантажити</translation>
+<translation id="7529102961911894712">зворотне посилання</translation>
+<translation id="7647456547678091388">порада</translation>
+<translation id="7661956066982048809">графічний документ</translation>
 <translation id="7673697353781729403">Години</translation>
+<translation id="7681220483256441252">покажчик</translation>
 <translation id="7720026100085573005">залишилось часу</translation>
 <translation id="7740016676195725605">сховати приховані субтитри</translation>
 <translation id="7740050170769002709">Вміст HTML</translation>
@@ -160,24 +192,33 @@
 <translation id="7891486169920085145">розділювач</translation>
 <translation id="795667975304826397">Файл не вибрано</translation>
 <translation id="8053789581856978548">текстове поле пошуку</translation>
+<translation id="8057695513531652401">примітка</translation>
+<translation id="8105797009065549151">посилання на примітку</translation>
 <translation id="8115662671911883373">показати приховані субтитри</translation>
 <translation id="8117451130807776954">Цей тиждень</translation>
 <translation id="819205353528511139">відтворити фільм у повноекранному режимі</translation>
 <translation id="8199524924445686405">рррр</translation>
 <translation id="8284326494547611709">Субтитри</translation>
 <translation id="835897206747267392">Недійсне значення</translation>
+<translation id="8415319359811155763">частина</translation>
 <translation id="8433900881053900389">панель інструментів</translation>
 <translation id="8444882422881193423">файлів: <ph name="NUMBER_OF_FILES" /></translation>
 <translation id="8451268428117625855">Виберіть файл.</translation>
 <translation id="8461852803063341183">перемикач</translation>
+<translation id="8474886197722836894">присвята</translation>
+<translation id="8531739829932800271">перелік описок</translation>
 <translation id="8534579021159131403">Хвилини</translation>
 <translation id="8541249477527128034">елемент керування мультимедіа</translation>
+<translation id="8550857728288566671">графічний символ</translation>
 <translation id="8583702881314752957">список визначень</translation>
 <translation id="8597182159515967513">заголовок</translation>
+<translation id="860475260694818407">зміст</translation>
 <translation id="8613126697340063924">керувати віддаленим відтворенням</translation>
+<translation id="862370744433916922">підзаголовок</translation>
 <translation id="8741316211671074806">Картинка в картинці</translation>
 <translation id="8750798805984357768">Виберіть один із запропонованих варіантів.</translation>
 <translation id="8785498733064193001">розпочати відтворення</translation>
+<translation id="8808573423886751634">розділ</translation>
 <translation id="8845239796550121995">Транслюється на телевізор</translation>
 <translation id="8851136666856101339">головний</translation>
 <translation id="8875657656876809964">Помилка відтворення відео</translation>
@@ -191,6 +232,7 @@
 <translation id="9132465097189459683">Інші...</translation>
 <translation id="9138385573473225930">сповіщення</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, починається <ph name="WEEK_START_DATE" /></translation>
+<translation id="9168329111483466115">виноска</translation>
 <translation id="947831847158436616">клітинка</translation>
 <translation id="966787709310836684">меню</translation>
 </translationbundle>

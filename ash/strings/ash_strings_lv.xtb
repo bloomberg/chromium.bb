@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">Wi-Fi tīkls ir izslēgts.</translation>
 <translation id="1864454756846565995">USB-C ierīce (aizmugurējā pieslēgvieta)</translation>
 <translation id="1882897271359938046">Spoguļo šeit: <ph name="DISPLAY_NAME" /></translation>
+<translation id="1885785240814121742">Atbloķēšana ar pirksta nospiedumu</translation>
 <translation id="1919743966458266018">Tika mainīti īsinājumtaustiņi, ar kuriem var atvērt uzdevumu pārvaldnieku. Lūdzu, turpmāk izmantojiet <ph name="NEW_SHORTCUT" />, nevis <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automātiskie klikšķi</translation>
 <translation id="1928739107511554905">Lai iegūtu atjauninājumu, izmantojiet skārienekrānu, lai ar pievienoto tastatūru restartētu Chromebook datoru.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">Taustiņu ķēde</translation>
 <translation id="2509468283778169019">Funkcija Caps Lock ir ieslēgta</translation>
 <translation id="2532589005999780174">Augsta kontrasta režīms</translation>
+<translation id="2575685495496069081">Vairākkārtēja pierakstīšanās ir atspējota</translation>
 <translation id="2597972630681408282">Nakts režīms: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM karte ir bloķēta.</translation>
 <translation id="2653659639078652383">Iesniegt</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">Uzņemt ekrāna daļas attēlu</translation>
 <translation id="371370241367527062">Priekšējais mikrofons</translation>
 <translation id="3771549900096082774">Augsta kontrasta režīms</translation>
+<translation id="3773700760453577392">Administrators ir aizliedzis lietotājam <ph name="USER_EMAIL" /> vairākkārtēju pierakstīšanos. Lai turpinātu, visiem lietotājiem ir jāizrakstās.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloķēt</translation>
 <translation id="3798670284305777884">Skaļrunis (iebūvētais)</translation>

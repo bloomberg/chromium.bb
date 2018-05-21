@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Remote-Bescheinigung (Remote Attestation) für das Gerät aktivieren</translation>
 <translation id="1062407476771304334">Ersetzen</translation>
 <translation id="1079801999187584280">Nutzung der Entwicklertools nicht zulassen</translation>
-<translation id="109166998561583554">Auslöser für Kontomeldung "Passwortschutz gefährdet"</translation>
 <translation id="1093082332347834239">Ist diese Einstellung aktiviert, läuft der Host für Remote-Unterstützung in einem Prozess mit <ph name="UIACCESS_PERMISSION_NAME" />-Berechtigungen. So kann der Remote-Nutzer mit geöffneten Fenstern auf dem lokalen Desktop arbeiten.
 
           Ist diese Einstellung deaktiviert oder nicht konfiguriert, läuft der Host für Remote-Unterstützung nur im Nutzerbereich. Remote-Nutzer können nicht mit geöffneten Fenstern auf dem Desktop arbeiten.</translation>
@@ -105,7 +104,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1438739959477268107">Standardeinstellung für die Schlüsselgenerierung</translation>
 <translation id="1454846751303307294">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von JavaScript untersagt ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultJavaScriptSetting", falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />-Clients):</translation>
-<translation id="1457305643416399820">Kontomeldung "Passwortschutz gefährdet" ist ausgeschaltet</translation>
 <translation id="1464848559468748897">Steuert das Nutzerverhalten in einer Sitzung mit mehreren Profilen auf Geräten mit <ph name="PRODUCT_OS_NAME" />
 
       Wenn für diese Richtlinie "MultiProfileUserBehaviorUnrestricted" festgelegt ist, kann der Nutzer entweder primärer oder sekundärer Nutzer in einer Sitzung mit mehreren Profilen sein.
@@ -315,6 +313,13 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="2082205219176343977">Konfigurieren Sie die für das Gerät erforderliche Mindestversion von Chrome.</translation>
 <translation id="209586405398070749">Stabiler Kanal</translation>
 <translation id="2098658257603918882">Berichte mit Nutzungs- und Absturzdaten erstellen</translation>
+<translation id="2111016292707172233">Durch diese Richtlinie wird die Verfügbarkeit von "Zum Suchen tippen" in der Inhaltsansicht von <ph name="PRODUCT_NAME" /> aktiviert.
+
+      Wenn Sie diese Einstellung aktivieren, steht dem Nutzer "Zum Suchen tippen" zur Verfügung und er kann die Funktion aktivieren oder deaktivieren.
+
+      Wenn Sie die Einstellung deaktivieren, wird "Zum Suchen tippen" vollständig deaktiviert.
+
+      Wird die Richtlinie nicht konfiguriert, entspricht dies einer Aktivierung, siehe Beschreibung oben.</translation>
 <translation id="2113068765175018713">Betriebsdauer der Geräte durch automatische Neustarts begrenzen</translation>
 <translation id="2127599828444728326">Benachrichtigungen auf diesen Websites zulassen</translation>
 <translation id="2131902621292742709">Verzögerung für die Bildschirmabdunkelung im Akkubetrieb</translation>
@@ -460,12 +465,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="2386362615870139244">Bildschirm-Wakelocks zulassen</translation>
 <translation id="2411817661175306360">Passwortschutzwarnung ist ausgeschaltet</translation>
 <translation id="2411919772666155530">Benachrichtigungen auf diesen Websites blockieren</translation>
-<translation id="2415979855753196119">Mit dieser Richtlinie können Sie die Auslösung der Kontomeldung "Passwortschutz gefährdet" steuern. Durch diese Kontomeldung wird Google über das Risiko informiert, dass dieses Konto gehackt wird.
-
-      Wenn diese Richtlinie auf "PasswordProtectionRiskOff" festgelegt ist, wird die Kontomeldung "Passwortschutz gefährdet" nicht ausgelöst.
-      Wenn diese Richtlinie auf "PasswordProtectionRiskOnPasswordReuse" festgelegt ist, wird die Kontomeldung "Passwortschutz gefährdet" ausgelöst, wenn der Nutzer sein Google-Passwort auf einer Website wiederverwendet, die nicht auf der weißen Liste steht.
-      Wenn diese Richtlinie auf "PasswordProtectionRiskOnPhishingReuse" festgelegt ist, wird die Kontomeldung "Passwortschutz gefährdet" ausgelöst, wenn der Nutzer sein Google-Passwort auf einer Phishingwebsite wiederverwendet.
-      Wenn diese Richtlinie nicht konfiguriert ist, wird die Kontomeldung "Passwortschutz gefährdet" ausgelöst, wenn der Nutzer sein Google-Passwort auf einer Phishingwebsite wiederverwendet. Der Nutzer kann diese Einstellung jedoch ändern.</translation>
 <translation id="2418507228189425036">Deaktiviert das Speichern des Browserverlaufs in <ph name="PRODUCT_NAME" /> und verhindert, dass Nutzer diese Einstellung ändern. 
 
       Wenn diese Einstellung aktiviert ist, wird der Browserverlauf nicht gespeichert. Mit dieser Einstellung wird auch die Tab-Synchronisierung deaktiviert.
@@ -881,6 +880,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3646859102161347133">Lupentyp festlegen</translation>
 <translation id="3653237928288822292">Symbol der Standardsuchmaschine</translation>
 <translation id="3660562134618097814">SAML-IdP-Cookies bei der Anmeldung übertragen</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> – Das einzeilige Feld ist veraltet und wird in Zukunft entfernt. Bitte nutzen Sie das mehrzeilige Textfeld unten.</translation>
 <translation id="3709266154059827597">Schwarze Liste für Installation von Erweiterungen konfigurieren</translation>
 <translation id="3711895659073496551">Suspend-Modus</translation>
 <translation id="3715569262675717862">Authentifizierung auf Grundlage von Clientzertifikaten</translation>
@@ -981,6 +981,7 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
       Führt Erweiterungen auf, die bei Geräten im Händlermodus automatisch für den Demo-Nutzer installiert werden. Diese Erweiterungen werden auf dem Gerät gespeichert und können anschließend offline installiert werden.
 
        Jeder Eintrag enthält ein Verzeichnis, in dem im Feld "extension-id" die Erweiterungs-ID und im Feld "update-url" die Aktualisierungs-URL angegeben werden müssen.</translation>
+<translation id="3874773863217952418">"Zum Suchen tippen" aktivieren</translation>
 <translation id="3877517141460819966">Integrierter Zwei-Faktor-Authentifizierungsmodus</translation>
 <translation id="388237772682176890">Da SPDY/3.1 nicht mehr unterstützt wird, wurde diese Richtlinie in M53 eingestellt und in M54 entfernt.
 
@@ -1239,6 +1240,11 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 
           Beispielmuster finden Sie unter https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">URL-Liste öffnen</translation>
+<translation id="4680936297850947973">In M68 nicht mehr verfügbar. Verwenden Sie stattdessen "DefaultPopupsSetting".
+
+      Eine vollständige Erläuterung finden Sie unter https://www.chromestatus.com/features/5675755719622656.
+      Wenn diese Richtlinie aktiviert ist, dürfen Websites gleichzeitig mit der Navigation neue Fenster oder Tabs öffnen.
+      Wenn diese Richtlinie deaktiviert oder nicht festgelegt ist, dürfen Websites neue Fenster oder Tabs nicht gleichzeitig mit der Navigation öffnen.</translation>
 <translation id="4680961954980851756">AutoFill aktivieren</translation>
 <translation id="4722122254122249791">Website-Isolierung für angegebene Ursprünge aktivieren</translation>
 <translation id="4722399051042571387">Wenn "false" eingestellt ist, können Nutzer keine schwache PIN festlegen, die leicht zu erraten ist.
@@ -1502,7 +1508,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 
       Hinweis: Wenn die Plattform Richtlinienbenachrichtigungen unterstützt, wird für die Verzögerung der Aktualisierung 24 Stunden festgelegt und alle Standardwerte der Richtlinie werden ignoriert, da davon ausgegangen wird, dass diese Benachrichtigungen bei jeglichen Richtlinienänderungen automatisch eine Aktualisierung erzwingen. Daher ist ein kürzeres Intervall zwischen den Aktualisierungen nicht erforderlich.</translation>
 <translation id="5530347722229944744">Potenziell gefährliche Downloads blockieren</translation>
-<translation id="5530586312297447592">Die Kontomeldung "Passwortschutz gefährdet" wird durch die Wiederverwendung eines Passworts auf einer Phishingseite ausgelöst</translation>
 <translation id="5535973522252703021">Weiße Liste für Kerberos-Bevollmächtigungs-Server</translation>
 <translation id="555077880566103058">Automatische Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" für alle Websites zulassen</translation>
 <translation id="5559079916187891399">Diese Richtlinie hat keine Auswirkung auf Android-Apps.</translation>
@@ -1860,7 +1865,6 @@ Ist die Richtlinie nicht konfiguriert, wird die Netzwerkvorhersage aktiviert, ka
 
           URL-Muster in dieser Richtlinie sollten sich nicht mit den über "WebUsbAskForUrls" konfigurierten URL-Mustern überschneiden. Es ist nicht festgelegt, welche der beiden Richtlinien Vorrang hat, falls eine URL mit beiden übereinstimmt.</translation>
 <translation id="6689792153960219308">Hardwarestatus senden</translation>
-<translation id="6698071416141001300">Die Kontomeldung "Passwortschutz gefährdet" wird durch die Wiederverwendung eines Passworts ausgelöst</translation>
 <translation id="6699880231565102694">Zwei-Faktor-Authentifizierung für Remotezugriff-Hosts aktivieren</translation>
 <translation id="6724842112053619797">Wenn Sie diese Einstellung aktivieren, werden die in <ph name="PRODUCT_NAME" />-Profilen gespeicherten Einstellungen, etwa Lesezeichen, AutoFill-Daten und Passwörter, zusätzlich in eine Datei geschrieben, die sich im Roaming-Nutzerprofilordner oder an einem vom Administrator über die Richtlinie <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> festgelegten Ort befindet. Durch die Aktivierung dieser Richtlinie wird die Cloudsynchronisierung deaktiviert.
 

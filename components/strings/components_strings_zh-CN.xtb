@@ -543,6 +543,7 @@
 <translation id="4759118997339041434">付款信息自动填充功能已停用</translation>
 <translation id="4764776831041365478">网址为 <ph name="URL" /> 的网页可能暂时无法连接，或者它已永久性地移动到了新网址。</translation>
 <translation id="4771973620359291008">发生未知错误。</translation>
+<translation id="4785689107224900852">切换到这个标签页</translation>
 <translation id="4792143361752574037">访问会话文件时出问题了。“保存到磁盘”功能已被停用。请重新加载此页以重试。</translation>
 <translation id="4800132727771399293">请检查您的到期日期和银行卡验证码 (CVC)，然后重试</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>

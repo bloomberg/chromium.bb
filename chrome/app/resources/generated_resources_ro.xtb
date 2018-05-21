@@ -409,7 +409,6 @@
 <translation id="1611584202130317952">Fluxul de provizionare a fost întrerupt. Încearcă din nou sau contactează proprietarul dispozitivului ori administratorul.</translation>
 <translation id="1611649489706141841">înainte</translation>
 <translation id="1611704746353331382">Exportați marcajele într-un fișier HTML...</translation>
-<translation id="1612129875274679969">Mențineți permanent acest dispozitiv în modul chioșc.</translation>
 <translation id="161460670679785907">Nu se poate detecta telefonul</translation>
 <translation id="1616206807336925449">Această extensie nu necesită permisiuni speciale.</translation>
 <translation id="1616298854599875024">Nu se poate importa extensia „<ph name="IMPORT_NAME" />”, deoarece nu este un modul folosit în comun</translation>
@@ -793,7 +792,6 @@
 <translation id="221872881068107022">Derulare inversă</translation>
 <translation id="2220529011494928058">Semnalați o problemă</translation>
 <translation id="2220572644011485463">PIN sau parolă</translation>
-<translation id="2222641695352322289">Singura modalitate de anulare este să reinstalați <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="2224444042887712269">Setarea aparține utilizatorului <ph name="OWNER_EMAIL" />.</translation>
 <translation id="2224551243087462610">Editați numele dosarului</translation>
 <translation id="2226449515541314767">Acest site a fost blocat și nu poate avea control complet asupra dispozitivelor MIDI.</translation>
@@ -1170,7 +1168,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2783298271312924866">Descărcat</translation>
 <translation id="2783321960289401138">Creează o comandă rapidă...</translation>
-<translation id="2783661497142353826">Gestionați aplicațiile de tip chioșc</translation>
 <translation id="2783829359200813069">Selectează tipurile de criptare</translation>
 <translation id="2784407158394623927">Activarea serviciilor de date mobile</translation>
 <translation id="2785873697295365461">Descriptorii fișierelor</translation>
@@ -1323,7 +1320,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3015992588037997514">Acest cod apare pe ecranul Chromeboxului?</translation>
 <translation id="3016641847947582299">Componentă actualizată</translation>
 <translation id="3016780570757425217">Afle locația</translation>
-<translation id="302014277942214887">Introduceți ID-ul aplicației sau adresa URL a magazinului web.</translation>
 <translation id="3020183492814296499">Comenzi rapide</translation>
 <translation id="3020990233660977256">Numărul de serie: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021678814754966447">&amp;Afișează sursa cadrului</translation>
@@ -1983,7 +1979,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4034042927394659004">Reduceți luminozitatea tastelor</translation>
 <translation id="4034824040120875894">Imprimantă</translation>
 <translation id="4035758313003622889">&amp;Manager de activități</translation>
-<translation id="4036758022112812315">Evidențiază ce vrei să auzi, apoi apasă tasta de căutare + S sau apasă lung tasta de căutare, apoi dă clic sau trage pentru a selecta conținutul.</translation>
 <translation id="4037084878352560732">Cal</translation>
 <translation id="4037889604535939429">Editează persoana</translation>
 <translation id="4042264909745389898">Termenii Google Chrome OS</translation>
@@ -3220,7 +3215,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Ca să poți naviga în continuare pe web, trebuie să soliciți administratorului să elimine aplicația.}few{Ca să poți naviga în continuare pe web, trebuie să soliciți administratorului să elimine aplicațiile.}other{Ca să poți naviga în continuare pe web, trebuie să soliciți administratorului să elimine aplicațiile.}}</translation>
 <translation id="5993332328670040093">Utilizarea datelor nu va mai fi măsurată.</translation>
 <translation id="6002458620803359783">Vocile preferate</translation>
-<translation id="600424552813877586">Aplicație nevalidă.</translation>
 <translation id="6005695835120147974">Router media</translation>
 <translation id="6006484371116297560">Tema clasică</translation>
 <translation id="6007237601604674381">Mutarea nu a reușit. <ph name="ERROR_MESSAGE" /></translation>
@@ -3504,7 +3498,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
         <ph name="TIME" /></translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> va configura actualizările automate pentru toți utilizatorii acestui computer.</translation>
 <translation id="6434309073475700221">Renunță</translation>
-<translation id="6435285122322546452">Gestionați aplicațiile de tip chioșc...</translation>
 <translation id="6436164536244065364">Vizualizați în Magazinul web Chrome</translation>
 <translation id="6438234780621650381">Restabilește setările</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> – se redă sunet</translation>
@@ -4559,7 +4552,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8037357227543935929">Solicită (în mod prestabilit)</translation>
 <translation id="803771048473350947">Fișier</translation>
 <translation id="8038111231936746805">(prestabilit)</translation>
-<translation id="8041535018532787664">Adăugați o aplicație de tip chioșc:</translation>
 <translation id="8044899503464538266">Lent</translation>
 <translation id="8045253504249021590">Sincronizarea a fost oprită prin Tabloul de bord Google.</translation>
 <translation id="8045923671629973368">Introdu ID-ul aplicației sau adresa URL din magazinul web</translation>

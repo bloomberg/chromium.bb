@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">為裝置啟用遠端認證機制</translation>
 <translation id="1062407476771304334">取代</translation>
 <translation id="1079801999187584280">禁止使用開發人員工具</translation>
-<translation id="109166998561583554">保護密碼的危險帳戶標記功能觸發條件</translation>
 <translation id="1093082332347834239">如果啟用這項設定，選端協助主機會在具備 <ph name="UIACCESS_PERMISSION_NAME" /> 的處理程序中執行，讓遠端使用者在本機使用者桌面上操控權限較高的視窗。
 
           如果停用或未指定這項設定，遠端協助主機則會在使用者的作業環境中執行，遠端使用者將無法在桌面上操控權限較高的視窗。</translation>
@@ -105,7 +104,6 @@
 <translation id="1438739959477268107">預設金鑰產生設定</translation>
 <translation id="1454846751303307294">允許你設定網址模式清單，指定不可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />用戶端)：</translation>
-<translation id="1457305643416399820">保護密碼的危險帳戶標記功能已關閉</translation>
 <translation id="1464848559468748897">針對使用者在 <ph name="PRODUCT_OS_NAME" /> 裝置多重設定檔工作階段中的行為進行控制。
 
       如果將這項政策設為「MultiProfileUserBehaviorUnrestricted」，使用者就能成為多重設定檔工作階段的主要或次要使用者。 
@@ -321,6 +319,13 @@
 <translation id="2082205219176343977">設定裝置的最低 Chrome 版本限制。</translation>
 <translation id="209586405398070749">穩定版</translation>
 <translation id="2098658257603918882">啟用使用量和當機相關資料的報告功能</translation>
+<translation id="2111016292707172233">在 <ph name="PRODUCT_NAME" /> 的內容畫面中啟用「輕觸搜尋」功能。
+
+      如果你啟用這項設定，使用者即可使用「輕觸搜尋」功能，並可自行選擇開啟或關閉這項功能。
+
+      如果你停用這項設定，就會完全停用「輕觸搜尋」功能。
+
+      未設定這項政策則等同於啟用這項功能，請見上方說明。</translation>
 <translation id="2113068765175018713">透過自動重新啟動的方式限制裝置的正常運作時間</translation>
 <translation id="2127599828444728326">允許這些網站的通知</translation>
 <translation id="2131902621292742709">在電池供電環境下執行時的螢幕調暗延遲時間</translation>
@@ -465,12 +470,6 @@
 <translation id="2386362615870139244">允許使用螢幕喚醒鎖</translation>
 <translation id="2411817661175306360">密碼保護警告已關閉</translation>
 <translation id="2411919772666155530">封鎖這些網站的通知</translation>
-<translation id="2415979855753196119">讓你控制在哪種情況下觸發保護密碼的危險帳戶標記功能。這項功能會告知 Google 特定帳戶可能遭到入侵。
-
-      如果將這項政策設為「PasswordProtectionRiskOff」，就不會觸發保護密碼的危險帳戶標記功能。
-      如果將這項政策設為「PasswordProtectionRiskOnPasswordReuse」，當使用者在任何非許可的網站上重複使用 Google 密碼時，就會觸發保護密碼的危險帳戶標記功能。
-      如果將這項政策設為「PasswordProtectionRiskOnPhishingReuse」，當使用者在詐騙網站上重複使用 Google 密碼時，就會觸發保護密碼的危險帳戶標記功能。
-      如果未設定這項政策，當使用者在詐騙網站上重複使用 Google 密碼時，就會觸發保護密碼的危險帳戶標記功能，但使用者可以變更這項設定。</translation>
 <translation id="2418507228189425036">停用 <ph name="PRODUCT_NAME" /> 的瀏覽記錄儲存功能，並禁止使用者變更這項設定。
 
       如果啟用這項設定，系統將不會儲存瀏覽記錄 (分頁同步功能會一並遭到停用)。
@@ -889,6 +888,7 @@
 <translation id="3646859102161347133">設定螢幕放大鏡類型</translation>
 <translation id="3653237928288822292">預設搜尋引擎圖示</translation>
 <translation id="3660562134618097814">登入時移轉 SAML IdP Cookie</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (單行欄位已淘汰，日後將遭到移除。請開始使用下方的多行文字方塊。)</translation>
 <translation id="3709266154059827597">設定擴充功能安裝黑名單</translation>
 <translation id="3711895659073496551">暫停</translation>
 <translation id="3715569262675717862">根據用戶端憑證進行驗證</translation>
@@ -991,6 +991,7 @@
       列出系統自動為零售模式裝置中的示範模式使用者所安裝的擴充功能。這些擴充功能會儲存在裝置上，並且可以在安裝後進行離線安裝。
 
       每個清單項目都含有目錄，其中的「extension-id」欄位必須包含擴充功能 ID，且「update-url」欄位必須包含更新網址。</translation>
+<translation id="3874773863217952418">啟用輕觸搜尋</translation>
 <translation id="3877517141460819966">整合式雙重驗證模式</translation>
 <translation id="388237772682176890">自 M53 起我們已淘汰這項政策，至 M54 則移除了這項政策 (因為我們已不再支援 SPDY/3.1)。
 
@@ -1247,6 +1248,11 @@
 
           如需模式範例，請參閱 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="467449052039111439">開啟網址清單</translation>
+<translation id="4680936297850947973">自 M68 起已淘汰，請改用 DefaultPopupsSetting。
+
+      如需完整說明，請前往  https://www.chromestatus.com/features/5675755719622656。
+      如果啟用這項政策，即可同時在多個網站中進行瀏覽及開啟新視窗/分頁。
+      如果停用這項政策或不予設定，則無法同時在多個網站中進行瀏覽及開啟新視窗/分頁。</translation>
 <translation id="4680961954980851756">啟用自動填入</translation>
 <translation id="4722122254122249791">為指定來源啟用網站隔離</translation>
 <translation id="4722399051042571387">如果設為 False，使用者將無法設定系統判定強度不足而容易被破解的 PIN。
@@ -1509,7 +1515,6 @@
 
       請注意，如果平台支援政策通知，由於政策通知通常會在政策變更時自動強制更新 (不需更高的更新頻率)，所以更新延遲時間會設為 24 小時 (忽略所有預設值和這項政策的值)。</translation>
 <translation id="5530347722229944744">封鎖有安全疑慮的下載作業</translation>
-<translation id="5530586312297447592">密碼在網路詐騙網頁上遭到重複使用時，會觸發保護密碼的危險帳戶標記功能</translation>
 <translation id="5535973522252703021">Kerberos 委派伺服器許可清單</translation>
 <translation id="555077880566103058">允許所有網站自動執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式</translation>
 <translation id="5559079916187891399">這項政策對 Android 應用程式沒有影響。</translation>
@@ -1866,7 +1871,6 @@
 
           透過這項政策設定的網址模式與透過 WebUsbAskForUrls 設定的網址模式不可衝突，否則系統將無法判定應優先遵循哪一項政策。</translation>
 <translation id="6689792153960219308">回報硬體狀態</translation>
-<translation id="6698071416141001300">密碼遭到重複使用時，會觸發保護密碼的危險帳戶標記功能</translation>
 <translation id="6699880231565102694">為遠端存取主機啟用雙重驗證機制</translation>
 <translation id="6724842112053619797">如果啟用這項設定，系統會將儲存在 <ph name="PRODUCT_NAME" /> 設定檔中的設定 (例如書籤、自動填入資料、密碼等) 一併寫入儲存在漫遊使用者設定檔資料夾中的檔案，或是管理員透過 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 政策指定的位置。啟用這項政策時，雲端同步處理功能會遭到停用：
 

@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">Wi-Fi imezimwa.</translation>
 <translation id="1864454756846565995">Kifaa cha USB-C (mlango wa nyuma)</translation>
 <translation id="1882897271359938046">Inaakisi kwenye <ph name="DISPLAY_NAME" /></translation>
+<translation id="1885785240814121742">Tumia alama ya kidole kufungua</translation>
 <translation id="1919743966458266018">Njia ya mkato ya kufungua kidhibiti cha shughuli kwenye Chrome imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Mibofyo ya kiotomatiki</translation>
 <translation id="1928739107511554905">Ili usasishe, tumia skrini ya kugusa kuwasha Chromebook yako upya huku kibodi ikiwa imeunganishwa.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">Vitufe vya kusalia kwa muda</translation>
 <translation id="2509468283778169019">Caps Lock imewashwa.</translation>
 <translation id="2532589005999780174">Hali ya juu ya utofautishaji</translation>
+<translation id="2575685495496069081">Umezima uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja</translation>
 <translation id="2597972630681408282">Mwanga wa Usiku: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM kadi imefungwa</translation>
 <translation id="2653659639078652383">Wasilisha</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">Piga eneo picha</translation>
 <translation id="371370241367527062">Maikrofoni ya mbele</translation>
 <translation id="3771549900096082774">Hali ya Juu ya Utofautishaji</translation>
+<translation id="3773700760453577392">Msimamizi ameondoa uwezo wa <ph name="USER_EMAIL" /> wa kuingia katika akaunti nyingi kwa wakati mmoja. Watumiaji wote lazima waondoke katika akaunti ili waendelee.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Funga</translation>
 <translation id="3798670284305777884">Spika (ya ndani)</translation>

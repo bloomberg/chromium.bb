@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
 <translation id="1864454756846565995">USB-C デバイス（背面のポート）</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> へミラーリング</translation>
+<translation id="1885785240814121742">指紋でロックを解除する</translation>
 <translation id="1919743966458266018">タスク マネージャを起動するショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
 <translation id="1923539912171292317">自動クリック</translation>
 <translation id="1928739107511554905">アップデートを取得するには、キーボードが接続された状態で、タッチスクリーンを使って Chromebook を再起動してください。</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">固定キー</translation>
 <translation id="2509468283778169019">Caps Lock がオンになっています</translation>
 <translation id="2532589005999780174">ハイコントラスト モード</translation>
+<translation id="2575685495496069081">マルチ ログインは無効にされています</translation>
 <translation id="2597972630681408282">読書灯: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM カードはロックされています</translation>
 <translation id="2653659639078652383">送信</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">一部分をキャプチャ</translation>
 <translation id="371370241367527062">前方のマイク</translation>
 <translation id="3771549900096082774">ハイ コントラスト モード</translation>
+<translation id="3773700760453577392"><ph name="USER_EMAIL" /> のマルチログインは、管理者によって禁止されています。続行するには、すべてのユーザーがログアウトする必要があります。</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ロック</translation>
 <translation id="3798670284305777884">スピーカー（内蔵）</translation>

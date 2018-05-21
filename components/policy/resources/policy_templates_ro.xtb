@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Activați atestarea la distanță pentru dispozitiv</translation>
 <translation id="1062407476771304334">Înlocuiți</translation>
 <translation id="1079801999187584280">Nu permite folosirea Instrumentelor pentru dezvoltatori</translation>
-<translation id="109166998561583554">Declanșarea semnalării unui cont protejat prin parolă care prezintă un risc</translation>
 <translation id="1093082332347834239">Dacă această setare este activată, gazda asistenței la distanță va rula într-un proces cu permisiunile <ph name="UIACCESS_PERMISSION_NAME" />. Astfel, utilizatorii la distanță pot să interacționeze cu ferestrele cu privilegii superioare de pe computerul utilizatorului local.
 
           Dacă această setare este dezactivată sau nu este configurată, gazda asistenței la distanță va rula în contextul utilizatorului, iar utilizatorii la distanță nu vor putea să interacționeze cu ferestrele cu privilegii superioare de pe computer.</translation>
@@ -105,7 +104,6 @@
 <translation id="1438739959477268107">Setarea prestabilită pentru generarea cheilor</translation>
 <translation id="1454846751303307294">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea de a rula JavaScript. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultJavaScriptSetting”, dacă aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="1456822151187621582">Windows (clienți <ph name="PRODUCT_OS_NAME" />):</translation>
-<translation id="1457305643416399820">Declanșarea semnalării unui cont protejat prin parolă care prezintă un risc este dezactivată</translation>
 <translation id="1464848559468748897">Controlează comportamentul utilizatorilor în timpul unei sesiuni cu profiluri multiple pe dispozitivele <ph name="PRODUCT_OS_NAME" />.
 
       Dacă politica este setată la „MultiProfileUserBehaviorUnrestricted”, utilizatorul poate fi atât unul principal, cât și unul secundar într-o sesiune cu profiluri multiple.
@@ -468,12 +466,6 @@
 <translation id="2386362615870139244">Permiteți blocarea activării ecranului</translation>
 <translation id="2411817661175306360">Avertismentul privind protecția prin parolă este dezactivat</translation>
 <translation id="2411919772666155530">Blocați notificările pe aceste site-uri</translation>
-<translation id="2415979855753196119">Îți permite să controlezi declanșarea semnalării unui cont protejat prin parolă care prezintă un risc. Prin declanșarea semnalării unui cont protejat prin parolă care prezintă un risc, Google află că acest cont riscă să fie spart.
-
-      Dacă această politică este setată la „PasswordProtectionRiskOff”, nu se va declanșa semnalarea contului protejat prin parolă care prezintă un risc.
-      Dacă această politică este setată la „PasswordProtectionRiskOnPasswordReuse”, semnalarea contului protejat prin parolă care prezintă un risc se va declanșa când utilizatorii refolosesc parolele Google pe site-uri care nu sunt trecute în lista albă.
-      Dacă această politică este setată la „PasswordProtectionRiskOnPhishingReuse”, semnalarea contului protejat prin parolă care prezintă un risc se va declanșa când utilizatorii refolosesc parolele Google pe site-uri de phishing.
-      Dacă această politică nu este configurată, semnalarea contului protejat prin parolă care prezintă un risc se va declanșa când utilizatorii refolosesc parolele Google pe site-uri de phishing, dar utilizatorul poate modifica această setare.</translation>
 <translation id="2418507228189425036">Dezactivează salvarea istoricului de navigare în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să schimbe această setare.
 
       Dacă această setare este activată, istoricul de navigare nu va fi salvat. Această setare dezactivează și sincronizarea filelor.
@@ -1524,7 +1516,6 @@
 
       Reține că dacă platforma acceptă notificări privind politica, întârzierea actualizării va fi setată la 24 de ore (vor fi ignorate valorile prestabilite și valoarea acestei politici), deoarece se așteaptă ca notificările privind politica să forțeze automat o actualizare ori de câte ori politica se modifică, actualizările mai frecvente fiind inutile.</translation>
 <translation id="5530347722229944744">Blochează descărcările potențial periculoase</translation>
-<translation id="5530586312297447592">Declanșarea semnalării unui cont protejat prin parolă care prezintă un risc este activată de refolosirea parolei pe o pagină de phishing</translation>
 <translation id="5535973522252703021">Lista albă a serverelor pentru delegare în protocolul Kerberos</translation>
 <translation id="555077880566103058">Permite tuturor site-urilor să ruleze automat pluginul <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Această politică nu afectează aplicațiile Android.</translation>
@@ -1881,7 +1872,6 @@
 
           Șabloanele de adrese URL din această politică nu trebuie să fie în contradicție cu cele configurate prin WebUsbAskForUrls. Nu se precizează care dintre cele două politici are întâietate dacă o adresă URL corespunde cu amândouă.</translation>
 <translation id="6689792153960219308">Raportează starea hardware-ului</translation>
-<translation id="6698071416141001300">Declanșarea semnalării unui cont protejat prin parolă care prezintă un risc este activată de refolosirea parolei</translation>
 <translation id="6699880231565102694">Activați autentificarea cu doi factori pentru gazdele de acces la distanță</translation>
 <translation id="6724842112053619797">Dacă activezi această setare, setările stocate în profilurile <ph name="PRODUCT_NAME" />, cum ar fi marcajele, datele de completare automată, parolele etc. vor fi scrise și într-un fișier stocat în dosarul profilului de utilizator pentru Roaming sau într-o locație specificată de administrator prin politica <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Dacă activezi această politică, se dezactivează sincronizarea în cloud.
 

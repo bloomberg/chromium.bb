@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Activer l'attestation à distance pour l'appareil</translation>
 <translation id="1062407476771304334">Remplacer</translation>
 <translation id="1079801999187584280">Interdire l'utilisation des outils pour les développeurs</translation>
-<translation id="109166998561583554">Déclencheur du signalement de compte à risque au niveau de la protection par mot de passe</translation>
 <translation id="1093082332347834239">Si ce paramètre est activé, l'hôte d'assistance à distance est exécuté dans un processus avec des autorisations <ph name="UIACCESS_PERMISSION_NAME" />. Cela permet aux utilisateurs distants d'interagir avec des fenêtres élevées sur le bureau de l'utilisateur local.
 
           Si ce paramètre est désactivé ou non configuré, l'hôte d'assistance à distance est exécuté dans le contexte de l'utilisateur et les utilisateurs distants ne peuvent pas interagir avec des fenêtres élevées sur le Bureau.</translation>
@@ -107,7 +106,6 @@
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultJavaScriptSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="1456822151187621582">Windows (clients <ph name="PRODUCT_OS_NAME" />) :</translation>
-<translation id="1457305643416399820">Le signalement de compte à risque au niveau de la protection par mot de passe est désactivé</translation>
 <translation id="1464848559468748897">Contrôle le comportement des utilisateurs dans une session multiprofil sur des appareils <ph name="PRODUCT_OS_NAME" />.
 
      Si cette règle est définie sur "MultiProfileUserBehaviorUnrestricted", l'utilisateur peut être utilisateur principal ou secondaire dans une session multiprofil.
@@ -331,6 +329,13 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="2082205219176343977">Configurer la version Chrome minimale autorisée de l'appareil.</translation>
 <translation id="209586405398070749">Version stable</translation>
 <translation id="2098658257603918882">Autoriser l'envoi de statistiques d'utilisation et de rapports d'erreur</translation>
+<translation id="2111016292707172233">Active la fonctionnalité "Appuyer pour rechercher" dans l'affichage du contenu de <ph name="PRODUCT_NAME" />.
+
+      Si vous activez ce paramètre, l'utilisateur sera en mesure d'activer ou de désactiver la fonctionnalité "Appuyer pour rechercher".
+
+      Si vous désactivez ce paramètre, l'utilisateur n'aura pas accès à la fonctionnalité "Appuyer pour rechercher".
+
+      Si cette règle n'est pas configurée, la fonctionnalité sera activée, conformément à la description ci-dessus.</translation>
 <translation id="2113068765175018713">Limiter le temps de fonctionnement de l'appareil en redémarrant automatiquement</translation>
 <translation id="2127599828444728326">Autoriser les notifications sur ces sites</translation>
 <translation id="2131902621292742709">Délai d'assombrissement de l'écran (batterie)</translation>
@@ -489,12 +494,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="2386362615870139244">Autoriser les WakeLock forçant l'activation de l'écran</translation>
 <translation id="2411817661175306360">L'avertissement relatif à la protection par mot de passe est désactivé</translation>
 <translation id="2411919772666155530">Bloquer les notifications sur ces sites</translation>
-<translation id="2415979855753196119">Vous permet de définir les conditions de signalement d'un compte dont la protection par mot de passe est en danger. Ce type de signalement permet d'informer Google que le compte concerné risque d'être piraté.
-
-      Si cette règle est définie sur "PasswordProtectionRiskOff", aucun signalement n'est déclenché.
-      Si elle est définie sur "PasswordProtectionRiskOnPasswordReuse", les comptes dont la protection par mot de passe est en péril sont signalés lorsque les utilisateurs réutilisent leurs mots de passe Google sur des sites qui ne figurent pas sur la liste blanche.
-      Si elle est définie sur "PasswordProtectionRiskOnPhishingReuse", les comptes à risque sont signalés lorsque les utilisateurs réutilisent leurs mots de passe Google sur des sites d'hameçonnage.
-      Il en va de même lorsque la règle n'est pas configurée, excepté que les utilisateurs peuvent modifier ce paramètre.</translation>
 <translation id="2418507228189425036">Désactive l'enregistrement de l'historique du navigateur dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
 
       Si ce paramètre est activé, l'historique de navigation n'est pas enregistré. Il désactive également la synchronisation des onglets.
@@ -930,6 +929,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3646859102161347133">Définir le type de loupe</translation>
 <translation id="3653237928288822292">Icône du moteur de recherche par défaut</translation>
 <translation id="3660562134618097814">Transférer des cookies de fournisseurs d'identité SAML lors de la connexion</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Le champ constitué d'une seule ligne est abandonné et va être supprimé prochainement. Utilisez à la place la zone de texte à plusieurs lignes ci-dessous.)</translation>
 <translation id="3709266154059827597">Configurer la liste noire d'installation des extensions</translation>
 <translation id="3711895659073496551">Arrêter</translation>
 <translation id="3715569262675717862">Authentification basée sur les certificats client</translation>
@@ -1041,6 +1041,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
        Elle répertorie les extensions qui sont automatiquement installées pour l'utilisateur de la démonstration sur les appareils en mode "point de vente". Celles-ci sont enregistrées dans l'appareil. Elles peuvent être installées hors connexion, une fois l'installation terminée.
 
        Chaque entrée de la liste contient un dictionnaire qui doit inclure l'identifiant d'extension dans le champ "extension-id", ainsi que son adresse URL dans le champ "update-url".</translation>
+<translation id="3874773863217952418">Activer la fonctionnalité "Appuyer pour rechercher"</translation>
 <translation id="3877517141460819966">Mode d'authentification à deux facteurs intégré</translation>
 <translation id="388237772682176890">Cette règle a été abandonnée dans la version M53 et supprimée dans la version M54, car le protocole SPDY 3.1 n'est plus pris en charge.
 
@@ -1310,6 +1311,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 
           Pour voir des exemples de formats, accédez à l'adresse https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Ouvrir une liste d'URL</translation>
+<translation id="4680936297850947973">Règle abandonnée dans la version M68. Utilisez à la place la règle DefaultPopupsSetting.
+
+      Pour obtenir une explication complète, consultez la page https://www.chromestatus.com/features/5675755719622656.
+      Si cette règle est activée, les sites sont autorisés à parcourir et à ouvrir de nouvelles fenêtres ou de nouveaux onglets simultanément.
+      Si cette règle est désactivée ou n'est pas définie, les sites ne sont pas autorisés à parcourir et à ouvrir une nouvelle fenêtre ou un nouvel onglet simultanément.</translation>
 <translation id="4680961954980851756">Activer la saisie automatique</translation>
 <translation id="4722122254122249791">Activer l'isolation des sites pour des origines définies</translation>
 <translation id="4722399051042571387">Si la règle est configurée sur "false", les utilisateurs ne pourront pas définir un code faible et facile à deviner.
@@ -1598,7 +1604,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Notez que si la plate-forme est compatible avec les notifications relatives aux règles, le délai d'actualisation sera défini sur 24 heures (ignorant ainsi toutes les valeurs par défaut et celle de cette règle). En effet, les notifications relatives aux règles forceront une actualisation automatique chaque fois qu'une règle est modifiée, ce qui rend inutile toute actualisation supplémentaire.</translation>
 <translation id="5530347722229944744">Bloquer les téléchargements potentiellement dangereux</translation>
-<translation id="5530586312297447592">Le signalement d'un compte à risque au niveau de la protection par mot de passe est déclenché par la réutilisation d'un mot de passe sur une page d'hameçonnage</translation>
 <translation id="5535973522252703021">Liste blanche des serveurs de délégation Kerberos</translation>
 <translation id="555077880566103058">Autoriser tous les sites à exécuter le plug-in "<ph name="FLASH_PLUGIN_NAME" />" automatiquement</translation>
 <translation id="5559079916187891399">Cette règle n'a aucun effet sur les applications Android.</translation>
@@ -1879,7 +1884,7 @@ Si vous activez ce paramètre ou ne définissez pas de valeur, la fonction de sa
 <translation id="6401669939808766804">Déconnecter l'utilisateur</translation>
 <translation id="6412477120967771054">Si cette règle est définie sur "false", l'outil de nettoyage de Chrome ne peut pas analyser le système pour détecter et supprimer les logiciels indésirables. Le déclenchement manuel de l'outil de nettoyage de Chrome à partir de chrome://settings/cleanup est désactivé.
 
-      Si elle est définie sur "true" ou qu'elle n'est pas définie, l'outil de nettoyage de Chrome analyse régulièrement le système pour détecter les éventuels logiciels indésirables et, s'il trouve en trouve, un message s'affiche demandant à l'utilisateur s'il souhaite les supprimer. Le déclenchement manuel de l'outil de nettoyage de Chrome à partir de chrome://settings est activé.
+      Si elle est définie sur "true" ou qu'elle n'est pas définie, l'outil de nettoyage de Chrome analyse régulièrement le système pour détecter les éventuels logiciels indésirables et, s'il en trouve, un message s'affiche demandant à l'utilisateur s'il souhaite les supprimer. Le déclenchement manuel de l'outil de nettoyage de Chrome à partir de chrome://settings est activé.
 
       Cette règle n'est pas disponible pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="6417861582779909667">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à définir des cookies. 
@@ -1974,7 +1979,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 
           Les formats d'URL de cette règle ne doivent pas entrer en conflit avec ceux qui ont été configurés via WebUsbAskForUrls. Aucun paramètre ne spécifie quelle règle est prioritaire si une URL est incluse dans les deux.</translation>
 <translation id="6689792153960219308">Envoyer des rapports sur l'état du matériel</translation>
-<translation id="6698071416141001300">Le signalement d'un compte à risque au niveau de la protection par mot de passe est déclenché par la réutilisation d'un mot de passe</translation>
 <translation id="6699880231565102694">Activer l'authentification forte pour les hôtes d'accès à distance</translation>
 <translation id="6724842112053619797">Si vous activez cette option, les paramètres stockés dans les profils <ph name="PRODUCT_NAME" />, comme les favoris, les données de saisie automatique et les mots de passe, sont également enregistrés dans un fichier stocké dans le dossier des profils utilisateur itinérants ou à un emplacement défini par l'administrateur tel que spécifié dans la règle <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. L'activation de cette règle entraîne la désactivation de la synchronisation cloud.
 

@@ -546,6 +546,7 @@
 <translation id="4759118997339041434">お支払い情報の自動入力は無効になっています</translation>
 <translation id="4764776831041365478"><ph name="URL" /> のウェブページは一時的に停止しているか、新しいウェブアドレスに移動した可能性があります。</translation>
 <translation id="4771973620359291008">不明なエラーが発生しました。</translation>
+<translation id="4785689107224900852">このタブに切り替え</translation>
 <translation id="4792143361752574037">セッション ファイルにアクセスする際に問題が発生しました。現在、ディスクに保存することはできません。ページを再読み込みしてもう一度お試しください。</translation>
 <translation id="4800132727771399293">有効期限と CVC を確認してからもう一度お試しください</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>

@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">Wi-Fi är inaktiverat.</translation>
 <translation id="1864454756846565995">USB-C-enhet (bakre port)</translation>
 <translation id="1882897271359938046">Spegling av <ph name="DISPLAY_NAME" /></translation>
+<translation id="1885785240814121742">Lås upp med fingeravtryck</translation>
 <translation id="1919743966458266018">Kortkommandot för att öppna aktivitetshanteraren har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatiska klick</translation>
 <translation id="1928739107511554905">Starta om Chromebook-enheten via pekskärmen med tangentbordet tillkopplat för att uppdatera.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">Tröga tangenter</translation>
 <translation id="2509468283778169019">CAPS LOCK är på</translation>
 <translation id="2532589005999780174">Högkontrastläge</translation>
+<translation id="2575685495496069081">Multiinloggning har inaktiverats</translation>
 <translation id="2597972630681408282">Nattljus: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortet är låst</translation>
 <translation id="2653659639078652383">Skicka</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">Ta bild av skärmområde</translation>
 <translation id="371370241367527062">Mikrofonen på framsidan</translation>
 <translation id="3771549900096082774">Högkontrastläge</translation>
+<translation id="3773700760453577392">En administratör har förbjudit multiinloggning för <ph name="USER_EMAIL" />. Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lås</translation>
 <translation id="3798670284305777884">Högtalare (inbyggd)</translation>

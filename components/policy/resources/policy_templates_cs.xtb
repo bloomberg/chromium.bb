@@ -28,7 +28,6 @@ Pokud je nastavena na hodnotu true nebo nastavena není, statistiky hlášeny bu
 <translation id="1062011392452772310">Povolit vzdálené ověření identity zařízení</translation>
 <translation id="1062407476771304334">Nahradit</translation>
 <translation id="1079801999187584280">Zakázat používání Nástrojů pro vývojáře</translation>
-<translation id="109166998561583554">Ochrana hesla – spouštěč označení účtu jako ohroženého</translation>
 <translation id="1093082332347834239">Pokud je zapnuto toto nastavení, hostitel vzdálené pomoci bude spuštěn v procesu s oprávněními <ph name="UIACCESS_PERMISSION_NAME" />. Vzdálení uživatelé tak na počítači místního uživatele budou moci provádět interakci s okny, která vyžadují zvýšená oprávnění.
 
           Pokud je toto nastavení vypnuto nebo není nakonfigurováno, hostitel vzdálené pomoci poběží v kontextu uživatele a vzdálení uživatelé na počítači nebudou moci provádět interakci s okny, která vyžadují zvýšená oprávnění.</translation>
@@ -106,7 +105,6 @@ Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vyt
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultJavaScriptSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="1456822151187621582">Windows (klienti <ph name="PRODUCT_OS_NAME" />):</translation>
-<translation id="1457305643416399820">Ochrana hesla – označování účtu jako ohroženého je vypnuté</translation>
 <translation id="1464848559468748897">Určuje chování uživatele v multiprofilové relaci v zařízeních se systémem <ph name="PRODUCT_OS_NAME" />.
       Pokud je tato zásada nastavena na hodnotu MultiProfileUserBehaviorUnrestricted, uživatel může být v multiprofilové relaci buď primárním, nebo sekundárním uživatelem.
 
@@ -315,6 +313,13 @@ Hodnota je analyzována jako slovník JSON s mapováním názvu zásady na hodno
 <translation id="2082205219176343977">Konfigurace minimální povolené verze Chromu v zařízení.</translation>
 <translation id="209586405398070749">Stabilní verze</translation>
 <translation id="2098658257603918882">Aktivovat odesílání dat o využití nebo selhání</translation>
+<translation id="2111016292707172233">Aktivuje dostupnost Vyhledání klepnutím v zobrazení obsahu prohlížeče <ph name="PRODUCT_NAME" />.
+
+Pokud toto nastavení aktivujete, Vyhledání klepnutím bude pro uživatele dostupné (uživatel jej bude moci zapnout nebo vypnout).
+
+Pokud toto nastavení deaktivujete, Vyhledání klepnutím bude zcela vypnuté.
+
+Pokud zásadu nenastavíte, bude se považovat za aktivované (viz popis výše).</translation>
 <translation id="2113068765175018713">Omezit provozní dobu zařízení automatickým restartováním</translation>
 <translation id="2127599828444728326">Povolit na těchto stránkách oznámení</translation>
 <translation id="2131902621292742709">Prodleva snížení jasu obrazovky při napájení z baterie</translation>
@@ -453,12 +458,6 @@ U zařízení spravovaných pomocí služby Active Directory tato zásada podpo
 <translation id="2386362615870139244">Povolit uzamčení obrazovky při probuzení</translation>
 <translation id="2411817661175306360">Ochrana hesla – upozornění je vypnuté</translation>
 <translation id="2411919772666155530">Blokovat upozornění na těchto stránkách</translation>
-<translation id="2415979855753196119">Umožňuje ovládat spouštění označení účtu jako ohroženého z hlediska ochrany hesla. V případě označení účtu jako ohroženého z hlediska ochrany hesla bude Google informován, že u daného účtu hrozí napadení.
-
-      Je-li tato zásada nastavena na možnost PasswordProtectionRiskOff, označení účtu jako ohroženého z hlediska ochrany hesla se spouštět nebude.
-      Je-li tato zásada nastavena na hodnotu PasswordProtectionRiskOnPasswordReuse, spustí se označení účtu jako ohroženého z hlediska ochrany hesla v případě, že uživatel použije heslo Google na webu, který není uveden na seznamu povolených.
-      Je-li tato zásada nastavena na hodnotu PasswordProtectionRiskOnPhishingReuse, spustí se označení účtu jako ohroženého z hlediska ochrany hesla v případě, že uživatel použije heslo Google na phishingovém webu.
-      Je-li tato zásada ponechána nenastavená, spustí se označení účtu jako ohroženého z hlediska ochrany hesla v případě, že uživatel použije heslo Google na phishingovém webu, ale uživatel toto nastavení bude moci změnit.</translation>
 <translation id="2418507228189425036">Deaktivuje ukládání historie procházení v prohlížeči <ph name="PRODUCT_NAME" /> a brání uživatelům, aby toto nastavení změnili.
 
 Pokud je toto nastavení deaktivováno, historie procházení nebude ukládána. Toto nastavení také deaktivuje synchronizaci karet.
@@ -884,6 +883,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="3646859102161347133">Nastavení typu lupy</translation>
 <translation id="3653237928288822292">Ikona výchozího poskytovatele vyhledávání</translation>
 <translation id="3660562134618097814">Přenos souborů cookie od poskytovatele identity SAML při přihlášení</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Podpora pole s jedním řádkem byla ukončena. Začněte používat níže uvedené textové pole s více řádky.)</translation>
 <translation id="3709266154059827597">Konfigurace seznamu zakázaných položek instalace rozšíření</translation>
 <translation id="3711895659073496551">Pozastavit</translation>
 <translation id="3715569262675717862">Ověřování založené na certifikátech klientů</translation>
@@ -992,6 +992,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
       Seznam rozšíření, která se automaticky nainstalují pro uživatele ukázky v zařízeních v režimu pro obchody. Tato rozšíření se uloží v zařízení a po instalaci mohou být nainstalována v režimu offline.
 
       Každý záznam v seznamu obsahuje adresář, který musí zahrnovat ID rozšíření v poli „extension-id“ a jeho webovou adresu pro aktualizace v poli „update-url“.</translation>
+<translation id="3874773863217952418">Aktivovat funkci Vyhledání klepnutím</translation>
 <translation id="3877517141460819966">Režim integrovaného dvoufaktorového ověření</translation>
 <translation id="388237772682176890">Ve verzi M53 byla podpora této zásady ukončena a ve verzi M54 byla tato zásada zcela odstraněna, protože byla odstraněna podpora protokolu SPDY/3.1.
 
@@ -1258,6 +1259,11 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
 
           Ukázkové vzory naleznete na stránce https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Otevřít seznam adres URL</translation>
+<translation id="4680936297850947973">Podpora této zásady byla od verze M68 ukončena. Použijte namísto ní zásadu DefaultPopupsSetting.
+
+      Úplné vysvětlení najdete na stránce https://www.chromestatus.com/features/5675755719622656.
+      Je-li tato zásada aktivována, budou weby moci zároveň provádět navigaci a otevírat nová okna/karty.
+      Pokud je tato zásada zakázána nebo není nastavena, budou mít weby současné provádění navigace a otevírání nových oken/karet zakázáno.</translation>
 <translation id="4680961954980851756">Aktivovat Automatické vyplňování</translation>
 <translation id="4722122254122249791">Aktivace izolace webů u určených zdrojů</translation>
 <translation id="4722399051042571387">Pokud je tato zásada nastavena na hodnotu false, uživatelé nebudou moci nastavit PIN, který je slabý a lze jej snadno uhodnout.
@@ -1541,7 +1547,6 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
 
       Upozorňujeme, že pokud platforma podporuje oznámení o zásadách, budou všechna výchozí nastavení i hodnota této zásady ignorovány a interval aktualizací bude nastaven na 24 hodin. Očekává se totiž, že při změně zásad bude aktualizace vynucena automaticky prostřednictvím oznámení.</translation>
 <translation id="5530347722229944744">Blokovat potenciálně nebezpečná stahování</translation>
-<translation id="5530586312297447592">Ochrana hesla – označení účtu jako ohroženého je spouštěno opětovným použitím hesla na phishingové stránce</translation>
 <translation id="5535973522252703021">Seznam povolených serverů pro delegování ověření protokolu Kerberos</translation>
 <translation id="555077880566103058">Povolit všem webům automatické spouštění pluginu <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Tato zásada nemá vliv na aplikace Android.</translation>
@@ -1915,7 +1920,6 @@ Není-li tato zásada nastavena na konkrétní hodnotu, bude předvídání sít
 
           Vzory adres URL v této zásadě by neměly být v konfliktu se vzory nakonfigurovanými pomocí zásady WebUsbAskForUrls. Není jasně dáno, která z těchto dvou zásad má přednost, pokud adresa URL odpovídá oběma.</translation>
 <translation id="6689792153960219308">Nahlásit stav hardwaru</translation>
-<translation id="6698071416141001300">Ochrana hesla – označení účtu jako ohroženého je spouštěno opětovným použitím hesla</translation>
 <translation id="6699880231565102694">Povolit dvoufázové ověření pro hostitele vzdáleného přístupu</translation>
 <translation id="6724842112053619797">Pokud zapnete toto nastavení, budou nastavení uložená v profilech <ph name="PRODUCT_NAME" /> (např. záložky, data automatického vyplňování nebo hesla) zapsána také do souboru uloženého ve složce cestovního uživatelského profilu nebo v umístění, které definuje administrátor prostřednictvím zásady <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Aktivací této zásady deaktivujete cloudovou synchronizaci.
 

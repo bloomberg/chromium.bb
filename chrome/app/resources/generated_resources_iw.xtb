@@ -406,7 +406,6 @@
 <translation id="1611584202130317952">תהליך הקצאת הגישה הופסק. יש לנסות שוב, או לפנות לבעלי המכשיר או למנהל המערכת.</translation>
 <translation id="1611649489706141841">קדימה</translation>
 <translation id="1611704746353331382">‏יצוא סימניות לקובץ HTML...</translation>
-<translation id="1612129875274679969">השאר מכשיר זה במצב קיוסק באופן קבוע.</translation>
 <translation id="161460670679785907">לא ניתן לזהות את הטלפון שלך</translation>
 <translation id="1616206807336925449">אין צורך בהרשאות מיוחדות כדי להשתמש בתוסף זה.</translation>
 <translation id="1616298854599875024">לא ניתן לייבא את התוסף "<ph name="IMPORT_NAME" />" כי הוא לא מודול משותף</translation>
@@ -790,7 +789,6 @@
 <translation id="221872881068107022">גלילה לאחור</translation>
 <translation id="2220529011494928058">דיווח על בעיה</translation>
 <translation id="2220572644011485463">‏PIN או סיסמה</translation>
-<translation id="2222641695352322289">הדרך היחידה לבטל פעולה זו היא להתקין מחדש את <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="2224444042887712269">ההגדרה הזו שייכת ל-<ph name="OWNER_EMAIL" />.</translation>
 <translation id="2224551243087462610">ערוך את שם התיקייה</translation>
 <translation id="2226449515541314767">‏האפשרות לשלוט שליטה מלאה על מכשירי MIDI נחסמה עבור אתר זה.</translation>
@@ -1167,7 +1165,6 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2783298271312924866">ההורדה בוצעה</translation>
 <translation id="2783321960289401138">צור קיצור דרך...</translation>
-<translation id="2783661497142353826">ניהול יישומי קיוסק</translation>
 <translation id="2783829359200813069">בחירת סוגי הצפנה</translation>
 <translation id="2784407158394623927">מפעיל את שירות הנתונים הסלולריים</translation>
 <translation id="2785873697295365461">מתארי קבצים</translation>
@@ -1320,7 +1317,6 @@
 <translation id="3015992588037997514">‏האם קוד זה מופיע במסך ה-Chromebox שלך?</translation>
 <translation id="3016641847947582299">הרכיב עודכן</translation>
 <translation id="3016780570757425217">לדעת מה המיקום שלך</translation>
-<translation id="302014277942214887">הזן מזהה יישום או כתובת אתר של חנות אינטרנט.</translation>
 <translation id="3020183492814296499">קיצורים</translation>
 <translation id="3020990233660977256">מספר סידורי: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021678814754966447">&amp;הצג את מקור המסגרת</translation>
@@ -1980,7 +1976,6 @@
 <translation id="4034042927394659004">הפחת את בהירות המקשים</translation>
 <translation id="4034824040120875894">מדפסת</translation>
 <translation id="4035758313003622889">&amp;מנהל המשימות</translation>
-<translation id="4036758022112812315">‏צריך להדגיש את הטקסט להשמעה ולהקיש על מקש החיפוש יחד עם מקש S. לחלופין, אפשר ללחוץ לחיצה ארוכה על מקש החיפוש ולאחר מכן ללחוץ או לגרור כדי לבחור תוכן.</translation>
 <translation id="4037084878352560732">סוס</translation>
 <translation id="4037889604535939429">עריכת פרטי אדם</translation>
 <translation id="4042264909745389898">‏תנאים של Google Chrome OS</translation>
@@ -3218,7 +3213,6 @@
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציה הזו.}two{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציות האלה.}many{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציות האלה.}other{כדי שאפשר יהיה להמשיך לגלוש באינטרנט, צריך לבקש ממנהל המערכת להסיר את האפליקציות האלה.}}</translation>
 <translation id="5993332328670040093">השימוש בנתונים כבר לא יימדד.</translation>
 <translation id="6002458620803359783">קולות מועדפים</translation>
-<translation id="600424552813877586">יישום לא חוקי.</translation>
 <translation id="6005695835120147974">נתב מדיה</translation>
 <translation id="6006484371116297560">קלאסי</translation>
 <translation id="6007237601604674381">ההעברה נכשלה. <ph name="ERROR_MESSAGE" /></translation>
@@ -3502,7 +3496,6 @@
           <ph name="TIME" /></translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> יגדיר עדכונים אוטומטיים לכל המשתמשים במחשב זה.</translation>
 <translation id="6434309073475700221">התעלם</translation>
-<translation id="6435285122322546452">נהל יישומי קיוסק...</translation>
 <translation id="6436164536244065364">הצג בחנות אינטרנט</translation>
 <translation id="6438234780621650381">איפוס הגדרות</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> - אודיו מופעל</translation>
@@ -4548,7 +4541,6 @@
 <translation id="8037357227543935929">שאל (ברירת מחדל)</translation>
 <translation id="803771048473350947">קובץ</translation>
 <translation id="8038111231936746805">(ברירת מחדל)</translation>
-<translation id="8041535018532787664">הוסף יישום קיוסק:</translation>
 <translation id="8044899503464538266">אטי</translation>
 <translation id="8045253504249021590">‏הסינכרון הושבת באמצעות מרכז השליטה של Google.</translation>
 <translation id="8045923671629973368">הזנה של מזהה יישום או כתובת אתר של חנות אינטרנט</translation>

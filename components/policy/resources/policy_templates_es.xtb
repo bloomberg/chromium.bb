@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Habilitar confirmación remota para el dispositivo</translation>
 <translation id="1062407476771304334">Sustituir</translation>
 <translation id="1079801999187584280">No permitir el uso de herramientas para desarrolladores</translation>
-<translation id="109166998561583554">Activar advertencia de protección de contraseña sobre cuenta en riesgo</translation>
 <translation id="1093082332347834239">Si se habilita esta opción, el host de asistencia remota se ejecutará en un proceso con permisos de <ph name="UIACCESS_PERMISSION_NAME" />. Esto permitirá que los usuarios remotos interactúen con ventanas a las que se puede acceder con permisos de administrador en el ordenador del usuario local.
 
           Si esta opción no se configura o se inhabilita, el host de asistencia remota se ejecutará en el contexto del usuario y los usuarios remotos no podrán interactuar con las ventanas que requieren permisos de administrador en el ordenador.</translation>
@@ -106,7 +105,6 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultJavaScriptSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
 <translation id="1456822151187621582">Windows (clientes de <ph name="PRODUCT_OS_NAME" />):</translation>
-<translation id="1457305643416399820">La advertencia de protección de contraseña sobre cuenta en riesgo está desactivada</translation>
 <translation id="1464848559468748897">Controla el comportamiento del usuario en una sesión de varios perfiles en dispositivos <ph name="PRODUCT_OS_NAME" />.
 
       Si esta política se establece en MultiProfileUserBehaviorUnrestricted, el usuario puede ser principal o secundario en una sesión de varios perfiles.
@@ -324,6 +322,13 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2082205219176343977">Configurar la versión mínima permitida de Chrome en el dispositivo.</translation>
 <translation id="209586405398070749">Canal estable</translation>
 <translation id="2098658257603918882">Habilitar informes de uso y de datos sobre fallos</translation>
+<translation id="2111016292707172233">Permite que Tocar para buscar esté disponible en la vista de contenido de <ph name="PRODUCT_NAME" />.
+
+      Si habilitas esta opción, Tocar para buscar estará disponible para los usuarios y podrán decidir cuándo activarla o desactivarla.
+
+      Si inhabilitas esta opción, Tocar para buscar inhabilitará por completo.
+
+      Si no se asigna ningún valor a esta política, se considerará que está habilitada (consulta la descripción anterior).</translation>
 <translation id="2113068765175018713">Limitar tiempo de actividad de dispositivo mediante reinicio automático</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Retraso de atenuado de pantalla cuando el dispositivo funciona con la batería</translation>
@@ -476,12 +481,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2386362615870139244">Permitir bloqueos de activación de pantalla</translation>
 <translation id="2411817661175306360">La advertencia de protección de contraseña está desactivada</translation>
 <translation id="2411919772666155530">Bloquear notificaciones en estos sitios</translation>
-<translation id="2415979855753196119">Permite controlar la activación de la advertencia de protección de contraseña sobre cuenta en riesgo. La advertencia de protección de contraseña sobre cuenta en riesgo informa a Google de que la cuenta corre el riesgo de ser interceptada.
-
-      Si se le asigna el valor "PasswordProtectionRiskOff" a esta política, no se activará la advertencia de protección de contraseña sobre cuenta en riesgo.
-      Si se le asigna el valor "PasswordProtectionRiskOnPasswordReuse", se activará la advertencia de protección de contraseña sobre cuenta en riesgo cuando los usuarios vuelvan a utilizar las contraseñas de Google en cualquier sitio web que no esté incluido en la lista blanca.
-      Si se le asigna el valor "PasswordProtectionRiskOnPhishingReuse" a esta política, se activará la advertencia de protección de contraseña sobre cuenta en riesgo cuando los usuarios vuelvan a utilizar las contraseñas de Google en sitios web de phishing.
-      Si no se le asigna ningún valor a esta política, se activará la advertencia de protección de contraseña sobre cuenta en riesgo cuando los usuarios vuelvan a utilizar las contraseñas de Google en sitios web de phishing, pero el usuario podrá cambiar esta opción.</translation>
 <translation id="2418507228189425036">Permite inhabilitar el almacenamiento del historial de navegación de <ph name="PRODUCT_NAME" /> e impide que los usuarios modifiquen esta opción.
 
       Si se habilita esta opción, no se almacenará el historial de navegación y se inhabilitará la sincronización de pestañas.
@@ -917,6 +916,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3646859102161347133">Establecer el tipo de aumento de pantalla</translation>
 <translation id="3653237928288822292">Icono del proveedor de búsquedas predeterminadas</translation>
 <translation id="3660562134618097814">Transferir las cookies del proveedor de identidad SAML durante el inicio de sesión</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (el campo de una línea está obsoleto y desaparecerá en el futuro; empieza a utilizar el campo de varias líneas de más abajo)</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalación de extensiones</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3715569262675717862">Autenticación basada en certificados de cliente</translation>
@@ -1028,6 +1028,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Permite mostrar las extensiones que están instaladas de forma automática en una sesión de demostración para dispositivos que se encuentren en modo comercial. Estas extensiones se guardan en el dispositivo y se pueden instalar sin conexión una vez que se ha completado el proceso de instalación.
 
       Cada entrada de la lista contiene un diccionario, que debe incluir el ID de la extensión en el campo "extension-id" y una URL de actualización en el campo "update-url".</translation>
+<translation id="3874773863217952418">Habilitar Tocar para buscar</translation>
 <translation id="3877517141460819966">Modo de autenticación de dos factores integrado</translation>
 <translation id="388237772682176890">Esta política está obsoleta en M53 y se ha quitado de M54, ya que se ha retirado la compatibilidad con SPDY/3.1.
 
@@ -1297,6 +1298,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Puedes consultar ejemplos de patrones en la página https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Abrir una lista de URLs</translation>
+<translation id="4680936297850947973">Obsoleta en M68. Usa DefaultPopupsSetting en su lugar.
+
+      Consulta una explicación completa en la página  https://www.chromestatus.com/features/5675755719622656.
+      Si se habilita esta política, los sitios web podrán abrir nuevas ventanas y pestañas y navegar de forma simultánea.
+      Si se inhabilita esta política o no se configura, los sitios web no podrán abrir ventanas ni pestañas nuevas ni navegar de forma simultánea.</translation>
 <translation id="4680961954980851756">Habilitar Autocompletar</translation>
 <translation id="4722122254122249791">Habilita el aislamiento de sitios web específicos</translation>
 <translation id="4722399051042571387">Si se le asigna el valor false, los usuarios no podrán definir ningún PIN que no se considere seguro y que sea fácil de adivinar.
@@ -1585,7 +1591,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Ten en cuenta que si la plataforma admite notificaciones sobre políticas, el tiempo de actualización se establecerá en 24 horas (ignorando todos los valores predeterminados y el valor de esta política), ya que se espera que estas notificaciones fuercen una actualización automática en cuanto se produzca algún cambio en una política. De esta forma, no será necesario realizar actualizaciones con mayor frecuencia.</translation>
 <translation id="5530347722229944744">Bloquear descargas potencialmente peligrosas</translation>
-<translation id="5530586312297447592">La advertencia de protección de contraseña sobre cuenta en riesgo se activa al reutilizar la contraseña en una página de phishing</translation>
 <translation id="5535973522252703021">Lista de admisión de servidores de delegación Kerberos</translation>
 <translation id="555077880566103058">Permitir que todos los sitios web ejecuten automáticamente el complemento <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Esta política no influye en las aplicaciones para Android.</translation>
@@ -1960,7 +1965,6 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
 
           Los patrones de URL de esta política no deben entrar en conflicto con los de la política WebUsbAskForUrls, ya que no se especifica cuál prevalece si una URL se incluye en ambas.</translation>
 <translation id="6689792153960219308">Informar sobre el estado del hardware</translation>
-<translation id="6698071416141001300">La advertencia de protección de contraseña sobre cuenta en riesgo se activa al reutilizar la contraseña</translation>
 <translation id="6699880231565102694">Habilitar la autenticación de dos factores para hosts de acceso remoto</translation>
 <translation id="6724842112053619797">Si habilitas esta opción, la configuración almacenada en los perfiles de <ph name="PRODUCT_NAME" /> (como los marcadores, los datos de Autocompletar y las contraseñas) también se escribirá en un archivo almacenado en la carpeta Itinerancia del perfil de usuario o en una ubicación especificada por el administrador en la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. 
 Al habilitar esta política, se inhabilita la sincronización en la nube.

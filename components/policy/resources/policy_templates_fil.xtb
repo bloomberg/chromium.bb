@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">I-enable ang malayuang pagpapatotoo para sa device</translation>
 <translation id="1062407476771304334">Palitan</translation>
 <translation id="1079801999187584280">Huwag payagan ang paggamit ng Mga Tool ng Developer</translation>
-<translation id="109166998561583554">Trigger sa pag-flag ng account na may nakompromisong proteksyon sa password</translation>
 <translation id="1093082332347834239">Kung naka-enable ang setting na ito, ang host ng remote na tulong ay patatakbuhin sa isang prosesong may mga pahintulot ng <ph name="UIACCESS_PERMISSION_NAME" />.  Bibigyang-daan nito ang mga remote na user upang makipag-ugnayan sa mga elevated window sa desktop ng lokal na user.
 
           Kung naka-disable o hindi naka-configure ang setting na ito, ang host ng remote na tulong ay patatakbuhin sa konteksto ng user at hindi magagawa ng mga remote na user na makipag-ugnayan sa mga elevated window sa desktop.</translation>
@@ -107,7 +106,6 @@
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakaran ng 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="1456822151187621582">Windows (mga <ph name="PRODUCT_OS_NAME" /> client):</translation>
-<translation id="1457305643416399820">Naka-off ang pag-flag ng account na may nakompromisong proteksyon sa password</translation>
 <translation id="1464848559468748897">Kontrolin ang gawi ng user sa isang multiprofile session sa mga <ph name="PRODUCT_OS_NAME" /> device.
 
       Kung itinakda ang patakarang ito sa 'MultiProfileUserBehaviorUnrestricted', ang user ay maaaring maging pangunahin o pangalawang user sa isang multiprofile session.
@@ -327,6 +325,13 @@
 <translation id="2082205219176343977">I-configure ang minimum na pinapayagang bersyon ng Chrome para sa device.</translation>
 <translation id="209586405398070749">Stable na channel</translation>
 <translation id="2098658257603918882">Paganahin ang pag-uulat ng data ng paggamit at kaugnay ng crash</translation>
+<translation id="2111016292707172233">Ine-enable ang availability ng I-tap para Maghanap sa view ng content ng <ph name="PRODUCT_NAME" />.
+
+      Kung ie-enable mo ang setting na ito, magagamit ng user ang I-tap para Maghanap at maaari niyang piliing i-on o i-off ang feature.
+
+      Kung idi-disable mo ang setting na ito, ganap na madi-disable ang I-tap para Maghanap.
+
+      Kung hindi itatakda ang patakarang ito, parang naka-enable na rin ito, tingnan ang paglalarawan sa itaas.</translation>
 <translation id="2113068765175018713">Limitahan ang uptime ng device sa pamamagitan ng awtomatikong pag-reboot</translation>
 <translation id="2127599828444728326">Payagan ang mga notification sa mga site na ito</translation>
 <translation id="2131902621292742709">Delay ng pag-dim ng screen kapag tumatakbo gamit ang power ng baterya</translation>
@@ -477,12 +482,6 @@
 <translation id="2386362615870139244">Payagan ang mga lock ng pagpapagana ng screen</translation>
 <translation id="2411817661175306360">Naka-off ang babala ng proteksyon sa password</translation>
 <translation id="2411919772666155530">I-block ang mga notification sa mga site na ito</translation>
-<translation id="2415979855753196119">Nagbibigay-daan sa iyong kontrolin ang pag-trigger ng pag-flag ng nanganganib na account para sa pagprotekta ng password. Sa pamamagitan ng pag-flag ng nanganganib na account para sa pagprotekta ng password, ipinapaalam sa Google na nanganganib na ma-hijack ang account na ito.
-
-      Kung itatakda ang patakarang ito sa 'PasswordProtectionRiskOff,' walang mati-trigger na pag-flag ng nanganganib na account para sa pagprotekta ng password.
-      Kung itatakda ang patakarang ito sa 'PasswordProtectionRiskOnPasswordReuse,' mati-trigger ang pag-flag ng nanganganib na account para sa pagprotekta ng password kapag ginamit muli ng user ang kanyang password sa Google sa isang hindi naka-whitelist na site.
-      Kung itatakda ang patakarang ito sa 'PasswordProtectionRiskOnPhishingReuse,' mati-trigger ang pag-flag ng nanganganib na account para sa pagprotekta ng password kapag ginamit muli ng user ang kanyang password sa Google sa isang phishing site.
-      Kung hindi itatakda ang patakarang ito, mati-trigger ang pag-flag ng nanganganib na account para sa pagprotekta ng password kapag ginamit muli ng user ang kanyang password sa Google sa isang phishing site, ngunit mababago ng user ang setting na ito.</translation>
 <translation id="2418507228189425036">Dini-disable ang pagse-save ng history ng browser sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user sa pagbabago sa setting na ito.
 
       Kung naka-enable ang setting na ito, hindi ise-save ang history ng pagba-browse. Dini-disable din ng setting na ito ang pagsi-syng ng tab.
@@ -917,6 +916,7 @@
 <translation id="3646859102161347133">Itakda ang uri ng magnifier sa screen</translation>
 <translation id="3653237928288822292">Default na icon ng provider ng paghahanap</translation>
 <translation id="3660562134618097814">Ilipat ang cookies ng SAML IdP sa pag-log in</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Hindi na ginagamit ang field na isang linya at aalisin ito sa hinaharap. Pakisimulang gamitin ang textbox na maraming linya sa ibaba.)</translation>
 <translation id="3709266154059827597">I-configure ang blacklist ng pag-install ng extension</translation>
 <translation id="3711895659073496551">Suspendihin</translation>
 <translation id="3715569262675717862">Pag-authenticate batay sa mga certificate ng kliyente</translation>
@@ -1022,6 +1022,7 @@
       Nililista ang mga extension na awtomatikong naka-install para sa user ng Demo, para sa mga device na nasa retail mode. Naka-save ang mga extension na ito sa device at maaaring i-install habang naka-offline, pagkatapos ng pag-install.
 
       Ang bawat entry sa listahan ay naglalaman ng diksyunaryong dapat kabilangan ng ID ng extension sa field na 'extension-id,' at ng URL ng update nito sa field na 'update-url.'</translation>
+<translation id="3874773863217952418">I-enable ang I-tap para Maghanap</translation>
 <translation id="3877517141460819966">Kasamang second factor authentication mode</translation>
 <translation id="388237772682176890">Ang patakarang ito ay hindi na ginagamit sa M53 at inalis na sa M54, dahil inalis na ang suporta sa SPDY/3.1.
 
@@ -1290,6 +1291,11 @@
 
           Para sa mga halimbawang pattern, tingnan ang https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Magbukas ng listahan ng mga URL</translation>
+<translation id="4680936297850947973">Hindi na ginagamit sa M68. Gamitin na lang ang DefaultPopupsSetting.
+
+      Para sa kumpletong paliwanag, tingnan ang https://www.chromestatus.com/features/5675755719622656.
+      Kung ie-enable ang patakarang ito, papayagan ang mga site na sabay-sabay na mag-navigate at magbukas ng mga bagong window/tab.
+      Kung idi-disable o hindi itatakda ang patakarang ito, hindi papayagan ang mga site na sabay-sabay na mag-navigate at magbukas ng bagong window/tab.</translation>
 <translation id="4680961954980851756">Paganahin ang AutoFill</translation>
 <translation id="4722122254122249791">I-enable ang Paghihiwalay ng Site para sa mga tinukoy na pinagmulan</translation>
 <translation id="4722399051042571387">Kung false, hindi makakapagtakda ang mga user ng mga madaling mahulaan na PIN.
@@ -1575,7 +1581,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Tandaan na kung sinusuportahan ng platform ang mga notification ng patakaran, itatakda ang pagkaantala ng pag-refresh sa 24 na oras (nang hindi pinapansin ang lahat ng default at value ng patakarang ito) dahil inaasahan na ang mga notification ng patakaran ay magpipilit ng awtomatikong pag-refresh sa tuwing magbabago ang patakaran, kaya hindi na kailangang madalas na mag-refresh.</translation>
 <translation id="5530347722229944744">I-block ang mga potensyal na mapanganib na pag-download</translation>
-<translation id="5530586312297447592">Ang pag-flag ng account na may nakompromisong proteksyon sa password ay nati-trigger ng muling paggamit ng password sa page na may phishing</translation>
 <translation id="5535973522252703021">Whitelist ng server ng paglalaan ng Kerberos</translation>
 <translation id="555077880566103058">Pahintulutan ang lahat ng site na awtomatikong patakbuhin ang plugin na <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Walang epekto ang patakarang ito sa mga Android app.</translation>
@@ -1950,7 +1955,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Hindi dapat sumasalungat ang mga pattern ng URL sa patakarang ito sa mga pattern ng URL na na-configure sa pamamagitan ng WebUsbAskForUrls. Hindi tinutukoy kung alin sa dalawang patakaran ang masusunod kung tumutugma ang isang URL sa parehong patakaran.</translation>
 <translation id="6689792153960219308">Iulat ang status ng hardware</translation>
-<translation id="6698071416141001300">Ang pag-flag ng account na may nakompromisong proteksyon sa password ay nati-trigger ng muling paggamit ng password</translation>
 <translation id="6699880231565102694">Paganahin ang pagpapatotoong may dalawang salik para sa mga host ng malayuang pag-access</translation>
 <translation id="6724842112053619797">Kung ie-enable mo ang setting na ito, ang mga setting na naka-store sa mga profile sa <ph name="PRODUCT_NAME" /> tulad ng mga bookmark, data ng autofill, mga password, atbp. ay ira-write din sa isang file na naka-store sa folder ng profile ng user ng Roaming o sa isang lokasyong tinukoy ng Administrator sa pamamagitan ng patakarang <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Madi-disable ang pag-sync sa cloud kapag na-enable ang patakarang ito.
 

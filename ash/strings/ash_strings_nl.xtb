@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">Wifi is uitgeschakeld.</translation>
 <translation id="1864454756846565995">USB-C-apparaat (poort aan achterkant)</translation>
 <translation id="1882897271359938046">Spiegelen naar <ph name="DISPLAY_NAME" /></translation>
+<translation id="1885785240814121742">Ontgrendelen met vingerafdruk</translation>
 <translation id="1919743966458266018">De sneltoets om Taakbeheer te openen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatische klikken</translation>
 <translation id="1928739107511554905">Als je de update wilt downloaden, sluit je het toetsenbord aan en start je je Chromebook opnieuw op via het touchscreen.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">Plaktoetsen</translation>
 <translation id="2509468283778169019">CAPS LOCK is ingeschakeld</translation>
 <translation id="2532589005999780174">Modus voor hoog contrast</translation>
+<translation id="2575685495496069081">Toegang tot meerdere accounts is uitgeschakeld</translation>
 <translation id="2597972630681408282">Nachtverlichting: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Simkaart is vergrendeld</translation>
 <translation id="2653659639078652383">Verzenden</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">Gebied vastleggen</translation>
 <translation id="371370241367527062">Microfoon aan voorzijde</translation>
 <translation id="3771549900096082774">Modus voor hoog contrast</translation>
+<translation id="3773700760453577392">Een beheerder heeft geen toestemming gegeven voor toegang tot meerdere accounts voor <ph name="USER_EMAIL" />. Alle gebruikers moeten uitloggen om door te gaan</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Vergrendelen</translation>
 <translation id="3798670284305777884">Luidspreker (intern)</translation>

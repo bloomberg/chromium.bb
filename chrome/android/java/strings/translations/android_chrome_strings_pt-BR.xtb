@@ -60,6 +60,7 @@
 <translation id="1506061864768559482">Mecanismo de pesquisa</translation>
 <translation id="1513352483775369820">Favoritos e histórico da Web</translation>
 <translation id="1513858653616922153">Excluir senha</translation>
+<translation id="1516229014686355813">O recurso "Tocar para pesquisar" envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. É possível desativá-lo em <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />.</translation>
 <translation id="1539064842193522527">Link aberto no Chrome</translation>
 <translation id="1549000191223877751">Mover para outra janela</translation>
 <translation id="1553358976309200471">Atualizar o Google Chrome</translation>
@@ -314,6 +315,9 @@
 <translation id="4002066346123236978">Título</translation>
 <translation id="4042870126885713738">Mostrar sugestões quando um endereço da Web não for convertido ou uma conexão não puder ser estabelecida</translation>
 <translation id="4046123991198612571">Próxima faixa</translation>
+<translation id="4048707525896921369">Saiba mais sobre tópicos em sites sem sair da página. O recurso "Tocar para pesquisar" envia uma palavra e o contexto relacionado para a Pesquisa Google, que mostra definições, imagens, resultados da pesquisa e outros detalhes para você.
+
+Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refinar a pesquisa, deslize o painel totalmente para cima e toque na caixa de pesquisa.</translation>
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="4062305924942672200">Informações legais</translation>
 <translation id="4084682180776658562">Favorito</translation>

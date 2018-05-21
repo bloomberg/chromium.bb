@@ -546,6 +546,7 @@
 <translation id="4759118997339041434">Opción de autocompletar pagos inhabilitada</translation>
 <translation id="4764776831041365478">Es posible que la página web <ph name="URL" /> esté temporalmente inactiva o que se haya trasladado definitivamente a otra dirección.</translation>
 <translation id="4771973620359291008">Se ha producido un error desconocido.</translation>
+<translation id="4785689107224900852">Cambiar a esta pestaña</translation>
 <translation id="4792143361752574037">No se ha podido acceder a los archivos de la sesión. La opción para guardar contenido en el disco está inhabilitada. Vuelve a cargar la página para intentarlo de nuevo.</translation>
 <translation id="4800132727771399293">Comprueba la fecha de caducidad y el código CVC, y vuelve a intentarlo</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>

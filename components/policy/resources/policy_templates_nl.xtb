@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Externe bevestiging van apparaat inschakelen</translation>
 <translation id="1062407476771304334">Vervangen</translation>
 <translation id="1079801999187584280">Het gebruik van de hulpprogramma's voor ontwikkelaars niet toestaan</translation>
-<translation id="109166998561583554">Trigger voor accountmarkering wegens wachtwoordbeveiligingsrisico</translation>
 <translation id="1093082332347834239">Als de instelling is ingeschakeld, wordt de host voor ondersteuning op afstand uitgevoerd in een proces met <ph name="UIACCESS_PERMISSION_NAME" />-rechten. Zodoende kan een externe gebruiker de vensters met een verhoogde bevoegdheid op de desktop van de lokale gebruiker gebruiken.
 
           Als deze instelling is uitgeschakeld of niet geconfigureerd, wordt de host voor ondersteuning op afstand uitgevoerd in de context van de gebruiker en kan de externe gebruiker geen vensters met een verhoogde bevoegdheid op de desktop gebruiken.</translation>
@@ -106,7 +105,6 @@
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultJavaScriptSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />-clients):</translation>
-<translation id="1457305643416399820">Accountmarkering wegens wachtwoordbeveiligingsrisico is uitgeschakeld</translation>
 <translation id="1464848559468748897">Bepaal het gebruikersgedrag tijdens een sessie met meerdere profielen op <ph name="PRODUCT_OS_NAME" />-apparaten.
 
       Als dit beleid is ingesteld op 'MultiProfileUserBehaviorUnrestricted', kan de gebruiker de primaire of secundaire gebruiker in een sessie met meerdere profielen zijn.
@@ -325,6 +323,13 @@
 <translation id="2082205219176343977">Configureer de minimaal toegestane Chrome-versie voor het apparaat.</translation>
 <translation id="209586405398070749">Stabiel kanaal</translation>
 <translation id="2098658257603918882">Rapportage van gebruiks- en crashgegevens inschakelen</translation>
+<translation id="2111016292707172233">Hiermee wordt de beschikbaarheid van 'Tikken om te zoeken' ingeschakeld in de contentweergave van <ph name="PRODUCT_NAME" />.
+
+      Als je deze instelling inschakelt, is 'Tikken om te zoeken' beschikbaar voor de gebruiker en kan de gebruiker de functie in- of uitschakelen.
+
+      Als je deze instelling uitschakelt, wordt 'Tikken om te zoeken' volledig uitgeschakeld.
+
+      Als er geen instelling voor dit beleid is opgegeven, staat dit gelijk aan het inschakelen van het beleid (zie de beschrijving hierboven).</translation>
 <translation id="2113068765175018713">Uptime van apparaat beperken door automatisch opnieuw op te starten</translation>
 <translation id="2127599828444728326">Meldingen op deze sites toestaan</translation>
 <translation id="2131902621292742709">Vertraging van dimmen van scherm wanneer op de batterij wordt gewerkt</translation>
@@ -470,12 +475,6 @@
 <translation id="2386362615870139244">Schermactiveringsvergrendeling toestaan</translation>
 <translation id="2411817661175306360">Waarschuwing voor wachtwoordbeveiliging is uitgeschakeld</translation>
 <translation id="2411919772666155530">Meldingen op deze sites blokkeren</translation>
-<translation id="2415979855753196119">Hiermee kun je de activering van accountmarkering wegens wachtwoordbeveiligingsrisico beheren. Accountmarkering wegens wachtwoordbeveiligingsrisico houdt in dat Google op de hoogte wordt gebracht dat dit account risico loopt om te worden gehackt.
-
-      Als dit beleid is ingesteld op PasswordProtectionRiskOff, wordt er geen accountmarkering wegens wachtwoordbeveiligingsrisico geactiveerd.
-      Als dit beleid is ingesteld op PasswordProtectionRiskOnPasswordReuse, wordt accountmarkering wegens wachtwoordbeveiligingsrisico geactiveerd wanneer de gebruiker het Google-wachtwoord hergebruikt op een site die niet op de witte lijst staat.
-      Als dit beleid is ingesteld op PasswordProtectionRiskOnPhishingReuse, wordt accountmarkering wegens wachtwoordbeveiligingsrisico geactiveerd wanneer de gebruiker het Google-wachtwoord hergebruikt op een phishingsite.
-      Als dit beleid niet is ingesteld, wordt accountmarkering wegens wachtwoordbeveiligingsrisico geactiveerd wanneer de gebruiker het Google-wachtwoord hergebruikt op een phishingsite, maar kan de gebruiker deze instelling wijzigen.</translation>
 <translation id="2418507228189425036">Hiermee wordt het opslaan van de browsergeschiedenis in <ph name="PRODUCT_NAME" /> uitgeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
       Als deze instelling is ingeschakeld, wordt de browsergeschiedenis niet opgeslagen. Met deze instelling wordt ook tabbladsynchronisatie uitgeschakeld.
@@ -908,6 +907,7 @@
 <translation id="3646859102161347133">Het type vergrootglas instellen</translation>
 <translation id="3653237928288822292">Pictogram voor standaardzoekprovider</translation>
 <translation id="3660562134618097814">SAML IdP-cookies overdragen tijdens het inloggen</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Het veld met één regel is beëindigd en wordt in de toekomst verwijderd. Gebruik het tekstvak met meerdere regels hieronder.)</translation>
 <translation id="3709266154059827597">Zwarte lijst voor het installeren van extensies configureren</translation>
 <translation id="3711895659073496551">Onderbreken</translation>
 <translation id="3715569262675717862">Verificatie op basis van clientcertificaten</translation>
@@ -1019,6 +1019,7 @@
       Hiermee vermeld je extensies die automatisch worden geïnstalleerd voor de demogebruiker, voor apparaten in de commerciële modus. Deze extensies worden opgeslagen op het apparaat en kunnen worden geïnstalleerd in de offline modus, na de installatie.
 
       Elke lijstvermelding bevat een woordenboek dat de extensie-ID moet bevatten in het veld 'Extensie-ID' en de update-URL in het veld 'Update-URL'.</translation>
+<translation id="3874773863217952418">'Tikken om te zoeken' inschakelen</translation>
 <translation id="3877517141460819966">Geïntegreerde modus voor authenticatie met twee factoren</translation>
 <translation id="388237772682176890">Dit beleid is beëindigd in M53 en is verwijderd in M54, omdat de ondersteuning voor SPDY/3.1 is verwijderd.
 
@@ -1286,6 +1287,11 @@
 
           Ga voor voorbeeldpatronen naar https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Een lijst met URL's openen</translation>
+<translation id="4680936297850947973">Beëindigd in M68. Gebruik in plaats hiervan DefaultPopupsSetting.
+
+      Ga naar https://www.chromestatus.com/features/5675755719622656 voor een volledige uitleg.
+      Als je dit beleid inschakelt, kunnen sites tegelijkertijd navigeren en nieuwe vensters/tabbladen openen.
+      Als dit beleid is uitgeschakeld of niet is ingesteld, kunnen sites niet tegelijkertijd navigeren en nieuwe vensters/tabbladen openen.</translation>
 <translation id="4680961954980851756">Automatisch aanvullen inschakelen</translation>
 <translation id="4722122254122249791">Site-isolatie inschakelen voor gespecificeerde herkomsten</translation>
 <translation id="4722399051042571387">Als dit is ingesteld op 'false' (onwaar), kunnen gebruikers geen pincodes instellen die als zwak worden beschouwd en gemakkelijk kunnen worden geraden.
@@ -1569,7 +1575,6 @@
 
       Houd er rekening mee dat als het platform beleidsmeldingen ondersteunt, de vernieuwingsvertraging wordt ingesteld op 24 uur (hierbij worden alle standaardinstellingen en de waarde van dit beleid genegeerd) omdat beleidsmeldingen naar verwachting automatisch een vernieuwing afdwingen wanneer het beleid wordt gewijzigd, waardoor frequentere vernieuwingen overbodig zijn.</translation>
 <translation id="5530347722229944744">Potentieel gevaarlijke downloads blokkeren</translation>
-<translation id="5530586312297447592">Accountmarkering wegens wachtwoordbeveiligingsrisico wordt geactiveerd bij hergebruik van een wachtwoord op een phishingpagina</translation>
 <translation id="5535973522252703021">Witte lijst voor Kerberos-delegatieserver</translation>
 <translation id="555077880566103058">Alle sites toestaan om de <ph name="FLASH_PLUGIN_NAME" />-plug-in automatisch uit te voeren</translation>
 <translation id="5559079916187891399">Dit beleid is niet van invloed op Android-apps.</translation>
@@ -1945,7 +1950,6 @@
 
           De URL-patronen in dit beleid mogen niet conflicteren met de patronen die zijn ingesteld via WebUsbAskForUrls. Er is niet opgegeven welk beleid voorrang krijgt wanneer een URL met beide overeenkomt.</translation>
 <translation id="6689792153960219308">De hardwarestatus melden</translation>
-<translation id="6698071416141001300">Accountmarkering wegens wachtwoordbeveiligingsrisico wordt geactiveerd bij hergebruik van een wachtwoord</translation>
 <translation id="6699880231565102694">Authenticatie in twee stappen inschakelen voor hosts voor externe toegang</translation>
 <translation id="6724842112053619797">Als je deze instelling inschakelt, worden de instellingen die zijn opgeslagen in <ph name="PRODUCT_NAME" />-profielen (zoals bladwijzers, gegevens voor automatisch aanvullen, wachtwoorden, enzovoort), ook geschreven naar een bestand dat is opgeslagen in de map voor roaming-gebruikersprofielen of op een locatie die de beheerder heeft opgegeven via het beleid <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Als je dit beleid inschakelt, wordt cloud-synchronisatie uitgeschakeld.
 

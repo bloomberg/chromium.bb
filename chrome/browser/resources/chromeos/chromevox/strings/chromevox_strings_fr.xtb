@@ -17,6 +17,7 @@
 <translation id="1082209053475788238">Aucun titre de niveau 6 précédent</translation>
 <translation id="1088219014394087294">Aucun titre</translation>
 <translation id="1106741348836243114">Activer ou désactiver les commentaires audio (icônes audio)</translation>
+<translation id="1108651818222110612">sous-titre</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1124771028211010580">Le style d'affichage actuel est "côte à côte".</translation>
 <translation id="113582498867142724">Collection de <ph name="TAG" /> avec <ph name="NUM" /> éléments</translation>
@@ -27,12 +28,14 @@
 <translation id="1167230103353892028"><ph name="NAME" />, élément de menu comportant un sous-menu</translation>
 <translation id="1177863135347784049">Personnalisé</translation>
 <translation id="1188858454923323853">complémentaire</translation>
+<translation id="1195238899008218998">Postface</translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox donne la parole à Google Chrome.</translation>
 <translation id="1225437811932752266">Félicitations ! Vous avez appris les bases pour utiliser ChromeVox. N'oubliez pas que vous pouvez ouvrir le menu de commandes ChromeVox à tout moment en appuyant sur la touche de recherche+point. Pour en savoir davantage sur ChromeVox et Chrome OS, consultez les articles ci-après.
 Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de fermeture, puis cliquez sur ce dernier.</translation>
 <translation id="1229276918471378188">Renvoi précédent</translation>
+<translation id="1236794971743289975">Note de fin</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">En-tête suivant de niveau 6</translation>
 <translation id="1275718070701477396">Sélectionnée</translation>
@@ -52,6 +55,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">région</translation>
 <translation id="1452236308086741652"><ph name="VALUE" />, zone de texte du mot de passe</translation>
+<translation id="146450394670219700">Objet graphique</translation>
 <translation id="1467432559032391204">Vers la gauche</translation>
 <translation id="1474557363159888097">Aucun ancrage précédent</translation>
 <translation id="1480046233931937785">Remerciements</translation>
@@ -108,6 +112,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2010555995361223825">Menus ChromeVox</translation>
 <translation id="2045490512405922022">non cochée</translation>
 <translation id="20601713649439366">Aucune expression mathématique précédente</translation>
+<translation id="2063539687800151747">Épigraphe</translation>
 <translation id="207477615537953741">Interprétation sémantique désactivée</translation>
 <translation id="2086961585857038472">Mot suivant</translation>
 <translation id="2089387485033699258">fr</translation>
@@ -118,6 +123,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2121067395472282800">touche d'accès : <ph name="KEY" /></translation>
 <translation id="2138345533858834403">Simule la sortie d'un affichage braille actualisable
         dans le panneau ChromeVox en haut de l'écran.</translation>
+<translation id="2163782704988363449">Errata</translation>
 <translation id="2169714232367507776">Cliquer sur l'élément actuel</translation>
 <translation id="2179452035581866348">ChromeVox utilise des sons pour vous fournir des informations essentielles et des données complémentaires. Découvrez la signification de chaque son afin d'optimiser votre navigation. Lorsque ces sons vous sont devenus familiers, vous pouvez désactiver les descriptions vocales détaillées et ne vous fier qu'à eux pour obtenir les informations essentielles présentes sur la page. Voici la liste complète des sons, avec la signification de chacun.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{parenthèse fermée}one{# parenthèse fermée}other{# parenthèses fermées}}</translation>
@@ -139,6 +145,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="241124561063364910">suivi de</translation>
 <translation id="2416512023405990736">Une case décochée</translation>
 <translation id="2417569100218200841">Infos sur le contenu</translation>
+<translation id="2417948780551741035">Notes de fin</translation>
 <translation id="2422937916923936891">Case à cocher d'élément de menu</translation>
 <translation id="2428534162001909979">Menus de commandes</translation>
 <translation id="2429669115401274487">p.m.</translation>
@@ -161,6 +168,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2637227747952042642">Objet Math</translation>
 <translation id="2639750663247012216">Touche de modification ChromeVox</translation>
 <translation id="2644542693584024604">faute d'orthographe</translation>
+<translation id="2661530546602071611">Notification</translation>
 <translation id="2673280813984708147">modifie</translation>
 <translation id="267442004702508783">actualiser</translation>
 <translation id="2684412629217766642">Fermer le didacticiel ChromeVox</translation>
@@ -173,6 +181,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2732718972699418926">a.m.</translation>
 <translation id="2749275490991666823">Cochée</translation>
 <translation id="27527859628328957">Renvoyer à l'élément suivant pouvant être agrandi</translation>
+<translation id="276402504937943375">sommaire</translation>
 <translation id="2770781857296573485">Passer en mode d'exploration par groupe</translation>
 <translation id="2777845298774924149">Fermé</translation>
 <translation id="2781264313200109999">Début du lien</translation>
@@ -189,6 +198,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2844995807198708617">Menu contextuel</translation>
 <translation id="2849332794118375855">Aucune case à cocher suivante</translation>
 <translation id="2864481629947106776">Lien précédent</translation>
+<translation id="2867808975387772810">Bibliographie</translation>
 <translation id="2873259058405069099">Accéder au début du tableau</translation>
 <translation id="288178314850623291">Utilisez les commandes d'accès direct pour passer à des types spécifiques d'éléments. Pour accéder directement au titre suivant, appuyez sur la touche de recherche+H, et pour revenir directement au titre précédent, appuyez sur la touche de recherche+Maj+H.</translation>
 <translation id="2894654529758326923">Informations</translation>
@@ -318,7 +328,9 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="3514822174137761109">{COUNT,plural, =1{caret}one{# caret}other{# carets}}</translation>
 <translation id="352577523970648069">Un champ de texte modifiable</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, case non cochée</translation>
+<translation id="3589661172894441357">Glossaire</translation>
 <translation id="3599054940393788245">En dehors de l'expression mathématique</translation>
+<translation id="360241989769010433">Remerciements</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{apostrophe inversée}one{# apostrophe inversée}other{# apostrophes inversées}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
@@ -348,6 +360,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="3909320334364316587">En-tête précédent de niveau 6</translation>
 <translation id="3914173277599553213">Obligatoire</translation>
 <translation id="3914732343065571127">Référence des commandes ChromeVox</translation>
+<translation id="3930498801443296724">Témoignage</translation>
 <translation id="3962990492275676168">Démarrer la description audio à partir de l'emplacement actuel</translation>
 <translation id="4004802134384979325">cochée</translation>
 <translation id="4006140876663370126">image</translation>
@@ -402,6 +415,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4373197658375206385">Aucun élément précédent autre qu'un lien</translation>
 <translation id="4376316291247992553">Consulter une image en braille</translation>
 <translation id="4378308539633073595">Faire défiler vers l'avant</translation>
+<translation id="4384583879834880242">Questions/Réponses</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">réinitialiser</translation>
 <translation id="4457472090507035117">Sélectionner la voix actuelle :</translation>
@@ -423,6 +437,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4601367666219428522">Tab <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">La prochaine touche actionnée sera ignorée.</translation>
 <translation id="461613135510474570">Navigation par phrase</translation>
+<translation id="4623097797855662355">Achevé d'imprimer</translation>
 <translation id="463135993322337640">Appuyez sur ChromeVox o, n pour découvrir les nouveautés</translation>
 <translation id="4647836961514597010">Palette couleurs</translation>
 <translation id="4652110509054054146">Utilisez la touche de recherche et la flèche de gauche ou de droite pour la touche Accueil ou Fin, ou la touche de recherche, Contrôle, flèche de gauche ou de droite pour la combinaison Contrôle Accueil ou Contrôle Fin, ou la touche de recherche, flèche vers le haut ou flèche le bas pour la touche Page précédente ou Page suivante.</translation>
@@ -457,6 +472,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4877261390094455813">Saisissez une requête de recherche.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" /> sur <ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Lien interne</translation>
+<translation id="492295894462528572">Avant-propos</translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4953585991029886728">Modifier le texte</translation>
 <translation id="4954534434583049121">Bloc de citation précédent</translation>
@@ -491,6 +507,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5111640677200759579">En-tête de colonne</translation>
 <translation id="5136967254288895616">Aucun lien précédent</translation>
 <translation id="513774504516943387">lien</translation>
+<translation id="5158275234811857234">Couverture</translation>
 <translation id="517143700877085897">, désélectionné</translation>
 <translation id="5183440668879371625">Ligne précédente (braille)</translation>
 <translation id="5184944171021383281">Aucun champ de formulaire suivant</translation>
@@ -501,6 +518,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Fin</translation>
 <translation id="5291783959063340370">Navigation par objet</translation>
+<translation id="5302089807023311274">Référence bibliographique</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, onglet</translation>
 <translation id="5310788376443009632">Éléments supprimés :</translation>
 <translation id="5320727453979144100">Mode permanent activé</translation>
@@ -508,6 +526,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="532371086589123547"><ph name="VALUE" />, zone de texte</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, lien</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
+<translation id="5349770431644471053">Lien entrant</translation>
 <translation id="536031132345979795">Retour en arrière en lecture en continu</translation>
 <translation id="5368000168321181111">Icônes audio désactivées</translation>
 <translation id="5374320867641260420">Aucun bouton suivant</translation>
@@ -523,6 +542,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5446809554778706307">Aucune sélection. Appuyez sur Ctrl+T pour ouvrir un nouvel onglet.</translation>
 <translation id="5451268436205074266">points <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Complémentaire</translation>
+<translation id="5462510922370980473">Liste des pages</translation>
 <translation id="5485036206801896268">Aucune image précédente</translation>
 <translation id="5486947920110100234">Aucun renvoi suivant</translation>
 <translation id="549602578321198708">Navigation par mot</translation>
@@ -548,6 +568,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5623778242535476823">rbtn</translation>
 <translation id="5623842676595125836">Journal</translation>
 <translation id="5628125749885014029">h4</translation>
+<translation id="5632083598315326067">Symbole graphique</translation>
 <translation id="5637871198229500030">Aucun tableau précédent</translation>
 <translation id="5653397561111110475">Utiliser les fonctionnalités d'accessibilité de l'écran tactile du Chromebook</translation>
 <translation id="5655682562155942719">Commandes d'accès direct</translation>
@@ -567,10 +588,12 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5732189279857692565">Il s'agit du deuxième titre. Pour continuer, appuyez sur la touche de recherche+H ou sur la touche de recherche+Maj+H</translation>
 <translation id="5748623122140342504">En-tête précédent de niveau 5</translation>
 <translation id="5750633686117194034">Vous n'avez appuyé sur aucune touche de modification. Veuillez appuyer sur une ou plusieurs d'entre elles, puis relever les doigts. Les touches définies sont alors énoncées. Appuyez sur la touche de tabulation pour quitter.</translation>
+<translation id="5760594853119905566">Annexe</translation>
 <translation id="5788275253279308023">fenêtre de navigation privée onglet <ph name="TITLE" /></translation>
 <translation id="5806206155699461681">Améliorez certains sites (tels que la recherche Google).</translation>
 <translation id="5819072574982403430">Élément d'arborescence</translation>
 <translation id="5826479389509458994">ligne <ph name="ROW" />, colonne <ph name="COL" /></translation>
+<translation id="5847883414085148048">Dédicace</translation>
 <translation id="5850707923114094062">Panoramique arrière</translation>
 <translation id="5851548754964597211">Liste d'onglets</translation>
 <translation id="5859752971144398932">Vous avez quitté la recherche.</translation>
@@ -581,6 +604,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5887397643266327462">Sous-titres braille activés</translation>
 <translation id="5891934789323004067">Tableau</translation>
 <translation id="5899860758576822363">Lire le contenu à un volume sonore moins élevé pendant la diffusion des commentaires audio ChromeVox</translation>
+<translation id="5921587111466148855">Chapitre</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{signe égal}one{# signe égal}other{# signes égal}}</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
 <translation id="5948123859135882163">Passer de l'interprétation structurelle à l'interprétation sémantique des expressions mathématiques et vice versa</translation>
@@ -589,6 +613,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5963413905009737549">Section</translation>
 <translation id="5968607524793740041">Afficher le menu contextuel</translation>
 <translation id="5983179082906765664">Augmenter la granularité de la navigation</translation>
+<translation id="5992285135956208197">Document graphique</translation>
 <translation id="5999630716831179808">Voix</translation>
 <translation id="6006050241733874051">Formulaire</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{barre oblique inverse}one{# barre oblique inverse}other{# barres obliques inverses}}</translation>
@@ -637,6 +662,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="6444046323172968959">Boîte de dialogue d'alerte</translation>
 <translation id="6459511626086141404">Mappage plat du clavier</translation>
 <translation id="6468049171101508116">Bouton suivant</translation>
+<translation id="646954774886932461">Index</translation>
 <translation id="6493991254603208962">Baisser la luminosité</translation>
 <translation id="6508059270146105198">Déplacer l'écran de braille vers le bas de la page</translation>
 <translation id="6536864053412760904">Jeton MathML</translation>
@@ -646,12 +672,14 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="6587021927234520429">Aucun titre de niveau 4 suivant</translation>
 <translation id="6601344353291556895">Activer les descriptions détaillées</translation>
 <translation id="6615602925644411249">Rechercher sur la page</translation>
+<translation id="6628427060004938651">Partie</translation>
 <translation id="6633350132811819843">Aucun tableau suivant</translation>
 <translation id="6637586476836377253">journal</translation>
 <translation id="6657128831881431364">Barre de progression</translation>
 <translation id="6659594942844771486">Onglet</translation>
 <translation id="667999046851023355">Document</translation>
 <translation id="6688209025607531203">Une alerte non modale</translation>
+<translation id="6696967141280706829">Préface</translation>
 <translation id="6697092096875747123">Liste déroulante précédente</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{point d'exclamation}one{# point d'exclamation}other{# points d'exclamation}}</translation>
 <translation id="6710213216561001401">Précédent</translation>
@@ -666,6 +694,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="6787839852456839824">Raccourcis clavier</translation>
 <translation id="6793101435925451627">zone liste</translation>
 <translation id="6833103209700200188">Pied de page</translation>
+<translation id="6858047746862060282">Prologue</translation>
 <translation id="6871161210040114857">Insensible à la casse</translation>
 <translation id="6877435256196695200">Aucune image suivante</translation>
 <translation id="6897341342232909480">Déplacer vers la gauche</translation>
@@ -675,12 +704,21 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="6911965441508464308">Aucune cellule au-dessus</translation>
 <translation id="6919104639734799681">Afficher la liste des tableaux</translation>
 <translation id="6964088412282673743">Aucune commande précédente.</translation>
+<translation id="6994042831499278539">Référence de glossaire</translation>
 <translation id="6996566555547746822">Liste déroulante suivante</translation>
+<translation id="700202842116345659">Entrée bibliographique</translation>
 <translation id="7005146664810010831">Aucune URL trouvée</translation>
 <translation id="7010712454773919705">Touche de modification ChromeVox</translation>
 <translation id="7031651751836475482">élément liste</translation>
 <translation id="7037042857287298941">Liste précédente</translation>
 <translation id="7041173719775863268">Fin de la sélection</translation>
+<translation id="7048792632163898198">Les quelques nouveaux raccourcis ne sont pas des commandes ChromeVox, mais ils restent très utiles pour exploiter tout le potentiel de Chrome.
+Pour passer à l'élément interactif suivant comme un bouton ou un lien, appuyez sur la touche Tabulation, et pour revenir à l'élément précédent, appuyez sur Maj+Tabulation.
+Pour accéder à la zone d'adresse du navigateur Chrome, appelée également "omnibox", appuyez sur Ctrl+L.
+Pour ouvrir et accéder à un nouvel onglet automatiquement, appuyez sur Ctrl+T. Le curseur est alors placé dans l'omnibox.
+Pour fermer un onglet, appuyez sur Ctrl+W.
+Pour passer à l'onglet ouvert suivant, appuyez sur Ctrl+Tabulation.
+Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="7086377898680121060">Augmenter la luminosité</translation>
 <translation id="7095834689119144465">Texte de modification (chiffres uniquement)</translation>
 <translation id="7096001299300236431">Contenu multimédia précédent</translation>
@@ -688,6 +726,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="712735679809149106">écho des mots</translation>
 <translation id="713824876195128146">Bloc de citation suivant</translation>
 <translation id="7143034430156387447">Alterner entre les méthodes braille à six et huit points</translation>
+<translation id="7157306005867877619">Résumé</translation>
 <translation id="7161425887892204659">Fin de la correspondance de texte</translation>
 <translation id="7161771961008409533">Bouton pop-up</translation>
 <translation id="7165714724802225287">Le style d'affichage actuel est "entrelacé".</translation>
@@ -706,6 +745,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="725969808843520477">Case d'option suivante</translation>
 <translation id="7269119382257320590">Aucun signe de ponctuation</translation>
 <translation id="7273174640290488576">Vide</translation>
+<translation id="7274770952766771364">Référence de note</translation>
 <translation id="7285387653379749618">Tableaux</translation>
 <translation id="7289186959554153431">Titre 3</translation>
 <translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
@@ -727,6 +767,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="7420313809195758138">Afficher le contexte d'un élément avant d'autres informations (comme son nom).</translation>
 <translation id="7425395583360211003">Retour</translation>
 <translation id="7434509671034404296">Options pour les développeurs</translation>
+<translation id="743783356331413498">Exemple</translation>
 <translation id="7439060726180460871">Répertoire</translation>
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">tabulation</translation>
@@ -740,10 +781,12 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">Énoncer l'URL de la page actuelle</translation>
 <translation id="7609363189280667021">Activer/Désactiver les sous-titres en braille</translation>
+<translation id="761303759119251275">Crédit</translation>
 <translation id="762020119231868829">Met en veille tous les widgets multimédias en cours d'utilisation</translation>
 <translation id="7625690649919402823">Tableau suivant</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), niveau <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Aucun titre de niveau 3 précédent</translation>
+<translation id="7647456547678091388">conseil</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, zone de texte</translation>
 <translation id="7663318257180412551">Titre 2</translation>
 <translation id="7674576868851035240">Lien suivant</translation>
@@ -756,6 +799,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, zone de texte du mot de passe</translation>
 <translation id="7773125101284285285">Fin du texte souligné</translation>
 <translation id="7776293189010177726">Ouvrir les menus ChromeVox</translation>
+<translation id="7800558923657349506">Épilogue</translation>
 <translation id="7805247615045262757">navigation par défaut</translation>
 <translation id="7805768142964895445">État</translation>
 <translation id="7810781339813764006">Groupe suivant</translation>
@@ -777,8 +821,10 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{guillemet}one{# guillemet}other{# guillemets}}</translation>
 <translation id="8017588669690167134">Voix désactivée</translation>
+<translation id="801990297710781303">Note de bas de page</translation>
 <translation id="8033827949643255796">sélectionné</translation>
 <translation id="8035962149453661158">max. : <ph name="X" /></translation>
+<translation id="8037651341025652929">Conclusion</translation>
 <translation id="8042761080832772327">Modifier le texte de la requête de recherche</translation>
 <translation id="8049189770492311300">Horloge</translation>
 <translation id="8065607967589909823">La sélection est la suivante :</translation>
@@ -795,6 +841,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="820417203470636242">Cellule vide</translation>
 <translation id="820469951249669083">Accéder à la ligne suivante</translation>
 <translation id="8215202828671303819">Sélection multiple</translation>
+<translation id="826825447994856889">Introduction</translation>
 <translation id="826991282343985864">l$1c$2</translation>
 <translation id="8276439074553447000">Renvoyer à l'élément précédent pouvant être agrandi</translation>
 <translation id="8278417001922463147">Aucun article précédent</translation>
@@ -869,6 +916,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="9043969572162476692"><ph name="NUM" /> %</translation>
 <translation id="9061884144798498064">Sélectionner un tableau braille à huit points :</translation>
 <translation id="9065283790526219006">+pop-up</translation>
+<translation id="9067522039955793016">Saut de page</translation>
 <translation id="9077213568694924680">supprimé de la sélection</translation>
 <translation id="9082874451376019682">Aucun curseur précédent</translation>
 <translation id="9087707351856729768">Saisissez du texte pour activer la saisie semi-automatique.</translation>
