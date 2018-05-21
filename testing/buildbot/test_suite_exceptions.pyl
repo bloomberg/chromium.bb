@@ -685,13 +685,6 @@
       # chromium.win
       'Win7 Tests (dbg)(1)',
       'Win10 Tests x64 (dbg)',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',
-      'Linux ASan Tests (sandboxed)',
-      'Linux Chromium OS ASan LSan Tests (1)',
-      'Linux ChromiumOS MSan Tests',
-      'Linux MSan Tests',
-      'Linux TSan Tests',
     ],
     'modifications': {
       'android-marshmallow-arm64-rel': {
