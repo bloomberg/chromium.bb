@@ -23,7 +23,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "chrome/common/buildflags.h"
 #include "components/metrics/data_use_tracker.h"
 #include "components/prefs/pref_member.h"
@@ -67,7 +66,6 @@ class HttpAuthHandlerFactory;
 class HttpAuthPreferences;
 class NetworkQualityEstimator;
 class RTTAndThroughputEstimatesObserver;
-class SSLConfigService;
 class URLRequestContext;
 class URLRequestContextGetter;
 }  // namespace net
@@ -199,9 +197,6 @@ class IOThread : public content::BrowserThreadDelegate {
   std::unique_ptr<net::HttpAuthHandlerFactory> CreateDefaultAuthHandlerFactory(
       net::HostResolver* host_resolver);
 
-  // Returns an SSLConfigService instance.
-  net::SSLConfigService* GetSSLConfigService();
-
   void ChangedToOnTheRecordOnIOThread();
 
   void UpdateDnsClientEnabled();
@@ -281,10 +276,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // the IO thread.
   network::mojom::NetworkContextRequest network_context_request_;
   network::mojom::NetworkContextParamsPtr network_context_params_;
-
-  // This is an instance of the default SSLConfigServiceManager for the current
-  // platform and it gets SSL preferences from local_state object.
-  std::unique_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
   scoped_refptr<net::URLRequestContextGetter>
       system_url_request_context_getter_;

@@ -15,6 +15,7 @@ import "services/network/public/mojom/ct_log_info.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "services/network/public/mojom/proxy_config.mojom";
 import "services/network/public/mojom/proxy_config_with_annotation.mojom";
+import "services/network/public/mojom/ssl_config.mojom";
 import "services/network/public/mojom/tcp_socket.mojom";
 import "services/network/public/mojom/udp_socket.mojom";
 import "services/network/public/mojom/url_loader.mojom";
@@ -104,6 +105,12 @@ struct NetworkContextParams {
 
   // Enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
   bool http_09_on_non_default_ports_enabled = false;
+
+  // SSL configuration. |intial_proxy_config| is the initial SSL configuration
+  // to use. If nullptr, uses the default configuration. Updated SSL
+  // configurations can be passed in via |ssl_config_client_request|.
+  SSLConfig? initial_ssl_config;
+  SSLConfigClient&? ssl_config_client_request;
 
   // Proxy configuration. If |intial_proxy_config| is set, it's the initial
   // proxy configuration. Updated proxy configuration can be passed in via

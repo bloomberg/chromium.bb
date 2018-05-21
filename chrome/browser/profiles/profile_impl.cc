@@ -84,7 +84,6 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
-#include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/prefs_internals_source.h"
 #include "chrome/common/buildflags.h"
@@ -607,12 +606,6 @@ void ProfileImpl::DoFinalInit() {
   UpdateIsEphemeralInStorage();
   GAIAInfoUpdateServiceFactory::GetForProfile(this);
 
-  PrefService* local_state = g_browser_process->local_state();
-  ssl_config_service_manager_.reset(
-      SSLConfigServiceManager::CreateDefaultManager(
-          local_state,
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
-
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   // Initialize the BackgroundModeManager - this has to be done here before
   // InitExtensions() is called because it relies on receiving notifications
@@ -643,6 +636,7 @@ void ProfileImpl::DoFinalInit() {
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
 
+  PrefService* local_state = g_browser_process->local_state();
   io_data_.Init(media_cache_path, media_cache_max_size, extensions_cookie_path,
                 GetPath(), predictor_, GetSpecialStoragePolicy(),
                 reporting_permissions_checker_factory_.CreateChecker(),
@@ -1027,17 +1021,6 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
 
 net::URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
   return io_data_.GetExtensionsRequestContextGetter().get();
-}
-
-net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
-  // If ssl_config_service_manager_ is null, this typically means that some
-  // KeyedService is trying to create a RequestContext at startup,
-  // but SSLConfigServiceManager is not initialized until DoFinalInit() which is
-  // invoked after all KeyedServices have been initialized (see
-  // http://crbug.com/171406).
-  DCHECK(ssl_config_service_manager_)
-      << "SSLConfigServiceManager is not initialized yet";
-  return ssl_config_service_manager_->Get();
 }
 
 content::BrowserPluginGuestManager* ProfileImpl::GetGuestManager() {

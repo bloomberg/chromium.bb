@@ -70,6 +70,10 @@ class NET_EXPORT SSLConfigService
   // called on the IO thread.
   void NotifySSLConfigChange();
 
+  // Checks if the config-service managed fields in two SSLConfigs are the same.
+  static bool SSLConfigsAreEqualForTesting(const net::SSLConfig& config1,
+                                           const net::SSLConfig& config2);
+
  protected:
   friend class base::RefCountedThreadSafe<SSLConfigService>;
 

@@ -70,7 +70,6 @@ class OffTheRecordProfileImpl : public Profile {
       const base::FilePath& partition_path,
       bool in_memory) override;
   void RegisterInProcessServices(StaticServiceMap* services) override;
-  net::SSLConfigService* GetSSLConfigService() override;
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;
   base::FilePath last_selected_directory() override;

@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -14,12 +13,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_store.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
-#include "net/ssl/ssl_config.h"
-#include "net/ssl/ssl_config_service.h"
+#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/ssl_config.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using net::SSLConfig;
-using net::SSLConfigService;
 
 class CommandLinePrefStoreSSLManagerTest : public testing::Test {
  public:
@@ -46,20 +42,19 @@ TEST_F(CommandLinePrefStoreSSLManagerTest, CommandLinePrefs) {
   std::unique_ptr<PrefService> local_state(factory.Create(registry.get()));
 
   SSLConfigServiceManager::RegisterPrefs(registry.get());
-
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
   std::unique_ptr<SSLConfigServiceManager> config_manager(
-      SSLConfigServiceManager::CreateDefaultManager(
-          local_state.get(), base::ThreadTaskRunnerHandle::Get()));
-  ASSERT_TRUE(config_manager.get());
-  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
-  ASSERT_TRUE(config_service.get());
+      SSLConfigServiceManager::CreateDefaultManager(local_state.get()));
+  config_manager->AddToNetworkContextParams(context_params.get());
 
-  SSLConfig ssl_config;
-  config_service->GetSSLConfig(&ssl_config);
   // Command-line flags should be respected.
-  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_1, ssl_config.version_min);
-  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_3, ssl_config.version_max);
-  EXPECT_EQ(net::kTLS13VariantDraft23, ssl_config.tls13_variant);
+  EXPECT_EQ(network::mojom::SSLVersion::kTLS11,
+            context_params->initial_ssl_config->version_min);
+  EXPECT_EQ(network::mojom::SSLVersion::kTLS13,
+            context_params->initial_ssl_config->version_max);
+  EXPECT_EQ(network::mojom::TLS13Variant::kDraft23,
+            context_params->initial_ssl_config->tls13_variant);
 
   // Explicitly double-check the settings are not in the preference store.
   const PrefService::Preference* version_min_pref =
@@ -101,18 +96,17 @@ TEST_F(CommandLinePrefStoreSSLManagerTest, TLS13VariantEnabled) {
 
   SSLConfigServiceManager::RegisterPrefs(registry.get());
 
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
   std::unique_ptr<SSLConfigServiceManager> config_manager(
-      SSLConfigServiceManager::CreateDefaultManager(
-          local_state.get(), base::ThreadTaskRunnerHandle::Get()));
-  ASSERT_TRUE(config_manager.get());
-  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
-  ASSERT_TRUE(config_service.get());
+      SSLConfigServiceManager::CreateDefaultManager(local_state.get()));
+  config_manager->AddToNetworkContextParams(context_params.get());
 
-  SSLConfig ssl_config;
-  config_service->GetSSLConfig(&ssl_config);
   // Command-line flags should be respected.
-  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_3, ssl_config.version_max);
-  EXPECT_EQ(net::kTLS13VariantDraft23, ssl_config.tls13_variant);
+  EXPECT_EQ(network::mojom::SSLVersion::kTLS13,
+            context_params->initial_ssl_config->version_max);
+  EXPECT_EQ(network::mojom::TLS13Variant::kDraft23,
+            context_params->initial_ssl_config->tls13_variant);
 }
 
 // Test that setting a disabled TLS 1.3 variant correctly sets SSLVersionMax.
@@ -132,15 +126,13 @@ TEST_F(CommandLinePrefStoreSSLManagerTest, TLS13VariantDisabled) {
 
   SSLConfigServiceManager::RegisterPrefs(registry.get());
 
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
   std::unique_ptr<SSLConfigServiceManager> config_manager(
-      SSLConfigServiceManager::CreateDefaultManager(
-          local_state.get(), base::ThreadTaskRunnerHandle::Get()));
-  ASSERT_TRUE(config_manager.get());
-  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
-  ASSERT_TRUE(config_service.get());
+      SSLConfigServiceManager::CreateDefaultManager(local_state.get()));
+  config_manager->AddToNetworkContextParams(context_params.get());
 
-  SSLConfig ssl_config;
-  config_service->GetSSLConfig(&ssl_config);
   // Command-line flags should be respected.
-  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_2, ssl_config.version_max);
+  EXPECT_EQ(network::mojom::SSLVersion::kTLS12,
+            context_params->initial_ssl_config->version_max);
 }

@@ -39,10 +39,6 @@ namespace content {
 class WebUI;
 }
 
-namespace net {
-class SSLConfigService;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -203,9 +199,6 @@ class Profile : public content::BrowserContext {
   // Returns the request context used for extension-related requests.  This
   // is only used for a separate cookie store currently.
   virtual net::URLRequestContextGetter* GetRequestContextForExtensions() = 0;
-
-  // Returns the SSLConfigService for this profile.
-  virtual net::SSLConfigService* GetSSLConfigService() = 0;
 
   // Return whether 2 profiles are the same. 2 profiles are the same if they
   // represent the same profile. This can happen if there is pointer equality

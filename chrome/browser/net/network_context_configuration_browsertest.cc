@@ -47,6 +47,8 @@
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
+#include "net/ssl/ssl_config.h"
+#include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
@@ -737,6 +739,90 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Hsts) {
 }
 
 #endif  // !defined(OS_MACOSX)
+
+// Check that the SSLConfig is hooked up. PRE_SSLConfig checks that changing
+// local_state() after start modifies the SSLConfig, SSLConfig makes sure the
+// (now modified) initial value of local_state() is respected.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_SSLConfig) {
+  // Start a TLS 1.0 server.
+  net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::SSLServerConfig ssl_config;
+  ssl_config.version_min = net::SSL_PROTOCOL_VERSION_TLS1;
+  ssl_config.version_max = net::SSL_PROTOCOL_VERSION_TLS1;
+  ssl_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  ssl_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(ssl_server.Start());
+
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  request->url = ssl_server.GetURL("/echo");
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory(), simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+#if defined(OS_MACOSX)
+  // TODO(https://crbug.com/757088):  Test certs don't work on OSX, with the
+  // network service.
+  if (GetParam().network_service_state != NetworkServiceState::kDisabled) {
+    EXPECT_FALSE(simple_loader_helper.response_body());
+  } else {
+    ASSERT_TRUE(simple_loader_helper.response_body());
+    EXPECT_EQ(*simple_loader_helper.response_body(), "Echo");
+  }
+#else
+  ASSERT_TRUE(simple_loader_helper.response_body());
+  EXPECT_EQ(*simple_loader_helper.response_body(), "Echo");
+#endif
+
+  // Disallow TLS 1.0 via prefs.
+  g_browser_process->local_state()->SetString(prefs::kSSLVersionMin,
+                                              switches::kSSLVersionTLSv11);
+  // Flush the changes to the network process, to avoid a race between updating
+  // the config and the next request.
+  g_browser_process->system_network_context_manager()
+      ->FlushSSLConfigManagerForTesting();
+
+  // With the new prefs, requests to the server should be blocked.
+  request = std::make_unique<network::ResourceRequest>();
+  request->url = ssl_server.GetURL("/echo");
+  content::SimpleURLLoaderTestHelper simple_loader_helper2;
+  simple_loader = network::SimpleURLLoader::Create(
+      std::move(request), TRAFFIC_ANNOTATION_FOR_TESTS);
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory(), simple_loader_helper2.GetCallback());
+  simple_loader_helper2.WaitForCallback();
+  EXPECT_FALSE(simple_loader_helper2.response_body());
+  EXPECT_EQ(net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH, simple_loader->NetError());
+}
+
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, SSLConfig) {
+  // Start a TLS 1.0 server.
+  net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::SSLServerConfig ssl_config;
+  ssl_config.version_min = net::SSL_PROTOCOL_VERSION_TLS1;
+  ssl_config.version_max = net::SSL_PROTOCOL_VERSION_TLS1;
+  ssl_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  ASSERT_TRUE(ssl_server.Start());
+
+  // Making a request should fail, since PRE_SSLConfig saved a pref to disallow
+  // TLS 1.0.
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  request->url = ssl_server.GetURL("/echo");
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory(), simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+  EXPECT_FALSE(simple_loader_helper.response_body());
+  EXPECT_EQ(net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH, simple_loader->NetError());
+}
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, ProxyConfig) {
   SetProxyPref(embedded_test_server()->host_port_pair());

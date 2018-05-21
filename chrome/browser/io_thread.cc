@@ -363,10 +363,6 @@ IOThread::IOThread(
       nullptr,
       nullptr,
       local_state);
-  ssl_config_service_manager_.reset(
-      SSLConfigServiceManager::CreateDefaultManager(
-          local_state,
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
   local_state->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
                                    base::Value(ShouldEnableAsyncDns()));
@@ -663,10 +659,6 @@ void IOThread::DisableQuic() {
   globals_->quic_disabled = true;
 }
 
-net::SSLConfigService* IOThread::GetSSLConfigService() {
-  return ssl_config_service_manager_->Get();
-}
-
 void IOThread::ChangedToOnTheRecordOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -720,7 +712,6 @@ void IOThread::ConstructSystemRequestContext() {
   std::unique_ptr<net::HostResolver> host_resolver(
       CreateGlobalHostResolver(net_log_));
 
-  builder->set_ssl_config_service(GetSSLConfigService());
   builder->SetHttpAuthHandlerFactory(
       CreateDefaultAuthHandlerFactory(host_resolver.get()));
 

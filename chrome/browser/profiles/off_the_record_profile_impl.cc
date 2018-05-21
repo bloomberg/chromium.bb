@@ -401,10 +401,6 @@ content::ResourceContext* OffTheRecordProfileImpl::GetResourceContext() {
   return io_data_->GetResourceContext();
 }
 
-net::SSLConfigService* OffTheRecordProfileImpl::GetSSLConfigService() {
-  return profile_->GetSSLConfigService();
-}
-
 content::BrowserPluginGuestManager* OffTheRecordProfileImpl::GetGuestManager() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   return guest_view::GuestViewManager::FromBrowserContext(this);

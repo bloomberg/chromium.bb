@@ -77,7 +77,6 @@ class ClientCertStore;
 class CookieStore;
 class HttpTransactionFactory;
 class ReportSender;
-class SSLConfigService;
 class URLRequestContextBuilder;
 class URLRequestJobFactoryImpl;
 
@@ -346,7 +345,6 @@ class ProfileIOData {
 
     scoped_refptr<content_settings::CookieSettings> cookie_settings;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
-    scoped_refptr<net::SSLConfigService> ssl_config_service;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::InfoMap> extension_info_map;
 #endif

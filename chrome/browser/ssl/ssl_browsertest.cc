@@ -42,6 +42,8 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
+#include "chrome/browser/net/default_network_context_params.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
@@ -155,6 +157,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -479,7 +482,8 @@ void ExpectBadClockInterstitial(content::WebContents* tab) {
 
 }  // namespace
 
-class SSLUITestBase : public InProcessBrowserTest {
+class SSLUITestBase : public InProcessBrowserTest,
+                      public network::mojom::SSLConfigClient {
  public:
   SSLUITestBase()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
@@ -500,7 +504,8 @@ class SSLUITestBase : public InProcessBrowserTest {
                             net::GetWebSocketTestDataDirectory()),
         wss_server_mismatched_(net::SpawnedTestServer::TYPE_WSS,
                                SSLOptions(SSLOptions::CERT_MISMATCHED_NAME),
-                               net::GetWebSocketTestDataDirectory()) {
+                               net::GetWebSocketTestDataDirectory()),
+        binding_(this) {
     https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
 
     https_server_expired_.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
@@ -557,7 +562,13 @@ class SSLUITestBase : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
+    network::mojom::NetworkContextParamsPtr context_params =
+        CreateDefaultNetworkContextParams();
+    last_ssl_config_ = *context_params->initial_ssl_config;
+    binding_.Bind(std::move(context_params->ssl_config_client_request));
   }
+
+  void TearDownOnMainThread() override { binding_.Close(); }
 
   void CheckAuthenticatedState(WebContents* tab,
                                int expected_authentication_state) {
@@ -784,19 +795,11 @@ class SSLUITestBase : public InProcessBrowserTest {
 
     EXPECT_TRUE(pref_service->GetBoolean(pref_name));
     EXPECT_TRUE(pref_service->IsManagedPreference(pref_name));
-  }
 
-  // Checks that the SSLConfig associated with the net::URLRequestContext
-  // of the |context_getter| has the SSLConfig member identified by |member|
-  // set to |expected|. This is sequenced such that any changes to prefs
-  // on the UI thread will have propogated before the config is examined.
-  void CheckSSLConfig(
-      scoped_refptr<net::URLRequestContextGetter> context_getter,
-      bool net::SSLConfig::*member,
-      bool expected) {
-    RunOnIOThreadBlocking(base::BindOnce(
-        &SSLUITestBase::CheckSSLConfigOnIOThread, base::Unretained(this),
-        context_getter, member, expected));
+    // Wait for the updated SSL configuration to be sent to the network service,
+    // to avoid a race.
+    g_browser_process->system_network_context_manager()
+        ->FlushSSLConfigManagerForTesting();
   }
 
   // Checks that the TransportSecurityState associated with the
@@ -853,18 +856,21 @@ class SSLUITestBase : public InProcessBrowserTest {
     EXPECT_EQ(app_url, new_tab->GetVisibleURL());
   }
 
-  net::EmbeddedTestServer https_server_;
-  net::EmbeddedTestServer https_server_expired_;
-  net::EmbeddedTestServer https_server_mismatched_;
-  net::EmbeddedTestServer https_server_sha1_;
-  net::EmbeddedTestServer https_server_common_name_only_;
+  void set_ssl_config_updated_callback(
+      const base::RepeatingClosure& ssl_config_updated_callback) {
+    ssl_config_updated_callback_ = std::move(ssl_config_updated_callback);
+  }
 
-  net::SpawnedTestServer https_server_ocsp_ok_;
-  net::SpawnedTestServer https_server_ocsp_revoked_;
-  net::SpawnedTestServer wss_server_expired_;
-  net::SpawnedTestServer wss_server_mismatched_;
+  // network::mojom::SSLConfigClient implementation.
+  void OnSSLConfigUpdated(network::mojom::SSLConfigPtr ssl_config) override {
+    last_ssl_config_ = *ssl_config;
+    if (ssl_config_updated_callback_)
+      ssl_config_updated_callback_.Run();
+  }
 
  protected:
+  typedef net::SpawnedTestServer::SSLOptions SSLOptions;
+
   // Navigates to an interstitial and clicks through the certificate
   // error; then navigates to a page at |path| that loads unsafe content.
   void SetUpUnsafeContentsWithUserException(const std::string& path) {
@@ -913,9 +919,6 @@ class SSLUITestBase : public InProcessBrowserTest {
     return app_browser;
   }
 
- private:
-  typedef net::SpawnedTestServer::SSLOptions SSLOptions;
-
   void UpdateChromePolicy(const policy::PolicyMap& policies) {
     policy_provider_.UpdateChromePolicy(policies);
     ASSERT_TRUE(base::MessageLoopCurrent::Get());
@@ -932,18 +935,6 @@ class SSLUITestBase : public InProcessBrowserTest {
                                              FROM_HERE, std::move(task),
                                              run_loop.QuitClosure());
     run_loop.Run();
-  }
-
-  void CheckSSLConfigOnIOThread(
-      scoped_refptr<net::URLRequestContextGetter> context_getter,
-      bool net::SSLConfig::*member,
-      bool expected) {
-    net::URLRequestContext* context = context_getter->GetURLRequestContext();
-    ASSERT_TRUE(context);
-
-    net::SSLConfig config;
-    context->ssl_config_service()->GetSSLConfig(&config);
-    EXPECT_EQ(expected, config.*member);
   }
 
   void CheckCTStatusOnIOThread(
@@ -970,7 +961,22 @@ class SSLUITestBase : public InProcessBrowserTest {
                   compliance_level));
   }
 
+  net::EmbeddedTestServer https_server_;
+  net::EmbeddedTestServer https_server_expired_;
+  net::EmbeddedTestServer https_server_mismatched_;
+  net::EmbeddedTestServer https_server_sha1_;
+  net::EmbeddedTestServer https_server_common_name_only_;
+
+  net::SpawnedTestServer https_server_ocsp_ok_;
+  net::SpawnedTestServer https_server_ocsp_revoked_;
+  net::SpawnedTestServer wss_server_expired_;
+  net::SpawnedTestServer wss_server_mismatched_;
+
   policy::MockConfigurationPolicyProvider policy_provider_;
+
+  base::RepeatingClosure ssl_config_updated_callback_;
+  network::mojom::SSLConfig last_ssl_config_;
+  mojo::Binding<network::mojom::SSLConfigClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLUITestBase);
 };
@@ -1853,13 +1859,23 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBase, TestHTTPSExpiredCertAndGoForward) {
 
 // Visits a page with revocation checking enabled and a valid OCSP response.
 IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPOk) {
-  bool net::SSLConfig::*member = &net::SSLConfig::rev_checking_enabled;
+  // OCSP checking is disabled by default.
+  EXPECT_FALSE(last_ssl_config_.rev_checking_enabled);
+  EXPECT_FALSE(CreateDefaultNetworkContextParams()
+                   ->initial_ssl_config->rev_checking_enabled);
+
+  // Enable, and make sure the default network context params reflect the
+  // change.
+  base::RunLoop run_loop;
+  set_ssl_config_updated_callback(run_loop.QuitClosure());
   ASSERT_NO_FATAL_FAILURE(
       EnablePolicy(g_browser_process->local_state(),
                    policy::key::kEnableOnlineRevocationChecks,
                    prefs::kCertRevocationCheckingEnabled));
-  ASSERT_NO_FATAL_FAILURE(
-      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
+  run_loop.Run();
+  EXPECT_TRUE(last_ssl_config_.rev_checking_enabled);
+  EXPECT_TRUE(CreateDefaultNetworkContextParams()
+                  ->initial_ssl_config->rev_checking_enabled);
 
   ASSERT_TRUE(https_server_ocsp_ok_.Start());
 
@@ -1881,13 +1897,23 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPOk) {
 
 // Visits a page with revocation checking enabled and a revoked OCSP response.
 IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPRevoked) {
-  bool net::SSLConfig::*member = &net::SSLConfig::rev_checking_enabled;
+  // OCSP checking is disabled by default.
+  EXPECT_FALSE(last_ssl_config_.rev_checking_enabled);
+  EXPECT_FALSE(CreateDefaultNetworkContextParams()
+                   ->initial_ssl_config->rev_checking_enabled);
+
+  // Enable, and make sure the default network context params reflect the
+  // change.
+  base::RunLoop run_loop;
+  set_ssl_config_updated_callback(run_loop.QuitClosure());
   ASSERT_NO_FATAL_FAILURE(
       EnablePolicy(g_browser_process->local_state(),
                    policy::key::kEnableOnlineRevocationChecks,
                    prefs::kCertRevocationCheckingEnabled));
-  ASSERT_NO_FATAL_FAILURE(
-      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
+  run_loop.Run();
+  EXPECT_TRUE(last_ssl_config_.rev_checking_enabled);
+  EXPECT_TRUE(CreateDefaultNetworkContextParams()
+                  ->initial_ssl_config->rev_checking_enabled);
 
   ASSERT_TRUE(https_server_ocsp_revoked_.Start());
 
@@ -1899,13 +1925,38 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPRevoked) {
       net::CERT_STATUS_REVOKED, AuthState::SHOWING_INTERSTITIAL);
 }
 
+// Visits a page with revocation checking set to the default value (disabled)
+// and a revoked OCSP response.
+IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPRevokedButNotChecked) {
+  // OCSP checking is disabled by default.
+  EXPECT_FALSE(last_ssl_config_.rev_checking_enabled);
+  EXPECT_FALSE(CreateDefaultNetworkContextParams()
+                   ->initial_ssl_config->rev_checking_enabled);
+
+  ASSERT_TRUE(https_server_ocsp_revoked_.Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_ocsp_revoked_.GetURL("/ssl/google.html"));
+
+  CheckAuthenticatedState(browser()->tab_strip_model()->GetActiveWebContents(),
+                          AuthState::NONE);
+
+  content::NavigationEntry* entry = browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetController()
+                                        .GetActiveEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_FALSE(entry->GetSSL().cert_status &
+               net::CERT_STATUS_REV_CHECKING_ENABLED);
+}
+
 // Visits a page that uses a SHA-1 leaf certificate, which should be rejected
 // by default.
 IN_PROC_BROWSER_TEST_P(SSLUITest, SHA1IsDefaultDisabled) {
-  bool net::SSLConfig::*member = &net::SSLConfig::sha1_local_anchors_enabled;
-
-  ASSERT_NO_FATAL_FAILURE(
-      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, false));
+  EXPECT_FALSE(last_ssl_config_.sha1_local_anchors_enabled);
+  EXPECT_FALSE(CreateDefaultNetworkContextParams()
+                   ->initial_ssl_config->sha1_local_anchors_enabled);
 
   ASSERT_TRUE(https_server_sha1_.Start());
   ui_test_utils::NavigateToURL(browser(),
@@ -1920,13 +1971,21 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SHA1IsDefaultDisabled) {
 // Enables support for SHA-1 certificates from locally installed CAs, then
 // attempts to navigate to such a site. No interstitial should be presented.
 IN_PROC_BROWSER_TEST_P(SSLUITest, SHA1PrefsCanEnable) {
-  bool net::SSLConfig::*member = &net::SSLConfig::sha1_local_anchors_enabled;
+  EXPECT_FALSE(last_ssl_config_.sha1_local_anchors_enabled);
+  EXPECT_FALSE(CreateDefaultNetworkContextParams()
+                   ->initial_ssl_config->sha1_local_anchors_enabled);
 
+  // Enable, and make sure the default network context params reflect the
+  // change.
+  base::RunLoop run_loop;
+  set_ssl_config_updated_callback(run_loop.QuitClosure());
   ASSERT_NO_FATAL_FAILURE(EnablePolicy(g_browser_process->local_state(),
                                        policy::key::kEnableSha1ForLocalAnchors,
                                        prefs::kCertEnableSha1LocalAnchors));
-  ASSERT_NO_FATAL_FAILURE(
-      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
+  run_loop.Run();
+  EXPECT_TRUE(last_ssl_config_.sha1_local_anchors_enabled);
+  EXPECT_TRUE(CreateDefaultNetworkContextParams()
+                  ->initial_ssl_config->sha1_local_anchors_enabled);
 
   ASSERT_TRUE(https_server_sha1_.Start());
   ui_test_utils::NavigateToURL(browser(),
@@ -1936,24 +1995,35 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SHA1PrefsCanEnable) {
       browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
 }
 
-// By default, trust in Symantec's Legacy PKI should be disabled.
+// By default, trust in Symantec's Legacy PKI should be disabled. Unfortunately,
+// there is currently no way to simulate navigation to a page that will
+// meaningfully test that Symantec enforcement is actually applied to the
+// request.
 IN_PROC_BROWSER_TEST_P(SSLUITest, SymantecEnforcementIsNotDisabled) {
-  bool net::SSLConfig::*member = &net::SSLConfig::symantec_enforcement_disabled;
-  ASSERT_NO_FATAL_FAILURE(
-      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, false));
+  EXPECT_FALSE(last_ssl_config_.symantec_enforcement_disabled);
+  EXPECT_FALSE(CreateDefaultNetworkContextParams()
+                   ->initial_ssl_config->symantec_enforcement_disabled);
 }
 
 // Enables support for Symantec's Legacy PKI via policy, and then ensures that
 // the SSLConfig is configured to trust the Legacy PKI.
 IN_PROC_BROWSER_TEST_P(SSLUITest, SymantecPrefsCanEnable) {
-  bool net::SSLConfig::*member = &net::SSLConfig::symantec_enforcement_disabled;
+  EXPECT_FALSE(last_ssl_config_.symantec_enforcement_disabled);
+  EXPECT_FALSE(CreateDefaultNetworkContextParams()
+                   ->initial_ssl_config->symantec_enforcement_disabled);
 
+  // Enable, and make sure the default network context params reflect the
+  // change.
+  base::RunLoop run_loop;
+  set_ssl_config_updated_callback(run_loop.QuitClosure());
   ASSERT_NO_FATAL_FAILURE(
       EnablePolicy(g_browser_process->local_state(),
                    policy::key::kEnableSymantecLegacyInfrastructure,
                    prefs::kCertEnableSymantecLegacyInfrastructure));
-  ASSERT_NO_FATAL_FAILURE(
-      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
+  run_loop.Run();
+  EXPECT_TRUE(last_ssl_config_.symantec_enforcement_disabled);
+  EXPECT_TRUE(CreateDefaultNetworkContextParams()
+                  ->initial_ssl_config->symantec_enforcement_disabled);
 }
 
 class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
