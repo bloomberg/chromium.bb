@@ -896,8 +896,7 @@ void SparseControl::OnChildIOCompleted(int result) {
 
 void SparseControl::DoUserCallback() {
   DCHECK(!user_callback_.is_null());
-  CompletionCallback cb = user_callback_;
-  user_callback_.Reset();
+  CompletionCallback cb = std::move(user_callback_);
   user_buf_ = NULL;
   pending_ = false;
   operation_ = kNoOperation;
