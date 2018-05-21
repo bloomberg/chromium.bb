@@ -97,6 +97,11 @@
       showcase::kClassForInstantiationKey : @"SCImageViewController",
       showcase::kUseCaseKey : @"ImageView with top aligned aspect fill",
     },
+    @{
+      showcase::kClassForDisplayKey : @"RecentTabsTableViewController",
+      showcase::kClassForInstantiationKey : @"SCDarkThemeRecentTabsCoordinator",
+      showcase::kUseCaseKey : @"Dark theme recent tabs",
+    },
   ];
 }
 
