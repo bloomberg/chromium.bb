@@ -331,9 +331,7 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   auto kiosk_app_handler = std::make_unique<chromeos::KioskAppsHandler>(
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
           profile));
-  chromeos::KioskAppsHandler* kiosk_handler = kiosk_app_handler.get();
   web_ui->AddMessageHandler(std::move(kiosk_app_handler));
-  kiosk_handler->GetLocalizedValues(source);
 #endif
 
   // Need to allow <object> elements so that the <extensionoptions> browser

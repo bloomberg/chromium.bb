@@ -21,15 +21,12 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/browser/web_ui_data_source.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -156,52 +153,6 @@ void KioskAppsHandler::RegisterMessages() {
       "setDisableBailoutShortcut",
       base::BindRepeating(&KioskAppsHandler::HandleSetDisableBailoutShortcut,
                           base::Unretained(this)));
-}
-
-void KioskAppsHandler::GetLocalizedValues(content::WebUIDataSource* source) {
-  source->AddString(
-      "addKioskAppButton",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ADD_KIOSK_APP_BUTTON));
-  source->AddString(
-      "kioskOverlayTitle",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_KIOSK_OVERLAY_TITLE));
-  source->AddString("addKioskApp",
-                    l10n_util::GetStringUTF16(IDS_EXTENSIONS_KIOSK_ADD_APP));
-  source->AddString(
-      "kioskAppIdEditHint",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_KIOSK_ADD_APP_HINT));
-  source->AddString(
-      "enableAutoLaunchButton",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_KIOSK_ENABLE_AUTO_LAUNCH));
-  source->AddString(
-      "disableAutoLaunchButton",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_KIOSK_DISABLE_AUTO_LAUNCH));
-  source->AddString("autoLaunch", l10n_util::GetStringUTF16(
-                                      IDS_EXTENSIONS_KIOSK_AUTO_LAUNCH));
-  source->AddString("invalidApp", l10n_util::GetStringUTF16(
-                                      IDS_EXTENSIONS_KIOSK_INVALID_APP));
-  source->AddString("kioskDiableBailoutShortcutLabel",
-                    l10n_util::GetStringUTF16(
-                        IDS_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_LABEL));
-  source->AddString(
-      "kioskDisableBailoutShortcutWarningBold",
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_BOLD));
-  const base::string16 product_os_name =
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME);
-  source->AddString(
-      "kioskDisableBailoutShortcutWarning",
-      l10n_util::GetStringFUTF16(
-          IDS_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_FORMAT,
-          product_os_name));
-  source->AddString(
-      "kioskDisableBailoutShortcutConfirm",
-      l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL));
-  source->AddString(
-      "kioskDisableBailoutShortcutCancel",
-      l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
-  source->AddString("done", l10n_util::GetStringUTF16(IDS_DONE));
-  source->AddString("add", l10n_util::GetStringUTF16(IDS_ADD));
 }
 
 void KioskAppsHandler::OnKioskAppDataChanged(const std::string& app_id) {
