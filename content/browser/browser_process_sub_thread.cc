@@ -6,13 +6,18 @@
 
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/notification_service_impl.h"
+#include "content/browser/utility_process_host.h"
+#include "content/common/child_process_host_impl.h"
+#include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread_delegate.h"
+#include "content/public/common/process_type.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
 
@@ -172,6 +177,34 @@ void BrowserProcessSubThread::IOThreadCleanUp() {
   // and delete the BrowserChildProcessHost instances to release whatever
   // IO thread only resources they are referencing.
   BrowserChildProcessHostImpl::TerminateAll();
+
+  for (BrowserChildProcessHostIterator it(PROCESS_TYPE_UTILITY); !it.Done();
+       ++it) {
+    UtilityProcessHost* utility_process =
+        static_cast<UtilityProcessHost*>(it.GetDelegate());
+    if (utility_process->sandbox_type() ==
+        service_manager::SANDBOX_TYPE_NETWORK) {
+      // Even though the TerminateAll call above tries to kill all child
+      // processes, that will fail sometimes (e.g. on Windows if there's pending
+      // I/O). Once the network service is sandboxed this will be taken care of,
+      // since the sandbox ensures child processes are terminated. Until then,
+      // wait on the network process for a bit. This is done so that:
+      // 1) when Chrome quits, we ensure that cookies & cache are flushed
+      // 2) tests aren't killed by swarming because of child processes that
+      //    outlive the parent process.
+      // https://crbug.com/841001
+      const int kMaxSecondsToWaitForNetworkProcess = 10;
+      ChildProcessHostImpl* child_process =
+          static_cast<ChildProcessHostImpl*>(it.GetHost());
+      const base::TimeTicks start_time = base::TimeTicks::Now();
+      child_process->peer_process().WaitForExitWithTimeout(
+          base::TimeDelta::FromSeconds(kMaxSecondsToWaitForNetworkProcess),
+          nullptr);
+      // Record time spent for the method call. Don't include failures.
+      UMA_HISTOGRAM_TIMES("NetworkService.ShutdownTime",
+                          base::TimeTicks::Now() - start_time);
+    }
+  }
 
   // Unregister GpuMemoryBuffer dump provider before IO thread is shut down.
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(

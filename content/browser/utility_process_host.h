@@ -71,6 +71,8 @@ class CONTENT_EXPORT UtilityProcessHost
   // SANDBOX_TYPE_NO_SANDBOX is specified.
   void SetSandboxType(service_manager::SandboxType sandbox_type);
 
+  service_manager::SandboxType sandbox_type() const { return sandbox_type_; }
+
   // Returns information about the utility child process.
   const ChildProcessData& GetData();
 #if defined(OS_POSIX)

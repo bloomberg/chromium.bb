@@ -71,6 +71,8 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
 
+  base::Process& peer_process() { return peer_process_; }
+
  private:
   friend class ChildProcessHost;
 
