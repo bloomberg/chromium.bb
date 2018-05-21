@@ -64,7 +64,6 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   SetContainerLayerState(mapping->LayerForVerticalScrollbar());
   SetContainerLayerState(mapping->LayerForScrollCorner());
   SetContainerLayerState(mapping->DecorationOutlineLayer());
-  SetContainerLayerState(mapping->BackgroundLayer());
   SetContainerLayerState(mapping->ChildClippingMaskLayer());
 
   if (mapping->ScrollingContentsLayer()) {

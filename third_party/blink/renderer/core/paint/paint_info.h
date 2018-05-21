@@ -107,9 +107,6 @@ struct CORE_EXPORT PaintInfo {
   bool SkipRootBackground() const {
     return paint_flags_ & kPaintLayerPaintingSkipRootBackground;
   }
-  bool PaintRootBackgroundOnly() const {
-    return paint_flags_ & kPaintLayerPaintingRootBackgroundOnly;
-  }
 
   bool IsPrinting() const { return global_paint_flags_ & kGlobalPaintPrinting; }
 

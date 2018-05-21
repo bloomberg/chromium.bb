@@ -64,7 +64,6 @@ enum PaintLayerFlag {
   kPaintLayerPaintingCompositingMaskPhase = 1 << 6,
   kPaintLayerPaintingCompositingScrollingPhase = 1 << 7,
   kPaintLayerPaintingOverflowContents = 1 << 8,
-  kPaintLayerPaintingRootBackgroundOnly = 1 << 9,
   kPaintLayerPaintingSkipRootBackground = 1 << 10,
   kPaintLayerPaintingChildClippingMaskPhase = 1 << 11,
   kPaintLayerPaintingAncestorClippingMaskPhase = 1 << 12,

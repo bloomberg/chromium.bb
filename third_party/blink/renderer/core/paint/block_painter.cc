@@ -86,8 +86,7 @@ void BlockPainter::PaintOverflowControlsIfNeeded(
     const LayoutPoint& paint_offset) {
   if (layout_block_.HasOverflowClip() &&
       layout_block_.Style()->Visibility() == EVisibility::kVisible &&
-      ShouldPaintSelfBlockBackground(paint_info.phase) &&
-      !paint_info.PaintRootBackgroundOnly()) {
+      ShouldPaintSelfBlockBackground(paint_info.phase)) {
     base::Optional<ClipRecorder> clip_recorder;
     if (!layout_block_.Layer()->IsSelfPaintingLayer()) {
       LayoutRect clip_rect = layout_block_.BorderBoxRect();
@@ -222,9 +221,6 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
     if (paint_phase == PaintPhase::kSelfBlockBackgroundOnly)
       return;
   }
-
-  if (paint_info.PaintRootBackgroundOnly())
-    return;
 
   if (paint_phase == PaintPhase::kMask &&
       layout_block_.Style()->Visibility() == EVisibility::kVisible) {

@@ -244,8 +244,7 @@ void LayoutView::SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
   // should fully invalidate on viewport resize if the background image is not
   // composited and needs full paint invalidation on background positioning area
   // resize.
-  if (Style()->HasFixedBackgroundImage() &&
-      (!compositor_ || !compositor_->NeedsFixedRootBackgroundLayer())) {
+  if (Style()->HasFixedBackgroundImage()) {
     if ((width_changed && MustInvalidateFillLayersPaintOnWidthChange(
                               Style()->BackgroundLayers())) ||
         (height_changed && MustInvalidateFillLayersPaintOnHeightChange(
@@ -723,10 +722,6 @@ IntRect LayoutView::DocumentRect() const {
   FlipForWritingMode(overflow_rect);
   // TODO(crbug.com/650768): The pixel snapping looks incorrect.
   return PixelSnappedIntRect(overflow_rect);
-}
-
-bool LayoutView::RootBackgroundIsEntirelyFixed() const {
-  return Style()->HasEntirelyFixedBackground();
 }
 
 IntSize LayoutView::GetLayoutSize(
