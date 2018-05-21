@@ -793,7 +793,16 @@ bool NGBoxFragmentPainter::NodeAtPoint(
     const LayoutPoint& accumulated_offset_for_legacy,
     HitTestAction action) {
   // TODO(eae): Switch to using NG geometry types.
-  LayoutSize offset(box_fragment_.Offset().left, box_fragment_.Offset().top);
+  LayoutSize offset;
+  if (box_fragment_.PhysicalFragment().IsPlacedByLayoutNG()) {
+    offset =
+        LayoutSize(box_fragment_.Offset().left, box_fragment_.Offset().top);
+  } else {
+    LayoutPoint location =
+        ToLayoutBox(box_fragment_.PhysicalFragment().GetLayoutObject())
+            ->Location();
+    offset = LayoutSize(location.X(), location.Y());
+  }
   LayoutPoint adjusted_location = accumulated_offset + offset;
   LayoutSize size(box_fragment_.Size().width, box_fragment_.Size().height);
   const ComputedStyle& style = box_fragment_.Style();

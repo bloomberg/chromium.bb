@@ -46,6 +46,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
     NGPhysicalSize size,
     Vector<scoped_refptr<NGPhysicalFragment>>& children,
     const NGPhysicalOffsetRect& contents_visual_rect,
+    const NGPhysicalOffsetRect& scrollable_overflow,
     const NGLineHeightMetrics& metrics,
     TextDirection base_direction,
     scoped_refptr<NGBreakToken> break_token)
@@ -57,6 +58,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
                                   children,
                                   contents_visual_rect,
                                   std::move(break_token)),
+      scrollable_overflow_(scrollable_overflow),
       metrics_(metrics) {
   base_direction_ = static_cast<unsigned>(base_direction);
 }
