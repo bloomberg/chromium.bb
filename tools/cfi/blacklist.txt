@@ -125,7 +125,7 @@ type:sandbox::TargetServices
 
 [cfi-icall]
 
-######### Cross-DSO icalls using dynamically resolved symbols
+######### Cross-DSO icalls using dynamically resolved symbols crbug.com/771365
 
 # ANGLE
 src:*third_party/angle/src/libANGLE/*
@@ -175,6 +175,7 @@ src:*base/native_library_unittest.cc
 src:*chrome/browser/ui/libgtkui/app_indicator_icon.cc
 src:*chrome/browser/ui/libgtkui/unity_service.cc
 src:*components/cronet/native/*
+src:*third_party/breakpad/breakpad/src/client/linux/handler/exception_handler_unittest.cc
 
 # chrome/browser/ui/views/frame/global_menu_bar_x11.cc
 fun:*GlobalMenuBarX11*
@@ -185,11 +186,14 @@ fun:*GrGLFunction*
 # Call to libcurl.so from the symupload utility
 src:*third_party/breakpad/breakpad/src/common/linux/http_upload.cc
 
-# The Kerberos code includes calls to dynamically resolved functions; however,
-# the unit tests do not exercise those code paths. Be careful removing.
+# The follow entries are speculatively disabled. They're included in the
+# chromium build and include calls to dynamically resolved symbols; however,
+# they do not trigger cfi-icall failures in unit tests or normal chrome usage.
+# They're disabled to avoid failing in uncommon code paths. Be careful removing.
 src:*net/http/http_auth_gssapi_posix.cc
-
-src:*third_party/breakpad/breakpad/src/client/linux/handler/exception_handler_unittest.cc
+src:*third_party/breakpad/breakpad/src/common/linux/libcurl_wrapper.cc
+src:*third_party/crashpad/crashpad/snapshot/crashpad_info_client_options_test.cc
+src:*third_party/skia/src/ports/SkFontHost_FreeType.cpp
 
 ######### Function pointers cast to incorrect type signatures
 
