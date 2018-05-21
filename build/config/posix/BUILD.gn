@@ -5,6 +5,7 @@
 import("//buildtools/deps_revisions.gni")
 import("//build/config/c++/c++.gni")
 import("//build/config/clang/clang.gni")
+import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/sysroot.gni")
 import("//build/toolchain/toolchain.gni")
@@ -59,7 +60,12 @@ config("runtime_library") {
 
     # Make sure we don't link against libc++ or libstdc++.
     if (is_clang) {
-      ldflags += [ "-nostdlib++" ]
+      # //build/config/android:runtime_library adds -nostdlib, which suppresses
+      # linking against all system libraries.  -nostdlib++ would be redundant,
+      # and would generate an unused warning in this case.
+      if (!is_android) {
+        ldflags += [ "-nostdlib++" ]
+      }
     } else {
       ldflags += [ "-nodefaultlibs" ]
 

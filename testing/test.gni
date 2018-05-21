@@ -134,7 +134,10 @@ template("test") {
 
         if (!defined(invoker.use_default_launcher) ||
             invoker.use_default_launcher) {
-          deps += [ "//testing/android/native_test:native_test_native_code" ]
+          deps += [
+            "//build/config:exe_and_shlib_deps",
+            "//testing/android/native_test:native_test_native_code",
+          ]
         }
       }
       unittest_apk(_apk_target) {

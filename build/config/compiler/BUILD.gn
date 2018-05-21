@@ -1134,6 +1134,17 @@ config("runtime_library") {
   defines = []
   configs = []
 
+  # TODO(crbug.com/830987): Come up with a better name for is POSIX + Fuchsia
+  # configuration.
+  #
+  # The order of this config is important: it must appear before
+  # android:runtime_library.  This is to ensure libc++ appears before
+  # libandroid_support in the -isystem include order.  Otherwise, there will be
+  # build errors related to symbols declared in math.h.
+  if (is_posix || is_fuchsia) {
+    configs += [ "//build/config/posix:runtime_library" ]
+  }
+
   # System-specific flags. If your compiler flags apply to one of the
   # categories here, add it to the associated file to keep this shared config
   # smaller.
@@ -1147,12 +1158,6 @@ config("runtime_library") {
     configs += [ "//build/config/mac:runtime_library" ]
   } else if (is_android) {
     configs += [ "//build/config/android:runtime_library" ]
-  }
-
-  # TODO(crbug.com/830987): Come up with a better name for is POSIX + Fuchsia
-  # configuration.
-  if (is_posix || is_fuchsia) {
-    configs += [ "//build/config/posix:runtime_library" ]
   }
 
   if (is_component_build) {

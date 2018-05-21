@@ -1028,6 +1028,7 @@ if (!android_64bit_target_cpu ||
     ]
     deps = [
       "//android_webview:common",
+      "//build/config:exe_and_shlib_deps",
       "//chrome:chrome_android_core",
     ]
 

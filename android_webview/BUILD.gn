@@ -386,6 +386,7 @@ source_set("webview_entry_point") {
 shared_library("libwebviewchromium") {
   deps = [
     ":webview_entry_point",
+    "//build/config:exe_and_shlib_deps",
   ]
   configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   configs += [ "//build/config/android:hide_all_but_jni" ]
@@ -418,6 +419,7 @@ if (android_64bit_target_cpu) {
   shared_library("monochrome") {
     deps = [
       ":webview_entry_point",
+      "//build/config:exe_and_shlib_deps",
     ]
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
     configs += [ "//build/config/android:hide_all_but_jni" ]
