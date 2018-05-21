@@ -41,6 +41,7 @@ SPECIAL_TOKENS = [
     'S3TC',
     'SPv2',
     'UTF8',
+    'sRGB',
     'API',
     'CSS',
     'DOM',
@@ -53,7 +54,19 @@ SPECIAL_TOKENS = [
     'V8',
 ]
 
-MATCHING_EXPRESSION = '((?:[A-Z][a-z]+)|[0-9]D?$)'
+# Applying _TOKEN_PATTERNS repeatedly should capture any sequence of a-z, A-Z,
+# 0-9.
+_TOKEN_PATTERNS = [
+    # 'Foo' 'foo'
+    '[A-Z]?[a-z]+',
+    # The following pattern captures only 'FOO' in 'FOOElement'.
+    '[A-Z]+(?![a-z])',
+    # '2D' '3D', but not '2Dimension'
+    '[0-9]D$',
+    '[0-9]+',
+]
+
+_TOKEN_RE = re.compile(r'(' + '|'.join(SPECIAL_TOKENS + _TOKEN_PATTERNS) + r')')
 
 
 def tokenize_name(name):
@@ -69,19 +82,14 @@ def tokenize_name(name):
     tokens = []
     while len(name) > 0:
         matched_token = None
-        for token in SPECIAL_TOKENS:
-            if name.startswith(token):
-                matched_token = token
-                break
-        if not matched_token:
-            match = re.search(MATCHING_EXPRESSION, name)
-            if not match:
-                matched_token = name
-            elif match.start(0) != 0:
-                matched_token = name[:match.start(0)]
-            else:
-                matched_token = match.group(0)
-        tokens.append(name[:len(matched_token)])
+        match = _TOKEN_RE.search(name)
+        if not match:
+            matched_token = name
+        elif match.start(0) != 0:
+            matched_token = name[:match.start(0)]
+        else:
+            matched_token = match.group(0)
+        tokens.append(matched_token)
         name = name[len(matched_token):]
     return tokens
 
