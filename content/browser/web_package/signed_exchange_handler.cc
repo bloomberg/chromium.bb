@@ -106,7 +106,7 @@ SignedExchangeHandler::SignedExchangeHandler(
   }
 
   // Triggering the read (asynchronously) for the encoded header length.
-  SetupBuffers(SignedExchangeHeader::kEncodedHeaderLengthInBytes);
+  SetupBuffers(SignedExchangeHeader::kEncodedLengthInBytes);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&SignedExchangeHandler::DoHeaderLoop,
                                 weak_factory_.GetWeakPtr()));
@@ -192,15 +192,15 @@ void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
 
 bool SignedExchangeHandler::ParseHeadersLength() {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "SignedExchangeHandler::ParseHeadersLength");
+                     "SignedExchangeHandler::ParseEncodedLength");
   DCHECK_EQ(state_, State::kReadingHeadersLength);
 
-  headers_length_ = SignedExchangeHeader::ParseHeadersLength(
+  headers_length_ = SignedExchangeHeader::ParseEncodedLength(
       base::make_span(reinterpret_cast<uint8_t*>(header_buf_->data()),
-                      SignedExchangeHeader::kEncodedHeaderLengthInBytes));
+                      SignedExchangeHeader::kEncodedLengthInBytes));
   if (headers_length_ == 0 || headers_length_ > kMaxHeadersCBORLength) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy_.get(), "SignedExchangeHandler::ParseHeadersLength",
+        devtools_proxy_.get(), "SignedExchangeHandler::ParseEncodedLength",
         base::StringPrintf("Invalid CBOR header length: %zu", headers_length_));
     return false;
   }
@@ -209,7 +209,7 @@ bool SignedExchangeHandler::ParseHeadersLength() {
   SetupBuffers(headers_length_);
   state_ = State::kReadingHeaders;
   TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                   "SignedExchangeHandler::ParseHeadersLength");
+                   "SignedExchangeHandler::ParseEncodedLength");
   return true;
 }
 
