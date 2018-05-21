@@ -121,10 +121,6 @@
 # http://crbug.com/831826
 -PolicyTest.UnifiedDesktopEnabledByDefault
 
-# Failures JS-side.
--GalleryBrowserTest.*
--GalleryBrowserTestInGuestMode.*
-
 # IME accesses ash::Shell for root window.
 -InputMethodEngineBrowserTest/InputMethodEngineBrowserTest.*
 -InputMethodEngineComponentExtensionBrowserTest/InputMethodEngineBrowserTest.*
@@ -281,8 +277,6 @@
 -*ECKEncryptedMediaTest.*
 -MSE_ClearKey/EncryptedMediaTest.*
 -MSE_ExternalClearKey/EncryptedMediaTest.*
--AudioPlayerBrowserTest.*
--AudioPlayerBrowserTestInGuestMode.OpenAudioOnDownloads
 -AutoplayExtensionBrowserTest.AutoplayAllowed
 -MediaEngagementBrowserTest.*
 -MediaEngagementAutoplayBrowserTest.*
@@ -292,8 +286,6 @@
 -ExtensionResourceRequestPolicyTest.Video
 -DeferredMediaBrowserTest.BackgroundMediaIsDeferred
 -DeclarativeNetRequestResourceTypeBrowserTest.Test1/0
--VideoPlayerBrowserTest.*
--VideoPlayerBrowserTestInGuestMode.OpenSingleVideoOnDownloads
 -IsolatedAppTest.SubresourceCookieIsolation
 -PageLoadMetricsBrowserTest.*
 -SRC_ExternalClearKey/EncryptedMediaTest.*
@@ -301,30 +293,6 @@
 -ChromeRenderProcessHostBackgroundingTest.ProcessPriorityAfterAudioStopsOnNotVisibleTab
 -ChromeRenderProcessHostBackgroundingTest.ProcessPriorityAfterAudioStartsFromBackgroundTab
 -ChromeRenderProcessHostBackgroundingTest.ProcessPriorityAfterStoppedAudio
--MultiProfileFileManagerBrowserTest.BasicDrive
--MultiProfileFileManagerBrowserTest.PRE_BasicDrive
--DirectoryTreeContextMenu/FileManagerBrowserTest.*
--RestoreGeometry/FileManagerBrowserTest.*
--OpenAudioFiles/FileManagerBrowserTest.*
--OpenImageFiles/FileManagerBrowserTest.*
--Delete/FileManagerBrowserTest.*
--QuickView/FileManagerBrowserTest.*
--SortColumns/FileManagerBrowserTest.*
--KeyboardOperations/FileManagerBrowserTest.*
--Transfer/FileManagerBrowserTest.*
--Tasks/FileManagerBrowserTest.*
--RestorePrefs/FileManagerBrowserTest.*
--ShowGridView/FileManagerBrowserTest.*
--Providers/FileManagerBrowserTest.*
--OpenFileDialog/FileManagerBrowserTest.*
--FileDisplay/FileManagerBrowserTest.*
--OpenFileDialog/FileManagerBrowserTest.*
--GearMenu/FileManagerBrowserTest.Test/3
--GearMenu/FileManagerBrowserTest.Test/0
--CreateNewFolder/FileManagerBrowserTest.*
--FileDisplay/FileManagerBrowserTest.*
--OpenVideoFiles/FileManagerBrowserTest.*
--TabIndex/FileManagerBrowserTest.*
 -DeclarativeNetRequestResourceTypeBrowserTest.Test1/1
 -DeclarativeNetRequestResourceTypeBrowserTest.Test2/0
 -DeclarativeNetRequestResourceTypeBrowserTest.Test2/1
@@ -333,9 +301,15 @@
 -ChromeTracingDelegateBrowserTestOnStartup.StartupTracingThrottle
 
 # Viz not supported (cont) https://crbug.com/827327. The FileManageBrowserTest
-# were renamed to FilesAppBrowserTest in https://crbug.com/843030. New names
-# added here. TODO(noel): once the rename change works it way through the bots
-# and sticks, remove the old FileManagerBrowserTest.* entries above.
+# were renamed to FilesAppBrowserTest in https://crbug.com/843030.
+-AudioPlayerBrowserTest.*
+-AudioPlayerBrowserTestInGuestMode.OpenAudioOnDownloads
+-GalleryBrowserTest.*
+-GalleryBrowserTestInGuestMode.*
+-MultiProfileFileManagerBrowserTest.BasicDrive
+-MultiProfileFileManagerBrowserTest.PRE_BasicDrive
+-VideoPlayerBrowserTest.*
+-VideoPlayerBrowserTestInGuestMode.OpenSingleVideoOnDownloads
 -CreateNewFolder/FilesAppBrowserTest.Test/createFolderDownloads
 -CreateNewFolder/FilesAppBrowserTest.Test/createFolderDownloads_GuestMode
 -CreateNewFolder/FilesAppBrowserTest.Test/selectCreateFolderDownloads
