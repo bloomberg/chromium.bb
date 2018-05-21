@@ -2088,6 +2088,12 @@ void Document::UpdateStyleAndLayoutTree() {
   if (View()->ShouldThrottleRendering())
     return;
 
+  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
+    // RecalcSlotAssignments should be done before checking
+    // NeedsLayoutTreeUpdate().
+    GetSlotAssignmentEngine().RecalcSlotAssignments();
+  }
+
   if (!NeedsLayoutTreeUpdate()) {
     if (Lifecycle().GetState() < DocumentLifecycle::kStyleClean) {
       // needsLayoutTreeUpdate may change to false without any actual layout
@@ -2122,9 +2128,6 @@ void Document::UpdateStyleAndLayoutTree() {
 
   // For V0 Shadow DOM or V1 Shadow DOM without IncrementalShadowDOM
   UpdateDistributionForLegacyDistributedNodes();
-
-  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
-    GetSlotAssignmentEngine().RecalcSlotAssignments();
 
   UpdateActiveStyle();
   UpdateStyleInvalidationIfNeeded();
