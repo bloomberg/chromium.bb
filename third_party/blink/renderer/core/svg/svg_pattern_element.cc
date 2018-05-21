@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_pattern.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/svg/pattern_attributes.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
@@ -103,6 +104,8 @@ void SVGPatternElement::BuildPendingResource() {
     resource_->AddClient(EnsureSVGResourceClient());
 
   InvalidatePattern(LayoutInvalidationReason::kSvgResourceInvalidated);
+  if (auto* layout_object = GetLayoutObject())
+    SVGResourcesCache::ResourceReferenceChanged(*layout_object);
 }
 
 void SVGPatternElement::ClearResourceReferences() {
