@@ -199,7 +199,7 @@ void OverlayWindowViews::SetUpViews() {
   controls_background_view_->SetSize(GetBounds().size());
   controls_background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   GetControlsBackgroundLayer()->SetColor(SK_ColorBLACK);
-  GetControlsBackgroundLayer()->SetOpacity(0.2f);
+  GetControlsBackgroundLayer()->SetOpacity(0.4f);
 
   // Set up views::View that closes the window.
   close_controls_view_->SetSize(kCloseIconSize);
