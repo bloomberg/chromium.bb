@@ -22,6 +22,7 @@
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "storage/browser/blob/blob_data_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
@@ -276,6 +277,27 @@ class BackgroundFetchDataManagerTest
   }
 
   // Synchronous version of
+  // BackgroundFetchDataManager::GetSettledFetchesForRegistration().
+  void GetSettledFetchesForRegistration(
+      const BackgroundFetchRegistrationId& registration_id,
+      blink::mojom::BackgroundFetchError* out_error,
+      bool* out_succeeded,
+      std::vector<BackgroundFetchSettledFetch>* out_settled_fetches) {
+    DCHECK(out_error);
+    DCHECK(out_succeeded);
+    DCHECK(out_settled_fetches);
+
+    base::RunLoop run_loop;
+    background_fetch_data_manager_->GetSettledFetchesForRegistration(
+        registration_id,
+        base::BindOnce(&BackgroundFetchDataManagerTest::
+                           DidGetSettledFetchesForRegistration,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       out_error, out_succeeded, out_settled_fetches));
+    run_loop.Run();
+  }
+
+  // Synchronous version of
   // ServiceWorkerContextWrapper::GetRegistrationUserDataByKeyPrefix.
   std::vector<std::string> GetRegistrationUserDataByKeyPrefix(
       int64_t service_worker_registration_id,
@@ -391,6 +413,22 @@ class BackgroundFetchDataManagerTest
   }
 
   void DidMarkRequestAsComplete(base::OnceClosure quit_closure) {
+    std::move(quit_closure).Run();
+  }
+
+  void DidGetSettledFetchesForRegistration(
+      base::OnceClosure quit_closure,
+      blink::mojom::BackgroundFetchError* out_error,
+      bool* out_succeeded,
+      std::vector<BackgroundFetchSettledFetch>* out_settled_fetches,
+      blink::mojom::BackgroundFetchError error,
+      bool succeeded,
+      std::vector<BackgroundFetchSettledFetch> settled_fetches,
+      std::vector<std::unique_ptr<storage::BlobDataHandle>>) {
+    *out_error = error;
+    *out_succeeded = succeeded;
+    *out_settled_fetches = std::move(settled_fetches);
+
     std::move(quit_closure).Run();
   }
 
@@ -782,6 +820,61 @@ TEST_P(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
       GetRequestStats(sw_id),
       (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
                           2 /* completed_requests */}));
+}
+
+TEST_P(BackgroundFetchDataManagerTest, GetSettledFetchesForRegistration) {
+  // This test only applies to persistent storage.
+  if (registration_storage_ ==
+      BackgroundFetchRegistrationStorage::kNonPersistent)
+    return;
+
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  std::vector<ServiceWorkerFetchRequest> requests(2u);
+  BackgroundFetchOptions options;
+  blink::mojom::BackgroundFetchError error;
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+
+  CreateRegistration(registration_id, requests, options, &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  EXPECT_EQ(
+      GetRequestStats(sw_id),
+      (ResponseStateStats{2 /* pending_requests */, 0 /* active_requests */,
+                          0 /* completed_requests */}));
+
+  // Nothing is downloaded yet.
+  bool succeeded = false;
+  std::vector<BackgroundFetchSettledFetch> settled_fetches;
+  GetSettledFetchesForRegistration(registration_id, &error, &succeeded,
+                                   &settled_fetches);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  EXPECT_TRUE(succeeded);
+  EXPECT_EQ(settled_fetches.size(), 0u);
+
+  for (size_t i = 0; i < requests.size(); i++) {
+    scoped_refptr<BackgroundFetchRequestInfo> request_info;
+    PopNextRequest(registration_id, &request_info);
+    ASSERT_TRUE(request_info);
+    AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
+    MarkRequestAsComplete(registration_id, request_info.get());
+  }
+
+  RestartDataManagerFromPersistentStorage();
+
+  EXPECT_EQ(
+      GetRequestStats(sw_id),
+      (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
+                          requests.size() /* completed_requests */}));
+
+  GetSettledFetchesForRegistration(registration_id, &error, &succeeded,
+                                   &settled_fetches);
+
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  // We are marking the responses as failed in Download Manager.
+  EXPECT_FALSE(succeeded);
+  EXPECT_EQ(settled_fetches.size(), requests.size());
 }
 
 TEST_P(BackgroundFetchDataManagerTest, Cleanup) {

@@ -19,6 +19,7 @@
 #include "content/browser/background_fetch/storage/delete_registration_task.h"
 #include "content/browser/background_fetch/storage/get_developer_ids_task.h"
 #include "content/browser/background_fetch/storage/get_metadata_task.h"
+#include "content/browser/background_fetch/storage/get_settled_fetches_task.h"
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/background_fetch/storage/mark_request_complete_task.h"
 #include "content/browser/background_fetch/storage/start_next_pending_request_task.h"
@@ -423,6 +424,13 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     SettledFetchesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundFetchPersistence)) {
+    AddDatabaseTask(std::make_unique<background_fetch::GetSettledFetchesTask>(
+        this, registration_id, std::move(callback)));
+    return;
+  }
 
   auto iter = registrations_.find(registration_id.unique_id());
   DCHECK(iter != registrations_.end());
