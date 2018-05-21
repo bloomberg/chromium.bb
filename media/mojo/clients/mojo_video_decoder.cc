@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -17,15 +18,41 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/media_switches.h"
 #include "media/base/overlay_info.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/common/mojo_decoder_buffer_converter.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "media/video/video_decode_accelerator.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace media {
+
+namespace {
+
+bool IsSupportedConfig(
+    const VideoDecodeAccelerator::SupportedProfiles& supported_profiles,
+    const VideoDecoderConfig& config) {
+  for (const auto& supported_profile : supported_profiles) {
+    if (config.profile() == supported_profile.profile &&
+        (!supported_profile.encrypted_only || config.is_encrypted()) &&
+        config.coded_size().width() >=
+            supported_profile.min_resolution.width() &&
+        config.coded_size().width() <=
+            supported_profile.max_resolution.width() &&
+        config.coded_size().height() >=
+            supported_profile.min_resolution.height() &&
+        config.coded_size().height() <=
+            supported_profile.max_resolution.height()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
 
 // Provides a thread-safe channel for VideoFrame destruction events.
 class MojoVideoFrameHandleReleaser
@@ -114,16 +141,19 @@ void MojoVideoDecoder::Initialize(
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-// Fail immediately if we know that the remote side cannot support |config|.
-//
-// TODO(sandersd): Implement a generic mechanism for caching supported
-// profiles. https://crbug.com/839951
-#if defined(OS_MACOSX)
-  if (config.codec() != kCodecH264 || config.is_encrypted()) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(init_cb, false));
-    return;
+  // Fail immediately if we know that the remote side cannot support |config|.
+  //
+  // TODO(sandersd): Implement a generic mechanism for communicating supported
+  // profiles. https://crbug.com/839951
+  if (gpu_factories_) {
+    VideoDecodeAccelerator::Capabilities capabilities =
+        gpu_factories_->GetVideoDecodeAcceleratorCapabilities();
+    if (!base::FeatureList::IsEnabled(kD3D11VideoDecoder) &&
+        !IsSupportedConfig(capabilities.supported_profiles, config)) {
+      task_runner_->PostTask(FROM_HERE, base::BindRepeating(init_cb, false));
+      return;
+    }
   }
-#endif  // defined(OS_MACOSX)
 
   int cdm_id =
       cdm_context ? cdm_context->GetCdmId() : CdmContext::kInvalidCdmId;
