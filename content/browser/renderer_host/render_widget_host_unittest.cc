@@ -127,15 +127,12 @@ class MockInputRouter : public InputRouter {
   bool HasPendingEvents() const override { return false; }
   void SetDeviceScaleFactor(float device_scale_factor) override {}
   void SetFrameTreeNodeId(int frameTreeNodeId) override {}
-  base::Optional<cc::TouchAction> AllowedTouchAction() override {
-    return cc::kTouchActionAuto;
-  }
+  cc::TouchAction AllowedTouchAction() override { return cc::kTouchActionAuto; }
   void SetForceEnableZoom(bool enabled) override {}
   void BindHost(mojom::WidgetInputHandlerHostRequest request,
                 bool frame_handler) override {}
   void StopFling() override {}
   bool FlingCancellationIsDeferred() override { return false; }
-  void OnSetTouchAction(cc::TouchAction touch_action) override {}
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override {
@@ -866,7 +863,8 @@ class RenderWidgetHostTest : public testing::Test {
                                            WebGestureDevice sourceDevice,
                                            const ui::LatencyInfo& ui_latency) {
     host_->ForwardGestureEventWithLatencyInfo(
-        SyntheticWebGestureEventBuilder::Build(type, sourceDevice), ui_latency);
+        SyntheticWebGestureEventBuilder::Build(type, sourceDevice),
+        ui_latency);
   }
 
   // Set the timestamp for the touch-event.
@@ -2109,14 +2107,6 @@ void RenderWidgetHostTest::InputEventRWHLatencyComponent() {
                                      WebInputEvent::kMouseMove);
 
   // Tests RWHI::ForwardGestureEvent().
-  PressTouchPoint(0, 1);
-  SendTouchEvent();
-  host_->mock_input_router()->OnSetTouchAction(cc::kTouchActionAuto);
-  dispatched_events =
-      host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
-  CheckLatencyInfoComponentInMessage(dispatched_events, GetLatencyComponentId(),
-                                     WebInputEvent::kTouchStart);
-
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
   dispatched_events =
@@ -2132,11 +2122,6 @@ void RenderWidgetHostTest::InputEventRWHLatencyComponent() {
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
   CheckLatencyInfoComponentInGestureScrollUpdate(dispatched_events,
                                                  GetLatencyComponentId());
-
-  ReleaseTouchPoint(0);
-  SendTouchEvent();
-  dispatched_events =
-      host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
 
   // Tests RWHI::ForwardTouchEventWithLatencyInfo().
   PressTouchPoint(0, 1);

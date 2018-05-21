@@ -432,14 +432,6 @@ class InputRouterImplTest : public testing::Test {
     base::RunLoop().Run();
   }
 
-  void PressAndSetTouchActionAuto() {
-    PressTouchPoint(1, 1);
-    SendTouchEvent();
-    input_router_->OnSetTouchAction(cc::kTouchActionAuto);
-    GetAndResetDispatchedMessages();
-    disposition_handler_->GetAndResetAckCount();
-  }
-
   void OverscrollDispatch();
 
   InputRouter::Config config_;
@@ -973,7 +965,6 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
   for (size_t i = 0; i < arraysize(eventTypes); ++i) {
     WebInputEvent::Type type = eventTypes[i];
     if (ShouldBlockEventStream(GetEventWithType(type))) {
-      PressAndSetTouchActionAuto();
       SimulateGestureEvent(type, blink::kWebGestureDeviceTouchscreen);
       DispatchedMessages dispatched_messages = GetAndResetDispatchedMessages();
 
@@ -1004,10 +995,6 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
       EXPECT_EQ(0, client_->in_flight_event_count());
       EXPECT_FALSE(HasPendingEvents());
       continue;
-
-      ReleaseTouchPoint(0);
-      SendTouchEvent();
-      GetAndResetDispatchedMessages();
     }
 
     SimulateGestureEvent(type, blink::kWebGestureDeviceTouchscreen);
@@ -1074,7 +1061,7 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAckInterleaved) {
   // Interleave a few events that do and do not ignore acks. All gesture events
   // should be dispatched immediately, but the acks will be blocked on blocking
   // events.
-  PressAndSetTouchActionAuto();
+
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
   DispatchedMessages dispatched_messages = GetAndResetDispatchedMessages();
@@ -1160,15 +1147,11 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAckInterleaved) {
       INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(2U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(0, client_->in_flight_event_count());
-
-  ReleaseTouchPoint(0);
-  SendTouchEvent();
 }
 
 // Test that GestureShowPress events don't get out of order due to
 // ignoring their acks.
 TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
-  PressAndSetTouchActionAuto();
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
   DispatchedMessages dispatched_messages = GetAndResetDispatchedMessages();
@@ -1220,9 +1203,6 @@ TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   EXPECT_EQ(3U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(0, client_->in_flight_event_count());
-
-  ReleaseTouchPoint(0);
-  SendTouchEvent();
 }
 
 // Test that touch ack timeout behavior is properly configured for
@@ -1256,8 +1236,6 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
   ReleaseTouchPoint(0);
   SendTouchEvent();
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
-
-  PressAndSetTouchActionAuto();
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   ASSERT_TRUE(TouchEventTimeoutEnabled());
 
@@ -1288,7 +1266,6 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
 
   PressTouchPoint(1, 1);
   SendTouchEvent();
-  input_router_->OnSetTouchAction(cc::kTouchActionNone);
   DispatchedMessages touch_press_event3 = GetAndResetDispatchedMessages();
   ASSERT_EQ(1u, touch_press_event3.size());
   ASSERT_TRUE(touch_press_event3[0]->ToEvent());
@@ -1308,8 +1285,6 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
   // should be restored.
   PressTouchPoint(1, 1);
   SendTouchEvent();
-  input_router_->ResetTouchAction();
-  input_router_->OnSetTouchAction(cc::kTouchActionAuto);
   EXPECT_TRUE(TouchEventTimeoutEnabled());
 }
 
@@ -1355,8 +1330,6 @@ TEST_F(InputRouterImplTest,
   // End the touch sequence.
   ReleaseTouchPoint(0);
   SendTouchEvent();
-  input_router_->ResetTouchAction();
-  input_router_->OnSetTouchAction(cc::kTouchActionAuto);
   dispatched_messages = GetAndResetDispatchedMessages();
   EXPECT_EQ(1U, dispatched_messages.size());
   dispatched_messages[0]->ToEvent()->CallCallback(
@@ -1437,9 +1410,6 @@ TEST_F(InputRouterImplTest, TouchActionResetBeforeEventReachesRenderer) {
 
   // Ensure touch action has been set to auto, as a new touch sequence has
   // started.
-  touch_press_event2[0]->ToEvent()->CallCallback(
-      InputEventAckSource::COMPOSITOR_THREAD, ui::LatencyInfo(),
-      INPUT_EVENT_ACK_STATE_CONSUMED, base::nullopt, cc::kTouchActionAuto);
   touch_press_event2[0]->ToEvent()->CallCallback(
       INPUT_EVENT_ACK_STATE_CONSUMED);
   touch_move_event2[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -1585,7 +1555,6 @@ TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
 
   PressTouchPoint(1, 1);
   SendTouchEvent();
-  input_router_->OnSetTouchAction(cc::kTouchActionAuto);
   EXPECT_TRUE(client_->GetAndResetFilterEventCalled());
   DispatchedMessages dispatched_messages = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, dispatched_messages.size());
@@ -1959,10 +1928,8 @@ TEST_F(InputRouterImplTest, TouchActionInCallback) {
       InputEventAckSource::COMPOSITOR_THREAD, ui::LatencyInfo(),
       INPUT_EVENT_ACK_STATE_CONSUMED, base::nullopt, cc::kTouchActionNone);
   ASSERT_EQ(1U, disposition_handler_->GetAndResetAckCount());
-  base::Optional<cc::TouchAction> allowed_touch_action =
-      input_router_->AllowedTouchAction();
-  DCHECK(allowed_touch_action.has_value());
-  EXPECT_EQ(cc::TouchAction::kTouchActionNone, allowed_touch_action.value());
+  EXPECT_EQ(cc::TouchAction::kTouchActionNone,
+            input_router_->AllowedTouchAction());
 }
 
 namespace {
@@ -2278,7 +2245,6 @@ TEST_F(InputRouterImplScaleGestureEventTest, GestureScrollUpdate) {
 }
 
 TEST_F(InputRouterImplScaleGestureEventTest, GestureScrollBegin) {
-  PressAndSetTouchActionAuto();
   SimulateGestureEvent(SyntheticWebGestureEventBuilder::BuildScrollBegin(
       10.f, 20.f, blink::kWebGestureDeviceTouchscreen));
   FlushGestureEvent(WebInputEvent::kGestureScrollBegin);

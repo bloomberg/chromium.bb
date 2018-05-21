@@ -62,7 +62,7 @@ class InputRouter : public IPC::Listener {
   virtual void SetFrameTreeNodeId(int frameTreeNodeId) = 0;
 
   // Return the currently allowed touch-action.
-  virtual base::Optional<cc::TouchAction> AllowedTouchAction() = 0;
+  virtual cc::TouchAction AllowedTouchAction() = 0;
 
   virtual void SetForceEnableZoom(bool enabled) = 0;
 
@@ -75,10 +75,6 @@ class InputRouter : public IPC::Listener {
 
   // Used to check if a fling cancellation is deferred due to boosting or not.
   virtual bool FlingCancellationIsDeferred() = 0;
-
-  // Called when a set-touch-action message is received from the renderer
-  // for a touch start event that is currently in flight.
-  virtual void OnSetTouchAction(cc::TouchAction touch_action) = 0;
 };
 
 }  // namespace content

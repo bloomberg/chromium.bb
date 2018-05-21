@@ -42,6 +42,11 @@ class CONTENT_EXPORT TouchActionFilter {
   // for a touch start event that is currently in flight.
   void OnSetTouchAction(cc::TouchAction touch_action);
 
+  // Called at the end of a touch action sequence in order to log when a
+  // whitelisted touch action is or is not equivalent to the allowed touch
+  // action.
+  void ReportAndResetTouchAction();
+
   // Must be called at least once between when the last gesture events for the
   // previous touch sequence have passed through the touch action filter and the
   // time the touch start for the next touch sequence has reached the
@@ -52,20 +57,15 @@ class CONTENT_EXPORT TouchActionFilter {
   // renderer for a touch start event that is currently in flight.
   void OnSetWhiteListedTouchAction(cc::TouchAction white_listed_touch_action);
 
-  base::Optional<cc::TouchAction> allowed_touch_action() const {
-    return allowed_touch_action_;
-  }
+  cc::TouchAction allowed_touch_action() const { return allowed_touch_action_; }
 
   void SetForceEnableZoom(bool enabled) { force_enable_zoom_ = enabled; }
-
-  void OnHasTouchEventHandlers(bool has_handlers);
 
  private:
   friend class MockRenderWidgetHost;
 
   bool ShouldSuppressManipulation(const blink::WebGestureEvent&);
   bool FilterManipulationEventAndResetState();
-  void ReportTouchAction();
 
   // Whether scroll and pinch gestures should be discarded due to touch-action.
   bool suppress_manipulation_events_;
@@ -83,20 +83,11 @@ class CONTENT_EXPORT TouchActionFilter {
   // Force enable zoom for Accessibility.
   bool force_enable_zoom_;
 
-  // Indicates whether this page has touch event handler or not. Set by
-  // InputRouterImpl::OnHasTouchEventHandler.
-  bool has_touch_event_handler_ = true;
-
   // What touch actions are currently permitted.
-  base::Optional<cc::TouchAction> allowed_touch_action_;
+  cc::TouchAction allowed_touch_action_;
 
   // Whitelisted touch action received from the compositor.
   base::Optional<cc::TouchAction> white_listed_touch_action_;
-
-  // Tracks the number of active scrolls. Overlapping flings are treated as
-  // independent scroll sequences so we count how many are active to know when
-  // all scroll sequences are completed.
-  size_t active_scroll_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TouchActionFilter);
 };

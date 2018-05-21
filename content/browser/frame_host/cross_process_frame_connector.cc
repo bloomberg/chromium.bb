@@ -253,7 +253,6 @@ void CrossProcessFrameConnector::BubbleScrollEvent(
   const gfx::PointF root_point =
       view_->TransformPointToRootCoordSpaceF(event.PositionInWidget());
   resent_gesture_event.SetPositionInWidget(root_point);
-  resent_gesture_event.is_bubbled_from_child_frame = true;
 
   if (view_->wheel_scroll_latching_enabled()) {
     if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
