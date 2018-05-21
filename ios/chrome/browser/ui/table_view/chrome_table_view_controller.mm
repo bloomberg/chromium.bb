@@ -36,6 +36,16 @@
   return self;
 }
 
+- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
+                           appBarStyle:
+                               (ChromeTableViewControllerStyle)appBarStyle
+                                styler:(ChromeTableViewStyler*)styler {
+  if (self = [self initWithTableViewStyle:style appBarStyle:appBarStyle]) {
+    _styler = styler;
+  }
+  return self;
+}
+
 - (instancetype)init {
   return [self initWithTableViewStyle:UITableViewStylePlain
                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];

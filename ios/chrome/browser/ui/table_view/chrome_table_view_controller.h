@@ -32,11 +32,19 @@ typedef NS_ENUM(NSInteger, ChromeTableViewControllerStyle) {
 // changes made afterwards are not guaranteed to take effect.
 @property(nonatomic, readonly, strong) ChromeTableViewStyler* styler;
 
-// Initializers.
+// Initializes the view controller, configured with |style|, |appBarStyle|. The
+// default ChromeTableViewStyler will be used.
 - (instancetype)initWithTableViewStyle:(UITableViewStyle)style
                            appBarStyle:
                                (ChromeTableViewControllerStyle)appBarStyle
     NS_DESIGNATED_INITIALIZER;
+// Initializes the view controller, configured with |style|, |appBarStyle|, and
+// |styler|. |styler| can't be nil.
+- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
+                           appBarStyle:
+                               (ChromeTableViewControllerStyle)appBarStyle
+                                styler:(ChromeTableViewStyler*)styler;
+// Unavailable initializers.
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
