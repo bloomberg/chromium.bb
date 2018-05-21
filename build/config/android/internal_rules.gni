@@ -2824,6 +2824,7 @@ if (enable_java_templates) {
     if (defined(invoker.deps)) {
       _accumulated_deps = invoker.deps
     }
+    _accumulated_deps += [ "//build/config:exe_and_shlib_deps" ]
 
     _enable_build_hooks =
         _supports_android &&

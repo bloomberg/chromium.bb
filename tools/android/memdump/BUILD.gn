@@ -8,5 +8,6 @@ executable("memdump") {
   ]
   deps = [
     "//base",
+    "//build/config:exe_and_shlib_deps",
   ]
 }
