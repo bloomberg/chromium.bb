@@ -1487,9 +1487,9 @@ ProxyResolutionService::State ProxyResolutionService::ResetProxyConfig(
   init_proxy_resolver_.reset();
   SuspendAllPendingRequests();
   resolver_.reset();
-  config_ = base::Optional<ProxyConfigWithAnnotation>();
+  config_ = base::nullopt;
   if (reset_fetched_config)
-    fetched_config_ = base::Optional<ProxyConfigWithAnnotation>();
+    fetched_config_ = base::nullopt;
   current_state_ = STATE_NONE;
 
   return previous_state;
