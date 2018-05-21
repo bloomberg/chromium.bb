@@ -66,6 +66,7 @@
   // Set the consumer first before calling [self.mediator initObservers] and
   // then [self.mediator reloadSessions].
   self.mediator.consumer = recentTabsTableViewController;
+  recentTabsTableViewController.delegate = self.mediator;
   [self.mediator initObservers];
   [self.mediator reloadSessions];
 
