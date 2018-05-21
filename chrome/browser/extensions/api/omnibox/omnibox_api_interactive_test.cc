@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
   omnibox_view->OnAfterPossibleChange(true);
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());
-  EXPECT_TRUE(popup_model->IsOpen());
+  EXPECT_TRUE(popup_model->IsDisplayingResults());
 
   // Quickly type another query and accept it before getting suggestions back
   // for the query. The popup will close after accepting input - ensure that it
@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
   // This checks that the keyword provider (via javascript)
   // gets told to navigate to the string "command".
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  EXPECT_FALSE(popup_model->IsOpen());
+  EXPECT_FALSE(popup_model->IsDisplayingResults());
 }
 
 // Tests deleting a deletable omnibox extension suggestion result.

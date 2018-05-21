@@ -276,7 +276,7 @@ void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
       // Remove focus only if the popup is closed. This will prevent someone
       // from changing the omnibox value and closing the popup without user
       // interaction.
-      if (!omnibox_view->model()->popup_model()->IsOpen())
+      if (!omnibox_view->model()->popup_model()->IsDisplayingResults())
         web_contents()->Focus();
       break;
   }

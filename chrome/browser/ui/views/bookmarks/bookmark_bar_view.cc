@@ -866,8 +866,11 @@ bool BookmarkBarView::CanProcessEventsWithinSubtree() const {
   // descendants. This will prevent hovers/clicks just above the omnibox popup
   // from activating the top few pixels of items on the bookmark bar.
   if (!IsDetached() && browser_view_ &&
-      browser_view_->GetLocationBar()->GetOmniboxView()->model()->
-          popup_model()->IsOpen()) {
+      browser_view_->GetLocationBar()
+          ->GetOmniboxView()
+          ->model()
+          ->popup_model()
+          ->IsDisplayingResults()) {
     return false;
   }
   return true;

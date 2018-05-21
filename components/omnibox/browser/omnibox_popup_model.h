@@ -36,7 +36,7 @@ class OmniboxPopupModel {
   };
 
   OmniboxPopupModel(OmniboxPopupView* popup_view, OmniboxEditModel* edit_model);
-  ~OmniboxPopupModel();
+  virtual ~OmniboxPopupModel();
 
   // Computes the maximum width, in pixels, that can be allocated for the two
   // parts of an autocomplete result, i.e. the contents and the description.
@@ -60,10 +60,13 @@ class OmniboxPopupModel {
                                     int* contents_max_width,
                                     int* description_max_width);
 
-  // Returns true if the popup is currently open.
-  bool IsOpen() const;
+  // Returns true if the popup is currently open and contains matches.
+  // Virtual for testing, since test code may not have autocomplete results.
+  virtual bool IsDisplayingResults() const;
 
   OmniboxPopupView* view() const { return view_; }
+
+  OmniboxEditModel* edit_model() const { return edit_model_; }
 
   // Returns the AutocompleteController used by this popup.
   AutocompleteController* autocomplete_controller() const {
