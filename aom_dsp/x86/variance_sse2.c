@@ -39,15 +39,6 @@ unsigned int aom_get_mb_ss_sse2(const int16_t *src) {
   return _mm_cvtsi128_si32(vsum);
 }
 
-// Read 4 samples from each of row and row + 1. Interleave the two rows and
-// zero-extend them to 16 bit samples stored in the lower half of an SSE
-// register.
-static __m128i read64(const uint8_t *p, int stride, int row) {
-  __m128i row0 = xx_loadl_32(p + (row + 0) * stride);
-  __m128i row1 = xx_loadl_32(p + (row + 1) * stride);
-  return _mm_unpacklo_epi8(_mm_unpacklo_epi8(row0, row1), _mm_setzero_si128());
-}
-
 static INLINE __m128i load4x2_sse2(const uint8_t *const p, const int stride) {
   const __m128i p0 = _mm_cvtsi32_si128(*(const uint32_t *)(p + 0 * stride));
   const __m128i p1 = _mm_cvtsi32_si128(*(const uint32_t *)(p + 1 * stride));
