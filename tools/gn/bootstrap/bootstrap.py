@@ -600,6 +600,7 @@ def write_gn_ninja(path, root_gen_dir, options, windows_x64_toolchain):
       'base/task_scheduler/scoped_set_task_priority_for_current_thread.cc',
       'base/task_scheduler/sequence.cc',
       'base/task_scheduler/sequence_sort_key.cc',
+      'base/task_scheduler/service_thread.cc',
       'base/task_scheduler/task.cc',
       'base/task_scheduler/task_scheduler.cc',
       'base/task_scheduler/task_scheduler_impl.cc',
