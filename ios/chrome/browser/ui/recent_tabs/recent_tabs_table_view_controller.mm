@@ -915,67 +915,66 @@ const int kRelativeTimeMaxHours = 4;
 
 - (void)handleLongPress:(UILongPressGestureRecognizer*)longPressGesture {
   DCHECK_EQ(self.tableView, longPressGesture.view);
-  if (longPressGesture.state == UIGestureRecognizerStateBegan) {
-    NSInteger sectionIdentifier = self.lastTappedHeaderSectionIdentifier;
-    if (![self isSessionSectionIdentifier:sectionIdentifier]) {
-      // Only handle LongPress for SessionHeaders.
-      return;
-    }
+  if (longPressGesture.state != UIGestureRecognizerStateBegan)
+    return;
+  NSInteger sectionIdentifier = self.lastTappedHeaderSectionIdentifier;
+  // Only handle LongPress for SessionHeaders.
+  if (![self isSessionSectionIdentifier:sectionIdentifier])
+    return;
 
-    // Highlight the section header being long pressed.
-    NSInteger section = [self.tableViewModel
-        sectionForSectionIdentifier:self.lastTappedHeaderSectionIdentifier];
-    ListItem* headerItem = [self.tableViewModel headerForSection:section];
-    UITableViewHeaderFooterView* headerView =
-        [self.tableView headerViewForSection:section];
-    if (headerItem.type == ItemTypeRecentlyClosedHeader ||
-        headerItem.type == ItemTypeSessionHeader) {
-      TableViewDisclosureHeaderFooterView* textHeaderView =
-          base::mac::ObjCCastStrict<TableViewDisclosureHeaderFooterView>(
-              headerView);
-      [textHeaderView animateHighlight];
-    }
-
-    web::ContextMenuParams params;
-    // Get view coordinates in local space.
-    CGPoint viewCoordinate = [longPressGesture locationInView:self.tableView];
-    params.location = viewCoordinate;
-    params.view = self.tableView;
-
-    // Present sheet/popover using controller that is added to view hierarchy.
-    // TODO(crbug.com/754642): Remove TopPresentedViewController().
-    UIViewController* topController =
-        top_view_controller::TopPresentedViewController();
-
-    self.contextMenuCoordinator =
-        [[ContextMenuCoordinator alloc] initWithBaseViewController:topController
-                                                            params:params];
-
-    // Fill the sheet/popover with buttons.
-    __weak RecentTabsTableViewController* weakSelf = self;
-
-    // "Open all tabs" button.
-    NSString* openAllButtonLabel =
-        l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OPEN_ALL_MENU_OPTION);
-    [self.contextMenuCoordinator
-        addItemWithTitle:openAllButtonLabel
-                  action:^{
-                    [weakSelf
-                        openTabsFromSessionSectionIdentifier:sectionIdentifier];
-                  }];
-
-    // "Hide for now" button.
-    NSString* hideButtonLabel =
-        l10n_util::GetNSString(IDS_IOS_RECENT_TABS_HIDE_MENU_OPTION);
-    [self.contextMenuCoordinator
-        addItemWithTitle:hideButtonLabel
-                  action:^{
-                    [weakSelf removeSessionAtSessionSectionIdentifier:
-                                  sectionIdentifier];
-                  }];
-
-    [self.contextMenuCoordinator start];
+  // Highlight the section header being long pressed.
+  NSInteger section = [self.tableViewModel
+      sectionForSectionIdentifier:self.lastTappedHeaderSectionIdentifier];
+  ListItem* headerItem = [self.tableViewModel headerForSection:section];
+  UITableViewHeaderFooterView* headerView =
+      [self.tableView headerViewForSection:section];
+  if (headerItem.type == ItemTypeRecentlyClosedHeader ||
+      headerItem.type == ItemTypeSessionHeader) {
+    TableViewDisclosureHeaderFooterView* textHeaderView =
+        base::mac::ObjCCastStrict<TableViewDisclosureHeaderFooterView>(
+            headerView);
+    [textHeaderView animateHighlight];
   }
+
+  web::ContextMenuParams params;
+  // Get view coordinates in local space.
+  CGPoint viewCoordinate = [longPressGesture locationInView:self.tableView];
+  params.location = viewCoordinate;
+  params.view = self.tableView;
+
+  // Present sheet/popover using controller that is added to view hierarchy.
+  // TODO(crbug.com/754642): Remove TopPresentedViewController().
+  UIViewController* topController =
+      top_view_controller::TopPresentedViewController();
+
+  self.contextMenuCoordinator =
+      [[ContextMenuCoordinator alloc] initWithBaseViewController:topController
+                                                          params:params];
+
+  // Fill the sheet/popover with buttons.
+  __weak RecentTabsTableViewController* weakSelf = self;
+
+  // "Open all tabs" button.
+  NSString* openAllButtonLabel =
+      l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OPEN_ALL_MENU_OPTION);
+  [self.contextMenuCoordinator
+      addItemWithTitle:openAllButtonLabel
+                action:^{
+                  [weakSelf
+                      openTabsFromSessionSectionIdentifier:sectionIdentifier];
+                }];
+
+  // "Hide for now" button.
+  NSString* hideButtonLabel =
+      l10n_util::GetNSString(IDS_IOS_RECENT_TABS_HIDE_MENU_OPTION);
+  [self.contextMenuCoordinator
+      addItemWithTitle:hideButtonLabel
+                action:^{
+                  [weakSelf removeSessionAtSessionSectionIdentifier:
+                                sectionIdentifier];
+                }];
+
+  [self.contextMenuCoordinator start];
 }
 
 - (void)openTabsFromSessionSectionIdentifier:(NSInteger)sectionIdentifier {
