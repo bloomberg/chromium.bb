@@ -42,6 +42,16 @@ void PendingTaskAdapter(LazyContextTaskQueue::PendingTask original_task,
   }
 }
 
+// Attempts to create a background host for a lazy background page. Returns true
+// if the background host is created.
+bool CreateLazyBackgroundHost(ProcessManager* pm, const Extension* extension) {
+  pm->IncrementLazyKeepaliveCount(extension);
+  // Creating the background host may fail, e.g. if the extension isn't enabled
+  // in incognito mode.
+  return pm->CreateBackgroundHost(extension,
+                                  BackgroundInfo::GetBackgroundURL(extension));
+}
+
 }  // namespace
 
 LazyBackgroundTaskQueue::LazyBackgroundTaskQueue(
@@ -104,26 +114,21 @@ void LazyBackgroundTaskQueue::AddPendingTask(
   PendingTasksKey key(browser_context, extension_id);
   PendingTasksMap::iterator it = pending_tasks_.find(key);
   if (it == pending_tasks_.end()) {
-    auto tasks_list_tmp = std::make_unique<PendingTasksList>();
-    tasks_list = tasks_list_tmp.get();
-    pending_tasks_[key] = std::move(tasks_list_tmp);
-
-    const Extension* extension =
-        ExtensionRegistry::Get(browser_context)->enabled_extensions().GetByID(
-            extension_id);
+    const Extension* extension = ExtensionRegistry::Get(browser_context)
+                                     ->enabled_extensions()
+                                     .GetByID(extension_id);
     if (extension && BackgroundInfo::HasLazyBackgroundPage(extension)) {
       // If this is the first enqueued task, and we're not waiting for the
       // background page to unload, ensure the background page is loaded.
-      ProcessManager* pm = ProcessManager::Get(browser_context);
-      pm->IncrementLazyKeepaliveCount(extension);
-      // Creating the background host may fail, e.g. if |profile| is incognito
-      // but the extension isn't enabled in incognito mode.
-      if (!pm->CreateBackgroundHost(
-            extension, BackgroundInfo::GetBackgroundURL(extension))) {
+      if (!CreateLazyBackgroundHost(ProcessManager::Get(browser_context),
+                                    extension)) {
         std::move(task).Run(nullptr);
         return;
       }
     }
+    auto tasks_list_tmp = std::make_unique<PendingTasksList>();
+    tasks_list = tasks_list_tmp.get();
+    pending_tasks_[key] = std::move(tasks_list_tmp);
   } else {
     tasks_list = it->second.get();
   }
@@ -158,11 +163,25 @@ void LazyBackgroundTaskQueue::ProcessPendingTasks(
 
   pending_tasks_.erase(key);
 
-  // Balance the keepalive in AddPendingTask. Note we don't do this on a
-  // failure to load, because the keepalive count is reset in that case.
+  // Balance the keepalive in CreateLazyBackgroundHost. Note we don't do this on
+  // a failure to load, because the keepalive count is reset in that case.
   if (host && BackgroundInfo::HasLazyBackgroundPage(extension)) {
     ProcessManager::Get(browser_context)
         ->DecrementLazyKeepaliveCount(extension);
+  }
+}
+
+void LazyBackgroundTaskQueue::NotifyTasksExtensionFailedToLoad(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  ProcessPendingTasks(nullptr, browser_context, extension);
+  // If this extension is also running in an off-the-record context, notify that
+  // task queue as well.
+  ExtensionsBrowserClient* browser_client = ExtensionsBrowserClient::Get();
+  if (browser_client->HasOffTheRecordContext(browser_context)) {
+    ProcessPendingTasks(nullptr,
+                        browser_client->GetOffTheRecordContext(browser_context),
+                        extension);
   }
 }
 
@@ -203,20 +222,48 @@ void LazyBackgroundTaskQueue::Observe(
   }
 }
 
+void LazyBackgroundTaskQueue::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  // If there are pending tasks for a lazy background page, and its background
+  // host has not been created yet, then create it. This can happen if a pending
+  // task was added while the extension is not yet enabled (e.g., component
+  // extension crashed and waiting to reload, https://crbug.com/835017).
+  if (!BackgroundInfo::HasLazyBackgroundPage(extension))
+    return;
+
+  CreateLazyBackgroundHostOnExtensionLoaded(browser_context, extension);
+
+  // Also try to create the background host for the off-the-record context.
+  ExtensionsBrowserClient* browser_client = ExtensionsBrowserClient::Get();
+  if (browser_client->HasOffTheRecordContext(browser_context)) {
+    CreateLazyBackgroundHostOnExtensionLoaded(
+        browser_client->GetOffTheRecordContext(browser_context), extension);
+  }
+}
+
 void LazyBackgroundTaskQueue::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionReason reason) {
-  // Notify consumers that the page failed to load.
-  ProcessPendingTasks(NULL, browser_context, extension);
-  // If this extension is also running in an off-the-record context, notify that
-  // task queue as well.
-  ExtensionsBrowserClient* browser_client = ExtensionsBrowserClient::Get();
-  if (browser_client->HasOffTheRecordContext(browser_context)) {
-    ProcessPendingTasks(NULL,
-                        browser_client->GetOffTheRecordContext(browser_context),
-                        extension);
-  }
+  NotifyTasksExtensionFailedToLoad(browser_context, extension);
+}
+
+void LazyBackgroundTaskQueue::CreateLazyBackgroundHostOnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  PendingTasksKey key(browser_context, extension->id());
+  if (!base::ContainsKey(pending_tasks_, key))
+    return;
+
+  ProcessManager* pm = ProcessManager::Get(browser_context);
+
+  // Background host already created, just wait for it to finish loading.
+  if (pm->GetBackgroundHostForExtension(extension->id()))
+    return;
+
+  if (!CreateLazyBackgroundHost(pm, extension))
+    ProcessPendingTasks(nullptr, browser_context, extension);
 }
 
 }  // namespace extensions

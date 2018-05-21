@@ -141,6 +141,11 @@ void EventPageRequestManager::AttemptWakeEventPage() {
 }
 
 void EventPageRequestManager::OnWakeComplete(bool success) {
+  // If there are multiple overlapping WakeEventPage requests, ensure the
+  // metrics are only recorded once.
+  if (current_wake_reason_ == MediaRouteProviderWakeReason::TOTAL_COUNT)
+    return;
+
   if (success) {
     MediaRouterMojoMetrics::RecordMediaRouteProviderWakeReason(
         current_wake_reason_);

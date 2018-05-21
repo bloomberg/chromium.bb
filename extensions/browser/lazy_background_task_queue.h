@@ -76,7 +76,8 @@ class LazyBackgroundTaskQueue : public KeyedService,
  private:
   FRIEND_TEST_ALL_PREFIXES(LazyBackgroundTaskQueueTest, AddPendingTask);
   FRIEND_TEST_ALL_PREFIXES(LazyBackgroundTaskQueueTest, ProcessPendingTasks);
-
+  FRIEND_TEST_ALL_PREFIXES(LazyBackgroundTaskQueueTest,
+                           CreateLazyBackgroundPageOnExtensionLoaded);
   // A map between a BrowserContext/extension_id pair and the queue of tasks
   // pending the load of its background page.
   using PendingTasksKey = std::pair<content::BrowserContext*, ExtensionId>;
@@ -90,15 +91,29 @@ class LazyBackgroundTaskQueue : public KeyedService,
                const content::NotificationDetails& details) override;
 
   // ExtensionRegistryObserver interface.
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
+  // If there are pending tasks for |extension| in |browser_context|, try to
+  // create the background host. If the background host cannot be created, the
+  // pending tasks are invoked with nullptr.
+  void CreateLazyBackgroundHostOnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension);
+
   // Called when a lazy background page has finished loading, or has failed to
-  // load (host is NULL in that case). All enqueued tasks are run in order.
+  // load (host is nullptr in that case). All enqueued tasks are run in order.
   void ProcessPendingTasks(
       ExtensionHost* host,
       content::BrowserContext* context,
+      const Extension* extension);
+
+  // Notifies queued tasks that a lazy background page has failed to load.
+  void NotifyTasksExtensionFailedToLoad(
+      content::BrowserContext* browser_context,
       const Extension* extension);
 
   content::BrowserContext* browser_context_;
