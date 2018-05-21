@@ -134,6 +134,9 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
 
   std::unique_ptr<JSONObject> ToJSON() const;
 
+  // Returns memory usage of this node plus ancestors.
+  size_t TreeMemoryUsageInBytes() const;
+
  private:
   EffectPaintPropertyNode(scoped_refptr<const EffectPaintPropertyNode> parent,
                           State&& state)

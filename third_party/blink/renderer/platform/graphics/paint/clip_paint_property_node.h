@@ -111,6 +111,9 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
 
   std::unique_ptr<JSONObject> ToJSON() const;
 
+  // Returns memory usage of the clip cache of this node plus ancestors.
+  size_t CacheMemoryUsageInBytes() const;
+
  private:
   ClipPaintPropertyNode(scoped_refptr<const ClipPaintPropertyNode> parent,
                         State&& state)

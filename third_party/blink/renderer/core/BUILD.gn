@@ -2075,10 +2075,6 @@ jumbo_source_set("unit_tests") {
     "svg/svg_path_parser_test.cc",
     "svg/svg_text_content_element_test.cc",
     "svg/unsafe_svg_attribute_sanitization_test.cc",
-    "testing/core_unit_test_helper.cc",
-    "testing/core_unit_test_helper.h",
-    "testing/page_test_base.cc",
-    "testing/page_test_base.h",
     "testing/sim/sim_canvas.cc",
     "testing/sim/sim_canvas.h",
     "testing/sim/sim_compositor.cc",
@@ -2121,6 +2117,7 @@ jumbo_source_set("unit_tests") {
 
   deps = [
     ":core",
+    ":unit_test_support",
     "//mojo/public/cpp/system",
     "//testing/gmock",
     "//testing/gtest",
@@ -2133,6 +2130,49 @@ jumbo_source_set("unit_tests") {
   if (!is_android) {
     deps += [ "//third_party/blink/renderer/core/mojo:unit_tests" ]
   }
+}
+
+jumbo_source_set("perf_tests") {
+  testonly = true
+  sources = [
+    "layout/visual_rect_mapping_perftest.cc",
+  ]
+
+  configs += [
+    ":blink_core_pch",
+    "//third_party/blink/renderer:config",
+    "//third_party/blink/renderer:inside_blink",
+  ]
+
+  deps = [
+    ":core",
+    ":unit_test_support",
+    "//mojo/public/cpp/system",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
+jumbo_source_set("unit_test_support") {
+  testonly = true
+  sources = [
+    "testing/core_unit_test_helper.cc",
+    "testing/core_unit_test_helper.h",
+    "testing/page_test_base.cc",
+    "testing/page_test_base.h",
+  ]
+
+  configs += [
+    ":blink_core_pch",
+    "//third_party/blink/renderer:config",
+    "//third_party/blink/renderer:inside_blink",
+  ]
+
+  deps = [
+    ":core",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 }
 
 # Fuzzer for blink::StyleSheetContents
