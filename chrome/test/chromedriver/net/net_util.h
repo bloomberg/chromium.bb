@@ -31,8 +31,11 @@ class NetAddress {
 
 // Synchronously fetches data from a GET HTTP request to the given URL.
 // Returns true if response is 200 OK and sets response body to |response|.
+// Sets |response_code| to the response code of the fetch if there were no
+// network errors, otherwise it is set to -1.
 bool FetchUrl(const std::string& url,
               URLRequestContextGetter* getter,
-              std::string* response);
+              std::string* response,
+              int* response_code);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_NET_NET_UTIL_H_
