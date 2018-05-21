@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/media_export.h"
+#include "media/base/video_bitrate_allocation.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 
@@ -142,13 +143,23 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   //  |buffer| is the bitstream buffer to use for output.
   virtual void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) = 0;
 
-  // Request a change to the encoding parameters.  This is only a request,
+  // Request a change to the encoding parameters. This is only a request,
   // fulfilled on a best-effort basis.
   // Parameters:
   //  |bitrate| is the requested new bitrate, in bits per second.
   //  |framerate| is the requested new framerate, in frames per second.
   virtual void RequestEncodingParametersChange(uint32_t bitrate,
                                                uint32_t framerate) = 0;
+
+  // Request a change to the encoding parameters. This is only a request,
+  // fulfilled on a best-effort basis. If not implemented, default behavior is
+  // to get the sum over layers and pass to version with bitrate as uint32_t.
+  // Parameters:
+  //  |bitrate| is the requested new bitrate, per spatial and temporal layer.
+  //  |framerate| is the requested new framerate, in frames per second.
+  virtual void RequestEncodingParametersChange(
+      const VideoBitrateAllocation& bitrate,
+      uint32_t framerate);
 
   // Destroys the encoder: all pending inputs and outputs are dropped
   // immediately and the component is freed.  This call may asynchronously free

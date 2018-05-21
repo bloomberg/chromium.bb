@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "media/base/video_decoder_config.h"
+#include "third_party/webrtc/api/video/video_bitrate_allocation.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -57,7 +58,8 @@ class CONTENT_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
       webrtc::EncodedImageCallback* callback) override;
   int32_t Release() override;
   int32_t SetChannelParameters(uint32_t packet_loss, int64_t rtt) override;
-  int32_t SetRates(uint32_t new_bit_rate, uint32_t frame_rate) override;
+  int32_t SetRateAllocation(const webrtc::VideoBitrateAllocation& allocation,
+                            uint32_t framerate) override;
   bool SupportsNativeHandle() const override;
   const char* ImplementationName() const override;
 

@@ -28,6 +28,7 @@
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
+#include "media/base/video_bitrate_allocation.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/video/gpu_video_accelerator_factories.h"
@@ -140,7 +141,8 @@ class RTCVideoEncoder::Impl
   void UseOutputBitstreamBufferId(int32_t bitstream_buffer_id);
 
   // Request encoding parameter change for the underlying encoder.
-  void RequestEncodingParametersChange(uint32_t bitrate, uint32_t framerate);
+  void RequestEncodingParametersChange(webrtc::VideoBitrateAllocation bitrate,
+                                       uint32_t framerate);
 
   void RegisterEncodeCompleteCallback(base::WaitableEvent* async_waiter,
                                       int32_t* async_retval,
@@ -391,22 +393,41 @@ void RTCVideoEncoder::Impl::UseOutputBitstreamBufferId(
 }
 
 void RTCVideoEncoder::Impl::RequestEncodingParametersChange(
-    uint32_t bitrate,
+    webrtc::VideoBitrateAllocation bitrate,
     uint32_t framerate) {
-  DVLOG(3) << __func__ << " bitrate=" << bitrate << ", framerate=" << framerate;
+  DVLOG(3) << __func__ << " bitrate=" << bitrate.ToString()
+           << ", framerate=" << framerate;
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Check for overflow converting bitrate (kilobits/sec) to bits/sec.
-  if (IsBitrateTooHigh(bitrate))
-    return;
 
   // This is a workaround to zero being temporarily provided, as part of the
   // initial setup, by WebRTC.
-  bitrate = std::max(1u, bitrate);
+  if (bitrate.get_sum_bps() == 0) {
+    bitrate.SetBitrate(0, 0, 1);
+  }
   framerate = std::max(1u, framerate);
 
-  if (video_encoder_)
-    video_encoder_->RequestEncodingParametersChange(bitrate * 1000, framerate);
+  if (video_encoder_) {
+    media::VideoBitrateAllocation allocation;
+    for (size_t spatial_id = 0;
+         spatial_id < media::VideoBitrateAllocation::kMaxSpatialLayers;
+         ++spatial_id) {
+      for (size_t temporal_id = 0;
+           temporal_id < media::VideoBitrateAllocation::kMaxTemporalLayers;
+           ++temporal_id) {
+        // TODO(sprang): Clean this up if/when webrtc struct moves to int.
+        uint32_t layer_bitrate = bitrate.GetBitrate(spatial_id, temporal_id);
+        RTC_CHECK_LE(layer_bitrate,
+                     static_cast<uint32_t>(std::numeric_limits<int>::max()));
+        if (!allocation.SetBitrate(spatial_id, temporal_id, layer_bitrate)) {
+          LOG(WARNING) << "Overflow in bitrate allocation: "
+                       << bitrate.ToString();
+          break;
+        }
+      }
+    }
+    DCHECK_EQ(allocation.GetSumBps(), static_cast<int>(bitrate.get_sum_bps()));
+    video_encoder_->RequestEncodingParametersChange(allocation, framerate);
+  }
 }
 
 void RTCVideoEncoder::Impl::Destroy(base::WaitableEvent* async_waiter) {
@@ -922,8 +943,10 @@ int32_t RTCVideoEncoder::SetChannelParameters(uint32_t packet_loss,
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t RTCVideoEncoder::SetRates(uint32_t new_bit_rate, uint32_t frame_rate) {
-  DVLOG(3) << __func__ << " new_bit_rate=" << new_bit_rate
+int32_t RTCVideoEncoder::SetRateAllocation(
+    const webrtc::VideoBitrateAllocation& allocation,
+    uint32_t frame_rate) {
+  DVLOG(3) << __func__ << " new_bit_rate=" << allocation.ToString()
            << ", frame_rate=" << frame_rate;
   if (!impl_.get()) {
     DVLOG(3) << "Encoder is not initialized";
@@ -939,7 +962,7 @@ int32_t RTCVideoEncoder::SetRates(uint32_t new_bit_rate, uint32_t frame_rate) {
   gpu_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&RTCVideoEncoder::Impl::RequestEncodingParametersChange,
-                     impl_, new_bit_rate, frame_rate));
+                     impl_, allocation, frame_rate));
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
