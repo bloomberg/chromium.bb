@@ -4,6 +4,7 @@
 
 #include "ash/touch/touch_observer_hud.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
@@ -16,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -269,6 +271,7 @@ class TouchHudProjectionTest : public TouchHudTestBase {
   // testing::Test:
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kShowTaps);
+    scoped_feature_list_.InitAndDisableFeature(features::kShowTapsApp);
     TouchHudTestBase::SetUp();
   }
 
@@ -293,6 +296,7 @@ class TouchHudProjectionTest : public TouchHudTestBase {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::TimeTicks event_time;
 
   DISALLOW_COPY_AND_ASSIGN(TouchHudProjectionTest);
