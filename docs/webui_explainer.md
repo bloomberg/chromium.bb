@@ -655,7 +655,7 @@ are in flight.
 
 ## See also
 
-* WebUI's C++ code follows the [Chromium C++ styleguide](../c++/c++.md).
+* WebUI's C++ code follows the [Chromium C++ styleguide](../styleguide/c++/c++.md).
 * WebUI's HTML/CSS/JS code follows the [Chromium Web
   Development Style Guide](../styleguide/web/web.md)
 
