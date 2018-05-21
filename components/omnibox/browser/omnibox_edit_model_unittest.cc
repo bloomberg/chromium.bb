@@ -28,22 +28,26 @@ class TestOmniboxEditModel : public OmniboxEditModel {
       : OmniboxEditModel(view,
                          controller,
                          std::make_unique<TestOmniboxClient>()),
-        popup_is_open_(false) {}
+        popup_is_displaying_results_(false) {}
 
-  bool PopupIsOpen() const override { return popup_is_open_; };
+  bool PopupIsDisplayingResults() const override {
+    return popup_is_displaying_results_;
+  };
 
   AutocompleteMatch CurrentMatch(GURL*) const override {
     return current_match_;
   };
 
-  void SetPopupIsOpen(bool open) { popup_is_open_ = open; }
+  void SetPopupIsDisplayingResults(bool displaying_results) {
+    popup_is_displaying_results_ = displaying_results;
+  }
 
   void SetCurrentMatch(const AutocompleteMatch& match) {
     current_match_ = match;
   }
 
  private:
-  bool popup_is_open_;
+  bool popup_is_displaying_results_;
   AutocompleteMatch current_match_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOmniboxEditModel);
@@ -170,7 +174,7 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
     model()->ResetDisplayUrls();
 
     model()->SetInputInProgress(input[i].is_match_selected_in_popup);
-    model()->SetPopupIsOpen(input[i].is_match_selected_in_popup);
+    model()->SetPopupIsDisplayingResults(input[i].is_match_selected_in_popup);
     AutocompleteMatch match;
     match.type = AutocompleteMatchType::NAVSUGGEST;
     match.destination_url = GURL(input[i].match_destination_url);

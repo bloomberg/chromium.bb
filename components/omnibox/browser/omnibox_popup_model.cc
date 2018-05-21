@@ -103,8 +103,8 @@ void OmniboxPopupModel::ComputeMatchMaxWidths(int contents_width,
   }
 }
 
-bool OmniboxPopupModel::IsOpen() const {
-  return view_->IsOpen();
+bool OmniboxPopupModel::IsDisplayingResults() const {
+  return view_->IsOpen() && !result().empty();
 }
 
 void OmniboxPopupModel::SetSelectedLine(size_t line,

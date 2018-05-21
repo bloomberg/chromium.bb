@@ -100,6 +100,9 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   // the specified point.
   size_t GetIndexForPoint(const gfx::Point& point);
 
+  // Returns true if the popup should be open.
+  bool PopupShouldBeOpen() const;
+
   OmniboxResultView* result_view_at(size_t i);
 
   LocationBarView* location_bar_view() { return location_bar_view_; }

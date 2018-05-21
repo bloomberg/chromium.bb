@@ -38,7 +38,7 @@ void OmniboxController::StartAutocomplete(
 }
 
 void OmniboxController::OnResultChanged(bool default_match_changed) {
-  const bool was_open = popup_ && popup_->IsOpen();
+  const bool was_open = popup_ && popup_->IsDisplayingResults();
   if (default_match_changed) {
     // The default match has changed, we need to let the OmniboxEditModel know
     // about new inline autocomplete text (blue highlight).
@@ -57,7 +57,7 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
     popup_->OnResultChanged();
   }
 
-  if (was_open && !popup_->IsOpen()) {
+  if (was_open && !popup_->IsDisplayingResults()) {
     // Accept the temporary text as the user text, because it makes little sense
     // to have temporary text when the popup is closed.
     omnibox_edit_model_->AcceptTemporaryTextAsUserText();
@@ -76,7 +76,7 @@ void OmniboxController::InvalidateCurrentMatch() {
 }
 
 void OmniboxController::ClearPopupKeywordMode() const {
-  if (popup_->IsOpen() &&
+  if (popup_->IsDisplayingResults() &&
       popup_->selected_line_state() == OmniboxPopupModel::KEYWORD)
     popup_->SetSelectedLineState(OmniboxPopupModel::NORMAL);
 }

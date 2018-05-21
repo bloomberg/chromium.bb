@@ -760,7 +760,7 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
     return true;
   }
 
-  if (model()->popup_model()->IsOpen()) {
+  if (model()->popup_model()->IsDisplayingResults()) {
     if (cmd == @selector(insertBacktab:)) {
       if (model()->popup_model()->selected_line_state() ==
             OmniboxPopupModel::KEYWORD) {
@@ -855,7 +855,7 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
   if (cmd == @selector(deleteForward:)) {
     const NSUInteger modifiers = [[NSApp currentEvent] modifierFlags];
     if ((modifiers & NSShiftKeyMask) != 0) {
-      if (model()->popup_model()->IsOpen()) {
+      if (model()->popup_model()->IsDisplayingResults()) {
         model()->popup_model()->TryDeletingCurrentItem();
         return true;
       }

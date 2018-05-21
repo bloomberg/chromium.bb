@@ -389,10 +389,9 @@ class OmniboxEditModel {
   // AutomationProvider::AutocompleteEditIsQueryInProgress.
   bool query_in_progress() const { return !autocomplete_controller()->done(); }
 
-  // Returns true if the popup exists and is open.  (This is a convenience
-  // wrapper for the benefit of test code, which may not have a popup model.)
-  // Virtual for testing.
-  virtual bool PopupIsOpen() const;
+  // Returns true if the popup exists and is open with results.
+  // Virtual for testing, since test code may not have a popup model.
+  virtual bool PopupIsDisplayingResults() const;
 
   // Called whenever user_text_ should change.
   void InternalSetUserText(const base::string16& text);

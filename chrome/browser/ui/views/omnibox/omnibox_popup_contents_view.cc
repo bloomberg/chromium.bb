@@ -313,7 +313,7 @@ void OmniboxPopupContentsView::OnLineSelected(size_t line) {
 }
 
 void OmniboxPopupContentsView::UpdatePopupAppearance() {
-  if (model_->result().empty() || omnibox_view_->IsImeShowingPopup()) {
+  if (!PopupShouldBeOpen()) {
     // No matches or the IME is showing a popup window which may overlap
     // the omnibox popup window.  Close any existing popup.
     if (popup_) {
@@ -549,6 +549,22 @@ size_t OmniboxPopupContentsView::GetIndexForPoint(const gfx::Point& point) {
       return i;
   }
   return OmniboxPopupModel::kNoMatch;
+}
+
+bool OmniboxPopupContentsView::PopupShouldBeOpen() const {
+  if (omnibox_view_->IsImeShowingPopup())
+    return false;
+
+  if (!model_->result().empty())
+    return true;
+
+  if (LocationBarView::IsRounded() &&
+      model_->edit_model()->user_input_in_progress() &&
+      model_->edit_model()->has_focus()) {
+    return true;
+  }
+
+  return false;
 }
 
 OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {

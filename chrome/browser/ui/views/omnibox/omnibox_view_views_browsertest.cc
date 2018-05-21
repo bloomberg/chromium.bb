@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, PasteAndGoDoesNotLeavePopupOpen) {
   omnibox_view_views->ExecuteCommand(IDS_PASTE_AND_GO, ui::EF_NONE);
 
   // The popup should not be open.
-  EXPECT_FALSE(view->model()->popup_model()->IsOpen());
+  EXPECT_FALSE(view->model()->popup_model()->IsDisplayingResults());
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, DoNotNavigateOnDrop) {
@@ -367,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
 
   // The omnibox popup should open with suggestions displayed.
   omnibox_view->model()->popup_model()->OnResultChanged();
-  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsDisplayingResults());
 
   // The omnibox text should be selected.
   EXPECT_TRUE(omnibox_view->IsSelectAll());
@@ -378,14 +378,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                          ui::EF_LEFT_MOUSE_BUTTON);
   omnibox_view_views->OnMousePressed(pressed);
-  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsDisplayingResults());
 
   // Simulate a mouse drag of the omnibox text, and the omnibox should close.
   ui::MouseEvent dragged(ui::ET_MOUSE_DRAGGED, point, point,
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
   omnibox_view_views->OnMouseDragged(dragged);
 
-  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
+  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsDisplayingResults());
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MaintainCursorAfterFocusCycle) {
@@ -415,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MaintainCursorAfterFocusCycle) {
 
   // The omnibox popup should open with suggestions displayed.
   omnibox_view->model()->popup_model()->OnResultChanged();
-  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsDisplayingResults());
 
   // TODO(krb): For some reason, we need to hit End twice to be registered.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_END, false,
@@ -429,7 +429,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MaintainCursorAfterFocusCycle) {
   omnibox_view->GetSelectionBounds(&prev_start, &end);
 
   chrome::FocusAppMenu(browser());
-  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
+  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsDisplayingResults());
 
   // Re-focus.
   chrome::FocusLocationBar(browser());
@@ -549,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FriendlyAccessibleLabel) {
   // The omnibox popup should open with suggestions displayed.
   chrome::FocusLocationBar(browser());
   omnibox_view->model()->popup_model()->OnResultChanged();
-  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsDisplayingResults());
   OmniboxViewViews* omnibox_view_views =
       static_cast<OmniboxViewViews*>(omnibox_view);
 
@@ -641,7 +641,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, AccessiblePopup) {
   // The omnibox popup should open with suggestions displayed.
   chrome::FocusLocationBar(browser());
   omnibox_view->model()->popup_model()->OnResultChanged();
-  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsDisplayingResults());
   ui::AXNodeData popup_node_data_2;
   popup_view->GetAccessibleNodeData(&popup_node_data_2);
   EXPECT_TRUE(popup_node_data_2.HasState(ax::mojom::State::kExpanded));

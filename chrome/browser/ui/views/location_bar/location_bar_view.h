@@ -386,6 +386,7 @@ class LocationBarView : public LocationBar,
   void AnimationEnded(const gfx::Animation* animation) override;
 
   // ChromeOmniboxEditController:
+  void OnInputInProgress(bool in_progress) override;
   void OnChanged() override;
   void OnPopupVisibilityChanged() override;
   const ToolbarModel* GetToolbarModel() const override;
