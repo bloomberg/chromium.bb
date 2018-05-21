@@ -266,12 +266,12 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
   gfx::Point point_in_browser_view_coords(point);
   views::View::ConvertPointToTarget(
       parent, browser_view_, &point_in_browser_view_coords);
-  gfx::Point test_point(point);
 
   // Determine if the TabStrip exists and is capable of being clicked on. We
   // might be a popup window without a TabStrip.
   if (delegate_->IsTabStripVisible()) {
     // See if the mouse pointer is within the bounds of the TabStrip.
+    gfx::Point test_point(point);
     if (ConvertedHitTest(parent, tab_strip_, &test_point)) {
       if (tab_strip_->IsPositionInWindowCaption(test_point))
         return HTCAPTION;
@@ -295,10 +295,9 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
   // If the point's y coordinate is below the top of the toolbar and otherwise
   // within the bounds of this view, the point is considered to be within the
   // client area.
-  gfx::Rect bv_bounds = browser_view_->bounds();
-  bv_bounds.Offset(0, toolbar_->y());
-  bv_bounds.set_height(bv_bounds.height() - toolbar_->y());
-  if (bv_bounds.Contains(point))
+  gfx::Rect bounds_from_toolbar_top = browser_view_->bounds();
+  bounds_from_toolbar_top.Inset(0, toolbar_->y(), 0, 0);
+  if (bounds_from_toolbar_top.Contains(point))
     return HTCLIENT;
 
   // If the point's y coordinate is above the top of the toolbar, but not
@@ -311,9 +310,9 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
   // cause the window controls not to work. So we return HTNOWHERE so that the
   // caller will hit-test the window controls before finally falling back to
   // HTCAPTION.
-  bv_bounds = browser_view_->bounds();
-  bv_bounds.set_height(toolbar_->y());
-  if (bv_bounds.Contains(point))
+  gfx::Rect tabstrip_background_bounds = browser_view_->bounds();
+  tabstrip_background_bounds.set_height(toolbar_->y());
+  if (tabstrip_background_bounds.Contains(point))
     return HTNOWHERE;
 
   // If the point is somewhere else, delegate to the default implementation.
