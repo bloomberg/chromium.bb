@@ -551,9 +551,12 @@ void RendererBlinkPlatformImpl::CloneSessionStorageNamespace(
     const std::string& source_namespace,
     const std::string& destination_namespace) {
   if (!local_storage_cached_areas_) {
+    // Some browser tests don't have a RenderThreadImpl.
+    RenderThreadImpl* render_thread = RenderThreadImpl::current();
+    if (!render_thread)
+      return;
     local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
-        RenderThreadImpl::current()->GetStoragePartitionService(),
-        main_thread_scheduler_));
+        render_thread->GetStoragePartitionService(), main_thread_scheduler_));
   }
   local_storage_cached_areas_->CloneNamespace(source_namespace,
                                               destination_namespace);

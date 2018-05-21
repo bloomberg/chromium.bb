@@ -16,6 +16,7 @@
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "url/origin.h"
 
@@ -110,7 +111,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   void Bind(mojom::SessionStorageNamespaceRequest request, int process_id);
 
   bool IsBound() const {
-    return binding_.is_bound() || bind_waiting_on_clone_population_;
+    return !bindings_.empty() || bind_waiting_on_clone_population_;
   }
 
   // Removes any LevelDBWrappers bound in |OpenArea| that are no longer bound.
@@ -149,7 +150,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
 
   bool populated_ = false;
   OriginAreas origin_areas_;
-  mojo::Binding<mojom::SessionStorageNamespace> binding_;
+  mojo::BindingSet<mojom::SessionStorageNamespace> bindings_;
 };
 
 }  // namespace content

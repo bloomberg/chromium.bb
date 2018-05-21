@@ -90,10 +90,16 @@ class CONTENT_EXPORT LocalStorageCachedArea
 
   friend class LocalStorageCachedAreaTest;
 
+  enum class FormatOption {
+    kLocalStorageDetectFormat,
+    kSessionStorageForceUTF16,
+    kSessionStorageForceUTF8
+  };
+
   static base::string16 Uint8VectorToString16(const std::vector<uint8_t>& input,
-                                              bool force_plain_utf16);
+                                              FormatOption format_option);
   static std::vector<uint8_t> String16ToUint8Vector(const base::string16& input,
-                                                    bool force_plain_utf16);
+                                                    FormatOption format_option);
 
   // LevelDBObserver:
   void KeyAdded(const std::vector<uint8_t>& key,
