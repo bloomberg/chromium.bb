@@ -6,9 +6,13 @@
 
 #include "ash/login_status.h"
 #include "ash/message_center/message_center_controller.h"
+#include "ash/public/cpp/ash_features.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/notification_tray.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/unified/unified_system_tray.h"
 
 namespace ash {
 
@@ -39,8 +43,16 @@ void ArcNotificationManagerDelegateImpl::GetAppIdByPackageName(
 }
 
 void ArcNotificationManagerDelegateImpl::ShowMessageCenter() {
-  Shell::Get()->GetNotificationTray()->ShowMessageCenter(
-      false /* show_by_click */);
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    Shell::Get()
+        ->GetPrimaryRootWindowController()
+        ->GetStatusAreaWidget()
+        ->unified_system_tray()
+        ->ShowBubble(false /* show_by_click */);
+  } else {
+    Shell::Get()->GetNotificationTray()->ShowMessageCenter(
+        false /* show_by_click */);
+  }
 }
 
 }  // namespace ash
