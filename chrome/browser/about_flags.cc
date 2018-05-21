@@ -3636,11 +3636,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableDisplayZoomSettingName,
      flag_descriptions::kEnableDisplayZoomSettingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kEnableDisplayZoomSetting)},
-
-    {"ash-enable-new-overview-ui",
-     flag_descriptions::kAshEnableNewOverviewUiName,
-     flag_descriptions::kAshEnableNewOverviewUiDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kNewOverviewUi)},
 #endif  // defined(OS_CHROMEOS)
 
     {"unified-consent", flag_descriptions::kUnifiedConsentName,

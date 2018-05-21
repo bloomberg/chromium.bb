@@ -64,21 +64,10 @@ constexpr float kShieldOpacity = 0.6f;
 
 // The color and opacity of the overview selector.
 constexpr SkColor kWindowSelectionColor = SkColorSetARGB(36, 255, 255, 255);
-constexpr SkColor kWindowSelectionBorderColor =
-    SkColorSetARGB(76, 255, 255, 255);
-
-// Border thickness of overview selector.
-constexpr int kWindowSelectionBorderThickness = 1;
 
 // Corner radius and shadow applied to the overview selector border.
 constexpr int kWindowSelectionRadius = 9;
 constexpr int kWindowSelectionShadowElevation = 24;
-
-// Values for the old overview ui.
-// TODO(crbug.com/782320): Delete these values when the old ui becomes obsolete.
-constexpr SkColor kOldWindowSelectionColor = SkColorSetARGB(51, 255, 255, 255);
-constexpr int kOldWindowSelectionRadius = 4;
-constexpr float kOldShieldOpacity = 0.7f;
 
 // The base color which is mixed with the dark muted color from wallpaper to
 // form the shield widgets color.
@@ -273,8 +262,7 @@ void WindowGrid::PositionWindows(bool animate,
   const gfx::Rect bounds = widget_window->parent()->bounds();
   widget_window->SetBounds(bounds);
 
-  if (IsNewOverviewUi())
-    ShowNoRecentsWindowMessage(window_list_.empty());
+  ShowNoRecentsWindowMessage(window_list_.empty());
 
   if (window_list_.empty())
     return;
@@ -414,7 +402,7 @@ bool WindowGrid::Move(WindowSelector::Direction direction, bool animate) {
   if (SelectedWindow()) {
     old_bounds = SelectedWindow()->target_bounds();
     // Make the old selected window header non-transparent first.
-    SelectedWindow()->SetSelected(false);
+    SelectedWindow()->set_selected(false);
   }
 
   // [up] key is equivalent to [left] key and [down] key is equivalent to
@@ -459,7 +447,7 @@ bool WindowGrid::Move(WindowSelector::Direction direction, bool animate) {
 
   // Make the new selected window header fully transparent.
   if (SelectedWindow())
-    SelectedWindow()->SetSelected(true);
+    SelectedWindow()->set_selected(true);
   return out_of_bounds;
 }
 
@@ -513,7 +501,7 @@ void WindowGrid::FilterItems(const base::string16& pattern) {
     } else {
       window->SetDimmed(true);
       if (selection_widget_ && SelectedWindow() == window.get()) {
-        SelectedWindow()->SetSelected(false);
+        SelectedWindow()->set_selected(false);
         selection_widget_.reset();
         selector_shadow_.reset();
       }
@@ -603,7 +591,7 @@ void WindowGrid::OnWindowDestroying(aura::Window* window) {
     bool send_focus_alert = selected_index_ == removed_index;
     if (selected_index_ >= removed_index && selected_index_ != 0)
       selected_index_--;
-    SelectedWindow()->SetSelected(true);
+    SelectedWindow()->set_selected(true);
     if (send_focus_alert)
       SelectedWindow()->SendAccessibleSelectionEvent();
   }
@@ -747,21 +735,18 @@ void WindowGrid::InitShieldWidget() {
           ? 1.f
           : 0.f;
   SkColor shield_color = kShieldColor;
-  if (IsNewOverviewUi()) {
-    // Extract the dark muted color from the wallpaper and mix it with
-    // |kShieldBaseColor|. Just use |kShieldBaseColor| if the dark muted color
-    // could not be extracted.
-    SkColor dark_muted_color =
-        Shell::Get()->wallpaper_controller()->GetProminentColor(
-            color_utils::ColorProfile());
-    if (dark_muted_color != ash::kInvalidWallpaperColor) {
-      shield_color = color_utils::GetResultingPaintColor(kShieldBaseColor,
-                                                         dark_muted_color);
-    }
+  // Extract the dark muted color from the wallpaper and mix it with
+  // |kShieldBaseColor|. Just use |kShieldBaseColor| if the dark muted color
+  // could not be extracted.
+  SkColor dark_muted_color =
+      Shell::Get()->wallpaper_controller()->GetProminentColor(
+          color_utils::ColorProfile());
+  if (dark_muted_color != ash::kInvalidWallpaperColor) {
+    shield_color =
+        color_utils::GetResultingPaintColor(kShieldBaseColor, dark_muted_color);
   }
   shield_widget_ = CreateBackgroundWidget(
-      root_window_, ui::LAYER_SOLID_COLOR,
-      IsNewOverviewUi() ? SK_ColorTRANSPARENT : shield_color, 0, 0,
+      root_window_, ui::LAYER_SOLID_COLOR, SK_ColorTRANSPARENT, 0, 0,
       SK_ColorTRANSPARENT, initial_opacity, /*parent=*/nullptr,
       /*stack_on_top=*/true);
   aura::Window* widget_window = shield_widget_->GetNativeWindow();
@@ -769,14 +754,12 @@ void WindowGrid::InitShieldWidget() {
   widget_window->SetBounds(bounds);
   widget_window->SetName("OverviewModeShield");
 
-  if (IsNewOverviewUi()) {
-    // Create |shield_view_| and animate its background and label if needed.
-    shield_view_ = new ShieldView();
-    shield_view_->SetBackgroundColor(shield_color);
-    shield_view_->SetGridBounds(bounds_);
-    shield_widget_->SetContentsView(shield_view_);
-    shield_widget_->SetOpacity(initial_opacity);
-  }
+  // Create |shield_view_| and animate its background and label if needed.
+  shield_view_ = new ShieldView();
+  shield_view_->SetBackgroundColor(shield_color);
+  shield_view_->SetGridBounds(bounds_);
+  shield_widget_->SetContentsView(shield_view_);
+  shield_widget_->SetOpacity(initial_opacity);
   ui::ScopedLayerAnimationSettings animation_settings(
       widget_window->layer()->GetAnimator());
   animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
@@ -784,22 +767,14 @@ void WindowGrid::InitShieldWidget() {
   animation_settings.SetTweenType(gfx::Tween::EASE_OUT);
   animation_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  shield_widget_->SetOpacity(IsNewOverviewUi() ? 1.f : kOldShieldOpacity);
+  shield_widget_->SetOpacity(1.f);
 }
 
 void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
-  if (IsNewOverviewUi()) {
-    selection_widget_ = CreateBackgroundWidget(
-        root_window_, ui::LAYER_TEXTURED, kWindowSelectionColor, 0,
-        kWindowSelectionRadius, SK_ColorTRANSPARENT, 0.f, /*parent=*/nullptr,
-        /*stack_on_top=*/true);
-  } else {
-    selection_widget_ = CreateBackgroundWidget(
-        root_window_, ui::LAYER_TEXTURED, kOldWindowSelectionColor,
-        kWindowSelectionBorderThickness, kOldWindowSelectionRadius,
-        kWindowSelectionBorderColor, 0.f, /*parent=*/nullptr,
-        /*stack_on_top=*/true);
-  }
+  selection_widget_ = CreateBackgroundWidget(
+      root_window_, ui::LAYER_TEXTURED, kWindowSelectionColor, 0,
+      kWindowSelectionRadius, SK_ColorTRANSPARENT, 0.f, /*parent=*/nullptr,
+      /*stack_on_top=*/true);
   aura::Window* widget_window = selection_widget_->GetNativeWindow();
   gfx::Rect target_bounds = SelectedWindow()->target_bounds();
   ::wm::ConvertRectFromScreen(root_window_, &target_bounds);

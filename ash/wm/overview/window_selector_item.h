@@ -122,7 +122,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Activates or deactivates selection depending on |selected|.
   // In selected state the item's caption is shown transparent and blends with
   // the selection widget.
-  void SetSelected(bool selected);
+  void set_selected(bool selected) { selected_ = selected; }
 
   // Sends an accessibility event indicating that this window became selected
   // so that it's highlighted and announced if accessibility features are

@@ -185,8 +185,7 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
       overview_started_(false),
       original_opacity_(window->layer()->GetTargetOpacity()),
       weak_ptr_factory_(this) {
-  if (IsNewOverviewUi())
-    type_ = GetWindowDimensionsType(window);
+  type_ = GetWindowDimensionsType(window);
 }
 
 ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() = default;
@@ -235,15 +234,13 @@ void ScopedTransformOverviewWindow::BeginScopedAnimation(
   // Remove the mask before animating because masks affect animation
   // performance. Observe the animation and add the mask after animating if the
   // animation type is layouting selector items.
-  if (IsNewOverviewUi()) {
-    mask_.reset();
-    selector_item_->SetShadowBounds(base::nullopt);
-    selector_item_->DisableBackdrop();
+  mask_.reset();
+  selector_item_->SetShadowBounds(base::nullopt);
+  selector_item_->DisableBackdrop();
 
-    if (window_->GetProperty(aura::client::kShowStateKey) !=
-        ui::SHOW_STATE_MINIMIZED) {
-      window_->layer()->SetMaskLayer(original_mask_layer_);
-    }
+  if (window_->GetProperty(aura::client::kShowStateKey) !=
+      ui::SHOW_STATE_MINIMIZED) {
+    window_->layer()->SetMaskLayer(original_mask_layer_);
   }
 
   for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow())) {
@@ -266,10 +263,9 @@ void ScopedTransformOverviewWindow::BeginScopedAnimation(
     animation_settings->push_back(std::move(settings));
   }
 
-  if (IsNewOverviewUi() &&
-      animation_type == OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS) {
-    if (animation_settings->size() > 0u)
-      animation_settings->front()->AddObserver(this);
+  if (animation_type == OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS &&
+      animation_settings->size() > 0u) {
+    animation_settings->front()->AddObserver(this);
   }
 }
 
@@ -454,10 +450,6 @@ gfx::Rect ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
   gfx::Rect new_bounds(bounds.x() + horizontal_offset,
                        bounds.y() + vertical_offset, width, height);
 
-  if (!IsNewOverviewUi()) {
-    DCHECK_EQ(ScopedTransformOverviewWindow::GridWindowFillMode::kNormal,
-              type());
-  }
   switch (type()) {
     case ScopedTransformOverviewWindow::GridWindowFillMode::kLetterBoxed:
     case ScopedTransformOverviewWindow::GridWindowFillMode::kPillarBoxed: {
@@ -569,9 +561,6 @@ ScopedTransformOverviewWindow::GetOverviewWindowForMinimizedState() const {
 }
 
 void ScopedTransformOverviewWindow::UpdateWindowDimensionsType() {
-  if (!IsNewOverviewUi())
-    return;
-
   type_ = GetWindowDimensionsType(window_);
   window_selector_bounds_.reset();
 }
@@ -581,7 +570,6 @@ void ScopedTransformOverviewWindow::CancelAnimationsListener() {
 }
 
 void ScopedTransformOverviewWindow::OnImplicitAnimationsCompleted() {
-  DCHECK(IsNewOverviewUi());
   CreateAndApplyMaskAndShadow();
   selector_item_->OnDragAnimationCompleted();
 }
@@ -626,9 +614,6 @@ void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
 void ScopedTransformOverviewWindow::CreateAndApplyMaskAndShadow() {
   // Add the mask which gives the window selector items rounded corners, and add
   // the shadow around the window.
-  if (!IsNewOverviewUi())
-    return;
-
   ui::Layer* layer = minimized_widget_
                          ? minimized_widget_->GetContentsView()->layer()
                          : window_->layer();

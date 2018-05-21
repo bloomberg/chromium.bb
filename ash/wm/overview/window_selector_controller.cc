@@ -66,8 +66,7 @@ bool ShouldExcludeWindowFromOverview(const aura::Window* window) {
 }
 
 bool IsBlurEnabled() {
-  return IsNewOverviewUi() &&
-         Shell::Get()->wallpaper_controller()->IsBlurEnabled();
+  return Shell::Get()->wallpaper_controller()->IsBlurEnabled();
 }
 
 }  // namespace
@@ -244,10 +243,6 @@ bool WindowSelectorController::ToggleOverview() {
   } else {
     // Don't start overview if window selection is not allowed.
     if (!CanSelect())
-      return false;
-
-    // Don't enter overview with no windows to select from.
-    if (!IsNewOverviewUi() && windows.empty())
       return false;
 
     window_selector_.reset(new WindowSelector(this));
