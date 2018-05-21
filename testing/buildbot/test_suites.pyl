@@ -1813,7 +1813,6 @@
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
-    'chromium_swarm_android_gtests',
     'clang_gl_gtests',
     'linux_flavor_specific_chromium_gtests',
     'non_clang_mac_win_chromium_gtests',
