@@ -85,7 +85,7 @@ gfx::Size TrayItemView::CalculatePreferredSize() const {
   gfx::Size size = rect.size();
   if (!animation_.get() || !animation_->is_animating())
     return size;
-  if (owner() && owner()->system_tray()->shelf()->IsHorizontalAlignment()) {
+  if (!owner() || owner()->system_tray()->shelf()->IsHorizontalAlignment()) {
     size.set_width(std::max(
         1, static_cast<int>(size.width() * animation_->GetCurrentValue())));
   } else {
@@ -105,7 +105,7 @@ void TrayItemView::ChildPreferredSizeChanged(views::View* child) {
 
 void TrayItemView::AnimationProgressed(const gfx::Animation* animation) {
   gfx::Transform transform;
-  if (owner() && owner()->system_tray()->shelf()->IsHorizontalAlignment()) {
+  if (!owner() || owner()->system_tray()->shelf()->IsHorizontalAlignment()) {
     transform.Translate(0, animation->CurrentValueBetween(
                                static_cast<double>(height()) / 2, 0.));
   } else {

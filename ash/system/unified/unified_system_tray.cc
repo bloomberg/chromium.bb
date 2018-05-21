@@ -16,6 +16,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_container.h"
+#include "ash/system/unified/notification_counter_view.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "chromeos/network/network_handler.h"
@@ -31,7 +32,7 @@ namespace ash {
 
 class UnifiedSystemTray::UiDelegate : public message_center::UiDelegate {
  public:
-  explicit UiDelegate(UnifiedSystemTray* owner);
+  UiDelegate(UnifiedSystemTray* owner);
   ~UiDelegate() override;
 
   // message_center::UiDelegate:
@@ -73,7 +74,7 @@ UnifiedSystemTray::UiDelegate::UiDelegate(UnifiedSystemTray* owner)
 UnifiedSystemTray::UiDelegate::~UiDelegate() = default;
 
 void UnifiedSystemTray::UiDelegate::OnMessageCenterContentsChanged() {
-  // TODO(tetsui): Implement.
+  owner_->UpdateNotificationInternal();
 }
 
 bool UnifiedSystemTray::UiDelegate::ShowPopups() {
@@ -136,7 +137,12 @@ void UnifiedSystemTray::NetworkStateDelegate::NetworkStateChanged(
 UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       ui_delegate_(std::make_unique<UiDelegate>(this)),
-      model_(std::make_unique<UnifiedSystemTrayModel>()) {
+      model_(std::make_unique<UnifiedSystemTrayModel>()),
+      notification_counter_item_(new NotificationCounterView()),
+      quiet_mode_view_(new QuietModeView()) {
+  tray_container()->AddChildView(notification_counter_item_);
+  tray_container()->AddChildView(quiet_mode_view_);
+
   // It is possible in unit tests that it's missing.
   if (chromeos::NetworkHandler::IsInitialized()) {
     tray::NetworkTrayView* network_item = new tray::NetworkTrayView(nullptr);
@@ -211,6 +217,11 @@ void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
 void UnifiedSystemTray::HideBubbleInternal() {
   bubble_.reset();
   SetIsActive(false);
+}
+
+void UnifiedSystemTray::UpdateNotificationInternal() {
+  notification_counter_item_->Update();
+  quiet_mode_view_->Update();
 }
 
 }  // namespace ash
