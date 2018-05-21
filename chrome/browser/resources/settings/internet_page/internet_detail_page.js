@@ -249,7 +249,7 @@ Polymer({
       const button = this.$$('#titleDiv .action-button:not([hidden])') ||
           this.$$('#titleDiv paper-button:not([hidden])');
       if (button)
-        button.focus();
+        setTimeout(() => button.focus());
     }
 
     if (this.shouldShowConfigureWhenNetworkLoaded_ &&
