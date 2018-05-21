@@ -8,5 +8,4 @@ per-file desktop_capture_device_unittest.cc=zijiehe@chromium.org
 
 per-file image_capture*=mcasas@chromium.org
 
-# TEAM: media-capture-and-streams@grotations.appspotmail.com
-# COMPONENT: Blink>GetUserMedia
+# COMPONENT: Internals>Media>ScreenCapture
