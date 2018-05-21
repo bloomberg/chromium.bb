@@ -39,9 +39,7 @@ class MockDelegatedFrameHostAndroidClient
 
 class MockWindowAndroidCompositor : public WindowAndroidCompositor {
  public:
-  MOCK_METHOD0(GetWeakPtr, base::WeakPtr<ui::WindowAndroidCompositor>());
-  MOCK_METHOD0(IncrementReadbackRequestCount, void());
-  MOCK_METHOD0(DecrementReadbackRequestCount, void());
+  MOCK_METHOD1(AttachLayerForReadback, void(scoped_refptr<cc::Layer>));
   MOCK_METHOD1(DoRequestCopyOfOutputOnRootLayer, void(viz::CopyOutputRequest*));
   MOCK_METHOD0(SetNeedsAnimate, void());
   MOCK_METHOD0(GetResourceManager, ResourceManager&());

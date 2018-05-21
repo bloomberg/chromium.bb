@@ -143,21 +143,23 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
     return;
   }
 
-  WindowAndroidCompositor* compositor =
-      view_->GetWindowAndroid()->GetCompositor();
-  compositor->IncrementReadbackRequestCount();
+  scoped_refptr<cc::Layer> readback_layer =
+      CreateSurfaceLayer(surface_info_.id(), surface_info_.size_in_pixels(),
+                         !has_transparent_background_);
+  readback_layer->SetHideLayerAndSubtree(true);
+  view_->GetWindowAndroid()->GetCompositor()->AttachLayerForReadback(
+      readback_layer);
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
           base::BindOnce(
               [](base::OnceCallback<void(const SkBitmap&)> callback,
-                 base::WeakPtr<WindowAndroidCompositor> compositor_weak_ptr,
+                 scoped_refptr<cc::Layer> readback_layer,
                  std::unique_ptr<viz::CopyOutputResult> result) {
-                if (compositor_weak_ptr)
-                  compositor_weak_ptr->DecrementReadbackRequestCount();
+                readback_layer->RemoveFromParent();
                 std::move(callback).Run(result->AsSkBitmap());
               },
-              std::move(callback), compositor->GetWeakPtr()));
+              std::move(callback), std::move(readback_layer)));
 
   if (src_subrect.IsEmpty()) {
     request->set_area(gfx::Rect(surface_info_.size_in_pixels()));
