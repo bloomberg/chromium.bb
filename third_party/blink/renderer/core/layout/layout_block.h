@@ -452,6 +452,11 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   bool NeedsPreferredWidthsRecalculation() const override;
 
+  bool IsInSelfHitTestingPhase(HitTestAction hit_test_action) const final {
+    return hit_test_action == kHitTestBlockBackground ||
+           hit_test_action == kHitTestChildBlockBackground;
+  }
+
  private:
   LayoutObjectChildList* VirtualChildren() final { return Children(); }
   const LayoutObjectChildList* VirtualChildren() const final {
@@ -467,11 +472,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   // Returns true if the positioned movement-only layout succeeded.
   bool TryLayoutDoingPositionedMovementOnly();
-
-  bool IsInSelfHitTestingPhase(HitTestAction hit_test_action) const final {
-    return hit_test_action == kHitTestBlockBackground ||
-           hit_test_action == kHitTestChildBlockBackground;
-  }
 
   bool IsPointInOverflowControl(HitTestResult&,
                                 const LayoutPoint& location_in_container,

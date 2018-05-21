@@ -250,6 +250,10 @@ bool LayoutNGMixin<Base>::NodeAtPoint(
     if (!location_in_container.Intersects(overflow_box))
       return false;
   }
+  if (Base::IsInSelfHitTestingPhase(action) && Base::HasOverflowClip() &&
+      Base::HitTestOverflowControl(result, location_in_container,
+                                   adjusted_location))
+    return true;
 
   return NGBlockFlowPainter(*this).NodeAtPoint(result, location_in_container,
                                                accumulated_offset,
