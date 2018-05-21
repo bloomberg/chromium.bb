@@ -352,6 +352,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     storage_partition_remove_mask |=
         StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS;
   }
+  if (remove_mask & DATA_TYPE_BACKGROUND_FETCH) {
+    storage_partition_remove_mask |=
+        StoragePartition::REMOVE_DATA_MASK_BACKGROUND_FETCH;
+  }
 
   // Content Decryption Modules used by Encrypted Media store licenses in a
   // private filesystem. These are different than content licenses used by

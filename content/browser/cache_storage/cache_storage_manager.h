@@ -39,8 +39,6 @@ namespace cache_storage_manager_unittest {
 class CacheStorageManagerTest;
 }
 
-// WARNING: The enum values are iterated over, so make sure the
-// values are contiguous when adding new ones.
 enum class CacheStorageOwner {
   kMinValue,
 
@@ -141,25 +139,29 @@ class CONTENT_EXPORT CacheStorageManager {
                                          CacheStorageOwner owner);
 
   // QuotaClient and Browsing Data Deletion support
-  void GetAllOriginsUsage(CacheStorageContext::GetUsageInfoCallback callback);
+  void GetAllOriginsUsage(CacheStorageOwner owner,
+                          CacheStorageContext::GetUsageInfoCallback callback);
   void GetAllOriginsUsageGetSizes(
       std::unique_ptr<std::vector<CacheStorageUsageInfo>> usage_info,
       CacheStorageContext::GetUsageInfoCallback callback);
 
   void GetOriginUsage(const url::Origin& origin_url,
+                      CacheStorageOwner owner,
                       storage::QuotaClient::GetUsageCallback callback);
-  void GetOrigins(storage::QuotaClient::GetOriginsCallback callback);
+  void GetOrigins(CacheStorageOwner owner,
+                  storage::QuotaClient::GetOriginsCallback callback);
   void GetOriginsForHost(const std::string& host,
+                         CacheStorageOwner owner,
                          storage::QuotaClient::GetOriginsCallback callback);
   void DeleteOriginData(const url::Origin& origin,
+                        CacheStorageOwner owner,
                         storage::QuotaClient::DeletionCallback callback);
-  void DeleteOriginData(const url::Origin& origin);
-  void NotifyStorageModified(const url::Origin& origin,
-                             std::unique_ptr<CacheStorage> cache_storage,
-                             base::OnceClosure callback,
-                             int64_t origin_size);
+  void DeleteOriginData(const url::Origin& origin, CacheStorageOwner owner);
   void DeleteOriginDidClose(const url::Origin& origin,
-                            storage::QuotaClient::DeletionCallback callback);
+                            CacheStorageOwner owner,
+                            storage::QuotaClient::DeletionCallback callback,
+                            std::unique_ptr<CacheStorage> cache_storage,
+                            int64_t origin_size);
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter()
       const {

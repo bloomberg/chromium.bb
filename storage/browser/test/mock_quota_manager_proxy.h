@@ -28,7 +28,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
 
   void RegisterClient(QuotaClient* client) override;
 
-  void SimulateQuotaManagerDestroyed();
+  virtual void SimulateQuotaManagerDestroyed();
 
   // We don't mock them.
   void NotifyOriginInUse(const url::Origin& origin) override {}

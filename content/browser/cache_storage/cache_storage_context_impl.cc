@@ -91,13 +91,14 @@ void CacheStorageContextImpl::GetAllOriginsInfo(
     return;
   }
 
-  cache_manager_->GetAllOriginsUsage(callback);
+  cache_manager_->GetAllOriginsUsage(CacheStorageOwner::kCacheAPI, callback);
 }
 
 void CacheStorageContextImpl::DeleteForOrigin(const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (cache_manager_)
-    cache_manager_->DeleteOriginData(url::Origin::Create(origin));
+    cache_manager_->DeleteOriginData(url::Origin::Create(origin),
+                                     CacheStorageOwner::kCacheAPI);
 }
 
 void CacheStorageContextImpl::AddObserver(

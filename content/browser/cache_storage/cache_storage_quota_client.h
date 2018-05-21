@@ -13,15 +13,17 @@
 #include "url/origin.h"
 
 namespace content {
+
 class CacheStorageManager;
+enum class CacheStorageOwner;
 
 // CacheStorageQuotaClient is owned by the QuotaManager. There is one per
 // CacheStorageManager, and therefore one per
 // ServiceWorkerContextCore.
 class CONTENT_EXPORT CacheStorageQuotaClient : public storage::QuotaClient {
  public:
-  explicit CacheStorageQuotaClient(
-      base::WeakPtr<CacheStorageManager> cache_manager);
+  CacheStorageQuotaClient(base::WeakPtr<CacheStorageManager> cache_manager,
+                          CacheStorageOwner owner);
   ~CacheStorageQuotaClient() override;
 
   // QuotaClient overrides
@@ -42,6 +44,7 @@ class CONTENT_EXPORT CacheStorageQuotaClient : public storage::QuotaClient {
 
  private:
   base::WeakPtr<CacheStorageManager> cache_manager_;
+  CacheStorageOwner owner_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorageQuotaClient);
 };

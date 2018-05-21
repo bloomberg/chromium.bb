@@ -348,6 +348,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemoveBrowsingDataAll) {
       content::BrowsingDataRemover::DATA_TYPE_COOKIES |
           content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
           (content::BrowsingDataRemover::DATA_TYPE_DOM_STORAGE &
+           ~content::BrowsingDataRemover::DATA_TYPE_BACKGROUND_FETCH &
            ~content::BrowsingDataRemover::DATA_TYPE_EMBEDDER_DOM_STORAGE) |
           content::BrowsingDataRemover::DATA_TYPE_CACHE |
           content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS |
@@ -548,6 +549,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionSiteData) {
       (content::BrowsingDataRemover::DATA_TYPE_COOKIES |
        content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
        content::BrowsingDataRemover::DATA_TYPE_DOM_STORAGE) &
+      ~content::BrowsingDataRemover::DATA_TYPE_BACKGROUND_FETCH &
       ~content::BrowsingDataRemover::DATA_TYPE_EMBEDDER_DOM_STORAGE;
   int supported_site_data =
       supported_site_data_except_plugins |
@@ -579,6 +581,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionAssorted) {
       (content::BrowsingDataRemover::DATA_TYPE_COOKIES |
        content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
        content::BrowsingDataRemover::DATA_TYPE_DOM_STORAGE) &
+      ~content::BrowsingDataRemover::DATA_TYPE_BACKGROUND_FETCH &
       ~content::BrowsingDataRemover::DATA_TYPE_EMBEDDER_DOM_STORAGE;
 
   SetPrefsAndVerifySettings(
