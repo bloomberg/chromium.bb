@@ -179,7 +179,8 @@ public class WebappActivity extends SingleTabActivity {
         }
 
         @Override
-        public void onOriginVerified(String packageName, Origin origin, boolean verified) {
+        public void onOriginVerified(String packageName, Origin origin, boolean verified,
+                Boolean online) {
             mVerificationFailed = !verified;
             mOriginVerifier = null;
             if (mVerificationFailed) getFullscreenManager().setPositionsForTabToNonFullscreen();

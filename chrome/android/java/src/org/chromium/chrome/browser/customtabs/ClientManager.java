@@ -402,15 +402,21 @@ class ClientManager {
         SessionParams params = mSessionParams.get(session);
         if (params == null || TextUtils.isEmpty(params.getPackageName())) return false;
 
-        OriginVerificationListener listener = (packageName, verifiedOrigin, verified) -> {
+        OriginVerificationListener listener = (packageName, verifiedOrigin, verified, online) -> {
             assert origin.equals(verifiedOrigin);
 
             CustomTabsCallback callback = getCallbackForSession(session);
             if (callback != null) {
-                callback.onRelationshipValidationResult(relation, origin.uri(), verified, null);
+                Bundle extras = null;
+                if (verified && online != null) {
+                    extras = new Bundle();
+                    extras.putBoolean(CustomTabsCallback.ONLINE_EXTRAS_KEY, online);
+                }
+                callback.onRelationshipValidationResult(relation, origin.uri(), verified, extras);
             }
             if (initializePostMessageChannel) {
-                params.postMessageHandler.onOriginVerified(packageName, verifiedOrigin, verified);
+                params.postMessageHandler
+                        .onOriginVerified(packageName, verifiedOrigin, verified, online);
             }
         };
 
