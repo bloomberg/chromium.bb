@@ -34,33 +34,26 @@ class ManifestTest : public testing::Test {
   // to a manifest or the manifest itself.
   class ManifestData {
    public:
-    explicit ManifestData(const char* name);
-    ManifestData(base::DictionaryValue* manifest, const char* name);
-    explicit ManifestData(std::unique_ptr<base::DictionaryValue> manifest);
-    explicit ManifestData(std::unique_ptr<base::DictionaryValue> manifest,
+    explicit ManifestData(base::StringPiece name);
+    ManifestData(base::Value manifest, base::StringPiece name);
+
+    ManifestData(ManifestData&& other);
+
+    // DEPRECATED. Use one of the above constructors.
+    ManifestData(base::Value* manifest, const char* name);
+    explicit ManifestData(std::unique_ptr<base::Value> manifest,
                           const char* name);
-    // C++98 requires the copy constructor for a type to be visible if you
-    // take a const-ref of a temporary for that type.  Since Manifest
-    // contains a scoped_ptr, its implicit copy constructor is declared
-    // Manifest(Manifest&) according to spec 12.8.5.  This breaks the first
-    // requirement and thus you cannot use it with LoadAndExpectError() or
-    // LoadAndExpectSuccess() easily.
-    //
-    // To get around this spec pedantry, we declare the copy constructor
-    // explicitly.  It will never get invoked.
-    ManifestData(const ManifestData& m);
 
     ~ManifestData();
 
     const std::string& name() const { return name_; }
 
-    base::DictionaryValue* GetManifest(const base::FilePath& manifest_path,
-                                       std::string* error) const;
+    const base::Value& GetManifest(const base::FilePath& manifest_path,
+                                   std::string* error) const;
 
    private:
     const std::string name_;
-    mutable base::DictionaryValue* manifest_;
-    mutable std::unique_ptr<base::DictionaryValue> manifest_holder_;
+    mutable base::Value manifest_;
   };
 
   // Allows the test implementation to override a loaded test manifest's
@@ -71,8 +64,7 @@ class ManifestTest : public testing::Test {
   // extensions/test/data/manifest_tests.
   virtual base::FilePath GetTestDataDir();
 
-  std::unique_ptr<base::DictionaryValue> LoadManifest(char const* manifest_name,
-                                                      std::string* error);
+  base::Value LoadManifest(char const* manifest_name, std::string* error);
 
   scoped_refptr<extensions::Extension> LoadExtension(
       const ManifestData& manifest,
