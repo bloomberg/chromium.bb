@@ -107,7 +107,13 @@ class PdfAccessibilityTreeTest : public content::RenderViewTest {
   std::vector<PP_PrivateAccessibilityCharInfo> chars_;
 };
 
-TEST_F(PdfAccessibilityTreeTest, TestEmptyPDFPage) {
+#if defined(MEMORY_SANITIZER)
+// https://crbug.com/845143
+#define MAYBE_TestEmptyPDFPage DISABLED_TestEmptyPDFPage
+#else
+#define MAYBE_TestEmptyPDFPage TestEmptyPDFPage
+#endif
+TEST_F(PdfAccessibilityTreeTest, MAYBE_TestEmptyPDFPage) {
   content::RenderFrame* render_frame = view_->GetMainRenderFrame();
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());

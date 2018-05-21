@@ -101,7 +101,13 @@ class DomDistillerJsTest : public content::ContentBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(DomDistillerJsTest, RunJsTests) {
+#if defined(MEMORY_SANITIZER)
+// https://crbug.com/845180
+#define MAYBE_RunJsTests DISABLED_RunJsTests
+#else
+#define MAYBE_RunJsTests RunJsTests
+#endif
+IN_PROC_BROWSER_TEST_F(DomDistillerJsTest, MAYBE_RunJsTests) {
   // TODO(jaebaek): Revisit this code when the --use-zoom-for-dsf feature on
   // Android is done. If we remove this code (i.e., enable --use-zoom-for-dsf),
   // HTMLImageElement::LayoutBoxWidth() returns a value that has a small error
