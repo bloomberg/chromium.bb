@@ -168,9 +168,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
                     browserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(bookmark);
   DCHECK(browserState);
-  self =
-      [super initWithTableViewStyle:UITableViewStylePlain
-                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    self =
+        [super initWithTableViewStyle:UITableViewStylePlain
+                          appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  } else {
+    self =
+        [super initWithTableViewStyle:UITableViewStylePlain
+                          appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  }
   if (self) {
     DCHECK(!bookmark->is_folder());
     DCHECK(!browserState->IsOffTheRecord());
@@ -202,8 +208,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.sectionHeaderHeight = 0;
   self.tableView.sectionFooterHeight = 0;
-  [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
   self.view.accessibilityIdentifier = @"Single Bookmark Editor";
+
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    // Add a tableFooterView in order to disable separators at the bottom of the
+    // tableView.
+    self.tableView.tableFooterView = [[UIView alloc] init];
+    [self.tableView
+        setSeparatorInset:UIEdgeInsetsMake(
+                              0, kBookmarkCellHorizontalLeadingInset, 0, 0)];
+  } else {
+    [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+  }
 
   self.title = l10n_util::GetNSString(IDS_IOS_BOOKMARK_EDIT_SCREEN_TITLE);
 
@@ -227,29 +243,36 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.doneItem = doneItem;
 
   // Setup the bottom toolbar.
-  self.navigationController.toolbar.barTintColor = [UIColor whiteColor];
   NSString* titleString = l10n_util::GetNSString(IDS_IOS_BOOKMARK_DELETE);
-  titleString = [titleString uppercaseString];
   UIBarButtonItem* deleteButton =
       [[UIBarButtonItem alloc] initWithTitle:titleString
                                        style:UIBarButtonItemStylePlain
                                       target:self
                                       action:@selector(deleteBookmark)];
   deleteButton.accessibilityIdentifier = kBookmarkEditDeleteButtonIdentifier;
-  [deleteButton
-      setTitleTextAttributes:[NSDictionary
-                                 dictionaryWithObjectsAndKeys:
-                                     [[MDCTypography fontLoader]
-                                         mediumFontOfSize:14],
-                                     NSFontAttributeName, [UIColor blackColor],
-                                     NSForegroundColorAttributeName, nil]
-                    forState:UIControlStateNormal];
-
   UIBarButtonItem* spaceButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                            target:nil
                            action:nil];
-  [self setToolbarItems:@[ deleteButton, spaceButton ] animated:NO];
+
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    deleteButton.tintColor = [UIColor redColor];
+    [self setToolbarItems:@[ spaceButton, deleteButton, spaceButton ]
+                 animated:NO];
+  } else {
+    self.navigationController.toolbar.barTintColor = [UIColor whiteColor];
+    deleteButton.title = [deleteButton.title uppercaseString];
+    [deleteButton
+        setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                 [[MDCTypography fontLoader]
+                                                     mediumFontOfSize:14],
+                                                 NSFontAttributeName,
+                                                 [UIColor blackColor],
+                                                 NSForegroundColorAttributeName,
+                                                 nil]
+                      forState:UIControlStateNormal];
+    [self setToolbarItems:@[ deleteButton, spaceButton ] animated:NO];
+  }
 
   [self updateUIFromBookmark];
 }
@@ -437,6 +460,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)textDidChangeForItem:(BookmarkTextFieldItem*)item {
   [self updateSaveButtonState];
+
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    NSIndexPath* textFieldIndexPath =
+        [self.tableViewModel indexPathForItemType:item.type
+                                sectionIdentifier:SectionIdentifierInfo];
+    UITableViewCell* cell =
+        [self.tableView cellForRowAtIndexPath:textFieldIndexPath];
+    BookmarkTextFieldCell* URLCell =
+        base::mac::ObjCCastStrict<BookmarkTextFieldCell>(cell);
+    // Update the URLCell valid state if it has changed.
+    if ([self inputURLIsValid] != URLCell.validState) {
+      [self.tableView beginUpdates];
+      URLCell.validState = [self inputURLIsValid];
+      [self.tableView endUpdates];
+    }
+  }
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField*)textField {

@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/ui/text_field_styling.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -45,6 +46,7 @@
     BookmarkTextFieldCell* cell =
         base::mac::ObjCCastStrict<BookmarkTextFieldCell>(tableCell);
     cell.textField.text = self.text;
+    cell.titleLabel.text = self.placeholder;
     cell.textField.placeholder = self.placeholder;
     cell.textField.tag = self.type;
     [cell.textField addTarget:self
@@ -54,7 +56,8 @@
     cell.textField.accessibilityLabel = self.text;
     cell.textField.accessibilityIdentifier = [NSString
         stringWithFormat:@"%@_textField", self.accessibilityIdentifier];
-    cell.titleLabel.text = self.placeholder;
+    cell.validState = YES;
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
   } else {
     LegacyBookmarkTextFieldCell* cell =
         base::mac::ObjCCastStrict<LegacyBookmarkTextFieldCell>(tableCell);
@@ -83,9 +86,15 @@
 
 #pragma mark - BookmarkTextFieldCell
 
+@interface BookmarkTextFieldCell ()
+@property(nonatomic, strong) UILabel* invalidURLLabel;
+@end
+
 @implementation BookmarkTextFieldCell
 @synthesize textField = _textField;
 @synthesize titleLabel = _titleLabel;
+@synthesize invalidURLLabel = _invalidURLLabel;
+@synthesize validState = _validState;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
@@ -102,6 +111,9 @@
   [self.titleLabel
       setContentCompressionResistancePriority:UILayoutPriorityRequired
                                       forAxis:UILayoutConstraintAxisHorizontal];
+  [self.titleLabel
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                      forAxis:UILayoutConstraintAxisVertical];
 
   // Textfield.
   self.textField = [[UITextField alloc] init];
@@ -112,34 +124,74 @@
   self.textField.textAlignment = NSTextAlignmentRight;
   [self.textField setContentHuggingPriority:UILayoutPriorityDefaultLow
                                     forAxis:UILayoutConstraintAxisHorizontal];
+  [self.textField
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                      forAxis:UILayoutConstraintAxisVertical];
 
-  // Container StackView.
+  // Horizontal StackView.
   UIStackView* horizontalStack = [[UIStackView alloc]
       initWithArrangedSubviews:@[ self.titleLabel, self.textField ]];
   horizontalStack.axis = UILayoutConstraintAxisHorizontal;
   horizontalStack.spacing = kBookmarkCellViewSpacing;
   horizontalStack.distribution = UIStackViewDistributionFill;
   horizontalStack.alignment = UIStackViewAlignmentCenter;
-  horizontalStack.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.contentView addSubview:horizontalStack];
+  [horizontalStack
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                      forAxis:UILayoutConstraintAxisVertical];
+
+  // Invalid URL label
+  self.invalidURLLabel = [[UILabel alloc] init];
+  self.invalidURLLabel.text =
+      l10n_util::GetNSString(IDS_IOS_BOOKMARK_URL_FIELD_VALIDATION_FAILED);
+  self.invalidURLLabel.textColor = [UIColor redColor];
+  self.invalidURLLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+  self.invalidURLLabel.adjustsFontForContentSizeCategory = YES;
+  [self.invalidURLLabel
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                      forAxis:UILayoutConstraintAxisVertical];
+  [self.invalidURLLabel
+      setContentHuggingPriority:UILayoutPriorityDefaultLow
+                        forAxis:UILayoutConstraintAxisHorizontal];
+
+  // Vertical StackView.
+  UIStackView* verticalStack = [[UIStackView alloc]
+      initWithArrangedSubviews:@[ horizontalStack, self.invalidURLLabel ]];
+  verticalStack.axis = UILayoutConstraintAxisVertical;
+  verticalStack.translatesAutoresizingMaskIntoConstraints = NO;
+  [verticalStack
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                      forAxis:UILayoutConstraintAxisVertical];
+  [self.contentView addSubview:verticalStack];
 
   // Set up constraints.
   [NSLayoutConstraint activateConstraints:@[
-    [horizontalStack.topAnchor
+    [verticalStack.topAnchor
         constraintEqualToAnchor:self.contentView.topAnchor
                        constant:kBookmarkCellVerticalInset],
-    [horizontalStack.bottomAnchor
+    [verticalStack.bottomAnchor
         constraintEqualToAnchor:self.contentView.bottomAnchor
                        constant:-kBookmarkCellVerticalInset],
-    [horizontalStack.leadingAnchor
+    [verticalStack.leadingAnchor
         constraintEqualToAnchor:self.contentView.leadingAnchor
                        constant:kBookmarkCellHorizontalLeadingInset],
-    [horizontalStack.trailingAnchor
+    [verticalStack.trailingAnchor
         constraintEqualToAnchor:self.contentView.trailingAnchor
                        constant:-kBookmarkCellHorizontalTrailingInset],
   ]];
 
   return self;
+}
+
+- (void)setValidState:(BOOL)validState {
+  _validState = validState;
+  if (validState) {
+    self.invalidURLLabel.hidden = YES;
+    self.textField.textColor = [UIColor lightGrayColor];
+  } else {
+    self.invalidURLLabel.hidden = NO;
+    self.textField.textColor = [UIColor redColor];
+  }
 }
 
 - (void)prepareForReuse {
@@ -148,6 +200,7 @@
   [self.textField removeTarget:nil
                         action:NULL
               forControlEvents:UIControlEventAllEvents];
+  self.validState = YES;
   self.textField.delegate = nil;
   self.textField.text = nil;
 }
