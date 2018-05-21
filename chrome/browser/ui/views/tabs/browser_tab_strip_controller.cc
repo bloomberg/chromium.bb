@@ -66,9 +66,7 @@ bool DetermineTabStripLayoutStacked(PrefService* prefs, bool* adjust_layout) {
   // For ash, always allow entering stacked mode.
 #if defined(OS_CHROMEOS)
   *adjust_layout = true;
-  // Stacked layout is always enabled in touch optimized UI design.
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ||
-         prefs->GetBoolean(prefs::kTabStripStackedLayout);
+  return prefs->GetBoolean(prefs::kTabStripStackedLayout);
 #else
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceStackedTabStripLayout);
