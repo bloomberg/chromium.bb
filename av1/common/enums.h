@@ -259,8 +259,6 @@ typedef enum ATTRIBUTE_PACKED {
   ADST_1D,
   FLIPADST_1D,
   IDTX_1D,
-  // TODO(sarahparker) need to eventually put something here for the
-  // mrc experiment to make this work with the ext-tx pruning functions
   TX_TYPES_1D,
 } TX_TYPE_1D;
 
