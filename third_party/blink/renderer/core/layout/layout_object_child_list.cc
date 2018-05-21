@@ -28,12 +28,34 @@
 
 #include "third_party/blink/renderer/core/dom/ax_object_cache.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 
 namespace blink {
+
+namespace {
+
+// Invalidate InineItems() in LayoutNGText.
+//
+// They need to be invalidated when moving across inline formatting context
+// (i.e., to a different LayoutBlockFlow.)
+void InvalidateInlineItems(LayoutObject* object) {
+  if (object->IsLayoutNGText()) {
+    ToLayoutNGText(object)->InvalidateInlineItems();
+  } else if (object->IsLayoutInline()) {
+    // When moving without |notify_layout_object|, only top-level objects are
+    // moved. Ensure to invalidate all LayoutNGText in this inline formatting
+    // context.
+    for (LayoutObject* curr = object->SlowFirstChild(); curr;
+         curr = curr->NextSibling())
+      InvalidateInlineItems(curr);
+  }
+}
+
+}  // namespace
 
 void LayoutObjectChildList::DestroyLeftoverChildren() {
   while (FirstChild()) {
@@ -172,11 +194,11 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
     if (notify_layout_object) {
       new_child->InsertedIntoTree();
       LayoutCounter::LayoutObjectSubtreeAttached(new_child);
-    } else if (new_child->IsLayoutNGText()) {
+    } else if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
       // |notify_layout_object| is an optimization to skip notifications when
       // moving within the same tree. Inline items need to be invalidated even
       // when moving.
-      ToLayoutNGText(new_child)->InvalidateInlineItems();
+      InvalidateInlineItems(new_child);
     }
   }
 

@@ -39,11 +39,7 @@ crbug.com/714962 external/wpt/css/css-transforms/transform-abspos-007.html [ Ski
 crbug.com/811429 fast/text/font-format-support-cbdt-sbix-cff2-vertical.html [ Failure ]
 
 # Crashes/asserts/failures due to inline item reuse.
-crbug.com/636993 accessibility/removed-continuation-element-causes-crash.html [ Crash ]
-crbug.com/636993 fast/css/first-letter-removed-added.html [ Crash ]
 crbug.com/591099 fast/css/getComputedStyle/getComputedStyle-resolved-values.html [ Crash ]
-crbug.com/594672 fast/events/updateLayoutForHitTest.html [ Failure ]
-crbug.com/594672 virtual/mouseevent_fractional/fast/events/updateLayoutForHitTest.html [ Failure ]
 
 # New passes
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-adjoining-opposite-float.html [ Pass ]
