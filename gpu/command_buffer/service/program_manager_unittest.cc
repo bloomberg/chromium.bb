@@ -2555,7 +2555,7 @@ INSTANTIATE_TEST_CASE_P(
         make_gl_ext_tuple("4.5",
                           "GL_NV_path_rendering "
                           "GL_NV_framebuffer_mixed_samples"),
-        make_gl_ext_tuple("OpenGL ES 3.1",
+        make_gl_ext_tuple("opengl es 3.1",
                           "GL_NV_path_rendering "
                           "GL_NV_framebuffer_mixed_samples")));
 
@@ -2641,7 +2641,7 @@ INSTANTIATE_TEST_CASE_P(
         make_gl_ext_tuple("3.2",
                           "GL_ARB_draw_buffers GL_ARB_blend_func_extended "
                           "GL_ARB_program_interface_query"),
-        make_gl_ext_tuple("OpenGL ES 3.1",
+        make_gl_ext_tuple("opengl es 3.1",
                           "GL_EXT_draw_buffers GL_EXT_blend_func_extended")));
 
 }  // namespace gles2

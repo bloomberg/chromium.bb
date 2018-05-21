@@ -25,4 +25,17 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   return success;
 }
 
+void CollectDriverInfoGL(GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
+
+  // Extract the OpenGL driver version string from the GL_VERSION string.
+  // Mac OpenGL drivers have the driver version
+  // at the end of the gl version string preceded by a dash.
+  // Use some jiggery-pokery to turn that utf8 string into a std::wstring.
+  size_t pos = gpu_info->gl_version.find_last_of('-');
+  if (pos == std::string::npos)
+    return;
+  gpu_info->driver_version = gpu_info->gl_version.substr(pos + 1);
+}
+
 }  // namespace gpu

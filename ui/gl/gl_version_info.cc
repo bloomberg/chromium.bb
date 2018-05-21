@@ -4,10 +4,10 @@
 
 #include "ui/gl/gl_version_info.h"
 
-#include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
-#include "base/version.h"
 
 namespace {
 
@@ -18,7 +18,7 @@ bool DesktopCoreCommonCheck(
            major_version > 3));
 }
 
-}  // namespace
+}
 
 namespace gl {
 
@@ -42,8 +42,10 @@ GLVersionInfo::GLVersionInfo(const char* version_str,
 void GLVersionInfo::Initialize(const char* version_str,
                                const char* renderer_str,
                                const ExtensionSet& extensions) {
-  if (version_str)
-    ParseVersionString(version_str);
+  if (version_str) {
+    ParseVersionString(version_str, &major_version, &minor_version,
+                       &is_es, &is_es2, &is_es3);
+  }
   if (renderer_str) {
     is_angle = base::StartsWith(renderer_str, "ANGLE",
                                 base::CompareCase::SENSITIVE);
@@ -63,95 +65,6 @@ void GLVersionInfo::Initialize(const char* version_str,
       DesktopCoreCommonCheck(is_es, major_version, minor_version) &&
       !HasExtension(extensions, "GL_ARB_compatibility");
   is_es3_capable = IsES3Capable(extensions);
-}
-
-void GLVersionInfo::ParseVersionString(const char* version_str) {
-  // Make sure the outputs are always initialized.
-  major_version = 0;
-  minor_version = 0;
-  is_es = false;
-  is_es2 = false;
-  is_es3 = false;
-  if (!version_str)
-    return;
-  base::StringPiece lstr(version_str);
-  constexpr base::StringPiece kESPrefix = "OpenGL ES ";
-  if (base::StartsWith(lstr, kESPrefix, base::CompareCase::SENSITIVE)) {
-    is_es = true;
-    lstr.remove_prefix(kESPrefix.size());
-  }
-  std::vector<base::StringPiece> pieces = base::SplitStringPiece(
-      lstr, " -()@", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (pieces.size() == 0) {
-    // This should never happen, but let's just tolerant bad driver behavior.
-    return;
-  }
-
-  std::string gl_version;
-  pieces[0].CopyToString(&gl_version);
-  base::Version version(gl_version);
-  if (version.IsValid()) {
-    if (version.components().size() >= 1) {
-      major_version = version.components()[0];
-    }
-    if (version.components().size() >= 2) {
-      minor_version = version.components()[1];
-    }
-    if (is_es) {
-      if (major_version == 2)
-        is_es2 = true;
-      if (major_version == 3)
-        is_es3 = true;
-    }
-  }
-
-  if (pieces.size() == 1)
-    return;
-
-  constexpr base::StringPiece kVendors[] = {
-      "ANGLE", "Mesa", "INTEL", "NVIDIA", "ATI", "FireGL", "Chromium", "APPLE"};
-  for (size_t ii = 1; ii < pieces.size(); ++ii) {
-    for (auto vendor : kVendors) {
-      if (pieces[ii] == vendor) {
-        vendor.CopyToString(&driver_vendor);
-        if (ii + 1 < pieces.size())
-          pieces[ii + 1].CopyToString(&driver_version);
-        return;
-      }
-    }
-  }
-  if (pieces.size() == 2) {
-    if (pieces[1][0] == 'V')
-      pieces[1].remove_prefix(1);
-    pieces[1].CopyToString(&driver_version);
-    return;
-  }
-  constexpr base::StringPiece kMaliPrefix = "v1.r";
-  if (base::StartsWith(pieces[1], kMaliPrefix, base::CompareCase::SENSITIVE)) {
-    // Mali drivers: v1.r12p0-04rel0.44f2946824bb8739781564bffe2110c9
-    pieces[1].remove_prefix(kMaliPrefix.size());
-    std::vector<base::StringPiece> numbers = base::SplitStringPiece(
-        pieces[1], "p", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    if (numbers.size() != 2)
-      return;
-    std::vector<base::StringPiece> parts = base::SplitStringPiece(
-        pieces[2], ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    if (parts.size() != 2)
-      return;
-    driver_vendor = "ARM";
-    numbers[0].CopyToString(&driver_version);
-    driver_version += ".";
-    numbers[1].AppendToString(&driver_version);
-    driver_version += ".";
-    parts[0].AppendToString(&driver_version);
-    return;
-  }
-  for (size_t ii = 1; ii < pieces.size(); ++ii) {
-    if (pieces[ii].find('.') != std::string::npos) {
-      pieces[ii].CopyToString(&driver_version);
-      return;
-    }
-  }
 }
 
 bool GLVersionInfo::IsES3Capable(const ExtensionSet& extensions) const {
@@ -181,6 +94,41 @@ bool GLVersionInfo::IsES3Capable(const ExtensionSet& extensions) const {
   // TODO(cwallez) check for texture related extensions. See crbug.com/623577
 
   return (has_transform_feedback && has_tex_storage);
+}
+
+void GLVersionInfo::ParseVersionString(const char* version_str,
+                                       unsigned* major_version,
+                                       unsigned* minor_version,
+                                       bool* is_es,
+                                       bool* is_es2,
+                                       bool* is_es3) {
+  // Make sure the outputs are always initialized.
+  *major_version = 0;
+  *minor_version = 0;
+  *is_es = false;
+  *is_es2 = false;
+  *is_es3 = false;
+  if (!version_str)
+    return;
+  std::string lstr(base::ToLowerASCII(version_str));
+  *is_es = (lstr.length() > 12) && (lstr.substr(0, 9) == "opengl es");
+  if (*is_es)
+    lstr = lstr.substr(10, 3);
+  base::StringTokenizer tokenizer(lstr.begin(), lstr.end(), ". ");
+  unsigned major, minor;
+  if (tokenizer.GetNext() &&
+      base::StringToUint(tokenizer.token_piece(), &major)) {
+    *major_version = major;
+    if (tokenizer.GetNext() &&
+        base::StringToUint(tokenizer.token_piece(), &minor)) {
+      *minor_version = minor;
+    }
+  }
+  if (*is_es && *major_version == 2)
+    *is_es2 = true;
+  if (*is_es && *major_version == 3)
+    *is_es3 = true;
+  DCHECK(major_version != 0);
 }
 
 }  // namespace gl
