@@ -32,6 +32,8 @@
 
 #include <algorithm>
 #include <memory>
+
+#include "base/feature_list.h"
 #include "base/optional.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
@@ -102,6 +104,12 @@
 namespace blink {
 
 namespace {
+
+// If kAllowClientHintsToThirdParty is enabled, then device-memory,
+// resource-width and viewport-width client hints can be sent to third-party
+// origins if the first-party has opted in to receiving client hints.
+const base::Feature kAllowClientHintsToThirdParty{
+    "AllowClientHintsToThirdParty", base::FEATURE_DISABLED_BY_DEFAULT};
 
 enum class RequestMethod { kIsPost, kIsNotPost };
 enum class RequestType { kIsConditional, kIsNotConditional };
@@ -883,6 +891,9 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& request) {
   WebEnabledClientHints enabled_hints;
+
+  bool is_1p_origin = false;
+
   if (blink::RuntimeEnabledFeatures::ClientHintsPersistentEnabled()) {
     // If the feature is enabled, then client hints are allowed only on secure
     // URLs.
@@ -898,17 +909,22 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     if (IsDetached())
       return;
 
-    if (!GetFrame()
-             ->Tree()
-             .Top()
-             .GetSecurityContext()
-             ->GetSecurityOrigin()
-             ->IsSameSchemeHostPort(
-                 SecurityOrigin::Create(request.Url()).get())) {
+    is_1p_origin =
+        GetFrame()
+            ->Tree()
+            .Top()
+            .GetSecurityContext()
+            ->GetSecurityOrigin()
+            ->IsSameSchemeHostPort(SecurityOrigin::Create(request.Url()).get());
+
+    if (!base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) &&
+        !is_1p_origin) {
       // No client hints for 3p origins.
       return;
     }
-    if (GetContentSettingsClient()) {
+    // Persisted client hints preferences should be read for only the first
+    // party origins.
+    if (is_1p_origin && GetContentSettingsClient()) {
       GetContentSettingsClient()->GetAllowedClientHintsFromSource(
           request.Url(), &enabled_hints);
     }
@@ -943,6 +959,12 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.AddHTTPHeaderField(
         "Viewport-Width",
         AtomicString(String::Number(GetFrame()->View()->ViewportWidth())));
+  }
+
+  if (!is_1p_origin) {
+    // No network quality client hints for 3p origins. Only DPR, resource width
+    // and viewport width client hints are allowed for 1p origins.
+    return;
   }
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kRtt, hints_preferences,
