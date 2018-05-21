@@ -72,26 +72,20 @@ _TOKEN_RE = re.compile(r'(' + '|'.join(SPECIAL_TOKENS + _TOKEN_PATTERNS) + r')')
 def tokenize_name(name):
     """Tokenize the specified name.
 
-    Detects special cases that are not easily discernible without additional
-    knowledge, such as recognizing that in SVGSVGElement, the first two SVGs
-    are separate tokens, but WebGL is one token.
+    A token consists of A-Z, a-z, and 0-9 characters. Other characters work as
+    token delimiters, and the resultant list won't contain such characters.
+    Capital letters also work as delimiters.  E.g. 'FooBar-baz' is tokenized to
+    ['Foo', 'Bar', 'baz']. See _TOKEN_PATTERNS for more details.
+
+    This function detects special cases that are not easily discernible without
+    additional knowledge, such as recognizing that in SVGSVGElement, the first
+    two SVGs are separate tokens, but WebGL is one token.
 
     Returns:
         A list of token strings.
+
     """
-    tokens = []
-    while len(name) > 0:
-        matched_token = None
-        match = _TOKEN_RE.search(name)
-        if not match:
-            matched_token = name
-        elif match.start(0) != 0:
-            matched_token = name[:match.start(0)]
-        else:
-            matched_token = match.group(0)
-        tokens.append(matched_token)
-        name = name[len(matched_token):]
-    return tokens
+    return _TOKEN_RE.findall(name)
 
 
 class NameStyleConverter(object):
