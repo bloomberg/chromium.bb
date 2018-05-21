@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/line/glyph_overflow.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/line/line_orientation_utils.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/inline_flow_box_painter.h"
@@ -988,8 +989,8 @@ inline void InlineFlowBox::AddBoxShadowVisualOverflow(
   // Similar to how glyph overflow works, if our lines are flipped, then it's
   // actually the opposite shadow that applies, since the line is "upside down"
   // in terms of block coordinates.
-  LayoutRectOutsets logical_outsets(
-      outsets.LineOrientationOutsetsWithFlippedLines(writing_mode));
+  LayoutRectOutsets logical_outsets =
+      LineOrientationLayoutRectOutsetsWithFlippedLines(outsets, writing_mode);
 
   LayoutRect shadow_bounds(LogicalFrameRect());
   shadow_bounds.Expand(logical_outsets);
@@ -1013,8 +1014,8 @@ inline void InlineFlowBox::AddBorderOutsetVisualOverflow(
   // actually the opposite border that applies, since the line is "upside down"
   // in terms of block coordinates. vertical-rl is the flipped line mode.
   LayoutRectOutsets logical_outsets =
-      style.BorderImageOutsets().LineOrientationOutsetsWithFlippedLines(
-          style.GetWritingMode());
+      LineOrientationLayoutRectOutsetsWithFlippedLines(
+          style.BorderImageOutsets(), style.GetWritingMode());
 
   if (!IncludeLogicalLeftEdge())
     logical_outsets.SetLeft(LayoutUnit());
@@ -1082,8 +1083,9 @@ inline void InlineFlowBox::AddTextBoxVisualOverflow(
 
   if (ShadowList* text_shadow = style.TextShadow()) {
     LayoutRectOutsets text_shadow_logical_outsets =
-        LayoutRectOutsets(text_shadow->RectOutsetsIncludingOriginal())
-            .LineOrientationOutsets(style.GetWritingMode());
+        LineOrientationLayoutRectOutsets(
+            LayoutRectOutsets(text_shadow->RectOutsetsIncludingOriginal()),
+            style.GetWritingMode());
     text_shadow_logical_outsets.ClampNegativeToZero();
     visual_rect_outsets += text_shadow_logical_outsets;
   }

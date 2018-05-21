@@ -49,19 +49,4 @@ void LayoutRectOutsets::Unite(const LayoutRectOutsets& other) {
   left_ = std::max(left_, other.left_);
 }
 
-LayoutRectOutsets LayoutRectOutsets::LineOrientationOutsets(
-    WritingMode writing_mode) const {
-  if (!IsHorizontalWritingMode(writing_mode))
-    return LayoutRectOutsets(left_, bottom_, right_, top_);
-  return *this;
-}
-
-LayoutRectOutsets LayoutRectOutsets::LineOrientationOutsetsWithFlippedLines(
-    WritingMode writing_mode) const {
-  LayoutRectOutsets outsets = LineOrientationOutsets(writing_mode);
-  if (IsFlippedLinesWritingMode(writing_mode))
-    std::swap(outsets.top_, outsets.bottom_);
-  return outsets;
-}
-
 }  // namespace blink

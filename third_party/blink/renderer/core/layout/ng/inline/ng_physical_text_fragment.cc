@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/line/line_orientation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
@@ -128,8 +129,9 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::SelfVisualRect() const {
 
   if (ShadowList* text_shadow = style.TextShadow()) {
     LayoutRectOutsets text_shadow_logical_outsets =
-        LayoutRectOutsets(text_shadow->RectOutsetsIncludingOriginal())
-            .LineOrientationOutsets(style.GetWritingMode());
+        LineOrientationLayoutRectOutsets(
+            LayoutRectOutsets(text_shadow->RectOutsetsIncludingOriginal()),
+            style.GetWritingMode());
     text_shadow_logical_outsets.ClampNegativeToZero();
     visual_rect.Expand(text_shadow_logical_outsets);
   }

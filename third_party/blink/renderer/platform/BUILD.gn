@@ -1792,7 +1792,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "geometry/geometry_test_helpers.cc",
     "geometry/geometry_test_helpers.h",
     "geometry/int_rect_test.cc",
-    "geometry/layout_rect_outsets_test.cc",
     "geometry/layout_rect_test.cc",
     "geometry/layout_size_test.cc",
     "geometry/region_test.cc",
