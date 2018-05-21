@@ -34,6 +34,9 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
   explicit UnifiedSystemTrayBubble(UnifiedSystemTray* tray, bool show_by_click);
   ~UnifiedSystemTrayBubble() override;
 
+  // Return the bounds of the bubble in the screen.
+  gfx::Rect GetBoundsInScreen() const;
+
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;
   views::TrayBubbleView* GetBubbleView() const override;

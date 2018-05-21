@@ -160,6 +160,10 @@ bool UnifiedSystemTray::IsBubbleShown() const {
   return !!bubble_;
 }
 
+gfx::Rect UnifiedSystemTray::GetBubbleBoundsInScreen() const {
+  return bubble_ ? bubble_->GetBoundsInScreen() : gfx::Rect();
+}
+
 bool UnifiedSystemTray::PerformAction(const ui::Event& event) {
   if (bubble_)
     CloseBubble();

@@ -81,6 +81,11 @@ UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
   }
 }
 
+gfx::Rect UnifiedSystemTrayBubble::GetBoundsInScreen() const {
+  DCHECK(bubble_view_);
+  return bubble_view_->GetBoundsInScreen();
+}
+
 TrayBackgroundView* UnifiedSystemTrayBubble::GetTray() const {
   return tray_;
 }
