@@ -241,7 +241,7 @@ bool DevToolsHttpClient::FetchUrlAndLog(const std::string& url,
                                         URLRequestContextGetter* getter,
                                         std::string* response) {
   VLOG(1) << "DevTools request: " << url;
-  bool ok = FetchUrl(url, getter, response);
+  bool ok = FetchUrl(url, getter, response, nullptr);
   if (ok) {
     VLOG(1) << "DevTools response: " << *response;
   } else {

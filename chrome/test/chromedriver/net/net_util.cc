@@ -32,11 +32,13 @@ class SyncUrlFetcher : public net::URLFetcherDelegate {
 
   ~SyncUrlFetcher() override {}
 
-  bool Fetch() {
+  bool Fetch(int* response_code) {
     getter_->GetNetworkTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&SyncUrlFetcher::FetchOnIOThread,
                                   base::Unretained(this)));
     event_.Wait();
+    if (response_code)
+      *response_code = response_code_;
     return success_;
   }
 
@@ -48,9 +50,15 @@ class SyncUrlFetcher : public net::URLFetcherDelegate {
   }
 
   void OnURLFetchComplete(const net::URLFetcher* source) override {
-    success_ = (source->GetResponseCode() == 200);
-    if (success_)
-      success_ = source->GetResponseAsString(response_);
+    response_code_ = -1;
+    success_ = false;
+    if (source->GetStatus().is_success()) {
+      response_code_ = source->GetResponseCode();
+      if (response_code_ == 200) {
+        success_ = source->GetResponseAsString(response_);
+      }
+    }
+
     fetcher_.reset();  // Destroy the fetcher on IO thread.
     event_.Signal();
   }
@@ -62,6 +70,7 @@ class SyncUrlFetcher : public net::URLFetcherDelegate {
   base::WaitableEvent event_;
   std::unique_ptr<net::URLFetcher> fetcher_;
   bool success_;
+  int response_code_;
 };
 
 }  // namespace
@@ -93,6 +102,7 @@ int NetAddress::port() const {
 
 bool FetchUrl(const std::string& url,
               URLRequestContextGetter* getter,
-              std::string* response) {
-  return SyncUrlFetcher(GURL(url), getter, response).Fetch();
+              std::string* response,
+              int* response_code) {
+  return SyncUrlFetcher(GURL(url), getter, response).Fetch(response_code);
 }
