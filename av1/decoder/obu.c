@@ -166,10 +166,12 @@ static int read_bitstream_level(BitstreamLevel *bl,
   return 1;
 }
 
+// On success, returns the number of bytes read from 'rb'.
+// On failure, sets pbi->common.error.error_code and returns 0.
 static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
                                          struct aom_read_bit_buffer *rb) {
   AV1_COMMON *const cm = &pbi->common;
-  uint32_t saved_bit_offset = rb->bit_offset;
+  const uint32_t saved_bit_offset = rb->bit_offset;
   int operating_points_cnt_minus_1 = 0;
 
   cm->profile = av1_read_profile(rb);
@@ -182,13 +184,16 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   // Video must have reduced_still_picture_hdr = 0
   if (!cm->seq_params.still_picture &&
       cm->seq_params.reduced_still_picture_hdr) {
-    return AOM_CODEC_UNSUP_BITSTREAM;
+    cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
+    return 0;
   }
 
   if (seq_params->reduced_still_picture_hdr) {
     seq_params->operating_point_idc[0] = 0;
-    if (!read_bitstream_level(&seq_params->level[0], rb))
-      return AOM_CODEC_UNSUP_BITSTREAM;
+    if (!read_bitstream_level(&seq_params->level[0], rb)) {
+      cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
+      return 0;
+    }
     seq_params->decoder_rate_model_param_present_flag[0] = 0;
   } else {
     operating_points_cnt_minus_1 =
@@ -196,8 +201,10 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
     for (int i = 0; i < operating_points_cnt_minus_1 + 1; i++) {
       seq_params->operating_point_idc[i] =
           aom_rb_read_literal(rb, OP_POINTS_IDC_BITS);
-      if (!read_bitstream_level(&seq_params->level[i], rb))
-        return AOM_CODEC_UNSUP_BITSTREAM;
+      if (!read_bitstream_level(&seq_params->level[i], rb)) {
+        cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
+        return 0;
+      }
       if (seq_params->level[i].major > 3)
         seq_params->tier[i] = aom_rb_read_bit(rb);
       else
