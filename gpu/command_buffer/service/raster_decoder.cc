@@ -957,7 +957,10 @@ ContextResult RasterDecoderImpl::Initialize(
     }
 
     if (supports_oop_raster_) {
-      gr_context_ = GrContext::MakeGL(std::move(interface));
+      GrContextOptions options;
+      options.fDriverBugWorkarounds =
+          GrDriverBugWorkarounds(workarounds().ToIntSet());
+      gr_context_ = GrContext::MakeGL(std::move(interface), options);
       if (gr_context_) {
         // TODO(enne): This cache is for this decoder only and each decoder has
         // its own cache.  This is pretty unfortunate.  This really needs to be

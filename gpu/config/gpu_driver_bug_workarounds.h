@@ -31,6 +31,8 @@ class GPU_EXPORT GpuDriverBugWorkarounds {
   // zero, then the other is applied.
   void Append(const GpuDriverBugWorkarounds& extra);
 
+  std::vector<int32_t> ToIntSet() const;
+
 #define GPU_OP(type, name) bool name = false;
   GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
 #undef GPU_OP
