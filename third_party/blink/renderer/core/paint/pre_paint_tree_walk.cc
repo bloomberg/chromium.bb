@@ -117,6 +117,7 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
   }
 
   frame_view.ClearNeedsPaintPropertyUpdate();
+  frame_view.GetJankTracker().NotifyPrePaintFinished();
   context_storage_.pop_back();
 }
 
@@ -206,6 +207,9 @@ bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
 
 void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
                                     PrePaintTreeWalkContext& context) {
+  PaintInvalidatorContext& paint_invalidator_context =
+      context.paint_invalidator_context;
+
   // This must happen before updatePropertiesForSelf, because the latter reads
   // some of the state computed here.
   UpdateAuxiliaryObjectProperties(object, context);
@@ -217,14 +221,14 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
     property_changed = property_tree_builder->UpdateForSelf();
 
     if (context.tree_builder_context->clip_changed) {
-      context.paint_invalidator_context.subtree_flags |=
+      paint_invalidator_context.subtree_flags |=
           PaintInvalidatorContext::kSubtreeVisualRectUpdate;
     }
   }
 
   paint_invalidator_.InvalidatePaint(
       object, base::OptionalOrNullptr(context.tree_builder_context),
-      context.paint_invalidator_context);
+      paint_invalidator_context);
 
   if (context.tree_builder_context) {
     property_changed |= property_tree_builder->UpdateForChildren();
@@ -234,8 +238,7 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
         RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
         !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       const auto* paint_invalidation_layer =
-          context.paint_invalidator_context.paint_invalidation_container
-              ->Layer();
+          paint_invalidator_context.paint_invalidation_container->Layer();
       if (!paint_invalidation_layer->NeedsRepaint()) {
         auto* mapping = paint_invalidation_layer->GetCompositedLayerMapping();
         if (!mapping)
@@ -247,6 +250,10 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   }
 
   CompositingLayerPropertyUpdater::Update(object);
+
+  object.GetFrameView()->GetJankTracker().NotifyObjectPrePaint(
+      object, paint_invalidator_context.old_visual_rect,
+      *paint_invalidator_context.painting_layer);
 }
 
 void PrePaintTreeWalk::Walk(const LayoutObject& object) {
