@@ -9,18 +9,15 @@
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/smb_client/smb_constants.h"
 #include "chrome/browser/chromeos/smb_client/smb_errors.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
 #include "chrome/browser/chromeos/smb_client/smb_provider.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_helper.h"
-#include "chrome/browser/chromeos/smb_client/smb_url.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
-#include "url/url_util.h"
 
 using chromeos::file_system_provider::Service;
 
@@ -112,18 +109,13 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
     }
   }
 
-  SmbUrl parsed_url;
-  if (!parsed_url.InitializeWithUrl(share_path.value())) {
-    std::move(callback).Run(
-        TranslateErrorToMountResult(base::File::Error::FILE_ERROR_INVALID_URL));
-    return;
-  }
+  // TODO(allenvic): Add URL parsing here once SmbUrl can be used without adding
+  // a standard scheme.
 
   // TODO(allenvic): Resolve parsed_url here using NetworkScanner once name
   // resolution is wired up.
-  DCHECK(parsed_url.IsValid());
   GetSmbProviderClient()->Mount(
-      base::FilePath(parsed_url.ToString()), workgroup, username,
+      share_path, workgroup, username,
       temp_file_manager_->WritePasswordToFile(password),
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                      base::Passed(&callback), options, share_path));
@@ -231,12 +223,6 @@ void SmbService::OnSetupKerberosResponse(bool success) {
 }
 
 void SmbService::CompleteSetup() {
-  // Add smb:// as a standard scheme. This is needed in order for GURL to be
-  // able to properly parse the smb:// URLs.
-  if (!url::IsStandard(kSmbScheme, url::Component(0, strlen(kSmbScheme)))) {
-    url::AddStandardScheme(kSmbScheme, url::SCHEME_WITH_HOST);
-  }
-
   GetProviderService()->RegisterProvider(std::make_unique<SmbProvider>(
       base::BindRepeating(&SmbService::Unmount, base::Unretained(this))));
   RestoreMounts();
