@@ -2776,7 +2776,7 @@ const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
     remote_shell_get_notification_surface};
 
-const uint32_t remote_shell_version = 15;
+const uint32_t remote_shell_version = 16;
 
 void bind_remote_shell(wl_client* client,
                        void* data,
