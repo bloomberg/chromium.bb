@@ -535,16 +535,6 @@ void CheckFrameDepth(unsigned int expected_depth, FrameTreeNode* node) {
             node->current_frame_host()->GetProcess()->GetFrameDepth());
 }
 
-void GenerateTapDownGesture(RenderWidgetHost* rwh) {
-  blink::WebGestureEvent gesture_tap_down(
-      blink::WebGestureEvent::kGestureTapDown,
-      blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchscreen);
-  gesture_tap_down.is_source_touch_event_set_non_blocking = true;
-  rwh->ForwardGestureEvent(gesture_tap_down);
-}
-
 }  // namespace
 
 //
@@ -1208,9 +1198,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   WaitForChildFrameSurfaceReady(child_iframe_node->current_frame_host());
 
   gesture_fling_start_ack_observer.Reset();
-
-  GenerateTapDownGesture(child_rwh);
-
   // Send a GSB, GSU, GFS sequence and verify that the GFS bubbles.
   blink::WebGestureEvent gesture_scroll_begin(
       blink::WebGestureEvent::kGestureScrollBegin,
@@ -1504,9 +1491,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, GestureFlingStart) {
 
   RenderWidgetHost* child_rwh =
       child_iframe_node->current_frame_host()->GetRenderWidgetHost();
+
   WaitForChildFrameSurfaceReady(child_iframe_node->current_frame_host());
 
-  GenerateTapDownGesture(child_rwh);
   // Send a GSB to start scrolling sequence.
   blink::WebGestureEvent gesture_scroll_begin(
       blink::WebGestureEvent::kGestureScrollBegin,

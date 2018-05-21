@@ -77,7 +77,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void SetDeviceScaleFactor(float device_scale_factor) override;
   void SetFrameTreeNodeId(int frame_tree_node_id) override;
   void SetForceEnableZoom(bool enabled) override;
-  base::Optional<cc::TouchAction> AllowedTouchAction() override;
+  cc::TouchAction AllowedTouchAction() override;
   void BindHost(mojom::WidgetInputHandlerHostRequest request,
                 bool frame_handler) override;
   void StopFling() override;
@@ -98,9 +98,6 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override;
-
-  void OnSetTouchAction(cc::TouchAction touch_action) override;
-  void ResetTouchAction();
 
  private:
   friend class InputRouterImplTest;
@@ -186,6 +183,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
 
   // IPC message handlers
   void OnHasTouchEventHandlers(bool has_handlers);
+  void OnSetTouchAction(cc::TouchAction touch_action);
 
   // Called when a touch timeout-affecting bit has changed, in turn toggling the
   // touch ack timeout feature of the |touch_event_queue_| as appropriate. Input

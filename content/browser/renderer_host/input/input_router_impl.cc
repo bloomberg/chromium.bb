@@ -136,14 +136,6 @@ void InputRouterImpl::SendGestureEvent(
 
   GestureEventWithLatencyInfo gesture_event(original_gesture_event);
 
-  // We reset TouchActionFilter::allowed_touch_action_ at GestureScrollEnd. If
-  // a gesture scroll event is bubbled from iframe to main frame after a
-  // GestureScrollEnd, then the main frame won't have allowed_touch_action_ set,
-  // so we set it to auto here.
-  // TODO(https://crbug.com/841270): Correct the behavior of scroll bubbling
-  // across an iframe.
-  if (gesture_event.event.is_bubbled_from_child_frame)
-    touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
   if (touch_action_filter_.FilterGestureEvent(&gesture_event.event) ==
       FilterGestureEventResult::kFilterGestureEventFiltered) {
     disposition_handler_->OnGestureEventAck(gesture_event,
@@ -208,7 +200,7 @@ void InputRouterImpl::SetForceEnableZoom(bool enabled) {
   touch_action_filter_.SetForceEnableZoom(enabled);
 }
 
-base::Optional<cc::TouchAction> InputRouterImpl::AllowedTouchAction() {
+cc::TouchAction InputRouterImpl::AllowedTouchAction() {
   return touch_action_filter_.allowed_touch_action();
 }
 
@@ -232,12 +224,15 @@ bool InputRouterImpl::FlingCancellationIsDeferred() {
 }
 
 void InputRouterImpl::CancelTouchTimeout() {
-  UpdateTouchAckTimeoutEnabled();
+  touch_event_queue_.SetAckTimeoutEnabled(false);
 }
 
 void InputRouterImpl::SetWhiteListedTouchAction(cc::TouchAction touch_action,
                                                 uint32_t unique_touch_event_id,
                                                 InputEventAckState state) {
+  // TODO(hayleyferr): Catch the cases that we have filtered out sending the
+  // touchstart.
+
   touch_action_filter_.OnSetWhiteListedTouchAction(touch_action);
   client_->OnSetWhiteListedTouchAction(touch_action);
 }
@@ -338,14 +333,14 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
   // in some cases we may filter out sending the touchstart - catch those here.
   if (WebTouchEventTraits::IsTouchSequenceStart(event.event) &&
       ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
-    // Touch action must be auto when there is no consumer
-    touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
+    touch_action_filter_.ResetTouchAction();
     UpdateTouchAckTimeoutEnabled();
   }
   disposition_handler_->OnTouchEventAck(event, ack_source, ack_result);
 
   // Reset the touch action at the end of a touch-action sequence.
   if (WebTouchEventTraits::IsTouchSequenceEnd(event.event)) {
+    touch_action_filter_.ReportAndResetTouchAction();
     UpdateTouchAckTimeoutEnabled();
   }
 }
@@ -576,7 +571,13 @@ void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
   TRACE_EVENT1("input", "InputRouterImpl::OnHasTouchEventHandlers",
                "has_handlers", has_handlers);
 
-  touch_action_filter_.OnHasTouchEventHandlers(has_handlers);
+  // Lack of a touch handler indicates that the page either has no touch-action
+  // modifiers or that all its touch-action modifiers are auto. Resetting the
+  // touch-action here allows forwarding of subsequent gestures even if the
+  // underlying touches never reach the router.
+  if (!has_handlers)
+    touch_action_filter_.ResetTouchAction();
+
   touch_event_queue_.OnHasTouchEventHandlers(has_handlers);
   client_->OnHasTouchEventHandlers(has_handlers);
 }
@@ -603,10 +604,6 @@ void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
   const bool touch_ack_timeout_enabled =
       touch_action_filter_.allowed_touch_action() != cc::kTouchActionNone;
   touch_event_queue_.SetAckTimeoutEnabled(touch_ack_timeout_enabled);
-}
-
-void InputRouterImpl::ResetTouchAction() {
-  touch_action_filter_.ResetTouchAction();
 }
 
 }  // namespace content

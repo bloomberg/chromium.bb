@@ -34,10 +34,6 @@ class WebGestureEvent : public WebInputEvent {
 
   bool is_source_touch_event_set_non_blocking;
 
-  // Whether a gesture event is bubbled across frames (such as from an iframe
-  // to the main frame).
-  bool is_bubbled_from_child_frame = false;
-
   // The pointer type for the first touch point in the gesture.
   WebPointerProperties::PointerType primary_pointer_type =
       WebPointerProperties::PointerType::kUnknown;
