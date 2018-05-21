@@ -260,20 +260,8 @@ void HTMLParserScriptRunner::PendingScriptFinished(
   if (IsExecutingScript() && pending_script->WasCanceled()) {
     pending_script->Dispose();
 
-    if (pending_script == ParserBlockingScript()) {
-      parser_blocking_script_ = nullptr;
-    } else {
-      CHECK_EQ(pending_script, scripts_to_execute_after_parsing_.front());
-
-      // TODO(hiroshige): Remove this CHECK() before going to beta.
-      // This is only to make clusterfuzz to find a test case that executes
-      // this code path.
-      CHECK(false);
-
-      scripts_to_execute_after_parsing_.pop_front();
-      // TODO(hiroshige): executeScriptsWaitingForParsing() should be
-      // called later at the appropriate time. https://crbug.com/696775
-    }
+    DCHECK_EQ(pending_script, ParserBlockingScript());
+    parser_blocking_script_ = nullptr;
 
     return;
   }
