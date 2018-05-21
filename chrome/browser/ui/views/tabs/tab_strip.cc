@@ -2389,9 +2389,8 @@ bool TabStrip::NeedsTouchLayout() const {
 }
 
 void TabStrip::SetResetToShrinkOnExit(bool value) {
-  if (!adjust_layout_ || MD::IsTouchOptimizedUiEnabled()) {
+  if (!adjust_layout_)
     return;
-  }
 
   // We have to be using stacked layout to reset out of it.
   value &= stacked_layout_;
