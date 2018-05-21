@@ -60,6 +60,7 @@
 <translation id="1506061864768559482">Search engine</translation>
 <translation id="1513352483775369820">Bookmark at history ng web</translation>
 <translation id="1513858653616922153">I-delete ang password</translation>
+<translation id="1516229014686355813">Ipinapadala sa Google Search ng I-tap para Maghanap ang napiling salita at ang kasalukuyang page bilang konteksto. Maaari mo itong i-off sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
 <translation id="1539064842193522527">Binuksan ang link sa Chrome</translation>
 <translation id="1549000191223877751">Lumipat sa ibang window</translation>
 <translation id="1553358976309200471">I-update ang Chrome</translation>
@@ -314,6 +315,9 @@
 <translation id="4002066346123236978">Pamagat</translation>
 <translation id="4042870126885713738">Magpakita ng mga suhestyon kapag hindi ma-resolve ang isang website o kung hindi makakonekta</translation>
 <translation id="4046123991198612571">Susunod na track</translation>
+<translation id="4048707525896921369">Matuto tungkol sa mga paksa sa mga website nang hindi umaalis sa page. Ipinapadala sa Google Search ng I-tap para Maghanap ang salita at ang konteksto nito, na nagbibigay ng mga kahulugan, larawan, resulta ng paghahanap, at iba pang detalye.
+
+Para isaayos ang iyong termino para sa paghahanap, pumindot nang matagal para pumili. Para pinuhin ang iyong paghahanap, i-slide ang panel hanggang sa pinakaitaas at i-tap ang box para sa paghahanap.</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Impormasyong legal</translation>
 <translation id="4084682180776658562">Bookmark</translation>

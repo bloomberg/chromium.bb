@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">O Wi-Fi está desligado.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta traseira)</translation>
 <translation id="1882897271359938046">Espelhamento de <ph name="DISPLAY_NAME" /></translation>
+<translation id="1885785240814121742">Desbloqueio com impressão digital</translation>
 <translation id="1919743966458266018">O atalho para abrir o gerenciador de tarefas foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
 <translation id="1928739107511554905">Para receber a atualização, use a touchscreen para reiniciar o Chromebook com o teclado conectado.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">Teclas aderentes</translation>
 <translation id="2509468283778169019">CAPS LOCK está ativado</translation>
 <translation id="2532589005999780174">Modo de alto contraste</translation>
+<translation id="2575685495496069081">A opção de login múltiplo foi desativada</translation>
 <translation id="2597972630681408282">Modo noturno: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">O cartão SIM está bloqueado</translation>
 <translation id="2653659639078652383">Enviar</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">Capturar região</translation>
 <translation id="371370241367527062">Microfone frontal</translation>
 <translation id="3771549900096082774">Modo de alto contraste</translation>
+<translation id="3773700760453577392">Um administrador desativou o login múltiplo para <ph name="USER_EMAIL" />. Todos os usuários precisam sair para continuar.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloquear</translation>
 <translation id="3798670284305777884">Alto-falante (interno)</translation>

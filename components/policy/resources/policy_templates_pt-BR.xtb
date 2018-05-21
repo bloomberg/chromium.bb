@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Ativar declaração remota para o dispositivo</translation>
 <translation id="1062407476771304334">Substituir</translation>
 <translation id="1079801999187584280">Não permite o uso das Ferramentas para Desenvolvedores</translation>
-<translation id="109166998561583554">Acionador de sinalização de conta com a proteção de senha em risco</translation>
 <translation id="1093082332347834239">Se esta configuração for ativada, o host de assistência remota será executado em um processo com permissões <ph name="UIACCESS_PERMISSION_NAME" />. Isso permitirá que os usuários remotos interajam com janelas elevadas na área de trabalho do usuário local.
 
           Se esta configuração for desativada ou não for configurada, o host de assistência remota será executado no contexto do usuário, e os usuários remotos não poderão interagir com janelas elevadas na área de trabalho.</translation>
@@ -101,7 +100,6 @@
 <translation id="1438739959477268107">Configuração padrão de geração de chaves</translation>
 <translation id="1454846751303307294">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para executar JavaScript. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultJavaScriptSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="1456822151187621582">Windows (clientes do <ph name="PRODUCT_OS_NAME" />):</translation>
-<translation id="1457305643416399820">A sinalização de conta com a proteção de senha em risco está desativada</translation>
 <translation id="1464848559468748897">Controla o comportamento do usuário em uma sessão de diversos perfis nos dispositivos com <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política for configurada como "MultiProfileUserBehaviorUnrestricted", o usuário poderá ser primário ou secundário em uma sessão de diversos perfis.
@@ -317,6 +315,13 @@
 <translation id="2082205219176343977">Configurar a versão mínima permitida do Chrome para o dispositivo.</translation>
 <translation id="209586405398070749">Canal Stable</translation>
 <translation id="2098658257603918882">Ativar relato de uso e dados relacionados a falhas</translation>
+<translation id="2111016292707172233">Ativa a disponibilidade de "Tocar para pesquisar" na visualização de conteúdo do <ph name="PRODUCT_NAME" />.
+
+      Se ativar esta configuração, o recurso "Tocar para pesquisar" ficará disponível para o usuário e ele poderá optar por ativá-lo ou desativá-lo.
+
+      Se desativar esta configuração, o recurso "Tocar para pesquisar" será completamente desativado.
+
+      Não configurar esta política é o mesmo que ativá-la (veja a descrição acima).</translation>
 <translation id="2113068765175018713">Limitar tempo de execução do dispositivo reiniciando automaticamente</translation>
 <translation id="2127599828444728326">Permitir notificações nesses sites</translation>
 <translation id="2131902621292742709">Intervalo de escurecimento de tela no funcionamento com energia da bateria</translation>
@@ -461,12 +466,6 @@
 <translation id="2386362615870139244">Permitir bloqueios de ativação da tela</translation>
 <translation id="2411817661175306360">O aviso de proteção de senha está desativado</translation>
 <translation id="2411919772666155530">Bloquear notificações nestes sites</translation>
-<translation id="2415979855753196119">Permite que você controle o acionamento da sinalização de conta com proteção de senha em risco. Sinalizar a conta com proteção de senha em risco significa informar ao Google que a conta está correndo o risco de ser invadida.
-
-      Se esta política for definida como "PasswordProtectionRiskOff", nenhuma sinalização de conta com proteção de senha em risco será acionada.
-      Se esta política for definida como "PasswordProtectionRiskOnPasswordReuse", a sinalização de conta com proteção de senha em risco será acionada quando o usuário reutilizar senhas do Google em qualquer site que não esteja na lista de permissões.
-      Se esta política for definida como "PasswordProtectionRiskOnPhishingReuse", a sinalização de conta com proteção de senha em risco será acionada quando o usuário reutilizar senhas do Google em sites de phishing.
-      Se a política não for configurada, a sinalização de conta com proteção de senha em risco será acionada quando o usuário reutilizar senhas do Google em sites de phishing, mas ele conseguirá alterar essa configuração.</translation>
 <translation id="2418507228189425036">Desativa o salvamento do histórico do navegador em <ph name="PRODUCT_NAME" /> e impede que os usuários alterem esta configuração.
 
       Se esta configuração é ativada, o histórico de navegação não é salvo. Esta configuração também desativa a sincronização de guias.
@@ -881,6 +880,7 @@
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
 <translation id="3653237928288822292">Ícone do provedor de pesquisa padrão</translation>
 <translation id="3660562134618097814">Transferir cookies do IDP de SAML durante o login</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" />: o campo de linha única é obsoleto e será removido no futuro. Comece a usar a caixa de texto de várias linhas abaixo.</translation>
 <translation id="3709266154059827597">Configurar a lista negra de instalação da extensão</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3715569262675717862">Autenticação baseada em certificados do cliente</translation>
@@ -984,6 +984,7 @@
       Lista extensões que são instaladas automaticamente para o usuário Demo, para dispositivos em modo de varejo. Essas extensões são salvas no dispositivo e podem ser instaladas off-line, após a instalação.
 
       Cada entrada da lista contém um dicionário que deve incluir a identificação de extensão no campo 'extensão-id', e o URL de atualização no campo 'update-url'.</translation>
+<translation id="3874773863217952418">Ativar "Tocar para pesquisar"</translation>
 <translation id="3877517141460819966">Modo de autenticação de segundo fator integrado</translation>
 <translation id="388237772682176890">O uso dessa política foi suspenso no M53 e removido no M54, porque a compatibilidade com o SPDY/3.1 foi removida.
 
@@ -1240,6 +1241,11 @@
 
           Para ver exemplos de padrões, consulte http://www.chromium.org/developers/how-tos/chrome-frame-getting-started (link em inglês).</translation>
 <translation id="467449052039111439">Abrir uma lista de URLs</translation>
+<translation id="4680936297850947973">Uso suspenso na versão M68. Em vez disso, use DefaultPopupsSetting.
+
+      Para ver a explicação detalhada, acesse https://www.chromestatus.com/features/5675755719622656.
+      Se esta política estiver ativada, os sites terão permissão para navegar e abrir novas janelas/guias simultaneamente.
+      Se esta política estiver desativada ou não for configurada, os sites não terão permissão para navegar e abrir uma nova janela/guia simultaneamente.</translation>
 <translation id="4680961954980851756">Ativar Preenchimento automático</translation>
 <translation id="4722122254122249791">Ativar o Isolamento de site para origens específicas</translation>
 <translation id="4722399051042571387">Se definida como false, os usuários não conseguirão configurar PINs que sejam fracos e fáceis de adivinhar.
@@ -1497,7 +1503,6 @@
 
       Se a plataforma for compatível com notificações sobre políticas, o atraso de atualização será configurado para 24 horas (ignorando todos os padrões e o valor da política), pois espera-se que as notificações sobre políticas forcem uma atualização automaticamente sempre que a política for alterada, tornando as atualizações mais frequentes desnecessárias.</translation>
 <translation id="5530347722229944744">Bloquear downloads potencialmente perigosos</translation>
-<translation id="5530586312297447592">A sinalização de conta com a proteção de senha em risco é acionada pela reutilização de senha em uma página de phishing</translation>
 <translation id="5535973522252703021">Lista branca do servidor de delegação Kerberos</translation>
 <translation id="555077880566103058">Permitir que todos os sites executem o plug-in <ph name="FLASH_PLUGIN_NAME" /> automaticamente</translation>
 <translation id="5559079916187891399">Esta política não tem nenhum efeito sobre apps Android.</translation>
@@ -1854,7 +1859,6 @@
 
           Os padrões de URL desta política não devem ser contrários àqueles configurados por meio de WebUsbAskForUrls. Não é especificado qual das duas políticas tem precedência quando um URL corresponde a ambas.</translation>
 <translation id="6689792153960219308">Informar status de hardware</translation>
-<translation id="6698071416141001300">A sinalização de conta com a proteção de senha em risco é acionada pela reutilização de senha</translation>
 <translation id="6699880231565102694">Ativar autenticação de dois fatores para hosts de acesso remoto</translation>
 <translation id="6724842112053619797">Se você ativar esta configuração, as definições armazenadas nos perfis do <ph name="PRODUCT_NAME" />, como favoritos, dados de preenchimento automático, senhas, entre outros, serão gravadas em um arquivo armazenado na pasta Perfil de usuário de roaming ou em um local especificado pelo administrador por meio da política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. A ativação dessa política desativa a sincronização em nuvem.
 
@@ -2328,9 +2332,9 @@
 <translation id="7976157349247117979">Nome do destino do <ph name="PRODUCT_NAME" /></translation>
 <translation id="7977445800390854860">Se esta política não for definida e a Ferramenta de limpeza do Chrome detectar software indesejado, ela poderá reportar metadados sobre a verificação ao Google de acordo com a política definida por SafeBrowsingExtendedReportingEnabled. A Ferramenta de limpeza do Chrome perguntará, então, ao usuário se ele quer remover o software indesejado. O usuário poderá optar por compartilhar resultados da limpeza com o Google para auxiliar em uma futura detecção de software indesejado. Esses resultados contêm metadados de arquivos e chaves de registro, conforme descrito pelo Relatório de Privacidade do Google Chrome.
 
-      Se esta política for definida como falsa e a Ferramenta de limpeza do Chrome detectar software indesejado, ela não reportará metadados sobre a verificação ao Google, substituindo qualquer política definida por SafeBrowsingExtendedReportingEnabled. A Ferramenta de limpeza do Chrome perguntará ao usuário se ele deseja remover o software indesejado. Os resultados da limpeza não serão reportados ao Google, e o usuário não terá a opção de fazê-lo.
+      Se esta política for definida como falsa e a Ferramenta de limpeza do Chrome detectar software indesejado, ela não reportará metadados sobre a verificação ao Google, substituindo qualquer política definida por SafeBrowsingExtendedReportingEnabled. A Ferramenta de limpeza do Chrome perguntará ao usuário se ele quer remover o software indesejado. Os resultados da limpeza não serão reportados ao Google, e o usuário não terá a opção de fazê-lo.
 
-      Se definida como verdadeira e a Ferramenta de limpeza do Chrome detectar software indesejado, ela poderá reportar metadados sobre a verificação ao Google, de acordo com a política definida por SafeBrowsingExtendedReportingEnabled. A Ferramenta de limpeza do Chrome perguntará ao usuário se ele deseja remover o software indesejado. Os resultados da limpeza serão reportados ao Google, e o usuário não terá a opção de impedir tal ação.
+      Se definida como verdadeira e a Ferramenta de limpeza do Chrome detectar software indesejado, ela poderá reportar metadados sobre a verificação ao Google, de acordo com a política definida por SafeBrowsingExtendedReportingEnabled. A Ferramenta de limpeza do Chrome perguntará ao usuário se ele quer remover o software indesejado. Os resultados da limpeza serão reportados ao Google, e o usuário não terá a opção de impedir tal ação.
 
       Esta política não está definida em instâncias do Windows que não estejam vinculadas a um domínio <ph name="MS_AD_NAME" />.</translation>
 <translation id="7980227303582973781">Nenhuma restrição especial</translation>

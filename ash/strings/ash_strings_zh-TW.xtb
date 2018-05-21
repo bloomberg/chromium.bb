@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">Wi-Fi 已關閉。</translation>
 <translation id="1864454756846565995">USB-C 裝置 (背面連接埠)</translation>
 <translation id="1882897271359938046">正在建立 <ph name="DISPLAY_NAME" /> 鏡像</translation>
+<translation id="1885785240814121742">使用指紋解鎖</translation>
 <translation id="1919743966458266018">開啟工作管理員的快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="1923539912171292317">自動點擊</translation>
 <translation id="1928739107511554905">如要更新，請連接鍵盤並使用觸控螢幕重新啟動 Chromebook。</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">相黏鍵</translation>
 <translation id="2509468283778169019">大寫鍵已啟用</translation>
 <translation id="2532589005999780174">高反差模式</translation>
+<translation id="2575685495496069081">多重登入功能已停用</translation>
 <translation id="2597972630681408282">夜燈功能：<ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM 卡已鎖定</translation>
 <translation id="2653659639078652383">提交</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">擷取部分畫面</translation>
 <translation id="371370241367527062">前置麥克風</translation>
 <translation id="3771549900096082774">高對比模式</translation>
+<translation id="3773700760453577392">管理員已禁止 <ph name="USER_EMAIL" /> 的多重登入功能。所有使用者都必須登出，才能繼續操作。</translation>
 <translation id="3783640748446814672">Alt</translation>
 <translation id="3784455785234192852">鎖定</translation>
 <translation id="3798670284305777884">喇叭 (內部)</translation>

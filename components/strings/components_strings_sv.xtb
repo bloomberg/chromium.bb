@@ -546,6 +546,7 @@
 <translation id="4759118997339041434">Autofyll för betalning har inaktiverats</translation>
 <translation id="4764776831041365478">Webbsidan på <ph name="URL" /> kan ligga nere för tillfället eller kan ha flyttats permanent till en ny webbadress.</translation>
 <translation id="4771973620359291008">Ett okänt fel uppstod.</translation>
+<translation id="4785689107224900852">Byt till den här fliken</translation>
 <translation id="4792143361752574037">Det gick inte att få åtkomst till sessionsfilerna. Det går för närvarande inte att spara till enheten. Läs in sidan igen och gör ett nytt försök.</translation>
 <translation id="4800132727771399293">Kontrollera utgångsdatum och CVC-kod och försök igen</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>

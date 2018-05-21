@@ -28,7 +28,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 <translation id="1062011392452772310">Aktivér fjernattestering for enheden</translation>
 <translation id="1062407476771304334">Erstat</translation>
 <translation id="1079801999187584280">Tillad ikke brug af Udviklerværktøjer</translation>
-<translation id="109166998561583554">Udløser af rapportering om truet konto via adgangskodebeskyttelse</translation>
 <translation id="1093082332347834239">Hvis denne indstilling er aktiveret, køres den eksterne hjælpehost i en proces med <ph name="UIACCESS_PERMISSION_NAME" />-tilladelser. Dette giver eksterne brugere mulighed for at interagere med vinduer med administratorrettigheder på den lokale brugers skrivebord.
 
           Hvis denne indstilling er deaktiveret eller ikke er konfigureret, køres den eksterne hjælpehost i brugerens kontekst, og eksterne brugere kan ikke interagere med vinduer med administratorrettigheder på skrivebordet.</translation>
@@ -105,7 +104,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 <translation id="1438739959477268107">Standardindstilling for nøglegenerering</translation>
 <translation id="1454846751303307294">Gør det muligt at oprette en liste over webadressemønstre for at angive websites, som ikke må køre JavaScript. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultJavaScriptSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />-klienter):</translation>
-<translation id="1457305643416399820">Rapportering om truet konto via adgangskodebeskyttelse er slået fra</translation>
 <translation id="1464848559468748897">Kontrollér brugeradfærden i en session med flere profiler på <ph name="PRODUCT_OS_NAME" />-enheder.
 
       Hvis politikken er angivet til "MultiProfileUserBehaviorUnrestricted", kan brugeren enten være primær eller sekundær bruger i en session med flere profiler.
@@ -321,6 +319,13 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2082205219176343977">Konfigurer den Chrome-version, der som minimum påkræves for enheden.</translation>
 <translation id="209586405398070749">Stabil kanal</translation>
 <translation id="2098658257603918882">Aktiver rapportering af brugs- og nedbrudsrelaterede data</translation>
+<translation id="2111016292707172233">Aktiverer tilgængeligheden af funktionen "Tryk for at søge" i indholdsvisningen i <ph name="PRODUCT_NAME" />.
+
+      Hvis du aktiverer denne indstilling, er "Tryk for at søge" tilgængelig for brugerne, og de kan vælge at slå funktionen til eller fra.
+
+      Hvis du deaktiverer denne indstilling, deaktiveres "Tryk for at søge" fuldstændigt.
+
+      Hvis politikken ikke angives, svarer det til, at den er aktiveret som i beskrivelsen ovenfor.</translation>
 <translation id="2113068765175018713">Begræns oppetid for enheden vha. automatisk genstart</translation>
 <translation id="2127599828444728326">Tillad underretninger på disse websites</translation>
 <translation id="2131902621292742709">Skærmnedtoningsforsinkelse, når batteriet bruges</translation>
@@ -465,12 +470,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2386362615870139244">Tillad aktiveringslås af skærm</translation>
 <translation id="2411817661175306360">Advarsler via adgangskodebeskyttelse er slået fra</translation>
 <translation id="2411919772666155530">Bloker underretninger på disse websites</translation>
-<translation id="2415979855753196119">Giver dig mulighed for at styre udløsningen af rapportering af truet konto via adgangskodebeskyttelse. Rapportering om truet konto via adgangskodebeskyttelse betyder, at Google underrettes om, at denne konto kan risikere at blive kapret.
-
-      Hvis der er angivet "PasswordProtectionRiskOff" for politikken, udløses der ikke nogen rapportering om truet konto via adgangskodebeskyttelse.
-      Hvis der er angivet "PasswordProtectionRiskOnPasswordReuse" for politikken, udløses rapportering om truet konto via adgangskodebeskyttelse, når brugeren genbruger adgangskoder til Google på websites, der ikke er hvidlistede.
-      Hvis der er angivet "PasswordProtectionRiskOnPhishingReuse" for politikken, udløses rapportering om truet konto via adgangskodebeskyttelse, når brugeren genbruger adgangskoder til Google på phishingwebsites.
-      Hvis politikken ikke angives, udløses rapportering om truet konto via adgangskodebeskyttelse, når brugeren genbruger adgangskoder til Google på phishingwebsites, men brugeren kan ændre indstillingen.</translation>
 <translation id="2418507228189425036">Deaktiverer lagring af browserhistorik i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
 
      Hvis denne indstilling er aktiveret, gemmes browserhistorikken ikke. Denne indstilling deaktiverer også synkronisering af faner.
@@ -890,6 +889,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3646859102161347133">Indstil type af lup</translation>
 <translation id="3653237928288822292">Ikon for standardsøgemaskine</translation>
 <translation id="3660562134618097814">Overfør SAML-IdP-cookies ved login</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (feltet med en enkelt linje er udfaset og fjernes inden for den nærmeste fremtid. Begynd at bruge tekstfeltet med flere linjer nedenfor).</translation>
 <translation id="3709266154059827597">Konfigurer sortliste for installation af udvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3715569262675717862">Godkendelse på baggrund af klientcertifikater</translation>
@@ -999,6 +999,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
       Listeudvidelser, der automatisk er installeret for demobrugeren til enheder i detailtilstand. Disse udvidelser gemmes i enheden og kan installeres i offlinetilstand efter installationen.
 
       Alle poster på listen indeholder en ordbog, der skal indeholde udvidelses-id'et i feltet "udvidelses-id" samt webadressen til opdatering i feltet "opdateringswebadresse".</translation>
+<translation id="3874773863217952418">Aktivér "Tryk for at søge"</translation>
 <translation id="3877517141460819966">Integreret godkendelsestilstand med sekundær faktor</translation>
 <translation id="388237772682176890">Denne politik er udfaset i M53 og fjernet i M54, da understøttelse af SPDY/3.1 er fjernet.
 
@@ -1255,6 +1256,11 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
           Du kan se eksempler på mønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Åbn en liste over webadresser</translation>
+<translation id="4680936297850947973">Udfaset i M68. Brug DefaultPopupsSetting i stedet.
+
+      Få en fuld forklaring på https://www.chromestatus.com/features/5675755719622656.
+      Hvis politikken er aktiveret, kan websites navigere og åbne nye vinduer/faner samtidigt.
+      Hvis politikken er deaktiveret eller ikke er angivet, kan websites ikke navigere eller åbne nye vinduer/faner samtidigt.</translation>
 <translation id="4680961954980851756">Aktiver AutoFyld</translation>
 <translation id="4722122254122249791">Aktivér isolering af websites for bestemte websites</translation>
 <translation id="4722399051042571387">Hvis den er angivet til falsk, kan brugerne ikke angive pinkoder, der er svage og nemme at gætte.
@@ -1516,7 +1522,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Bemærk! Hvis platformen understøtter underretninger vedrørende politik, angives forsinkelsen af opdateringen til 24 timer (der ses bort fra alle standardindstillingerne og værdierne for denne politik), da det forventes, at underretninger vedrørende politik automatisk gennemtvinger en opdatering, når politikken ændres. Dermed er hyppige opdateringer ikke nødvendige.</translation>
 <translation id="5530347722229944744">Bloker potentielt farlige downloads</translation>
-<translation id="5530586312297447592">Rapportering om truet konto via adgangskodebeskyttelse udløses ved genbrug af adgangskoder på en phishingside</translation>
 <translation id="5535973522252703021">Hvidliste for Kerberos-delegeringsserver</translation>
 <translation id="555077880566103058">Giv alle websites tilladelse til at køre <ph name="FLASH_PLUGIN_NAME" />-pluginnet automatisk</translation>
 <translation id="5559079916187891399">Denne politik påvirker ikke Android-apps.</translation>
@@ -1873,7 +1878,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
           Webadressemønstre i denne politik må ikke være i strid med dem, der er konfigureret via WebUsbAskForUrls. Det er ikke angivet, hvilken af de to politikker der har forrang, hvis en webadresse matcher begge.</translation>
 <translation id="6689792153960219308">Rapportér hardwarestatus</translation>
-<translation id="6698071416141001300">Rapportering om truet konto via adgangskodebeskyttelse udløses ved genbrug af adgangskoder</translation>
 <translation id="6699880231565102694">Aktivér godkendelse med to faktorer for værter med fjernadgang</translation>
 <translation id="6724842112053619797">Hvis du aktiverer denne indstilling, skrives indstillingerne, der er gemt i <ph name="PRODUCT_NAME" />-profiler, f.eks. bogmærker, autofylddata og adgangskoder, også i en fil, der er gemt i roamingmappen for brugerprofilen eller et andet sted som angivet af administratoren via <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />-politikken. Når du aktiverer denne politik, deaktiveres synkronisering i skyen.
 

@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">„Wi-Fi“ ryšys išjungtas.</translation>
 <translation id="1864454756846565995">USB-C įrenginys (prievadas gale)</translation>
 <translation id="1882897271359938046">Dubliuojama <ph name="DISPLAY_NAME" /></translation>
+<translation id="1885785240814121742">Atrakinimas kontroliniu kodu</translation>
 <translation id="1919743966458266018">Pakeistas užduočių tvarkytuvės atidarymo spartusis klavišas. Naudokite <ph name="NEW_SHORTCUT" /> vietoje <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatiniai paspaudimai</translation>
 <translation id="1928739107511554905">Kad gautumėte naujinį, naudodami jutiklinį ekraną iš naujo paleiskite „Chromebook“ su prijungta klaviatūra.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">Fiksuotos pozicijos klavišai</translation>
 <translation id="2509468283778169019">DIDŽIŲJŲ RAIDŽIŲ RAŠYMAS įjungtas</translation>
 <translation id="2532589005999780174">Didelio kontrasto režimas</translation>
+<translation id="2575685495496069081">Neleidžiama prisijungti prie kelių paskyrų</translation>
 <translation id="2597972630681408282">Nakties šviesa: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM kortelė užrakinta</translation>
 <translation id="2653659639078652383">Pateikti</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">Užfiksuoti sritį</translation>
 <translation id="371370241367527062">Priekinis mikrofonas</translation>
 <translation id="3771549900096082774">Didelio kontrasto režimas</translation>
+<translation id="3773700760453577392">Administratorius neleido <ph name="USER_EMAIL" />. prisijungti prie kelių paskyrų. Norint tęsti, visi naudotojai turi atsijungti.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Užrakinti</translation>
 <translation id="3798670284305777884">Garsiakalbis (vidinis)</translation>

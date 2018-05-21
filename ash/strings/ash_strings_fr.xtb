@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">Le Wi-Fi est désactivé.</translation>
 <translation id="1864454756846565995">Appareil USB de type C (port situé sur l'arrière de l'appareil)</translation>
 <translation id="1882897271359938046">Mise en miroir pour <ph name="DISPLAY_NAME" /></translation>
+<translation id="1885785240814121742">Déverrouillage avec empreinte</translation>
 <translation id="1919743966458266018">Le raccourci permettant d'ouvrir le gestionnaire de tâches a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
 <translation id="1923539912171292317">Clics automatiques</translation>
 <translation id="1928739107511554905">Pour télécharger la mise à jour, utilisez l'écran tactile pour redémarrer votre Chromebook avec le clavier branché.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">Touches persistantes</translation>
 <translation id="2509468283778169019">Touche VERR MAJ activée</translation>
 <translation id="2532589005999780174">Mode Contraste élevé</translation>
+<translation id="2575685495496069081">La connexion multicompte a été désactivée</translation>
 <translation id="2597972630681408282">Éclairage nocturne : <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La carte SIM est verrouillée</translation>
 <translation id="2653659639078652383">Valider</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">Capturer la zone</translation>
 <translation id="371370241367527062">Micro avant</translation>
 <translation id="3771549900096082774">Mode Contraste élevé</translation>
+<translation id="3773700760453577392">Un administrateur a désactivé la connexion multicompte pour <ph name="USER_EMAIL" />. Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Verrouiller</translation>
 <translation id="3798670284305777884">Haut-parleur (interne)</translation>

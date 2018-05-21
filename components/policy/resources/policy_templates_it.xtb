@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Attivazione dell'attestazione da remoto per il dispositivo</translation>
 <translation id="1062407476771304334">Sostituisci</translation>
 <translation id="1079801999187584280">Non consentire l'utilizzo degli Strumenti per sviluppatori</translation>
-<translation id="109166998561583554">Attivazione della segnalazione di account a rischio da parte del servizio di protezione tramite password</translation>
 <translation id="1093082332347834239">Se l'impostazione viene attivata, l'host per l'assistenza remota viene eseguito in un processo con le autorizzazioni <ph name="UIACCESS_PERMISSION_NAME" />. In questo modo gli utenti remoti possono interagire con finestre con privilegi più elevati sul desktop dell'utente locale.
 
           Se l'impostazione viene disattivata o non configurata, l'host dell'assistenza remota viene eseguito nel contesto dell'utente e gli utenti remoti non possono interagire con finestre con privilegi più elevati sul desktop.</translation>
@@ -102,7 +101,6 @@ Il fattore di regolazione minimo deve essere 100%.</translation>
 <translation id="1438739959477268107">Impostazione generazione di chiavi predefinite</translation>
 <translation id="1454846751303307294">Consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita l'esecuzione di JavaScript. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultJavaScriptSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="1456822151187621582">Windows (client <ph name="PRODUCT_OS_NAME" />):</translation>
-<translation id="1457305643416399820">La segnalazione di account a rischio da parte del servizio di protezione tramite password non è attiva</translation>
 <translation id="1464848559468748897">Consente di controllare il comportamento degli utenti in una sessione multiprofilo su dispositivi <ph name="PRODUCT_OS_NAME" />.
 
       Se questa norma viene impostata su "MultiProfileUserBehaviorUnrestricted", l'utente può essere l'utente principale o secondario di una sessione multiprofilo.
@@ -310,6 +308,13 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2082205219176343977">Configura la versione minima di Chrome consentita per il dispositivo.</translation>
 <translation id="209586405398070749">Canale stabile</translation>
 <translation id="2098658257603918882">Attiva rapporti sull'utilizzo e sui dati relativi agli arresti anomali</translation>
+<translation id="2111016292707172233">Consente di attivare la disponibilità della funzione Tocca per cercare nella visualizzazione contenuti di <ph name="PRODUCT_NAME" />.
+
+      Se attivi questa impostazione, la funzione Tocca per cercare sarà a disposizione degli utenti, che potranno scegliere se attivarla o disattivarla.
+
+      Se disattivi questa impostazione, la funzione Tocca per cercare verrà disattivata completamente.
+
+      Non impostare questa norma equivale ad attivarla; leggi la descrizione precedente.</translation>
 <translation id="2113068765175018713">Limita il tempo di attività del dispositivo riavviandolo automaticamente</translation>
 <translation id="2127599828444728326">Consenti notifiche su questi siti</translation>
 <translation id="2131902621292742709">Ritardo oscuramento schermo in caso di utilizzo della batteria</translation>
@@ -448,12 +453,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2386362615870139244">Consenti Wakelock dello schermo</translation>
 <translation id="2411817661175306360">L'avviso di protezione tramite password non è attivo</translation>
 <translation id="2411919772666155530">Blocca le notifiche su questi siti</translation>
-<translation id="2415979855753196119">Ti consente di controllare l'attivazione della segnalazione di account a rischio da parte del servizio di protezione tramite password. Questo tipo di segnalazione consente di informare Google che questo account è a rischio di violazione.
-
-      Se questa norma è impostata su 'PasswordProtectionRiskOff', non verrà attivata alcuna segnalazione di account a rischio da parte del servizio di protezione tramite password.
-      Se questa norma è impostata su 'PasswordProtectionRiskOnPasswordReuse', la segnalazione di account a rischio da parte del servizio di protezione tramite password verrà attivata quando l'utente riutilizza la password di Google su un sito non autorizzato.
-      Se questa norma è impostata su 'PasswordProtectionRiskOnPhishingReuse', la segnalazione di account a rischio da parte del servizio di protezione tramite password verrà attivata quando l'utente riutilizza la password di Google su un sito di phishing.
-      Se questa norma viene lasciata non impostata, la segnalazione di account a rischio da parte del servizio di protezione tramite password verrà attivata quando l'utente riutilizza la propria password Google su un sito di phishing, ma l'utente riuscirà a modificare questa impostazione.</translation>
 <translation id="2418507228189425036">Consente di disattivare il salvataggio della cronologia del browser in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
 
       Se questa impostazione è attivata, la cronologia di navigazione non viene salvata. Con questa impostazione viene disattivata anche la sincronizzazione delle schede.
@@ -868,6 +867,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3646859102161347133">Impostazione tipo di ingrandimento dello schermo</translation>
 <translation id="3653237928288822292">Icona del provider di ricerca predefinito</translation>
 <translation id="3660562134618097814">Trasferisci i cookie dell'IdP SAML durante l'accesso</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Il campo a una sola riga è obsoleto e sarà rimosso a breve. Inizia a usare la casella di testo multiriga qui sotto.)</translation>
 <translation id="3709266154059827597">Configura blacklist per l'installazione delle estensioni</translation>
 <translation id="3711895659073496551">Sospensione</translation>
 <translation id="3715569262675717862">Autenticazione basata su certificati client</translation>
@@ -968,6 +968,7 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Consente di elencare le estensioni che vengono installate automaticamente per gli utenti Demo di dispositivi in modalità retail. Queste estensioni vengono salvate sul dispositivo e possono essere installate offline, dopo l'installazione.
 
       Ogni voce dell'elenco contiene un dizionario che deve includere l'ID dell'estensione nel campo "extension-id" e il relativo URL di aggiornamento nel campo "update-url".</translation>
+<translation id="3874773863217952418">Attiva Tocca per cercare</translation>
 <translation id="3877517141460819966">Modalità di autenticazione a due fattori integrata</translation>
 <translation id="388237772682176890">Questa norma è stata ritirata in M53 e rimossa in M54 perché è stato rimosso il supporto di SPDY/3.1.
 
@@ -1218,6 +1219,11 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 
           Per avere pattern di esempio, visita il sito https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Apri un elenco di URL</translation>
+<translation id="4680936297850947973">Ritirata in M68. Usa DefaultPopupsSetting.
+
+      Per una spiegazione completa, consulta la pagina https://www.chromestatus.com/features/5675755719622656.
+      Se questa norma viene attivata, ai siti sarà concesso di navigare e aprire nuove finestre/schede contemporaneamente.
+      Se questa norma viene disattivata o non viene impostata, ai siti non sarà concesso di navigare e aprire nuove finestre/schede contemporaneamente.</translation>
 <translation id="4680961954980851756">Abilita Compilazione automatica</translation>
 <translation id="4722122254122249791">Attiva isolamento sito per origini specificate</translation>
 <translation id="4722399051042571387">Se questa norma viene impostata su false, gli utenti non potranno impostare PIN non sicuri e facili da intuire.
@@ -1449,7 +1455,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5457924070961220141">Consente di configurare il renderer HTML predefinito se <ph name="PRODUCT_FRAME_NAME" /> è installato. Se questa norma non viene impostata, per impostazione predefinita il rendering viene eseguito dal browser host; tuttavia, in alternativa, puoi sostituire tale impostazione e consentire che l'esecuzione del rendering delle pagine HTML venga eseguita, per impostazione predefinita, da <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="5459155981813668716">Consente di configurare le lingue di visualizzazione consentite per <ph name="PRODUCT_OS_NAME" />.
 
-      Se questa norma viene impostata, l'utente potrà configurare soltanto una delle lingue di visualizzazione di <ph name="PRODUCT_OS_NAME" /> specificate da questa norma. Se la norma non viene impostata o viene impostato un elenco vuoto, <ph name="PRODUCT_OS_NAME" /> potrà essere visualizzato in tutte le lingue supportate. Se per questa norma viene impostato un elenco contenente valori non validi, tutti i valori non validi verranno ignorati. Se un utente aveva precedentemente configurato una lingua di visualizzazione di <ph name="PRODUCT_OS_NAME" /> non consentita da questa norma, all'accesso successivo la lingua di visualizzazione verrà sostituita con una lingua consentita. Se l'utente aveva configurato delle lingue preferite e una di queste è consentita da questa norma, in <ph name="PRODUCT_OS_NAME" /> verrà usata tale lingua. In caso contrario, in <ph name="PRODUCT_OS_NAME" /> verrà usato il primo valore valido specificato in questo norma oppure, se la norma contiene soltanto voci non valide, verrà usata una lingua di riserva (attualmente en-US).</translation>
+      Se questa norma viene impostata, l'utente potrà configurare soltanto una delle lingue di visualizzazione di <ph name="PRODUCT_OS_NAME" /> specificate da questa norma. Se la norma non viene impostata o viene impostato un elenco vuoto, <ph name="PRODUCT_OS_NAME" /> potrà essere visualizzato in tutte le lingue supportate. Se per questa norma viene impostato un elenco contenente valori non validi, tutti i valori non validi verranno ignorati. Se un utente aveva precedentemente configurato una lingua di visualizzazione di <ph name="PRODUCT_OS_NAME" /> non consentita da questa norma, all'accesso successivo la lingua di visualizzazione verrà sostituita con una lingua consentita. Se l'utente aveva configurato delle lingue preferite e una di queste è consentita da questa norma, in <ph name="PRODUCT_OS_NAME" /> verrà usata tale lingua. In caso contrario, in <ph name="PRODUCT_OS_NAME" /> verrà usato il primo valore valido specificato in questo norma oppure, se la norma contiene soltanto voci non valide, verrà usata una lingua di fallback (attualmente en-US).</translation>
 <translation id="5464816904705580310">Configurazione delle impostazioni per gli utenti gestiti.</translation>
 <translation id="546726650689747237">Ritardo oscuramento schermo in caso di utilizzo di CA</translation>
 <translation id="5469484020713359236">Consente di impostare un elenco di pattern URL che specificano i siti autorizzati a impostare cookie. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultCookiesSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
@@ -1477,7 +1483,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Se la piattaforma supporta le notifiche relative alle norme, il ritardo dell'aggiornamento verrà impostato su 24 ore (vengono ignorati tutti i valori predefiniti e il valore di questa norma) perché è previsto che le notifiche relative alle norme forzino l'aggiornamento automatico quando cambiano le norme, rendendo superflui aggiornamenti più frequenti.</translation>
 <translation id="5530347722229944744">Blocca download potenzialmente pericolosi</translation>
-<translation id="5530586312297447592">La segnalazione di account a rischio da parte del servizio di protezione tramite password viene attivata se vengono riutilizzate password in pagine di phishing</translation>
 <translation id="5535973522252703021">Whitelist server di delega Kerberos</translation>
 <translation id="555077880566103058">Consenti l'esecuzione automatica del plug-in <ph name="FLASH_PLUGIN_NAME" /> in tutti i siti</translation>
 <translation id="5559079916187891399">Questa norma non influisce sulle app Android.</translation>
@@ -1829,7 +1834,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 
           I pattern URL di questa norma non devono essere in conflitto con quelli configurati tramite la norma WebUsbAskForUrls. Non viene specificato quale delle due norme debba avere precedenza se un URL presenta corrispondenze con entrambe.</translation>
 <translation id="6689792153960219308">Segnala lo stato dell'hardware</translation>
-<translation id="6698071416141001300">La segnalazione di account a rischio da parte del servizio di protezione tramite password viene attivata se vengono riutilizzate password</translation>
 <translation id="6699880231565102694">Abilita autenticazione a due fattori per gli host di accesso remoto</translation>
 <translation id="6724842112053619797">Se attivi questa impostazione, le impostazioni memorizzate nei profili <ph name="PRODUCT_NAME" />, come i preferiti, i dati della compilazione automatica, le password e così via, saranno scritte anche in un file memorizzato nella cartella del profilo utente Roaming o in una posizione specificata dall'amministratore tramite la norma <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Se si attiva questa norma, viene disattivata la sincronizzazione nella cloud.
 
@@ -2620,7 +2624,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="9084985621503260744">Specifica se l'attività video incide sulla gestione dell'alimentazione</translation>
 <translation id="9085839450090699752">Consente di stabilire per quanto tempo, in millisecondi, gli utenti riceveranno notifiche relative alla necessità di riavviare <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> per applicare un aggiornamento in sospeso.
 
-      Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento. Per quanto riguarda i dispositivi <ph name="PRODUCT_OS_NAME" />, nella barra delle applicazioni viene mostrata una notifica relativa al riavvio quando viene rilevato un upgrade. Questa notifica cambia colore una volta trascorso metà del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Per quanto riguarda i browser <ph name="PRODUCT_NAME" />, il menu delle app cambia per indicare che è necessario riavviare una volta trascorso un terzo del periodo di notifica. Questa notifica cambia colore una volta trascorsi due terzi del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Le notifiche aggiuntive attivate in base alla norma <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> relativa ai browser seguono questa stessa pianificazione.
+      Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento. Per quanto riguarda i dispositivi <ph name="PRODUCT_OS_NAME" />, nella barra delle applicazioni viene mostrata una notifica relativa al riavvio quando viene rilevato un upgrade. Questa notifica cambia colore una volta trascorso metà del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Per quanto riguarda i browser <ph name="PRODUCT_NAME" />, il menu delle app cambia per indicare che è necessario il riavvio una volta trascorso un terzo del periodo di notifica. Questa notifica cambia colore una volta trascorsi due terzi del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Le notifiche aggiuntive attivate in base alla norma <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> relativa ai browser seguono questa stessa pianificazione.
 
       Se la norma non viene impostata, viene usato il periodo predefinito di 345600000 millisecondi (quattro giorni) per i dispositivi <ph name="PRODUCT_OS_NAME" /> e di 604800000 millisecondi (una settimana) per i browser.</translation>
 <translation id="9088433379343318874">Abilita il provider di contenuti dell'utente supervisionato</translation>

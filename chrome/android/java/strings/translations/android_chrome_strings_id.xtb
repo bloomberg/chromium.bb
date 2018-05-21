@@ -60,6 +60,7 @@
 <translation id="1506061864768559482">Mesin telusur</translation>
 <translation id="1513352483775369820">Bookmark dan histori web</translation>
 <translation id="1513858653616922153">Hapus sandi</translation>
+<translation id="1516229014686355813">Tap untuk Menelusuri mengirimkan kata yang dipilih dan halaman yang dibuka sebagai konteks ke Google Penelusuran. Anda dapat menonaktifkannya di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
 <translation id="1539064842193522527">Link dibuka di Chrome</translation>
 <translation id="1549000191223877751">Beralih ke jendela lain</translation>
 <translation id="1553358976309200471">Perbarui browser Chrome</translation>
@@ -314,6 +315,9 @@
 <translation id="4002066346123236978">Judul</translation>
 <translation id="4042870126885713738">Tampilkan saran ketika alamat web tidak muncul atau koneksi yang bermasalah</translation>
 <translation id="4046123991198612571">Lagu berikutnya</translation>
+<translation id="4048707525896921369">Pelajari topik di situs tanpa menutup halaman. Tap untuk Menelusuri mengirimkan kata dan konteks di sekitarnya ke Google Penelusuran, menampilkan definisi, gambar, hasil penelusuran, dan detail lainnya.
+
+Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk mempersempit penelusuran, geser panel ke atas, lalu tap kotak penelusuran.</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Informasi hukum</translation>
 <translation id="4084682180776658562">Bookmark</translation>

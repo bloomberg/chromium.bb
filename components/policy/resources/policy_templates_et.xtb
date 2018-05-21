@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Seadme kaugatesteerimise lubamine</translation>
 <translation id="1062407476771304334">Asenda</translation>
 <translation id="1079801999187584280">Arendaja tööriistade kasutamise keelamine</translation>
-<translation id="109166998561583554">Ohus oleva paroolikaitse konto märgistamise käivitaja</translation>
 <translation id="1093082332347834239">Kui seade on lubatud, käitatakse protsessis kaugabi hosti lubadega <ph name="UIACCESS_PERMISSION_NAME" />. See võimaldab kaugkasutajatel suhelda kohaliku kasutaja töölaual olevate administraatoriõigusi nõudvate akendega.
 
           Kui seade on keelatud või seadistamata, käitatakse kaugabi hosti kasutaja kontekstis ja kaugkasutajad ei saa töölaual suhelda administraatoriõigusi nõudvate akendega.</translation>
@@ -107,7 +106,6 @@
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultJavaScriptSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
 <translation id="1456822151187621582">Windows (operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> kliendid):</translation>
-<translation id="1457305643416399820">Ohus olevate paroolikaitse kontode märgistamine on välja lülitatud</translation>
 <translation id="1464848559468748897">Kasutaja käitumise juhtimine mitme profiiliga seansside puhul operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> seadmetes.
 
       Kui reegel on määratud valikule „MultiProfileUserBehaviorUnrestricted”, saab kasutaja mitme profiiliga seansi puhul olla kas peamine või sekundaarne kasutaja.
@@ -329,6 +327,13 @@
 <translation id="2082205219176343977">Seadmes kõige vanema lubatud Chrome'i versiooni seadistamine.</translation>
 <translation id="209586405398070749">Stabiilne kanal</translation>
 <translation id="2098658257603918882">Luba kasutus- ja krahhiandmete aruandlus</translation>
+<translation id="2111016292707172233">Lubab teenuse <ph name="PRODUCT_NAME" /> sisu vaates funktsiooni Puuduta otsimiseks.
+
+      Kui selle seade lubate, on funktsioon Puuduta otsimiseks kasutaja jaoks saadaval ja ta saab selle sisse või välja lülitada.
+
+      Kui selle seade keelate, keelatakse funktsioon Puuduta otsimiseks täielikult.
+
+      Kui seda reeglit ei määrata, on see võrdväärne lubatuga (vt eelnevat kirjeldust).</translation>
 <translation id="2113068765175018713">Seadme tööaja piiramine automaatse taaskäivitamisega</translation>
 <translation id="2127599828444728326">Luba märguanded nendel saitidel</translation>
 <translation id="2131902621292742709">Ekraani hämardamise viiteaeg akutoite kasutamisel</translation>
@@ -478,12 +483,6 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 <translation id="2386362615870139244">Ekraani aktiveerimise lukustamise lubamine</translation>
 <translation id="2411817661175306360">Paroolikaitse hoiatus on välja lülitatud</translation>
 <translation id="2411919772666155530">Blokeerige märguanded nendel saitidel</translation>
-<translation id="2415979855753196119">Võimaldab teil juhtida paroolikaitse teavituse käivitamist riskantsetel kontodel. Paroolikaitse teavitus riskantsel kontol tähendab, et Google'it teavitatakse, et kontot ähvardab kaaperdamise oht.
-
-      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOff”, ei käivitata riskantsetel kontodel paroolikaitse teavitust.
-      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOnPasswordReuse”, käivitatakse riskantsetel kontodel paroolikaitse teavitus siis, kui kasutaja kasutab Google'i parooli saidil, mis ei kuulu lubatud saitide loendisse.
-      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOnPhishingReuse”, käivitatakse riskantsetel kontodel paroolikaitse teavitus siis, kui kasutaja kasutab Google'i parooli andmepüügisaidil.
-      Kui see reegel jäetakse määramata, käivitatakse paroolikaitse teavitus riskantsetel kontodel siis, kui kasutaja kasutab Google'i parooli andmepüügisaidil, kuid kasutaja saab seda muuta.</translation>
 <translation id="2418507228189425036">Keelab brauseris <ph name="PRODUCT_NAME" /> sirvimisajaloo salvestamise ja takistab kasutajaid seadet muutmast.
 
       Kui seade on lubatud, ei salvestata sirvimisajalugu. Seade keelab ka vahelehtede sünkroonimise.
@@ -916,6 +915,7 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 <translation id="3646859102161347133">Ekraaniluubi tüübi määramine</translation>
 <translation id="3653237928288822292">Vaikeotsingupakkuja ikoon</translation>
 <translation id="3660562134618097814">SAML IdP küpsisefailide ülekandmine sisselogimisel</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Üherealist välja enam ei toetata ja tulevikus see eemaldatakse. Hakake kasutama allolevat mitmerealist tekstivälja.)</translation>
 <translation id="3709266154059827597">Laienduste installimise musta nimekirja seadistamine</translation>
 <translation id="3711895659073496551">Peata</translation>
 <translation id="3715569262675717862">Kliendi sertifikaatidel põhinev autentimine</translation>
@@ -1021,6 +1021,7 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
       Loetleb laiendused, mis laaditakse automaatselt demo kasutajale jaerežiimis seadmete jaoks. Laiendused salvestatakse seadmesse ja need saab hiljem installida võrguühenduseta.
 
       Iga loendi kirje sisaldab sõnastikku, mis peab väljal „extension-id” sisaldama laienduse ID-d ja väljal „update-url” värskenduse URL-i.</translation>
+<translation id="3874773863217952418">Funktsiooni Puuduta otsimiseks lubamine</translation>
 <translation id="3877517141460819966">Integreeritud kahe teguriga autentimise režiim</translation>
 <translation id="388237772682176890">Selle reegli tugi katkestatakse versioonis M53 ja see eemaldatakse versioonis M54, kuna SPDY/3.1 tugi eemaldatakse.
 
@@ -1265,7 +1266,7 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 <translation id="4617338332148204752">Metasildi kontrollimise vahelejätmine teenuses <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Installimiseks lubatud laienduste loendi seadistamine</translation>
 <translation id="4632343302005518762">Pistikprogrammil <ph name="PRODUCT_FRAME_NAME" /> loetletud sisutüüpide töötlemise lubamine</translation>
-<translation id="4632566332417930481">Ettevõtte reegli alusel installitud laiendites arendaja tööriistade kasutamise keelamine, arendaja tööriistade kasutamise lubamine muus kontekstis</translation>
+<translation id="4632566332417930481">Ettevõtte reegli alusel installitud laiendustes arendaja tööriistade kasutamise keelamine, arendaja tööriistade kasutamise lubamine muus kontekstis</translation>
 <translation id="4633786464238689684">Asendab klaviatuuri ülemise rea klahvide vaiketoimingud funktsiooniklahvide toimingutega.
 
           Kui reegel on määratud valikule Tõene, toimivad klaviatuuri ülemise rea klahvid vaikimisi funktsiooniklahvidena. Nende meediaklahvidena kasutamiseks tuleb vajutada otsinguklahvi.
@@ -1289,6 +1290,11 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 
           Vaadake näidismustreid aadressilt http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Ava URL-ide loend</translation>
+<translation id="4680936297850947973">Versioonis M68 on tugi katkestatud. Kasutage selle asemel reeglit DefaultPopupsSetting.
+
+      Vaadake täielikku selgitust aadressilt https://www.chromestatus.com/features/5675755719622656.
+      Kui reegel on lubatud, tohivad saidid samal ajal navigeerida ja uusi aknaid/vahelehti avada.
+      Kui reegel on keelatud või määramata, ei ole saitidel lubatud samal ajal navigeerida ja uusi aknaid/vahelehti avada.</translation>
 <translation id="4680961954980851756">Luba automaatne täitmine</translation>
 <translation id="4722122254122249791">Saidi isoleerimise lubamine konkreetsete lähtekohtade puhul</translation>
 <translation id="4722399051042571387">Kui see on vale, ei saa kasutajad määrata PIN-koode, mis on nõrgad ja hõlpsalt äraarvatavad.
@@ -1538,14 +1544,14 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 
       Kui reeglit ei määrata, siis võidakse automaatselt importida või kasutajalt küsida, kas ta soovib importida.</translation>
 <translation id="5423197884968724595">Android WebView' piirangu nimi:</translation>
-<translation id="5442026853063570579">See reegel juhib ka juurdepääsu Androidi arendaja valikutele. Kui määrate reegli väärtuseks „DeveloperToolsDisallowed” (väärtus 2), ei pääse kasutajad arendaja valikutele juurde. Kui määrate reeglile muu väärtuse või jätate selle määramata, pääsevad kasutajad arendaja valikutele juurde, puudutades rakenduses Androidi seaded seitse korda järgunumbrit.</translation>
+<translation id="5442026853063570579">See reegel haldab ka juurdepääsu Androidi arendaja valikutele. Kui määrate reegli väärtuseks „DeveloperToolsDisallowed” (väärtus 2), ei pääse kasutajad arendaja valikutele juurde. Kui määrate reeglile muu väärtuse või jätate selle määramata, pääsevad kasutajad arendaja valikutele juurde, puudutades rakenduses Androidi seaded seitse korda järgunumbrit.</translation>
 <translation id="5447306928176905178">Mäluteabe (JS kuhja maht) aruandluse lubamine lehele (iganenud)</translation>
 <translation id="5457065417344056871">Külalisrežiimi lubamine brauseris</translation>
 <translation id="5457924070961220141">Võimaldab <ph name="PRODUCT_FRAME_NAME" /> installimisel seadistada HTML-i vaikerenderdaja.
           Kui jätate selle reegli määramata, siis lubatakse vaikeseadena hostbrauseril renderdada, kuid võite selle alistada ja lasta rakendusel <ph name="PRODUCT_FRAME_NAME" /> vaikimisi HTML-lehti renderdada.</translation>
 <translation id="5459155981813668716">Seadistab lokaadid, kus tohib operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> kuvada.
 
-      Kui reegel on määratud, saab kasutaja seadistada operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> nii, et seda tohiks kuvada ainult selle reegliga määratud lokaatides. Kui reegel on määramata või määratud on tühi loend, tohib operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> kuvada kõikides toetatud lokaatides. Kui reegli jaoks on määratud sobimatute väärtustega loend, eiratakse kõiki sobimatuid väärtusi. Kui kasutaja oli operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> valinud kuvatava keele, mis ei ole selle reegli kohaselt lubatud, määratakse kasutaja järgmisel sisselogimisel lubatud kuvatav lokaat. Kui kasutaja oli seadistanud eelistatud lokaadid ja üks eelistatud lokaatidest on selle reegli alusel lubatud, aktiveeritakse operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> see lokaat. Muidu määrab <ph name="PRODUCT_OS_NAME" /> reegli esimese sobiva väärtuse või taandelokaadi (praegu en-US), kui reegel sisaldab ainult sobimatuid kirjeid.</translation>
+      Kui reegel on määratud, saab kasutaja seadistada operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> nii, et seda tohiks kuvada ainult selle reegliga määratud lokaatides. Kui reegel on määramata või määratud on tühi loend, tohib operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> kuvada kõikides toetatud lokaatides. Kui reegli jaoks on määratud sobimatute väärtustega loend, eiratakse kõiki sobimatuid väärtusi. Kui kasutaja oli operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> valinud kuvatava keele, mis ei ole selle reegli kohaselt lubatud, määratakse kasutaja järgmisel sisselogimisel lubatud kuvatav lokaat. Kui kasutaja oli seadistanud eelistatud lokaadid ja üks eelistatud lokaatidest on selle reegli alusel lubatud, aktiveeritakse operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> see lokaat. Muul juhul kasutatakse operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> reegli esimest sobivat väärtust või varulokaati (praegu en-US), kui reegel sisaldab ainult sobimatuid kirjeid.</translation>
 <translation id="5464816904705580310">Hallatud kasutajate seadete konfigureerimine.</translation>
 <translation id="546726650689747237">Ekraani hämardamise viiteaeg võrgutoite kasutamisel</translation>
 <translation id="5469484020713359236">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud küpsiseid määrata.
@@ -1575,7 +1581,6 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 
       Pange tähele, et kui platvorm toetab reeglite märguandeid, määratakse värskendamise viiteks 24 tundi (eirates kõiki vaikeväärtusi ja selle reegli väärtust), kuna eeldatakse, et reegli märguanded jõustavad reegli muutmisel automaatse värskendamise, mis muudab sagedasemad värskendused ebavajalikuks.</translation>
 <translation id="5530347722229944744">Blokeeri potentsiaalselt ohtlikud allalaadimised</translation>
-<translation id="5530586312297447592">Ohus olevate paroolikaitse kontode märgistamise käivitab parooli uuesti kasutamine andmepüügilehel</translation>
 <translation id="5535973522252703021">Kerberose volitusserveri lubatud nimekiri</translation>
 <translation id="555077880566103058">Luba kõigil saitidel pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> automaatne käitamine</translation>
 <translation id="5559079916187891399">See reegel ei mõjuta Androidi rakendusi.</translation>
@@ -1950,7 +1955,6 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 
           Selles reeglis olevad URL-i mustrid ei tohi olla vastuolus reeglitega, mis on seadistatud reegliga WebUsbAskForUrls. Määramata on see, millist kahest reeglist eelistatakse, kui URL ühtib mõlemaga.</translation>
 <translation id="6689792153960219308">Riistvara oleku aruanne</translation>
-<translation id="6698071416141001300">Ohus olevate paroolikaitse kontode märgistamise käivitab parooli uuesti kasutamine</translation>
 <translation id="6699880231565102694">Kahetasandilise autentimise lubamine kaugjuurdepääsu hostidele</translation>
 <translation id="6724842112053619797">Kui lubate selle seade, kirjutatakse teenuse <ph name="PRODUCT_NAME" /> profiilide salvestatud seaded, näiteks järjehoidjad, automaatse täitmise andmed, paroolid jms, faili, mis talletatakse rändlust kasutava profiili kausta või asukohta, mille administraator määrab reegliga <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Reegli lubamine keelab pilveteenusega sünkroonimise.
 
@@ -2801,9 +2805,9 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="9035964157729712237">Mustast nimekirjast välistatud laienduste ID-d</translation>
 <translation id="9042911395677044526">Võimaldab võrguseadistuse kasutajapõhiselt teenuse <ph name="PRODUCT_OS_NAME" /> seadmes jõustada. Võrguseadistus on JSON-i vormingus string, mille määratleb Open Network Configuration vorming, mida kirjeldatakse aadressil <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Määrake, kas videotoimingud mõjutavad toitehaldust</translation>
-<translation id="9085839450090699752">Võimaldab määrata ajavahemiku millisekundites, mille jooksul kasutajaid teavitatakse sellest, et <ph name="PRODUCT_NAME" /> või <ph name="PRODUCT_OS_NAME" />-i seade tuleb ootel oleva värskenduse rakendamiseks taaskäivitada.
+<translation id="9085839450090699752">Võimaldab määrata ajavahemiku millisekundites, mille jooksul kasutajaid teavitatakse sellest, et <ph name="PRODUCT_NAME" /> või <ph name="PRODUCT_OS_NAME" />-seade tuleb ootel oleva värskenduse rakendamiseks taaskäivitada.
 
-      Selle vahemiku jooksul teavitatakse kasutajat värskendusest korduvalt. <ph name="PRODUCT_OS_NAME" />-i seadmete puhul kuvatakse värskenduse tuvastamisel taaskäivituse märguanne süsteemisalves. Märguanne muudab üks kord värvi siis, kui pool ajavahemikust on möödunud, ja teist korda ajavahemiku lõpus. <ph name="PRODUCT_NAME" />'i brauseri puhul rakenduse menüü muutub, kui kolmandik ajavahemikust on möödunud, ja näitab, et rakendus on vaja taaskäivitada. Märguanne muudab üks kord värvi siis, kui möödunud on kaks kolmandikku ajavahemikust, ja teist korda ajavahemiku lõpus. Brauserites reegliga <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> lubatud lisamärguanded järgivad sama ajakava.
+      Selle vahemiku jooksul teavitatakse kasutajat värskendusest korduvalt. <ph name="PRODUCT_OS_NAME" />-i seadmete puhul kuvatakse värskenduse tuvastamisel taaskäivituse märguanne süsteemisalves. Märguanne muudab üks kord värvi siis, kui pool ajavahemikust on möödunud, ja teist korda ajavahemiku lõpus. <ph name="PRODUCT_NAME" />'i brauseri puhul rakenduse menüü muutub, kui kolmandik ajavahemikust on möödunud, ja näitab, et rakendus on vaja taaskäivitada. Märguanne muudab esimest korda värvi siis, kui möödunud on kaks kolmandikku ajavahemikust, ja teist korda ajavahemiku lõpus. Brauserites reegliga <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> lubatud lisamärguanded järgivad sama ajakava.
 
       Kui reegel on määramata, kasutatakse <ph name="PRODUCT_OS_NAME" />-i seadmete puhul vaikeperioodi 345 600 000 millisekundit (neli päeva) ja brauserite puhul 604 800 000 (üks nädal).</translation>
 <translation id="9088433379343318874">Jälgitava kasutaja sisupakkuja lubamine</translation>

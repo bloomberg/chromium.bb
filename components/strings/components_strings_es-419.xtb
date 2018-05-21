@@ -547,6 +547,7 @@
 <translation id="4759118997339041434">Se inhabilitó la función Autocompletar en los pagos</translation>
 <translation id="4764776831041365478">Es posible que la página web en <ph name="URL" /> no funcione temporalmente o se haya trasladado de manera permanente a una nueva dirección web.</translation>
 <translation id="4771973620359291008">Se ha producido un error desconocido.</translation>
+<translation id="4785689107224900852">Cambiar a esta pestaña</translation>
 <translation id="4792143361752574037">Se produjo un error al acceder a los archivos de la sesión. Por el momento, no se pueden guardar en el disco. Vuelve a cargar la página para intentarlo de nuevo.</translation>
 <translation id="4800132727771399293">Verifica la fecha de vencimiento y el CVC, y vuelve a intentarlo.</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>

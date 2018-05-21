@@ -60,6 +60,7 @@
 <translation id="1506061864768559482">검색엔진</translation>
 <translation id="1513352483775369820">북마크 및 방문 기록</translation>
 <translation id="1513858653616922153">비밀번호 삭제</translation>
+<translation id="1516229014686355813">'탭하여 검색'을 사용하면 선택한 단어와 현재 페이지가 Google 검색에 전송되어 맥락으로 사용됩니다. <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 이 기능을 사용 중지할 수 있습니다.</translation>
 <translation id="1539064842193522527">링크가 Chrome에서 열림</translation>
 <translation id="1549000191223877751">다른 창으로 이동</translation>
 <translation id="1553358976309200471">Chrome 업데이트</translation>
@@ -314,6 +315,9 @@
 <translation id="4002066346123236978">제목</translation>
 <translation id="4042870126885713738">웹 주소가 확인되지 않거나 연결되지 않는 경우 추천 주소 표시</translation>
 <translation id="4046123991198612571">다음 트랙</translation>
+<translation id="4048707525896921369">페이지에서 나가지 않고도 웹사이트에 언급된 주제에 관해 자세히 알아보세요. '탭하여 검색' 기능은 단어와 관련 맥락을 Google 검색으로 전송하여 정의, 사진, 검색결과 및 기타 세부정보를 제공합니다.
+
+검색어를 조정하려면 길게 눌러 선택하세요. 더욱 상세히 검색하려면 패널을 위로 끝까지 슬라이드한 다음 검색창을 탭하세요.</translation>
 <translation id="4056223980640387499">세피아</translation>
 <translation id="4062305924942672200">법적 정보</translation>
 <translation id="4084682180776658562">북마크</translation>

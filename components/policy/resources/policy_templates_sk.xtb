@@ -27,7 +27,6 @@
 <translation id="1062011392452772310">Povoliť pre zariadenie vzdialené overenie</translation>
 <translation id="1062407476771304334">Nahradiť</translation>
 <translation id="1079801999187584280">Zakázať použitie nástrojov pre vývojárov</translation>
-<translation id="109166998561583554">Spustenie nahlásenia ohrozeného účtu v rámci ochrany heslom</translation>
 <translation id="1093082332347834239">Ak je toto nastavenie povolené, hostiteľ vzdialenej pomoci sa bude spúšťať v procesoch s povoleniami <ph name="UIACCESS_PERMISSION_NAME" />. Umožní tak vzdialeným používateľom interagovať s privilegovanými oknami na pracovnej ploche miestneho používateľa.
 
           Ak je toto nastavenie zakázané alebo nie je nakonfigurované, hostiteľ vzdialenej pomoci bude spustený v kontexte daného používateľa a vzdialení používatelia nemôžu interagovať s privilegovanými oknami na pracovnej ploche.</translation>
@@ -106,7 +105,6 @@
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultJavaScriptSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="1456822151187621582">Windows (klienty <ph name="PRODUCT_OS_NAME" />):</translation>
-<translation id="1457305643416399820">Nahlásenie ohrozeného účtu v rámci ochrany heslom je vypnuté</translation>
 <translation id="1464848559468748897">Určuje správ používateľa v multiprofilovej relácii na zariadeniach so systémom <ph name="PRODUCT_OS_NAME" />.
 
       Ak je pravidlo nastavené na hodnotu MultiProfileUserBehaviorUnrestricted, používateľ môže byť v multiprofilovej relácii buď primárnym, alebo sekundárnym používateľom.
@@ -320,6 +318,13 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2082205219176343977">Konfigurácia minimálnej povolenej verzie Chromu pre zariadenie.</translation>
 <translation id="209586405398070749">Stabilná verzia</translation>
 <translation id="2098658257603918882">Povoliť hlásenie údajov týkajúcich sa používania a zlyhaní</translation>
+<translation id="2111016292707172233">Povolí dostupnosť Vyhľadávania klepnutím v zobrazení obsahu v prehliadači <ph name="PRODUCT_NAME" />.
+
+      Ak toto nastavenie povolíte, bude mať používateľ k dispozícii Vyhľadávanie klepnutím a bude si môcť túto funkciu vypnúť alebo zapnúť.
+
+      Ak toto nastavenie zakážete, Vyhľadávanie klepnutím bude úplne vypnuté.
+
+      Ak toto pravidlo nenastavíte, prehliadač sa bude správať rovnako, ako keby ste ho povolili (prečítajte si popis vyššie).</translation>
 <translation id="2113068765175018713">Obmedziť časové obdobie prevádzky zariadenia automatickým reštartovaním</translation>
 <translation id="2127599828444728326">Povoliť upozornenia na týchto webových stránkach</translation>
 <translation id="2131902621292742709">Oneskorenie zníženia jasu obrazovky pri napájaní z batérie</translation>
@@ -461,12 +466,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2386362615870139244">Povoliť uzamknutie obrazovky v aktívnom režime</translation>
 <translation id="2411817661175306360">Upozornenie ochrany heslom je vypnuté</translation>
 <translation id="2411919772666155530">Blokovať upozornenia na týchto webových stránkach</translation>
-<translation id="2415979855753196119">Umožňuje ovládať spustenie nahlásenia ohrozeného účtu v rámci ochrany heslom. Nahlásenie ohrozeného účtu v rámci ochrany heslom znamená, že Google bude informovaný, že tomuto účtu hrozí napadnutie.
-
-      Ak toto pravidlo nastavíte na možnosť PasswordProtectionRiskOff, nespustí sa žiadne nahlásenie ohrozeného účtu v rámci ochrany heslom.
-      Ak ho nastavíte na možnosť PasswordProtectionRiskOnPasswordReuse, nahlásenie ohrozeného účtu v rámci ochrany heslom sa spustí, keď používateľ opätovne použije heslo Googlu na webe, ktorý nebol pridaný na bielu listinu.
-      Ak ho nastavíte na možnosť PasswordProtectionRiskOnPhishingReuse, nahlásenie ohrozeného účtu v rámci ochrany heslom sa spustí, keď používateľ opätovne použije heslo Googlu na phishingovom webe.
-      Ak toto pravidlo nenastavíte, nahlásenie ohrozeného účtu v rámci ochrany heslom sa spustí, keď používateľ opätovne použije heslo Googlu na phishingovom webe. Nastavenie však bude môcť zmeniť.</translation>
 <translation id="2418507228189425036">Zakáže v prehliadači <ph name="PRODUCT_NAME" /> ukladanie histórie prehliadania a zabráni používateľom toto nastavenie meniť.
 
       Ak toto nastavenie povolíte, história prehliadania sa nebude ukladať. Toto nastavenie tiež zakáže synchronizáciu kariet.
@@ -903,6 +902,7 @@ Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom
 <translation id="3646859102161347133">Nastavenie typu lupy obrazovky</translation>
 <translation id="3653237928288822292">Ikona predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="3660562134618097814">Preniesť súbory cookie poskytovateľa identity SAML počas prihlásenia</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Podpora pre pole s jedným riadkom bola ukončená a v budúcnosti bude odstránené. Začnite používať textové pole s viacerými riadkami nižšie.)</translation>
 <translation id="3709266154059827597">Konfigurovať zoznam rozšírení, ktorých inštalácia je zakázaná</translation>
 <translation id="3711895659073496551">Režim spánku</translation>
 <translation id="3715569262675717862">Overenie totožnosti na základe certifikátov klienta</translation>
@@ -1008,6 +1008,7 @@ Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom
       Zoznam rozšírení, ktoré sa automaticky nainštalujú pre používateľa ukážky v zariadeniach v režime predaja. Tieto rozšírenia sa uložia v zariadení a po inštalácii môžu byť nainštalované v režime offline.
 
       Každý záznam v zozname obsahuje adresár, ktorý musí zahŕňať ID rozšírenia v poli „extension-id“ a jeho webovú adresu pre aktualizácie v poli „update-url“.</translation>
+<translation id="3874773863217952418">Povoliť vyhľadávanie klepnutím</translation>
 <translation id="3877517141460819966">Režim integrovaného druhého faktora overenia totožnosti</translation>
 <translation id="388237772682176890">Podpora tohto pravidla bola ukončená vo verzii M53. Toto pravidlo bolo odstránené vo verzii M54, pretože bola ukončená podpora protokolu SPDY/3.1.
 
@@ -1276,6 +1277,11 @@ Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom
 
           Príklady vzorov nájdete na adrese http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Otvoriť zoznam webových adries</translation>
+<translation id="4680936297850947973">Podpora bola ukončená vo verzii M68. Použite namiesto neho pravidlo DefaultPopupsSetting.
+
+      Úplné vysvetlenie nájdete na adrese https://www.chromestatus.com/features/5675755719622656.
+      Ak toto pravidlo povolíte, weby budú môcť súbežne prechádzať a otvárať nové okná alebo karty.
+      Ak toto pravidlo zakážete alebo nenastavíte, weby nebudú môcť súbežne prechádzať alebo otvárať nové okná ani karty.</translation>
 <translation id="4680961954980851756">Zapnúť automatické dopĺňanie</translation>
 <translation id="4722122254122249791">Povolenie izolácie webov pre konkrétne zdroje</translation>
 <translation id="4722399051042571387">Ak je toto nastavenie nakonfigurované na možnosť False, používatelia nebudú môcť nastaviť slabé ani ľahko uhádnuteľné kódy PIN.
@@ -1562,7 +1568,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Upozorňujeme, že ak platforma podporuje upozornenia na pravidlá, oneskorenie obnovenia bude nastavené na 24 hodín (všetky predvolené nastavenia a hodnota určená v tomto pravidle budú ignorované), pretože sa očakáva, že upozornenia na pravidlá vynútia automatické obnovenie po každej zmene pravidiel. Častejšie obnovenia sú preto zbytočné.</translation>
 <translation id="5530347722229944744">Blokovať potenciálne nebezpečné súbory na stiahnutie</translation>
-<translation id="5530586312297447592">Nahlásenie ohrozeného účtu v rámci ochrany heslom sa spúšťa po opätovnom použití hesla na phishingovej stránke</translation>
 <translation id="5535973522252703021">Zoznam povolených serverov delegovania protokolu Kerberos</translation>
 <translation id="555077880566103058">Povoliť všetkým webom automaticky spúšťať doplnok <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Toto pravidlo nemá žiaden vplyv na aplikácie pre Android.</translation>
@@ -1936,7 +1941,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, ktoré sú nakonfigurované prostredníctvom pravidla WebUsbAskForUrls. Ak webová adresa zodpovedá obom pravidlám, nie je určené, ktoré z nich má prednosť.</translation>
 <translation id="6689792153960219308">Nahlásiť stav hardvéru</translation>
-<translation id="6698071416141001300">Nahlásenie ohrozeného účtu v rámci ochrany heslom sa spúšťa po opätovnom použití hesla</translation>
 <translation id="6699880231565102694">Povolenie dvojfázového overenia totožnosti pre hostiteľov vzdialeného prístupu</translation>
 <translation id="6724842112053619797">Ak povolíte toto nastavenie, nastavenia uložené v profiloch <ph name="PRODUCT_NAME" /> (napr. záložky, údaje automatického dopĺňania, heslá atď.) sa zapíšu tiež do súboru uloženého v priečinku roamingového používateľského profilu alebo v umiestnení špecifikovanom správcom prostredníctvom pravidla <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Povolenie tohto pravidla vypne synchronizáciu s cloudom.
 
@@ -2440,7 +2444,7 @@ Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adr
 
       Ak pravidlo nastavíte na hodnotu False, Chrome Cleanup pri zistení nechceného softvéru nenahlási metadáta hľadania Googlu, čím prepíše akékoľvek pravidlo nastavené možnosťou SafeBrowsingExtendedReportingEnabled. Chrome Cleanup sa opýta používateľa, či chce nechcený softvér odstrániť. Výsledky vyčistenia sa nenahlásia Googlu a používateľ to ani nebude môcť zvoliť.
 
-      Ak pravidlo nastavíte na hodnotu True, Chrome Cleanup pri zistení nechceného softvéru môže nahlásiť metadáta hľadania do Googlu s súlade s pravidlom nastaveným možnosťou SafeBrowsingExtendedReportingEnabled. Chrome Cleanup sa opýta používateľa, či chce nechcený softvér odstrániť. Výsledky vyčistenia sa nahlásia Googlu a používateľ nebude mať možnosť tomu zabrániť.
+      Ak pravidlo nastavíte na hodnotu True, Chrome Cleanup pri zistení nechceného softvéru môže nahlásiť metadáta hľadania Googlu s súlade s pravidlom nastaveným možnosťou SafeBrowsingExtendedReportingEnabled. Chrome Cleanup sa opýta používateľa, či chce nechcený softvér odstrániť. Výsledky vyčistenia sa nahlásia Googlu a používateľ nebude mať možnosť tomu zabrániť.
 
       Toto pravidlo nie je k dispozícii v reláciách systému Windows, ktoré nie sú pripojené k doméne <ph name="MS_AD_NAME" />.</translation>
 <translation id="7980227303582973781">Žiadne špeciálne obmedzenia</translation>

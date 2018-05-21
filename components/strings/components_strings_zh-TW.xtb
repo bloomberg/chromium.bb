@@ -546,6 +546,7 @@
 <translation id="4759118997339041434">付款資訊自動填入功能已停用</translation>
 <translation id="4764776831041365478"><ph name="URL" /> 的網頁可能暫時無法使用或被永久移至新網址。</translation>
 <translation id="4771973620359291008">發生不明的錯誤。</translation>
+<translation id="4785689107224900852">切換至這個分頁</translation>
 <translation id="4792143361752574037">存取工作階段檔案時發生問題，目前無法將檔案儲存到磁碟。請重新載入網頁，然後再試一次。</translation>
 <translation id="4800132727771399293">請檢查您的有效期限和信用卡安全碼，然後再試一次</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>

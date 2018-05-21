@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Dayakan pembuktian jauh untuk peranti</translation>
 <translation id="1062407476771304334">Gantikan</translation>
 <translation id="1079801999187584280">Jangan benarkan penggunaan Alat Pembangun</translation>
-<translation id="109166998561583554">Penanda akaun perlindungan kata laluan berisiko dicetuskan</translation>
 <translation id="1093082332347834239">Jika tetapan ini didayakan, hos bantuan jauh akan dijalankan dalam proses dengan kebenaran <ph name="UIACCESS_PERMISSION_NAME" />. Langkah ini akan membolehkan pengguna jauh berinteraksi dengan tetingkap ternaik pada desktop pengguna setempat.
 
           Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, hos bantuan jauh akan dijalankan dalam konteks pengguna dan pengguna jauh tidak boleh berinteraksi dengan tetingkap ternaik pada desktop.</translation>
@@ -107,7 +106,6 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultJavaScriptSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
 <translation id="1456822151187621582">Windows (pelanggan <ph name="PRODUCT_OS_NAME" />):</translation>
-<translation id="1457305643416399820">Penanda akaun perlindungan kata laluan berisiko dimatikan</translation>
 <translation id="1464848559468748897">Mengawal tingkah laku pengguna dalam sesi berbilang profil pada peranti <ph name="PRODUCT_OS_NAME" />.
 
       Jika dasar ini ditetapkan kepada 'MultiProfileUserBehaviorUnrestricted', pengguna boleh menjadi sama ada pengguna utama atau sekunder dalam sesi berbilang profil.
@@ -214,7 +212,7 @@
 <translation id="1803646570632580723">Senarai apl berpin untuk dipaparkan dalam pelancar</translation>
 <translation id="1808715480127969042">Sekat kuki pada tapak ini</translation>
 <translation id="1810261428246410396">Benarkan penggunaan Penambatan Segera.</translation>
-<translation id="1826282708349731794">Mengawal cara Chrome Cleanup melaporkan data kepada Google</translation>
+<translation id="1826282708349731794">Mengawal cara Pembersih Chrome melaporkan data kepada Google</translation>
 <translation id="1827523283178827583">Gunakan pelayan proksi tetap</translation>
 <translation id="1843117931376765605">Segar semula kadar untuk dasar pengguna</translation>
 <translation id="1844620919405873871">Mengkonfigurasikan dasar yang berkaitan buka kunci pantas.</translation>
@@ -329,6 +327,13 @@
 <translation id="2082205219176343977">Konfigurasikan versi Chrome minimum yang dibenarkan untuk peranti ini.</translation>
 <translation id="209586405398070749">Saluran stabil</translation>
 <translation id="2098658257603918882">Dayakan laporan penggunaan dan data berkaitan nahas</translation>
+<translation id="2111016292707172233">Mendayakan ketersediaan Ketik untuk Mencari dalam paparan kandungan <ph name="PRODUCT_NAME" />.
+
+      Jika anda mendayakan tetapan ini, Ketik untuk Mencari akan tersedia kepada pengguna dan mereka boleh memilih untuk menghidupkan atau mematikan ciri tersebut.
+
+      Jika anda melumpuhkan tetapan ini, Ketik untuk Mencari akan dilumpuhkan sepenuhnya.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan, keadaannya sama seperti tetapan ini didayakan, lihat huraian di atas.</translation>
 <translation id="2113068765175018713">Hadkan masa hidup peranti melalui but semula automatik.</translation>
 <translation id="2127599828444728326">Benarkan pemberitahuan pada tapak ini</translation>
 <translation id="2131902621292742709">Kelewatan pemalapan skrin apabila dijalankan dengan kuasa bateri</translation>
@@ -481,12 +486,6 @@
 <translation id="2386362615870139244">Benarkan kunci bangkit skrin</translation>
 <translation id="2411817661175306360">Amaran perlindungan kata laluan dimatikan</translation>
 <translation id="2411919772666155530">Sekat pemberitahuan pada tapak ini</translation>
-<translation id="2415979855753196119">Membolehkan anda mengawal pencetusan pembenderaan akaun berisiko perlindungan kata laluan. Pembenderaan akaun berisiko perlindungan kata laluan bermakna memberitahu Google bahawa akaun ini berisiko untuk dirampas.
-
-      Jika dasar ini ditetapkan kepada 'PasswordProtectionRiskOff', pembenderaan akaun berisiko perlindungan kata laluan tidak akan dicetuskan.
-      Jika dasar ini ditetapkan kepada 'PasswordProtectionRiskOnPasswordReuse', pembenderaan akaun berisiko perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google pada mana-mana tapak yang tidak disenaraiputihkan.
-      Jika dasar ini ditetapkan kepada 'PasswordProtectionRiskOnPhishingReuse', pembenderaan akaun berisiko perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google pada tapak pancingan data.
-      Jika dasar ini dibiarkan tidak ditetapkan, pembenderaan akaun berisiko perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google mereka pada tapak pancingan data tetapi pengguna boleh menukar tetapan ini.</translation>
 <translation id="2418507228189425036">Melumpuhkan penyimpanan sejarah penyemakan imbas dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
 
       Jika tetapan ini didayakan, sejarah penyemakan imbas tidak disimpan. Tetapan ini turut melumpuhkan penyegerakan tab.
@@ -619,7 +618,7 @@
       Dasar ini tidak mempengaruhi sama ada pengguna boleh mengkonfigurasi pencetak pada peranti individu. Tujuan dasar adalah sebagai tambahan kepada konfigurasi pencetak oleh pengguna individu.
       </translation>
 <translation id="2633084400146331575">Dayakan maklum balas yang dituturkan</translation>
-<translation id="2640843331263301324">Mendayakan Chrome Cleanup pada Windows</translation>
+<translation id="2640843331263301324">Mendayakan Pembersih Chrome pada Windows</translation>
 <translation id="2646290749315461919">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk mengesan lokasi fizikal pengguna. Penjejakan lokasi fizikal pengguna boleh dibenarkan secara lalai, dinafikan secara lalai atau pengguna boleh ditanya setiap kali tapak web meminta lokasi fizikal. Jika dasar ini tidak ditetapkan, 'AskGeolocation' akan digunakan dan pengguna akan dapat mengubah.</translation>
 <translation id="2647069081229792812">Dayakan atau lumpuhkan pengeditan penanda halaman</translation>
 <translation id="2650049181907741121">Tindakan yang perlu diambil apabila pengguna menutup penutup</translation>
@@ -921,6 +920,7 @@
 <translation id="3646859102161347133">Tetapkan jenis penggadang skrin</translation>
 <translation id="3653237928288822292">Ikon pembekal carian lalai</translation>
 <translation id="3660562134618097814">Pindahkan kuki IdP SAML semasa log masuk</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Medan satu baris tidak akan digunakan lagi dan akan dialih keluar pada masa akan datang. Sila gunakan kotak teks berbilang baris di bawah.)</translation>
 <translation id="3709266154059827597">Konfigurasi senarai hitam pemasangan sambungan</translation>
 <translation id="3711895659073496551">Gantung</translation>
 <translation id="3715569262675717862">Pengesahan berdasarkan sijil klien</translation>
@@ -1031,6 +1031,7 @@
       Senarai sambungan yang dipasang secara automatik untuk pengguna Tunjuk Cara, bagi peranti dalam mod runcit. Sambungan ini disimpan dalam peranti dan boleh dipasang semasa di luar talian selepas pemasangan.
 
       Setiap masukan senarai mengandungi kamus yang mesti merangkumi ID sambungan dalam medan 'extension-id' dan URL kemas kininya dalam medan 'update-url'.</translation>
+<translation id="3874773863217952418">Dayakan Ketik untuk Mencari</translation>
 <translation id="3877517141460819966">Mod pengesahan faktor kedua bersepadu</translation>
 <translation id="388237772682176890">Dasar ini ditamatkan dalam M53 dan dialih keluar dalam M54 kerana sokongan SPDY/3.1 dialih keluar.
 
@@ -1299,6 +1300,11 @@
 
           Untuk melihat contoh pola, lawati http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Buka senarai URL</translation>
+<translation id="4680936297850947973">Ditamatkan dalam M68. Gunakan DefaultPopupsSetting sebagai ganti.
+
+      Untuk mendapatkan penerangan lengkap, lihat https://www.chromestatus.com/features/5675755719622656.
+      Jika dasar ini didayakan, tapak akan dibenarkan menavigasi dan membuka tetingkap/tab baharu secara serentak.
+      Jika dasar ini dilumpuhkan atau tidak ditetapkan, tapak tidak dibenarkan menavigasi dan membuka tetingkap/tab baharu secara serentak.</translation>
 <translation id="4680961954980851756">Dayakan Auto Isi</translation>
 <translation id="4722122254122249791">Dayakan Pengasingan Tapak untuk asal yang ditentukan</translation>
 <translation id="4722399051042571387">Jika palsu, pengguna tidak akan dapat menetapkan PIN yang lemah dan mudah diteka.
@@ -1583,7 +1589,6 @@
 
       Ambil perhatian bahawa jika platform menyokong pemberitahuan dasar, lengahan muat semula akan ditetapkan kepada 24 jam (mengabaikan semua nilai lalai dan nilai dasar ini) kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah, melakukan muat semula yang tidak diperlukan dengan lebih kerap.</translation>
 <translation id="5530347722229944744">Sekat muat turun yang mungkin berbahaya</translation>
-<translation id="5530586312297447592">Penandaan akaun perlindungan kata laluan berisiko dicetuskan oleh penggunaan semula kata laluan pada halaman pancingan data</translation>
 <translation id="5535973522252703021">Senarai putih pelayan penugasan Kerberos</translation>
 <translation id="555077880566103058">Benarkan semua tapak menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik</translation>
 <translation id="5559079916187891399">Dasar ini tidak berkesan terhadap apl Android.</translation>
@@ -1861,11 +1866,11 @@
       Jika anda mendayakan tetapan ini atau tidak menetapkan nilai, Auto Isi akan kekal di bawah kawalan pengguna. Perkara ini akan membenarkan mereka mengkonfigurasi profil Auto Isi dan untuk menghidupkan atau mematikan Auto Isi mengikut budi bicara mereka.</translation>
 <translation id="6394350458541421998">Dasar ini telah dihentikan pada <ph name="PRODUCT_OS_NAME" /> versi 29. Sebaliknya sila gunakan dasar PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Log keluar pengguna</translation>
-<translation id="6412477120967771054">Jika ditetapkan kepada palsu, akan menghalang Chrome Cleanup daripada mengimbas sistem untuk mengesan perisian yang tidak dikehendaki dan melakukan pembersihan. Tindakan memulakan Chrome Cleanup secara manual daripada chrome://settings/cleanup dilumpuhkan.
+<translation id="6412477120967771054">Jika ditetapkan kepada palsu, akan menghalang Pembersih Chrome daripada mengimbas sistem untuk mengesan perisian yang tidak dikehendaki dan melakukan pembersihan. Tindakan memulakan Pembersih Chrome secara manual daripada chrome://settings/cleanup dilumpuhkan.
 
-      Jika ditetapkan kepada benar atau tidak ditetapkan, Chrome Cleanup akan mengimbas sistem secara berkala untuk mengesan perisian yang tidak dikehendaki dan sekiranya menemui perisian tersebut, Chrome Cleanup akan bertanya kepada pengguna sama ada hendak mengalihnya keluar. Tindakan memulakan Chrome Cleanup secara manual daripada chrome://settings didayakan.
+      Jika ditetapkan kepada benar atau tidak ditetapkan, Pembersih Chrome akan mengimbas sistem secara berkala untuk mengesan perisian yang tidak dikehendaki dan sekiranya menemui perisian tersebut, Pembersih Chrome akan bertanya kepada pengguna sama ada hendak mengalihnya keluar. Tindakan memulakan Pembersih Chrome secara manual daripada chrome://settings didayakan.
 
-      Dasar ini tidak tersedia pada kejadian Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
+      Dasar ini tidak tersedia pada tika Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="6417861582779909667">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk menetapkan kuki.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak, sama ada dari dasar 'DefaultCookiesSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
@@ -1958,7 +1963,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Corak URL dalam dasar ini tidak boleh bercanggah dengan corak yang dikonfigurasi melalui WebUsbAskForUrls. Antara dua dasar ini, tidak dinyatakan dasar yang diberi keutamaan jika URL didapati sepadan dengan kedua-dua dasar.</translation>
 <translation id="6689792153960219308">Laporkan status perkakasan</translation>
-<translation id="6698071416141001300">Penandaan akaun perlindungan kata laluan berisiko dicetuskan oleh penggunaan semula kata laluan</translation>
 <translation id="6699880231565102694">Dayakan pengesahan dua faktor untuk hos akses jauh</translation>
 <translation id="6724842112053619797">Jika anda mendayakan tetapan ini, tetapan yang disimpan dalam profil <ph name="PRODUCT_NAME" /> seperti penanda halaman, data autolengkap, kata laluan dan sebagainya akan turut ditulis pada fail yang disimpan dalam folder profil "Roaming" pengguna atau lokasi yang ditentukan oleh Pentadbir melaui dasar <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Sekiranya dasar ini didayakan, penyegerakan awan akan dilumpuhkan.
 
@@ -2461,13 +2465,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Jika tetapan ini dilumpuhkan dan sambungan UDP keluar ditapis oleh firewall, maka mesin ini hanya boleh bersambung dengan mesin hos di dalam rangkaian setempat sahaja.</translation>
 <translation id="7976157349247117979">Nama destinasi <ph name="PRODUCT_NAME" /></translation>
-<translation id="7977445800390854860">Jika tidak ditetapkan, sekiranya Chrome Cleanup mengesan perisian yang tidak dikehendaki, Chrome Cleanup boleh melaporkan metadata tentang imbasan itu kepada Google menurut dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Chrome Cleanup kemudiannya akan menanyakan pengguna jika mereka ingin membersihkan perisian yang tidak dikehendaki itu. Pengguna boleh memilih untuk berkongsi keputusan pembersihan dengan Google untuk membantu pengesanan perisian yang tidak dikehendaki pada masa akan datang. Keputusan ini mengandungi metadata fail dan kunci daftaran seperti yang diterangkan oleh Kertas Putih Privasi Chrome.
+<translation id="7977445800390854860">Jika tidak ditetapkan, sekiranya Pembersih Chrome mengesan perisian yang tidak dikehendaki, Pembersih Chrome boleh melaporkan metadata tentang imbasan itu kepada Google menurut dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Pembersih Chrome kemudiannya akan menanyakan pengguna jika mereka ingin membersihkan perisian yang tidak dikehendaki itu. Pengguna boleh memilih untuk berkongsi keputusan pembersihan dengan Google untuk membantu pengesanan perisian yang tidak dikehendaki pada masa akan datang. Keputusan ini mengandungi metadata fail dan kunci daftaran seperti yang diterangkan oleh Kertas Putih Privasi Chrome.
 
-      Jika ditetapkan kepada palsu, sekiranya Chrome Cleanup mengesan perisian yang tidak dikehendaki, Chrome Cleanup tidak akan melaporkan metadata tentang imbasan itu kepada Google, mengatasi sebarang dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Chrome Cleanup akan menanyakan pengguna jika mereka ingin membersihkan perisian yang tidak dikehendaki itu.  Keputusan pembersihan tidak akan dilaporkan kepada Google dan pengguna tidak akan mempunyai pilihan untuk melakukannya.
+      Jika ditetapkan kepada palsu, sekiranya Pembersih Chrome mengesan perisian yang tidak dikehendaki, Pembersih Chrome tidak akan melaporkan metadata tentang imbasan itu kepada Google, mengatasi sebarang dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Pembersih Chrome akan menanyakan pengguna jika mereka ingin membersihkan perisian yang tidak dikehendaki itu.  Keputusan pembersihan tidak akan dilaporkan kepada Google dan pengguna tidak akan mempunyai pilihan untuk melakukannya.
 
-      Jika ditetapkan kepada benar, sekiranya Chrome Cleanup mengesan perisian yang tidak dikehendaki, Chrome Cleanup boleh melaporkan metadata tentang imbasan itu kepada Google menurut dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Chrome Cleanup akan menanyakan pengguna jika mereka ingin membersihkan perisian yang tidak dikehendaki itu.  Keputusan pembersihan akan dilaporkan kepada Google dan pengguna tidak mempunyai pilihan untuk menghalangnya.
+      Jika ditetapkan kepada benar, sekiranya Pembersih Chrome mengesan perisian yang tidak dikehendaki, Pembersih Chrome boleh melaporkan metadata tentang imbasan itu kepada Google menurut dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Pembersih Chrome akan menanyakan pengguna jika mereka ingin membersihkan perisian yang tidak dikehendaki itu.  Keputusan pembersihan akan dilaporkan kepada Google dan pengguna tidak mempunyai pilihan untuk menghalangnya.
 
-      Dasar ini tidak tersedia pada kejadian Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
+      Dasar ini tidak tersedia pada tika Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="7980227303582973781">Tiada sekatan khas</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Putar skrin 0 darjah</translation>

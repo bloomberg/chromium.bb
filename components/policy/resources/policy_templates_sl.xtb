@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Omogoči oddaljeno potrditev naprave</translation>
 <translation id="1062407476771304334">Zamenjaj</translation>
 <translation id="1079801999187584280">Prepoved uporabe orodij za razvijalce</translation>
-<translation id="109166998561583554">Sprožilec označevanja ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico</translation>
 <translation id="1093082332347834239">Če je ta nastavitev omogočena, se gostitelj za oddaljeno pomoč izvaja v procesu z dovoljenji <ph name="UIACCESS_PERMISSION_NAME" />. Tako lahko oddaljeni uporabniki uporabljajo okna s skrbniškimi pravicami na namizju lokalnega uporabnika.
 
           Če je ta nastavitev onemogočena ali ni konfigurirana, se gostitelj za oddaljeno pomoč izvaja v uporabnikovem kontekstu in oddaljeni uporabniki ne morejo uporabljati oken s skrbniškimi pravicami na namizju.</translation>
@@ -107,7 +106,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultJavaScriptSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
 <translation id="1456822151187621582">Windows (odjemalci s sistemom <ph name="PRODUCT_OS_NAME" />):</translation>
-<translation id="1457305643416399820">Označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico je izklopljeno</translation>
 <translation id="1464848559468748897">Nadzira vedenje uporabnikov v večprofilni seji v napravah s sistemom <ph name="PRODUCT_OS_NAME" />.
 
       Če je ta pravilnik nastavljen na »MultiProfileUserBehaviorUnrestricted«, je lahko uporabnik primarni ali sekundarni uporabnik v večprofilni seji.
@@ -329,6 +327,13 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2082205219176343977">Konfiguriranje najmanjše dovoljene različice Chroma za napravo.</translation>
 <translation id="209586405398070749">Stabilna različica</translation>
 <translation id="2098658257603918882">Omogoči poročanje o uporabi in podatkih, povezanih z zrušitvami</translation>
+<translation id="2111016292707172233">Omogoči razpoložljivost funkcije »Iskanje z dotikom« v pogledu vsebine brskalnika <ph name="PRODUCT_NAME" />.
+
+      Če omogočite to nastavitev, je funkcija »Iskanje z dotikom« na voljo uporabniku, ki lahko to funkcijo vkopi ali izklopi.
+
+      Če onemogočite to nastavitev, bo funkcija »Iskanje z dotikom« v celoti onemogočena.
+
+      Če ta pravilnik ni nastavljen, je enako, kot če je funkcija omogočena. Glejte zgornji opis.</translation>
 <translation id="2113068765175018713">Omejitev časa dejavnosti naprave samodejnim vnovičnim zagonom</translation>
 <translation id="2127599828444728326">Dovoli obvestila na teh mestih</translation>
 <translation id="2131902621292742709">Časovni zamik zatemnitve zaslona ob napajanju iz akumulatorja</translation>
@@ -481,12 +486,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2386362615870139244">Omogočanje zaklepanja preklopa zaslona iz mirovanja</translation>
 <translation id="2411817661175306360">Opozorilo zaščite z geslom je izklopljeno</translation>
 <translation id="2411919772666155530">Blokiraj obvestila na teh mestih</translation>
-<translation id="2415979855753196119">Omogoča, da nadzirate sprožitev označevanja ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico. Označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico pomeni sporočanje Googlu, da temu računu grozi vdor v račun.
-
-      Če je ta pravilnik nastavljen na »PasswordProtectionRiskOff«, označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico ne bo sproženo.
-      Če je ta pravilnik nastavljen na »PasswordProtectionRiskOnPasswordReuse«, bo označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproženo, če uporabnik znova uporabi geslo za Google na katerem koli spletnem mestu, ki ni uvrščeno na seznam dovoljenih.
-      Če je ta pravilnik nastavljen na »PasswordProtectionRiskOnPhishingReuse«, bo označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproženo, če uporabnik znova uporabi geslo za Google na spletnih mestih z lažnim predstavljanjem.
-      Če ta pravilnik ni nastavljen, bo označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproženo, če uporabnik znova uporabi geslo za Google na spletnih mestih z lažnim predstavljanjem, vendar lahko uporabnik to spremeni.</translation>
 <translation id="2418507228189425036">Onemogoči shranjevanje zgodovine brskanja v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje te nastavitve.
 
       Če je ta nastavitev omogočena, se zgodovina brskanja ne shranjuje. Ta nastavitev prav tako onemogoča sinhronizacijo zavihkov.
@@ -922,6 +921,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3646859102161347133">Nastavitev vrste lupe</translation>
 <translation id="3653237928288822292">Privzeta ikona iskalnika</translation>
 <translation id="3660562134618097814">Prenesi piškotke SAML IdP pri prijavi</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Enovrstično polje je zastarelo in bo v prihodnje odstranjeno. Začnite uporabljati večvrstično besedilno polje spodaj.)</translation>
 <translation id="3709266154059827597">Nastavi seznam razširitev, katerih namestitev je prepovedana</translation>
 <translation id="3711895659073496551">Prekinitev</translation>
 <translation id="3715569262675717862">Preverjanje pristnosti glede na potrdila odjemalca</translation>
@@ -1033,6 +1033,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Navaja razširitve, samodejno nameščene za uporabnika predstavitvenega načina, za naprave v maloprodajnem načinu. Te razširitve so shranjene v napravi in jih je mogoče namestiti brez povezave.
 
       Vsak vnos na seznamu vsebuje slovar, ki mora vključevati ID razširitve v polju »extension-id« in URL za posodobitev v polju »update-url«.</translation>
+<translation id="3874773863217952418">Omogoči »Iskanje z dotikom«</translation>
 <translation id="3877517141460819966">Integriran način dvojnega preverjanja pristnosti</translation>
 <translation id="388237772682176890">Ta pravilnik je zastarel v različici M53 in je odstranjen v različici M54 zaradi umika podpore za protokol SPDY/3.1.
 
@@ -1301,6 +1302,11 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Primere vzorcev si lahko ogledate na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Odpri seznam URL-jev</translation>
+<translation id="4680936297850947973">Zastarelo v M68. Uporabite pravilnik DefaultPopupsSetting.
+
+      Podrobno pojasnilo je na strani https://www.chromestatus.com/features/5675755719622656.
+      Če je ta pravilnik omogočen, bo spletnim mestom dovoljeno hkratno premikanje in odpiranje novih oken/zavihkov.
+      Če je ta pravilnik onemogočen ali ni nastavljen, spletnim mestom ne bo dovoljeno hkratno premikanje in odpiranje novih oken/zavihkov.</translation>
 <translation id="4680961954980851756">Omogoči samodejno izpolnjevanje</translation>
 <translation id="4722122254122249791">Omogočanje osamitve spletnih mest za določene izvore</translation>
 <translation id="4722399051042571387">Če je nastavitev onemogočena, uporabniki ne bodo mogli nastaviti kod PIN, ki so šibke in jih je mogoče preprosto uganiti.
@@ -1551,14 +1557,14 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če ni nastavljen, bo uporabnik morda vprašan, ali naj ga uvozi, ali pa bo uvoz izveden samodejno.</translation>
 <translation id="5423197884968724595">Ime omejitve za Android WebView:</translation>
-<translation id="5442026853063570579">Ta pravilnik prav tako nadzira dostop do možnosti za razvijalce za Android. Če ta pravilnik nastavite na »DeveloperToolsDisallowed« (vrednost 2), uporabniki ne morejo dostopati do možnosti za razvijalce. Če ta pravilnik onemogočite ali ga ne nastavite, uporabniki lahko dostopajo do možnosti za razvijalce, tako da se v aplikaciji Nastavitve za Android sedemkrat dotaknejo številke gradnje.</translation>
+<translation id="5442026853063570579">Ta pravilnik prav tako nadzira dostop do možnosti za razvijalce za Android. Če ta pravilnik nastavite na »DeveloperToolsDisallowed« (vrednost 2), uporabniki ne morejo dostopati do možnosti za razvijalce. Če ta pravilnik onemogočite ali ga ne nastavite, uporabniki lahko dostopajo do možnosti za razvijalce tako, da se v aplikaciji Nastavitve za Android sedemkrat dotaknejo številke gradnje.</translation>
 <translation id="5447306928176905178">Omogoči poročanje o podatkih pomnilnika (velikost kopice JS) strani (zastarelo)</translation>
 <translation id="5457065417344056871">Omogočanje načina za goste v brskalniku</translation>
 <translation id="5457924070961220141">Omogoča nastavitev privzetega upodabljalnika HTML, ko je <ph name="PRODUCT_FRAME_NAME" /> nameščen.
           Če ta pravilnik ni nastavljen, je gostiteljskemu brskalniku upodabljanje privzeto dovoljeno, vendar lahko po želji to preglasite in določite, da bo <ph name="PRODUCT_FRAME_NAME" /> privzeto upodabljal strani HTML.</translation>
 <translation id="5459155981813668716">Konfigurira jezike, v katerih je lahko prikazan <ph name="PRODUCT_OS_NAME" />.
 
-      Če je ta pravilnik nastavljen, lahko uporabnik konfigurira <ph name="PRODUCT_OS_NAME" /> za prikaz samo v enem od jezikov, ki jih določa ta pravilnik. Če ta pravilnik ni nastavljen ali je nastavljen na prazen seznam, je <ph name="PRODUCT_OS_NAME" /> lahko prikazan v vseh podprtih jezikih. Če je ta pravilnik nastavljen na seznam z neveljavnimi vrednosti, bodo vse neveljavne vrednosti prezrte. Če je uporabnik <ph name="PRODUCT_OS_NAME" /> vnaprej konfiguriral za prikaz v jeziku, ki ga ta pravilnik ne dovoljuje, bo jezik prikaza preklopljen v dovoljen jezik, ko se uporabnik naslednjič prijavi. Če je uporabnik konfiguriral prednostne jezike in enega izmed njih dovoljuje ta pravilnik, bo <ph name="PRODUCT_OS_NAME" /> preklopil v ta jezik. V nasprotnem primeru bo <ph name="PRODUCT_OS_NAME" /> preklopil na prvo veljavno vrednost, ki jo določa ta pravilnik, ali rezervni jezik (trenutno je to ameriška angleščina, en-US), če ta pravilnik vsebuje samo neveljavne vnose.</translation>
+      Če je ta pravilnik nastavljen, lahko uporabnik konfigurira <ph name="PRODUCT_OS_NAME" /> za prikaz samo v enem od jezikov, ki jih določa ta pravilnik. Če ta pravilnik ni nastavljen ali je nastavljen na prazen seznam, je <ph name="PRODUCT_OS_NAME" /> lahko prikazan v vseh podprtih jezikih. Če je ta pravilnik nastavljen na seznam z neveljavnimi vrednostmi, bodo vse neveljavne vrednosti prezrte. Če je uporabnik <ph name="PRODUCT_OS_NAME" /> v preteklosti konfiguriral za prikaz v jeziku, ki ga ta pravilnik ne dovoljuje, bo jezik prikaza preklopljen v dovoljen jezik, ko se uporabnik naslednjič prijavi. Če je uporabnik konfiguriral prednostne jezike in enega izmed njih dovoljuje ta pravilnik, bo <ph name="PRODUCT_OS_NAME" /> preklopil v ta jezik. V nasprotnem primeru bo <ph name="PRODUCT_OS_NAME" /> preklopil na prvo veljavno vrednost, ki jo določa ta pravilnik, ali rezervni jezik (trenutno je to ameriška angleščina, en-US), če ta pravilnik vsebuje samo neveljavne vnose.</translation>
 <translation id="5464816904705580310">Konfiguriranje nastavitev za upravljane uporabnike.</translation>
 <translation id="546726650689747237">Časovni zamik zatemnitve zaslona ob napajanju iz električnega omrežja</translation>
 <translation id="5469484020713359236">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki lahko nastavljajo piškotke.
@@ -1588,7 +1594,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če okolje podpira obvestila pravilnika, je zakasnitev osvežitve nastavljena na 24 ur (prezrejo se vse privzete nastavitve in vrednost tega pravilnika), ker je pričakovano, da obvestila pravilnika ob vsakokratni zamenjavi pravilnika samodejno vsilijo osvežitev, zaradi česar so pogostejše osvežitve nepotrebne.</translation>
 <translation id="5530347722229944744">Blokiraj morebitne nevarne prenose</translation>
-<translation id="5530586312297447592">Označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproži vnovična uporaba gesla na spletnem mestu z lažnim predstavljanjem</translation>
 <translation id="5535973522252703021">Seznam dovoljenih delegacijskih strežnikov za Kerberos</translation>
 <translation id="555077880566103058">Omogoči vsem spletnim mestom samodejno izvajanje vtičnika <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Ta pravilnik ne vpliva na aplikacije za Android.</translation>
@@ -1897,7 +1902,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Onemogoči orodja za razvijalce in konzolo JavaScript.
 
-      Če to nastavitev omogočite, dostop do orodij za razvijalcev ne bo mogoč in elementov na spletnih mestih ne bo več mogoče pregledovati. Vse bližnjične tipke in vnosi v meniju ali kontekstnem meniju za odpiranje orodij za razvijalce in konzole JavaScript bodo onemogočeni.
+      Če to nastavitev omogočite, dostop do orodij za razvijalce ne bo mogoč in elementov na spletnih mestih ne bo več mogoče pregledovati. Vse bližnjične tipke in vnosi v meniju ali kontekstnem meniju za odpiranje orodij za razvijalce in konzole JavaScript bodo onemogočeni.
 
       Če to možnost onemogočite ali je ne nastavite, lahko uporabnik uporablja orodja za razvijalce in konzolo JavaScript.</translation>
 <translation id="653608967792832033">Določa trajanje uporabnikove nedejavnosti, po preteku katere se zaslon zaklene, če se napaja iz akumulatorja.
@@ -1963,7 +1968,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Vzorci URL-jev v tem pravilniku ne smejo biti v nasprotju s tistimi, ki so konfigurirani v pravilniku »WebUsbAskForUrls«. Če se URL ujema z obema pravilnikoma, ni določeno, kateri ima prednost.</translation>
 <translation id="6689792153960219308">Poročanje o stanju strojne opreme</translation>
-<translation id="6698071416141001300">Označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproži vnovična uporaba gesla</translation>
 <translation id="6699880231565102694">Omogočanje preverjanja pristnosti v dveh korakih za gostitelje oddaljenega dostopa</translation>
 <translation id="6724842112053619797">Če omogočite to nastavitev, se podatki, shranjeni v profilih izdelka <ph name="PRODUCT_NAME" />, kot so zaznamki, podatki samodejnega izpolnjevanja, gesla in drugi podatki, prav tako zapišejo v datoteko, shranjeno v mapo uporabniškega profila za gostovanje ali na lokacijo, ki jo določi skrbnik s pravilnikom <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Če omogočite ta pravilnik, onemogočite sinhronizacijo z oblakom.
 
@@ -2814,7 +2818,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="9084985621503260744">Navedite, ali videodejavnost vpliva na upravljanje napajanja</translation>
 <translation id="9085839450090699752">Omogoči nastavitev časovnega obdobja v milisekundah, v katerem so uporabniki obveščeni, da mora biti <ph name="PRODUCT_NAME" /> znova zagnan ali da mora biti naprava <ph name="PRODUCT_OS_NAME" /> znova zagnana za uveljavitev čakajoče posodobitve.
 
-      V tem časovnem obdobju je uporabnik postopno obveščan glede potrebe po posodobitvi. Ko je zaznana nadgradnja, se za naprave <ph name="PRODUCT_OS_NAME" /> obvestilo o vnovičnem zagonu pojavi v sistemski vrstici. Barva obvestila se spremeni, ko mine polovica obdobja za obveščanje, in znova, ko mine celotno obdobje za obveščanje. Za brskalnike <ph name="PRODUCT_NAME" /> se meni aplikacije spremeni, da ponazori, da je potreben vnovični zagon, ko mine ena tretjina obdobja za obveščanje. Barva tega obvestila se spremeni, ko mineta dve tretjini obdobja za obveščanje, in znova, ko mine celotno obdobje za obveščanje. Za dodatna obvestila, ki jih je omogočil pravilnik <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> za brskalnike, prav tako velja ta razpored.
+      V tem časovnem obdobju je uporabnik večkrat obveščen glede potrebe po posodobitvi. Ko je zaznana nadgradnja, se za naprave <ph name="PRODUCT_OS_NAME" /> v sistemski vrstici pojavi obvestilo o vnovičnem zagonu. Barva obvestila se spremeni, ko mine polovica obdobja za obveščanje, in znova, ko mine celotno obdobje za obveščanje. Za brskalnike <ph name="PRODUCT_NAME" /> se meni aplikacije spremeni, da ponazori, da je potreben vnovični zagon, ko mine ena tretjina obdobja za obveščanje. Barva tega obvestila se spremeni, ko mineta dve tretjini obdobja za obveščanje, in znova, ko mine celotno obdobje za obveščanje. Za dodatna obvestila, ki jih je omogočil pravilnik <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> za brskalnike, prav tako velja ta razpored.
 
       Če pravilnik ni nastavljen, se za naprave <ph name="PRODUCT_OS_NAME" /> kot privzeto časovno obdobje uporabi 345.600.000 millisekund (štirje dnevi), za brskalnike pa 604.800.000 milisekund (en teden).</translation>
 <translation id="9088433379343318874">Omogočanje ponudnika vsebine za zaščitene uporabnike</translation>

@@ -20,7 +20,7 @@
 <translation id="1110994991967754504">Selecionar autorização para <ph name="PERMISSION_NAME" /></translation>
 <translation id="1111153019813902504">Marcadores recentes</translation>
 <translation id="1113869188872983271">&amp;Anular reordenação</translation>
-<translation id="1125573121925420732">Pode ser comum a apresentação de avisos enquanto os Websites atualizam a respetiva segurança. Esta situação deve melhorar brevemente.</translation>
+<translation id="1125573121925420732">Pode ser frequente a apresentação de avisos enquanto os Websites atualizam a respetiva segurança. Esta situação deve melhorar brevemente.</translation>
 <translation id="1126551341858583091">O tamanho no armazenamento local é de <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Cache da política OK</translation>
 <translation id="1150979032973867961">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o sistema operativo do seu computador não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
@@ -263,7 +263,7 @@
 <translation id="2742870351467570537">Remover itens seleccionados</translation>
 <translation id="277133753123645258">Método de envio</translation>
 <translation id="277499241957683684">Registo do dispositivo em falta</translation>
-<translation id="2781030394888168909">Exportar MacOS</translation>
+<translation id="2781030394888168909">Exportar para MacOS</translation>
 <translation id="2784949926578158345">A ligação foi reposta.</translation>
 <translation id="2788784517760473862">Cartões de crédito admitidos</translation>
 <translation id="2794233252405721443">Site bloqueado</translation>
@@ -546,6 +546,7 @@
 <translation id="4759118997339041434">Preenchimento automático do pagamento desativado</translation>
 <translation id="4764776831041365478">A página Web em <ph name="URL" /> poderá estar temporariamente inactiva ou poderá ter sido movida permanentemente para um novo endereço Web.</translation>
 <translation id="4771973620359291008">Ocorreu um erro desconhecido.</translation>
+<translation id="4785689107224900852">Mudar para este separador</translation>
 <translation id="4792143361752574037">Ocorreu um problema ao aceder aos ficheiros da sessão. A opção de guardar no disco está atualmente desativada. Recarregue a página para tentar novamente.</translation>
 <translation id="4800132727771399293">Verifique a data de validade e o Código de Segurança/CVC e tente novamente</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>

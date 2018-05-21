@@ -26,7 +26,6 @@
 <translation id="1062011392452772310">Włącz zaświadczanie zdalne dla urządzenia</translation>
 <translation id="1062407476771304334">Zastąp</translation>
 <translation id="1079801999187584280">Zablokuj używanie narzędzi dla programistów</translation>
-<translation id="109166998561583554">Wyzwalacz oznaczania kont jako zagrożonych w zakresie ochrony hasłem</translation>
 <translation id="1093082332347834239">Jeśli to ustawienie jest włączone, host pomocy zdalnej będzie uruchamiany w procesie z uprawnieniami <ph name="UIACCESS_PERMISSION_NAME" />. Dzięki temu użytkownicy zdalni będą mieć dostęp do okien z podwyższonym poziomem uprawnień na komputerze użytkownika lokalnego.
 
           Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, host pomocy zdalnej będzie uruchamiany w kontekście użytkownika, a użytkownicy zdalni nie będą mieć dostępu do okien z podwyższonym poziomem uprawnień na komputerze.</translation>
@@ -93,8 +92,8 @@
 <translation id="1397855852561539316">Adres URL usługi propozycji od domyślnego dostawcy wyszukiwania</translation>
 <translation id="1424081297104898791">Określa, gdzie można używać narzędzi dla programistów.
 
-      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsDisallowedForForceInstalledExtensions” (wartość 0, która jest domyślną dla użytkowników w przedsiębiorstwie), narzędzia dla programistów i konsola JavaScript są dostępne wszędzie z wyjątkiem kontekstu rozszerzeń zainstalowanych przez zasady przedsiębiorstwa.
-      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsAllowed” (wartość 1, która jest domyślną dla użytkowników niezarządzanych), narzędzia dla programistów i konsola JavaScript są dostępne we wszystkich kontekstach, również w kontekście rozszerzeń zainstalowanych przez zasady przedsiębiorstwa.
+      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsDisallowedForForceInstalledExtensions” (wartość 0, która jest domyślną dla użytkowników korporacyjnych), narzędzia dla programistów i konsola JavaScript są dostępne wszędzie z wyjątkiem kontekstu rozszerzeń zainstalowanych przez zasady przedsiębiorstwa.
+      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsAllowed” (wartość 1, która jest domyślna dla użytkowników niezarządzanych), narzędzia dla programistów i konsola JavaScript są dostępne we wszystkich kontekstach, również w kontekście rozszerzeń zainstalowanych przez zasady przedsiębiorstwa.
       Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsDisallowed” (wartość 2), narzędzia dla programistów są niedostępne i nie można badać elementów na stronach. Wyłączone będą wszystkie skróty klawiszowe oraz pozycje menu i menu kontekstowego, które otwierają narzędzia dla programistów i konsolę JavaScript.
       Jeśli starsza zasada DeveloperToolsDisabled jest ustawiona na wartość prawda, wartość tej zasady jest ignorowana, a narzędzia dla programistów są wyłączone.</translation>
 <translation id="1426410128494586442">Tak</translation>
@@ -103,7 +102,6 @@
 <translation id="1438739959477268107">Domyślne ustawienie generowania kluczy</translation>
 <translation id="1454846751303307294">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie może być wykonywany kod JavaScript. W przypadku nieskonfigurowania tej zasady dla wszystkich witryn będzie używana globalna wartość domyślna pobierana z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="1456822151187621582">Windows (klienty <ph name="PRODUCT_OS_NAME" />):</translation>
-<translation id="1457305643416399820">Oznaczanie kont jako zagrożonych w zakresie ochrony hasłem jest wyłączone</translation>
 <translation id="1464848559468748897">Kontroluje zachowanie użytkownika w sesji wieloprofilowej na urządzeniach z <ph name="PRODUCT_OS_NAME" />.
 
       Jeśli zasada ma wartość „MultiProfileUserBehaviorUnrestricted”, użytkownik może być użytkownikiem głównym lub dodatkowym w sesji wieloprofilowej.
@@ -319,6 +317,13 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2082205219176343977">Skonfiguruj minimalną dozwoloną wersję Chrome dla urządzenia.</translation>
 <translation id="209586405398070749">Wersja stabilna</translation>
 <translation id="2098658257603918882">Włącz przesyłanie raportów o użytkowaniu i danych dotyczących awarii</translation>
+<translation id="2111016292707172233">Pozwala korzystać z funkcji „Kliknij, by wyszukać” w widoku treści w <ph name="PRODUCT_NAME" />.
+
+      Jeśli włączysz to ustawienie, funkcja „Kliknij, by wyszukać” będzie dostępna dla użytkownika i będzie on mógł ją włączyć lub wyłączyć.
+
+      Jeśli wyłączysz to ustawienie, funkcja „Kliknij, by wyszukać” zostanie całkowicie wyłączona.
+
+      Pozostawienie tej zasady nieustawionej jest równoznaczne z jej włączeniem – patrz opis powyżej.</translation>
 <translation id="2113068765175018713">Ogranicz czas działania urządzenia przez automatyczne ponowne uruchamianie</translation>
 <translation id="2127599828444728326">Zezwalaj na powiadomienia w tych witrynach.</translation>
 <translation id="2131902621292742709">Opóźnienie przyciemnienia ekranu przy zasilaniu z baterii</translation>
@@ -464,13 +469,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2386362615870139244">Zezwalaj na blokowanie wybudzania ekranu</translation>
 <translation id="2411817661175306360">Ostrzeżenie dotyczące ochrony hasłem jest wyłączone</translation>
 <translation id="2411919772666155530">Blokuj powiadomienia w tych witrynach.</translation>
-<translation id="2415979855753196119">Umożliwia sterowanie wyzwalaniem oznaczania kont jako zagrożonych w zakresie ochrony hasłem. 
-Oznaczanie kont jako zagrożonych w zakresie ochrony hasłem oznacza informowanie Google, że dane konto jest narażone na włamanie.
-
-      Jeśli ta zasada ma ustawioną wartość „PasswordProtectionRiskOff”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem nie będzie nigdy wyzwalane.
-      Jeśli ma ustawioną wartość „PasswordProtectionRiskOnPasswordReuse”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem będzie wyzwalane, gdy użytkownicy będą stosować hasła do kont Google w innych witrynach spoza białej listy.
-      Przy ustawieniu „PasswordProtectionRiskOnPhishingReuse”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem będzie wyzwalane, gdy użytkownicy będą stosować hasła do kont Google w witrynach wyłudzających informacje.
-      Jeśli zasada nie jest skonfigurowana, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem będzie wyzwalane, gdy użytkownicy będą stosować hasła do kont Google w witrynach wyłudzających informacje, ale użytkownik może zmienić to ustawienie.</translation>
 <translation id="2418507228189425036">Wyłącza zapisywanie historii przeglądarki <ph name="PRODUCT_NAME" /> i blokuje możliwość zmiany tego ustawienia przez użytkowników.
 
       Po włączeniu ustawienia historia przeglądania nie jest zapisywana. To ustawienie wyłącza również synchronizowanie kart.
@@ -886,6 +884,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3646859102161347133">Ustaw typ lupy</translation>
 <translation id="3653237928288822292">Ikona domyślnego dostawcy wyszukiwania</translation>
 <translation id="3660562134618097814">Prześlij pliki cookie dostawcy tożsamości SAML podczas logowania</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Pole z jednym wierszem jest nieużywane i zostanie usunięte. Zacznij używać wielowierszowego pola tekstowego poniżej).</translation>
 <translation id="3709266154059827597">Konfiguruj czarną listę instalacji rozszerzeń</translation>
 <translation id="3711895659073496551">Wstrzymaj</translation>
 <translation id="3715569262675717862">Uwierzytelnianie na podstawie certyfikatów klienta</translation>
@@ -986,6 +985,7 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
       Zawiera listę rozszerzeń, które są automatycznie instalowane dla użytkownika demonstracyjnego w przypadku urządzeń działających w trybie sklepu. Rozszerzenia są zapisane na urządzeniu i można je zainstalować w trybie offline, po instalacji aplikacji.
 
        Każda pozycja listy zawiera słownik, w którym obowiązkowe pola „extension-id” i „update-url” muszą zawierać odpowiednio identyfikator rozszerzenia i adres URL aktualizacji.</translation>
+<translation id="3874773863217952418">Włącz funkcję Kliknij, by wyszukać</translation>
 <translation id="3877517141460819966">Tryb zintegrowanego uwierzytelniania dwuskładnikowego</translation>
 <translation id="388237772682176890">Ta zasada jest wycofywana w wersji M53 i usunięta w wersji M54 z powodu usunięcia obsługi SPDY/3.1.
 
@@ -1244,6 +1244,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Przykładowe wzorce znajdziesz na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
 <translation id="467449052039111439">Otwórz adresy URL z listy</translation>
+<translation id="4680936297850947973">Wycofane w wersji M68. W zamian użyj DefaultPopupsSetting.
+
+      Pełne wyjaśnienie można znaleźć na https://www.chromestatus.com/features/5675755719622656.
+      Jeśli ta zasada zostanie włączona, strony będą mogły otwierać nowe okna/karty podczas nawigowania.
+      Jeśli ta zasada zostanie wyłączona lub nie zostanie ustawiona, strony nie będą mogły otwierać nowych okien/kart podczas nawigowania.</translation>
 <translation id="4680961954980851756">Włącz autouzupełnianie</translation>
 <translation id="4722122254122249791">Włącz izolację witryn z określonych źródeł</translation>
 <translation id="4722399051042571387">Jeśli to ustawienie jest wyłączone, użytkownicy nie mogą ustawiać kodów PIN, które są słabe i łatwe do odgadnięcia. Słabe kody PIN to na przykład ciągi takich samych cyfr (1111), kolejnych cyfr w porządku rosnącym (1234) lub malejącym (4321) i ciągi często używane. Domyślnie po wpisaniu słabego kodu PIN nie pojawia się komunikat o błędzie, a tylko ostrzeżenie.</translation>
@@ -1501,7 +1506,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Uwaga: jeśli platforma obsługuje powiadomienia o zasadach, czas odświeżania będzie ustawiony na 24 godziny (wartości domyślne i wartość tej zasady będą ignorowane), ponieważ powiadomienia te powinny automatycznie wymuszać odświeżenie po każdej zmianie zasad, przez co częstsze odświeżanie jest niepotrzebne.</translation>
 <translation id="5530347722229944744">Blokuj pobieranie potencjalnie niebezpiecznych plików</translation>
-<translation id="5530586312297447592">Oznaczenie konta jako zagrożonego w zakresie ochrony hasłem jest wyzwalane przez użycie tego samego hasła na stronie stosującej phishing</translation>
 <translation id="5535973522252703021">Biała lista serwerów przekazywania poświadczeń w protokole Kerberos</translation>
 <translation id="555077880566103058">Pozwala wszystkim witrynom na automatyczne uruchamianie wtyczki <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Ta zasada nie ma żadnego wpływu na aplikacje na Androida.</translation>
@@ -1858,7 +1862,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Wzorce adresów URL z tej zasady nie mogą kolidować z wzorcami skonfigurowanymi w zasadzie WebUsbAskForUrls. Nie jest określone, która zasada zostanie zastosowana, gdy URL pasuje do obu zasad.</translation>
 <translation id="6689792153960219308">Raportuj stan sprzętu</translation>
-<translation id="6698071416141001300">Oznaczenie konta jako zagrożonego w zakresie ochrony hasłem jest wyzwalane przez użycie tego samego hasła w innym miejscu</translation>
 <translation id="6699880231565102694">Włącz uwierzytelnianie dwuskładnikowe dla hostów zdalnego dostępu</translation>
 <translation id="6724842112053619797">Jeśli włączysz to ustawienie, ustawienia zapisane w profilach <ph name="PRODUCT_NAME" />, takie jak zakładki, dane autouzupełniania, hasła itp., będą też zapisywane w folderze profilu przenośnego (Roaming) użytkownika lub w lokalizacji ustawionej przez administratora w zasadzie <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Włączenie tej zasady wyłącza synchronizację z chmurą.
 
@@ -2664,11 +2667,11 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="9035964157729712237">Identyfikatory rozszerzeń nieobjętych czarną listą</translation>
 <translation id="9042911395677044526">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla poszczególnych użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Określ, czy aktywność związana z filmami wpływa na zarządzanie energią</translation>
-<translation id="9085839450090699752">Umożliwia ustawienie czasu (w milisekundach), przez który użytkownicy będą powiadamiani o konieczności ponownego uruchomienia <ph name="PRODUCT_NAME" /> lub urządzenia z <ph name="PRODUCT_OS_NAME" /> w celu zainstalowania oczekującej aktualizacji.
+<translation id="9085839450090699752">Umożliwia ustawienie czasu (w milisekundach), przez który użytkownicy będą powiadamiani o konieczności ponownego uruchomienia <ph name="PRODUCT_NAME" /> lub urządzenia z systemem <ph name="PRODUCT_OS_NAME" /> w celu zainstalowania oczekującej aktualizacji.
 
-      Przez ten czas użytkownik będzie cyklicznie informowany o konieczności aktualizacji. Na urządzeniach z <ph name="PRODUCT_OS_NAME" /> powiadomienie o konieczności ponownego uruchomienia będzie wyświetlane w obszarze powiadomień. Powiadomienie zmieni kolor pierwszy raz po upływie połowy okresu powiadamiania i drugi raz po jego zakończeniu. W przeglądarkach <ph name="PRODUCT_NAME" /> po upływie jednej trzeciej okresu powiadamiania zmienia się menu aplikacji, sygnalizując konieczność ponownego uruchomienia. Powiadomienie zmienia kolor po upływie dwóch trzecich okresu powiadamiania i ponownie po jego zakończeniu. Dodatkowe powiadomienia, które w przeglądarkach włącza zasada <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, są wyświetlane według tego samego harmonogramu.
+      Przez ten czas użytkownik będzie cyklicznie informowany o konieczności aktualizacji. Na urządzeniach z systemem <ph name="PRODUCT_OS_NAME" /> powiadomienie o konieczności ponownego uruchomienia będzie wyświetlane w obszarze powiadomień. Powiadomienie zmieni kolor pierwszy raz po upływie połowy okresu powiadamiania i drugi raz po jego zakończeniu. W przeglądarkach <ph name="PRODUCT_NAME" /> po upływie jednej trzeciej okresu powiadamiania zmienia się menu aplikacji, sygnalizując konieczność ponownego uruchomienia. Powiadomienie zmienia kolor po upływie dwóch trzecich okresu powiadamiania i ponownie po jego zakończeniu. Dodatkowe powiadomienia, które w przeglądarkach włącza zasada <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, są wyświetlane według tego samego harmonogramu.
 
-      Jeśli zasada jest nieskonfigurowana, na urządzeniach z <ph name="PRODUCT_OS_NAME" /> stosowany jest okres domyślny 345600000 milisekund (cztery dni), a w przeglądarkach – 604800000 milisekund (tydzień).</translation>
+      Jeśli zasada jest nieskonfigurowana, na urządzeniach z systemem <ph name="PRODUCT_OS_NAME" /> stosowany jest okres domyślny 345600000 milisekund (cztery dni), a w przeglądarkach – 604800000 milisekund (tydzień).</translation>
 <translation id="9088433379343318874">Włącz dostawcę treści dla nadzorowanego użytkownika</translation>
 <translation id="9088444059179765143">Konfigurowanie metody automatycznego wykrywania strefy czasowej</translation>
 <translation id="9096086085182305205">Biała lista serwera uwierzytelniania</translation>

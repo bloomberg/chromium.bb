@@ -16,6 +16,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="127345590676626841">Chrome updates automatically so that you always have the freshest version. When this download completes, Chrome will restart and you'll be on your way.</translation>
 <translation id="1302523850133262269">Please wait while Chrome installs the latest system updates.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
+<translation id="1388971155537343688">Launching Chrome</translation>
 <translation id="1393853151966637042">Get help with using Chrome</translation>
 <translation id="1399397803214730675">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and try again.</translation>
 <translation id="1434626383986940139">Chrome Canary Apps</translation>
@@ -177,6 +178,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="573759479754913123">About Chrome OS</translation>
 <translation id="5774845247549698882">Chrome OS is displayed in this language</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
+<translation id="5804318322022881572">Couldn't launch Chrome. Try again.</translation>
 <translation id="5855036575689098185">Software running on your computer is incompatible with Google Chrome.</translation>
 <translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
 <translation id="5895138241574237353">Restart</translation>
@@ -231,6 +233,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7589360514048265910">This computer will no longer receive Google Chrome updates because Mac OS X 10.9 is no longer supported.</translation>
 <translation id="7592736734348559088">Google Chrome could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="7626032353295482388">Welcome to Chrome</translation>
+<translation id="7651907282515937834">Chrome Enterprise logo</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
 <translation id="7756122083761163394">This person's browsing data will be deleted from this device. To recover the data, sign in to Chrome as $2.</translation>
 <translation id="7761834446675418963">Click your name to open Chrome and start browsing.</translation>

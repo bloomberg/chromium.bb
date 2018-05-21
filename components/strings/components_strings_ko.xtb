@@ -546,6 +546,7 @@
 <translation id="4759118997339041434">결제 자동완성 사용 중지</translation>
 <translation id="4764776831041365478"><ph name="URL" />의 웹페이지가 일시적으로 다운되었거나 새 웹 주소로 완전히 이동했을 수 있습니다.</translation>
 <translation id="4771973620359291008">알 수 없는 오류가 발생했습니다.</translation>
+<translation id="4785689107224900852">이 탭으로 전환</translation>
 <translation id="4792143361752574037">세션 파일에 액세스하는 중에 문제가 발생했습니다. 현재 디스크에 저장할 수 없습니다. 페이지를 새로고침하여 다시 시도하세요.</translation>
 <translation id="4800132727771399293">유효기간과 CVC를 확인한 후 다시 시도해 주세요.</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>

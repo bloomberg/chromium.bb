@@ -182,6 +182,7 @@
 <translation id="705851970750939768">Оновити Chromium</translation>
 <translation id="7066436765290594559">ОС Chromium не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
 <translation id="7162152143154757523">Chromium може точніше перевіряти правопис, надсилаючи текст, який ви вводите у веб-переглядачі, на сервери Google. Це дозволяє використовувати ту саму технологію перевірки правопису, що й у Пошуку Google.</translation>
+<translation id="7196312274710523067">Не вдалося запустити Chromium. Повторіть спробу.</translation>
 <translation id="7205698830395646142">Сховати в меню Chromium</translation>
 <translation id="7223968959479464213">Диспетчер завдань – Chromium</translation>
 <translation id="722928257909516027">Показати меню Chromium</translation>
@@ -204,6 +205,7 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="7451052299415159299">Chromium потрібен дозвіл на використання камери, щоб надати цьому сайту доступ до неї</translation>
 <translation id="7483335560992089831">Неможливо встановити версію Chromium, аналогічну запущеній зараз. Закрийте Chromium і повторіть спробу.</translation>
 <translation id="7549178288319965365">Про ОС Chromium</translation>
+<translation id="75551686469636272">Запускається Chromium</translation>
 <translation id="7577193603922410712">Щойно було застосовано спеціальне оновлення для захисту Chromium. Щоб воно почало діяти, перезапустіть Chromium (ваші вкладки буде відновлено).</translation>
 <translation id="761356813943268536">Chromium використовує вашу камеру та мікрофон.</translation>
 <translation id="7617377681829253106">Chromium став ще кращим</translation>

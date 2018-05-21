@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">वाई-फ़ाई  बंद है.</translation>
 <translation id="1864454756846565995">USB-C डिवाइस (पिछला पोर्ट)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> पर मिरर कर रहा है</translation>
+<translation id="1885785240814121742">फ़िंगरप्रिंट से अनलॉक करें</translation>
 <translation id="1919743966458266018">काम के प्रबंधक को खोलने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="1923539912171292317">स्वत: क्‍लिक</translation>
 <translation id="1928739107511554905">अपडेट पाने के लिए, अटैच किए गए कीबोर्ड से अपने Chromebook को रीस्टार्ट करने के लिए टचस्क्रीन का इस्तेमाल करें.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">रोचक कुंजियां</translation>
 <translation id="2509468283778169019">CAPS LOCK चालू है</translation>
 <translation id="2532589005999780174">उच्च कंट्रास्ट मोड</translation>
+<translation id="2575685495496069081">एक से ज़्यादा साइन इन को बंद कर दिया गया है</translation>
 <translation id="2597972630681408282">नाइट लाइट: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">सिम कार्ड लॉक है</translation>
 <translation id="2653659639078652383">सबमिट करें</translation>
@@ -136,6 +138,8 @@
 <translation id="3712407551474845318">क्षेत्र कैप्‍चर करें</translation>
 <translation id="371370241367527062">सामने वाला माइक्रोफ़ोन</translation>
 <translation id="3771549900096082774">उच्च कंट्रास्ट मोड</translation>
+<translation id="3773700760453577392">किसी एडमिन ने <ph name="USER_EMAIL" /> के लिए एक से ज़्यादा साइन इन अस्वीकार कर दिए हैं.
+जारी रखने के लिए सभी उपयोगकर्ताओं को साइन आउट करना होगा.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">लॉक करें</translation>
 <translation id="3798670284305777884">स्पीकर (आंतरिक)</translation>

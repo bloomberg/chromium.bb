@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Az eszköz távoli tanúsításának engedélyezése</translation>
 <translation id="1062407476771304334">Csere</translation>
 <translation id="1079801999187584280">A Fejlesztői eszközök használatának letiltása</translation>
-<translation id="109166998561583554">A fiók jelszóvédelem általi veszélyeztetettnek jelölését szabályzó eseményindító</translation>
 <translation id="1093082332347834239">Ha a beállítás be van kapcsolva, a távoli támogatás gazdagépe a(z) <ph name="UIACCESS_PERMISSION_NAME" /> engedélyekkel rendelkező folyamatban fut. Ez lehetővé teszi a távoli felhasználók számára, hogy interakcióba lépjenek a kiemelt ablakokkal a helyi felhasználó asztali számítógépén.
 
           Ha a beállítás ki van kapcsolva vagy nincs beállítva, a távoli támogatás gazdagépe a felhasználó kontextusában fut, és a távoli felhasználók nem tudnak interakcióba lépni a kiemelt ablakokkal az asztali számítógépen.</translation>
@@ -105,7 +104,6 @@
 <translation id="1438739959477268107">Kulcslétrehozás alapértelmezett beállítása</translation>
 <translation id="1454846751303307294">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem futtathatnak JavaScriptet. Ha a házirend beállítatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultJavaScriptSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />-ügyfelek):</translation>
-<translation id="1457305643416399820">Jelszóvédelemmel rendelkező, veszélyeztetett fiók megjelölése kikapcsolva</translation>
 <translation id="1464848559468748897">A felhasználói viselkedés vezérlése többprofilos munkamenet során <ph name="PRODUCT_OS_NAME" />-eszközökön.
 
       Ha a házirend beállítása „MultiProfileUserBehaviorUnrestricted”, akkor a felhasználó lehet elsődleges vagy másodlagos felhasználó egy többprofilos munkamenetben.
@@ -320,6 +318,13 @@
 <translation id="2082205219176343977">Az engedélyezett legrégebbi Chrome-verzió beállítása az eszközön.</translation>
 <translation id="209586405398070749">Stabil csatorna</translation>
 <translation id="2098658257603918882">Használati és összeomlással kapcsolatos adatok jelentésének engedélyezése</translation>
+<translation id="2111016292707172233">Lehetővé teszi a Keresés koppintással funkció használatát a <ph name="PRODUCT_NAME" /> tartalomnézetében.
+
+      Ha aktiválja ezt a beállítást, akkor a felhasználó használhatja a Keresés koppintással funkciót, és saját maga döntheti el, hogy be- vagy kikapcsolja-e azt.
+
+      Amennyiben letiltja ezt a beállítást, a Keresés koppintással funkció egyáltalán nem lesz használható.
+
+      Ha nem határozza meg ezt a beállítást, az ugyanolyan, mintha aktiválná (lásd feljebb).</translation>
 <translation id="2113068765175018713">Eszköz működési idejének korlátozása automatikus újraindítással</translation>
 <translation id="2127599828444728326">Értesítések engedélyezése ezeken a webhelyeken</translation>
 <translation id="2131902621292742709">Képernyő elsötétítésének késleltetése akkumulátorról való működés során</translation>
@@ -464,12 +469,6 @@
 <translation id="2386362615870139244">Képernyőébresztés zárolásainak engedélyezése</translation>
 <translation id="2411817661175306360">A jelszóvédelemmel kapcsolatos figyelmeztetés kikapcsolva</translation>
 <translation id="2411919772666155530">Értesítések letiltása ezeken a webhelyeken</translation>
-<translation id="2415979855753196119">Ennek segítségével szabályozhatja a fiókvédelem veszélyeztetett fiók jelzőjének kiváltását. A fiókvédelem veszélyeztetett fiók jelzője tájékoztatja a Google-t arról, hogy a fiókot feltörés veszélye fenyegeti.
-
-      Ha a házirend értéke „PasswordProtectionRiskOff”, akkor a jelszóvédelem sosem váltja ki a veszélyeztetett fiók jelzőt.
-      Ha a házirend értéke „PasswordProtectionRiskOnPasswordReuse”, akkor a jelszóvédelem abban az esetben váltja ki a veszélyeztetett fiók jelzőt, ha a felhasználó az engedélyezőlistán nem szereplő webhelyen próbálja beállítani Google-jelszavát jelszóként.
-      Ha a házirend értéke „PasswordProtectionRiskOnPhishingReuse”, akkor a jelszóvédelem abban az esetben váltja ki a veszélyeztetett fiók jelzőt, ha a felhasználó adathalász webhelyen próbálja beállítani Google-jelszavát jelszóként.
-      Ha a házirend nincs beállítva, akkor a jelszóvédelem abban az esetben váltja ki a veszélyeztetett fiók jelzőt, ha a felhasználó adathalász webhelyen próbálja beállítani Google-jelszavát jelszóként, azonban a felhasználó módosíthatja ezt a viselkedést.</translation>
 <translation id="2418507228189425036">Letiltja a böngészési előzmények mentését a <ph name="PRODUCT_NAME" /> számára, és megakadályozza, hogy a felhasználók megváltoztassák ezt a beállítást.
 
       Ha ez a beállítás engedélyezve van, a rendszer nem menti a böngészési előzményeket. A beállítás a lapok szinkronizálását is letiltja.
@@ -887,6 +886,7 @@
 <translation id="3646859102161347133">Nagyító típusának beállítása</translation>
 <translation id="3653237928288822292">Alapértelmezett keresési szolgáltató ikonja</translation>
 <translation id="3660562134618097814">SAML IdP cookie-k átadása a bejelentkezés során</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Az egysoros mező megszűnt, és a jövőben eltávolítjuk. Kérjük, használja az alábbi többsoros szövegmezőt.)</translation>
 <translation id="3709266154059827597">Bővítménytelepítési feketelista beállítása</translation>
 <translation id="3711895659073496551">Felfüggesztés</translation>
 <translation id="3715569262675717862">Klienstanúsítványokon alapuló hitelesítés</translation>
@@ -987,6 +987,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Felsorolja azokat a bővítményeket, amelyeket a kiállító módban lévő eszközök esetében automatikusan telepít a rendszer a bemutatófelhasználó részére. A bővítményeket a rendszer az eszközre menti, így azok offline módban, a telepítés után is telepíthetők.
 
       A listabejegyzések szótárának tartalmaznia kell a bővítményazonosítót az „extension-id” mezőben, valamint annak frissített URL-jét az „update-url” mezőben.</translation>
+<translation id="3874773863217952418">Keresés koppintással engedélyezése</translation>
 <translation id="3877517141460819966">Integrált kétlépcsős azonosítási mód</translation>
 <translation id="388237772682176890">Ez az irányelv megszűnt az M53-ban, valamint eltávolításra került az M54-ben, mivel a SPDY/3.1  támogatását megszüntettük.
 
@@ -1243,6 +1244,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Példamintákért lásd a következő címet: https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Nyisson meg egy URL-listát</translation>
+<translation id="4680936297850947973">Megszűnt az M68-as verzióban. Használja helyette a DefaultPopupsSetting házirendet.
+
+      A teljes magyarázatot a következő linken találja: https://www.chromestatus.com/features/5675755719622656.
+      Ha engedélyezett ez a házirend, a webhelyeknek engedélyezve lesz, hogy egyszerre navigáljanak és nyissanak meg új ablakokat és lapokat.
+      Ha le van tiltva ez a házirend, illetve nincs beállítva, a webhelyek számára le lesz tiltva, hogy egyszerre navigáljanak és nyissanak meg új ablakokat és lapokat.</translation>
 <translation id="4680961954980851756">Automatikus kitöltés engedélyezése</translation>
 <translation id="4722122254122249791">Webhely-izoláció engedélyezése meghatározott forrásoknál</translation>
 <translation id="4722399051042571387">Ha hamisra van állítva, a felhasználók nem tudnak majd gyenge vagy könnyen kitalálható jelszót beállítani.
@@ -1505,7 +1511,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Felhívjuk figyelmét, hogy ha az operációs rendszer támogatja a házirendekkel kapcsolatos értesítéseket, akkor a frissítési időszak 24 órás lesz (azaz a böngésző nem veszi figyelembe sem az alapértelmezett, sem a beállított értékeket), ugyanis a házirenddel kapcsolatos értesítéseknek automatikusan ki kell kényszeríteniük a frissítést, amikor egy házirend megváltozik, így szükségtelen gyakrabban frissíteni.</translation>
 <translation id="5530347722229944744">Potenciálisan veszélyes letöltések letiltása</translation>
-<translation id="5530586312297447592">A jelszóvédelemmel rendelkező, veszélyeztetett fiók megjelölését aktiválja a jelszó adathalász oldalon való újrafelhasználása</translation>
 <translation id="5535973522252703021">Kerberos felhatalmazási szerver kivétellistája</translation>
 <translation id="555077880566103058">A(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modul automatikus futtatásának engedélyezése minden webhelyen</translation>
 <translation id="5559079916187891399">A házirend nem vonatkozik az Android-alkalmazásokra.</translation>
@@ -1863,7 +1868,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Az ebben a házirendben megadott URL-minták nem ütközhetnek a WebUsbAskForUrls házirendben beállítottakkal. Nincs meghatározva, hogy a két házirend közül melyik élvez elsőbbséget, ha egy URL mindkettővel egyezik.</translation>
 <translation id="6689792153960219308">Hardverállapot jelentése</translation>
-<translation id="6698071416141001300">A jelszóvédelemmel rendelkező, veszélyeztetett fiók megjelölését aktiválja a jelszó újrafelhasználása</translation>
 <translation id="6699880231565102694">A kétlépcsős azonosítás engedélyezése távoli hozzáférésű gazdagépekhez</translation>
 <translation id="6724842112053619797">Ha engedélyezi ezt a beállítást, a rendszer a(z) <ph name="PRODUCT_NAME" />-profilokban tárolt beállításokat (például könyvjelzők, automatikus kitöltési adatok, jelszavak stb.) a Barangoló felhasználói profil mappájában, illetve a rendszergazda által, a(z) <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> házirendnek megfelelően megadott helyen tárolt fájlba is beírja. A házirend engedélyezésével letiltja a felhőalapú szinkronizálást.
 

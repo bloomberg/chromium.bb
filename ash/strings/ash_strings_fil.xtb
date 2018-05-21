@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">Naka-off ang Wi-Fi.</translation>
 <translation id="1864454756846565995">USB-C device (port sa rear)</translation>
 <translation id="1882897271359938046">Nagmi-mirror sa <ph name="DISPLAY_NAME" /></translation>
+<translation id="1885785240814121742">I-unlock gamit ang fingerprint</translation>
 <translation id="1919743966458266018">Napalitan na ang shortcut para sa pagbubukas sa task manager. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Mga awtomatikong pag-click</translation>
 <translation id="1928739107511554905">Para makuha ang update, gamitin ang touchscreen para i-restart ang iyong Chromebook nang nakakabit ang keyboard.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">Mga sticky key</translation>
 <translation id="2509468283778169019">Naka-on ang CAPS LOCK</translation>
 <translation id="2532589005999780174">High contrast mode</translation>
+<translation id="2575685495496069081">Na-disable ang maraming pag-sign in</translation>
 <translation id="2597972630681408282">Night Light: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Naka-lock ang SIM card</translation>
 <translation id="2653659639078652383">Isumite</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">I-capture ang rehiyon</translation>
 <translation id="371370241367527062">Mikropono sa harap</translation>
 <translation id="3771549900096082774">High Contrast Mode</translation>
+<translation id="3773700760453577392">Hindi pinayagan ng isang administrator ang maraming pag-sign in para sa <ph name="USER_EMAIL" />. Dapat mag-sign out ang lahat ng user para makapagpatuloy.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">I-lock</translation>
 <translation id="3798670284305777884">Speaker (internal)</translation>

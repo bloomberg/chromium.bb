@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">기기에 대한 원격 인증을 사용합니다.</translation>
 <translation id="1062407476771304334">바꾸기</translation>
 <translation id="1079801999187584280">Developer Tools 사용 금지</translation>
-<translation id="109166998561583554">위험 계정 비밀번호 보호 경고 트리거</translation>
 <translation id="1093082332347834239">이 설정을 사용 설정하면 <ph name="UIACCESS_PERMISSION_NAME" /> 권한을 사용하여 원격 지원 호스트가 실행됩니다. 이 경우 원격 사용자가 로컬 사용자의 데스크톱에서 관리자 창으로 상호 작용하도록 허용합니다.
 
           이 설정을 사용 중지하거나 설정하지 않으면 원격 지원 호스트가 사용자의 컨텍스트에서 실행되며 원격 사용자는 데스크톱에서 관리자 창으로 상호 작용할 수 없습니다.</translation>
@@ -107,7 +106,6 @@
 
           이 정책을 설정하지 않은 경우 'DefaultJavaScriptSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
 <translation id="1456822151187621582">Windows(<ph name="PRODUCT_OS_NAME" /> 클라이언트):</translation>
-<translation id="1457305643416399820">위험 계정 비밀번호 보호 경고가 꺼짐</translation>
 <translation id="1464848559468748897"><ph name="PRODUCT_OS_NAME" /> 기기에서 멀티프로필 세션의 사용자 동작을 제어합니다.
 
       이 정책을 'MultiProfileUserBehaviorUnrestricted'로 설정한 경우 사용자는 멀티프로필 세션에서 기본 또는 보조 사용자가 될 수 있습니다.
@@ -329,6 +327,13 @@
 <translation id="2082205219176343977">기기에 허용되는 최소 Chrome 버전을 설정합니다.</translation>
 <translation id="209586405398070749">정식 채널</translation>
 <translation id="2098658257603918882">사용 및 비정상 종료 관련 데이터 보고 사용</translation>
+<translation id="2111016292707172233"><ph name="PRODUCT_NAME" />의 콘텐츠 뷰에서 '탭하여 검색' 기능을 사용 설정합니다.
+
+      이 설정을 사용 설정하면 사용자에게 '탭하여 검색' 기능이 제공되며, 사용자는 기능을 켜거나 끌 수 있습니다.
+
+      이 설정을 사용 중지하면 '탭하여 검색' 기능이 완전히 사용 중지됩니다.
+
+      정책을 설정하지 않으면 사용 설정한 경우와 동일하게 작동합니다. 위 설명을 참조하세요.</translation>
 <translation id="2113068765175018713">자동으로 재부팅하여 기기 가동 시간 제한</translation>
 <translation id="2127599828444728326">이 사이트에서 알림 허용</translation>
 <translation id="2131902621292742709">배터리 전원으로 실행할 때 화면 어둡게 하기 지연</translation>
@@ -479,12 +484,6 @@
 <translation id="2386362615870139244">화면 잠금 허용</translation>
 <translation id="2411817661175306360">비밀번호 보호 경고가 꺼짐</translation>
 <translation id="2411919772666155530">이 사이트에서 알림 차단</translation>
-<translation id="2415979855753196119">위험 계정 비밀번호 보호 경고 트리거를 관리할 수 있습니다. 위험 계정 비밀번호 보호 경고는 이 계정이 위험에 처해 있거나 도용되었다고 Google에 알리는 기능입니다.
-
-      이 정책이 'PasswordProtectionRiskOff'로 설정되면 위험 계정 비밀번호 보호 경고가 실행되지 않습니다.
-      이 정책이 'PasswordProtectionRiskOnPasswordReuse'로 설정되면 사용자가 허용되지 않은 사이트에서 Google 비밀번호를 재사용할 때 위험 계정 비밀번호 보호 경고가 실행됩니다.
-      이 정책이 'PasswordProtectionRiskOnPhishingReuse'로 설정되면 사용자가 피싱 사이트에서 Google 비밀번호를 재사용할 때 위험 계정 비밀번호 보호 경고가 실행됩니다.
-      이 정책이 설정되어 있지 않으면 사용자가 피싱 사이트에서 Google 비밀번호를 재사용할 때 위험 계정 비밀번호 경고가 실행되지만 사용자가 이 설정을 변경할 수 있습니다.</translation>
 <translation id="2418507228189425036"><ph name="PRODUCT_NAME" />에서 인터넷 사용 기록 저장을 사용 중지하고 사용자가 이 설정을 변경하지 못하게 합니다.
 
       이 설정을 사용하면 인터넷 사용 기록이 저장되지 않으며 탭 동기화도 사용 중지됩니다.
@@ -920,6 +919,7 @@
 <translation id="3646859102161347133">화면 돋보기 유형 설정</translation>
 <translation id="3653237928288822292">기본 검색 공급자 아이콘</translation>
 <translation id="3660562134618097814">로그인 중 SAML IdP 쿠키 전송</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" />(한 줄 입력란은 지원 중단되었으며 삭제될 예정입니다. 아래의 여러 줄 입력란을 사용해 주세요.)</translation>
 <translation id="3709266154059827597">확장 프로그램 설치 차단목록 설정</translation>
 <translation id="3711895659073496551">일시중지</translation>
 <translation id="3715569262675717862">클라이언트 인증서를 기반으로 하는 인증</translation>
@@ -1025,6 +1025,7 @@
       판매 모드인 기기의 경우 데모 사용자에게 자동으로 설치되는 확장 프로그램을 표시합니다. 이러한 확장 프로그램은 기기에 저장되며 오프라인 상태일 때 설치할 수 있습니다.
 
       각 목록 항목에는 '확장 프로그램 ID' 입력란에 확장 프로그램 ID를, 'url 업데이트' 입력란에 업데이트 URL을 포함해야 하는 사전이 포함됩니다.</translation>
+<translation id="3874773863217952418">'탭하여 검색' 기능 사용</translation>
 <translation id="3877517141460819966">통합된 2단계 인증 모드</translation>
 <translation id="388237772682176890">SPDY/3.1 지원이 삭제되어 이 정책은 M53에서 지원 중단되고 M54에서 삭제되었습니다.
 
@@ -1293,6 +1294,11 @@
 
           예제 패턴은 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started 페이지를 참조하세요.</translation>
 <translation id="467449052039111439">URL 목록 열기</translation>
+<translation id="4680936297850947973">M68에서 지원 중단되었습니다. 대신 DefaultPopupsSetting을 사용하세요.
+
+      자세한 내용은 https://www.chromestatus.com/features/5675755719622656 페이지를 참조하세요.
+      이 정책을 사용 설정하면 사이트에서 동시에 새로운 창/탭을 탐색하고 열 수 있습니다.
+      이 정책을 사용 중지하거나 설정하지 않으면 사이트에서 동시에 새로운 창/탭을 탐색하고 열 수 없습니다.</translation>
 <translation id="4680961954980851756">자동 완성 사용</translation>
 <translation id="4722122254122249791">지정된 출처의 사이트 격리 사용 설정</translation>
 <translation id="4722399051042571387">false인 경우 사용자는 보안 강도가 약하고 추측하기 쉬운 PIN을 설정할 수 없습니다.
@@ -1578,7 +1584,6 @@
 
       플랫폼에서 정책 알림을 지원하면 정책이 변경될 때마다 정책 알림이 자동으로 강제 새로고침되어 잦은 새로고침이 불필요하므로 새로고침 지연이 24시간으로 설정됩니다(모든 기본값 및 이 정책의 값 무시).</translation>
 <translation id="5530347722229944744">위험할 가능성이 있는 다운로드 차단</translation>
-<translation id="5530586312297447592">피싱 페이지에서 비밀번호가 재사용되어 위험 계정에 관한 비밀번호 보호 경고가 실행됨</translation>
 <translation id="5535973522252703021">Kerberos 위임 서버 허용목록</translation>
 <translation id="555077880566103058">모든 사이트에서 <ph name="FLASH_PLUGIN_NAME" /> 플러그인을 자동으로 실행하도록 허용</translation>
 <translation id="5559079916187891399">이 정책은 Android 앱에 아무런 영향을 미치지 않습니다.</translation>
@@ -1953,7 +1958,6 @@
 
           이 정책의 URL 패턴은 WebUsbAskForUrls를 통해 구성된 패턴과 충돌해서는 안 됩니다. URL이 두 정책과 모두 일치할 때 어떤 정책이 우선 적용되는지 지정되어 있지 않습니다.</translation>
 <translation id="6689792153960219308">하드웨어 상태 보고</translation>
-<translation id="6698071416141001300">비밀번호가 재사용되어 위험 계정에 관한 비밀번호 보호 경고가 실행됨</translation>
 <translation id="6699880231565102694">원격 액세스 호스트를 위한 2단계 인증 사용</translation>
 <translation id="6724842112053619797">이 설정을 사용하면 북마크, 데이터 자동 완성, 비밀번호 등 <ph name="PRODUCT_NAME" /> 프로필에 저장된 설정이 로밍 사용자 프로필 폴더나 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 정책을 통해 관리자가 지정한 위치에 저장된 파일에도 작성됩니다. 이 정책을 사용하면 클라우드 동기화는 사용 중지됩니다.
 

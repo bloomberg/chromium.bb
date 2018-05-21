@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">Salli etätodennus laitteelle</translation>
 <translation id="1062407476771304334">Korvaa</translation>
 <translation id="1079801999187584280">Estä kehittäjätyökalujen käyttö</translation>
-<translation id="109166998561583554">Salasanasuojauksen riskialttiin tilin merkinnän käynnistin</translation>
 <translation id="1093082332347834239">Jos tämä asetus on käytössä, etätuen isäntä suoritetaan prosessissa, jonka käyttöoikeuksiin sisältyy <ph name="UIACCESS_PERMISSION_NAME" />. Tällöin etäkäyttäjä voi käyttää paikallisen käyttäjän työpöydällä olevia ikkunoita, jotka edellyttävät järjestelmänvalvojan käyttöoikeuksia.
 
           Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, etätuen isäntä suoritetaan käyttäjän kontekstissa, jolloin etäkäyttäjä ei voi käyttää työpöydällä olevia järjestelmänvalvojan oikeuksia edellyttäviä ikkunoita.</translation>
@@ -105,7 +104,6 @@
 <translation id="1438739959477268107">Oletusavaimen luomisasetus</translation>
 <translation id="1454846751303307294">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa suorittaa JavaScriptiä. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultJavaScriptSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="1456822151187621582">Windows (käyttöjärjestelmässä <ph name="PRODUCT_OS_NAME" /> toimivat asiakkaat):</translation>
-<translation id="1457305643416399820">Salasanasuojauksen riskialttiin tilin merkintä on poissa käytöstä</translation>
 <translation id="1464848559468748897">Hallinnoi käyttäjien toimia monen profiilin käyttökerralla tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävillä laitteilla.
 
       Jos käytännön arvoksi asetetaan MultiProfileUserBehaviorUnrestricted, käyttäjä voi olla joko monen profiilin käyttökerran ensi- tai toissijainen käyttäjä.
@@ -320,6 +318,13 @@
 <translation id="2082205219176343977">Määritä vanhin sallittu Chrome-versio laitteelle.</translation>
 <translation id="209586405398070749">Vakaa versio</translation>
 <translation id="2098658257603918882">Ota käyttö- ja kaatumistietojen raportointi käyttöön</translation>
+<translation id="2111016292707172233">Määrittää, näyttääkö <ph name="PRODUCT_NAME" /> napauttamalla hakemisen sisältönäkymässä.
+
+      Jos asetus on käytössä, napauttamalla hakeminen on käytettävissä ja käyttäjä voi halutessaan ottaa sen käyttöön tai poistaa käytöstä.
+
+      Jos asetus ei ole käytössä, napauttamalla hakeminen poistetaan kokonaan käytöstä.
+
+      Tämän käytännön määrittämättä jättäminen vastaa sen käyttöönottoa yllä kuvatulla tavalla.</translation>
 <translation id="2113068765175018713">Rajoita laitteen käyttöaikaa automaattisella uudelleenkäynnistyksellä</translation>
 <translation id="2127599828444728326">Salli ilmoitukset näillä sivustoilla</translation>
 <translation id="2131902621292742709">Ruudun himmennyksen viive käytettäessä laitetta akkuvirralla</translation>
@@ -464,12 +469,6 @@
 <translation id="2386362615870139244">Salli näytön herätyksen lukitus</translation>
 <translation id="2411817661175306360">Salasanasuojauksen varoitus on poissa käytöstä</translation>
 <translation id="2411919772666155530">Estä ilmoitukset näillä sivustoilla</translation>
-<translation id="2415979855753196119">Sallii salasanasuojauksen riskialttiin tilin merkinnän käynnistyksen hallinnan. Salasanasuojauksen riskialttiin tilin merkintä tarkoittaa sitä, että Googlelle ilmoitetaan tilin olevan riskialtis kaappauksille.
-
-      Jos käytännön arvoksi on määritetty PasswordProtectionRiskOff, salasanasuojauksen riskialttiin tilin merkintää ei käynnistetä.
-      Jos käytännön arvoksi on määritetty PasswordProtectionRiskOnPasswordReuse, salasanasuojauksen riskialttiin tilin merkintä käynnistetään, kun käyttäjät käyttävät Google-salasanojaan sivustoilla, joita ei ole lisätty sallittujen sivustojen listaan.
-      Jos käytännön arvoksi on määritetty PasswordProtectionRiskOnPhishingReuse, salasanasuojauksen riskialttiin tilin merkintä käynnistetään, kun käyttäjät käyttävät Google-salasanojaan tietojenkalastelusivustoilla.
-      Jos käytäntöä ei ole määritetty, salasanasuojauksen riskialttiin tilin merkintä käynnistetään, kun käyttäjät käyttävät Google-salasanojaan tietojenkalastelusivustoilla. Käyttäjä voi kuitenkin muuttaa tämän asetuksen.</translation>
 <translation id="2418507228189425036">Määrittää, että <ph name="PRODUCT_NAME" /> ei tallenna selaushistoriaa, ja estää käyttäjiä muokkaamasta tätä asetusta.
 
       Jos tämä asetus on käytössä, selaushistoriaa ei tallenneta. Lisäksi tämä asetus poistaa käytöstä välilehtien synkronoinnin.
@@ -889,6 +888,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3646859102161347133">Aseta näytön suurentajan tyyppi</translation>
 <translation id="3653237928288822292">Oletushakupalvelun kuvake</translation>
 <translation id="3660562134618097814">SAML-tunnistuspalvelun evästeiden siirto kirjautumisen aikana</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Yksirivinen kenttä on poistettu käytöstä ja poistetaan pian kokonaan. Siirry käyttämään alla olevaa monirivistä tekstiruutua.)</translation>
 <translation id="3709266154059827597">Määritä, mitä laajennuksia ei saa asentaa</translation>
 <translation id="3711895659073496551">Keskeytä</translation>
 <translation id="3715569262675717862">Käyttöoikeusvarmenteisiin perustuva todennus</translation>
@@ -992,6 +992,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Luettelee laajennukset, jotka asennetaan automaattisesti esittelykäyttäjälle myyntitilassa olevilla laitteilla. Tällaiset laajennukset on tallennettu laitteelle, ja niitä on mahdollista asentaa offline-tilassa.
 
       Luettelon jokainen merkintä sisältää sanakirjan, jonka tulee sisältää laajennuksen tunnus (extension-id-kenttä) sekä sen päivitysosoite (update-url-kenttä).</translation>
+<translation id="3874773863217952418">Ota napauttamalla hakeminen käyttöön</translation>
 <translation id="3877517141460819966">Sisäänrakennettu monitasoinen todennustila</translation>
 <translation id="388237772682176890">Tämä käytäntö poistetaan käytöstä M53:ssa ja poistetaan kokonaan M54:ssä, koska SPDY/3.1-tuki poistuu.
 
@@ -1249,6 +1250,11 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Esimerkkimalleja on osoitteessa http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Avaa seuraavat sivut:</translation>
+<translation id="4680936297850947973">Poistettu käytöstä M68:ssa. Ota sen sijaan käyttöön DefaultPopupsSetting.
+
+      Saat lisätietoja osoitteesta https://www.chromestatus.com/features/5675755719622656.
+      Jos tämä käytäntö on otettu käyttöön, sivustot saavat käyttää siirtymistoimintoja ja avata uusia ikkunoita tai välilehtiä samanaikaisesti.
+      Jos tämä käytäntö on poistettu käytöstä tai sitä ei ole määritetty, sivustoja estetään käyttämästä siirtymistoimintoja ja avaamasta uusia ikkunoita tai välilehtiä samanaikaisesti.</translation>
 <translation id="4680961954980851756">Ota automaattinen täyttö käyttöön</translation>
 <translation id="4722122254122249791">Ota sivuston eristäminen käyttöön tiettyjen alkuperien kohdalla</translation>
 <translation id="4722399051042571387">Jos asetuksen arvo on epätosi, käyttäjät eivät voi asettaa heikkoja tai helposti arvattavia PIN-koodeja.
@@ -1511,7 +1517,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
       Huom. Jos ympäristö tukee käytäntöilmoituksia, päivitysviiveeksi määritetään 24 tuntia (tämän käytännön oletus- ja muut arvot ohitetaan), sillä todennäköisesti käytäntöilmoitus pakottaa sovelluksen suorittamaan päivityksen käytännön muuttuessa. Tästä syystä päivityksiä ei tarvitse suorittaa useammin.</translation>
 <translation id="5530347722229944744">Estä mahdollisesti vaaralliset lataukset</translation>
-<translation id="5530586312297447592">Salasanasuojauksen riskialttiin tilin merkintä käynnistyy, kun salasanaa käytetään uudelleen tietojenkalastelusivulla</translation>
 <translation id="5535973522252703021">Sallitut Kerberos-delegaatiopalvelimet</translation>
 <translation id="555077880566103058">Salli kaikkien sivustojen suorittaa <ph name="FLASH_PLUGIN_NAME" />-laajennus automaattisesti.</translation>
 <translation id="5559079916187891399">Tällä käytännöllä ei ole vaikutusta Android-sovelluksiin.</translation>
@@ -1866,7 +1871,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
           Tämän käytännön URL-osoitemallien on sovittava yhteen WebUsbAskForUrlsin kautta määritettyjen kanssa. Jos URL-osoite sopii yhteen kummankin kanssa, etusijan ottavaa käytäntöä ei ole määritetty.</translation>
 <translation id="6689792153960219308">Laitteiston tilan raportointi</translation>
-<translation id="6698071416141001300">Salasanasuojauksen riskialttiin tilin merkintä käynnistyy, kun salasanaa käytetään uudelleen</translation>
 <translation id="6699880231565102694">Ota kahden tekijän todennus käyttöön etäisännille</translation>
 <translation id="6724842112053619797">Jos tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> ‑profiileihin tallennetut tiedot, esim. kirjanmerkit, automaattisen täytön tiedot ja salasanat, tallennetaan myös roaming-käyttäjän profiilitiedostoon tai järjestelmänvalvojan <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />-käytännössä määrittämään sijaintiin. Pilvisynkronointi poistetaan käytöstä, kun tämä käytäntö on käytössä.
 

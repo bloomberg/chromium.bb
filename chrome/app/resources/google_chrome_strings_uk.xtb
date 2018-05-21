@@ -14,6 +14,7 @@
 <translation id="127345590676626841">Chrome оновлюється автоматично, щоб у вас завжди була найновіша версія. Коли це завантаження завершиться, Chrome перезапуститься, і ви зможете продовжувати роботу.</translation>
 <translation id="1302523850133262269">Зачекайте, доки Chrome установить найновіші оновлення системи.</translation>
 <translation id="137466361146087520">Бета-версія Google Chrome</translation>
+<translation id="1388971155537343688">Запускається Chrome</translation>
 <translation id="1393853151966637042">Отримати довідку щодо користування Chrome</translation>
 <translation id="1399397803214730675">На комп’ютері вже встановлено новішу версію Google Chrome. Якщо програмне забезпечення не працює, видаліть Google Chrome і повторіть спробу.</translation>
 <translation id="1434626383986940139">Програми Chrome для версії Canary</translation>
@@ -169,6 +170,7 @@
 <translation id="573759479754913123">Про ОС Chrome</translation>
 <translation id="5774845247549698882">Для ОС Chrome вибрано цю мову</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
+<translation id="5804318322022881572">Не вдалося запустити Chrome. Повторіть спробу.</translation>
 <translation id="5855036575689098185">Програмне забезпечення, запущене на вашому комп’ютері, не сумісне з Google Chrome.</translation>
 <translation id="5877064549588274448">Канал змінено. Перезапустіть пристрій, щоб застосувати зміни.</translation>
 <translation id="5895138241574237353">Перезапустити</translation>
@@ -223,6 +225,7 @@
 <translation id="7589360514048265910">На цей комп’ютер більше не надходитимуть оновлення Google Chrome, оскільки ОС Mac X 10.9 уже не підтримується.</translation>
 <translation id="7592736734348559088">Google Chrome не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
 <translation id="7626032353295482388">Вітаємо у Chrome!</translation>
+<translation id="7651907282515937834">Логотип Chrome Enterprise</translation>
 <translation id="7747138024166251722">Програмі встановлення не вдалося створити тимчасовий каталог. Перевірте наявність вільного простору на диску та дозволу на встановлення програмного забезпечення.</translation>
 <translation id="7756122083761163394">Дані веб-перегляду цього користувача буде видалено з цього пристрою. Щоб відновити дані, увійдіть в обліковий запис Chrome як $2.</translation>
 <translation id="7761834446675418963">Натисніть своє ім’я, щоб відкрити Chrome і розпочати перегляд сайтів.</translation>

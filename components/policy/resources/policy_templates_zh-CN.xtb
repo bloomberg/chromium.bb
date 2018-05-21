@@ -28,7 +28,6 @@
 <translation id="1062011392452772310">为设备启用远程认证</translation>
 <translation id="1062407476771304334">替换</translation>
 <translation id="1079801999187584280">禁止使用开发者工具</translation>
-<translation id="109166998561583554">“密码保护服务举报面临风险的帐号”功能触发条件</translation>
 <translation id="1093082332347834239">启用此设置后，远程协助主机会在具有 <ph name="UIACCESS_PERMISSION_NAME" /> 权限的进程中运行。这样，远程用户就可以在本地用户桌面上操控提权后的窗口。
 
           如果停用或未配置此设置，远程协助主机则会在用户的环境中运行，而远程用户将无法在桌面上操控提权后的窗口。</translation>
@@ -104,7 +103,6 @@
 <translation id="1438739959477268107">默认的密钥生成设置</translation>
 <translation id="1454846751303307294">可让您设置网址格式的列表，这些网址格式用于指定不允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="1456822151187621582">Windows（<ph name="PRODUCT_OS_NAME" />客户端）：</translation>
-<translation id="1457305643416399820">“密码保护服务举报面临风险的帐号”功能处于关闭状态</translation>
 <translation id="1464848559468748897">控制<ph name="PRODUCT_OS_NAME" />设备上多个人资料会话中的用户行为。
 
       如果此政策设为“MultiProfileUserBehaviorUnrestricted”，用户将能够以主用户或次要用户的身份登录多个人资料会话。
@@ -308,6 +306,13 @@
 <translation id="2082205219176343977">为设备配置允许使用的最低 Chrome 版本。</translation>
 <translation id="209586405398070749">稳定版</translation>
 <translation id="2098658257603918882">启用关于使用情况和崩溃相关数据的报告</translation>
+<translation id="2111016292707172233">在 <ph name="PRODUCT_NAME" /> 的内容视图中启用“点按搜索”功能。
+
+      如果您启用了此设置，用户将能够使用“点按搜索”功能，并可选择开启或关闭该功能。
+
+      如果您停用了此设置，“点按搜索”功能将会被完全停用。
+
+      如果您未设置此政策，则等同于已启用此政策，请参见上述说明。</translation>
 <translation id="2113068765175018713">通过自动重启限制设备的正常运行时间</translation>
 <translation id="2127599828444728326">允许在这些网站上显示通知</translation>
 <translation id="2131902621292742709">使用电源供电时的屏幕变暗延迟时间</translation>
@@ -437,12 +442,6 @@
 <translation id="2386362615870139244">允许使用屏幕唤醒锁定</translation>
 <translation id="2411817661175306360">密码保护服务警告功能处于关闭状态</translation>
 <translation id="2411919772666155530">阻止在这些网站上显示通知</translation>
-<translation id="2415979855753196119">可让您控制“密码保护服务举报面临风险的帐号”功能的触发条件。该功能可在相应帐号面临被盗用的风险时向 Google 发出通知。
-
-      如果此政策设为“PasswordProtectionRiskOff”，则一律不会触发“密码保护服务举报面临风险的帐号”功能。
-      如果此政策设为“PasswordProtectionRiskOnPasswordReuse”，那么每当用户在任何未列入白名单的网站上重复使用 Google 密码时，都会触发“密码保护服务举报面临风险的帐号”功能。
-      如果此政策设为“PasswordProtectionRiskOnPhishingReuse”，那么每当用户在网上诱骗网站上重复使用 Google 密码时，都会触发“密码保护服务举报面临风险的帐号”功能。
-      如果未设置此政策，那么当用户在网上诱骗网站上重复使用 Google 密码时，“密码保护服务举报面临风险的帐号”功能便会被触发，但用户可以更改此设置。</translation>
 <translation id="2418507228189425036">停用 <ph name="PRODUCT_NAME" /> 中的浏览记录保存功能，并禁止用户更改此设置。
 
       如果此设置处于启用状态，系统将不会保存浏览记录，并且会停用标签页同步功能。
@@ -853,6 +852,7 @@
 <translation id="3646859102161347133">设置放大镜类型</translation>
 <translation id="3653237928288822292">默认搜索服务提供商图标</translation>
 <translation id="3660562134618097814">在用户登录期间转移 SAML IdP Cookie</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" />（我们已弃用并将于日后移除单行字段。请开始使用下面的多行文本框。）</translation>
 <translation id="3709266154059827597">配置扩展程序安装黑名单</translation>
 <translation id="3711895659073496551">暂停</translation>
 <translation id="3715569262675717862">基于客户端证书的身份验证</translation>
@@ -952,6 +952,7 @@
     列出系统自动为演示用户安装的扩展程序（它们将安装在零售模式下的设备上）。安装后，这些扩展程序保存在该设备中，并且可以在离线状态下安装。
 
       每个列表条目都包含一个字典，其“extension-id”字段必须包含扩展程序 ID，而其“update-url”字段必须包含更新网址。</translation>
+<translation id="3874773863217952418">启用“点按搜索”</translation>
 <translation id="3877517141460819966">集成的双重身份验证模式</translation>
 <translation id="388237772682176890">我们在 M53 中弃用了此政策，并在 M54 中移除了此政策（因为 SPDY/3.1 已不再受支持）。
 
@@ -1207,6 +1208,11 @@
 
           要查看示例格式，请访问 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="467449052039111439">打开网址列表</translation>
+<translation id="4680936297850947973">已在 M68 中弃用。请改用 DefaultPopupsSetting。
+
+      如需完整说明，请访问 https://www.chromestatus.com/features/5675755719622656。
+      如果您启用了此政策，网站将可以在导航的同时打开新窗口/标签页。
+      如果您停用了或未设置此政策，网站将无法在导航的同时打开新窗口/标签页。</translation>
 <translation id="4680961954980851756">启用自动填充</translation>
 <translation id="4722122254122249791">为指定的来源启用网站隔离功能</translation>
 <translation id="4722399051042571387">如果设为 false，用户将无法设置安全系数低且易于猜中的 PIN 码。
@@ -1465,7 +1471,6 @@
 
       请注意，如果平台支持政策通知，刷新延迟时间将被设为 24 小时（忽略所有默认值和此政策的值），这是因为只要政策发生变化，政策通知应该会自动强制进行刷新，所以没有必要更频繁地进行刷新。</translation>
 <translation id="5530347722229944744">拦截可能有危险的下载内容</translation>
-<translation id="5530586312297447592">在网上诱骗网页中重复使用密码可触发“密码保护服务举报面临风险的帐号”功能</translation>
 <translation id="5535973522252703021">Kerberos 授权服务器白名单</translation>
 <translation id="555077880566103058">允许所有网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件</translation>
 <translation id="5559079916187891399">此政策对 Android 应用没有任何影响。</translation>
@@ -1821,7 +1826,6 @@
 
           此政策中的网址格式不应与通过 WebUsbAskForUrls 配置的网址格式冲突，因为无从指定当某个网址与这两项政策都相符时应以哪项政策为准。</translation>
 <translation id="6689792153960219308">报告硬件状态</translation>
-<translation id="6698071416141001300">重复使用密码可触发“密码保护服务举报面临风险的帐号”功能</translation>
 <translation id="6699880231565102694">为远程访问主机启用双重身份验证</translation>
 <translation id="6724842112053619797">如果您启用此设置，存储在 <ph name="PRODUCT_NAME" /> 个人资料中的设置（例如书签、自动填充数据、密码等）将会被写入一个存储在漫游用户个人资料文件夹内的文件中，或被写入一个由管理员通过 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 政策指定的位置中。启用此政策会停用云同步。
 
@@ -2608,11 +2612,11 @@
 <translation id="9035964157729712237">要从黑名单中排除的扩展程序 ID</translation>
 <translation id="9042911395677044526">允许将要按用户应用的网络配置推送到 <ph name="PRODUCT_OS_NAME" />设备。网络配置是 JSON 格式的字符串，具体定义如 <ph name="ONC_SPEC_URL" /> 中的开放网络配置格式所述。</translation>
 <translation id="9084985621503260744">指定视频活动是否影响电源管理</translation>
-<translation id="9085839450090699752">让您能够设置一个时间段（以毫秒为单位），以供系统用于通知用户必须重新启动 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />设备以应用尚未应用的更新。
+<translation id="9085839450090699752">让您能够设置一个时间段（以毫秒为单位），使系统在此时间段内通知用户必须重新启动 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />设备以应用尚未应用的更新。
 
-      在该时间段内，系统将会反复提示用户需要进行更新。对于 <ph name="PRODUCT_OS_NAME" />设备，当检测到待处理的升级时，系统任务栏中就会显示重新启动通知。此通知会在通知时段过半后改变一次颜色，并会在整个通知时段过后再次改变颜色。对于 <ph name="PRODUCT_NAME" /> 浏览器，应用菜单会发生变化以指示在通知时段的三分之一过后需要重新启动。此通知会在通知时段的三分之二过后改变一次颜色，并会在整个通知时段过后再次改变颜色。<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策为浏览器启用的其他通知也会遵循这一时间表。
+      在该时间段内，系统将会反复提示用户需要进行更新。对于 <ph name="PRODUCT_OS_NAME" />设备，当检测到待处理的升级时，系统任务栏中就会显示重新启动通知。此通知会在通知时段过半后改变一次颜色，并会在整个通知时段过后再次改变颜色。对于 <ph name="PRODUCT_NAME" /> 浏览器，应用菜单会在通知时段的三分之一过后发生变化以指示需要重新启动。此通知会在通知时段的三分之二过后改变一次颜色，并会在整个通知时段过后再次改变颜色。<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策为浏览器启用的其他通知也会遵循这一时间表。
 
-      如果未设置此政策，系统将会使用 345600000 毫秒（4 天）作为 <ph name="PRODUCT_OS_NAME" />设备默认的通知时间段，并会使用 604800000 毫秒（1 周）作为所有浏览器默认的通知时间段。</translation>
+      如果未设置此政策，系统将会对 <ph name="PRODUCT_OS_NAME" />设备使用 345600000 毫秒（4 天）的默认通知时间段，对浏览器使用 604800000 毫秒（1 周）的默认通知时间段。</translation>
 <translation id="9088433379343318874">启用受监管用户内容提供方</translation>
 <translation id="9088444059179765143">配置自动检测时区方法</translation>
 <translation id="9096086085182305205">身份验证服务器白名单</translation>

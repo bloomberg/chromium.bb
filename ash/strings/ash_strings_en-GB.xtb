@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">Wi-Fi is turned off.</translation>
 <translation id="1864454756846565995">USB-C device (rear port)</translation>
 <translation id="1882897271359938046">Mirroring to <ph name="DISPLAY_NAME" /></translation>
+<translation id="1885785240814121742">Unlock with fingerprint</translation>
 <translation id="1919743966458266018">The shortcut to open the task manager has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatic clicks</translation>
 <translation id="1928739107511554905">To get the update, use the touchscreen to restart your Chromebook with the keyboard attached.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">Sticky keys</translation>
 <translation id="2509468283778169019">CAPS LOCK is on</translation>
 <translation id="2532589005999780174">High contrast mode</translation>
+<translation id="2575685495496069081">Multiple sign-in has been disabled</translation>
 <translation id="2597972630681408282">Night Light: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM card is locked</translation>
 <translation id="2653659639078652383">Submit</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">Capture region</translation>
 <translation id="371370241367527062">Front microphone</translation>
 <translation id="3771549900096082774">High contrast mode</translation>
+<translation id="3773700760453577392">An administrator has disallowed multiple sign-in for <ph name="USER_EMAIL" />. All users must sign out to continue.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lock</translation>
 <translation id="3798670284305777884">Speaker (internal)</translation>

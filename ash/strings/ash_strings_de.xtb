@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">WLAN ist deaktiviert.</translation>
 <translation id="1864454756846565995">USB-C-Gerät (Port hinten)</translation>
 <translation id="1882897271359938046">Wird auf <ph name="DISPLAY_NAME" /> gespiegelt...</translation>
+<translation id="1885785240814121742">Mit Fingerabdruck entsperren</translation>
 <translation id="1919743966458266018">Die Tastenkombination zum Öffnen des Task-Managers hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatische Klicks</translation>
 <translation id="1928739107511554905">Sie können das Update vornehmen, indem Sie den Touchscreen verwenden, um das Chromebook mit angeschlossener Tastatur neu zu starten.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">Sticky Keys</translation>
 <translation id="2509468283778169019">Feststelltaste An</translation>
 <translation id="2532589005999780174">Modus mit hohem Kontrast</translation>
+<translation id="2575685495496069081">Mehrfachanmeldung wurde deaktiviert</translation>
 <translation id="2597972630681408282">Nachtlicht: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-Karte ist gesperrt</translation>
 <translation id="2653659639078652383">Senden</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">Bereich erfassen</translation>
 <translation id="371370241367527062">Mikrofon auf der Vorderseite</translation>
 <translation id="3771549900096082774">Modus mit hohem Kontrast</translation>
+<translation id="3773700760453577392">Ein Administrator hat die Mehrfachanmeldung für <ph name="USER_EMAIL" /> deaktiviert. Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="3783640748446814672">Alt</translation>
 <translation id="3784455785234192852">Sperren</translation>
 <translation id="3798670284305777884">Lautsprecher (intern)</translation>
