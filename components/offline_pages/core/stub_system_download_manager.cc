@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/system_download_manager_stub.h"
+#include "components/offline_pages/core/stub_system_download_manager.h"
 
 namespace offline_pages {
 
-SystemDownloadManagerStub::SystemDownloadManagerStub(int64_t id_to_use,
+StubSystemDownloadManager::StubSystemDownloadManager(int64_t id_to_use,
                                                      bool installed)
     : download_id_(id_to_use), last_removed_id_(0), installed_(installed) {}
 
-SystemDownloadManagerStub::~SystemDownloadManagerStub() {}
+StubSystemDownloadManager::~StubSystemDownloadManager() {}
 
-bool SystemDownloadManagerStub::IsDownloadManagerInstalled() {
+bool StubSystemDownloadManager::IsDownloadManagerInstalled() {
   return installed_;
 }
 
-int64_t SystemDownloadManagerStub::AddCompletedDownload(
+int64_t StubSystemDownloadManager::AddCompletedDownload(
     const std::string& title,
     const std::string& description,
     const std::string& path,
@@ -33,7 +33,7 @@ int64_t SystemDownloadManagerStub::AddCompletedDownload(
   return download_id_;
 }
 
-int SystemDownloadManagerStub::Remove(
+int StubSystemDownloadManager::Remove(
     const std::vector<int64_t>& android_download_manager_ids) {
   int count = static_cast<int>(android_download_manager_ids.size());
   if (count > 0)

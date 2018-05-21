@@ -12,7 +12,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
-#include "components/offline_pages/core/system_download_manager_stub.h"
+#include "components/offline_pages/core/stub_system_download_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -106,7 +106,7 @@ TEST_F(OfflinePageArchiverTest, PublishArchive) {
   base::FilePath new_file_path =
       public_archive_dir_path().Append(offline_page.file_path.BaseName());
   std::unique_ptr<SystemDownloadManager> download_manager(
-      new SystemDownloadManagerStub(kDownloadId, true));
+      new StubSystemDownloadManager(kDownloadId, true));
 
   archiver.PublishArchive(
       offline_page, base::ThreadTaskRunnerHandle::Get(),
