@@ -12,7 +12,7 @@ ContainerFullscreenBehavior::ContainerFullscreenBehavior(
 
 ContainerFullscreenBehavior::~ContainerFullscreenBehavior() {}
 
-const gfx::Rect ContainerFullscreenBehavior::AdjustSetBoundsRequest(
+gfx::Rect ContainerFullscreenBehavior::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
     const gfx::Rect& requested_bounds_in_screen_coords) {
   return display_bounds;

@@ -58,7 +58,7 @@ class KEYBOARD_EXPORT NotificationManager {
   // ought to be considered equal regardless of location or non-zero dimensions.
   // This method will return a default empty (0,0,0,0) rectangle for any 0-area
   // rectangle, otherwise it returns the original rectangle, unmodified.
-  const gfx::Rect CanonicalizeEmptyRectangles(const gfx::Rect rect) const;
+  gfx::Rect CanonicalizeEmptyRectangles(const gfx::Rect& rect) const;
 
   ValueNotificationConsolidator<bool> availability_;
   ValueNotificationConsolidator<gfx::Rect> visual_bounds_;

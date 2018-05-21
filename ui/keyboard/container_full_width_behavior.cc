@@ -56,7 +56,7 @@ void ContainerFullWidthBehavior::InitializeShowAnimationStartingState(
   container->layer()->SetOpacity(kAnimationStartOrAfterHideOpacity);
 }
 
-const gfx::Rect ContainerFullWidthBehavior::AdjustSetBoundsRequest(
+gfx::Rect ContainerFullWidthBehavior::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
     const gfx::Rect& requested_bounds_in_screen_coords) {
   gfx::Rect new_bounds;

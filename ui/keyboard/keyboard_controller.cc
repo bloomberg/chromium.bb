@@ -286,7 +286,7 @@ void KeyboardController::NotifyContentsBoundsChanging(
   }
 }
 
-void KeyboardController::MoveKeyboard(const gfx::Rect new_bounds) {
+void KeyboardController::MoveKeyboard(const gfx::Rect& new_bounds) {
   DCHECK(keyboard_visible());
   SetContainerBounds(new_bounds, false);
 }
@@ -786,13 +786,13 @@ void KeyboardController::ReportLingeringState() {
                             state_, KeyboardControllerState::COUNT);
 }
 
-const gfx::Rect KeyboardController::GetWorkspaceObscuringBounds() const {
+gfx::Rect KeyboardController::GetWorkspaceObscuringBounds() const {
   if (keyboard_visible() && container_behavior_->BoundsObscureUsableRegion())
     return current_keyboard_bounds_;
   return gfx::Rect();
 }
 
-const gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
+gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
   // Overscroll is generally dependent on lock state, however, its behavior
   // temporarily overridden by a static field in certain lock screen contexts.
   // Furthermore, floating keyboard should never affect layout.
@@ -803,7 +803,7 @@ const gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
   return gfx::Rect();
 }
 
-const gfx::Rect KeyboardController::AdjustSetBoundsRequest(
+gfx::Rect KeyboardController::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
     const gfx::Rect& requested_bounds) const {
   return container_behavior_->AdjustSetBoundsRequest(display_bounds,

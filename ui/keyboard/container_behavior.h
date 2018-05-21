@@ -41,7 +41,7 @@ class KEYBOARD_EXPORT ContainerBehavior {
   // adjust the request to different bounds, if necessary. This method gets
   // called at any time during the keyboard's life cycle. The bounds are in
   // global screen coordinates.
-  virtual const gfx::Rect AdjustSetBoundsRequest(
+  virtual gfx::Rect AdjustSetBoundsRequest(
       const gfx::Rect& display_bounds,
       const gfx::Rect& requested_bounds_in_screen_coords) = 0;
 

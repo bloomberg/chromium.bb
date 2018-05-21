@@ -157,11 +157,11 @@ class KEYBOARD_EXPORT KeyboardController
   // Returns the current bounds that affect the workspace layout. If the
   // keyboard is not shown or if the keyboard mode should not affect the usable
   // region of the screen, an empty rectangle will get returned.
-  const gfx::Rect GetWorkspaceObscuringBounds() const;
+  gfx::Rect GetWorkspaceObscuringBounds() const;
 
   // Returns the current bounds that affect the window layout of the various
   // lock screens.
-  const gfx::Rect GetKeyboardLockScreenOffsetBounds() const;
+  gfx::Rect GetKeyboardLockScreenOffsetBounds() const;
 
   KeyboardControllerState GetStateForTest() const { return state_; }
 
@@ -169,9 +169,8 @@ class KEYBOARD_EXPORT KeyboardController
     return container_behavior_->GetType();
   }
 
-  const gfx::Rect AdjustSetBoundsRequest(
-      const gfx::Rect& display_bounds,
-      const gfx::Rect& requested_bounds) const;
+  gfx::Rect AdjustSetBoundsRequest(const gfx::Rect& display_bounds,
+                                   const gfx::Rect& requested_bounds) const;
 
   // Returns true if overscroll is currently allowed by the active keyboard
   // container behavior.
@@ -182,12 +181,12 @@ class KEYBOARD_EXPORT KeyboardController
   bool HandlePointerEvent(const ui::LocatedEvent& event);
 
   // Moves an already loaded keyboard.
-  void MoveKeyboard(const gfx::Rect new_bounds);
+  void MoveKeyboard(const gfx::Rect& new_bounds);
 
   // Sets the active container type. If the keyboard is currently shown, this
   // will trigger a hide animation and a subsequent show animation. Otherwise
   // the ContainerBehavior change is synchronous.
-  void SetContainerType(const ContainerType type,
+  void SetContainerType(ContainerType type,
                         base::Optional<gfx::Rect> target_bounds,
                         base::OnceCallback<void(bool)> callback);
 
@@ -278,7 +277,7 @@ class KEYBOARD_EXPORT KeyboardController
   // time ago.
   void ShowKeyboardIfWithinTransientBlurThreshold();
 
-  void SetContainerBehaviorInternal(const ContainerType type);
+  void SetContainerBehaviorInternal(ContainerType type);
 
   std::unique_ptr<KeyboardUI> ui_;
   KeyboardLayoutDelegate* layout_delegate_;

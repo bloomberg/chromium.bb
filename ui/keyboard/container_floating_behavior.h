@@ -41,7 +41,7 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
       aura::Window* window,
       ui::ScopedLayerAnimationSettings* animation_settings) override;
   void InitializeShowAnimationStartingState(aura::Window* container) override;
-  const gfx::Rect AdjustSetBoundsRequest(
+  gfx::Rect AdjustSetBoundsRequest(
       const gfx::Rect& display_bounds,
       const gfx::Rect& requested_bounds_in_screen_coords) override;
   bool IsOverscrollAllowed() const override;
