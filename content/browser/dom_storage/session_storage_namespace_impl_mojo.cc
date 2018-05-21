@@ -21,8 +21,7 @@ SessionStorageNamespaceImplMojo::SessionStorageNamespaceImplMojo(
     : namespace_id_(std::move(namespace_id)),
       data_map_listener_(data_map_listener),
       add_namespace_callback_(std::move(add_namespace_callback)),
-      register_new_map_callback_(std::move(register_new_map_callback)),
-      binding_(this) {}
+      register_new_map_callback_(std::move(register_new_map_callback)) {}
 
 SessionStorageNamespaceImplMojo::~SessionStorageNamespaceImplMojo() = default;
 
@@ -87,7 +86,7 @@ void SessionStorageNamespaceImplMojo::Reset() {
   run_after_clone_population_.clear();
   populated_ = false;
   origin_areas_.clear();
-  binding_.Close();
+  bindings_.CloseAllBindings();
 }
 
 void SessionStorageNamespaceImplMojo::Bind(
@@ -102,7 +101,7 @@ void SessionStorageNamespaceImplMojo::Bind(
   }
   DCHECK(IsPopulated());
   process_id_ = process_id;
-  binding_.Bind(std::move(request));
+  bindings_.AddBinding(this, std::move(request));
   bind_waiting_on_clone_population_ = false;
 }
 
@@ -136,11 +135,11 @@ void SessionStorageNamespaceImplMojo::OpenArea(
     const url::Origin& origin,
     mojom::LevelDBWrapperAssociatedRequest database) {
   DCHECK(IsPopulated());
-  DCHECK(binding_.is_bound());
+  DCHECK(!bindings_.empty());
   DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);
   if (!ChildProcessSecurityPolicy::GetInstance()->CanAccessDataForOrigin(
           process_id_, origin.GetURL())) {
-    binding_.ReportBadMessage("Access denied for sessionStorage request");
+    bindings_.ReportBadMessage("Access denied for sessionStorage request");
     return;
   }
   auto it = origin_areas_.find(origin);

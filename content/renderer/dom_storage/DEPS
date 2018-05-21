@@ -1,6 +1,7 @@
 specific_include_rules = {
   'local_storage\.*': [
     "-content/renderer",
+    "+components/services/leveldb/public/cpp/util.h",
     "+components/services/leveldb/public/interfaces",
     "+content/common/dom_storage/dom_storage_map.h",
     "+content/renderer/dom_storage/local_storage_cached_area.h",

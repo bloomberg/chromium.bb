@@ -327,7 +327,8 @@ void SessionStorageContextMojo::PurgeUnusedWrappersIfNeeded() {
 
 void SessionStorageContextMojo::ScavengeUnusedNamespaces(
     base::OnceClosure done) {
-  DCHECK(!has_scavenged_);
+  if (has_scavenged_)
+    return;
   if (connection_state_ != CONNECTION_FINISHED) {
     RunWhenConnected(
         base::BindOnce(&SessionStorageContextMojo::ScavengeUnusedNamespaces,
@@ -753,7 +754,7 @@ void SessionStorageContextMojo::OnGotNextMapId(
 }
 
 void SessionStorageContextMojo::OnConnectionFinished() {
-  DCHECK_EQ(connection_state_, FETCHING_METADATA);
+  DCHECK(!database_ || connection_state_ == FETCHING_METADATA);
   if (!database_) {
     partition_directory_.reset();
     file_system_.reset();
