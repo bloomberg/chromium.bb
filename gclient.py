@@ -438,7 +438,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     condition_part = (['    "condition": %r,' % self.condition]
                       if self.condition else [])
     s.extend([
-        '  # %s' % self.hierarchy(include_url=False),
+        '  # %s' % self.hierarchy(),
         '  "%s": {' % (self.name,),
         '    "url": "%s",' % (self.raw_url,),
     ] + condition_part + [
@@ -1120,16 +1120,12 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   def __repr__(self):
     return '%s: %s' % (self.name, self.url)
 
-  def hierarchy(self, include_url=True):
+  def hierarchy(self):
     """Returns a human-readable hierarchical reference to a Dependency."""
-    def format_name(d):
-      if include_url:
-        return '%s(%s)' % (d.name, d.url)
-      return d.name
-    out = format_name(self)
+    out = self.name
     i = self.parent
     while i and i.name:
-      out = '%s -> %s' % (format_name(i), out)
+      out = '%s -> %s' % (i.name, out)
       i = i.parent
     return out
 
@@ -1820,7 +1816,7 @@ class CipdDependency(Dependency):
       condition_part = (['    "condition": %r,' % self.condition]
                         if self.condition else [])
       s.extend([
-          '  # %s' % self.hierarchy(include_url=False),
+          '  # %s' % self.hierarchy(),
           '  "%s": {' % (self.name.split(':')[0],),
           '    "packages": [',
       ])
@@ -2018,7 +2014,7 @@ class Flattener(object):
 
     # Only include vars explicitly listed in the DEPS files or gclient solution,
     # not automatic, local overrides (i.e. not all of dep.get_vars()).
-    hierarchy = dep.hierarchy(include_url=False)
+    hierarchy = dep.hierarchy()
     for key, value in dep._vars.iteritems():
       # Make sure there are no conflicting variables. It is fine however
       # to use same variable name, as long as the value is consistent.
@@ -2132,7 +2128,7 @@ def _DepsOsToLines(deps_os):
       condition_part = (['      "condition": %r,' % dep.condition]
                         if dep.condition else [])
       s.extend([
-          '    # %s' % dep.hierarchy(include_url=False),
+          '    # %s' % dep.hierarchy(),
           '    "%s": {' % (name,),
           '      "url": "%s",' % (dep.raw_url,),
       ] + condition_part + [
@@ -2151,7 +2147,7 @@ def _HooksToLines(name, hooks):
   s = ['%s = [' % name]
   for dep, hook in hooks:
     s.extend([
-        '  # %s' % dep.hierarchy(include_url=False),
+        '  # %s' % dep.hierarchy(),
         '  {',
     ])
     if hook.name is not None:
@@ -2180,7 +2176,7 @@ def _HooksOsToLines(hooks_os):
     s.append('  "%s": [' % hook_os)
     for dep, hook in os_hooks:
       s.extend([
-          '    # %s' % dep.hierarchy(include_url=False),
+          '    # %s' % dep.hierarchy(),
           '    {',
       ])
       if hook.name is not None:
