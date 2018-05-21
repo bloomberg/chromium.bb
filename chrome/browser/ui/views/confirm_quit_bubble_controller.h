@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "ui/gfx/animation/animation_delegate.h"
 
 class ConfirmQuitBubbleBase;
 
@@ -17,17 +18,21 @@ template <typename T>
 struct DefaultSingletonTraits;
 }
 
+namespace gfx {
+class SlideAnimation;
+}
+
 namespace ui {
 class Accelerator;
 }
 
 // Manages showing and hiding the confirm-to-quit bubble.  Requests Chrome to be
 // closed if the quit accelerator is held down or pressed twice in succession.
-class ConfirmQuitBubbleController {
+class ConfirmQuitBubbleController : public gfx::AnimationDelegate {
  public:
   static ConfirmQuitBubbleController* GetInstance();
 
-  ~ConfirmQuitBubbleController();
+  ~ConfirmQuitBubbleController() override;
 
   // Returns true if the event was handled.
   bool HandleKeyboardEvent(const ui::Accelerator& accelerator);
@@ -36,12 +41,39 @@ class ConfirmQuitBubbleController {
   friend struct base::DefaultSingletonTraits<ConfirmQuitBubbleController>;
   friend class ConfirmQuitBubbleControllerTest;
 
+  enum class State {
+    // The accelerator has not been pressed.
+    kWaiting,
+
+    // The accelerator was pressed, but not yet released.
+    kPressed,
+
+    // The accelerator was pressed and released before the timer expired.
+    kReleased,
+
+    // The accelerator was either held down for the entire duration of the
+    // timer, or was pressed a second time.  Either way, the accelerator is
+    // currently held.
+    kConfirmed,
+
+    // The accelerator was released and Chrome is now quitting.
+    kQuitting,
+  };
+
+  // |animation| is used to fade out all browser windows.
   ConfirmQuitBubbleController(std::unique_ptr<ConfirmQuitBubbleBase> bubble,
-                              std::unique_ptr<base::Timer> hide_timer);
+                              std::unique_ptr<base::Timer> hide_timer,
+                              std::unique_ptr<gfx::SlideAnimation> animation);
 
   ConfirmQuitBubbleController();
 
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+
   void OnTimerElapsed();
+
+  void ConfirmQuit();
 
   void Quit();
 
@@ -49,10 +81,11 @@ class ConfirmQuitBubbleController {
 
   std::unique_ptr<ConfirmQuitBubbleBase> const view_;
 
-  // Indicates if the accelerator was released while the timer was active.
-  bool released_key_ = false;
+  State state_;
 
   std::unique_ptr<base::Timer> hide_timer_;
+
+  std::unique_ptr<gfx::SlideAnimation> const browser_hide_animation_;
 
   base::OnceClosure quit_action_;
 

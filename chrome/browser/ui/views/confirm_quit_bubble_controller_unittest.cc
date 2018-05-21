@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/animation/slide_animation.h"
 
 class TestConfirmQuitBubble : public ConfirmQuitBubbleBase {
  public:
@@ -27,6 +28,21 @@ class TestConfirmQuitBubble : public ConfirmQuitBubbleBase {
   DISALLOW_COPY_AND_ASSIGN(TestConfirmQuitBubble);
 };
 
+class TestSlideAnimation : public gfx::SlideAnimation {
+ public:
+  TestSlideAnimation() : gfx::SlideAnimation(nullptr) {}
+  ~TestSlideAnimation() override {}
+
+  void Reset() override {}
+  void Reset(double value) override {}
+  void Show() override {}
+  void Hide() override {}
+  void SetSlideDuration(int duration) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestSlideAnimation);
+};
+
 class ConfirmQuitBubbleControllerTest : public testing::Test {
  protected:
   void SetUp() override {
@@ -36,8 +52,9 @@ class ConfirmQuitBubbleControllerTest : public testing::Test {
         std::make_unique<base::MockTimer>(false, false);
     bubble_ = bubble.get();
     timer_ = timer.get();
-    controller_.reset(
-        new ConfirmQuitBubbleController(std::move(bubble), std::move(timer)));
+    controller_.reset(new ConfirmQuitBubbleController(
+        std::move(bubble), std::move(timer),
+        std::make_unique<TestSlideAnimation>()));
 
     quit_called_ = false;
     controller_->SetQuitActionForTest(base::BindOnce(
@@ -85,6 +102,8 @@ TEST_F(ConfirmQuitBubbleControllerTest, PressAndHold) {
   PressQuitAccelerator();
   EXPECT_TRUE(timer_->IsRunning());
   timer_->Fire();
+  EXPECT_FALSE(quit_called_);
+  ReleaseQuitAccelerator();
   EXPECT_TRUE(quit_called_);
 }
 
@@ -95,6 +114,8 @@ TEST_F(ConfirmQuitBubbleControllerTest, DoublePress) {
   EXPECT_TRUE(timer_->IsRunning());
   PressQuitAccelerator();
   EXPECT_FALSE(timer_->IsRunning());
+  EXPECT_FALSE(quit_called_);
+  ReleaseQuitAccelerator();
   EXPECT_TRUE(quit_called_);
 }
 
@@ -126,5 +147,7 @@ TEST_F(ConfirmQuitBubbleControllerTest, OtherKeyPress) {
   EXPECT_TRUE(timer_->IsRunning());
   PressQuitAccelerator();
   EXPECT_FALSE(timer_->IsRunning());
+  EXPECT_FALSE(quit_called_);
+  ReleaseQuitAccelerator();
   EXPECT_TRUE(quit_called_);
 }
