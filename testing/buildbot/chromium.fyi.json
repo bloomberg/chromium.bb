@@ -576,6 +576,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "latency_unittests"
       },
       {
@@ -1002,6 +1008,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -3852,6 +3864,12 @@
         "test": "ash_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "aura_unittests"
+      },
+      {
         "args": [
           "--enable-surface-synchronization"
         ],
@@ -3873,6 +3891,12 @@
           "shards": 10
         },
         "test": "browser_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "compositor_unittests"
       },
       {
         "args": [
@@ -3929,6 +3953,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "wayland_client_perftests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "wm_unittests"
       }
     ],
     "isolated_scripts": [
@@ -4956,6 +4986,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "libjingle_xmpp_unittests"
       },
       {
@@ -5765,6 +5801,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "keyboard_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "libjingle_xmpp_unittests"
       },
       {
@@ -6451,6 +6493,12 @@
           "can_use_on_swarming_builders": false
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {
