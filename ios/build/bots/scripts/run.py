@@ -42,7 +42,6 @@ def main():
         args.iossim,
         args.platform,
         args.version,
-        args.xcode_version,
         args.xcode_build_version,
         args.out_dir,
         env_vars=args.env_var,
@@ -57,7 +56,6 @@ def main():
     else:
       tr = test_runner.DeviceTestRunner(
         args.app,
-        args.xcode_version,
         args.xcode_build_version,
         args.out_dir,
         env_vars=args.env_var,
@@ -171,13 +169,8 @@ def parse_args():
     '-b',
     '--xcode-build-version',
     help='Xcode build version to install.',
+    required=True,
     metavar='build_id',
-  )
-  parser.add_argument(
-    '-x',
-    '--xcode-version',
-    help='Version of Xcode to use. DEPRECATED by --xcode-build-version.',
-    metavar='ver',
   )
   parser.add_argument(
     '--xcode-path',
@@ -207,10 +200,6 @@ def parse_args():
     if not (args.iossim and args.platform and args.version):
       parser.error(
         'must specify all or none of -i/--iossim, -p/--platform, -v/--version')
-
-  if not (bool(args.xcode_version) ^ bool(args.xcode_build_version)):
-    parser.error(
-      'must specify exactly one of --xcode-build-version or --xcode-version')
 
   args_json = json.loads(args.args_json)
   args.env_var = args.env_var or []
