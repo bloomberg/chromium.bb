@@ -5,8 +5,10 @@
 #include "ash/system/unified/unified_system_tray.h"
 
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/message_center/ash_popup_alignment_delegate.h"
+#include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_tray_view.h"
 #include "ash/system/network/tray_network_state_observer.h"
@@ -17,6 +19,7 @@
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "chromeos/network/network_handler.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
@@ -184,8 +187,13 @@ void UnifiedSystemTray::CloseBubble() {
 }
 
 base::string16 UnifiedSystemTray::GetAccessibleNameForTray() {
-  // TODO(tetsui): Implement.
-  return base::string16();
+  base::string16 time = base::TimeFormatTimeOfDayWithHourClockType(
+      base::Time::Now(),
+      Shell::Get()->system_tray_model()->clock()->hour_clock_type(),
+      base::kKeepAmPm);
+  base::string16 battery = PowerStatus::Get()->GetAccessibleNameString(false);
+  return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBLE_DESCRIPTION,
+                                    time, battery);
 }
 
 void UnifiedSystemTray::HideBubbleWithView(
