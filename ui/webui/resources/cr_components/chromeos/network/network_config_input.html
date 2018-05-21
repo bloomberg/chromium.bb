@@ -30,9 +30,9 @@
     <div class="control-box">
       <paper-input-container always-float-label>
         <label id="label" slot="label">[[label]]</label>
-        <iron-input slot="input">
-          <input value="{{value::input}}" tabindex="1" disabled="[[disabled]]"
-              aria-label$="[[label]]"
+        <iron-input slot="input" bind-value="{{value}}">
+          <input tabindex="1" disabled="[[disabled]]" aria-label$="[[label]]"
+              value="{{value::input}}"
               type="[[getInputType_(password, showPassword)]]">
         </iron-input>
       </paper-input-container>
