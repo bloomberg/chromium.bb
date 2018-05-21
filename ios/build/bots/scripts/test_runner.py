@@ -51,6 +51,13 @@ class AppNotFoundError(TestRunnerError):
       'App does not exist: %s' % app_path)
 
 
+class SystemAlertPresentError(TestRunnerError):
+  """System alert is shown on the device."""
+  def __init__(self):
+    super(SystemAlertPresentError, self).__init__(
+      'System alert is shown on the device.')
+
+
 class DeviceDetectionError(TestRunnerError):
   """Unexpected number of devices detected."""
   def __init__(self, udids):
@@ -464,6 +471,9 @@ class TestRunner(object):
       sys.stdout.flush()
 
       returncode = proc.returncode
+
+    if self.xctest_path and parser.SystemAlertPresent():
+      raise SystemAlertPresentError()
 
     for test in parser.FailedTests(include_flaky=True):
       # Test cases are named as <test group>.<test case>. If the test case
