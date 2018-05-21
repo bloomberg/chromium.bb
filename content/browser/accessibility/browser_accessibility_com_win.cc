@@ -1916,6 +1916,52 @@ void BrowserAccessibilityComWin::Init(ui::AXPlatformNodeDelegate* delegate) {
   AXPlatformNodeWin::Init(delegate);
 }
 
+base::string16 BrowserAccessibilityComWin::GetInvalidValue() const {
+  const BrowserAccessibilityWin* target = owner();
+  // The aria-invalid=spelling/grammar need to be exposed as text attributes for
+  // a range matching the visual underline representing the error.
+  if (static_cast<ax::mojom::InvalidState>(
+          target->GetIntAttribute(ax::mojom::IntAttribute::kInvalidState)) ==
+          ax::mojom::InvalidState::kNone &&
+      target->IsTextOnlyObject() && target->PlatformGetParent()) {
+    // Text nodes need to reflect the invalid state of their parent object,
+    // otherwise spelling and grammar errors communicated through aria-invalid
+    // won't be reflected in text attributes.
+    target = static_cast<BrowserAccessibilityWin*>(target->PlatformGetParent());
+  }
+
+  base::string16 invalid_value;
+  // Note: spelling+grammar errors case is disallowed and not supported. It
+  // could possibly arise with aria-invalid on the ancestor of a spelling error,
+  // but this is not currently described in any spec and no real-world use cases
+  // have been found.
+  switch (static_cast<ax::mojom::InvalidState>(
+      target->GetIntAttribute(ax::mojom::IntAttribute::kInvalidState))) {
+    case ax::mojom::InvalidState::kNone:
+    case ax::mojom::InvalidState::kFalse:
+      break;
+    case ax::mojom::InvalidState::kTrue:
+      return invalid_value = L"true";
+    case ax::mojom::InvalidState::kSpelling:
+      return invalid_value = L"spelling";
+    case ax::mojom::InvalidState::kGrammar:
+      return base::ASCIIToUTF16("grammar");
+    case ax::mojom::InvalidState::kOther: {
+      base::string16 aria_invalid_value;
+      if (target->GetString16Attribute(
+              ax::mojom::StringAttribute::kAriaInvalidValue,
+              &aria_invalid_value)) {
+        SanitizeStringAttributeForIA2(aria_invalid_value, &aria_invalid_value);
+        invalid_value = aria_invalid_value;
+      } else {
+        // Set the attribute to L"true", since we cannot be more specific.
+        invalid_value = L"true";
+      }
+    }
+  }
+  return invalid_value;
+}
+
 std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
     const {
   std::vector<base::string16> attributes;
@@ -2007,43 +2053,12 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
     }
   }
 
-  int32_t invalid_state =
-      owner()->GetIntAttribute(ax::mojom::IntAttribute::kInvalidState);
-  switch (static_cast<ax::mojom::InvalidState>(invalid_state)) {
-    case ax::mojom::InvalidState::kNone:
-    case ax::mojom::InvalidState::kFalse:
-      break;
-    case ax::mojom::InvalidState::kTrue:
-      attributes.push_back(L"invalid:true");
-      break;
-    case ax::mojom::InvalidState::kSpelling:
-    case ax::mojom::InvalidState::kGrammar: {
-      base::string16 spelling_grammar_value;
-      if (invalid_state &
-          static_cast<int32_t>(ax::mojom::InvalidState::kSpelling))
-        spelling_grammar_value = L"spelling";
-      else if (invalid_state &
-               static_cast<int32_t>(ax::mojom::InvalidState::kGrammar))
-        spelling_grammar_value = L"grammar";
-      else
-        spelling_grammar_value = L"spelling,grammar";
-      attributes.push_back(L"invalid:" + spelling_grammar_value);
-      break;
-    }
-    case ax::mojom::InvalidState::kOther: {
-      base::string16 aria_invalid_value;
-      if (owner()->GetString16Attribute(
-              ax::mojom::StringAttribute::kAriaInvalidValue,
-              &aria_invalid_value)) {
-        SanitizeStringAttributeForIA2(aria_invalid_value, &aria_invalid_value);
-        attributes.push_back(L"invalid:" + aria_invalid_value);
-      } else {
-        // Set the attribute to L"true", since we cannot be more specific.
-        attributes.push_back(L"invalid:true");
-      }
-      break;
-    }
-  }
+  // Screen readers look at the text attributes to determine if something is
+  // misspelled, so we need to propagate any spelling attributes from immediate
+  // parents of text-only objects.
+  base::string16 invalid_value = GetInvalidValue();
+  if (!invalid_value.empty())
+    attributes.push_back(L"invalid:" + invalid_value);
 
   base::string16 language(owner()->GetInheritedString16Attribute(
       ax::mojom::StringAttribute::kLanguage));
