@@ -1933,7 +1933,8 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
     unsigned int red = SkColorGetR(color);
     unsigned int green = SkColorGetG(color);
     unsigned int blue = SkColorGetB(color);
-    if (alpha) {
+    // Don't expose default value of pure white.
+    if (alpha && (red != 255 || green != 255 || blue != 255)) {
       base::string16 color_value = L"rgb(" + base::UintToString16(red) + L',' +
                                    base::UintToString16(green) + L',' +
                                    base::UintToString16(blue) + L')';
@@ -1946,11 +1947,14 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
     unsigned int red = SkColorGetR(color);
     unsigned int green = SkColorGetG(color);
     unsigned int blue = SkColorGetB(color);
-    base::string16 color_value = L"rgb(" + base::UintToString16(red) + L',' +
-                                 base::UintToString16(green) + L',' +
-                                 base::UintToString16(blue) + L')';
-    SanitizeStringAttributeForIA2(color_value, &color_value);
-    attributes.push_back(L"color:" + color_value);
+    // Don't expose default value of black.
+    if (red || green || blue) {
+      base::string16 color_value = L"rgb(" + base::UintToString16(red) + L',' +
+                                   base::UintToString16(green) + L',' +
+                                   base::UintToString16(blue) + L')';
+      SanitizeStringAttributeForIA2(color_value, &color_value);
+      attributes.push_back(L"color:" + color_value);
+    }
   }
 
   base::string16 font_family(owner()->GetInheritedString16Attribute(
@@ -2043,8 +2047,8 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
 
   base::string16 language(owner()->GetInheritedString16Attribute(
       ax::mojom::StringAttribute::kLanguage));
-  // Default value should be L"en-US".
-  if (!language.empty()) {
+  // Don't expose default value should of L"en-US".
+  if (!language.empty() && language != L"en-US") {
     SanitizeStringAttributeForIA2(language, &language);
     attributes.push_back(L"language:" + language);
   }
