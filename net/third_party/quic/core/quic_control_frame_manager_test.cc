@@ -183,6 +183,29 @@ TEST_F(QuicControlFrameManagerTest, RetransmitControlFrame) {
   EXPECT_FALSE(manager_->RetransmitControlFrame(QuicFrame(&window_update_)));
 }
 
+TEST_F(QuicControlFrameManagerTest, DonotSendPingWithBufferedFrames) {
+  Initialize();
+  InSequence s;
+  EXPECT_CALL(*connection_, SendControlFrame(_))
+      .WillOnce(Invoke(this, &QuicControlFrameManagerTest::ClearControlFrame));
+  EXPECT_CALL(*connection_, SendControlFrame(_)).WillOnce(Return(false));
+  // Send control frames 1.
+  manager_->OnCanWrite();
+  EXPECT_FALSE(manager_->HasPendingRetransmission());
+  EXPECT_TRUE(manager_->WillingToWrite());
+
+  // Send PING when there is buffered frames.
+  manager_->WritePing();
+  // Verify only the buffered 3 frames are sent.
+  EXPECT_CALL(*connection_, SendControlFrame(_))
+      .Times(3)
+      .WillRepeatedly(
+          Invoke(this, &QuicControlFrameManagerTest::ClearControlFrame));
+  manager_->OnCanWrite();
+  EXPECT_FALSE(manager_->HasPendingRetransmission());
+  EXPECT_FALSE(manager_->WillingToWrite());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

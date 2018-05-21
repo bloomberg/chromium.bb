@@ -53,7 +53,7 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // immediately.
   void WriteOrBufferBlocked(QuicStreamId id);
 
-  // Sends a PING_FRAME.
+  // Sends a PING_FRAME. Do not send PING if there is buffered frames.
   void WritePing();
 
   // Called when |frame| gets acked. Returns true if |frame| gets acked for the

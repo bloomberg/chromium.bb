@@ -79,14 +79,14 @@ void QuicControlFrameManager::WriteOrBufferBlocked(QuicStreamId id) {
 
 void QuicControlFrameManager::WritePing() {
   QUIC_DVLOG(1) << "Writing PING_FRAME";
-  const bool had_buffered_frames = HasBufferedFrames();
-  QUIC_BUG_IF(had_buffered_frames)
-      << "Try to send PING when there is buffered control frames.";
-  control_frames_.emplace_back(
-      QuicFrame(QuicPingFrame(++last_control_frame_id_)));
-  if (had_buffered_frames) {
+  if (HasBufferedFrames()) {
+    // Do not send ping if there is buffered frames.
+    QUIC_LOG(WARNING)
+        << "Try to send PING when there is buffered control frames.";
     return;
   }
+  control_frames_.emplace_back(
+      QuicFrame(QuicPingFrame(++last_control_frame_id_)));
   WriteBufferedFrames();
 }
 
