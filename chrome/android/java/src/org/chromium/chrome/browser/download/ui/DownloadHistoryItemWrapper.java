@@ -524,12 +524,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public String getDisplayFileName() {
-            String title = mItem.title;
-            if (TextUtils.isEmpty(title)) {
-                return getDisplayHostname();
-            } else {
-                return title;
-            }
+            return mItem.title;
         }
 
         @Override
