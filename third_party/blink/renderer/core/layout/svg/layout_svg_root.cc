@@ -65,7 +65,7 @@ LayoutSVGRoot::LayoutSVGRoot(SVGElement* node)
 
 LayoutSVGRoot::~LayoutSVGRoot() = default;
 
-void LayoutSVGRoot::ComputeIntrinsicSizingInfo(
+void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
   // https://www.w3.org/TR/SVG/coords.html#IntrinsicSizing
 
@@ -89,6 +89,13 @@ void LayoutSVGRoot::ComputeIntrinsicSizingInfo(
 
   if (!IsHorizontalWritingMode())
     intrinsic_sizing_info.Transpose();
+}
+
+void LayoutSVGRoot::ComputeIntrinsicSizingInfo(
+    IntrinsicSizingInfo& intrinsic_sizing_info) const {
+  UnscaledIntrinsicSizingInfo(intrinsic_sizing_info);
+
+  intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoom());
 }
 
 bool LayoutSVGRoot::IsEmbeddedThroughSVGImage() const {

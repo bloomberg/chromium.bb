@@ -222,7 +222,7 @@ bool SVGImage::GetIntrinsicSizingInfo(
   if (!layout_object)
     return false;
 
-  layout_object->ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
+  layout_object->UnscaledIntrinsicSizingInfo(intrinsic_sizing_info);
   return true;
 }
 

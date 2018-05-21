@@ -1430,7 +1430,7 @@ DocumentLifecycle& LocalFrameView::Lifecycle() const {
   return frame_->GetDocument()->Lifecycle();
 }
 
-LayoutReplaced* LocalFrameView::EmbeddedReplacedContent() const {
+LayoutSVGRoot* LocalFrameView::EmbeddedReplacedContent() const {
   auto* layout_view = this->GetLayoutView();
   if (!layout_view)
     return nullptr;
@@ -1441,16 +1441,13 @@ LayoutReplaced* LocalFrameView::EmbeddedReplacedContent() const {
 
   // Currently only embedded SVG documents participate in the size-negotiation
   // logic.
-  if (first_child->IsSVGRoot())
-    return ToLayoutSVGRoot(first_child);
-
-  return nullptr;
+  return ToLayoutSVGRootOrNull(first_child);
 }
 
 bool LocalFrameView::GetIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  if (LayoutReplaced* content_layout_object = EmbeddedReplacedContent()) {
-    content_layout_object->ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
+  if (LayoutSVGRoot* content_layout_object = EmbeddedReplacedContent()) {
+    content_layout_object->UnscaledIntrinsicSizingInfo(intrinsic_sizing_info);
     return true;
   }
   return false;
