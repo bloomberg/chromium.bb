@@ -112,6 +112,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestCase("fileDisplayDownloads"),
                       TestCase("fileDisplayDownloads").InGuestMode(),
                       TestCase("fileDisplayDrive"),
+                      TestCase("fileDisplayUsb"),
                       TestCase("fileDisplayMtp"),
                       TestCase("fileSearch"),
                       TestCase("fileSearchCaseInsensitive"),
