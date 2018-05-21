@@ -8,52 +8,6 @@ option optimize_for = LITE_RUNTIME;
 
 package login_manager;
 
-// ARC startup options sent from Chrome to session manager. This message is
-// used in SessionManagerInterface.StartArcInterface method.
-message StartArcInstanceRequest {
-  enum PackageCacheMode {
-    // Performs packages cache setup if the pre-generated cache exists.
-    DEFAULT = 0;
-    // Performs packages cache setup if the pre-generated cache exists and
-    // copies resulting packages.xml to the temporary location after
-    // SystemServer initialized the package manager.
-    COPY_ON_INIT = 1;
-    // Skips packages cache setup and copies resulting packages.xml to the
-    // temporary location after SystemServer initialized the package manager.
-    SKIP_SETUP_COPY_ON_INIT = 2;
-  }
-
-  // Account ID of the user to start ARC for. This must be the same as the
-  // one given in StartSession.
-  optional string account_id = 1;
-
-  // Option to disable ACTION_BOOT_COMPLETED broadcast for 3rd party apps.
-  optional bool skip_boot_completed_broadcast = 2;
-
-  // Option to enable package manager service to scan /vendor/priv-app
-  // directory.
-  optional bool scan_vendor_priv_app = 3;
-
-  // Option to start the container for Chrome OS login screen. When this is set
-  // and true, the container will start only a handful of processes that don't
-  // read an actual user's /data. |account_id|, |skip_boot_completed_broadcast|,
-  // and |scan_vendor_priv_app| are ignored when |for_login_screen| is true.
-  optional bool for_login_screen = 4;
-
-  // Deprecated. Do not use.
-  // Option to create a server socket in session_manager.
-  // TODO(yusukes): Make this always enabled and then remove the field.
-  optional bool create_server_socket = 5;
-
-  // Option to enable native bridge experiment (b/63133475).
-  optional bool native_bridge_experiment = 6;
-
-  // Optional mode for packages cache tests.
-  optional PackageCacheMode packages_cache_mode = 7 [default = DEFAULT];
-
-  // Next ID to use: 8
-}
-
 // ARC start options sent from Chrome to session manager. This message is used
 // in the SessionManagerInterface.StartArcMiniContainer method.
 message StartArcMiniContainerRequest {
