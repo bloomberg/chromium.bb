@@ -319,12 +319,16 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileDialog, /* file_dialog.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("openFileDialogDownloads"),
+    ::testing::Values(TestCase("openFileDialogUnload"),
+                      TestCase("openFileDialogDownloads"),
                       TestCase("openFileDialogDownloads").InGuestMode(),
-                      TestCase("openFileDialogDrive"),
                       TestCase("openFileDialogDownloads").InIncognito(),
+                      TestCase("openFileDialogCancelDownloads"),
+                      TestCase("openFileDialogEscapeDownloads"),
+                      TestCase("openFileDialogDrive"),
                       TestCase("openFileDialogDrive").InIncognito(),
-                      TestCase("openFileDialogUnload")));
+                      TestCase("openFileDialogCancelDrive"),
+                      TestCase("openFileDialogEscapeDrive")));
 
 // Test does too much? Flaky on all bots: http://crbug.com/500966
 WRAPPED_INSTANTIATE_TEST_CASE_P(
