@@ -253,6 +253,7 @@ def _handle_perf_results(
     logdog_dict = {}
     logdog_stream = None
     logdog_label = 'Results Dashboard'
+    upload_fail = False
     with oauth_api.with_access_token(service_account_file) as oauth_file:
       for directory in benchmark_directory_list:
         benchmark_name = _get_benchmark_name(directory)
