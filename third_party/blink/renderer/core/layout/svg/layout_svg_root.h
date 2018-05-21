@@ -39,7 +39,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   bool IsEmbeddedThroughFrameContainingSVGDocument() const;
 
   void IntrinsicSizingInfoChanged() const;
-  void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
+  void UnscaledIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
 
   // If you have a LayoutSVGRoot, use firstChild or lastChild instead.
   void SlowFirstChild() const = delete;
@@ -110,6 +110,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
            LayoutReplaced::IsOfType(type);
   }
 
+  void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
   LayoutUnit ComputeReplacedLogicalWidth(
       ShouldComputePreferred = kComputeActual) const override;
   LayoutUnit ComputeReplacedLogicalHeight(

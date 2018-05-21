@@ -85,7 +85,7 @@ class LayoutAnalyzer;
 class LayoutBox;
 class LayoutEmbeddedObject;
 class LayoutObject;
-class LayoutReplaced;
+class LayoutSVGRoot;
 class LayoutScrollbarPart;
 class LayoutView;
 class PaintArtifactCompositor;
@@ -984,7 +984,7 @@ class CORE_EXPORT LocalFrameView final
                      const CullRect&) const;
 
   LocalFrameView* ParentFrameView() const;
-  LayoutReplaced* EmbeddedReplacedContent() const;
+  LayoutSVGRoot* EmbeddedReplacedContent() const;
 
   void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
 
