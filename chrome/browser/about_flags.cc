@@ -3870,6 +3870,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisallowUnsafeHttpDownloadsNameDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kDisallowUnsafeHttpDownloads)},
 
+#if defined(OS_CHROMEOS)
+    {"show-taps-app", flag_descriptions::kShowTapsAppName,
+     flag_descriptions::kShowTapsAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kShowTapsApp)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

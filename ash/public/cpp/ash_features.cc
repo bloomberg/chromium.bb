@@ -25,6 +25,9 @@ const base::Feature kOverviewSwipeToClose{"OverviewSwipeToClose",
 const base::Feature kPersistentWindowBounds{"PersistentWindowBounds",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kShowTapsApp{"ShowTapsApp",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSystemTrayUnified{"SystemTrayUnified",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -48,6 +51,10 @@ bool IsKeyboardShortcutViewerEnabled() {
 
 bool IsPersistentWindowBoundsEnabled() {
   return base::FeatureList::IsEnabled(kPersistentWindowBounds);
+}
+
+bool IsShowTapsAppEnabled() {
+  return base::FeatureList::IsEnabled(kShowTapsApp);
 }
 
 bool IsSystemTrayUnifiedEnabled() {

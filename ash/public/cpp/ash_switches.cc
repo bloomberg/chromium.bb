@@ -129,10 +129,6 @@ const char kHasInternalStylus[] = "has-internal-stylus";
 // option "Show taps".
 const char kShowTaps[] = "show-taps";
 
-// Uses a mojo app to implement the "Show taps" feature. Exists so the mojo app
-// version can be tested independently from the classic version.
-const char kShowTapsApp[] = "show-taps-app";
-
 // Forces the views login implementation.
 const char kShowViewsLogin[] = "show-views-login";
 
