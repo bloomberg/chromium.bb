@@ -293,6 +293,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
     return request_interceptor_->client_hints_count_seen();
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+
  private:
   // Called by |https_server_|.
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
@@ -466,6 +468,14 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ClientHintsBrowserTest);
 };
 
+class ClientHintsAllowThirdPartyBrowserTest : public ClientHintsBrowserTest {
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    scoped_feature_list_.InitFromCommandLine("AllowClientHintsToThirdParty",
+                                             "");
+    ClientHintsBrowserTest::SetUpCommandLine(cmd);
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, CorsChecks) {
   for (size_t i = 0; i < blink::kClientHintsHeaderMappingCount; ++i) {
     // Do not test for headers that have not been enabled on the blink "stable"
@@ -570,6 +580,54 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 #endif
   // Requests to third party servers should not have client hints attached.
   EXPECT_EQ(1u, third_party_request_count_seen());
+  EXPECT_EQ(0u, third_party_client_hints_count_seen());
+}
+
+// Test that client hints are attached to third party subresources if
+// AllowClientHintsToThirdParty feature is enabled.
+IN_PROC_BROWSER_TEST_F(ClientHintsAllowThirdPartyBrowserTest,
+                       ClientHintsThirdPartyAllowed) {
+  base::HistogramTester histogram_tester;
+
+  SetClientHintExpectationsOnMainFrame(false);
+  SetClientHintExpectationsOnSubresources(true);
+
+  // Add client hints for the embedded test server.
+  ui_test_utils::NavigateToURL(browser(),
+                               accept_ch_without_lifetime_img_localhost());
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
+
+  EXPECT_EQ(6u, count_client_hints_headers_seen());
+
+  // Requests to third party servers should not have client hints attached.
+  EXPECT_EQ(1u, third_party_request_count_seen());
+
+  // Device memory, viewport width and DRP client hints should be sent to the
+  // third-party when feature "AllowClientHintsToThirdParty" is enabled.
+  EXPECT_EQ(3u, third_party_client_hints_count_seen());
+}
+
+// Test that client hints are not attached to third party subresources if
+// AllowClientHintsToThirdParty feature is not enabled.
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
+                       ClientHintsThirdPartyNotAllowed) {
+  base::HistogramTester histogram_tester;
+
+  SetClientHintExpectationsOnMainFrame(false);
+  SetClientHintExpectationsOnSubresources(true);
+
+  // Add client hints for the embedded test server.
+  ui_test_utils::NavigateToURL(browser(),
+                               accept_ch_without_lifetime_img_localhost());
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
+
+  EXPECT_EQ(6u, count_client_hints_headers_seen());
+
+  // Requests to third party servers should not have client hints attached.
+  EXPECT_EQ(1u, third_party_request_count_seen());
+
+  // Client hints should not be sent to the third-party when feature
+  // "AllowClientHintsToThirdParty" is not enabled.
   EXPECT_EQ(0u, third_party_client_hints_count_seen());
 }
 
