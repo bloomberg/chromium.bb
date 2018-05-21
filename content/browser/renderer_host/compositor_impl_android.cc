@@ -674,6 +674,11 @@ void CompositorImpl::SetRootWindow(gfx::NativeWindow root_window) {
   root_window_ = root_window;
   root_window_->SetLayer(root_layer ? root_layer : cc::Layer::Create());
   root_window_->GetLayer()->SetBounds(size_);
+  if (!readback_layer_tree_) {
+    readback_layer_tree_ = cc::Layer::Create();
+    readback_layer_tree_->SetHideLayerAndSubtree(true);
+  }
+  root_window->GetLayer()->AddChild(readback_layer_tree_);
   root_window->AttachCompositor(this);
   if (!host_) {
     CreateLayerTreeHost();
@@ -1068,17 +1073,8 @@ void CompositorImpl::DidCommit() {
   root_window_->OnCompositingDidCommit();
 }
 
-base::WeakPtr<ui::WindowAndroidCompositor> CompositorImpl::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
-}
-
-void CompositorImpl::IncrementReadbackRequestCount() {
-  pending_readback_request_count_++;
-}
-
-void CompositorImpl::DecrementReadbackRequestCount() {
-  DCHECK_GT(pending_readback_request_count_, 0u);
-  pending_readback_request_count_--;
+void CompositorImpl::AttachLayerForReadback(scoped_refptr<cc::Layer> layer) {
+  readback_layer_tree_->AddChild(layer);
 }
 
 void CompositorImpl::RequestCopyOfOutputOnRootLayer(
@@ -1147,7 +1143,7 @@ void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
 }
 
 bool CompositorImpl::HavePendingReadbacks() {
-  return pending_readback_request_count_ > 0u;
+  return !readback_layer_tree_->children().empty();
 }
 
 std::unique_ptr<ui::CompositorLock> CompositorImpl::GetCompositorLock(
