@@ -670,6 +670,26 @@ TEST(WindowServiceClientTest, ExternalDeleteWindow) {
             SingleChangeToDescription(*helper.changes()));
 }
 
+TEST(WindowServiceClientTest, Embed) {
+  WindowServiceTestHelper helper;
+  aura::Window* window = helper.helper()->NewWindow(2);
+  aura::Window* embed_window = helper.helper()->NewWindow(3);
+  ASSERT_TRUE(window);
+  ASSERT_TRUE(embed_window);
+  window->AddChild(embed_window);
+  embed_window->SetBounds(gfx::Rect(1, 2, 3, 4));
+
+  std::unique_ptr<Embedding> embedding = helper.CreateEmbedding(embed_window);
+  ASSERT_TRUE(embedding);
+  ASSERT_EQ("OnEmbed", SingleChangeToDescription(*embedding->changes()));
+  const Change& test_change = (*embedding->changes())[0];
+  ASSERT_EQ(1u, test_change.windows.size());
+  EXPECT_EQ(embed_window->bounds(), test_change.windows[0].bounds);
+  EXPECT_EQ(kInvalidTransportId, test_change.windows[0].parent_id);
+  EXPECT_EQ(embed_window->TargetVisibility(), test_change.windows[0].visible);
+  EXPECT_NE(kInvalidTransportId, test_change.windows[0].window_id);
+}
+
 }  // namespace
 }  // namespace ws2
 }  // namespace ui

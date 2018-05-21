@@ -215,6 +215,7 @@ TestWindow WindowDataToTestWindow(const mojom::WindowDataPtr& data) {
   window.window_id = data->window_id;
   window.visible = data->visible;
   window.properties = mojo::FlatMapToMap(data->properties);
+  window.bounds = data->bounds;
   return window;
 }
 

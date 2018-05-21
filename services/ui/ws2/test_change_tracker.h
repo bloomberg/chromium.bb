@@ -63,6 +63,7 @@ struct TestWindow {
   Id parent_id;
   Id window_id;
   bool visible;
+  gfx::Rect bounds;
   std::map<std::string, std::vector<uint8_t>> properties;
 };
 
