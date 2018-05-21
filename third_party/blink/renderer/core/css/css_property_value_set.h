@@ -253,7 +253,7 @@ class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
   void SetProperty(CSSPropertyID,
                    CSSValueID identifier,
                    bool important = false);
-  void SetProperty(const CSSPropertyValue&, CSSPropertyValue* slot = nullptr);
+  void SetProperty(const CSSPropertyValue&);
 
   template <typename T>  // CSSPropertyID or AtomicString
   bool RemoveProperty(T property, String* return_text = nullptr);
