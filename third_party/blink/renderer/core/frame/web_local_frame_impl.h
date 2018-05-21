@@ -260,12 +260,13 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebFrame* FindFrameByName(const WebString& name) override;
   void SendPings(const WebURL& destination_url) override;
   bool DispatchBeforeUnloadEvent(bool) override;
-  void Load(const WebURLRequest&,
-            WebFrameLoadType,
-            const WebHistoryItem&,
-            WebHistoryLoadType,
-            bool is_client_redirect,
-            const base::UnguessableToken& devtools_navigation_token) override;
+  void CommitNavigation(
+      const WebURLRequest&,
+      WebFrameLoadType,
+      const WebHistoryItem&,
+      WebHistoryLoadType,
+      bool is_client_redirect,
+      const base::UnguessableToken& devtools_navigation_token) override;
   blink::mojom::CommitResult CommitSameDocumentNavigation(
       const WebURL&,
       WebFrameLoadType,

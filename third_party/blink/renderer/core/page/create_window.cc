@@ -538,7 +538,7 @@ void CreateWindowForRequest(const FrameLoadRequest& request,
   FrameLoadRequest new_request(nullptr, request.GetResourceRequest());
   new_request.SetForm(request.Form());
   if (new_frame->IsLocalFrame())
-    ToLocalFrame(new_frame)->Loader().Load(new_request);
+    ToLocalFrame(new_frame)->Loader().StartNavigation(new_request);
 }
 
 }  // namespace blink

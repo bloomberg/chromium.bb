@@ -89,15 +89,26 @@ class CORE_EXPORT FrameLoader final {
 
   ProgressTracker& Progress() const { return *progress_tracker_; }
 
-  // Starts a load. It will eventually call StartLoad() or LoadInSameDocument().
-  // For history navigations or reloads, an appropriate FrameLoadType should be
-  // given. Otherwise, FrameLoadTypeStandard should be used (and the final
-  // FrameLoadType will be computed). For history navigations, a history item
-  // and a HistoryLoadType should also be provided.
-  void Load(const FrameLoadRequest&,
-            FrameLoadType = kFrameLoadTypeStandard,
-            HistoryItem* = nullptr,
-            HistoryLoadType = kHistoryDifferentDocumentLoad);
+  // Starts a navigation. It will eventually send the navigation to the
+  // browser process, or call LoadInSameDocument for same-document navigation.
+  // For reloads, an appropriate FrameLoadType should be given. Otherwise,
+  // FrameLoadTypeStandard should be used (and the final FrameLoadType
+  // will be computed).
+  // TODO(dgozman): remove history parameters.
+  void StartNavigation(const FrameLoadRequest&,
+                       FrameLoadType = kFrameLoadTypeStandard,
+                       HistoryItem* = nullptr,
+                       HistoryLoadType = kHistoryDifferentDocumentLoad);
+
+  // Called when the browser process has asked this renderer process to commit
+  // a navigation in this frame. This method skips most of the checks assuming
+  // that browser process has already performed any checks necessary.
+  // For history navigations, a history item should be provided and
+  // an appropriate FrameLoadType should be given.
+  void CommitNavigation(const FrameLoadRequest&,
+                        FrameLoadType = kFrameLoadTypeStandard,
+                        HistoryItem* = nullptr,
+                        HistoryLoadType = kHistoryDifferentDocumentLoad);
 
   // Called when the browser process has asked this renderer process to commit a
   // same document navigation in that frame. Returns false if the navigation
@@ -208,7 +219,8 @@ class CORE_EXPORT FrameLoader final {
       bool is_client_redirect,
       WebTriggeringEventInfo,
       HTMLFormElement*,
-      mojom::blink::BlobURLTokenPtr);
+      mojom::blink::BlobURLTokenPtr,
+      bool check_with_client);
 
   // Like ShouldContinueForNavigationPolicy, but should be used when following
   // redirects.
@@ -254,11 +266,18 @@ class CORE_EXPORT FrameLoader final {
   NavigationPolicy CheckLoadCanStart(FrameLoadRequest&,
                                      FrameLoadType,
                                      NavigationPolicy,
-                                     NavigationType);
+                                     NavigationType,
+                                     bool check_with_client);
+  void LoadInternal(const FrameLoadRequest&,
+                    FrameLoadType,
+                    HistoryItem*,
+                    HistoryLoadType,
+                    bool check_with_client);
   void StartLoad(FrameLoadRequest&,
                  FrameLoadType,
                  NavigationPolicy,
-                 HistoryItem*);
+                 HistoryItem*,
+                 bool check_with_client);
 
   void ClearInitialScrollState();
 

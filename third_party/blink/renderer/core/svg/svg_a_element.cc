@@ -137,7 +137,7 @@ void SVGAElement::DefaultEventHandler(Event* event) {
           &GetDocument(), ResourceRequest(GetDocument().CompleteURL(url)),
           target);
       frame_request.SetTriggeringEvent(event);
-      frame->Loader().Load(frame_request);
+      frame->Loader().StartNavigation(frame_request);
       return;
     }
   }

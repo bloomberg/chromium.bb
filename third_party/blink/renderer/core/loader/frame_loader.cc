@@ -837,10 +837,35 @@ static NavigationPolicy NavigationPolicyForRequest(
   return policy;
 }
 
-void FrameLoader::Load(const FrameLoadRequest& passed_request,
-                       FrameLoadType frame_load_type,
-                       HistoryItem* history_item,
-                       HistoryLoadType history_load_type) {
+void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
+                                  FrameLoadType frame_load_type,
+                                  HistoryItem* history_item,
+                                  HistoryLoadType history_load_type) {
+  CHECK(!passed_request.GetSubstituteData().IsValid());
+  CHECK(frame_load_type != kFrameLoadTypeBackForward);
+  CHECK(!history_item);
+  CHECK(history_load_type == kHistoryDifferentDocumentLoad);
+  return LoadInternal(passed_request, frame_load_type, history_item,
+                      history_load_type, true /* check_with_client */);
+}
+
+void FrameLoader::CommitNavigation(const FrameLoadRequest& passed_request,
+                                   FrameLoadType frame_load_type,
+                                   HistoryItem* history_item,
+                                   HistoryLoadType history_load_type) {
+  CHECK(!passed_request.OriginDocument());
+  CHECK(passed_request.FrameName().IsEmpty());
+  CHECK(!passed_request.TriggeringEvent());
+  CHECK(!passed_request.Form());
+  return LoadInternal(passed_request, frame_load_type, history_item,
+                      history_load_type, false /* check_with_client */);
+}
+
+void FrameLoader::LoadInternal(const FrameLoadRequest& passed_request,
+                               FrameLoadType frame_load_type,
+                               HistoryItem* history_item,
+                               HistoryLoadType history_load_type,
+                               bool check_with_client) {
   DCHECK(frame_->GetDocument());
 
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
@@ -933,7 +958,7 @@ void FrameLoader::Load(const FrameLoadRequest& passed_request,
   if (request.GetResourceRequest().IsSameDocumentNavigation())
     return;
 
-  StartLoad(request, new_load_type, policy, history_item);
+  StartLoad(request, new_load_type, policy, history_item, check_with_client);
 }
 
 mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
@@ -1394,7 +1419,8 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
     bool is_client_redirect,
     WebTriggeringEventInfo triggering_event_info,
     HTMLFormElement* form,
-    mojom::blink::BlobURLTokenPtr blob_url_token) {
+    mojom::blink::BlobURLTokenPtr blob_url_token,
+    bool check_with_client) {
   // Don't ask if we are loading an empty URL.
   if (request.Url().IsEmpty() || substitute_data.IsValid())
     return kNavigationPolicyCurrentTab;
@@ -1423,6 +1449,8 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
       replaces_current_history_item, is_client_redirect, triggering_event_info,
       form, should_check_main_world_content_security_policy,
       std::move(blob_url_token));
+  if (!check_with_client)
+    CHECK_EQ(kNavigationPolicyCurrentTab, policy);
   DCHECK(policy == kNavigationPolicyCurrentTab ||
          policy == kNavigationPolicyIgnore ||
          policy == kNavigationPolicyHandledByClient ||
@@ -1457,8 +1485,8 @@ NavigationPolicy FrameLoader::ShouldContinueForRedirectNavigationPolicy(
       nullptr,  // origin_document
       substitute_data, loader, should_check_main_world_content_security_policy,
       type, policy, frame_load_type, is_client_redirect,
-      WebTriggeringEventInfo::kNotFromEvent, form,
-      nullptr /* blob_url_token */);
+      WebTriggeringEventInfo::kNotFromEvent, form, nullptr /* blob_url_token */,
+      true /* check_with_client */);
 }
 
 void FrameLoader::ClientDroppedNavigation() {
@@ -1472,7 +1500,8 @@ NavigationPolicy FrameLoader::CheckLoadCanStart(
     FrameLoadRequest& frame_load_request,
     FrameLoadType type,
     NavigationPolicy navigation_policy,
-    NavigationType navigation_type) {
+    NavigationType navigation_type,
+    bool check_with_client) {
   if (frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
       Document::kNoDismissal) {
     return kNavigationPolicyIgnore;
@@ -1506,13 +1535,14 @@ NavigationPolicy FrameLoader::CheckLoadCanStart(
       frame_load_request.ClientRedirect() ==
           ClientRedirectPolicy::kClientRedirect,
       triggering_event_info, frame_load_request.Form(),
-      frame_load_request.GetBlobURLToken());
+      frame_load_request.GetBlobURLToken(), check_with_client);
 }
 
 void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
                             FrameLoadType type,
                             NavigationPolicy navigation_policy,
-                            HistoryItem* history_item) {
+                            HistoryItem* history_item,
+                            bool check_with_client) {
   DCHECK(Client()->HasWebView());
   ResourceRequest& resource_request = frame_load_request.GetResourceRequest();
   NavigationType navigation_type = DetermineNavigationType(
@@ -1535,8 +1565,9 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
 
   bool had_placeholder_client_document_loader =
       provisional_document_loader_ && !provisional_document_loader_->DidStart();
-  navigation_policy = CheckLoadCanStart(frame_load_request, type,
-                                        navigation_policy, navigation_type);
+  navigation_policy =
+      CheckLoadCanStart(frame_load_request, type, navigation_policy,
+                        navigation_type, check_with_client);
   if (navigation_policy == kNavigationPolicyIgnore) {
     if (had_placeholder_client_document_loader &&
         !resource_request.CheckForBrowserSideNavigation()) {

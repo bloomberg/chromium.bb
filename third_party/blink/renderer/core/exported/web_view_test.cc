@@ -2258,28 +2258,28 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       main_frame_local->Loader().GetDocumentLoader()->GetHistoryItem();
 
   // Click an anchor
-  main_frame_local->Loader().Load(FrameLoadRequest(
+  main_frame_local->Loader().StartNavigation(FrameLoadRequest(
       main_frame_local->GetDocument(),
       ResourceRequest(main_frame_local->GetDocument()->CompleteURL("#a"))));
   Persistent<HistoryItem> item2 =
       main_frame_local->Loader().GetDocumentLoader()->GetHistoryItem();
 
   // Go back, then forward, then back again.
-  main_frame_local->Loader().Load(
+  main_frame_local->Loader().CommitNavigation(
       FrameLoadRequest(nullptr, item1->GenerateResourceRequest(
                                     mojom::FetchCacheMode::kDefault)),
       kFrameLoadTypeBackForward, item1.Get(), kHistorySameDocumentLoad);
-  main_frame_local->Loader().Load(
+  main_frame_local->Loader().CommitNavigation(
       FrameLoadRequest(nullptr, item2->GenerateResourceRequest(
                                     mojom::FetchCacheMode::kDefault)),
       kFrameLoadTypeBackForward, item2.Get(), kHistorySameDocumentLoad);
-  main_frame_local->Loader().Load(
+  main_frame_local->Loader().CommitNavigation(
       FrameLoadRequest(nullptr, item1->GenerateResourceRequest(
                                     mojom::FetchCacheMode::kDefault)),
       kFrameLoadTypeBackForward, item1.Get(), kHistorySameDocumentLoad);
 
   // Click a different anchor
-  main_frame_local->Loader().Load(FrameLoadRequest(
+  main_frame_local->Loader().StartNavigation(FrameLoadRequest(
       main_frame_local->GetDocument(),
       ResourceRequest(main_frame_local->GetDocument()->CompleteURL("#b"))));
   Persistent<HistoryItem> item3 =
@@ -2287,11 +2287,11 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
 
   // Go back, then forward. The scroll position should be properly set on the
   // forward navigation.
-  main_frame_local->Loader().Load(
+  main_frame_local->Loader().CommitNavigation(
       FrameLoadRequest(nullptr, item1->GenerateResourceRequest(
                                     mojom::FetchCacheMode::kDefault)),
       kFrameLoadTypeBackForward, item1.Get(), kHistorySameDocumentLoad);
-  main_frame_local->Loader().Load(
+  main_frame_local->Loader().CommitNavigation(
       FrameLoadRequest(nullptr, item3->GenerateResourceRequest(
                                     mojom::FetchCacheMode::kDefault)),
       kFrameLoadTypeBackForward, item3.Get(), kHistorySameDocumentLoad);
@@ -3467,7 +3467,7 @@ TEST_F(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
   FrameLoadRequest request_with_target_start(
       local_frame->GetDocument(),
       web_url_request_with_target_start.ToResourceRequest(), "_top");
-  local_frame->Loader().Load(request_with_target_start);
+  local_frame->Loader().StartNavigation(request_with_target_start);
   EXPECT_FALSE(client.DidFocusCalled());
 
   web_view_helper.Reset();  // Remove dependency on locally scoped client.
@@ -3484,7 +3484,9 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
   WebURLRequest web_url_request;
   FrameLoadRequest request(nullptr, web_url_request.ToResourceRequest(),
                            "_blank");
-  ToLocalFrame(web_view_impl->GetPage()->MainFrame())->Loader().Load(request);
+  ToLocalFrame(web_view_impl->GetPage()->MainFrame())
+      ->Loader()
+      .StartNavigation(request);
   ASSERT_TRUE(client.CreatedWebView());
   EXPECT_FALSE(client.DidFocusCalled());
 
@@ -3497,7 +3499,7 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
                    ->GetPage()
                    ->MainFrame())
       ->Loader()
-      .Load(request_with_target_start);
+      .StartNavigation(request_with_target_start);
   EXPECT_TRUE(client.DidFocusCalled());
 
   web_view_helper.Reset();  // Remove dependency on locally scoped client.

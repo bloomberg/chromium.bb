@@ -546,7 +546,7 @@ void WebPluginContainerImpl::LoadFrameRequest(const WebURLRequest& request,
 
   FrameLoadRequest frame_request(frame->GetDocument(),
                                  request.ToResourceRequest(), target);
-  frame->Loader().Load(frame_request);
+  frame->Loader().StartNavigation(frame_request);
 }
 
 bool WebPluginContainerImpl::IsRectTopmost(const WebRect& rect) {

@@ -426,8 +426,8 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
 
     lazy_load_intersection_observer_->observe(this);
   } else {
-    child_frame->Loader().Load(FrameLoadRequest(&GetDocument(), request),
-                               child_load_type);
+    child_frame->Loader().StartNavigation(
+        FrameLoadRequest(&GetDocument(), request), child_load_type);
   }
   return true;
 }
@@ -453,8 +453,8 @@ void HTMLFrameOwnerElement::LoadIfHiddenOrNearViewport(
   // be disconnected.
   ToLocalFrame(ContentFrame())
       ->Loader()
-      .Load(FrameLoadRequest(&GetDocument(), resource_request),
-            frame_load_type);
+      .StartNavigation(FrameLoadRequest(&GetDocument(), resource_request),
+                       frame_load_type);
 }
 
 void HTMLFrameOwnerElement::CancelPendingLazyLoad() {

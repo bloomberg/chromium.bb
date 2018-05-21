@@ -7510,7 +7510,7 @@ TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick) {
   frame_request.SetTriggeringEvent(event);
   ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
       ->Loader()
-      .Load(frame_request);
+      .StartNavigation(frame_request);
 }
 
 class TestNewWindowWebViewClient : public FrameTestHelpers::TestWebViewClient {
@@ -7578,7 +7578,7 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow) {
       Frame::NotifyUserActivation(frame);
   ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
       ->Loader()
-      .Load(frame_request);
+      .StartNavigation(frame_request);
   FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.GetWebView()->MainFrame());
 
@@ -7636,10 +7636,10 @@ TEST_F(WebFrameTest, BackDuringChildFrameReload) {
   HistoryItem* history_item = item;
   ResourceRequest request =
       history_item->GenerateResourceRequest(mojom::FetchCacheMode::kDefault);
-  main_frame->Load(WrappedResourceRequest(request),
-                   WebFrameLoadType::kBackForward, item,
-                   kWebHistoryDifferentDocumentLoad, false,
-                   base::UnguessableToken::Create());
+  main_frame->CommitNavigation(WrappedResourceRequest(request),
+                               WebFrameLoadType::kBackForward, item,
+                               kWebHistoryDifferentDocumentLoad, false,
+                               base::UnguessableToken::Create());
 
   FrameTestHelpers::ReloadFrame(child_frame);
   EXPECT_EQ(item.UrlString(), main_frame->GetDocument().Url().GetString());
@@ -7814,7 +7814,7 @@ TEST_F(WebFrameTest, NavigateToSame) {
               ->Url()));
   ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
       ->Loader()
-      .Load(frame_request);
+      .StartNavigation(frame_request);
   FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.GetWebView()->MainFrame());
 
@@ -8020,9 +8020,10 @@ TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType) {
 
   ToLocalFrame(web_view_impl->GetPage()->MainFrame())
       ->Loader()
-      .Load(FrameLoadRequest(nullptr, item->GenerateResourceRequest(
-                                          mojom::FetchCacheMode::kDefault)),
-            kFrameLoadTypeBackForward, item.Get(), kHistorySameDocumentLoad);
+      .CommitNavigation(
+          FrameLoadRequest(nullptr, item->GenerateResourceRequest(
+                                        mojom::FetchCacheMode::kDefault)),
+          kFrameLoadTypeBackForward, item.Get(), kHistorySameDocumentLoad);
   EXPECT_EQ(kWebBackForwardCommit, client.LastCommitType());
 }
 
