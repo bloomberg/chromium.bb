@@ -152,6 +152,10 @@
 #pragma mark - RecentTabsTableViewControllerDelegate
 
 - (void)refreshSessionsView {
+  // This method is called from two places: 1) when this mediator observes a
+  // change in the synced session state, and 2) when the UI layer recognizes
+  // that the signin process has completed. The latter call is necessary because
+  // it can happen much more immediately than the former call.
   [self.consumer refreshUserState:[self userSignedInState]];
 }
 
