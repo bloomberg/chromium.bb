@@ -989,7 +989,9 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     public boolean shouldShowAppMenu() {
-        return getActivityTab() != null && getToolbarManager().isInitialized();
+        if (getActivityTab() == null || !getToolbarManager().isInitialized()) return false;
+
+        return super.shouldShowAppMenu();
     }
 
     @Override
