@@ -133,6 +133,11 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'SetMargins', function() {
   this.runMochaTest(settings_sections_tests.TestNames.SetMargins);
 });
 
+TEST_F('PrintPreviewSettingsSectionsTest', 'SetPagesPerSheet', function() {
+  loadTimeData.overrideValues({pagesPerSheetEnabled: true});
+  this.runMochaTest(settings_sections_tests.TestNames.SetPagesPerSheet);
+});
+
 TEST_F('PrintPreviewSettingsSectionsTest', 'SetScaling', function() {
   this.runMochaTest(settings_sections_tests.TestNames.SetScaling);
 });
@@ -318,6 +323,11 @@ TEST_F('PrintPreviewPreviewGenerationTest', 'PageRange', function() {
 
 TEST_F('PrintPreviewPreviewGenerationTest', 'SelectionOnly', function() {
   this.runMochaTest(preview_generation_test.TestNames.SelectionOnly);
+});
+
+TEST_F('PrintPreviewPreviewGenerationTest', 'PagesPerSheet', function() {
+  loadTimeData.overrideValues({pagesPerSheetEnabled: true});
+  this.runMochaTest(preview_generation_test.TestNames.PagesPerSheet);
 });
 
 TEST_F('PrintPreviewPreviewGenerationTest', 'Scaling', function() {
