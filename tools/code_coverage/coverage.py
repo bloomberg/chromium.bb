@@ -153,6 +153,9 @@ FILE_BUG_MESSAGE = (
     'https://bugs.chromium.org/p/chromium/issues/entry?'
     'components=Tools%3ECodeCoverage')
 
+# String to replace with actual llvm profile path.
+LLVM_PROFILE_FILE_PATH_SUBSTITUTION = '<llvm_profile_file_path>'
+
 
 class _CoverageSummary(object):
   """Encapsulates coverage summary representation."""
@@ -1070,6 +1073,8 @@ def _ExecuteCommand(target, command, output_file_path):
       [target, profile_pattern_string, PROFRAW_FILE_EXTENSION])
   expected_profraw_file_path = os.path.join(_GetCoverageReportRootDirPath(),
                                             expected_profraw_file_name)
+  command = command.replace(LLVM_PROFILE_FILE_PATH_SUBSTITUTION,
+                            expected_profraw_file_path)
 
   try:
     # Some fuzz targets or tests may write into stderr, redirect it as well.
@@ -1109,6 +1114,8 @@ def _ExecuteIOSCommand(command, output_file_path):
   # checkout.
   iossim_profraw_file_path = os.path.join(
       OUTPUT_DIR, os.extsep.join(['iossim', PROFRAW_FILE_EXTENSION]))
+  command = command.replace(LLVM_PROFILE_FILE_PATH_SUBSTITUTION,
+                            iossim_profraw_file_path)
 
   try:
     with open(output_file_path, 'wb') as output_file_handle:
@@ -1455,8 +1462,10 @@ def _GetCommandForWebTests(arguments):
       'python', 'testing/xvfb.py', 'python',
       'third_party/blink/tools/run_web_tests.py',
       '--additional-driver-flag=--no-sandbox',
-      '--disable-breakpad', '--no-show-results',
+      '--additional-env-var=LLVM_PROFILE_FILE=%s' %
+      LLVM_PROFILE_FILE_PATH_SUBSTITUTION,
       '--child-processes=%d' % max(1, int(multiprocessing.cpu_count() / 2)),
+      '--disable-breakpad', '--no-show-results', '--skip-failing-tests',
       '--target=%s' % os.path.basename(BUILD_DIR), '--time-out-ms=30000'
   ]
   if arguments.strip():
