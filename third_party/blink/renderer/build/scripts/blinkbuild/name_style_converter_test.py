@@ -108,8 +108,10 @@ class SmartTokenizerTest(unittest.TestCase):
         self.assertEqual(tokenize_name('IsXHTMLDocument'), ['Is', 'XHTML', 'Document'])
         self.assertEqual(tokenize_name('isHTMLDocument'), ['is', 'HTML', 'Document'])
 
-        self.assertEqual(tokenize_name('Animation.idl'), ['Animation', '.', 'idl'])
-        self.assertEqual(tokenize_name('-webkit-appearance'), ['-', 'webkit', '-', 'appearance'])
+    def test_ignoring_characters(self):
+        self.assertEqual(tokenize_name('Animation.idl'), ['Animation', 'idl'])
+        self.assertEqual(tokenize_name('-webkit-appearance'), ['webkit', 'appearance'])
+        self.assertEqual(tokenize_name('  foo_bar!#"$'), ['foo', 'bar'])
 
 
 class NameStyleConverterTest(unittest.TestCase):
