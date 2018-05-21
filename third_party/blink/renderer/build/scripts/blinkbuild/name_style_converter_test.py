@@ -77,6 +77,10 @@ class SmartTokenizerTest(unittest.TestCase):
         self.assertEqual(tokenize_name('WebGL2CompressedTextureETC1'),
                          ['WebGL2', 'Compressed', 'Texture', 'ETC1'])
         self.assertEqual(tokenize_name('EXTsRGB'), ['EXT', 'sRGB'])
+        # 'PVRTC' contains a special token 'RTC', but it should be a
+        # single token.
+        self.assertEqual(tokenize_name('WebGLCompressedTexturePVRTC'),
+                         ['WebGL', 'Compressed', 'Texture', 'PVRTC'])
 
         self.assertEqual(tokenize_name('SVGFEBlendElement'), ['SVG', 'FE', 'Blend', 'Element'])
         self.assertEqual(tokenize_name('SVGMPathElement'), ['SVG', 'MPath', 'Element'])
@@ -102,8 +106,10 @@ class SmartTokenizerTest(unittest.TestCase):
         self.assertEqual(tokenize_name('XPathEvaluator'), ['XPath', 'Evaluator'])
 
         self.assertEqual(tokenize_name('IsXHTMLDocument'), ['Is', 'XHTML', 'Document'])
+        self.assertEqual(tokenize_name('isHTMLDocument'), ['is', 'HTML', 'Document'])
 
-        self.assertEqual(tokenize_name('Animation.idl'), ['Animation', '.idl'])
+        self.assertEqual(tokenize_name('Animation.idl'), ['Animation', '.', 'idl'])
+        self.assertEqual(tokenize_name('-webkit-appearance'), ['-', 'webkit', '-', 'appearance'])
 
 
 class NameStyleConverterTest(unittest.TestCase):
