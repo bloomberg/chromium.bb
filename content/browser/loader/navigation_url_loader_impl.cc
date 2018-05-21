@@ -541,10 +541,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           network::SharedURLLoaderFactory::Create(
               std::move(request_info->blob_url_loader_factory)),
-          GetContentClient()->browser()->CreateURLLoaderThrottles(
-              *resource_request_, resource_context_, web_contents_getter_,
-              navigation_ui_data_.get(), frame_tree_node_id_),
-          0 /* routing_id */, 0 /* request_id? */,
+          CreateURLLoaderThrottles(), 0 /* routing_id */, 0 /* request_id? */,
           network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
           kNavigationUrlLoaderTrafficAnnotation,
           base::ThreadTaskRunnerHandle::Get());
