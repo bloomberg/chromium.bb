@@ -220,8 +220,7 @@ static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
       kGlobalPaintFlattenCompositingLayers)
     return false;
   if (paint_flags &
-      (kPaintLayerPaintingRootBackgroundOnly |
-       kPaintLayerPaintingOverlayScrollbars | kPaintLayerUncachedClipRects))
+      (kPaintLayerPaintingOverlayScrollbars | kPaintLayerUncachedClipRects))
     return false;
 
   // When in FOUC-avoidance mode, don't cache any subsequences, to avoid having
@@ -377,10 +376,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       (is_painting_composited_decoration ||
        (!is_painting_scrolling_content && !is_painting_mask)) &&
       paint_layer_.GetLayoutObject().StyleRef().HasOutline();
-
-  if (paint_flags & kPaintLayerPaintingRootBackgroundOnly &&
-      !paint_layer_.GetLayoutObject().IsLayoutView())
-    return result;
 
   // Ensure our lists are up to date.
   paint_layer_.StackingNode()->UpdateLayerListsIfNeeded();
@@ -1284,8 +1279,6 @@ void PaintLayerPainter::PaintForegroundForFragments(
     bool selection_only,
     bool force_paint_chunks,
     PaintLayerFlags paint_flags) {
-  DCHECK(!(paint_flags & kPaintLayerPaintingRootBackgroundOnly));
-
   // Optimize clipping for the single fragment case.
   bool should_clip = layer_fragments.size() == 1 &&
                      !layer_fragments[0].foreground_rect.IsEmpty();

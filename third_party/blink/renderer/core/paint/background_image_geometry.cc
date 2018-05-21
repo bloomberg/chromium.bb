@@ -52,9 +52,7 @@ bool FixedBackgroundPaintsInLocalCoordinates(
     return false;
 
   CompositedLayerMapping* mapping = root_layer->GetCompositedLayerMapping();
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return !mapping->BackgroundPaintsOntoScrollingContentsLayer();
-  return mapping->BackgroundLayerPaintsFixedRootBackground();
+  return !mapping->BackgroundPaintsOntoScrollingContentsLayer();
 }
 
 LayoutSize CalculateFillTileSize(const LayoutBoxModelObject& obj,

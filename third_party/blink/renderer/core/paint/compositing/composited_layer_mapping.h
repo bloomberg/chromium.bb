@@ -134,14 +134,8 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
   GraphicsLayer* ForegroundLayer() const { return foreground_layer_.get(); }
 
-  GraphicsLayer* BackgroundLayer() const { return background_layer_.get(); }
-
   GraphicsLayer* DecorationOutlineLayer() const {
     return decoration_outline_layer_.get();
-  }
-
-  bool BackgroundLayerPaintsFixedRootBackground() const {
-    return background_layer_paints_fixed_root_background_;
   }
 
   bool HasScrollingLayer() const { return scrolling_layer_.get(); }
@@ -382,8 +376,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       const IntPoint& snapped_offset_from_composited_ancestor,
       const IntRect& relative_compositing_bounds);
   void UpdateForegroundLayerGeometry();
-  void UpdateBackgroundLayerGeometry(
-      const IntSize& relative_compositing_bounds_size);
   void UpdateDecorationOutlineLayerGeometry(
       const IntSize& relative_compositing_bounds_size);
   void UpdateScrollingLayerGeometry(const IntRect& local_compositing_bounds);
@@ -420,7 +412,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
                                     bool needs_scroll_corner_layer,
                                     bool needs_ancestor_clip);
   bool UpdateForegroundLayer(bool needs_foreground_layer);
-  bool UpdateBackgroundLayer(bool needs_background_layer);
   bool UpdateDecorationOutlineLayer(bool needs_decoration_outline_layer);
   bool UpdateMaskLayer(bool needs_mask_layer);
   bool UpdateChildClippingMaskLayer(bool needs_child_clipping_mask_layer);
@@ -456,8 +447,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       IntRect& compositing_bounds_relative_to_composited_ancestor,
       LayoutPoint& offset_from_composited_ancestor,
       IntPoint& snapped_offset_from_composited_ancestor);
-
-  void SetBackgroundLayerPaintsFixedRootBackground(bool);
 
   GraphicsLayerPaintingPhase PaintingPhaseForPrimaryLayer() const;
 
@@ -628,37 +617,17 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // border radius or clip-path.
   std::unique_ptr<GraphicsLayer> child_clipping_mask_layer_;
 
-  // There are two other (optional) layers whose painting is managed by the
+  // There is one other (optional) layer whose painting is managed by the
   // CompositedLayerMapping, but whose position in the hierarchy is maintained
-  // by the PaintLayerCompositor. These are the foreground and background
-  // layers. The foreground layer exists if we have composited descendants with
-  // negative z-order. We need the extra layer in this case because the layer
-  // needs to draw both below (for the background, say) and above (for the
-  // normal flow content, say) the negative z-order descendants and this is
-  // impossible with a single layer. The RLC handles inserting foreground_layer_
-  // in the correct position in our descendant list for us (right after the neg
-  // z-order dsecendants).
-  //
-  // The background layer is only created if this is the root layer and our
-  // background is entirely fixed. In this case we want to put the background in
-  // a separate composited layer so that when we scroll, we don't have to
-  // re-raster the background into position. This layer is also inserted into
-  // the tree by the RLC as it gets a special home. This layer becomes a
-  // descendant of the frame clipping layer. That is:
-  //   ...
-  //     + frame clipping layer
-  //       + background_layer_
-  //       + frame scrolling layer
-  //         + root content layer
-  //
-  // With the hierarchy set up like this, the root content layer is able to
-  // scroll without affecting the background layer (or paint invalidation).
-
+  // by the PaintLayerCompositor. This is the foreground layer. The foreground
+  // layer exists if we have composited descendants with negative z-order. We
+  // need the extra layer in this case because the layer needs to draw both
+  // below (for the background, say) and above (for the normal flow content,
+  // say) the negative z-order descendants and this is impossible with a single
+  // layer. The RLC handles inserting foreground_layer_ in the correct position
+  // in our descendant list for us (right after the neg z-order dsecendants).
   // Only used in cases where we need to draw the foreground separately.
   std::unique_ptr<GraphicsLayer> foreground_layer_;
-
-  // Only used in cases where we need to draw the background separately.
-  std::unique_ptr<GraphicsLayer> background_layer_;
 
   std::unique_ptr<GraphicsLayer> layer_for_horizontal_scrollbar_;
   std::unique_ptr<GraphicsLayer> layer_for_vertical_scrollbar_;
@@ -730,7 +699,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   unsigned pending_update_scope_ : 2;
   unsigned is_main_frame_layout_view_layer_ : 1;
 
-  unsigned background_layer_paints_fixed_root_background_ : 1;
   unsigned scrolling_contents_are_empty_ : 1;
 
   // Keep track of whether the background is painted onto the scrolling contents

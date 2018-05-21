@@ -123,12 +123,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   // Whether the given layer needs an extra 'contents' layer.
   bool NeedsContentsCompositingLayer(const PaintLayer*) const;
 
-  bool NeedsFixedRootBackgroundLayer() const;
-  GraphicsLayer* FixedRootBackgroundLayer() const;
-  void SetNeedsUpdateFixedBackground() {
-    needs_update_fixed_background_ = true;
-  }
-
   // Issue paint invalidations of the appropriate layers when the given Layer
   // starts or stops being composited.
   void PaintInvalidationOnCompositingChange(PaintLayer*);
@@ -176,7 +170,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   void FrameViewDidChangeSize();
   void FrameViewDidScroll();
   void FrameViewScrollbarsExistenceDidChange();
-  void RootFixedBackgroundsChanged();
 
   std::unique_ptr<JSONObject> LayerTreeAsJSON(LayerTreeFlags) const;
 
@@ -280,7 +273,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   // except the one in updateIfNeeded, then rename this to
   // m_compositingDirty.
   bool root_should_always_composite_dirty_;
-  bool needs_update_fixed_background_;
   bool in_overlay_fullscreen_video_;
 
   enum RootLayerAttachment {

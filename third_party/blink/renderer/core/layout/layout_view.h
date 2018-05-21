@@ -184,10 +184,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   IntRect DocumentRect() const;
 
-  // LayoutObject that paints the root background has background-images which
-  // all have background-attachment: fixed.
-  bool RootBackgroundIsEntirelyFixed() const;
-
   IntervalArena* GetIntervalArena();
 
   void SetLayoutQuoteHead(LayoutQuote* head) { layout_quote_head_ = head; }

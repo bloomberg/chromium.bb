@@ -158,9 +158,6 @@ void NGBoxFragmentPainter::PaintObject(
       return;
   }
 
-  if (paint_info.PaintRootBackgroundOnly())
-    return;
-
   if (paint_phase == PaintPhase::kMask && is_visible)
     return PaintMask(paint_info, paint_offset);
 
@@ -679,8 +676,7 @@ void NGBoxFragmentPainter::PaintOverflowControlsIfNeeded(
     const LayoutPoint& paint_offset) {
   if (box_fragment_.HasOverflowClip() &&
       box_fragment_.Style().Visibility() == EVisibility::kVisible &&
-      ShouldPaintSelfBlockBackground(paint_info.phase) &&
-      !paint_info.PaintRootBackgroundOnly()) {
+      ShouldPaintSelfBlockBackground(paint_info.phase)) {
     const NGPhysicalBoxFragment& fragment = PhysicalFragment();
     base::Optional<ClipRecorder> clip_recorder;
     if (!fragment.Layer()->IsSelfPaintingLayer()) {

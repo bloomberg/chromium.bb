@@ -200,10 +200,6 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
     if ((diff.NeedsFullPaintInvalidation() || diff.NeedsLayout()) &&
         GetNode() && (IsDocumentElement() || IsHTMLBodyElement(*GetNode()))) {
       View()->SetShouldDoFullPaintInvalidation();
-
-      if (old_style->HasEntirelyFixedBackground() !=
-          new_style.HasEntirelyFixedBackground())
-        View()->Compositor()->SetNeedsUpdateFixedBackground();
     }
 
     // When a layout hint happens and an object's position style changes, we

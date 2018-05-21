@@ -206,7 +206,6 @@ CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)
       content_offset_in_compositing_layer_dirty_(false),
       pending_update_scope_(kGraphicsLayerUpdateNone),
       is_main_frame_layout_view_layer_(false),
-      background_layer_paints_fixed_root_background_(false),
       scrolling_contents_are_empty_(false),
       background_paints_onto_scrolling_contents_layer_(false),
       background_paints_onto_graphics_layer_(false),
@@ -238,7 +237,6 @@ CompositedLayerMapping::~CompositedLayerMapping() {
   UpdateOverflowControlsLayers(false, false, false, false);
   UpdateChildTransformLayer(false);
   UpdateForegroundLayer(false);
-  UpdateBackgroundLayer(false);
   UpdateMaskLayer(false);
   UpdateChildClippingMaskLayer(false);
   UpdateScrollingLayers(false);
@@ -281,7 +279,6 @@ void CompositedLayerMapping::DestroyGraphicsLayers() {
   ancestor_clipping_mask_layer_ = nullptr;
   graphics_layer_ = nullptr;
   foreground_layer_ = nullptr;
-  background_layer_ = nullptr;
   child_containment_layer_ = nullptr;
   child_transform_layer_ = nullptr;
   mask_layer_ = nullptr;
@@ -460,10 +457,6 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
     } else {
       graphics_layer_->SetContentsOpaque(false);
     }
-  } else if (background_layer_) {
-    graphics_layer_->SetContentsOpaque(false);
-    background_layer_->SetContentsOpaque(
-        owning_layer_.BackgroundIsKnownToBeOpaqueInRect(CompositedBounds()));
   } else if (IsSurfaceLayerCanvas(GetLayoutObject())) {
     // TODO(crbug.com/705019): Contents could be opaque, but that cannot be
     // determined from the main thread. Or can it?
@@ -712,13 +705,6 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
   const ComputedStyle& style = layout_object.StyleRef();
 
   bool layer_config_changed = false;
-  SetBackgroundLayerPaintsFixedRootBackground(
-      layout_object.IsLayoutView() &&
-      compositor->NeedsFixedRootBackgroundLayer());
-
-  // The background layer is currently only used for fixed root backgrounds.
-  if (UpdateBackgroundLayer(background_layer_paints_fixed_root_background_))
-    layer_config_changed = true;
 
   if (UpdateForegroundLayer(
           compositor->NeedsContentsCompositingLayer(&owning_layer_)))
@@ -1215,14 +1201,9 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
   UpdateMaskLayerGeometry();
   UpdateTransformGeometry(snapped_offset_from_composited_ancestor,
                           relative_compositing_bounds);
-  UpdateBackgroundLayerGeometry(contents_size);
   // TODO(yigu): Currently the decoration layer uses the same contentSize
-  // as background layer and foreground layer. There are scenarios that
-  // the sizes could be different. The actual size of the decoration layer
-  // should be calculated separately.
-  // The size of the background layer should be different as well. We need to
-  // check whether we are painting the decoration layer into the background and
-  // then ignore or consider the outline when determining the contentSize.
+  // as the foreground layer. There are scenarios where the sizes could be
+  // different so the decoration layer size should be calculated separately.
   UpdateDecorationOutlineLayerGeometry(contents_size);
   UpdateScrollingLayerGeometry(local_compositing_bounds);
   UpdateForegroundLayerGeometry();
@@ -1765,25 +1746,6 @@ void CompositedLayerMapping::UpdateForegroundLayerGeometry() {
       IntPoint(compositing_bounds.Location() - parent_location));
 }
 
-void CompositedLayerMapping::UpdateBackgroundLayerGeometry(
-    const IntSize& relative_compositing_bounds_size) {
-  if (!background_layer_)
-    return;
-
-  auto background_size = relative_compositing_bounds_size;
-  if (BackgroundLayerPaintsFixedRootBackground()) {
-    LocalFrameView* frame_view = ToLayoutView(GetLayoutObject()).GetFrameView();
-    background_size = frame_view->VisibleContentSize();
-  }
-  background_layer_->SetPosition(FloatPoint());
-  if (background_size != background_layer_->Size()) {
-    background_layer_->SetSize(background_size);
-    background_layer_->SetNeedsDisplay();
-  }
-  background_layer_->SetOffsetFromLayoutObject(
-      graphics_layer_->OffsetFromLayoutObject());
-}
-
 void CompositedLayerMapping::UpdateDecorationOutlineLayerGeometry(
     const IntSize& relative_compositing_bounds_size) {
   if (!decoration_outline_layer_)
@@ -1988,15 +1950,6 @@ void CompositedLayerMapping::UpdateDrawsContent() {
   if (foreground_layer_)
     foreground_layer_->SetDrawsContent(has_painted_content);
 
-  // TODO(yigu): The background should no longer setDrawsContent(true) if we
-  // only have an outline and we are drawing the outline into the decoration
-  // layer (i.e. if there is nothing actually drawn into the
-  // background anymore.)
-  // "hasPaintedContent" should be calculated in a way that does not take the
-  // outline into consideration.
-  if (background_layer_)
-    background_layer_->SetDrawsContent(has_painted_content);
-
   if (decoration_outline_layer_)
     decoration_outline_layer_->SetDrawsContent(true);
 
@@ -2100,12 +2053,6 @@ bool CompositedLayerMapping::UpdateChildTransformLayer(
   }
 
   return layers_changed;
-}
-
-void CompositedLayerMapping::SetBackgroundLayerPaintsFixedRootBackground(
-    bool background_layer_paints_fixed_root_background) {
-  background_layer_paints_fixed_root_background_ =
-      background_layer_paints_fixed_root_background;
 }
 
 bool CompositedLayerMapping::ToggleScrollbarLayerIfNeeded(
@@ -2244,39 +2191,36 @@ enum ApplyToGraphicsLayersModeFlags {
   kApplyToLayersAffectedByPreserve3D = (1 << 0),
   kApplyToSquashingLayer = (1 << 1),
   kApplyToScrollbarLayers = (1 << 2),
-  kApplyToBackgroundLayer = (1 << 3),
-  kApplyToMaskLayers = (1 << 4),
-  kApplyToContentLayers = (1 << 5),
+  kApplyToMaskLayers = (1 << 3),
+  kApplyToContentLayers = (1 << 4),
   kApplyToChildContainingLayers =
-      (1 << 6),  // layers between m_graphicsLayer and children
-  kApplyToNonScrollingContentLayers = (1 << 7),
-  kApplyToScrollingContentLayers = (1 << 8),
-  kApplyToDecorationOutlineLayer = (1 << 9),
+      (1 << 5),  // layers between m_graphicsLayer and children
+  kApplyToNonScrollingContentLayers = (1 << 6),
+  kApplyToScrollingContentLayers = (1 << 7),
+  kApplyToDecorationOutlineLayer = (1 << 8),
   kApplyToAllGraphicsLayers =
-      (kApplyToSquashingLayer | kApplyToScrollbarLayers |
-       kApplyToBackgroundLayer | kApplyToMaskLayers |
+      (kApplyToSquashingLayer | kApplyToScrollbarLayers | kApplyToMaskLayers |
        kApplyToLayersAffectedByPreserve3D | kApplyToContentLayers |
        kApplyToScrollingContentLayers | kApplyToDecorationOutlineLayer)
 };
 typedef unsigned ApplyToGraphicsLayersMode;
 
 // Flags to layers mapping matrix:
-//                  bit 0 1 2 3 4 5 6 7 8 9
-// ChildTransform       *           *
-// Main                 *         *   *
-// Clipping             *           *
-// Scrolling            *           *
-// ScrollingContents    *         * *   *
-// Foreground           *         *     *
+//                  bit 0 1 2 3 4 5 6 7 8
+// ChildTransform       *         *
+// Main                 *       *   *
+// Clipping             *         *
+// Scrolling            *         *
+// ScrollingContents    *       * *   *
+// Foreground           *       *     *
 // Squashing              *
-// Mask                         * *   *
-// ChildClippingMask            * *   *
-// AncestorClippingMask         * *   *
-// Background                 * *     *
+// Mask                       * *   *
+// ChildClippingMask          * *   *
+// AncestorClippingMask       * *   *
 // HorizontalScrollbar      *
 // VerticalScrollbar        *
 // ScrollCorner             *
-// DecorationOutline                  *   *
+// DecorationOutline                *   *
 template <typename Func>
 static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping,
                                   const Func& f,
@@ -2327,11 +2271,6 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping,
        (mode & kApplyToNonScrollingContentLayers)) &&
       mapping->AncestorClippingMaskLayer())
     f(mapping->AncestorClippingMaskLayer());
-
-  if (((mode & kApplyToBackgroundLayer) || (mode & kApplyToContentLayers) ||
-       (mode & kApplyToNonScrollingContentLayers)) &&
-      mapping->BackgroundLayer())
-    f(mapping->BackgroundLayer());
 
   if ((mode & kApplyToScrollbarLayers) &&
       mapping->LayerForHorizontalScrollbar())
@@ -2441,32 +2380,6 @@ bool CompositedLayerMapping::UpdateForegroundLayer(
     foreground_layer_ = nullptr;
     layer_changed = true;
   }
-
-  return layer_changed;
-}
-
-bool CompositedLayerMapping::UpdateBackgroundLayer(
-    bool needs_background_layer) {
-  bool layer_changed = false;
-  if (needs_background_layer) {
-    if (!background_layer_) {
-      background_layer_ =
-          CreateGraphicsLayer(CompositingReason::kLayerForBackground);
-      background_layer_->SetTransformOrigin(FloatPoint3D());
-      background_layer_->SetPaintingPhase(kGraphicsLayerPaintBackground);
-      layer_changed = true;
-    }
-  } else {
-    if (background_layer_) {
-      background_layer_->RemoveFromParent();
-      background_layer_ = nullptr;
-      layer_changed = true;
-    }
-  }
-
-  if (layer_changed &&
-      !owning_layer_.GetLayoutObject().DocumentBeingDestroyed())
-    Compositor()->RootFixedBackgroundsChanged();
 
   return layer_changed;
 }
@@ -2735,9 +2648,7 @@ bool CompositedLayerMapping::UpdateSquashingLayers(
 
 GraphicsLayerPaintingPhase
 CompositedLayerMapping::PaintingPhaseForPrimaryLayer() const {
-  unsigned phase = 0;
-  if (!background_layer_)
-    phase |= kGraphicsLayerPaintBackground;
+  unsigned phase = kGraphicsLayerPaintBackground;
   if (!foreground_layer_)
     phase |= kGraphicsLayerPaintForeground;
   if (!mask_layer_)
@@ -3577,15 +3488,8 @@ void CompositedLayerMapping::PaintContents(
   if (graphics_layer_painting_phase & kGraphicsLayerPaintDecoration)
     paint_layer_flags |= kPaintLayerPaintingCompositingDecorationPhase;
 
-  if (graphics_layer == background_layer_.get())
-    paint_layer_flags |= kPaintLayerPaintingRootBackgroundOnly;
-  else if (Compositor()->FixedRootBackgroundLayer() &&
-           owning_layer_.IsRootLayer())
-    paint_layer_flags |= kPaintLayerPaintingSkipRootBackground;
-
   if (graphics_layer == graphics_layer_.get() ||
       graphics_layer == foreground_layer_.get() ||
-      graphics_layer == background_layer_.get() ||
       graphics_layer == mask_layer_.get() ||
       graphics_layer == child_clipping_mask_layer_.get() ||
       graphics_layer == scrolling_contents_layer_.get() ||
@@ -3594,7 +3498,7 @@ void CompositedLayerMapping::PaintContents(
     bool paint_root_background_onto_scrolling_contents_layer =
         background_paints_onto_scrolling_contents_layer_;
     DCHECK(!paint_root_background_onto_scrolling_contents_layer ||
-           (!background_layer_ && !foreground_layer_));
+           !foreground_layer_);
     if (paint_root_background_onto_scrolling_contents_layer) {
       if (graphics_layer == scrolling_contents_layer_.get())
         paint_layer_flags &= ~kPaintLayerPaintingSkipRootBackground;
@@ -3834,8 +3738,6 @@ String CompositedLayerMapping::DebugName(
     name = "Ancestor Clipping Mask Layer";
   } else if (graphics_layer == foreground_layer_.get()) {
     name = owning_layer_.DebugName() + " (foreground) Layer";
-  } else if (graphics_layer == background_layer_.get()) {
-    name = owning_layer_.DebugName() + " (background) Layer";
   } else if (graphics_layer == child_containment_layer_.get()) {
     name = "Child Containment Layer";
   } else if (graphics_layer == child_transform_layer_.get()) {

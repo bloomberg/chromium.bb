@@ -79,7 +79,6 @@ PaintLayerCompositor::PaintLayerCompositor(LayoutView& layout_view)
       has_accelerated_compositing_(true),
       compositing_(false),
       root_should_always_composite_dirty_(true),
-      needs_update_fixed_background_(false),
       in_overlay_fullscreen_video_(false),
       root_layer_attachment_(kRootLayerUnattached) {
   UpdateAcceleratedCompositingSettings();
@@ -331,11 +330,6 @@ void PaintLayerCompositor::ApplyOverlayFullscreenVideoAdjustmentIfNeeded() {
       FindFullscreenVideoLayoutObject(layout_view_.GetDocument());
   if (!video || !video->Layer()->HasCompositedLayerMapping() ||
       !video->VideoElement()->UsesOverlayFullscreenVideo()) {
-    if (is_local_root) {
-      GraphicsLayer* background_layer = FixedRootBackgroundLayer();
-      if (background_layer && !background_layer->Parent())
-        RootFixedBackgroundsChanged();
-    }
     return;
   }
 
@@ -359,8 +353,6 @@ void PaintLayerCompositor::ApplyOverlayFullscreenVideoAdjustmentIfNeeded() {
   else
     overflow_controls_host_layer_->AddChild(video_layer);
 
-  if (GraphicsLayer* background_layer = FixedRootBackgroundLayer())
-    background_layer->RemoveFromParent();
   in_overlay_fullscreen_video_ = true;
 }
 
@@ -546,11 +538,6 @@ void PaintLayerCompositor::UpdateIfNeeded(
     ApplyOverlayFullscreenVideoAdjustmentIfNeeded();
   }
 
-  if (needs_update_fixed_background_) {
-    RootFixedBackgroundsChanged();
-    needs_update_fixed_background_ = false;
-  }
-
   for (unsigned i = 0; i < layers_needing_paint_invalidation.size(); i++) {
     ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
         layers_needing_paint_invalidation[i]->GetLayoutObject());
@@ -731,13 +718,6 @@ void PaintLayerCompositor::FrameViewDidChangeSize() {
   UpdateOverflowControlsLayers();
 }
 
-enum AcceleratedFixedRootBackgroundHistogramBuckets {
-  kScrolledMainFrameBucket = 0,
-  kScrolledMainFrameWithAcceleratedFixedRootBackground = 1,
-  kScrolledMainFrameWithUnacceleratedFixedRootBackground = 2,
-  kAcceleratedFixedRootBackgroundHistogramMax = 3
-};
-
 void PaintLayerCompositor::FrameViewDidScroll() {
   LocalFrameView* frame_view = layout_view_.GetFrameView();
   IntSize scroll_offset = frame_view->ScrollOffsetInt();
@@ -760,37 +740,11 @@ void PaintLayerCompositor::FrameViewDidScroll() {
     scroll_layer_->SetPosition(IntPoint(-scroll_offset));
 
   ShowScrollbarLayersIfNeeded();
-
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, accelerated_background_histogram,
-                      ("Renderer.AcceleratedFixedRootBackground",
-                       kAcceleratedFixedRootBackgroundHistogramMax));
-  accelerated_background_histogram.Count(kScrolledMainFrameBucket);
 }
 
 void PaintLayerCompositor::FrameViewScrollbarsExistenceDidChange() {
   if (container_layer_)
     UpdateOverflowControlsLayers();
-}
-
-void PaintLayerCompositor::RootFixedBackgroundsChanged() {
-  if (!container_layer_)
-    return;
-
-  // To avoid having to make the fixed root background layer fixed positioned to
-  // stay put, we position it in the layer tree as follows:
-  //
-  // + Overflow controls host
-  //   + LocalFrame clip
-  //     + (Fixed root background) <-- Here.
-  //     + LocalFrame scroll
-  //       + Root content layer
-  //   + Scrollbars
-  //
-  // That is, it needs to be the first child of the frame clip, the sibling of
-  // the frame scroll layer. The compositor does not own the background layer,
-  // it just positions it (like the foreground layer).
-  if (GraphicsLayer* background_layer = FixedRootBackgroundLayer())
-    container_layer_->AddChildBelow(background_layer, scroll_layer_.get());
 }
 
 std::unique_ptr<JSONObject> PaintLayerCompositor::LayerTreeAsJSON(
@@ -1049,27 +1003,6 @@ Scrollbar* PaintLayerCompositor::GraphicsLayerToScrollbar(
   if (graphics_layer == LayerForVerticalScrollbar()) {
     return layout_view_.GetFrameView()->VerticalScrollbar();
   }
-  return nullptr;
-}
-
-bool PaintLayerCompositor::NeedsFixedRootBackgroundLayer() const {
-  return !RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-         PreferCompositingToLCDTextEnabled() &&
-         layout_view_.RootBackgroundIsEntirelyFixed();
-}
-
-GraphicsLayer* PaintLayerCompositor::FixedRootBackgroundLayer() const {
-  // Get the fixed root background from the LayoutView layer's
-  // compositedLayerMapping.
-  PaintLayer* view_layer = layout_view_.Layer();
-  if (!view_layer)
-    return nullptr;
-
-  if (view_layer->GetCompositingState() == kPaintsIntoOwnBacking &&
-      view_layer->GetCompositedLayerMapping()
-          ->BackgroundLayerPaintsFixedRootBackground())
-    return view_layer->GetCompositedLayerMapping()->BackgroundLayer();
-
   return nullptr;
 }
 
