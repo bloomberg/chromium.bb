@@ -28,6 +28,7 @@ class CONTROLLER_EXPORT OomInterventionImpl
 
   // mojom::blink::OomIntervention:
   void StartDetection(mojom::blink::OomInterventionHostPtr,
+                      base::UnsafeSharedMemoryRegion shared_metrics_buffer,
                       uint64_t memory_workload_threshold,
                       bool trigger_intervention) override;
 
@@ -37,6 +38,8 @@ class CONTROLLER_EXPORT OomInterventionImpl
   void Check(TimerBase*);
 
   uint64_t memory_workload_threshold_ = 0;
+
+  base::WritableSharedMemoryMapping shared_metrics_buffer_;
 
   MemoryWorkloadCaculator workload_calculator_;
   mojom::blink::OomInterventionHostPtr host_;

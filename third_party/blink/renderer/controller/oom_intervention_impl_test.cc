@@ -7,6 +7,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/common/oom_intervention/oom_intervention_types.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -60,7 +61,9 @@ TEST_F(OomInterventionImplTest, DetectedAndDeclined) {
 
   mojom::blink::OomInterventionHostPtr host_ptr;
   MockOomInterventionHost mock_host(mojo::MakeRequest(&host_ptr));
-  intervention->StartDetection(std::move(host_ptr), threshold,
+  base::UnsafeSharedMemoryRegion shm =
+      base::UnsafeSharedMemoryRegion::Create(sizeof(OomInterventionMetrics));
+  intervention->StartDetection(std::move(host_ptr), std::move(shm), threshold,
                                true /*trigger_intervention*/);
   test::RunDelayedTasks(TimeDelta::FromSeconds(1));
   EXPECT_TRUE(page->Paused());

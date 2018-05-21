@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_OOM_INTERVENTION_OOM_INTERVENTION_TAB_HELPER_H_
 #define CHROME_BROWSER_ANDROID_OOM_INTERVENTION_OOM_INTERVENTION_TAB_HELPER_H_
 
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -104,6 +105,12 @@ class OomInterventionTabHelper
   InterventionState intervention_state_ = InterventionState::NOT_TRIGGERED;
 
   mojo::Binding<blink::mojom::OomInterventionHost> binding_;
+
+  // The shared memory region that stores metrics written by the renderer
+  // process. The memory is updated frequently and the browser should touch the
+  // memory only after renderer process is dead.
+  base::UnsafeSharedMemoryRegion shared_metrics_buffer_;
+  base::WritableSharedMemoryMapping metrics_mapping_;
 
   // If memory workload in renderer is above this threshold, we assume that we
   // are in a near-OOM situation.

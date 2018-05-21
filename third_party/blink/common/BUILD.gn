@@ -32,6 +32,7 @@ jumbo_source_set("common") {
     "message_port/transferable_message_struct_traits.cc",
     "message_port/transferable_message_struct_traits.h",
     "mime_util/mime_util.cc",
+    "oom_intervention/oom_intervention_types.h",
     "origin_manifest/origin_manifest.cc",
     "origin_trials/trial_token.cc",
     "origin_trials/trial_token_validator.cc",
