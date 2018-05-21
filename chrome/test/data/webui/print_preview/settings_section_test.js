@@ -22,6 +22,7 @@ cr.define('settings_sections_tests', function() {
     SetMediaSize: 'set media size',
     SetDpi: 'set dpi',
     SetMargins: 'set margins',
+    SetPagesPerSheet: 'set pages per sheet',
     SetScaling: 'set scaling',
     SetOther: 'set other',
     PresetCopies: 'preset copies',
@@ -743,6 +744,25 @@ cr.define('settings_sections_tests', function() {
             assertEquals(
                 print_preview.ticket_items.MarginsTypeValue.MINIMUM,
                 page.settings.margins.value);
+          });
+    });
+
+    test(assert(TestNames.SetPagesPerSheet), function() {
+      toggleMoreSettings();
+      const pagesPerSheetElement =
+          page.$$('print-preview-pages-per-sheet-settings');
+      assertFalse(pagesPerSheetElement.hidden);
+
+      const pagesPerSheetInput = pagesPerSheetElement.$$('select');
+      assertEquals(1, page.settings.pagesPerSheet.value);
+
+      // Change to a different value.
+      pagesPerSheetInput.value = 2;
+      pagesPerSheetInput.dispatchEvent(new CustomEvent('change'));
+      return test_util
+          .eventToPromise('process-select-change', pagesPerSheetElement)
+          .then(function() {
+            assertEquals(2, page.settings.pagesPerSheet.value);
           });
     });
 

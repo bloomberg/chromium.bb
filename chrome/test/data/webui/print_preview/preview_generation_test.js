@@ -14,6 +14,7 @@ cr.define('preview_generation_test', function() {
     MediaSize: 'media size',
     PageRange: 'page range',
     Rasterize: 'rasterize',
+    PagesPerSheet: 'pages per sheet',
     Scaling: 'scaling',
     SelectionOnly: 'selection only',
     Destination: 'destination',
@@ -238,6 +239,11 @@ cr.define('preview_generation_test', function() {
       return testSimpleSetting(
           'selectionOnly', false, true, 'shouldPrintSelectionOnly', false,
           true);
+    });
+
+    /** Validate changing the pages per sheet updates the preview. */
+    test(assert(TestNames.PagesPerSheet), function() {
+      return testSimpleSetting('pagesPerSheet', 1, 2, 'pagesPerSheet', 1, 2);
     });
 
     /** Validate changing the scaling updates the preview. */
