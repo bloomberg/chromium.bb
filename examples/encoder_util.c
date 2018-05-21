@@ -11,10 +11,11 @@
 
 // Utility functions used by encoder binaries.
 
+#include "encoder_util.h"
+
 #include <assert.h>
 #include <string.h>
 
-#include "./encoder_util.h"
 #include "aom/aom_integer.h"
 
 #define mmin(a, b) ((a) < (b) ? (a) : (b))

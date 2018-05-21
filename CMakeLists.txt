@@ -158,44 +158,47 @@ list(APPEND AOM_SOURCES
             "${AOM_ROOT}/aom/src/aom_image.c"
             "${AOM_ROOT}/aom/src/aom_integer.c")
 
-list(APPEND AOM_COMMON_APP_UTIL_SOURCES "${AOM_ROOT}/args.c"
-            "${AOM_ROOT}/args.h" "${AOM_ROOT}/md5_utils.c"
-            "${AOM_ROOT}/md5_utils.h" "${AOM_ROOT}/tools_common.c"
-            "${AOM_ROOT}/tools_common.h" "${AOM_ROOT}/video_common.h"
-            "${AOM_ROOT}/y4menc.c" "${AOM_ROOT}/y4menc.h")
+list(APPEND AOM_COMMON_APP_UTIL_SOURCES "${AOM_ROOT}/common/args.c"
+            "${AOM_ROOT}/common/args.h" "${AOM_ROOT}/common/md5_utils.c"
+            "${AOM_ROOT}/common/md5_utils.h"
+            "${AOM_ROOT}/common/tools_common.c"
+            "${AOM_ROOT}/common/tools_common.h"
+            "${AOM_ROOT}/common/video_common.h" "${AOM_ROOT}/common/y4menc.c"
+            "${AOM_ROOT}/common/y4menc.h")
 
-list(APPEND AOM_DECODER_APP_UTIL_SOURCES "${AOM_ROOT}/ivfdec.c"
-            "${AOM_ROOT}/ivfdec.h" "${AOM_ROOT}/obudec.c"
-            "${AOM_ROOT}/obudec.h" "${AOM_ROOT}/video_reader.c"
-            "${AOM_ROOT}/video_reader.h")
+list(APPEND AOM_DECODER_APP_UTIL_SOURCES "${AOM_ROOT}/common/ivfdec.c"
+            "${AOM_ROOT}/common/ivfdec.h" "${AOM_ROOT}/common/obudec.c"
+            "${AOM_ROOT}/common/obudec.h" "${AOM_ROOT}/common/video_reader.c"
+            "${AOM_ROOT}/common/video_reader.h")
 
 list(APPEND AOM_ENCODER_APP_UTIL_SOURCES
-            "${AOM_ROOT}/ivfenc.c"
-            "${AOM_ROOT}/ivfenc.h"
-            "${AOM_ROOT}/video_writer.c"
-            "${AOM_ROOT}/video_writer.h"
-            "${AOM_ROOT}/warnings.c"
-            "${AOM_ROOT}/warnings.h"
-            "${AOM_ROOT}/y4minput.c"
-            "${AOM_ROOT}/y4minput.h"
+            "${AOM_ROOT}/common/ivfenc.c"
+            "${AOM_ROOT}/common/ivfenc.h"
+            "${AOM_ROOT}/common/video_writer.c"
+            "${AOM_ROOT}/common/video_writer.h"
+            "${AOM_ROOT}/common/warnings.c"
+            "${AOM_ROOT}/common/warnings.h"
+            "${AOM_ROOT}/common/y4minput.c"
+            "${AOM_ROOT}/common/y4minput.h"
             "${AOM_ROOT}/examples/encoder_util.h"
             "${AOM_ROOT}/examples/encoder_util.c")
 
-list(APPEND AOM_ENCODER_STATS_SOURCES "${AOM_ROOT}/aomstats.c"
-            "${AOM_ROOT}/aomstats.h" "${AOM_ROOT}/rate_hist.c"
-            "${AOM_ROOT}/rate_hist.h")
+list(APPEND AOM_ENCODER_STATS_SOURCES "${AOM_ROOT}/stats/aomstats.c"
+            "${AOM_ROOT}/stats/aomstats.h" "${AOM_ROOT}/stats/rate_hist.c"
+            "${AOM_ROOT}/stats/rate_hist.h")
 
 list(APPEND AOM_PKG_CONFIG_SOURCES "${AOM_CONFIG_DIR}/aom.pc")
 
 list(APPEND AOM_VERSION_SOURCES "${AOM_CONFIG_DIR}/aom_version.h")
 
-list(APPEND AOM_WEBM_DECODER_SOURCES "${AOM_ROOT}/webmdec.cc"
-            "${AOM_ROOT}/webmdec.h")
+list(APPEND AOM_WEBM_DECODER_SOURCES "${AOM_ROOT}/common/webmdec.cc"
+            "${AOM_ROOT}/common/webmdec.h")
 
-list(APPEND AOM_WEBM_ENCODER_SOURCES "${AOM_ROOT}/webmenc.cc"
-            "${AOM_ROOT}/webmenc.h")
+list(APPEND AOM_WEBM_ENCODER_SOURCES "${AOM_ROOT}/common/webmenc.cc"
+            "${AOM_ROOT}/common/webmenc.h")
 
-include_directories(${AOM_ROOT} ${AOM_CONFIG_DIR})
+include_directories(${AOM_ROOT} ${AOM_CONFIG_DIR} ${AOM_ROOT}/apps
+                    ${AOM_ROOT}/common ${AOM_ROOT}/examples ${AOM_ROOT}/stats)
 
 # Targets
 add_library(aom_version ${AOM_VERSION_SOURCES})
@@ -298,8 +301,14 @@ if(CONFIG_UNIT_TESTS OR ENABLE_EXAMPLES OR ENABLE_TOOLS)
   endif()
 endif()
 
+if((CONFIG_AV1_DECODER OR CONFIG_AV1_ENCODER) AND ENABLE_EXAMPLES)
+  add_executable(resize_util "${AOM_ROOT}/examples/resize_util.c"
+                 $<TARGET_OBJECTS:aom_common_app_util>)
+  list(APPEND AOM_APP_TARGETS resize_util)
+endif()
+
 if(CONFIG_AV1_DECODER AND ENABLE_EXAMPLES)
-  add_executable(aomdec "${AOM_ROOT}/aomdec.c"
+  add_executable(aomdec "${AOM_ROOT}/apps/aomdec.c"
                  $<TARGET_OBJECTS:aom_common_app_util>
                  $<TARGET_OBJECTS:aom_decoder_app_util>)
   add_executable(decode_to_md5 "${AOM_ROOT}/examples/decode_to_md5.c"
@@ -358,7 +367,7 @@ endif()
 
 if(CONFIG_AV1_ENCODER)
   if(ENABLE_EXAMPLES)
-    add_executable(aomenc "${AOM_ROOT}/aomenc.c"
+    add_executable(aomenc "${AOM_ROOT}/apps/aomenc.c"
                    $<TARGET_OBJECTS:aom_common_app_util>
                    $<TARGET_OBJECTS:aom_encoder_app_util>
                    $<TARGET_OBJECTS:aom_encoder_stats>)

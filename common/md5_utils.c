@@ -22,7 +22,7 @@
 
 #include <string.h> /* for memcpy() */
 
-#include "md5_utils.h"
+#include "common/md5_utils.h"
 
 static void byteSwap(UWORD32 *buf, unsigned words) {
   md5byte *p;

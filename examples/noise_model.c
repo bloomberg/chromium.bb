@@ -24,18 +24,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../args.h"
-#include "../tools_common.h"
-#include "../video_writer.h"
 #include "aom/aom_encoder.h"
 #include "aom_dsp/aom_dsp_common.h"
+
 #if CONFIG_AV1_DECODER
 #include "aom_dsp/grain_synthesis.h"
 #endif
+
 #include "aom_dsp/grain_table.h"
 #include "aom_dsp/noise_model.h"
 #include "aom_dsp/noise_util.h"
 #include "aom_mem/aom_mem.h"
+#include "common/args.h"
+#include "common/tools_common.h"
+#include "common/video_writer.h"
 
 static const char *exec_name;
 

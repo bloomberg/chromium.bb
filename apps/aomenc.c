@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./aomenc.h"
+#include "aomenc.h"
 #include "./aom_config.h"
 
 #include <assert.h>
@@ -20,38 +20,34 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if CONFIG_LIBYUV
-#include "third_party/libyuv/include/libyuv/scale.h"
-#endif
-
-#include "aom/aom_encoder.h"
 #if CONFIG_AV1_DECODER
 #include "aom/aom_decoder.h"
-#endif
-
-#include "./args.h"
-#include "./ivfenc.h"
-#include "./tools_common.h"
-#include "examples/encoder_util.h"
-
-#if CONFIG_AV1_ENCODER
-#include "aom/aomcx.h"
-#endif
-#if CONFIG_AV1_DECODER
 #include "aom/aomdx.h"
 #endif
 
-#include "./aomstats.h"
-#include "./rate_hist.h"
-#include "./warnings.h"
+#include "aom/aom_encoder.h"
 #include "aom/aom_integer.h"
+#include "aom/aomcx.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/mem_ops.h"
+#include "common/args.h"
+#include "common/ivfenc.h"
+#include "common/tools_common.h"
+#include "common/warnings.h"
+
 #if CONFIG_WEBM_IO
-#include "./webmenc.h"
+#include "common/webmenc.h"
 #endif
-#include "./y4minput.h"
+
+#include "common/y4minput.h"
+#include "examples/encoder_util.h"
+#include "stats/aomstats.h"
+#include "stats/rate_hist.h"
+
+#if CONFIG_LIBYUV
+#include "third_party/libyuv/include/libyuv/scale.h"
+#endif
 
 /* Swallow warnings about unused results of fread/fwrite */
 static size_t wrap_fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {

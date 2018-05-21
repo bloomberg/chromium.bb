@@ -16,7 +16,7 @@
 #include <string.h>
 #include <limits.h>
 
-#include "./aom_config.h"
+#include "aom_config.h"
 
 #if CONFIG_OS_SUPPORT
 #if HAVE_UNISTD_H
@@ -26,30 +26,25 @@
 #endif
 #endif
 
+#include "aom/aom_decoder.h"
+#include "aom/aomdx.h"
+#include "aom_ports/aom_timer.h"
+#include "aom_ports/mem_ops.h"
+#include "common/args.h"
+#include "common/ivfdec.h"
+#include "common/md5_utils.h"
+#include "common/obudec.h"
+#include "common/tools_common.h"
+
+#if CONFIG_WEBM_IO
+#include "common/webmdec.h"
+#endif
+
+#include "common/y4menc.h"
+
 #if CONFIG_LIBYUV
 #include "third_party/libyuv/include/libyuv/scale.h"
 #endif
-
-#include "./args.h"
-#include "./ivfdec.h"
-
-#include "aom/aom_decoder.h"
-#include "aom_ports/mem_ops.h"
-#include "aom_ports/aom_timer.h"
-
-#if CONFIG_AV1_DECODER
-#include "aom/aomdx.h"
-#endif
-
-#include "./md5_utils.h"
-#include "./obudec.h"
-#include "./tools_common.h"
-
-#if CONFIG_WEBM_IO
-#include "./webmdec.h"
-#endif
-
-#include "./y4menc.h"
 
 static const char *exec_name;
 

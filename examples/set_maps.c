@@ -47,11 +47,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "aom/aomcx.h"
 #include "aom/aom_encoder.h"
-
-#include "../tools_common.h"
-#include "../video_writer.h"
+#include "aom/aomcx.h"
+#include "common/tools_common.h"
+#include "common/video_writer.h"
 
 static const char *exec_name;
 

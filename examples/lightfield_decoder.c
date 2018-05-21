@@ -29,10 +29,8 @@
 
 #include "aom/aom_decoder.h"
 #include "aom/aomdx.h"
-
-#include "../tools_common.h"
-#include "../video_reader.h"
-#include "./aom_config.h"
+#include "common/tools_common.h"
+#include "common/video_reader.h"
 
 static const char *exec_name;
 

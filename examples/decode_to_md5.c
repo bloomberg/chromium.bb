@@ -34,13 +34,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "aom/aomdx.h"
 #include "aom/aom_decoder.h"
-
-#include "../md5_utils.h"
-#include "../tools_common.h"
-#include "../video_reader.h"
-#include "./aom_config.h"
+#include "aom/aomdx.h"
+#include "common/md5_utils.h"
+#include "common/tools_common.h"
+#include "common/video_reader.h"
 
 static void get_image_md5(const aom_image_t *img, unsigned char digest[16]) {
   int plane, y;

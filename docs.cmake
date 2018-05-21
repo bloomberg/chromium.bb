@@ -27,7 +27,7 @@ set(AOM_DOXYGEN_SOURCES "${AOM_ROOT}/aom/aom.h" "${AOM_ROOT}/aom/aom_codec.h"
 
 if(CONFIG_AV1_DECODER)
   set(AOM_DOXYGEN_EXAMPLE_SOURCES ${AOM_DOXYGEN_EXAMPLE_SOURCES}
-      "${AOM_ROOT}/aomdec.c" "${AOM_ROOT}/examples/decode_to_md5.c"
+      "${AOM_ROOT}/apps/aomdec.c" "${AOM_ROOT}/examples/decode_to_md5.c"
       "${AOM_ROOT}/examples/decode_with_drops.c"
       "${AOM_ROOT}/examples/simple_decoder.c")
 
@@ -60,7 +60,7 @@ endif()
 
 if(CONFIG_AV1_ENCODER)
   set(AOM_DOXYGEN_EXAMPLE_SOURCES ${AOM_DOXYGEN_EXAMPLE_SOURCES}
-      "${AOM_ROOT}/aomenc.c" "${AOM_ROOT}/examples/lossless_encoder.c"
+      "${AOM_ROOT}/apps/aomenc.c" "${AOM_ROOT}/examples/lossless_encoder.c"
       "${AOM_ROOT}/examples/set_maps.c" "${AOM_ROOT}/examples/simple_encoder.c"
       "${AOM_ROOT}/examples/twopass_encoder.c")
 

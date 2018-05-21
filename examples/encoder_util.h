@@ -14,7 +14,6 @@
 #ifndef EXAMPLES_ENCODER_UTIL_H_
 #define EXAMPLES_ENCODER_UTIL_H_
 
-#include "./aom_config.h"
 #include "aom/aom_image.h"
 
 // Returns mismatch location (?loc[0],?loc[1]) and the values at that location

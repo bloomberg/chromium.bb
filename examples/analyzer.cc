@@ -12,13 +12,14 @@
 #include <wx/aboutdlg.h>
 #include <wx/cmdline.h>
 #include <wx/dcbuffer.h>
-#include "./tools_common.h"
-#include "./video_reader.h"
+
 #include "aom/aom_decoder.h"
 #include "aom/aomdx.h"
-#include "av1/decoder/accounting.h"
 #include "av1/common/onyxc_int.h"
+#include "av1/decoder/accounting.h"
 #include "av1/decoder/inspection.h"
+#include "common/tools_common.h"
+#include "common/video_reader.h"
 
 #define OD_SIGNMASK(a) (-((a) < 0))
 #define OD_FLIPSIGNI(a, b) (((a) + OD_SIGNMASK(b)) ^ OD_SIGNMASK(b))

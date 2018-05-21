@@ -51,12 +51,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "aom/aomcx.h"
 #include "aom/aom_decoder.h"
 #include "aom/aom_encoder.h"
+#include "aom/aomcx.h"
+#include "common/tools_common.h"
+#include "common/video_writer.h"
 #include "examples/encoder_util.h"
-#include "./tools_common.h"
-#include "./video_writer.h"
 
 #define AOM_BORDER_IN_PIXELS 288
 
