@@ -73,7 +73,7 @@ void MediaDrmBridgeFactory::Create(
   // TODO(xhwang): We should always try per-origin provisioning as long as it's
   // supported regardless of whether persistent license is enabled or not.
   if (!MediaDrmBridge::IsPersistentLicenseTypeSupported(key_system)) {
-    std::move(cdm_created_cb_).Run(CreateMediaDrmBridge(""), "");
+    CreateMediaDrmBridge("");
     return;
   }
 
@@ -96,15 +96,41 @@ void MediaDrmBridgeFactory::OnStorageInitialized() {
     return;
   }
 
-  std::move(cdm_created_cb_).Run(CreateMediaDrmBridge(origin_id), "");
+  CreateMediaDrmBridge(origin_id);
 }
 
-scoped_refptr<MediaDrmBridge> MediaDrmBridgeFactory::CreateMediaDrmBridge(
-    const std::string& origin_id) {
-  return MediaDrmBridge::CreateInternal(
-      scheme_uuid_, security_level_, std::move(storage_), create_fetcher_cb_,
-      session_message_cb_, session_closed_cb_, session_keys_change_cb_,
-      session_expiration_update_cb_, origin_id);
+void MediaDrmBridgeFactory::CreateMediaDrmBridge(const std::string& origin_id) {
+  DCHECK(!media_drm_bridge_);
+
+  // Requires MediaCrypto so that it can be used by MediaCodec-based decoders.
+  const bool requires_media_crypto = true;
+
+  media_drm_bridge_ = MediaDrmBridge::CreateInternal(
+      scheme_uuid_, origin_id, security_level_, requires_media_crypto,
+      std::move(storage_), create_fetcher_cb_, session_message_cb_,
+      session_closed_cb_, session_keys_change_cb_,
+      session_expiration_update_cb_);
+
+  if (!media_drm_bridge_) {
+    std::move(cdm_created_cb_).Run(nullptr, "MediaDrmBridge creation failed");
+    return;
+  }
+
+  media_drm_bridge_->SetMediaCryptoReadyCB(base::BindRepeating(
+      &MediaDrmBridgeFactory::OnMediaCryptoReady, weak_factory_.GetWeakPtr()));
+}
+
+void MediaDrmBridgeFactory::OnMediaCryptoReady(
+    JavaObjectPtr media_crypto,
+    bool requires_secure_video_codec) {
+  DCHECK(media_crypto);
+  if (media_crypto->is_null()) {
+    media_drm_bridge_ = nullptr;
+    std::move(cdm_created_cb_).Run(nullptr, "MediaCrypto not available");
+    return;
+  }
+
+  std::move(cdm_created_cb_).Run(media_drm_bridge_, "");
 }
 
 }  // namespace media
