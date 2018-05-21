@@ -550,6 +550,14 @@ CHAR-LIMIT guidelines:
         Open this page
       </message>
 
+      <!-- Startup page preferences -->
+      <message name="IDS_OPTIONS_STARTUP_PAGE_TITLE" desc="The title of the setting that allows users to manage the page that opens when they start Chrome.">
+        Startup Page
+      </message>
+      <message name="IDS_OPTIONS_STARTUP_PAGE_EDIT_TITLE" desc="The title of the screen that allows users to change the URL of the page that opens when they start Chrome.">
+        Edit startup page
+      </message>
+
       <!-- Notifications preferences -->
       <message name="IDS_PREFS_NOTIFICATIONS" desc="Title for Notification preferences.">
         Notifications

@@ -173,6 +173,9 @@ public class MainPreferences extends PreferenceFragment
 
         if (HomepageManager.shouldShowHomepageSetting()) {
             Preference homepagePref = addPreferenceIfAbsent(PREF_HOMEPAGE);
+            if (FeatureUtilities.isNewTabPageButtonEnabled()) {
+                homepagePref.setTitle(R.string.options_startup_page_title);
+            }
             setOnOffSummary(homepagePref, HomepageManager.getInstance().getPrefHomepageEnabled());
         } else {
             removePreferenceIfPresent(PREF_HOMEPAGE);
