@@ -41,9 +41,9 @@ namespace blink {
 class Document;
 class Page;
 class PaintController;
-class LayoutReplaced;
 class SVGImageChromeClient;
 class SVGImageForContainer;
+struct IntrinsicSizingInfo;
 
 // SVGImage does not use Skia to draw images (as BitmapImage does) but instead
 // handles drawing itself. Internally, SVGImage creates a detached & sandboxed
@@ -64,8 +64,6 @@ class CORE_EXPORT SVGImage final : public Image {
   }
 
   static bool IsInSVGImage(const Node*);
-
-  LayoutReplaced* EmbeddedReplacedContent() const;
 
   bool IsSVGImage() const override { return true; }
   IntSize Size() const override { return intrinsic_size_; }
@@ -103,6 +101,13 @@ class CORE_EXPORT SVGImage final : public Image {
   // thus also independent of current zoom level.
   FloatSize ConcreteObjectSize(const FloatSize& default_object_size) const;
 
+  bool GetIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
+  bool HasIntrinsicSizingInfo() const;
+
+  // Unlike the above (HasIntrinsicSizingInfo) - which only indicates that
+  // dimensions can be read - this returns true if those dimensions are not
+  // empty (i.e if the concrete object size resolved using an empty default
+  // object size is non-empty.)
   bool HasIntrinsicDimensions() const;
 
   sk_sp<PaintRecord> PaintRecordForContainer(const KURL&,

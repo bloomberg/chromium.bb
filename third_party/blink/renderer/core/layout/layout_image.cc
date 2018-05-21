@@ -364,10 +364,10 @@ bool LayoutImage::NodeAtPoint(HitTestResult& result,
 
 void LayoutImage::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  if (LayoutReplaced* content_layout_object = EmbeddedReplacedContent()) {
-    content_layout_object->ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
+  if (SVGImage* svg_image = EmbeddedSVGImage()) {
+    svg_image->GetIntrinsicSizingInfo(intrinsic_sizing_info);
 
-    // Handle zoom & vertical writing modes here, as the embedded document
+    // Handle zoom & vertical writing modes here, as the embedded SVG document
     // doesn't know about them.
     intrinsic_sizing_info.size.Scale(Style()->EffectiveZoom());
     if (Style()->GetObjectFit() != EObjectFit::kScaleDown)
@@ -407,10 +407,11 @@ void LayoutImage::ComputeIntrinsicSizingInfo(
 bool LayoutImage::NeedsPreferredWidthsRecalculation() const {
   if (LayoutReplaced::NeedsPreferredWidthsRecalculation())
     return true;
-  return EmbeddedReplacedContent();
+  SVGImage* svg_image = EmbeddedSVGImage();
+  return svg_image && svg_image->HasIntrinsicSizingInfo();
 }
 
-LayoutReplaced* LayoutImage::EmbeddedReplacedContent() const {
+SVGImage* LayoutImage::EmbeddedSVGImage() const {
   if (!image_resource_)
     return nullptr;
   ImageResourceContent* cached_image = image_resource_->CachedImage();
@@ -418,10 +419,7 @@ LayoutReplaced* LayoutImage::EmbeddedReplacedContent() const {
   // https://crbug.com/761026
   if (!cached_image || cached_image->IsCacheValidator())
     return nullptr;
-  Image* image = cached_image->GetImage();
-  if (!image->IsSVGImage())
-    return nullptr;
-  return ToSVGImage(image)->EmbeddedReplacedContent();
+  return ToSVGImageOrNull(cached_image->GetImage());
 }
 
 bool LayoutImage::ShouldInvertColor() const {

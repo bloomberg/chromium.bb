@@ -35,6 +35,7 @@ namespace blink {
 
 class HTMLAreaElement;
 class HTMLMapElement;
+class SVGImage;
 
 // LayoutImage is used to display any image type.
 //
@@ -98,7 +99,7 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
 
  protected:
   bool NeedsPreferredWidthsRecalculation() const final;
-  LayoutReplaced* EmbeddedReplacedContent() const;
+  SVGImage* EmbeddedSVGImage() const;
   void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
 
   void ImageChanged(WrappedImagePtr,
