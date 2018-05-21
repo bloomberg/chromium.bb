@@ -59,6 +59,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "event_test_utils.cc",
+    "event_test_utils.h",
     "test_change_tracker.cc",
     "test_change_tracker.h",
     "test_window_service_delegate.cc",
