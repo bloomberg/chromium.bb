@@ -65,6 +65,16 @@ GpuDriverBugWorkarounds::GpuDriverBugWorkarounds(
 
 GpuDriverBugWorkarounds::~GpuDriverBugWorkarounds() = default;
 
+std::vector<int32_t> GpuDriverBugWorkarounds::ToIntSet() const {
+  std::vector<int32_t> result;
+#define GPU_OP(type, name) \
+  if (name)                \
+    result.push_back(type);
+  GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
+#undef GPU_OP
+  return result;
+}
+
 void GpuDriverBugWorkarounds::Append(const GpuDriverBugWorkarounds& extra) {
 #define GPU_OP(type, name) name |= extra.name;
   GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
