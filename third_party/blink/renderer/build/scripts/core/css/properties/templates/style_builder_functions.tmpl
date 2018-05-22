@@ -40,43 +40,44 @@ state.Style()->{{property.setter}}
   {{declare_value()}};
   {% else %}
     {# full implementation #}
-    {% if not property.custom_apply_functions_initial %}
+    {% if not property.custom_apply %}
+      {% if property.style_builder_generate_initial %}
   {{declare_initial()}} {
-      {% if property.svg %}
+        {% if property.svg %}
     {{set_value(property)}}(SVGComputedStyle::{{property.initial}}());
-      {% elif property.font %}
+        {% elif property.font %}
     {{set_value(property)}}(FontBuilder::{{property.initial}}());
-      {% else %}
+        {% else %}
     {{set_value(property)}}(ComputedStyleInitialValues::{{property.initial}}());
-      {% endif %}
-      {% if property.independent %}
-    state.Style()->{{property.is_inherited_setter}}(false);
-      {% endif %}
-  }
-    {% endif %}
-    {% if not property.custom_apply_functions_inherit %}
-  {{declare_inherit()}} {
-      {% if property.svg %}
-    {{set_value(property)}}(state.ParentStyle()->SvgStyle().{{property.getter}}());
-      {% elif property.font %}
-    {{set_value(property)}}(state.ParentFontDescription().{{property.getter}}());
-      {% else %}
-    {{set_value(property)}}(state.ParentStyle()->{{property.getter}}());
-      {% endif %}
-      {% if property.independent %}
-    state.Style()->{{property.is_inherited_setter}}(true);
-      {% endif %}
-  }
-    {% endif %}
-    {% if not property.custom_apply_functions_value %}
-  {{declare_value()}} {
-    {{convert_and_set_value(property)}}
+        {% endif %}
         {% if property.independent %}
     state.Style()->{{property.is_inherited_setter}}(false);
         {% endif %}
   }
-    {% endif %}
-    {% if property.custom_apply == "auto" %}
+      {% endif %}
+      {% if property.style_builder_generate_inherit %}
+  {{declare_inherit()}} {
+        {% if property.svg %}
+    {{set_value(property)}}(state.ParentStyle()->SvgStyle().{{property.getter}}());
+        {% elif property.font %}
+    {{set_value(property)}}(state.ParentFontDescription().{{property.getter}}());
+        {% else %}
+    {{set_value(property)}}(state.ParentStyle()->{{property.getter}}());
+        {% endif %}
+        {% if property.independent %}
+    state.Style()->{{property.is_inherited_setter}}(true);
+        {% endif %}
+  }
+      {% endif %}
+      {% if property.style_builder_generate_value %}
+  {{declare_value()}} {
+    {{convert_and_set_value(property)}}
+          {% if property.independent %}
+    state.Style()->{{property.is_inherited_setter}}(false);
+          {% endif %}
+  }
+      {% endif %}
+    {% elif property.custom_apply == "auto" %}
       {% set auto_getter = property.custom_apply_args['auto_getter'] or
                          'HasAuto' + property.name_for_methods %}
       {% set auto_setter = property.custom_apply_args['auto_setter'] or

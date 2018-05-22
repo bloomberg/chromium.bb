@@ -43,8 +43,9 @@ state.Style()->{{property.is_inherited_setter}}
 namespace blink {
 
 {% for property in properties if property.should_declare_functions
-    and not property.use_property_class_in_stylebuilder %}
-{% if not property.custom_apply_functions_initial %}
+    and not property.use_property_class_in_stylebuilder
+    and not property.style_builder_template %}
+{% if property.style_builder_generate_initial %}
 {{declare_initial_function(property.property_id)}} {
   {% if property.svg %}
   {{set_value(property)}}(SVGComputedStyle::{{property.initial}}());
@@ -59,7 +60,7 @@ namespace blink {
 }
 
 {% endif %}
-{% if not property.custom_apply_functions_inherit %}
+{% if property.style_builder_generate_inherit %}
 {{declare_inherit_function(property.property_id)}} {
   {% if property.svg %}
   {{set_value(property)}}(state.ParentStyle()->SvgStyle().{{property.getter}}());
@@ -74,7 +75,7 @@ namespace blink {
 }
 
 {% endif %}
-{% if not property.custom_apply_functions_value %}
+{% if property.style_builder_generate_value %}
 {{declare_value_function(property.property_id)}} {
   {{convert_and_set_value(property)}}
   {% if property.independent %}

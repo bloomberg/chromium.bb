@@ -34,29 +34,44 @@
         "InitialValue"
       ],
     },
-    // - custom_apply_functions_all
-    // - custom_apply_functions_initial
-    // - custom_apply_functions_inherit
-    // - custom_apply_functions_value
-    // Handlers of the given types will be declared but not defined. Setting
-    // custom_apply_functions_all is equivalent to setting the other three flags
-    custom_apply_functions_all: {
-      default: false,
-      valid_type: "bool",
-    },
-    custom_apply_functions_initial: {
-      default: false,
-      valid_type: "bool",
-    },
-    custom_apply_functions_inherit: {
-      default: false,
-      valid_type: "bool",
-    },
-    custom_apply_functions_value: {
-      default: false,
-      valid_type: "bool",
+
+    // Suppresses code generation for the specified style builder functions.
+    // This allows us to provide hand-written style builder functions in cases
+    // where it's needed.
+    style_builder_custom_functions: {
+      default: [],
+      valid_type: "list",
+      valid_values: [
+        "initial",
+        "inherit",
+        "value",
+      ],
     },
 
+    // Affects how the style building functions are generated.
+    //
+    // Several property groups (e.g. color properties) deviate from the default
+    // style builder application, yet there are enough of these properties that
+    // we want to generate code for them rather than having manually written
+    // style builder functions.
+    //
+    // NOTE: Currently only used by the legacy style builder. More values will
+    //       appear here, such as "color" and "fill_layer".
+    style_builder_template: {
+      valid_values: [
+        // The legacy template means that regular code generation should not be
+        // be performed, and that the property is hard-coded in
+        // style_builder_functions.cc.tmpl.
+        "legacy",
+      ],
+    },
+
+    // Set this to true if we do not support generation of style builder
+    // functions in the CSSProperty subclasses (yet).
+    style_builder_legacy: {
+      default: false,
+      value_type: "bool"
+    },
 
     // - is_descriptor
     // Whether it is a CSS descriptor. Descriptors define the characteristics of
@@ -355,7 +370,8 @@
     {
       name: "animation-delay",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       priority: "Animation",
       typedom_types: ["Time"],
       separator: ",",
@@ -366,7 +382,8 @@
       keywords: ["normal", "reverse", "alternate", "alternate-reverse"],
       typedom_types: ["Keyword"],
       separator: ",",
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       priority: "Animation",
       separator: ",",
     },
@@ -374,7 +391,8 @@
       name: "animation-duration",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       separator: ",",
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       priority: "Animation",
       typedom_types: ["Time"],
       separator: ",",
@@ -382,7 +400,8 @@
     {
       name: "animation-fill-mode",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       priority: "Animation",
       keywords: ["none", "forwards", "backwards", "both"],
       typedom_types: ["Keyword"],
@@ -393,7 +412,8 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       keywords: ["infinite"],
       separator: ",",
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       priority: "Animation",
       keywords: ["infinite"],
       typedom_types: ["Keyword", "Number"],
@@ -402,7 +422,8 @@
     {
       name: "animation-name",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       priority: "Animation",
       keywords: ["none"],
       typedom_types: ["Keyword"],
@@ -411,7 +432,8 @@
     {
       name: "animation-play-state",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       priority: "Animation",
       keywords: ["running", "paused"],
       typedom_types: ["Keyword"],
@@ -420,7 +442,8 @@
     {
       name: "animation-timing-function",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       priority: "Animation",
       keywords: ["linear", "ease", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end"],
       typedom_types: ["Keyword"],
@@ -429,7 +452,8 @@
     {
       name: "transition-delay",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       priority: "Animation",
       typedom_types: ["Time"],
       separator: ",",
@@ -439,13 +463,15 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       typedom_types: ["Keyword", "Time"],
       separator: ",",
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       priority: "Animation",
     },
     {
       name: "transition-property",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       priority: "Animation",
       keywords: ["none"],
       typedom_types: ["Keyword"]
@@ -453,7 +479,8 @@
     {
       name: "transition-timing-function",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       priority: "Animation",
       keywords: ["linear", "ease", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end"],
       typedom_types: ["Keyword"],
@@ -474,7 +501,8 @@
       default_value: "Color::kBlack",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["initial", "inherit", "value"],
       priority: "High",
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
@@ -490,7 +518,8 @@
       typedom_types: ["Keyword"],
       default_value: "ltr",
       type_name: "TextDirection",
-      custom_apply_functions_value: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["value"],
       priority: "High",
     },
     {
@@ -678,7 +707,8 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       font: true,
-      custom_apply_functions_value: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["value"],
       priority: "High",
     },
     {
@@ -691,7 +721,8 @@
       typedom_types: ["Keyword"],
       default_value: "mixed",
       getter: "GetTextOrientation",
-      custom_apply_functions_value: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["value"],
       priority: "High",
     },
     {
@@ -699,7 +730,8 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       type_name: "TextOrientation",
-      custom_apply_functions_value: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["value"],
       priority: "High",
     },
     {
@@ -712,7 +744,8 @@
       typedom_types: ["Keyword"],
       default_value: "horizontal-tb",
       type_name: "WritingMode",
-      custom_apply_functions_value: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["value"],
       priority: "High",
     },
     {
@@ -720,7 +753,8 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       type_name: "WritingMode",
-      custom_apply_functions_value: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["value"],
       priority: "High",
     },
     {
@@ -741,7 +775,8 @@
       field_template: "primitive",
       default_value: "1.0",
       type_name: "float",
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["initial", "inherit", "value"],
       priority: "High",
     },
     {
@@ -810,7 +845,6 @@
     {
       name: "background-attachment",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      custom_apply_functions_all: true,
       keywords: ["scroll", "fixed", "local"],
       typedom_types: ["Keyword"],
       separator: " "
@@ -818,7 +852,6 @@
     {
       name: "background-blend-mode",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      custom_apply_functions_all: true,
       keywords: [
         "normal", "multiply", "screen", "overlay", "darken", "lighten",
         "color-dodge", "color-burn", "hard-light", "soft-light", "difference",
@@ -830,7 +863,6 @@
     {
       name: "background-clip",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      custom_apply_functions_all: true,
       keywords: ["border-box", "padding-box", "content-box"],
       typedom_types: ["Keyword"],
       separator: " "
@@ -845,7 +877,6 @@
       default_value: "StyleColor(Color::kTransparent)",
       type_name: "StyleColor",
       computed_style_custom_functions: ["getter"],
-      custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
@@ -857,12 +888,10 @@
       keywords: ["auto", "none"],
       typedom_types: ["Keyword", "Image"],
       separator: " ",
-      custom_apply_functions_all: true,
     },
     {
       name: "background-origin",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      custom_apply_functions_all: true,
       keywords: ["border-box", "padding-box", "content-box"],
       typedom_types: ["Keyword"],
       separator: " "
@@ -871,27 +900,22 @@
       name: "background-position-x",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
-      custom_apply_functions_all: true,
     },
     {
       name: "background-position-y",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
-      custom_apply_functions_all: true,
     },
     {
       name: "background-repeat-x",
-      custom_apply_functions_all: true,
     },
     {
       name: "background-repeat-y",
-      custom_apply_functions_all: true,
     },
     {
       name: "background-size",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
-      custom_apply_functions_all: true,
       keywords: ["auto", "cover", "contain"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       separator: " "
@@ -901,8 +925,8 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
-      custom_apply_functions_inherit: true,
-      custom_apply_functions_value: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["inherit", "value"],
       keywords: ["sub", "super"],
       typedom_types: ["Keyword", "Percentage", "Length"]
     },
@@ -916,7 +940,6 @@
       default_value: "0",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
@@ -986,13 +1009,11 @@
       name: "border-image-outset",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       interpolable: true,
-      custom_apply_functions_all: true,
       typedom_types: ["Length", "Number"]
     },
     {
       name: "border-image-repeat",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      custom_apply_functions_all: true,
       keywords: ["stretch", "repeat", "round", "space"],
       typedom_types: ["Keyword"]
     },
@@ -1000,7 +1021,6 @@
       name: "border-image-slice",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       interpolable: true,
-      custom_apply_functions_all: true,
       typedom_types: ["Number", "Percentage"],
     },
     {
@@ -1009,13 +1029,13 @@
       interpolable: true,
       keywords: ["none"],
       typedom_types: ["Keyword", "Image"],
-      custom_apply_functions_value: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["value"],
     },
     {
       name: "border-image-width",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       interpolable: true,
-      custom_apply_functions_all: true,
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage", "Number"],
     },
@@ -1029,7 +1049,6 @@
       default_value: "0",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
@@ -1071,7 +1090,6 @@
       default_value: "0",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
@@ -1113,7 +1131,6 @@
       default_value: "0",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
@@ -1268,7 +1285,8 @@
       default_value: "Color()",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["initial", "inherit", "value"],
       keywords: ["auto", "currentcolor"],
       typedom_types: ["Keyword"],
     },
@@ -1291,7 +1309,6 @@
       type_name: "LengthBox",
       computed_style_custom_functions: ["setter"],
       converter: "ConvertClip",
-      custom_apply_functions_all: true,
       keywords: ["auto"],
       typedom_types: ["Keyword"],
     },
@@ -1375,19 +1392,22 @@
       separator: ",",
       type_name: "ContentData",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["initial", "inherit", "value"],
     },
     {
       name: "counter-increment",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       keywords: ["none"],
       typedom_types: ["Keyword"],
     },
     {
       name: "counter-reset",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       keywords: ["none"],
       typedom_types: ["Keyword"],
     },
@@ -1406,7 +1426,8 @@
         "zoom-out", "grab", "grabbing"
       ],
       default_value: "auto",
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["initial", "inherit", "value"],
       typedom_types: ["Keyword"]
     },
     {
@@ -1445,7 +1466,8 @@
         "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none"
       ],
       typedom_types: ["Keyword"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["initial", "inherit", "value"],
     },
     {
       name: "dominant-baseline",
@@ -1472,7 +1494,8 @@
       inherited: true,
       svg: true,
       setter: "SetFillPaint",
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
     },
     {
       name: "fill-opacity",
@@ -1676,7 +1699,8 @@
     {
       name: "grid-template-areas",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["initial", "inherit", "value"],
       keywords: ["none"],
       typedom_types: ["Keyword"]
     },
@@ -1690,7 +1714,8 @@
                       "third_party/blink/renderer/core/style/grid_track_size.h"],
       default_value: "Vector<GridTrackSize>()",
       type_name: "Vector<GridTrackSize>",
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       keywords: ["none"],
       typedom_types: ["Keyword"]
     },
@@ -1704,7 +1729,8 @@
                       "third_party/blink/renderer/core/style/grid_track_size.h"],
       default_value: "Vector<GridTrackSize>()",
       type_name: "Vector<GridTrackSize>",
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
       keywords: ["none"],
       typedom_types: ["Keyword"]
     },
@@ -1865,7 +1891,8 @@
       typedom_types: ["Keyword", "Image"],
       type_name: "StyleImage",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_apply_functions_value: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["value"],
       keywords: ["none"]
     },
     {
@@ -1989,7 +2016,6 @@
       name: "mask-source-type",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSMaskSourceType",
-      custom_apply_functions_all: true,
     },
     {
       name: "mask-type",
@@ -2192,7 +2218,6 @@
       default_value: "0",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
@@ -2221,7 +2246,8 @@
       typedom_types: ["Keyword"],
       default_value: "none",
       type_name: "EBorderStyle",
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["initial", "inherit", "value"],
     },
     {
       name: "outline-width",
@@ -2404,7 +2430,8 @@
       typedom_types: ["Keyword"],
       default_value: "static",
       getter: "GetPosition",
-      custom_apply_functions_inherit: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["inherit"],
     },
     {
       name: "quotes",
@@ -2428,7 +2455,8 @@
       keywords: ["none", "both", "horizontal", "vertical"],
       typedom_types: ["Keyword"],
       default_value: "none",
-      custom_apply_functions_value: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["value"],
     },
     {
       name: "right",
@@ -2753,7 +2781,8 @@
     {
       name: "size",
       property_methods: ["ParseSingleValue"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["initial", "inherit", "value"],
     },
     {
       name: "speak",
@@ -2791,7 +2820,8 @@
       inherited: true,
       svg: true,
       setter: "SetStrokePaint",
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_template: "legacy",
     },
     {
       name: "stroke-dasharray",
@@ -2899,7 +2929,8 @@
       typedom_types: ["Keyword"],
       default_value: "start",
       getter: "GetTextAlign",
-      custom_apply_functions_value: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["value"],
     },
     {
       name: "text-align-last",
@@ -2939,7 +2970,6 @@
       include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
       default_value: "StyleColor::CurrentColor()",
       type_name: "StyleColor",
-      custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
@@ -2983,7 +3013,8 @@
       field_group: "*",
       field_template: "<length>",
       default_value: "Length(kFixed)",
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["initial", "inherit", "value"],
       typedom_types: ["Length", "Percentage"]
     },
     {
@@ -3201,8 +3232,8 @@
       name: "vertical-align",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
-      custom_apply_functions_inherit: true,
-      custom_apply_functions_value: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["inherit", "value"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       keywords: ["baseline", "sub", "super", "text-top", "text-bottom", "middle"],
     },
@@ -3250,7 +3281,8 @@
       keywords: ["none", "drag", "no-drag"],
       default_value: "none",
       name_for_methods: "DraggableRegionMode",
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["initial", "inherit", "value"],
     },
     {
       name: "-webkit-border-horizontal-spacing",
@@ -3267,7 +3299,8 @@
     {
       name: "-webkit-border-image",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      custom_apply_functions_value: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["value"],
     },
     {
       name: "-webkit-border-vertical-spacing",
@@ -3362,7 +3395,6 @@
       default_value: "1",
       type_name: "unsigned short",
       computed_style_custom_functions: ["setter"],
-      custom_apply_functions_all: true,
       keywords: ["auto"],
       typedom_types: ["Keyword", "Number"]
     },
@@ -3402,7 +3434,6 @@
       default_value: "0",
       type_name: "Color",
       computed_style_custom_functions: ["getter","setter"],
-      custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
@@ -3454,7 +3485,6 @@
       type_name: "float",
       computed_style_custom_functions: ["setter"],
       converter: "ConvertComputedLength<float>",
-      custom_apply_functions_all: true,
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length"],
     },
@@ -3542,77 +3572,65 @@
       name: "-webkit-mask-box-image-outset",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
-      custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-box-image-repeat",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-box-image-slice",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
-      custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-box-image-source",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
-      custom_apply_functions_value: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["value"],
     },
     {
       name: "-webkit-mask-box-image-width",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
-      custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-clip",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-composite",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-image",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
-      custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-origin",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-position-x",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
-      custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-position-y",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
-      custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-repeat-x",
-      custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-repeat-y",
-      custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-size",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
-      custom_apply_functions_all: true,
     },
     {
       name: "-webkit-perspective-origin-x",
@@ -3682,7 +3700,6 @@
       default_value: "Color()",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_apply_functions_all: true,
       converter: "ConvertStyleColor",
     },
     {
@@ -3700,7 +3717,8 @@
       name: "-webkit-text-emphasis-style",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["initial", "inherit", "value"],
     },
     {
       name: "-webkit-text-fill-color",
@@ -3712,7 +3730,6 @@
       default_value: "Color()",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_apply_functions_all: true,
       converter: "ConvertStyleColor",
     },
     {
@@ -3735,7 +3752,6 @@
       default_value: "Color()",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_apply_functions_all: true,
       converter: "ConvertStyleColor",
     },
     {
@@ -3833,7 +3849,8 @@
     {
       name: "will-change",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      custom_apply_functions_all: true,
+      style_builder_legacy: true,
+      style_builder_custom_functions: ["initial", "inherit", "value"],
       keywords: ["auto"],
       typedom_types: ["Keyword"]
     },
@@ -3877,7 +3894,6 @@
       default_value: "0",
       type_name: "int",
       computed_style_custom_functions: ["setter"],
-      custom_apply_functions_all: true,
       keywords: ["auto"],
       typedom_types: ["Keyword", "Number"]
     },
