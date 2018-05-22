@@ -329,11 +329,7 @@ void SyncAuthManager::AccessTokenFetched(const GoogleServiceAuthError& error,
   switch (error.state()) {
     case GoogleServiceAuthError::NONE:
       token_status_.token_receive_time = base::Time::Now();
-      // TODO(treib): Can we get rid of the read-before-write? PrefService
-      // should only notify if the value actually changed anyway.
-      if (sync_prefs_->SyncHasAuthError()) {
-        sync_prefs_->SetSyncAuthError(false);
-      }
+      sync_prefs_->SetSyncAuthError(false);
       ClearAuthError();
       break;
     case GoogleServiceAuthError::CONNECTION_FAILED:
@@ -351,11 +347,7 @@ void SyncAuthManager::AccessTokenFetched(const GoogleServiceAuthError& error,
                               weak_ptr_factory_.GetWeakPtr()));
       break;
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
-      // TODO(treib): Can we get rid of the read-before-write? PrefService
-      // should only notify if the value actually changed anyway.
-      if (!sync_prefs_->SyncHasAuthError()) {
-        sync_prefs_->SetSyncAuthError(true);
-      }
+      sync_prefs_->SetSyncAuthError(true);
       UpdateAuthErrorState(error);
       break;
     default:
