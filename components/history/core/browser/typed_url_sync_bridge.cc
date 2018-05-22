@@ -410,8 +410,20 @@ void TypedURLSyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
   // client with a bad clock setting won't go on an expiration rampage and
   // delete all history from every client). The server will gracefully age out
   // the sync DB entries when they've been idle for long enough.
-  if (expired)
+  if (expired) {
+    // Delete metadata from the DB and ask the processor to untrack the entries.
+    for (const URLRow& row : deleted_rows) {
+      std::string storage_key = GetStorageKeyFromURLRow(row);
+      sync_metadata_database_->ClearSyncMetadata(syncer::TYPED_URLS,
+                                                 storage_key);
+      // TODO(jkrcal): Untrack the entity from the processor, too (by
+      // introducing UntrackEntityForStorageKey() function into the change
+      // processor). Extend the integration tests to cover the crash in
+      // https://crbug.com/827111. Also add unit-test coverage for expired
+      // deletions (needs some refactoring in the tests).
+    }
     return;
+  }
 
   std::unique_ptr<MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
@@ -431,7 +443,7 @@ void TypedURLSyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
     }
   } else {
     // Delete rows.
-    for (const auto& row : deleted_rows) {
+    for (const URLRow& row : deleted_rows) {
       std::string storage_key = GetStorageKeyFromURLRow(row);
       change_processor()->Delete(storage_key, metadata_change_list.get());
     }

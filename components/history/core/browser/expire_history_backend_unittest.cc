@@ -959,7 +959,7 @@ TEST_F(ExpireHistoryTest, ExpireHistoryBeforeUnstarred) {
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[2], &url_row2));
 
   // Expire the oldest two visits.
-  expirer_.ExpireHistoryBefore(visit_times[1]);
+  expirer_.ExpireHistoryBeforeForTesting(visit_times[1]);
 
   // The first URL should be deleted along with its sole visit. The second URL
   // itself should not be affected, as there is still one more visit to it, but
@@ -977,7 +977,7 @@ TEST_F(ExpireHistoryTest, ExpireHistoryBeforeUnstarred) {
   // Now expire one more visit so that the second URL should be removed. The
   // third URL and its visit should be intact.
   ClearLastNotifications();
-  expirer_.ExpireHistoryBefore(visit_times[2]);
+  expirer_.ExpireHistoryBeforeForTesting(visit_times[2]);
   EnsureURLInfoGone(url_row1, true);
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[2], &temp_row));
   main_db_->GetVisitsForURL(temp_row.id(), &visits);
@@ -1000,7 +1000,7 @@ TEST_F(ExpireHistoryTest, ExpireHistoryBeforeStarred) {
   // Now expire the first three visits (first two URLs). The first three visits
   // should be deleted, but the URL records themselves should not, as they are
   // starred.
-  expirer_.ExpireHistoryBefore(visit_times[2]);
+  expirer_.ExpireHistoryBeforeForTesting(visit_times[2]);
 
   URLRow temp_row;
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[0], &temp_row));

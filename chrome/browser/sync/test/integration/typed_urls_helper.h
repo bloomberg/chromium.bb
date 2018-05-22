@@ -57,6 +57,10 @@ void AddUrlToHistoryWithTimestamp(int index,
                                   history::VisitSource source,
                                   const base::Time& timestamp);
 
+// Expires all visits before |end_time| from the History DB for the sync profile
+// at |index|.
+void ExpireHistoryBefore(int index, base::Time end_time);
+
 // Deletes a URL from the history DB for a specific sync profile.
 void DeleteUrlFromHistory(int index, const GURL& url);
 
@@ -70,8 +74,13 @@ void SetPageTitle(int index, const GURL& url, const std::string& title);
 // Returns true if all clients have the same URLs.
 bool CheckAllProfilesHaveSameURLs();
 
-// Return ture if a specific sync metadata has the typed url.
+// Return true if there is sync metadata for the given typed |url| in the given
+// sync profile.
 bool CheckSyncHasURLMetadata(int index, const GURL& url);
+
+// Return true if there is sync metadata for typed url with |url_id| in the
+// given sync profile.
+bool CheckSyncHasMetadataForURLID(int index, history::URLID url_id);
 
 // Checks that the two vectors contain the same set of URLRows (possibly in
 // a different order).

@@ -1105,6 +1105,19 @@ void HistoryService::ExpireHistory(
       callback);
 }
 
+void HistoryService::ExpireHistoryBeforeForTesting(
+    base::Time end_time,
+    base::OnceClosure callback,
+    base::CancelableTaskTracker* tracker) {
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  tracker->PostTaskAndReply(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&HistoryBackend::ExpireHistoryBeforeForTesting,
+                     history_backend_, end_time),
+      std::move(callback));
+}
+
 void HistoryService::ExpireLocalAndRemoteHistoryBetween(
     WebHistoryService* web_history,
     const std::set<GURL>& restrict_urls,
