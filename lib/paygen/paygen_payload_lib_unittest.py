@@ -438,8 +438,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Run the test.
     self.mox.ReplayAll()
-    self.assertEqual(gen._SignHashes(hashes),
-                     signatures)
+    self.assertEqual(gen._SignHashes(hashes), signatures)
 
   def testInsertPayloadSignatures(self):
     """Test inserting payload signatures."""
@@ -455,7 +454,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     # Record the expected function calls.
     cmd = ['delta_generator',
            '-in_file=' + gen.payload_file,
-           mox.IsA(str),
+           mox.StrContains('payload_signature_file'),
            '-out_file=' + gen.signed_payload_file,
            '-out_metadata_size_file=' + gen.metadata_size_file]
     gen._RunGeneratorCmd(cmd)

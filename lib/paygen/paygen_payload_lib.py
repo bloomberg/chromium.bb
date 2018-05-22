@@ -432,7 +432,7 @@ class _PaygenPayload(object):
 
     cmd = ['delta_generator',
            '-in_file=' + path_util.ToChrootPath(self.payload_file),
-           '-signature_file=' + ':'.join(signature_file_names),
+           '-payload_signature_file=' + ':'.join(signature_file_names),
            '-out_file=' + path_util.ToChrootPath(self.signed_payload_file),
            '-out_metadata_size_file=' +
            path_util.ToChrootPath(self.metadata_size_file)]
