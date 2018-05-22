@@ -5,13 +5,21 @@
 #ifndef MEDIA_BLINK_WEBMEDIAPLAYER_DELEGATE_H_
 #define MEDIA_BLINK_WEBMEDIAPLAYER_DELEGATE_H_
 
+#include "third_party/blink/public/platform/web_media_player.h"
+
 namespace blink {
-class WebMediaPlayer;
 enum class WebFullscreenVideoStatus;
-}
+class WebMediaPlayer;
+}  // namespace blink
+
 namespace gfx {
 class Size;
-}
+}  // namespace gfx
+
+namespace viz {
+class SurfaceId;
+}  // namespace viz
+
 namespace media {
 
 enum class MediaContentType;
@@ -104,8 +112,12 @@ class WebMediaPlayerDelegate {
   // Notify that the muted status of the media player has changed.
   virtual void DidPlayerMutedStatusChange(int delegate_id, bool muted) = 0;
 
-  // Notify that the source media player of Picture-in-Picture has changed.
-  virtual void DidPictureInPictureSourceChange(int delegate_id) = 0;
+  // Notify that the source media player has entered Picture-in-Picture mode.
+  virtual void DidPictureInPictureModeStart(
+      int delegate_id,
+      const viz::SurfaceId&,
+      const gfx::Size&,
+      blink::WebMediaPlayer::PipWindowSizeCallback) = 0;
 
   // Notify that the source media player has exited Picture-in-Picture mode.
   virtual void DidPictureInPictureModeEnd(int delegate_id,

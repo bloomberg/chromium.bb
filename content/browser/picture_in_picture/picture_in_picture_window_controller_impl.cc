@@ -63,11 +63,13 @@ PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
   DCHECK(window_) << "Picture in Picture requires a valid window.";
 }
 
-void PictureInPictureWindowControllerImpl::Show() {
+gfx::Size PictureInPictureWindowControllerImpl::Show() {
   DCHECK(window_);
   DCHECK(surface_id_.is_valid());
 
   window_->Show();
+
+  return window_->GetBounds().size();
 }
 
 void PictureInPictureWindowControllerImpl::Close() {

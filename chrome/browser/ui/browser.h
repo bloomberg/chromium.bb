@@ -504,6 +504,8 @@ class Browser : public TabStripModelObserver,
                            const GURL& url) override;
   void UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,
                                        const gfx::Size& natural_size) override;
+  gfx::Size EnterPictureInPicture(const viz::SurfaceId&,
+                                  const gfx::Size&) override;
   void ExitPictureInPicture() override;
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }

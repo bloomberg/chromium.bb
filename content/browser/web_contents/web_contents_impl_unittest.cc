@@ -56,6 +56,7 @@
 #include "content/test/test_web_contents.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -3474,11 +3475,16 @@ TEST_F(WebContentsImplTest, MediaWakeLock) {
   EXPECT_TRUE(has_video_wake_lock());
   EXPECT_FALSE(has_audio_wake_lock());
 
+  viz::SurfaceId surface_id =
+      viz::SurfaceId(viz::FrameSinkId(1, 1),
+                     viz::LocalSurfaceId(
+                         11, base::UnguessableToken::Deserialize(0x111111, 0)));
+
   // Send the video in Picture-in-Picture mode, power blocker should still be
   // on.
   rfh->OnMessageReceived(
-      MediaPlayerDelegateHostMsg_OnPictureInPictureSourceChanged(
-          0, kPlayerAudioVideoId));
+      MediaPlayerDelegateHostMsg_OnPictureInPictureModeStarted(
+          0, kPlayerAudioVideoId, surface_id, gfx::Size(), 0));
   EXPECT_TRUE(has_video_wake_lock());
   EXPECT_FALSE(has_audio_wake_lock());
 
@@ -3536,8 +3542,22 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
   EXPECT_EQ(SK_ColorGREEN, observer.last_theme_color());
 }
 
-TEST_F(WebContentsImplTest, PictureInPictureMediaPlayerIdWasChanged) {
+class PictureInPictureDelegate : public WebContentsDelegate {
+ public:
+  PictureInPictureDelegate() = default;
+
+  MOCK_METHOD2(EnterPictureInPicture,
+               gfx::Size(const viz::SurfaceId&, const gfx::Size&));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PictureInPictureDelegate);
+};
+
+TEST_F(WebContentsImplTest, EnterPictureInPicture) {
   const int kPlayerVideoOnlyId = 30; /* arbitrary and used for tests */
+
+  PictureInPictureDelegate delegate;
+  contents()->SetDelegate(&delegate);
 
   MediaWebContentsObserver* observer =
       contents()->media_web_contents_observer();
@@ -3548,9 +3568,17 @@ TEST_F(WebContentsImplTest, PictureInPictureMediaPlayerIdWasChanged) {
   // set.
   EXPECT_FALSE(observer->GetPictureInPictureVideoMediaPlayerId().has_value());
 
+  viz::SurfaceId surface_id =
+      viz::SurfaceId(viz::FrameSinkId(1, 1),
+                     viz::LocalSurfaceId(
+                         11, base::UnguessableToken::Deserialize(0x111111, 0)));
+
+  EXPECT_CALL(delegate, EnterPictureInPicture(surface_id, gfx::Size(42, 42)));
+
   rfh->OnMessageReceived(
-      MediaPlayerDelegateHostMsg_OnPictureInPictureSourceChanged(
-          rfh->GetRoutingID(), kPlayerVideoOnlyId));
+      MediaPlayerDelegateHostMsg_OnPictureInPictureModeStarted(
+          rfh->GetRoutingID(), kPlayerVideoOnlyId, surface_id /* surface_id */,
+          gfx::Size(42, 42) /* natural_size */, 1 /* request_id */));
   EXPECT_TRUE(observer->GetPictureInPictureVideoMediaPlayerId().has_value());
   EXPECT_EQ(kPlayerVideoOnlyId,
             observer->GetPictureInPictureVideoMediaPlayerId()->second);

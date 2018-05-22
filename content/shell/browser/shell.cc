@@ -535,6 +535,14 @@ bool Shell::ShouldAllowRunningInsecureContent(
   return allowed_per_prefs || allowed_by_test;
 }
 
+gfx::Size Shell::EnterPictureInPicture(const viz::SurfaceId& surface_id,
+                                       const gfx::Size& natural_size) {
+  // During tests, returning a fake window size to pretent the window was
+  // created and allow tests to run accordingly.
+  return switches::IsRunWebTestsSwitchPresent() ? gfx::Size(42, 42)
+                                                : gfx::Size(0, 0);
+}
+
 gfx::Size Shell::GetShellDefaultSize() {
   static gfx::Size default_shell_size;
   if (!default_shell_size.IsEmpty())

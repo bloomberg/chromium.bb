@@ -173,6 +173,8 @@ class Shell : public WebContentsDelegate,
                                          bool allowed_per_prefs,
                                          const url::Origin& origin,
                                          const GURL& resource_url) override;
+  gfx::Size EnterPictureInPicture(const viz::SurfaceId&,
+                                  const gfx::Size& natural_size) override;
 
   static gfx::Size GetShellDefaultSize();
 

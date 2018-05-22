@@ -65,7 +65,11 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
       blink::WebFullscreenVideoStatus fullscreen_video_status) override;
   void DidPlayerSizeChange(int delegate_id, const gfx::Size& size) override;
   void DidPlayerMutedStatusChange(int delegate_id, bool muted) override;
-  void DidPictureInPictureSourceChange(int delegate_id) override;
+  void DidPictureInPictureModeStart(
+      int delegate_id,
+      const viz::SurfaceId&,
+      const gfx::Size&,
+      blink::WebMediaPlayer::PipWindowSizeCallback) override;
   void DidPictureInPictureModeEnd(int delegate_id, base::OnceClosure) override;
 
   // content::RenderFrameObserver overrides.
@@ -98,6 +102,9 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void OnMediaDelegateBecamePersistentVideo(int player_id, bool value);
   void OnPictureInPictureModeEnded(int player_id);
   void OnPictureInPictureModeEndedAck(int player_id, int request_id);
+  void OnPictureInPictureModeStartedAck(int player_id,
+                                        int request_id,
+                                        const gfx::Size&);
 
   // Schedules UpdateTask() to run soon.
   void ScheduleUpdateTask();
@@ -172,9 +179,17 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
       base::flat_map<int, base::OnceClosure>;
   ExitPictureInPictureCallbackMap exit_picture_in_picture_callback_map_;
 
-  // Counter that is used to use unique request id associated with exit
+  // Map associating a callback with a request sent to the browser process. The
+  // index is used as a unique request id that is passed to the browser process
+  // and will then ACK with the same id which will be used to run the right
+  // callback.
+  using EnterPictureInPictureCallbackMap =
+      base::flat_map<int, blink::WebMediaPlayer::PipWindowSizeCallback>;
+  EnterPictureInPictureCallbackMap enter_picture_in_picture_callback_map_;
+
+  // Counter that is used to use unique request id associated with
   // picture-in-picture callbacks. It is incremented every time it is used.
-  int next_exit_picture_in_picture_callback_id_ = 0;
+  int next_picture_in_picture_callback_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebMediaPlayerDelegate);
 };

@@ -219,7 +219,11 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
     DCHECK_EQ(player_id_, delegate_id);
   }
 
-  MOCK_METHOD1(DidPictureInPictureSourceChange, void(int));
+  MOCK_METHOD4(DidPictureInPictureModeStart,
+               void(int,
+                    const viz::SurfaceId&,
+                    const gfx::Size&,
+                    blink::WebMediaPlayer::PipWindowSizeCallback));
   MOCK_METHOD2(DidPictureInPictureModeEnd,
                void(int, blink::WebMediaPlayer::PipWindowClosedCallback));
 
@@ -1351,10 +1355,12 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   wmpi_->OnSurfaceIdUpdated(surface_id_);
 
   EXPECT_CALL(delegate_,
-              DidPictureInPictureSourceChange(delegate_.player_id()));
+              DidPictureInPictureModeStart(delegate_.player_id(), surface_id_,
+                                           GetNaturalSize(), _));
   EXPECT_CALL(pip_surface_info_cb_, Run(surface_id_, GetNaturalSize()));
-  // This call should trigger the callback since the SurfaceId is set.
+
   wmpi_->EnterPictureInPicture(base::DoNothing());
+  wmpi_->OnSurfaceIdUpdated(surface_id_);
 
   // Upon exiting Picture-in-Picture mode, functions to cleanup are expected to
   // be called. ~WMPI calls ExitPictureInPicture().
