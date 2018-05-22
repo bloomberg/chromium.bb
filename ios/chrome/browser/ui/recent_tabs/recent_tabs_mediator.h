@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/sync/synced_sessions_bridge.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/closed_tabs_observer_bridge.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_image_data_source.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -25,6 +26,7 @@ class ChromeBrowserState;
 // accordingly.
 @interface RecentTabsMediator
     : NSObject<ClosedTabsObserving,
+               RecentTabsImageDataSource,
                SyncedSessionsObserver,
                LegacyRecentTabsTableViewControllerDelegate>
 

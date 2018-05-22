@@ -16,8 +16,6 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/favicon/favicon_loader.h"
-#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
@@ -32,6 +30,7 @@
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_image_data_source.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
@@ -108,8 +107,6 @@ const int kRelativeTimeMaxHours = 4;
 @property(nonatomic, strong) SigninPromoViewMediator* signinPromoViewMediator;
 // The sectionIdentifier for the last tapped header, 0 if no header was tapped.
 @property(nonatomic, assign) NSInteger lastTappedHeaderSectionIdentifier;
-// Favicon Loader to retrieve favicons for URLCells.
-@property(nonatomic, assign) FaviconLoader* faviconLoader;
 @end
 
 @implementation RecentTabsTableViewController : ChromeTableViewController
@@ -118,13 +115,13 @@ const int kRelativeTimeMaxHours = 4;
 @synthesize delegate = delegate_;
 @synthesize dispatcher = _dispatcher;
 @synthesize handsetCommandHandler = _handsetCommandHandler;
+@synthesize imageDataSource = _imageDataSource;
 @synthesize lastTappedHeaderSectionIdentifier =
     _lastTappedHeaderSectionIdentifier;
 @synthesize loader = _loader;
 @synthesize sessionState = _sessionState;
 @synthesize signinPromoViewMediator = _signinPromoViewMediator;
 @synthesize tabRestoreService = _tabRestoreService;
-@synthesize faviconLoader = _faviconLoader;
 
 #pragma mark - Public Interface
 
@@ -166,12 +163,6 @@ const int kRelativeTimeMaxHours = 4;
                                               action:@selector(handleTap:)];
   tapGesture.delegate = self;
   [self.tableView addGestureRecognizer:tapGesture];
-
-  // TODO(crbug.com/845192) : Remove dependency on browserState.
-  if (self.browserState) {
-    self.faviconLoader =
-        IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
-  }
 
   // If the NavigationBar is not translucent, set
   // |self.extendedLayoutIncludesOpaqueBars| to YES in order to avoid a top
@@ -674,17 +665,15 @@ const int kRelativeTimeMaxHours = 4;
   TableViewURLCell* URLCell = base::mac::ObjCCastStrict<TableViewURLCell>(cell);
 
   NSString* itemIdentifier = URLItem.uniqueIdentifier;
-  favicon_base::IconTypeSet faviconTypes = {
-      favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
-      favicon_base::IconType::kTouchPrecomposedIcon};
-  UIImage* cachedFavicon = self.faviconLoader->ImageForURL(
-      URLItem.URL, faviconTypes, ^(UIImage* favicon) {
-        // Only set favicon if the cell hasn't been reused.
-        if ([URLCell.cellUniqueIdentifier isEqualToString:itemIdentifier]) {
-          URLCell.faviconView.image = favicon;
-        }
-
-      });
+  UIImage* cachedFavicon = [self.imageDataSource
+      faviconForURL:URLItem.URL
+         completion:^(UIImage* favicon) {
+           // Only set favicon if the cell hasn't been reused.
+           if ([URLCell.cellUniqueIdentifier isEqualToString:itemIdentifier]) {
+             DCHECK(favicon);
+             URLCell.faviconView.image = favicon;
+           }
+         }];
   DCHECK(cachedFavicon);
   URLCell.faviconView.image = cachedFavicon;
 }
