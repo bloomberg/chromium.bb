@@ -245,11 +245,11 @@ testing::AssertionResult AccountTrackerObserver::CheckEvents(
   return result;
 }
 
-class IdentityAccountTrackerTest : public testing::Test {
+class AccountTrackerTest : public testing::Test {
  public:
-  IdentityAccountTrackerTest() {}
+  AccountTrackerTest() {}
 
-  ~IdentityAccountTrackerTest() override {}
+  ~AccountTrackerTest() override {}
 
   void SetUp() override {
     fake_oauth2_token_service_.reset(new FakeProfileOAuth2TokenService());
@@ -367,7 +367,7 @@ class IdentityAccountTrackerTest : public testing::Test {
   AccountTrackerObserver observer_;
 };
 
-void IdentityAccountTrackerTest::ReturnOAuthUrlFetchResults(
+void AccountTrackerTest::ReturnOAuthUrlFetchResults(
     int fetcher_id,
     net::HttpStatusCode response_code,
     const std::string& response_string) {
@@ -379,14 +379,14 @@ void IdentityAccountTrackerTest::ReturnOAuthUrlFetchResults(
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
-void IdentityAccountTrackerTest::ReturnOAuthUrlFetchSuccess(
+void AccountTrackerTest::ReturnOAuthUrlFetchSuccess(
     const std::string& account_key) {
   IssueAccessToken(account_key);
   ReturnOAuthUrlFetchResults(gaia::GaiaOAuthClient::kUrlFetcherId, net::HTTP_OK,
                              GetValidTokenInfoResponse(account_key));
 }
 
-void IdentityAccountTrackerTest::ReturnOAuthUrlFetchFailure(
+void AccountTrackerTest::ReturnOAuthUrlFetchFailure(
     const std::string& account_key) {
   IssueAccessToken(account_key);
   ReturnOAuthUrlFetchResults(gaia::GaiaOAuthClient::kUrlFetcherId,
@@ -395,7 +395,7 @@ void IdentityAccountTrackerTest::ReturnOAuthUrlFetchFailure(
 
 // Primary tests just involve the Active account
 
-TEST_F(IdentityAccountTrackerTest, PrimaryNoEventsBeforeLogin) {
+TEST_F(AccountTrackerTest, PrimaryNoEventsBeforeLogin) {
   NotifyTokenAvailable(kPrimaryAccountKey);
   NotifyTokenRevoked(kPrimaryAccountKey);
 
@@ -407,7 +407,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryNoEventsBeforeLogin) {
   EXPECT_TRUE(observer()->CheckEvents());
 }
 
-TEST_F(IdentityAccountTrackerTest, PrimaryLoginThenTokenAvailable) {
+TEST_F(AccountTrackerTest, PrimaryLoginThenTokenAvailable) {
   SetActiveAccount(kPrimaryAccountKey);
   NotifyTokenAvailable(kPrimaryAccountKey);
   EXPECT_TRUE(observer()->CheckEvents());
@@ -419,7 +419,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryLoginThenTokenAvailable) {
 
 // These tests exercise true login/logout, which are not possible on ChromeOS.
 #if !defined(OS_CHROMEOS)
-TEST_F(IdentityAccountTrackerTest, PrimaryTokenAvailableThenLogin) {
+TEST_F(AccountTrackerTest, PrimaryTokenAvailableThenLogin) {
   NotifyTokenAvailable(kPrimaryAccountKey);
   EXPECT_TRUE(observer()->CheckEvents());
 
@@ -429,7 +429,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryTokenAvailableThenLogin) {
       observer()->CheckEvents(TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
 }
 
-TEST_F(IdentityAccountTrackerTest, PrimaryTokenAvailableAndRevokedThenLogin) {
+TEST_F(AccountTrackerTest, PrimaryTokenAvailableAndRevokedThenLogin) {
   NotifyTokenAvailable(kPrimaryAccountKey);
   EXPECT_TRUE(observer()->CheckEvents());
 
@@ -440,7 +440,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryTokenAvailableAndRevokedThenLogin) {
 }
 #endif
 
-TEST_F(IdentityAccountTrackerTest, PrimaryRevoke) {
+TEST_F(AccountTrackerTest, PrimaryRevoke) {
   SetActiveAccount(kPrimaryAccountKey);
   NotifyTokenAvailable(kPrimaryAccountKey);
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
@@ -451,7 +451,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryRevoke) {
       observer()->CheckEvents(TrackingEvent(SIGN_OUT, kPrimaryAccountKey)));
 }
 
-TEST_F(IdentityAccountTrackerTest, PrimaryRevokeThenLogin) {
+TEST_F(AccountTrackerTest, PrimaryRevokeThenLogin) {
   SetActiveAccount(kPrimaryAccountKey);
   NotifyTokenAvailable(kPrimaryAccountKey);
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
@@ -462,7 +462,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryRevokeThenLogin) {
   EXPECT_TRUE(observer()->CheckEvents());
 }
 
-TEST_F(IdentityAccountTrackerTest, PrimaryRevokeThenTokenAvailable) {
+TEST_F(AccountTrackerTest, PrimaryRevokeThenTokenAvailable) {
   SetActiveAccount(kPrimaryAccountKey);
   NotifyTokenAvailable(kPrimaryAccountKey);
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
@@ -476,7 +476,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryRevokeThenTokenAvailable) {
 
 // These tests exercise true login/logout, which are not possible on ChromeOS.
 #if !defined(OS_CHROMEOS)
-TEST_F(IdentityAccountTrackerTest, PrimaryLogoutThenRevoke) {
+TEST_F(AccountTrackerTest, PrimaryLogoutThenRevoke) {
   NotifyLogin(kPrimaryAccountKey);
   NotifyTokenAvailable(kPrimaryAccountKey);
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
@@ -490,7 +490,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryLogoutThenRevoke) {
   EXPECT_TRUE(observer()->CheckEvents());
 }
 
-TEST_F(IdentityAccountTrackerTest, PrimaryLogoutFetchCancelAvailable) {
+TEST_F(AccountTrackerTest, PrimaryLogoutFetchCancelAvailable) {
   NotifyLogin(kPrimaryAccountKey);
   NotifyTokenAvailable(kPrimaryAccountKey);
   // TokenAvailable kicks off a fetch. Logout without satisfying it.
@@ -507,7 +507,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryLogoutFetchCancelAvailable) {
 
 // Non-primary accounts
 
-TEST_F(IdentityAccountTrackerTest, Available) {
+TEST_F(AccountTrackerTest, Available) {
   SetupPrimaryLogin();
 
   NotifyTokenAvailable("user@example.com");
@@ -518,14 +518,14 @@ TEST_F(IdentityAccountTrackerTest, Available) {
       observer()->CheckEvents(TrackingEvent(SIGN_IN, "user@example.com")));
 }
 
-TEST_F(IdentityAccountTrackerTest, Revoke) {
+TEST_F(AccountTrackerTest, Revoke) {
   SetupPrimaryLogin();
 
   account_tracker()->OnRefreshTokenRevoked("user@example.com");
   EXPECT_TRUE(observer()->CheckEvents());
 }
 
-TEST_F(IdentityAccountTrackerTest, AvailableRevokeAvailable) {
+TEST_F(AccountTrackerTest, AvailableRevokeAvailable) {
   SetupPrimaryLogin();
 
   NotifyTokenAvailable("user@example.com");
@@ -540,7 +540,7 @@ TEST_F(IdentityAccountTrackerTest, AvailableRevokeAvailable) {
       observer()->CheckEvents(TrackingEvent(SIGN_IN, "user@example.com")));
 }
 
-TEST_F(IdentityAccountTrackerTest, AvailableRevokeAvailableWithPendingFetch) {
+TEST_F(AccountTrackerTest, AvailableRevokeAvailableWithPendingFetch) {
   SetupPrimaryLogin();
 
   NotifyTokenAvailable("user@example.com");
@@ -553,7 +553,7 @@ TEST_F(IdentityAccountTrackerTest, AvailableRevokeAvailableWithPendingFetch) {
       observer()->CheckEvents(TrackingEvent(SIGN_IN, "user@example.com")));
 }
 
-TEST_F(IdentityAccountTrackerTest, AvailableRevokeRevoke) {
+TEST_F(AccountTrackerTest, AvailableRevokeRevoke) {
   SetupPrimaryLogin();
 
   NotifyTokenAvailable("user@example.com");
@@ -567,7 +567,7 @@ TEST_F(IdentityAccountTrackerTest, AvailableRevokeRevoke) {
   EXPECT_TRUE(observer()->CheckEvents());
 }
 
-TEST_F(IdentityAccountTrackerTest, AvailableAvailable) {
+TEST_F(AccountTrackerTest, AvailableAvailable) {
   SetupPrimaryLogin();
 
   NotifyTokenAvailable("user@example.com");
@@ -579,7 +579,7 @@ TEST_F(IdentityAccountTrackerTest, AvailableAvailable) {
   EXPECT_TRUE(observer()->CheckEvents());
 }
 
-TEST_F(IdentityAccountTrackerTest, TwoAccounts) {
+TEST_F(AccountTrackerTest, TwoAccounts) {
   SetupPrimaryLogin();
 
   NotifyTokenAvailable("alpha@example.com");
@@ -601,7 +601,7 @@ TEST_F(IdentityAccountTrackerTest, TwoAccounts) {
       observer()->CheckEvents(TrackingEvent(SIGN_OUT, "beta@example.com")));
 }
 
-TEST_F(IdentityAccountTrackerTest, AvailableTokenFetchFailAvailable) {
+TEST_F(AccountTrackerTest, AvailableTokenFetchFailAvailable) {
   SetupPrimaryLogin();
 
   NotifyTokenAvailable("user@example.com");
@@ -616,7 +616,7 @@ TEST_F(IdentityAccountTrackerTest, AvailableTokenFetchFailAvailable) {
 
 // These tests exercise true login/logout, which are not possible on ChromeOS.
 #if !defined(OS_CHROMEOS)
-TEST_F(IdentityAccountTrackerTest, MultiSignOutSignIn) {
+TEST_F(AccountTrackerTest, MultiSignOutSignIn) {
   SetupPrimaryLogin();
 
   NotifyTokenAvailable("alpha@example.com");
@@ -668,7 +668,7 @@ TEST_F(IdentityAccountTrackerTest, MultiSignOutSignIn) {
 
 // Primary/non-primary interactions
 
-TEST_F(IdentityAccountTrackerTest, MultiNoEventsBeforeLogin) {
+TEST_F(AccountTrackerTest, MultiNoEventsBeforeLogin) {
   NotifyTokenAvailable(kPrimaryAccountKey);
   NotifyTokenAvailable("user@example.com");
   NotifyTokenRevoked("user@example.com");
@@ -684,7 +684,7 @@ TEST_F(IdentityAccountTrackerTest, MultiNoEventsBeforeLogin) {
 
 // This test exercises true login/logout, which are not possible on ChromeOS.
 #if !defined(OS_CHROMEOS)
-TEST_F(IdentityAccountTrackerTest, MultiLogoutRemovesAllAccounts) {
+TEST_F(AccountTrackerTest, MultiLogoutRemovesAllAccounts) {
   NotifyLogin(kPrimaryAccountKey);
   NotifyTokenAvailable(kPrimaryAccountKey);
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
@@ -700,7 +700,7 @@ TEST_F(IdentityAccountTrackerTest, MultiLogoutRemovesAllAccounts) {
 }
 #endif
 
-TEST_F(IdentityAccountTrackerTest, MultiRevokePrimaryDoesNotRemoveAllAccounts) {
+TEST_F(AccountTrackerTest, MultiRevokePrimaryDoesNotRemoveAllAccounts) {
   SetActiveAccount(kPrimaryAccountKey);
   NotifyTokenAvailable(kPrimaryAccountKey);
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
@@ -714,7 +714,7 @@ TEST_F(IdentityAccountTrackerTest, MultiRevokePrimaryDoesNotRemoveAllAccounts) {
       observer()->CheckEvents(TrackingEvent(SIGN_OUT, kPrimaryAccountKey)));
 }
 
-TEST_F(IdentityAccountTrackerTest, GetAccountsPrimary) {
+TEST_F(AccountTrackerTest, GetAccountsPrimary) {
   SetupPrimaryLogin();
 
   std::vector<AccountIds> ids = account_tracker()->GetAccounts();
@@ -723,12 +723,12 @@ TEST_F(IdentityAccountTrackerTest, GetAccountsPrimary) {
   EXPECT_EQ(AccountKeyToObfuscatedId(kPrimaryAccountKey), ids[0].gaia);
 }
 
-TEST_F(IdentityAccountTrackerTest, GetAccountsSignedOut) {
+TEST_F(AccountTrackerTest, GetAccountsSignedOut) {
   std::vector<AccountIds> ids = account_tracker()->GetAccounts();
   EXPECT_EQ(0ul, ids.size());
 }
 
-TEST_F(IdentityAccountTrackerTest, GetAccountsOnlyReturnAccountsWithTokens) {
+TEST_F(AccountTrackerTest, GetAccountsOnlyReturnAccountsWithTokens) {
   SetupPrimaryLogin();
 
   NotifyTokenAvailable("alpha@example.com");
@@ -743,7 +743,7 @@ TEST_F(IdentityAccountTrackerTest, GetAccountsOnlyReturnAccountsWithTokens) {
   EXPECT_EQ(AccountKeyToObfuscatedId("beta@example.com"), ids[1].gaia);
 }
 
-TEST_F(IdentityAccountTrackerTest, GetAccountsSortOrder) {
+TEST_F(AccountTrackerTest, GetAccountsSortOrder) {
   SetupPrimaryLogin();
 
   NotifyTokenAvailable("zeta@example.com");
@@ -763,8 +763,7 @@ TEST_F(IdentityAccountTrackerTest, GetAccountsSortOrder) {
   EXPECT_EQ(AccountKeyToObfuscatedId("zeta@example.com"), ids[2].gaia);
 }
 
-TEST_F(IdentityAccountTrackerTest,
-       GetAccountsReturnNothingWhenPrimarySignedOut) {
+TEST_F(AccountTrackerTest, GetAccountsReturnNothingWhenPrimarySignedOut) {
   SetupPrimaryLogin();
 
   NotifyTokenAvailable("zeta@example.com");
