@@ -502,8 +502,6 @@ class Browser : public TabStripModelObserver,
                            bool is_audible) override;
   void OnDidBlockFramebust(content::WebContents* web_contents,
                            const GURL& url) override;
-  void UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,
-                                       const gfx::Size& natural_size) override;
   gfx::Size EnterPictureInPicture(const viz::SurfaceId&,
                                   const gfx::Size&) override;
   void ExitPictureInPicture() override;

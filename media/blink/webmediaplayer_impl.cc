@@ -249,8 +249,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       surface_layer_for_video_enabled_(params->use_surface_layer_for_video()),
       request_routing_token_cb_(params->request_routing_token_cb()),
       overlay_routing_token_(OverlayInfo::RoutingToken()),
-      media_metrics_provider_(params->take_metrics_provider()),
-      pip_surface_info_cb_(params->pip_surface_info_cb()) {
+      media_metrics_provider_(params->take_metrics_provider()) {
   DVLOG(1) << __func__;
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_selector_);
@@ -416,8 +415,10 @@ void WebMediaPlayerImpl::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
   // disabled.
   // The viz::SurfaceId may be updated when the video begins playback or when
   // the size of the video changes.
-  if (client_ && client_->IsInPictureInPictureMode())
-    pip_surface_info_cb_.Run(pip_surface_id_, pipeline_metadata_.natural_size);
+  if (client_ && client_->IsInPictureInPictureMode()) {
+    delegate_->DidPictureInPictureSurfaceChange(
+        delegate_id_, surface_id, pipeline_metadata_.natural_size);
+  }
 }
 
 bool WebMediaPlayerImpl::SupportsOverlayFullscreenVideo() {

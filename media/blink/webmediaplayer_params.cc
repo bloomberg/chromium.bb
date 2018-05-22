@@ -32,8 +32,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
         blink::WebSurfaceLayerBridgeObserver*)> create_bridge_callback,
     scoped_refptr<viz::ContextProvider> context_provider,
-    bool use_surface_layer_for_video,
-    const PipSurfaceInfoCB& pip_surface_info_cb)
+    bool use_surface_layer_for_video)
     : defer_load_cb_(defer_load_cb),
       audio_renderer_sink_(audio_renderer_sink),
       media_log_(std::move(media_log)),
@@ -55,8 +54,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       metrics_provider_(std::move(metrics_provider)),
       create_bridge_callback_(create_bridge_callback),
       context_provider_(std::move(context_provider)),
-      use_surface_layer_for_video_(use_surface_layer_for_video),
-      pip_surface_info_cb_(pip_surface_info_cb) {}
+      use_surface_layer_for_video_(use_surface_layer_for_video) {}
 
 WebMediaPlayerParams::~WebMediaPlayerParams() = default;
 

@@ -2386,13 +2386,6 @@ void RenderFrameHostImpl::FrameSizeChanged(const gfx::Size& frame_size) {
   frame_size_ = frame_size;
 }
 
-void RenderFrameHostImpl::OnUpdatePictureInPictureSurfaceId(
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size) {
-  if (delegate_)
-    delegate_->UpdatePictureInPictureSurfaceId(surface_id, natural_size);
-}
-
 void RenderFrameHostImpl::OnDidBlockFramebust(const GURL& url) {
   delegate_->OnDidBlockFramebust(url);
 }

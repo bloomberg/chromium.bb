@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "content/browser/media/audible_metrics.h"
 #include "content/browser/media/audio_stream_monitor.h"
+#include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/browser/render_frame_host.h"
@@ -138,6 +139,9 @@ bool MediaWebContentsObserver::OnMessageReceived(
         OnPictureInPictureModeStarted)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded,
                         OnPictureInPictureModeEnded)
+    IPC_MESSAGE_HANDLER(
+        MediaPlayerDelegateHostMsg_OnPictureInPictureSurfaceChanged,
+        OnPictureInPictureSurfaceChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -313,6 +317,22 @@ void MediaWebContentsObserver::OnPictureInPictureModeEnded(
   render_frame_host->Send(
       new MediaPlayerDelegateMsg_OnPictureInPictureModeEnded_ACK(
           render_frame_host->GetRoutingID(), delegate_id, request_id));
+}
+
+void MediaWebContentsObserver::OnPictureInPictureSurfaceChanged(
+    RenderFrameHost* render_frame_host,
+    int delegate_id,
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& natural_size) {
+  DCHECK(surface_id.is_valid());
+  DCHECK(pip_player_);
+
+  PictureInPictureWindowControllerImpl* pip_controller =
+      PictureInPictureWindowControllerImpl::FromWebContents(
+          web_contents_impl());
+  DCHECK(pip_controller);
+
+  pip_controller->EmbedSurface(surface_id, natural_size);
 }
 
 void MediaWebContentsObserver::ClearWakeLocks(

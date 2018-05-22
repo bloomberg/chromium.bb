@@ -1416,26 +1416,6 @@ void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
       url, FramebustBlockTabHelper::ClickCallback());
 }
 
-void Browser::UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,
-                                              const gfx::Size& natural_size) {
-  // TODO(mlamouri): update this to be only about updating the SurfaceId.
-  if (!pip_window_controller_ ||
-      pip_window_controller_->GetInitiatorWebContents() !=
-          tab_strip_model_->GetActiveWebContents()) {
-    // If there was already a controller, close the existing window before
-    // creating the next one.
-    if (pip_window_controller_)
-      pip_window_controller_->Close();
-
-    // Update |pip_window_controller_| for the current content::WebContents.
-    pip_window_controller_ =
-        content::PictureInPictureWindowController::GetOrCreateForWebContents(
-            tab_strip_model_->GetActiveWebContents());
-  }
-  pip_window_controller_->EmbedSurface(surface_id, natural_size);
-  pip_window_controller_->Show();
-}
-
 gfx::Size Browser::EnterPictureInPicture(const viz::SurfaceId& surface_id,
                                          const gfx::Size& natural_size) {
   if (!pip_window_controller_ ||
@@ -1451,6 +1431,7 @@ gfx::Size Browser::EnterPictureInPicture(const viz::SurfaceId& surface_id,
         content::PictureInPictureWindowController::GetOrCreateForWebContents(
             tab_strip_model_->GetActiveWebContents());
   }
+
   pip_window_controller_->EmbedSurface(surface_id, natural_size);
   return pip_window_controller_->Show();
 }

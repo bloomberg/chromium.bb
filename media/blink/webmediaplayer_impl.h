@@ -921,9 +921,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // route the video to be shown in the Picture-in-Picture window.
   viz::SurfaceId pip_surface_id_;
 
-  // Callback to pass updated information about the current surface info.
-  WebMediaPlayerParams::PipSurfaceInfoCB pip_surface_info_cb_;
-
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
 

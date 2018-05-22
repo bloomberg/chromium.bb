@@ -867,11 +867,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // frame.
   void FrameDidCallFocus();
 
-  // Send viz::SurfaceId and video information to FrameHost to use for
-  // Picture-in-Picture.
-  void OnPictureInPictureSurfaceIdUpdated(const viz::SurfaceId& surface_id,
-                                          const gfx::Size& natural_size);
-
  protected:
   explicit RenderFrameImpl(CreateParams params);
 
