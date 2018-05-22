@@ -320,6 +320,17 @@ void Redo(PP_Instance instance) {
   }
 }
 
+int32_t PdfPrintBegin(PP_Instance instance,
+                      const PP_PrintSettings_Dev* print_settings,
+                      const PP_PdfPrintSettings_Dev* pdf_print_settings) {
+  void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
+  if (!object)
+    return 0;
+
+  auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
+  return obj_instance->PdfPrintBegin(print_settings, pdf_print_settings);
+}
+
 const PPP_Pdf ppp_private = {
     &GetLinkAtPosition,
     &Transform,
@@ -335,6 +346,7 @@ const PPP_Pdf ppp_private = {
     &CanRedo,
     &Undo,
     &Redo,
+    &PdfPrintBegin,
 };
 
 int ExtractPrintPreviewPageIndex(base::StringPiece src_url) {
@@ -1061,12 +1073,9 @@ void OutOfProcessInstance::Redo() {
   engine_->Redo();
 }
 
-uint32_t OutOfProcessInstance::QuerySupportedPrintOutputFormats() {
-  return engine_->QuerySupportedPrintOutputFormats();
-}
-
-int32_t OutOfProcessInstance::PrintBegin(
-    const PP_PrintSettings_Dev& print_settings) {
+int32_t OutOfProcessInstance::PdfPrintBegin(
+    const PP_PrintSettings_Dev* print_settings,
+    const PP_PdfPrintSettings_Dev* pdf_print_settings) {
   // For us num_pages is always equal to the number of pages in the PDF
   // document irrespective of the printable area.
   int32_t ret = engine_->GetNumberOfPages();
@@ -1074,13 +1083,25 @@ int32_t OutOfProcessInstance::PrintBegin(
     return 0;
 
   uint32_t supported_formats = engine_->QuerySupportedPrintOutputFormats();
-  if ((print_settings.format & supported_formats) == 0)
+  if ((print_settings->format & supported_formats) == 0)
     return 0;
 
   print_settings_.is_printing = true;
-  print_settings_.pepper_print_settings = print_settings;
+  print_settings_.pepper_print_settings = *print_settings;
+  print_settings_.pdf_print_settings = *pdf_print_settings;
   engine_->PrintBegin();
   return ret;
+}
+
+uint32_t OutOfProcessInstance::QuerySupportedPrintOutputFormats() {
+  return engine_->QuerySupportedPrintOutputFormats();
+}
+
+int32_t OutOfProcessInstance::PrintBegin(
+    const PP_PrintSettings_Dev& print_settings) {
+  // Replaced with PdfPrintBegin();
+  NOTREACHED();
+  return 0;
 }
 
 pp::Resource OutOfProcessInstance::PrintPages(
@@ -1089,13 +1110,14 @@ pp::Resource OutOfProcessInstance::PrintPages(
   if (!print_settings_.is_printing)
     return pp::Resource();
 
-  print_settings_.print_pages_called_ = true;
+  print_settings_.print_pages_called = true;
   return engine_->PrintPages(page_ranges, page_range_count,
-                             print_settings_.pepper_print_settings);
+                             print_settings_.pepper_print_settings,
+                             print_settings_.pdf_print_settings);
 }
 
 void OutOfProcessInstance::PrintEnd() {
-  if (print_settings_.print_pages_called_)
+  if (print_settings_.print_pages_called)
     UserMetricsRecordAction("PDF.PrintPage");
   print_settings_.Clear();
   engine_->PrintEnd();
@@ -1999,6 +2021,13 @@ void OutOfProcessInstance::PrintPreviewHistogramEnumeration(int32_t sample) {
   uma_.HistogramEnumeration("PrintPreview.PdfAction", sample,
                             PDFACTION_BUCKET_BOUNDARY);
   preview_action_recorded_[sample] = true;
+}
+
+void OutOfProcessInstance::PrintSettings::Clear() {
+  is_printing = false;
+  print_pages_called = false;
+  memset(&pepper_print_settings, 0, sizeof(pepper_print_settings));
+  memset(&pdf_print_settings, 0, sizeof(pdf_print_settings));
 }
 
 }  // namespace chrome_pdf

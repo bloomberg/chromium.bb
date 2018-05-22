@@ -1964,7 +1964,8 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
     NOTREACHED();
     return 0;
   }
-  int num_pages = 0;
+
+  int num_pages;
   PP_PrintSettings_Dev print_settings;
   print_settings.printable_area = PP_FromGfxRect(print_params.printable_area);
   print_settings.content_area = PP_FromGfxRect(print_params.print_content_area);
@@ -1976,11 +1977,20 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
       static_cast<PP_PrintScalingOption_Dev>(print_params.print_scaling_option);
   print_settings.format = format;
 
-  print_settings.num_pages_per_sheet = print_params.num_pages_per_sheet;
+  if (LoadPdfInterface()) {
+    PP_PdfPrintSettings_Dev pdf_print_settings;
+    pdf_print_settings.num_pages_per_sheet = print_params.num_pages_per_sheet;
+    // TODO(https://crbug.com/835654): Fill in the value from |print_params|.
+    pdf_print_settings.scale_factor = 100;
 
-  num_pages = plugin_print_interface_->Begin(pp_instance(), &print_settings);
+    num_pages = plugin_pdf_interface_->PrintBegin(
+        pp_instance(), &print_settings, &pdf_print_settings);
+  } else {
+    num_pages = plugin_print_interface_->Begin(pp_instance(), &print_settings);
+  }
   if (!num_pages)
     return 0;
+
   current_print_settings_ = print_settings;
   metafile_ = nullptr;
   ranges_.clear();

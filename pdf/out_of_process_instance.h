@@ -88,6 +88,8 @@ class OutOfProcessInstance : public pp::Instance,
   bool CanRedo();
   void Undo();
   void Redo();
+  int32_t PdfPrintBegin(const PP_PrintSettings_Dev* print_settings,
+                        const PP_PdfPrintSettings_Dev* pdf_print_settings);
 
   void FlushCallback(int32_t result);
   void DidOpen(int32_t result);
@@ -310,18 +312,22 @@ class OutOfProcessInstance : public pp::Instance,
 
   struct PrintSettings {
     PrintSettings() { Clear(); }
-    void Clear() {
-      is_printing = false;
-      print_pages_called_ = false;
-      memset(&pepper_print_settings, 0, sizeof(pepper_print_settings));
-    }
-    // This is set to true when PrintBegin is called and false when PrintEnd is
-    // called.
+
+    void Clear();
+
+    // This is set to true when PdfPrintBegin() is called and false when
+    // PrintEnd() is called.
     bool is_printing;
+
     // To know whether this was an actual print operation, so we don't double
     // count UMA logging.
-    bool print_pages_called_;
+    bool print_pages_called;
+
+    // Generic print settings.
     PP_PrintSettings_Dev pepper_print_settings;
+
+    // PDF-specific print settings.
+    PP_PdfPrintSettings_Dev pdf_print_settings;
   };
 
   PrintSettings print_settings_;

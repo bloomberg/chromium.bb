@@ -32,7 +32,7 @@ enum PP_PrintScalingOption_Dev {
   PP_PRINTSCALINGOPTION_LAST = PP_PRINTSCALINGOPTION_SOURCE_SIZE
 };
 
-[assert_size(64)]
+[assert_size(60)]
 struct PP_PrintSettings_Dev {
   /** This is the size of the printable area in points (1/72 of an inch). */
   PP_Rect printable_area;
@@ -44,6 +44,4 @@ struct PP_PrintSettings_Dev {
   PP_Bool grayscale;
   /** Note that Chrome currently only supports PDF printing. */
   PP_PrintOutputFormat_Dev format;
-  /** Note the following parameter is for N-up mode. */
-  uint32_t num_pages_per_sheet;
 };

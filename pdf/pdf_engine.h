@@ -39,6 +39,8 @@ typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
                                                       size_t text_length);
 #endif
 
+struct PP_PdfPrintSettings_Dev;
+
 namespace pp {
 class InputEvent;
 class VarDictionary;
@@ -309,7 +311,8 @@ class PDFEngine {
   virtual pp::Resource PrintPages(
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings) = 0;
+      const PP_PrintSettings_Dev& print_settings,
+      const PP_PdfPrintSettings_Dev& pdf_print_settings) = 0;
   virtual void PrintEnd() = 0;
   virtual void StartFind(const std::string& text, bool case_sensitive) = 0;
   virtual bool SelectFindResult(bool forward) = 0;

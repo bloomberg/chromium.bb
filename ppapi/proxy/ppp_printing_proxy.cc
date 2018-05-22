@@ -41,18 +41,13 @@ uint32_t QuerySupportedFormats(PP_Instance instance) {
 }
 
 int32_t Begin(PP_Instance instance,
-              const struct PP_PrintSettings_Dev* print_settings) {
+              const PP_PrintSettings_Dev* print_settings) {
   if (!HasPrintingPermission(instance))
     return 0;
-  // Settings is just serialized as a string.
-  std::string settings_string;
-  settings_string.resize(sizeof(*print_settings));
-  memcpy(&settings_string[0], print_settings, sizeof(*print_settings));
 
   int32_t result = 0;
-  HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiMsg_PPPPrinting_Begin(API_ID_PPP_PRINTING, instance,
-                                     settings_string, &result));
+  HostDispatcher::GetForInstance(instance)->Send(new PpapiMsg_PPPPrinting_Begin(
+      API_ID_PPP_PRINTING, instance, *print_settings, &result));
   return result;
 }
 
@@ -157,17 +152,14 @@ void PPP_Printing_Proxy::OnPluginMsgQuerySupportedFormats(PP_Instance instance,
 }
 
 void PPP_Printing_Proxy::OnPluginMsgBegin(PP_Instance instance,
-                                          const std::string& settings_string,
+                                          const PP_PrintSettings_Dev& settings,
                                           int32_t* result) {
-  *result = 0;
-
-  PP_PrintSettings_Dev settings;
-  if (settings_string.size() != sizeof(settings))
+  if (!ppp_printing_impl_) {
+    *result = 0;
     return;
-  memcpy(&settings, &settings_string[0], sizeof(settings));
+  }
 
-  if (ppp_printing_impl_)
-    *result = CallWhileUnlocked(ppp_printing_impl_->Begin, instance, &settings);
+  *result = CallWhileUnlocked(ppp_printing_impl_->Begin, instance, &settings);
 }
 
 void PPP_Printing_Proxy::OnPluginMsgPrintPages(

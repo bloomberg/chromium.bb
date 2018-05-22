@@ -105,6 +105,15 @@ void Redo(PP_Instance instance) {
       new PpapiMsg_PPPPdf_Redo(API_ID_PPP_PDF, instance));
 }
 
+int32_t PrintBegin(PP_Instance instance,
+                   const PP_PrintSettings_Dev* print_settings,
+                   const PP_PdfPrintSettings_Dev* pdf_print_settings) {
+  int32_t ret = 0;
+  HostDispatcher::GetForInstance(instance)->Send(new PpapiMsg_PPPPdf_PrintBegin(
+      API_ID_PPP_PDF, instance, *print_settings, *pdf_print_settings, &ret));
+  return ret;
+}
+
 const PPP_Pdf ppp_pdf_interface = {
     &GetLinkAtPosition,
     &Transform,
@@ -120,6 +129,7 @@ const PPP_Pdf ppp_pdf_interface = {
     &CanRedo,
     &Undo,
     &Redo,
+    &PrintBegin,
 };
 #else
 // The NaCl plugin doesn't need the host side interface - stub it out.
@@ -171,6 +181,7 @@ bool PPP_Pdf_Proxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_CanRedo, OnPluginMsgCanRedo)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_Undo, OnPluginMsgUndo)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_Redo, OnPluginMsgRedo)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_PrintBegin, OnPluginMsgPrintBegin)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -255,6 +266,20 @@ void PPP_Pdf_Proxy::OnPluginMsgUndo(PP_Instance instance) {
 void PPP_Pdf_Proxy::OnPluginMsgRedo(PP_Instance instance) {
   if (ppp_pdf_)
     CallWhileUnlocked(ppp_pdf_->Redo, instance);
+}
+
+void PPP_Pdf_Proxy::OnPluginMsgPrintBegin(
+    PP_Instance instance,
+    const PP_PrintSettings_Dev& print_settings,
+    const PP_PdfPrintSettings_Dev& pdf_print_settings,
+    int32_t* result) {
+  if (!ppp_pdf_) {
+    *result = 0;
+    return;
+  }
+
+  *result = CallWhileUnlocked(ppp_pdf_->PrintBegin, instance, &print_settings,
+                              &pdf_print_settings);
 }
 
 }  // namespace proxy

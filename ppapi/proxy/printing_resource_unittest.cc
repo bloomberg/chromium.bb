@@ -75,8 +75,7 @@ TEST_F(PrintingResourceTest, GetDefaultPrintSettings) {
                                          PP_PRINTORIENTATION_NORMAL,
                                          PP_PRINTSCALINGOPTION_NONE,
                                          PP_FALSE,
-                                         PP_PRINTOUTPUTFORMAT_PDF,
-                                         1};
+                                         PP_PRINTOUTPUTFORMAT_PDF};
   PluginMessageFilter::DispatchResourceReplyForTest(
       reply_params,
       PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply(
@@ -94,8 +93,6 @@ TEST_F(PrintingResourceTest, GetDefaultPrintSettings) {
             output_settings.print_scaling_option);
   EXPECT_EQ(reply_settings.grayscale, output_settings.grayscale);
   EXPECT_EQ(reply_settings.format, output_settings.format);
-  EXPECT_EQ(reply_settings.num_pages_per_sheet,
-            output_settings.num_pages_per_sheet);
 
   EXPECT_EQ(g_callback_result, PP_OK);
   EXPECT_EQ(g_callback_called, true);
