@@ -373,6 +373,8 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
     view->SetDelegate(rw_delegate.get());
   }
   view->SetAllowPauseForResizeOrRepaint(!allow_other_views_);
+  if (parent_ui_layer_)
+    view->SetParentUiLayer(parent_ui_layer_);
 
   // Fancy layout comes later; for now just make it our size and resize it
   // with us. In case there are other siblings of the content area, we want
@@ -444,6 +446,14 @@ void WebContentsViewMac::CloseTabAfterEventTracking() {
 
 void WebContentsViewMac::CloseTab() {
   web_contents_->Close(web_contents_->GetRenderViewHost());
+}
+
+void WebContentsViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
+  parent_ui_layer_ = parent_ui_layer;
+  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
+      web_contents_->GetRenderWidgetHostView());
+  if (view)
+    view->SetParentUiLayer(parent_ui_layer);
 }
 
 }  // namespace content
@@ -658,6 +668,11 @@ void WebContentsViewMac::CloseTab() {
 
   [self webContents]->
       FocusThroughTabTraversal(direction == NSSelectingPrevious);
+}
+
+- (void)cr_setParentUiLayer:(ui::Layer*)parentUiLayer {
+  if (webContentsView_)
+    webContentsView_->SetParentUiLayer(parentUiLayer);
 }
 
 - (void)updateWebContentsVisibility {

@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/compositor/layer_observer.h"
 #include "ui/display/display.h"
 
 namespace ui {
@@ -43,7 +44,8 @@ class BrowserCompositorMacClient {
 //   is visible.
 // - The RenderWidgetHostViewMac that is used to display these frames is
 //   attached to the NSView hierarchy of an NSWindow.
-class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
+class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
+                                            public ui::LayerObserver {
  public:
   BrowserCompositorMac(
       ui::AcceleratedWidgetMacNSView* accelerated_widget_mac_ns_view,
@@ -101,6 +103,11 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   // hidden (e.g, because it is occluded by another window).
   void SetNSViewAttachedToWindow(bool attached);
 
+  // Sets or clears the parent ui::Layer and updates state to reflect that
+  // we are now using the ui::Compositor from |parent_ui_layer| (if non-nullptr)
+  // or one from |recyclable_compositor_| (if a compositor is needed).
+  void SetParentUiLayer(ui::Layer* parent_ui_layer);
+
   viz::FrameSinkId GetRootFrameSinkId();
 
   const gfx::Size& GetRendererSize() const { return dfh_size_dip_; }
@@ -128,9 +135,6 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
     return weak_factory_.GetWeakPtr();
   }
 
-  // Returns nullptr if no compositor is attached.
-  ui::Compositor* Compositor() const;
-
   void DidNavigate();
 
   void BeginPauseForFrame(bool auto_resize_enabled);
@@ -139,16 +143,24 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
 
   bool ForceNewSurfaceForTesting();
 
+  ui::Compositor* GetCompositorForTesting() const;
+
  private:
+  // ui::LayerObserver implementation:
+  void LayerDestroyed(ui::Layer* layer) override;
+
   // The state of |delegated_frame_host_| and |recyclable_compositor_| to
-  // manage being visible, hidden, or occluded.
+  // manage being visible, occluded, hidden, or drawn via a ui::Layer. Note that
+  // TransitionToState will transition through each intermediate state according
+  // to enum values (e.g, going from HasAttachedCompositor to HasNoCompositor
+  // will temporarily go through HasDetachedCompositor).
   enum State {
     // Effects:
     // - |recyclable_compositor_| exists and is attached to
     //   |delegated_frame_host_|.
     // Happens when:
     // - |render_widet_host_| is in the visible state.
-    HasAttachedCompositor,
+    HasAttachedCompositor = 0,
     // Effects:
     // - |recyclable_compositor_| exists, but |delegated_frame_host_| is
     //   hidden and detached from it.
@@ -159,7 +171,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
     //   around so that we will have content to show when we are un-occluded. If
     //   we had a way to keep the CALayers attached to the NSView while
     //   detaching the ui::Compositor, then there would be no need for this
-    HasDetachedCompositor,
+    HasDetachedCompositor = 1,
     // Effects:
     // - |recyclable_compositor_| has been recycled and |delegated_frame_host_|
     //   is hidden and detached from it.
@@ -167,14 +179,22 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
     // - The |render_widget_host_| hidden or gone, and |cocoa_view_| is not
     //   attached to an NSWindow.
     // - This happens for backgrounded tabs.
-    HasNoCompositor,
+    HasNoCompositor = 2,
+    // Effects:
+    // - |recyclable_compositor_| does not exist. |delegated_frame_host_| is
+    //   attached to |parent_ui_layer_|'s compositor.
+    // Happens when:
+    // - |parent_ui_layer_| is non-nullptr.
+    UseParentLayerCompositor = 3,
   };
   State state_ = HasNoCompositor;
   void UpdateState();
   void TransitionToState(State new_state);
-  void GetViewProperties(gfx::Size* bounds_in_dip,
-                         float* scale_factor,
-                         gfx::ColorSpace* color_space) const;
+
+  // Weak pointer to the layer supplied and reset via SetParentUiLayer. |this|
+  // is an observer of |parent_ui_layer_|, to ensure that |parent_ui_layer_|
+  // always be valid when non-null.
+  ui::Layer* parent_ui_layer_ = nullptr;
   bool render_widget_host_is_hidden_ = true;
   bool ns_view_attached_to_window_ = false;
 
@@ -209,9 +229,6 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
     ScreenUpdatesDisabled,
   } repaint_state_ = RepaintState::None;
   bool repaint_auto_resize_enabled_ = false;
-
-  uint32_t capture_sequence_number_ = 0;
-
   bool is_first_navigation_ = true;
 
   base::WeakPtrFactory<BrowserCompositorMac> weak_factory_;

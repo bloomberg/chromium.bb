@@ -45,6 +45,7 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/secure_password_input.h"
 #include "ui/base/cocoa/text_services_context_menu.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
@@ -109,6 +110,11 @@ NSView* RenderWidgetHostViewMac::AcceleratedWidgetGetNSView() const {
 }
 
 void RenderWidgetHostViewMac::AcceleratedWidgetCALayerParamsUpdated() {
+  // This may be called when we do not have a parent ui::Layer (e.g, when tab
+  // capturing a background layer). Do not update the NSView in this case.
+  if (display_only_using_parent_ui_layer_)
+    return;
+
   // Set the background color for the root layer from the frame that just
   // swapped. See RenderWidgetHostViewAura for more details. Note that this is
   // done only after the swap has completed, so that the background is not set
@@ -195,6 +201,13 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
+}
+
+void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
+  if (parent_ui_layer)
+    display_only_using_parent_ui_layer_ = true;
+  if (browser_compositor_)
+    browser_compositor_->SetParentUiLayer(parent_ui_layer);
 }
 
 RenderWidgetHostViewCocoa* RenderWidgetHostViewMac::cocoa_view() const {
@@ -928,6 +941,10 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
 }
 
 bool RenderWidgetHostViewMac::ShouldContinueToPauseForFrame() {
+  // Only pause for frames when drawing through a separate ui::Compositor.
+  if (display_only_using_parent_ui_layer_)
+    return false;
+
   return browser_compositor_->ShouldContinueToPauseForFrame();
 }
 
@@ -1219,6 +1236,11 @@ base::Optional<SkColor> RenderWidgetHostViewMac::GetBackgroundColor() const {
 }
 
 void RenderWidgetHostViewMac::SetBackgroundLayerColor(SkColor color) {
+  // If displaying via a ui::Layer, leave the background color of the NSView
+  // as transparent (it is to be used for input handling only).
+  if (display_only_using_parent_ui_layer_)
+    return;
+
   if (color == background_layer_color_)
     return;
   background_layer_color_ = color;
