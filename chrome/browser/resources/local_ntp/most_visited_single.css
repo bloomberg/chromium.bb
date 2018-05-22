@@ -238,7 +238,7 @@ body.dark-theme .mv-thumb.failed-img {
   background-color: #555;
 }
 
-/* We use ::after without content to provide an aditional element on top of the
+/* We use ::after without content to provide an additional element on top of the
  * thumbnail. */
 .mv-thumb.failed-img::after {
   border: 8px solid rgb(215,215,215);
@@ -373,7 +373,6 @@ html[dir=rtl] .mv-favicon {
 }
 
 .md-tile {
-  border: 1px solid transparent;
   border-radius: 4px;
   box-sizing: border-box;
   cursor: pointer;
@@ -391,20 +390,32 @@ html[dir=rtl] .mv-favicon {
 }
 
 .md-tile:hover {
-  background-color: white;
-  border: 1px solid rgb(218, 220, 224);
+  background-color: rgba(33, 32, 36, 0.06);
+}
+
+body.dark-theme .md-tile:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .md-tile:hover > .md-menu {
   opacity: 1;
 }
 
-.md-tile:active {
-  border-color: transparent;
+.md-tile:active,
+body.dark-theme .md-tile:active {
+  background-color: white;
   box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3),
       0 4px 8px 3px rgba(60, 64, 67, 0.15);
   transition-duration: 200ms;
   z-index: 10;
+}
+
+body.dark-theme .md-tile:active .md-title {
+  color: rgba(33, 32, 36, 0.86);
+}
+
+body.dark-theme .md-tile:active .md-menu::after {
+  background-color: rgba(33, 32, 36, 0.71);
 }
 
 .md-tile.blacklisted {
@@ -419,7 +430,9 @@ html[dir=rtl] .mv-favicon {
   display: flex;
   flex-flow: column nowrap;
   height: 100%;
+  position: relative;
   width: 100%;
+  z-index: -1;
 }
 
 .md-link {
@@ -469,7 +482,7 @@ html[dir=rtl] .mv-favicon {
 }
 
 .md-title {
-  color: rgb(60, 64, 67);
+  color: rgba(33, 32, 36, 0.86);
   font-family: 'Roboto';
   font-size: var(--md-title-font-size);
   height: var(--md-title-height);
@@ -477,6 +490,10 @@ html[dir=rtl] .mv-favicon {
   text-align: center;
   width: 100%;
   word-wrap: break-word;
+}
+
+body.dark-theme .md-title {
+  color: rgb(248, 249, 250);
 }
 
 .md-menu {
@@ -504,7 +521,7 @@ html[dir=rtl] .mv-favicon {
       url(chrome-search://local-ntp/images/close_3_mask.png@2x) 2x);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: var(--mask-width);
-  background-color: rgb(218, 220, 224);
+  background-color: rgba(33, 32, 36, 0.55);
   content: '';
   display: block;
   height: var(--md-menu-size);
@@ -514,6 +531,10 @@ html[dir=rtl] .mv-favicon {
   width: var(--md-menu-size);
 }
 
+body.dark-theme .md-menu::after {
+  background-color: white;
+}
+
 html[dir=rtl] .md-menu {
   left: 0;
   right: auto;
@@ -521,5 +542,10 @@ html[dir=rtl] .md-menu {
 
 .md-menu:hover::after,
 .md-menu:focus::after {
-  background-color: rgb(154, 160, 166);
+  background-color: rgba(33, 32, 36, 0.71);
+}
+
+body.dark-theme .md-menu:hover::after,
+body.dark-theme .md-menu:focus::after {
+  background-color: rgb(218, 220, 224);
 }
