@@ -1822,7 +1822,7 @@ CrSettingsAndroidAppsPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsAndroidAppsPageTest', 'All', function() {
+TEST_F('CrSettingsAndroidAppsPageTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
