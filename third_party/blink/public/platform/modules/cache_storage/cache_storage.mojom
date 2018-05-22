@@ -89,12 +89,12 @@ interface CacheStorageCache {
 
   // Returns all cached responses that match |request| according to options
   // specified on |query_params|.
-  MatchAll(blink.mojom.FetchAPIRequest request, QueryParams query_params)
+  MatchAll(blink.mojom.FetchAPIRequest? request, QueryParams query_params)
       => (MatchAllResult result);
 
   // Returns all keys (which are requests) of matching |request| and
   // |query_params|.
-  Keys(blink.mojom.FetchAPIRequest request, QueryParams query_params)
+  Keys(blink.mojom.FetchAPIRequest? request, QueryParams query_params)
       => (CacheKeysResult result);
 
   // Perform a batch of operations, used for PUT and DELETE operations.

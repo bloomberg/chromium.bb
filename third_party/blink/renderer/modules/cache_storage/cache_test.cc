@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -146,23 +147,24 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
     result->set_status(error_);
     std::move(callback).Run(std::move(result));
   }
-  void MatchAll(const WebServiceWorkerRequest& request,
+  void MatchAll(const base::Optional<WebServiceWorkerRequest>& request,
                 mojom::blink::QueryParamsPtr query_params,
                 MatchAllCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchMatchAll";
-    CheckUrlIfProvided(request.Url());
+    if (request)
+      CheckUrlIfProvided(request->Url());
     CheckQueryParamsIfProvided(query_params);
     mojom::blink::MatchAllResultPtr result =
         mojom::blink::MatchAllResult::New();
     result->set_status(error_);
     std::move(callback).Run(std::move(result));
   }
-  void Keys(const WebServiceWorkerRequest& request,
+  void Keys(const base::Optional<WebServiceWorkerRequest>& request,
             mojom::blink::QueryParamsPtr query_params,
             KeysCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchKeys";
-    if (!request.Url().IsEmpty()) {
-      CheckUrlIfProvided(request.Url());
+    if (request && !request->Url().IsEmpty()) {
+      CheckUrlIfProvided(request->Url());
       CheckQueryParamsIfProvided(query_params);
     }
     mojom::blink::CacheKeysResultPtr result =
@@ -418,6 +420,13 @@ TEST_F(CacheStorageTest, BasicArguments) {
       CreateCache(fetcher, std::make_unique<NotImplementedErrorCache>());
   DCHECK(cache);
 
+  ScriptPromise match_all_result_no_arguments =
+      cache->matchAll(GetScriptState(), exception_state);
+  EXPECT_EQ("dispatchMatchAll",
+            test_cache()->GetAndClearLastErrorWebCacheMethodCalled());
+  EXPECT_EQ(kNotImplementedString,
+            GetRejectString(match_all_result_no_arguments));
+
   const String url = "http://www.cache.arguments.test/";
   test_cache()->SetExpectedUrl(&url);
 
@@ -613,7 +622,7 @@ class KeysTestCache : public NotImplementedErrorCache {
   KeysTestCache(Vector<WebServiceWorkerRequest>& requests)
       : requests_(requests) {}
 
-  void Keys(const WebServiceWorkerRequest& request,
+  void Keys(const base::Optional<WebServiceWorkerRequest>& request,
             mojom::blink::QueryParamsPtr query_params,
             KeysCallback callback) override {
     mojom::blink::CacheKeysResultPtr result =
@@ -639,7 +648,9 @@ TEST_F(CacheStorageTest, KeysResponseTest) {
 
   Vector<WebServiceWorkerRequest> web_requests(size_t(2));
   web_requests[0].SetURL(KURL(url1));
+  web_requests[0].SetMethod("GET");
   web_requests[1].SetURL(KURL(url2));
+  web_requests[1].SetMethod("GET");
 
   Cache* cache =
       CreateCache(fetcher, std::make_unique<KeysTestCache>(web_requests));
@@ -665,7 +676,7 @@ class MatchAllAndBatchTestCache : public NotImplementedErrorCache {
   MatchAllAndBatchTestCache(Vector<mojom::blink::FetchAPIResponsePtr> responses)
       : responses_(std::move(responses)) {}
 
-  void MatchAll(const WebServiceWorkerRequest& request,
+  void MatchAll(const base::Optional<WebServiceWorkerRequest>& request,
                 mojom::blink::QueryParamsPtr query_params,
                 MatchAllCallback callback) override {
     mojom::blink::MatchAllResultPtr result =

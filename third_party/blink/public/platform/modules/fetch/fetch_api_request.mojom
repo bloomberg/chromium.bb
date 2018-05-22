@@ -101,11 +101,7 @@ struct FetchAPIRequest {
   RequestContextType request_context_type;
   network.mojom.RequestContextFrameType frame_type;
   url.mojom.Url url;
-  // TODO(lfg): |method| shouldn't be nullable. This is allowed in order to
-  // facilitate type conversions between FetchAPIRequest and
-  // WebServiceWorkerRequest, but should be made non-nullable once the browser
-  // process is converted to use the mojo type.
-  string? method;
+  string method;
   map<string, string> headers;
   SerializedBlob? blob;
   Referrer referrer;
