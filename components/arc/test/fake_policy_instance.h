@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_ARC_TEST_FAKE_POLICY_INSTANCE_H_
 #define COMPONENTS_ARC_TEST_FAKE_POLICY_INSTANCE_H_
 
+#include <string>
+
 #include "components/arc/common/policy.mojom.h"
 
 namespace arc {
@@ -18,11 +20,17 @@ class FakePolicyInstance : public mojom::PolicyInstance {
   void InitDeprecated(mojom::PolicyHostPtr host_ptr) override;
   void Init(mojom::PolicyHostPtr host_ptr, InitCallback callback) override;
   void OnPolicyUpdated() override;
+  void OnCommandReceived(const std::string& command,
+                         OnCommandReceivedCallback callback) override;
 
   void CallGetPolicies(mojom::PolicyHost::GetPoliciesCallback callback);
 
+  const std::string& command_payload() { return command_payload_; }
+
  private:
   mojom::PolicyHostPtr host_ptr_;
+
+  std::string command_payload_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePolicyInstance);
 };

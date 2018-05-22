@@ -19,13 +19,17 @@
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class GoogleServiceAuthError;
 class PrefService;
+class Profile;
 
 namespace base {
 class SequencedTaskRunner;
@@ -41,12 +45,14 @@ class AppInstallEventLogUploader;
 class CloudExternalDataManager;
 class DeviceManagementService;
 class PolicyOAuth2TokenFetcher;
+class RemoteCommandsInvalidator;
 class StatusUploader;
 
 // Implements logic for initializing user policy on Chrome OS.
 class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
                                        public CloudPolicyClient::Observer,
                                        public CloudPolicyService::Observer,
+                                       public content::NotificationObserver,
                                        public KeyedService {
  public:
   // Enum describing what behavior we want to enforce here.
@@ -91,6 +97,7 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // |io_task_runner| is used for network IO. Currently this must be the IO
   // BrowserThread.
   UserCloudPolicyManagerChromeOS(
+      Profile* profile,
       std::unique_ptr<CloudPolicyStore> store,
       std::unique_ptr<CloudExternalDataManager> external_data_manager,
       const base::FilePath& component_policy_cache_path,
@@ -200,6 +207,17 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
 
   void StartRefreshSchedulerIfReady();
 
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
+  // Observer called on profile shutdown.
+  void ProfileShutdown();
+
+  // Profile associated with the current user.
+  Profile* const profile_;
+
   // Owns the store, note that CloudPolicyManager just keeps a plain pointer.
   std::unique_ptr<CloudPolicyStore> store_;
 
@@ -264,6 +282,16 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // The callback to invoke if the user session should be shutdown. This is
   // injected in the constructor to make it easier to write tests.
   base::OnceClosure fatal_error_callback_;
+
+  // Used to register for notification that profile creation is complete.
+  content::NotificationRegistrar registrar_;
+
+  // Invalidator used for remote commands to be delivered to this user.
+  std::unique_ptr<RemoteCommandsInvalidator> invalidator_;
+
+  // Listening to notification that profile is destroyed.
+  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
+      shutdown_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChromeOS);
 };

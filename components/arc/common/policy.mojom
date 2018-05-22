@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 4
+// Next MinVersion: 5
 
 module arc.mojom;
 
@@ -50,6 +50,15 @@ enum InstallErrorReason {
     USER_INVALID = 10,
 };
 
+// Should be kept in sync with device_management_backend.proto/
+// RemoteCommandResult/ResultType.
+[Extensible]
+enum CommandResultType {
+  IGNORED = 0,  // The command was ignored as obsolete.
+  FAILURE = 1,  // The command could not be executed.
+  SUCCESS = 2,  // The command was successfully executed.
+};
+
 // Next Method ID: 2
 interface PolicyHost {
   // Get policies from Chrome OS, as JSON-encoded dictionary with the policies'
@@ -76,7 +85,7 @@ interface PolicyHost {
                                       InstallErrorReason reason);
 };
 
-// Next Method ID: 3
+// Next Method ID: 4
 interface PolicyInstance {
   // DEPRECATED: Please use Init@2 instead.
   InitDeprecated@0(PolicyHost host_ptr);
@@ -86,4 +95,11 @@ interface PolicyInstance {
 
   // Indicates some policies have changed
   OnPolicyUpdated@1();
+
+  // Forwards a command received from the management server. The payload is
+  // opaque to Chrome OS (it contains JSON from the RemoteCommand.payload field
+  // for the USER_ARC_COMMAND RemoteCommand - cf.
+  // device_management_backend.proto).
+  [MinVersion=4] OnCommandReceived@3(string command)
+      => (CommandResultType result);
 };

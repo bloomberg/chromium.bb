@@ -5,6 +5,8 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -12,7 +14,9 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/policy/remote_commands/user_command_arc_job.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -24,7 +28,9 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/core/common/remote_commands/remote_command_job.h"
 #include "components/policy/policy_constants.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -526,6 +532,50 @@ TEST_F(ArcPolicyBridgeTest, PolicyInstanceUnmanagedTest) {
 
 TEST_F(ArcPolicyBridgeTest, PolicyInstanceManagedTest) {
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() + "\"}");
+}
+
+namespace {
+
+std::unique_ptr<policy::RemoteCommandJob> CreateArcJob(
+    Profile* profile,
+    base::TimeTicks issued_time,
+    const std::string& payload) {
+  enterprise_management::RemoteCommand command_proto;
+  command_proto.set_type(
+      enterprise_management::RemoteCommand_Type_USER_ARC_COMMAND);
+  constexpr policy::RemoteCommandJob::UniqueIDType kUniqueID = 123456789;
+  command_proto.set_command_id(kUniqueID);
+  command_proto.set_age_of_command(
+      (base::TimeTicks::Now() - issued_time).InMilliseconds());
+  command_proto.set_payload(payload);
+
+  auto job = std::make_unique<policy::UserCommandArcJob>(profile);
+  EXPECT_TRUE(job->Init(base::TimeTicks::Now(), command_proto));
+  EXPECT_EQ(kUniqueID, job->unique_id());
+  EXPECT_EQ(policy::RemoteCommandJob::NOT_STARTED, job->status());
+  return job;
+}
+
+}  // namespace
+
+TEST_F(ArcPolicyBridgeTest, UserCommandArcJobTest) {
+  const std::string kPayload = "testing payload";
+  ArcPolicyBridge::SetForTesting(policy_bridge());
+  std::unique_ptr<policy::RemoteCommandJob> job =
+      CreateArcJob(profile(), base::TimeTicks::Now(), kPayload);
+  base::RunLoop run_loop;
+
+  auto check_result_callback = base::BindRepeating(
+      [](base::RunLoop* run_loop, policy::RemoteCommandJob* job,
+         FakePolicyInstance* policy_instance, std::string expected_payload) {
+        EXPECT_EQ(policy::RemoteCommandJob::SUCCEEDED, job->status());
+        EXPECT_EQ(expected_payload, policy_instance->command_payload());
+        run_loop->Quit();
+      },
+      &run_loop, base::Unretained(job.get()), policy_instance(), kPayload);
+  EXPECT_TRUE(job->Run(base::TimeTicks::Now(), check_result_callback));
+  run_loop.Run();
+  ArcPolicyBridge::SetForTesting(nullptr);
 }
 
 TEST_P(ArcPolicyBridgeAffiliatedTest, ApkCacheEnabledTest) {
