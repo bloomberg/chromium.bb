@@ -66,13 +66,6 @@ const int kMaxFetcherRetries = 8;
 // accounts have changed in the content-area.
 const char* const kGaiaCookieName = "APISID";
 
-enum GaiaCookieRequestType {
-  ADD_ACCOUNT,
-  LOG_OUT_ALL_ACCOUNTS,
-  LOG_OUT_ONE_ACCOUNT,
-  LIST_ACCOUNTS
-};
-
 }  // namespace
 
 GaiaCookieManagerService::GaiaCookieRequest::GaiaCookieRequest(
@@ -90,8 +83,7 @@ GaiaCookieManagerService::GaiaCookieRequest::CreateAddAccountRequest(
     const std::string& account_id,
     const std::string& source) {
   return GaiaCookieManagerService::GaiaCookieRequest(
-      GaiaCookieManagerService::GaiaCookieRequestType::ADD_ACCOUNT, account_id,
-      source);
+      GaiaCookieRequestType::ADD_ACCOUNT, account_id, source);
 }
 
 // static
@@ -99,8 +91,7 @@ GaiaCookieManagerService::GaiaCookieRequest
 GaiaCookieManagerService::GaiaCookieRequest::CreateLogOutRequest(
     const std::string& source) {
   return GaiaCookieManagerService::GaiaCookieRequest(
-      GaiaCookieManagerService::GaiaCookieRequestType::LOG_OUT, std::string(),
-      source);
+      GaiaCookieRequestType::LOG_OUT, std::string(), source);
 }
 
 // static
@@ -108,8 +99,7 @@ GaiaCookieManagerService::GaiaCookieRequest
 GaiaCookieManagerService::GaiaCookieRequest::CreateListAccountsRequest(
     const std::string& source) {
   return GaiaCookieManagerService::GaiaCookieRequest(
-      GaiaCookieManagerService::GaiaCookieRequestType::LIST_ACCOUNTS,
-      std::string(), source);
+      GaiaCookieRequestType::LIST_ACCOUNTS, std::string(), source);
 }
 
 GaiaCookieManagerService::ExternalCcResultFetcher::ExternalCcResultFetcher(
