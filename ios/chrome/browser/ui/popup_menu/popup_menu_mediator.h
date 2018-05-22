@@ -24,9 +24,13 @@ class WebStateList;
 // updating the items of the popup menu.
 @interface PopupMenuMediator : NSObject
 
+// Initializes the mediator with a |type| of popup menu, whether it
+// |isIncognito|, a |readingListModel| used to display the badge for the reading
+// list entry, and whether the mediator should |triggerNewIncognitoTabTip|.
 - (instancetype)initWithType:(PopupMenuType)type
-                 isIncognito:(BOOL)isIncognito
-            readingListModel:(ReadingListModel*)readingListModel
+                  isIncognito:(BOOL)isIncognito
+             readingListModel:(ReadingListModel*)readingListModel
+    triggerNewIncognitoTabTip:(BOOL)triggerNewIncognitoTabTip
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
