@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/chromeos/drive/download_handler.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_util.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/components/drivefs/drivefs_host.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system.h"
 #include "components/drive/chromeos/resource_metadata.h"
@@ -75,6 +78,8 @@ const base::FilePath::CharType kCacheFileDirectory[] =
 // Name of the directory used to store temporary files.
 const base::FilePath::CharType kTemporaryFileDirectory[] =
     FILE_PATH_LITERAL("tmp");
+
+const base::Feature kDriveFs{"DriveFS", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Returns a user agent string used for communicating with the Drive backend,
 // both WAPI and Drive API.  The user agent looks like:
@@ -236,6 +241,58 @@ class DriveIntegrationService::PreferenceWatcher {
   DISALLOW_COPY_AND_ASSIGN(PreferenceWatcher);
 };
 
+class DriveIntegrationService::DriveFsHolder
+    : public drivefs::DriveFsHost::Delegate {
+ public:
+  DriveFsHolder(Profile* profile, base::RepeatingClosure on_drivefs_mounted);
+
+  drivefs::DriveFsHost* drivefs_host() { return &drivefs_host_; }
+
+ private:
+  // drivefs::DriveFsHost::Delegate:
+  net::URLRequestContextGetter* GetRequestContext() override;
+  service_manager::Connector* GetConnector() override;
+  const AccountId& GetAccountId() override;
+  void OnMounted(const base::FilePath& path) override;
+
+  Profile* const profile_;
+
+  // Invoked when DriveFS mounting is completed.
+  const base::RepeatingClosure on_drivefs_mounted_;
+
+  drivefs::DriveFsHost drivefs_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(DriveFsHolder);
+};
+
+DriveIntegrationService::DriveFsHolder::DriveFsHolder(
+    Profile* profile,
+    base::RepeatingClosure on_drivefs_mounted)
+    : profile_(profile),
+      on_drivefs_mounted_(std::move(on_drivefs_mounted)),
+      drivefs_host_(profile_->GetPath(), this) {}
+
+net::URLRequestContextGetter*
+DriveIntegrationService::DriveFsHolder::GetRequestContext() {
+  return profile_->GetRequestContext();
+}
+
+service_manager::Connector*
+DriveIntegrationService::DriveFsHolder::GetConnector() {
+  return content::BrowserContext::GetConnectorFor(profile_);
+}
+
+const AccountId& DriveIntegrationService::DriveFsHolder::GetAccountId() {
+  return chromeos::ProfileHelper::Get()
+      ->GetUserByProfile(profile_)
+      ->GetAccountId();
+}
+
+void DriveIntegrationService::DriveFsHolder::OnMounted(
+    const base::FilePath& path) {
+  on_drivefs_mounted_.Run();
+}
+
 DriveIntegrationService::DriveIntegrationService(
     Profile* profile,
     PreferenceWatcher* preference_watcher,
@@ -247,8 +304,17 @@ DriveIntegrationService::DriveIntegrationService(
       state_(NOT_INITIALIZED),
       enabled_(false),
       mount_point_name_(test_mount_point_name),
-      cache_root_directory_(!test_cache_root.empty() ?
-                            test_cache_root : util::GetCacheRootPath(profile)),
+      cache_root_directory_(!test_cache_root.empty()
+                                ? test_cache_root
+                                : util::GetCacheRootPath(profile)),
+      drivefs_holder_(
+          base::FeatureList::IsEnabled(kDriveFs)
+              ? std::make_unique<DriveFsHolder>(
+                    profile_,
+                    base::BindRepeating(&DriveIntegrationService::
+                                            AddDriveMountPointAfterMounted,
+                                        base::Unretained(this)))
+              : nullptr),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile && !profile->IsOffTheRecord());
@@ -390,6 +456,11 @@ bool DriveIntegrationService::IsMounted() const {
   return mount_points->GetRegisteredPath(mount_point_name_, &unused);
 }
 
+base::FilePath DriveIntegrationService::GetMountPointPath() const {
+  return drivefs_holder_ ? drivefs_holder_->drivefs_host()->GetMountPath()
+                         : drive::util::GetDriveMountPointPath(profile_);
+}
+
 void DriveIntegrationService::AddObserver(
     DriveIntegrationServiceObserver* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -462,19 +533,26 @@ void DriveIntegrationService::AddDriveMountPoint() {
   DCHECK_EQ(INITIALIZED, state_);
   DCHECK(enabled_);
 
-  const base::FilePath& drive_mount_point =
-      util::GetDriveMountPointPath(profile_);
+  if (drivefs_holder_ && !drivefs_holder_->drivefs_host()->IsMounted()) {
+    drivefs_holder_->drivefs_host()->Mount();
+    return;
+  }
+  AddDriveMountPointAfterMounted();
+}
+
+void DriveIntegrationService::AddDriveMountPointAfterMounted() {
+  const base::FilePath& drive_mount_point = GetMountPointPath();
   if (mount_point_name_.empty())
     mount_point_name_ = drive_mount_point.BaseName().AsUTF8Unsafe();
   storage::ExternalMountPoints* const mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
   DCHECK(mount_points);
 
-  bool success =
-      mount_points->RegisterFileSystem(mount_point_name_,
-                                       storage::kFileSystemTypeDrive,
-                                       storage::FileSystemMountOption(),
-                                       drive_mount_point);
+  bool success = mount_points->RegisterFileSystem(
+      mount_point_name_,
+      drivefs_holder_ ? storage::kFileSystemTypeNativeLocal
+                      : storage::kFileSystemTypeDrive,
+      storage::FileSystemMountOption(), drive_mount_point);
 
   if (success) {
     logger_->Log(logging::LOG_INFO, "Drive mount point is added");
@@ -499,6 +577,8 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
     mount_points->RevokeFileSystem(mount_point_name_);
     logger_->Log(logging::LOG_INFO, "Drive mount point is removed");
   }
+  if (drivefs_holder_)
+    drivefs_holder_->drivefs_host()->Unmount();
 }
 
 void DriveIntegrationService::Initialize() {

@@ -56,6 +56,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
 
     virtual net::URLRequestContextGetter* GetRequestContext() = 0;
     virtual service_manager::Connector* GetConnector() = 0;
+    virtual const AccountId& GetAccountId() = 0;
     virtual std::unique_ptr<OAuth2MintTokenFlow> CreateMintTokenFlow(
         OAuth2MintTokenFlow::Delegate* delegate,
         const std::string& client_id,
@@ -71,7 +72,6 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
   };
 
   DriveFsHost(const base::FilePath& profile_path,
-              const AccountId& account,
               Delegate* delegate);
   ~DriveFsHost() override;
 
@@ -104,9 +104,6 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
 
   // The path to the user's profile.
   const base::FilePath profile_path_;
-
-  // The user whose DriveFS instance |this| is host to.
-  const AccountId account_id_;
 
   Delegate* const delegate_;
 

@@ -97,6 +97,10 @@ class DriveIntegrationService : public KeyedService,
 
   bool IsMounted() const;
 
+  // Returns the path of the mount point for drive. It is only valid to call if
+  // |IsMounted()|.
+  base::FilePath GetMountPointPath() const;
+
   // Adds and removes the observer.
   void AddObserver(DriveIntegrationServiceObserver* observer);
   void RemoveObserver(DriveIntegrationServiceObserver* observer);
@@ -129,13 +133,20 @@ class DriveIntegrationService : public KeyedService,
     INITIALIZED,
     REMOUNTING,
   };
+  class DriveFsHolder;
 
   // Returns true if Drive is enabled.
   // Must be called on UI thread.
   bool IsDriveEnabled();
 
-  // Registers remote file system for drive mount point.
+  // Registers remote file system for drive mount point. If DriveFS is enabled,
+  // but not yet mounted, this will start it mounting and wait for it to
+  // complete before adding the mount point.
   void AddDriveMountPoint();
+
+  // Registers remote file system for drive mount point.
+  void AddDriveMountPointAfterMounted();
+
   // Unregisters drive mount point from File API.
   void RemoveDriveMountPoint();
 
@@ -188,6 +199,8 @@ class DriveIntegrationService : public KeyedService,
   std::unique_ptr<PreferenceWatcher> preference_watcher_;
   std::unique_ptr<content::NotificationRegistrar>
       profile_notification_registrar_;
+
+  std::unique_ptr<DriveFsHolder> drivefs_holder_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

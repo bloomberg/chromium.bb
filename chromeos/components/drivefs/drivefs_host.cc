@@ -82,12 +82,14 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
         binding_(this) {
     source_path_ = base::StrCat({kMountScheme, pending_token_.ToString()});
     std::string datadir_option = base::StrCat(
-        {"datadir=", host_->profile_path_.Append(kDataPath)
-                         .Append(host_->account_id_.GetAccountIdKey())
-                         .value()});
+        {"datadir=",
+         host_->profile_path_.Append(kDataPath)
+             .Append(host_->delegate_->GetAccountId().GetAccountIdKey())
+             .value()});
     chromeos::disks::DiskMountManager::GetInstance()->MountPath(
         source_path_, "",
-        base::StrCat({"drivefs-", host_->account_id_.GetAccountIdKey()}),
+        base::StrCat(
+            {"drivefs-", host_->delegate_->GetAccountId().GetAccountIdKey()}),
         {datadir_option}, chromeos::MOUNT_TYPE_NETWORK_STORAGE,
         chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
 
@@ -95,8 +97,9 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
         mojo::MakeProxy(mojo_connection_delegate_->InitializeMojoConnection());
     mojom::DriveFsDelegatePtr delegate;
     binding_.Bind(mojo::MakeRequest(&delegate));
-    bootstrap->Init({base::in_place, host_->account_id_.GetUserEmail()},
-                    mojo::MakeRequest(&drivefs_), std::move(delegate));
+    bootstrap->Init(
+        {base::in_place, host_->delegate_->GetAccountId().GetUserEmail()},
+        mojo::MakeRequest(&drivefs_), std::move(delegate));
 
     // If unconsumed, the registration is cleaned up when |this| is destructed.
     PendingConnectionManager::Get().ExpectOpenIpcChannel(
@@ -117,7 +120,7 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     }
   }
 
-  bool mounted() const { return mounted_ && !mount_path_.empty(); }
+  bool mounted() const { return drivefs_has_mounted_ && !mount_path_.empty(); }
   const base::FilePath& mount_path() const { return mount_path_; }
 
   // Accepts the mojo connection over |handle|, delegating to
@@ -146,8 +149,8 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     }
     mount_path_ = base::FilePath(mount_info.mount_path);
     DCHECK(!mount_info.mount_path.empty());
-    if (mounted_) {
-      OnMounted();
+    if (mounted()) {
+      NotifyDelegateOnMounted();
     }
     return true;
   }
@@ -169,18 +172,21 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
         host_->delegate_->CreateMintTokenFlow(this, client_id, app_id, scopes);
     DCHECK(mint_token_flow_);
     host_->GetIdentityManager().GetAccessToken(
-        host_->account_id_.GetUserEmail(), {}, kIdentityConsumerId,
+        host_->delegate_->GetAccountId().GetUserEmail(), {},
+        kIdentityConsumerId,
         base::BindOnce(&DriveFsHost::MountState::GotChromeAccessToken,
                        base::Unretained(this)));
   }
+
   void OnMounted() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    mounted_ = true;
-    if (mount_path_.empty()) {
-      return;
+    drivefs_has_mounted_ = true;
+    if (mounted()) {
+      NotifyDelegateOnMounted();
     }
-    host_->delegate_->OnMounted(mount_path());
   }
+
+  void NotifyDelegateOnMounted() { host_->delegate_->OnMounted(mount_path()); }
 
   void GotChromeAccessToken(const base::Optional<std::string>& access_token,
                             base::Time expiration_time,
@@ -239,18 +245,14 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
   mojom::DriveFsPtr drivefs_;
   mojo::Binding<mojom::DriveFsDelegate> binding_;
 
-  // Whether DriveFS has reported mounting.
-  bool mounted_ = false;
+  bool drivefs_has_mounted_ = false;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(MountState);
 };
 
 DriveFsHost::DriveFsHost(const base::FilePath& profile_path,
-                         const AccountId& account_id,
                          DriveFsHost::Delegate* delegate)
     : profile_path_(profile_path),
-      account_id_(account_id),
       delegate_(delegate) {
   chromeos::disks::DiskMountManager::GetInstance()->AddObserver(this);
 }
@@ -262,8 +264,9 @@ DriveFsHost::~DriveFsHost() {
 
 bool DriveFsHost::Mount() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (mount_state_ || !account_id_.HasAccountIdKey() ||
-      account_id_.GetUserEmail().empty()) {
+  const AccountId& account_id = delegate_->GetAccountId();
+  if (mount_state_ || !account_id.HasAccountIdKey() ||
+      account_id.GetUserEmail().empty()) {
     return false;
   }
   mount_state_ = std::make_unique<MountState>(this);

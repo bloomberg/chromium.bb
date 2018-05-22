@@ -24,9 +24,12 @@
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "components/drive/chromeos/dummy_file_system.h"
+#include "components/drive/service/dummy_drive_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/storage_monitor/storage_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -168,16 +171,24 @@ class VolumeManagerTest : public testing::Test {
    public:
     ProfileEnvironment(chromeos::PowerManagerClient* power_manager_client,
                        DiskMountManager* disk_manager)
-        : profile_(new TestingProfile),
+        : profile_(std::make_unique<TestingProfile>()),
           extension_registry_(
-              new extensions::ExtensionRegistry(profile_.get())),
+              std::make_unique<extensions::ExtensionRegistry>(profile_.get())),
           file_system_provider_service_(
-              new chromeos::file_system_provider::Service(
+              std::make_unique<chromeos::file_system_provider::Service>(
                   profile_.get(),
                   extension_registry_.get())),
-          volume_manager_(new VolumeManager(
+          drive_integration_service_(
+              std::make_unique<drive::DriveIntegrationService>(
+                  profile_.get(),
+                  nullptr,
+                  new drive::DummyDriveService(),
+                  std::string(),
+                  base::FilePath(),
+                  new drive::DummyFileSystem())),
+          volume_manager_(std::make_unique<VolumeManager>(
               profile_.get(),
-              nullptr,  // DriveIntegrationService
+              drive_integration_service_.get(),  // DriveIntegrationService
               power_manager_client,
               disk_manager,
               file_system_provider_service_.get(),
@@ -198,6 +209,7 @@ class VolumeManagerTest : public testing::Test {
     std::unique_ptr<extensions::ExtensionRegistry> extension_registry_;
     std::unique_ptr<chromeos::file_system_provider::Service>
         file_system_provider_service_;
+    std::unique_ptr<drive::DriveIntegrationService> drive_integration_service_;
     std::unique_ptr<VolumeManager> volume_manager_;
   };
 
@@ -215,6 +227,7 @@ class VolumeManagerTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
+  content::TestServiceManagerContext context_;
   std::unique_ptr<chromeos::FakePowerManagerClient> power_manager_client_;
   std::unique_ptr<FakeDiskMountManager> disk_mount_manager_;
   std::unique_ptr<ProfileEnvironment> main_profile_;

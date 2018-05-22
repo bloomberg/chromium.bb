@@ -104,9 +104,10 @@ class ForwardingOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
 
 class TestingDriveFsHostDelegate : public DriveFsHost::Delegate {
  public:
-  explicit TestingDriveFsHostDelegate(
-      std::unique_ptr<service_manager::Connector> connector)
-      : connector_(std::move(connector)) {}
+  TestingDriveFsHostDelegate(
+      std::unique_ptr<service_manager::Connector> connector,
+      const AccountId& account_id)
+      : connector_(std::move(connector)), account_id_(account_id) {}
 
   MockOAuth2MintTokenFlow& mock_flow() { return mock_flow_; }
 
@@ -123,6 +124,8 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate {
   service_manager::Connector* GetConnector() override {
     return connector_.get();
   }
+  const AccountId& GetAccountId() override { return account_id_; }
+
   std::unique_ptr<OAuth2MintTokenFlow> CreateMintTokenFlow(
       OAuth2MintTokenFlow::Delegate* delegate,
       const std::string& client_id,
@@ -142,7 +145,8 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate {
         std::move(pending_bootstrap_));
   }
 
-  std::unique_ptr<service_manager::Connector> connector_;
+  const std::unique_ptr<service_manager::Connector> connector_;
+  const AccountId account_id_;
   MockOAuth2MintTokenFlow mock_flow_;
   mojom::DriveFsBootstrapPtrInfo pending_bootstrap_;
 
@@ -226,9 +230,8 @@ class DriveFsHostTest : public ::testing::Test,
         service_manager::TestConnectorFactory::CreateForUniqueService(
             std::make_unique<FakeIdentityService>(&mock_identity_manager_));
     host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(
-        connector_factory_->CreateConnector());
-    host_ = std::make_unique<DriveFsHost>(profile_path_, account_id_,
-                                          host_delegate_.get());
+        connector_factory_->CreateConnector(), account_id_);
+    host_ = std::make_unique<DriveFsHost>(profile_path_, host_delegate_.get());
   }
 
   void TearDown() override {
@@ -446,7 +449,9 @@ TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
       AccountId::AdFromObjGuid("ID"),
   };
   for (auto& account : unsupported_accounts) {
-    host_ = std::make_unique<DriveFsHost>(profile_path_, account, nullptr);
+    host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(
+        connector_factory_->CreateConnector(), account);
+    host_ = std::make_unique<DriveFsHost>(profile_path_, host_delegate_.get());
     EXPECT_FALSE(host_->Mount());
     EXPECT_FALSE(host_->IsMounted());
   }

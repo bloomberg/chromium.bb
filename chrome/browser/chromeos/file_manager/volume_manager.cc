@@ -173,9 +173,8 @@ Volume::Volume()
 Volume::~Volume() = default;
 
 // static
-std::unique_ptr<Volume> Volume::CreateForDrive(Profile* profile) {
-  const base::FilePath& drive_path =
-      drive::util::GetDriveMountPointPath(profile);
+std::unique_ptr<Volume> Volume::CreateForDrive(
+    const base::FilePath& drive_path) {
   std::unique_ptr<Volume> volume(new Volume());
   volume->type_ = VOLUME_TYPE_GOOGLE_DRIVE;
   volume->device_type_ = chromeos::DEVICE_TYPE_UNKNOWN;
@@ -388,12 +387,10 @@ void VolumeManager::Initialize() {
                Volume::CreateForDownloads(downloads));
 
   // Subscribe to DriveIntegrationService.
-  if (drive_integration_service_) {
-    drive_integration_service_->AddObserver(this);
-    if (drive_integration_service_->IsMounted()) {
-      DoMountEvent(chromeos::MOUNT_ERROR_NONE,
-                   Volume::CreateForDrive(profile_));
-    }
+  drive_integration_service_->AddObserver(this);
+  if (drive_integration_service_->IsMounted()) {
+    DoMountEvent(chromeos::MOUNT_ERROR_NONE,
+                 Volume::CreateForDrive(GetDriveMountPointPath()));
   }
 
   // Subscribe to DiskMountManager.
@@ -549,13 +546,15 @@ void VolumeManager::OnFileSystemMounted() {
   // Raise mount event.
   // We can pass chromeos::MOUNT_ERROR_NONE even when authentication is failed
   // or network is unreachable. These two errors will be handled later.
-  DoMountEvent(chromeos::MOUNT_ERROR_NONE, Volume::CreateForDrive(profile_));
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
+               Volume::CreateForDrive(GetDriveMountPointPath()));
 }
 
 void VolumeManager::OnFileSystemBeingUnmounted() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  DoUnmountEvent(chromeos::MOUNT_ERROR_NONE, *Volume::CreateForDrive(profile_));
+  DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+                 *Volume::CreateForDrive(GetDriveMountPointPath()));
 }
 
 void VolumeManager::OnAutoMountableDiskEvent(
@@ -1114,6 +1113,10 @@ void VolumeManager::DoUnmountEvent(chromeos::MountError error_code,
 
   for (auto& observer : observers_)
     observer.OnVolumeUnmounted(error_code, volume);
+}
+
+base::FilePath VolumeManager::GetDriveMountPointPath() const {
+  return drive_integration_service_->GetMountPointPath();
 }
 
 }  // namespace file_manager
