@@ -79,12 +79,12 @@ class CORE_EXPORT FormData final
   // Internal functions.
 
   const WTF::TextEncoding& Encoding() const { return encoding_; }
+  CString Encode(const String& key) const;
   class Entry;
   const HeapVector<Member<const Entry>>& Entries() const { return entries_; }
   size_t size() const { return entries_.size(); }
   void append(const String& name, int value);
   void append(const String& name, Blob*, const String& filename = String());
-  String Decode(const CString& data) const;
 
   // This flag is true if this FormData is created with a <form>, and its
   // associated elements contain a non-empty password field.
@@ -99,7 +99,6 @@ class CORE_EXPORT FormData final
   explicit FormData(const WTF::TextEncoding&);
   explicit FormData(HTMLFormElement*);
   void SetEntry(const Entry*);
-  CString EncodeAndNormalize(const String& key) const;
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
 
   WTF::TextEncoding encoding_;
@@ -113,23 +112,22 @@ class CORE_EXPORT FormData final
 // Entry objects are immutable.
 class FormData::Entry : public GarbageCollectedFinalized<FormData::Entry> {
  public:
-  Entry(const CString& name, const CString& value)
-      : name_(name), value_(value) {}
-  Entry(const CString& name, Blob* blob, const String& filename)
+  Entry(const String& name, const String& value) : name_(name), value_(value) {}
+  Entry(const String& name, Blob* blob, const String& filename)
       : name_(name), blob_(blob), filename_(filename) {}
   void Trace(blink::Visitor*);
 
   bool IsString() const { return !blob_; }
   bool isFile() const { return blob_; }
-  const CString& name() const { return name_; }
-  const CString& Value() const { return value_; }
+  const String& name() const { return name_; }
+  const String& Value() const { return value_; }
   Blob* GetBlob() const { return blob_.Get(); }
   File* GetFile() const;
   const String& Filename() const { return filename_; }
 
  private:
-  const CString name_;
-  const CString value_;
+  const String name_;
+  const String value_;
   const Member<Blob> blob_;
   const String filename_;
 };
