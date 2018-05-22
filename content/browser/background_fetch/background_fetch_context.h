@@ -114,7 +114,16 @@ class CONTENT_EXPORT BackgroundFetchContext
                         const BackgroundFetchOptions& options,
                         const SkBitmap& icon,
                         size_t num_requests,
-                        const BackgroundFetchRegistration& registration);
+                        const BackgroundFetchRegistration& registration,
+                        base::OnceClosure done_closure);
+
+  // Initializes the new Job Controller.
+  void InitializeController(
+      const std::string& unique_id,
+      std::unique_ptr<BackgroundFetchJobController> controller,
+      base::OnceClosure done_closure,
+      size_t total_downloads,
+      size_t completed_downloads);
 
   // Called when an existing registration has been retrieved from the data
   // manager. If the registration does not exist then |registration| is nullptr.

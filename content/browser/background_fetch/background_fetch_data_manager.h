@@ -63,6 +63,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
                               std::unique_ptr<BackgroundFetchRegistration>)>;
   using NextRequestCallback =
       base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
+  using NumRequestsCallback = base::OnceCallback<void(size_t)>;
 
   BackgroundFetchDataManager(
       BrowserContext* browser_context,
@@ -133,9 +134,16 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       const url::Origin& origin,
       blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback);
 
+  // Gets the number of fetch requests that have been completed for a given
+  // registration.
+  void GetNumCompletedRequests(
+      const BackgroundFetchRegistrationId& registration_id,
+      NumRequestsCallback callback);
+
   // BackgroundFetchScheduler::RequestProvider implementation:
   void PopNextRequest(const BackgroundFetchRegistrationId& registration_id,
                       NextRequestCallback callback) override;
+
   void MarkRequestAsComplete(
       const BackgroundFetchRegistrationId& registration_id,
       BackgroundFetchRequestInfo* request,

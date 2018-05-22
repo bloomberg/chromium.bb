@@ -119,10 +119,21 @@ void BackgroundFetchContext::DidCreateRegistration(
   }
 
   DCHECK(registration);
+
+  BackgroundFetchRegistration* registration_ptr = registration.get();
+  // The closure takes ownership of |registration|, and it's guaranteed to
+  // outlive CreateController, which uses the underlying pointer.
+  base::OnceClosure done_closure = base::BindOnce(
+      [](blink::mojom::BackgroundFetchService::FetchCallback callback,
+         blink::mojom::BackgroundFetchError error,
+         std::unique_ptr<BackgroundFetchRegistration> registration) {
+        std::move(callback).Run(error, *registration);
+      },
+      std::move(callback), error, std::move(registration));
+
   // Create the BackgroundFetchJobController to do the actual fetching.
   CreateController(registration_id, options, icon, num_requests,
-                   *registration.get());
-  std::move(callback).Run(error, *registration.get());
+                   *registration_ptr, std::move(done_closure));
 }
 
 void BackgroundFetchContext::AddRegistrationObserver(
@@ -174,7 +185,8 @@ void BackgroundFetchContext::CreateController(
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
     size_t num_requests,
-    const BackgroundFetchRegistration& registration) {
+    const BackgroundFetchRegistration& registration,
+    base::OnceClosure done_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto controller = std::make_unique<BackgroundFetchJobController>(
@@ -187,18 +199,27 @@ void BackgroundFetchContext::CreateController(
           &BackgroundFetchContext::DidFinishJob, weak_factory_.GetWeakPtr(),
           base::Bind(&background_fetch::RecordSchedulerFinishedError)));
 
-  // TODO(delphick): This assumes that fetches are always started afresh in
-  // each browser session. We need to initialize the number of downloads using
-  // information loaded from the database.
-  controller->InitializeRequestStatus(
-      0,            /* completed_downloads */
-      num_requests, /* total_downloads */
-      std::vector<std::string>() /* outstanding download GUIDs */);
+  data_manager_.GetNumCompletedRequests(
+      registration_id,
+      base::BindOnce(&BackgroundFetchContext::InitializeController,
+                     weak_factory_.GetWeakPtr(), registration_id.unique_id(),
+                     std::move(controller), std::move(done_closure),
+                     num_requests));
+}
+
+void BackgroundFetchContext::InitializeController(
+    const std::string& unique_id,
+    std::unique_ptr<BackgroundFetchJobController> controller,
+    base::OnceClosure done_closure,
+    size_t total_downloads,
+    size_t completed_downloads) {
+  controller->InitializeRequestStatus(completed_downloads, total_downloads,
+                                      {} /* outstanding download GUIDs */);
 
   scheduler_->AddJobController(controller.get());
 
-  job_controllers_.insert(
-      std::make_pair(registration_id.unique_id(), std::move(controller)));
+  job_controllers_.insert({unique_id, std::move(controller)});
+  std::move(done_closure).Run();
 }
 
 void BackgroundFetchContext::Abort(
