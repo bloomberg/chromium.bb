@@ -11,7 +11,7 @@
 
 #include <immintrin.h>
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
 
 static INLINE __m256i dc_sum_64(const uint8_t *ref) {
   const __m256i x0 = _mm256_loadu_si256((const __m256i *)ref);

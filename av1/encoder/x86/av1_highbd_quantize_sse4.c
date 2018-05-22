@@ -12,7 +12,8 @@
 #include <smmintrin.h>
 #include <stdint.h>
 
-#include "./av1_rtcd.h"
+#include "config/av1_rtcd.h"
+
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/x86/synonyms.h"
 

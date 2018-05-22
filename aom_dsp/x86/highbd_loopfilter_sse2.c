@@ -11,7 +11,8 @@
 
 #include <emmintrin.h>  // SSE2
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+
 #include "aom_dsp/x86/lpf_common_sse2.h"
 #include "aom_ports/emmintrin_compat.h"
 #include "aom_ports/mem.h"

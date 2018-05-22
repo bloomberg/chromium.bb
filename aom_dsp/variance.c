@@ -13,8 +13,8 @@
 #include <string.h>
 
 #include "config/aom_config.h"
-
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+#include "config/av1_rtcd.h"
 
 #include "aom/aom_integer.h"
 #include "aom_ports/mem.h"
@@ -23,7 +23,6 @@
 #include "aom_dsp/blend.h"
 #include "aom_dsp/variance.h"
 
-#include "./av1_rtcd.h"
 #include "av1/common/filter.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/reconinter.h"

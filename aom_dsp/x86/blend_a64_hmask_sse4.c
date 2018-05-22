@@ -11,7 +11,7 @@
 
 #include "aom/aom_integer.h"
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
 
 // To start out, just dispatch to the function using the 2D mask and
 // pass mask stride as 0. This can be improved upon if necessary.

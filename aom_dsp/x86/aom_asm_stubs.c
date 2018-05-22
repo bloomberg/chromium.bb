@@ -10,8 +10,8 @@
  */
 
 #include "config/aom_config.h"
+#include "config/aom_dsp_rtcd.h"
 
-#include "./aom_dsp_rtcd.h"
 #include "aom_dsp/x86/convolve.h"
 
 #if HAVE_SSE2

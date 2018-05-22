@@ -11,7 +11,8 @@
 
 #include <smmintrin.h>
 
-#include "./av1_rtcd.h"
+#include "config/av1_rtcd.h"
+
 #include "av1/common/warped_motion.h"
 
 static const uint8_t warp_highbd_arrange_bytes[16] = {

@@ -14,12 +14,10 @@
 #include <tmmintrin.h>
 
 #include "config/aom_config.h"
-
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+#include "config/av1_rtcd.h"
 
 #include "aom_dsp/x86/synonyms.h"
-
-#include "./av1_rtcd.h"
 
 unsigned int aom_sad4xh_sse2(const uint8_t *a, int a_stride, const uint8_t *b,
                              int b_stride, int width, int height) {

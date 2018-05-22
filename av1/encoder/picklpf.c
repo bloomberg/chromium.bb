@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <limits.h>
 
-#include "./aom_scale_rtcd.h"
+#include "config/aom_scale_rtcd.h"
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/psnr.h"

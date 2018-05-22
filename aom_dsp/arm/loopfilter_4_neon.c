@@ -11,7 +11,7 @@
 
 #include <arm_neon.h>
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
 
 static INLINE void loop_filter_neon(uint8x8_t dblimit,   // flimit
                                     uint8x8_t dlimit,    // limit

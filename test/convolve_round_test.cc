@@ -11,7 +11,8 @@
 
 #include <assert.h>
 
-#include "./av1_rtcd.h"
+#include "config/av1_rtcd.h"
+
 #include "aom/aom_integer.h"
 #include "aom_ports/aom_timer.h"
 #include "test/acm_random.h"

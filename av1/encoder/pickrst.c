@@ -14,7 +14,7 @@
 #include <limits.h>
 #include <math.h>
 
-#include "./aom_scale_rtcd.h"
+#include "config/aom_scale_rtcd.h"
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/binary_codes_writer.h"

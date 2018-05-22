@@ -11,7 +11,8 @@
 
 #include <tmmintrin.h>
 
-#include "./av1_rtcd.h"
+#include "config/av1_rtcd.h"
+
 #include "aom/aom_integer.h"
 #include "aom_dsp/blend.h"
 #include "aom_dsp/x86/synonyms.h"

@@ -14,6 +14,9 @@
 #include <stdio.h>
 
 #include "config/aom_config.h"
+#include "config/av1_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+#include "config/aom_scale_rtcd.h"
 
 #include "av1/common/alloccommon.h"
 #include "av1/common/cdef.h"
@@ -46,9 +49,6 @@
 #include "av1/encoder/speed_features.h"
 #include "av1/encoder/temporal_filter.h"
 
-#include "./av1_rtcd.h"
-#include "./aom_dsp_rtcd.h"
-#include "./aom_scale_rtcd.h"
 #include "aom_dsp/psnr.h"
 #if CONFIG_INTERNAL_STATS
 #include "aom_dsp/ssim.h"

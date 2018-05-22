@@ -16,8 +16,9 @@
 #include "./config.h"
 #endif
 
-#include "./aom_dsp_rtcd.h"
-#include "./av1_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+#include "config/av1_rtcd.h"
+
 #include "./cdef.h"
 
 /* Generated from gen_filter_tables.c. */

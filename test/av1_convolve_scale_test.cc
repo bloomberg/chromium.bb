@@ -13,7 +13,8 @@
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
-#include "./av1_rtcd.h"
+#include "config/av1_rtcd.h"
+
 #include "aom_ports/aom_timer.h"
 #include "test/acm_random.h"
 #include "test/clear_system_state.h"

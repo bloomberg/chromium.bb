@@ -83,9 +83,9 @@ include("${AOM_ROOT}/build/cmake/sanitizers.cmake")
 include("${AOM_ROOT}/build/cmake/util.cmake")
 
 list(APPEND AOM_RTCD_SOURCES
-            "${AOM_CONFIG_DIR}/aom_dsp_rtcd.h"
-            "${AOM_CONFIG_DIR}/aom_scale_rtcd.h"
-            "${AOM_CONFIG_DIR}/av1_rtcd.h"
+            "${AOM_CONFIG_DIR}/config/aom_dsp_rtcd.h"
+            "${AOM_CONFIG_DIR}/config/aom_scale_rtcd.h"
+            "${AOM_CONFIG_DIR}/config/av1_rtcd.h"
             "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd_defs.pl"
             "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd.c"
             "${AOM_ROOT}/aom_scale/aom_scale_rtcd.pl"
@@ -240,13 +240,13 @@ endif()
 # TODO(tomfinegan): Move rtcd target setup where it belongs for each rtcd
 # source.
 add_rtcd_build_step("${AOM_ROOT}/aom_dsp/aom_dsp_rtcd_defs.pl"
-                    "${AOM_CONFIG_DIR}/aom_dsp_rtcd.h"
+                    "${AOM_CONFIG_DIR}/config/aom_dsp_rtcd.h"
                     "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd.c" "aom_dsp_rtcd")
 add_rtcd_build_step("${AOM_ROOT}/aom_scale/aom_scale_rtcd.pl"
-                    "${AOM_CONFIG_DIR}/aom_scale_rtcd.h"
+                    "${AOM_CONFIG_DIR}/config/aom_scale_rtcd.h"
                     "${AOM_ROOT}/aom_scale/aom_scale_rtcd.c" "aom_scale_rtcd")
 add_rtcd_build_step("${AOM_ROOT}/av1/common/av1_rtcd_defs.pl"
-                    "${AOM_CONFIG_DIR}/av1_rtcd.h"
+                    "${AOM_CONFIG_DIR}/config/av1_rtcd.h"
                     "${AOM_ROOT}/av1/common/av1_rtcd.c" "av1_rtcd")
 
 add_library(aom_rtcd OBJECT ${AOM_RTCD_SOURCES})

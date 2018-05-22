@@ -1,7 +1,9 @@
 #include <assert.h>
+
+#include "config/av1_rtcd.h"
+
 #include "av1/encoder/hash.h"
 #include "av1/encoder/hash_motion.h"
-#include "./av1_rtcd.h"
 
 static const int crc_bits = 16;
 static const int block_size_bits = 3;

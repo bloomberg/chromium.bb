@@ -12,13 +12,14 @@
 #ifndef TEST_HIPREC_CONVOLVE_TEST_UTIL_H_
 #define TEST_HIPREC_CONVOLVE_TEST_UTIL_H_
 
+#include "config/av1_rtcd.h"
+
 #include "test/acm_random.h"
 #include "test/util.h"
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
-#include "./av1_rtcd.h"
 #include "aom_ports/aom_timer.h"
 #include "av1/common/convolve.h"
 #include "av1/common/mv.h"

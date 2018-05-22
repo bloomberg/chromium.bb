@@ -12,7 +12,8 @@
 #include <math.h>
 #include <string.h>
 
-#include "./aom_scale_rtcd.h"
+#include "config/aom_scale_rtcd.h"
+
 #include "aom/aom_integer.h"
 #include "av1/common/cdef.h"
 #include "av1/common/onyxc_int.h"

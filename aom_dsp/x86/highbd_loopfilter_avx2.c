@@ -11,7 +11,8 @@
 
 #include <immintrin.h>
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+
 #include "aom_dsp/x86/common_avx2.h"
 #include "aom_dsp/x86/lpf_common_sse2.h"
 #include "aom/aom_integer.h"

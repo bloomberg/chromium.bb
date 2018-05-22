@@ -12,7 +12,7 @@
 #include <emmintrin.h>
 
 #include "av1/common/cfl.h"
-#include "./av1_rtcd.h"
+#include "config/av1_rtcd.h"
 
 static INLINE __m128i fill_sum_epi32(__m128i l0) {
   l0 = _mm_add_epi32(l0, _mm_shuffle_epi32(l0, _MM_SHUFFLE(1, 0, 3, 2)));

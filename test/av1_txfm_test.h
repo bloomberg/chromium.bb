@@ -19,13 +19,14 @@
 #endif
 #include <math.h>
 
+#include "config/av1_rtcd.h"
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "test/acm_random.h"
 #include "av1/common/av1_txfm.h"
 #include "av1/common/blockd.h"
 #include "av1/common/enums.h"
-#include "./av1_rtcd.h"
 
 namespace libaom_test {
 typedef enum {

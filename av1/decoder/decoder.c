@@ -13,9 +13,9 @@
 #include <limits.h>
 #include <stdio.h>
 
-#include "./av1_rtcd.h"
-#include "./aom_dsp_rtcd.h"
-#include "./aom_scale_rtcd.h"
+#include "config/av1_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+#include "config/aom_scale_rtcd.h"
 
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/system_state.h"

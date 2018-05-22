@@ -12,7 +12,7 @@
 #include <arm_neon.h>
 #include <assert.h>
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
 #include "config/aom_config.h"
 
 #include "aom/aom_integer.h"

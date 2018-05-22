@@ -11,9 +11,10 @@
 
 #include <emmintrin.h>
 
+#include "config/aom_dsp_rtcd.h"
+
 #include "aom_dsp/x86/synonyms.h"
 
-#include "./aom_dsp_rtcd.h"
 #include "aom_ports/mem.h"
 
 void aom_minmax_8x8_sse2(const uint8_t *s, int p, const uint8_t *d, int dp,

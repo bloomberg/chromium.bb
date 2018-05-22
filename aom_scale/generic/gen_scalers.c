@@ -9,7 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./aom_scale_rtcd.h"
+#include "config/aom_scale_rtcd.h"
+
 #include "aom_scale/aom_scale.h"
 #include "aom_mem/aom_mem.h"
 /****************************************************************************

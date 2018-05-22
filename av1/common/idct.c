@@ -11,8 +11,9 @@
 
 #include <math.h>
 
-#include "./aom_dsp_rtcd.h"
-#include "./av1_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+#include "config/av1_rtcd.h"
+
 #include "aom_ports/mem.h"
 #include "av1/common/av1_inv_txfm1d_cfg.h"
 #include "av1/common/av1_txfm.h"

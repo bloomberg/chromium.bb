@@ -10,7 +10,9 @@
  */
 
 #include <immintrin.h>
-#include "./aom_dsp_rtcd.h"
+
+#include "config/aom_dsp_rtcd.h"
+
 #include "aom_dsp/x86/masked_variance_intrin_ssse3.h"
 
 static INLINE __m128i mm256_add_hi_lo_epi16(const __m256i val) {

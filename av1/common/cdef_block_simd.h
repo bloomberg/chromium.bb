@@ -9,7 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./av1_rtcd.h"
+#include "config/av1_rtcd.h"
+
 #include "./cdef_block.h"
 
 /* partial A is a 16-bit vector of the form:

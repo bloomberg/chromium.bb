@@ -12,7 +12,8 @@
 #include <assert.h>
 #include <math.h>
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+
 #include "aom_dsp/psnr.h"
 #include "aom_scale/yv12config.h"
 

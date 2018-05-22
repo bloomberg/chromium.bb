@@ -17,8 +17,8 @@
 #include <tmmintrin.h>
 
 #include "config/aom_config.h"
+#include "config/aom_dsp_rtcd.h"
 
-#include "./aom_dsp_rtcd.h"
 #include "aom_dsp/blend.h"
 
 static INLINE void comp_mask_pred_16_ssse3(const uint8_t *src0,

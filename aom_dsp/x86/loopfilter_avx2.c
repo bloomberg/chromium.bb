@@ -11,7 +11,8 @@
 
 #include <immintrin.h> /* AVX2 */
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+
 #include "aom_ports/mem.h"
 
 void aom_lpf_horizontal_16_avx2(unsigned char *s, int p,

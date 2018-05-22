@@ -1,4 +1,5 @@
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+
 #include "av1/common/av1_txfm.h"
 #include "av1/common/x86/av1_txfm_sse4.h"
 

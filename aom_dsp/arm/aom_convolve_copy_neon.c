@@ -11,7 +11,8 @@
 
 #include <arm_neon.h>
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+
 #include "aom/aom_integer.h"
 
 void aom_convolve_copy_neon(const uint8_t *src,    // r0

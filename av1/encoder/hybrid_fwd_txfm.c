@@ -9,9 +9,9 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./av1_rtcd.h"
 #include "config/aom_config.h"
-#include "./aom_dsp_rtcd.h"
+#include "config/av1_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
 
 #include "av1/common/idct.h"
 #include "av1/encoder/hybrid_fwd_txfm.h"

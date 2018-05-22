@@ -12,8 +12,8 @@
 #include <immintrin.h>
 
 #include "config/aom_config.h"
+#include "config/av1_rtcd.h"
 
-#include "./av1_rtcd.h"
 #include "av1/common/restoration.h"
 #include "aom_dsp/x86/synonyms.h"
 #include "aom_dsp/x86/synonyms_avx2.h"

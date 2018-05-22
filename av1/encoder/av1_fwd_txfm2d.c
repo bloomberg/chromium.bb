@@ -11,8 +11,9 @@
 
 #include <assert.h>
 
-#include "./aom_dsp_rtcd.h"
-#include "./av1_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+#include "config/av1_rtcd.h"
+
 #include "aom_dsp/txfm_common.h"
 #include "av1/common/enums.h"
 #include "av1/common/av1_txfm.h"

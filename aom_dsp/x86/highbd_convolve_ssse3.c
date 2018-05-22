@@ -12,7 +12,8 @@
 #include <tmmintrin.h>
 #include <assert.h>
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+
 #include "aom_dsp/x86/convolve_sse2.h"
 
 void av1_highbd_convolve_y_sr_ssse3(const uint16_t *src, int src_stride,

@@ -14,8 +14,8 @@
 #include <immintrin.h>
 
 #include "config/aom_config.h"
+#include "config/av1_rtcd.h"
 
-#include "./av1_rtcd.h"
 #include "aom/aom_integer.h"
 #include "aom_dsp/x86/transpose_sse2.h"
 #include "aom_dsp/x86/txfm_common_sse2.h"

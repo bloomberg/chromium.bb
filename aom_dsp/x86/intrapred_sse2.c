@@ -11,7 +11,7 @@
 
 #include <emmintrin.h>
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
 
 static INLINE void dc_store_4xh(uint32_t dc, int height, uint8_t *dst,
                                 ptrdiff_t stride) {

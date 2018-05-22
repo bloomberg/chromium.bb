@@ -14,12 +14,10 @@
 #include <tmmintrin.h>
 
 #include "config/aom_config.h"
-
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+#include "config/av1_rtcd.h"
 
 #include "aom_dsp/x86/synonyms.h"
-
-#include "./av1_rtcd.h"
 
 void aom_var_filter_block2d_bil_first_pass_ssse3(
     const uint8_t *a, uint16_t *b, unsigned int src_pixels_per_line,

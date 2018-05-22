@@ -24,7 +24,7 @@
 #include "av1/common/common.h"
 #include "av1/common/resize.h"
 
-#include "./aom_scale_rtcd.h"
+#include "config/aom_scale_rtcd.h"
 
 // Filters for interpolation (0.5-band) - note this also filters integer pels.
 static const InterpKernel filteredinterp_filters500[(1 << RS_SUBPEL_BITS)] = {

@@ -11,7 +11,8 @@
 #include "config/aom_config.h"
 
 #define RTCD_C
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+
 #include "aom_ports/aom_once.h"
 
 void aom_dsp_rtcd() { once(setup_rtcd_internal); }

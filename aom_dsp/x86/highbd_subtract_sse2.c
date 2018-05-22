@@ -14,8 +14,7 @@
 #include <stddef.h>
 
 #include "config/aom_config.h"
-
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
 
 typedef void (*SubtractWxHFuncType)(int16_t *diff, ptrdiff_t diff_stride,
                                     const uint16_t *src, ptrdiff_t src_stride,

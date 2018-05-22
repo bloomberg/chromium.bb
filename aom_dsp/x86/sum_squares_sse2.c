@@ -14,7 +14,7 @@
 #include <stdio.h>
 
 #include "aom_dsp/x86/synonyms.h"
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
 
 static INLINE __m128i xx_loadh_64(__m128i a, const void *b) {
   const __m128d ad = _mm_castsi128_pd(a);

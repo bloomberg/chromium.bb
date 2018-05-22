@@ -13,7 +13,7 @@
 #include "av1/common/common_data.h"
 #include "av1/common/onyxc_int.h"
 
-#include "./av1_rtcd.h"
+#include "config/av1_rtcd.h"
 
 void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm) {
   assert(block_size_wide[CFL_MAX_BLOCK_SIZE] == CFL_BUF_LINE);

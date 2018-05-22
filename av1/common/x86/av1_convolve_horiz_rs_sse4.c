@@ -12,7 +12,8 @@
 #include <assert.h>
 #include <smmintrin.h>
 
-#include "./av1_rtcd.h"
+#include "config/av1_rtcd.h"
+
 #include "av1/common/convolve.h"
 #include "av1/common/resize.h"
 #include "aom_dsp/x86/synonyms.h"

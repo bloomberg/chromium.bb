@@ -11,7 +11,7 @@
 
 #include <assert.h>
 #include "aom_dsp/txfm_common.h"
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
 
 void aom_fdct8x8_c(const int16_t *input, tran_low_t *final_output, int stride) {
   int i, j;

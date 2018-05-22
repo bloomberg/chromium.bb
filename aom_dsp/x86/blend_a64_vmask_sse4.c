@@ -21,7 +21,7 @@
 #include "aom_dsp/x86/synonyms.h"
 #include "aom_dsp/x86/blend_sse4.h"
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
 
 //////////////////////////////////////////////////////////////////////////////
 // Implementation - No sub-sampling

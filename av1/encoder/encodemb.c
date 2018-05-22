@@ -9,9 +9,9 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./av1_rtcd.h"
 #include "config/aom_config.h"
-#include "./aom_dsp_rtcd.h"
+#include "config/av1_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
 
 #include "aom_dsp/bitwriter.h"
 #include "aom_dsp/quantize.h"

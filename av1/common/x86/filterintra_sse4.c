@@ -10,7 +10,9 @@
  */
 
 #include <smmintrin.h>
-#include "./av1_rtcd.h"
+
+#include "config/av1_rtcd.h"
+
 #include "aom_dsp/x86/synonyms.h"
 #include "av1/common/enums.h"
 #include "av1/common/reconintra.h"

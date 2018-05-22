@@ -12,7 +12,8 @@
 #include <assert.h>
 #include <smmintrin.h>
 
-#include "./av1_rtcd.h"
+#include "config/av1_rtcd.h"
+
 #include "av1/common/filter.h"
 
 typedef void (*TransposeSave)(int width, int pixelsNum, uint32_t *src,

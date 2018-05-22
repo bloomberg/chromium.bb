@@ -12,7 +12,8 @@
 #include <emmintrin.h>
 #include <smmintrin.h>
 
-#include "./av1_rtcd.h"
+#include "config/av1_rtcd.h"
+
 #include "av1/common/warped_motion.h"
 
 /* This is a modified version of 'warped_filter' from warped_motion.c:

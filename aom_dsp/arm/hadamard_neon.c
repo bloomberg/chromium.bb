@@ -11,7 +11,7 @@
 
 #include <arm_neon.h>
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
 
 static void hadamard8x8_one_pass(int16x8_t *a0, int16x8_t *a1, int16x8_t *a2,
                                  int16x8_t *a3, int16x8_t *a4, int16x8_t *a5,

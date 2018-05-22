@@ -12,10 +12,11 @@
 #ifndef TEST_COMP_AVG_PRED_TEST_H_
 #define TEST_COMP_AVG_PRED_TEST_H_
 
+#include "config/aom_dsp_rtcd.h"
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/acm_random.h"
 #include "test/util.h"
-#include "./aom_dsp_rtcd.h"
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "av1/common/common_data.h"

@@ -343,8 +343,9 @@ configure_file("${AOM_CONFIG_DIR}/rtcd_config.cmake"
 set(AOM_RTCD_CONFIG_FILE_LIST "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd_defs.pl"
     "${AOM_ROOT}/aom_scale/aom_scale_rtcd.pl"
     "${AOM_ROOT}/av1/common/av1_rtcd_defs.pl")
-set(AOM_RTCD_HEADER_FILE_LIST "${AOM_CONFIG_DIR}/aom_dsp_rtcd.h"
-    "${AOM_CONFIG_DIR}/aom_scale_rtcd.h" "${AOM_CONFIG_DIR}/av1_rtcd.h")
+set(AOM_RTCD_HEADER_FILE_LIST "${AOM_CONFIG_DIR}/config/aom_dsp_rtcd.h"
+    "${AOM_CONFIG_DIR}/config/aom_scale_rtcd.h"
+    "${AOM_CONFIG_DIR}/config/av1_rtcd.h")
 set(AOM_RTCD_SOURCE_FILE_LIST "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd.c"
     "${AOM_ROOT}/aom_scale/aom_scale_rtcd.c"
     "${AOM_ROOT}/av1/common/av1_rtcd.c")

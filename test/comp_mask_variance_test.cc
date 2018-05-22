@@ -13,7 +13,7 @@
 #include <new>
 
 #include "config/aom_config.h"
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
 
 #include "aom/aom_codec.h"
 #include "aom/aom_integer.h"

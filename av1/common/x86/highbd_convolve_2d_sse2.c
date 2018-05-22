@@ -11,7 +11,8 @@
 #include <emmintrin.h>
 #include <assert.h>
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+
 #include "aom_dsp/aom_filter.h"
 
 static INLINE void copy_64(const uint16_t *src, uint16_t *dst) {

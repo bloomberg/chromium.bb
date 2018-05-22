@@ -14,11 +14,12 @@
 #include <stdlib.h>
 #include <vector>
 
+#include "config/av1_rtcd.h"
+
 #include "test/acm_random.h"
 #include "test/util.h"
 #include "test/av1_txfm_test.h"
 #include "av1/common/av1_txfm.h"
-#include "./av1_rtcd.h"
 
 using libaom_test::ACMRandom;
 using libaom_test::TYPE_TXFM;

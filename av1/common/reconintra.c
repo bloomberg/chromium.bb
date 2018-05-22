@@ -11,10 +11,10 @@
 
 #include <math.h>
 
-#include "./av1_rtcd.h"
 #include "config/aom_config.h"
+#include "config/aom_dsp_rtcd.h"
+#include "config/av1_rtcd.h"
 
-#include "./aom_dsp_rtcd.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/aom_once.h"

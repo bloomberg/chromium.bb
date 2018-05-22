@@ -12,8 +12,8 @@
 #include <assert.h>
 #include <math.h>
 
-#include "./aom_dsp_rtcd.h"
-#include "./av1_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+#include "config/av1_rtcd.h"
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/blend.h"

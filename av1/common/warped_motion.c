@@ -15,7 +15,8 @@
 #include <math.h>
 #include <assert.h>
 
-#include "./av1_rtcd.h"
+#include "config/av1_rtcd.h"
+
 #include "av1/common/warped_motion.h"
 #include "av1/common/scale.h"
 

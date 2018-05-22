@@ -9,7 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
+
 #include "aom_dsp/mips/macros_msa.h"
 
 #define SAD_INSVE_W4(RTYPE, in0, in1, in2, in3, out)       \

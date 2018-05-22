@@ -20,7 +20,8 @@
 /****************************************************************************
  *  Header Files
  ****************************************************************************/
-#include "./aom_scale_rtcd.h"
+#include "config/aom_scale_rtcd.h"
+
 #include "aom_mem/aom_mem.h"
 #include "aom_scale/aom_scale.h"
 #include "aom_scale/yv12config.h"

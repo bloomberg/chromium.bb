@@ -11,7 +11,9 @@
 
 #include <assert.h>
 #include <string>
-#include "./aom_dsp_rtcd.h"
+
+#include "config/aom_dsp_rtcd.h"
+
 #include "test/acm_random.h"
 #include "aom_dsp/aom_simd.h"
 #undef SIMD_INLINE

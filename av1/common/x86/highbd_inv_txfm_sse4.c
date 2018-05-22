@@ -11,8 +11,8 @@
 #include <assert.h>
 #include <smmintrin.h> /* SSE4.1 */
 
-#include "./av1_rtcd.h"
 #include "config/aom_config.h"
+#include "config/av1_rtcd.h"
 
 #include "av1/common/av1_inv_txfm1d_cfg.h"
 #include "av1/common/x86/highbd_txfm_utility_sse4.h"

@@ -13,7 +13,8 @@
 #include <assert.h>
 
 #include "config/aom_config.h"
-#include "./av1_rtcd.h"
+#include "config/av1_rtcd.h"
+
 #include "aom_dsp/txfm_common.h"
 #include "aom_ports/mem.h"
 #include "av1/common/common.h"

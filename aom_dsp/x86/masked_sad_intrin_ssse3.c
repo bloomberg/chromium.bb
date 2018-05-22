@@ -13,8 +13,8 @@
 #include <tmmintrin.h>
 
 #include "config/aom_config.h"
+#include "config/aom_dsp_rtcd.h"
 
-#include "./aom_dsp_rtcd.h"
 #include "aom_dsp/blend.h"
 #include "aom/aom_integer.h"
 #include "aom_dsp/x86/synonyms.h"

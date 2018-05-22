@@ -13,9 +13,9 @@
 #include <math.h>
 
 #include "config/aom_config.h"
+#include "config/aom_dsp_rtcd.h"
+#include "config/aom_scale_rtcd.h"
 
-#include "./aom_dsp_rtcd.h"
-#include "./aom_scale_rtcd.h"
 #include "aom_mem/aom_mem.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/resize.h"

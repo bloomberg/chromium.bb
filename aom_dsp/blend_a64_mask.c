@@ -16,7 +16,7 @@
 #include "aom_dsp/blend.h"
 #include "aom_dsp/aom_dsp_common.h"
 
-#include "./aom_dsp_rtcd.h"
+#include "config/aom_dsp_rtcd.h"
 
 // Blending with alpha mask. Mask values come from the range [0, 64],
 // as described for AOM_BLEND_A64 in aom_dsp/blend.h. src0 or src1 can

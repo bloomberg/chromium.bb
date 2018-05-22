@@ -11,7 +11,9 @@
 
 #include <assert.h>
 #include <math.h>
-#include "./aom_dsp_rtcd.h"
+
+#include "config/aom_dsp_rtcd.h"
+
 #include "aom_dsp/ssim.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
