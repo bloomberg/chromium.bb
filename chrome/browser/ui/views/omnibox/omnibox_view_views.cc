@@ -560,7 +560,7 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
   friendly_suggestion_text_prefix_length_ = 0;
 }
 
-bool OmniboxViewViews::UnapplySteadyStateElisions(bool home_key_pressed) {
+bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   if (!base::FeatureList::IsEnabled(
           omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)) {
     return false;
@@ -573,7 +573,7 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(bool home_key_pressed) {
   // If everything is selected, the user likely does not intend to edit the URL.
   // But if the Home key is pressed, the user probably does want to interact
   // with the beginning of the URL - in which case we unelide.
-  if (IsSelectAll() && !home_key_pressed)
+  if (IsSelectAll() && gesture != UnelisionGesture::HOME_KEY_PRESSED)
     return false;
 
   base::string16 full_url =
@@ -586,8 +586,22 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(bool home_key_pressed) {
   // URL. Otherwise, we would have to use the FormatURL offset adjustments.
   size_t offset = full_url.find(GetText());
   if (offset != base::string16::npos) {
-    start += offset;
-    end += offset;
+    if (start != end && gesture == UnelisionGesture::MOUSE_RELEASE &&
+        !model()->ClassifiesAsSearch(GetSelectedText())) {
+      // For user selections that look like a URL instead of a Search:
+      // If we are uneliding at the end of a drag-select (on mouse release),
+      // and the selection spans to the beginning of the elided URL, ensure that
+      // the new selection spans to the beginning of the unelided URL too.
+      // i.e. google.com/maps => https://www.google.com/maps
+      //      ^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^
+      if (start != 0)
+        start += offset;
+      if (end != 0)
+        end += offset;
+    } else {
+      start += offset;
+      end += offset;
+    }
 
     // Since we are changing the text in the double-click event handler, we
     // need to fix the cached indices of the double-clicked word.
@@ -631,7 +645,7 @@ bool OmniboxViewViews::OnAfterPossibleChange(bool allow_keyword_ui_change) {
   // keystroke, tap gesture, and caret placement. Ignore selection changes while
   // the mouse is down, as we generally defer handling that until mouse release.
   if (state_changes.selection_differs && !is_mouse_pressed_ &&
-      UnapplySteadyStateElisions(false)) {
+      UnapplySteadyStateElisions(UnelisionGesture::OTHER)) {
     something_changed = true;
     state_changes.text_differs = true;
   }
@@ -716,8 +730,8 @@ bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {
 base::string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
   DCHECK_EQ(IDS_PASTE_AND_GO, command_id);
   return l10n_util::GetStringUTF16(
-      model()->IsPasteAndSearch(GetClipboardText()) ?
-          IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO);
+      model()->ClassifiesAsSearch(GetClipboardText()) ? IDS_PASTE_AND_SEARCH
+                                                      : IDS_PASTE_AND_GO);
 }
 
 const char* OmniboxViewViews::GetClassName() const {
@@ -750,7 +764,8 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
   // This ensures that when the user makes a double-click partial select, we
   // perform the unelision at the same time as we make the partial selection,
   // which is on mousedown.
-  if (!select_all_on_mouse_release_ && UnapplySteadyStateElisions(false))
+  if (!select_all_on_mouse_release_ &&
+      UnapplySteadyStateElisions(UnelisionGesture::OTHER))
     TextChanged();
 
   return handled;
@@ -784,7 +799,7 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   // Make an unelision check on mouse release. This handles the drag selection
   // case, in which we defer uneliding until mouse release.
   is_mouse_pressed_ = false;
-  if (UnapplySteadyStateElisions(false))
+  if (UnapplySteadyStateElisions(UnelisionGesture::MOUSE_RELEASE))
     TextChanged();
 }
 
@@ -1227,7 +1242,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     case ui::VKEY_HOME:
       // The Home key indicates that the user wants to move the cursor to the
       // beginning of the full URL, so it should always trigger an unelide.
-      if (UnapplySteadyStateElisions(true)) {
+      if (UnapplySteadyStateElisions(UnelisionGesture::HOME_KEY_PRESSED)) {
         if (shift) {
           // After uneliding, we need to move the end of the selection range
           // to the beginning of the full unelided URL.

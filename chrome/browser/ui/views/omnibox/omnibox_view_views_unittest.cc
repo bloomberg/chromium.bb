@@ -246,7 +246,7 @@ void OmniboxViewViewsTest::SetUp() {
   views::Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 400, 40);
+  params.bounds = gfx::Rect(0, 0, 400, 80);
   widget_->Init(params);
   widget_->Show();
 
@@ -618,7 +618,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, CaretPlacementByMouse) {
 
   // Advance the clock 5 seconds so the second click is not interpreted as a
   // double click.
-  clock()->Advance(base::TimeDelta::FromSeconds(10));
+  clock()->Advance(base::TimeDelta::FromSeconds(5));
 
   // Second click should unelide only on mouse release.
   omnibox_view()->OnMousePressed(CreateMouseEvent(
@@ -694,6 +694,46 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseClickDrag) {
   omnibox_view()->GetSelectionBounds(&start, &end);
   EXPECT_EQ(14U, start);
   EXPECT_EQ(16U, end);
+}
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest,
+       MouseClickDragToBeginningSelectingText) {
+  // Backwards drag-select this portion of the elided URL: |exam|ple.com
+  omnibox_view()->OnMousePressed(CreateMouseEvent(
+      ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
+  omnibox_view()->OnMouseDragged(CreateMouseEvent(
+      ui::ET_MOUSE_DRAGGED, GetPointInTextAtXOffset(0 * kCharacterWidth)));
+  omnibox_view()->OnMouseReleased(CreateMouseEvent(
+      ui::ET_MOUSE_RELEASED, GetPointInTextAtXOffset(0 * kCharacterWidth)));
+  ExpectFullUrlDisplayed();
+
+  // Since the selection did not look like a URL, expect the following selected
+  // selected portion after the user releases the mouse:
+  // https://www.|exam|ple.com
+  size_t start, end;
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(16U, start);
+  EXPECT_EQ(12U, end);
+}
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest,
+       MouseClickDragToBeginningSelectingURL) {
+  // Backwards drag-select this portion of the elided URL: |example.co|m
+  omnibox_view()->OnMousePressed(CreateMouseEvent(
+      ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(10 * kCharacterWidth)));
+  omnibox_view()->OnMouseDragged(CreateMouseEvent(
+      ui::ET_MOUSE_DRAGGED, GetPointInTextAtXOffset(0 * kCharacterWidth)));
+  omnibox_view()->OnMouseReleased(CreateMouseEvent(
+      ui::ET_MOUSE_RELEASED, GetPointInTextAtXOffset(0 * kCharacterWidth)));
+  ExpectFullUrlDisplayed();
+
+  // Since the selection does look like a URL, expect the following selected
+  // selected portion after the user releases the mouse:
+  // |https://www.example.co|m
+  size_t start, end;
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(22U, start);
+  EXPECT_EQ(0U, end);
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClickDrag) {

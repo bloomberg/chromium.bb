@@ -135,9 +135,19 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
                            MouseClickDrag);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
+                           MouseClickDragToBeginningSelectingText);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
+                           MouseClickDragToBeginningSelectingURL);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
                            MouseDoubleClickDrag);
   friend class OmniboxViewViewsTest;
   friend class OmniboxViewViewsSteadyStateElisionsTest;
+
+  enum class UnelisionGesture {
+    HOME_KEY_PRESSED,
+    MOUSE_RELEASE,
+    OTHER,
+  };
 
   // Update the field with |text| and set the selection.
   void SetTextAndSelectedRange(const base::string16& text,
@@ -162,9 +172,8 @@ class OmniboxViewViews : public OmniboxView,
   void ClearAccessibilityLabel();
 
   // Returns true if the user text was updated with the full URL (without
-  // steady-state elisions). |home_key_pressed| is true if we are uneliding
-  // because the user has pressed the Home key.
-  bool UnapplySteadyStateElisions(bool home_key_pressed);
+  // steady-state elisions).  |gesture| is the user gesture causing unelision.
+  bool UnapplySteadyStateElisions(UnelisionGesture gesture);
 
   // OmniboxView:
   void SetWindowTextAndCaretPos(const base::string16& text,
