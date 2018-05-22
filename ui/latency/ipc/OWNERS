@@ -8,7 +8,6 @@ nasko@chromium.org
 palmer@chromium.org
 tsepez@chromium.org
 
-per-file *.gyp*=*
 per-file BUILD.gn=*
 
 per-file *_param_traits*.*=set noparent

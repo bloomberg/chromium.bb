@@ -2,7 +2,6 @@ per-file chromeos_features.cc=*
 per-file chromeos_features.h=*
 per-file chromeos_switches.cc=*
 per-file chromeos_switches.h=*
-per-file chromeos.gyp=*
 per-file BUILD.gn=*
 
 achuith@chromium.org
