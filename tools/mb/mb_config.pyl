@@ -127,6 +127,7 @@
       'ToTAndroid64': 'android_clang_tot_release_arm64',
       'ToTAndroid x64': 'android_clang_tot_x64',
       'ToTLinux': 'clang_tot_linux_full_symbols_shared_release',
+      'ToTLinuxCoverage': 'clang_tot_coverage_minimal_symbols_shared_release',
       'ToTLinux (dbg)': 'clang_tot_shared_debug',
       'ToTLinuxASan': 'clang_tot_asan_lsan_static_release',
       'ToTLinuxASanLibfuzzer': 'release_libfuzzer_asan_clang_tot',
@@ -134,6 +135,7 @@
       'ToTLinuxThinLTO': 'clang_tot_release_minimal_symbols_thin_lto_static_use_lld',
       'ToTLinuxUBSanVptr': 'clang_tot_edge_ubsan_no_recover_hack_static_release',
       'ToTMac': 'clang_tot_minimal_symbols_shared_release',
+      'ToTMacCoverage': 'clang_tot_coverage_minimal_symbols_shared_release',
       'ToTMac (dbg)': 'clang_tot_shared_debug',
       'ToTMacASan': 'asan_disable_nacl_clang_tot_full_symbols_static_release',
       'ToTWin': 'clang_tot_official_minimal_symbols_static_release_x86',
@@ -1140,6 +1142,10 @@
       'clang_tot', 'minimal_symbols', 'shared', 'release',
     ],
 
+    'clang_tot_coverage_minimal_symbols_shared_release': [
+      'clang_tot', 'use_clang_coverage', 'minimal_symbols', 'shared', 'release',
+    ],
+
     'clang_tot_shared_release_dcheck': [
       'clang_tot', 'shared', 'release', 'dcheck_always_on',
     ],
@@ -1774,6 +1780,10 @@
 
     'no_clang': {
       'gn_args': 'is_clang=false',
+    },
+
+    'use_clang_coverage': {
+      'gn_args': 'use_clang_coverage=true',
     },
 
     'use_cxx11': {
