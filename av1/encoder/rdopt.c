@@ -9734,9 +9734,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   unsigned char segment_id = mbmi->segment_id;
   int i, k;
   struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE];
-  const int skip_ctx = av1_get_skip_context(xd);
-  const int rate_skip0 = x->skip_cost[skip_ctx][0];
-  const int rate_skip1 = x->skip_cost[skip_ctx][1];
   unsigned int ref_costs_single[REF_FRAMES];
   unsigned int ref_costs_comp[REF_FRAMES][REF_FRAMES];
   int *comp_inter_cost = x->comp_inter_cost[av1_get_reference_mode_context(xd)];
@@ -10024,6 +10021,42 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       if (mbmi->mode != DC_PRED && mbmi->mode != PAETH_PRED)
         rate2 += intra_cost_penalty;
       distortion2 = distortion_y + distortion_uv;
+
+      // Estimate the reference frame signaling cost and add it
+      // to the rolling cost variable.
+      rate2 += ref_frame_cost;
+      if (skippable) {
+        // Back out the coefficient coding costs
+        rate2 -= (rate_y + rate_uv);
+        rate_y = 0;
+        rate_uv = 0;
+        // Cost the skip mb case
+        rate2 += x->skip_cost[av1_get_skip_context(xd)][1];
+      } else {
+        // Add in the cost of the no skip flag.
+        rate2 += x->skip_cost[av1_get_skip_context(xd)][0];
+      }
+      // Calculate the final RD estimate for this mode.
+      this_rd = RDCOST(x->rdmult, rate2, distortion2);
+
+      // Keep record of best intra rd
+      if (this_rd < search_state.best_intra_rd) {
+        search_state.best_intra_rd = this_rd;
+        search_state.best_intra_mode = mbmi->mode;
+      }
+
+      if (sf->skip_intra_in_interframe) {
+        if (search_state.best_rd < (INT64_MAX / 2) &&
+            this_rd > (search_state.best_rd + (search_state.best_rd >> 1)))
+          search_state.skip_intra_modes = 1;
+      }
+
+      if (!disable_skip) {
+        for (i = 0; i < REFERENCE_MODES; ++i)
+          search_state.best_pred_rd[i] =
+              AOMMIN(search_state.best_pred_rd[i], this_rd);
+      }
+
     } else {
       int_mv backup_ref_mv[2];
 
@@ -10263,7 +10296,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             skippable = tmp_rd_stats.skip;
             rate_y = tmp_rd_stats_y.rate;
             rate_uv = tmp_rd_stats_uv.rate;
-            total_sse = tmp_rd_stats.sse;
             this_rd = tmp_alt_rd;
             tmp_ref_rd = tmp_alt_rd;
             backup_mbmi = *mbmi;
@@ -10285,69 +10317,17 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       if (this_rd == INT64_MAX) continue;
 
       rate2 += real_compmode_cost;
-    }
 
-    // Estimate the reference frame signaling cost and add it
-    // to the rolling cost variable.
-    rate2 += ref_frame_cost;
+      // Estimate the reference frame signaling cost and add it
+      // to the rolling cost variable.
+      rate2 += ref_frame_cost;
 
-    if (ref_frame == INTRA_FRAME) {
-      if (skippable) {
-        // Back out the coefficient coding costs
-        rate2 -= (rate_y + rate_uv);
-        rate_y = 0;
-        rate_uv = 0;
-        // Cost the skip mb case
-        rate2 += x->skip_cost[av1_get_skip_context(xd)][1];
-      } else if (ref_frame != INTRA_FRAME && !xd->lossless[mbmi->segment_id]) {
-        if (RDCOST(x->rdmult, rate_y + rate_uv + rate_skip0, distortion2) <
-            RDCOST(x->rdmult, rate_skip1, total_sse)) {
-          // Add in the cost of the no skip flag.
-          rate2 += x->skip_cost[av1_get_skip_context(xd)][0];
-        } else {
-          // FIXME(rbultje) make this work for splitmv also
-          rate2 += x->skip_cost[av1_get_skip_context(xd)][1];
-          distortion2 = total_sse;
-          assert(total_sse >= 0);
-          rate2 -= (rate_y + rate_uv);
-          this_skip2 = 1;
-          rate_y = 0;
-          rate_uv = 0;
-        }
-      } else {
-        // Add in the cost of the no skip flag.
-        rate2 += x->skip_cost[av1_get_skip_context(xd)][0];
-      }
-
-      // Calculate the final RD estimate for this mode.
-      this_rd = RDCOST(x->rdmult, rate2, distortion2);
-    } else {
       this_skip2 = mbmi->skip;
       this_rd = RDCOST(x->rdmult, rate2, distortion2);
       if (this_skip2) {
         rate_y = 0;
         rate_uv = 0;
       }
-    }
-
-    if (ref_frame == INTRA_FRAME) {
-      // Keep record of best intra rd
-      if (this_rd < search_state.best_intra_rd) {
-        search_state.best_intra_rd = this_rd;
-        search_state.best_intra_mode = mbmi->mode;
-      }
-
-      if (sf->skip_intra_in_interframe) {
-        if (search_state.best_rd < (INT64_MAX / 2) &&
-            this_rd > (search_state.best_rd + (search_state.best_rd >> 1)))
-          search_state.skip_intra_modes = 1;
-      }
-    }
-
-    if (!disable_skip && ref_frame == INTRA_FRAME) {
-      for (i = 0; i < REFERENCE_MODES; ++i)
-        search_state.best_pred_rd[i] =
-            AOMMIN(search_state.best_pred_rd[i], this_rd);
     }
 
     // Did this mode help.. i.e. is it the new best mode
