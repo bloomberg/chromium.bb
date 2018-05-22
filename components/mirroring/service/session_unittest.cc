@@ -111,6 +111,7 @@ class SessionTest : public ResourceProvider,
     sink_info.capability = DeviceCapability::AUDIO_AND_VIDEO;
     // Expect to receive OFFER message when session is created.
     base::RunLoop run_loop;
+    EXPECT_CALL(*this, OnGetNetworkContext()).Times(1);
     EXPECT_CALL(*this, OnError(_)).Times(0);
     EXPECT_CALL(*this, OnOffer())
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
@@ -140,7 +141,6 @@ TEST_F(SessionTest, Mirroring) {
     // Except mirroing session starts after receiving ANSWER message.
     base::RunLoop run_loop;
     EXPECT_CALL(*this, OnGetVideoCaptureHost()).Times(1);
-    EXPECT_CALL(*this, OnGetNetworkContext()).Times(1);
     EXPECT_CALL(*this, OnError(_)).Times(0);
     EXPECT_CALL(*this, DidStart())
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
@@ -180,7 +180,6 @@ TEST_F(SessionTest, AnswerTimeout) {
     // Expect error.
     base::RunLoop run_loop;
     EXPECT_CALL(*this, OnGetVideoCaptureHost()).Times(0);
-    EXPECT_CALL(*this, OnGetNetworkContext()).Times(0);
     EXPECT_CALL(*this, DidStop()).Times(1);
     EXPECT_CALL(*this, OnError(ANSWER_TIME_OUT))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));

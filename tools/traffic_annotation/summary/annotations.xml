@@ -135,6 +135,7 @@ Refer to README.md for content description and update process.
  <item id="logo_tracker" hash_code="36859107" type="0" content_hash_code="67588075" os_list="linux,windows" file_path="components/search_provider_logos/logo_tracker.cc"/>
  <item id="metrics_report_ukm" hash_code="727478" type="0" content_hash_code="40919254" os_list="linux,windows" file_path="components/metrics/net/net_metrics_log_uploader.cc"/>
  <item id="metrics_report_uma" hash_code="727528" type="0" content_hash_code="10176197" os_list="linux,windows" file_path="components/metrics/net/net_metrics_log_uploader.cc"/>
+ <item id="mirroring_get_setup_info" hash_code="78447809" type="0" content_hash_code="112561099" os_list="linux,windows" file_path="components/mirroring/service/session_monitor.cc"/>
  <item id="missing" hash_code="77012883" type="0" reserved="1" os_list="linux,windows" file_path=""/>
  <item id="mojo_context_state" hash_code="93232258" type="0" deprecated="2017-10-20" content_hash_code="124821232" file_path=""/>
  <item id="navigation_url_loader" hash_code="63171670" type="0" content_hash_code="129352907" os_list="linux,windows" file_path="content/browser/loader/navigation_url_loader_impl.cc"/>

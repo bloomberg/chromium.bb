@@ -6,6 +6,7 @@
 #define COMPONENTS_MIRRORING_SERVICE_MIRROR_SETTINGS_H_
 
 #include "base/time/time.h"
+#include "base/values.h"
 #include "media/capture/video_capture_types.h"
 #include "media/cast/cast_config.h"
 
@@ -38,6 +39,9 @@ class MirrorSettings {
 
   int max_width() const { return max_width_; }
   int max_height() const { return max_height_; }
+
+  // Returns a dictionary value of the current settings.
+  base::Value ToDictionaryValue();
 
  private:
   const int min_width_;

@@ -30,11 +30,10 @@ namespace mirroring {
 class UdpSocketClientTest : public ::testing::Test {
  public:
   UdpSocketClientTest() {
-    network::mojom::NetworkContextPtr network_context_ptr;
     network_context_ = std::make_unique<MockNetworkContext>(
-        mojo::MakeRequest(&network_context_ptr));
+        mojo::MakeRequest(&network_context_ptr_));
     udp_transport_client_ = std::make_unique<UdpSocketClient>(
-        media::cast::test::GetFreeLocalPort(), std::move(network_context_ptr),
+        media::cast::test::GetFreeLocalPort(), network_context_ptr_.get(),
         base::OnceClosure());
   }
 
@@ -49,6 +48,7 @@ class UdpSocketClientTest : public ::testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  network::mojom::NetworkContextPtr network_context_ptr_;
   std::unique_ptr<MockNetworkContext> network_context_;
   std::unique_ptr<UdpSocketClient> udp_transport_client_;
   std::unique_ptr<Packet> received_packet_;

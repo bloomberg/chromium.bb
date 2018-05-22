@@ -6,11 +6,14 @@
 #define COMPONENTS_MIRRORING_SERVICE_SESSION_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "components/mirroring/service/interface.h"
 #include "components/mirroring/service/message_dispatcher.h"
 #include "components/mirroring/service/mirror_settings.h"
 #include "components/mirroring/service/rtp_stream.h"
+#include "components/mirroring/service/session_monitor.h"
+#include "components/mirroring/service/wifi_status_monitor.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport_defines.h"
 
@@ -26,6 +29,7 @@ namespace mirroring {
 
 struct ReceiverResponse;
 class VideoCaptureClient;
+class SessionMonitor;
 
 // Controls a mirroring session, including audio/video capturing and Cast
 // Streaming. When constructed, it does OFFER/ANSWER exchange with the mirroring
@@ -101,6 +105,10 @@ class Session final : public RtpStreamClient {
   MirrorSettings mirror_settings_;
 
   MessageDispatcher message_dispatcher_;
+
+  network::mojom::NetworkContextPtr network_context_;
+
+  base::Optional<SessionMonitor> session_monitor_;
 
   // Created after OFFER/ANSWER exchange succeeds.
   std::unique_ptr<AudioRtpStream> audio_stream_;
