@@ -69,6 +69,8 @@
   recentTabsTableViewController.delegate = self.mediator;
   [self.mediator initObservers];
   [self.mediator reloadSessions];
+  // Set the datasource for favicons.
+  recentTabsTableViewController.imageDataSource = self.mediator;
 
   // Present RecentTabsNavigationController.
   self.recentTabsNavigationController = [[TableViewNavigationController alloc]
