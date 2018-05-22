@@ -539,6 +539,40 @@
     .catch(failTest);
   }
 
+  async function srcObjectReplaceInactiveTracks() {
+    let video = document.createElement('video');
+    video.autoplay = true;
+    assertEquals(video.srcObject, null);
+    try {
+      let stream = await navigator.mediaDevices.getUserMedia(
+          {audio: true, video: true});
+      video.onplaying = () => {
+        video.onplaying = null;
+        video.onloadstart = () => {
+          failTest("loadstart should not be fired");
+        }
+
+        assertNotEquals(video.srcObject, null);
+        assertTrue(video.videoWidth > 0);
+        assertTrue(video.videoHeight > 0);
+
+        // Stop tracks.
+        stream.getTracks().forEach(track => track.stop());
+        let onprogress_calls = 0;
+        video.onprogress = () => {
+          assertEquals(video.networkState, HTMLMediaElement.NETWORK_IDLE);
+          setTimeout(reportTestSuccess, 100);
+          if (++onprogress_calls > 1)
+            failTest('progress should not be fired more than once');
+        }
+      }
+
+      video.srcObject = stream;
+    } catch (err) {
+      failTest('getUserMedia() failed');
+    }
+  }
+
   function srcObjectRemoveVideoTrack() {
     var video = document.createElement('video');
     video.autoplay = true;
