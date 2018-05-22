@@ -309,14 +309,13 @@ const char* ProtoEnumToString(sync_pb::UserConsentSpecifics::Feature feature) {
   return "";
 }
 
-const char* ProtoEnumToString(
-    sync_pb::UserConsentSpecifics::ConsentStatus status) {
-  ASSERT_ENUM_BOUNDS(sync_pb::UserConsentSpecifics, ConsentStatus,
+const char* ProtoEnumToString(sync_pb::UserConsentTypes::ConsentStatus status) {
+  ASSERT_ENUM_BOUNDS(sync_pb::UserConsentTypes, ConsentStatus,
                      CONSENT_STATUS_UNSPECIFIED, GIVEN);
   switch (status) {
-    ENUM_CASE(sync_pb::UserConsentSpecifics, CONSENT_STATUS_UNSPECIFIED);
-    ENUM_CASE(sync_pb::UserConsentSpecifics, NOT_GIVEN);
-    ENUM_CASE(sync_pb::UserConsentSpecifics, GIVEN);
+    ENUM_CASE(sync_pb::UserConsentTypes, CONSENT_STATUS_UNSPECIFIED);
+    ENUM_CASE(sync_pb::UserConsentTypes, NOT_GIVEN);
+    ENUM_CASE(sync_pb::UserConsentTypes, GIVEN);
   }
   NOTREACHED();
   return "";
@@ -355,20 +354,6 @@ const char* ProtoEnumToString(
     ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, BACKUP_AND_RESTORE);
     ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent,
               GOOGLE_LOCATION_SERVICE);
-  }
-  NOTREACHED();
-  return "";
-}
-
-const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::UserConsent::ConsentStatus status) {
-  ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::UserConsent, ConsentStatus,
-                     CONSENT_STATUS_UNSPECIFIED, GIVEN);
-  switch (status) {
-    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent,
-              CONSENT_STATUS_UNSPECIFIED);
-    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, NOT_GIVEN);
-    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, GIVEN);
   }
   NOTREACHED();
   return "";
