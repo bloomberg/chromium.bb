@@ -53,6 +53,16 @@ void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
   const Document& document = layout_box_.GetDocument();
   bool is_horizontal_writing_mode =
       layout_box_.ContainingBlock()->Style()->IsHorizontalWritingMode();
+
+  LayoutSize margin_box_for_use_counter = new_reference_box_logical_size;
+  if (is_horizontal_writing_mode) {
+    margin_box_for_use_counter.Expand(layout_box_.MarginWidth(),
+                                      layout_box_.MarginHeight());
+  } else {
+    margin_box_for_use_counter.Expand(layout_box_.MarginHeight(),
+                                      layout_box_.MarginWidth());
+  }
+
   switch (ReferenceBox(*layout_box_.Style()->ShapeOutside())) {
     case CSSBoxType::kMargin:
       UseCounter::Count(document, WebFeature::kShapeOutsideMarginBox);
@@ -74,6 +84,12 @@ void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
       else
         new_reference_box_logical_size.Shrink(layout_box_.BorderHeight(),
                                               layout_box_.BorderWidth());
+
+      if (new_reference_box_logical_size != margin_box_for_use_counter) {
+        UseCounter::Count(
+            document,
+            WebFeature::kShapeOutsidePaddingBoxDifferentFromMarginBox);
+      }
       break;
     case CSSBoxType::kContent:
       UseCounter::Count(document, WebFeature::kShapeOutsideContentBox);
@@ -85,6 +101,12 @@ void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
         new_reference_box_logical_size.Shrink(
             layout_box_.BorderAndPaddingHeight(),
             layout_box_.BorderAndPaddingWidth());
+
+      if (new_reference_box_logical_size != margin_box_for_use_counter) {
+        UseCounter::Count(
+            document,
+            WebFeature::kShapeOutsideContentBoxDifferentFromMarginBox);
+      }
       break;
     case CSSBoxType::kMissing:
       NOTREACHED();

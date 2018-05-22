@@ -18749,6 +18749,8 @@ Called by update_net_error_codes.py.-->
       label="V8ExtendableCookieChangeEvent_Changed_AttributeGetter"/>
   <int value="2460"
       label="V8ExtendableCookieChangeEvent_Deleted_AttributeGetter"/>
+  <int value="2461" label="ShapeOutsideContentBoxDifferentFromMarginBox"/>
+  <int value="2462" label="ShapeOutsidePaddingBoxDifferentFromMarginBox"/>
 </enum>
 
 <enum name="FeedbackSource">

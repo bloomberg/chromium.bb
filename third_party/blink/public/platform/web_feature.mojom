@@ -1929,6 +1929,8 @@ enum WebFeature {
   kV8CookieChangeEvent_Deleted_AttributeGetter = 2458,
   kV8ExtendableCookieChangeEvent_Changed_AttributeGetter = 2459,
   kV8ExtendableCookieChangeEvent_Deleted_AttributeGetter = 2460,
+  kShapeOutsideContentBoxDifferentFromMarginBox = 2461,
+  kShapeOutsidePaddingBoxDifferentFromMarginBox = 2462,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
