@@ -10,12 +10,19 @@
 // Coordinator for displaying Action Sheets.
 @interface ActionSheetCoordinator : AlertCoordinator
 
-// Init with the parameters for anchoring the popover.
+// Init with the parameters for anchoring the popover to a UIView.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                      title:(NSString*)title
                                    message:(NSString*)message
                                       rect:(CGRect)rect
                                       view:(UIView*)view
+    NS_DESIGNATED_INITIALIZER;
+
+// Init with the parameters for anchoring the popover to a UIBarButtonItem.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                     title:(NSString*)title
+                                   message:(NSString*)message
+                             barButtonItem:(UIBarButtonItem*)barButtonItem
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
