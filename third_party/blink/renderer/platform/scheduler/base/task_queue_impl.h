@@ -155,6 +155,17 @@ class PLATFORM_EXPORT TaskQueueImpl {
     TaskQueue::PostedTask task;
   };
 
+  // Types of queues TaskQueueImpl is maintaining internally.
+  enum class WorkQueueType { kImmediate, kDelayed };
+
+  // Non-nestable tasks may get deferred but such queue is being maintained on
+  // TaskQueueManager side, so we need to keep information how to requeue it.
+  struct DeferredNonNestableTask {
+    internal::TaskQueueImpl::Task task;
+    internal::TaskQueueImpl* task_queue;
+    WorkQueueType work_queue_type;
+  };
+
   using OnNextWakeUpChangedCallback = RepeatingCallback<void(TimeTicks)>;
   using OnTaskStartedHandler =
       RepeatingCallback<void(const TaskQueue::Task&, TimeTicks)>;
@@ -240,8 +251,8 @@ class PLATFORM_EXPORT TaskQueueImpl {
 
   // Pushes |task| onto the front of the specified work queue. Caution must be
   // taken with this API because you could easily starve out other work.
-  void RequeueDeferredNonNestableTask(TaskQueueImpl::Task&& task,
-                                      SequencedTaskSource::WorkType work_type);
+  // TODO(kraynov): Simplify non-nestable task logic https://crbug.com/845437.
+  void RequeueDeferredNonNestableTask(DeferredNonNestableTask task);
 
   void PushImmediateIncomingTaskForTest(TaskQueueImpl::Task&& task);
   EnqueueOrder GetFenceForTest() const;

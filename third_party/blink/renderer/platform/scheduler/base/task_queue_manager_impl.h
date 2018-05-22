@@ -177,13 +177,10 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
     IncomingImmediateWorkMap has_incoming_immediate_work;
   };
 
-  // TODO(scheduler-dev): Review if we really need non-nestable tasks at all.
-  struct NonNestableTask {
-    internal::TaskQueueImpl::Task task;
-    internal::TaskQueueImpl* task_queue;
-    WorkType work_type;
-  };
-  using NonNestableTaskDeque = circular_deque<NonNestableTask>;
+  // TaskQueueManager maintains a queue of non-nestable tasks since they're
+  // uncommon and allocating an extra deque per TaskQueue will waste the memory.
+  using NonNestableTaskDeque =
+      circular_deque<internal::TaskQueueImpl::DeferredNonNestableTask>;
 
   // We have to track rentrancy because we support nested runloops but the
   // selector interface is unaware of those.  This struct keeps track off all
