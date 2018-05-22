@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_HID_TEST_REPORT_DESCRIPTORS_H_
-#define DEVICE_HID_TEST_REPORT_DESCRIPTORS_H_
+#ifndef SERVICES_DEVICE_HID_TEST_REPORT_DESCRIPTORS_H_
+#define SERVICES_DEVICE_HID_TEST_REPORT_DESCRIPTORS_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -36,4 +36,4 @@ extern const size_t kLogitechUnifyingReceiverSize;
 
 }  // namespace device
 
-#endif  // DEVICE_HID_TEST_REPORT_DESCRIPTORS_H_
+#endif  // SERVICES_DEVICE_HID_TEST_REPORT_DESCRIPTORS_H_

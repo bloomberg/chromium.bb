@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_HID_HID_MANAGER_IMPL_H_
-#define DEVICE_HID_HID_MANAGER_IMPL_H_
+#ifndef SERVICES_DEVICE_HID_HID_MANAGER_IMPL_H_
+#define SERVICES_DEVICE_HID_HID_MANAGER_IMPL_H_
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -62,4 +62,4 @@ class HidManagerImpl : public mojom::HidManager, public HidService::Observer {
 
 }  // namespace device
 
-#endif  // DEVICE_HID_HID_MANAGER_IMPL_H_
+#endif  // SERVICES_DEVICE_HID_HID_MANAGER_IMPL_H_

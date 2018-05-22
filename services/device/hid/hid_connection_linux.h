@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_HID_HID_CONNECTION_LINUX_H_
-#define DEVICE_HID_HID_CONNECTION_LINUX_H_
+#ifndef SERVICES_DEVICE_HID_HID_CONNECTION_LINUX_H_
+#define SERVICES_DEVICE_HID_HID_CONNECTION_LINUX_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -67,4 +67,4 @@ class HidConnectionLinux : public HidConnection {
 
 }  // namespace device
 
-#endif  // DEVICE_HID_HID_CONNECTION_LINUX_H_
+#endif  // SERVICES_DEVICE_HID_HID_CONNECTION_LINUX_H_
