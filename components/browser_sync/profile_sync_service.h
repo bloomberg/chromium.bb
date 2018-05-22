@@ -73,7 +73,6 @@ class SyncTypePreferenceProvider;
 class TypeDebugInfoObserver;
 struct CommitCounters;
 struct StatusCounters;
-struct SyncCredentials;
 struct UpdateCounters;
 struct UserShare;
 }  // namespace syncer
@@ -542,7 +541,6 @@ class ProfileSyncService : public syncer::SyncService,
   void ClearServerDataForTest(const base::Closure& callback);
 
  private:
-  syncer::SyncCredentials GetCredentials();
   virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
   syncer::SyncEngine::HttpPostProviderFactoryGetter
   MakeHttpPostProviderFactoryGetter();

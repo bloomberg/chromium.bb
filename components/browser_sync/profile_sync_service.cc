@@ -421,16 +421,6 @@ void ProfileSyncService::OnSessionRestoreComplete() {
   }
 }
 
-SyncCredentials ProfileSyncService::GetCredentials() {
-  // No credentials exist or are needed for the local sync backend.
-  // TODO(treib): Move the LocalSync check into InitializeCredentials and get
-  // rid of this method.
-  if (IsLocalSyncEnabled())
-    return SyncCredentials();
-
-  return auth_manager_->GetCredentials();
-}
-
 syncer::WeakHandle<syncer::JsEventHandler>
 ProfileSyncService::GetJsEventHandler() {
   return syncer::MakeWeakHandle(sync_js_controller_.AsWeakPtr());
@@ -571,7 +561,8 @@ void ProfileSyncService::InitializeEngine() {
   params.service_url = sync_service_url();
   params.sync_user_agent = GetLocalDeviceInfoProvider()->GetSyncUserAgent();
   params.http_factory_getter = MakeHttpPostProviderFactoryGetter();
-  params.credentials = GetCredentials();
+  params.credentials = auth_manager_->GetCredentials();
+  DCHECK(!params.credentials.account_id.empty() || IsLocalSyncEnabled());
   invalidation::InvalidationService* invalidator =
       sync_client_->GetInvalidationService();
   params.invalidator_client_id =
@@ -614,7 +605,7 @@ void ProfileSyncService::AccessTokenFetched(
 
   if (error.state() == GoogleServiceAuthError::NONE) {
     if (HasSyncingEngine()) {
-      engine_->UpdateCredentials(GetCredentials());
+      engine_->UpdateCredentials(auth_manager_->GetCredentials());
     } else {
       startup_controller_->TryStart();
     }
