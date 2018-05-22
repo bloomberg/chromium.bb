@@ -33,12 +33,7 @@ void ProxyToTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner,
 
 }  // namespace
 
-RunLoop::Delegate::Delegate()
-    : should_quit_when_idle_callback_(base::BindRepeating(
-          [](Delegate* self) {
-            return self->active_run_loops_.top()->quit_when_idle_received_;
-          },
-          Unretained(this))) {
+RunLoop::Delegate::Delegate() {
   // The Delegate can be created on another thread. It is only bound in
   // RegisterDelegateForCurrentThread().
   DETACH_FROM_THREAD(bound_thread_checker_);
@@ -54,7 +49,7 @@ RunLoop::Delegate::~Delegate() {
 }
 
 bool RunLoop::Delegate::ShouldQuitWhenIdle() {
-  return should_quit_when_idle_callback_.Run();
+  return active_run_loops_.top()->quit_when_idle_received_;
 }
 
 // static
@@ -70,30 +65,6 @@ void RunLoop::RegisterDelegateForCurrentThread(Delegate* delegate) {
          "MessageLoop/ScopedTaskEnvironment on a thread that already had one?";
   tls_delegate.Get().Set(delegate);
   delegate->bound_ = true;
-}
-
-// static
-RunLoop::Delegate* RunLoop::OverrideDelegateForCurrentThreadForTesting(
-    Delegate* delegate,
-    Delegate::ShouldQuitWhenIdleCallback
-        overriding_should_quit_when_idle_callback) {
-  // Bind |delegate| to this thread.
-  DCHECK(!delegate->bound_);
-  DCHECK_CALLED_ON_VALID_THREAD(delegate->bound_thread_checker_);
-
-  // Overriding cannot be performed while running.
-  DCHECK(!IsRunningOnCurrentThread());
-
-  // Override the current Delegate (there must be one).
-  Delegate* overridden_delegate = tls_delegate.Get().Get();
-  DCHECK(overridden_delegate);
-  DCHECK(overridden_delegate->bound_);
-  overridden_delegate->should_quit_when_idle_callback_ =
-      std::move(overriding_should_quit_when_idle_callback);
-  tls_delegate.Get().Set(delegate);
-  delegate->bound_ = true;
-
-  return overridden_delegate;
 }
 
 RunLoop::RunLoop(Type type)

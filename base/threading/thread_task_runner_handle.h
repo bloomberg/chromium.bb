@@ -35,19 +35,10 @@ class BASE_EXPORT ThreadTaskRunnerHandle {
   // ScopedClosureRunners expire in LIFO (stack) order. Note: nesting
   // ThreadTaskRunnerHandles isn't generally desired but it's useful in unit
   // tests where multiple task runners can share the main thread for simplicity
-  // and determinism (in which case RunLoop::Run() is banned for the scope of
-  // the override as it would execute tasks from the wrong task runner). It's
-  // also useful in unit test frameworks in which a task runner takes over the
-  // main thread; in that case it's fine to allow running through
-  // |type = kTakeOverThread| iff RunLoop::Run() will result in running tasks
-  // posted to the overriding ThreadTaskRunnerHandle.
-  enum class OverrideType {
-    kDefault,
-    kTakeOverThread,
-  };
+  // and determinism.
   static ScopedClosureRunner OverrideForTesting(
-      scoped_refptr<SingleThreadTaskRunner> overriding_task_runner,
-      OverrideType type = OverrideType::kDefault) WARN_UNUSED_RESULT;
+      scoped_refptr<SingleThreadTaskRunner> overriding_task_runner)
+      WARN_UNUSED_RESULT;
 
   // Binds |task_runner| to the current thread. |task_runner| must belong
   // to the current thread for this to succeed.
