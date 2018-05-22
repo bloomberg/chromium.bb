@@ -107,6 +107,23 @@ IN_PROC_BROWSER_TEST_F(WebContentsModalDialogManagerViewsMacTest, Basic) {
   EXPECT_EQ(1, destroy_count_);
 }
 
+// Test for some code injection or third party tool invoking -[NSWindow close].
+IN_PROC_BROWSER_TEST_F(WebContentsModalDialogManagerViewsMacTest, NativeClose) {
+  NSArray* children = [browser()->window()->GetNativeWindow() childWindows];
+  EXPECT_EQ(0u, [children count]);
+
+  Widget* dialog = ShowViewsDialogOn(0, true);
+  EXPECT_TRUE(dialog->IsVisible());
+
+  // Chrome code never does this, but ensure the codepaths are robust to it.
+  // Invoking this will jump to SingleWebContentsDialogManagerViewsMac::
+  // OnWidgetDestroying() without first encountering OnWidgetClosing().
+  [dialog->GetNativeWindow() close];
+
+  EXPECT_EQ(1, destroy_count_);
+  EXPECT_EQ(dialog, last_destroyed_);
+}
+
 // Test showing dialogs in two tabs, switch tabs, then close the background tab,
 // then close the browser window.
 IN_PROC_BROWSER_TEST_F(WebContentsModalDialogManagerViewsMacTest,

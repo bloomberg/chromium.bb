@@ -199,9 +199,10 @@ void SingleWebContentsDialogManagerViewsMac::OnWidgetClosing(
 void SingleWebContentsDialogManagerViewsMac::OnWidgetDestroying(
     views::Widget* widget) {
   // On Mac, this would only be reached if something called -[NSWindow close]
-  // on the dialog without going through Widget::Close or CloseNow(). Since
-  // dialogs have no titlebar, it won't come from the system. If something
-  // internally calls -[NSWindow close] it might break lifetime assumptions
-  // made by DialogDelegate.
-  NOTREACHED();
+  // on the dialog without going through Widget::Close or CloseNow(). In this
+  // case (only), OnWidgetClosing() is skipped, so invoke it here. Note: since
+  // dialogs have no titlebar, it "shouldn't" happen, but crashes in
+  // https://crbug.com/825809 suggest it can. Possibly this occurs via code
+  // injection or a third party tool.
+  OnWidgetClosing(widget);  // Deletes |this|.
 }
