@@ -16,6 +16,28 @@ interface FindInPage {
   // defined in fractions of the content document's width and height.
   GetNearestFindResult(gfx.mojom.PointF point) => (float distance);
 
+  // Activates a find result nearest to |point|, which is in fractions of the
+  // content document's width and height.
+  //
+  // Return values:
+  //
+  // |active_match_rect| will contain the bounding box of the activated
+  // find-in-page match marker. Might be an empty rect if there is none.
+  //
+  // |number_of_matches| is the current number of matches, or -1 if we
+  // shouldn't update number of matches.
+  //
+  // |active_match_ordinal| will contain the activated match's ordinal
+  // or -1 if  we shouldn't update the active match ordinal.
+  //
+  // |final_update| is true if it's the final find reply for the frame.
+  //
+  ActivateNearestFindResult(gfx.mojom.PointF point) =>
+                           (gfx.mojom.Rect active_match_rect,
+                           int32 number_of_matches,
+                           int32 active_match_ordinal,
+                           bool final_update);
+
   // Returns the bounding boxes of the find-in-page match markers from the
   // frame. The bounding boxes are returned in find-in-page coordinates.
   //

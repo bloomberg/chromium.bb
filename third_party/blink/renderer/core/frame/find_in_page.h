@@ -44,10 +44,6 @@ class CORE_EXPORT FindInPage final
 
   void StopFinding(WebLocalFrame::StopFindAction);
 
-  void IncreaseMatchCount(int count, int identifier);
-
-  int SelectNearestFindMatch(const WebFloatPoint&, WebRect* selection_rect);
-
   void SetTickmarks(const WebVector<WebRect>&);
 
   int FindMatchMarkersVersion() const;
@@ -58,6 +54,9 @@ class CORE_EXPORT FindInPage final
   WebFloatRect ActiveFindMatchRect();
 
   // mojom::blink::FindInPage overrides
+
+  void ActivateNearestFindResult(const WebFloatPoint&,
+                                 ActivateNearestFindResultCallback) final;
 
   // Returns the distance (squared) to the closest find-in-page match from the
   // provided point, in find-in-page coordinates.

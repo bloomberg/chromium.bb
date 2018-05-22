@@ -1765,11 +1765,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSetOverlayRoutingToken)
     IPC_MESSAGE_HANDLER(FrameMsg_NotifyUserActivation, OnNotifyUserActivation)
 
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(FrameMsg_ActivateNearestFindResult,
-                        OnActivateNearestFindResult)
-#endif
-
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
@@ -6238,26 +6233,6 @@ void RenderFrameImpl::OnMixedContentFound(
                             request_context, params.was_allowed,
                             params.had_redirect, source_location);
 }
-
-#if defined(OS_ANDROID)
-void RenderFrameImpl::OnActivateNearestFindResult(int request_id,
-                                                  float x,
-                                                  float y) {
-  WebRect selection_rect;
-  int ordinal =
-      frame_->SelectNearestFindMatch(WebFloatPoint(x, y), &selection_rect);
-  if (ordinal == -1) {
-    // Something went wrong, so send a no-op reply (force the frame to report
-    // the current match count) in case the host is waiting for a response due
-    // to rate-limiting.
-    frame_->IncreaseMatchCount(0, request_id);
-    return;
-  }
-
-  SendFindReply(request_id, -1 /* number_of_matches */, ordinal, selection_rect,
-                true /* final_update */);
-}
-#endif
 
 void RenderFrameImpl::OnSetOverlayRoutingToken(
     const base::UnguessableToken& token) {

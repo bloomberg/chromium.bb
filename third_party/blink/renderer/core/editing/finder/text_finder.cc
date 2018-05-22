@@ -534,7 +534,7 @@ void TextFinder::ScopeStringMatches(int identifier,
     last_match_count_ += match_count;
 
     // Let the frame know how many matches we found during this pass.
-    OwnerFrame().IncreaseMatchCount(match_count, identifier);
+    IncreaseMatchCount(identifier, match_count);
   }
 
   if (timed_out) {
@@ -557,7 +557,7 @@ void TextFinder::FlushCurrentScopingEffort(int identifier) {
     return;
 
   frame_scoping_ = false;
-  OwnerFrame().IncreaseMatchCount(0, identifier);
+  IncreaseMatchCount(identifier, 0);
 }
 
 void TextFinder::FinishCurrentScopingEffort(int identifier) {

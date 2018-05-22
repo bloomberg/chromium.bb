@@ -313,9 +313,6 @@ class CORE_EXPORT WebLocalFrameImpl final
             bool wrap_within_frame,
             bool* active_now = nullptr) override;
   void StopFinding(StopFindAction) override;
-  void IncreaseMatchCount(int count, int identifier) override;
-  int SelectNearestFindMatch(const WebFloatPoint&,
-                             WebRect* selection_rect) override;
   void SetTickmarks(const WebVector<WebRect>&) override;
   WebNode ContextMenuNode() const override;
   WebFrameWidget* FrameWidget() const override;
