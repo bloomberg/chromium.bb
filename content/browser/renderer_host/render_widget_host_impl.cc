@@ -2318,11 +2318,11 @@ void RenderWidgetHostImpl::OnUnlockMouse() {
     is_last_unlocked_by_target_ = true;
 }
 
-void RenderWidgetHostImpl::RequestKeyboardLock(
+bool RenderWidgetHostImpl::RequestKeyboardLock(
     base::Optional<base::flat_set<ui::DomCode>> codes) {
   if (!delegate_) {
     CancelKeyboardLock();
-    return;
+    return false;
   }
 
   DCHECK(!codes.has_value() || !codes.value().empty());
@@ -2333,8 +2333,12 @@ void RenderWidgetHostImpl::RequestKeyboardLock(
       !keyboard_keys_to_lock_.has_value() ||
       base::ContainsKey(keyboard_keys_to_lock_.value(), ui::DomCode::ESCAPE);
 
-  if (!delegate_->RequestKeyboardLock(this, esc_requested))
+  if (!delegate_->RequestKeyboardLock(this, esc_requested)) {
     CancelKeyboardLock();
+    return false;
+  }
+
+  return true;
 }
 
 void RenderWidgetHostImpl::CancelKeyboardLock() {

@@ -103,10 +103,12 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
   if (!dom_codes.empty())
     dom_code_set = std::move(dom_codes);
 
-  render_frame_host_->GetRenderWidgetHost()->RequestKeyboardLock(
-      std::move(dom_code_set));
-
-  std::move(callback).Run(KeyboardLockRequestResult::kSuccess);
+  if (render_frame_host_->GetRenderWidgetHost()->RequestKeyboardLock(
+          std::move(dom_code_set))) {
+    std::move(callback).Run(KeyboardLockRequestResult::kSuccess);
+  } else {
+    std::move(callback).Run(KeyboardLockRequestResult::kRequestFailedError);
+  }
 }
 
 void KeyboardLockServiceImpl::CancelKeyboardLock() {
