@@ -10,7 +10,10 @@ import("//services/service_manager/public/service_manifest.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
 
 component("lib") {
-  friend = [ ":tests" ]
+  friend = [
+    ":tests",
+    ":test_support",
+  ]
   public = [
     "gpu_support.h",
     "ids.h",
@@ -59,6 +62,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "client_window_test_helper.cc",
+    "client_window_test_helper.h",
     "event_test_utils.cc",
     "event_test_utils.h",
     "test_change_tracker.cc",

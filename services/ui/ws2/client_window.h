@@ -94,10 +94,16 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
       viz::mojom::CompositorFrameSinkClientPtr client);
 
  private:
+  friend class ClientWindowTestHelper;
+
   ClientWindow(aura::Window*,
                WindowServiceClient* client,
                const viz::FrameSinkId& frame_sink_id,
                bool is_top_level);
+
+  // Forwards to TopLevelEventHandler, see it for details.
+  // NOTE: this is only applicable to top-levels.
+  bool IsInPointerPressedForTesting();
 
   aura::Window* window_;
 

@@ -13,6 +13,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "services/ui/ws2/client_window.h"
+#include "services/ui/ws2/client_window_test_helper.h"
 #include "services/ui/ws2/event_test_utils.h"
 #include "services/ui/ws2/gpu_support.h"
 #include "services/ui/ws2/test_window_service_delegate.h"
@@ -616,6 +618,56 @@ TEST(WindowServiceClientTest, EventsGoToCaptureWindow) {
             drag_event.window_id);
   EXPECT_EQ("POINTER_MOVED -4,-4",
             LocatedEventToEventTypeAndLocation(drag_event.event.get()));
+}
+
+TEST(WindowServiceClientTest, PointerDownResetOnCaptureChange) {
+  WindowServiceTestHelper helper;
+  aura::Window* window = helper.helper()->NewWindow(1);
+  ASSERT_TRUE(window);
+  aura::Window* top_level = helper.helper()->NewTopLevelWindow(2);
+  ASSERT_TRUE(top_level);
+  top_level->AddChild(window);
+  helper.helper()->SetClientArea(top_level, gfx::Insets(10, 0, 0, 0));
+  top_level->Show();
+  window->Show();
+  top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window->SetBounds(gfx::Rect(10, 10, 90, 90));
+  // Left press on the top-level, leaving mouse down.
+  test::EventGenerator event_generator(helper.root());
+  event_generator.MoveMouseTo(5, 5);
+  event_generator.PressLeftButton();
+  ClientWindow* top_level_client_window = ClientWindow::GetMayBeNull(top_level);
+  ASSERT_TRUE(top_level_client_window);
+  ClientWindowTestHelper top_level_client_window_helper(
+      top_level_client_window);
+  EXPECT_TRUE(top_level_client_window_helper.IsInPointerPressed());
+
+  // Set capture on |window|, top_level should no longer be in pointer-down
+  // (because capture changed).
+  EXPECT_TRUE(helper.helper()->SetCapture(window));
+  EXPECT_FALSE(top_level_client_window_helper.IsInPointerPressed());
+}
+
+TEST(WindowServiceClientTest, PointerDownResetOnHide) {
+  WindowServiceTestHelper helper;
+  aura::Window* top_level = helper.helper()->NewTopLevelWindow(2);
+  ASSERT_TRUE(top_level);
+  helper.helper()->SetClientArea(top_level, gfx::Insets(10, 0, 0, 0));
+  top_level->Show();
+  top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
+  // Left press on the top-level, leaving mouse down.
+  test::EventGenerator event_generator(helper.root());
+  event_generator.MoveMouseTo(5, 5);
+  event_generator.PressLeftButton();
+  ClientWindow* top_level_client_window = ClientWindow::GetMayBeNull(top_level);
+  ASSERT_TRUE(top_level_client_window);
+  ClientWindowTestHelper top_level_client_window_helper(
+      top_level_client_window);
+  EXPECT_TRUE(top_level_client_window_helper.IsInPointerPressed());
+
+  // Hiding should implicitly cancel capture.
+  top_level->Hide();
+  EXPECT_FALSE(top_level_client_window_helper.IsInPointerPressed());
 }
 
 TEST(WindowServiceClientTest, DeleteWindow) {
