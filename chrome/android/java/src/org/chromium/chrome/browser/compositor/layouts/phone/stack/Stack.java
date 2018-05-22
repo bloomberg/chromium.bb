@@ -33,7 +33,7 @@ import org.chromium.ui.base.LocalizationUtils;
  *
  * @VisibleForTesting
  */
-public class Stack {
+public abstract class Stack {
     public static final int MAX_NUMBER_OF_STACKED_TABS_TOP = 3;
     public static final int MAX_NUMBER_OF_STACKED_TABS_BOTTOM = 3;
 
@@ -42,11 +42,6 @@ public class Stack {
     private static final float STACK_LANDSCAPE_Y_OFFSET_PROPORTION = -0.5f;
 
     public enum DragLock { NONE, SCROLL, DISCARD }
-
-    /**
-     * The percentage of the screen that defines the spacing between tabs by default (no pinch).
-     */
-    public static final float SPACING_SCREEN = 0.26f;
 
     /**
      * The percentage of the screen to cover for the discarded tab to be fully transparent.
@@ -146,29 +141,16 @@ public class Stack {
     private static final float LANDSCAPE_SWIPE_DRAG_TAB_OFFSET_DP = 40.f;
 
     // External References
-    private TabList mTabList;
+    protected TabList mTabList;
 
     // True when the stack is still visible for animation but it is going to be empty.
     private boolean mIsDying;
 
     // Screen State Variables
-    private int mSpacing;
-    private float mWarpSize;
-    private StackTab[] mStackTabs; // mStackTabs can be null if there are no tabs
+    protected int mSpacing;
+    protected StackTab[] mStackTabs; // mStackTabs can be null if there are no tabs
 
     private int mLongPressSelected = -1;
-
-    // During pinch, the finger the closest to the bottom of the stack changes the scrolling
-    // and the other finger locally stretches the spacing between the tabs.
-    private int mPinch0TabIndex = -1;
-    private int mPinch1TabIndex = -1;
-    private float mLastPinch0Offset;
-    private float mLastPinch1Offset;
-
-    // Current progress of the 'even out' phase. This progress as the screen get scrolled.
-    private float mEvenOutProgress = 1.0f;
-    // Rate to even out all the tabs.
-    private float mEvenOutRate = 1.0f; // This will be updated from dimens.xml
 
     // Overscroll
     private StackScroller mScroller;
@@ -192,18 +174,18 @@ public class Stack {
     private float mMinScrollMotion;
 
     // Scrolling Variables
-    private float mScrollTarget;
-    private float mScrollOffset;
+    protected float mScrollTarget;
+    protected float mScrollOffset;
     private float mScrollOffsetForDyingTabs;
-    private float mCurrentScrollDirection;
-    private StackTab mScrollingTab;
+    protected float mCurrentScrollDirection;
+    protected StackTab mScrollingTab;
 
     // Swipe Variables
     private float mSwipeUnboundScrollOffset;
     private float mSwipeBoundedScrollOffset;
     private boolean mSwipeIsCancelable;
     private boolean mSwipeCanScroll;
-    private boolean mInSwipe;
+    protected boolean mInSwipe;
 
     // Discard
     private StackTab mDiscardingTab;
@@ -212,17 +194,15 @@ public class Stack {
     // involve a jni call. Instead, mDiscardDirection will be initialized in Show().
     private float mDiscardDirection = Float.NaN;
 
-    private float mMinSpacing; // This will be updated from dimens.xml
-
     private boolean mRecomputePosition = true;
 
     private int mReferenceOrderIndex = -1;
 
     // Orientation Variables
-    private int mCurrentMode = Orientation.PORTRAIT;
+    protected int mCurrentMode = Orientation.PORTRAIT;
 
     // Animation Variables
-    private OverviewAnimationType mOverviewAnimationType = OverviewAnimationType.NONE;
+    protected OverviewAnimationType mOverviewAnimationType = OverviewAnimationType.NONE;
     private StackAnimation mAnimationFactory;
     private StackViewAnimation mViewAnimationFactory;
 
@@ -480,7 +460,7 @@ public class Stack {
      * @param time The current time of the app in ms.
      * @param type The type of the animation to start.
      */
-    private void startAnimation(long time, OverviewAnimationType type) {
+    protected void startAnimation(long time, OverviewAnimationType type) {
         startAnimation(time, type, TabList.INVALID_TAB_INDEX, false);
     }
 
@@ -950,7 +930,8 @@ public class Stack {
     }
 
     /**
-     * Evens out auto-magically the cards as the stack get scrolled.
+     * OverlappingStack implements this to auto-magically the cards as the stack get scrolled.
+     * NonOverlappingStack just ignores this call.
      *
      * @param amount                The amount of scroll performed in pixel. The sign indicates the
      *                              direction.
@@ -958,58 +939,7 @@ public class Stack {
      *                              the amount scrolled.
      * @return                      True if any tab had been 'visibly' moved.
      */
-    private boolean evenOutTabs(float amount, boolean allowReverseDirection) {
-        if (mStackTabs == null || mOverviewAnimationType != OverviewAnimationType.NONE
-                || mEvenOutProgress >= 1.0f || amount == 0) {
-            return false;
-        }
-        boolean changed = false;
-        boolean reverseScrolling = false;
-
-        // The evening out process last until mEvenOutRate reaches 1.0. Tabs blend linearly
-        // between the current position to a nice evenly scaled pattern. Because we do not store
-        // the starting position for each tab we need more complicated math to do the blend.
-        // The absoluteProgress is how much we need progress this step on the [0, 1] scale.
-        float absoluteProgress = Math.min(Math.abs(amount) * mEvenOutRate, 1.0f - mEvenOutProgress);
-        // The relativeProgress is how much we need to blend the target to the current to get there.
-        float relativeProgress = absoluteProgress / (1.0f - mEvenOutProgress);
-
-        float screenMax = getScrollDimensionSize();
-        for (int i = 0; i < mStackTabs.length; ++i) {
-            float source = mStackTabs[i].getScrollOffset();
-            float target = screenToScroll(i * mSpacing);
-            float sourceScreen = Math.min(screenMax, scrollToScreen(source + mScrollTarget));
-            float targetScreen = Math.min(screenMax, scrollToScreen(target + mScrollTarget));
-            // If the target and the current position matches on the screen then we snap to the
-            // target.
-            if (sourceScreen == targetScreen) {
-                mStackTabs[i].setScrollOffset(target);
-                continue;
-            }
-            float step = source + (target - source) * relativeProgress;
-            float stepScreen = Math.min(screenMax, scrollToScreen(step + mScrollTarget));
-            // If the step can be performed without noticing then we do it.
-            if (sourceScreen == stepScreen) {
-                mStackTabs[i].setScrollOffset(step);
-                continue;
-            }
-            // If the scrolling goes in the same direction as the step then the motion is applied.
-            if ((targetScreen - sourceScreen) * amount > 0 || allowReverseDirection) {
-                mStackTabs[i].setScrollOffset(step);
-                changed = true;
-            } else {
-                reverseScrolling = true;
-            }
-        }
-        // Only account for progress if the scrolling was in the right direction. It assumes here
-        // That if any of the tabs was going in the wrong direction then the progress is not
-        // recorded at all. This is very conservative to avoid poping in the scrolling. It works
-        // for now but might need to be revisited if we see artifacts.
-        if (!reverseScrolling) {
-            mEvenOutProgress += absoluteProgress;
-        }
-        return changed;
-    }
+    protected abstract boolean evenOutTabs(float amount, boolean allowReverseDirection);
 
     /**
      * Called on touch fling event. Scroll the stack or help to discard a tab.
@@ -1072,7 +1002,6 @@ public class Stack {
             mLongPressSelected = getTabIndexAtPositon(x, y);
             if (mLongPressSelected >= 0) {
                 startAnimation(time, OverviewAnimationType.VIEW_MORE, mLongPressSelected, false);
-                mEvenOutProgress = 0.0f;
             }
         }
     }
@@ -1087,147 +1016,8 @@ public class Stack {
      * @param y1         The y coordinate of the second touch event.
      * @param firstEvent The pinch is the first of a sequence of pinch events.
      */
-    public void onPinch(long time, float x0, float y0, float x1, float y1, boolean firstEvent) {
-        if ((mOverviewAnimationType != OverviewAnimationType.START_PINCH
-                && mOverviewAnimationType != OverviewAnimationType.NONE) || mStackTabs == null) {
-            return;
-        }
-        if (mPinch0TabIndex < 0) startAnimation(time, OverviewAnimationType.START_PINCH);
-
-        // Reordering the fingers so pinch0 is always the closest to the top of the stack.
-        // This allows simpler math down the line where we assume that
-        // pinch0TabIndex <= pinch0TabIndex
-        // It also means that crossing the finger will separate the tabs again.
-        boolean inverse = (mCurrentMode == Orientation.PORTRAIT)
-                ? y0 > y1
-                : LocalizationUtils.isLayoutRtl() ? (x0 <= x1) : (x0 > x1);
-        float pinch0X = inverse ? x1 : x0;
-        float pinch0Y = inverse ? y1 : y0;
-        float pinch1X = inverse ? x0 : x1;
-        float pinch1Y = inverse ? y0 : y1;
-        float pinch0Offset = (mCurrentMode == Orientation.PORTRAIT)
-                ? pinch0Y
-                : LocalizationUtils.isLayoutRtl() ? -pinch0X : pinch0X;
-        float pinch1Offset = (mCurrentMode == Orientation.PORTRAIT)
-                ? pinch1Y
-                : LocalizationUtils.isLayoutRtl() ? -pinch1X : pinch1X;
-
-        if (firstEvent) {
-            // Resets pinch and scrolling state.
-            mPinch0TabIndex = -1;
-            mPinch1TabIndex = -1;
-            mScrollingTab = null;
-            commitDiscard(time, false);
-        }
-        int pinch0TabIndex = mPinch0TabIndex;
-        int pinch1TabIndex = mPinch1TabIndex;
-        if (mPinch0TabIndex < 0) {
-            pinch0TabIndex = getTabIndexAtPositon(pinch0X, pinch0Y);
-            pinch1TabIndex = getTabIndexAtPositon(pinch1X, pinch1Y);
-            // If any of them is invalid we invalidate both.
-            if (pinch0TabIndex < 0 || pinch1TabIndex < 0) {
-                pinch0TabIndex = -1;
-                pinch1TabIndex = -1;
-            }
-        }
-
-        if (pinch0TabIndex >= 0 && mPinch0TabIndex == pinch0TabIndex
-                && mPinch1TabIndex == pinch1TabIndex) {
-            final float minScrollTarget = getMinScroll(false);
-            final float maxScrollTarget = getMaxScroll(false);
-            final float oldScrollTarget =
-                    MathUtils.clamp(mScrollTarget, minScrollTarget, maxScrollTarget);
-            // pinch0TabIndex > pinch1TabIndex is unexpected but we do not want to exit
-            // ungracefully so process it as if the tabs were the same.
-            if (pinch0TabIndex >= pinch1TabIndex) {
-                // If one tab is pinched then we only scroll.
-                float screenDelta0 = pinch0Offset - mLastPinch0Offset;
-                if (pinch0TabIndex == 0) {
-                    // Linear scroll on the top tab for the overscroll to kick-in linearly.
-                    setScrollTarget(oldScrollTarget + screenDelta0, false);
-                } else {
-                    float tab0ScrollSpace =
-                            mStackTabs[pinch0TabIndex].getScrollOffset() + oldScrollTarget;
-                    float tab0Screen = scrollToScreen(tab0ScrollSpace);
-                    float tab0ScrollFinal = screenToScroll(tab0Screen + screenDelta0);
-                    setScrollTarget(
-                            tab0ScrollFinal - mStackTabs[pinch0TabIndex].getScrollOffset(), false);
-                }
-                // This is the common case of the pinch, 2 fingers on 2 different tabs.
-            } else {
-                // Find the screen space position before and after the scroll so the tab 0 matches
-                // the finger 0 motion.
-                float screenDelta0 = pinch0Offset - mLastPinch0Offset;
-                float tab0ScreenBefore = approxScreen(mStackTabs[pinch0TabIndex], oldScrollTarget);
-                float tab0ScreenAfter = tab0ScreenBefore + screenDelta0;
-
-                // Find the screen space position before and after the scroll so the tab 1 matches
-                // the finger 1 motion.
-                float screenDelta1 = pinch1Offset - mLastPinch1Offset;
-                float tab1ScreenBefore = approxScreen(mStackTabs[pinch1TabIndex], oldScrollTarget);
-                float tab1ScreenAfter = tab1ScreenBefore + screenDelta1;
-
-                // Heuristic: the scroll is defined by half the change of the first pinched tab.
-                // The rational is that it looks nice this way :)... Scrolling creates a sliding
-                // effect. When a finger does not move then it is expected that none of the tabs
-                // past that steady finger should move. This does the job.
-                float globalScrollBefore = screenToScroll(tab0ScreenBefore);
-                float globalScrollAfter = screenToScroll((tab0ScreenAfter + tab0ScreenBefore) / 2);
-                setScrollTarget(oldScrollTarget + globalScrollAfter - globalScrollBefore, true);
-
-                // Evens out the tabs in between
-                float minScreen = tab0ScreenAfter;
-                float maxScreen = tab0ScreenAfter;
-                for (int i = pinch0TabIndex; i <= pinch1TabIndex; i++) {
-                    float screenBefore = approxScreen(mStackTabs[i], oldScrollTarget);
-                    float t = (tab1ScreenBefore == tab0ScreenBefore)
-                            ? 1
-                            : ((screenBefore - tab0ScreenBefore)
-                                      / (tab1ScreenBefore - tab0ScreenBefore));
-                    float screenAfter = (1 - t) * tab0ScreenAfter + t * tab1ScreenAfter;
-                    screenAfter = Math.max(minScreen, screenAfter);
-                    screenAfter = Math.min(maxScreen, screenAfter);
-                    minScreen = screenAfter + StackTab.sStackedTabVisibleSize;
-                    maxScreen = screenAfter + mStackTabs[i].getSizeInScrollDirection(mCurrentMode);
-                    float newScrollOffset = screenToScroll(screenAfter) - mScrollTarget;
-                    mStackTabs[i].setScrollOffset(newScrollOffset);
-                }
-
-                // Push a bit the tabs bellow pinch1.
-                float delta1 = tab1ScreenAfter - tab1ScreenBefore;
-                for (int i = pinch1TabIndex + 1; i < mStackTabs.length; i++) {
-                    delta1 /= 2;
-                    float screenAfter = approxScreen(mStackTabs[i], oldScrollTarget) + delta1;
-                    screenAfter = Math.max(minScreen, screenAfter);
-                    screenAfter = Math.min(maxScreen, screenAfter);
-                    minScreen = screenAfter + StackTab.sStackedTabVisibleSize;
-                    maxScreen = screenAfter + mStackTabs[i].getSizeInScrollDirection(mCurrentMode);
-                    mStackTabs[i].setScrollOffset(screenToScroll(screenAfter) - mScrollTarget);
-                }
-
-                // Pull a bit the tabs above pinch0.
-                minScreen = tab0ScreenAfter;
-                maxScreen = tab0ScreenAfter;
-                float posScreen = tab0ScreenAfter;
-                float delta0 = tab0ScreenAfter - tab0ScreenBefore;
-                for (int i = pinch0TabIndex - 1; i > 0; i--) {
-                    delta0 /= 2;
-                    minScreen = posScreen - mStackTabs[i].getSizeInScrollDirection(mCurrentMode);
-                    maxScreen = posScreen - StackTab.sStackedTabVisibleSize;
-                    float screenAfter = approxScreen(mStackTabs[i], oldScrollTarget) + delta0;
-                    screenAfter = Math.max(minScreen, screenAfter);
-                    screenAfter = Math.min(maxScreen, screenAfter);
-                    mStackTabs[i].setScrollOffset(screenToScroll(screenAfter) - mScrollTarget);
-                }
-            }
-        }
-        mPinch0TabIndex = pinch0TabIndex;
-        mPinch1TabIndex = pinch1TabIndex;
-        mLastPinch0Offset = pinch0Offset;
-        mLastPinch1Offset = pinch1Offset;
-        mEvenOutProgress = 0.0f;
-        requestUpdate();
-    }
+    public abstract void onPinch(
+            long time, float x0, float y0, float x1, float y1, boolean firstEvent);
 
     /**
      * Commits or release the that currently being considered for discard. This function
@@ -1237,7 +1027,7 @@ public class Stack {
      * @param allowDiscard Whether to allow to discard the tab currently being considered
      *                     for discard.
      */
-    private void commitDiscard(long time, boolean allowDiscard) {
+    protected void commitDiscard(long time, boolean allowDiscard) {
         if (mDiscardingTab == null) return;
 
         assert mStackTabs != null;
@@ -1258,11 +1048,6 @@ public class Stack {
      * Called on touch up or cancel event.
      */
     public void onUpOrCancel(long time) {
-        // Make sure the bottom tab always goes back to the top of the screen.
-        if (mPinch0TabIndex >= 0) {
-            startAnimation(time, OverviewAnimationType.REACH_TOP);
-            requestUpdate();
-        }
         // Commit or uncommit discard tab
         commitDiscard(time, true);
 
@@ -1348,8 +1133,6 @@ public class Stack {
         mMaxUnderScroll = maxUnderScrollPx * pxToDp;
         mMaxOverScrollAngle = res.getInteger(R.integer.over_scroll_angle);
         mMaxOverScrollSlide = res.getDimensionPixelOffset(R.dimen.over_scroll_slide) * pxToDp;
-        mEvenOutRate = 1.0f / (res.getDimension(R.dimen.even_out_scrolling) * pxToDp);
-        mMinSpacing = res.getDimensionPixelOffset(R.dimen.min_spacing) * pxToDp;
         mBorderTransparentTop =
                 res.getDimension(R.dimen.tabswitcher_border_frame_transparent_top) * pxToDp;
         mBorderTransparentSide =
@@ -1371,7 +1154,7 @@ public class Stack {
         updateCurrentMode(orientation);
     }
 
-    private float getScrollDimensionSize() {
+    protected float getScrollDimensionSize() {
         return mCurrentMode == Orientation.PORTRAIT ? mLayout.getHeightMinusBrowserControls()
                                                     : mLayout.getWidth();
     }
@@ -1395,7 +1178,7 @@ public class Stack {
      * @param y The y coordinate where to perform the hit test.
      * @return  The index of the tab selected. -1 if none.
      */
-    private int getTabIndexAtPositon(float x, float y) {
+    protected int getTabIndexAtPositon(float x, float y) {
         return getTabIndexAtPositon(x, y, 0);
     }
 
@@ -1477,6 +1260,39 @@ public class Stack {
     }
 
     /**
+     * @return Whether or not to enable logic that gives the tabs a "stacked" appearance at the top
+     *         (in portrait mode) or left (in landscape mode).
+     */
+    protected abstract boolean shouldStackTabsAtTop();
+
+    /**
+     * @return Whether or not to enable logic that gives the tabs a "stacked" appearance at the
+     *         bottom (in portrait mode) or right (in landscape mode).
+     */
+    protected abstract boolean shouldStackTabsAtBottom();
+
+    /**
+     * @return How much the stack should adjust the y position of each LayoutTab in portrait mode
+     *         (as a fraction of the amount space that would be above and below the tab if it were
+     *         centered).
+     */
+    protected abstract float getStackPortraitYOffsetProportion();
+
+    /**
+     * @return How much the stack should adjust the x position of each LayoutTab in landscape mode
+     *         (as a fraction of the amount space that would be to the left and right of the tab if
+     *         it were centered).
+     */
+    protected abstract float getStackLandscapeStartOffsetProportion();
+
+    /**
+     * @return How much the stack should adjust the x position of each LayoutTab in portrait mode
+     *         (as a fraction of the amount space that would be above and below the tab if it were
+     *         centered).
+     */
+    protected abstract float getStackLandscapeYOffsetProportion();
+
+    /**
      * ComputeTabPosition pass 3:
      * Compute the position of the tabs. Adjust for top and bottom stacking.
      *
@@ -1505,25 +1321,27 @@ public class Stack {
                     stackTab.isDying() ? mScrollOffsetForDyingTabs : scrollOffset;
             float screenScrollOffset = approxScreen(stackTab, stackScrollOffset);
 
-            // Resolve top stacking
-            screenScrollOffset = Math.max(minStackedPosition, screenScrollOffset);
-            if (stackedCount < MAX_NUMBER_OF_STACKED_TABS_TOP) {
-                // This make sure all the tab get stacked up as one when all the tabs do a
-                // full roll animation.
-                final float tiltXcos = (float) Math.cos(Math.toRadians(layoutTab.getTiltX()));
-                final float tiltYcos = (float) Math.cos(Math.toRadians(layoutTab.getTiltY()));
-                float collapse = Math.min(Math.abs(tiltXcos), Math.abs(tiltYcos));
-                collapse *= layoutTab.getAlpha();
-                minStackedPosition += StackTab.sStackedTabVisibleSize * collapse;
-            }
-            stackedCount += stackTab.isDying() ? 0 : 1;
-            if (overscrollPercent < 0) {
-                // Oversroll at the top of the screen. For the first
-                // OVERSCROLL_TOP_SLIDE_PCTG of the overscroll, slide the tabs
-                // together so they completely overlap.  After that, stop scrolling the tabs.
-                screenScrollOffset +=
-                        (overscrollPercent / OVERSCROLL_TOP_SLIDE_PCTG) * screenScrollOffset;
-                screenScrollOffset = Math.max(0, screenScrollOffset);
+            if (shouldStackTabsAtTop()) {
+                // Resolve top stacking
+                screenScrollOffset = Math.max(minStackedPosition, screenScrollOffset);
+                if (stackedCount < MAX_NUMBER_OF_STACKED_TABS_TOP) {
+                    // This make sure all the tab get stacked up as one when all the tabs do a
+                    // full roll animation.
+                    final float tiltXcos = (float) Math.cos(Math.toRadians(layoutTab.getTiltX()));
+                    final float tiltYcos = (float) Math.cos(Math.toRadians(layoutTab.getTiltY()));
+                    float collapse = Math.min(Math.abs(tiltXcos), Math.abs(tiltYcos));
+                    collapse *= layoutTab.getAlpha();
+                    minStackedPosition += StackTab.sStackedTabVisibleSize * collapse;
+                }
+                stackedCount += stackTab.isDying() ? 0 : 1;
+                if (overscrollPercent < 0) {
+                    // Oversroll at the top of the screen. For the first
+                    // OVERSCROLL_TOP_SLIDE_PCTG of the overscroll, slide the tabs
+                    // together so they completely overlap.  After that, stop scrolling the tabs.
+                    screenScrollOffset +=
+                            (overscrollPercent / OVERSCROLL_TOP_SLIDE_PCTG) * screenScrollOffset;
+                    screenScrollOffset = Math.max(0, screenScrollOffset);
+                }
             }
 
             // Note: All the Offsets except for centering shouldn't depend on the tab's scaling
@@ -1539,58 +1357,62 @@ public class Stack {
             final float horizontalPadding =
                     (parentWidth
                             - layoutTab.getOriginalContentWidth() * StackAnimation.SCALE_AMOUNT
-                                    * stackScale) / 2.0f;
+                                    * stackScale)
+                    / 2.0f;
             final float verticalPadding =
                     (parentHeight
                             - layoutTab.getOriginalContentHeight() * StackAnimation.SCALE_AMOUNT
-                                    * stackScale) / 2.0f;
+                                    * stackScale)
+                    / 2.0f;
 
             if (portrait) {
-                yIn += STACK_PORTRAIT_Y_OFFSET_PROPORTION * verticalPadding;
+                yIn += getStackPortraitYOffsetProportion() * verticalPadding;
                 yIn += screenScrollOffset;
             } else {
                 if (LocalizationUtils.isLayoutRtl()) {
-                    xIn -= STACK_LANDSCAPE_START_OFFSET_PROPORTION * horizontalPadding;
+                    xIn -= getStackLandscapeStartOffsetProportion() * horizontalPadding;
                     xIn -= screenScrollOffset;
                 } else {
-                    xIn += STACK_LANDSCAPE_START_OFFSET_PROPORTION * horizontalPadding;
+                    xIn += getStackLandscapeStartOffsetProportion() * horizontalPadding;
                     xIn += screenScrollOffset;
                 }
-                yIn += STACK_LANDSCAPE_Y_OFFSET_PROPORTION * verticalPadding;
+                yIn += getStackLandscapeYOffsetProportion() * verticalPadding;
             }
 
             layoutTab.setX(xIn);
             layoutTab.setY(yIn);
         }
 
-        // Resolve bottom stacking
-        stackedCount = 0;
-        float maxStackedPosition =
-                portrait ? mLayout.getHeightMinusBrowserControls() : mLayout.getWidth();
-        for (int i = mStackTabs.length - 1; i >= 0; i--) {
-            assert mStackTabs[i] != null;
-            StackTab stackTab = mStackTabs[i];
-            LayoutTab layoutTab = stackTab.getLayoutTab();
-            if (stackTab.isDying()) continue;
+        if (shouldStackTabsAtBottom()) {
+            // Resolve bottom stacking
+            stackedCount = 0;
+            float maxStackedPosition =
+                    portrait ? mLayout.getHeightMinusBrowserControls() : mLayout.getWidth();
+            for (int i = mStackTabs.length - 1; i >= 0; i--) {
+                assert mStackTabs[i] != null;
+                StackTab stackTab = mStackTabs[i];
+                LayoutTab layoutTab = stackTab.getLayoutTab();
+                if (stackTab.isDying()) continue;
 
-            float pos;
-            if (portrait) {
-                pos = layoutTab.getY();
-                layoutTab.setY(Math.min(pos, maxStackedPosition));
-            } else if (LocalizationUtils.isLayoutRtl()) {
-                // On RTL landscape, pos is a distance between tab's right and mLayout's right.
-                float posOffset = mLayout.getWidth()
-                        - layoutTab.getOriginalContentWidth() * StackAnimation.SCALE_AMOUNT
-                                * stackScale;
-                pos = -layoutTab.getX() + posOffset;
-                layoutTab.setX(-Math.min(pos, maxStackedPosition) + posOffset);
-            } else {
-                pos = layoutTab.getX();
-                layoutTab.setX(Math.min(pos, maxStackedPosition));
-            }
-            if (pos >= maxStackedPosition && stackedCount < MAX_NUMBER_OF_STACKED_TABS_BOTTOM) {
-                maxStackedPosition -= StackTab.sStackedTabVisibleSize;
-                stackedCount++;
+                float pos;
+                if (portrait) {
+                    pos = layoutTab.getY();
+                    layoutTab.setY(Math.min(pos, maxStackedPosition));
+                } else if (LocalizationUtils.isLayoutRtl()) {
+                    // On RTL landscape, pos is a distance between tab's right and mLayout's right.
+                    float posOffset = mLayout.getWidth()
+                            - layoutTab.getOriginalContentWidth() * StackAnimation.SCALE_AMOUNT
+                                    * stackScale;
+                    pos = -layoutTab.getX() + posOffset;
+                    layoutTab.setX(-Math.min(pos, maxStackedPosition) + posOffset);
+                } else {
+                    pos = layoutTab.getX();
+                    layoutTab.setX(Math.min(pos, maxStackedPosition));
+                }
+                if (pos >= maxStackedPosition && stackedCount < MAX_NUMBER_OF_STACKED_TABS_BOTTOM) {
+                    maxStackedPosition -= StackTab.sStackedTabVisibleSize;
+                    stackedCount++;
+                }
             }
         }
 
@@ -1821,6 +1643,9 @@ public class Stack {
         }
     }
 
+    /** Whether or not to apply logic to enforce that there are no gaps between tabs. */
+    protected abstract boolean shouldCloseGapsBetweenTabs();
+
     /**
      * Computes the {@link LayoutTab} position from the stack and the stackTab data.
      *
@@ -1836,8 +1661,10 @@ public class Stack {
         // Step 1: Updates the {@link LayoutTab} scale, alpha and depth values.
         computeTabScaleAlphaDepthHelper(stackRect);
 
-        // Step 2: Fix tab scroll offsets to avoid gaps.
-        computeTabScrollOffsetHelper();
+        if (shouldCloseGapsBetweenTabs()) {
+            // Step 2: Fix tab scroll offsets to avoid gaps.
+            computeTabScrollOffsetHelper();
+        }
 
         // Step 3: Compute the actual position.
         computeTabOffsetHelper(stackRect);
@@ -1977,29 +1804,21 @@ public class Stack {
         return true;
     }
 
-    private int computeSpacing(int layoutTabCount) {
-        // This redetermines the proper spacing for the {@link StackTab}.  It takes in
-        // a parameter for the size instead of using the mStackTabs.length
-        // property because we could be setting the spacing for a delete
-        // before the tab has been removed (will help with animations).
-        int spacing = 0;
-        if (layoutTabCount > 1) {
-            final float dimension = getScrollDimensionSize();
-            int minSpacing = (int) Math.max(dimension * SPACING_SCREEN, mMinSpacing);
-            if (mStackTabs != null) {
-                for (int i = 0; i < mStackTabs.length; i++) {
-                    assert mStackTabs[i] != null;
-                    if (!mStackTabs[i].isDying()) {
-                        minSpacing = (int) Math.min(
-                                minSpacing, mStackTabs[i].getSizeInScrollDirection(mCurrentMode));
-                    }
-                }
-            }
-            spacing = (int) ((dimension - 20) / (layoutTabCount * .8f));
-            spacing = Math.max(spacing, minSpacing);
-        }
-        return spacing;
-    }
+    /**
+     * @return The percentage of the screen that defines the spacing between tabs by default (no
+     *         pinch).
+     */
+    protected abstract float getSpacingScreen();
+
+    /**
+     * This redetermines the proper spacing for the {@link StackTab}. It takes in a parameter for
+     * the size instead of using the mStackTabs.length property because we could be setting the
+     * spacing for a delete before the tab has been removed (will help with animations).
+     * @param layoutTabCount The number of layout tabs currently in the Stack.
+     * @return               How far apart the tabs should be spaced (modulo certain adjustments,
+     *                       such as non-linear warping).
+     */
+    protected abstract int computeSpacing(int layoutTabCount);
 
     private float getStackScale(RectF stackRect) {
         return mCurrentMode == Orientation.PORTRAIT
@@ -2007,7 +1826,7 @@ public class Stack {
                 : stackRect.height() / mLayout.getHeightMinusBrowserControls();
     }
 
-    private void setScrollTarget(float offset, boolean immediate) {
+    protected void setScrollTarget(float offset, boolean immediate) {
         // Ensure that the stack cannot be scrolled too far in either direction.
         // mScrollOffset is clamped between [-min, 0], where offset 0 has the
         // farthest back tab (the first tab) at the top, with everything else
@@ -2019,12 +1838,12 @@ public class Stack {
         mCurrentScrollDirection = Math.signum(mScrollTarget - mScrollOffset);
     }
 
-    private float getMinScroll(boolean allowUnderScroll) {
+    protected float getMinScroll(boolean allowUnderScroll) {
         float maxOffset = 0;
         if (mStackTabs != null) {
             // The tabs are not always ordered so we need to browse them all.
             for (int i = 0; i < mStackTabs.length; i++) {
-                if (!mStackTabs[i].isDying() && mStackTabs[i].getLayoutTab().isVisible()) {
+                if (!mStackTabs[i].isDying()) {
                     maxOffset = Math.max(mStackTabs[i].getScrollOffset(), maxOffset);
                 }
             }
@@ -2037,7 +1856,7 @@ public class Stack {
      *
      * @param allowOverscroll True if overscroll is allowed.
      */
-    private float getMaxScroll(boolean allowOverscroll) {
+    protected float getMaxScroll(boolean allowOverscroll) {
         if (mStackTabs == null || !allowOverscroll) {
             return 0;
         } else {
@@ -2061,13 +1880,12 @@ public class Stack {
         }
     }
 
-    private boolean allowOverscroll() {
+    protected boolean allowOverscroll() {
         // All the animations that want to leave the tilt value to be set by the overscroll must
         // be added here.
-        return (mOverviewAnimationType == OverviewAnimationType.NONE
-                       || mOverviewAnimationType == OverviewAnimationType.VIEW_MORE
-                       || mOverviewAnimationType == OverviewAnimationType.ENTER_STACK)
-                && mPinch0TabIndex < 0;
+        return mOverviewAnimationType == OverviewAnimationType.NONE
+                || mOverviewAnimationType == OverviewAnimationType.VIEW_MORE
+                || mOverviewAnimationType == OverviewAnimationType.ENTER_STACK;
     }
 
     /**
@@ -2138,93 +1956,29 @@ public class Stack {
         mOverScrollOffset = overscroll;
     }
 
-    private void resetAllScrollOffset() {
-        if (mTabList == null) return;
-        // Reset the scroll position to put the important {@link StackTab} into focus.
-        // This does not scroll the {@link StackTab}s there but rather moves everything
-        // there immediately.
-        // The selected tab is supposed to show at the center of the screen.
-        float maxTabsPerPage = getScrollDimensionSize() / mSpacing;
-        float centerOffsetIndex = maxTabsPerPage / 2.0f - 0.5f;
-        final int count = mTabList.getCount();
-        final int index = mTabList.index();
-        if (index < centerOffsetIndex || count <= maxTabsPerPage) {
-            mScrollOffset = 0;
-        } else if (index == count - 1 && Math.ceil(maxTabsPerPage) < count) {
-            mScrollOffset = (maxTabsPerPage - count - 1) * mSpacing;
-        } else if ((count - index - 1) < centerOffsetIndex) {
-            mScrollOffset = (maxTabsPerPage - count) * mSpacing;
-        } else {
-            mScrollOffset = (centerOffsetIndex - index) * mSpacing;
-        }
-        // Reset the scroll offset of the tabs too.
-        if (mStackTabs != null) {
-            for (int i = 0; i < mStackTabs.length; i++) {
-                mStackTabs[i].setScrollOffset(screenToScroll(i * mSpacing));
-            }
-        }
-        setScrollTarget(mScrollOffset, false);
-    }
+    /**
+     * Called when the stack is opened to reset all the tab and scroll positions.
+     */
+    protected abstract void resetAllScrollOffset();
 
-    private float approxScreen(StackTab tab, float globalScrollOffset) {
+    protected float approxScreen(StackTab tab, float globalScrollOffset) {
         return scrollToScreen(tab.getScrollOffset() + globalScrollOffset);
     }
 
     /**
-     * The scroll space does not map linearly to the screen so it creates a nice slow down
-     * effect at the top of the screen while scrolling.
-     * Warps x so it matches y(x) = x - warpSize on the positive side and 0 on the negative side
-     * with a smooth transition between [0, 2 * warpSize].
-     * @see #screenToScroll(float)
-     *
-     * [-oo, 0] -> 0
-     * [0, 2 * warpSize] -> warpSize * ((x-warpSize) / 2 * warpSize + 0.5) ^ 2.
-     * [2 * warpSize, +oo] -> x
-     * @param x        The offset in scroll space.
-     * @param warpSize The size in scroll space of the slow down effect.
-     * @return         The offset on screen corresponding to the scroll space offset.
-     */
-    private float scrollToScreen(float x, float warpSize) {
-        if (x <= 0) return 0;
-        if (x >= 2 * warpSize) return x - warpSize;
-        x = (x - warpSize) / (2.0f * warpSize) + 0.5f;
-        return x * x * warpSize;
-    }
-
-    /**
-     * Public version of scrollToScreen(float, float) that uses the current warp size.
+     * Maps from scroll coordinates to screen coordinates.
      * @param scrollSpace The offset in scroll space.
      * @return            The offset on screen corresponding to the scroll space offset.
      */
-    public float scrollToScreen(float scrollSpace) {
-        return scrollToScreen(scrollSpace, mWarpSize);
-    }
+    public abstract float scrollToScreen(float scrollSpace);
 
     /**
-     * Unwarps x so it matches the above warp function.
-     * @see #scrollToScreen(float)
-     *
-     * [-oo, 0] -> -warpSize
-     * [0, warpSize] -> 2 * warpSize * sqrt(x / warpSize).
-     * [warpSize, +oo] -> x + warpSize
-     * @param x        The screen space offset.
-     * @param warpSize The size in scroll space of the slow down effect.
-     * @return         The offset in scroll space corresponding to the offset on screen.
-     */
-    private float screenToScroll(float x, float warpSize) {
-        if (x <= 0) return 0;
-        if (x >= warpSize) return x + warpSize;
-        return (float) Math.sqrt(x * warpSize) * 2;
-    }
-
-    /**
-     * Public version of screenToScroll(float, float) that uses the current warp size.
+     * Maps from screen coordinates to scroll coordinates. This allows Stack subclasses (e.g.
+     * OverlappingStack) to use non-linear scrolling.
      * @param scrollSpace The offset in screen space.
      * @return            The offset in scroll space corresponding to the offset on screen.
      */
-    public float screenToScroll(float screenSpace) {
-        return screenToScroll(screenSpace, mWarpSize);
-    }
+    public abstract float screenToScroll(float screenSpace);
 
     /**
      * @return The range of the discard action. At the end of the +/- range the discarded tab
@@ -2276,7 +2030,7 @@ public class Stack {
         return 1.f - Math.abs(t);
     }
 
-    private void updateCurrentMode(int orientation) {
+    protected void updateCurrentMode(int orientation) {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)) {
             mCurrentMode = Orientation.LANDSCAPE;
         } else {
@@ -2284,7 +2038,6 @@ public class Stack {
         }
 
         mDiscardDirection = getDefaultDiscardDirection();
-        setWarpState(true, false);
         final float opaqueTopPadding = mBorderTopPadding - mBorderTransparentTop;
         mAnimationFactory = StackAnimation.createAnimationFactory(this, mLayout.getWidth(),
                 mLayout.getHeight(), mLayout.getTopBrowserControlsHeight(), mBorderTopPadding,
@@ -2312,9 +2065,7 @@ public class Stack {
     /**
      * Resets all the indices that are pointing to tabs for various features.
      */
-    private void resetInputActionIndices() {
-        mPinch0TabIndex = -1;
-        mPinch1TabIndex = -1;
+    protected void resetInputActionIndices() {
         mScrollingTab = null;
         mDiscardingTab = null;
         mLongPressSelected = -1;
@@ -2337,34 +2088,6 @@ public class Stack {
     }
 
     /**
-     * Whether or not the tab positions warp from linear to nonlinear as the tabs approach the edge
-     * of the screen.  This allows us to move the tabs to linear space to track finger movements,
-     * but also move them back to non-linear space without any visible change to the user.
-     * @param canWarp           Whether or not the tabs are allowed to warp.
-     * @param adjustCurrentTabs Whether or not to change the tab positions so there's no visible
-     *                          difference after the change.
-     */
-    private void setWarpState(boolean canWarp, boolean adjustCurrentTabs) {
-        float warp = canWarp ? getScrollDimensionSize() * SCROLL_WARP_PCTG : 0.f;
-
-        if (mStackTabs != null && adjustCurrentTabs && Float.compare(warp, mWarpSize) != 0) {
-            float scrollOffset =
-                    MathUtils.clamp(mScrollOffset, getMinScroll(false), getMaxScroll(false));
-            for (int i = 0; i < mStackTabs.length; i++) {
-                StackTab tab = mStackTabs[i];
-                float tabScrollOffset = tab.getScrollOffset();
-                float tabScrollSpace = tabScrollOffset + scrollOffset;
-                float tabScreen = scrollToScreen(tabScrollSpace, mWarpSize);
-                float tabScrollSpaceFinal = screenToScroll(tabScreen, warp);
-                float scrollDelta = tabScrollSpaceFinal - tabScrollSpace;
-                tab.setScrollOffset(tabScrollOffset + scrollDelta);
-            }
-        }
-
-        mWarpSize = warp;
-    }
-
-    /**
      * Called when the swipe animation get initiated. It gives a chance to initialize everything.
      * @param time      The current time of the app in ms.
      * @param direction The direction the swipe is in.
@@ -2373,9 +2096,6 @@ public class Stack {
      */
     public void swipeStarted(long time, ScrollDirection direction, float x, float y) {
         if (direction != ScrollDirection.DOWN) return;
-
-        // Turn off warping the tabs because we need them to track the user's finger.
-        setWarpState(false, false);
 
         // Restart the enter stack animation with the new warp values.
         startAnimation(time, OverviewAnimationType.ENTER_STACK);
@@ -2391,9 +2111,6 @@ public class Stack {
                     MathUtils.clamp(mScrollOffset, getMinScroll(false), getMaxScroll(false));
         }
         setScrollTarget(mScrollOffset, true);
-
-        // Don't let the tabs even out during this scroll.
-        mEvenOutProgress = 1.f;
 
         // Set up the tracking scroll parameters.
         mSwipeUnboundScrollOffset = mScrollOffset;
@@ -2487,10 +2204,6 @@ public class Stack {
 
         mInSwipe = false;
 
-        // Reset the warp state and mark the tabs to even themselves out.
-        setWarpState(true, true);
-        mEvenOutProgress = 0.f;
-
         onUpOrCancel(time);
     }
 
@@ -2505,9 +2218,6 @@ public class Stack {
         mDiscardingTab = null;
 
         mInSwipe = false;
-
-        setWarpState(true, true);
-        mEvenOutProgress = 0.f;
 
         // Select the current tab so we exit the switcher.
         Tab tab = TabModelUtils.getCurrentTab(mTabList);
