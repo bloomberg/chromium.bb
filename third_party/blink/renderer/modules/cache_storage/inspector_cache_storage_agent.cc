@@ -310,7 +310,8 @@ class GetCacheKeysForRequestData {
 
   void Dispatch(std::unique_ptr<GetCacheKeysForRequestData> self) {
     cache_ptr_->Keys(
-        WebServiceWorkerRequest(), mojom::blink::QueryParams::New(),
+        base::Optional<WebServiceWorkerRequest>(),
+        mojom::blink::QueryParams::New(),
         WTF::Bind(
             [](DataRequestParams params,
                std::unique_ptr<GetCacheKeysForRequestData> self,
@@ -547,6 +548,7 @@ void InspectorCacheStorageAgent::deleteEntry(
               auto& operation = batch_operations.back();
               operation->operation_type = mojom::blink::OperationType::kDelete;
               operation->request.SetURL(KURL(request));
+              operation->request.SetMethod("GET");
 
               mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr;
               cache_ptr.Bind(std::move(result->get_cache()));
@@ -587,6 +589,7 @@ void InspectorCacheStorageAgent::requestCachedResponse(
   }
   WebServiceWorkerRequest request;
   request.SetURL(KURL(request_url));
+  request.SetMethod("GET");
   cache_storage->Match(
       request, mojom::blink::QueryParams::New(),
       WTF::Bind(

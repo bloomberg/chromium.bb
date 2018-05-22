@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
@@ -573,12 +574,12 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
 ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
                                   const Request* request,
                                   const CacheQueryOptions& options) {
-  WebServiceWorkerRequest web_request;
+  base::Optional<WebServiceWorkerRequest> web_request;
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
 
   if (request) {
-    request->PopulateWebServiceWorkerRequest(web_request);
+    request->PopulateWebServiceWorkerRequest(web_request.emplace());
 
     if (request->method() != HTTPNames::GET && !options.ignoreMethod()) {
       resolver->Resolve(HeapVector<Member<Response>>());
@@ -764,12 +765,12 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
 ScriptPromise Cache::KeysImpl(ScriptState* script_state,
                               const Request* request,
                               const CacheQueryOptions& options) {
-  WebServiceWorkerRequest web_request;
+  base::Optional<WebServiceWorkerRequest> web_request;
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
 
   if (request) {
-    request->PopulateWebServiceWorkerRequest(web_request);
+    request->PopulateWebServiceWorkerRequest(web_request.emplace());
 
     if (request->method() != HTTPNames::GET && !options.ignoreMethod()) {
       resolver->Resolve(HeapVector<Member<Response>>());

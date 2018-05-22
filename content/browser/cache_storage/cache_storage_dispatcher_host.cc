@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -92,7 +93,7 @@ class CacheStorageDispatcherHost::CacheImpl
     std::move(callback).Run(blink::mojom::MatchResult::NewResponse(*response));
   }
 
-  void MatchAll(const ServiceWorkerFetchRequest& request,
+  void MatchAll(const base::Optional<ServiceWorkerFetchRequest>& request,
                 blink::mojom::QueryParamsPtr match_params,
                 MatchAllCallback callback) override {
     content::CacheStorageCache* cache = cache_handle_.value();
@@ -102,28 +103,17 @@ class CacheStorageDispatcherHost::CacheImpl
       return;
     }
 
-    if (request.url.is_empty()) {
-      cache->MatchAll(
-          nullptr, std::move(match_params),
-          base::BindOnce(&CacheImpl::OnCacheMatchAllCallback,
-                         weak_factory_.GetWeakPtr(), std::move(callback)));
-      return;
+    std::unique_ptr<ServiceWorkerFetchRequest> request_ptr;
+
+    if (request && !request->url.is_empty()) {
+      request_ptr = std::make_unique<ServiceWorkerFetchRequest>(
+          request->url, request->method, request->headers, request->referrer,
+          request->is_reload);
     }
 
-    auto scoped_request = std::make_unique<ServiceWorkerFetchRequest>(
-        request.url, request.method, request.headers, request.referrer,
-        request.is_reload);
-    if (match_params->ignore_search) {
-      cache->MatchAll(
-          std::move(scoped_request), std::move(match_params),
-          base::BindOnce(&CacheImpl::OnCacheMatchAllCallback,
-                         weak_factory_.GetWeakPtr(), std::move(callback)));
-      return;
-    }
-
-    cache->Match(
-        std::move(scoped_request), std::move(match_params),
-        base::BindOnce(&CacheImpl::OnCacheMatchAllCallbackAdapter,
+    cache->MatchAll(
+        std::move(request_ptr), std::move(match_params),
+        base::BindOnce(&CacheImpl::OnCacheMatchAllCallback,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -141,19 +131,7 @@ class CacheStorageDispatcherHost::CacheImpl
         blink::mojom::MatchAllResult::NewResponses(std::move(responses)));
   }
 
-  void OnCacheMatchAllCallbackAdapter(
-      blink::mojom::CacheStorageCache::MatchAllCallback callback,
-      blink::mojom::CacheStorageError error,
-      std::unique_ptr<ServiceWorkerResponse> response) {
-    std::vector<ServiceWorkerResponse> responses;
-    if (error == CacheStorageError::kSuccess) {
-      DCHECK(response);
-      responses.push_back(std::move(*response));
-    }
-    OnCacheMatchAllCallback(std::move(callback), error, std::move(responses));
-  }
-
-  void Keys(const ServiceWorkerFetchRequest& request,
+  void Keys(const base::Optional<ServiceWorkerFetchRequest>& request,
             blink::mojom::QueryParamsPtr match_params,
             KeysCallback callback) override {
     content::CacheStorageCache* cache = cache_handle_.value();
@@ -163,9 +141,13 @@ class CacheStorageDispatcherHost::CacheImpl
       return;
     }
 
-    auto request_ptr = std::make_unique<ServiceWorkerFetchRequest>(
-        request.url, request.method, request.headers, request.referrer,
-        request.is_reload);
+    std::unique_ptr<ServiceWorkerFetchRequest> request_ptr;
+
+    if (request) {
+      request_ptr = std::make_unique<ServiceWorkerFetchRequest>(
+          request->url, request->method, request->headers, request->referrer,
+          request->is_reload);
+    }
     cache->Keys(
         std::move(request_ptr), std::move(match_params),
         base::BindOnce(&CacheImpl::OnCacheKeysCallback,
