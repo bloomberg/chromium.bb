@@ -84,7 +84,8 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPad Air 2",
-      "os": "10.0",
+      "os": "10.3",
+      "xcode build version": "8E3004b",
       "dimensions": [
         {
           "os": "Mac-10.12",
@@ -99,7 +100,8 @@
     {
       "include": "common_tests.json",
       "device type": "iPad Air 2",
-      "os": "10.0",
+      "os": "10.3",
+      "xcode build version": "8E3004b",
       "dimensions": [
         {
           "os": "Mac-10.12",
