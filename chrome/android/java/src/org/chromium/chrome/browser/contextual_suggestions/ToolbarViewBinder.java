@@ -33,6 +33,8 @@ class ToolbarViewBinder
             view.setSlimPeekEnabled(model.isSlimPeekEnabled());
         } else if (propertyKey == PropertyKey.TOOLBAR_TRANSLATION_PERCENT) {
             view.setTranslationPercent(model.getToolbarTranslationPercent());
+        } else if (propertyKey == PropertyKey.TOOLBAR_ARROW_TINT_RESOURCE_ID) {
+            view.setArrowTintResourceId(model.getToolbarArrowTintResourceId());
         } else {
             assert false : "Unhandled property detected.";
         }
