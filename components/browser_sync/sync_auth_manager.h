@@ -105,6 +105,8 @@ class SyncAuthManager : public identity::IdentityManager::Observer,
   void UpdateAuthErrorState(const GoogleServiceAuthError& error);
   void ClearAuthError();
 
+  void ClearAccessTokenAndRequest();
+
   void AccessTokenFetched(const GoogleServiceAuthError& error,
                           const std::string& access_token);
 

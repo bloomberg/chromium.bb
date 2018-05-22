@@ -159,6 +159,7 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
         RequestAccessToken();
       } else {
         request_access_token_backoff_.InformOfRequest(false);
+        // TODO(treib): Also set token_status_.next_token_request_time here?
         request_access_token_retry_timer_.Start(
             FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
             base::BindRepeating(&SyncAuthManager::RequestAccessToken,
@@ -197,13 +198,16 @@ void SyncAuthManager::ClearAuthError() {
   UpdateAuthErrorState(GoogleServiceAuthError::AuthErrorNone());
 }
 
-void SyncAuthManager::Clear() {
-  ClearAuthError();
-
+void SyncAuthManager::ClearAccessTokenAndRequest() {
   access_token_.clear();
   request_access_token_retry_timer_.Stop();
   ongoing_access_token_fetch_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+void SyncAuthManager::Clear() {
+  ClearAuthError();
+  ClearAccessTokenAndRequest();
 }
 
 void SyncAuthManager::OnPrimaryAccountSet(
@@ -244,9 +248,8 @@ void SyncAuthManager::OnRefreshTokenRevoked(const std::string& account_id) {
   UpdateAuthErrorState(
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 
-  access_token_.clear();
-  // TODO(treib): We should probably also cancel any ongoing access token
-  // request and stop the retry timer.
+  ClearAccessTokenAndRequest();
+
   sync_service_->OnRefreshTokenRevoked();
 }
 
@@ -268,9 +271,7 @@ void SyncAuthManager::OnRefreshTokensLoaded() {
     // OAuth2TokenService::Observer::OnAuthErrorChanged(), because
     // CREDENTIALS_REJECTED_BY_CLIENT is only set by the signin component when
     // the refresh token is created.
-    access_token_.clear();
-    request_access_token_retry_timer_.Stop();
-    ongoing_access_token_fetch_.reset();
+    ClearAccessTokenAndRequest();
 
     sync_service_->OnCredentialsRejectedByClient();
   }
