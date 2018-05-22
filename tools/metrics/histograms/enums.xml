@@ -6160,8 +6160,10 @@ histogram as enum -->
   <int value="8" label="News"/>
   <int value="9" label="Line"/>
   <int value="10" label="Whatsapp"/>
-  <int value="11" label="Gsa"/>
+  <int value="11" label="GSA"/>
   <int value="12" label="WebAPK"/>
+  <int value="13" label="Yahoo Mail"/>
+  <int value="14" label="Viber"/>
 </enum>
 
 <enum name="ClipboardAction">
