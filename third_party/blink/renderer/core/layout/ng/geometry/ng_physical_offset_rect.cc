@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -34,6 +35,23 @@ void NGPhysicalOffsetRect::Unite(const NGPhysicalOffsetRect& other) {
   LayoutUnit bottom = std::max(Bottom(), other.Bottom());
   offset = {left, top};
   size = {right - left, bottom - top};
+}
+
+void NGPhysicalOffsetRect::Expand(const NGPhysicalBoxStrut& strut) {
+  if (strut.top) {
+    offset.top -= strut.top;
+    size.height += strut.top;
+  }
+  if (strut.bottom) {
+    size.height += strut.bottom;
+  }
+  if (strut.left) {
+    offset.left -= strut.left;
+    size.width += strut.left;
+  }
+  if (strut.right) {
+    size.width += strut.right;
+  }
 }
 
 NGPhysicalOffsetRect::NGPhysicalOffsetRect(const LayoutRect& source)
