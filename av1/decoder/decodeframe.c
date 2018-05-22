@@ -2453,6 +2453,8 @@ static int tile_worker_hook(void *arg1, void *arg2) {
     TileDataDec *const tile_data =
         pbi->tile_data + tile_row * cm->tile_cols + tile_col;
 
+    td->xd = pbi->mb;
+    td->xd.corrupted = 0;
     td->bit_reader = &tile_data->bit_reader;
     av1_zero(td->dqcoeff);
     av1_tile_init(&td->xd.tile, cm, tile_row, tile_col);
@@ -2590,8 +2592,7 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
     AVxWorker *const worker = &pbi->tile_workers[worker_idx];
     DecWorkerData *const thread_data = pbi->thread_data + worker_idx;
     winterface->sync(worker);
-    thread_data->td->xd = pbi->mb;
-    thread_data->td->xd.corrupted = 0;
+
     worker->hook = tile_worker_hook;
     worker->data1 = thread_data;
     worker->data2 = pbi;
@@ -2605,6 +2606,7 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
     const int base = tile_count_tg / num_workers;
     const int remain = tile_count_tg % num_workers;
     int tile_start = startTile;
+    int corrupted = 0;
 
     for (worker_idx = 0; worker_idx < num_workers; ++worker_idx) {
       // compute number of tiles assign to each worker
@@ -2628,8 +2630,10 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
 
     for (; worker_idx > 0; --worker_idx) {
       AVxWorker *const worker = &pbi->tile_workers[worker_idx - 1];
-      aom_merge_corrupted_flag(&pbi->mb.corrupted, !winterface->sync(worker));
+      aom_merge_corrupted_flag(&corrupted, !winterface->sync(worker));
     }
+
+    pbi->mb.corrupted = corrupted;
   }
 
   if (pbi->mb.corrupted)
