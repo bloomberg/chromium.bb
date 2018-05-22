@@ -290,6 +290,9 @@ void WebAudioSourceProviderImpl::SetCopyAudioCallback(
 }
 
 void WebAudioSourceProviderImpl::ClearCopyAudioCallback() {
+  // Use |sink_lock_| to protect |tee_filter_| too since they go in lockstep.
+  base::AutoLock auto_lock(sink_lock_);
+
   DCHECK(tee_filter_);
   tee_filter_->set_copy_audio_bus_callback(CopyAudioCB());
 }
