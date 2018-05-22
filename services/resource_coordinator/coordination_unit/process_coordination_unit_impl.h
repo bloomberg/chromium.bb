@@ -47,7 +47,7 @@ class ProcessCoordinationUnitImpl
   }
   base::TimeDelta cumulative_cpu_usage() const { return cumulative_cpu_usage_; }
 
-  std::set<FrameCoordinationUnitImpl*> GetFrameCoordinationUnits() const;
+  const std::set<FrameCoordinationUnitImpl*>& GetFrameCoordinationUnits() const;
   std::set<PageCoordinationUnitImpl*> GetAssociatedPageCoordinationUnits()
       const;
 
