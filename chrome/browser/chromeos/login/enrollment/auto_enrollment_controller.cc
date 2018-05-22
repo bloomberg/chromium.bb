@@ -78,18 +78,17 @@ std::string FRERequirementToString(
   return std::string();
 }
 
-// Returns true if this is an official build and the device has chrome firmware.
+// Returns true if this is an official build and the device has Chrome firmware.
 bool IsOfficialChrome() {
-#if defined(OFFICIAL_BUILD)
   std::string firmware_type;
-  const bool non_chrome_firmware =
-      system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-          system::kFirmwareTypeKey, &firmware_type) &&
-      firmware_type == system::kFirmwareTypeValueNonchrome;
-  return !non_chrome_firmware;
-#else
-  return false;
+  bool is_official =
+      !system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+          system::kFirmwareTypeKey, &firmware_type) ||
+      firmware_type != system::kFirmwareTypeValueNonchrome;
+#if !defined(OFFICIAL_BUILD)
+  is_official = false;
 #endif
+  return is_official;
 }
 
 // Schedules immediate initialization of the |DeviceManagementService| and
