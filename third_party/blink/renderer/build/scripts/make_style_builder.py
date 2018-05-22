@@ -43,30 +43,7 @@ def calculate_apply_functions_to_declare(property_):
         and property_['is_property']
     property_['use_property_class_in_stylebuilder'] = \
         property_['should_declare_functions'] \
-        and not (property_['custom_apply_functions_initial'] or
-                 property_['custom_apply_functions_inherit'] or
-                 property_['custom_apply_functions_value'])
-    # TODO(crbug.com/751354): Remove this hard coded list of supported
-    # properties once all of them have been implemented
-    if property_['custom_apply_functions_all']:
-        if (property_['upper_camel_name'] in [
-                'BackgroundAttachment', 'BackgroundBlendMode', 'BackgroundClip',
-                'BackgroundColor', 'BackgroundImage', 'BackgroundOrigin',
-                'BackgroundPositionX', 'BackgroundPositionY',
-                'BackgroundRepeatX', 'BackgroundRepeatY', 'BackgroundSize',
-                'BorderBottomColor', 'BorderImageOutset', 'BorderImageRepeat',
-                'BorderImageSlice', 'BorderImageWidth', 'BorderLeftColor',
-                'BorderRightColor', 'BorderTopColor', 'Clip', 'ColumnCount',
-                'ColumnRuleColor', 'ColumnWidth', 'MaskSourceType',
-                'OutlineColor', 'TextDecorationColor',
-                'WebkitMaskBoxImageOutset', 'WebkitMaskBoxImageRepeat',
-                'WebkitMaskBoxImageSlice', 'WebkitMaskBoxImageWidth',
-                'WebkitMaskClip', 'WebkitMaskComposite', 'WebkitMaskImage',
-                'WebkitMaskOrigin', 'WebkitMaskPositionX',
-                'WebkitMaskPositionY', 'WebkitMaskRepeatX', 'WebkitMaskRepeatY',
-                'WebkitMaskSize', 'WebkitTextEmphasisColor',
-                'WebkitTextFillColor', 'WebkitTextStrokeColor', 'ZIndex']):
-            property_['use_property_class_in_stylebuilder'] = True
+        and not property_['style_builder_legacy']
 
 
 class StyleBuilderWriter(json5_generator.Writer):

@@ -201,13 +201,12 @@ class CSSProperties(object):
         if property_['inherited']:
             property_['is_inherited_setter'] = 'Set' + name + 'IsInherited'
 
-        # Expand whether there are custom StyleBuilder methods.
-        if property_['custom_apply_functions_all']:
-            property_['custom_apply_functions_inherit'] = True
-            property_['custom_apply_functions_initial'] = True
-            property_['custom_apply_functions_value'] = True
+        # Figure out whether we should generate style builder implementations.
+        for x in ['initial', 'inherit', 'value']:
+            suppressed = x in property_['style_builder_custom_functions']
+            property_['style_builder_generate_%s' % x] = not suppressed
 
-        # Expand StyleBuilderConverter params where ncessary.
+        # Expand StyleBuilderConverter params where necessary.
         if property_['type_name'] in PRIMITIVE_TYPES:
             set_if_none(property_, 'converter', 'CSSPrimitiveValue')
         else:
