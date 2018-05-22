@@ -14,11 +14,19 @@
 #include "ui/ozone/demo/surfaceless_gl_renderer.h"
 #include "ui/ozone/public/ozone_platform.h"
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/vulkan/init/vulkan_factory.h"
+#include "ui/ozone/demo/vulkan_renderer.h"
+#endif
+
 namespace ui {
 namespace {
 
 const char kDisableSurfaceless[] = "disable-surfaceless";
 const char kDisableGpu[] = "disable-gpu";
+#if BUILDFLAG(ENABLE_VULKAN)
+const char kEnableVulkan[] = "enable-vulkan";
+#endif
 
 scoped_refptr<gl::GLSurface> CreateGLSurface(gfx::AcceleratedWidget widget) {
   scoped_refptr<gl::GLSurface> surface;
@@ -42,6 +50,19 @@ bool SimpleRendererFactory::Initialize() {
   OzonePlatform::GetInstance()->AfterSandboxEntry();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (command_line->HasSwitch(kEnableVulkan)) {
+    vulkan_implementation_ = gpu::CreateVulkanImplementation();
+    if (vulkan_implementation_ &&
+        vulkan_implementation_->InitializeVulkanInstance()) {
+      type_ = VULKAN;
+      return true;
+    } else {
+      vulkan_implementation_.reset();
+    }
+  }
+#endif
   if (!command_line->HasSwitch(kDisableGpu) && gl::init::InitializeGLOneOff() &&
       gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get())) {
     type_ = GL;
@@ -65,6 +86,11 @@ std::unique_ptr<Renderer> SimpleRendererFactory::CreateRenderer(
       }
       return std::make_unique<GlRenderer>(widget, surface, size);
     }
+#if BUILDFLAG(ENABLE_VULKAN)
+    case VULKAN:
+      return std::make_unique<VulkanRenderer>(vulkan_implementation_.get(),
+                                              widget, size);
+#endif
     case SOFTWARE:
       return std::make_unique<SoftwareRenderer>(widget, size);
   }
