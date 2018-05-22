@@ -219,7 +219,6 @@ void LayoutMenuList::UpdateFromElement() {
   HTMLSelectElement* select = SelectElement();
   HTMLOptionElement* option = select->OptionToBeShown();
   String text = g_empty_string;
-  bool had_option = !!option_style_;
   option_style_ = nullptr;
 
   if (select->IsMultiple()) {
@@ -255,7 +254,7 @@ void LayoutMenuList::UpdateFromElement() {
   DidUpdateActiveOption(option);
 
   DCHECK(inner_block_);
-  if (!had_option || HasOptionStyleChanged(inner_block_->StyleRef()))
+  if (HasOptionStyleChanged(inner_block_->StyleRef()))
     UpdateInnerStyle();
 }
 
