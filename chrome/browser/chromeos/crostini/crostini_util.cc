@@ -52,6 +52,7 @@ void MaybeLaunchTerminal(Profile* profile,
 }
 
 void MaybeLaunchContainerAppplication(
+    Profile* profile,
     std::unique_ptr<crostini::CrostiniRegistryService::Registration>
         registration,
     crostini::ConciergeClientResult result) {
@@ -59,7 +60,7 @@ void MaybeLaunchContainerAppplication(
     // TODO(timloh): Do something if launching failed, as otherwise the app
     // launcher remains open and there's no feedback.
     crostini::CrostiniManager::GetInstance()->LaunchContainerApplication(
-        registration->vm_name, registration->container_name,
+        profile, registration->vm_name, registration->container_name,
         registration->desktop_file_id, base::DoNothing());
   }
 }
@@ -116,7 +117,7 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
   RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
   crostini_manager->RestartCrostini(
       profile, registration->vm_name, registration->container_name,
-      base::BindOnce(&MaybeLaunchContainerAppplication,
+      base::BindOnce(&MaybeLaunchContainerAppplication, profile,
                      std::move(registration)));
   registry_service->AppLaunched(app_id);
 }

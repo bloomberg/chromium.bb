@@ -148,7 +148,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   // Checks the arguments for stopping a Termina VM. Stops the Termina VM via
   // ConciergeClient::StopVm. |callback| is called if the arguments are bad,
   // or after the method call finishes.
-  void StopVm(std::string name, StopVmCallback callback);
+  void StopVm(Profile* profile, std::string name, StopVmCallback callback);
 
   // Checks the arguments for starting a Container inside an existing Termina
   // VM. Starts the container via ConciergeClient::StartContainer. |callback|
@@ -162,14 +162,16 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   // Asynchronously launches an app as specified by its desktop file id.
   // |callback| is called with SUCCESS when the relevant process is started
   // or LAUNCH_CONTAINER_APPLICATION_FAILED if there was an error somewhere.
-  void LaunchContainerApplication(std::string vm_name,
+  void LaunchContainerApplication(Profile* profile,
+                                  std::string vm_name,
                                   std::string container_name,
                                   std::string desktop_file_id,
                                   LaunchContainerApplicationCallback callback);
 
   // Asynchronously gets app icons as specified by their desktop file ids.
   // |callback| is called after the method call finishes.
-  void GetContainerAppIcons(std::string vm_name,
+  void GetContainerAppIcons(Profile* profile,
+                            std::string vm_name,
                             std::string container_name,
                             std::vector<std::string> desktop_file_ids,
                             int icon_size,
@@ -256,6 +258,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   // Callback for CrostiniManager::StartContainer. Called after the Concierge
   // service finishes.
   void OnStartContainer(
+      std::string owner_id,
       std::string vm_name,
       std::string container_name,
       StartContainerCallback callback,
@@ -287,9 +290,10 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
       CreateDiskImageCallback callback,
       int64_t free_disk_size);
 
-  // Pending StartContainer callbacks are keyed by <vm_name, container_name>
-  // string pairs.
-  std::multimap<std::pair<std::string, std::string>, StartContainerCallback>
+  // Pending StartContainer callbacks are keyed by <owner_id, vm_name,
+  // container_name> string tuples.
+  std::multimap<std::tuple<std::string, std::string, std::string>,
+                StartContainerCallback>
       start_container_callbacks_;
 
   // Note: This should remain the last member so it'll be destroyed and

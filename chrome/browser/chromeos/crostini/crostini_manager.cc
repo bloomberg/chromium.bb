@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -565,7 +566,9 @@ void CrostiniManager::StartTerminaVm(std::string name,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void CrostiniManager::StopVm(std::string name, StopVmCallback callback) {
+void CrostiniManager::StopVm(Profile* profile,
+                             std::string name,
+                             StopVmCallback callback) {
   if (name.empty()) {
     LOG(ERROR) << "name is required";
     std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
@@ -573,6 +576,7 @@ void CrostiniManager::StopVm(std::string name, StopVmCallback callback) {
   }
 
   vm_tools::concierge::StopVmRequest request;
+  request.set_owner_id(CryptohomeIdForProfile(profile));
   request.set_name(std::move(name));
 
   GetConciergeClient()->StopVm(
@@ -627,16 +631,19 @@ void CrostiniManager::StartContainer(std::string vm_name,
   GetConciergeClient()->StartContainer(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnStartContainer,
-                     weak_ptr_factory_.GetWeakPtr(), request.vm_name(),
-                     request.container_name(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), request.cryptohome_id(),
+                     request.vm_name(), request.container_name(),
+                     std::move(callback)));
 }
 
 void CrostiniManager::LaunchContainerApplication(
+    Profile* profile,
     std::string vm_name,
     std::string container_name,
     std::string desktop_file_id,
     LaunchContainerApplicationCallback callback) {
   vm_tools::concierge::LaunchContainerApplicationRequest request;
+  request.set_owner_id(CryptohomeIdForProfile(profile));
   request.set_vm_name(std::move(vm_name));
   request.set_container_name(std::move(container_name));
   request.set_desktop_file_id(std::move(desktop_file_id));
@@ -648,6 +655,7 @@ void CrostiniManager::LaunchContainerApplication(
 }
 
 void CrostiniManager::GetContainerAppIcons(
+    Profile* profile,
     std::string vm_name,
     std::string container_name,
     std::vector<std::string> desktop_file_ids,
@@ -655,6 +663,7 @@ void CrostiniManager::GetContainerAppIcons(
     int scale,
     GetContainerAppIconsCallback callback) {
   vm_tools::concierge::ContainerAppIconRequest request;
+  request.set_owner_id(CryptohomeIdForProfile(profile));
   request.set_vm_name(std::move(vm_name));
   request.set_container_name(std::move(container_name));
   google::protobuf::RepeatedPtrField<std::string> ids(
@@ -836,6 +845,7 @@ void CrostiniManager::OnStopVm(
 }
 
 void CrostiniManager::OnStartContainer(
+    std::string owner_id,
     std::string vm_name,
     std::string container_name,
     StartContainerCallback callback,
@@ -848,8 +858,9 @@ void CrostiniManager::OnStartContainer(
   vm_tools::concierge::StartContainerResponse response = reply.value();
   if (response.status() == vm_tools::concierge::CONTAINER_STATUS_STARTING) {
     // The callback will be called when we receive the ContainerStated signal.
-    start_container_callbacks_.emplace(std::make_pair(vm_name, container_name),
-                                       std::move(callback));
+    start_container_callbacks_.emplace(
+        std::make_tuple(owner_id, vm_name, container_name),
+        std::move(callback));
     return;
   }
   if (response.status() != vm_tools::concierge::CONTAINER_STATUS_RUNNING) {
@@ -863,8 +874,13 @@ void CrostiniManager::OnStartContainer(
 void CrostiniManager::OnContainerStarted(
     const vm_tools::concierge::ContainerStartedSignal& signal) {
   // Find the callbacks to call, then erase them from the map.
+  std::string owner_id = signal.owner_id();
+  // TODO(nverne): remove this check once Concierge always fills in owner_id.
+  if (owner_id.empty()) {
+    owner_id = CryptohomeIdForProfile(ProfileManager::GetPrimaryUserProfile());
+  }
   auto range = start_container_callbacks_.equal_range(
-      std::make_pair(signal.vm_name(), signal.container_name()));
+      std::make_tuple(owner_id, signal.vm_name(), signal.container_name()));
   for (auto it = range.first; it != range.second; ++it) {
     std::move(it->second).Run(ConciergeClientResult::SUCCESS);
   }
@@ -874,8 +890,13 @@ void CrostiniManager::OnContainerStarted(
 void CrostiniManager::OnContainerStartupFailed(
     const vm_tools::concierge::ContainerStartedSignal& signal) {
   // Find the callbacks to call, then erase them from the map.
+  std::string owner_id = signal.owner_id();
+  // TODO(nverne): remove this check once Concierge always fills in owner_id.
+  if (owner_id.empty()) {
+    owner_id = CryptohomeIdForProfile(ProfileManager::GetPrimaryUserProfile());
+  }
   auto range = start_container_callbacks_.equal_range(
-      std::make_pair(signal.vm_name(), signal.container_name()));
+      std::make_tuple(owner_id, signal.vm_name(), signal.container_name()));
   for (auto it = range.first; it != range.second; ++it) {
     std::move(it->second).Run(ConciergeClientResult::CONTAINER_START_FAILED);
   }

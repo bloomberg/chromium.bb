@@ -190,7 +190,8 @@ class CrostiniRegistryService : public KeyedService {
   // Removes all the icons installed for an application.
   void RemoveAppData(const std::string& app_id);
 
-  // Owned by the BrowserContext.
+  // Owned by the Profile.
+  Profile* const profile_;
   PrefService* const prefs_;
 
   // Keeps root folder where Crostini app icons for different scale factors are
