@@ -1026,8 +1026,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
     // DownloadManagerCoordinator must be created before
     // DownloadManagerTabHelper.
-    _downloadManagerCoordinator =
-        [[DownloadManagerCoordinator alloc] initWithBaseViewController:self];
+    _browserContainerCoordinator = [[BrowserContainerCoordinator alloc]
+        initWithBaseViewController:self
+                      browserState:browserState];
+    [_browserContainerCoordinator start];
+    _downloadManagerCoordinator = [[DownloadManagerCoordinator alloc]
+        initWithBaseViewController:IsUIRefreshPhase1Enabled()
+                                       ? _browserContainerCoordinator
+                                             .viewController
+                                       : self];
     _downloadManagerCoordinator.presenter =
         [[VerticalAnimationContainer alloc] init];
 
@@ -1632,10 +1639,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // The WebView is overflowing its bounds to be displayed below the toolbars.
   self.view.clipsToBounds = YES;
 
-  _browserContainerCoordinator = [[BrowserContainerCoordinator alloc]
-      initWithBaseViewController:self
-                    browserState:self.browserState];
-  [_browserContainerCoordinator start];
   UIViewController* containerViewController =
       _browserContainerCoordinator.viewController;
   [self addChildViewController:containerViewController];
@@ -2290,6 +2293,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // DownloadManagerCoordinator is already created.
   DCHECK(_downloadManagerCoordinator);
   _downloadManagerCoordinator.webStateList = [_model webStateList];
+  _downloadManagerCoordinator.bottomMarginHeightAnchor =
+      [NamedGuide guideWithName:kSecondaryToolbar view:self.view].heightAnchor;
 
   if (IsUIRefreshPhase1Enabled()) {
     self.popupMenuCoordinator = [[PopupMenuCoordinator alloc]

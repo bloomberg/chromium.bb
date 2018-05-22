@@ -32,6 +32,9 @@ class WebStateList;
 // Needed to observe web state closing. Set to null when stop method is called.
 @property(nonatomic) WebStateList* webStateList;
 
+// Controls the height of the bottom margin.
+@property(nonatomic) NSLayoutDimension* bottomMarginHeightAnchor;
+
 // Underlying UIViewController presented by this coordinator.
 @property(nonatomic, readonly) UIViewController* viewController;
 

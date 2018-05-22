@@ -41,6 +41,9 @@
 
 @property(nonatomic, weak) id<DownloadManagerViewControllerDelegate> delegate;
 
+// Controls the height of the bottom margin.
+@property(nonatomic) NSLayoutDimension* bottomMarginHeightAnchor;
+
 @end
 
 // All UI elements presend in view controller's view.
