@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_VULKAN_VULKAN_IMPLEMENTATION_X11_H_
-#define GPU_VULKAN_VULKAN_IMPLEMENTATION_X11_H_
+#ifndef GPU_VULKAN_X_VULKAN_IMPLEMENTATION_X11_H_
+#define GPU_VULKAN_X_VULKAN_IMPLEMENTATION_X11_H_
 
 #include <memory>
 
-#include "gpu/vulkan/vulkan_export.h"
+#include "base/component_export.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace gpu {
 
-class VULKAN_EXPORT VulkanImplementationX11 : public VulkanImplementation {
+class COMPONENT_EXPORT(VULKAN_X11) VulkanImplementationX11
+    : public VulkanImplementation {
  public:
   VulkanImplementationX11();
   explicit VulkanImplementationX11(XDisplay* x_display);
@@ -39,4 +40,4 @@ class VULKAN_EXPORT VulkanImplementationX11 : public VulkanImplementation {
 
 }  // namespace gpu
 
-#endif  // GPU_VULKAN_VULKAN_IMPLEMENTATION_X11_H_
+#endif  // GPU_VULKAN_X_VULKAN_IMPLEMENTATION_X11_H_

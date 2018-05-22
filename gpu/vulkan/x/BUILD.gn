@@ -6,26 +6,26 @@ import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
 
 assert(enable_vulkan)
+assert(use_x11 || use_ozone)
 
-component("init") {
-  output_name = "vulkan_init"
+component("x") {
+  output_name = "vulkan_x11"
 
   sources = [
-    "vulkan_factory.cc",
-    "vulkan_factory.h",
+    "vulkan_implementation_x11.cc",
+    "vulkan_implementation_x11.h",
   ]
 
-  defines = [ "IS_VULKAN_INIT_IMPL" ]
+  defines = [ "IS_VULKAN_X11_IMPL" ]
+
+  configs += [ "//build/config/linux:x11" ]
+
+  deps = [
+    "//ui/gfx/x",
+  ]
 
   public_deps = [
     "//base",
     "//gpu/vulkan",
   ]
-
-  if (use_x11) {
-    public_deps += [ "//gpu/vulkan/x" ]
-  }
-  if (use_ozone) {
-    public_deps += [ "//ui/ozone" ]
-  }
 }

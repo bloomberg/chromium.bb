@@ -4,6 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//gpu/vulkan/features.gni")
 import("//ui/ozone/ozone.gni")
 import("//ui/ozone/ozone_extra.gni")
 import("//testing/test.gni")
@@ -86,6 +87,7 @@ jumbo_component("ozone_base") {
 
   public_deps = [
     "//base",
+    "//gpu/vulkan:buildflags",
     "//ipc",
     "//skia",
     "//ui/display/types",
@@ -100,6 +102,10 @@ jumbo_component("ozone_base") {
     "//ui/gfx/ipc/skia",
     "//ui/gl",
   ]
+
+  if (enable_vulkan) {
+    public_deps += [ "//gpu/vulkan" ]
+  }
 
   visibility += [
     # Everyone should depend on //ui/ozone instead except a handful of

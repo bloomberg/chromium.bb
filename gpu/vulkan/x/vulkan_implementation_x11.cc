@@ -4,7 +4,7 @@
 
 #define VK_USE_PLATFORM_XLIB_KHR
 
-#include "gpu/vulkan/vulkan_implementation_x11.h"
+#include "gpu/vulkan/x/vulkan_implementation_x11.h"
 
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
