@@ -163,6 +163,8 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   // doesn't currently support partial raster.
   settings.use_partial_raster = !settings.use_zero_copy;
 
+  settings.gpu_rasterization_forced = features::IsUiGpuRasterizationEnabled();
+
   settings.use_rgba_4444 =
       command_line->HasSwitch(switches::kUIEnableRGBA4444Textures);
 

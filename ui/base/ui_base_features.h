@@ -25,6 +25,8 @@ UI_BASE_EXPORT extern const base::Feature kUiCompositorScrollWithLayers;
 
 UI_BASE_EXPORT bool IsTouchableAppContextMenuEnabled();
 
+UI_BASE_EXPORT bool IsUiGpuRasterizationEnabled();
+
 #if defined(OS_WIN)
 UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
 UI_BASE_EXPORT extern const base::Feature kInputPaneOnScreenKeyboard;

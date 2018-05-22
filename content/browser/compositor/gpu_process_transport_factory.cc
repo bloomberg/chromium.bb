@@ -410,11 +410,12 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       shared_worker_context_provider_ = nullptr;
 
     if (!shared_worker_context_provider_) {
-      bool need_alpha_channel = false;
-      bool support_locking = true;
-      bool support_gles2_interface = false;
-      bool support_raster_interface = true;
-      bool support_grcontext = false;
+      const bool need_alpha_channel = false;
+      const bool support_locking = true;
+      const bool support_gles2_interface =
+          features::IsUiGpuRasterizationEnabled();
+      const bool support_raster_interface = true;
+      const bool support_grcontext = features::IsUiGpuRasterizationEnabled();
       shared_worker_context_provider_ = CreateContextCommon(
           gpu_channel_host, gpu::kNullSurfaceHandle, need_alpha_channel,
           false /* support_stencil */, support_locking, support_gles2_interface,
@@ -437,11 +438,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       // front buffer into a mailbox, insert a sync token, and send the
       // mailbox+sync to the ui service process.
       gpu::SurfaceHandle surface_handle = data->surface_handle;
-      bool need_alpha_channel = false;
-      bool support_locking = false;
-      bool support_gles2_interface = true;
-      bool support_raster_interface = false;
-      bool support_grcontext = true;
+      const bool need_alpha_channel = false;
+      const bool support_locking = false;
+      const bool support_gles2_interface = true;
+      const bool support_raster_interface = false;
+      const bool support_grcontext = true;
       context_provider = CreateContextCommon(
           std::move(gpu_channel_host), surface_handle, need_alpha_channel,
           support_stencil, support_locking, support_gles2_interface,
