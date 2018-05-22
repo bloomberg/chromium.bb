@@ -927,8 +927,7 @@ void RenderWidgetHostViewAndroid::EvictFrameIfNecessary() {
       current_surface_size_.width() == view_.GetPhysicalBackingSize().width();
   if (!is_width_same) {
     EvictDelegatedFrame();
-    content_background_color_ = SK_ColorBLACK;
-    UpdateBackgroundColor();
+    SetContentBackgroundColor(SK_ColorBLACK);
   }
 }
 
@@ -1245,10 +1244,9 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
     touch_selection_controller_->OnViewportChanged(viewport_rect);
   }
 
-  content_background_color_ = is_transparent
-                                  ? SK_ColorTRANSPARENT
-                                  : frame_metadata.root_background_color;
-  UpdateBackgroundColor();
+  SetContentBackgroundColor(is_transparent
+                                ? SK_ColorTRANSPARENT
+                                : frame_metadata.root_background_color);
 
   // ViewAndroid::content_offset() must be in CSS scale
   float top_content_offset_dip = IsUseZoomForDSFEnabled()

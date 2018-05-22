@@ -91,6 +91,14 @@ RenderWidgetHost* RenderWidgetHostViewBase::GetRenderWidgetHost() const {
   return host();
 }
 
+void RenderWidgetHostViewBase::SetContentBackgroundColor(SkColor color) {
+  if (content_background_color_ == color)
+    return;
+
+  content_background_color_ = color;
+  UpdateBackgroundColor();
+}
+
 void RenderWidgetHostViewBase::NotifyObserversAboutShutdown() {
   // Note: RenderWidgetHostInputEventRouter is an observer, and uses the
   // following notification to remove this view from its surface owners map.
