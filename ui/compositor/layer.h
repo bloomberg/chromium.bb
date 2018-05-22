@@ -320,7 +320,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Returns the fallback SurfaceId set by SetFallbackSurfaceId.
   const viz::SurfaceId* GetFallbackSurfaceId() const;
 
-  bool has_external_content() {
+  bool has_external_content() const {
     return texture_layer_.get() || surface_layer_.get();
   }
 

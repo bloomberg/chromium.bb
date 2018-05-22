@@ -5,8 +5,8 @@
 A simple debugging tool exists to help visualize the views tree during
 debugging. It consists of 4 components:
 
-1.  The function `View::PrintViewGraph()` (already in the file `view.cc` if
-    you've sync'd recently),
+1.  The function `views::PrintViewGraph()` (in the file
+    `ui/views/debug_utils.h`),
 1.  a gdb script file `viewg.gdb` (see below),
 1.  the graphViz package (http://www.graphviz.org/ - downloadable for Linux,
     Windows and Mac), and
@@ -17,7 +17,6 @@ debugging. It consists of 4 components:
 To use the tool,
 
 1.  Make sure you have 'dot' installed (part of graphViz),
-1.  define `TOUCH_DEBUG` and compile chrome with Views enabled,
 1.  run gdb on your build and
 1.  `source viewg.gdb` (this can be done automatically in `.gdbinit`),
 1.  stop at any breakpoint inside class `View` (or any derived class), and
@@ -35,7 +34,7 @@ It is easy to modify the gdb script to generate PDF in case viewing with evince
 If you don't use gdb, you may be able to adapt the script to work with your
 favorite debugger. The gdb script invokes
 
-    this->PrintViewGraph(true)
+    views::PrintViewGraph(this)
 
 on the current object, returning `std::string`, whose contents must then be
 saved to a file in order to be processed by dot.
@@ -54,7 +53,7 @@ define viewg
     set logging overwrite on
     set logging redirect on
     set logging on
-    printf "%s\n", this->PrintViewGraph(true).c_str()
+    printf "%s\n", view::PrintViewGraph(this).c_str()
     set logging off
     shell dot -Tsvg -o ~/state.svg ~/state.dot
     set pagination on
