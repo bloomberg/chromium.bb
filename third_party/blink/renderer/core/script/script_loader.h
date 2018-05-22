@@ -161,7 +161,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   }
 
   Member<ScriptElementBase> element_;
-  WTF::OrdinalNumber start_line_number_;
 
   // https://html.spec.whatwg.org/multipage/scripting.html#script-processing-model
   // "A script element has several associated pieces of state.":
