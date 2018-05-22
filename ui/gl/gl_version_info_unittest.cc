@@ -52,7 +52,9 @@ TEST(GLVersionInfoTest, ParseGLVersionStringTest) {
       {"4.5.14008 Compatibility Profile Context 21.19.137.514", 4, 5, false,
        false, false, "", "21.19.137.514"},
       {"4.5.13497 Compatibility Profile/Debug Context 23.20.782.0", 4, 5, false,
-       false, false, "", "23.20.782.0"}};
+       false, false, "", "23.20.782.0"},
+      // This is a non spec compliant string from Nexus6 on Android N.
+      {"OpenGL ES 3.1V@104.0", 3, 1, true, false, true, "", "104.0"}};
   ExtensionSet extensions;
   for (size_t ii = 0; ii < base::size(kTestData); ++ii) {
     GLVersionInfo version_info(kTestData[ii].gl_version, nullptr, extensions);

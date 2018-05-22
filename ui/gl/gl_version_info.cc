@@ -87,11 +87,15 @@ void GLVersionInfo::ParseVersionString(const char* version_str) {
     return;
   }
 
-  DCHECK_LE(3u, pieces[0].size());  // At lease major.minor
-  if (pieces[0][pieces[0].size() - 1] == 'V') {
-    // On Nexus 6 with Android N, GL_VERSION string is not spec conformant.
-    // There is no space between "3.1" and "V@104.0".
-    pieces[0].remove_suffix(1);
+  if (is_es) {
+    // Desktop GL doesn't specify the GL_VERSION format, but ES spec requires
+    // the string to be in the format of "OpenGL ES major.minor other_info".
+    DCHECK_LE(3u, pieces[0].size());
+    if (pieces[0][pieces[0].size() - 1] == 'V') {
+      // On Nexus 6 with Android N, GL_VERSION string is not spec compliant.
+      // There is no space between "3.1" and "V@104.0".
+      pieces[0].remove_suffix(1);
+    }
   }
   std::string gl_version;
   pieces[0].CopyToString(&gl_version);
