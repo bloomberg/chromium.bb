@@ -82,7 +82,8 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   ~Volume();
 
   // Factory static methods for different volume types.
-  static std::unique_ptr<Volume> CreateForDrive(Profile* profile);
+  static std::unique_ptr<Volume> CreateForDrive(
+      const base::FilePath& drive_path);
   static std::unique_ptr<Volume> CreateForDownloads(
       const base::FilePath& downloads_path);
   static std::unique_ptr<Volume> CreateForRemovable(
@@ -358,6 +359,9 @@ class VolumeManager : public KeyedService,
   void DoUnmountEvent(chromeos::MountError error_code, const Volume& volume);
   void OnExternalStorageDisabledChangedUnmountCallback(
       chromeos::MountError error_code);
+
+  // Returns the path of the mount point for drive.
+  base::FilePath GetDriveMountPointPath() const;
 
   Profile* profile_;
   drive::DriveIntegrationService* drive_integration_service_;  // Not owned.
