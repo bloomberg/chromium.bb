@@ -47,7 +47,7 @@ AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
       has_autofill_suggestions_(false),
       has_shown_popup_for_current_edit_(false),
       should_show_scan_credit_card_(false),
-      is_credit_card_popup_(false),
+      popup_type_(PopupType::kUnspecified),
       should_show_cc_signin_promo_(false),
       weak_ptr_factory_(this) {
   DCHECK(manager);
@@ -68,8 +68,7 @@ void AutofillExternalDelegate::OnQuery(int query_id,
   element_bounds_ = element_bounds;
   should_show_scan_credit_card_ =
       manager_->ShouldShowScanCreditCard(query_form_, query_field_);
-  is_credit_card_popup_ =
-      manager_->IsCreditCardPopup(query_form_, query_field_);
+  popup_type_ = manager_->GetPopupType(query_form_, query_field_);
   should_show_cc_signin_promo_ =
       manager_->ShouldShowCreditCardSigninPromo(query_form_, query_field_);
 }
@@ -275,8 +274,8 @@ void AutofillExternalDelegate::ClearPreviewedForm() {
   driver_->RendererShouldClearPreviewedForm();
 }
 
-bool AutofillExternalDelegate::IsCreditCardPopup() const {
-  return is_credit_card_popup_;
+PopupType AutofillExternalDelegate::GetPopupType() const {
+  return popup_type_;
 }
 
 AutofillDriver* AutofillExternalDelegate::GetAutofillDriver() {
@@ -409,9 +408,14 @@ void AutofillExternalDelegate::InsertDataListValues(
 base::string16 AutofillExternalDelegate::GetSettingsSuggestionValue()
     const {
   if (base::FeatureList::IsEnabled(autofill::kAutofillExpandedPopupViews)) {
-    return l10n_util::GetStringUTF16(IsCreditCardPopup()
-                                         ? IDS_AUTOFILL_MANAGE_PAYMENT_METHODS
-                                         : IDS_AUTOFILL_MANAGE_ADDRESSES);
+    if (GetPopupType() == PopupType::kAddresses)
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_ADDRESSES);
+
+    if (GetPopupType() == PopupType::kCreditCards)
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_PAYMENT_METHODS);
+
+    DCHECK_EQ(GetPopupType(), PopupType::kPersonalInformation);
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE);
   }
 
   return l10n_util::GetStringUTF16(

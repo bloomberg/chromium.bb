@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/popup_types.h"
 
 namespace autofill {
 
@@ -47,8 +48,8 @@ class AutofillPopupDelegate {
   // Informs the delegate that the Autofill previewed form should be cleared.
   virtual void ClearPreviewedForm() = 0;
 
-  // Returns true if popup is for credit card.
-  virtual bool IsCreditCardPopup() const = 0;
+  // Returns the type of the popup being shown.
+  virtual PopupType GetPopupType() const = 0;
 
   // Returns the associated AutofillDriver.
   virtual AutofillDriver* GetAutofillDriver() = 0;

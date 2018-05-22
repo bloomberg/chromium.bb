@@ -34,6 +34,7 @@
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/popup_types.h"
 #include "components/autofill/core/common/form_data.h"
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -93,8 +94,8 @@ class AutofillManager : public AutofillHandler,
   virtual bool ShouldShowScanCreditCard(const FormData& form,
                                         const FormFieldData& field);
 
-  // Whether the |field| belongs to CREDIT_CARD |FieldTypeGroup|.
-  virtual bool IsCreditCardPopup(const FormData& form,
+  // Returns the type of the popup being shown.
+  virtual PopupType GetPopupType(const FormData& form,
                                  const FormFieldData& field);
 
   // Whether we should show the signin promo, based on the triggered |field|
@@ -402,6 +403,10 @@ class AutofillManager : public AutofillHandler,
   AutofillField* GetAutofillField(const FormData& form,
                                   const FormFieldData& field)
       WARN_UNUSED_RESULT;
+
+  // Returns true if any form in the field corresponds to an address
+  // |FieldTypeGroup|.
+  bool FormHasAddressField(const FormData& form) WARN_UNUSED_RESULT;
 
   // Re-parses |live_form| and adds the result to |form_structures_|.
   // |cached_form| should be a pointer to the existing version of the form, or

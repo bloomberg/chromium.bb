@@ -130,6 +130,7 @@ static_library("browser") {
     "phone_number_i18n.cc",
     "phone_number_i18n.h",
     "popup_item_ids.h",
+    "popup_types.h",
     "rationalization_util.cc",
     "rationalization_util.h",
     "region_combobox_model.cc",

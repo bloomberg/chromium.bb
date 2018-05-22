@@ -65,7 +65,7 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
     base::i18n::TextDirection text_direction)
     : controller_common_(element_bounds, text_direction, container_view),
       view_(NULL),
-      layout_model_(this, delegate->IsCreditCardPopup()),
+      layout_model_(this, delegate->GetPopupType() == PopupType::kCreditCards),
       delegate_(delegate),
       weak_ptr_factory_(this) {
   ClearState();

@@ -66,6 +66,10 @@ void CreateTestAddressFormData(FormData* form);
 void CreateTestAddressFormData(FormData* form,
                                std::vector<ServerFieldTypeSet>* types);
 
+// Populates |form| with data corresponding to a simple personal information
+// form, including name and email, but no address-related fields.
+void CreateTestPersonalInformationFormData(FormData* form);
+
 // Returns a full profile with valid info according to rules for Canada.
 AutofillProfile GetFullValidProfileForCanada();
 

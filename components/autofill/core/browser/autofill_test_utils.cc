@@ -174,6 +174,25 @@ void CreateTestAddressFormData(FormData* form,
   types->push_back(type_set);
 }
 
+void CreateTestPersonalInformationFormData(FormData* form) {
+  form->name = ASCIIToUTF16("MyForm");
+  form->origin = GURL("http://myform.com/form.html");
+  form->action = GURL("http://myform.com/submit.html");
+  form->main_frame_origin =
+      url::Origin::Create(GURL("https://myform_root.com/form.html"));
+
+  FormFieldData field;
+  ServerFieldTypeSet type_set;
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+  form->fields.push_back(field);
+  test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  form->fields.push_back(field);
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  form->fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "email", &field);
+  form->fields.push_back(field);
+}
+
 inline void check_and_set(
     FormGroup* profile, ServerFieldType type, const char* value) {
   if (value)
