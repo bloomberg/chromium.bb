@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-up-animation.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/transform-animation.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animation-runner-behavior.html">
@@ -29,7 +28,7 @@
       }
 
       #title {
-        @apply --layout-flex-5;
+        flex: 5;
         font-size: 0.87rem;
         font-weight: 500;
         overflow: hidden;
@@ -38,7 +37,6 @@
       }
 
       #pageselector-container {
-        @apply --layout-flex-1;
         text-align: center;
         /* The container resizes according to the width of the toolbar. On small
          * screens with large numbers of pages, overflow page numbers without
@@ -47,7 +45,7 @@
       }
 
       #buttons {
-        @apply --layout-flex-5;
+        flex: 5;
         text-align: end;
         user-select: none;
       }
