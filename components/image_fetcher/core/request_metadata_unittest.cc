@@ -17,8 +17,6 @@ TEST(RequestMetadataTest, Equality) {
   lhs.mime_type = "testMimeType";
   rhs.http_response_code = 1;
   lhs.http_response_code = 1;
-  rhs.from_http_cache = true;
-  lhs.from_http_cache = true;
   lhs.content_location_header = "http://test-location.com/image.png";
   rhs.content_location_header = "http://test-location.com/image.png";
 
@@ -32,8 +30,6 @@ TEST(RequestMetadataTest, NoEquality) {
   lhs.mime_type = "testMimeType";
   rhs.http_response_code = 1;
   lhs.http_response_code = 1;
-  rhs.from_http_cache = true;
-  lhs.from_http_cache = true;
   lhs.content_location_header = "http://test-location.com/image.png";
   rhs.content_location_header = "http://test-location.com/image.png";
 
@@ -44,10 +40,6 @@ TEST(RequestMetadataTest, NoEquality) {
   lhs.http_response_code = 2;
   EXPECT_NE(rhs, lhs);
   lhs.http_response_code = 1;
-
-  lhs.from_http_cache = false;
-  EXPECT_NE(rhs, lhs);
-  lhs.from_http_cache = true;
 
   lhs.content_location_header = "http://other.test-location.com/image.png";
   EXPECT_NE(rhs, lhs);

@@ -109,7 +109,6 @@ void ImageDataFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
         &metadata.content_location_header);
     success &= (metadata.http_response_code == net::HTTP_OK);
   }
-  metadata.from_http_cache = source->WasCached();
 
   std::string image_data;
   if (success) {

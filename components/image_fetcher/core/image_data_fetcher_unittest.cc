@@ -97,42 +97,6 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
   test_url_fetcher->delegate()->OnURLFetchComplete(test_url_fetcher);
 }
 
-TEST_F(ImageDataFetcherTest, FetchImageData_FromCache) {
-  image_data_fetcher_.FetchImageData(
-      GURL(kImageURL),
-      base::Bind(&ImageDataFetcherTest::OnImageDataFetched,
-                 base::Unretained(this)),
-      TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  RequestMetadata expected_metadata;
-  expected_metadata.mime_type = std::string("image/png");
-  expected_metadata.http_response_code = net::HTTP_OK;
-  expected_metadata.from_http_cache = true;
-  EXPECT_CALL(*this, OnImageDataFetched(std::string(kURLResponseData),
-                                        expected_metadata));
-
-  // Get and configure the TestURLFetcher.
-  net::TestURLFetcher* test_url_fetcher =
-      fetcher_factory_.GetFetcherByID(ImageDataFetcher::kFirstUrlFetcherId);
-  ASSERT_NE(nullptr, test_url_fetcher);
-  test_url_fetcher->set_status(
-      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
-  test_url_fetcher->SetResponseString(kURLResponseData);
-  test_url_fetcher->set_response_code(net::HTTP_OK);
-  test_url_fetcher->set_was_cached(true);
-
-  std::string raw_header =
-      "HTTP/1.1 200 OK\n"
-      "Content-type: image/png\n\n";
-  std::replace(raw_header.begin(), raw_header.end(), '\n', '\0');
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(raw_header));
-  test_url_fetcher->set_response_headers(headers);
-
-  // Call the URLFetcher delegate to continue the test.
-  test_url_fetcher->delegate()->OnURLFetchComplete(test_url_fetcher);
-}
-
 TEST_F(ImageDataFetcherTest, FetchImageData_NotFound) {
   image_data_fetcher_.FetchImageData(
       GURL(kImageURL),
