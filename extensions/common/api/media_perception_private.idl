@@ -54,7 +54,10 @@ namespace mediaPerceptionPrivate {
 
     // The media analytics process is busy launching. Wait for setState
     // <code>RUNNING</code> or setState <code>RESTARTING</code> callback.
-    SERVICE_BUSY_LAUNCHING
+    SERVICE_BUSY_LAUNCHING,
+
+    // The component is not installed properly.
+    SERVICE_NOT_INSTALLED
   };
 
   enum ComponentType {
@@ -86,6 +89,41 @@ namespace mediaPerceptionPrivate {
     // The version string for the current component.
     DOMString? version;
   };
+
+  // ------------------- Start of process management definitions. ------------
+  // New interface for managing the process state of the media perception
+  // service with the intention of eventually phasing out the setState() call.
+  enum ProcessStatus {
+    // The component process state is unknown, for example, if the process is
+    // waiting to be launched. This is the initial state before
+    // $(ref:setComponentProcessState) is first called.
+    UNKNOWN,
+
+    // The component process has been started.
+    // This value can only be passed to $(ref:setComponentProcessState) if the
+    // process is currently in state <code>STOPPED</code> or
+    // <code>UNKNOWN</code>.
+    STARTED,
+
+    // The component process has been stopped.
+    // This value can only be passed to $(ref:setComponentProcessState) if the
+    // process is currently in state <code>STARTED</code>.
+    // Note: the process is automatically stopped when the Chrome process
+    // is closed.
+    STOPPED,
+
+    // Indicates that a ServiceError has occurred.
+    SERVICE_ERROR
+  };
+
+  dictionary ProcessState {
+    ProcessStatus? status;
+
+    // Return parameter for $(ref:setComponentProcessState) that
+    // specifies the error type for failure cases.
+    ServiceError? serviceError;
+  };
+  // ------------------- End of process management definitions. --------------
 
   // The parameters for processing a particular video stream.
   dictionary VideoStreamParam {
@@ -419,6 +457,8 @@ namespace mediaPerceptionPrivate {
 
   callback ComponentStateCallback = void(ComponentState componentState);
 
+  callback ProcessStateCallback = void(ProcessState processState);
+
   interface Functions {
     // Gets the status of the media perception process.
     // |callback| : The current state of the system.
@@ -449,6 +489,15 @@ namespace mediaPerceptionPrivate {
     static void setAnalyticsComponent(
         Component component,
         ComponentStateCallback callback);
+
+    // Manages the lifetime of the component process. This function should
+    // only be used if the component is installed. It will fail if the
+    // component is not installed.
+    // |processState| : The desired state for the component process.
+    // |callback| : Reports the new state of the process, which is expected to
+    // be the same as the desired state, unless something goes wrong.
+    static void setComponentProcessState(
+        ProcessState processState, ProcessStateCallback callback);
   };
 
   interface Events {
