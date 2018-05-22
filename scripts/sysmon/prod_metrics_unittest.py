@@ -42,32 +42,6 @@ class TestModuleFunctions(cros_test_lib.TestCase):
       prod_metrics._get_data_center({'hostname': 'foo'})
 
 
-class TestProdHostReporter(cros_test_lib.TestCase):
-  """Tests for ProdHostReporter."""
-
-  def test_call(self):
-    """Test ProdHostReporter reporting correctly."""
-    servers = [
-        prod_metrics.Server(hostname='sharanohiar',
-                            data_center='mtv',
-                            status='primary',
-                            roles='shard',
-                            created='2016-01-01 00:00:00',
-                            modified='2016-01-02 00:00:00',
-                            note=''),
-    ]
-    source = mock.NonCallableMock(['get_servers'])
-    source.get_servers.side_effect = lambda: iter(servers)
-    sink1 = mock.NonCallableMock(['write_servers'])
-    sink2 = mock.NonCallableMock(['write_servers'])
-
-    reporter = prod_metrics._ProdHostReporter(source, [sink1, sink2])
-    reporter()
-
-    sink1.write_servers.assert_called_once_with(servers)
-    sink2.write_servers.assert_called_once_with(servers)
-
-
 class TestAtestSource(cros_test_lib.TestCase):
   """Tests for AtestSource."""
 

@@ -23,30 +23,12 @@ _ATEST_PROGRAM = '/usr/local/autotest/cli/atest'
 logger = logging.getLogger(__name__)
 
 
-class _ProdHostReporter(object):
-  """Prod host metrics reporter.
-
-  ProdHostReporter takes source and sinks arguments.  Sources have a
-  get_servers() method that returns prod host information as an iterable
-  of Server instances.  Sinks have a write_servers() method for
-  reporting the server information.
-  """
-
-  def __init__(self, source, sinks=()):
-    """Initialize instance.
-
-    Args:
-      source: Source for getting prod host information.
-      sinks: Sinks for writing prod host information.
-    """
-    self._source = source
-    self._sinks = sinks
-
-  def __call__(self):
-    """Report prod hosts."""
-    servers = list(self._source.get_servers())
-    for sink in self._sinks:
-      sink.write_servers(servers)
+def collect_prod_hosts():
+  source = _AtestSource(_ATEST_PROGRAM)
+  sinks = (_TsMonSink(_METRIC_ROOT_PATH), _LoggingSink())
+  servers = list(source.get_servers())
+  for sink in sinks:
+    sink.write_servers(servers)
 
 
 class _AtestSource(object):
@@ -201,8 +183,3 @@ class _LoggingSink(object):
     """
     for server in servers:
       logger.debug('Server: %r', server)
-
-
-collect_prod_hosts = _ProdHostReporter(
-    source=_AtestSource(_ATEST_PROGRAM),
-    sinks=(_TsMonSink(_METRIC_ROOT_PATH), _LoggingSink()))
