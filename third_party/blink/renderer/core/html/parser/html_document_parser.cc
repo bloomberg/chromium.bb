@@ -28,6 +28,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
@@ -59,7 +60,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -461,7 +461,7 @@ size_t HTMLDocumentParser::ProcessTokenizedChunkFromBackgroundParser(
       "blink,loading",
       "HTMLDocumentParser::processTokenizedChunkFromBackgroundParser",
       pop_chunk.get(), TRACE_EVENT_FLAG_FLOW_IN);
-  AutoReset<bool> has_line_number(&is_parsing_at_line_number_, true);
+  base::AutoReset<bool> has_line_number(&is_parsing_at_line_number_, true);
 
   SECURITY_DCHECK(pump_speculations_session_nesting_level_ == 1);
   SECURITY_DCHECK(!InPumpSession());

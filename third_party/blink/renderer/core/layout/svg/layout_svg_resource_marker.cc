@@ -21,8 +21,8 @@
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_marker.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -36,7 +36,7 @@ void LayoutSVGResourceMarker::UpdateLayout() {
   if (is_in_layout_)
     return;
 
-  AutoReset<bool> in_layout_change(&is_in_layout_, true);
+  base::AutoReset<bool> in_layout_change(&is_in_layout_, true);
 
   // LayoutSVGHiddenContainer overwrites layout(). We need the
   // layouting of LayoutSVGContainer for calculating  local

@@ -809,8 +809,8 @@ void LocalFrameView::AdjustViewSize() {
 void LocalFrameView::AdjustViewSizeAndLayout() {
   AdjustViewSize();
   if (NeedsLayout()) {
-    AutoReset<bool> suppress_adjust_view_size(&suppress_adjust_view_size_,
-                                              true);
+    base::AutoReset<bool> suppress_adjust_view_size(&suppress_adjust_view_size_,
+                                                    true);
     UpdateLayout();
   }
 }
@@ -947,7 +947,8 @@ void LocalFrameView::PerformPreLayoutTasks() {
   Lifecycle().AdvanceTo(DocumentLifecycle::kInPreLayout);
 
   // Don't schedule more layouts, we're in one.
-  AutoReset<bool> change_scheduling_enabled(&layout_scheduling_enabled_, false);
+  base::AutoReset<bool> change_scheduling_enabled(&layout_scheduling_enabled_,
+                                                  false);
 
   if (!nested_layout_count_ && !in_synchronous_post_layout_ &&
       post_layout_tasks_timer_.IsActive()) {
@@ -1182,8 +1183,8 @@ void LocalFrameView::UpdateLayout() {
 
     FontCachePurgePreventer font_cache_purge_preventer;
     {
-      AutoReset<bool> change_scheduling_enabled(&layout_scheduling_enabled_,
-                                                false);
+      base::AutoReset<bool> change_scheduling_enabled(
+          &layout_scheduling_enabled_, false);
       nested_layout_count_++;
 
       // If the layout view was marked as needing layout after we added items in
@@ -1299,7 +1300,7 @@ void LocalFrameView::UpdateLayout() {
       }
 
       if (NeedsLayout()) {
-        AutoReset<bool> suppress(&suppress_adjust_view_size_, true);
+        base::AutoReset<bool> suppress(&suppress_adjust_view_size_, true);
         UpdateLayout();
       }
 
@@ -3183,7 +3184,7 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
   if (!frame_->GetDocument()->IsActive())
     return Lifecycle().GetState() == target_state;
 
-  AutoReset<DocumentLifecycle::LifecycleState> target_state_scope(
+  base::AutoReset<DocumentLifecycle::LifecycleState> target_state_scope(
       &current_update_lifecycle_phases_target_state_, target_state);
 
   if (ShouldThrottleRendering()) {
@@ -3205,8 +3206,8 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
     return Lifecycle().GetState() == target_state;
   }
 
-  AutoReset<bool> past_layout_lifecycle_update(&past_layout_lifecycle_update_,
-                                               true);
+  base::AutoReset<bool> past_layout_lifecycle_update(
+      &past_layout_lifecycle_update_, true);
 
   // OOPIF local frame roots that are throttled can return now that layout
   // is clean and intersection observations can be calculated.

@@ -7,13 +7,13 @@
 
 #include "third_party/blink/renderer/platform/platform_export.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
@@ -80,7 +80,7 @@ class DisableListModificationCheck {
   DisableListModificationCheck();
 
  private:
-  AutoReset<bool> disabler_;
+  base::AutoReset<bool> disabler_;
 };
 #endif  // DCHECK_IS_ON()
 

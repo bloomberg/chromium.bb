@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/input/pointer_event_manager.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
@@ -21,7 +22,6 @@
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -181,7 +181,7 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
       UseCounter::Count(frame_, WebFeature::kPointerEventDispatchPointerDown);
 
     DCHECK(!dispatching_pointer_id_);
-    AutoReset<int> dispatch_holder(&dispatching_pointer_id_, pointer_id);
+    base::AutoReset<int> dispatch_holder(&dispatching_pointer_id_, pointer_id);
     DispatchEventResult dispatch_result = target->DispatchEvent(pointer_event);
     return EventHandlingUtil::ToWebInputEventResult(dispatch_result);
   }

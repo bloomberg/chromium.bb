@@ -27,13 +27,13 @@
 
 #include "third_party/blink/renderer/core/dom/context_lifecycle_notifier.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/dom/pausable_object.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
 void ContextLifecycleNotifier::NotifyResumingPausableObjects() {
-  AutoReset<IterationState> scope(&iteration_state_, kAllowingNone);
+  base::AutoReset<IterationState> scope(&iteration_state_, kAllowingNone);
   for (ContextLifecycleObserver* observer : observers_) {
     if (observer->ObserverType() !=
         ContextLifecycleObserver::kPausableObjectType)
@@ -48,7 +48,7 @@ void ContextLifecycleNotifier::NotifyResumingPausableObjects() {
 }
 
 void ContextLifecycleNotifier::NotifySuspendingPausableObjects() {
-  AutoReset<IterationState> scope(&iteration_state_, kAllowingNone);
+  base::AutoReset<IterationState> scope(&iteration_state_, kAllowingNone);
   for (ContextLifecycleObserver* observer : observers_) {
     if (observer->ObserverType() !=
         ContextLifecycleObserver::kPausableObjectType)

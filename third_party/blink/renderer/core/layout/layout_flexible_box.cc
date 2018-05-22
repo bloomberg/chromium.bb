@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 
 #include <limits>
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
 #include "third_party/blink/renderer/core/layout/layout_state.h"
@@ -43,7 +44,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/length_functions.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -372,7 +372,7 @@ void LayoutFlexibleBox::UpdateBlockLayout(bool relayout_children) {
     return;
 
   relaid_out_children_.clear();
-  WTF::AutoReset<bool> reset1(&in_layout_, true);
+  base::AutoReset<bool> reset1(&in_layout_, true);
   DCHECK_EQ(has_definite_height_, SizeDefiniteness::kUnknown);
 
   if (UpdateLogicalWidthAndColumnWidth())

@@ -25,6 +25,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_H_
 
 #include <memory>
+#include "base/auto_reset.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_data_consumer_handle.h"
@@ -48,7 +49,6 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -352,13 +352,13 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
       Type,
       const AtomicString& fetch_initiator_name);
 
-  class ProhibitAddRemoveClientInScope : public AutoReset<bool> {
+  class ProhibitAddRemoveClientInScope : public base::AutoReset<bool> {
    public:
     ProhibitAddRemoveClientInScope(Resource* resource)
         : AutoReset(&resource->is_add_remove_client_prohibited_, true) {}
   };
 
-  class RevalidationStartForbiddenScope : public AutoReset<bool> {
+  class RevalidationStartForbiddenScope : public base::AutoReset<bool> {
    public:
     RevalidationStartForbiddenScope(Resource* resource)
         : AutoReset(&resource->is_revalidation_start_forbidden_, true) {}

@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request.h"
 
 #include <memory>
+#include "base/auto_reset.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_cors.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -87,7 +88,6 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
@@ -1711,7 +1711,7 @@ void XMLHttpRequest::EndLoading() {
   if (loader_) {
     // Set |m_error| in order to suppress the cancel notification (see
     // XMLHttpRequest::didFail).
-    AutoReset<bool> scope(&error_, true);
+    base::AutoReset<bool> scope(&error_, true);
     loader_.Release()->Cancel();
   }
 

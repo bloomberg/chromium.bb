@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
+#include "base/auto_reset.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_frame_request_callback.h"
@@ -27,7 +28,6 @@
 #include "third_party/blink/renderer/modules/xr/xr_presentation_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_session_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -379,7 +379,7 @@ void XRSession::OnFrame(
     // Resolve the queued requestAnimationFrame callbacks. All XR rendering will
     // happen within these calls. resolving_frame_ will be true for the duration
     // of the callbacks.
-    AutoReset<bool> resolving(&resolving_frame_, true);
+    base::AutoReset<bool> resolving(&resolving_frame_, true);
     callback_collection_.ExecuteCallbacks(this, presentation_frame);
 
     // The session might have ended in the middle of the frame. Only call

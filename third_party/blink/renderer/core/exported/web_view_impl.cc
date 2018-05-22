@@ -33,6 +33,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -169,7 +170,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 #if defined(WTF_USE_DEFAULT_RENDER_THEME)
@@ -1984,7 +1984,7 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
   if (WebFrameWidgetBase::IgnoreInputEvents())
     return WebInputEventResult::kNotHandled;
 
-  AutoReset<const WebInputEvent*> current_event_change(
+  base::AutoReset<const WebInputEvent*> current_event_change(
       &CurrentInputEvent::current_input_event_, &input_event);
   UIEventWithKeyState::ClearNewTabModifierSetFromIsolatedWorld();
 

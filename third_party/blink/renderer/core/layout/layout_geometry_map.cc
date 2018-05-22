@@ -25,10 +25,10 @@
 
 #include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 #define LAYOUT_GEOMETRY_MAP_LOGGING 0
 
@@ -196,7 +196,8 @@ void LayoutGeometryMap::PushMappingsToAncestor(
     const LayoutBoxModelObject* ancestor_layout_object) {
   // We need to push mappings in reverse order here, so do insertions rather
   // than appends.
-  AutoReset<size_t> position_change(&insertion_position_, mapping_.size());
+  base::AutoReset<size_t> position_change(&insertion_position_,
+                                          mapping_.size());
   do {
     layout_object =
         layout_object->PushMappingToContainer(ancestor_layout_object, *this);
@@ -265,7 +266,8 @@ void LayoutGeometryMap::PushMappingsToAncestor(
       PushMappingsToAncestor(&ancestor_layer->GetLayoutObject(), nullptr);
     }
 
-    AutoReset<size_t> position_change(&insertion_position_, mapping_.size());
+    base::AutoReset<size_t> position_change(&insertion_position_,
+                                            mapping_.size());
     bool accumulating_transform =
         layout_object.Style()->Preserves3D() ||
         ancestor_layer->GetLayoutObject().Style()->Preserves3D();

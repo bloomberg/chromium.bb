@@ -22,13 +22,13 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin_hash.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -416,7 +416,7 @@ void MemoryCache::PruneNow(double current_time, PruneStrategy strategy) {
     Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
   }
 
-  AutoReset<bool> reentrancy_protector(&in_prune_resources_, true);
+  base::AutoReset<bool> reentrancy_protector(&in_prune_resources_, true);
 
   PruneResources(strategy);
   prune_frame_time_stamp_ = last_frame_paint_time_stamp_;

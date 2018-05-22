@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 
 #include <memory>
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -20,7 +21,6 @@
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -357,7 +357,7 @@ void BodyStreamBuffer::ProcessData() {
   DCHECK(consumer_);
   DCHECK(!in_process_data_);
 
-  AutoReset<bool> auto_reset(&in_process_data_, true);
+  base::AutoReset<bool> auto_reset(&in_process_data_, true);
   while (stream_needs_more_) {
     const char* buffer = nullptr;
     size_t available = 0;

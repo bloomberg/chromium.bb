@@ -26,9 +26,9 @@
 
 #include "third_party/blink/renderer/core/editing/commands/undo_stack.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/editing/commands/undo_step.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -83,7 +83,7 @@ void UndoStack::Redo() {
     redo_stack_.erase(back);
 
     DCHECK(!in_redo_);
-    AutoReset<bool> redo_scope(&in_redo_, true);
+    base::AutoReset<bool> redo_scope(&in_redo_, true);
     step->Reapply();
     // reapply will call us back to push this command onto the undo stack.
   }

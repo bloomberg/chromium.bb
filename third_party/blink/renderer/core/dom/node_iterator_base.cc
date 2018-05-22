@@ -64,7 +64,7 @@ unsigned NodeIteratorBase::AcceptNode(Node* node,
     return V8NodeFilter::FILTER_ACCEPT;
 
   // 5. Set the active flag.
-  WTF::AutoReset<bool> set_active_flag(&active_flag_, true);
+  base::AutoReset<bool> set_active_flag(&active_flag_, true);
 
   // 6. Let result be the return value of call a user object’s operation with
   // filter, "acceptNode", and « node ». If this throws an exception, then unset

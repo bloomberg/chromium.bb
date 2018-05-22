@@ -5,11 +5,11 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 
 #include <memory>
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -501,7 +501,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
                                             size_t end_index) {
   DCHECK(!RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled());
 
-  AutoReset<size_t> subsequence_begin_index(
+  base::AutoReset<size_t> subsequence_begin_index(
       &current_cached_subsequence_begin_index_in_new_list_,
       new_display_item_list_.size());
   DisplayItem* cached_item =

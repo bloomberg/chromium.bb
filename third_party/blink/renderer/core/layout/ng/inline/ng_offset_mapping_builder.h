@@ -5,9 +5,9 @@
 #ifndef NGOffsetMappingBuilder_h
 #define NGOffsetMappingBuilder_h
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -80,7 +80,7 @@ class CORE_EXPORT NGOffsetMappingBuilder {
     ~SourceNodeScope();
 
    private:
-    AutoReset<const LayoutObject*> auto_reset_;
+    base::AutoReset<const LayoutObject*> auto_reset_;
 
 #if DCHECK_IS_ON()
     NGOffsetMappingBuilder* builder_ = nullptr;

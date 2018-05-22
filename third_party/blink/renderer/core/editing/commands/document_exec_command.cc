@@ -29,6 +29,7 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/editing/commands/editing_commands_utilities.h"
 #include "third_party/blink/renderer/core/editing/commands/editor_command.h"
@@ -38,7 +39,6 @@
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
@@ -82,7 +82,7 @@ bool Document::execCommand(const String& command_name,
                                              kWarningMessageLevel, message));
     return false;
   }
-  AutoReset<bool> execute_scope(&is_running_exec_command_, true);
+  base::AutoReset<bool> execute_scope(&is_running_exec_command_, true);
 
   // Postpone DOM mutation events, which can execute scripts and change
   // DOM tree against implementation assumption.

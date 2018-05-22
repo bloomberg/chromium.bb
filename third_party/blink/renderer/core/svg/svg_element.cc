@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/effect_stack.h"
@@ -55,7 +56,6 @@
 #include "third_party/blink/renderer/core/svg/svg_use_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xml_names.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
@@ -573,7 +573,7 @@ void SVGElement::InvalidateRelativeLengthClients(
 
 #if DCHECK_IS_ON()
   DCHECK(!in_relative_length_clients_invalidation_);
-  AutoReset<bool> in_relative_length_clients_invalidation_change(
+  base::AutoReset<bool> in_relative_length_clients_invalidation_change(
       &in_relative_length_clients_invalidation_, true);
 #endif
 

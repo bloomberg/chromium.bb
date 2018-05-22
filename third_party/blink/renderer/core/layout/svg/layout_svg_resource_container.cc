@@ -19,11 +19,11 @@
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -55,7 +55,7 @@ void LayoutSVGResourceContainer::UpdateLayout() {
   if (is_in_layout_)
     return;
 
-  AutoReset<bool> in_layout_change(&is_in_layout_, true);
+  base::AutoReset<bool> in_layout_change(&is_in_layout_, true);
 
   LayoutSVGHiddenContainer::UpdateLayout();
 
