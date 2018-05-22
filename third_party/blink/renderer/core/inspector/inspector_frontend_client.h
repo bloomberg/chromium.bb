@@ -36,19 +36,11 @@
 
 namespace blink {
 
-class ContextMenuProvider;
-class LocalFrame;
-
 class InspectorFrontendClient : public GarbageCollectedMixin {
  public:
   virtual ~InspectorFrontendClient() = default;
 
   virtual void SendMessageToEmbedder(const String&) = 0;
-
-  virtual void ShowContextMenu(LocalFrame* target_frame,
-                               float x,
-                               float y,
-                               ContextMenuProvider*) = 0;
 };
 
 }  // namespace blink

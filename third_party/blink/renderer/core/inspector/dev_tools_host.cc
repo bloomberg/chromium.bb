@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/inspector/inspector_frontend_client.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -206,8 +207,12 @@ void DevToolsHost::ShowContextMenu(LocalFrame* target_frame,
       FrontendMenuProvider::Create(this, items);
   menu_provider_ = menu_provider;
   float zoom = target_frame->PageZoomFactor();
-  if (client_)
-    client_->ShowContextMenu(target_frame, x * zoom, y * zoom, menu_provider);
+  {
+    ContextMenuAllowedScope scope;
+    target_frame->GetPage()->GetContextMenuController().ClearContextMenu();
+    target_frame->GetPage()->GetContextMenuController().ShowContextMenuAtPoint(
+        target_frame, x * zoom, y * zoom, menu_provider);
+  }
 }
 
 String DevToolsHost::getSelectionBackgroundColor() {

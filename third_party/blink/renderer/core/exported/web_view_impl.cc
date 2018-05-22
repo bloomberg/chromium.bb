@@ -1465,19 +1465,6 @@ WebInputEventResult WebViewImpl::SendContextMenuEvent() {
 }
 #endif
 
-void WebViewImpl::ShowContextMenuAtPoint(float x,
-                                         float y,
-                                         ContextMenuProvider* menu_provider) {
-  if (!GetPage()->MainFrame()->IsLocalFrame())
-    return;
-  {
-    ContextMenuAllowedScope scope;
-    GetPage()->GetContextMenuController().ClearContextMenu();
-    GetPage()->GetContextMenuController().ShowContextMenuAtPoint(
-        GetPage()->DeprecatedLocalMainFrame(), x, y, menu_provider);
-  }
-}
-
 void WebViewImpl::ShowContextMenuForElement(WebElement element) {
   if (!GetPage())
     return;
