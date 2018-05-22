@@ -1389,9 +1389,6 @@
     },
     {
       name: "WebXRHitTest",
-      // TODO(https://crbug.com/828321): Change to "experimental" when it no
-      // longer breaks WebXR. See https://crbug.com/844228.
-      status: "test",
     },
     {
       name: "WorkerNosniffBlock",
