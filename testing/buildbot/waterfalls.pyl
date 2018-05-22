@@ -469,7 +469,7 @@
         'skip_cipd_packages': True,
         'skip_output_links': True,
         'test_suites': {
-          'gtest_tests': 'chromium_android_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_android_gtests',
         },
       },
       'x86 Cloud Tester': {
@@ -637,7 +637,7 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'chromium_android_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_android_gtests',
         },
       },
       'ToTLinux': {
@@ -1158,9 +1158,7 @@
           ],
         },
         'test_suites': {
-          # TODO(kbr): it's weird that this has the most in common with the
-          # clang testers' test suites.
-          'gtest_tests': 'chromium_android_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_android_gtests',
         },
       },
       'Out of Process Profiling Linux': {
@@ -1637,7 +1635,7 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'chromium_android_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_android_gtests',
         },
       },
       'Linux ASan LSan Tests (1)': {
