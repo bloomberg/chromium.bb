@@ -949,9 +949,6 @@ jumbo_component("base") {
     "trace_event/heap_profiler_allocation_context.h",
     "trace_event/heap_profiler_allocation_context_tracker.cc",
     "trace_event/heap_profiler_allocation_context_tracker.h",
-    "trace_event/heap_profiler_allocation_register.cc",
-    "trace_event/heap_profiler_allocation_register.h",
-    "trace_event/heap_profiler_allocation_register_win.cc",
     "trace_event/heap_profiler_event_filter.cc",
     "trace_event/heap_profiler_event_filter.h",
     "trace_event/heap_profiler_heap_dump_writer.cc",
@@ -988,8 +985,6 @@ jumbo_component("base") {
     "trace_event/memory_usage_estimator.h",
     "trace_event/process_memory_dump.cc",
     "trace_event/process_memory_dump.h",
-    "trace_event/sharded_allocation_register.cc",
-    "trace_event/sharded_allocation_register.h",
     "trace_event/trace_buffer.cc",
     "trace_event/trace_buffer.h",
     "trace_event/trace_category.h",
@@ -1157,7 +1152,6 @@ jumbo_component("base") {
       "threading/platform_thread_posix.cc",
       "threading/thread_local_storage_posix.cc",
       "timer/hi_res_timer_manager_posix.cc",
-      "trace_event/heap_profiler_allocation_register_posix.cc",
     ]
   }
 
@@ -1405,7 +1399,6 @@ jumbo_component("base") {
       "time/time_exploded_posix.cc",
       "time/time_fuchsia.cc",
       "timer/hi_res_timer_manager_posix.cc",
-      "trace_event/heap_profiler_allocation_register_posix.cc",
     ]
 
     # These only need to be public deps because of includes of their headers
@@ -2410,7 +2403,6 @@ test("base_unittests") {
     "trace_event/blame_context_unittest.cc",
     "trace_event/event_name_filter_unittest.cc",
     "trace_event/heap_profiler_allocation_context_tracker_unittest.cc",
-    "trace_event/heap_profiler_allocation_register_unittest.cc",
     "trace_event/heap_profiler_heap_dump_writer_unittest.cc",
     "trace_event/heap_profiler_stack_frame_deduplicator_unittest.cc",
     "trace_event/heap_profiler_type_name_deduplicator_unittest.cc",

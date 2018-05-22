@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_BLINK_GC_MEMORY_DUMP_PROVIDER_H_
 
 #include "base/trace_event/memory_dump_provider.h"
-#include "base/trace_event/sharded_allocation_register.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -34,7 +33,6 @@ class PLATFORM_EXPORT BlinkGCMemoryDumpProvider final
   // MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs&,
                     base::trace_event::ProcessMemoryDump*) override;
-  void OnHeapProfilingEnabled(bool) override;
 
   // The returned WebMemoryAllocatorDump is owned by
   // BlinkGCMemoryDumpProvider, and should not be retained (just used to
@@ -50,13 +48,9 @@ class PLATFORM_EXPORT BlinkGCMemoryDumpProvider final
     return current_process_memory_dump_.get();
   }
 
-  void insert(Address, size_t, const char*);
-  void Remove(Address);
-
  private:
   BlinkGCMemoryDumpProvider();
 
-  base::trace_event::ShardedAllocationRegister allocation_register_;
   std::unique_ptr<base::trace_event::ProcessMemoryDump>
       current_process_memory_dump_;
 };
