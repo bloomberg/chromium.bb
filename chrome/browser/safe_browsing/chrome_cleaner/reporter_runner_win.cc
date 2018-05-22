@@ -634,7 +634,7 @@ class ReporterRunner {
 
     // The reporter sequence has been scheduled to run, so don't notify that
     // it has not been scheduled.
-    std::move(scoped_runner.Release());
+    ignore_result(scoped_runner.Release());
   }
 
  private:
@@ -765,8 +765,8 @@ class ReporterRunner {
     if (!invocations_.container().empty()) {
       // If there are other invocations to start, then we shouldn't finalize
       // this object. ScopedClosureRunner::Release requires its return value to
-      // be used, so simply std::move it, since it will not be needed.
-      std::move(scoped_runner.Release());
+      // be used, so simply ignore_result it, since it will not be needed.
+      ignore_result(scoped_runner.Release());
       PostNextInvocation();
     }
 
