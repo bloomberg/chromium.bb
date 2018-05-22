@@ -86,8 +86,12 @@ const CGFloat kSuggestionHorizontalMargin = 6;
       self.contentSize = frame.size;
       // Offsets labels for right alignment.
       CGFloat offset = CGRectGetWidth(frame) - contentwidth;
+      CGFloat currentX = kSuggestionHorizontalMargin + offset;
       for (UIView* label in self.subviews) {
-        label.frame = CGRectOffset(label.frame, offset, 0);
+        CGRect newFrame = label.frame;
+        newFrame.origin.x = currentX;
+        label.frame = newFrame;
+        currentX += CGRectGetWidth(label.frame) + kSuggestionHorizontalMargin;
       }
     } else {
       self.contentSize = CGSizeMake(contentwidth, CGRectGetHeight(frame));
