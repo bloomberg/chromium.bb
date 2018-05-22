@@ -10,8 +10,11 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -175,6 +178,31 @@ TEST_F(TaskSchedulerDelayedTaskManagerTest, DelayedTasksRunAfterDelay) {
   EXPECT_CALL(mock_task_b, Run());
   service_thread_task_runner_->FastForwardBy(TimeDelta::FromHours(1));
   testing::Mock::VerifyAndClear(&mock_task_b);
+}
+
+TEST_F(TaskSchedulerDelayedTaskManagerTest, PostTaskDuringStart) {
+  Thread other_thread("Test");
+  other_thread.StartAndWaitForTesting();
+
+  WaitableEvent task_posted;
+
+  other_thread.task_runner()->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                                         delayed_task_manager_.AddDelayedTask(
+                                             std::move(task_),
+                                             BindOnce(&RunTask));
+                                         task_posted.Signal();
+                                       }));
+
+  delayed_task_manager_.Start(service_thread_task_runner_);
+
+  // The test is testing a race between AddDelayedTask/Start but it still needs
+  // synchronization to ensure we don't do the final verification before the
+  // task itself is posted.
+  task_posted.Wait();
+
+  // Fast-forward time. Expect the task to be forwarded to RunTask().
+  EXPECT_CALL(mock_task_, Run());
+  service_thread_task_runner_->FastForwardBy(kLongDelay);
 }
 
 }  // namespace internal
