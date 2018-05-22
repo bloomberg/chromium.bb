@@ -656,24 +656,9 @@ template("component") {
     assert(invoker.static_component_type == "static_library" ||
            invoker.static_component_type == "source_set")
     _component_mode = invoker.static_component_type
-  } else if (is_android || !defined(invoker.sources)) {
+  } else if (!defined(invoker.sources)) {
     # When there are no sources defined, use a source set to avoid creating
     # an empty static library (which generally don't work).
-    #
-    # When we changed components to default from source sets to static
-    # libraries, an Android benchmark regressed slightly
-    # (https://crbug.com/619593). We don't have a good theory on why this might
-    # be since theoretically it should be the same. It could be something as
-    # silly as random code locality luck.
-    #
-    # There seems to be no build-time performance hit to using source sets on
-    # Android (the normal reason for defaulting to static libraries), so we
-    # make the default on Android to be source set.
-    #
-    # If it's been a long time since this was added and you're skeptical,
-    # please feel free to remove the Android exception and see if any
-    # benchmarks obviously regress. If not, it would be great to standardize
-    # with the rest of the platforms.
     _component_mode = "source_set"
   } else {
     _component_mode = "static_library"
