@@ -118,4 +118,31 @@ media::VideoCaptureParams MirrorSettings::GetVideoCaptureParams() {
   return params;
 }
 
+base::Value MirrorSettings::ToDictionaryValue() {
+  base::Value settings(base::Value::Type::DICTIONARY);
+  settings.SetKey("maxWidth", base::Value(max_width_));
+  settings.SetKey("maxHeight", base::Value(max_height_));
+  settings.SetKey("minWidth", base::Value(min_width_));
+  settings.SetKey("minHeight", base::Value(min_height_));
+  settings.SetKey("senderSideLetterboxing", base::Value(true));
+  settings.SetKey("minFrameRate", base::Value(0));
+  settings.SetKey("maxFrameRate", base::Value(kMaxFrameRate));
+  settings.SetKey("minVideoBitrate", base::Value(kMinVideoBitrate));
+  settings.SetKey("maxVideoBitrate", base::Value(kMaxVideoBitrate));
+  settings.SetKey("audioBitrate", base::Value(kAudioBitrate));
+  settings.SetKey(
+      "maxLatencyMillis",
+      base::Value(static_cast<int32_t>(kMaxPlayoutDelay.InMilliseconds())));
+  settings.SetKey(
+      "minLatencyMillis",
+      base::Value(static_cast<int32_t>(kMinPlayoutDelay.InMilliseconds())));
+  settings.SetKey("animatedLatencyMillis",
+                  base::Value(static_cast<int32_t>(
+                      kAnimatedPlayoutDelay.InMilliseconds())));
+  settings.SetKey("dscpEnabled", base::Value(false));
+  settings.SetKey("enableLogging", base::Value(true));
+  settings.SetKey("useTdls", base::Value(false));
+  return settings;
+}
+
 }  // namespace mirroring

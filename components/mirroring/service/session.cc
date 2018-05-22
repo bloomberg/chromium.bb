@@ -58,6 +58,13 @@ constexpr int kAudioSsrcMax = 5e5;
 constexpr int kVideoSsrcMin = 5e5 + 1;
 constexpr int kVideoSsrcMax = 10e5;
 
+// Maximum number of bytes of file data allowed in a single Crash report. As of
+// this writing, the total report upload size is capped at 20 MB.
+//
+// 2 KB of "overhead bytes" are subtracted to account for all of the non-file
+// data in a report upload, including HTTP headers/requests and form data.
+constexpr int kMaxCrashReportBytes = (20 * 1024 - 2) * 1024;
+
 class TransportClient final : public media::cast::CastTransport::Client {
  public:
   explicit TransportClient(Session* session) : session_(session) {}
@@ -225,6 +232,28 @@ Session::Session(int32_t session_id,
   DCHECK(resource_provider_);
   mirror_settings_.SetResolutionContraints(max_resolution.width(),
                                            max_resolution.height());
+  resource_provider_->GetNetworkContext(mojo::MakeRequest(&network_context_));
+
+  auto wifi_status_monitor =
+      std::make_unique<WifiStatusMonitor>(session_id_, &message_dispatcher_);
+  network::mojom::URLLoaderFactoryPtr url_loader_factory;
+  network_context_->CreateURLLoaderFactory(
+      mojo::MakeRequest(&url_loader_factory), 0 /* process_id */);
+
+  // Generate session level tags.
+  base::Value session_tags(base::Value::Type::DICTIONARY);
+  session_tags.SetKey("mirrorSettings", mirror_settings_.ToDictionaryValue());
+  session_tags.SetKey("shouldCaptureAudio",
+                      base::Value(sink_info_.capability != VIDEO_ONLY));
+  session_tags.SetKey("shouldCaptureVideo",
+                      base::Value(sink_info_.capability != AUDIO_ONLY));
+  session_tags.SetKey("receiverProductName",
+                      base::Value(sink_info_.model_name));
+
+  session_monitor_.emplace(
+      kMaxCrashReportBytes, sink_info_.ip_address, std::move(session_tags),
+      std::move(url_loader_factory), std::move(wifi_status_monitor));
+
   CreateAndSendOffer();
 }
 
@@ -233,7 +262,8 @@ Session::~Session() {
 }
 
 void Session::ReportError(SessionError error) {
-  DVLOG(1) << __func__ << ": error=" << error;
+  if (session_monitor_.has_value())
+    session_monitor_->OnStreamingError(error);
   if (observer_)
     observer_->OnError(error);
   StopSession();
@@ -244,6 +274,8 @@ void Session::StopSession() {
   if (!resource_provider_)
     return;
 
+  session_monitor_->StopStreamingSession();
+  session_monitor_.reset();
   weak_factory_.InvalidateWeakPtrs();
   audio_encode_thread_ = nullptr;
   video_encode_thread_ = nullptr;
@@ -260,7 +292,6 @@ void Session::StopSession() {
 }
 
 void Session::OnError(const std::string& message) {
-  VLOG(1) << message;
   ReportError(SessionError::RTP_STREAM_ERROR);
 }
 
@@ -283,7 +314,6 @@ void Session::OnEncoderStatusChange(OperationalStatus status) {
     case OperationalStatus::STATUS_UNSUPPORTED_CODEC:
     case OperationalStatus::STATUS_CODEC_INIT_FAILED:
     case OperationalStatus::STATUS_CODEC_RUNTIME_ERROR:
-      DVLOG(1) << "OperationalStatus error.";
       ReportError(SessionError::ENCODING_ERROR);
       break;
   }
@@ -335,13 +365,7 @@ void Session::OnTransportStatusChanged(CastTransportStatus status) {
     case CastTransportStatus::TRANSPORT_STREAM_INITIALIZED:
       return;  // Not errors, do nothing.
     case CastTransportStatus::TRANSPORT_INVALID_CRYPTO_CONFIG:
-      DVLOG(1) << "Warning: unexpected status: "
-               << "TRANSPORT_INVALID_CRYPTO_CONFIG";
-      ReportError(SessionError::CAST_TRANSPORT_ERROR);
-      break;
     case CastTransportStatus::TRANSPORT_SOCKET_ERROR:
-      DVLOG(1) << "Warning: unexpected status: "
-               << "TRANSPORT_SOCKET_ERROR";
       ReportError(SessionError::CAST_TRANSPORT_ERROR);
       break;
   }
@@ -360,7 +384,6 @@ void Session::OnAnswer(const std::string& cast_mode,
                        const std::vector<FrameSenderConfig>& video_configs,
                        const ReceiverResponse& response) {
   if (!response.answer || response.type == ResponseType::UNKNOWN) {
-    VLOG(1) << "Received a null ANSWER response.";
     ReportError(ANSWER_TIME_OUT);
     return;
   }
@@ -368,23 +391,17 @@ void Session::OnAnswer(const std::string& cast_mode,
   DCHECK_EQ(ResponseType::ANSWER, response.type);
 
   if (response.result != "ok") {
-    VLOG(1) << "Received an error ANSWER response.";
     ReportError(ANSWER_NOT_OK);
     return;
   }
 
   const Answer& answer = *response.answer;
   if (answer.cast_mode != cast_mode) {
-    VLOG(1) << "Unexpected cast mode=" << answer.cast_mode
-            << " while expected mode=" << cast_mode;
     ReportError(ANSWER_MISMATCHED_CAST_MODE);
     return;
   }
 
   if (answer.send_indexes.size() != answer.ssrcs.size()) {
-    VLOG(1) << "sendIndexes.length != ssrcs.length in ANSWER"
-            << " sendIndexes.length=" << answer.send_indexes.size()
-            << " ssrcs.length=" << answer.ssrcs.size();
     ReportError(ANSWER_MISMATCHED_SSRC_LENGTH);
     return;
   }
@@ -399,15 +416,12 @@ void Session::OnAnswer(const std::string& cast_mode,
   for (size_t i = 0; i < answer.send_indexes.size(); ++i) {
     if (answer.send_indexes[i] < 0 ||
         answer.send_indexes[i] >= video_idx_bound) {
-      VLOG(1) << "Invalid indexes selected in ANSWER: Select index="
-              << answer.send_indexes[i] << " allowed index<" << video_idx_bound;
       ReportError(ANSWER_SELECT_INVALID_INDEX);
       return;
     }
     if (answer.send_indexes[i] < video_start_idx) {
       // Audio
       if (has_audio) {
-        VLOG(1) << "Receiver selected audio RTP stream twice in ANSWER";
         ReportError(ANSWER_SELECT_MULTIPLE_AUDIO);
         return;
       }
@@ -417,7 +431,6 @@ void Session::OnAnswer(const std::string& cast_mode,
     } else {
       // Video
       if (has_video) {
-        VLOG(1) << "Receiver selected video RTP stream twice in ANSWER";
         ReportError(ANSWER_SELECT_MULTIPLE_VIDEO);
         return;
       }
@@ -429,7 +442,6 @@ void Session::OnAnswer(const std::string& cast_mode,
     }
   }
   if (!has_audio && !has_video) {
-    VLOG(1) << "Incorrect ANSWER message: No audio or Video.";
     ReportError(ANSWER_NO_AUDIO_OR_VIDEO);
     return;
   }
@@ -455,11 +467,9 @@ void Session::OnAnswer(const std::string& cast_mode,
       base::DefaultTickClock::GetInstance(),
       base::ThreadTaskRunnerHandle::Get(), audio_encode_thread_,
       video_encode_thread_);
-  network::mojom::NetworkContextPtr network_context;
-  resource_provider_->GetNetworkContext(mojo::MakeRequest(&network_context));
   auto udp_client = std::make_unique<UdpSocketClient>(
       net::IPEndPoint(sink_info_.ip_address, answer.udp_port),
-      std::move(network_context),
+      network_context_.get(),
       base::BindOnce(&Session::ReportError, weak_factory_.GetWeakPtr(),
                      SessionError::CAST_TRANSPORT_ERROR));
   cast_transport_ = media::cast::CastTransport::Create(
@@ -503,6 +513,13 @@ void Session::OnAnswer(const std::string& cast_mode,
         base::BindOnce(&Session::ReportError, weak_factory_.GetWeakPtr(),
                        SessionError::VIDEO_CAPTURE_ERROR));
   }
+
+  const SessionMonitor::SessionType session_type =
+      (has_audio && has_video)
+          ? SessionMonitor::AUDIO_AND_VIDEO
+          : has_audio ? SessionMonitor::AUDIO_ONLY : SessionMonitor::VIDEO_ONLY;
+  session_monitor_->StartStreamingSession(cast_environment_, session_type,
+                                          false /* is_remoting */);
 
   if (observer_)
     observer_->DidStart();

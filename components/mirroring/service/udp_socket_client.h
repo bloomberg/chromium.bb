@@ -24,7 +24,7 @@ class UdpSocketClient final : public media::cast::PacketTransport,
                               public network::mojom::UDPSocketReceiver {
  public:
   UdpSocketClient(const net::IPEndPoint& remote_endpoint,
-                  network::mojom::NetworkContextPtr context,
+                  network::mojom::NetworkContext* context,
                   base::OnceClosure error_callback);
 
   ~UdpSocketClient() override;
@@ -54,7 +54,7 @@ class UdpSocketClient final : public media::cast::PacketTransport,
                          const base::Optional<net::IPEndPoint>& addr);
 
   const net::IPEndPoint remote_endpoint_;
-  const network::mojom::NetworkContextPtr network_context_;
+  network::mojom::NetworkContext* const network_context_;
   base::OnceClosure error_callback_;
 
   mojo::Binding<network::mojom::UDPSocketReceiver> binding_;

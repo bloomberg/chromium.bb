@@ -47,16 +47,18 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag() {
 }  // namespace
 
 UdpSocketClient::UdpSocketClient(const net::IPEndPoint& remote_endpoint,
-                                 network::mojom::NetworkContextPtr context,
+                                 network::mojom::NetworkContext* context,
                                  base::OnceClosure error_callback)
     : remote_endpoint_(remote_endpoint),
-      network_context_(std::move(context)),
+      network_context_(context),
       error_callback_(std::move(error_callback)),
       binding_(this),
       bytes_sent_(0),
       allow_sending_(false),
       num_packets_pending_receive_(0),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(network_context_);
+}
 
 UdpSocketClient::~UdpSocketClient() {}
 
