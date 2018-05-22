@@ -17,6 +17,7 @@ namespace media {
 
 class AudioManager;
 class AudioRendererSink;
+class DecoderFactory;
 class RendererFactory;
 class VideoRendererSink;
 
@@ -40,6 +41,7 @@ class TestMojoMediaClient : public MojoMediaClient {
 
  private:
   std::unique_ptr<AudioManager> audio_manager_;
+  std::unique_ptr<DecoderFactory> decoder_factory_;
   std::unique_ptr<RendererFactory> renderer_factory_;
   std::vector<scoped_refptr<AudioRendererSink>> audio_sinks_;
   std::vector<std::unique_ptr<VideoRendererSink>> video_sinks_;

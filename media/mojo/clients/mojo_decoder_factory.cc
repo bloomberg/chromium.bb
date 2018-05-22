@@ -29,6 +29,7 @@ MojoDecoderFactory::~MojoDecoderFactory() = default;
 
 void MojoDecoderFactory::CreateAudioDecoders(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    MediaLog* media_log,
     std::vector<std::unique_ptr<AudioDecoder>>* audio_decoders) {
 #if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
   mojom::AudioDecoderPtr audio_decoder_ptr;

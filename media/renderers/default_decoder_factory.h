@@ -1,25 +1,24 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_CLIENTS_MOJO_DECODER_FACTORY_H_
-#define MEDIA_MOJO_CLIENTS_MOJO_DECODER_FACTORY_H_
+#ifndef MEDIA_RENDERERS_DEFAULT_DECODER_FACTORY_H_
+#define MEDIA_RENDERERS_DEFAULT_DECODER_FACTORY_H_
 
-#include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include <memory>
+
 #include "media/base/decoder_factory.h"
+#include "media/base/media_export.h"
 
 namespace media {
 
-namespace mojom {
-class InterfaceFactory;
-}
-
-class MojoDecoderFactory : public DecoderFactory {
+class MEDIA_EXPORT DefaultDecoderFactory : public DecoderFactory {
  public:
-  explicit MojoDecoderFactory(
-      media::mojom::InterfaceFactory* interface_factory);
-  ~MojoDecoderFactory() final;
+  // |external_decoder_factory| is optional decoder factory that provides
+  // additional decoders.
+  explicit DefaultDecoderFactory(
+      std::unique_ptr<DecoderFactory> external_decoder_factory);
+  ~DefaultDecoderFactory() final;
 
   void CreateAudioDecoders(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -35,11 +34,11 @@ class MojoDecoderFactory : public DecoderFactory {
       std::vector<std::unique_ptr<VideoDecoder>>* video_decoders) final;
 
  private:
-  media::mojom::InterfaceFactory* interface_factory_;
+  std::unique_ptr<DecoderFactory> external_decoder_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(MojoDecoderFactory);
+  DISALLOW_COPY_AND_ASSIGN(DefaultDecoderFactory);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_CLIENTS_MOJO_DECODER_FACTORY_H_
+#endif  // MEDIA_RENDERERS_DEFAULT_DECODER_FACTORY_H_

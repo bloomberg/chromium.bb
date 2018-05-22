@@ -35,6 +35,7 @@
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/filters/context_3d.h"
 #include "media/media_buildflags.h"
+#include "media/renderers/default_decoder_factory.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
@@ -525,12 +526,16 @@ MediaFactory::CreateMediaStreamRendererFactory() {
 }
 
 media::DecoderFactory* MediaFactory::GetDecoderFactory() {
-#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) || BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
   if (!decoder_factory_) {
-    decoder_factory_.reset(
+    std::unique_ptr<media::DecoderFactory> external_decoder_factory;
+#if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) || BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
+    external_decoder_factory.reset(
         new media::MojoDecoderFactory(GetMediaInterfaceFactory()));
-  }
 #endif
+    decoder_factory_.reset(
+        new media::DefaultDecoderFactory(std::move(external_decoder_factory)));
+  }
+
   return decoder_factory_.get();
 }
 
