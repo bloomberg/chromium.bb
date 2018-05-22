@@ -29,7 +29,7 @@ void ProcessHeap::Init() {
   total_allocated_object_size_ = 0;
   total_marked_object_size_ = 0;
 
-  GCInfoTable::Init();
+  GCInfoTable::CreateGlobalTable();
 
   base::SamplingHeapProfiler::SetHooksInstallCallback([]() {
     HeapAllocHooks::SetAllocationHook(&BlinkGCAllocHook);

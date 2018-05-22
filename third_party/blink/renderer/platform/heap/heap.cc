@@ -627,7 +627,7 @@ void ThreadHeap::TakeSnapshot(SnapshotType type) {
 
   // 0 is used as index for freelist entries. Objects are indexed 1 to
   // gcInfoIndex.
-  ThreadState::GCSnapshotInfo info(GCInfoTable::GcInfoIndex() + 1);
+  ThreadState::GCSnapshotInfo info(GCInfoTable::Get().GcInfoIndex() + 1);
   String thread_dump_name =
       String::Format("blink_gc/thread_%lu",
                      static_cast<unsigned long>(thread_state_->ThreadId()));
@@ -677,8 +677,8 @@ void ThreadHeap::TakeSnapshot(SnapshotType type) {
   size_t total_dead_count = 0;
   size_t total_live_size = 0;
   size_t total_dead_size = 0;
-  for (size_t gc_info_index = 1; gc_info_index <= GCInfoTable::GcInfoIndex();
-       ++gc_info_index) {
+  for (size_t gc_info_index = 1;
+       gc_info_index <= GCInfoTable::Get().GcInfoIndex(); ++gc_info_index) {
     total_live_count += info.live_count[gc_info_index];
     total_dead_count += info.dead_count[gc_info_index];
     total_live_size += info.live_size[gc_info_index];
@@ -738,7 +738,8 @@ void ThreadHeap::WriteBarrier(void* value) {
   header->Mark();
   marking_worklist_->Push(
       WorklistTaskId::MainThread,
-      {header->Payload(), ThreadHeap::GcInfo(header->GcInfoIndex())->trace_});
+      {header->Payload(),
+       GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex())->trace_});
 }
 
 ThreadHeap* ThreadHeap::main_thread_heap_ = nullptr;
