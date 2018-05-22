@@ -14,7 +14,6 @@
 -NewlibPackagedAppTest.SuccessfulLoad
 -PolicyTest.DefaultCookiesSetting
 -PreviewsOptimizationGuideBrowserTest.NoScriptPreviewsEnabledByWhitelist
--ProfileWindowBrowserTest.GuestClearsCookies
 -ProxySettingsApiTest.ProxyEventsInvalidProxy
 -RegisterProtocolHandlerBrowserTest.CustomHandler
 -SSLUITest.TestBadHTTPSDownload/0
@@ -36,7 +35,6 @@
 -PKPModelClientTest.PKPEnforced/1
 
 # https://crbug.com/721398
--WebViewTest.ClearData
 -WebViewTest.ClearDataCache
 
 # Non-navigation downloads don't go through RequestLimiter (
@@ -235,8 +233,6 @@
 # Fails because of missing support to navigate to filesystem: URLs.
 # https://crbug.com/797292
 -ProcessManagerBrowserTest.NestedURLDownloadsToExtensionAllowed
--SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl/0
--SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl/1
 
 # Tests check state of NQE in the browser process, but need to be updated to
 # watch NQE in the renderer process.

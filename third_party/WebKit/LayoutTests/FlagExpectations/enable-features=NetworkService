@@ -3,11 +3,8 @@
 
 Bug(none) external/wpt/clear-site-data/storage.https.html [ Failure ]
 Bug(none) external/wpt/clear-site-data/navigation.https.html [ Timeout ]
-Bug(none) external/wpt/content-security-policy/inside-worker/dedicated-script.html [ Failure Timeout ]
-Bug(none) external/wpt/content-security-policy/inside-worker/dedicated-inheritance.html [ Failure ]
 Bug(none) external/wpt/html/browsers/offline/appcache/workers/appcache-worker.html [ Timeout ]
 crbug.com/829417 external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Timeout ]
-Bug(none) external/wpt/service-workers/service-worker/fetch-request-xhr-sync-on-worker.https.html [ Timeout ]
 crbug.com/771118 external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
 
 # Passes on NetworkService and fails on non-NetworkService because
@@ -16,8 +13,6 @@ Bug(none) external/wpt/service-workers/service-worker/request-end-to-end.https.h
 crbug.com/830472 external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Pass ]
 
 Bug(none) http/tests/misc/redirect-to-about-blank.html [ Timeout ]
-Bug(none) http/tests/security/contentSecurityPolicy/cascade/same-origin-window-open.html [ Timeout Crash ]
-Bug(none) http/tests/security/contentSecurityPolicy/cascade/same-origin-with-own-policy-window-open.html [ Timeout Crash ]
 Bug(none) http/tests/security/cors-rfc1918 [ Crash Timeout ]
 Bug(none) http/tests/security/mime-type-execute-as-html-01.html [ Failure ]
 Bug(none) http/tests/security/mime-type-execute-as-html-04.html [ Failure ]
