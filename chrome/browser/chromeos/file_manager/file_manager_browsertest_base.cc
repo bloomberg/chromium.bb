@@ -372,6 +372,7 @@ class FakeTestVolume : public LocalTestVolume {
                               SharedOption::NONE, base::Time::Now()));
     CreateEntry(TestEntryInfo(DIRECTORY, std::string(), "A", std::string(),
                               SharedOption::NONE, base::Time::Now()));
+    base::RunLoop().RunUntilIdle();
     return true;
   }
 
@@ -390,6 +391,7 @@ class FakeTestVolume : public LocalTestVolume {
     // Expose the mount point with the given volume and device type.
     VolumeManager::Get(profile)->AddVolumeForTesting(root_path(), volume_type_,
                                                      device_type_, read_only_);
+    base::RunLoop().RunUntilIdle();
     return true;
   }
 
@@ -752,12 +754,18 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
           local_volume_->CreateEntry(*message.entries[i]);
           break;
         case DRIVE_VOLUME:
-          if (drive_volume_)
+          if (drive_volume_) {
             drive_volume_->CreateEntry(*message.entries[i]);
+          } else if (!IsGuestModeTest()) {
+            LOG(FATAL) << "Add entry: but no Drive volume.";
+          }
           break;
         case USB_VOLUME:
-          if (usb_volume_)
+          if (usb_volume_) {
             usb_volume_->CreateEntry(*message.entries[i]);
+          } else {
+            LOG(FATAL) << "Add entry: but no USB volume.";
+          }
           break;
       }
     }
