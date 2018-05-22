@@ -239,6 +239,19 @@ void OomInterventionTabHelper::OnForegroundOOMDetected(
         NearOomDetectionEndReason::OOM_PROTECTED_CRASH);
   }
 
+  blink::OomInterventionMetrics* metrics =
+      static_cast<blink::OomInterventionMetrics*>(metrics_mapping_.memory());
+
+  UMA_HISTOGRAM_MEMORY_LARGE_MB(
+      "Memory.Experimental.OomIntervention.RendererPrivateMemoryFootprintAtOOM",
+      metrics->current_private_footprint_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_MB(
+      "Memory.Experimental.OomIntervention.RendererSwapFootprintAtOOM",
+      metrics->current_swap_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_MB(
+      "Memory.Experimental.OomIntervention.RendererBlinkUsageAtOOM",
+      metrics->current_blink_usage_kb / 1024);
+
   if (decider_) {
     DCHECK(!web_contents()->GetBrowserContext()->IsOffTheRecord());
     const std::string& host = web_contents()->GetVisibleURL().host();
