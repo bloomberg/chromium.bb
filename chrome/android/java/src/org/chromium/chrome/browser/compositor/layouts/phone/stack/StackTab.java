@@ -337,44 +337,6 @@ public class StackTab implements ChromeAnimation.Animatable<StackTab.Property> {
     }
 
     /**
-     * The scroll space does not map linearly to the screen so it creates a nice slow down
-     * effect at the top of the screen while scrolling.
-     * Warps x so it matches y(x) = x - warpSize on the positive side and 0 on the negative side
-     * with a smooth transition between [0, 2 * warpSize].
-     * @see #screenToScroll(float, float)
-     *
-     * [-oo, 0] -> 0
-     * [0, 2 * warpSize] -> warpSize * ((x-warpSize) / 2 * warpSize + 0.5) ^ 2.
-     * [2 * warpSize, +oo] -> x
-     * @param x        The offset in scroll space.
-     * @param warpSize The size in scroll space of the slow down effect.
-     * @return         The offset on screen corresponding to the scroll space offset.
-     */
-    public static float scrollToScreen(float x, float warpSize) {
-        if (x <= 0) return 0;
-        if (x >= 2 * warpSize) return x - warpSize;
-        x = (x - warpSize) / (2.0f * warpSize) + 0.5f;
-        return x * x * warpSize;
-    }
-
-    /**
-     * Unwarps x so it matches the above warp function.
-     * @see #scrollToScreen(float, float)
-     *
-     * [-oo, 0] -> -warpSize
-     * [0, warpSize] -> 2 * warpSize * sqrt(x / warpSize).
-     * [warpSize, +oo] -> x + warpSize
-     * @param x        The screen space offset.
-     * @param warpSize The size in scroll space of the slow down effect.
-     * @return         The offset in scroll space corresponding to the offset on screen.
-     */
-    public static float screenToScroll(float x, float warpSize) {
-        if (x <= 0) return 0;
-        if (x >= warpSize) return x + warpSize;
-        return (float) Math.sqrt(x * warpSize) * 2;
-    }
-
-    /**
      * @param orientation The orientation to choose to get the size.
      * @return            The size of the content along the provided orientation.
      */
