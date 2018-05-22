@@ -20,7 +20,6 @@
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
-#include "base/trace_event/heap_profiler_allocation_register.h"
 #include "base/trace_event/heap_profiler_event_filter.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
@@ -300,14 +299,23 @@ class AtomicallyConsistentSendBufferArray {
 // nullptr.
 AtomicallyConsistentSendBufferArray g_send_buffers;
 
+size_t HashAddress(const void* address) {
+  // The multiplicative hashing scheme from [Knuth 1998].
+  // |a| is the first prime after 2^17.
+  const uintptr_t key = reinterpret_cast<uintptr_t>(address);
+  const uintptr_t a = 131101;
+  const uintptr_t shift = 15;
+  const uintptr_t h = (key * a) >> shift;
+  return h;
+}
+
 // "address" is the address in question, which is used to select which send
 // buffer to use.
 void DoSend(const void* address,
             const void* data,
             size_t size,
             SendBuffer* send_buffers) {
-  base::trace_event::AllocationRegister::AddressHasher hasher;
-  int bin_to_use = hasher(address) % kNumSendBuffers;
+  int bin_to_use = HashAddress(address) % kNumSendBuffers;
   send_buffers[bin_to_use].Send(data, size);
 }
 

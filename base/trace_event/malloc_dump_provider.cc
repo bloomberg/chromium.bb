@@ -9,13 +9,8 @@
 #include <unordered_map>
 
 #include "base/allocator/allocator_extension.h"
-#include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
 #include "base/debug/profiler.h"
-#include "base/threading/thread_local_storage.h"
-#include "base/trace_event/heap_profiler_allocation_context.h"
-#include "base/trace_event/heap_profiler_allocation_context_tracker.h"
-#include "base/trace_event/heap_profiler_heap_dump_writer.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "build/build_config.h"
@@ -33,115 +28,6 @@ namespace base {
 namespace trace_event {
 
 namespace {
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
-
-using allocator::AllocatorDispatch;
-
-void* HookAlloc(const AllocatorDispatch* self, size_t size, void* context) {
-  const AllocatorDispatch* const next = self->next;
-  void* ptr = next->alloc_function(next, size, context);
-  if (ptr)
-    MallocDumpProvider::GetInstance()->InsertAllocation(ptr, size);
-  return ptr;
-}
-
-void* HookZeroInitAlloc(const AllocatorDispatch* self,
-                        size_t n,
-                        size_t size,
-                        void* context) {
-  const AllocatorDispatch* const next = self->next;
-  void* ptr = next->alloc_zero_initialized_function(next, n, size, context);
-  if (ptr)
-    MallocDumpProvider::GetInstance()->InsertAllocation(ptr, n * size);
-  return ptr;
-}
-
-void* HookAllocAligned(const AllocatorDispatch* self,
-                       size_t alignment,
-                       size_t size,
-                       void* context) {
-  const AllocatorDispatch* const next = self->next;
-  void* ptr = next->alloc_aligned_function(next, alignment, size, context);
-  if (ptr)
-    MallocDumpProvider::GetInstance()->InsertAllocation(ptr, size);
-  return ptr;
-}
-
-void* HookRealloc(const AllocatorDispatch* self,
-                  void* address,
-                  size_t size,
-                  void* context) {
-  const AllocatorDispatch* const next = self->next;
-  void* ptr = next->realloc_function(next, address, size, context);
-  MallocDumpProvider::GetInstance()->RemoveAllocation(address);
-  if (size > 0)  // realloc(size == 0) means free().
-    MallocDumpProvider::GetInstance()->InsertAllocation(ptr, size);
-  return ptr;
-}
-
-void HookFree(const AllocatorDispatch* self, void* address, void* context) {
-  if (address)
-    MallocDumpProvider::GetInstance()->RemoveAllocation(address);
-  const AllocatorDispatch* const next = self->next;
-  next->free_function(next, address, context);
-}
-
-size_t HookGetSizeEstimate(const AllocatorDispatch* self,
-                           void* address,
-                           void* context) {
-  const AllocatorDispatch* const next = self->next;
-  return next->get_size_estimate_function(next, address, context);
-}
-
-unsigned HookBatchMalloc(const AllocatorDispatch* self,
-                         size_t size,
-                         void** results,
-                         unsigned num_requested,
-                         void* context) {
-  const AllocatorDispatch* const next = self->next;
-  unsigned count =
-      next->batch_malloc_function(next, size, results, num_requested, context);
-  for (unsigned i = 0; i < count; ++i) {
-    MallocDumpProvider::GetInstance()->InsertAllocation(results[i], size);
-  }
-  return count;
-}
-
-void HookBatchFree(const AllocatorDispatch* self,
-                   void** to_be_freed,
-                   unsigned num_to_be_freed,
-                   void* context) {
-  const AllocatorDispatch* const next = self->next;
-  for (unsigned i = 0; i < num_to_be_freed; ++i) {
-    MallocDumpProvider::GetInstance()->RemoveAllocation(to_be_freed[i]);
-  }
-  next->batch_free_function(next, to_be_freed, num_to_be_freed, context);
-}
-
-void HookFreeDefiniteSize(const AllocatorDispatch* self,
-                          void* ptr,
-                          size_t size,
-                          void* context) {
-  if (ptr)
-    MallocDumpProvider::GetInstance()->RemoveAllocation(ptr);
-  const AllocatorDispatch* const next = self->next;
-  next->free_definite_size_function(next, ptr, size, context);
-}
-
-AllocatorDispatch g_allocator_hooks = {
-    &HookAlloc,            /* alloc_function */
-    &HookZeroInitAlloc,    /* alloc_zero_initialized_function */
-    &HookAllocAligned,     /* alloc_aligned_function */
-    &HookRealloc,          /* realloc_function */
-    &HookFree,             /* free_function */
-    &HookGetSizeEstimate,  /* get_size_estimate_function */
-    &HookBatchMalloc,      /* batch_malloc_function */
-    &HookBatchFree,        /* batch_free_function */
-    &HookFreeDefiniteSize, /* free_definite_size_function */
-    nullptr,               /* next */
-};
-#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
-
 #if defined(OS_WIN)
 // A structure containing some information about a given heap.
 struct WinHeapInfo {
@@ -184,9 +70,7 @@ MallocDumpProvider* MallocDumpProvider::GetInstance() {
                    LeakySingletonTraits<MallocDumpProvider>>::get();
 }
 
-MallocDumpProvider::MallocDumpProvider()
-    : tid_dumping_heap_(kInvalidThreadId) {}
-
+MallocDumpProvider::MallocDumpProvider() = default;
 MallocDumpProvider::~MallocDumpProvider() = default;
 
 // Called at trace dump point time. Creates a snapshot the memory counters for
@@ -288,91 +172,7 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
                           MemoryAllocatorDump::kUnitsBytes,
                           resident_size - allocated_objects_size);
   }
-
-  // Heap profiler dumps.
-  if (!allocation_register_.is_enabled())
-    return true;
-
-  tid_dumping_heap_ = PlatformThread::CurrentId();
-  // At this point the Insert/RemoveAllocation hooks will ignore this thread.
-  // Enclosing all the temporary data structures in a scope, so that the heap
-  // profiler does not see unbalanced malloc/free calls from these containers.
-  {
-    TraceEventMemoryOverhead overhead;
-    std::unordered_map<AllocationContext, AllocationMetrics> metrics_by_context;
-    if (AllocationContextTracker::capture_mode() !=
-        AllocationContextTracker::CaptureMode::DISABLED) {
-      ShardedAllocationRegister::OutputMetrics shim_metrics =
-          allocation_register_.UpdateAndReturnsMetrics(metrics_by_context);
-
-      // Aggregate data for objects allocated through the shim.
-      inner_dump->AddScalar("shim_allocated_objects_size",
-                            MemoryAllocatorDump::kUnitsBytes,
-                            shim_metrics.size);
-      inner_dump->AddScalar("shim_allocator_object_count",
-                            MemoryAllocatorDump::kUnitsObjects,
-                            shim_metrics.count);
-    }
-    allocation_register_.EstimateTraceMemoryOverhead(&overhead);
-
-    pmd->DumpHeapUsage(metrics_by_context, overhead, "malloc");
-  }
-  tid_dumping_heap_ = kInvalidThreadId;
-
   return true;
-}
-
-void MallocDumpProvider::OnHeapProfilingEnabled(bool enabled) {
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  if (enabled) {
-    allocation_register_.SetEnabled();
-    allocator::InsertAllocatorDispatch(&g_allocator_hooks);
-  } else {
-    allocation_register_.SetDisabled();
-  }
-#endif
-}
-
-void MallocDumpProvider::InsertAllocation(void* address, size_t size) {
-  if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
-    return;
-
-  // CurrentId() can be a slow operation (crbug.com/497226). This apparently
-  // redundant condition short circuits the CurrentID() calls when unnecessary.
-  if (tid_dumping_heap_ != kInvalidThreadId &&
-      tid_dumping_heap_ == PlatformThread::CurrentId())
-    return;
-
-  // AllocationContextTracker will return nullptr when called re-reentrantly.
-  // This is the case of GetInstanceForCurrentThread() being called for the
-  // first time, which causes a new() inside the tracker which re-enters the
-  // heap profiler, in which case we just want to early out.
-  auto* tracker = AllocationContextTracker::GetInstanceForCurrentThread();
-  if (!tracker)
-    return;
-
-  AllocationContext context;
-  if (!tracker->GetContextSnapshot(&context))
-    return;
-
-  if (!allocation_register_.is_enabled())
-    return;
-
-  allocation_register_.Insert(address, size, context);
-}
-
-void MallocDumpProvider::RemoveAllocation(void* address) {
-  if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
-    return;
-
-  // No re-entrancy is expected here as none of the calls below should
-  // cause a free()-s (|allocation_register_| does its own heap management).
-  if (tid_dumping_heap_ != kInvalidThreadId &&
-      tid_dumping_heap_ == PlatformThread::CurrentId())
-    return;
-  if (!allocation_register_.is_enabled())
-    return;
-  allocation_register_.Remove(address);
 }
 
 void MallocDumpProvider::EnableMetrics() {

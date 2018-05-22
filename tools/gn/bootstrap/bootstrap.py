@@ -633,7 +633,6 @@ def write_gn_ninja(path, root_gen_dir, options, windows_x64_toolchain):
       'base/trace_event/event_name_filter.cc',
       'base/trace_event/heap_profiler_allocation_context.cc',
       'base/trace_event/heap_profiler_allocation_context_tracker.cc',
-      'base/trace_event/heap_profiler_allocation_register.cc',
       'base/trace_event/heap_profiler_event_filter.cc',
       'base/trace_event/heap_profiler_heap_dump_writer.cc',
       'base/trace_event/heap_profiler_serialization_state.cc',
@@ -709,7 +708,6 @@ def write_gn_ninja(path, root_gen_dir, options, windows_x64_toolchain):
         'base/threading/platform_thread_posix.cc',
         'base/threading/thread_local_storage_posix.cc',
         'base/time/time_conversion_posix.cc',
-        'base/trace_event/heap_profiler_allocation_register_posix.cc',
     ])
     static_libraries['libevent'] = {
         'sources': [
@@ -949,7 +947,6 @@ def write_gn_ninja(path, root_gen_dir, options, windows_x64_toolchain):
         'base/threading/thread_local_storage_win.cc',
         'base/time/time_win.cc',
         'base/timer/hi_res_timer_manager_win.cc',
-        'base/trace_event/heap_profiler_allocation_register_win.cc',
         'base/trace_event/trace_event_etw_export_win.cc',
         'base/win/core_winrt_util.cc',
         'base/win/enum_variant.cc',
