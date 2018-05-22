@@ -255,8 +255,6 @@ class MessageReceiverDisallowStart : public MessageReceiver {
                   mock_instance_clients()->size());
         // Remove the connection by peer
         mock_instance_clients()->at(current_mock_instance_index_).reset();
-        std::move(dispatcher_request);
-        std::move(controller_request);
         break;
       case StartMode::SUCCEED:
         MessageReceiver::OnStartWorker(
