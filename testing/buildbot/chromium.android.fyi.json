@@ -3918,7 +3918,8 @@
             {
               "device_type": "coho"
             }
-          ]
+          ],
+          "hard_timeout": 120
         },
         "test": "gl_unittests"
       },
