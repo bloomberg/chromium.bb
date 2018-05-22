@@ -1,6 +1,1 @@
-# This should match chrome/browser/chromeos/file_manager/OWNERS
-fukino@chromium.org
-hirono@chromium.org
-kinaba@chromium.org
-yamaguchi@chromium.org
-yoshiki@chromium.org
+file://ui/file_manager/OWNERS
