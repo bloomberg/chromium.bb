@@ -795,11 +795,10 @@ AudioInputStream* AudioManagerMac::MakeLowLatencyInputStream(
     return nullptr;
   }
 
-  using VoiceProcessingMode = AUAudioInputStream::VoiceProcessingMode;
   VoiceProcessingMode voice_processing_mode =
       (params.effects() & AudioParameters::ECHO_CANCELLER)
-          ? VoiceProcessingMode::ENABLED
-          : VoiceProcessingMode::DISABLED;
+          ? VoiceProcessingMode::kEnabled
+          : VoiceProcessingMode::kDisabled;
 
   auto* stream = new AUAudioInputStream(this, params, audio_device_id,
                                         log_callback, voice_processing_mode);
