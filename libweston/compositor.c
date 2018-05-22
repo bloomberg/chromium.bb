@@ -1931,6 +1931,7 @@ weston_view_destroy(struct weston_view *view)
 	pixman_region32_fini(&view->transform.opaque);
 
 	weston_view_set_transform_parent(view, NULL);
+	weston_view_set_output(view, NULL);
 
 	wl_list_remove(&view->surface_link);
 
