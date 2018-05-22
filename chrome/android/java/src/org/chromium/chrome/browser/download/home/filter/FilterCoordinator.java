@@ -42,9 +42,8 @@ public class FilterCoordinator {
      * Builds a new FilterCoordinator.
      * @param context The context to build the views and pull parameters from.
      */
-    public FilterCoordinator(Context context /*, FilterSource chipFilterSource */) {
-        mChipsProvider =
-                new FilterChipsProvider(type -> handleChipSelected() /*, chipFilterSource */);
+    public FilterCoordinator(Context context, OfflineItemFilterSource chipFilterSource) {
+        mChipsProvider = new FilterChipsProvider(type -> handleChipSelected(), chipFilterSource);
         mChipsCoordinator = new ChipsCoordinator(context, mChipsProvider);
 
         mModel = new FilterModel();
