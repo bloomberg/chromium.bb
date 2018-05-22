@@ -268,21 +268,6 @@ static uint8_t *invert_mask(uint8_t *mask_inv_buffer, const uint8_t *const mask,
   return mask_inv_buffer;
 }
 
-const uint8_t *av1_get_compound_type_mask_inverse(
-    const INTERINTER_COMPOUND_DATA *const comp_data, uint8_t *mask_buffer,
-    int h, int w, int stride, BLOCK_SIZE sb_type) {
-  assert(is_masked_compound_type(comp_data->interinter_compound_type));
-  (void)sb_type;
-  switch (comp_data->interinter_compound_type) {
-    case COMPOUND_WEDGE:
-      return av1_get_contiguous_soft_mask(comp_data->wedge_index,
-                                          !comp_data->wedge_sign, sb_type);
-    case COMPOUND_DIFFWTD:
-      return invert_mask(mask_buffer, comp_data->seg_mask, h, w, stride);
-    default: assert(0); return NULL;
-  }
-}
-
 const uint8_t *av1_get_compound_type_mask(
     const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type) {
   assert(is_masked_compound_type(comp_data->interinter_compound_type));
