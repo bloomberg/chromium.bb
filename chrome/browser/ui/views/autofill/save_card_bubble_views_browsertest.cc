@@ -7,6 +7,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views_browsertest_base.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -197,6 +199,45 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                   "https://support.google.com/chrome/?p=settings_autofill" ||
               new_tab_contents->GetVisibleURL().spec() ==
                   "https://support.google.com/chromebook/?p=settings_autofill");
+}
+
+// Tests the local save bubble. Ensures that the bubble behaves correctly if
+// dismissed and then immediately torn down (e.g. by closing browser window)
+// before the asynchronous close completes. Regression test for
+// https://crbug.com/842577 .
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Local_SynchronousCloseAfterAsynchronousClose) {
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+
+  SaveCardBubbleViews* bubble = GetSaveCardBubbleViews();
+  EXPECT_TRUE(bubble);
+  views::Widget* bubble_widget = bubble->GetWidget();
+  EXPECT_TRUE(bubble_widget);
+  EXPECT_TRUE(bubble_widget->IsVisible());
+  bubble->Hide();
+  EXPECT_FALSE(bubble_widget->IsVisible());
+
+  // The bubble is immediately hidden, but it can still receive events here.
+  // Simulate an OS event arriving to destroy the Widget.
+  bubble_widget->CloseNow();
+  // |bubble| and |bubble_widget| now point to deleted objects.
+
+  // Simulate closing the browser window.
+  browser()->tab_strip_model()->CloseAllTabs();
+
+  // Process the asynchronous close (which should do nothing).
+  base::RunLoop().RunUntilIdle();
 }
 
 // Tests the upload save bubble. Ensures that clicking the [Save] button

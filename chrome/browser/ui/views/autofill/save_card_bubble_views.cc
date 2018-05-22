@@ -72,6 +72,12 @@ void SaveCardBubbleViews::Show(DisplayReason reason) {
 }
 
 void SaveCardBubbleViews::Hide() {
+  // If |controller_| is null, WindowClosing() won't invoke OnBubbleClosed(), so
+  // do that here. This will clear out |controller_|'s reference to |this|. Note
+  // that WindowClosing() happens only after the _asynchronous_ Close() task
+  // posted in CloseBubble() completes, but we need to fix references sooner.
+  if (controller_)
+    controller_->OnBubbleClosed();
   controller_ = nullptr;
   CloseBubble();
 }
