@@ -733,7 +733,22 @@ void ScriptLoader::FetchModuleScriptTree(const KURL& url,
 PendingScript* ScriptLoader::TakePendingScript(
     ScriptSchedulingType scheduling_type) {
   CHECK(prepared_pending_script_);
-  DCHECK_NE(scheduling_type, ScriptSchedulingType::kNotSet);
+
+  switch (scheduling_type) {
+    case ScriptSchedulingType::kAsync:
+    case ScriptSchedulingType::kInOrder:
+      // As ClassicPendingScript keeps a reference to ScriptResource,
+      // the ScriptResource is anyway kept alive until evaluation,
+      // and can be garbage-collected after that (together with
+      // ClassicPendingScript).
+      resource_keep_alive_ = nullptr;
+      break;
+
+    default:
+      // ScriptResource is kept alive by resource_keep_alive_
+      // until ScriptLoader is garbage collected.
+      break;
+  }
 
   PendingScript* pending_script = prepared_pending_script_;
   prepared_pending_script_ = nullptr;
@@ -748,7 +763,6 @@ void ScriptLoader::Execute() {
   PendingScript* pending_script = pending_script_;
   pending_script_ = nullptr;
   ExecuteScriptBlock(pending_script, NullURL());
-  resource_keep_alive_ = nullptr;
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block
