@@ -10,118 +10,26 @@
 #include <memory>
 #include <queue>
 
-#include "base/test/scoped_task_environment.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/ws2/client_window.h"
 #include "services/ui/ws2/client_window_test_helper.h"
 #include "services/ui/ws2/event_test_utils.h"
-#include "services/ui/ws2/gpu_support.h"
-#include "services/ui/ws2/test_window_service_delegate.h"
-#include "services/ui/ws2/test_window_tree_client.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_client_test_helper.h"
+#include "services/ui/ws2/window_service_test_setup.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
-#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gl/test/gl_surface_test_support.h"
 #include "ui/wm/core/capture_controller.h"
 
 namespace ui {
 namespace ws2 {
 namespace {
-
-// Embedding contains the object necessary for an embedding. This is created
-// by way of WindowServiceTestHelper::CreateEmbededing().
-//
-// NOTE: destroying this object does not destroy the embedding.
-struct Embedding {
-  std::vector<Change>* changes() {
-    return window_tree_client.tracker()->changes();
-  }
-
-  TestWindowTreeClient window_tree_client;
-
-  // NOTE: this is owned by the WindowServiceClient that Embed() was called on.
-  WindowServiceClient* window_service_client = nullptr;
-
-  std::unique_ptr<WindowServiceClientTestHelper> helper;
-};
-
-// Sets up state needed for WindowService tests.
-class WindowServiceTestHelper {
- public:
-  WindowServiceTestHelper() {
-    if (gl::GetGLImplementation() == gl::kGLImplementationNone)
-      gl::GLSurfaceTestSupport::InitializeOneOff();
-
-    ui::ContextFactory* context_factory = nullptr;
-    ui::ContextFactoryPrivate* context_factory_private = nullptr;
-    const bool enable_pixel_output = false;
-    ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                         &context_factory_private);
-    aura_test_helper_.SetUp(context_factory, context_factory_private);
-    scoped_capture_client_ = std::make_unique<wm::ScopedCaptureClient>(
-        aura_test_helper_.root_window());
-    service_ = std::make_unique<WindowService>(&delegate_, nullptr);
-    delegate_.set_top_level_parent(aura_test_helper_.root_window());
-
-    const bool intercepts_events = false;
-    window_service_client_ = service_->CreateWindowServiceClient(
-        &window_tree_client_, intercepts_events);
-    window_service_client_->InitFromFactory();
-    helper_ = std::make_unique<WindowServiceClientTestHelper>(
-        window_service_client_.get());
-  }
-
-  ~WindowServiceTestHelper() {
-    window_service_client_.reset();
-    service_.reset();
-    scoped_capture_client_.reset();
-    aura_test_helper_.TearDown();
-    ui::TerminateContextFactoryForTests();
-  }
-
-  std::unique_ptr<Embedding> CreateEmbedding(aura::Window* embed_root,
-                                             uint32_t flags = 0) {
-    std::unique_ptr<Embedding> embedding = std::make_unique<Embedding>();
-    embedding->window_service_client = helper_->Embed(
-        embed_root, nullptr, &embedding->window_tree_client, flags);
-    if (!embedding->window_service_client)
-      return nullptr;
-    embedding->helper = std::make_unique<WindowServiceClientTestHelper>(
-        embedding->window_service_client);
-    return embedding;
-  }
-
-  aura::Window* root() { return aura_test_helper_.root_window(); }
-  TestWindowServiceDelegate* delegate() { return &delegate_; }
-  TestWindowTreeClient* window_tree_client() { return &window_tree_client_; }
-  WindowServiceClientTestHelper* helper() { return helper_.get(); }
-
-  std::vector<Change>* changes() {
-    return window_tree_client_.tracker()->changes();
-  }
-
- private:
-  base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
-  aura::test::AuraTestHelper aura_test_helper_;
-  std::unique_ptr<wm::ScopedCaptureClient> scoped_capture_client_;
-  TestWindowServiceDelegate delegate_;
-  std::unique_ptr<WindowService> service_;
-  TestWindowTreeClient window_tree_client_;
-  std::unique_ptr<WindowServiceClient> window_service_client_;
-  std::unique_ptr<WindowServiceClientTestHelper> helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowServiceTestHelper);
-};
 
 class TestLayoutManager : public aura::LayoutManager {
  public:
@@ -154,77 +62,77 @@ class TestLayoutManager : public aura::LayoutManager {
 };
 
 TEST(WindowServiceClientTest, NewWindow) {
-  WindowServiceTestHelper helper;
-  EXPECT_TRUE(helper.changes()->empty());
-  aura::Window* window = helper.helper()->NewWindow(1);
+  WindowServiceTestSetup setup;
+  EXPECT_TRUE(setup.changes()->empty());
+  aura::Window* window = setup.client_test_helper()->NewWindow(1);
   ASSERT_TRUE(window);
   EXPECT_EQ("ChangeCompleted id=1 sucess=true",
-            SingleChangeToDescription(*helper.changes()));
+            SingleChangeToDescription(*setup.changes()));
 }
 
 TEST(WindowServiceClientTest, NewWindowWithProperties) {
-  WindowServiceTestHelper helper;
-  EXPECT_TRUE(helper.changes()->empty());
+  WindowServiceTestSetup setup;
+  EXPECT_TRUE(setup.changes()->empty());
   aura::PropertyConverter::PrimitiveType value = true;
   std::vector<uint8_t> transport = mojo::ConvertTo<std::vector<uint8_t>>(value);
-  aura::Window* window = helper.helper()->NewWindow(
+  aura::Window* window = setup.client_test_helper()->NewWindow(
       1, {{ui::mojom::WindowManager::kAlwaysOnTop_Property, transport}});
   ASSERT_TRUE(window);
   EXPECT_EQ("ChangeCompleted id=1 sucess=true",
-            SingleChangeToDescription(*helper.changes()));
+            SingleChangeToDescription(*setup.changes()));
   EXPECT_TRUE(window->GetProperty(aura::client::kAlwaysOnTopKey));
 }
 
 TEST(WindowServiceClientTest, NewTopLevelWindow) {
-  WindowServiceTestHelper helper;
-  EXPECT_TRUE(helper.changes()->empty());
-  aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
+  WindowServiceTestSetup setup;
+  EXPECT_TRUE(setup.changes()->empty());
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
   ASSERT_TRUE(top_level);
   EXPECT_EQ("TopLevelCreated id=1 window_id=0,1 drawn=false",
-            SingleChangeToDescription(*helper.changes()));
+            SingleChangeToDescription(*setup.changes()));
 }
 
 TEST(WindowServiceClientTest, NewTopLevelWindowWithProperties) {
-  WindowServiceTestHelper helper;
-  EXPECT_TRUE(helper.changes()->empty());
+  WindowServiceTestSetup setup;
+  EXPECT_TRUE(setup.changes()->empty());
   aura::PropertyConverter::PrimitiveType value = true;
   std::vector<uint8_t> transport = mojo::ConvertTo<std::vector<uint8_t>>(value);
-  aura::Window* top_level = helper.helper()->NewTopLevelWindow(
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(
       1, {{ui::mojom::WindowManager::kAlwaysOnTop_Property, transport}});
   ASSERT_TRUE(top_level);
   EXPECT_EQ("TopLevelCreated id=1 window_id=0,1 drawn=false",
-            SingleChangeToDescription(*helper.changes()));
+            SingleChangeToDescription(*setup.changes()));
   EXPECT_TRUE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
 }
 
 TEST(WindowServiceClientTest, SetTopLevelWindowBounds) {
-  WindowServiceTestHelper helper;
-  aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
-  helper.changes()->clear();
+  WindowServiceTestSetup setup;
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  setup.changes()->clear();
 
   const gfx::Rect bounds_from_client = gfx::Rect(1, 2, 300, 400);
-  helper.helper()->SetWindowBounds(top_level, bounds_from_client, 2);
+  setup.client_test_helper()->SetWindowBounds(top_level, bounds_from_client, 2);
   EXPECT_EQ(bounds_from_client, top_level->bounds());
-  ASSERT_EQ(2u, helper.changes()->size());
+  ASSERT_EQ(2u, setup.changes()->size());
   {
-    const Change& change = (*helper.changes())[0];
+    const Change& change = (*setup.changes())[0];
     EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, change.type);
     EXPECT_EQ(top_level->bounds(), change.bounds2);
     EXPECT_TRUE(change.local_surface_id);
-    helper.changes()->erase(helper.changes()->begin());
+    setup.changes()->erase(setup.changes()->begin());
   }
   // See comments in WindowServiceClient::SetBoundsImpl() for why this returns
   // false.
   EXPECT_EQ("ChangeCompleted id=2 sucess=false",
-            SingleChangeToDescription(*helper.changes()));
-  helper.changes()->clear();
+            SingleChangeToDescription(*setup.changes()));
+  setup.changes()->clear();
 
   const gfx::Rect bounds_from_server = gfx::Rect(101, 102, 103, 104);
   top_level->SetBounds(bounds_from_server);
-  ASSERT_EQ(1u, helper.changes()->size());
-  EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, (*helper.changes())[0].type);
-  EXPECT_EQ(bounds_from_server, (*helper.changes())[0].bounds2);
-  helper.changes()->clear();
+  ASSERT_EQ(1u, setup.changes()->size());
+  EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, (*setup.changes())[0].type);
+  EXPECT_EQ(bounds_from_server, (*setup.changes())[0].bounds2);
+  setup.changes()->clear();
 
   // Set a LayoutManager so that when the client requests a bounds change the
   // window is resized to a different bounds.
@@ -233,53 +141,54 @@ TEST(WindowServiceClientTest, SetTopLevelWindowBounds) {
   const gfx::Rect restricted_bounds = gfx::Rect(401, 405, 406, 407);
   layout_manager->set_next_bounds(restricted_bounds);
   top_level->parent()->SetLayoutManager(layout_manager);
-  helper.helper()->SetWindowBounds(top_level, bounds_from_client, 3);
-  ASSERT_EQ(2u, helper.changes()->size());
+  setup.client_test_helper()->SetWindowBounds(top_level, bounds_from_client, 3);
+  ASSERT_EQ(2u, setup.changes()->size());
   // The layout manager changes the bounds to a different value than the client
   // requested, so the client should get OnWindowBoundsChanged() with
   // |restricted_bounds|.
-  EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, (*helper.changes())[0].type);
-  EXPECT_EQ(restricted_bounds, (*helper.changes())[0].bounds2);
+  EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, (*setup.changes())[0].type);
+  EXPECT_EQ(restricted_bounds, (*setup.changes())[0].bounds2);
 
   // And because the layout manager changed the bounds the result is false.
   EXPECT_EQ("ChangeCompleted id=3 sucess=false",
-            ChangeToDescription((*helper.changes())[1]));
+            ChangeToDescription((*setup.changes())[1]));
 }
 
 // Tests the ability of the client to change properties on the server.
 TEST(WindowServiceClientTest, SetTopLevelWindowProperty) {
-  WindowServiceTestHelper helper;
-  aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
-  helper.changes()->clear();
+  WindowServiceTestSetup setup;
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  setup.changes()->clear();
 
   EXPECT_FALSE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
   aura::PropertyConverter::PrimitiveType client_value = true;
   std::vector<uint8_t> client_transport_value =
       mojo::ConvertTo<std::vector<uint8_t>>(client_value);
-  helper.helper()->SetWindowProperty(
+  setup.client_test_helper()->SetWindowProperty(
       top_level, ui::mojom::WindowManager::kAlwaysOnTop_Property,
       client_transport_value, 2);
   EXPECT_EQ("ChangeCompleted id=2 sucess=true",
-            SingleChangeToDescription(*helper.changes()));
+            SingleChangeToDescription(*setup.changes()));
   EXPECT_TRUE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
-  helper.changes()->clear();
+  setup.changes()->clear();
 
   top_level->SetProperty(aura::client::kAlwaysOnTopKey, false);
   EXPECT_EQ(
       "PropertyChanged window=0,1 key=prop:always_on_top "
       "value=0000000000000000",
-      SingleChangeToDescription(*helper.changes()));
+      SingleChangeToDescription(*setup.changes()));
 }
 
 TEST(WindowServiceClientTest, WindowToWindowData) {
-  WindowServiceTestHelper helper;
-  aura::Window* window = helper.helper()->NewWindow(1);
-  helper.changes()->clear();
+  WindowServiceTestSetup setup;
+  aura::Window* window = setup.client_test_helper()->NewWindow(1);
+  setup.changes()->clear();
 
   window->SetBounds(gfx::Rect(1, 2, 300, 400));
   window->SetProperty(aura::client::kAlwaysOnTopKey, true);
   window->Show();  // Called to make the window visible.
-  mojom::WindowDataPtr data = helper.helper()->WindowToWindowData(window);
+  mojom::WindowDataPtr data =
+      setup.client_test_helper()->WindowToWindowData(window);
   EXPECT_EQ(gfx::Rect(1, 2, 300, 400), data->bounds);
   EXPECT_TRUE(data->visible);
   EXPECT_EQ(1u, data->properties.count(
@@ -291,15 +200,15 @@ TEST(WindowServiceClientTest, WindowToWindowData) {
 }
 
 TEST(WindowServiceClientTest, MovePressDragRelease) {
-  WindowServiceTestHelper helper;
-  TestWindowTreeClient* window_tree_client = helper.window_tree_client();
-  aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
+  WindowServiceTestSetup setup;
+  TestWindowTreeClient* window_tree_client = setup.window_tree_client();
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
   ASSERT_TRUE(top_level);
 
   top_level->Show();
   top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
 
-  test::EventGenerator event_generator(helper.root());
+  test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(50, 50);
   EXPECT_EQ("POINTER_ENTERED 40,40",
             LocatedEventToEventTypeAndLocation(
@@ -357,19 +266,20 @@ class EventRecordingWindowDelegate : public aura::test::TestWindowDelegate {
 
 TEST(WindowServiceClientTest, MoveFromClientToNonClient) {
   EventRecordingWindowDelegate window_delegate;
-  WindowServiceTestHelper helper;
-  TestWindowTreeClient* window_tree_client = helper.window_tree_client();
-  helper.delegate()->set_delegate_for_next_top_level(&window_delegate);
-  aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
+  WindowServiceTestSetup setup;
+  TestWindowTreeClient* window_tree_client = setup.window_tree_client();
+  setup.delegate()->set_delegate_for_next_top_level(&window_delegate);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
   ASSERT_TRUE(top_level);
 
   top_level->Show();
   top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
-  helper.helper()->SetClientArea(top_level, gfx::Insets(10, 0, 0, 0));
+  setup.client_test_helper()->SetClientArea(top_level,
+                                            gfx::Insets(10, 0, 0, 0));
 
   window_delegate.ClearEvents();
 
-  test::EventGenerator event_generator(helper.root());
+  test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(50, 50);
   // Move generates both an enter and move.
   EXPECT_EQ("POINTER_ENTERED 40,40",
@@ -436,21 +346,21 @@ TEST(WindowServiceClientTest, MoveFromClientToNonClient) {
 }
 
 TEST(WindowServiceClientTest, PointerWatcher) {
-  WindowServiceTestHelper helper;
-  TestWindowTreeClient* window_tree_client = helper.window_tree_client();
-  aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
+  WindowServiceTestSetup setup;
+  TestWindowTreeClient* window_tree_client = setup.window_tree_client();
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
   ASSERT_TRUE(top_level);
-  helper.helper()->SetEventTargetingPolicy(top_level,
-                                           mojom::EventTargetingPolicy::NONE);
+  setup.client_test_helper()->SetEventTargetingPolicy(
+      top_level, mojom::EventTargetingPolicy::NONE);
   EXPECT_EQ(mojom::EventTargetingPolicy::NONE,
             top_level->event_targeting_policy());
   // Start the pointer watcher only for pointer down/up.
-  helper.helper()->window_tree()->StartPointerWatcher(false);
+  setup.client_test_helper()->window_tree()->StartPointerWatcher(false);
 
   top_level->Show();
   top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
 
-  test::EventGenerator event_generator(helper.root());
+  test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(50, 50);
   ASSERT_TRUE(window_tree_client->observed_pointer_events().empty());
 
@@ -468,7 +378,7 @@ TEST(WindowServiceClientTest, PointerWatcher) {
                 window_tree_client->PopObservedPointerEvent().event.get()));
 
   // Enable observing move events.
-  helper.helper()->window_tree()->StartPointerWatcher(true);
+  setup.client_test_helper()->window_tree()->StartPointerWatcher(true);
   event_generator.MoveMouseTo(8, 9);
   EXPECT_EQ("POINTER_MOVED 8,9",
             LocatedEventToEventTypeAndLocation(
@@ -482,72 +392,72 @@ TEST(WindowServiceClientTest, PointerWatcher) {
 }
 
 TEST(WindowServiceClientTest, Capture) {
-  WindowServiceTestHelper helper;
-  aura::Window* window = helper.helper()->NewWindow(1);
+  WindowServiceTestSetup setup;
+  aura::Window* window = setup.client_test_helper()->NewWindow(1);
 
   // Setting capture on |window| should fail as it's not visible.
-  EXPECT_FALSE(helper.helper()->SetCapture(window));
+  EXPECT_FALSE(setup.client_test_helper()->SetCapture(window));
 
-  aura::Window* top_level = helper.helper()->NewTopLevelWindow(2);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(2);
   ASSERT_TRUE(top_level);
-  EXPECT_FALSE(helper.helper()->SetCapture(top_level));
+  EXPECT_FALSE(setup.client_test_helper()->SetCapture(top_level));
   top_level->Show();
-  EXPECT_TRUE(helper.helper()->SetCapture(top_level));
+  EXPECT_TRUE(setup.client_test_helper()->SetCapture(top_level));
 
-  EXPECT_FALSE(helper.helper()->ReleaseCapture(window));
-  EXPECT_TRUE(helper.helper()->ReleaseCapture(top_level));
+  EXPECT_FALSE(setup.client_test_helper()->ReleaseCapture(window));
+  EXPECT_TRUE(setup.client_test_helper()->ReleaseCapture(top_level));
 
   top_level->AddChild(window);
   window->Show();
-  EXPECT_TRUE(helper.helper()->SetCapture(window));
-  EXPECT_TRUE(helper.helper()->ReleaseCapture(window));
+  EXPECT_TRUE(setup.client_test_helper()->SetCapture(window));
+  EXPECT_TRUE(setup.client_test_helper()->ReleaseCapture(window));
 }
 
 TEST(WindowServiceClientTest, CaptureNotification) {
-  WindowServiceTestHelper helper;
-  aura::Window* window = helper.helper()->NewWindow(1);
-  aura::Window* top_level = helper.helper()->NewTopLevelWindow(2);
+  WindowServiceTestSetup setup;
+  aura::Window* window = setup.client_test_helper()->NewWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(2);
   top_level->AddChild(window);
   ASSERT_TRUE(top_level);
   top_level->Show();
   window->Show();
-  helper.changes()->clear();
-  EXPECT_TRUE(helper.helper()->SetCapture(window));
-  EXPECT_TRUE(helper.changes()->empty());
+  setup.changes()->clear();
+  EXPECT_TRUE(setup.client_test_helper()->SetCapture(window));
+  EXPECT_TRUE(setup.changes()->empty());
 
   wm::CaptureController::Get()->ReleaseCapture(window);
   EXPECT_EQ("OnCaptureChanged new_window=null old_window=0,1",
-            SingleChangeToDescription(*(helper.changes())));
+            SingleChangeToDescription(*(setup.changes())));
 }
 
 TEST(WindowServiceClientTest, CaptureNotificationForEmbedRoot) {
-  WindowServiceTestHelper helper;
-  aura::Window* window = helper.helper()->NewWindow(1);
-  aura::Window* top_level = helper.helper()->NewTopLevelWindow(2);
+  WindowServiceTestSetup setup;
+  aura::Window* window = setup.client_test_helper()->NewWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(2);
   top_level->AddChild(window);
   ASSERT_TRUE(top_level);
   top_level->Show();
   window->Show();
-  helper.changes()->clear();
-  EXPECT_TRUE(helper.helper()->SetCapture(window));
-  EXPECT_TRUE(helper.changes()->empty());
+  setup.changes()->clear();
+  EXPECT_TRUE(setup.client_test_helper()->SetCapture(window));
+  EXPECT_TRUE(setup.changes()->empty());
 
   // Set capture on the embed-root from the embedded client. The embedder
   // should be notified.
-  std::unique_ptr<Embedding> embedding = helper.CreateEmbedding(window);
+  std::unique_ptr<Embedding> embedding = setup.CreateEmbedding(window);
   ASSERT_TRUE(embedding);
-  helper.changes()->clear();
+  setup.changes()->clear();
   embedding->changes()->clear();
-  EXPECT_TRUE(embedding->helper->SetCapture(window));
+  EXPECT_TRUE(embedding->client_test_helper->SetCapture(window));
   EXPECT_EQ("OnCaptureChanged new_window=null old_window=0,1",
-            SingleChangeToDescription(*(helper.changes())));
-  helper.changes()->clear();
+            SingleChangeToDescription(*(setup.changes())));
+  setup.changes()->clear();
   EXPECT_TRUE(embedding->changes()->empty());
 
   // Set capture from the embedder. This triggers the embedded client to lose
   // capture.
-  EXPECT_TRUE(helper.helper()->SetCapture(window));
-  EXPECT_TRUE(helper.changes()->empty());
+  EXPECT_TRUE(setup.client_test_helper()->SetCapture(window));
+  EXPECT_TRUE(setup.changes()->empty());
   // NOTE: the '2' is because the embedded client sees the high order bits of
   // the root.
   EXPECT_EQ("OnCaptureChanged new_window=null old_window=2,1",
@@ -557,44 +467,44 @@ TEST(WindowServiceClientTest, CaptureNotificationForEmbedRoot) {
   // And release capture locally.
   wm::CaptureController::Get()->ReleaseCapture(window);
   EXPECT_EQ("OnCaptureChanged new_window=null old_window=0,1",
-            SingleChangeToDescription(*(helper.changes())));
+            SingleChangeToDescription(*(setup.changes())));
   EXPECT_TRUE(embedding->changes()->empty());
 }
 
 TEST(WindowServiceClientTest, CaptureNotificationForTopLevel) {
-  WindowServiceTestHelper helper;
-  aura::Window* top_level = helper.helper()->NewTopLevelWindow(11);
+  WindowServiceTestSetup setup;
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(11);
   ASSERT_TRUE(top_level);
   top_level->Show();
-  helper.changes()->clear();
-  EXPECT_TRUE(helper.helper()->SetCapture(top_level));
-  EXPECT_TRUE(helper.changes()->empty());
+  setup.changes()->clear();
+  EXPECT_TRUE(setup.client_test_helper()->SetCapture(top_level));
+  EXPECT_TRUE(setup.changes()->empty());
 
   // Release capture locally.
   wm::CaptureController* capture_controller = wm::CaptureController::Get();
   capture_controller->ReleaseCapture(top_level);
   EXPECT_EQ("OnCaptureChanged new_window=null old_window=0,11",
-            SingleChangeToDescription(*(helper.changes())));
-  helper.changes()->clear();
+            SingleChangeToDescription(*(setup.changes())));
+  setup.changes()->clear();
 
   // Set capture locally.
   capture_controller->SetCapture(top_level);
-  EXPECT_TRUE(helper.changes()->empty());
+  EXPECT_TRUE(setup.changes()->empty());
 
   // Set capture from client.
-  EXPECT_TRUE(helper.helper()->SetCapture(top_level));
-  EXPECT_TRUE(helper.changes()->empty());
+  EXPECT_TRUE(setup.client_test_helper()->SetCapture(top_level));
+  EXPECT_TRUE(setup.changes()->empty());
 
   // Release locally.
   capture_controller->ReleaseCapture(top_level);
   EXPECT_EQ("OnCaptureChanged new_window=null old_window=0,11",
-            SingleChangeToDescription(*(helper.changes())));
+            SingleChangeToDescription(*(setup.changes())));
 }
 
 TEST(WindowServiceClientTest, EventsGoToCaptureWindow) {
-  WindowServiceTestHelper helper;
-  aura::Window* window = helper.helper()->NewWindow(1);
-  aura::Window* top_level = helper.helper()->NewTopLevelWindow(2);
+  WindowServiceTestSetup setup;
+  aura::Window* window = setup.client_test_helper()->NewWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(2);
   top_level->AddChild(window);
   ASSERT_TRUE(top_level);
   top_level->Show();
@@ -602,38 +512,39 @@ TEST(WindowServiceClientTest, EventsGoToCaptureWindow) {
   top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
   window->SetBounds(gfx::Rect(10, 10, 90, 90));
   // Left press on the top-level, leaving mouse down.
-  test::EventGenerator event_generator(helper.root());
+  test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(5, 5);
   event_generator.PressLeftButton();
-  helper.window_tree_client()->ClearInputEvents();
+  setup.window_tree_client()->ClearInputEvents();
 
   // Set capture on |window|.
-  EXPECT_TRUE(helper.helper()->SetCapture(window));
-  EXPECT_TRUE(helper.window_tree_client()->input_events().empty());
+  EXPECT_TRUE(setup.client_test_helper()->SetCapture(window));
+  EXPECT_TRUE(setup.window_tree_client()->input_events().empty());
 
   // Move mouse, should go to |window|.
   event_generator.MoveMouseTo(6, 6);
-  auto drag_event = helper.window_tree_client()->PopInputEvent();
-  EXPECT_EQ(helper.helper()->TransportIdForWindow(window),
+  auto drag_event = setup.window_tree_client()->PopInputEvent();
+  EXPECT_EQ(setup.client_test_helper()->TransportIdForWindow(window),
             drag_event.window_id);
   EXPECT_EQ("POINTER_MOVED -4,-4",
             LocatedEventToEventTypeAndLocation(drag_event.event.get()));
 }
 
 TEST(WindowServiceClientTest, PointerDownResetOnCaptureChange) {
-  WindowServiceTestHelper helper;
-  aura::Window* window = helper.helper()->NewWindow(1);
+  WindowServiceTestSetup setup;
+  aura::Window* window = setup.client_test_helper()->NewWindow(1);
   ASSERT_TRUE(window);
-  aura::Window* top_level = helper.helper()->NewTopLevelWindow(2);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(2);
   ASSERT_TRUE(top_level);
   top_level->AddChild(window);
-  helper.helper()->SetClientArea(top_level, gfx::Insets(10, 0, 0, 0));
+  setup.client_test_helper()->SetClientArea(top_level,
+                                            gfx::Insets(10, 0, 0, 0));
   top_level->Show();
   window->Show();
   top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
   window->SetBounds(gfx::Rect(10, 10, 90, 90));
   // Left press on the top-level, leaving mouse down.
-  test::EventGenerator event_generator(helper.root());
+  test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(5, 5);
   event_generator.PressLeftButton();
   ClientWindow* top_level_client_window = ClientWindow::GetMayBeNull(top_level);
@@ -644,19 +555,20 @@ TEST(WindowServiceClientTest, PointerDownResetOnCaptureChange) {
 
   // Set capture on |window|, top_level should no longer be in pointer-down
   // (because capture changed).
-  EXPECT_TRUE(helper.helper()->SetCapture(window));
+  EXPECT_TRUE(setup.client_test_helper()->SetCapture(window));
   EXPECT_FALSE(top_level_client_window_helper.IsInPointerPressed());
 }
 
 TEST(WindowServiceClientTest, PointerDownResetOnHide) {
-  WindowServiceTestHelper helper;
-  aura::Window* top_level = helper.helper()->NewTopLevelWindow(2);
+  WindowServiceTestSetup setup;
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(2);
   ASSERT_TRUE(top_level);
-  helper.helper()->SetClientArea(top_level, gfx::Insets(10, 0, 0, 0));
+  setup.client_test_helper()->SetClientArea(top_level,
+                                            gfx::Insets(10, 0, 0, 0));
   top_level->Show();
   top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
   // Left press on the top-level, leaving mouse down.
-  test::EventGenerator event_generator(helper.root());
+  test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(5, 5);
   event_generator.PressLeftButton();
   ClientWindow* top_level_client_window = ClientWindow::GetMayBeNull(top_level);
@@ -671,38 +583,38 @@ TEST(WindowServiceClientTest, PointerDownResetOnHide) {
 }
 
 TEST(WindowServiceClientTest, DeleteWindow) {
-  WindowServiceTestHelper helper;
-  aura::Window* window = helper.helper()->NewWindow(1);
+  WindowServiceTestSetup setup;
+  aura::Window* window = setup.client_test_helper()->NewWindow(1);
   ASSERT_TRUE(window);
   aura::WindowTracker tracker;
   tracker.Add(window);
-  helper.changes()->clear();
-  helper.helper()->DeleteWindow(window);
+  setup.changes()->clear();
+  setup.client_test_helper()->DeleteWindow(window);
   EXPECT_TRUE(tracker.windows().empty());
   EXPECT_EQ("ChangeCompleted id=1 sucess=true",
-            SingleChangeToDescription(*helper.changes()));
+            SingleChangeToDescription(*setup.changes()));
 }
 
 TEST(WindowServiceClientTest, ExternalDeleteWindow) {
-  WindowServiceTestHelper helper;
-  aura::Window* window = helper.helper()->NewWindow(1);
+  WindowServiceTestSetup setup;
+  aura::Window* window = setup.client_test_helper()->NewWindow(1);
   ASSERT_TRUE(window);
-  helper.changes()->clear();
+  setup.changes()->clear();
   delete window;
   EXPECT_EQ("WindowDeleted window=0,1",
-            SingleChangeToDescription(*helper.changes()));
+            SingleChangeToDescription(*setup.changes()));
 }
 
 TEST(WindowServiceClientTest, Embed) {
-  WindowServiceTestHelper helper;
-  aura::Window* window = helper.helper()->NewWindow(2);
-  aura::Window* embed_window = helper.helper()->NewWindow(3);
+  WindowServiceTestSetup setup;
+  aura::Window* window = setup.client_test_helper()->NewWindow(2);
+  aura::Window* embed_window = setup.client_test_helper()->NewWindow(3);
   ASSERT_TRUE(window);
   ASSERT_TRUE(embed_window);
   window->AddChild(embed_window);
   embed_window->SetBounds(gfx::Rect(1, 2, 3, 4));
 
-  std::unique_ptr<Embedding> embedding = helper.CreateEmbedding(embed_window);
+  std::unique_ptr<Embedding> embedding = setup.CreateEmbedding(embed_window);
   ASSERT_TRUE(embedding);
   ASSERT_EQ("OnEmbed", SingleChangeToDescription(*embedding->changes()));
   const Change& test_change = (*embedding->changes())[0];
