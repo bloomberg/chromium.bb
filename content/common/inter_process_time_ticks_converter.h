@@ -12,10 +12,95 @@
 
 namespace content {
 
-class LocalTimeDelta;
-class LocalTimeTicks;
-class RemoteTimeDelta;
-class RemoteTimeTicks;
+// SiteSpecificTimeDelta<T> is base::TimeDelta with a type tag. It it
+// essentially base::TimeDelta, but SiteSpecificTimeDelta<T> is different from
+// SiteSpecificTimeDelta<U> if T is different from U.
+template <typename T>
+class SiteSpecificTimeDelta final {
+ public:
+  SiteSpecificTimeDelta() = default;
+  static SiteSpecificTimeDelta<T> FromTimeDelta(base::TimeDelta delta) {
+    return SiteSpecificTimeDelta<T>(delta);
+  }
+  static SiteSpecificTimeDelta<T> FromMicroseconds(int64_t usec) {
+    return SiteSpecificTimeDelta<T>(base::TimeDelta::FromMicroseconds(usec));
+  }
+
+  base::TimeDelta ToTimeDelta() const { return delta_; }
+  bool operator==(const SiteSpecificTimeDelta<T> rhs) const {
+    return delta_ == rhs.delta_;
+  }
+  bool operator<(const SiteSpecificTimeDelta<T> rhs) const {
+    return delta_ < rhs.delta_;
+  }
+  bool operator<=(const SiteSpecificTimeDelta<T> rhs) const {
+    return delta_ <= rhs.delta_;
+  }
+
+ private:
+  explicit SiteSpecificTimeDelta(base::TimeDelta delta) : delta_(delta) {}
+
+  base::TimeDelta delta_;
+};
+
+// For logging use only.
+template <typename T>
+std::ostream& operator<<(std::ostream& os, SiteSpecificTimeDelta<T> delta) {
+  return os << delta.ToTimeDelta();
+}
+
+// SiteSpecificTimeTicks<T> is base::TimeTicks with a type tag. It is
+// essentially base::TimeTicks, but SiteSpecificTimeTicks<T> is different from
+// SiteSpecificTimeTicks<U> if T is different from U.
+template <typename T>
+class SiteSpecificTimeTicks final {
+ public:
+  SiteSpecificTimeTicks() = default;
+  static SiteSpecificTimeTicks<T> FromTimeTicks(base::TimeTicks time_ticks) {
+    return SiteSpecificTimeTicks<T>(time_ticks);
+  }
+
+  base::TimeTicks ToTimeTicks() const { return time_ticks_; }
+  bool is_null() const { return time_ticks_.is_null(); }
+
+  SiteSpecificTimeTicks<T> operator+(SiteSpecificTimeDelta<T> delta) const {
+    return SiteSpecificTimeTicks<T>(time_ticks_ + delta.ToTimeDelta());
+  }
+  SiteSpecificTimeDelta<T> operator-(SiteSpecificTimeTicks<T> rhs) const {
+    return SiteSpecificTimeDelta<T>::FromTimeDelta(time_ticks_ -
+                                                   rhs.time_ticks_);
+  }
+  bool operator<(const SiteSpecificTimeTicks<T> rhs) const {
+    return time_ticks_ < rhs.time_ticks_;
+  }
+  bool operator==(const SiteSpecificTimeTicks<T> rhs) const {
+    return time_ticks_ == rhs.time_ticks_;
+  }
+  bool operator<=(const SiteSpecificTimeTicks<T> rhs) const {
+    return time_ticks_ <= rhs.time_ticks_;
+  }
+
+ private:
+  explicit SiteSpecificTimeTicks(base::TimeTicks time_ticks)
+      : time_ticks_(time_ticks) {}
+
+  base::TimeTicks time_ticks_;
+};
+
+// For logging use only.
+template <typename T>
+std::ostream& operator<<(std::ostream& os,
+                         SiteSpecificTimeTicks<T> time_ticks) {
+  return os << time_ticks.ToTimeTicks();
+}
+
+class SiteSpecificTimeLocalTag;
+using LocalTimeTicks = SiteSpecificTimeTicks<SiteSpecificTimeLocalTag>;
+using LocalTimeDelta = SiteSpecificTimeDelta<SiteSpecificTimeLocalTag>;
+
+class SiteSpecificTimeRemoteTag;
+using RemoteTimeTicks = SiteSpecificTimeTicks<SiteSpecificTimeRemoteTag>;
+using RemoteTimeDelta = SiteSpecificTimeDelta<SiteSpecificTimeRemoteTag>;
 
 // On Windows, TimeTicks are not always consistent between processes as
 // indicated by |TimeTicks::IsConsistentAcrossProcesses()|. Often, the values on
@@ -51,18 +136,18 @@ class RemoteTimeTicks;
 //    local's range. Any values converted will be shifted the same amount.
 class CONTENT_EXPORT InterProcessTimeTicksConverter {
  public:
-  InterProcessTimeTicksConverter(const LocalTimeTicks& local_lower_bound,
-                                 const LocalTimeTicks& local_upper_bound,
-                                 const RemoteTimeTicks& remote_lower_bound,
-                                 const RemoteTimeTicks& remote_upper_bound);
+  InterProcessTimeTicksConverter(LocalTimeTicks local_lower_bound,
+                                 LocalTimeTicks local_upper_bound,
+                                 RemoteTimeTicks remote_lower_bound,
+                                 RemoteTimeTicks remote_upper_bound);
 
   // Returns the value within the local's bounds that correlates to
   // |remote_ms|.
-  LocalTimeTicks ToLocalTimeTicks(const RemoteTimeTicks& remote_ms) const;
+  LocalTimeTicks ToLocalTimeTicks(RemoteTimeTicks remote_ms) const;
 
   // Returns the equivalent delta after applying remote-to-local scaling to
   // |remote_delta|.
-  LocalTimeDelta ToLocalTimeDelta(const RemoteTimeDelta& remote_delta) const;
+  LocalTimeDelta ToLocalTimeDelta(RemoteTimeDelta remote_delta) const;
 
   // Returns the (remote time) - (local time) difference estimated by the
   // converter. This is the constant that is subtracted from remote TimeTicks to
@@ -70,84 +155,14 @@ class CONTENT_EXPORT InterProcessTimeTicksConverter {
   base::TimeDelta GetSkewForMetrics() const;
 
  private:
-  int64_t Convert(int64_t value) const;
-
   // The local time which |remote_lower_bound_| is mapped to.
-  int64_t local_base_time_;
+  LocalTimeTicks local_base_time_;
+  LocalTimeDelta local_range_;
 
-  int64_t numerator_;
-  int64_t denominator_;
+  double range_conversion_rate_;
 
-  int64_t remote_lower_bound_;
-  int64_t remote_upper_bound_;
-};
-
-class CONTENT_EXPORT LocalTimeDelta {
- public:
-  int ToInt32() const { return value_; }
-
- private:
-  friend class InterProcessTimeTicksConverter;
-  friend class LocalTimeTicks;
-
-  LocalTimeDelta(int value) : value_(value) {}
-
-  int value_;
-};
-
-class CONTENT_EXPORT LocalTimeTicks {
- public:
-  static LocalTimeTicks FromTimeTicks(const base::TimeTicks& value) {
-    return LocalTimeTicks(value.ToInternalValue());
-  }
-
-  base::TimeTicks ToTimeTicks() {
-    return base::TimeTicks::FromInternalValue(value_);
-  }
-
-  LocalTimeTicks operator+(const LocalTimeDelta& delta) {
-    return LocalTimeTicks(value_ + delta.value_);
-  }
-
- private:
-  friend class InterProcessTimeTicksConverter;
-
-  LocalTimeTicks(int64_t value) : value_(value) {}
-
-  int64_t value_;
-};
-
-class CONTENT_EXPORT RemoteTimeDelta {
- public:
-  static RemoteTimeDelta FromRawDelta(int delta) {
-    return RemoteTimeDelta(delta);
-  }
-
- private:
-  friend class InterProcessTimeTicksConverter;
-  friend class RemoteTimeTicks;
-
-  RemoteTimeDelta(int value) : value_(value) {}
-
-  int value_;
-};
-
-class CONTENT_EXPORT RemoteTimeTicks {
- public:
-  static RemoteTimeTicks FromTimeTicks(const base::TimeTicks& ticks) {
-    return RemoteTimeTicks(ticks.ToInternalValue());
-  }
-
-  RemoteTimeDelta operator-(const RemoteTimeTicks& rhs) const {
-    return RemoteTimeDelta(value_ - rhs.value_);
-  }
-
- private:
-  friend class InterProcessTimeTicksConverter;
-
-  RemoteTimeTicks(int64_t value) : value_(value) {}
-
-  int64_t value_;
+  RemoteTimeTicks remote_lower_bound_;
+  RemoteTimeTicks remote_upper_bound_;
 };
 
 }  // namespace content
