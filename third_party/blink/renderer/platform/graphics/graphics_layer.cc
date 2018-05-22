@@ -1248,7 +1248,7 @@ void GraphicsLayer::SetContentsToImage(
   }
 
   SetContentsTo(image_layer_.get(),
-                /*prevent_contents_opaque_changes=*/true);
+                /*prevent_contents_opaque_changes=*/false);
 }
 
 cc::Layer* GraphicsLayer::CcLayer() const {
