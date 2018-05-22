@@ -168,7 +168,7 @@ base::HistogramBase* GetMediumTimeHistogram(const std::string& name) {
 std::string AsUTF8ForSQL(const base::FilePath& path) {
 #if defined(OS_WIN)
   return base::WideToUTF8(path.value());
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return path.value();
 #endif
 }
@@ -542,7 +542,7 @@ base::FilePath Connection::DbPath() const {
   const base::StringPiece db_path(path);
 #if defined(OS_WIN)
   return base::FilePath(base::UTF8ToWide(db_path));
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return base::FilePath(db_path);
 #else
   NOTREACHED();
@@ -676,7 +676,7 @@ std::string Connection::CollectErrorInfo(int error, Statement* stmt) const {
   // from posix.
 #if defined(OS_WIN)
   base::StringAppendF(&debug_info, "LastError: %d\n", GetLastErrno());
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   base::StringAppendF(&debug_info, "errno: %d\n", GetLastErrno());
 #else
   NOTREACHED();  // Add appropriate log info.
@@ -1284,8 +1284,10 @@ bool Connection::AttachDatabase(const base::FilePath& other_db_path,
   Statement s(GetUniqueStatement("ATTACH DATABASE ? AS ?"));
 #if OS_WIN
   s.BindString16(0, other_db_path.value());
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   s.BindString(0, other_db_path.value());
+#else
+#error Unsupported platform
 #endif
   s.BindString(1, attachment_point);
   return s.Run();
@@ -1651,7 +1653,7 @@ bool Connection::OpenInternal(const std::string& file_name,
   }
 
   // TODO(shess): OS_WIN support?
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
   if (restrict_to_user_) {
     DCHECK_NE(file_name, std::string(":memory"));
     base::FilePath file_path(file_name);
@@ -1672,7 +1674,7 @@ bool Connection::OpenInternal(const std::string& file_name,
       base::SetPosixFilePermissions(wal_path, mode);
     }
   }
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
   // SQLite uses a lookaside buffer to improve performance of small mallocs.
   // Chromium already depends on small mallocs being efficient, so we disable
