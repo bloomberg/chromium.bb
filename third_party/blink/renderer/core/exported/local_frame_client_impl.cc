@@ -383,7 +383,7 @@ void LocalFrameClientImpl::
   }
 }
 
-void LocalFrameClientImpl::DispatchDidNavigateWithinPage(
+void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
     HistoryItem* item,
     HistoryCommitType commit_type,
     bool content_initiated) {
@@ -391,7 +391,7 @@ void LocalFrameClientImpl::DispatchDidNavigateWithinPage(
   // TODO(dglazkov): Does this need to be called for subframes?
   web_frame_->ViewImpl()->DidCommitLoad(should_create_history_entry, true);
   if (web_frame_->Client()) {
-    web_frame_->Client()->DidNavigateWithinPage(
+    web_frame_->Client()->DidFinishSameDocumentNavigation(
         WebHistoryItem(item), static_cast<WebHistoryCommitType>(commit_type),
         content_initiated);
   }

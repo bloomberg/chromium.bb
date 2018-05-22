@@ -61,9 +61,10 @@ class WebFrameTestClient : public blink::WebFrameClient {
   void DidCommitProvisionalLoad(const blink::WebHistoryItem& history_item,
                                 blink::WebHistoryCommitType history_type,
                                 blink::WebGlobalObjectReusePolicy) override;
-  void DidNavigateWithinPage(const blink::WebHistoryItem& history_item,
-                             blink::WebHistoryCommitType history_type,
-                             bool content_initiated) override;
+  void DidFinishSameDocumentNavigation(
+      const blink::WebHistoryItem& history_item,
+      blink::WebHistoryCommitType history_type,
+      bool content_initiated) override;
   void DidReceiveTitle(const blink::WebString& title,
                        blink::WebTextDirection direction) override;
   void DidChangeIcon(blink::WebIconURL::Type icon_type) override;
