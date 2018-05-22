@@ -124,15 +124,12 @@ void DataObserver::OnURLsModified(history::HistoryService* history_service,
 }
 
 void DataObserver::OnURLsDeleted(history::HistoryService* history_service,
-                                 bool all_history,
-                                 bool expired,
-                                 const history::URLRows& deleted_rows,
-                                 const std::set<GURL>& favicon_urls) {
-  if (all_history) {
+                                 const history::DeletionInfo& deletion_info) {
+  if (deletion_info.IsAllHistory()) {
     delta_file_service_->Clear();
     data_cleared_callback_.Run();
   } else {
-    for (const auto& row : deleted_rows) {
+    for (const auto& row : deletion_info.deleted_rows()) {
       if (!row.hidden())
         delta_file_service_->PageDeleted(row.url());
     }

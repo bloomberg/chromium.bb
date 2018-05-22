@@ -214,10 +214,7 @@ class HistoryMenuBridge : public sessions::TabRestoreServiceObserver,
   void OnURLsModified(history::HistoryService* history_service,
                       const history::URLRows& changed_urls) override;
   void OnURLsDeleted(history::HistoryService* history_service,
-                     bool all_history,
-                     bool expired,
-                     const history::URLRows& deleted_rows,
-                     const std::set<GURL>& favicon_urls) override;
+                     const history::DeletionInfo& deletion_info) override;
   void OnHistoryServiceLoaded(history::HistoryService* service) override;
 
   base::scoped_nsobject<HistoryMenuCocoaController> controller_;  // strong
