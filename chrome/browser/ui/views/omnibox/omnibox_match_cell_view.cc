@@ -240,6 +240,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
     // An entry with |is_old_style_answer_| may use the image_view_. But it's
     // set when the image arrives (later).
     image_view_->SetImage(gfx::ImageSkia());
+    image_view_->SetSize(gfx::Size());
   } else {
     SkColor color = result_view->GetColor(OmniboxPart::RESULTS_BACKGROUND);
     extensions::image_util::ParseHexColorString(match.image_dominant_color,

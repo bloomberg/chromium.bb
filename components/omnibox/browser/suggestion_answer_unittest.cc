@@ -9,7 +9,9 @@
 
 #include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -261,6 +263,23 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
   answer->AddImageURLsTo(&urls);
   ASSERT_EQ(0U, urls.size());
 
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(omnibox::kOmniboxNewAnswerLayout);
+    json =
+        "{ \"i\": { \"d\": \"https://gstatic.com/foo.png\", \"t\": 3 },"
+        "  \"l\" : ["
+        "    { \"il\": { \"t\": [{ \"t\": \"some text\", \"tt\": 5 }] } },"
+        "    { \"il\": { \"t\": [{ \"t\": \"other text\", \"tt\": 8 }] } }"
+        "  ]}";
+    answer = ParseAnswer(json);
+    ASSERT_TRUE(answer);
+    answer->AddImageURLsTo(&urls);
+    ASSERT_EQ(1U, urls.size());
+    EXPECT_EQ(GURL("https://gstatic.com/foo.png"), urls[0]);
+    urls.clear();
+  }
+
   json =
       "{ \"l\" : ["
       "  { \"il\": { \"t\": [{ \"t\": \"some text\", \"tt\": 5 }] } },"
@@ -271,6 +290,21 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
   answer->AddImageURLsTo(&urls);
   ASSERT_EQ(1U, urls.size());
   EXPECT_EQ(GURL("https://gstatic.com/foo.png"), urls[0]);
+  urls.clear();
+
+  json =
+      "{ \"i\": { \"d\": \"https://gstatic.com/foo.png\", \"t\": 3 },"
+      "  \"l\" : ["
+      "    { \"il\": { \"t\": [{ \"t\": \"some text\", \"tt\": 5 }] } },"
+      "    { \"il\": { \"t\": [{ \"t\": \"other text\", \"tt\": 8 }],"
+      "              \"i\": { \"d\": \"//gstatic.com/bar.png\", \"t\": 3 }}}"
+      "  ]}";
+  answer = ParseAnswer(json);
+  ASSERT_TRUE(answer);
+  answer->AddImageURLsTo(&urls);
+  ASSERT_EQ(1U, urls.size());
+  EXPECT_EQ(GURL("https://gstatic.com/bar.png"), urls[0]);
+  urls.clear();
 
   json =
       "{ \"l\" : ["
@@ -281,7 +315,7 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
   answer = ParseAnswer(json);
   ASSERT_TRUE(answer);
   answer->AddImageURLsTo(&urls);
-  ASSERT_EQ(3U, urls.size());
-  EXPECT_EQ(GURL("https://gstatic.com/foo.png"), urls[1]);
-  EXPECT_EQ(GURL("https://gstatic.com/bar.jpg"), urls[2]);
+  ASSERT_EQ(1U, urls.size());
+  // Note: first_line_.image_url() is not used in practice (so it's ignored).
+  EXPECT_EQ(GURL("https://gstatic.com/bar.jpg"), urls[0]);
 }

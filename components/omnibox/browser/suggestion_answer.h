@@ -28,7 +28,7 @@ class DictionaryValue;
 // When represented in the UI, these elements should be styled and laid out
 // according to the specification at https://goto.google.com/ais_api.
 //
-// Each of the three classes has either an explicit or implicity copy
+// Each of the three classes has either an explicit or implicit copy
 // constructor to support copying answer values (via SuggestionAnswer::copy) as
 // members of SuggestResult and AutocompleteMatch.
 class SuggestionAnswer {
@@ -93,7 +93,7 @@ class SuggestionAnswer {
     FRIEND_TEST_ALL_PREFIXES(SuggestionAnswerTest, DifferentValuesAreUnequal);
 
     // No DISALLOW_COPY_AND_ASSIGN since we depend on the copy constructor in
-    // SuggestionAnswer::copy and the assigment operator as values in vector.
+    // SuggestionAnswer::copy and the assignment operator as values in vector.
   };
 
   class ImageLine {
@@ -138,7 +138,7 @@ class SuggestionAnswer {
   };
 
   SuggestionAnswer();
-  SuggestionAnswer(const SuggestionAnswer& answer) = default;
+  SuggestionAnswer(const SuggestionAnswer& answer);
   ~SuggestionAnswer();
 
   // Parses |answer_json| and returns a SuggestionAnswer containing the
@@ -155,6 +155,7 @@ class SuggestionAnswer {
     return base::WrapUnique(source ? new SuggestionAnswer(*source) : nullptr);
   }
 
+  const GURL& image_url() const { return image_url_; }
   const ImageLine& first_line() const { return first_line_; }
   const ImageLine& second_line() const { return second_line_; }
 
@@ -176,6 +177,7 @@ class SuggestionAnswer {
   // Forbid assignment.
   SuggestionAnswer& operator=(const SuggestionAnswer&);
 
+  GURL image_url_;
   ImageLine first_line_;
   ImageLine second_line_;
   int type_;
