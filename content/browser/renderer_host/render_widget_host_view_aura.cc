@@ -1839,8 +1839,7 @@ void RenderWidgetHostViewAura::OnRenderFrameMetadataChanged() {
   RenderWidgetHostViewBase::OnRenderFrameMetadataChanged();
   const cc::RenderFrameMetadata& metadata =
       host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
-  content_background_color_ = metadata.root_background_color;
-  UpdateBackgroundColor();
+  SetContentBackgroundColor(metadata.root_background_color);
 
   if (metadata.selection.start != selection_start_ ||
       metadata.selection.end != selection_end_) {

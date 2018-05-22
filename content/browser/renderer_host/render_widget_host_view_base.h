@@ -562,6 +562,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
  protected:
   explicit RenderWidgetHostViewBase(RenderWidgetHost* host);
 
+  // SetContentBackgroundColor is called when the render wants to  update the
+  // view's background color.
+  void SetContentBackgroundColor(SkColor color);
   void NotifyObserversAboutShutdown();
 
   virtual MouseWheelPhaseHandler* GetMouseWheelPhaseHandler();
