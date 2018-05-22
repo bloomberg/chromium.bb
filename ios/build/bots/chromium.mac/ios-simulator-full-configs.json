@@ -23,7 +23,10 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone 6s Plus",
-      "os": "10.0",
+      "os": "10.3",
+      "xcode build version": "8E3004b",
+      "shards": 1,
+      "shard size": 8,
       "dimensions": [
         {
           "os": "Mac-10.12",
@@ -68,7 +71,10 @@
     {
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
-      "os": "10.0",
+      "os": "10.3",
+      "xcode build version": "8E3004b",
+      "shards": 1,
+      "shard size": 8,
       "dimensions": [
         {
           "os": "Mac-10.12",
@@ -98,7 +104,10 @@
     {
       "include": "eg_cq_tests.json",
       "device type": "iPad Air 2",
-      "os": "10.0",
+      "os": "10.3",
+      "xcode build version": "8E3004b",
+      "shards": 1,
+      "shard size": 8,
       "dimensions": [
         {
           "os": "Mac-10.12",
