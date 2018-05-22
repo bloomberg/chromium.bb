@@ -27,11 +27,11 @@
 #include "components/sync/engine/model_type_connector.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/shutdown_reason.h"
+#include "components/sync/engine/sync_credentials.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_status.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 #include "components/sync/syncable/change_record.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 
 class GURL;
 
@@ -58,25 +58,6 @@ class TypeDebugInfoObserver;
 class UnrecoverableErrorHandler;
 struct Experiments;
 struct UserShare;
-
-// Contains everything needed to talk to and identify a user account.
-struct SyncCredentials {
-  SyncCredentials();
-  SyncCredentials(const SyncCredentials& other);
-  ~SyncCredentials();
-
-  // Account_id of signed in account.
-  std::string account_id;
-
-  // The email associated with this account.
-  std::string email;
-
-  // The raw authentication token's bytes.
-  std::string sync_token;
-
-  // The set of scopes to use when talking to sync server.
-  OAuth2TokenService::ScopeSet scope_set;
-};
 
 // SyncManager encapsulates syncable::Directory and serves as the parent of all
 // other objects in the sync API.  If multiple threads interact with the same
