@@ -8621,18 +8621,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
             args->ref_frame_cost, mv_cost, residue_cost);
 #endif  // INTER_MODE_RD_STATS_DUMP
 #endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
-        int64_t tmp_rd;
-        const int skip_ctx = av1_get_skip_context(xd);
-        if (RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist) <
-            RDCOST(x->rdmult, 0, rd_stats->sse))
-          tmp_rd = RDCOST(x->rdmult, rd_stats->rate + x->skip_cost[skip_ctx][0],
-                          rd_stats->dist);
-        else
-          tmp_rd = RDCOST(x->rdmult,
-                          rd_stats->rate + x->skip_cost[skip_ctx][1] -
-                              rd_stats_y->rate - rd_stats_uv->rate,
-                          rd_stats->sse);
-
+        int64_t tmp_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
         if (tmp_rd < best_rd) {
           best_rd_stats = *rd_stats;
           best_rd_stats_y = *rd_stats_y;
@@ -9791,7 +9780,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     int64_t distortion2 = 0, distortion_y = 0, distortion_uv = 0;
     int skippable = 0;
     int this_skip2 = 0;
-    int64_t total_sse = INT64_MAX;
     uint8_t ref_frame_type;
 
     this_mode = av1_mode_order[mode_index].mode;
@@ -10129,7 +10117,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         rate2 = rd_stats.rate;
         skippable = rd_stats.skip;
         distortion2 = rd_stats.dist;
-        total_sse = rd_stats.sse;
         rate_y = rd_stats_y.rate;
         rate_uv = rd_stats_uv.rate;
       }
@@ -10156,19 +10143,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
         rate2 += (rate2 < INT_MAX ? x->drl_mode_cost0[drl_ctx][0] : 0);
 
-        if (this_rd < INT64_MAX) {
-          if (RDCOST(x->rdmult, rate_y + rate_uv, distortion2) <
-              RDCOST(x->rdmult, 0, total_sse))
-            tmp_ref_rd = RDCOST(
-                x->rdmult, rate2 + x->skip_cost[av1_get_skip_context(xd)][0],
-                distortion2);
-          else
-            tmp_ref_rd =
-                RDCOST(x->rdmult,
-                       rate2 + x->skip_cost[av1_get_skip_context(xd)][1] -
-                           rate_y - rate_uv,
-                       total_sse);
+        if (tmp_ref_rd != INT64_MAX) {
+          tmp_ref_rd = RDCOST(x->rdmult, rate2, distortion2);
         }
+
         memcpy(x->blk_skip_drl, x->blk_skip,
                sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
 
