@@ -31,14 +31,23 @@ function testCrostiniSuccess(done) {
       })
       .then(() => {
         // Click on Linux Files.
-        assertTrue(test.fakeMouseClick(
-            '#directory-tree .tree-item [root-type-icon="crostini"]'));
+        assertTrue(
+            test.fakeMouseClick(
+                '#directory-tree .tree-item [root-type-icon="crostini"]'),
+            'click linux files');
         return test.waitForElement('paper-progress:not([hidden])');
+      })
+      .then(() => {
+        // Ensure mountCrostiniContainer is called.
+        return test.repeatUntil(() => {
+          if (!mountCallback)
+            return test.pending('Waiting for mountCrostiniContainer');
+          return mountCallback;
+        });
       })
       .then(() => {
         // Intercept the fileManagerPrivate.mountCrostiniContainer call
         // and add crostini disk mount.
-        assertTrue(mountCallback != null);
         var volumeInfo = mockVolumeManager.createVolumeInfo(
             VolumeManagerCommon.VolumeType.CROSTINI, 'crostini',
             str('LINUX_FILES_ROOT_LABEL'));
