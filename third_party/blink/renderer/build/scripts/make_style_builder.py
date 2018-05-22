@@ -32,7 +32,6 @@ import types
 
 from core.css import css_properties
 import json5_generator
-from name_utilities import lower_first
 import template_expander
 
 
@@ -71,9 +70,6 @@ def calculate_apply_functions_to_declare(property_):
 
 
 class StyleBuilderWriter(json5_generator.Writer):
-    filters = {
-        'lower_first': lower_first,
-    }
 
     def __init__(self, json5_file_paths, output_dir):
         super(StyleBuilderWriter, self).__init__([], output_dir)
@@ -95,16 +91,14 @@ class StyleBuilderWriter(json5_generator.Writer):
     def css_properties(self):
         return self._json5_properties
 
-    @template_expander.use_jinja('templates/style_builder_functions.h.tmpl',
-                                 filters=filters)
+    @template_expander.use_jinja('templates/style_builder_functions.h.tmpl')
     def generate_style_builder_functions_h(self):
         return {
             'input_files': self._input_files,
             'properties': self._properties,
         }
 
-    @template_expander.use_jinja('templates/style_builder_functions.cc.tmpl',
-                                 filters=filters)
+    @template_expander.use_jinja('templates/style_builder_functions.cc.tmpl')
     def generate_style_builder_functions_cpp(self):
         return {
             'input_files': self._input_files,
@@ -112,8 +106,7 @@ class StyleBuilderWriter(json5_generator.Writer):
             'properties_by_id': self._json5_properties.properties_by_id,
         }
 
-    @template_expander.use_jinja(
-        'templates/style_builder.cc.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/style_builder.cc.tmpl')
     def generate_style_builder(self):
         return {
             'input_files': self._input_files,

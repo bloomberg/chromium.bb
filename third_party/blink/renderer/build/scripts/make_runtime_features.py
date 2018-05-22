@@ -29,10 +29,10 @@
 
 import sys
 
+from blinkbuild.name_style_converter import NameStyleConverter
 import json5_generator
 import name_utilities
 from name_utilities import class_member_name
-from name_utilities import lower_first
 import template_expander
 
 
@@ -49,7 +49,7 @@ class RuntimeFeatureWriter(json5_generator.Writer):
         self._features = self.json5_file.name_dictionaries
         # Make sure the resulting dictionaries have all the keys we expect.
         for feature in self._features:
-            feature['first_lowered_name'] = lower_first(feature['name'])
+            feature['tokenized_name'] = NameStyleConverter(feature['name'])
             feature['class_member_name'] = class_member_name(feature['name'])
             # Most features just check their isFooEnabled bool
             # but some depend on or are implied by other bools.

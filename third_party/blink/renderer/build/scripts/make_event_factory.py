@@ -100,7 +100,6 @@ class EventFactoryWriter(json5_generator.Writer):
     }
     filters = {
         'cpp_name': name_utilities.cpp_name,
-        'lower_first': name_utilities.lower_first,
         'script_name': name_utilities.script_name,
         'create_event_whitelist': create_event_whitelist,
         'create_event_measure_whitelist': create_event_measure_whitelist,

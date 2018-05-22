@@ -62,7 +62,7 @@ _TOKEN_PATTERNS = [
     # The following pattern captures only 'FOO' in 'FOOElement'.
     '[A-Z]+(?![a-z])',
     # '2D' '3D', but not '2Dimension'
-    '[0-9][Dd]$',
+    '[0-9][Dd](?![a-z])',
     '[0-9]+',
 ]
 
@@ -114,6 +114,16 @@ class NameStyleConverter(object):
            https://en.wikipedia.org/wiki/Camel_case.
         """
         return ''.join([token[0].upper() + token[1:] for token in self.tokens])
+
+    def to_lower_camel_case(self):
+        """Lower camel case is the name style for attribute names and operation
+           names in web platform APIs.
+           e.g. 'addEventListener', 'documentURI', 'fftSize'
+           https://en.wikipedia.org/wiki/Camel_case.
+        """
+        if not self.tokens:
+            return ''
+        return self.tokens[0].lower() + ''.join([token[0].upper() + token[1:] for token in self.tokens[1:]])
 
     def to_macro_case(self):
         """Macro case is the macro name style per Google C++ Style Guide:

@@ -27,7 +27,7 @@ CORE_EXPORT extern const char k{{feature.name}}TrialName[];
 
 {% for feature in features %}
 {% if feature.origin_trial_feature_name %}
-CORE_EXPORT bool {{feature.first_lowered_name}}Enabled(const ExecutionContext*);
+CORE_EXPORT bool {{feature.tokenized_name.to_lower_camel_case()}}Enabled(const ExecutionContext*);
 {% endif %}
 {% endfor %}
 
