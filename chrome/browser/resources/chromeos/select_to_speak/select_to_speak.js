@@ -60,6 +60,11 @@ const SELECT_TO_SPEAK_TRAY_CLASS_NAME =
 // before clipboard change and paste events are ignored.
 const CLIPBOARD_READ_MAX_DELAY_MS = 1000;
 
+// Number of milliseconds to wait after requesting a clipboard copy
+// before clipboard copy events are ignored, used to clear the clipboard
+// after reading data in a paste event.
+const CLIPBOARD_CLEAR_MAX_DELAY_MS = 500;
+
 // Matches one of the known Drive apps which need the clipboard to find and read
 // selected text. Includes sandbox and non-sandbox versions.
 const DRIVE_APP_REGEXP =
@@ -316,6 +321,24 @@ SelectToSpeak.prototype = {
       evt.preventDefault();
       this.startSpeech_(evt.clipboardData.getData('text/plain'));
       this.readClipboardDataTimeMs_ = -1;
+      // Clear the clipboard data by copying nothing (the current document).
+      // Do this in a timeout to avoid a recursive warning per
+      // https://crbug.com/363288.
+      setTimeout(() => {
+        this.clearClipboardDataTimeMs_ = Date.now();
+        document.execCommand('copy');
+      }, 0);
+    }
+  },
+
+  onClipboardCopy_: function(evt) {
+    if (Date.now() - this.clearClipboardDataTimeMs_ <
+        CLIPBOARD_CLEAR_MAX_DELAY_MS) {
+      // onClipboardPaste has just completed reading the clipboard for speech.
+      // This is used to clear the clipboard.
+      evt.clipboardData.setData('text/plain', '');
+      evt.preventDefault();
+      this.clearClipboardDataTimeMs_ = -1;
     }
   },
 
@@ -666,6 +689,7 @@ SelectToSpeak.prototype = {
     document.addEventListener('paste', this.onClipboardPaste_.bind(this));
     chrome.accessibilityPrivate.onSelectToSpeakStateChangeRequested.addListener(
         this.onStateChangeRequested_.bind(this));
+    document.addEventListener('copy', this.onClipboardCopy_.bind(this));
     // Initialize the state to SelectToSpeakState.INACTIVE.
     chrome.accessibilityPrivate.onSelectToSpeakStateChanged(this.state_);
   },
