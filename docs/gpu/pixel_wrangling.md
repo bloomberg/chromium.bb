@@ -123,9 +123,14 @@ shift, and a calendar appointment.
     *   Contact bajones, kainino, kbr, vmiura, zmo, or another member of the
         Chrome GPU team who's already a committer for help landing patches or
         reverts during your shift.
-2.  Apply for [access to the bots].
+1.  Apply for [access to the bots].
+1.  You may want to install the [Flake linker] extension, which adds several useful features to the bot build log pages.
+    *   Links to Chromium flakiness dashboard from build result pages, so you can see all failures for a single test across the fleet.
+    *   Automatically hides green build steps so you can see the failure immediately.
+    *   Turns build log links into deep links directly to the failure line in the log.
 
 [access to the bots]: https://sites.google.com/a/google.com/chrome-infrastructure/golo/remote-access?pli=1
+[Flake linker]: https://chrome.google.com/webstore/detail/flake-linker/boamnmbgmfnobomddmenbaicodgglkhc
 
 ### How to Keep the Bots Green
 
@@ -174,10 +179,9 @@ shift, and a calendar appointment.
         tryservers' jobs:
         1.  <code>[linux_chromium_rel_ng]</code> on the [luci.chromium.try]
             waterfall
-<!-- TODO(kainino): update link to luci.chromium.try -->
-        1.  <code>[mac_chromium_rel_ng]</code> on the [tryserver.chromium.mac]
+        1.  <code>[mac_chromium_rel_ng]</code> on the [luci.chromium.try]
             waterfall
-<!-- TODO(kainino): update link to luci.chromium.try -->
+            <!-- TODO(kainino): update link to luci.chromium.try -->
         1.  <code>[win7_chromium_rel_ng]</code> on the [tryserver.chromium.win]
             waterfall
     1.  The best tool to use to quickly find flakiness on the tryservers is the
@@ -254,7 +258,7 @@ shift, and a calendar appointment.
 [tree sheriffing page]: https://sites.google.com/a/chromium.org/dev/developers/tree-sheriffs
 [linux_chromium_rel_ng]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng
 [luci.chromium.try]: https://ci.chromium.org/p/chromium/g/luci.chromium.try/builders
-[mac_chromium_rel_ng]: https://ci.chromium.org/buildbot/tryserver.chromium.mac/mac_chromium_rel_ng/
+[mac_chromium_rel_ng]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac_chromium_rel_ng
 [tryserver.chromium.mac]: https://ci.chromium.org/p/chromium/g/tryserver.chromium.mac/builders
 [win7_chromium_rel_ng]: https://ci.chromium.org/buildbot/tryserver.chromium.win/win7_chromium_rel_ng/
 [tryserver.chromium.win]: https://ci.chromium.org/p/chromium/g/tryserver.chromium.win/builders
