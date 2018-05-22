@@ -46,7 +46,7 @@ class ArcProcessTaskProvider : public TaskProvider {
   void RequestSystemProcessList();
 
   void UpdateProcessList(ArcTaskMap* pid_to_task,
-                         const std::vector<arc::ArcProcess>& processes);
+                         std::vector<arc::ArcProcess> processes);
   void OnUpdateAppProcessList(std::vector<arc::ArcProcess> processes);
   void OnUpdateSystemProcessList(std::vector<arc::ArcProcess> processes);
 

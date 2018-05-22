@@ -22,10 +22,21 @@ namespace task_manager {
 
 namespace {
 
-base::string16 MakeTitle(const std::string& process_name,
-                         arc::mojom::ProcessState process_state) {
+// |arc_process_.packages()| contains an alphabetically-sorted list of
+// package names the process has. Since the Task class can hold only one
+// icon per process, and there is no reliable way to pick the most important
+// process from the |arc_process_.packages()| list, just use the first item
+// in the list.  In some case, |arc_process_.packages()| is empty, it would
+// be expected to get default process icon. For example, daemon processes in
+// android container such like surfaceflinger, debuggerd or installd. Each
+// of them would be shown on task manager but does not have a package name.
+std::string FirstPackage(const std::vector<std::string>& packages) {
+  return packages.empty() ? std::string() : packages[0];
+}
+
+base::string16 MakeTitle(const arc::ArcProcess& arc_process) {
   int name_template = IDS_TASK_MANAGER_ARC_PREFIX;
-  switch (process_state) {
+  switch (arc_process.process_state()) {
     case arc::mojom::ProcessState::PERSISTENT:
     case arc::mojom::ProcessState::PERSISTENT_UI:
     case arc::mojom::ProcessState::TOP:
@@ -45,7 +56,7 @@ base::string16 MakeTitle(const std::string& process_name,
       break;
   }
   base::string16 title = l10n_util::GetStringFUTF16(
-      name_template, base::UTF8ToUTF16(process_name));
+      name_template, base::UTF8ToUTF16(arc_process.process_name()));
   base::i18n::AdjustStringForLocaleDirection(&title);
   return title;
 }
@@ -56,23 +67,12 @@ constexpr char kEmptyActivityName[] = "";
 
 }  // namespace
 
-ArcProcessTask::ArcProcessTask(base::ProcessId pid,
-                               base::ProcessId nspid,
-                               const std::string& process_name,
-                               arc::mojom::ProcessState process_state,
-                               const std::vector<std::string>& packages)
-    : Task(MakeTitle(process_name, process_state),
-           process_name,
+ArcProcessTask::ArcProcessTask(arc::ArcProcess arc_process)
+    : Task(MakeTitle(arc_process),
+           arc_process.process_name(),
            nullptr /* icon */,
-           pid),
-      nspid_(nspid),
-      process_name_(process_name),
-      process_state_(process_state),
-      // |packages| contains an alphabetically-sorted list of package names the
-      // process has. Since the Task class can hold only one icon per process,
-      // and there is no reliable way to pick the most important process from
-      // the |packages| list, just use the first item in the list.
-      package_name_(packages.empty() ? "" : packages.at(0)),
+           arc_process.pid()),
+      arc_process_(std::move(arc_process)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   StartIconLoading();
@@ -89,12 +89,8 @@ void ArcProcessTask::StartIconLoading() {
   arc::ArcIntentHelperBridge::GetResult result =
       arc::ArcIntentHelperBridge::GetResult::FAILED_ARC_NOT_READY;
   if (intent_helper_bridge) {
-    // In some case, the package_name_ does not exists, it would be expected to
-    // get default process icon. For example, daemon processes in android
-    // container such like surfaceflinger, debuggerd or installd. Each of them
-    // would be shown on task manager but does not have a package name.
     std::vector<arc::ArcIntentHelperBridge::ActivityName> activities = {
-        {package_name_, kEmptyActivityName}};
+        {FirstPackage(arc_process_.packages()), kEmptyActivityName}};
     result = intent_helper_bridge->GetActivityIcons(
         activities, base::BindOnce(&ArcProcessTask::OnIconLoaded,
                                    weak_ptr_factory_.GetWeakPtr()));
@@ -129,7 +125,7 @@ int ArcProcessTask::GetChildProcessUniqueID() const {
 
 bool ArcProcessTask::IsKillable() {
   // Do not kill persistent processes.
-  return process_state_ > arc::mojom::ProcessState::PERSISTENT_UI;
+  return arc_process_.IsKernelKillable();
 }
 
 void ArcProcessTask::Kill() {
@@ -138,14 +134,15 @@ void ArcProcessTask::Kill() {
       KillProcess);
   if (!process_instance)
     return;
-  process_instance->KillProcess(nspid_, "Killed manually from Task Manager");
+  process_instance->KillProcess(arc_process_.nspid(),
+                                "Killed manually from Task Manager");
 }
 
 void ArcProcessTask::OnConnectionReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   VLOG(2) << "intent_helper instance is ready. Fetching the icon for "
-          << package_name_;
+          << FirstPackage(arc_process_.packages());
   arc::ArcServiceManager::Get()
       ->arc_bridge_service()
       ->intent_helper()
@@ -160,7 +157,7 @@ void ArcProcessTask::OnConnectionReady() {
 }
 
 void ArcProcessTask::SetProcessState(arc::mojom::ProcessState process_state) {
-  process_state_ = process_state;
+  arc_process_.set_process_state(process_state);
 }
 
 void ArcProcessTask::OnIconLoaded(
