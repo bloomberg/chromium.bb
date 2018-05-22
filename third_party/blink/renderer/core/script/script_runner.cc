@@ -40,13 +40,8 @@ namespace blink {
 
 ScriptRunner::ScriptRunner(Document* document)
     : document_(document),
-      task_runner_(document->GetTaskRunner(TaskType::kNetworking)),
-      number_of_in_order_scripts_with_pending_notification_(0),
-      is_suspended_(false) {
+      task_runner_(document->GetTaskRunner(TaskType::kNetworking)) {
   DCHECK(document);
-#ifndef NDEBUG
-  number_of_extra_tasks_ = 0;
-#endif
 }
 
 void ScriptRunner::QueueScriptForExecution(ScriptLoader* script_loader) {
