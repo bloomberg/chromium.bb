@@ -207,6 +207,7 @@ group("gn_all") {
       "//third_party/angle/src/tests:angle_end2end_tests",
       "//third_party/angle/src/tests:angle_unittests",
       "//third_party/angle/src/tests:angle_white_box_tests",
+      "//third_party/blink/common:blink_common_unittests",
       "//third_party/blink/renderer/platform:blink_platform_unittests",
       "//third_party/blink/renderer/platform/heap:blink_heap_unittests",
       "//third_party/catapult/telemetry:bitmaptools($host_toolchain)",

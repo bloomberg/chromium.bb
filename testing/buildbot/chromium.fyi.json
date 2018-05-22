@@ -359,6 +359,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "blink_common_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "blink_heap_unittests"
       },
       {
@@ -796,6 +802,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "blink_common_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "blink_heap_unittests"
       },
       {
@@ -1216,6 +1228,12 @@
           "can_use_on_swarming_builders": false
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "blink_common_unittests"
       },
       {
         "swarming": {
@@ -1663,6 +1681,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "blink_common_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "blink_heap_unittests"
       },
       {
@@ -2037,6 +2061,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_common_unittests"
       },
       {
         "swarming": {
@@ -2522,6 +2552,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "battor_agent_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_common_unittests"
       },
       {
         "swarming": {
@@ -4264,6 +4300,17 @@
             }
           ]
         },
+        "test": "blink_common_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "coho"
+            }
+          ]
+        },
         "test": "blink_heap_unittests"
       },
       {
@@ -4811,6 +4858,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "blink_common_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "blink_heap_unittests"
       },
       {
@@ -5184,6 +5237,12 @@
           "shards": 5
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_common_unittests"
       },
       {
         "swarming": {
@@ -5628,6 +5687,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_common_unittests"
       },
       {
         "swarming": {
@@ -6330,6 +6395,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "blink_common_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "blink_heap_unittests"
       },
       {
@@ -6900,6 +6971,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "blink_common_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "blink_heap_unittests"
       },
       {
@@ -7113,6 +7190,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_common_unittests"
       },
       {
         "swarming": {
@@ -7362,6 +7445,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "battor_agent_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_common_unittests"
       },
       {
         "swarming": {
@@ -8160,6 +8249,15 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_common_unittests"
       },
       {
         "args": [
