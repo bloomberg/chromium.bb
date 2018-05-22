@@ -38,36 +38,47 @@ TEST_F(VersionTest, VersionComparison) {
     EXPECT_TRUE(info.Contains("0"));
     EXPECT_TRUE(info.Contains("8.9"));
     EXPECT_TRUE(info.Contains("100"));
+    EXPECT_TRUE(info.Contains("1.9.alpha"));
   }
   {
     Version info = {kGT, kNumerical, "8.9", nullptr};
     EXPECT_FALSE(info.Contains("7"));
     EXPECT_FALSE(info.Contains("8.9"));
+    EXPECT_FALSE(info.Contains("8.9.hs762"));
     EXPECT_FALSE(info.Contains("8.9.1"));
     EXPECT_TRUE(info.Contains("9"));
+    EXPECT_TRUE(info.Contains("9.hs762"));
   }
   {
     Version info = {kGE, kNumerical, "8.9", nullptr};
     EXPECT_FALSE(info.Contains("7"));
+    EXPECT_FALSE(info.Contains("7.07hdy"));
     EXPECT_TRUE(info.Contains("8.9"));
     EXPECT_TRUE(info.Contains("8.9.1"));
+    EXPECT_TRUE(info.Contains("8.9.1beta0"));
     EXPECT_TRUE(info.Contains("9"));
+    EXPECT_TRUE(info.Contains("9.0rel"));
   }
   {
     Version info = {kEQ, kNumerical, "8.9", nullptr};
     EXPECT_FALSE(info.Contains("7"));
     EXPECT_TRUE(info.Contains("8"));
+    EXPECT_TRUE(info.Contains("8.1uhdy"));
     EXPECT_TRUE(info.Contains("8.9"));
+    EXPECT_TRUE(info.Contains("8.9.8alp9"));
     EXPECT_TRUE(info.Contains("8.9.1"));
     EXPECT_FALSE(info.Contains("9"));
   }
   {
     Version info = {kLT, kNumerical, "8.9", nullptr};
     EXPECT_TRUE(info.Contains("7"));
+    EXPECT_TRUE(info.Contains("7.txt"));
     EXPECT_TRUE(info.Contains("8.8"));
+    EXPECT_TRUE(info.Contains("8.8.test"));
     EXPECT_FALSE(info.Contains("8"));
     EXPECT_FALSE(info.Contains("8.9"));
     EXPECT_FALSE(info.Contains("8.9.1"));
+    EXPECT_FALSE(info.Contains("8.9.duck"));
     EXPECT_FALSE(info.Contains("9"));
   }
   {
@@ -76,8 +87,10 @@ TEST_F(VersionTest, VersionComparison) {
     EXPECT_TRUE(info.Contains("8.8"));
     EXPECT_TRUE(info.Contains("8"));
     EXPECT_TRUE(info.Contains("8.9"));
+    EXPECT_TRUE(info.Contains("8.9.chicken"));
     EXPECT_TRUE(info.Contains("8.9.1"));
     EXPECT_FALSE(info.Contains("9"));
+    EXPECT_FALSE(info.Contains("9.pork"));
   }
   {
     Version info = {kBetween, kNumerical, "8.9", "9.1"};

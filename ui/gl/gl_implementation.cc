@@ -275,11 +275,9 @@ bool WillUseGLGetStringForExtensions() {
 bool WillUseGLGetStringForExtensions(GLApi* api) {
   const char* version_str =
       reinterpret_cast<const char*>(api->glGetStringFn(GL_VERSION));
-  unsigned major_version, minor_version;
-  bool is_es, is_es2, is_es3;
-  GLVersionInfo::ParseVersionString(version_str, &major_version, &minor_version,
-                                    &is_es, &is_es2, &is_es3);
-  return is_es || major_version < 3;
+  ExtensionSet extensions;
+  GLVersionInfo version_info(version_str, nullptr, extensions);
+  return version_info.is_es || version_info.major_version < 3;
 }
 
 base::NativeLibrary LoadLibraryAndPrintError(

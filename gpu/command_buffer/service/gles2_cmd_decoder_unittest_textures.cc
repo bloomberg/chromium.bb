@@ -2079,7 +2079,7 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
 TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DETC1) {
   InitState init;
   init.extensions = "GL_OES_compressed_ETC1_RGB8_texture";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   const uint32_t kBucketId = 123;
@@ -2185,7 +2185,7 @@ TEST_P(GLES2DecoderTest, CopySubTextureCHROMIUMBadTarget) {
 TEST_P(GLES2DecoderManualInitTest, EGLImageExternalBindTexture) {
   InitState init;
   init.extensions = "GL_OES_EGL_image_external";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kNewServiceId));
@@ -2203,7 +2203,7 @@ TEST_P(GLES2DecoderManualInitTest, EGLImageExternalBindTexture) {
 TEST_P(GLES2DecoderManualInitTest, EGLImageExternalGetBinding) {
   InitState init;
   init.extensions = "GL_OES_EGL_image_external";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
@@ -2233,7 +2233,7 @@ TEST_P(GLES2DecoderManualInitTest, EGLImageExternalGetBinding) {
 TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTextureDefaults) {
   InitState init;
   init.extensions = "GL_OES_EGL_image_external";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
@@ -2250,7 +2250,7 @@ TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTextureDefaults) {
 TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTextureParam) {
   InitState init;
   init.extensions = "GL_OES_EGL_image_external";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
@@ -2298,7 +2298,7 @@ TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTextureParam) {
 TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTextureParamInvalid) {
   InitState init;
   init.extensions = "GL_OES_EGL_image_external";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
   DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
@@ -2330,7 +2330,7 @@ TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTextureParamInvalid) {
 TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTexImage2DError) {
   InitState init;
   init.extensions = "GL_OES_EGL_image_external";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.bind_generates_resource = true;
   InitDecoder(init);
 
@@ -3320,7 +3320,7 @@ TEST_P(GLES2DecoderTest, CreateAndConsumeTextureCHROMIUMInvalidTexture) {
 TEST_P(GLES2DecoderManualInitTest, DepthTextureBadArgs) {
   InitState init;
   init.extensions = "GL_ANGLE_depth_texture";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.has_depth = true;
   init.has_stencil = true;
   init.request_depth = true;
@@ -3384,7 +3384,7 @@ TEST_P(GLES2DecoderManualInitTest, DepthTextureBadArgs) {
 TEST_P(GLES2DecoderManualInitTest, GenerateMipmapDepthTexture) {
   InitState init;
   init.extensions = "GL_ANGLE_depth_texture";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.has_depth = true;
   init.has_stencil = true;
   init.request_depth = true;
@@ -3803,7 +3803,7 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImage) {
 TEST_P(GLES2DecoderManualInitTest, DrawWithGLImageExternal) {
   InitState init;
   init.extensions = "GL_OES_EGL_image_external";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   init.has_alpha = true;
   init.has_depth = true;
   init.request_alpha = true;
@@ -3843,7 +3843,7 @@ TEST_P(GLES2DecoderManualInitTest, DrawWithGLImageExternal) {
 TEST_P(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES2) {
   InitState init;
   init.extensions = "GL_OES_texture_float";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   InitDecoder(init);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 17, 0, GL_RGBA, GL_FLOAT, 0, 0);
@@ -3866,7 +3866,7 @@ TEST_P(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES2) {
 TEST_P(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES3) {
   InitState init;
   init.extensions = "GL_OES_texture_float GL_EXT_color_buffer_float";
-  init.gl_version = "opengl es 3.0";
+  init.gl_version = "OpenGL ES 3.0";
   InitDecoder(init);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2DConvertInternalFormat(GL_TEXTURE_2D, 0, GL_RGBA, 16, 17, 0,
@@ -3893,7 +3893,7 @@ TEST_P(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES3) {
 TEST_P(GLES2DecoderManualInitTest, TexSubImage2DFloatOnGLES3) {
   InitState init;
   init.extensions = "GL_OES_texture_float GL_EXT_color_buffer_float";
-  init.gl_version = "opengl es 3.0";
+  init.gl_version = "OpenGL ES 3.0";
   InitDecoder(init);
   const int kWidth = 8;
   const int kHeight = 4;
@@ -3930,7 +3930,7 @@ TEST_P(GLES2DecoderManualInitTest, TexSubImage2DFloatOnGLES3) {
 TEST_P(GLES2DecoderManualInitTest, TexSubImage2DFloatDoesClearOnGLES3) {
   InitState init;
   init.extensions = "GL_OES_texture_float GL_EXT_color_buffer_float";
-  init.gl_version = "opengl es 3.0";
+  init.gl_version = "OpenGL ES 3.0";
   InitDecoder(init);
   const int kWidth = 8;
   const int kHeight = 4;
@@ -4030,7 +4030,7 @@ TEST_P(GLES2DecoderManualInitTest, TexImage2DFloatConvertsFormatDesktop) {
 TEST_P(GLES2DecoderManualInitTest, TexImage2Dnorm16OnGLES2) {
   InitState init;
   init.extensions = "GL_EXT_texture_norm16";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "OpenGL ES 2.0";
   InitDecoder(init);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 16, 17, 0, GL_RED, GL_UNSIGNED_SHORT,
@@ -4040,7 +4040,7 @@ TEST_P(GLES2DecoderManualInitTest, TexImage2Dnorm16OnGLES2) {
 TEST_P(GLES2DecoderManualInitTest, TexImage2Dnorm16OnGLES3) {
   InitState init;
   init.extensions = "GL_EXT_texture_norm16";
-  init.gl_version = "opengl es 3.0";
+  init.gl_version = "OpenGL ES 3.0";
   InitDecoder(init);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_R16_EXT, 16, 17, 0, GL_RED,

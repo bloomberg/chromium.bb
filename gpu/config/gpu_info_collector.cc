@@ -165,6 +165,11 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
 
   gl::GLVersionInfo gl_info(gpu_info->gl_version.c_str(),
                             gpu_info->gl_renderer.c_str(), extension_set);
+  if (!gl_info.driver_vendor.empty() && gpu_info->driver_vendor.empty())
+    gpu_info->driver_vendor = gl_info.driver_vendor;
+  if (!gl_info.driver_version.empty() && gpu_info->driver_version.empty())
+    gpu_info->driver_version = gl_info.driver_version;
+
   GLint max_samples = 0;
   if (gl_info.IsAtLeastGL(3, 0) || gl_info.IsAtLeastGLES(3, 0) ||
       gl::HasExtension(extension_set, "GL_ANGLE_framebuffer_multisample") ||
@@ -220,7 +225,6 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   gpu_info->vertex_shader_version = glsl_version;
 
   IdentifyActiveGPU(gpu_info);
-  CollectDriverInfoGL(gpu_info);
   return true;
 }
 
@@ -244,6 +248,8 @@ void IdentifyActiveGPU(GPUInfo* gpu_info) {
   if (gpu_info->secondary_gpus.size() == 0) {
     // If there is only a single GPU, that GPU is active.
     gpu_info->gpu.active = true;
+    gpu_info->gpu.vendor_string = gpu_info->gl_vendor;
+    gpu_info->gpu.device_string = gpu_info->gl_renderer;
     return;
   }
 
