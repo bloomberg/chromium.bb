@@ -283,8 +283,8 @@ class SDKTestStage(generic_stages.BuilderStage):
     chroot_args = new_chroot_args + ['--download', '--replace', '--nousepkg',
                                      '--url', 'file://' + tarball_location]
     cros_build_lib.RunCommand(
-        [], cwd=self._build_root, enter_chroot=True, chroot_args=chroot_args,
-        extra_env=self._portage_extra_env)
+        ['true'], cwd=self._build_root, enter_chroot=True,
+        chroot_args=chroot_args, extra_env=self._portage_extra_env)
 
     # Inject the toolchain binpkgs from the previous sdk build.  On end user
     # systems, they'd be fetched from the binpkg mirror, but we don't have one
