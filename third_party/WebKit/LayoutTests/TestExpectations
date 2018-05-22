@@ -165,7 +165,6 @@ crbug.com/841567 virtual/threaded/fast/scrolling/overflow-scrollability.html [ F
 crbug.com/841567 virtual/threaded/fast/scrolling/scrollbar-tickmarks-hittest.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/same-page-navigate.html [ Failure Pass ]
 
-
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 crbug.com/736052 virtual/disable-spv175/compositing/overflow/composited-scroll-with-fractional-translation.html [ Skip ]
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
@@ -3964,45 +3963,13 @@ crbug.com/737959 http/tests/misc/object-image-load-outlives-gc-without-crashing.
 
 crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
 
-# crbug.com/736177: Failures likely related to different results on Mac with different GPUs
-crbug.com/736177 [ Mac10.12 ] fast/forms/form-element-geometry.html [ Failure Pass ]
+# TODO(qyearsley): Triage these failures and associate them with other bugs.
 crbug.com/736177 [ Mac ] fast/forms/input-appearance-height.html [ Failure Pass ]
+crbug.com/736177 [ Mac ] fast/forms/radio/radio-appearance-basic.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] svg/as-border-image/svg-as-border-image.html [ Failure Pass ]
-# These tests are failing on Mac-10.12 when using an Intel GPU and Mac Retina
-crbug.com/736177 [ Mac10.12 Retina ] compositing/overflow/theme-affects-visual-overflow.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] css1/box_properties/acid_test.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] css2.1/t09-c5526c-display-00-e.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] css3/selectors3/html/css3-modsel-25.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] css3/selectors3/html/css3-modsel-70.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] css3/selectors3/xhtml/css3-modsel-25.xml [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] css3/selectors3/xhtml/css3-modsel-70.xml [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] css3/selectors3/xml/css3-modsel-25.xml [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] css3/selectors3/xml/css3-modsel-70.xml [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/block/basic/011.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/block/margin-collapse/103.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/css/non-standard-checkbox-size.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/forms/001.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/forms/basic-inputs.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/forms/checkbox/checkbox-appearance-basic.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/forms/file/file-input-disabled.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/forms/formmove.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/forms/formmove2.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/forms/indeterminate.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/forms/input-value.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/forms/radio/radio-appearance-basic.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/inline/positionedLifetime.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/parser/bad-xml-slash.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/replaced/replaced-breaking.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/text/textIteratorNilRenderer.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] fast/text/whitespace/normal-after-nowrap-breaking.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla/bugs/bug1318.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla/bugs/bug4527.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla_expected_failures/core/captions1.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla_expected_failures/core/captions2.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Failure Pass ]
+crbug.com/736177 [ Mac ] fast/forms/checkbox/checkbox-appearance-basic.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Failure Pass ]
+crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Failure Pass ]
 
 crbug.com/734762 inspector-protocol/timeline/page-frames.js [ Failure ]
 
@@ -4526,8 +4493,6 @@ crbug.com/810009 [ Linux ] virtual/disable-spv175/paint/invalidation/image/canva
 # Sheriff failures 2018-02-15
 crbug.com/812417 [ Win7 ] http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Failure ]
 
-# Sheriff failures 2018-02-19
-crbug.com/771643 [ Mac ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Failure ]
 
 # Sheriff failures 2018-02-20
 crbug.com/789921 media/controls/repaint-on-resize.html [ Failure Pass ]
@@ -4662,7 +4627,7 @@ crbug.com/825262 [ Win7 ] external/wpt/css/css-transitions/properties-value-impl
 
 # Sheriff 2018-03-26
 crbug.com/825733 [ Win ] media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
-crbug.com/825733 [ Win Linux ] virtual/video-surface-layer/media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
+crbug.com/825733 virtual/video-surface-layer/media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
 crbug.com/754986 media/video-transformed.html [ Pass Failure ]
 crbug.com/754986 virtual/video-surface-layer/media/video-transformed.html [ Pass Failure ]
 
@@ -4756,3 +4721,7 @@ crbug.com/841933 http/tests/webaudio/autoplay-crossorigin.html [ Skip ]
 
 # Sheriff 2018-05-16
 crbug.com/843691 fast/css/opacity-float.html [ Failure ]
+
+# Flaky recently as of 2018-5-21
+crbug.com/845267 [ Mac10.13 ] http/tests/inspector-protocol/page/page-lifecycleEvents.js [ Failure Pass ]
+crbug.com/845266 [ Mac ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Failure Timeout Pass ]
