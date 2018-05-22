@@ -246,9 +246,9 @@ TEST_F(NetworkContextTest, UserAgentAndLanguage) {
   EXPECT_EQ(kUserAgent, network_context->url_request_context()
                             ->http_user_agent_settings()
                             ->GetUserAgent());
-  EXPECT_EQ("en-us,en", network_context->url_request_context()
-                            ->http_user_agent_settings()
-                            ->GetAcceptLanguage());
+  EXPECT_EQ("", network_context->url_request_context()
+                    ->http_user_agent_settings()
+                    ->GetAcceptLanguage());
 
   // Change accept-language.
   network_context->SetAcceptLanguage(kAcceptLanguage);

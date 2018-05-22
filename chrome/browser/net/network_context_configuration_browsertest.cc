@@ -843,13 +843,13 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   bool system =
       (GetParam().network_context_type == NetworkContextType::kSystem ||
        GetParam().network_context_type == NetworkContextType::kSafeBrowsing);
-  const char kDefaultAcceptLanguage[] = "en-us,en";
+  // echoheader returns "None" when the header isn't there in the first place.
+  const char kNoAcceptLanguage[] = "None";
 
   std::string accept_language, user_agent;
   // Check default.
   ASSERT_TRUE(FetchHeaderEcho("accept-language", &accept_language));
-  EXPECT_EQ(system ? kDefaultAcceptLanguage : "en-US,en;q=0.9",
-            accept_language);
+  EXPECT_EQ(system ? kNoAcceptLanguage : "en-US,en;q=0.9", accept_language);
   ASSERT_TRUE(FetchHeaderEcho("user-agent", &user_agent));
   EXPECT_EQ(::GetUserAgent(), user_agent);
 
@@ -859,7 +859,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   FlushNetworkInterface();
   std::string accept_language2, user_agent2;
   ASSERT_TRUE(FetchHeaderEcho("accept-language", &accept_language2));
-  EXPECT_EQ(system ? kDefaultAcceptLanguage : "uk", accept_language2);
+  EXPECT_EQ(system ? kNoAcceptLanguage : "uk", accept_language2);
   ASSERT_TRUE(FetchHeaderEcho("user-agent", &user_agent2));
   EXPECT_EQ(::GetUserAgent(), user_agent2);
 
@@ -869,8 +869,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   FlushNetworkInterface();
   std::string accept_language3, user_agent3;
   ASSERT_TRUE(FetchHeaderEcho("accept-language", &accept_language3));
-  EXPECT_EQ(system ? kDefaultAcceptLanguage : "uk,en_US;q=0.9",
-            accept_language3);
+  EXPECT_EQ(system ? kNoAcceptLanguage : "uk,en_US;q=0.9", accept_language3);
   ASSERT_TRUE(FetchHeaderEcho("user-agent", &user_agent3));
   EXPECT_EQ(::GetUserAgent(), user_agent3);
 }
