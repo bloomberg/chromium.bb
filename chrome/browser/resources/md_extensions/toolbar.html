@@ -123,9 +123,6 @@
             title="$i18n{toolbarUpdateNowTooltip}">
           $i18n{toolbarUpdateNow}
         </paper-button>
-        <cr-toast>
-          <div>[[toastLabel_]]</div>
-        </cr-toast>
 <if expr="chromeos">
         <paper-button id="kioskExtensions" on-click="onKioskTap_"
             hidden$="[[!kioskEnabled]]">
@@ -134,6 +131,9 @@
 </if>
       </div>
     </div>
+    <cr-toast>
+      <div>[[toastLabel_]]</div>
+    </cr-toast>
   </template>
   <script src="toolbar.js"></script>
 </dom-module>
