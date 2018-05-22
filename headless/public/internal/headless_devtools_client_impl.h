@@ -106,6 +106,8 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
   int GetNextRawDevToolsMessageId() override;
   void SendRawDevToolsMessage(const std::string& json_message) override;
   void SendRawDevToolsMessage(const base::DictionaryValue& message) override;
+  void DispatchMessageFromExternalHost(
+      const std::string& json_message) override;
 
   // content::DevToolsAgentHostClient implementation:
   void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
@@ -127,6 +129,8 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
   void AttachToHost(content::DevToolsAgentHost* agent_host);
   void DetachFromHost(content::DevToolsAgentHost* agent_host);
 
+  void AttachToExternalHost(ExternalHost* external_host);
+
   void SetTaskRunnerForTests(
       scoped_refptr<base::SequencedTaskRunner> task_runner) {
     browser_main_thread_ = task_runner;
@@ -147,6 +151,9 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
     base::OnceClosure callback;
     base::OnceCallback<void(const base::Value&)> callback_with_result;
   };
+
+  void DispatchProtocolMessage(const std::string& host_id,
+                               const std::string& json_message);
 
   template <typename CallbackType>
   void FinalizeAndSendMessage(base::DictionaryValue* message,
@@ -172,15 +179,16 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
                          const EventHandler* event_handler,
                          const base::DictionaryValue* result_dict);
 
-  content::DevToolsAgentHost* agent_host_;      // Not owned.
-  RawProtocolListener* raw_protocol_listener_;  // Not owned.
-  int next_message_id_;
-  int next_raw_message_id_;
-  std::unordered_map<int, Callback> pending_messages_;
+  content::DevToolsAgentHost* agent_host_ = nullptr;
+  ExternalHost* external_host_ = nullptr;
+  RawProtocolListener* raw_protocol_listener_ = nullptr;
 
+  int next_message_id_ = 0;
+  int next_raw_message_id_ = 1;
+  std::unordered_map<int, Callback> pending_messages_;
   EventHandlerMap event_handlers_;
 
-  bool renderer_crashed_;
+  bool renderer_crashed_ = false;
 
   accessibility::ExperimentalDomain accessibility_domain_;
   animation::ExperimentalDomain animation_domain_;

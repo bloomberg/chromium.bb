@@ -121,7 +121,19 @@ class HEADLESS_EXPORT HeadlessDevToolsClient {
  public:
   virtual ~HeadlessDevToolsClient() {}
 
+  class HEADLESS_EXPORT ExternalHost {
+   public:
+    ExternalHost() {}
+    virtual ~ExternalHost() {}
+    virtual void SendProtocolMessage(const std::string& message) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ExternalHost);
+  };
+
   static std::unique_ptr<HeadlessDevToolsClient> Create();
+  static std::unique_ptr<HeadlessDevToolsClient> CreateWithExternalHost(
+      ExternalHost*);
 
   // DevTools commands are split into domains which corresponds to the getters
   // below. Each domain can be used to send commands and to subscribe to events.
@@ -186,6 +198,9 @@ class HEADLESS_EXPORT HeadlessDevToolsClient {
   // The id within the message must be odd to prevent collisions.
   virtual void SendRawDevToolsMessage(const std::string& json_message) = 0;
   virtual void SendRawDevToolsMessage(const base::DictionaryValue& message) = 0;
+
+  virtual void DispatchMessageFromExternalHost(
+      const std::string& json_message) = 0;
 
   // TODO(skyostil): Add notification for disconnection.
 
