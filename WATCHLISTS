@@ -1936,7 +1936,6 @@
                       'markusheintz@chromium.org',
                       'msramek+watch@chromium.org'],
     'bubble': ['hcarmona+bubble@chromium.org',
-               'groby+bubble@chromium.org',
                'rouslan+bubble@chromium.org'],
     'cache_storage': ['nhiroki@chromium.org'],
     'cast': ['amp+watch@chromium.org',
