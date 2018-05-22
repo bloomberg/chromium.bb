@@ -1293,7 +1293,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       proxy_routing_id_(MSG_ROUTING_NONE),
 #if BUILDFLAG(ENABLE_PLUGINS)
       plugin_power_saver_helper_(nullptr),
-      plugin_find_handler_(nullptr),
 #endif
       cookie_jar_(this),
       selection_text_offset_(0),
@@ -7050,15 +7049,7 @@ RenderFrameImpl::GetURLLoaderFactory() {
 }
 
 blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {
-  if (frame_->GetDocument().IsPluginDocument())
-    return frame_->GetDocument().To<WebPluginDocument>().Plugin();
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  if (plugin_find_handler_)
-    return plugin_find_handler_->container()->Plugin();
-#endif
-
-  return nullptr;
+  return frame_->GetWebPluginForFind();
 }
 
 void RenderFrameImpl::SendFindReply(int request_id,

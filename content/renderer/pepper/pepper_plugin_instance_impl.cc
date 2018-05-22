@@ -663,10 +663,6 @@ v8::Local<v8::Context> PepperPluginInstanceImpl::GetMainWorldContext() {
 void PepperPluginInstanceImpl::Delete() {
   is_deleted_ = true;
 
-  if (render_frame_ && render_frame_->plugin_find_handler() == this) {
-    render_frame_->set_plugin_find_handler(nullptr);
-  }
-
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
 
@@ -2636,7 +2632,7 @@ void PepperPluginInstanceImpl::SetPluginToHandleFindRequests(
       render_frame_->GetRenderView()->GetMainRenderFrame() == render_frame_;
   if (!is_main_frame)
     return;
-  render_frame_->set_plugin_find_handler(this);
+  container_->UsePluginAsFindHandler();
 }
 
 void PepperPluginInstanceImpl::NumberOfFindResultsChanged(

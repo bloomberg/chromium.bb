@@ -33,6 +33,7 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_plugin_document.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 
@@ -246,6 +247,26 @@ TextFinder& FindInPage::EnsureTextFinder() {
     text_finder_ = TextFinder::Create(*frame_);
 
   return *text_finder_;
+}
+
+void FindInPage::SetPluginFindHandler(WebPluginContainer* plugin) {
+  plugin_find_handler_ = plugin;
+}
+
+WebPluginContainer* FindInPage::PluginFindHandler() const {
+  return plugin_find_handler_;
+}
+
+WebPlugin* WebLocalFrameImpl::GetWebPluginForFind() {
+  return find_in_page_->GetWebPluginForFind();
+}
+
+WebPlugin* FindInPage::GetWebPluginForFind() {
+  if (frame_->GetDocument().IsPluginDocument())
+    return frame_->GetDocument().To<WebPluginDocument>().Plugin();
+  if (plugin_find_handler_)
+    return plugin_find_handler_->Plugin();
+  return nullptr;
 }
 
 void FindInPage::BindToRequest(

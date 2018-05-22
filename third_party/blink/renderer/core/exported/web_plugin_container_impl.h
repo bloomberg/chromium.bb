@@ -148,6 +148,8 @@ class CORE_EXPORT WebPluginContainerImpl final
   WebPlugin* Plugin() override { return web_plugin_; }
   void SetPlugin(WebPlugin*) override;
 
+  void UsePluginAsFindHandler() override;
+
   float DeviceScaleFactor() override;
   float PageScaleFactor() override;
   float PageZoomFactor() override;

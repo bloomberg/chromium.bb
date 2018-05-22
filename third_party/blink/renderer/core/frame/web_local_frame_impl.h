@@ -64,7 +64,6 @@ class WebFrameClient;
 class WebFrameWidgetBase;
 class WebNode;
 class WebPerformance;
-class WebPlugin;
 class WebScriptExecutionCallback;
 class WebSpellCheckPanelHostClient;
 class WebView;
@@ -244,8 +243,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebString GetLayerTreeAsTextForTesting(
       bool show_debug_info = false) const override;
 
-  FindInPage* GetFindInPageForTesting() const;
-
   WebFrameClient* Client() const override { return client_; }
 
   // WebLocalFrame methods:
@@ -314,6 +311,7 @@ class CORE_EXPORT WebLocalFrameImpl final
             bool* active_now = nullptr) override;
   void StopFinding(StopFindAction) override;
   void SetTickmarks(const WebVector<WebRect>&) override;
+  WebPlugin* GetWebPluginForFind() override;
   WebNode ContextMenuNode() const override;
   WebFrameWidget* FrameWidget() const override;
   void CopyImageAt(const WebPoint&) override;
@@ -413,6 +411,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebSpellCheckPanelHostClient* SpellCheckPanelHostClient() const override {
     return spell_check_panel_host_client_;
   }
+
+  FindInPage* GetFindInPage() const { return find_in_page_; }
 
   TextFinder* GetTextFinder() const;
   // Returns the text finder object if it already exists.

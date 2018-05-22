@@ -5098,8 +5098,7 @@ TEST_F(WebFrameTest, FindInPageMatchRects) {
   WebVector<WebFloatRect> web_match_rects =
       main_frame->EnsureTextFinder().FindMatchRects();
   ASSERT_EQ(static_cast<size_t>(kNumResults), web_match_rects.size());
-  int rects_version =
-      main_frame->GetFindInPageForTesting()->FindMatchMarkersVersion();
+  int rects_version = main_frame->GetFindInPage()->FindMatchMarkersVersion();
 
   for (int result_index = 0; result_index < kNumResults; ++result_index) {
     FloatRect result_rect =
@@ -5120,21 +5119,19 @@ TEST_F(WebFrameTest, FindInPageMatchRects) {
     // Verify that the expected match rect also matches the currently active
     // match.  Compare the enclosing rects to prevent precision issues caused by
     // CSS transforms.
-    FloatRect active_match =
-        main_frame->GetFindInPageForTesting()->ActiveFindMatchRect();
+    FloatRect active_match = main_frame->GetFindInPage()->ActiveFindMatchRect();
     EXPECT_EQ(EnclosingIntRect(active_match), EnclosingIntRect(result_rect));
 
     // The rects version should not have changed.
-    EXPECT_EQ(main_frame->GetFindInPageForTesting()->FindMatchMarkersVersion(),
+    EXPECT_EQ(main_frame->GetFindInPage()->FindMatchMarkersVersion(),
               rects_version);
   }
 
   // Resizing should update the rects version.
   web_view_helper.Resize(WebSize(800, 600));
   RunPendingTasks();
-  EXPECT_TRUE(
-      main_frame->GetFindInPageForTesting()->FindMatchMarkersVersion() !=
-      rects_version);
+  EXPECT_TRUE(main_frame->GetFindInPage()->FindMatchMarkersVersion() !=
+              rects_version);
 }
 
 TEST_F(WebFrameTest, FindInPageActiveIndex) {
