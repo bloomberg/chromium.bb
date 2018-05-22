@@ -187,11 +187,12 @@ int ShellBrowserMainParts::PreCreateThreads() {
             crash_dumps_dir, kAndroidMinidumpDescriptor));
   }
 #endif
+
+  net_log_ = std::make_unique<ShellNetLog>("content_shell");
   return 0;
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
-  net_log_.reset(new ShellNetLog("content_shell"));
   InitializeBrowserContexts();
   Shell::Initialize();
   net::NetModule::SetResourceProvider(PlatformResourceProvider);
