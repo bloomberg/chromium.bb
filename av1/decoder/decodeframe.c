@@ -1790,7 +1790,6 @@ static void setup_frame_size(AV1_COMMON *cm, int frame_size_override_flag,
 
 static void setup_sb_size(SequenceHeader *seq_params,
                           struct aom_read_bit_buffer *rb) {
-  (void)rb;
   set_sb_size(seq_params, aom_rb_read_bit(rb) ? BLOCK_128X128 : BLOCK_64X64);
 }
 
@@ -2663,7 +2662,10 @@ static void error_handler(void *data) {
   aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME, "Truncated packet");
 }
 
-void av1_read_bitdepth(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
+// Reads the high_bitdepth and twelve_bit fields in color_config() and sets
+// cm->bit_depth based on the values of those fields and cm->profile. Reports
+// errors by calling rb->error_handler() or aom_internal_error().
+static void av1_read_bitdepth(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   const int high_bitdepth = aom_rb_read_bit(rb);
   if (cm->profile == PROFILE_2 && high_bitdepth) {
     const int twelve_bit = aom_rb_read_bit(rb);
@@ -2674,7 +2676,6 @@ void av1_read_bitdepth(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Unsupported profile/bit-depth combination");
   }
-  return;
 }
 
 void av1_read_film_grain_params(AV1_COMMON *cm,
@@ -2830,9 +2831,8 @@ static void read_film_grain(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
          sizeof(aom_film_grain_t));
 }
 
-void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
-                                           struct aom_read_bit_buffer *rb,
-                                           int allow_lowbitdepth) {
+void av1_read_color_config(AV1_COMMON *cm, struct aom_read_bit_buffer *rb,
+                           int allow_lowbitdepth) {
   av1_read_bitdepth(cm, rb);
 
   cm->use_highbitdepth = cm->bit_depth > AOM_BITS_8 || !allow_lowbitdepth;
@@ -2879,13 +2879,14 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
     } else if (cm->profile == PROFILE_1) {
       // 444 only
       cm->subsampling_x = cm->subsampling_y = 0;
-    } else if (cm->profile == PROFILE_2) {
+    } else {
+      assert(cm->profile == PROFILE_2);
       if (cm->bit_depth == AOM_BITS_12) {
         cm->subsampling_x = aom_rb_read_bit(rb);
-        if (cm->subsampling_x == 0)
-          cm->subsampling_y = 0;  // 444
-        else
+        if (cm->subsampling_x)
           cm->subsampling_y = aom_rb_read_bit(rb);  // 422 or 420
+        else
+          cm->subsampling_y = 0;  // 444
       } else {
         // 422
         cm->subsampling_x = 1;
@@ -2893,12 +2894,12 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
       }
     }
     if (cm->matrix_coefficients == AOM_CICP_MC_IDENTITY &&
-        (cm->subsampling_x != 0 || cm->subsampling_y != 0)) {
+        (cm->subsampling_x || cm->subsampling_y)) {
       aom_internal_error(
           &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
           "Identity CICP Matrix incompatible with non 4:4:4 color sampling");
     }
-    if (cm->subsampling_x == 1 && cm->subsampling_y == 1) {
+    if (cm->subsampling_x && cm->subsampling_y) {
       cm->chroma_sample_position = aom_rb_read_literal(rb, 2);
     }
   }
@@ -2917,11 +2918,22 @@ void av1_read_timing_info_header(AV1_COMMON *cm,
         rb, 32);  // Number of units in a display tick
     cm->timing_info.time_scale =
         aom_rb_read_unsigned_literal(rb, 32);  // Time scale
+    if (cm->timing_info.num_units_in_display_tick == 0 ||
+        cm->timing_info.time_scale == 0) {
+      aom_internal_error(
+          &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+          "num_units_in_display_tick and time_scale must be greater than 0.");
+    }
     cm->timing_info.equal_picture_interval =
         aom_rb_read_bit(rb);  // Equal picture interval bit
     if (cm->timing_info.equal_picture_interval) {
       cm->timing_info.num_ticks_per_picture =
           aom_rb_read_uvlc(rb) + 1;  // ticks per picture
+      if (cm->timing_info.num_ticks_per_picture == 0) {
+        aom_internal_error(
+            &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+            "num_ticks_per_picture_minus_1 cannot be (1 << 32) − 1.");
+      }
 #else
   cm->num_units_in_tick =
       aom_rb_read_unsigned_literal(rb, 32);  // Number of units in tick
@@ -2953,13 +2965,12 @@ void av1_read_decoder_model_info(AV1_COMMON *cm,
 
 void av1_read_op_parameters_info(AV1_COMMON *const cm,
                                  struct aom_read_bit_buffer *rb, int op_num) {
-  if (op_num > MAX_NUM_OPERATING_POINTS)
+  // The cm->op_params array has MAX_NUM_OPERATING_POINTS + 1 elements.
+  if (op_num > MAX_NUM_OPERATING_POINTS) {
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "AV1 does not support %d decoder model operating points",
                        op_num + 1);
-
-  //  cm->op_params[op_num].has_parameters = aom_rb_read_bit(rb);
-  //  if (!cm->op_params[op_num].has_parameters) return;
+  }
 
   cm->op_params[op_num].bitrate = aom_rb_read_uvlc(rb) + 1;
 
@@ -3030,8 +3041,8 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
     seq_params->enable_order_hint = 0;
     seq_params->enable_jnt_comp = 0;
     seq_params->enable_ref_frame_mvs = 0;
-    seq_params->force_screen_content_tools = 2;
-    seq_params->force_integer_mv = 2;
+    seq_params->force_screen_content_tools = 2;  // SELECT_SCREEN_CONTENT_TOOLS
+    seq_params->force_integer_mv = 2;            // SELECT_INTEGER_MV
     seq_params->order_hint_bits_minus_1 = -1;
   } else {
     seq_params->enable_interintra_compound = aom_rb_read_bit(rb);
@@ -3046,19 +3057,20 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
         seq_params->enable_order_hint ? aom_rb_read_bit(rb) : 0;
 
     if (aom_rb_read_bit(rb)) {
-      seq_params->force_screen_content_tools = 2;
+      seq_params->force_screen_content_tools =
+          2;  // SELECT_SCREEN_CONTENT_TOOLS
     } else {
       seq_params->force_screen_content_tools = aom_rb_read_bit(rb);
     }
 
     if (seq_params->force_screen_content_tools > 0) {
       if (aom_rb_read_bit(rb)) {
-        seq_params->force_integer_mv = 2;
+        seq_params->force_integer_mv = 2;  // SELECT_INTEGER_MV
       } else {
         seq_params->force_integer_mv = aom_rb_read_bit(rb);
       }
     } else {
-      seq_params->force_integer_mv = 2;
+      seq_params->force_integer_mv = 2;  // SELECT_INTEGER_MV
     }
     seq_params->order_hint_bits_minus_1 =
         seq_params->enable_order_hint ? aom_rb_read_literal(rb, 3) : -1;

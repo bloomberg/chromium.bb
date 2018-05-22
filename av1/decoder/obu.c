@@ -155,6 +155,7 @@ static int is_obu_in_current_operating_point(AV1Decoder *pbi,
 
 static uint32_t read_temporal_delimiter_obu() { return 0; }
 
+// Returns a boolean that indicates success.
 static int read_bitstream_level(BitstreamLevel *bl,
                                 struct aom_read_bit_buffer *rb) {
   const uint8_t seq_level_idx = aom_rb_read_literal(rb, LEVEL_BITS);
@@ -164,7 +165,8 @@ static int read_bitstream_level(BitstreamLevel *bl,
   return 1;
 }
 
-// On success, returns the number of bytes read from 'rb'.
+// On success, sets pbi->sequence_header_ready to 1 and returns the number of
+// bytes read from 'rb'.
 // On failure, sets pbi->common.error.error_code and returns 0.
 static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
                                          struct aom_read_bit_buffer *rb) {
@@ -172,16 +174,22 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   const uint32_t saved_bit_offset = rb->bit_offset;
   int operating_points_cnt_minus_1 = 0;
 
-  cm->profile = av1_read_profile(rb);
+  // Verify rb has been configured to report errors.
+  assert(rb->error_handler);
 
-  SequenceHeader *seq_params = &cm->seq_params;
+  cm->profile = av1_read_profile(rb);
+  if (cm->profile > PROFILE_2) {
+    cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
+    return 0;
+  }
+
+  SequenceHeader *const seq_params = &cm->seq_params;
 
   // Still picture or not
   seq_params->still_picture = aom_rb_read_bit(rb);
   seq_params->reduced_still_picture_hdr = aom_rb_read_bit(rb);
   // Video must have reduced_still_picture_hdr = 0
-  if (!cm->seq_params.still_picture &&
-      cm->seq_params.reduced_still_picture_hdr) {
+  if (!seq_params->still_picture && seq_params->reduced_still_picture_hdr) {
     cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
     return 0;
   }
@@ -192,6 +200,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
       cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
       return 0;
     }
+    seq_params->tier[0] = 0;
     seq_params->decoder_rate_model_param_present_flag[0] = 0;
   } else {
     operating_points_cnt_minus_1 =
@@ -203,6 +212,8 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
         cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
         return 0;
       }
+      // This is the seq_level_idx[i] > 7 check in the spec. seq_level_idx 7
+      // is equivalent to level 3.3.
       if (seq_params->level[i].major > 3)
         seq_params->tier[i] = aom_rb_read_bit(rb);
       else
@@ -235,7 +246,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 
   read_sequence_header(cm, rb);
 
-  av1_read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
+  av1_read_color_config(cm, rb, pbi->allow_lowbitdepth);
 
 #if !CONFIG_BUFFER_MODEL
   if (!seq_params->reduced_still_picture_hdr)
@@ -244,7 +255,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
     cm->timing_info_present = 0;
 #else
   if (!seq_params->reduced_still_picture_hdr)
-    cm->timing_info_present = aom_rb_read_bit(rb);  // timing info present flag
+    cm->timing_info_present = aom_rb_read_bit(rb);  // timing_info_present_flag
   else
     cm->timing_info_present = 0;
 
@@ -288,7 +299,10 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 
   cm->film_grain_params_present = aom_rb_read_bit(rb);
 
-  av1_check_trailing_bits(pbi, rb);
+  if (av1_check_trailing_bits(pbi, rb) != 0) {
+    // cm->error.error_code is already set.
+    return 0;
+  }
 
   pbi->sequence_header_ready = 1;
 
