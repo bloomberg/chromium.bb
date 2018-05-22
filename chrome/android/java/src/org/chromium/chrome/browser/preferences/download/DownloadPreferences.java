@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.preferences.download;
 
-import static org.chromium.chrome.browser.preferences.download.DownloadDirectoryAdapter.NO_SELECTED_ITEM_ID;
-
-import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -17,18 +14,16 @@ import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
-import org.chromium.chrome.browser.preferences.SpinnerPreference;
 
 /**
  * Fragment to keep track of all downloads related preferences.
  */
 public class DownloadPreferences
         extends PreferenceFragment implements Preference.OnPreferenceChangeListener {
-    private static final String PREF_LOCATION_CHANGE = "location_change";
+    public static final String PREF_LOCATION_CHANGE = "location_change";
     private static final String PREF_LOCATION_PROMPT_ENABLED = "location_prompt_enabled";
 
-    private SpinnerPreference mLocationChangePref;
-    private DownloadDirectoryAdapter mDirectoryAdapter;
+    private DownloadLocationPreference mLocationChangePref;
     private ChromeSwitchPreference mLocationPromptEnabledPref;
 
     @Override
@@ -42,20 +37,7 @@ public class DownloadPreferences
                 (ChromeSwitchPreference) findPreference(PREF_LOCATION_PROMPT_ENABLED);
         mLocationPromptEnabledPref.setOnPreferenceChangeListener(this);
 
-        mLocationChangePref = (SpinnerPreference) findPreference(PREF_LOCATION_CHANGE);
-        mLocationChangePref.setOnPreferenceChangeListener(this);
-        mDirectoryAdapter = new DownloadDirectoryAdapter(getActivity());
-        int selectedItemId = mDirectoryAdapter.getSelectedItemId();
-        if (selectedItemId == NO_SELECTED_ITEM_ID) {
-            selectedItemId = mDirectoryAdapter.getFirstSelectableItemId();
-        }
-        mDirectoryAdapter.registerDataSetObserver(new DataSetObserver() {
-            @Override
-            public void onChanged() {
-                mLocationChangePref.setEnabled(mDirectoryAdapter.hasAvailableLocations());
-            }
-        });
-        mLocationChangePref.setAdapter(mDirectoryAdapter, selectedItemId);
+        mLocationChangePref = (DownloadLocationPreference) findPreference(PREF_LOCATION_CHANGE);
 
         updateData();
     }
@@ -68,11 +50,12 @@ public class DownloadPreferences
 
     private void updateData() {
         if (mLocationChangePref != null) {
-            mDirectoryAdapter.notifyDataSetChanged();
+            mLocationChangePref.setSummary(
+                    PrefServiceBridge.getInstance().getDownloadDefaultDirectory());
         }
 
         if (mLocationPromptEnabledPref != null) {
-            // Location prompt is marked enabled if the prompt status is not don't show.
+            // Location prompt is marked enabled if the prompt status is not DONT_SHOW.
             boolean isLocationPromptEnabled =
                     PrefServiceBridge.getInstance().getPromptForDownloadAndroid()
                     != DownloadPromptStatus.DONT_SHOW;
@@ -95,14 +78,6 @@ public class DownloadPreferences
             } else {
                 PrefServiceBridge.getInstance().setPromptForDownloadAndroid(
                         DownloadPromptStatus.DONT_SHOW);
-            }
-        } else if (PREF_LOCATION_CHANGE.equals(preference.getKey())) {
-            DownloadDirectoryAdapter.DirectoryOption option =
-                    (DownloadDirectoryAdapter.DirectoryOption) newValue;
-            if (option.getLocation() != null) {
-                PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(
-                        option.getLocation().getAbsolutePath());
-                updateData();
             }
         }
         return true;

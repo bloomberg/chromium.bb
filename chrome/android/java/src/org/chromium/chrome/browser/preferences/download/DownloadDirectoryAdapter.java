@@ -18,6 +18,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.DirectoryOption;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.TintedImageView;
@@ -32,42 +33,6 @@ import java.util.List;
  */
 public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
     public static int NO_SELECTED_ITEM_ID = -1;
-
-    /**
-     * Denotes a given option for directory selection; includes name, location, and space.
-     */
-    public static class DirectoryOption {
-        private final String mName;
-        private final File mLocation;
-        private final long mAvailableSpace;
-
-        DirectoryOption(String directoryName, File directoryLocation, long availableSpace) {
-            mName = directoryName;
-            mLocation = directoryLocation;
-            mAvailableSpace = availableSpace;
-        }
-
-        /**
-         * @return File location associated with this directory option.
-         */
-        public File getLocation() {
-            return mLocation;
-        }
-
-        /**
-         * @return Name associated with this directory option.
-         */
-        public String getName() {
-            return mName;
-        }
-
-        /**
-         * @return Amount of available space in this directory option.
-         */
-        long getAvailableSpace() {
-            return mAvailableSpace;
-        }
-    }
 
     private Context mContext;
     private LayoutInflater mLayoutInflater;
@@ -125,7 +90,7 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         if (directoryOption == null) return view;
 
         TextView titleText = (TextView) view.findViewById(R.id.text);
-        titleText.setText(directoryOption.getName());
+        titleText.setText(directoryOption.name);
 
         // ModalDialogView may do a measure pass on the view hierarchy to limit the layout inside
         // certain area, where LayoutParams cannot be null.
@@ -150,14 +115,14 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         if (directoryOption == null) return view;
 
         TextView titleText = (TextView) view.findViewById(R.id.title);
-        titleText.setText(directoryOption.getName());
+        titleText.setText(directoryOption.name);
 
         TextView summaryText = (TextView) view.findViewById(R.id.description);
         if (isEnabled(position)) {
             TextViewCompat.setTextAppearance(titleText, R.style.BlackTitle1);
             TextViewCompat.setTextAppearance(summaryText, R.style.BlackBody);
             summaryText.setText(DownloadUtils.getStringForAvailableBytes(
-                    mContext, directoryOption.getAvailableSpace()));
+                    mContext, directoryOption.availableSpace));
         } else {
             TextViewCompat.setTextAppearance(titleText, R.style.BlackDisabledText1);
             TextViewCompat.setTextAppearance(summaryText, R.style.BlackDisabledText3);
@@ -177,7 +142,7 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
     @Override
     public boolean isEnabled(int position) {
         DirectoryOption directoryOption = (DirectoryOption) getItem(position);
-        return directoryOption != null && directoryOption.getAvailableSpace() != 0;
+        return directoryOption != null && directoryOption.availableSpace != 0;
     }
 
     /**
@@ -190,7 +155,7 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         for (int i = 0; i < getCount(); i++) {
             DirectoryOption option = (DirectoryOption) getItem(i);
             if (option == null) continue;
-            if (defaultLocation.equals(option.getLocation().getAbsolutePath())) return i;
+            if (defaultLocation.equals(option.location.getAbsolutePath())) return i;
         }
         return NO_SELECTED_ITEM_ID;
     }
@@ -206,9 +171,9 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         for (int i = 0; i < getCount(); i++) {
             DirectoryOption option = (DirectoryOption) getItem(i);
             if (option == null) continue;
-            if (option.getAvailableSpace() > 0) {
+            if (option.availableSpace > 0) {
                 PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(
-                        option.getLocation().getAbsolutePath());
+                        option.location.getAbsolutePath());
                 return i;
             }
         }

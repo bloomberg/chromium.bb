@@ -128,9 +128,8 @@ public class DownloadLocationDialog extends ModalDialogView {
     @Nullable
     File getFileLocation() {
         if (mFileLocation == null) return null;
-        DownloadDirectoryAdapter.DirectoryOption selected =
-                (DownloadDirectoryAdapter.DirectoryOption) mFileLocation.getSelectedItem();
-        return selected.getLocation();
+        DirectoryOption selected = (DirectoryOption) mFileLocation.getSelectedItem();
+        return selected.location;
     }
 
     /**
