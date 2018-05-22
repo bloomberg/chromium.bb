@@ -270,11 +270,11 @@ class DrmDevice::PageFlipManager {
       return;
     }
 
-    DrmDevice::PageFlipCallback callback = std::move(it->callback);
     it->pending_calls--;
     if (it->pending_calls)
       return;
 
+    DrmDevice::PageFlipCallback callback = std::move(it->callback);
     callbacks_.erase(it);
     std::move(callback).Run(frame, timestamp);
   }
