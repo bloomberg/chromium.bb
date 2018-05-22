@@ -439,13 +439,14 @@ gfx::ImageSkia GetIcon(const NetworkState* network,
                        IconType icon_type,
                        int strength_index) {
   if (network->Matches(NetworkTypePattern::Ethernet())) {
-    DCHECK_NE(ICON_TYPE_TRAY, icon_type);
     return gfx::CreateVectorIcon(kNetworkEthernetIcon,
-                                 GetDefaultColorForIconType(ICON_TYPE_LIST));
-  } else if (network->Matches(NetworkTypePattern::Wireless())) {
+                                 GetDefaultColorForIconType(icon_type));
+  }
+  if (network->Matches(NetworkTypePattern::Wireless())) {
     return GetImageForIndex(ImageTypeForNetwork(network, icon_type), icon_type,
                             strength_index);
-  } else if (network->Matches(NetworkTypePattern::VPN())) {
+  }
+  if (network->Matches(NetworkTypePattern::VPN())) {
     DCHECK_NE(ICON_TYPE_TRAY, icon_type);
     return gfx::CreateVectorIcon(kNetworkVpnIcon,
                                  GetDefaultColorForIconType(ICON_TYPE_LIST));
