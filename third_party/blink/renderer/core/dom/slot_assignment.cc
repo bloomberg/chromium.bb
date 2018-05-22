@@ -218,6 +218,10 @@ void SlotAssignment::RecalcAssignment() {
 
   if (!needs_assignment_recalc_)
     return;
+#if DCHECK_IS_ON()
+  DCHECK(
+      !SlotAssignmentRecalcForbiddenScope::IsSlotAssignmentRecalcForbidden());
+#endif
   needs_assignment_recalc_ = false;
 
   for (Member<HTMLSlotElement> slot : Slots())
@@ -380,5 +384,19 @@ void SlotAssignment::Trace(blink::Visitor* visitor) {
   visitor->Trace(slot_map_);
   visitor->Trace(owner_);
 }
+
+#if DCHECK_IS_ON()
+unsigned SlotAssignmentRecalcForbiddenScope::g_main_thread_counter_ = 0;
+
+unsigned& SlotAssignmentRecalcForbiddenScope::GetMutableCounter() {
+  if (IsMainThread())
+    return g_main_thread_counter_;
+
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(WTF::ThreadSpecific<unsigned>,
+                                  slot_assignment_recalc_forbidden_counter_,
+                                  ());
+  return *slot_assignment_recalc_forbidden_counter_;
+}
+#endif
 
 }  // namespace blink
