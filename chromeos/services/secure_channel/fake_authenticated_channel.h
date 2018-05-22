@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/authenticated_channel.h"
+#include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
 namespace chromeos {
 
@@ -24,21 +25,34 @@ class FakeAuthenticatedChannel : public AuthenticatedChannel {
   FakeAuthenticatedChannel();
   ~FakeAuthenticatedChannel() override;
 
-  const std::vector<std::tuple<std::string, std::string, base::OnceClosure>>&
+  std::vector<std::tuple<std::string, std::string, base::OnceClosure>>&
   sent_messages() {
     return sent_messages_;
   }
 
+  bool has_disconnection_been_requested() {
+    return has_disconnection_been_requested_;
+  }
+
+  void set_connection_metadata(
+      const mojom::ConnectionMetadata& connection_metadata) {
+    connection_metadata_ = connection_metadata;
+  }
+
   // AuthenticatedChannel:
+  const mojom::ConnectionMetadata& GetConnectionMetadata() const override;
   void PerformSendMessage(const std::string& feature,
                           const std::string& payload,
                           base::OnceClosure on_sent_callback) override;
+  void PerformDisconnection() override;
 
   // Make Notify{Disconnected|MessageReceived}() public for testing.
   using AuthenticatedChannel::NotifyDisconnected;
   using AuthenticatedChannel::NotifyMessageReceived;
 
  private:
+  mojom::ConnectionMetadata connection_metadata_;
+  bool has_disconnection_been_requested_ = false;
   std::vector<std::tuple<std::string, std::string, base::OnceClosure>>
       sent_messages_;
 
@@ -48,7 +62,7 @@ class FakeAuthenticatedChannel : public AuthenticatedChannel {
 // Test AuthenticatedChannel::Observer implementation.
 class FakeAuthenticatedChannelObserver : public AuthenticatedChannel::Observer {
  public:
-  FakeAuthenticatedChannelObserver(const std::string& expected_channel_id);
+  FakeAuthenticatedChannelObserver();
   ~FakeAuthenticatedChannelObserver() override;
 
   bool has_been_notified_of_disconnection() {
@@ -60,13 +74,11 @@ class FakeAuthenticatedChannelObserver : public AuthenticatedChannel::Observer {
   }
 
   // AuthenticatedChannel::Observer:
-  void OnDisconnected(const std::string& channel_id) override;
-  void OnMessageReceived(const std::string& channel_id,
-                         const std::string& feature,
+  void OnDisconnected() override;
+  void OnMessageReceived(const std::string& feature,
                          const std::string& payload) override;
 
  private:
-  const std::string expected_channel_id_;
   bool has_been_notified_of_disconnection_ = false;
   std::vector<std::pair<std::string, std::string>> received_messages_;
 };

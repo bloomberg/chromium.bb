@@ -34,14 +34,21 @@ void AuthenticatedChannelImpl::Factory::SetFactoryForTesting(
 
 std::unique_ptr<AuthenticatedChannel>
 AuthenticatedChannelImpl::Factory::BuildInstance(
+    const std::vector<mojom::ConnectionCreationDetail>&
+        connection_creation_details,
     std::unique_ptr<cryptauth::SecureChannel> secure_channel) {
-  return base::WrapUnique(
-      new AuthenticatedChannelImpl(std::move(secure_channel)));
+  return base::WrapUnique(new AuthenticatedChannelImpl(
+      connection_creation_details, std::move(secure_channel)));
 }
 
 AuthenticatedChannelImpl::AuthenticatedChannelImpl(
+    const std::vector<mojom::ConnectionCreationDetail>&
+        connection_creation_details,
     std::unique_ptr<cryptauth::SecureChannel> secure_channel)
-    : AuthenticatedChannel(), secure_channel_(std::move(secure_channel)) {
+    : AuthenticatedChannel(),
+      connection_metadata_(connection_creation_details,
+                           mojom::ConnectionMetadata::kNoRssiAvailable),
+      secure_channel_(std::move(secure_channel)) {
   // |secure_channel_| should be a valid and already authenticated.
   DCHECK(secure_channel_);
   DCHECK_EQ(secure_channel_->status(),
@@ -52,6 +59,14 @@ AuthenticatedChannelImpl::AuthenticatedChannelImpl(
 
 AuthenticatedChannelImpl::~AuthenticatedChannelImpl() {
   secure_channel_->RemoveObserver(this);
+}
+
+const mojom::ConnectionMetadata&
+AuthenticatedChannelImpl::GetConnectionMetadata() const {
+  // TODO(khorimoto): Update |connection_metadata_.rssi_rolling_average|
+  // periodically throughout the connection when applicable. For now,
+  // kNoRssiAvailable is used in all cases.
+  return connection_metadata_;
 }
 
 void AuthenticatedChannelImpl::PerformSendMessage(
@@ -74,17 +89,25 @@ void AuthenticatedChannelImpl::PerformSendMessage(
       std::move(on_sent_callback);
 }
 
+void AuthenticatedChannelImpl::PerformDisconnection() {
+  secure_channel_->Disconnect();
+}
+
 void AuthenticatedChannelImpl::OnSecureChannelStatusChanged(
     cryptauth::SecureChannel* secure_channel,
     const cryptauth::SecureChannel::Status& old_status,
     const cryptauth::SecureChannel::Status& new_status) {
   DCHECK_EQ(secure_channel_.get(), secure_channel);
 
-  // The only expected status change is AUTHENTICATED => DISCONNECTED.
-  DCHECK_EQ(old_status, cryptauth::SecureChannel::Status::AUTHENTICATED);
-  DCHECK_EQ(new_status, cryptauth::SecureChannel::Status::DISCONNECTED);
+  // The only expected status changes are AUTHENTICATED => DISCONNECTING,
+  // AUTHENTICATED => DISCONNECTED, and DISCONNECTING => DISCONNECTED.
+  DCHECK(old_status == cryptauth::SecureChannel::Status::AUTHENTICATED ||
+         old_status == cryptauth::SecureChannel::Status::DISCONNECTING);
+  DCHECK(new_status == cryptauth::SecureChannel::Status::DISCONNECTING ||
+         new_status == cryptauth::SecureChannel::Status::DISCONNECTED);
 
-  NotifyDisconnected();
+  if (new_status == cryptauth::SecureChannel::Status::DISCONNECTED)
+    NotifyDisconnected();
 }
 
 void AuthenticatedChannelImpl::OnMessageReceived(

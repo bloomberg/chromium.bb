@@ -4,15 +4,18 @@
 
 #include "chromeos/services/secure_channel/authenticated_channel_impl.h"
 
+#include <iterator>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/services/secure_channel/fake_authenticated_channel.h"
+#include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/fake_secure_channel.h"
 #include "components/cryptauth/remote_device_test_util.h"
@@ -21,6 +24,10 @@
 namespace chromeos {
 
 namespace secure_channel {
+
+const mojom::ConnectionCreationDetail kTestConnectionCreationDetails[] = {
+    mojom::ConnectionCreationDetail::
+        REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING};
 
 class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
  protected:
@@ -38,10 +45,12 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
     fake_secure_channel_ = fake_secure_channel.get();
 
     channel_ = AuthenticatedChannelImpl::Factory::Get()->BuildInstance(
+        std::vector<mojom::ConnectionCreationDetail>(
+            std::begin(kTestConnectionCreationDetails),
+            std::end(kTestConnectionCreationDetails)),
         std::move(fake_secure_channel));
 
-    test_observer_ = std::make_unique<FakeAuthenticatedChannelObserver>(
-        channel_->channel_id());
+    test_observer_ = std::make_unique<FakeAuthenticatedChannelObserver>();
     channel_->AddObserver(test_observer_.get());
   }
 
@@ -94,6 +103,8 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
     return test_observer_.get();
   }
 
+  AuthenticatedChannel* channel() { return channel_.get(); }
+
  private:
   void OnMessageSent(int sequence_number) {
     sent_sequence_numbers_.insert(sequence_number);
@@ -114,7 +125,32 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SecureChannelAuthenticatedChannelImplTest);
 };
 
-TEST_F(SecureChannelAuthenticatedChannelImplTest, SendReceiveAndDisconnect) {
+TEST_F(SecureChannelAuthenticatedChannelImplTest, ConnectionMetadata) {
+  const auto& connection_metadata = channel()->GetConnectionMetadata();
+  EXPECT_EQ(std::vector<mojom::ConnectionCreationDetail>(
+                std::begin(kTestConnectionCreationDetails),
+                std::end(kTestConnectionCreationDetails)),
+            connection_metadata.creation_details);
+  // TODO(khorimoto): Update test to test RSSI rolling average when implemented.
+  // https://crbug.com/844759.
+  EXPECT_EQ(mojom::ConnectionMetadata::kNoRssiAvailable,
+            connection_metadata.rssi_rolling_average);
+}
+
+TEST_F(SecureChannelAuthenticatedChannelImplTest, DisconnectRequestFromClient) {
+  // Call Disconnect(). The underlying SecureChannel should have started
+  // the disconnection process but not yet finished it.
+  channel()->Disconnect();
+  EXPECT_FALSE(test_observer()->has_been_notified_of_disconnection());
+
+  // Complete the disconnection process.
+  fake_secure_channel()->ChangeStatus(
+      cryptauth::SecureChannel::Status::DISCONNECTED);
+  EXPECT_TRUE(test_observer()->has_been_notified_of_disconnection());
+}
+
+TEST_F(SecureChannelAuthenticatedChannelImplTest,
+       SendReceiveAndDisconnect_RemoteDeviceDisconnects) {
   const auto& received_messages = test_observer()->received_messages();
 
   int sequence_number_1 = SendMessageAndVerifyResults("feature1", "payload1");

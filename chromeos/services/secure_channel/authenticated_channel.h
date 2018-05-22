@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
 namespace chromeos {
 
@@ -23,13 +24,14 @@ class AuthenticatedChannel {
   class Observer {
    public:
     virtual ~Observer();
-    virtual void OnDisconnected(const std::string& channel_id) = 0;
-    virtual void OnMessageReceived(const std::string& channel_id,
-                                   const std::string& feature,
+    virtual void OnDisconnected() = 0;
+    virtual void OnMessageReceived(const std::string& feature,
                                    const std::string& payload) = 0;
   };
 
   virtual ~AuthenticatedChannel();
+
+  virtual const mojom::ConnectionMetadata& GetConnectionMetadata() const = 0;
 
   // Sends a message with the specified |feature| and |payload|. Once the
   // message has been sent, |on_sent_callback| will be invoked. Returns whether
@@ -39,8 +41,10 @@ class AuthenticatedChannel {
                    const std::string& payload,
                    base::OnceClosure on_sent_callback);
 
-  // Note: Channel ID is guaranteed to be unique among all channels.
-  const std::string& channel_id() const { return channel_id_; }
+  // Disconnects this channel. Note that disconnection is an asynchronous
+  // operation; observers will be notified when disconnection completes via the
+  // OnDisconnected() callback.
+  void Disconnect();
 
   bool is_disconnected() const { return is_disconnected_; }
 
@@ -57,12 +61,16 @@ class AuthenticatedChannel {
                                   const std::string& payload,
                                   base::OnceClosure on_sent_callback) = 0;
 
+  // Performs the actual logic of disconnecting. By the time this function is
+  // called, it has already been confirmed that the channel is still indeed
+  // connected.
+  virtual void PerformDisconnection() = 0;
+
   void NotifyDisconnected();
   void NotifyMessageReceived(const std::string& feature,
                              const std::string& payload);
 
  private:
-  const std::string channel_id_;
   base::ObserverList<Observer> observer_list_;
   bool is_disconnected_ = false;
 

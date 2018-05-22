@@ -6,6 +6,7 @@
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_AUTHENTICATED_CHANNEL_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/authenticated_channel.h"
@@ -29,6 +30,8 @@ class AuthenticatedChannelImpl : public AuthenticatedChannel,
     static Factory* Get();
     static void SetFactoryForTesting(Factory* test_factory);
     virtual std::unique_ptr<AuthenticatedChannel> BuildInstance(
+        const std::vector<mojom::ConnectionCreationDetail>&
+            connection_creation_details,
         std::unique_ptr<cryptauth::SecureChannel> secure_channel);
 
    private:
@@ -37,14 +40,18 @@ class AuthenticatedChannelImpl : public AuthenticatedChannel,
 
   ~AuthenticatedChannelImpl() override;
 
+ private:
+  AuthenticatedChannelImpl(
+      const std::vector<mojom::ConnectionCreationDetail>&
+          connection_creation_details,
+      std::unique_ptr<cryptauth::SecureChannel> secure_channel);
+
   // AuthenticatedChannel:
+  const mojom::ConnectionMetadata& GetConnectionMetadata() const override;
   void PerformSendMessage(const std::string& feature,
                           const std::string& payload,
                           base::OnceClosure on_sent_callback) final;
-
- private:
-  AuthenticatedChannelImpl(
-      std::unique_ptr<cryptauth::SecureChannel> secure_channel);
+  void PerformDisconnection() override;
 
   // cryptauth::SecureChannel::Observer:
   void OnSecureChannelStatusChanged(
@@ -57,6 +64,7 @@ class AuthenticatedChannelImpl : public AuthenticatedChannel,
   void OnMessageSent(cryptauth::SecureChannel* secure_channel,
                      int sequence_number) override;
 
+  mojom::ConnectionMetadata connection_metadata_;
   std::unique_ptr<cryptauth::SecureChannel> secure_channel_;
   std::unordered_map<int, base::OnceClosure> sequence_number_to_callback_map_;
 
