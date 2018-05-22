@@ -16,7 +16,6 @@
 #include "ash/ash_export.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell_delegate.h"
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
@@ -52,31 +51,20 @@ enum class Config;
 
 // WindowManager serves as the WindowManagerDelegate and
 // WindowTreeClientDelegate for mash. WindowManager takes ownership of
-// the WindowTreeClient. This is used in not in classic, only mus and mash.
+// the WindowTreeClient. This is used in not in classic.
 class ASH_EXPORT WindowManager : public aura::WindowManagerDelegate,
                                  public aura::WindowTreeClientDelegate {
  public:
   // Set |show_primary_host_on_connect| to true if the initial display should
   // be made visible.  Generally tests should use false, other places use true.
   WindowManager(service_manager::Connector* connector,
-                Config config,
                 bool show_primary_host_on_connect);
   ~WindowManager() override;
 
   // |initial_display_prefs| contains a dictionary of initial display prefs to
   // pass to Shell::Init for synchronous initial display configuraiton.
   void Init(std::unique_ptr<aura::WindowTreeClient> window_tree_client,
-            std::unique_ptr<ash::ShellDelegate> shell_delegate,
             std::unique_ptr<base::Value> initial_display_prefs);
-
-  // Sets the callback that is run once the connection to mus is lost. If not
-  // set shutdown occurs when the connection is lost (the Shell is deleted).
-  void SetLostConnectionCallback(base::OnceClosure closure);
-
-  // Blocks waiting for the initial set of displays.
-  bool WaitForInitialDisplays();
-
-  Config config() const { return config_; }
 
   aura::WindowTreeClient* window_tree_client() {
     return window_tree_client_.get();
@@ -180,11 +168,7 @@ class ASH_EXPORT WindowManager : public aura::WindowManagerDelegate,
   service_manager::Connector* connector_;
   display::mojom::DisplayControllerPtr display_controller_;
 
-  const Config config_;
-
   const bool show_primary_host_on_connect_;
-
-  base::OnceClosure lost_connection_callback_;
 
   std::unique_ptr<::wm::WMState> wm_state_;
   std::unique_ptr<aura::PropertyConverter> property_converter_;
@@ -203,6 +187,7 @@ class ASH_EXPORT WindowManager : public aura::WindowManagerDelegate,
 
   // The ShellDelegate to install. This may be null, in which case
   // ShellDelegateMus is used.
+  // NOTE: AshTestHelper may set |shell_delegate_| directly.
   std::unique_ptr<ShellDelegate> shell_delegate_;
 
   std::unique_ptr<base::Value> initial_display_prefs_;

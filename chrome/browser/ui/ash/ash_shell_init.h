@@ -5,18 +5,11 @@
 #ifndef CHROME_BROWSER_UI_ASH_ASH_SHELL_INIT_H_
 #define CHROME_BROWSER_UI_ASH_ASH_SHELL_INIT_H_
 
-#include <memory>
-
 #include "base/macros.h"
 
 class PrefRegistrySimple;
 
-namespace ash {
-class WindowManager;
-}  // namespace ash
-
-// Class responsible for initializing and destroying the Ash Shell for both
-// CLASSIC and MUS modes.
+// Initializes and destroys the ash::Shell for ash::Config::CLASSIC.
 class AshShellInit {
  public:
   AshShellInit();
@@ -29,9 +22,6 @@ class AshShellInit {
   static void RegisterDisplayPrefs(PrefRegistrySimple* registry);
 
  private:
-  // Only created when running in ash::Config::MUS.
-  std::unique_ptr<ash::WindowManager> window_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(AshShellInit);
 };
 

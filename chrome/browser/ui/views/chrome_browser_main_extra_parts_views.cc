@@ -58,20 +58,6 @@
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.h"
 #endif  // defined(OS_CHROMEOS)
 
-namespace {
-
-#if defined(USE_AURA)
-bool ShouldCreateWMState() {
-#if defined(OS_CHROMEOS)
-  return chromeos::GetAshConfig() != ash::Config::MUS;
-#else
-  return true;
-#endif
-}
-#endif
-
-}  // namespace
-
 ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews() {
 }
 
@@ -88,8 +74,7 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
   SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
 
 #if defined(USE_AURA)
-  if (ShouldCreateWMState())
-    wm_state_.reset(new wm::WMState);
+  wm_state_.reset(new wm::WMState);
 #endif
 }
 

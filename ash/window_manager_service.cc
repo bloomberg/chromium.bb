@@ -9,9 +9,7 @@
 
 #include "ash/mojo_interface_factory.h"
 #include "ash/network_connect_delegate_mus.h"
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/system/power/power_status.h"
 #include "ash/window_manager.h"
 #include "base/bind.h"
@@ -35,13 +33,8 @@
 
 namespace ash {
 
-WindowManagerService::WindowManagerService(
-    bool show_primary_host_on_connect,
-    Config ash_config,
-    std::unique_ptr<ash::ShellDelegate> shell_delegate)
-    : show_primary_host_on_connect_(show_primary_host_on_connect),
-      shell_delegate_(std::move(shell_delegate)),
-      ash_config_(ash_config) {}
+WindowManagerService::WindowManagerService(bool show_primary_host_on_connect)
+    : show_primary_host_on_connect_(show_primary_host_on_connect) {}
 
 WindowManagerService::~WindowManagerService() {
   // Verify that we created a WindowManager before attempting to tear everything
@@ -78,7 +71,6 @@ void WindowManagerService::InitWindowManager(
   statistics_provider_->SetMachineStatistic("keyboard_layout", "");
 
   window_manager_->Init(std::move(window_tree_client),
-                        std::move(shell_delegate_),
                         /*initial_display_prefs=*/nullptr);
 }
 
@@ -138,7 +130,7 @@ void WindowManagerService::OnStart() {
     return;
   }
   window_manager_ = std::make_unique<WindowManager>(
-      context()->connector(), ash_config_, show_primary_host_on_connect_);
+      context()->connector(), show_primary_host_on_connect_);
 
   const bool automatically_create_display_roots = false;
   std::unique_ptr<aura::WindowTreeClient> window_tree_client =
