@@ -1596,12 +1596,10 @@ NavigationRequest::CheckContentSecurityPolicy(bool is_redirect,
   // redirect URL cannot be changed at this point. upgrade-insecure-requests
   // needs to move to the net stack to resolve this. https://crbug.com/615885
   if (!is_redirect && !frame_tree_node()->IsMainFrame()) {
-    GURL new_url;
     if (parent &&
-        parent->ShouldModifyRequestUrlForCsp(
-            common_params_.url, true /* is subresource */, &new_url)) {
-      common_params_.url = new_url;
-      request_params_.original_url = new_url;
+        parent->ShouldModifyRequestUrlForCsp(true /* is subresource */)) {
+      parent->ModifyRequestUrlForCsp(&common_params_.url);
+      request_params_.original_url = common_params_.url;
     }
   }
 
