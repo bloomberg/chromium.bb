@@ -161,6 +161,12 @@ const CGFloat kTableViewMaxWidth = 414.0;
 - (void)containerViewWillLayoutSubviews {
   self.dimmingShield.frame = self.containerView.bounds;
   self.shadowContainer.frame = [self frameOfPresentedViewInContainerView];
+
+  // Force the presented VC's view to fill the tableViewContainer.  Otherwise
+  // there are cases (switching size classes while another VC is presented over
+  // the tableView) where autoresizing does not properly size the presented VC's
+  // view to fill its parent.
+  self.presentedViewController.view.frame = self.tableViewContainer.bounds;
 }
 
 #pragma mark - Private Methods
