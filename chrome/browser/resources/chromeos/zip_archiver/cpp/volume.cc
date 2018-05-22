@@ -7,6 +7,7 @@
 #include <cstring>
 #include <sstream>
 
+#include "char_coding.h"
 #include "request.h"
 #include "volume_archive_minizip.h"
 #include "volume_reader_javascript_stream.h"
@@ -328,9 +329,10 @@ void Volume::ReadMetadataCallback(int32_t /*result*/,
 
   for (;;) {
     path_name.clear();
-    if (volume_archive_->GetCurrentFileInfo(&path_name, &size, &is_directory,
-                                            &modification_time) ==
-        VolumeArchive::RESULT_FAIL) {
+    bool is_encoded_in_utf8;
+    if (volume_archive_->GetCurrentFileInfo(
+            &path_name, &is_encoded_in_utf8, &size, &is_directory,
+            &modification_time) == VolumeArchive::RESULT_FAIL) {
       message_sender_->SendFileSystemError(file_system_id_, request_id,
                                            volume_archive_->error_message());
       ClearJob();
@@ -342,7 +344,14 @@ void Volume::ReadMetadataCallback(int32_t /*result*/,
     if (path_name.empty())  // End of archive.
       break;
 
-    ConstructMetadata(index, path_name.c_str(), size, is_directory,
+    std::string display_name;
+    if (is_encoded_in_utf8) {
+      display_name = std::string(path_name);
+    } else {
+      display_name = Cp437ToUtf8(path_name);
+    }
+
+    ConstructMetadata(index, display_name.c_str(), size, is_directory,
                       modification_time, &root_metadata);
 
     index_to_pathname_[index] = path_name;
@@ -403,9 +412,10 @@ void Volume::OpenFileCallback(int32_t /*result*/, const OpenFileArgs& args) {
     return;
   }
 
-  if (volume_archive_->GetCurrentFileInfo(&path_name, &size, &is_directory,
-                                          &modification_time) !=
-      VolumeArchive::RESULT_SUCCESS) {
+  bool is_encoded_in_utf8;
+  if (volume_archive_->GetCurrentFileInfo(
+          &path_name, &is_encoded_in_utf8, &size, &is_directory,
+          &modification_time) != VolumeArchive::RESULT_SUCCESS) {
     message_sender_->SendFileSystemError(file_system_id_, args.request_id,
                                          volume_archive_->error_message());
     ClearJob();

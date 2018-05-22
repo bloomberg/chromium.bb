@@ -90,6 +90,7 @@ class VolumeArchiveMinizip : public VolumeArchive {
 
   // See volume_archive_interface.h.
   virtual VolumeArchive::Result GetCurrentFileInfo(std::string* path_name,
+                                                   bool* isEncodedInUtf8,
                                                    int64_t* size,
                                                    bool* is_directory,
                                                    time_t* modification_time);

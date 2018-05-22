@@ -239,6 +239,7 @@ bool VolumeArchiveMinizip::Init(const std::string& encoding) {
 
 VolumeArchive::Result VolumeArchiveMinizip::GetCurrentFileInfo(
     std::string* pathname,
+    bool* is_encoded_in_utf8,
     int64_t* size,
     bool* is_directory,
     time_t* modification_time) {
@@ -272,8 +273,9 @@ VolumeArchive::Result VolumeArchiveMinizip::GetCurrentFileInfo(
     set_error_message(volume_archive_constants::kArchiveNextHeaderError);
     return VolumeArchive::RESULT_FAIL;
   }
-
   *pathname = std::string(raw_file_name_in_zip);
+  *is_encoded_in_utf8 = (raw_file_info.flag & (1 << 11)) != 0;
+
   *size = raw_file_info.uncompressed_size;
   // Directory entries in zip files end with "/".
   *is_directory = base::EndsWith(raw_file_name_in_zip, "/",
