@@ -55,10 +55,8 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
  public:
   static ScriptLoader* Create(ScriptElementBase* element,
                               bool created_by_parser,
-                              bool is_evaluated,
-                              bool created_during_document_write) {
-    return new ScriptLoader(element, created_by_parser, is_evaluated,
-                            created_during_document_write);
+                              bool is_evaluated) {
+    return new ScriptLoader(element, created_by_parser, is_evaluated);
   }
 
   ~ScriptLoader() override;
@@ -124,10 +122,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   virtual PendingScript* GetPendingScriptIfControlledByScriptRunner();
 
  protected:
-  ScriptLoader(ScriptElementBase*,
-               bool created_by_parser,
-               bool is_evaluated,
-               bool created_during_document_write);
+  ScriptLoader(ScriptElementBase*, bool created_by_parser, bool is_evaluated);
 
  private:
   bool IgnoresLoadRequest() const;
@@ -155,10 +150,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   // PendingScriptClient
   void PendingScriptFinished(PendingScript*) override;
-
-  bool WasCreatedDuringDocumentWrite() {
-    return created_during_document_write_;
-  }
 
   Member<ScriptElementBase> element_;
 
@@ -199,8 +190,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   bool will_be_parser_executed_;
 
   bool will_execute_when_document_finished_parsing_;
-
-  const bool created_during_document_write_;
 
   // A PendingScript is first created in PrepareScript() and stored in
   // |prepared_pending_script_|.

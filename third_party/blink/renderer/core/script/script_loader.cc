@@ -64,12 +64,10 @@ namespace blink {
 
 ScriptLoader::ScriptLoader(ScriptElementBase* element,
                            bool parser_inserted,
-                           bool already_started,
-                           bool created_during_document_write)
+                           bool already_started)
     : element_(element),
       will_be_parser_executed_(false),
-      will_execute_when_document_finished_parsing_(false),
-      created_during_document_write_(created_during_document_write) {
+      will_execute_when_document_finished_parsing_(false) {
   // <spec
   // href="https://html.spec.whatwg.org/multipage/scripting.html#already-started">
   // ... The cloning steps for script elements must set the "already started"
@@ -361,10 +359,18 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   DCHECK(!prepared_pending_script_);
 
+  // TODO(csharrison): This logic only works if the tokenizer/parser was not
+  // blocked waiting for scripts when the element was inserted. This usually
+  // fails for instance, on second document.write if a script writes twice
+  // in a row. To fix this, the parser might have to keep track of raw
+  // string position.
+  //
+  // Also PendingScript's contructor has the same code.
+  const bool is_in_document_write = element_document.IsInDocumentWrite();
+
   // Reset line numbering for nested writes.
-  TextPosition position = element_document.IsInDocumentWrite()
-                              ? TextPosition()
-                              : script_start_position;
+  TextPosition position =
+      is_in_document_write ? TextPosition() : script_start_position;
 
   // <spec step="21">Let options be a script fetch options whose cryptographic
   // nonce is cryptographic nonce, integrity metadata is integrity metadata,
@@ -491,7 +497,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         if (!parser_inserted_) {
           script_location_type =
               ScriptSourceLocationType::kInlineInsideGeneratedElement;
-        } else if (element_->GetDocument().IsInDocumentWrite()) {
+        } else if (is_in_document_write) {
           script_location_type =
               ScriptSourceLocationType::kInlineInsideDocumentWrite;
         }
@@ -680,7 +686,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // Note: this block is also duplicated in
   // HTMLParserScriptRunner::processScriptElementInternal().
   // TODO(hiroshige): Merge the duplicated code.
-  KURL script_url = (!element_document.IsInDocumentWrite() && parser_inserted_)
+  KURL script_url = (!is_in_document_write && parser_inserted_)
                         ? element_document.Url()
                         : KURL();
   ExecuteScriptBlock(TakePendingScript(ScriptSchedulingType::kImmediate),
@@ -809,6 +815,8 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
 
   const bool was_canceled = pending_script->WasCanceled();
   const bool is_external = pending_script->IsExternal();
+  const bool created_during_document_write =
+      pending_script->WasCreatedDuringDocumentWrite();
   const double parser_blocking_load_start_time =
       pending_script->ParserBlockingLoadStartTime();
   pending_script->Dispose();
@@ -824,7 +832,7 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
     DocumentParserTiming::From(element_->GetDocument())
         .RecordParserBlockedOnScriptLoadDuration(
             CurrentTimeTicksInSeconds() - parser_blocking_load_start_time,
-            WasCreatedDuringDocumentWrite());
+            created_during_document_write);
   }
 
   if (was_canceled)
@@ -907,7 +915,7 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
     DocumentParserTiming::From(element_->GetDocument())
         .RecordParserBlockedOnScriptExecutionDuration(
             CurrentTimeTicksInSeconds() - script_exec_start_time,
-            WasCreatedDuringDocumentWrite());
+            created_during_document_write);
   }
 
   // <spec step="8">If the script is from an external file, then fire an event

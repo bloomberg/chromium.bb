@@ -70,8 +70,7 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
 
  protected:
   ScriptLoader* InitializeScriptLoader(bool parser_inserted,
-                                       bool already_started,
-                                       bool created_during_document_write);
+                                       bool already_started);
 
   friend class ScriptLoader;
   virtual void DispatchLoadEvent() = 0;

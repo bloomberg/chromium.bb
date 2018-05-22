@@ -132,6 +132,10 @@ class CORE_EXPORT PendingScript
     return original_context_document_;
   }
 
+  bool WasCreatedDuringDocumentWrite() {
+    return created_during_document_write_;
+  }
+
  protected:
   PendingScript(ScriptElementBase*, const TextPosition& starting_position);
 
@@ -160,6 +164,8 @@ class CORE_EXPORT PendingScript
   // This is only used to check whether the script element is moved between
   // documents and thus doesn't retain a strong reference.
   WeakMember<Document> original_context_document_;
+
+  const bool created_during_document_write_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingScript);
 };

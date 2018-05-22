@@ -44,8 +44,7 @@ inline HTMLScriptElement::HTMLScriptElement(Document& document,
                                             const CreateElementFlags flags)
     : HTMLElement(scriptTag, document),
       loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
-                                     flags.WasAlreadyStarted(),
-                                     flags.IsCreatedDuringDocumentWrite())) {}
+                                     flags.WasAlreadyStarted())) {}
 
 HTMLScriptElement* HTMLScriptElement::Create(Document& document,
                                              const CreateElementFlags flags) {

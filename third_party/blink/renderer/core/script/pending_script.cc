@@ -47,6 +47,8 @@ WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
 }
 }  // namespace
 
+// See the comment about |is_in_document_write| in ScriptLoader::PrepareScript()
+// about IsInDocumentWrite() use here.
 PendingScript::PendingScript(ScriptElementBase* element,
                              const TextPosition& starting_position)
     : element_(element),
@@ -54,7 +56,9 @@ PendingScript::PendingScript(ScriptElementBase* element,
       parser_blocking_load_start_time_(0),
       virtual_time_pauser_(CreateWebScopedVirtualTimePauser(element)),
       client_(nullptr),
-      original_context_document_(element->GetDocument().ContextDocument()) {}
+      original_context_document_(element->GetDocument().ContextDocument()),
+      created_during_document_write_(
+          element->GetDocument().IsInDocumentWrite()) {}
 
 PendingScript::~PendingScript() {}
 
