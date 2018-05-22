@@ -500,8 +500,8 @@ class DriveTestVolume : public TestVolume {
     CheckForUpdates();
   }
 
-  // Notifies FileSystem that the contents in FakeDriveService are
-  // changed, hence the new contents should be fetched.
+  // Notifies FileSystem that the contents in FakeDriveService have changed,
+  // hence the new contents should be fetched.
   void CheckForUpdates() {
     if (integration_service_ && integration_service_->file_system()) {
       integration_service_->file_system()->CheckForUpdates();
