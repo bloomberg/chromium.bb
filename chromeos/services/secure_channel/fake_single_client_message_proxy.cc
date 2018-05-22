@@ -4,16 +4,20 @@
 
 #include "chromeos/services/secure_channel/fake_single_client_message_proxy.h"
 
-#include "base/callback.h"
-
 namespace chromeos {
 
 namespace secure_channel {
 
-FakeSingleClientMessageProxy::FakeSingleClientMessageProxy(Delegate* delegate)
-    : SingleClientMessageProxy(delegate) {}
+FakeSingleClientMessageProxy::FakeSingleClientMessageProxy(
+    Delegate* delegate,
+    base::OnceCallback<void(const base::UnguessableToken&)> destructor_callback)
+    : SingleClientMessageProxy(delegate),
+      destructor_callback_(std::move(destructor_callback)) {}
 
-FakeSingleClientMessageProxy::~FakeSingleClientMessageProxy() = default;
+FakeSingleClientMessageProxy::~FakeSingleClientMessageProxy() {
+  if (destructor_callback_)
+    std::move(destructor_callback_).Run(proxy_id());
+}
 
 void FakeSingleClientMessageProxy::HandleReceivedMessage(
     const std::string& feature,

@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/single_client_message_proxy.h"
@@ -20,7 +20,11 @@ namespace secure_channel {
 // Test SingleClientMessageProxy implementation.
 class FakeSingleClientMessageProxy : public SingleClientMessageProxy {
  public:
-  FakeSingleClientMessageProxy(Delegate* delegate);
+  FakeSingleClientMessageProxy(
+      Delegate* delegate,
+      base::OnceCallback<void(const base::UnguessableToken&)>
+          destructor_callback =
+              base::OnceCallback<void(const base::UnguessableToken&)>());
   ~FakeSingleClientMessageProxy() override;
 
   bool was_remote_device_disconnection_handled() {
@@ -41,6 +45,8 @@ class FakeSingleClientMessageProxy : public SingleClientMessageProxy {
   void HandleReceivedMessage(const std::string& feature,
                              const std::string& payload) override;
   void HandleRemoteDeviceDisconnection() override;
+
+  base::OnceCallback<void(const base::UnguessableToken&)> destructor_callback_;
 
   std::vector<std::pair<std::string, std::string>> processed_messages_;
   bool was_remote_device_disconnection_handled_ = false;
