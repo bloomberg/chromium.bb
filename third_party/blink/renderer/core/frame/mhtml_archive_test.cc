@@ -372,6 +372,15 @@ TEST_F(MHTMLArchiveTest, MHTMLDate) {
   EXPECT_EQ(mhtml_date(), archive->Date());
 }
 
+TEST_F(MHTMLArchiveTest, EmptyArchive) {
+  char* buf = nullptr;
+  scoped_refptr<SharedBuffer> data =
+      SharedBuffer::Create(buf, static_cast<size_t>(0u));
+  KURL http_url = ToKURL("http://www.example.com");
+  MHTMLArchive* archive = MHTMLArchive::Create(http_url, data.get());
+  EXPECT_EQ(nullptr, archive);
+}
+
 }  // namespace test
 
 }  // namespace blink
