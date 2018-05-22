@@ -110,11 +110,6 @@ class ContentSubresourceFilterDriverFactory
   // changing the config (e.g. for forcing devtools activation).
   Configuration matched_configuration_;
 
-  // Messages to be logged if the most recently _committed_ non-same-document
-  // navigation in the main frame was in an activation list with warning bit
-  // set. Has the same lifetime as |matched_configuration_|.
-  std::vector<std::string> on_commit_warning_messages_;
-
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterDriverFactory);
 };
 
