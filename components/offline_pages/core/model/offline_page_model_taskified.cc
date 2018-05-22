@@ -330,17 +330,17 @@ void OfflinePageModelTaskified::GetAllPages(
 
 void OfflinePageModelTaskified::GetPageByOfflineId(
     int64_t offline_id,
-    const SingleOfflinePageItemCallback& callback) {
-  auto task = GetPagesTask::CreateTaskMatchingOfflineId(store_.get(), callback,
-                                                        offline_id);
+    SingleOfflinePageItemCallback callback) {
+  auto task = GetPagesTask::CreateTaskMatchingOfflineId(
+      store_.get(), std::move(callback), offline_id);
   task_queue_.AddTask(std::move(task));
 }
 
 void OfflinePageModelTaskified::GetPageByGuid(
     const std::string& guid,
-    const SingleOfflinePageItemCallback& callback) {
-  auto task =
-      GetPagesTask::CreateTaskMatchingGuid(store_.get(), callback, guid);
+    SingleOfflinePageItemCallback callback) {
+  auto task = GetPagesTask::CreateTaskMatchingGuid(store_.get(),
+                                                   std::move(callback), guid);
   task_queue_.AddTask(std::move(task));
 }
 
@@ -394,11 +394,11 @@ void OfflinePageModelTaskified::GetPagesByRequestOrigin(
 void OfflinePageModelTaskified::GetPageBySizeAndDigest(
     int64_t file_size,
     const std::string& digest,
-    const SingleOfflinePageItemCallback& callback) {
+    SingleOfflinePageItemCallback callback) {
   DCHECK_GT(file_size, 0);
   DCHECK(!digest.empty());
   auto task = GetPagesTask::CreateTaskMatchingSizeAndDigest(
-      store_.get(), callback, file_size, digest);
+      store_.get(), std::move(callback), file_size, digest);
   task_queue_.AddTask(std::move(task));
 }
 

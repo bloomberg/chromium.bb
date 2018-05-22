@@ -276,12 +276,12 @@ ReadResult ReadPagesBySizeAndDigest(int64_t file_size,
   return result;
 }
 
-void WrapInMultipleItemsCallback(const SingleOfflinePageItemCallback& callback,
+void WrapInMultipleItemsCallback(SingleOfflinePageItemCallback callback,
                                  const std::vector<OfflinePageItem>& pages) {
   if (pages.size() == 0)
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
   else
-    callback.Run(&pages[0]);
+    std::move(callback).Run(&pages[0]);
 }
 
 ReadResult SelectItemsForUpgrade(sql::Connection* db) {
@@ -392,32 +392,32 @@ std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingUrl(
 // static
 std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingOfflineId(
     OfflinePageMetadataStoreSQL* store,
-    const SingleOfflinePageItemCallback& callback,
+    SingleOfflinePageItemCallback callback,
     int64_t offline_id) {
   return base::WrapUnique(new GetPagesTask(
       store, base::BindOnce(&ReadPagesByOfflineId, offline_id),
-      base::BindRepeating(&WrapInMultipleItemsCallback, callback)));
+      base::BindOnce(&WrapInMultipleItemsCallback, std::move(callback))));
 }
 
 // static
 std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingGuid(
     OfflinePageMetadataStoreSQL* store,
-    const SingleOfflinePageItemCallback& callback,
+    SingleOfflinePageItemCallback callback,
     const std::string& guid) {
   return base::WrapUnique(new GetPagesTask(
       store, base::BindOnce(&ReadPagesByGuid, guid),
-      base::BindRepeating(&WrapInMultipleItemsCallback, callback)));
+      base::BindOnce(&WrapInMultipleItemsCallback, std::move(callback))));
 }
 
 // static
 std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingSizeAndDigest(
     OfflinePageMetadataStoreSQL* store,
-    const SingleOfflinePageItemCallback& callback,
+    SingleOfflinePageItemCallback callback,
     int64_t file_size,
     const std::string& digest) {
   return base::WrapUnique(new GetPagesTask(
       store, base::BindOnce(&ReadPagesBySizeAndDigest, file_size, digest),
-      base::BindRepeating(&WrapInMultipleItemsCallback, callback)));
+      base::BindOnce(&WrapInMultipleItemsCallback, std::move(callback))));
 }
 
 // static

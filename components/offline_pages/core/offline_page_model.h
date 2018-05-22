@@ -172,15 +172,14 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
   virtual void GetAllPages(MultipleOfflinePageItemCallback callback) = 0;
 
   // Returns zero or one offline pages associated with a specified |offline_id|.
-  virtual void GetPageByOfflineId(
-      int64_t offline_id,
-      const SingleOfflinePageItemCallback& callback) = 0;
+  virtual void GetPageByOfflineId(int64_t offline_id,
+                                  SingleOfflinePageItemCallback callback) = 0;
 
   // Returns zero or one offline page associated with a specified |guid|.
   // Note: this should only be used for the case that |guid| can uniquely
   // identify the page regardless its namespace.
   virtual void GetPageByGuid(const std::string& guid,
-                             const SingleOfflinePageItemCallback& callback) = 0;
+                             SingleOfflinePageItemCallback callback) = 0;
 
   // Retrieves all pages associated with any of |client_ids|.
   virtual void GetPagesByClientIds(
@@ -215,7 +214,7 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
   virtual void GetPageBySizeAndDigest(
       int64_t file_size,
       const std::string& digest,
-      const SingleOfflinePageItemCallback& callback) = 0;
+      SingleOfflinePageItemCallback callback) = 0;
 
   // Gets all offline ids where the offline page has the matching client id.
   virtual void GetOfflineIdsForClientId(

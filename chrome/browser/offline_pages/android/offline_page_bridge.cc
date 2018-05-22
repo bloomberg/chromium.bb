@@ -451,7 +451,8 @@ void OfflinePageBridge::GetPageByOfflineId(
   ScopedJavaGlobalRef<jobject> j_callback_ref;
   j_callback_ref.Reset(env, j_callback_obj);
   offline_page_model_->GetPageByOfflineId(
-      offline_id, base::Bind(&SingleOfflinePageItemCallback, j_callback_ref));
+      offline_id,
+      base::BindOnce(&SingleOfflinePageItemCallback, j_callback_ref));
 }
 
 std::vector<ClientId> getClientIdsFromObjectArrays(
@@ -693,8 +694,8 @@ void OfflinePageBridge::PublishInternalPageByGuid(
 
   offline_page_model->GetPageByGuid(
       ConvertJavaStringToUTF8(env, j_guid),
-      base::Bind(&OfflinePageBridge::PublishInternalArchive,
-                 weak_ptr_factory_.GetWeakPtr(), j_published_callback_ref));
+      base::BindOnce(&OfflinePageBridge::PublishInternalArchive,
+                     weak_ptr_factory_.GetWeakPtr(), j_published_callback_ref));
 }
 
 void OfflinePageBridge::PublishInternalArchive(
@@ -988,8 +989,9 @@ void OfflinePageBridge::GetSizeAndComputeDigestDone(
 
   offline_page_model_->GetPageBySizeAndDigest(
       size_and_digest.first, size_and_digest.second,
-      base::Bind(&OfflinePageBridge::GetPageBySizeAndDigestDone,
-                 weak_ptr_factory_.GetWeakPtr(), j_callback_obj, intent_url));
+      base::BindOnce(&OfflinePageBridge::GetPageBySizeAndDigestDone,
+                     weak_ptr_factory_.GetWeakPtr(), j_callback_obj,
+                     intent_url));
 }
 
 void OfflinePageBridge::GetPageBySizeAndDigestDone(

@@ -89,21 +89,21 @@ class GetPagesTask : public Task {
   // from DB.
   static std::unique_ptr<GetPagesTask> CreateTaskMatchingOfflineId(
       OfflinePageMetadataStoreSQL* store,
-      const SingleOfflinePageItemCallback& callback,
+      SingleOfflinePageItemCallback callback,
       int64_t offline_id);
 
   // Creates |GetPagesTask| reading a single page matching provided |guid| from
   // DB.
   static std::unique_ptr<GetPagesTask> CreateTaskMatchingGuid(
       OfflinePageMetadataStoreSQL* store,
-      const SingleOfflinePageItemCallback& callback,
+      SingleOfflinePageItemCallback callback,
       const std::string& guid);
 
   // Creates |GetPagesTask| reading a single page matching provided |file_size|
   // and |digest| from DB.
   static std::unique_ptr<GetPagesTask> CreateTaskMatchingSizeAndDigest(
       OfflinePageMetadataStoreSQL* store,
-      const SingleOfflinePageItemCallback& callback,
+      SingleOfflinePageItemCallback callback,
       int64_t file_size,
       const std::string& digest);
 

@@ -50,21 +50,19 @@ class StubOfflinePageModel : public OfflinePageModel {
   void GetOfflineIdsForClientId(
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) override;
-  void GetPageByOfflineId(
-      int64_t offline_id,
-      const SingleOfflinePageItemCallback& callback) override;
+  void GetPageByOfflineId(int64_t offline_id,
+                          SingleOfflinePageItemCallback callback) override;
   void GetPageByGuid(const std::string& guid,
-                     const SingleOfflinePageItemCallback& callback) override;
+                     SingleOfflinePageItemCallback callback) override;
   void GetPagesByURL(const GURL& url,
                      URLSearchMode url_search_mode,
                      MultipleOfflinePageItemCallback callback) override;
   void GetPagesByRequestOrigin(
       const std::string& origin,
       MultipleOfflinePageItemCallback callback) override;
-  void GetPageBySizeAndDigest(
-      int64_t file_size,
-      const std::string& digest,
-      const SingleOfflinePageItemCallback& callback) override;
+  void GetPageBySizeAndDigest(int64_t file_size,
+                              const std::string& digest,
+                              SingleOfflinePageItemCallback callback) override;
   void GetPagesRemovedOnCacheReset(
       MultipleOfflinePageItemCallback callback) override;
   void GetPagesByNamespace(const std::string& name_space,

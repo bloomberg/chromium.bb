@@ -61,7 +61,8 @@ MultipleOfflinePageItemCallback GetPagesTaskTest::get_pages_callback() {
 }
 
 SingleOfflinePageItemCallback GetPagesTaskTest::get_single_page_callback() {
-  return base::Bind(&GetPagesTaskTest::OnGetPageDone, base::Unretained(this));
+  return base::BindOnce(&GetPagesTaskTest::OnGetPageDone,
+                        base::Unretained(this));
 }
 
 TEST_F(GetPagesTaskTest, GetAllPages) {
