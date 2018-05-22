@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_HID_HID_SERVICE_WIN_H_
-#define DEVICE_HID_HID_SERVICE_WIN_H_
+#ifndef SERVICES_DEVICE_HID_HID_SERVICE_WIN_H_
+#define SERVICES_DEVICE_HID_HID_SERVICE_WIN_H_
 
 #include <windows.h>
 
@@ -76,4 +76,4 @@ class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
 
 }  // namespace device
 
-#endif  // DEVICE_HID_HID_SERVICE_WIN_H_
+#endif  // SERVICES_DEVICE_HID_HID_SERVICE_WIN_H_
