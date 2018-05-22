@@ -20,7 +20,6 @@ namespace {
 // GCC (and Clang) can transparently use vector ops. Only try to do this on
 // architectures where we know it works, otherwise gcc will attempt to emulate
 // the vector ops, which is unlikely to be efficient.
-// TODO(ricea): Add ARCH_CPU_ARM_FAMILY when arm_neon=1 becomes the default.
 #if defined(COMPILER_GCC) &&                                          \
     (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY)) && \
     !defined(OS_NACL)
@@ -51,9 +50,8 @@ inline void MaskWebSocketFramePayloadByBytes(
     char* const begin,
     char* const end) {
   for (char* masked = begin; masked != end; ++masked) {
-    *masked ^= masking_key.key[masking_key_offset++];
-    if (masking_key_offset == WebSocketFrameHeader::kMaskingKeyLength)
-      masking_key_offset = 0;
+    *masked ^= masking_key.key[masking_key_offset++ %
+                               WebSocketFrameHeader::kMaskingKeyLength];
   }
 }
 
