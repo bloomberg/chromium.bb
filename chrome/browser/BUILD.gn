@@ -2634,6 +2634,8 @@ jumbo_split_static_library("browser") {
       "repost_form_warning_controller.h",
       "resource_coordinator/background_tab_navigation_throttle.cc",
       "resource_coordinator/background_tab_navigation_throttle.h",
+      "resource_coordinator/decision_details.cc",
+      "resource_coordinator/decision_details.h",
       "resource_coordinator/discard_metrics_lifecycle_unit_observer.cc",
       "resource_coordinator/discard_metrics_lifecycle_unit_observer.h",
       "resource_coordinator/discard_reason.h",
