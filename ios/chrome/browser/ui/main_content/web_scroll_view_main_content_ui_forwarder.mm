@@ -131,11 +131,18 @@ void UpdateStateWithProxy(MainContentUIStateUpdater* updater,
 
 - (void)webViewScrollViewFrameDidChange:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  // Frame changes may move the scroll view relative to its safe area, so check
+  // for content inset adjustments.
+  [self checkForContentInsetAdjustment];
+
   [self.updater scrollViewSizeDidChange:webViewScrollViewProxy.frame.size];
 }
 
 - (void)webViewScrollViewDidScroll:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  // Check whether this scroll is due to a content inset adjustment.
+  [self checkForContentInsetAdjustment];
+
   [self.updater scrollViewDidScrollToOffset:self.proxy.contentOffset];
 }
 
@@ -167,8 +174,7 @@ void UpdateStateWithProxy(MainContentUIStateUpdater* updater,
 
 - (void)webViewScrollViewDidResetContentInset:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
-  [self.updater
-      scrollViewDidResetContentInset:webViewScrollViewProxy.contentInset];
+  [self checkForContentInsetAdjustment];
 }
 
 #pragma mark - WebStateListObserving
@@ -187,6 +193,19 @@ void UpdateStateWithProxy(MainContentUIStateUpdater* updater,
                     atIndex:(int)atIndex
                      reason:(int)reason {
   self.webState = newWebState;
+}
+
+#pragma mark - Private
+
+// Checks whether the content inset has been updated, notifying the updater of
+// any changes.
+- (void)checkForContentInsetAdjustment {
+  UIEdgeInsets inset = self.proxy.contentInset;
+  if (@available(iOS 11, *)) {
+    inset = self.proxy.adjustedContentInset;
+  }
+  if (!UIEdgeInsetsEqualToEdgeInsets(inset, self.updater.state.contentInset))
+    [self.updater scrollViewDidResetContentInset:inset];
 }
 
 @end

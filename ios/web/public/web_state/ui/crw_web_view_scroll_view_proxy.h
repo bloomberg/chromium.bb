@@ -39,6 +39,8 @@
 @property(nonatomic, assign)
     UIScrollViewContentInsetAdjustmentBehavior contentInsetAdjustmentBehavior
         API_AVAILABLE(ios(11.0));
+@property(nonatomic, readonly)
+    UIEdgeInsets adjustedContentInset API_AVAILABLE(ios(11.0));
 @property(weak, nonatomic, readonly)
     UIPanGestureRecognizer* panGestureRecognizer;
 // Returns the scrollview's gesture recognizers.

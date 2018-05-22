@@ -197,6 +197,10 @@
   }
 }
 
+- (UIEdgeInsets)adjustedContentInset API_AVAILABLE(ios(11.0)) {
+  return [_scrollView adjustedContentInset];
+}
+
 - (void)setContentInsetAdjustmentBehavior:
     (UIScrollViewContentInsetAdjustmentBehavior)contentInsetAdjustmentBehavior
     API_AVAILABLE(ios(11.0)) {
