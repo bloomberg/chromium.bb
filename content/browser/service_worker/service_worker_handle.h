@@ -77,7 +77,6 @@ class CONTENT_EXPORT ServiceWorkerHandle
       blink::mojom::ServiceWorkerState sent_state);
 
   int provider_id() const { return provider_id_; }
-  int handle_id() const { return handle_id_; }
   ServiceWorkerVersion* version() { return version_.get(); }
 
   base::WeakPtr<ServiceWorkerHandle> AsWeakPtr();
@@ -109,7 +108,6 @@ class CONTENT_EXPORT ServiceWorkerHandle
   // object.
   const url::Origin provider_origin_;
   const int provider_id_;
-  const int handle_id_;
   scoped_refptr<ServiceWorkerVersion> version_;
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerObjectHost> bindings_;
   // Typically |remote_objects_| contains only one Mojo connection,

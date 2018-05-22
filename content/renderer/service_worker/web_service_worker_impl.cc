@@ -117,27 +117,27 @@ WebServiceWorkerImpl::WebServiceWorkerImpl(
       proxy_(nullptr),
       is_for_client_(provider_context),
       context_for_client_(std::move(provider_context)) {
-  DCHECK_NE(blink::mojom::kInvalidServiceWorkerHandleId, info_->handle_id);
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId, info_->version_id);
   host_.Bind(std::move(info_->host_ptr_info));
   binding_.Bind(std::move(info_->request));
 
   if (is_for_client_) {
-    context_for_client_->AddServiceWorkerObject(info_->handle_id, this);
+    context_for_client_->AddServiceWorkerObject(info_->version_id, this);
   } else {
     ServiceWorkerContextClient::ThreadSpecificInstance()
-        ->AddServiceWorkerObject(info_->handle_id, this);
+        ->AddServiceWorkerObject(info_->version_id, this);
   }
 }
 
 WebServiceWorkerImpl::~WebServiceWorkerImpl() {
   if (is_for_client_) {
     if (context_for_client_) {
-      context_for_client_->RemoveServiceWorkerObject(info_->handle_id);
+      context_for_client_->RemoveServiceWorkerObject(info_->version_id);
     }
   } else {
     if (ServiceWorkerContextClient::ThreadSpecificInstance()) {
       ServiceWorkerContextClient::ThreadSpecificInstance()
-          ->RemoveServiceWorkerObject(info_->handle_id);
+          ->RemoveServiceWorkerObject(info_->version_id);
     }
   }
 }

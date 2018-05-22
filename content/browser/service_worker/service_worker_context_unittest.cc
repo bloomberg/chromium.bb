@@ -754,10 +754,6 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
                      false /* expect_waiting */, true /* expect_active */));
   content::RunAllTasksUntilIdle();
 
-  // Next handle id should be 1 (the next call should return 2) because
-  // registered worker should have taken ID 0.
-  EXPECT_EQ(1, context()->GetNewServiceWorkerHandleId());
-
   context()->ScheduleDeleteAndStartOver();
 
   // The storage is disabled while the recovery process is running, so the
@@ -789,10 +785,6 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
       base::BindOnce(&ExpectRegisteredWorkers, SERVICE_WORKER_OK,
                      false /* expect_waiting */, true /* expect_active */));
   content::RunAllTasksUntilIdle();
-
-  // The new context should take over next handle id. ID 2 should have been
-  // taken by the running registration, so the following method calls return 3.
-  EXPECT_EQ(3, context()->GetNewServiceWorkerHandleId());
 
   ASSERT_EQ(5u, notifications_.size());
   EXPECT_EQ(REGISTRATION_COMPLETED, notifications_[0].type);

@@ -198,13 +198,12 @@ base::RepeatingClosure CreateCallbackWithCalledFlag(bool* out_is_called) {
 class MockServiceWorkerObjectHost
     : public blink::mojom::ServiceWorkerObjectHost {
  public:
-  MockServiceWorkerObjectHost(int32_t handle_id, int64_t version_id)
-      : handle_id_(handle_id), version_id_(version_id) {}
+  explicit MockServiceWorkerObjectHost(int64_t version_id)
+      : version_id_(version_id) {}
   ~MockServiceWorkerObjectHost() override = default;
 
   blink::mojom::ServiceWorkerObjectInfoPtr CreateObjectInfo() {
     auto info = blink::mojom::ServiceWorkerObjectInfo::New();
-    info->handle_id = handle_id_;
     info->version_id = version_id_;
     bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
     info->request = mojo::MakeRequest(&remote_object_);
@@ -223,7 +222,6 @@ class MockServiceWorkerObjectHost
     NOTREACHED();
   }
 
-  const int32_t handle_id_;
   const int64_t version_id_;
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerObjectHost> bindings_;
   blink::mojom::ServiceWorkerObjectAssociatedPtr remote_object_;
@@ -304,8 +302,8 @@ class ServiceWorkerContextClientTest : public testing::Test {
   }
 
   bool ContainsServiceWorkerObject(ServiceWorkerContextClient* context_client,
-                                   int handle_id) {
-    return context_client->ContainsServiceWorkerObjectForTesting(handle_id);
+                                   int64_t version_id) {
+    return context_client->ContainsServiceWorkerObjectForTesting(version_id);
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner() const {
@@ -521,10 +519,9 @@ TEST_F(ServiceWorkerContextClientTest, GetOrCreateServiceWorkerObject) {
       CreateContextClient(&pipes, &mock_proxy);
   scoped_refptr<WebServiceWorkerImpl> worker1;
   scoped_refptr<WebServiceWorkerImpl> worker2;
-  const int handle_id = 100;
+  const int64_t version_id = 200;
   auto mock_service_worker_object_host =
-      std::make_unique<MockServiceWorkerObjectHost>(handle_id,
-                                                    200 /* version_id */);
+      std::make_unique<MockServiceWorkerObjectHost>(version_id);
   ASSERT_EQ(0, mock_service_worker_object_host->GetBindingCount());
 
   // Should return a worker object newly created with the 1st given |info|.
@@ -533,10 +530,10 @@ TEST_F(ServiceWorkerContextClientTest, GetOrCreateServiceWorkerObject) {
         mock_service_worker_object_host->CreateObjectInfo();
     // ServiceWorkerObjectHost Mojo connection has been added.
     EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
-    EXPECT_FALSE(ContainsServiceWorkerObject(context_client.get(), handle_id));
+    EXPECT_FALSE(ContainsServiceWorkerObject(context_client.get(), version_id));
     worker1 = context_client->GetOrCreateServiceWorkerObject(std::move(info));
     EXPECT_TRUE(worker1);
-    EXPECT_TRUE(ContainsServiceWorkerObject(context_client.get(), handle_id));
+    EXPECT_TRUE(ContainsServiceWorkerObject(context_client.get(), version_id));
     // |worker1| is holding the 1st blink::mojom::ServiceWorkerObjectHost Mojo
     // connection to |mock_service_worker_object_host|.
     EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
@@ -559,7 +556,7 @@ TEST_F(ServiceWorkerContextClientTest, GetOrCreateServiceWorkerObject) {
   worker1 = nullptr;
   worker2 = nullptr;
   task_runner()->RunUntilIdle();
-  EXPECT_FALSE(ContainsServiceWorkerObject(context_client.get(), handle_id));
+  EXPECT_FALSE(ContainsServiceWorkerObject(context_client.get(), version_id));
   // The 1st ServiceWorkerObjectHost Mojo connection got broken.
   EXPECT_EQ(0, mock_service_worker_object_host->GetBindingCount());
 

@@ -99,7 +99,7 @@ interface ServiceWorkerContainerHost {
 // to use this name.
 interface ServiceWorkerContainer {
   // Corresponds to setting ServiceWorkerContainer#controller.
-  // If |controller_info| is invalid (its |handle_id| is invalid), then
+  // If |controller_info| is invalid (its |object_info| is null), then
   // ServiceWorkerContainer#controller is cleared.
   // If |controller_info| is valid, |used_features| is the set of
   // features the controller has used, for UseCounter purposes.

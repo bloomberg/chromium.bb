@@ -257,9 +257,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void ProtectVersion(const scoped_refptr<ServiceWorkerVersion>& version);
   void UnprotectVersion(int64_t version_id);
 
-  // Returns new context-local unique ID.
-  int GetNewServiceWorkerHandleId();
-
   void ScheduleDeleteAndStartOver() const;
 
   // Deletes all files on disk and restarts the system. This leaves the system
@@ -359,7 +356,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
 
   bool force_update_on_page_load_;
-  int next_handle_id_;
   // Set in RegisterServiceWorker(), cleared in ClearAllServiceWorkersForTest().
   // This is used to avoid unnecessary disk read operation in tests. This value
   // is false if Chrome was relaunched after service workers were registered.

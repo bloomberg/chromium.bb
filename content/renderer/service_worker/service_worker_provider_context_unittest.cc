@@ -41,13 +41,12 @@ namespace service_worker_provider_context_unittest {
 class MockServiceWorkerObjectHost
     : public blink::mojom::ServiceWorkerObjectHost {
  public:
-  MockServiceWorkerObjectHost(int32_t handle_id, int64_t version_id)
-      : handle_id_(handle_id), version_id_(version_id) {}
+  explicit MockServiceWorkerObjectHost(int64_t version_id)
+      : version_id_(version_id) {}
   ~MockServiceWorkerObjectHost() override = default;
 
   blink::mojom::ServiceWorkerObjectInfoPtr CreateObjectInfo() {
     auto info = blink::mojom::ServiceWorkerObjectInfo::New();
-    info->handle_id = handle_id_;
     info->version_id = version_id_;
     bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
     info->request = mojo::MakeRequest(&remote_object_);
@@ -66,8 +65,7 @@ class MockServiceWorkerObjectHost
     NOTREACHED();
   }
 
-  int32_t handle_id_;
-  int64_t version_id_;
+  const int64_t version_id_;
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerObjectHost> bindings_;
   blink::mojom::ServiceWorkerObjectAssociatedPtr remote_object_;
 };
@@ -293,8 +291,8 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   }
 
   bool ContainsServiceWorker(ServiceWorkerProviderContext* provider_context,
-                             int handle_id) {
-    return provider_context->ContainsServiceWorkerObjectForTesting(handle_id);
+                             int64_t version_id) {
+    return provider_context->ContainsServiceWorkerObjectForTesting(version_id);
   }
 
  protected:
@@ -313,8 +311,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
 
   {
     auto mock_service_worker_object_host =
-        std::make_unique<MockServiceWorkerObjectHost>(100 /* handle_id */,
-                                                      200 /* version_id */);
+        std::make_unique<MockServiceWorkerObjectHost>(200 /* version_id */);
     ASSERT_EQ(0, mock_service_worker_object_host->GetBindingCount());
     blink::mojom::ServiceWorkerObjectInfoPtr object_info =
         mock_service_worker_object_host->CreateObjectInfo();
@@ -347,8 +344,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
 
   {
     auto mock_service_worker_object_host =
-        std::make_unique<MockServiceWorkerObjectHost>(101 /* handle_id */,
-                                                      201 /* version_id */);
+        std::make_unique<MockServiceWorkerObjectHost>(201 /* version_id */);
     ASSERT_EQ(0, mock_service_worker_object_host->GetBindingCount());
     blink::mojom::ServiceWorkerObjectInfoPtr object_info =
         mock_service_worker_object_host->CreateObjectInfo();
@@ -424,8 +420,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   const int kProviderId = 10;
 
   // (1) Test if setting the controller via the CTOR works.
-  auto object_host1 = std::make_unique<MockServiceWorkerObjectHost>(
-      100 /* handle_id */, 200 /* version_id */);
+  auto object_host1 =
+      std::make_unique<MockServiceWorkerObjectHost>(200 /* version_id */);
   ASSERT_EQ(0, object_host1->GetBindingCount());
   blink::mojom::ServiceWorkerObjectInfoPtr object_info1 =
       object_host1->CreateObjectInfo();
@@ -459,8 +455,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
   // (2) Test if resetting the controller to a new one via SetController
   // works.
-  auto object_host2 = std::make_unique<MockServiceWorkerObjectHost>(
-      101 /* handle_id */, 201 /* version_id */);
+  auto object_host2 =
+      std::make_unique<MockServiceWorkerObjectHost>(201 /* version_id */);
   ASSERT_EQ(0, object_host2->GetBindingCount());
   blink::mojom::ServiceWorkerObjectInfoPtr object_info2 =
       object_host2->CreateObjectInfo();
@@ -520,8 +516,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
   // (4) Test if resetting the controller to yet another one via SetController
   // works.
-  auto object_host4 = std::make_unique<MockServiceWorkerObjectHost>(
-      102 /* handle_id */, 202 /* version_id */);
+  auto object_host4 =
+      std::make_unique<MockServiceWorkerObjectHost>(202 /* version_id */);
   ASSERT_EQ(0, object_host4->GetBindingCount());
   blink::mojom::ServiceWorkerObjectInfoPtr object_info4 =
       object_host4->CreateObjectInfo();
@@ -558,8 +554,7 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
   const int kProviderId = 10;
 
   auto mock_service_worker_object_host =
-      std::make_unique<MockServiceWorkerObjectHost>(100 /* handle_id */,
-                                                    200 /* version_id */);
+      std::make_unique<MockServiceWorkerObjectHost>(200 /* version_id */);
   ASSERT_EQ(0, mock_service_worker_object_host->GetBindingCount());
   blink::mojom::ServiceWorkerObjectInfoPtr object_info =
       mock_service_worker_object_host->CreateObjectInfo();
@@ -636,12 +631,12 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrCreateRegistration) {
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow, nullptr,
       nullptr, nullptr /* controller_info */, nullptr /* loader_factory*/);
 
-  auto active_host = std::make_unique<MockServiceWorkerObjectHost>(
-      100 /* handle_id */, 200 /* version_id */);
-  auto waiting_host = std::make_unique<MockServiceWorkerObjectHost>(
-      101 /* handle_id */, 201 /* version_id */);
-  auto installing_host = std::make_unique<MockServiceWorkerObjectHost>(
-      102 /* handle_id */, 202 /* version_id */);
+  auto active_host =
+      std::make_unique<MockServiceWorkerObjectHost>(200 /* version_id */);
+  auto waiting_host =
+      std::make_unique<MockServiceWorkerObjectHost>(201 /* version_id */);
+  auto installing_host =
+      std::make_unique<MockServiceWorkerObjectHost>(202 /* version_id */);
   ASSERT_EQ(0, active_host->GetBindingCount());
   ASSERT_EQ(0, waiting_host->GetBindingCount());
   ASSERT_EQ(0, installing_host->GetBindingCount());
@@ -724,10 +719,9 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrCreateServiceWorker) {
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow, nullptr,
       nullptr, nullptr /* controller_info */, nullptr /* loader_factory*/);
-  const int handle_id = 100;
+  const int64_t version_id = 200;
   auto mock_service_worker_object_host =
-      std::make_unique<MockServiceWorkerObjectHost>(handle_id,
-                                                    200 /* version_id */);
+      std::make_unique<MockServiceWorkerObjectHost>(version_id);
   ASSERT_EQ(0, mock_service_worker_object_host->GetBindingCount());
 
   // Should return a worker object newly created with the 1st given |info|.
@@ -736,10 +730,10 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrCreateServiceWorker) {
         mock_service_worker_object_host->CreateObjectInfo();
     // ServiceWorkerObjectHost Mojo connection has been added.
     EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
-    ASSERT_FALSE(ContainsServiceWorker(provider_context.get(), handle_id));
+    ASSERT_FALSE(ContainsServiceWorker(provider_context.get(), version_id));
     worker1 = provider_context->GetOrCreateServiceWorkerObject(std::move(info));
     EXPECT_TRUE(worker1);
-    EXPECT_TRUE(ContainsServiceWorker(provider_context.get(), handle_id));
+    EXPECT_TRUE(ContainsServiceWorker(provider_context.get(), version_id));
     // |worker1| is holding the 1st blink::mojom::ServiceWorkerObjectHost Mojo
     // connection to |mock_service_worker_object_host|.
     EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
@@ -762,7 +756,7 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrCreateServiceWorker) {
   worker1 = nullptr;
   worker2 = nullptr;
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(ContainsServiceWorker(provider_context.get(), handle_id));
+  EXPECT_FALSE(ContainsServiceWorker(provider_context.get(), version_id));
   // The 1st ServiceWorkerObjectHost Mojo connection got broken.
   EXPECT_EQ(0, mock_service_worker_object_host->GetBindingCount());
 

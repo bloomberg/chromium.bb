@@ -170,7 +170,6 @@ ServiceWorkerHandle::ServiceWorkerHandle(
       provider_host_(provider_host),
       provider_origin_(url::Origin::Create(provider_host->document_url())),
       provider_id_(provider_host->provider_id()),
-      handle_id_(context->GetNewServiceWorkerHandleId()),
       version_(std::move(version)),
       weak_ptr_factory_(this) {
   DCHECK(context_ && provider_host_ && version_);
@@ -212,7 +211,6 @@ ServiceWorkerHandle::CreateCompleteObjectInfoToSend() {
 blink::mojom::ServiceWorkerObjectInfoPtr
 ServiceWorkerHandle::CreateIncompleteObjectInfo() {
   auto info = blink::mojom::ServiceWorkerObjectInfo::New();
-  info->handle_id = handle_id_;
   info->url = version_->script_url();
   info->state =
       mojo::ConvertTo<blink::mojom::ServiceWorkerState>(version_->status());
