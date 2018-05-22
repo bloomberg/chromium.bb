@@ -39,6 +39,11 @@ class ServiceWorkerProviderContext;
 // this class. However, since //content can't know if Blink already has a
 // Handle, it passes a new Handle whenever passing this class to Blink. Blink
 // discards the new Handle if it already has one.
+// Also, this class is referred but not owned by ServiceWorkerProviderContext
+// (for service worker client contexts) and ServiceWorkerContextClient (for
+// service worker execution contexts). These are tracking WebServiceWorker to
+// ensure the uniqueness of ServiceWorker objects, and this class adds/removes
+// the reference in the ctor/dtor.
 //
 // When a blink::mojom::ServiceWorkerObjectInfo arrives at the renderer,
 // if there is no WebServiceWorkerImpl which represents the ServiceWorker, a
@@ -106,7 +111,8 @@ class CONTENT_EXPORT WebServiceWorkerImpl
   // For service worker client contexts, |this| is tracked (not owned) in
   // |context_for_client_->controllee_state_->workers_|.
   // For service worker execution contexts, |context_for_client_| is
-  // null.
+  // null and |this| is tracked (not owned) in
+  // |ServiceWorkerContextClient::ThreadSpecificInstance()->context_->workers_|.
   base::WeakPtr<ServiceWorkerProviderContext> context_for_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerImpl);

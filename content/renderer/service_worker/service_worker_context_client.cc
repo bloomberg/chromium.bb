@@ -38,7 +38,6 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_impl.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
-#include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
 #include "content/renderer/service_worker/service_worker_network_provider.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
@@ -456,6 +455,9 @@ struct ServiceWorkerContextClient::WorkerContextData {
     DCHECK(thread_checker.CalledOnValidThread());
   }
 
+  // Map from handle id to JavaScript ServiceWorker object.
+  std::map<int, WebServiceWorkerImpl*> workers_;
+
   mojo::Binding<mojom::ServiceWorkerEventDispatcher> event_dispatcher_binding;
 
   // Bound by the first Mojo call received on the service worker thread
@@ -721,6 +723,21 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
 
 ServiceWorkerContextClient::~ServiceWorkerContextClient() {}
 
+scoped_refptr<WebServiceWorkerImpl>
+ServiceWorkerContextClient::GetOrCreateServiceWorkerObject(
+    blink::mojom::ServiceWorkerObjectInfoPtr info) {
+  if (!info)
+    return nullptr;
+
+  auto found = context_->workers_.find(info->handle_id);
+  if (found != context_->workers_.end()) {
+    return found->second;
+  }
+
+  return WebServiceWorkerImpl::CreateForServiceWorkerGlobalScope(
+      std::move(info));
+}
+
 void ServiceWorkerContextClient::GetClient(
     const blink::WebString& id,
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks) {
@@ -808,9 +825,6 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   // same thread before the worker context goes away in
   // willDestroyWorkerContext.
   context_.reset(new WorkerContextData(this));
-  // Create ServiceWorkerDispatcher first for this worker thread to be used
-  // later by TakeRegistrationForServiceWorkerGlobalScope() etc.
-  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance();
 
   DCHECK(pending_dispatcher_request_.is_pending());
   DCHECK(pending_controller_request_.is_pending());
@@ -1518,10 +1532,8 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
              blink::mojom::kInvalidServiceWorkerHandleId &&
          event->source_info_for_service_worker->version_id !=
              blink::mojom::kInvalidServiceWorkerVersionId);
-  scoped_refptr<WebServiceWorkerImpl> worker =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance()
-          ->GetOrCreateServiceWorker(
-              std::move(event->source_info_for_service_worker));
+  scoped_refptr<WebServiceWorkerImpl> worker = GetOrCreateServiceWorkerObject(
+      std::move(event->source_info_for_service_worker));
   proxy_->DispatchExtendableMessageEvent(
       request_id, std::move(event->message), event->source_origin,
       WebServiceWorkerImpl::CreateHandle(worker));
@@ -1696,6 +1708,23 @@ void ServiceWorkerContextClient::OnIdleTimeout() {
 
 bool ServiceWorkerContextClient::RequestedTermination() const {
   return context_->timeout_timer->did_idle_timeout();
+}
+
+void ServiceWorkerContextClient::AddServiceWorkerObject(
+    int handle_id,
+    WebServiceWorkerImpl* worker) {
+  DCHECK(!base::ContainsKey(context_->workers_, handle_id));
+  context_->workers_[handle_id] = worker;
+}
+
+void ServiceWorkerContextClient::RemoveServiceWorkerObject(int handle_id) {
+  DCHECK(base::ContainsKey(context_->workers_, handle_id));
+  context_->workers_.erase(handle_id);
+}
+
+bool ServiceWorkerContextClient::ContainsServiceWorkerObjectForTesting(
+    int handle_id) {
+  return base::ContainsKey(context_->workers_, handle_id);
 }
 
 base::WeakPtr<ServiceWorkerContextClient>

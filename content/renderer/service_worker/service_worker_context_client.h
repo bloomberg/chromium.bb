@@ -52,10 +52,6 @@ class WebServiceWorkerResponse;
 class WebURLResponse;
 }
 
-namespace IPC {
-class Message;
-}
-
 namespace content {
 
 struct PlatformNotificationData;
@@ -64,6 +60,7 @@ class EmbeddedWorkerInstanceClientImpl;
 class ServiceWorkerNetworkProvider;
 class ServiceWorkerProviderContext;
 class ServiceWorkerTimeoutTimer;
+class WebServiceWorkerImpl;
 class WebWorkerFetchContext;
 
 // ServiceWorkerContextClient is a "client" of a service worker execution
@@ -107,6 +104,11 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       base::TimeTicks start_worker_received_time) {
     start_worker_received_time_ = start_worker_received_time;
   }
+
+  // Returns the service worker object described by |info|. Creates a new object
+  // if needed, or else returns the existing one.
+  scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorkerObject(
+      blink::mojom::ServiceWorkerObjectInfoPtr info);
 
   // WebServiceWorkerContextClient overrides.
   void GetClient(
@@ -258,6 +260,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   class NavigationPreloadRequest;
   friend class ControllerServiceWorkerImpl;
   friend class ServiceWorkerContextClientTest;
+  friend class WebServiceWorkerImpl;
   FRIEND_TEST_ALL_PREFIXES(
       ServiceWorkerContextClientTest,
       DispatchOrQueueFetchEvent_RequestedTerminationAndDie);
@@ -271,7 +274,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // in the browser process.
   int GetRoutingID() const { return embedded_worker_id_; }
 
-  void Send(IPC::Message* message);
   void SendWorkerStarted();
 
   // Implements mojom::ServiceWorkerEventDispatcher.
@@ -393,6 +395,11 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // Returns true if the worker has requested to be terminated by the browser
   // process. It does this due to idle timeout.
   bool RequestedTermination() const;
+
+  // Keeps the mapping from handle id to ServiceWorker object.
+  void AddServiceWorkerObject(int handle_id, WebServiceWorkerImpl* worker);
+  void RemoveServiceWorkerObject(int handle_id);
+  bool ContainsServiceWorkerObjectForTesting(int handle_id);
 
   base::WeakPtr<ServiceWorkerContextClient> GetWeakPtr();
 

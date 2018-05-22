@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "content/common/service_worker/service_worker_messages.h"
-#include "content/renderer/service_worker/service_worker_dispatcher.h"
+#include "content/renderer/service_worker/service_worker_context_client.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_proxy.h"
@@ -124,12 +124,8 @@ WebServiceWorkerImpl::WebServiceWorkerImpl(
   if (is_for_client_) {
     context_for_client_->AddServiceWorkerObject(info_->handle_id, this);
   } else {
-    // For service worker execution contexts, still use the dispatcher on the
-    // service worker thread.
-    ServiceWorkerDispatcher* dispatcher =
-        ServiceWorkerDispatcher::GetThreadSpecificInstance();
-    DCHECK(dispatcher);
-    dispatcher->AddServiceWorker(info_->handle_id, this);
+    ServiceWorkerContextClient::ThreadSpecificInstance()
+        ->AddServiceWorkerObject(info_->handle_id, this);
   }
 }
 
@@ -139,10 +135,10 @@ WebServiceWorkerImpl::~WebServiceWorkerImpl() {
       context_for_client_->RemoveServiceWorkerObject(info_->handle_id);
     }
   } else {
-    ServiceWorkerDispatcher* dispatcher =
-        ServiceWorkerDispatcher::GetThreadSpecificInstance();
-    if (dispatcher)
-      dispatcher->RemoveServiceWorker(info_->handle_id);
+    if (ServiceWorkerContextClient::ThreadSpecificInstance()) {
+      ServiceWorkerContextClient::ThreadSpecificInstance()
+          ->RemoveServiceWorkerObject(info_->handle_id);
+    }
   }
 }
 

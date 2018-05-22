@@ -1701,7 +1701,6 @@ test("content_unittests") {
     "../renderer/render_thread_impl_unittest.cc",
     "../renderer/render_widget_unittest.cc",
     "../renderer/service_worker/service_worker_context_client_unittest.cc",
-    "../renderer/service_worker/service_worker_dispatcher_unittest.cc",
     "../renderer/service_worker/service_worker_provider_context_unittest.cc",
     "../renderer/service_worker/service_worker_subresource_loader_unittest.cc",
     "../renderer/service_worker/service_worker_timeout_timer_unittest.cc",

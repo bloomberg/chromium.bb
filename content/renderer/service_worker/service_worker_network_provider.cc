@@ -15,7 +15,6 @@
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
-#include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "ipc/ipc_sync_channel.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -306,7 +305,6 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
-  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance();
   context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
       info->provider_id,
       blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
@@ -319,7 +317,6 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
 // Constructor for service worker execution contexts.
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
-  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance();
   context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
       info->provider_id, std::move(info->client_request),
       std::move(info->host_ptr_info));
