@@ -56,7 +56,6 @@
 #include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/compositor/gpu_process_transport_factory.h"
@@ -517,9 +516,13 @@ BrowserMainLoop::~BrowserMainLoop() {
   g_current_browser_main_loop = nullptr;
 }
 
-void BrowserMainLoop::Init() {
+void BrowserMainLoop::Init(
+    std::unique_ptr<BrowserProcessSubThread> service_manager_thread) {
   TRACE_EVENT0("startup", "BrowserMainLoop::Init");
 
+  // This is always invoked before |io_thread_| is initialized (i.e. never
+  // resets it).
+  io_thread_ = std::move(service_manager_thread);
   parts_.reset(
       GetContentClient()->browser()->CreateBrowserMainParts(parameters_));
 }
@@ -649,11 +652,6 @@ void BrowserMainLoop::MainMessageLoopStart() {
 }
 
 void BrowserMainLoop::PostMainMessageLoopStart() {
-  {
-    TRACE_EVENT0("startup",
-                 "BrowserMainLoop::Subsystem:CreateBrowserThread::IO");
-    InitializeIOThread();
-  }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SystemMonitor");
     system_monitor_.reset(new base::SystemMonitor);
@@ -919,12 +917,14 @@ int BrowserMainLoop::CreateThreads() {
         *task_scheduler_init_params.get());
   }
 
-  // The thread used for BrowserThread::IO is created in
-  // |PostMainMessageLoopStart()|, but it's only tagged as BrowserThread::IO
-  // here in order to prevent any code from statically posting to it before
+  // The |io_thread| can have optionally been injected into Init(), but if not,
+  // create it here. Thre thread is only tagged as BrowserThread::IO here in
+  // order to prevent any code from statically posting to it before
   // CreateThreads() (as such maintaining the invariant that PreCreateThreads()
   // et al. "happen-before" BrowserThread::IO is "brought up").
-  DCHECK(io_thread_);
+  if (!io_thread_) {
+    io_thread_ = BrowserProcessSubThread::CreateIOThread();
+  }
   io_thread_->RegisterAsBrowserThread();
 
   created_threads_ = true;
@@ -1135,10 +1135,6 @@ base::SequencedTaskRunner* BrowserMainLoop::audio_service_runner() {
                                    "instantiated - running the audio service "
                                    "out of process?";
   return audio_service_runner_.get();
-}
-
-void BrowserMainLoop::InitializeIOThreadForTesting() {
-  InitializeIOThread();
 }
 
 #if !defined(OS_ANDROID)
@@ -1503,21 +1499,6 @@ void BrowserMainLoop::MainMessageLoopRun() {
   base::RunLoop run_loop;
   run_loop.Run();
 #endif
-}
-
-void BrowserMainLoop::InitializeIOThread() {
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  // Up the priority of the |io_thread_| as some of its IPCs relate to
-  // display tasks.
-  options.priority = base::ThreadPriority::DISPLAY;
-#endif
-
-  io_thread_ = std::make_unique<BrowserProcessSubThread>(BrowserThread::IO);
-
-  if (!io_thread_->StartWithOptions(options))
-    LOG(FATAL) << "Failed to start BrowserThread::IO";
 }
 
 void BrowserMainLoop::InitializeMojo() {
