@@ -133,10 +133,6 @@ class PLATFORM_EXPORT FloatPoint {
   operator CGPoint() const;
 #endif
 
-  // Can we remove this one?
-  SkPoint Data() const;
-
-  operator SkPoint() const;
   operator gfx::PointF() const;
   explicit operator gfx::ScrollOffset() const;
 

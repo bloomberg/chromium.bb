@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -417,10 +418,10 @@ void ClipQuad(GraphicsContext& context,
               const FloatPoint quad[],
               bool antialiased) {
   SkPath path;
-  path.moveTo(quad[0]);
-  path.lineTo(quad[1]);
-  path.lineTo(quad[2]);
-  path.lineTo(quad[3]);
+  path.moveTo(FloatPointToSkPoint(quad[0]));
+  path.lineTo(FloatPointToSkPoint(quad[1]));
+  path.lineTo(FloatPointToSkPoint(quad[2]));
+  path.lineTo(FloatPointToSkPoint(quad[3]));
 
   context.ClipPath(path, antialiased ? kAntiAliased : kNotAntiAliased);
 }

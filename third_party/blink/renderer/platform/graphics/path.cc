@@ -309,25 +309,27 @@ void Path::SetWindRule(const WindRule rule) {
 }
 
 void Path::MoveTo(const FloatPoint& point) {
-  path_.moveTo(point.Data());
+  path_.moveTo(FloatPointToSkPoint(point));
 }
 
 void Path::AddLineTo(const FloatPoint& point) {
-  path_.lineTo(point.Data());
+  path_.lineTo(FloatPointToSkPoint(point));
 }
 
 void Path::AddQuadCurveTo(const FloatPoint& cp, const FloatPoint& ep) {
-  path_.quadTo(cp.Data(), ep.Data());
+  path_.quadTo(FloatPointToSkPoint(cp), FloatPointToSkPoint(ep));
 }
 
 void Path::AddBezierCurveTo(const FloatPoint& p1,
                             const FloatPoint& p2,
                             const FloatPoint& ep) {
-  path_.cubicTo(p1.Data(), p2.Data(), ep.Data());
+  path_.cubicTo(FloatPointToSkPoint(p1), FloatPointToSkPoint(p2),
+                FloatPointToSkPoint(ep));
 }
 
 void Path::AddArcTo(const FloatPoint& p1, const FloatPoint& p2, float radius) {
-  path_.arcTo(p1.Data(), p2.Data(), WebCoreFloatToSkScalar(radius));
+  path_.arcTo(FloatPointToSkPoint(p1), FloatPointToSkPoint(p2),
+              WebCoreFloatToSkScalar(radius));
 }
 
 void Path::AddArcTo(const FloatPoint& p,
