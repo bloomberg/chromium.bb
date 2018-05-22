@@ -105,12 +105,16 @@ class VideoResourceUpdaterTest : public testing::Test {
         /*max_resource_size=*/10000);
   }
 
-  scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame() {
-    const int kDimension = 10;
-    gfx::Size size(kDimension, kDimension);
-    static uint8_t y_data[kDimension * kDimension] = {0};
-    static uint8_t u_data[kDimension * kDimension / 2] = {0};
-    static uint8_t v_data[kDimension * kDimension / 2] = {0};
+  // Note that the number of pixels needed for |size| must be less than or equal
+  // to the number of pixels needed for size of 100x100.
+  scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame(
+      const gfx::Size& size = gfx::Size(10, 10)) {
+    constexpr int kMaxDimension = 100;
+    static uint8_t y_data[kMaxDimension * kMaxDimension] = {0};
+    static uint8_t u_data[kMaxDimension * kMaxDimension / 2] = {0};
+    static uint8_t v_data[kMaxDimension * kMaxDimension / 2] = {0};
+
+    CHECK_LE(size.width() * size.height(), kMaxDimension * kMaxDimension);
 
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::WrapExternalYuvData(
@@ -468,6 +472,35 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceNoDeleteSoftwareCompositor) {
 
   // Ensure that the same shared bitmap was reused.
   EXPECT_EQ(layer_tree_frame_sink_software_->shared_bitmaps(), shared_bitmaps);
+}
+
+TEST_F(VideoResourceUpdaterTest, ChangeResourceSizeSoftwareCompositor) {
+  constexpr gfx::Size kSize1(10, 10);
+  constexpr gfx::Size kSize2(20, 20);
+
+  std::unique_ptr<VideoResourceUpdater> updater = CreateUpdaterForSoftware();
+
+  // Allocate the resources for a software video frame.
+  VideoFrameExternalResources resources =
+      updater->CreateExternalResourcesFromVideoFrame(
+          CreateTestYUVVideoFrame(kSize1));
+  // Expect exactly one allocated shared bitmap.
+  EXPECT_EQ(1u, layer_tree_frame_sink_software_->shared_bitmaps().size());
+  auto shared_bitmaps = layer_tree_frame_sink_software_->shared_bitmaps();
+
+  // Simulate the ResourceProvider releasing the resource back to the video
+  // updater.
+  std::move(resources.release_callbacks[0]).Run(gpu::SyncToken(), false);
+
+  // Allocate resources for the next frame with a different size.
+  resources = updater->CreateExternalResourcesFromVideoFrame(
+      CreateTestYUVVideoFrame(kSize2));
+
+  // The first resource was released, so it can be reused but it's the wrong
+  // size. We should expect the first shared bitmap to be deleted and a new
+  // shared bitmap to be allocated.
+  EXPECT_EQ(1u, layer_tree_frame_sink_software_->shared_bitmaps().size());
+  EXPECT_NE(layer_tree_frame_sink_software_->shared_bitmaps(), shared_bitmaps);
 }
 
 TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes) {

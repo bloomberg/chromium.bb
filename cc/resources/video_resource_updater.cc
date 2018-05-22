@@ -800,36 +800,43 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     output_color_space = output_color_space.GetAsFullRangeRGB();
   }
 
-  // Drop recycled resources that are the wrong format.
-  auto can_delete_resource_fn =
-      [output_resource_format](const std::unique_ptr<PlaneResource>& resource) {
-        return !resource->has_refs() &&
-               resource->resource_format() != output_resource_format;
-      };
-  base::EraseIf(all_resources_, can_delete_resource_fn);
-  // TODO(kylechar): Delete resources that are the wrong size for all output
-  // planes.
-
-  std::vector<PlaneResource*> plane_resources;
+  std::vector<gfx::Size> outplane_plane_sizes;
+  outplane_plane_sizes.reserve(output_plane_count);
   for (size_t i = 0; i < output_plane_count; ++i) {
-    gfx::Size output_plane_resource_size =
-        SoftwarePlaneDimension(video_frame.get(), software_compositor(), i);
+    outplane_plane_sizes.push_back(
+        SoftwarePlaneDimension(video_frame.get(), software_compositor(), i));
+    const gfx::Size& output_plane_resource_size = outplane_plane_sizes.back();
     if (output_plane_resource_size.IsEmpty() ||
         output_plane_resource_size.width() > max_resource_size_ ||
         output_plane_resource_size.height() > max_resource_size_) {
-      // This output plane has invalid geometry. Clean up and return an empty
-      // external resources.
-      for (auto* plane_resource : plane_resources)
-        plane_resource->remove_ref();
+      // This output plane has invalid geometry so return an empty external
+      // resources.
       return VideoFrameExternalResources();
     }
+  }
 
-    PlaneResource* plane_resource = RecycleOrAllocateResource(
-        output_plane_resource_size, output_resource_format, output_color_space,
-        video_frame->unique_id(), i);
+  // Delete recycled resources that are the wrong format or wrong size.
+  auto can_delete_resource_fn =
+      [output_resource_format,
+       &outplane_plane_sizes](const std::unique_ptr<PlaneResource>& resource) {
+        // Resources that are still being used can't be deleted.
+        if (resource->has_refs())
+          return false;
 
-    plane_resource->add_ref();
-    plane_resources.push_back(plane_resource);
+        return resource->resource_format() != output_resource_format ||
+               !base::ContainsValue(outplane_plane_sizes,
+                                    resource->resource_size());
+      };
+  base::EraseIf(all_resources_, can_delete_resource_fn);
+
+  // Recycle or allocate resources for each video plane.
+  std::vector<PlaneResource*> plane_resources;
+  plane_resources.reserve(output_plane_count);
+  for (size_t i = 0; i < output_plane_count; ++i) {
+    plane_resources.push_back(RecycleOrAllocateResource(
+        outplane_plane_sizes[i], output_resource_format, output_color_space,
+        video_frame->unique_id(), i));
+    plane_resources.back()->add_ref();
   }
 
   VideoFrameExternalResources external_resources;
