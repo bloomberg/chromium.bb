@@ -1090,7 +1090,7 @@ RendererBlinkPlatformImpl::GetGpuMemoryBufferManager() {
 
 blink::WebString RendererBlinkPlatformImpl::ConvertIDNToUnicode(
     const blink::WebString& host) {
-  return WebString::FromUTF16(url_formatter::IDNToUnicode(host.Utf8()));
+  return WebString::FromUTF16(url_formatter::IDNToUnicode(host.Ascii()));
 }
 
 //------------------------------------------------------------------------------
