@@ -168,6 +168,9 @@ enum class TaskType : unsigned {
   // * //third_party/blink/renderer/core/workers
   kInternalWorker = 36,
 
+  // Tasks used at IntersectionObserver.
+  kInternalIntersectionObserver = 44,
+
   ///////////////////////////////////////
   // The following task types are only for MainThreadTaskQueue.
   ///////////////////////////////////////
@@ -188,7 +191,7 @@ enum class TaskType : unsigned {
   // should be very limited.
   kUnthrottled = 25,
 
-  kCount = 44,
+  kCount = 45,
 };
 
 }  // namespace blink

@@ -77,6 +77,11 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kInternalUserInteraction:
     case TaskType::kInternalInspector:
     case TaskType::kInternalWorker:
+    case TaskType::kInternalIntersectionObserver:
+      // UnthrottledTaskRunner is generally discouraged in future.
+      // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
+      // move them into other task runners. See also comments in
+      // Get(LocalFrame). (https://crbug.com/670534)
       return TaskQueueWithTaskType::Create(default_task_queue_, type);
     case TaskType::kMainThreadTaskQueueV8:
     case TaskType::kMainThreadTaskQueueCompositor:
