@@ -139,7 +139,7 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(KeyboardWindowDelegate);
 };
 
-void ToggleTouchEventLogging(bool enable) {
+void SetTouchEventLogging(bool enable) {
 #if defined(OS_CHROMEOS)
   // TODO(moshayedi): crbug.com/642863. Revisit when we have mojo interface for
   // InputController for processes that aren't mus-ws.
@@ -360,7 +360,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 
     case KeyboardControllerState::WILL_HIDE:
     case KeyboardControllerState::SHOWN: {
-      ToggleTouchEventLogging(true);
+      SetTouchEventLogging(true /* enable */);
 
       keyboard::LogKeyboardControlEvent(
           reason == HIDE_REASON_AUTOMATIC
@@ -651,7 +651,7 @@ void KeyboardController::PopulateKeyboardContent(
     return;
   }
 
-  ToggleTouchEventLogging(!show_keyboard);
+  SetTouchEventLogging(!show_keyboard /* enable */);
 
   switch (state_) {
     case KeyboardControllerState::INITIAL:
