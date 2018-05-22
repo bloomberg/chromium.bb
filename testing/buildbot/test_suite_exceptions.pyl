@@ -2108,18 +2108,6 @@
   },
   'services_unittests': {
     'remove_from': [
-      # On chromium.android, unclear why these aren't run on all bots.
-      'KitKat Tablet Tester',
-      'Lollipop Phone Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow 64 bit Tester',
-      'Marshmallow Tablet Tester',
-      'Nougat Phone Tester',
-       # chromium.android.fyi
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-      'x64 Device Tester',
-      'x86 Cloud Tester',
       # chromium.clang
       'ToTLinuxMSan',  # https://crbug.com/831676
       # chromium.fyi
