@@ -7,6 +7,10 @@
 #include <utility>
 #include <vector>
 
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/ime/ime_controller.h"
+#include "ash/ime/test_ime_controller_client.h"
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
@@ -67,6 +71,94 @@ TEST_F(VirtualKeyboardControllerTest, RestoreKeyboardDevices) {
   std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> blocker(
       new MockEventBlocker);
   SetEventBlocker(std::move(blocker));
+}
+
+TEST_F(VirtualKeyboardControllerTest,
+       ForceToShowKeyboardWithKeysetWhenAccessibilityKeyboardIsEnabled) {
+  // TODO(mash): Turning on accessibility keyboard does not create a valid
+  // KeyboardController under MASH. See https://crbug.com/646565.
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  accessibility_controller->SetVirtualKeyboardEnabled(true);
+  ASSERT_TRUE(accessibility_controller->IsVirtualKeyboardEnabled());
+
+  // Set up a mock ImeControllerClient to test keyset changes.
+  TestImeControllerClient client;
+  Shell::Get()->ime_controller()->SetClient(client.CreateInterfacePtr());
+
+  // Should show the keyboard without messing with accessibility prefs.
+  Shell::Get()->virtual_keyboard_controller()->ForceShowKeyboardWithKeyset(
+      chromeos::input_method::mojom::ImeKeyset::kEmoji);
+  Shell::Get()->ime_controller()->FlushMojoForTesting();
+  EXPECT_TRUE(accessibility_controller->IsVirtualKeyboardEnabled());
+
+  // Keyset should be emoji.
+  Shell::Get()->ime_controller()->FlushMojoForTesting();
+  EXPECT_EQ(chromeos::input_method::mojom::ImeKeyset::kEmoji,
+            client.last_keyset_);
+
+  // Simulate the keyboard hiding.
+  if (keyboard::KeyboardController::GetInstance()->HasObserver(
+          Shell::Get()->virtual_keyboard_controller())) {
+    Shell::Get()->virtual_keyboard_controller()->OnKeyboardHidden();
+  }
+  base::RunLoop().RunUntilIdle();
+
+  // The keyboard should still be enabled.
+  EXPECT_TRUE(accessibility_controller->IsVirtualKeyboardEnabled());
+
+  // Reset the accessibility prefs.
+  accessibility_controller->SetVirtualKeyboardEnabled(false);
+
+  // Keyset should be reset to none.
+  Shell::Get()->ime_controller()->FlushMojoForTesting();
+  EXPECT_EQ(chromeos::input_method::mojom::ImeKeyset::kNone,
+            client.last_keyset_);
+}
+
+TEST_F(VirtualKeyboardControllerTest,
+       ForceToShowKeyboardWithKeysetWhenAccessibilityKeyboardIsDisabled) {
+  // TODO(mash): Turning on accessibility keyboard does not create a valid
+  // KeyboardController under MASH. See https://crbug.com/646565.
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  accessibility_controller->SetVirtualKeyboardEnabled(false);
+  ASSERT_FALSE(accessibility_controller->IsVirtualKeyboardEnabled());
+
+  // Set up a mock ImeControllerClient to test keyset changes.
+  TestImeControllerClient client;
+  Shell::Get()->ime_controller()->SetClient(client.CreateInterfacePtr());
+
+  // Should show the keyboard by turning on the accesibility keyboard.
+  Shell::Get()->virtual_keyboard_controller()->ForceShowKeyboardWithKeyset(
+      chromeos::input_method::mojom::ImeKeyset::kEmoji);
+  Shell::Get()->ime_controller()->FlushMojoForTesting();
+  EXPECT_TRUE(accessibility_controller->IsVirtualKeyboardEnabled());
+
+  // Keyset should be emoji.
+  EXPECT_EQ(chromeos::input_method::mojom::ImeKeyset::kEmoji,
+            client.last_keyset_);
+
+  // Simulate the keyboard hiding.
+  if (keyboard::KeyboardController::GetInstance()->HasObserver(
+          Shell::Get()->virtual_keyboard_controller())) {
+    Shell::Get()->virtual_keyboard_controller()->OnKeyboardHidden();
+  }
+  base::RunLoop().RunUntilIdle();
+
+  // The keyboard should still be disabled again.
+  EXPECT_FALSE(accessibility_controller->IsVirtualKeyboardEnabled());
+
+  // Keyset should be reset to none.
+  Shell::Get()->ime_controller()->FlushMojoForTesting();
+  EXPECT_EQ(chromeos::input_method::mojom::ImeKeyset::kNone,
+            client.last_keyset_);
 }
 
 class VirtualKeyboardControllerAutoTest : public VirtualKeyboardControllerTest,

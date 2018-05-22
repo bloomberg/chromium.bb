@@ -21,6 +21,7 @@
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
+#include "ash/virtual_keyboard_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -274,8 +275,6 @@ ImeMenuTray::ImeMenuTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       ime_controller_(Shell::Get()->ime_controller()),
       label_(new ImeMenuLabel()),
-      show_keyboard_(false),
-      force_show_keyboard_(false),
       keyboard_suppressed_(false),
       show_bubble_after_keyboard_hidden_(false),
       is_emoji_enabled_(false),
@@ -343,11 +342,8 @@ void ImeMenuTray::ShowKeyboardWithKeyset(
     chromeos::input_method::mojom::ImeKeyset keyset) {
   CloseBubble();
 
-  // This will override the url ref of the keyboard to make it shown with
-  // the given keyset.
-  ime_controller_->OverrideKeyboardKeyset(
-      keyset,
-      base::BindOnce(&ImeMenuTray::ShowKeyboard, base::Unretained(this)));
+  Shell::Get()->virtual_keyboard_controller()->ForceShowKeyboardWithKeyset(
+      keyset);
 }
 
 bool ImeMenuTray::ShouldShowBottomButtons() {
@@ -464,87 +460,16 @@ void ImeMenuTray::HideBubble(const views::TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 
-void ImeMenuTray::OnKeyboardClosed() {
-  ime_controller_->OverrideKeyboardKeyset(
-      chromeos::input_method::mojom::ImeKeyset::kNone);
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller)
-    keyboard_controller->RemoveObserver(this);
-
-  show_keyboard_ = false;
-  force_show_keyboard_ = false;
-}
-
 void ImeMenuTray::OnKeyboardHidden() {
   if (show_bubble_after_keyboard_hidden_) {
     show_bubble_after_keyboard_hidden_ = false;
     keyboard::KeyboardController* keyboard_controller =
         keyboard::KeyboardController::GetInstance();
-    if (keyboard_controller)
-      keyboard_controller->RemoveObserver(this);
+    DCHECK(keyboard_controller);
+    keyboard_controller->RemoveObserver(this);
 
     ShowImeMenuBubbleInternal(false /* show_by_click */);
     return;
-  }
-
-  if (!show_keyboard_)
-    return;
-
-  // If the the IME menu has overriding the input view url, we should write it
-  // back to normal keyboard when hiding the input view.
-  ime_controller_->OverrideKeyboardKeyset(
-      chromeos::input_method::mojom::ImeKeyset::kNone);
-  show_keyboard_ = false;
-
-  // If the keyboard is forced to be shown by IME menu for once, we need to
-  // disable the keyboard when it's hidden.
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller)
-    keyboard_controller->RemoveObserver(this);
-
-  if (!force_show_keyboard_)
-    return;
-
-  // Posts a task to disable the virtual keyboard.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ImeMenuTray::DisableVirtualKeyboard,
-                            weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ImeMenuTray::ShowKeyboard() {
-  // If onscreen keyboard has been enabled, shows the keyboard directly.
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  show_keyboard_ = true;
-  if (keyboard_controller) {
-    keyboard_controller->AddObserver(this);
-    // If the keyboard window hasn't been created yet, it means the extension
-    // cannot receive anything to show the keyboard. Therefore, instead of
-    // relying the extension to show the keyboard, forcibly show the keyboard
-    // window here (which will cause the keyboard window to be created).
-    // Otherwise, the extension will show keyboard by calling private api. The
-    // native side could just skip showing the keyboard.
-    if (!keyboard_controller->IsKeyboardWindowCreated())
-      keyboard_controller->ShowKeyboard(false);
-    return;
-  }
-
-  AccessibilityController* accessibility_controller =
-      Shell::Get()->accessibility_controller();
-  // Fails to show the keyboard.
-  if (accessibility_controller->IsVirtualKeyboardEnabled())
-    return;
-
-  // Onscreen keyboard has not been enabled yet, forces to bring out the
-  // keyboard for one time.
-  force_show_keyboard_ = true;
-  accessibility_controller->SetVirtualKeyboardEnabled(true);
-  keyboard_controller = keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller) {
-    keyboard_controller->AddObserver(this);
-    keyboard_controller->ShowKeyboard(false);
   }
 }
 
@@ -562,11 +487,6 @@ void ImeMenuTray::UpdateTrayLabel() {
     label_->SetText(current_ime.short_name + base::UTF8ToUTF16("*"));
   else
     label_->SetText(current_ime.short_name);
-}
-
-void ImeMenuTray::DisableVirtualKeyboard() {
-  Shell::Get()->accessibility_controller()->SetVirtualKeyboardEnabled(false);
-  force_show_keyboard_ = false;
 }
 
 }  // namespace ash

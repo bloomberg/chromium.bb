@@ -6,7 +6,10 @@
 
 #include <vector>
 
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/ime/ime_controller.h"
 #include "ash/keyboard/keyboard_ui.h"
+#include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -30,6 +33,17 @@ namespace {
 bool IsVirtualKeyboardEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       keyboard::switches::kEnableVirtualKeyboard);
+}
+
+void DisableVirtualKeyboard() {
+  // Reset the accessibility keyboard settings.
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  if (!accessibility_controller)
+    return;
+
+  DCHECK(accessibility_controller->IsVirtualKeyboardEnabled());
+  accessibility_controller->SetVirtualKeyboardEnabled(false);
 }
 
 void MoveKeyboardToDisplayInternal(const display::Display& display) {
@@ -77,6 +91,13 @@ VirtualKeyboardController::~VirtualKeyboardController() {
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+}
+
+void VirtualKeyboardController::ForceShowKeyboardWithKeyset(
+    chromeos::input_method::mojom::ImeKeyset keyset) {
+  Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
+      keyset, base::BindOnce(&VirtualKeyboardController::ForceShowKeyboard,
+                             base::Unretained(this)));
 }
 
 void VirtualKeyboardController::OnTabletModeStarted() {
@@ -214,6 +235,68 @@ void VirtualKeyboardController::SetKeyboardEnabled(bool enabled) {
     Shell::Get()->CreateKeyboard();
   } else {
     Shell::Get()->DestroyKeyboard();
+  }
+}
+
+void VirtualKeyboardController::ForceShowKeyboard() {
+  // If the virtual keyboard is enabled, show the keyboard directly.
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller) {
+    // Observe the keyboard closing in order to reset any keysets.
+    if (!keyboard_controller->HasObserver(this))
+      keyboard_controller->AddObserver(this);
+    keyboard_controller->ShowKeyboard(false /* locked */);
+    return;
+  }
+
+  // Otherwise, force enable the virtual keyboard by turning on the
+  // accessibility keyboard.
+  // TODO(https://crbug.com/818567): This is risky as enabling accessibility
+  // keyboard is a persistent setting, so we have to ensure that we disable it
+  // again when the keyboard is closed.
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  DCHECK(!accessibility_controller->IsVirtualKeyboardEnabled());
+
+  // TODO(mash): Turning on accessibility keyboard does not create a valid
+  // KeyboardController under MASH. See https://crbug.com/646565.
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  // Onscreen keyboard has not been enabled yet, forces to bring out the
+  // keyboard for one time.
+  accessibility_controller->SetVirtualKeyboardEnabled(true);
+  keyboard_enabled_using_accessibility_prefs_ = true;
+  keyboard_controller = keyboard::KeyboardController::GetInstance();
+  DCHECK(keyboard_controller);
+
+  // Observe the keyboard closing in order to disable the accessibility
+  // keyboard again and reset any keysets.
+  keyboard_controller->AddObserver(this);
+  keyboard_controller->ShowKeyboard(false);
+}
+
+void VirtualKeyboardController::OnKeyboardClosed() {
+  Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
+      chromeos::input_method::mojom::ImeKeyset::kNone);
+}
+
+void VirtualKeyboardController::OnKeyboardHidden() {
+  Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
+      chromeos::input_method::mojom::ImeKeyset::kNone);
+
+  if (keyboard::KeyboardController* keyboard_controller =
+          keyboard::KeyboardController::GetInstance()) {
+    keyboard_controller->RemoveObserver(this);
+  }
+
+  if (keyboard_enabled_using_accessibility_prefs_) {
+    keyboard_enabled_using_accessibility_prefs_ = false;
+
+    // Posts a task to disable the virtual keyboard.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(DisableVirtualKeyboard));
   }
 }
 

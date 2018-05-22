@@ -72,7 +72,6 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   void HideBubble(const views::TrayBubbleView* bubble_view) override;
 
   // keyboard::KeyboardControllerObserver:
-  void OnKeyboardClosed() override;
   void OnKeyboardHidden() override;
 
   // VirtualKeyboardObserver:
@@ -88,12 +87,6 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   // Updates the text of the label on the tray.
   void UpdateTrayLabel();
 
-  // Disables the virtual keyboard.
-  void DisableVirtualKeyboard();
-
-  // Show the virtual keyboard.
-  void ShowKeyboard();
-
   ImeController* ime_controller_;
 
   // Bubble for default and detailed views.
@@ -101,8 +94,6 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   ImeListView* ime_list_view_;
 
   views::Label* label_;
-  bool show_keyboard_;
-  bool force_show_keyboard_;
   bool keyboard_suppressed_;
   bool show_bubble_after_keyboard_hidden_;
   bool is_emoji_enabled_;
