@@ -498,6 +498,7 @@ jumbo_source_set("browser") {
     "browser_main_loop.cc",
     "browser_main_loop.h",
     "browser_main_runner_impl.cc",
+    "browser_main_runner_impl.h",
     "browser_plugin/browser_plugin_embedder.cc",
     "browser_plugin/browser_plugin_embedder.h",
     "browser_plugin/browser_plugin_guest.cc",
