@@ -40,6 +40,7 @@ _CONFIG = [
             'base::CreateSequencedTaskRunnerWithTraits',
             'base::SequencedTaskRunner',
             'base::SingleThreadTaskRunner',
+            'base::ScopedFD',
             'base::SysInfo',
             'base::ThreadChecker',
             'base::Time',
