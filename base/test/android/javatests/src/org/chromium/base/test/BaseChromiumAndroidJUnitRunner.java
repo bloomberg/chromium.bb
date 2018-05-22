@@ -214,6 +214,9 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
 
         @Override
         public TestRequest build() {
+            // See crbug://841695. TestLoader.isTestClass is incorrectly deciding that
+            // InstrumentationTestSuite is a test class.
+            removeTestClass("android.test.InstrumentationTestSuite");
             // If a test class was requested, then no need to iterate class loader.
             if (mHasClassList) {
                 return super.build();
