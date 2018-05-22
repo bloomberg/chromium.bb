@@ -34,11 +34,11 @@ flat_rule::ElementType GetElementType(content::ResourceType type) {
     case content::RESOURCE_TYPE_LAST_TYPE:
     case content::RESOURCE_TYPE_PREFETCH:
     case content::RESOURCE_TYPE_SUB_RESOURCE:
-    // TODO(crbug.com/696822): Add support for main frame and csp report to
-    // url_pattern_index. These are supported by the Web Request API.
-    case content::RESOURCE_TYPE_MAIN_FRAME:
-    case content::RESOURCE_TYPE_CSP_REPORT:
       return flat_rule::ElementType_OTHER;
+    case content::RESOURCE_TYPE_MAIN_FRAME:
+      return flat_rule::ElementType_MAIN_FRAME;
+    case content::RESOURCE_TYPE_CSP_REPORT:
+      return flat_rule::ElementType_CSP_REPORT;
     case content::RESOURCE_TYPE_SCRIPT:
     case content::RESOURCE_TYPE_WORKER:
     case content::RESOURCE_TYPE_SHARED_WORKER:

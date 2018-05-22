@@ -155,6 +155,8 @@ flat_rule::ElementType GetElementType(dnr_api::ResourceType resource_type) {
   switch (resource_type) {
     case dnr_api::RESOURCE_TYPE_NONE:
       return flat_rule::ElementType_NONE;
+    case dnr_api::RESOURCE_TYPE_MAIN_FRAME:
+      return flat_rule::ElementType_MAIN_FRAME;
     case dnr_api::RESOURCE_TYPE_SUB_FRAME:
       return flat_rule::ElementType_SUBDOCUMENT;
     case dnr_api::RESOURCE_TYPE_STYLESHEET:
@@ -171,6 +173,8 @@ flat_rule::ElementType GetElementType(dnr_api::ResourceType resource_type) {
       return flat_rule::ElementType_XMLHTTPREQUEST;
     case dnr_api::RESOURCE_TYPE_PING:
       return flat_rule::ElementType_PING;
+    case dnr_api::RESOURCE_TYPE_CSP_REPORT:
+      return flat_rule::ElementType_CSP_REPORT;
     case dnr_api::RESOURCE_TYPE_MEDIA:
       return flat_rule::ElementType_MEDIA;
     case dnr_api::RESOURCE_TYPE_WEBSOCKET:
@@ -214,10 +218,12 @@ ParseResult ComputeElementTypes(const dnr_api::RuleCondition& condition,
   if (include_element_type_mask & exclude_element_type_mask)
     return ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED;
 
-  *element_types =
-      include_element_type_mask
-          ? include_element_type_mask
-          : (flat_rule::ElementType_ANY & ~exclude_element_type_mask);
+  if (include_element_type_mask != flat_rule::ElementType_NONE)
+    *element_types = include_element_type_mask;
+  else if (exclude_element_type_mask != flat_rule::ElementType_NONE)
+    *element_types = flat_rule::ElementType_ANY & ~exclude_element_type_mask;
+  else
+    *element_types = url_pattern_index::kDefaultFlatElementTypesMask;
 
   return ParseResult::SUCCESS;
 }

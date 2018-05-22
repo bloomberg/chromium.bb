@@ -366,6 +366,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   for (const auto& rule_data : rules_data) {
     TestRule rule = CreateGenericRule();
     rule.condition->url_filter = rule_data.url_filter;
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rule.id = rule_data.id;
     rules.push_back(rule);
   }
@@ -394,6 +395,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter =
       std::string("pages_with_script/page2.html?q=bye^");
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
 
   // '^' (Separator character) matches anything except a letter, a digit or
@@ -631,18 +633,21 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Whitelist) {
   TestRule rule = CreateGenericRule();
   int id = kMinValidID;
 
-  // Block all requests ending with numbers 1 to |kNumRequests|.
+  // Block all main-frame requests ending with numbers 1 to |kNumRequests|.
   std::vector<TestRule> rules;
   for (int i = 1; i <= kNumRequests; ++i) {
     rule.id = id++;
     rule.condition->url_filter = base::StringPrintf("num=%d|", i);
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rules.push_back(rule);
   }
 
-  // Whitelist all requests ending with even numbers from 1 to |kNumRequests|.
+  // Whitelist all main-frame requests ending with even numbers from 1 to
+  // |kNumRequests|.
   for (int i = 2; i <= kNumRequests; i += 2) {
     rule.id = id++;
     rule.condition->url_filter = base::StringPrintf("num=%d|", i);
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rule.action->type = std::string("whitelist");
     rules.push_back(rule);
   }
@@ -670,9 +675,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Whitelist) {
 // enabled.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        Enable_Disable_Reload_Uninstall) {
-  // Block all requests to example.com
+  // Block all main frame requests to example.com
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = std::string("example.com");
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
   const ExtensionId extension_id = last_loaded_extension_id();
 
@@ -743,6 +749,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   for (const auto& rule_data : rules_data) {
     TestRule rule = CreateGenericRule();
     rule.condition->url_filter = rule_data.url_filter;
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rule.id = rule_data.id;
     if (rule_data.add_to_first_extension)
       rules_1.push_back(rule);
@@ -798,6 +805,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   rule.priority = kMinValidPriority;
   rule.action->type = std::string("redirect");
   rule.condition->url_filter = std::string("example.com");
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
 
   base::Time last_extension_install_time = base::Time::Min();
 
@@ -855,6 +863,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
     rule.condition->url_filter = rule_data.url_filter;
     rule.id = rule_data.id;
     rule.priority = kMinValidPriority;
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rule.action->type = rule_data.action_type;
     rule.action->redirect_url = rule_data.redirect_url;
     rules.push_back(rule);
@@ -937,6 +946,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RedirectPriority) {
       rule.action->type = std::string("redirect");
       rule.action->redirect_url = redirect_url_for_priority(j);
       rule.condition->url_filter = pattern;
+      rule.condition->resource_types = std::vector<std::string>({"main_frame"});
       rules.push_back(rule);
     }
   }
@@ -970,9 +980,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RedirectPriority) {
 // from an incognito context.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        BlockRequests_Incognito) {
-  // Block all requests to example.com
+  // Block all main-frame requests to example.com.
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = std::string("example.com");
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
 
   ExtensionId extension_id = last_loaded_extension_id();
@@ -1396,7 +1407,8 @@ class DeclarativeNetRequestResourceTypeBrowserTest
   DeclarativeNetRequestResourceTypeBrowserTest() {}
 
  protected:
-  // TODO(crbug.com/696822): Add tests for "object", "ping", "other", "font".
+  // TODO(crbug.com/696822): Add tests for "object", "ping", "other", "font",
+  // "csp_report".
   enum ResourceTypeMask {
     kNone = 0,
     kSubframe = 1 << 0,

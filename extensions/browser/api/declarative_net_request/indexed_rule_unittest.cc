@@ -156,7 +156,8 @@ TEST_F(IndexedRuleTest, ResourceTypesParsing) {
     // Only valid if |expected_result| is SUCCESS.
     const uint16_t expected_element_types;
   } cases[] = {
-      {nullptr, nullptr, ParseResult::SUCCESS, flat_rule::ElementType_ANY},
+      {nullptr, nullptr, ParseResult::SUCCESS,
+       flat_rule::ElementType_ANY & ~flat_rule::ElementType_MAIN_FRAME},
       {nullptr,
        std::make_unique<ResourceTypeVec>(
            ResourceTypeVec({dnr_api::RESOURCE_TYPE_SCRIPT})),
@@ -174,12 +175,13 @@ TEST_F(IndexedRuleTest, ResourceTypesParsing) {
        flat_rule::ElementType_NONE},
       {nullptr,
        std::make_unique<ResourceTypeVec>(ResourceTypeVec(
-           {dnr_api::RESOURCE_TYPE_SUB_FRAME, dnr_api::RESOURCE_TYPE_STYLESHEET,
-            dnr_api::RESOURCE_TYPE_SCRIPT, dnr_api::RESOURCE_TYPE_IMAGE,
-            dnr_api::RESOURCE_TYPE_FONT, dnr_api::RESOURCE_TYPE_OBJECT,
+           {dnr_api::RESOURCE_TYPE_MAIN_FRAME, dnr_api::RESOURCE_TYPE_SUB_FRAME,
+            dnr_api::RESOURCE_TYPE_STYLESHEET, dnr_api::RESOURCE_TYPE_SCRIPT,
+            dnr_api::RESOURCE_TYPE_IMAGE, dnr_api::RESOURCE_TYPE_FONT,
+            dnr_api::RESOURCE_TYPE_OBJECT,
             dnr_api::RESOURCE_TYPE_XMLHTTPREQUEST, dnr_api::RESOURCE_TYPE_PING,
-            dnr_api::RESOURCE_TYPE_MEDIA, dnr_api::RESOURCE_TYPE_WEBSOCKET,
-            dnr_api::RESOURCE_TYPE_OTHER})),
+            dnr_api::RESOURCE_TYPE_CSP_REPORT, dnr_api::RESOURCE_TYPE_MEDIA,
+            dnr_api::RESOURCE_TYPE_WEBSOCKET, dnr_api::RESOURCE_TYPE_OTHER})),
        ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES,
        flat_rule::ElementType_NONE},
       {std::make_unique<ResourceTypeVec>(ResourceTypeVec()),

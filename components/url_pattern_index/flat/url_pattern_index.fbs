@@ -37,7 +37,6 @@ enum ActivationType : ubyte (bit_flags) {
 }
 
 // The types of subresource requests that a URL rule should be applied to.
-// Corresponds to url_pattern_index::proto::ElementType.
 enum ElementType : ushort (bit_flags) {
   OTHER,
   SCRIPT,
@@ -53,6 +52,8 @@ enum ElementType : ushort (bit_flags) {
   MEDIA,
   FONT,
   WEBSOCKET,
+  CSP_REPORT,
+  MAIN_FRAME,
   // Note: Update the default value for |element_types| field in UrlRule, on
   // adding/removing values from this enum.
 }
@@ -63,9 +64,11 @@ table UrlRule {
   // Rule matching options, a bitmask consisting of OptionFlags.
   options : ubyte;
 
-  // A bitmask of ElementType. Equals ElementType_ANY by default for
-  // compactness.
-  element_types : ushort = 4095;
+  // A bitmask of ElementType. Equals ElementType_ANY & ~ElementType_MAIN_FRAME
+  // by default for compactness. We expect most rules to not use
+  // ElementType_MAIN_FRAME. Keep this in sync with
+  // url_pattern_index::kDefaultFlatElementTypesMask.
+  element_types : ushort = 8191;
 
   // A bitmask of ActivationType. Disables all activation types by default.
   activation_types : ubyte = 0;

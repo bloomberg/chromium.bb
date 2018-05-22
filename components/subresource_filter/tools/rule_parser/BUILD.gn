@@ -6,12 +6,15 @@ source_set("rule_parser") {
   sources = [
     "rule.cc",
     "rule.h",
+    "rule_options.h",
     "rule_parser.cc",
     "rule_parser.h",
   ]
+  public_deps = [
+    "//components/url_pattern_index",
+  ]
   deps = [
     "//base",
-    "//components/url_pattern_index/proto:url_pattern_index",
     "//third_party/protobuf:protobuf_lite",
   ]
 }

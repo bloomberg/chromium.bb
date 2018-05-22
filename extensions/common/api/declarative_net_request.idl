@@ -7,7 +7,7 @@
 namespace declarativeNetRequest {
   // This describes the resource type of the network request.
   enum ResourceType {
-    // TODO(crbug.com/696822): add main_frame, csp.
+    main_frame,
     sub_frame,
     stylesheet,
     script,
@@ -16,6 +16,7 @@ namespace declarativeNetRequest {
     object,
     xmlhttprequest,
     ping,
+    csp_report,
     media,
     websocket,
     other
@@ -74,13 +75,14 @@ namespace declarativeNetRequest {
     // Note: sub-domains like "a.example.com" are also allowed.
     DOMString[]? excludedDomains;
 
-    // List of resource types which the rule can match. If the list is omitted,
-    // the rule is applied to all resource types. An empty list is not allowed.
+    // List of resource types which the rule can match. An empty list is not
+    // allowed.
     ResourceType[]? resourceTypes;
 
-    // List of resource types which the rule won't match. If the list is empty
-    // or omitted, no resource types are excluded. This takes precedence over
-    // |resourceTypes|.
+    // List of resource types which the rule won't match. Only one of
+    // |resourceTypes| and |excludedResourceTypes| should be specified. If
+    // neither of them are specified, all resource types except "main_frame"
+    // are blocked.
     ResourceType[]? excludedResourceTypes;
 
     // Specifies whether the network request is firstParty or thirdParty to the

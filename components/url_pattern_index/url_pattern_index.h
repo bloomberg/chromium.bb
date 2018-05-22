@@ -40,6 +40,14 @@ using UrlPatternIndexOffset = flatbuffers::Offset<flat::UrlPatternIndex>;
 constexpr size_t kNGramSize = 5;
 static_assert(kNGramSize <= sizeof(NGram), "NGram type is too narrow.");
 
+// The default element types mask as specified by the flatbuffer schema.
+constexpr uint16_t kDefaultFlatElementTypesMask =
+    flat::ElementType_ANY & ~flat::ElementType_MAIN_FRAME;
+
+// The default element types mask used by a proto::UrlRule.
+constexpr uint32_t kDefaultProtoElementTypesMask =
+    proto::ELEMENT_TYPE_ALL & ~proto::ELEMENT_TYPE_POPUP;
+
 // Serializes the |rule| to the FlatBuffer |builder|, and returns an offset to
 // it in the resulting buffer. Returns null offset iff the |rule| could not be
 // serialized because of unsupported options or it is otherwise invalid.
