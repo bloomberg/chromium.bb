@@ -132,7 +132,7 @@ TEST_F(TabLifecycleUnitTest, CanDiscardByDefault) {
 TEST_F(TabLifecycleUnitTest, SetFocused) {
   TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
                                       tab_strip_model_.get());
-  EXPECT_EQ(NowTicks(), tab_lifecycle_unit.GetSortKey().last_focused_time);
+  EXPECT_EQ(NowTicks(), tab_lifecycle_unit.GetLastFocusedTime());
   EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
   EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
   EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
@@ -140,8 +140,7 @@ TEST_F(TabLifecycleUnitTest, SetFocused) {
   tab_lifecycle_unit.SetFocused(true);
   tab_strip_model_->ActivateTabAt(0, false);
   web_contents_->WasShown();
-  EXPECT_EQ(base::TimeTicks::Max(),
-            tab_lifecycle_unit.GetSortKey().last_focused_time);
+  EXPECT_EQ(base::TimeTicks::Max(), tab_lifecycle_unit.GetLastFocusedTime());
   EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
   EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
   EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
@@ -149,8 +148,7 @@ TEST_F(TabLifecycleUnitTest, SetFocused) {
   tab_lifecycle_unit.SetFocused(false);
   tab_strip_model_->ActivateTabAt(1, false);
   web_contents_->WasHidden();
-  EXPECT_EQ(test_clock_.NowTicks(),
-            tab_lifecycle_unit.GetSortKey().last_focused_time);
+  EXPECT_EQ(test_clock_.NowTicks(), tab_lifecycle_unit.GetLastFocusedTime());
   EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
   EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
   EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));

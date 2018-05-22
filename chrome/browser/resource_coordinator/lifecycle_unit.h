@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
+#include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -27,17 +28,37 @@ class TabLifecycleUnitExternal;
 // use any system resource.
 class LifecycleUnit {
  public:
-  // Used to sort LifecycleUnit by importance. The most important LifecycleUnit
-  // has the greatest SortKey.
+  // Used to sort LifecycleUnit by importance using a reactivation score or the
+  // last focused time.
+  // The most important LifecycleUnit has the greatest SortKey.
   struct SortKey {
+    // kMaxScore is used when a SortKey should rank ahead of any other SortKey.
+    // Two SortKeys with kMaxScore are compared using |last_focused_time|.
+    static constexpr float kMaxScore = std::numeric_limits<float>::max();
+
     SortKey();
+
+    // Creates a SortKey based on the LifecycleUnit's last focused time.
     explicit SortKey(base::TimeTicks last_focused_time);
+
+    // Creates a SortKey based on a score calculated for the LifecycleUnit and
+    // the last focused time. Used when the TabRanker feature is enabled.
+    SortKey(float score, base::TimeTicks last_focused_time);
+
+    SortKey(const SortKey& other);
 
     bool operator<(const SortKey& other) const;
     bool operator>(const SortKey& other) const;
 
+    // Abstract importance score calculated by the Tab Ranker where a higher
+    // score suggests the tab is more likely to be reactivated.
+    // kMaxScore if the LifecycleUnit is currently focused.
+    base::Optional<float> score;
+
     // Last time at which the LifecycleUnit was focused. base::TimeTicks::Max()
     // if the LifecycleUnit is currently focused.
+    // Used when the TabRanker feature is disabled. Also used as a tiebreaker
+    // when two scores are the same.
     base::TimeTicks last_focused_time;
   };
 
@@ -54,6 +75,10 @@ class LifecycleUnit {
   // title is available.
   virtual base::string16 GetTitle() const = 0;
 
+  // Returns the last time at which the LifecycleUnit was focused, or
+  // base::TimeTicks::Max() if the LifecycleUnit is currently focused.
+  virtual base::TimeTicks GetLastFocusedTime() const = 0;
+
   // Returns the process hosting this LifecycleUnit. Used to distribute OOM
   // scores.
   //
@@ -62,7 +87,8 @@ class LifecycleUnit {
   virtual base::ProcessHandle GetProcessHandle() const = 0;
 
   // Returns a key that can be used to evaluate the relative importance of this
-  // LifecycleUnit.
+  // LifecycleUnit. This key may not be trivial to calculate, so this should not
+  // be called repeatedly if the value will be reused, e.g. during a sort.
   //
   // TODO(fdoray): Figure out if GetSortKey() and CanDiscard() should be
   // replaced with a method that returns a numeric value representing the

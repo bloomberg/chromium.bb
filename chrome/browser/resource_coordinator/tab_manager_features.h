@@ -16,6 +16,7 @@ extern const base::Feature kCustomizedTabLoadTimeout;
 extern const base::Feature kProactiveTabDiscarding;
 extern const base::Feature kStaggeredBackgroundTabOpening;
 extern const base::Feature kStaggeredBackgroundTabOpeningExperiment;
+extern const base::Feature kTabRanker;
 
 }  // namespace features
 

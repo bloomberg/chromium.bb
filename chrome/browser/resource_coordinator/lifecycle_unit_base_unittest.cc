@@ -43,10 +43,13 @@ class DummyLifecycleUnit : public LifecycleUnitBase {
     return nullptr;
   }
   base::string16 GetTitle() const override { return base::string16(); }
+  base::TimeTicks GetLastFocusedTime() const override {
+    return base::TimeTicks();
+  }
   base::ProcessHandle GetProcessHandle() const override {
     return base::ProcessHandle();
   }
-  SortKey GetSortKey() const override { return SortKey(); }
+  SortKey GetSortKey() const override { return SortKey(base::TimeTicks()); }
   content::Visibility GetVisibility() const override {
     return content::Visibility::VISIBLE;
   }

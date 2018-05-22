@@ -102,7 +102,7 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
       info->discard_count = tab_lifecycle_unit_external->GetDiscardCount();
       info->utility_rank = rank++;
       const base::TimeTicks last_focused_time =
-          lifecycle_unit->GetSortKey().last_focused_time;
+          lifecycle_unit->GetLastFocusedTime();
       const base::TimeDelta elapsed =
           (last_focused_time == base::TimeTicks::Max())
               ? base::TimeDelta()
