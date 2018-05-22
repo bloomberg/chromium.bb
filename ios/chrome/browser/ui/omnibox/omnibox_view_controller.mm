@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
 
 #import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -54,10 +55,21 @@
   self.view.incognito = self.incognito;
 }
 
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  [self.view setLeadingImageHidden:!IsIPadIdiom()];
+}
+
 #pragma mark - public methods
 
 - (OmniboxTextFieldIOS*)textField {
   return self.view.textField;
+}
+
+#pragma mark - OmniboxConsumer
+
+- (void)updateAutocompleteIcon:(UIImage*)icon {
+  [self.view setLeadingImage:icon];
 }
 
 @end

@@ -7,10 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/omnibox/omnibox_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 
 // The view controller managing the omnibox textfield and its container view.
-@interface OmniboxViewController : UIViewController
+@interface OmniboxViewController : UIViewController<OmniboxConsumer>
 
 // The textfield used by this view controller.
 @property(nonatomic, readonly, strong) OmniboxTextFieldIOS* textField;

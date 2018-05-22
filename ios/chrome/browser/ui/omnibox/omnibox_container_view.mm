@@ -21,7 +21,7 @@
 #endif
 
 namespace {
-const CGFloat kLeadingButtonEdgeOffset = 9;
+const CGFloat kleadingImageViewEdgeOffset = 9;
 // Offset from the leading edge to the textfield when no image is shown.
 const CGFloat kTextFieldLeadingOffsetNoImage = 16;
 // Space between the leading button and the textfield when a button is shown.
@@ -34,11 +34,12 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
 // Constraints the leading textfield side to the leading of |self|.
 // Active when the |leadingView| is nil or hidden.
 @property(nonatomic, strong) NSLayoutConstraint* leadingTextfieldConstraint;
-// When the |leadingButton| is not hidden, this is a constraint that links the
-// leading edge of the button to self leading edge. Used for animations.
-@property(nonatomic, strong) NSLayoutConstraint* leadingButtonLeadingConstraint;
-// The leading button, such as the security status icon.
-@property(nonatomic, strong) UIButton* leadingButton;
+// When the |leadingImageView| is not hidden, this is a constraint that links
+// the leading edge of the button to self leading edge. Used for animations.
+@property(nonatomic, strong)
+    NSLayoutConstraint* leadingImageViewLeadingConstraint;
+// The leading image view. Used for autocomplete icons.
+@property(nonatomic, strong) UIImageView* leadingImageView;
 // Redefined as readwrite.
 @property(nonatomic, strong) OmniboxTextFieldIOS* textField;
 
@@ -46,27 +47,11 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
 
 @implementation OmniboxContainerView
 @synthesize textField = _textField;
-@synthesize leadingButton = _leadingButton;
+@synthesize leadingImageView = _leadingImageView;
 @synthesize leadingTextfieldConstraint = _leadingTextfieldConstraint;
 @synthesize incognito = _incognito;
-@synthesize leadingButtonLeadingConstraint = _leadingButtonLeadingConstraint;
-
-#pragma mark - Public properties
-
-- (void)setLeadingButton:(UIButton*)leadingButton {
-  _leadingButton = leadingButton;
-  _leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
-  [_leadingButton
-      setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                      forAxis:UILayoutConstraintAxisHorizontal];
-  [_leadingButton
-      setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                      forAxis:UILayoutConstraintAxisVertical];
-  [_leadingButton setContentHuggingPriority:UILayoutPriorityRequired
-                                    forAxis:UILayoutConstraintAxisHorizontal];
-  [_leadingButton setContentHuggingPriority:UILayoutPriorityRequired
-                                    forAxis:UILayoutConstraintAxisVertical];
-}
+@synthesize leadingImageViewLeadingConstraint =
+    _leadingImageViewLeadingConstraint;
 
 #pragma mark - Public methods
 
@@ -101,53 +86,57 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                         forAxis:
                                             UILayoutConstraintAxisHorizontal];
+
+    [self createLeadingImageView];
+    _leadingImageView.tintColor = tintColor ?: [UIColor blackColor];
   }
   return self;
 }
 
-- (void)setLeadingButtonHidden:(BOOL)hidden {
-  if (!_leadingButton) {
-    return;
-  }
-
+- (void)setLeadingImageHidden:(BOOL)hidden {
   if (hidden) {
-    [_leadingButton removeFromSuperview];
+    [_leadingImageView removeFromSuperview];
     self.leadingTextfieldConstraint.active = YES;
   } else {
-    [self addSubview:_leadingButton];
+    [self addSubview:_leadingImageView];
     self.leadingTextfieldConstraint.active = NO;
-    self.leadingButtonLeadingConstraint = [self.layoutMarginsGuide.leadingAnchor
-        constraintEqualToAnchor:self.leadingButton.leadingAnchor
-                       constant:-kLeadingButtonEdgeOffset];
+    self.leadingImageViewLeadingConstraint =
+        [self.layoutMarginsGuide.leadingAnchor
+            constraintEqualToAnchor:self.leadingImageView.leadingAnchor
+                           constant:-kleadingImageViewEdgeOffset];
 
-    NSLayoutConstraint* leadingButtonToTextField = nil;
-    leadingButtonToTextField = [self.leadingButton.trailingAnchor
+    NSLayoutConstraint* leadingImageViewToTextField = nil;
+    leadingImageViewToTextField = [self.leadingImageView.trailingAnchor
         constraintEqualToAnchor:self.textField.leadingAnchor
                        constant:-kTextFieldLeadingOffsetImage];
 
     [NSLayoutConstraint activateConstraints:@[
-      [_leadingButton.centerYAnchor
+      [_leadingImageView.centerYAnchor
           constraintEqualToAnchor:self.layoutMarginsGuide.centerYAnchor],
-      self.leadingButtonLeadingConstraint,
-      leadingButtonToTextField,
+      self.leadingImageViewLeadingConstraint,
+      leadingImageViewToTextField,
     ]];
   }
 }
 
-- (void)setLeadingButtonEnabled:(BOOL)enabled {
-  _leadingButton.enabled = enabled;
+- (void)setLeadingImage:(UIImage*)image {
+  [self.leadingImageView setImage:image];
 }
 
-- (void)setPlaceholderImage:(UIImage*)image {
-  [self.leadingButton setImage:image forState:UIControlStateNormal];
-}
-
-#pragma mark - Private methods
-
-// Retrieves a resource image by ID and returns it as UIImage.
-- (UIImage*)placeholderImageWithId:(int)imageID {
-  return [NativeImage(imageID)
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+- (void)createLeadingImageView {
+  _leadingImageView = [[UIImageView alloc] init];
+  _leadingImageView.translatesAutoresizingMaskIntoConstraints = NO;
+  [_leadingImageView
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                      forAxis:UILayoutConstraintAxisHorizontal];
+  [_leadingImageView
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                      forAxis:UILayoutConstraintAxisVertical];
+  [_leadingImageView
+      setContentHuggingPriority:UILayoutPriorityRequired
+                        forAxis:UILayoutConstraintAxisHorizontal];
+  [_leadingImageView setContentHuggingPriority:UILayoutPriorityRequired
+                                       forAxis:UILayoutConstraintAxisVertical];
 }
 
 @end
