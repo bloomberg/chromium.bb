@@ -110,7 +110,6 @@ void ScriptLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(pending_script_);
   visitor->Trace(prepared_pending_script_);
-  visitor->Trace(original_document_);
   visitor->Trace(resource_keep_alive_);
   PendingScriptClient::Trace(visitor);
 }
@@ -309,7 +308,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // document.
   Document& element_document = element_->GetDocument();
   Document* context_document = element_document.ContextDocument();
-  original_document_ = context_document;
   if (!element_document.ExecutingFrame())
     return false;
   if (!context_document || !context_document->ExecutingFrame())
@@ -787,7 +785,7 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
 
   // Do not execute module scripts if they are moved between documents.
   // TODO(hiroshige): Also do not execute classic scripts. crbug.com/721914
-  if (original_document_ != context_document &&
+  if (pending_script->OriginalContextDocument() != context_document &&
       GetScriptType() == ScriptType::kModule) {
     pending_script->Dispose();
     return;
