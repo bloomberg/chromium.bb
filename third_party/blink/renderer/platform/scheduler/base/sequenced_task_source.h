@@ -18,11 +18,7 @@ namespace internal {
 // from TaskQueueManager.
 class SequencedTaskSource {
  public:
-  // TODO(alexclarke): Move this enum elsewhere.
-  enum class WorkType { kImmediate, kDelayed };
-
   // Take a next task to run from a sequence.
-  // TODO(altimin): Do not pass |work_type| here.
   virtual Optional<PendingTask> TakeTask() = 0;
 
   // Notify a sequence that a taken task has been completed.

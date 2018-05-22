@@ -28,10 +28,10 @@ ThreadControllerImpl::ThreadControllerImpl(
       weak_factory_(this) {
   immediate_do_work_closure_ =
       BindRepeating(&ThreadControllerImpl::DoWork, weak_factory_.GetWeakPtr(),
-                    SequencedTaskSource::WorkType::kImmediate);
+                    WorkType::kImmediate);
   delayed_do_work_closure_ =
       BindRepeating(&ThreadControllerImpl::DoWork, weak_factory_.GetWeakPtr(),
-                    SequencedTaskSource::WorkType::kDelayed);
+                    WorkType::kDelayed);
 }
 
 ThreadControllerImpl::~ThreadControllerImpl() = default;
@@ -146,13 +146,13 @@ void ThreadControllerImpl::DidQueueTask(const PendingTask& pending_task) {
   task_annotator_.DidQueueTask("TaskQueueManager::PostTask", pending_task);
 }
 
-void ThreadControllerImpl::DoWork(SequencedTaskSource::WorkType work_type) {
+void ThreadControllerImpl::DoWork(WorkType work_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sequence_);
 
   {
     AutoLock lock(any_sequence_lock_);
-    if (work_type == SequencedTaskSource::WorkType::kImmediate)
+    if (work_type == WorkType::kImmediate)
       any_sequence().immediate_do_work_posted = false;
     any_sequence().do_work_running_count++;
   }

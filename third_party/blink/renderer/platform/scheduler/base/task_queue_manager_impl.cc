@@ -216,10 +216,10 @@ void TaskQueueManagerImpl::OnExitNestedRunLoop() {
     // While we were nested some non-nestable tasks may have become eligible to
     // run. We push them back onto the front of their original work queues.
     while (!main_thread_only().non_nestable_task_queue.empty()) {
-      NonNestableTask& non_nestable_task =
+      internal::TaskQueueImpl::DeferredNonNestableTask& non_nestable_task =
           *main_thread_only().non_nestable_task_queue.begin();
       non_nestable_task.task_queue->RequeueDeferredNonNestableTask(
-          std::move(non_nestable_task.task), non_nestable_task.work_type);
+          std::move(non_nestable_task));
       main_thread_only().non_nestable_task_queue.pop_front();
     }
     if (main_thread_only().observer)
@@ -299,9 +299,9 @@ Optional<PendingTask> TaskQueueManagerImpl::TakeTask() {
       // the additional delay should not be a problem.
       // Note because we don't delete queues while nested, it's perfectly OK to
       // store the raw pointer for |queue| here.
-      NonNestableTask deferred_task{work_queue->TakeTaskFromWorkQueue(),
-                                    work_queue->task_queue(),
-                                    work_queue->queue_type()};
+      internal::TaskQueueImpl::DeferredNonNestableTask deferred_task{
+          work_queue->TakeTaskFromWorkQueue(), work_queue->task_queue(),
+          work_queue->queue_type()};
       // We push these tasks onto the front to make sure that when requeued they
       // are pushed in the right order.
       main_thread_only().non_nestable_task_queue.push_front(

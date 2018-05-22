@@ -33,7 +33,7 @@ class WorkQueueSets;
 // throttling mechanisms.
 class PLATFORM_EXPORT WorkQueue {
  public:
-  using QueueType = SequencedTaskSource::WorkType;
+  using QueueType = internal::TaskQueueImpl::WorkQueueType;
 
   // Note |task_queue| can be null if queue_type is kNonNestable.
   WorkQueue(TaskQueueImpl* task_queue, const char* name, QueueType queue_type);

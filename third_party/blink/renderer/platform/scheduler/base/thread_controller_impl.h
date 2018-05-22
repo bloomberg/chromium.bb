@@ -66,7 +66,9 @@ class PLATFORM_EXPORT ThreadControllerImpl : public ThreadController,
   RunLoop::NestingObserver* nesting_observer_ = nullptr;
 
  private:
-  void DoWork(SequencedTaskSource::WorkType work_type);
+  enum class WorkType { kImmediate, kDelayed };
+
+  void DoWork(WorkType work_type);
 
   struct AnySequence {
     AnySequence();
