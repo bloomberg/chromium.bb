@@ -86,7 +86,8 @@ enum class TriggerManagerReason {
 class TriggerManager {
  public:
   TriggerManager(BaseUIManager* ui_manager,
-                 ReferrerChainProvider* referrer_chain_provider);
+                 ReferrerChainProvider* referrer_chain_provider,
+                 PrefService* local_state_prefs);
   virtual ~TriggerManager();
 
   // Returns a SBErrorDisplayOptions struct containing user state that is

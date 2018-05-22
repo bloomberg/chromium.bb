@@ -362,6 +362,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   rappor::RapporServiceImpl::RegisterPrefs(registry);
   RegisterNetworkContextCreationPrefs(registry);
   RegisterScreenshotPrefs(registry);
+  safe_browsing::RegisterLocalStatePrefs(registry);
   SigninManagerFactory::RegisterPrefs(registry);
   SSLConfigServiceManager::RegisterPrefs(registry);
   startup_metric_utils::RegisterPrefs(registry);

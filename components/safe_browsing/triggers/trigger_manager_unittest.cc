@@ -56,14 +56,13 @@ class MockThreatDetailsFactory : public ThreatDetailsFactory {
 
 class MockTriggerThrottler : public TriggerThrottler {
  public:
+  MockTriggerThrottler() : TriggerThrottler(nullptr) {}
   MOCK_CONST_METHOD1(TriggerCanFire, bool(TriggerType trigger_type));
 };
 
 class TriggerManagerTest : public ::testing::Test {
  public:
-  TriggerManagerTest()
-      : trigger_manager_(/*ui_manager=*/nullptr,
-                         /*referrer_chain_provider=*/nullptr) {}
+  TriggerManagerTest() : trigger_manager_(nullptr, nullptr, nullptr) {}
   ~TriggerManagerTest() override {}
 
   void SetUp() override {
