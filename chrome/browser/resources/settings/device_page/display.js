@@ -548,6 +548,27 @@ Polymer({
   },
 
   /**
+   * Returns true if the given mode is the best mode for the |selectedDisplay|.
+   * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
+   * @param {!chrome.system.display.DisplayMode} mode
+   * @return {boolean}
+   * @private
+   */
+  isBestMode_: function(selectedDisplay, mode) {
+    if (!selectedDisplay.isInternal)
+      return mode.isNative;
+
+    // Things work differently for full HD devices(1080p). The best mode is the
+    // one with 1.25 device scale factor and 0.8 ui scale.
+    if (mode.heightInNativePixels == 1080) {
+      return Math.abs(mode.uiScale - 0.8) < 0.001 &&
+          Math.abs(mode.deviceScaleFactor - 1.25) < 0.001;
+    }
+
+    return mode.uiScale == 1.0;
+  },
+
+  /**
    * @return {string}
    * @private
    */
@@ -563,11 +584,9 @@ Polymer({
     const mode = this.selectedDisplay.modes[
         /** @type {number} */ (this.selectedModePref_.value)];
     assert(mode);
-    const best =
-        this.selectedDisplay.isInternal ? mode.uiScale == 1.0 : mode.isNative;
     const widthStr = mode.width.toString();
     const heightStr = mode.height.toString();
-    if (best)
+    if (this.isBestMode_(this.selectedDisplay, mode))
       return this.i18n('displayResolutionTextBest', widthStr, heightStr);
     else if (mode.isNative)
       return this.i18n('displayResolutionTextNative', widthStr, heightStr);
