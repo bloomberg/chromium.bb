@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 using cocoa_test_event_utils::SynthesizeKeyEvent;
@@ -62,6 +63,10 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, SwitchTabsMac) {
 }
 
 IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, MenuCommandPriority) {
+  // This test doesn't work in Views mode at the moment:
+  // https://crbug.com/845503. Disabled pending a bit of design work to fix it.
+  if (!views_mode_controller::IsViewsBrowserCocoa())
+    return;
   NSWindow* ns_window = browser()->window()->GetNativeWindow();
   TabStripModel* tab_strip = browser()->tab_strip_model();
 
