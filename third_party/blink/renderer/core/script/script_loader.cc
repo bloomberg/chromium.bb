@@ -67,7 +67,6 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
                            bool already_started,
                            bool created_during_document_write)
     : element_(element),
-      start_line_number_(WTF::OrdinalNumber::BeforeFirst()),
       will_be_parser_executed_(false),
       will_execute_when_document_finished_parsing_(false),
       created_during_document_write_(created_during_document_write) {
@@ -94,13 +93,6 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
     // ... It is unset by the HTML parser and the XML parser on script elements
     // they insert. ...</spec>
     non_blocking_ = false;
-  }
-
-  if (parser_inserted &&
-      element_->GetDocument().GetScriptableDocumentParser() &&
-      !element_->GetDocument().IsInDocumentWrite()) {
-    start_line_number_ =
-        element_->GetDocument().GetScriptableDocumentParser()->LineNumber();
   }
 }
 
@@ -806,7 +798,8 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
     AtomicString nonce = element_->GetNonceForElement();
     if (!should_bypass_main_world_csp &&
         !element_->AllowInlineScriptForCSP(
-            nonce, start_line_number_, script->InlineSourceTextForCSP(),
+            nonce, pending_script->StartingPosition().line_,
+            script->InlineSourceTextForCSP(),
             ContentSecurityPolicy::InlineType::kBlock)) {
       // Consider as if "the script's script is null" retrospectively,
       // if the CSP check fails, which is considered as load failure.
