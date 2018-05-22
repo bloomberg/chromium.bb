@@ -17,11 +17,11 @@
 
 #include "config/aom_config.h"
 
-#include "./ivfdec.h"
-#include "./obudec.h"
+#include "common/ivfdec.h"
+#include "common/obudec.h"
+#include "common/tools_common.h"
+#include "common/webmdec.h"
 #include "tools/obu_parser.h"
-#include "./tools_common.h"
-#include "./webmdec.h"
 
 namespace {
 
