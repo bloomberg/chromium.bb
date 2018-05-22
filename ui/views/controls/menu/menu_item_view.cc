@@ -1213,12 +1213,9 @@ base::string16 MenuItemView::GetMinorText() const {
     return base::string16();
   }
 
-  ui::Accelerator accelerator;
-  if (MenuConfig::instance().show_accelerators && GetDelegate() &&
-      GetCommand() &&
-      GetDelegate()->GetAccelerator(GetCommand(), &accelerator)) {
-    return accelerator.GetShortcutText();
-  }
+  base::string16 accel_text;
+  if (MenuConfig::instance().ShouldShowAcceleratorText(this, &accel_text))
+    return accel_text;
 
   return minor_text_;
 }

@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_image_util.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/round_rect_painter.h"
 namespace views {
 
@@ -66,7 +67,8 @@ MenuConfig::MenuConfig()
       touchable_menu_shadow_elevation(12),
       vertical_touchable_menu_item_padding(8),
       padded_separator_left_margin(64),
-      arrow_key_selection_wraps(true) {
+      arrow_key_selection_wraps(true),
+      show_context_menu_accelerators(true) {
   Init();
 }
 
@@ -78,6 +80,21 @@ int MenuConfig::CornerRadiusForMenu(const MenuController* controller) const {
   if (controller && (controller->is_combobox() || controller->IsContextMenu()))
     return auxiliary_corner_radius;
   return corner_radius;
+}
+
+bool MenuConfig::ShouldShowAcceleratorText(const MenuItemView* item,
+                                           base::string16* text) const {
+  if (!show_accelerators || !item->GetDelegate() || !item->GetCommand())
+    return false;
+  ui::Accelerator accelerator;
+  if (!item->GetDelegate()->GetAccelerator(item->GetCommand(), &accelerator))
+    return false;
+  if (item->GetMenuController() && item->GetMenuController()->IsContextMenu() &&
+      !show_context_menu_accelerators) {
+    return false;
+  }
+  *text = accelerator.GetShortcutText();
+  return true;
 }
 
 // static

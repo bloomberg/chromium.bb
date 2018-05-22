@@ -12,6 +12,7 @@
 namespace views {
 
 class MenuController;
+class MenuItemView;
 
 // Layout type information for menu items. Use the instance() method to obtain
 // the MenuConfig for the current platform.
@@ -25,6 +26,11 @@ struct VIEWS_EXPORT MenuConfig {
   // Returns the appropriate corner radius for the menu controlled by
   // |controller|, or the default corner radius if |controller| is nullptr.
   int CornerRadiusForMenu(const MenuController* controller) const;
+
+  // Returns whether |item_view| should show accelerator text. If so, returns
+  // the text to show.
+  bool ShouldShowAcceleratorText(const MenuItemView* item_view,
+                                 base::string16* text) const;
 
   // Font list used by menus.
   gfx::FontList font_list;
@@ -195,6 +201,9 @@ struct VIEWS_EXPORT MenuConfig {
 
   // Whether arrow keys should wrap around the end of the menu when selecting.
   bool arrow_key_selection_wraps;
+
+  // Whether to show accelerators in context menus.
+  bool show_context_menu_accelerators;
 
  private:
   // Configures a MenuConfig as appropriate for the current platform.

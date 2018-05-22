@@ -49,6 +49,7 @@ void MenuConfig::Init() {
   check_selected_combobox_item = true;
   arrow_key_selection_wraps = false;
   use_mnemonics = false;
+  show_context_menu_accelerators = false;
   if (ui::MaterialDesignController::IsSecondaryUiMaterial())
     InitMaterialMenuConfig(this);
 }
