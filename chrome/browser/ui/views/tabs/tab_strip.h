@@ -689,9 +689,6 @@ class TabStrip : public views::View,
   // includes the new selection model. This keeps track of the previous
   // selection model, and is always consistent with |tabs_|. This must be
   // updated to account for tab insertions/removals/moves.
-  //
-  // TODO(erikchen): Duplicating internal state of TabStripModel is not great.
-  // Get rid of this. https://crbug.com/842194.
   ui::ListSelectionModel selected_tabs_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
