@@ -2561,6 +2561,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       [nativeController toolbarHeight] > 0.0 && ![self canShowTabStrip]) {
     // On iPhone, don't add any header height for ToolbarOwner native
     // controllers when they're displaying their own toolbar.
+    if (base::FeatureList::IsEnabled(
+            web::features::kBrowserContainerFullscreen))
+      return StatusBarHeight();
     return 0;
   }
 

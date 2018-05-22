@@ -119,8 +119,8 @@
   CGFloat contentWidth = std::max<CGFloat>(
       0, screenWidth - safeAreaInsets.left - safeAreaInsets.right);
   // The scroll offset at which point searchField's frame should stop growing.
-  CGFloat maxScaleOffset =
-      self.frame.size.height - ntp_header::kMinHeaderHeight;
+  CGFloat maxScaleOffset = self.frame.size.height -
+                           ntp_header::kMinHeaderHeight - safeAreaInsets.top;
   // The scroll offset at which point searchField's frame should start
   // growing.
   CGFloat startScaleOffset = maxScaleOffset - ntp_header::kAnimationDistance;
