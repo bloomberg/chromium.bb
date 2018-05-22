@@ -149,7 +149,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
       const GURL& url,
       std::vector<IntentPickerAppInfo> apps);
 
-  static void CloseOrGoBack(content::WebContents* tab);
+  static void CloseOrGoBack(content::WebContents* web_contents);
 
   void CancelNavigation();
 
