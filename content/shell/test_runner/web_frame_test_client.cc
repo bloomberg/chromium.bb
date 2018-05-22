@@ -434,7 +434,7 @@ void WebFrameTestClient::DidCommitProvisionalLoad(
   }
 }
 
-void WebFrameTestClient::DidNavigateWithinPage(
+void WebFrameTestClient::DidFinishSameDocumentNavigation(
     const blink::WebHistoryItem& history_item,
     blink::WebHistoryCommitType history_type,
     bool content_initiated) {

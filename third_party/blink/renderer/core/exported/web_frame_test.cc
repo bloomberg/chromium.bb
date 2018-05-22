@@ -7472,9 +7472,9 @@ class TestNavigationPolicyWebFrameClient
   ~TestNavigationPolicyWebFrameClient() override = default;
 
   // FrameTestHelpers::TestWebFrameClient:
-  void DidNavigateWithinPage(const WebHistoryItem&,
-                             WebHistoryCommitType,
-                             bool) override {
+  void DidFinishSameDocumentNavigation(const WebHistoryItem&,
+                                       WebHistoryCommitType,
+                                       bool) override {
     EXPECT_TRUE(false);
   }
 
@@ -7990,9 +7990,9 @@ class TestDidNavigateCommitTypeWebFrameClient
   ~TestDidNavigateCommitTypeWebFrameClient() override = default;
 
   // FrameTestHelpers::TestWebFrameClient:
-  void DidNavigateWithinPage(const WebHistoryItem&,
-                             WebHistoryCommitType type,
-                             bool) override {
+  void DidFinishSameDocumentNavigation(const WebHistoryItem&,
+                                       WebHistoryCommitType type,
+                                       bool) override {
     last_commit_type_ = type;
   }
 

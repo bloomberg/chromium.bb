@@ -117,11 +117,12 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
                                    global_object_reuse_policy);
   }
 
-  void DidNavigateWithinPage(const blink::WebHistoryItem& item,
-                             blink::WebHistoryCommitType commit_type,
-                             bool content_initiated) {
-    test_client()->DidNavigateWithinPage(item, commit_type, content_initiated);
-    Base::DidNavigateWithinPage(item, commit_type, content_initiated);
+  void DidFinishSameDocumentNavigation(const blink::WebHistoryItem& item,
+                                       blink::WebHistoryCommitType commit_type,
+                                       bool content_initiated) {
+    test_client()->DidFinishSameDocumentNavigation(item, commit_type,
+                                                   content_initiated);
+    Base::DidFinishSameDocumentNavigation(item, commit_type, content_initiated);
   }
 
   void DidReceiveTitle(const blink::WebString& title,

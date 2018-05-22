@@ -94,9 +94,9 @@ class LocalFrameClientImpl final : public LocalFrameClient {
                                               const ResourceResponse&) override;
   void DispatchDidHandleOnloadEvents() override;
   void DispatchDidReceiveServerRedirectForProvisionalLoad() override;
-  void DispatchDidNavigateWithinPage(HistoryItem*,
-                                     HistoryCommitType,
-                                     bool content_initiated) override;
+  void DidFinishSameDocumentNavigation(HistoryItem*,
+                                       HistoryCommitType,
+                                       bool content_initiated) override;
   void DispatchWillCommitProvisionalLoad() override;
   void DispatchDidStartProvisionalLoad(DocumentLoader*,
                                        ResourceRequest&) override;

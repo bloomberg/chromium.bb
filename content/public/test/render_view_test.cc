@@ -643,7 +643,7 @@ void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,
   DCHECK(!current_item.IsNull());
   item.SetDocumentSequenceNumber(current_item.DocumentSequenceNumber());
 
-  impl->GetMainRenderFrame()->DidNavigateWithinPage(
+  impl->GetMainRenderFrame()->DidFinishSameDocumentNavigation(
       item,
       is_new_navigation ? blink::kWebStandardCommit
                         : blink::kWebHistoryInertCommit,

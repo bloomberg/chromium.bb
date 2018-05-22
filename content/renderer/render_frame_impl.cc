@@ -4337,12 +4337,13 @@ void RenderFrameImpl::DidFinishLoad() {
       memory_metrics, ".ServiceWorkerControlledMainFrameDidFinishLoad");
 }
 
-void RenderFrameImpl::DidNavigateWithinPage(
+void RenderFrameImpl::DidFinishSameDocumentNavigation(
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type,
     bool content_initiated) {
-  TRACE_EVENT1("navigation,rail", "RenderFrameImpl::didNavigateWithinPage",
-               "id", routing_id_);
+  TRACE_EVENT1("navigation,rail",
+               "RenderFrameImpl::didFinishSameDocumentNavigation", "id",
+               routing_id_);
   DocumentState* document_state =
       DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
   UpdateNavigationState(document_state, true /* was_within_same_document */,
