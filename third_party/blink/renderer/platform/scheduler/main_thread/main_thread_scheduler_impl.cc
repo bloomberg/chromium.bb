@@ -200,6 +200,8 @@ const char* TaskTypeToString(TaskType task_type) {
       return "MainThreadTaskQueueIPC";
     case TaskType::kMainThreadTaskQueueControl:
       return "MainThreadTaskQueueControl";
+    case TaskType::kInternalIntersectionObserver:
+      return "InternalIntersectionObserver";
     case TaskType::kCount:
       return "Count";
   }

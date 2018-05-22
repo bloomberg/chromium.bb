@@ -39170,6 +39170,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="41" label="MainThreadTaskQueueIdle"/>
   <int value="42" label="MainThreadTaskQueueIPC"/>
   <int value="43" label="MainThreadTaskQueueControl"/>
+  <int value="44" label="InternalIntersectionObserver"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">

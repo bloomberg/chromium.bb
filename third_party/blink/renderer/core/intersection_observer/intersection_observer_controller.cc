@@ -31,7 +31,7 @@ void IntersectionObserverController::PostTaskToDeliverObservations() {
   // need to be unthrottled, but we should throttle all the other tasks
   // (e.g. ones coming from the web page).
   GetExecutionContext()
-      ->GetTaskRunner(TaskType::kUnthrottled)
+      ->GetTaskRunner(TaskType::kInternalIntersectionObserver)
       ->PostTask(
           FROM_HERE,
           WTF::Bind(
