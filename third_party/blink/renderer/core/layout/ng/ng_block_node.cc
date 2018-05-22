@@ -180,6 +180,19 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
     layout_result = ToLayoutBlockFlow(box_)->CachedLayoutResult(
         constraint_space, break_token);
     if (layout_result) {
+      // TODO(layoutng): Figure out why these two call can't be inside the
+      // !constraint_space.IsIntermediateLayout() block below.
+      UpdateShapeOutsideInfoIfNeeded(
+          constraint_space.PercentageResolutionSize().inline_size);
+      // We may need paint invalidation even if we can reuse layout, as our
+      // paint offset/visual rect may have changed due to relative
+      // positioning changes. Otherwise we fail fast/css/
+      // fast/css/relative-positioned-block-with-inline-ancestor-and-parent
+      // -dynamic.html
+      // TODO(layoutng): See if we can optimize this. When we natively
+      // support relative positioning in NG we can probably remove this,
+      box_->SetMayNeedPaintInvalidation();
+
       // We have to re-set the cached result here, because it is used for
       // LayoutNGMixin::CurrentFragment and therefore has to be up-to-date.
       // In particular, that fragment would have an incorrect offset if we
@@ -188,17 +201,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
           constraint_space, break_token, layout_result);
       if (!constraint_space.IsIntermediateLayout()) {
         block_flow->ClearPaintFragment();
-        if (first_child && first_child.IsInline()) {
+        if (first_child && first_child.IsInline())
           block_flow->SetPaintFragment(layout_result->PhysicalFragment());
-          // We may need paint invalidation even if we can reuse layout, as our
-          // paint offset/visual rect may have changed due to relative
-          // positioning changes. Otherwise we fail fast/css/
-          // fast/css/relative-positioned-block-with-inline-ancestor-and-parent
-          // -dynamic.html
-          // TODO(layoutng): See if we can optimize this. When we natively
-          // support relative positioning in NG we can probably remove this,
-          box_->SetMayNeedPaintInvalidation();
-        }
       }
       return layout_result;
     }
