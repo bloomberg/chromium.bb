@@ -25,6 +25,7 @@ var VPNConfigType = {
 /** @const */ var DEFAULT_HASH = 'default';
 /** @const */ var DO_NOT_CHECK_HASH = 'do-not-check';
 /** @const */ var NO_CERTS_HASH = 'no-certs';
+/** @const */ var NO_USER_CERT_HASH = 'no-user-cert';
 
 Polymer({
   is: 'network-config',
@@ -445,36 +446,39 @@ Polymer({
   /** @private */
   onCertificateListsChanged_: function() {
     this.networkingPrivate.getCertificateLists(function(certificateLists) {
-      var caCerts = [this.getDefaultCert_(
-          this.i18n('networkCAUseDefault'), DEFAULT_HASH)];
-      caCerts = caCerts.concat(certificateLists.serverCaCertificates);
+      var isOpenVpn = this.type == CrOnc.Type.VPN &&
+          this.get('VPN.Type', this.configProperties_) ==
+              CrOnc.VPNType.OPEN_VPN;
+
+      var caCerts = certificateLists.serverCaCertificates.slice();
+      if (!isOpenVpn) {
+        // 'Default' is the same as 'Do not check' except it sets
+        // eap.UseSystemCAs (which does not apply to OpenVPN).
+        caCerts.unshift(this.getDefaultCert_(
+            this.i18n('networkCAUseDefault'), DEFAULT_HASH));
+      }
       caCerts.push(this.getDefaultCert_(
           this.i18n('networkCADoNotCheck'), DO_NOT_CHECK_HASH));
       this.set('serverCaCerts_', caCerts);
-      if (this.selectedServerCaHash_ && !caCerts.find((cert) => {
-            return cert.hash == this.selectedServerCaHash_;
-          })) {
-        this.selectedServerCaHash_ = undefined;
-      }
 
       var userCerts = certificateLists.userCertificates.slice();
+      // Only hardware backed user certs are supported.
+      userCerts.forEach(function(cert) {
+        if (!cert.hardwareBacked)
+          cert.hash = '';  // Clear the hash to invalidate the certificate.
+      });
+      if (isOpenVpn) {
+        // OpenVPN allows but does not require a user certificate.
+        userCerts.unshift(this.getDefaultCert_(
+            this.i18n('networkNoUserCert'), NO_USER_CERT_HASH));
+      }
       if (!userCerts.length) {
         userCerts = [this.getDefaultCert_(
             this.i18n('networkCertificateNoneInstalled'), NO_CERTS_HASH)];
-      } else {
-        // Only hardware backed user certs are supported.
-        userCerts.forEach(function(cert) {
-          if (!cert.hardwareBacked)
-            cert.hash = '';  // Clear the hash to invalidate the certificate.
-        });
       }
       this.set('userCerts_', userCerts);
-      if (this.selectedUserCertHash_ && !userCerts.find((cert) => {
-            return cert.hash == this.selectedUserCertHash_;
-          })) {
-        this.selectedUserCertHash_ = undefined;
-      }
 
+      this.updateSelectedCerts_();
       this.updateCertError_();
     }.bind(this));
   },
@@ -900,6 +904,7 @@ Polymer({
         break;
     }
     this.updateCertError_();
+    this.onCertificateListsChanged_();
   },
 
   /** @private */
@@ -980,8 +985,6 @@ Polymer({
       if (serverCa)
         this.selectedServerCaHash_ = serverCa.hash;
     }
-    if (!this.selectedServerCaHash_ && this.serverCaCerts_[0])
-      this.selectedServerCaHash_ = this.serverCaCerts_[0].hash;
 
     if (certId) {
       var userCert = this.userCerts_.find(function(cert) {
@@ -990,15 +993,40 @@ Polymer({
       if (userCert)
         this.selectedUserCertHash_ = userCert.hash;
     }
-    if (!this.selectedUserCertHash_) {
-      // Find either the first valid entry or the 'no-certs' entry.
-      var selectUserCert = this.userCerts_.find(function(cert) {
-        return !!cert.hash;
-      });
-      if (selectUserCert)
-        this.selectedUserCertHash_ = selectUserCert.hash;
-    }
+    this.updateSelectedCerts_();
     this.updateIsConfigured_();
+  },
+
+  /**
+   * @param {!Array<!chrome.networkingPrivate.Certificate>} certs
+   * @param {string|undefined} hash
+   * @private
+   * @return {!chrome.networkingPrivate.Certificate|undefined}
+   */
+  findCert_: function(certs, hash) {
+    if (!hash)
+      return undefined;
+    return certs.find((cert) => {
+      return cert.hash == hash;
+    });
+  },
+
+  /**
+   * Called when the certificate list or a selected certificate changes.
+   * Ensures that each selected certificate exists in its list, or selects the
+   * correct default value.
+   * @private
+   */
+  updateSelectedCerts_: function() {
+    if (!this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_))
+      this.selectedServerCaHash_ = undefined;
+    if (!this.selectedServerCaHash_ && this.serverCaCerts_[0])
+      this.selectedServerCaHash_ = this.serverCaCerts_[0].hash;
+
+    if (!this.findCert_(this.userCerts_, this.selectedUserCertHash_))
+      this.selectedUserCertHash_ = undefined;
+    if (!this.selectedUserCertHash_ && this.userCerts_[0])
+      this.selectedUserCertHash_ = this.userCerts_[0].hash;
   },
 
   /**
@@ -1161,8 +1189,10 @@ Polymer({
         return !!this.get('L2TP.Username', vpn) &&
             this.selectedUserCertHashIsValid_();
       case VPNConfigType.OPEN_VPN:
-        return !!this.get('OpenVPN.Username', vpn) &&
-            this.selectedUserCertHashIsValid_();
+        // OpenVPN should require username + password OR a user cert. However,
+        // there may be servers with different requirements so err on the side
+        // of permissiveness.
+        return true;
     }
     return false;
   },
@@ -1195,9 +1225,7 @@ Polymer({
     var caHash = this.selectedServerCaHash_ || '';
     if (!caHash || caHash == DO_NOT_CHECK_HASH || caHash == DEFAULT_HASH)
       return [];
-    var serverCa = this.serverCaCerts_.find(function(cert) {
-      return cert.hash == caHash;
-    });
+    var serverCa = this.findCert_(this.serverCaCerts_, caHash);
     return serverCa && serverCa.pem ? [serverCa.pem] : [];
   },
 
@@ -1206,11 +1234,12 @@ Polymer({
    * @private
    */
   getUserCertPkcs11Id_: function() {
-    if (!this.selectedUserCertHashIsValid_())
+    var userCertHash = this.selectedUserCertHash_ || '';
+    if (!this.selectedUserCertHashIsValid_() ||
+        userCertHash == NO_USER_CERT_HASH) {
       return '';
-    var userCert = this.userCerts_.find((cert) => {
-      return cert.hash == this.selectedUserCertHash_;
-    });
+    }
+    var userCert = this.findCert_(this.userCerts_, userCertHash);
     return (userCert && userCert.PKCS11Id) || '';
   },
 

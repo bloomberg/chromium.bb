@@ -93,10 +93,6 @@ std::string VPNCheckCredentials(
     std::string username;
     provider_properties.GetStringWithoutPathExpansion(
         shill::kOpenVPNUserProperty, &username);
-    if (username.empty()) {
-      NET_LOG(ERROR) << "OpenVPN: No username for: " << service_path;
-      return NetworkConnectionHandler::kErrorConfigurationRequired;
-    }
     bool passphrase_required = false;
     provider_properties.GetBooleanWithoutPathExpansion(
         shill::kPassphraseRequiredProperty, &passphrase_required);
