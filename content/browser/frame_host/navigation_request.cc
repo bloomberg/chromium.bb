@@ -523,17 +523,15 @@ void NavigationRequest::BeginNavigation() {
   // gives CSP a chance to modify requests that NavigationThrottles would
   // otherwise block. Similarly, the NavigationHandle is created afterwards, so
   // that it gets the request URL after potentially being modified by CSP.
-  net::Error net_error;
-  if (CheckContentSecurityPolicy(false /* is redirect */,
-                                 false /* is_response_check */, net_error) ==
-      CONTENT_SECURITY_POLICY_CHECK_FAILED) {
+  net::Error net_error = CheckContentSecurityPolicy(
+      false /* is redirect */, false /* is_response_check */);
+  if (net_error != net::OK) {
     // Create a navigation handle so that the correct error code can be set on
     // it by OnRequestFailed().
     CreateNavigationHandle();
     OnRequestFailedInternal(network::URLLoaderCompletionStatus(net_error),
                             false /* skip_throttles */,
                             base::nullopt /* error_page_content */);
-
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
     // destroyed the NavigationRequest.
     return;
@@ -779,10 +777,9 @@ void NavigationRequest::OnRequestRedirected(
   // Check Content Security Policy before the NavigationThrottles run. This
   // gives CSP a chance to modify requests that NavigationThrottles would
   // otherwise block.
-  net::Error net_error;
-  if (CheckContentSecurityPolicy(true /* is redirect */,
-                                 false /* is_response_check */, net_error) ==
-      CONTENT_SECURITY_POLICY_CHECK_FAILED) {
+  net::Error net_error = CheckContentSecurityPolicy(
+      true /* is redirect */, false /* is_response_check */);
+  if (net_error != net::OK) {
     OnRequestFailed(network::URLLoaderCompletionStatus(net_error));
 
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
@@ -1004,10 +1001,9 @@ void NavigationRequest::OnResponseStarted(
   // The CSP 'navigate-to' directive needs to know whether the response is a
   // redirect or not in order to perform its checks. This is the reason
   // why we need to check the CSP both on request and response.
-  net::Error net_error;
-  if (CheckContentSecurityPolicy(navigation_handle_->WasServerRedirect(),
-                                 true /* is_response_check */, net_error) ==
-      CONTENT_SECURITY_POLICY_CHECK_FAILED) {
+  net::Error net_error = CheckContentSecurityPolicy(
+      navigation_handle_->WasServerRedirect(), true /* is_response_check */);
+  if (net_error != net::OK) {
     OnRequestFailedInternal(network::URLLoaderCompletionStatus(net_error),
                             false /* skip_throttles */,
                             base::nullopt /* error_page_content */);
@@ -1507,42 +1503,6 @@ void NavigationRequest::CommitNavigation() {
       render_frame_host->GetSiteInstance()->GetBrowserContext());
 }
 
-bool NavigationRequest::IsAllowedByCSP(
-    RenderFrameHostImpl* parent,
-    bool is_redirect,
-    bool is_response_check,
-    CSPContext::CheckCSPDisposition disposition,
-    net::Error& net_error) {
-  bool allowed = true;
-  bool allowed_by_directive;
-
-  allowed_by_directive = IsAllowedByCSPDirective(
-      initiator_csp_context_.get(), CSPDirective::NavigateTo, is_redirect,
-      is_response_check, disposition);
-
-  // net::ERR_ABORTED is used to ensure that the navigation is cancelled
-  // when the 'navigate-to' directive check is failed. This is a better user
-  // experience as the user is not presented with an error page.
-  if (!allowed_by_directive)
-    net_error = net::ERR_ABORTED;
-  allowed &= allowed_by_directive;
-
-  if (parent) {
-    allowed_by_directive =
-        IsAllowedByCSPDirective(parent, CSPDirective::FrameSrc, is_redirect,
-                                is_response_check, disposition);
-    allowed &= allowed_by_directive;
-
-    // If 'frame-src' fails, ERR_BLOCKED_BY_CLIENT is used instead.
-    // If both checks fail, ERR_BLOCKED_BY_CLIENT is used to keep the existing
-    // behaviour before 'navigate-to' was introduced.
-    if (!allowed_by_directive)
-      net_error = net::ERR_BLOCKED_BY_CLIENT;
-  }
-
-  return allowed;
-}
-
 bool NavigationRequest::IsAllowedByCSPDirective(
     CSPContext* context,
     CSPDirective::Name directive,
@@ -1555,16 +1515,46 @@ bool NavigationRequest::IsAllowedByCSPDirective(
       begin_params_->is_form_submission);
 }
 
-NavigationRequest::ContentSecurityPolicyCheckResult
-NavigationRequest::CheckContentSecurityPolicy(bool is_redirect,
-                                              bool is_response_check,
-                                              net::Error& net_error) {
+net::Error NavigationRequest::CheckCSPDirectives(
+    RenderFrameHostImpl* parent,
+    bool is_redirect,
+    bool is_response_check,
+    CSPContext::CheckCSPDisposition disposition) {
+  bool navigate_to_allowed = IsAllowedByCSPDirective(
+      initiator_csp_context_.get(), CSPDirective::NavigateTo, is_redirect,
+      is_response_check, disposition);
+
+  bool frame_src_allowed = true;
+  if (parent) {
+    frame_src_allowed =
+        IsAllowedByCSPDirective(parent, CSPDirective::FrameSrc, is_redirect,
+                                is_response_check, disposition);
+  }
+
+  if (navigate_to_allowed && frame_src_allowed)
+    return net::OK;
+
+  // If 'frame-src' fails, ERR_BLOCKED_BY_CLIENT is used instead.
+  // If both checks fail, ERR_BLOCKED_BY_CLIENT is used to keep the existing
+  // behaviour before 'navigate-to' was introduced.
+  if (!frame_src_allowed)
+    return net::ERR_BLOCKED_BY_CLIENT;
+
+  // net::ERR_ABORTED is used to ensure that the navigation is cancelled
+  // when the 'navigate-to' directive check is failed. This is a better user
+  // experience as the user is not presented with an error page.
+  return net::ERR_ABORTED;
+}
+
+net::Error NavigationRequest::CheckContentSecurityPolicy(
+    bool is_redirect,
+    bool is_response_check) {
   if (common_params_.url.SchemeIs(url::kAboutScheme))
-    return CONTENT_SECURITY_POLICY_CHECK_PASSED;
+    return net::OK;
 
   if (common_params_.should_check_main_world_csp ==
       CSPDisposition::DO_NOT_CHECK) {
-    return CONTENT_SECURITY_POLICY_CHECK_PASSED;
+    return net::OK;
   }
 
   FrameTreeNode* parent_ftn = frame_tree_node()->parent();
@@ -1588,8 +1578,9 @@ NavigationRequest::CheckContentSecurityPolicy(bool is_redirect,
   // This sequence of events allows site owners to learn about (via step 1) any
   // requests that are upgraded in step 2.
 
-  bool allowed = IsAllowedByCSP(parent, is_redirect, is_response_check,
-                                CSPContext::CHECK_REPORT_ONLY_CSP, net_error);
+  net::Error report_only_csp_status =
+      CheckCSPDirectives(parent, is_redirect, is_response_check,
+                         CSPContext::CHECK_REPORT_ONLY_CSP);
 
   // TODO(mkwst,estark): upgrade-insecure-requests does not work when following
   // redirects. Trying to uprade the new URL on redirect here is fruitless: the
@@ -1603,11 +1594,11 @@ NavigationRequest::CheckContentSecurityPolicy(bool is_redirect,
     }
   }
 
-  allowed &= IsAllowedByCSP(parent, is_redirect, is_response_check,
-                            CSPContext::CHECK_ENFORCED_CSP, net_error);
-
-  return allowed ? CONTENT_SECURITY_POLICY_CHECK_PASSED
-                 : CONTENT_SECURITY_POLICY_CHECK_FAILED;
+  net::Error enforced_csp_status = CheckCSPDirectives(
+      parent, is_redirect, is_response_check, CSPContext::CHECK_ENFORCED_CSP);
+  if (enforced_csp_status != net::OK)
+    return enforced_csp_status;
+  return report_only_csp_status;
 }
 
 NavigationRequest::CredentialedSubresourceCheckResult
