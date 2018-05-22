@@ -105,6 +105,20 @@ TEST(BindObjcBlockTestARC, TestSixArguments) {
   EXPECT_EQ(result2, 6);
 }
 
+TEST(BindObjcBlockTestARC, TestBlockMoveable) {
+  base::OnceClosure c;
+  __block BOOL invoked_block = NO;
+  @autoreleasepool {
+    c = base::BindOnce(
+        ^(std::unique_ptr<BOOL> v) {
+          invoked_block = *v;
+        },
+        std::make_unique<BOOL>(YES));
+  };
+  std::move(c).Run();
+  EXPECT_TRUE(invoked_block);
+}
+
 #if defined(OS_IOS)
 
 TEST(BindObjcBlockTestARC, TestBlockReleased) {
