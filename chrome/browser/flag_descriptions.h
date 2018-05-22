@@ -1136,6 +1136,9 @@ extern const char kWebrtcStunOriginDescription[];
 extern const char kWebrtcH264WithOpenh264FfmpegName[];
 extern const char kWebrtcH264WithOpenh264FfmpegDescription[];
 
+extern const char kWebSocketHandshakeReuseConnectionName[];
+extern const char kWebSocketHandshakeReuseConnectionDescription[];
+
 extern const char kWebvrName[];
 extern const char kWebvrDescription[];
 

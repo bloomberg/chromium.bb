@@ -161,6 +161,10 @@ bool ValidateConnection(const HttpResponseHeaders* headers,
 
 }  // namespace
 
+const base::Feature
+    WebSocketBasicHandshakeStream::kWebSocketHandshakeReuseConnection{
+        "WebSocketHandshakeReuseConnection", base::FEATURE_DISABLED_BY_DEFAULT};
+
 WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
     std::unique_ptr<ClientSocketHandle> connection,
     WebSocketStream::ConnectDelegate* connect_delegate,
@@ -290,7 +294,10 @@ void WebSocketBasicHandshakeStream::SetConnectionReused() {
 }
 
 bool WebSocketBasicHandshakeStream::CanReuseConnection() const {
-  return false;
+  if (!base::FeatureList::IsEnabled(kWebSocketHandshakeReuseConnection))
+    return false;
+
+  return parser() && parser()->CanReuseConnection();
 }
 
 int64_t WebSocketBasicHandshakeStream::GetTotalReceivedBytes() const {

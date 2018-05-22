@@ -111,6 +111,7 @@
 #include "net/cert/cert_verify_proc_android.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
+#include "net/websockets/websocket_basic_handshake_stream.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/device/public/cpp/device_features.h"
@@ -3879,6 +3880,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowTapsAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kShowTapsApp)},
 #endif
+
+    {"enable-websocket-auth-connection-reuse",
+     flag_descriptions::kWebSocketHandshakeReuseConnectionName,
+     flag_descriptions::kWebSocketHandshakeReuseConnectionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(net::WebSocketBasicHandshakeStream::
+                            kWebSocketHandshakeReuseConnection)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
