@@ -17,7 +17,7 @@ namespace ash {
 
 class ActionView;
 class AssistantController;
-class LogoView;
+class StubLogoView;
 
 // Listener which receives notification of action view events.
 class ActionViewListener {
@@ -55,7 +55,7 @@ class ActionView : public views::View,
   ActionViewListener* listener_;
 
   views::ImageView* keyboard_action_view_;  // Owned by view hierarchy.
-  LogoView* voice_action_view_;             // Owned by view hierarchy.
+  StubLogoView* voice_action_view_;         // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(ActionView);
 };
