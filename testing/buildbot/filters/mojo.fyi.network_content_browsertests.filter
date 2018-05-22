@@ -3,11 +3,9 @@
 # failures. Otherwise please reach out to network-service-dev@.
 
 # https://crbug.com/715640
--ServiceWorkerBrowserTest.FetchPageWithSaveData
 -ServiceWorkerBrowserTest.ImportsBustMemcache
 -ServiceWorkerBrowserTest.Reload
 -ServiceWorkerBrowserTest.ResponseFromHTTPSServiceWorkerIsMarkedAsSecure
--ServiceWorkerBrowserTest.ResponseFromHTTPServiceWorkerIsNotMarkedAsSecure
 -ServiceWorkerNavigationPreloadTest.CanceledByInterceptor
 -ServiceWorkerNavigationPreloadTest.RespondWithNavigationPreloadWithMimeSniffing
 -ServiceWorkerV8CodeCacheForCacheStorageTest.V8CacheOnCacheStorage
