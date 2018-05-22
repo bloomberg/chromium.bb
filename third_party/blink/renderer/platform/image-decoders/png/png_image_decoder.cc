@@ -146,16 +146,19 @@ void PNGImageDecoder::InitializeNewFrame(size_t index) {
   buffer.SetRequiredPreviousFrameIndex(previous_frame_index);
 }
 
-inline sk_sp<SkColorSpace> ReadColorSpace(png_structp png, png_infop info) {
-  if (png_get_valid(png, info, PNG_INFO_sRGB))
-    return SkColorSpace::MakeSRGB();
+inline std::unique_ptr<ColorProfile> ReadColorProfile(png_structp png,
+                                                      png_infop info) {
+  if (png_get_valid(png, info, PNG_INFO_sRGB)) {
+    return std::make_unique<ColorProfile>(*skcms_sRGB_profile());
+  }
 
   png_charp name;
   int compression;
-  png_bytep profile;
+  png_bytep buffer;
   png_uint_32 length;
-  if (png_get_iCCP(png, info, &name, &compression, &profile, &length))
-    return SkColorSpace::MakeICC(profile, length);
+  if (png_get_iCCP(png, info, &name, &compression, &buffer, &length)) {
+    return ColorProfile::Create(buffer, length);
+  }
 
   png_fixed_point chrm[8];
   if (!png_get_cHRM_fixed(png, info, &chrm[0], &chrm[1], &chrm[2], &chrm[3],
@@ -178,26 +181,29 @@ inline sk_sp<SkColorSpace> ReadColorSpace(png_structp png, png_infop info) {
     float float_value;
   };
 
-  SkColorSpacePrimaries primaries;
-  primaries.fRX = pngFixedToFloat(chrm[2]);
-  primaries.fRY = pngFixedToFloat(chrm[3]);
-  primaries.fGX = pngFixedToFloat(chrm[4]);
-  primaries.fGY = pngFixedToFloat(chrm[5]);
-  primaries.fBX = pngFixedToFloat(chrm[6]);
-  primaries.fBY = pngFixedToFloat(chrm[7]);
-  primaries.fWX = pngFixedToFloat(chrm[0]);
-  primaries.fWY = pngFixedToFloat(chrm[1]);
-
-  SkMatrix44 to_xyzd50(SkMatrix44::kUninitialized_Constructor);
-  if (!primaries.toXYZD50(&to_xyzd50))
+  float rx = pngFixedToFloat(chrm[2]);
+  float ry = pngFixedToFloat(chrm[3]);
+  float gx = pngFixedToFloat(chrm[4]);
+  float gy = pngFixedToFloat(chrm[5]);
+  float bx = pngFixedToFloat(chrm[6]);
+  float by = pngFixedToFloat(chrm[7]);
+  float wx = pngFixedToFloat(chrm[0]);
+  float wy = pngFixedToFloat(chrm[1]);
+  skcms_Matrix3x3 to_xyzd50;
+  if (!skcms_PrimariesToXYZD50(rx, ry, gx, gy, bx, by, wx, wy, &to_xyzd50))
     return nullptr;
 
-  SkColorSpaceTransferFn fn;
-  fn.fG = 1.0f / pngFixedToFloat(inverse_gamma);
-  fn.fA = 1.0f;
-  fn.fB = fn.fC = fn.fD = fn.fE = fn.fF = 0.0f;
+  skcms_TransferFunction fn;
+  fn.g = 1.0f / pngFixedToFloat(inverse_gamma);
+  fn.a = 1.0f;
+  fn.b = fn.c = fn.d = fn.e = fn.f = 0.0f;
 
-  return SkColorSpace::MakeRGB(fn, to_xyzd50);
+  skcms_ICCProfile profile;
+  skcms_Init(&profile);
+  skcms_SetTransferFunction(&profile, &fn);
+  skcms_SetXYZD50(&profile, &to_xyzd50);
+
+  return std::make_unique<ColorProfile>(profile);
 }
 
 void PNGImageDecoder::SetColorSpace() {
@@ -210,9 +216,9 @@ void PNGImageDecoder::SetColorSpace() {
     return;
   // We only support color profiles for color PALETTE and RGB[A] PNG.
   // TODO(msarett): Add GRAY profile support, block CYMK?
-  sk_sp<SkColorSpace> color_space = ReadColorSpace(png, info);
-  if (color_space)
-    SetEmbeddedColorSpace(color_space);
+  if (auto profile = ReadColorProfile(png, info)) {
+    SetEmbeddedColorProfile(std::move(profile));
+  }
 }
 
 bool PNGImageDecoder::SetSize(unsigned width, unsigned height) {
@@ -251,7 +257,7 @@ void PNGImageDecoder::HeaderAvailable() {
       color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
     png_set_gray_to_rgb(png);
 
-  if (!HasEmbeddedColorSpace()) {
+  if (!HasEmbeddedColorProfile()) {
     const double kInverseGamma = 0.45455;
     const double kDefaultGamma = 2.2;
     double gamma;
@@ -579,13 +585,13 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
     // the premultiply, we will very likely end up with valid pixels
     // where R, G, and/or B are greater than A.  The legacy drawing
     // pipeline does not know how to handle this.
-    if (SkColorSpaceXform* xform = ColorTransform()) {
-      SkColorSpaceXform::ColorFormat color_format =
-          SkColorSpaceXform::kRGBA_8888_ColorFormat;
-      bool color_converison_successful =
-          xform->apply(color_format, dst_row, color_format, src_ptr, width,
-                       kUnpremul_SkAlphaType);
-      DCHECK(color_converison_successful);
+    if (ColorProfileTransform* xform = ColorTransform()) {
+      skcms_PixelFormat color_format = skcms_PixelFormat_RGBA_8888;
+      skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Unpremul;
+      bool color_conversion_successful = skcms_Transform(
+          src_ptr, color_format, alpha_format, xform->SrcProfile(), dst_row,
+          color_format, alpha_format, xform->DstProfile(), width);
+      DCHECK(color_conversion_successful);
       src_ptr = png_bytep(dst_row);
     }
 
@@ -651,13 +657,15 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
     }
 #endif
     // We'll apply the color space xform to opaque pixels after they have been
-    // written to the ImageFrame, purely because SkColorSpaceXform supports
-    // RGBA (and not RGB).
-    if (SkColorSpaceXform* xform = ColorTransform()) {
-      bool color_converison_successful =
-          xform->apply(XformColorFormat(), dst_row, XformColorFormat(), dst_row,
-                       width, kOpaque_SkAlphaType);
-      DCHECK(color_converison_successful);
+    // written to the ImageFrame.
+    // TODO: Apply the xform to the RGB pixels, skipping second pass over data.
+    if (ColorProfileTransform* xform = ColorTransform()) {
+      skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Opaque;
+      bool color_conversion_successful =
+          skcms_Transform(dst_row, XformColorFormat(), alpha_format,
+                          xform->SrcProfile(), dst_row, XformColorFormat(),
+                          alpha_format, xform->DstProfile(), width);
+      DCHECK(color_conversion_successful);
     }
   }
 

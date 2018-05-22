@@ -202,7 +202,7 @@ Image::SizeAvailability BitmapImage::DataChanged(bool all_data_received) {
 }
 
 bool BitmapImage::HasColorProfile() const {
-  return decoder_ && decoder_->HasEmbeddedColorSpace();
+  return decoder_ && decoder_->HasEmbeddedColorProfile();
 }
 
 String BitmapImage::FilenameExtension() const {

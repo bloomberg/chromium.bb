@@ -68,7 +68,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   void SetData(scoped_refptr<SharedBuffer> data, bool all_data_received);
 
   bool IsSizeAvailable();
-  bool HasEmbeddedColorSpace() const;
+  bool HasEmbeddedColorProfile() const;
   IntSize Size() const;
   IntSize FrameSizeAtIndex(size_t index) const;
   size_t FrameCount();
@@ -101,7 +101,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   String filename_extension_;
   IntSize size_;
   int repetition_count_;
-  bool has_embedded_color_space_ = false;
+  bool has_embedded_color_profile_ = false;
   bool all_data_received_;
   bool can_yuv_decode_;
   bool has_hot_spot_;

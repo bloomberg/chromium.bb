@@ -313,11 +313,10 @@ void WEBPImageDecoder::ReadColorProfile() {
       reinterpret_cast<const char*>(chunk_iterator.chunk.bytes);
   size_t profile_size = chunk_iterator.chunk.size;
 
-  sk_sp<SkColorSpace> color_space =
-      SkColorSpace::MakeICC(profile_data, profile_size);
-  if (color_space) {
-    if (color_space->type() == SkColorSpace::kRGB_Type)
-      SetEmbeddedColorSpace(std::move(color_space));
+  if (auto profile = ColorProfile::Create(profile_data, profile_size)) {
+    if (profile->GetProfile()->data_color_space == skcms_Signature_RGB) {
+      SetEmbeddedColorProfile(std::move(profile));
+    }
   } else {
     DLOG(ERROR) << "Failed to parse image ICC profile";
   }
@@ -346,18 +345,18 @@ void WEBPImageDecoder::ApplyPostProcessing(size_t frame_index) {
   // space and then immediately after, perform a linear premultiply
   // and linear blending.  Can we find a way to perform the
   // premultiplication and blending in a linear space?
-  SkColorSpaceXform* xform = ColorTransform();
+  ColorProfileTransform* xform = ColorTransform();
   if (xform) {
-    const SkColorSpaceXform::ColorFormat kSrcFormat =
-        SkColorSpaceXform::kBGRA_8888_ColorFormat;
-    const SkColorSpaceXform::ColorFormat kDstFormat =
-        SkColorSpaceXform::kRGBA_8888_ColorFormat;
+    skcms_PixelFormat kSrcFormat = skcms_PixelFormat_BGRA_8888;
+    skcms_PixelFormat kDstFormat = skcms_PixelFormat_RGBA_8888;
+    skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Unpremul;
     for (int y = decoded_height_; y < decoded_height; ++y) {
       const int canvas_y = top + y;
       uint8_t* row = reinterpret_cast<uint8_t*>(buffer.GetAddr(left, canvas_y));
-      bool color_converison_successful = xform->apply(
-          kDstFormat, row, kSrcFormat, row, width, kUnpremul_SkAlphaType);
-      DCHECK(color_converison_successful);
+      bool color_conversion_successful = skcms_Transform(
+          row, kSrcFormat, alpha_format, xform->SrcProfile(), row, kDstFormat,
+          alpha_format, xform->DstProfile(), width);
+      DCHECK(color_conversion_successful);
       uint8_t* pixel = row;
       for (int x = 0; x < width; ++x, pixel += 4) {
         const int canvas_x = left + x;

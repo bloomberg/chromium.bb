@@ -466,34 +466,35 @@ class JPEGImageReader final {
 
         // Allow color management of the decoded RGBA pixels if possible.
         if (!decoder_->IgnoresColorSpace()) {
-          JOCTET* profile = nullptr;
+          JOCTET* profile_buf = nullptr;
           unsigned profile_length = 0;
-          if (read_icc_profile(Info(), &profile, &profile_length)) {
-            sk_sp<SkColorSpace> color_space =
-                SkColorSpace::MakeICC(profile, profile_length);
-            if (color_space) {
-              const SkColorSpace::Type type = color_space->type();
+          if (read_icc_profile(Info(), &profile_buf, &profile_length)) {
+            std::unique_ptr<ColorProfile> profile =
+                ColorProfile::Create(profile_buf, profile_length);
+            if (profile) {
+              uint32_t data_color_space =
+                  profile->GetProfile()->data_color_space;
               switch (info_.jpeg_color_space) {
                 case JCS_CMYK:
                 case JCS_YCCK:
-                  if (type != SkColorSpace::kCMYK_Type)
-                    color_space = nullptr;
+                  if (data_color_space != skcms_Signature_CMYK)
+                    profile = nullptr;
                   break;
                 case JCS_GRAYSCALE:
-                  if (type != SkColorSpace::kGray_Type &&
-                      type != SkColorSpace::kRGB_Type)
-                    color_space = nullptr;
+                  if (data_color_space != skcms_Signature_Gray &&
+                      data_color_space != skcms_Signature_RGB)
+                    profile = nullptr;
                   break;
                 default:
-                  if (type != SkColorSpace::kRGB_Type)
-                    color_space = nullptr;
+                  if (data_color_space != skcms_Signature_RGB)
+                    profile = nullptr;
                   break;
               }
-              Decoder()->SetEmbeddedColorSpace(std::move(color_space));
+              Decoder()->SetEmbeddedColorProfile(std::move(profile));
             } else {
               DLOG(ERROR) << "Failed to parse image ICC profile";
             }
-            free(profile);
+            free(profile_buf);
           }
           if (Decoder()->ColorTransform()) {
             override_color_space = JCS_UNKNOWN;
@@ -902,13 +903,14 @@ bool OutputRows(JPEGImageReader* reader, ImageFrame& buffer) {
     for (int x = 0; x < width; ++pixel, ++x)
       SetPixel<colorSpace>(pixel, samples, x);
 
-    SkColorSpaceXform* xform = reader->Decoder()->ColorTransform();
+    ColorProfileTransform* xform = reader->Decoder()->ColorTransform();
     if (xform) {
       ImageFrame::PixelData* row = buffer.GetAddr(0, y);
-      bool color_converison_successful =
-          xform->apply(XformColorFormat(), row, XformColorFormat(), row, width,
-                       kOpaque_SkAlphaType);
-      DCHECK(color_converison_successful);
+      skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Unpremul;
+      bool color_conversion_successful = skcms_Transform(
+          row, XformColorFormat(), alpha_format, xform->SrcProfile(), row,
+          XformColorFormat(), alpha_format, xform->DstProfile(), width);
+      DCHECK(color_conversion_successful);
     }
   }
 
@@ -1012,12 +1014,14 @@ bool JPEGImageDecoder::OutputScanlines() {
       if (jpeg_read_scanlines(info, &row, 1) != 1)
         return false;
 
-      SkColorSpaceXform* xform = ColorTransform();
+      ColorProfileTransform* xform = ColorTransform();
       if (xform) {
-        bool color_converison_successful =
-            xform->apply(XformColorFormat(), row, XformColorFormat(), row,
-                         info->output_width, kOpaque_SkAlphaType);
-        DCHECK(color_converison_successful);
+        skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Unpremul;
+        bool color_conversion_successful = skcms_Transform(
+            row, XformColorFormat(), alpha_format, xform->SrcProfile(), row,
+            XformColorFormat(), alpha_format, xform->DstProfile(),
+            info->output_width);
+        DCHECK(color_conversion_successful);
       }
     }
     buffer.SetPixelsChanged(true);
