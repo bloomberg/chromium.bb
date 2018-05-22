@@ -56,6 +56,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -368,7 +369,7 @@ class LoginDisplayHostWebUI::KeyboardDrivenOobeKeyHandler
   // ui::EventHandler
   void OnKeyEvent(ui::KeyEvent* event) override {
     if (event->key_code() == ui::VKEY_F6) {
-      ash::Shell::Get()->GetPrimarySystemTray()->CloseBubble();
+      SystemTrayClient::Get()->SetPrimaryTrayVisible(false);
       event->StopPropagation();
     }
   }

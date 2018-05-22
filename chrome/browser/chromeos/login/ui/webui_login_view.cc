@@ -8,6 +8,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/focus_cycler.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -602,6 +603,10 @@ bool WebUILoginView::MoveFocusToSystemTray(bool reverse) {
   // Focus is accepted, but the Ash system tray is not available in Mash, so
   // exit early.
   if (ash_util::IsRunningInMash())
+    return true;
+
+  // The old system tray is not available when UnifiedSystemTray is enabled.
+  if (ash::features::IsSystemTrayUnifiedEnabled())
     return true;
 
   // The focus should not move to the system tray if voice interaction OOOBE is
