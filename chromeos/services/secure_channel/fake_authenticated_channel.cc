@@ -12,6 +12,11 @@ FakeAuthenticatedChannel::FakeAuthenticatedChannel() : AuthenticatedChannel() {}
 
 FakeAuthenticatedChannel::~FakeAuthenticatedChannel() = default;
 
+const mojom::ConnectionMetadata&
+FakeAuthenticatedChannel::GetConnectionMetadata() const {
+  return connection_metadata_;
+}
+
 void FakeAuthenticatedChannel::PerformSendMessage(
     const std::string& feature,
     const std::string& payload,
@@ -20,23 +25,21 @@ void FakeAuthenticatedChannel::PerformSendMessage(
       std::make_tuple(feature, payload, std::move(on_sent_callback)));
 }
 
-FakeAuthenticatedChannelObserver::FakeAuthenticatedChannelObserver(
-    const std::string& expected_channel_id)
-    : expected_channel_id_(expected_channel_id) {}
+void FakeAuthenticatedChannel::PerformDisconnection() {
+  has_disconnection_been_requested_ = true;
+}
+
+FakeAuthenticatedChannelObserver::FakeAuthenticatedChannelObserver() = default;
 
 FakeAuthenticatedChannelObserver::~FakeAuthenticatedChannelObserver() = default;
 
-void FakeAuthenticatedChannelObserver::OnDisconnected(
-    const std::string& channel_id) {
-  DCHECK_EQ(expected_channel_id_, channel_id);
+void FakeAuthenticatedChannelObserver::OnDisconnected() {
   has_been_notified_of_disconnection_ = true;
 }
 
 void FakeAuthenticatedChannelObserver::OnMessageReceived(
-    const std::string& channel_id,
     const std::string& feature,
     const std::string& payload) {
-  DCHECK_EQ(expected_channel_id_, channel_id);
   received_messages_.push_back(std::make_pair(feature, payload));
 }
 

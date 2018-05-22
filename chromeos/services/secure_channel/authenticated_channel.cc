@@ -13,8 +13,7 @@ namespace secure_channel {
 
 AuthenticatedChannel::Observer::~Observer() = default;
 
-AuthenticatedChannel::AuthenticatedChannel()
-    : channel_id_(base::GenerateGUID()) {}
+AuthenticatedChannel::AuthenticatedChannel() = default;
 
 AuthenticatedChannel::~AuthenticatedChannel() = default;
 
@@ -28,6 +27,12 @@ bool AuthenticatedChannel::SendMessage(const std::string& feature,
   return true;
 }
 
+void AuthenticatedChannel::Disconnect() {
+  // Clients should not attempt to disconnect an already-disconnected channel.
+  DCHECK(!is_disconnected_);
+  PerformDisconnection();
+}
+
 void AuthenticatedChannel::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -39,13 +44,8 @@ void AuthenticatedChannel::RemoveObserver(Observer* observer) {
 void AuthenticatedChannel::NotifyDisconnected() {
   is_disconnected_ = true;
 
-  // Make a copy before notifying observers to ensure that if one observer
-  // deletes |this| before the next observer is able to be processed, a segfault
-  // is prevented.
-  const std::string channel_id_copy = channel_id_;
-
   for (auto& observer : observer_list_)
-    observer.OnDisconnected(channel_id_copy);
+    observer.OnDisconnected();
 }
 
 void AuthenticatedChannel::NotifyMessageReceived(const std::string& feature,
@@ -53,12 +53,11 @@ void AuthenticatedChannel::NotifyMessageReceived(const std::string& feature,
   // Make a copy before notifying observers to ensure that if one observer
   // deletes |this| before the next observer is able to be processed, a segfault
   // is prevented.
-  const std::string channel_id_copy = channel_id_;
   const std::string feature_copy = feature;
   const std::string payload_copy = payload;
 
   for (auto& observer : observer_list_)
-    observer.OnMessageReceived(channel_id_copy, feature_copy, payload_copy);
+    observer.OnMessageReceived(feature_copy, payload_copy);
 }
 
 }  // namespace secure_channel
