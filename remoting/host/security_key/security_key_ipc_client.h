@@ -94,7 +94,7 @@ class SecurityKeyIpcClient : public IPC::Listener {
   mojo::edk::NamedPlatformHandle named_channel_handle_;
 
   // A handle for the IPC channel used for exchanging security key messages.
-  mojo::edk::ScopedPlatformHandle channel_handle_;
+  mojo::edk::ScopedInternalPlatformHandle channel_handle_;
 
   // Signaled when the IPC connection is ready for security key requests.
   ConnectedCallback connected_callback_;

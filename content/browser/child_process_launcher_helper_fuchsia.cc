@@ -57,13 +57,13 @@ void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
   DCHECK_CURRENTLY_ON(client_thread_id_);
 }
 
-mojo::edk::ScopedPlatformHandle
+mojo::edk::ScopedInternalPlatformHandle
 ChildProcessLauncherHelper::PrepareMojoPipeHandlesOnClientThread() {
   DCHECK_CURRENTLY_ON(client_thread_id_);
 
   // By doing nothing here, StartLaunchOnClientThread() will construct a channel
   // pair instead.
-  return mojo::edk::ScopedPlatformHandle();
+  return mojo::edk::ScopedInternalPlatformHandle();
 }
 
 std::unique_ptr<FileMappedForLaunch>

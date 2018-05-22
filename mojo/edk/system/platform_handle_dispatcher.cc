@@ -12,11 +12,12 @@ namespace edk {
 
 // static
 scoped_refptr<PlatformHandleDispatcher> PlatformHandleDispatcher::Create(
-    ScopedPlatformHandle platform_handle) {
+    ScopedInternalPlatformHandle platform_handle) {
   return new PlatformHandleDispatcher(std::move(platform_handle));
 }
 
-ScopedPlatformHandle PlatformHandleDispatcher::PassPlatformHandle() {
+ScopedInternalPlatformHandle
+PlatformHandleDispatcher::PassInternalPlatformHandle() {
   return std::move(platform_handle_);
 }
 
@@ -41,13 +42,14 @@ void PlatformHandleDispatcher::StartSerialize(uint32_t* num_bytes,
   *num_handles = 1;
 }
 
-bool PlatformHandleDispatcher::EndSerialize(void* destination,
-                                            ports::PortName* ports,
-                                            ScopedPlatformHandle* handles) {
+bool PlatformHandleDispatcher::EndSerialize(
+    void* destination,
+    ports::PortName* ports,
+    ScopedInternalPlatformHandle* handles) {
   base::AutoLock lock(lock_);
   if (is_closed_)
     return false;
-  handles[0] = ScopedPlatformHandle(platform_handle_.get());
+  handles[0] = ScopedInternalPlatformHandle(platform_handle_.get());
   return true;
 }
 
@@ -80,7 +82,7 @@ scoped_refptr<PlatformHandleDispatcher> PlatformHandleDispatcher::Deserialize(
     size_t num_bytes,
     const ports::PortName* ports,
     size_t num_ports,
-    ScopedPlatformHandle* handles,
+    ScopedInternalPlatformHandle* handles,
     size_t num_handles) {
   if (num_bytes || num_ports || num_handles != 1)
     return nullptr;
@@ -89,7 +91,7 @@ scoped_refptr<PlatformHandleDispatcher> PlatformHandleDispatcher::Deserialize(
 }
 
 PlatformHandleDispatcher::PlatformHandleDispatcher(
-    ScopedPlatformHandle platform_handle)
+    ScopedInternalPlatformHandle platform_handle)
     : platform_handle_(std::move(platform_handle)) {}
 
 PlatformHandleDispatcher::~PlatformHandleDispatcher() {

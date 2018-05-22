@@ -249,14 +249,16 @@ MojoResult MojoWrapPlatformHandleImpl(
     const MojoPlatformHandle* platform_handle,
     const MojoWrapPlatformHandleOptions* options,
     MojoHandle* mojo_handle) {
-  return g_core->WrapPlatformHandle(platform_handle, options, mojo_handle);
+  return g_core->WrapInternalPlatformHandle(platform_handle, options,
+                                            mojo_handle);
 }
 
 MojoResult MojoUnwrapPlatformHandleImpl(
     MojoHandle mojo_handle,
     const MojoUnwrapPlatformHandleOptions* options,
     MojoPlatformHandle* platform_handle) {
-  return g_core->UnwrapPlatformHandle(mojo_handle, options, platform_handle);
+  return g_core->UnwrapInternalPlatformHandle(mojo_handle, options,
+                                              platform_handle);
 }
 
 MojoResult MojoWrapPlatformSharedMemoryRegionImpl(

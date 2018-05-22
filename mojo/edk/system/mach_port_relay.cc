@@ -65,22 +65,23 @@ void ReportChildError(ChildUMAError error) {
 }  // namespace
 
 // static
-void MachPortRelay::ReceivePorts(std::vector<ScopedPlatformHandle>* handles) {
+void MachPortRelay::ReceivePorts(
+    std::vector<ScopedInternalPlatformHandle>* handles) {
   DCHECK(handles);
 
   for (auto& handle : *handles) {
-    DCHECK(handle.get().type != PlatformHandle::Type::MACH);
-    if (handle.get().type != PlatformHandle::Type::MACH_NAME)
+    DCHECK(handle.get().type != InternalPlatformHandle::Type::MACH);
+    if (handle.get().type != InternalPlatformHandle::Type::MACH_NAME)
       continue;
 
-    handle.get().type = PlatformHandle::Type::MACH;
+    handle.get().type = InternalPlatformHandle::Type::MACH;
 
     // MACH_PORT_NULL doesn't need translation.
     if (handle.get().port == MACH_PORT_NULL)
       continue;
 
     // TODO(wez): Wrapping handle.get().port in this way causes it to be
-    // Free()d via mach_port_mod_refs() - should PlatformHandle also do
+    // Free()d via mach_port_mod_refs() - should InternalPlatformHandle also do
     // that if the handle never reaches here, or should this code not be
     // wrapping it?
     base::mac::ScopedMachReceiveRight message_port(handle.get().port);
@@ -112,17 +113,17 @@ void MachPortRelay::SendPortsToProcess(Channel::Message* message,
   DCHECK(message);
   mach_port_t task_port = port_provider_->TaskForPid(process);
 
-  std::vector<ScopedPlatformHandle> handles = message->TakeHandles();
+  std::vector<ScopedInternalPlatformHandle> handles = message->TakeHandles();
   // Message should have handles, otherwise there's no point in calling this
   // function.
   DCHECK(!handles.empty());
   for (auto& handle : handles) {
-    DCHECK(handle.get().type != PlatformHandle::Type::MACH_NAME);
-    if (handle.get().type != PlatformHandle::Type::MACH)
+    DCHECK(handle.get().type != InternalPlatformHandle::Type::MACH_NAME);
+    if (handle.get().type != InternalPlatformHandle::Type::MACH)
       continue;
 
     if (!handle.is_valid()) {
-      handle.get().type = PlatformHandle::Type::MACH_NAME;
+      handle.get().type = InternalPlatformHandle::Type::MACH_NAME;
       continue;
     }
 
@@ -169,15 +170,15 @@ void MachPortRelay::SendPortsToProcess(Channel::Message* message,
 
     ReportBrokerError(BrokerUMAError::SUCCESS);
     handle.get().port = intermediate_port;
-    handle.get().type = PlatformHandle::Type::MACH_NAME;
+    handle.get().type = InternalPlatformHandle::Type::MACH_NAME;
   }
   message->SetHandles(std::move(handles));
 }
 
-void MachPortRelay::ExtractPort(ScopedPlatformHandle* handle,
+void MachPortRelay::ExtractPort(ScopedInternalPlatformHandle* handle,
                                 base::ProcessHandle process) {
-  DCHECK_EQ(handle->get().type, PlatformHandle::Type::MACH_NAME);
-  handle->get().type = PlatformHandle::Type::MACH;
+  DCHECK_EQ(handle->get().type, InternalPlatformHandle::Type::MACH_NAME);
+  handle->get().type = InternalPlatformHandle::Type::MACH;
 
   // No extraction necessary for MACH_PORT_NULL.
   if (!handle->is_valid())

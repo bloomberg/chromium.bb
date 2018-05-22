@@ -84,21 +84,22 @@ PlatformChannelPair::PlatformChannelPair(bool client_is_blocking) {
 #endif  // defined(OS_MACOSX)
 #endif  // defined(OS_NACL_SFI)
 
-  server_handle_.reset(PlatformHandle(fds[0]));
+  server_handle_.reset(InternalPlatformHandle(fds[0]));
   DCHECK(server_handle_.is_valid());
-  client_handle_.reset(PlatformHandle(fds[1]));
+  client_handle_.reset(InternalPlatformHandle(fds[1]));
   DCHECK(client_handle_.is_valid());
 }
 
 // static
-ScopedPlatformHandle PlatformChannelPair::PassClientHandleFromParentProcess(
+ScopedInternalPlatformHandle
+PlatformChannelPair::PassClientHandleFromParentProcess(
     const base::CommandLine& command_line) {
   std::string client_fd_string =
       command_line.GetSwitchValueASCII(kMojoPlatformChannelHandleSwitch);
   return PassClientHandleFromParentProcessFromString(client_fd_string);
 }
 
-ScopedPlatformHandle
+ScopedInternalPlatformHandle
 PlatformChannelPair::PassClientHandleFromParentProcessFromString(
     const std::string& value) {
   int client_fd = -1;
@@ -106,7 +107,7 @@ PlatformChannelPair::PassClientHandleFromParentProcessFromString(
   base::GlobalDescriptors::Key key = -1;
   if (value.empty() || !base::StringToUint(value, &key)) {
     LOG(ERROR) << "Missing or invalid --" << kMojoPlatformChannelHandleSwitch;
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
   }
   client_fd = base::GlobalDescriptors::GetInstance()->Get(key);
 #else
@@ -114,10 +115,10 @@ PlatformChannelPair::PassClientHandleFromParentProcessFromString(
       !base::StringToInt(value, &client_fd) ||
       client_fd < base::GlobalDescriptors::kBaseDescriptor) {
     LOG(ERROR) << "Missing or invalid --" << kMojoPlatformChannelHandleSwitch;
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
   }
 #endif
-  return ScopedPlatformHandle(PlatformHandle(client_fd));
+  return ScopedInternalPlatformHandle(InternalPlatformHandle(client_fd));
 }
 
 void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(

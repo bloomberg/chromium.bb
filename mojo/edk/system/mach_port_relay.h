@@ -44,7 +44,7 @@ class MachPortRelay : public base::PortProvider::Observer {
   //
   // See SendPortsToProcess() for the definition of intermediate and final Mach
   // ports.
-  static void ReceivePorts(std::vector<ScopedPlatformHandle>* handles);
+  static void ReceivePorts(std::vector<ScopedInternalPlatformHandle>* handles);
 
   explicit MachPortRelay(base::PortProvider* port_provider);
   ~MachPortRelay() override;
@@ -59,11 +59,12 @@ class MachPortRelay : public base::PortProvider::Observer {
   void SendPortsToProcess(Channel::Message* message,
                           base::ProcessHandle process);
 
-  // Given a PlatformHandle of Type::MACH_NAME, extracts the Mach port, and
-  // updates the contents of the PlatformHandle to have Type::MACH and have the
-  // actual Mach port. On failure, replaces the contents with Type::MACH and
-  // MACH_PORT_NULL.
-  void ExtractPort(ScopedPlatformHandle* handle, base::ProcessHandle process);
+  // Given a InternalPlatformHandle of Type::MACH_NAME, extracts the Mach port,
+  // and updates the contents of the InternalPlatformHandle to have Type::MACH
+  // and have the actual Mach port. On failure, replaces the contents with
+  // Type::MACH and MACH_PORT_NULL.
+  void ExtractPort(ScopedInternalPlatformHandle* handle,
+                   base::ProcessHandle process);
 
   // Observer interface.
   void AddObserver(Observer* observer);

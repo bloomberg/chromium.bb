@@ -25,10 +25,10 @@
 namespace content {
 namespace internal {
 
-mojo::edk::ScopedPlatformHandle
+mojo::edk::ScopedInternalPlatformHandle
 ChildProcessLauncherHelper::PrepareMojoPipeHandlesOnClientThread() {
   DCHECK_CURRENTLY_ON(client_thread_id_);
-  return mojo::edk::ScopedPlatformHandle();
+  return mojo::edk::ScopedInternalPlatformHandle();
 }
 
 void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {

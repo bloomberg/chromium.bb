@@ -9,19 +9,19 @@
 namespace mojo {
 namespace edk {
 
-ScopedPlatformHandle CreateClientHandle(
+ScopedInternalPlatformHandle CreateClientHandle(
     const NamedPlatformHandle& named_handle) {
   // TODO(fuchsia): Implement, or remove dependencies (crbug.com/754038).
   NOTREACHED();
-  return ScopedPlatformHandle();
+  return ScopedInternalPlatformHandle();
 }
 
-ScopedPlatformHandle CreateServerHandle(
+ScopedInternalPlatformHandle CreateServerHandle(
     const NamedPlatformHandle& named_handle,
     const CreateServerHandleOptions& options) {
   // TODO(fuchsia): Implement, or remove dependencies (crbug.com/754038).
   NOTREACHED();
-  return ScopedPlatformHandle();
+  return ScopedInternalPlatformHandle();
 }
 
 }  // namespace edk

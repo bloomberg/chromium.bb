@@ -34,7 +34,7 @@ PlatformChannelPair::PlatformChannelPair(bool client_is_blocking) {
   DWORD kOpenMode =
       PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED | FILE_FLAG_FIRST_PIPE_INSTANCE;
   const DWORD kPipeMode = PIPE_TYPE_BYTE | PIPE_READMODE_BYTE;
-  server_handle_.reset(PlatformHandle(
+  server_handle_.reset(InternalPlatformHandle(
       CreateNamedPipeW(pipe_name.c_str(), kOpenMode, kPipeMode,
                        1,           // Max instances.
                        4096,        // Out buffer size.
@@ -52,11 +52,11 @@ PlatformChannelPair::PlatformChannelPair(bool client_is_blocking) {
   // Allow the handle to be inherited by child processes.
   SECURITY_ATTRIBUTES security_attributes = {
       sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE};
-  client_handle_.reset(
-      PlatformHandle(CreateFileW(pipe_name.c_str(), kDesiredAccess,
-                                 0,  // No sharing.
-                                 &security_attributes, OPEN_EXISTING, kFlags,
-                                 nullptr)));  // No template file.
+  client_handle_.reset(InternalPlatformHandle(
+      CreateFileW(pipe_name.c_str(), kDesiredAccess,
+                  0,  // No sharing.
+                  &security_attributes, OPEN_EXISTING, kFlags,
+                  nullptr)));  // No template file.
   PCHECK(client_handle_.is_valid());
 
   // Since a client has connected, ConnectNamedPipe() should return zero and
@@ -66,25 +66,26 @@ PlatformChannelPair::PlatformChannelPair(bool client_is_blocking) {
 }
 
 // static
-ScopedPlatformHandle PlatformChannelPair::PassClientHandleFromParentProcess(
+ScopedInternalPlatformHandle
+PlatformChannelPair::PassClientHandleFromParentProcess(
     const base::CommandLine& command_line) {
   std::string client_handle_string =
       command_line.GetSwitchValueASCII(kMojoPlatformChannelHandleSwitch);
   return PassClientHandleFromParentProcessFromString(client_handle_string);
 }
 
-ScopedPlatformHandle
+ScopedInternalPlatformHandle
 PlatformChannelPair::PassClientHandleFromParentProcessFromString(
     const std::string& value) {
   int client_handle_value = 0;
   if (value.empty() ||
       !base::StringToInt(value, &client_handle_value)) {
     LOG(ERROR) << "Missing or invalid --" << kMojoPlatformChannelHandleSwitch;
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
   }
 
-  return ScopedPlatformHandle(
-      PlatformHandle(LongToHandle(client_handle_value)));
+  return ScopedInternalPlatformHandle(
+      InternalPlatformHandle(LongToHandle(client_handle_value)));
 }
 
 void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(

@@ -27,7 +27,7 @@ void RunCrashReporter(const std::string& crash_type,
                       const std::string& device,
                       const std::string& board,
                       const std::string& cpu_abi,
-                      mojo::edk::ScopedPlatformHandle pipe) {
+                      mojo::edk::ScopedInternalPlatformHandle pipe) {
   base::LaunchOptions options;
   options.fds_to_remap.push_back(
       std::make_pair(pipe.get().handle, STDIN_FILENO));
@@ -91,8 +91,9 @@ ArcCrashCollectorBridge::~ArcCrashCollectorBridge() {
 
 void ArcCrashCollectorBridge::DumpCrash(const std::string& type,
                                         mojo::ScopedHandle pipe) {
-  mojo::edk::ScopedPlatformHandle pipe_handle;
-  mojo::edk::PassWrappedPlatformHandle(pipe.release().value(), &pipe_handle);
+  mojo::edk::ScopedInternalPlatformHandle pipe_handle;
+  mojo::edk::PassWrappedInternalPlatformHandle(pipe.release().value(),
+                                               &pipe_handle);
 
   base::PostTaskWithTraits(
       FROM_HERE, {base::WithBaseSyncPrimitives()},

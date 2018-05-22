@@ -32,13 +32,14 @@ namespace {
 std::unique_ptr<mojo::edk::IncomingBrokerClientInvitation>
 EstablishMojoConnection() {
 #if defined(OS_WIN)
-  mojo::edk::ScopedPlatformHandle platform_channel(
+  mojo::edk::ScopedInternalPlatformHandle platform_channel(
       mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
           *base::CommandLine::ForCurrentProcess()));
 #else
-  mojo::edk::ScopedPlatformHandle platform_channel(
-      mojo::edk::PlatformHandle(base::GlobalDescriptors::GetInstance()->Get(
-          service_manager::kMojoIPCChannel)));
+  mojo::edk::ScopedInternalPlatformHandle platform_channel(
+      mojo::edk::InternalPlatformHandle(
+          base::GlobalDescriptors::GetInstance()->Get(
+              service_manager::kMojoIPCChannel)));
 #endif
   DCHECK(platform_channel.is_valid());
   return mojo::edk::IncomingBrokerClientInvitation::Accept(

@@ -105,7 +105,7 @@ class TestStartupClientChannelListener : public IPC::Listener {
 void ConnectAsync(mojo::ScopedMessagePipeHandle handle,
                   mojo::edk::NamedPlatformHandle os_pipe,
                   mojo::edk::PeerConnection* peer_connection) {
-  mojo::edk::ScopedPlatformHandle os_pipe_handle =
+  mojo::edk::ScopedInternalPlatformHandle os_pipe_handle =
       mojo::edk::CreateClientHandle(os_pipe);
   if (!os_pipe_handle.is_valid())
     return;

@@ -47,92 +47,92 @@ bool MakeUnixAddr(const NamedPlatformHandle& handle,
 }
 
 // This function creates a unix domain socket, and set it as non-blocking.
-// If successful, this returns a ScopedPlatformHandle containing the socket.
-// Otherwise, this returns an invalid ScopedPlatformHandle.
-ScopedPlatformHandle CreateUnixDomainSocket(bool needs_connection) {
+// If successful, this returns a ScopedInternalPlatformHandle containing the
+// socket. Otherwise, this returns an invalid ScopedInternalPlatformHandle.
+ScopedInternalPlatformHandle CreateUnixDomainSocket(bool needs_connection) {
   // Create the unix domain socket.
-  PlatformHandle socket_handle(socket(AF_UNIX, SOCK_STREAM, 0));
+  InternalPlatformHandle socket_handle(socket(AF_UNIX, SOCK_STREAM, 0));
   socket_handle.needs_connection = needs_connection;
-  ScopedPlatformHandle handle(socket_handle);
+  ScopedInternalPlatformHandle handle(socket_handle);
   if (!handle.is_valid()) {
     PLOG(ERROR) << "Failed to create AF_UNIX socket.";
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
   }
 
   // Now set it as non-blocking.
   if (!base::SetNonBlocking(handle.get().handle)) {
     PLOG(ERROR) << "base::SetNonBlocking() failed " << handle.get().handle;
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
   }
   return handle;
 }
 
 }  // namespace
 
-ScopedPlatformHandle CreateClientHandle(
+ScopedInternalPlatformHandle CreateClientHandle(
     const NamedPlatformHandle& named_handle) {
   if (!named_handle.is_valid())
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
 
   struct sockaddr_un unix_addr;
   size_t unix_addr_len;
   if (!MakeUnixAddr(named_handle, &unix_addr, &unix_addr_len))
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
 
-  ScopedPlatformHandle handle = CreateUnixDomainSocket(false);
+  ScopedInternalPlatformHandle handle = CreateUnixDomainSocket(false);
   if (!handle.is_valid())
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
 
   if (HANDLE_EINTR(connect(handle.get().handle,
                            reinterpret_cast<sockaddr*>(&unix_addr),
                            unix_addr_len)) < 0) {
     PLOG(ERROR) << "connect " << named_handle.name;
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
   }
 
   return handle;
 }
 
-ScopedPlatformHandle CreateServerHandle(
+ScopedInternalPlatformHandle CreateServerHandle(
     const NamedPlatformHandle& named_handle,
     const CreateServerHandleOptions& options) {
   if (!named_handle.is_valid())
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
 
   // Make sure the path we need exists.
   base::FilePath socket_dir = base::FilePath(named_handle.name).DirName();
   if (!base::CreateDirectory(socket_dir)) {
     LOG(ERROR) << "Couldn't create directory: " << socket_dir.value();
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
   }
 
   // Delete any old FS instances.
   if (unlink(named_handle.name.c_str()) < 0 && errno != ENOENT) {
     PLOG(ERROR) << "unlink " << named_handle.name;
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
   }
 
   struct sockaddr_un unix_addr;
   size_t unix_addr_len;
   if (!MakeUnixAddr(named_handle, &unix_addr, &unix_addr_len))
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
 
-  ScopedPlatformHandle handle = CreateUnixDomainSocket(true);
+  ScopedInternalPlatformHandle handle = CreateUnixDomainSocket(true);
   if (!handle.is_valid())
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
 
   // Bind the socket.
   if (bind(handle.get().handle, reinterpret_cast<const sockaddr*>(&unix_addr),
            unix_addr_len) < 0) {
     PLOG(ERROR) << "bind " << named_handle.name;
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
   }
 
   // Start listening on the socket.
   if (listen(handle.get().handle, SOMAXCONN) < 0) {
     PLOG(ERROR) << "listen " << named_handle.name;
     unlink(named_handle.name.c_str());
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
   }
   return handle;
 }

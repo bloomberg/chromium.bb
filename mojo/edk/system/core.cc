@@ -217,8 +217,8 @@ void Core::ReleaseDispatchersForTransit(
     handles_->CancelTransit(dispatchers);
 }
 
-MojoResult Core::CreatePlatformHandleWrapper(
-    ScopedPlatformHandle platform_handle,
+MojoResult Core::CreateInternalPlatformHandleWrapper(
+    ScopedInternalPlatformHandle platform_handle,
     MojoHandle* wrapper_handle) {
   MojoHandle h = AddDispatcher(
       PlatformHandleDispatcher::Create(std::move(platform_handle)));
@@ -228,9 +228,9 @@ MojoResult Core::CreatePlatformHandleWrapper(
   return MOJO_RESULT_OK;
 }
 
-MojoResult Core::PassWrappedPlatformHandle(
+MojoResult Core::PassWrappedInternalPlatformHandle(
     MojoHandle wrapper_handle,
-    ScopedPlatformHandle* platform_handle) {
+    ScopedInternalPlatformHandle* platform_handle) {
   base::AutoLock lock(handles_->GetLock());
   scoped_refptr<Dispatcher> d;
   MojoResult result = handles_->GetAndRemoveDispatcher(wrapper_handle, &d);
@@ -239,7 +239,7 @@ MojoResult Core::PassWrappedPlatformHandle(
   if (d->GetType() == Dispatcher::Type::PLATFORM_HANDLE) {
     PlatformHandleDispatcher* phd =
         static_cast<PlatformHandleDispatcher*>(d.get());
-    *platform_handle = phd->PassPlatformHandle();
+    *platform_handle = phd->PassInternalPlatformHandle();
   } else {
     result = MOJO_RESULT_INVALID_ARGUMENT;
   }
@@ -965,30 +965,30 @@ MojoResult Core::GetBufferInfo(MojoHandle buffer_handle,
   return dispatcher->GetBufferInfo(info);
 }
 
-MojoResult Core::WrapPlatformHandle(
+MojoResult Core::WrapInternalPlatformHandle(
     const MojoPlatformHandle* platform_handle,
     const MojoWrapPlatformHandleOptions* options,
     MojoHandle* mojo_handle) {
-  ScopedPlatformHandle handle;
-  MojoResult result =
-      MojoPlatformHandleToScopedPlatformHandle(platform_handle, &handle);
+  ScopedInternalPlatformHandle handle;
+  MojoResult result = MojoPlatformHandleToScopedInternalPlatformHandle(
+      platform_handle, &handle);
   if (result != MOJO_RESULT_OK)
     return result;
 
-  return CreatePlatformHandleWrapper(std::move(handle), mojo_handle);
+  return CreateInternalPlatformHandleWrapper(std::move(handle), mojo_handle);
 }
 
-MojoResult Core::UnwrapPlatformHandle(
+MojoResult Core::UnwrapInternalPlatformHandle(
     MojoHandle mojo_handle,
     const MojoUnwrapPlatformHandleOptions* options,
     MojoPlatformHandle* platform_handle) {
-  ScopedPlatformHandle handle;
-  MojoResult result = PassWrappedPlatformHandle(mojo_handle, &handle);
+  ScopedInternalPlatformHandle handle;
+  MojoResult result = PassWrappedInternalPlatformHandle(mojo_handle, &handle);
   if (result != MOJO_RESULT_OK)
     return result;
 
-  return ScopedPlatformHandleToMojoPlatformHandle(std::move(handle),
-                                                  platform_handle);
+  return ScopedInternalPlatformHandleToMojoPlatformHandle(std::move(handle),
+                                                          platform_handle);
 }
 
 MojoResult Core::WrapPlatformSharedMemoryRegion(
@@ -1012,10 +1012,10 @@ MojoResult Core::WrapPlatformSharedMemoryRegion(
     return MOJO_RESULT_INVALID_ARGUMENT;
 #endif
 
-  ScopedPlatformHandle handles[2];
+  ScopedInternalPlatformHandle handles[2];
   bool handles_ok = true;
   for (size_t i = 0; i < num_platform_handles; ++i) {
-    MojoResult result = MojoPlatformHandleToScopedPlatformHandle(
+    MojoResult result = MojoPlatformHandleToScopedInternalPlatformHandle(
         &platform_handles[i], &handles[i]);
     if (result != MOJO_RESULT_OK)
       handles_ok = false;
@@ -1043,7 +1043,7 @@ MojoResult Core::WrapPlatformSharedMemoryRegion(
 
   base::subtle::PlatformSharedMemoryRegion region =
       base::subtle::PlatformSharedMemoryRegion::Take(
-          CreateSharedMemoryRegionHandleFromPlatformHandles(
+          CreateSharedMemoryRegionHandleFromInternalPlatformHandles(
               std::move(handles[0]), std::move(handles[1])),
           mode, size, token);
   if (!region.IsValid())
@@ -1115,9 +1115,9 @@ MojoResult Core::UnwrapPlatformSharedMemoryRegion(
       return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
-  ScopedPlatformHandle handle;
-  ScopedPlatformHandle read_only_handle;
-  ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+  ScopedInternalPlatformHandle handle;
+  ScopedInternalPlatformHandle read_only_handle;
+  ExtractInternalPlatformHandlesFromSharedMemoryRegionHandle(
       region.PassPlatformHandle(), &handle, &read_only_handle);
 
   const uint32_t available_handle_storage_slots = *num_platform_handles;
@@ -1130,8 +1130,8 @@ MojoResult Core::UnwrapPlatformSharedMemoryRegion(
       base::subtle::PlatformSharedMemoryRegion::Mode::kWritable) {
     if (available_handle_storage_slots < 2)
       return MOJO_RESULT_INVALID_ARGUMENT;
-    if (ScopedPlatformHandleToMojoPlatformHandle(std::move(read_only_handle),
-                                                 &platform_handles[1]) !=
+    if (ScopedInternalPlatformHandleToMojoPlatformHandle(
+            std::move(read_only_handle), &platform_handles[1]) !=
         MOJO_RESULT_OK) {
       return MOJO_RESULT_INVALID_ARGUMENT;
     }
@@ -1139,7 +1139,7 @@ MojoResult Core::UnwrapPlatformSharedMemoryRegion(
   }
 #endif
 
-  if (ScopedPlatformHandleToMojoPlatformHandle(
+  if (ScopedInternalPlatformHandleToMojoPlatformHandle(
           std::move(handle), &platform_handles[0]) != MOJO_RESULT_OK) {
     return MOJO_RESULT_INVALID_ARGUMENT;
   }
@@ -1280,8 +1280,8 @@ MojoResult Core::SendInvitation(
   auto* invitation_dispatcher =
       static_cast<InvitationDispatcher*>(dispatcher.get());
 
-  ScopedPlatformHandle endpoint_handle;
-  MojoResult result = MojoPlatformHandleToScopedPlatformHandle(
+  ScopedInternalPlatformHandle endpoint_handle;
+  MojoResult result = MojoPlatformHandleToScopedInternalPlatformHandle(
       &transport_endpoint->platform_handles[0], &endpoint_handle);
   if (result != MOJO_RESULT_OK || !endpoint_handle.is_valid())
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -1346,8 +1346,8 @@ MojoResult Core::AcceptInvitation(
   if (*invitation_handle == MOJO_HANDLE_INVALID)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-  ScopedPlatformHandle endpoint_handle;
-  MojoResult result = MojoPlatformHandleToScopedPlatformHandle(
+  ScopedInternalPlatformHandle endpoint_handle;
+  MojoResult result = MojoPlatformHandleToScopedInternalPlatformHandle(
       &transport_endpoint->platform_handles[0], &endpoint_handle);
   if (result != MOJO_RESULT_OK) {
     Close(*invitation_handle);

@@ -18,7 +18,7 @@ namespace heap_profiling {
 class ReceiverPipe : public ReceiverPipeBase,
                      public base::MessagePumpForIO::FdWatcher {
  public:
-  explicit ReceiverPipe(mojo::edk::ScopedPlatformHandle handle);
+  explicit ReceiverPipe(mojo::edk::ScopedInternalPlatformHandle handle);
 
   // Must be called on the IO thread.
   void StartReadingOnIOThread();

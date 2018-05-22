@@ -28,12 +28,12 @@ void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
   DCHECK_CURRENTLY_ON(client_thread_id_);
 }
 
-mojo::edk::ScopedPlatformHandle
+mojo::edk::ScopedInternalPlatformHandle
 ChildProcessLauncherHelper::PrepareMojoPipeHandlesOnClientThread() {
   DCHECK_CURRENTLY_ON(client_thread_id_);
 
   if (!delegate_->ShouldLaunchElevated())
-    return mojo::edk::ScopedPlatformHandle();
+    return mojo::edk::ScopedInternalPlatformHandle();
 
   mojo::edk::NamedPlatformChannelPair named_pair;
   named_pair.PrepareToPassClientHandleToChildProcess(command_line());

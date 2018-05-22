@@ -207,10 +207,10 @@ void FakeFileSystemInstance::OpenFileToRead(const std::string& url,
       file.seekable == File::Seekable::YES
           ? CreateRegularFileDescriptor(file.content, temp_dir_.GetPath())
           : CreateStreamFileDescriptor(file.content);
-  mojo::edk::ScopedPlatformHandle platform_handle(
-      mojo::edk::PlatformHandle(fd.release()));
+  mojo::edk::ScopedInternalPlatformHandle platform_handle(
+      mojo::edk::InternalPlatformHandle(fd.release()));
   MojoHandle wrapped_handle;
-  MojoResult result = mojo::edk::CreatePlatformHandleWrapper(
+  MojoResult result = mojo::edk::CreateInternalPlatformHandleWrapper(
       std::move(platform_handle), &wrapped_handle);
   DCHECK_EQ(MOJO_RESULT_OK, result);
   base::ThreadTaskRunnerHandle::Get()->PostTask(

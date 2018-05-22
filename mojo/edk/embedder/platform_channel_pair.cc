@@ -18,11 +18,11 @@ const char PlatformChannelPair::kMojoPlatformChannelHandleSwitch[] =
 PlatformChannelPair::~PlatformChannelPair() {
 }
 
-ScopedPlatformHandle PlatformChannelPair::PassServerHandle() {
+ScopedInternalPlatformHandle PlatformChannelPair::PassServerHandle() {
   return std::move(server_handle_);
 }
 
-ScopedPlatformHandle PlatformChannelPair::PassClientHandle() {
+ScopedInternalPlatformHandle PlatformChannelPair::PassClientHandle() {
   return std::move(client_handle_);
 }
 

@@ -11,7 +11,8 @@
 namespace mojo {
 namespace edk {
 
-ScopedPlatformHandle DuplicatePlatformHandle(PlatformHandle platform_handle) {
+ScopedInternalPlatformHandle DuplicatePlatformHandle(
+    InternalPlatformHandle platform_handle) {
   DCHECK(platform_handle.is_valid());
 
   HANDLE new_handle;
@@ -19,9 +20,9 @@ ScopedPlatformHandle DuplicatePlatformHandle(PlatformHandle platform_handle) {
   if (!DuplicateHandle(GetCurrentProcess(), platform_handle.handle,
                        GetCurrentProcess(), &new_handle, 0, TRUE,
                        DUPLICATE_SAME_ACCESS))
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
   DCHECK_NE(new_handle, INVALID_HANDLE_VALUE);
-  return ScopedPlatformHandle(PlatformHandle(new_handle));
+  return ScopedInternalPlatformHandle(InternalPlatformHandle(new_handle));
 }
 
 }  // namespace edk

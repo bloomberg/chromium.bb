@@ -33,7 +33,7 @@ class ChannelWin : public Channel,
                    public base::MessagePumpForIO::IOHandler {
  public:
   ChannelWin(Delegate* delegate,
-             ScopedPlatformHandle handle,
+             ScopedInternalPlatformHandle handle,
              scoped_refptr<base::TaskRunner> io_task_runner)
       : Channel(delegate),
         self_(this),
@@ -79,11 +79,11 @@ class ChannelWin : public Channel,
     leak_handle_ = true;
   }
 
-  bool GetReadPlatformHandles(
+  bool GetReadInternalPlatformHandles(
       size_t num_handles,
       const void* extra_header,
       size_t extra_header_size,
-      std::vector<ScopedPlatformHandle>* handles) override {
+      std::vector<ScopedInternalPlatformHandle>* handles) override {
     DCHECK(extra_header);
     if (num_handles > std::numeric_limits<uint16_t>::max())
       return false;
@@ -95,7 +95,7 @@ class ChannelWin : public Channel,
     const HandleEntry* extra_header_handles =
         reinterpret_cast<const HandleEntry*>(extra_header);
     for (size_t i = 0; i < num_handles; i++) {
-      handles->emplace_back(ScopedPlatformHandle(PlatformHandle(
+      handles->emplace_back(ScopedInternalPlatformHandle(InternalPlatformHandle(
           base::win::Uint32ToHandle(extra_header_handles[i].handle))));
     }
     return true;
@@ -239,7 +239,8 @@ class ChannelWin : public Channel,
       // Note that we don't simply release these objects because they also own
       // an internal process handle (in |owning_process|) which *does* need to
       // be closed.
-      std::vector<ScopedPlatformHandle> handles = message->TakeHandles();
+      std::vector<ScopedInternalPlatformHandle> handles =
+          message->TakeHandles();
       for (auto& handle : handles)
         handle.get().handle = INVALID_HANDLE_VALUE;
 
@@ -314,7 +315,7 @@ class ChannelWin : public Channel,
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.
   scoped_refptr<Channel> self_;
 
-  ScopedPlatformHandle handle_;
+  ScopedInternalPlatformHandle handle_;
   const scoped_refptr<base::TaskRunner> io_task_runner_;
 
   base::MessagePumpForIO::IOContext connect_context_;

@@ -24,7 +24,8 @@ class UnixDomainSocketAcceptor : public base::MessagePumpForIO::FdWatcher {
     // Called when a client connects to the factory. It is the delegate's
     // responsibility to create an IPC::Channel for the handle, or else close
     // the file descriptor contained therein.
-    virtual void OnClientConnected(mojo::edk::ScopedPlatformHandle handle) = 0;
+    virtual void OnClientConnected(
+        mojo::edk::ScopedInternalPlatformHandle handle) = 0;
 
     // Called when an error occurs and the channel is closed.
     virtual void OnListenError() = 0;
@@ -47,7 +48,7 @@ class UnixDomainSocketAcceptor : public base::MessagePumpForIO::FdWatcher {
   base::MessagePumpForIO::FdWatchController server_listen_connection_watcher_;
   mojo::edk::NamedPlatformHandle named_pipe_;
   Delegate* delegate_;
-  mojo::edk::ScopedPlatformHandle listen_handle_;
+  mojo::edk::ScopedInternalPlatformHandle listen_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(UnixDomainSocketAcceptor);
 };

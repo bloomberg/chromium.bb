@@ -17,10 +17,10 @@ namespace mojo {
 namespace edk {
 namespace test {
 
-// TODO(fuchsia): Merge Fuchsia's PlatformHandle with the POSIX one and use the
-// POSIX-generic versions of these. See crbug.com/754029.
+// TODO(fuchsia): Merge Fuchsia's InternalPlatformHandle with the POSIX one and
+// use the POSIX-generic versions of these. See crbug.com/754029.
 
-bool BlockingWrite(const PlatformHandle& handle,
+bool BlockingWrite(const InternalPlatformHandle& handle,
                    const void* buffer,
                    size_t bytes_to_write,
                    size_t* bytes_written) {
@@ -41,7 +41,7 @@ bool BlockingWrite(const PlatformHandle& handle,
   return true;
 }
 
-bool BlockingRead(const PlatformHandle& handle,
+bool BlockingRead(const InternalPlatformHandle& handle,
                   void* buffer,
                   size_t buffer_size,
                   size_t* bytes_read) {
@@ -62,7 +62,7 @@ bool BlockingRead(const PlatformHandle& handle,
   return true;
 }
 
-bool NonBlockingRead(const PlatformHandle& handle,
+bool NonBlockingRead(const InternalPlatformHandle& handle,
                      void* buffer,
                      size_t buffer_size,
                      size_t* bytes_read) {
@@ -80,15 +80,16 @@ bool NonBlockingRead(const PlatformHandle& handle,
   return true;
 }
 
-ScopedPlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp) {
+ScopedInternalPlatformHandle InternalPlatformHandleFromFILE(
+    base::ScopedFILE fp) {
   CHECK(fp);
   int rv = HANDLE_EINTR(dup(fileno(fp.get())));
   PCHECK(rv != -1) << "dup";
-  return ScopedPlatformHandle(PlatformHandle::ForFd(rv));
+  return ScopedInternalPlatformHandle(InternalPlatformHandle::ForFd(rv));
 }
 
-base::ScopedFILE FILEFromPlatformHandle(ScopedPlatformHandle h,
-                                        const char* mode) {
+base::ScopedFILE FILEFromInternalPlatformHandle(ScopedInternalPlatformHandle h,
+                                                const char* mode) {
   CHECK(h.get().is_valid_fd());
   base::ScopedFILE rv(fdopen(h.release().as_fd(), mode));
   PCHECK(rv) << "fdopen";

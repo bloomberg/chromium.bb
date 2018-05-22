@@ -140,11 +140,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
       bool in_transit);
 
   // See "mojo/edk/embedder/embedder.h" for more information on these functions.
-  MojoResult CreatePlatformHandleWrapper(ScopedPlatformHandle platform_handle,
-                                         MojoHandle* wrapper_handle);
+  MojoResult CreateInternalPlatformHandleWrapper(
+      ScopedInternalPlatformHandle platform_handle,
+      MojoHandle* wrapper_handle);
 
-  MojoResult PassWrappedPlatformHandle(MojoHandle wrapper_handle,
-                                       ScopedPlatformHandle* platform_handle);
+  MojoResult PassWrappedInternalPlatformHandle(
+      MojoHandle wrapper_handle,
+      ScopedInternalPlatformHandle* platform_handle);
 
   // Requests that the EDK tear itself down. |callback| will be called once
   // the shutdown process is complete. Note that |callback| is always called
@@ -281,10 +283,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/platform_handle.h".
-  MojoResult WrapPlatformHandle(const MojoPlatformHandle* platform_handle,
-                                const MojoWrapPlatformHandleOptions* options,
-                                MojoHandle* mojo_handle);
-  MojoResult UnwrapPlatformHandle(
+  MojoResult WrapInternalPlatformHandle(
+      const MojoPlatformHandle* platform_handle,
+      const MojoWrapPlatformHandleOptions* options,
+      MojoHandle* mojo_handle);
+  MojoResult UnwrapInternalPlatformHandle(
       MojoHandle mojo_handle,
       const MojoUnwrapPlatformHandleOptions* options,
       MojoPlatformHandle* platform_handle);

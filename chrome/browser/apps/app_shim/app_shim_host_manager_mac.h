@@ -52,7 +52,8 @@ class AppShimHostManager : public apps::UnixDomainSocketAcceptor::Delegate,
   virtual ~AppShimHostManager();
 
   // UnixDomainSocketAcceptor::Delegate implementation.
-  void OnClientConnected(mojo::edk::ScopedPlatformHandle handle) override;
+  void OnClientConnected(
+      mojo::edk::ScopedInternalPlatformHandle handle) override;
   void OnListenError() override;
 
   // The |acceptor_| must be created on a thread which allows blocking I/O.

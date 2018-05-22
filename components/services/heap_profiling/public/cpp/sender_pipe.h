@@ -32,14 +32,16 @@ class SenderPipe {
     // |kPipeSize|.
     PipePair();
     PipePair(PipePair&&);
-    mojo::edk::ScopedPlatformHandle PassSender() { return std::move(sender_); }
-    mojo::edk::ScopedPlatformHandle PassReceiver() {
+    mojo::edk::ScopedInternalPlatformHandle PassSender() {
+      return std::move(sender_);
+    }
+    mojo::edk::ScopedInternalPlatformHandle PassReceiver() {
       return std::move(receiver_);
     }
 
    private:
-    mojo::edk::ScopedPlatformHandle sender_;
-    mojo::edk::ScopedPlatformHandle receiver_;
+    mojo::edk::ScopedInternalPlatformHandle sender_;
+    mojo::edk::ScopedInternalPlatformHandle receiver_;
     DISALLOW_COPY_AND_ASSIGN(PipePair);
   };
 

@@ -28,11 +28,11 @@ class TestChannel : public Channel {
     return OnReadComplete(bytes_read, next_read_size_hint);
   }
 
-  MOCK_METHOD4(GetReadPlatformHandles,
+  MOCK_METHOD4(GetReadInternalPlatformHandles,
                bool(size_t num_handles,
                     const void* extra_header,
                     size_t extra_header_size,
-                    std::vector<ScopedPlatformHandle>* handles));
+                    std::vector<ScopedInternalPlatformHandle>* handles));
   MOCK_METHOD0(Start, void());
   MOCK_METHOD0(ShutDownImpl, void());
   MOCK_METHOD0(LeakHandle, void());
@@ -53,9 +53,10 @@ class MockChannelDelegate : public Channel::Delegate {
   const void* GetReceivedPayload() const { return payload_.get(); }
 
  protected:
-  void OnChannelMessage(const void* payload,
-                        size_t payload_size,
-                        std::vector<ScopedPlatformHandle> handles) override {
+  void OnChannelMessage(
+      const void* payload,
+      size_t payload_size,
+      std::vector<ScopedInternalPlatformHandle> handles) override {
     payload_.reset(new char[payload_size]);
     memcpy(payload_.get(), payload, payload_size);
     payload_size_ = payload_size;
@@ -180,7 +181,7 @@ TEST(ChannelTest, OnReadNonLegacyMessage) {
 class ChannelTestShutdownAndWriteDelegate : public Channel::Delegate {
  public:
   ChannelTestShutdownAndWriteDelegate(
-      ScopedPlatformHandle handle,
+      ScopedInternalPlatformHandle handle,
       scoped_refptr<base::TaskRunner> task_runner,
       scoped_refptr<Channel> client_channel,
       std::unique_ptr<base::Thread> client_thread,
@@ -196,9 +197,10 @@ class ChannelTestShutdownAndWriteDelegate : public Channel::Delegate {
   ~ChannelTestShutdownAndWriteDelegate() override { channel_->ShutDown(); }
 
   // Channel::Delegate implementation
-  void OnChannelMessage(const void* payload,
-                        size_t payload_size,
-                        std::vector<ScopedPlatformHandle> handles) override {
+  void OnChannelMessage(
+      const void* payload,
+      size_t payload_size,
+      std::vector<ScopedInternalPlatformHandle> handles) override {
     ++message_count_;
 
     // If |client_channel_| exists then close it and its thread.

@@ -47,12 +47,12 @@ NamedPlatformChannelPair::NamedPlatformChannelPair(
 
 NamedPlatformChannelPair::~NamedPlatformChannelPair() {}
 
-ScopedPlatformHandle NamedPlatformChannelPair::PassServerHandle() {
+ScopedInternalPlatformHandle NamedPlatformChannelPair::PassServerHandle() {
   return std::move(server_handle_);
 }
 
 // static
-ScopedPlatformHandle
+ScopedInternalPlatformHandle
 NamedPlatformChannelPair::PassClientHandleFromParentProcess(
     const base::CommandLine& command_line) {
   // In order to support passing the pipe name on the command line, the pipe
@@ -61,7 +61,7 @@ NamedPlatformChannelPair::PassClientHandleFromParentProcess(
       command_line.GetSwitchValueNative(kMojoNamedPlatformChannelPipeSwitch));
 
   if (!handle.is_valid())
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
 
   return CreateClientHandle(handle);
 }

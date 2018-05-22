@@ -14,37 +14,39 @@
 namespace mojo {
 namespace edk {
 
-class MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle {
+class MOJO_SYSTEM_IMPL_EXPORT ScopedInternalPlatformHandle {
  public:
-  ScopedPlatformHandle() {}
-  explicit ScopedPlatformHandle(PlatformHandle handle) : handle_(handle) {}
-  ~ScopedPlatformHandle() { handle_.CloseIfNecessary(); }
+  ScopedInternalPlatformHandle() {}
+  explicit ScopedInternalPlatformHandle(InternalPlatformHandle handle)
+      : handle_(handle) {}
+  ~ScopedInternalPlatformHandle() { handle_.CloseIfNecessary(); }
 
   // Move-only constructor and operator=.
-  ScopedPlatformHandle(ScopedPlatformHandle&& other)
+  ScopedInternalPlatformHandle(ScopedInternalPlatformHandle&& other)
       : handle_(other.release()) {}
 
-  ScopedPlatformHandle& operator=(ScopedPlatformHandle&& other) {
+  ScopedInternalPlatformHandle& operator=(
+      ScopedInternalPlatformHandle&& other) {
     reset(other.release());
     return *this;
   }
 
-  const PlatformHandle& get() const { return handle_; }
-  PlatformHandle& get() { return handle_; }
+  const InternalPlatformHandle& get() const { return handle_; }
+  InternalPlatformHandle& get() { return handle_; }
 
-  void swap(ScopedPlatformHandle& other) {
-    PlatformHandle temp = handle_;
+  void swap(ScopedInternalPlatformHandle& other) {
+    InternalPlatformHandle temp = handle_;
     handle_ = other.handle_;
     other.handle_ = temp;
   }
 
-  PlatformHandle release() WARN_UNUSED_RESULT {
-    PlatformHandle rv = handle_;
-    handle_ = PlatformHandle();
+  InternalPlatformHandle release() WARN_UNUSED_RESULT {
+    InternalPlatformHandle rv = handle_;
+    handle_ = InternalPlatformHandle();
     return rv;
   }
 
-  void reset(PlatformHandle handle = PlatformHandle()) {
+  void reset(InternalPlatformHandle handle = InternalPlatformHandle()) {
     handle_.CloseIfNecessary();
     handle_ = handle;
   }
@@ -52,9 +54,9 @@ class MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle {
   bool is_valid() const { return handle_.is_valid(); }
 
  private:
-  PlatformHandle handle_;
+  InternalPlatformHandle handle_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedPlatformHandle);
+  DISALLOW_COPY_AND_ASSIGN(ScopedInternalPlatformHandle);
 };
 
 }  // namespace edk

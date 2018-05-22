@@ -115,9 +115,9 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
 
     // Mojo IPC setup.
     mojo::edk::PlatformChannelPair channel_pair;
-    mojo::edk::ScopedPlatformHandle parent_handle =
+    mojo::edk::ScopedInternalPlatformHandle parent_handle =
         channel_pair.PassServerHandle();
-    mojo::edk::ScopedPlatformHandle client_handle =
+    mojo::edk::ScopedInternalPlatformHandle client_handle =
         channel_pair.PassClientHandle();
     base::HandlesToInheritVector handles;
     handles.push_back(client_handle.get().handle);

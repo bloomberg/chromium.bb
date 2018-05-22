@@ -106,7 +106,7 @@ class ServiceProcessState {
 
   // Return the channel handle used for communicating with the service.
 #if defined(OS_MACOSX)
-  mojo::edk::ScopedPlatformHandle GetServiceProcessChannel();
+  mojo::edk::ScopedInternalPlatformHandle GetServiceProcessChannel();
 #else
   mojo::edk::NamedPlatformHandle GetServiceProcessChannel();
 #endif

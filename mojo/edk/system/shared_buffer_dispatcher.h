@@ -60,7 +60,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
       size_t num_bytes,
       const ports::PortName* ports,
       size_t num_ports,
-      ScopedPlatformHandle* platform_handles,
+      ScopedInternalPlatformHandle* platform_handles,
       size_t num_handles);
 
   // Passes the underlying PlatformSharedMemoryRegion. This dispatcher must be
@@ -88,7 +88,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
                       uint32_t* num_platform_handles) override;
   bool EndSerialize(void* destination,
                     ports::PortName* ports,
-                    ScopedPlatformHandle* handles) override;
+                    ScopedInternalPlatformHandle* handles) override;
   bool BeginTransit() override;
   void CompleteTransitAndClose() override;
   void CancelTransit() override;

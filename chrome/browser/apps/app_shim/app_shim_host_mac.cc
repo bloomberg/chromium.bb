@@ -25,7 +25,7 @@ AppShimHost::~AppShimHost() {
     handler->OnShimClose(this);
 }
 
-void AppShimHost::ServeChannel(mojo::edk::ScopedPlatformHandle handle) {
+void AppShimHost::ServeChannel(mojo::edk::ScopedInternalPlatformHandle handle) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!channel_.get());
   channel_ = IPC::ChannelProxy::Create(

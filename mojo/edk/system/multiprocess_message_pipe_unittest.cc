@@ -402,7 +402,7 @@ TEST_F(MultiprocessMessagePipeTest, SharedBufferPassing) {
   });
 }
 
-DEFINE_TEST_CLIENT_WITH_PIPE(CheckPlatformHandleFile,
+DEFINE_TEST_CLIENT_WITH_PIPE(CheckInternalPlatformHandleFile,
                              MultiprocessMessagePipeTest,
                              h) {
   HandleSignalsState hss;
@@ -431,12 +431,13 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckPlatformHandleFile,
   CHECK_GT(num_handles, 0);
 
   for (int i = 0; i < num_handles; ++i) {
-    ScopedPlatformHandle h;
-    CHECK_EQ(PassWrappedPlatformHandle(handles[i], &h), MOJO_RESULT_OK);
+    ScopedInternalPlatformHandle h;
+    CHECK_EQ(PassWrappedInternalPlatformHandle(handles[i], &h), MOJO_RESULT_OK);
     CHECK(h.is_valid());
     MojoClose(handles[i]);
 
-    base::ScopedFILE fp(test::FILEFromPlatformHandle(std::move(h), "r"));
+    base::ScopedFILE fp(
+        test::FILEFromInternalPlatformHandle(std::move(h), "r"));
     CHECK(fp);
     std::string fread_buffer(100, '\0');
     size_t bytes_read =
@@ -452,11 +453,12 @@ class MultiprocessMessagePipeTestWithPipeCount
     : public MultiprocessMessagePipeTest,
       public testing::WithParamInterface<size_t> {};
 
-TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
+TEST_P(MultiprocessMessagePipeTestWithPipeCount,
+       InternalPlatformHandlePassing) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  RunTestClient("CheckPlatformHandleFile", [&](MojoHandle h) {
+  RunTestClient("CheckInternalPlatformHandleFile", [&](MojoHandle h) {
     std::vector<MojoHandle> handles;
 
     size_t pipe_count = GetParam();
@@ -469,11 +471,11 @@ TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
       fflush(fp.get());
       rewind(fp.get());
       MojoHandle handle;
-      ASSERT_EQ(
-          CreatePlatformHandleWrapper(
-              ScopedPlatformHandle(test::PlatformHandleFromFILE(std::move(fp))),
-              &handle),
-          MOJO_RESULT_OK);
+      ASSERT_EQ(CreateInternalPlatformHandleWrapper(
+                    ScopedInternalPlatformHandle(
+                        test::InternalPlatformHandleFromFILE(std::move(fp))),
+                    &handle),
+                MOJO_RESULT_OK);
       handles.push_back(handle);
     }
 

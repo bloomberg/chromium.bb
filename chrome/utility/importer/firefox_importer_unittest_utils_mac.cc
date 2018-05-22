@@ -42,7 +42,7 @@ constexpr char kMojoChannelToken[] = "mojo-channel-token";
 // |mojo_channel_token| - token for creating the Mojo pipe.
 base::Process LaunchNSSDecrypterChildProcess(
     const base::FilePath& nss_path,
-    mojo::edk::ScopedPlatformHandle mojo_handle,
+    mojo::edk::ScopedInternalPlatformHandle mojo_handle,
     const std::string& mojo_channel_token) {
   base::CommandLine cl(*base::CommandLine::ForCurrentProcess());
   cl.AppendSwitchASCII(switches::kTestChildProcess, "NSSDecrypterChildProcess");
@@ -247,9 +247,10 @@ MULTIPROCESS_TEST_MAIN(NSSDecrypterChildProcess) {
   auto invitation = mojo::edk::IncomingBrokerClientInvitation::Accept(
       mojo::edk::ConnectionParams(
           mojo::edk::TransportProtocol::kLegacy,
-          mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(
-              service_manager::kMojoIPCChannel +
-              base::GlobalDescriptors::kBaseDescriptor))));
+          mojo::edk::ScopedInternalPlatformHandle(
+              mojo::edk::InternalPlatformHandle(
+                  service_manager::kMojoIPCChannel +
+                  base::GlobalDescriptors::kBaseDescriptor))));
   mojo::ScopedMessagePipeHandle mojo_handle = invitation->ExtractMessagePipe(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           kMojoChannelToken));

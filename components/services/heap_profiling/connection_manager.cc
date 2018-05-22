@@ -151,8 +151,8 @@ void ConnectionManager::OnNewConnection(base::ProcessId pid,
   CHECK_EQ(MOJO_RESULT_OK, mojo::UnwrapPlatformFile(
                                std::move(receiver_pipe_end), &receiver_handle));
   scoped_refptr<ReceiverPipe> new_pipe =
-      new ReceiverPipe(mojo::edk::ScopedPlatformHandle(
-          mojo::edk::PlatformHandle(receiver_handle)));
+      new ReceiverPipe(mojo::edk::ScopedInternalPlatformHandle(
+          mojo::edk::InternalPlatformHandle(receiver_handle)));
 
   // The allocation tracker will call this on a background thread, so thunk
   // back to the current thread with weak pointers.

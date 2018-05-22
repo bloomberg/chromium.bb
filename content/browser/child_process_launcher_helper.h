@@ -104,7 +104,8 @@ class ChildProcessLauncherHelper :
 
   // Called in to give implementors a chance at creating a server pipe.
   // Platform specific.
-  mojo::edk::ScopedPlatformHandle PrepareMojoPipeHandlesOnClientThread();
+  mojo::edk::ScopedInternalPlatformHandle
+  PrepareMojoPipeHandlesOnClientThread();
 
   // Returns the list of files that should be mapped in the child process.
   // Platform specific.
@@ -188,7 +189,7 @@ class ChildProcessLauncherHelper :
 
   void LaunchOnLauncherThread();
 
-  const mojo::edk::PlatformHandle& mojo_client_handle() const {
+  const mojo::edk::InternalPlatformHandle& mojo_client_handle() const {
     return mojo_client_handle_.get();
   }
   base::CommandLine* command_line() { return command_line_.get(); }
@@ -211,8 +212,8 @@ class ChildProcessLauncherHelper :
   std::unique_ptr<base::CommandLine> command_line_;
   std::unique_ptr<SandboxedProcessLauncherDelegate> delegate_;
   base::WeakPtr<ChildProcessLauncher> child_process_launcher_;
-  mojo::edk::ScopedPlatformHandle mojo_client_handle_;
-  mojo::edk::ScopedPlatformHandle mojo_server_handle_;
+  mojo::edk::ScopedInternalPlatformHandle mojo_client_handle_;
+  mojo::edk::ScopedInternalPlatformHandle mojo_server_handle_;
   bool terminate_on_shutdown_;
   std::unique_ptr<mojo::edk::OutgoingBrokerClientInvitation>
       broker_client_invitation_;

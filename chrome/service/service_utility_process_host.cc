@@ -425,12 +425,12 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
   cmd_line->CopySwitchesFrom(service_command_line, kForwardSwitches,
                              arraysize(kForwardSwitches));
 
-  mojo::edk::ScopedPlatformHandle parent_handle;
+  mojo::edk::ScopedInternalPlatformHandle parent_handle;
   bool success = false;
   if (sandbox) {
     mojo::edk::PlatformChannelPair channel_pair;
     parent_handle = channel_pair.PassServerHandle();
-    mojo::edk::ScopedPlatformHandle client_handle =
+    mojo::edk::ScopedInternalPlatformHandle client_handle =
         channel_pair.PassClientHandle();
     base::HandlesToInheritVector handles;
     handles.push_back(client_handle.get().handle);

@@ -20,7 +20,7 @@ namespace edk {
 namespace {
 
 std::string PrepareToPassHandleToChildProcessAsString(
-    const PlatformHandle& handle,
+    const InternalPlatformHandle& handle,
     HandlePassingInformation* handle_passing_info) {
   DCHECK(handle.is_valid());
 
@@ -37,29 +37,30 @@ PlatformChannelPair::PlatformChannelPair(bool client_is_blocking) {
   zx_status_t result = zx_channel_create(0, &handles[0], &handles[1]);
   CHECK_EQ(ZX_OK, result);
 
-  server_handle_.reset(PlatformHandle::ForHandle(handles[0]));
+  server_handle_.reset(InternalPlatformHandle::ForHandle(handles[0]));
   DCHECK(server_handle_.is_valid());
-  client_handle_.reset(PlatformHandle::ForHandle(handles[1]));
+  client_handle_.reset(InternalPlatformHandle::ForHandle(handles[1]));
   DCHECK(client_handle_.is_valid());
 }
 
 // static
-ScopedPlatformHandle PlatformChannelPair::PassClientHandleFromParentProcess(
+ScopedInternalPlatformHandle
+PlatformChannelPair::PassClientHandleFromParentProcess(
     const base::CommandLine& command_line) {
   std::string handle_string =
       command_line.GetSwitchValueASCII(kMojoPlatformChannelHandleSwitch);
   return PassClientHandleFromParentProcessFromString(handle_string);
 }
 
-ScopedPlatformHandle
+ScopedInternalPlatformHandle
 PlatformChannelPair::PassClientHandleFromParentProcessFromString(
     const std::string& value) {
   unsigned int id = 0;
   if (value.empty() || !base::StringToUint(value, &id)) {
     LOG(ERROR) << "Missing or invalid --" << kMojoPlatformChannelHandleSwitch;
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
   }
-  return ScopedPlatformHandle(PlatformHandle::ForHandle(
+  return ScopedInternalPlatformHandle(InternalPlatformHandle::ForHandle(
       zx_get_startup_handle(base::checked_cast<uint32_t>(id))));
 }
 
@@ -72,7 +73,7 @@ void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(
 
 // static
 void PlatformChannelPair::PrepareToPassHandleToChildProcess(
-    const PlatformHandle& handle,
+    const InternalPlatformHandle& handle,
     base::CommandLine* command_line,
     HandlePassingInformation* handle_passing_info) {
   DCHECK(command_line);

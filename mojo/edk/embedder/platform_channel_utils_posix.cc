@@ -35,7 +35,7 @@ bool IsRecoverableError() {
          errno == ENOMEM || errno == ENOBUFS;
 }
 
-bool GetPeerEuid(PlatformHandle handle, uid_t* peer_euid) {
+bool GetPeerEuid(InternalPlatformHandle handle, uid_t* peer_euid) {
   DCHECK(peer_euid);
 #if defined(OS_MACOSX) || defined(OS_OPENBSD) || defined(OS_FREEBSD)
   uid_t socket_euid;
@@ -63,7 +63,7 @@ bool GetPeerEuid(PlatformHandle handle, uid_t* peer_euid) {
 #endif
 }
 
-bool IsPeerAuthorized(PlatformHandle peer_handle) {
+bool IsPeerAuthorized(InternalPlatformHandle peer_handle) {
   uid_t peer_euid;
   if (!GetPeerEuid(peer_handle, &peer_euid))
     return false;
@@ -106,7 +106,7 @@ const int kSendFlags = 0;
 const int kSendFlags = MSG_NOSIGNAL;
 #endif
 
-ssize_t PlatformChannelWrite(const ScopedPlatformHandle& h,
+ssize_t PlatformChannelWrite(const ScopedInternalPlatformHandle& h,
                              const void* bytes,
                              size_t num_bytes) {
   DCHECK(h.is_valid());
@@ -121,7 +121,7 @@ ssize_t PlatformChannelWrite(const ScopedPlatformHandle& h,
 #endif
 }
 
-ssize_t PlatformChannelWritev(const ScopedPlatformHandle& h,
+ssize_t PlatformChannelWritev(const ScopedInternalPlatformHandle& h,
                               struct iovec* iov,
                               size_t num_iov) {
   DCHECK(h.is_valid());
@@ -139,10 +139,10 @@ ssize_t PlatformChannelWritev(const ScopedPlatformHandle& h,
 }
 
 ssize_t PlatformChannelSendmsgWithHandles(
-    const ScopedPlatformHandle& h,
+    const ScopedInternalPlatformHandle& h,
     struct iovec* iov,
     size_t num_iov,
-    const std::vector<ScopedPlatformHandle>& platform_handles) {
+    const std::vector<ScopedInternalPlatformHandle>& platform_handles) {
   DCHECK(iov);
   DCHECK_GT(num_iov, 0u);
   DCHECK(!platform_handles.empty());
@@ -168,10 +168,10 @@ ssize_t PlatformChannelSendmsgWithHandles(
 }
 
 ssize_t PlatformChannelRecvmsg(
-    const ScopedPlatformHandle& h,
+    const ScopedInternalPlatformHandle& h,
     void* buf,
     size_t num_bytes,
-    base::circular_deque<ScopedPlatformHandle>* platform_handles,
+    base::circular_deque<ScopedInternalPlatformHandle>* platform_handles,
     bool block) {
   DCHECK(buf);
   DCHECK_GT(num_bytes, 0u);
@@ -205,7 +205,7 @@ ssize_t PlatformChannelRecvmsg(
       const int* fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
       for (size_t i = 0; i < num_fds; i++) {
         platform_handles->push_back(
-            ScopedPlatformHandle(PlatformHandle(fds[i])));
+            ScopedInternalPlatformHandle(InternalPlatformHandle(fds[i])));
         DCHECK(platform_handles->back().is_valid());
       }
     }
@@ -214,8 +214,8 @@ ssize_t PlatformChannelRecvmsg(
   return result;
 }
 
-bool ServerAcceptConnection(const ScopedPlatformHandle& server_handle,
-                            ScopedPlatformHandle* connection_handle,
+bool ServerAcceptConnection(const ScopedInternalPlatformHandle& server_handle,
+                            ScopedInternalPlatformHandle* connection_handle,
                             bool check_peer_user) {
   DCHECK(server_handle.is_valid());
   connection_handle->reset();
@@ -223,7 +223,7 @@ bool ServerAcceptConnection(const ScopedPlatformHandle& server_handle,
   NOTREACHED();
   return false;
 #else
-  ScopedPlatformHandle accept_handle(PlatformHandle(
+  ScopedInternalPlatformHandle accept_handle(InternalPlatformHandle(
       HANDLE_EINTR(accept(server_handle.get().handle, NULL, 0))));
   if (!accept_handle.is_valid())
     return IsRecoverableError();

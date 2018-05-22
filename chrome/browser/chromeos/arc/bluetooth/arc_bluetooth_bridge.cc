@@ -1691,10 +1691,10 @@ void ArcBluetoothBridge::OpenBluetoothSocket(
     std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
-  mojo::edk::ScopedPlatformHandle platform_handle{
-      mojo::edk::PlatformHandle(sock.release())};
+  mojo::edk::ScopedInternalPlatformHandle platform_handle{
+      mojo::edk::InternalPlatformHandle(sock.release())};
   MojoHandle wrapped_handle;
-  MojoResult wrap_result = mojo::edk::CreatePlatformHandleWrapper(
+  MojoResult wrap_result = mojo::edk::CreateInternalPlatformHandleWrapper(
       std::move(platform_handle), &wrapped_handle);
   if (wrap_result != MOJO_RESULT_OK) {
     LOG(ERROR) << "Failed to wrap handles. Closing: " << wrap_result;

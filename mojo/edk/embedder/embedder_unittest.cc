@@ -396,18 +396,19 @@ TEST_F(EmbedderTest, MultiprocessMixMachAndFds) {
     MojoHandle platform_handles[arraysize(kTestHandleTypes)];
     for (size_t i = 0; i < arraysize(kTestHandleTypes); i++) {
       const auto type = kTestHandleTypes[i];
-      ScopedPlatformHandle scoped_handle;
+      ScopedInternalPlatformHandle scoped_handle;
       if (type == HandleType::POSIX) {
         // The easiest source of fds is opening /dev/null.
         base::File file(base::FilePath("/dev/null"),
                         base::File::FLAG_OPEN | base::File::FLAG_WRITE);
         ASSERT_TRUE(file.IsValid());
-        scoped_handle.reset(PlatformHandle(file.TakePlatformFile()));
-        EXPECT_EQ(PlatformHandle::Type::POSIX, scoped_handle.get().type);
+        scoped_handle.reset(InternalPlatformHandle(file.TakePlatformFile()));
+        EXPECT_EQ(InternalPlatformHandle::Type::POSIX,
+                  scoped_handle.get().type);
       } else if (type == HandleType::MACH_NULL) {
         scoped_handle.reset(
-            PlatformHandle(static_cast<mach_port_t>(MACH_PORT_NULL)));
-        EXPECT_EQ(PlatformHandle::Type::MACH, scoped_handle.get().type);
+            InternalPlatformHandle(static_cast<mach_port_t>(MACH_PORT_NULL)));
+        EXPECT_EQ(InternalPlatformHandle::Type::MACH, scoped_handle.get().type);
       } else {
         auto shared_memory = base::UnsafeSharedMemoryRegion::Create(kShmSize);
         ASSERT_TRUE(shared_memory.IsValid());
@@ -415,12 +416,12 @@ TEST_F(EmbedderTest, MultiprocessMixMachAndFds) {
             base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
                 std::move(shared_memory))
                 .PassPlatformHandle();
-        scoped_handle.reset(PlatformHandle(shm_handle.release()));
-        EXPECT_EQ(PlatformHandle::Type::MACH, scoped_handle.get().type);
+        scoped_handle.reset(InternalPlatformHandle(shm_handle.release()));
+        EXPECT_EQ(InternalPlatformHandle::Type::MACH, scoped_handle.get().type);
       }
       ASSERT_EQ(MOJO_RESULT_OK,
-                CreatePlatformHandleWrapper(std::move(scoped_handle),
-                                            platform_handles + i));
+                CreateInternalPlatformHandleWrapper(std::move(scoped_handle),
+                                                    platform_handles + i));
     }
 
     // 2. Send all the handles to the child.
@@ -446,20 +447,20 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessMixMachAndFdsClient,
   // 2. Extract each handle, and verify the type.
   for (int i = 0; i < kNumHandles; i++) {
     const auto type = kTestHandleTypes[i];
-    ScopedPlatformHandle scoped_handle;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              PassWrappedPlatformHandle(platform_handles[i], &scoped_handle));
+    ScopedInternalPlatformHandle scoped_handle;
+    ASSERT_EQ(MOJO_RESULT_OK, PassWrappedInternalPlatformHandle(
+                                  platform_handles[i], &scoped_handle));
     if (type == HandleType::POSIX) {
       EXPECT_NE(0, scoped_handle.get().handle);
-      EXPECT_EQ(PlatformHandle::Type::POSIX, scoped_handle.get().type);
+      EXPECT_EQ(InternalPlatformHandle::Type::POSIX, scoped_handle.get().type);
     } else if (type == HandleType::MACH_NULL) {
       EXPECT_EQ(static_cast<mach_port_t>(MACH_PORT_NULL),
                 scoped_handle.get().port);
-      EXPECT_EQ(PlatformHandle::Type::MACH, scoped_handle.get().type);
+      EXPECT_EQ(InternalPlatformHandle::Type::MACH, scoped_handle.get().type);
     } else {
       EXPECT_NE(static_cast<mach_port_t>(MACH_PORT_NULL),
                 scoped_handle.get().port);
-      EXPECT_EQ(PlatformHandle::Type::MACH, scoped_handle.get().type);
+      EXPECT_EQ(InternalPlatformHandle::Type::MACH, scoped_handle.get().type);
     }
   }
 
@@ -489,7 +490,7 @@ NamedPlatformHandle GenerateChannelName() {
 }
 
 void CreateClientHandleOnIoThread(const NamedPlatformHandle& named_handle,
-                                  ScopedPlatformHandle* output) {
+                                  ScopedInternalPlatformHandle* output) {
   *output = CreateClientHandle(named_handle);
 }
 
@@ -506,7 +507,7 @@ TEST_F(EmbedderTest, ClosePendingPeerConnection) {
             Wait(server_pipe.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED));
   base::MessageLoop message_loop;
   base::RunLoop run_loop;
-  ScopedPlatformHandle client_handle;
+  ScopedInternalPlatformHandle client_handle;
   // Closing the channel involves posting a task to the IO thread to do the
   // work. By the time the local message pipe has been observerd as closed,
   // that task will have been posted. Therefore, a task to create the client

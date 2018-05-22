@@ -239,7 +239,7 @@ base::LazyInstance<QuitClosure>::DestructorAtExit g_quit_closure =
 std::unique_ptr<mojo::edk::IncomingBrokerClientInvitation>
 InitializeMojoIPCChannel() {
   TRACE_EVENT0("startup", "InitializeMojoIPCChannel");
-  mojo::edk::ScopedPlatformHandle platform_channel;
+  mojo::edk::ScopedInternalPlatformHandle platform_channel;
 #if defined(OS_WIN)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
       mojo::edk::PlatformChannelPair::kMojoPlatformChannelHandleSwitch)) {
@@ -258,8 +258,8 @@ InitializeMojoIPCChannel() {
       mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
           *base::CommandLine::ForCurrentProcess());
 #elif defined(OS_POSIX)
-  platform_channel.reset(
-      mojo::edk::PlatformHandle(base::GlobalDescriptors::GetInstance()->Get(
+  platform_channel.reset(mojo::edk::InternalPlatformHandle(
+      base::GlobalDescriptors::GetInstance()->Get(
           service_manager::kMojoIPCChannel)));
 #endif
   // Mojo isn't supported on all child process types.

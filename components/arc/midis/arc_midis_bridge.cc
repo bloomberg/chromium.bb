@@ -86,7 +86,7 @@ void ArcMidisBridge::Connect(mojom::MidisServerRequest request,
       base::kNullProcessHandle,
       mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
                                   channel_pair.PassServerHandle()));
-  mojo::edk::ScopedPlatformHandle child_handle =
+  mojo::edk::ScopedInternalPlatformHandle child_handle =
       channel_pair.PassClientHandle();
   base::ScopedFD fd(child_handle.release().handle);
 

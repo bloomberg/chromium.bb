@@ -9,9 +9,9 @@
 namespace mojo {
 namespace edk {
 
-MojoResult MojoPlatformHandleToScopedPlatformHandle(
+MojoResult MojoPlatformHandleToScopedInternalPlatformHandle(
     const MojoPlatformHandle* platform_handle,
-    ScopedPlatformHandle* out_handle) {
+    ScopedInternalPlatformHandle* out_handle) {
   if (platform_handle->struct_size != sizeof(MojoPlatformHandle))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -20,14 +20,14 @@ MojoResult MojoPlatformHandleToScopedPlatformHandle(
     return MOJO_RESULT_OK;
   }
 
-  PlatformHandle handle;
+  InternalPlatformHandle handle;
   switch (platform_handle->type) {
 #if defined(OS_FUCHSIA)
     case MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE:
-      handle = PlatformHandle::ForHandle(platform_handle->value);
+      handle = InternalPlatformHandle::ForHandle(platform_handle->value);
       break;
     case MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR:
-      handle = PlatformHandle::ForFd(platform_handle->value);
+      handle = InternalPlatformHandle::ForFd(platform_handle->value);
       break;
 
 #elif defined(OS_POSIX)
@@ -38,7 +38,7 @@ MojoResult MojoPlatformHandleToScopedPlatformHandle(
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     case MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT:
-      handle.type = PlatformHandle::Type::MACH;
+      handle.type = InternalPlatformHandle::Type::MACH;
       handle.port = static_cast<mach_port_t>(platform_handle->value);
       break;
 #endif
@@ -57,8 +57,8 @@ MojoResult MojoPlatformHandleToScopedPlatformHandle(
   return MOJO_RESULT_OK;
 }
 
-MojoResult ScopedPlatformHandleToMojoPlatformHandle(
-    ScopedPlatformHandle handle,
+MojoResult ScopedInternalPlatformHandleToMojoPlatformHandle(
+    ScopedInternalPlatformHandle handle,
     MojoPlatformHandle* platform_handle) {
   if (platform_handle->struct_size != sizeof(MojoPlatformHandle))
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -78,13 +78,13 @@ MojoResult ScopedPlatformHandleToMojoPlatformHandle(
   }
 #elif defined(OS_POSIX)
   switch (handle.get().type) {
-    case PlatformHandle::Type::POSIX:
+    case InternalPlatformHandle::Type::POSIX:
       platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR;
       platform_handle->value = static_cast<uint64_t>(handle.release().handle);
       break;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-    case PlatformHandle::Type::MACH:
+    case InternalPlatformHandle::Type::MACH:
       platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT;
       platform_handle->value = static_cast<uint64_t>(handle.release().port);
       break;
@@ -101,31 +101,31 @@ MojoResult ScopedPlatformHandleToMojoPlatformHandle(
   return MOJO_RESULT_OK;
 }
 
-void ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+void ExtractInternalPlatformHandlesFromSharedMemoryRegionHandle(
     base::subtle::PlatformSharedMemoryRegion::ScopedPlatformHandle handle,
-    ScopedPlatformHandle* extracted_handle,
-    ScopedPlatformHandle* extracted_readonly_handle) {
+    ScopedInternalPlatformHandle* extracted_handle,
+    ScopedInternalPlatformHandle* extracted_readonly_handle) {
 #if defined(OS_WIN)
-  extracted_handle->reset(PlatformHandle(handle.Take()));
+  extracted_handle->reset(InternalPlatformHandle(handle.Take()));
 #elif defined(OS_FUCHSIA)
-  extracted_handle->reset(PlatformHandle::ForHandle(handle.release()));
+  extracted_handle->reset(InternalPlatformHandle::ForHandle(handle.release()));
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   // This is a Mach port. Same code as below, but separated for clarity.
-  extracted_handle->reset(PlatformHandle(handle.release()));
+  extracted_handle->reset(InternalPlatformHandle(handle.release()));
 #elif defined(OS_ANDROID)
   // This is a file descriptor. Same code as above, but separated for clarity.
-  extracted_handle->reset(PlatformHandle(handle.release()));
+  extracted_handle->reset(InternalPlatformHandle(handle.release()));
 #else
-  extracted_handle->reset(PlatformHandle(handle.fd.release()));
+  extracted_handle->reset(InternalPlatformHandle(handle.fd.release()));
   extracted_readonly_handle->reset(
-      PlatformHandle(handle.readonly_fd.release()));
+      InternalPlatformHandle(handle.readonly_fd.release()));
 #endif
 }
 
 base::subtle::PlatformSharedMemoryRegion::ScopedPlatformHandle
-CreateSharedMemoryRegionHandleFromPlatformHandles(
-    ScopedPlatformHandle handle,
-    ScopedPlatformHandle readonly_handle) {
+CreateSharedMemoryRegionHandleFromInternalPlatformHandles(
+    ScopedInternalPlatformHandle handle,
+    ScopedInternalPlatformHandle readonly_handle) {
 #if defined(OS_WIN)
   DCHECK(!readonly_handle.is_valid());
   return base::win::ScopedHandle(handle.release().handle);

@@ -24,7 +24,7 @@ namespace edk {
 namespace test {
 namespace {
 
-bool IsNonBlocking(const PlatformHandle& handle) {
+bool IsNonBlocking(const InternalPlatformHandle& handle) {
 #if defined(OS_WIN)
   // Haven't figured out a way to query whether a HANDLE was created with
   // FILE_FLAG_OVERLAPPED.
@@ -34,13 +34,13 @@ bool IsNonBlocking(const PlatformHandle& handle) {
 #endif
 }
 
-bool WriteByte(const PlatformHandle& handle, char c) {
+bool WriteByte(const InternalPlatformHandle& handle, char c) {
   size_t bytes_written = 0;
   BlockingWrite(handle, &c, 1, &bytes_written);
   return bytes_written == 1;
 }
 
-bool ReadByte(const PlatformHandle& handle, char* c) {
+bool ReadByte(const InternalPlatformHandle& handle, char* c) {
   size_t bytes_read = 0;
   BlockingRead(handle, c, 1, &bytes_read);
   return bytes_read == 1;
@@ -74,7 +74,8 @@ TEST_F(MultiprocessTestHelperTest, PassedChannel) {
   helper.StartChild("PassedChannel");
 
   // Take ownership of the handle.
-  ScopedPlatformHandle handle = std::move(helper.server_platform_handle);
+  ScopedInternalPlatformHandle handle =
+      std::move(helper.server_platform_handle);
 
   // The handle should be non-blocking.
   EXPECT_TRUE(IsNonBlocking(handle.get()));
@@ -96,7 +97,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PassedChannel) {
   CHECK(MultiprocessTestHelper::client_platform_handle.is_valid());
 
   // Take ownership of the handle.
-  ScopedPlatformHandle handle =
+  ScopedInternalPlatformHandle handle =
       std::move(MultiprocessTestHelper::client_platform_handle);
 
   // The handle should be non-blocking.

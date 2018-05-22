@@ -19,18 +19,19 @@ class MOJO_SYSTEM_IMPL_EXPORT ConnectionParams {
  public:
   // Configures an OS pipe-based connection of type |type| to the remote process
   // using the given transport |protocol|.
-  ConnectionParams(TransportProtocol protocol, ScopedPlatformHandle channel);
+  ConnectionParams(TransportProtocol protocol,
+                   ScopedInternalPlatformHandle channel);
 
   ConnectionParams(ConnectionParams&& params);
   ConnectionParams& operator=(ConnectionParams&& params);
 
   TransportProtocol protocol() const { return protocol_; }
 
-  ScopedPlatformHandle TakeChannelHandle();
+  ScopedInternalPlatformHandle TakeChannelHandle();
 
  private:
   TransportProtocol protocol_;
-  ScopedPlatformHandle channel_;
+  ScopedInternalPlatformHandle channel_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionParams);
 };
