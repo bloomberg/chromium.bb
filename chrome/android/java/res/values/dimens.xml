@@ -561,6 +561,7 @@
     <dimen name="contextual_suggestions_toolbar_icon_size">48dp</dimen>
     <dimen name="contextual_suggestions_toolbar_animation_duration">72dp</dimen>
     <dimen name="contextual_suggestions_toolbar_max_translation">18dp</dimen>
+    <dimen name="contextual_suggestions_slim_peek_inset">10dp</dimen>
 
     <!-- Defaults for TabbedModeFirstRunActivity values. -->
     <item type="dimen" name="dialog_fixed_width_major">100%</item>

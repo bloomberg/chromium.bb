@@ -30,6 +30,7 @@ class ContextualSuggestionsModel
         static final PropertyKey DEFAULT_TOOLBAR_ON_CLICK_LISTENER = new PropertyKey();
         static final PropertyKey SLIM_PEEK_ENABLED = new PropertyKey();
         static final PropertyKey TOOLBAR_TRANSLATION_PERCENT = new PropertyKey();
+        static final PropertyKey TOOLBAR_ARROW_TINT_RESOURCE_ID = new PropertyKey();
 
         private PropertyKey() {}
     }
@@ -91,6 +92,7 @@ class ContextualSuggestionsModel
     private boolean mToolbarShadowVisibility;
     private boolean mIsSlimPeekEnabled;
     private float mToolbarTranslationPercent;
+    private int mToolbarArrowTintResourceId;
 
     /** @param clusterList The current list of clusters. */
     void setClusterList(ClusterList clusterList) {
@@ -220,5 +222,20 @@ class ContextualSuggestionsModel
      */
     float getToolbarTranslationPercent() {
         return mToolbarTranslationPercent;
+    }
+
+    /**
+     * @param resourceId The resource id of the tint for the toolbar arrow.
+     */
+    void setToolbarArrowTintResourceId(int resourceId) {
+        mToolbarArrowTintResourceId = resourceId;
+        notifyPropertyChanged(PropertyKey.TOOLBAR_ARROW_TINT_RESOURCE_ID);
+    }
+
+    /**
+     * @return The resource id of the tint for the toolbar arrow.
+     */
+    int getToolbarArrowTintResourceId() {
+        return mToolbarArrowTintResourceId;
     }
 }
