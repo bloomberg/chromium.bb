@@ -1216,12 +1216,8 @@ void HistoryService::NotifyURLsDeleted(const DeletionInfo& deletion_info) {
     }
   }
 
-  for (HistoryServiceObserver& observer : observers_) {
-    observer.OnURLsDeleted(
-        this, deletion_info.IsAllHistory(), deletion_info.is_from_expiration(),
-        deletion_info.deleted_rows(), deletion_info.favicon_urls());
+  for (HistoryServiceObserver& observer : observers_)
     observer.OnURLsDeleted(this, deletion_info);
-  }
 }
 
 void HistoryService::NotifyHistoryServiceLoaded() {
