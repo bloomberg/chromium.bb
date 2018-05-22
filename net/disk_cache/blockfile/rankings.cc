@@ -92,9 +92,9 @@ enum CrashLocation {
   // so that it doesn't warn about TerminateSelf() returning.
   __builtin_unreachable();
 #endif
-#elif defined(OS_POSIX)
-  // On POSIX, _exit() will terminate the process with minimal cleanup,
-  // and it is cleaner than killing.
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  // On POSIX and Fuchsia, _exit() will terminate the process with minimal
+  // cleanup, and it is cleaner than killing.
   _exit(0);
 #endif
 }

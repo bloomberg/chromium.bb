@@ -79,10 +79,10 @@
 
 // For access to standard POSIXish features, use OS_POSIX instead of a
 // more specific macro.
-#if defined(OS_AIX) || defined(OS_ANDROID) || defined(OS_ASMJS) ||     \
-    defined(OS_FREEBSD) || defined(OS_FUCHSIA) || defined(OS_LINUX) || \
-    defined(OS_MACOSX) || defined(OS_NACL) || defined(OS_NETBSD) ||    \
-    defined(OS_OPENBSD) || defined(OS_QNX) || defined(OS_SOLARIS)
+#if defined(OS_AIX) || defined(OS_ANDROID) || defined(OS_ASMJS) ||    \
+    defined(OS_FREEBSD) || defined(OS_LINUX) || defined(OS_MACOSX) || \
+    defined(OS_NACL) || defined(OS_NETBSD) || defined(OS_OPENBSD) ||  \
+    defined(OS_QNX) || defined(OS_SOLARIS)
 #define OS_POSIX 1
 #endif
 
@@ -179,6 +179,8 @@
 // Type detection for wchar_t.
 #if defined(OS_WIN)
 #define WCHAR_T_IS_UTF16
+#elif defined(OS_FUCHSIA)
+#define WCHAR_T_IS_UTF32
 #elif defined(OS_POSIX) && defined(COMPILER_GCC) && defined(__WCHAR_MAX__) && \
     (__WCHAR_MAX__ == 0x7fffffff || __WCHAR_MAX__ == 0xffffffff)
 #define WCHAR_T_IS_UTF32
