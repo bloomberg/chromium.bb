@@ -9,16 +9,6 @@
 namespace chromeos {
 namespace system {
 
-TEST(NameValuePairsParser, TestGetSingleValueFromTool) {
-  NameValuePairsParser::NameValueMap map;
-  NameValuePairsParser parser(&map);
-  const char* command[] = { "/bin/echo", "Foo" };
-  EXPECT_TRUE(parser.GetSingleValueFromTool(arraysize(command), command,
-                                            "foo"));
-  ASSERT_EQ(1U, map.size());
-  EXPECT_EQ("Foo", map["foo"]);
-}
-
 TEST(NameValuePairsParser, TestParseNameValuePairs) {
   NameValuePairsParser::NameValueMap map;
   NameValuePairsParser parser(&map);
