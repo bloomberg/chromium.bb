@@ -159,7 +159,7 @@ int GzipSourceStream::FilterData(IOBuffer* output_buffer,
         if (bytes_out > 0 ||
             bytes_used + replay_data_.size() >= kMaxZlibHeaderSniffBytes ||
             ret == Z_STREAM_END) {
-          std::move(replay_data_);
+          replay_data_.clear();
           if (ret == Z_STREAM_END) {
             input_state_ = STATE_GZIP_FOOTER;
           } else {
@@ -177,7 +177,6 @@ int GzipSourceStream::FilterData(IOBuffer* output_buffer,
         DCHECK_EQ(TYPE_DEFLATE, type());
 
         if (replay_data_.empty()) {
-          std::move(replay_data_);
           input_state_ = replay_state_;
           break;
         }
