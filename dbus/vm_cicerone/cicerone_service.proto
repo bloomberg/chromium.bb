@@ -1,0 +1,191 @@
+// Copyright 2018 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+option optimize_for = LITE_RUNTIME;
+
+// This file defines messages used for interacting directly with containers
+// running inside of a VM.
+package vm_tools.cicerone;
+option go_package = "vm_cicerone_proto";
+
+// Message sent to cicerone when a VM has started up. This is just for
+// tracking purposes by cicerone.
+message NotifyVmStartedRequest {
+  // Name of the VM.
+  string vm_name = 1;
+
+  // The owner of the VM.
+  string owner_id = 2;
+
+  // The IPv4 subnet for containers within the VM in network byte order.
+  uint32 container_ipv4_subnet = 3;
+
+  // The netmask for the IPv4 subnet for containers within the VM in network
+  // byte order.
+  uint32 container_ipv4_netmask = 4;
+}
+
+// Message sent to cicerone when a VM stopped or failed to complete startup.
+// This is just for tracking purposes by cicerone.
+message NotifyVmStoppedRequest {
+  // Name of the VM.
+  string vm_name = 1;
+
+  // The owner of the VM.
+  string owner_id = 2;
+}
+
+// Message sent to cicerone when requesting a token for linking to a container
+// that is going to be started for a VM.
+message ContainerTokenRequest {
+  // Name of the VM.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM.
+  string owner_id = 3;
+}
+
+// Reply to the GetContainerToken method.
+message ContainerTokenResponse {
+  // A token that should be passed into the container to identify itself. This
+  // token will be the empty string if the request was invalid.
+  string container_token = 1;
+}
+
+// Message sent to cicerone to check whether or not a specific container is
+// currently running.
+message IsContainerRunningRequest {
+  // Name of the VM.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM.
+  string owner_id = 3;
+}
+
+// Reply to the IsContainerRunning method.
+message IsContainerRunningResponse {
+  // True if the container is running, false otherwise.
+  bool container_running = 1;
+}
+
+// Message used in the signal for when a container has started up or failed to
+// start.
+message ContainerStartedSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+}
+
+// Message used in the signal for when a container has shut down.
+message ContainerShutdownSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+}
+
+// Request to launch on application in the specified VM/container. Used with the
+// LaunchContainerApplication D-Bus message into vm_concierge.
+message LaunchContainerApplicationRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target, if empty the default
+  // container name will be used.
+  string container_name = 2;
+
+  // ID of the application to launch, should map to the desktop_file_id that
+  // is in the application list sent back from the container.
+  string desktop_file_id = 3;
+
+  // The owner of the vm and container.
+  string owner_id = 4;
+}
+
+// Response sent back by vm_concierge when it receives a
+// LaunchContainerApplication D-Bus message.
+message LaunchContainerApplicationResponse {
+  // If true, the requested application launched successfully.
+  bool success = 1;
+
+  // The failure_reason if the requested application could not be started.
+  string failure_reason = 2;
+}
+
+// Request to get application icons in the specified VM/container. Used with the
+// GetContainerAppIcon D-Bus message into vm_concierge.
+message ContainerAppIconRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target, if empty the default
+  // container name will be used.
+  string container_name = 2;
+
+  // IDs of the application to get icons for, should map to the desktop_file_id
+  // that is in the application list sent back from the container.
+  repeated string desktop_file_ids = 3;
+
+  // The icon size with both its height and width equal to this number.
+  int32 size = 4;
+
+  // The target scale of this icon. This is the scale factor at which this icon
+  // is designed to be used.
+  int32 scale = 5;
+
+  // The owner of the VM and container.
+  string owner_id = 6;
+}
+
+// One desktop file ID with its icon.
+message DesktopIcon {
+  string desktop_file_id = 1;
+  bytes icon = 2;
+}
+
+// Response sent back by vm_concierge when it receives a
+// GetContainerAppIcon D-Bus message.
+// Some desktop_file_id may not have an icon.
+message ContainerAppIconResponse {
+  repeated DesktopIcon icons = 1;
+}
+
+// Launch vshd request.
+message LaunchVshdRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target.
+  string container_name = 2;
+
+  // The port for vshd to connect to.
+  uint32 port = 3;
+
+  // The owner of the VM and container.
+  string owner_id = 4;
+}
+
+// Response sent back by vm_cicerone when it receives a LaunchVshd
+// call.
+message LaunchVshdResponse {
+  bool success = 1;
+
+  string failure_reason = 2;
+}

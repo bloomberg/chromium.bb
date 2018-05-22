@@ -26,6 +26,7 @@
 #include "smbprovider/dbus-constants.h"
 #include "update_engine/dbus-constants.h"
 #include "vm_applications/dbus-constants.h"
+#include "vm_cicerone/dbus-constants.h"
 #include "vm_concierge/dbus-constants.h"
 
 namespace dbus {

@@ -315,6 +315,8 @@ message StartContainerResponse {
   ContainerStatus status = 3;
 }
 
+// TODO(jkardatzke): Remove applications/icon protobufs once Chrome is migrated
+// to cicerone.
 // Request to launch on application in the specified VM/container. Used with the
 // LaunchContainerApplication D-Bus message into vm_concierge.
 message LaunchContainerApplicationRequest {
