@@ -100,11 +100,10 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       const DeletePageCallback& callback) override;
 
   void GetAllPages(MultipleOfflinePageItemCallback callback) override;
-  void GetPageByOfflineId(
-      int64_t offline_id,
-      const SingleOfflinePageItemCallback& callback) override;
+  void GetPageByOfflineId(int64_t offline_id,
+                          SingleOfflinePageItemCallback callback) override;
   void GetPageByGuid(const std::string& guid,
-                     const SingleOfflinePageItemCallback& callback) override;
+                     SingleOfflinePageItemCallback callback) override;
   void GetPagesByClientIds(const std::vector<ClientId>& client_ids,
                            MultipleOfflinePageItemCallback callback) override;
   void GetPagesByURL(const GURL& url,
@@ -121,10 +120,9 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void GetPagesByRequestOrigin(
       const std::string& request_origin,
       MultipleOfflinePageItemCallback callback) override;
-  void GetPageBySizeAndDigest(
-      int64_t file_size,
-      const std::string& digest,
-      const SingleOfflinePageItemCallback& callback) override;
+  void GetPageBySizeAndDigest(int64_t file_size,
+                              const std::string& digest,
+                              SingleOfflinePageItemCallback callback) override;
   void GetOfflineIdsForClientId(
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) override;

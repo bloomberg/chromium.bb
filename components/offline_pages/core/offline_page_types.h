@@ -100,7 +100,7 @@ typedef base::Callback<void(DeletePageResult)> DeletePageCallback;
 typedef base::Callback<void(bool)> HasPagesCallback;
 typedef base::Callback<void(const MultipleOfflineIdResult&)>
     MultipleOfflineIdCallback;
-typedef base::Callback<void(const OfflinePageItem*)>
+typedef base::OnceCallback<void(const OfflinePageItem*)>
     SingleOfflinePageItemCallback;
 typedef base::OnceCallback<void(const MultipleOfflinePageItemResult&)>
     MultipleOfflinePageItemCallback;
