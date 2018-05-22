@@ -378,12 +378,9 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
   const user_manager::User* user = FindUnlockUser(user_context.GetAccountId());
   if (user) {
     // Check to see if the user submitted a PIN and it is valid.
-    const std::string pin = user_context.GetKey()->GetSecret();
-    Key::KeyType key_type = user_context.GetKey()->GetKeyType();
-
     if (unlock_attempt_type_ == AUTH_PIN) {
       quick_unlock::PinBackend::GetInstance()->TryAuthenticate(
-          user_context.GetAccountId(), pin, key_type,
+          user_context.GetAccountId(), *user_context.GetKey(),
           base::BindOnce(&ScreenLocker::OnPinAttemptDone,
                          weak_factory_.GetWeakPtr(), user_context));
       // OnPinAttemptDone will call ContinueAuthenticate.

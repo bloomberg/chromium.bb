@@ -179,6 +179,11 @@ void DoMount(const base::WeakPtr<AuthAttemptState>& attempt,
   // necessary because cryptohomes created by Chrome OS M38 and older will have
   // a legacy key with no label while those created by Chrome OS M39 and newer
   // will have a key with the label kCryptohomeGAIAKeyLabel.
+  //
+  // This logic does not apply to PIN and weak keys in general, as those do not
+  // authenticate against a wildcard label.
+  if (attempt->user_context.IsUsingPin())
+    auth_key->mutable_data()->set_label(key->GetLabel());
   auth_key->set_secret(key->GetSecret());
   DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
       cryptohome::Identification(attempt->user_context.GetAccountId()), auth,

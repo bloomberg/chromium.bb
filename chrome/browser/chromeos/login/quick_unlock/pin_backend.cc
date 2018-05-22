@@ -4,7 +4,8 @@
 
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 
-#include "base/no_destructor.h"
+#include "base/base64.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage_cryptohome.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage_prefs.h"
@@ -12,11 +13,14 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "components/account_id/account_id.h"
+#include "crypto/random.h"
 
 namespace chromeos {
 namespace quick_unlock {
 
 namespace {
+
+constexpr int kSaltByteSize = 16;
 
 QuickUnlockStorage* GetPrefsBackend(const AccountId& account_id) {
   return QuickUnlockFactory::GetForAccountId(account_id);
@@ -27,23 +31,56 @@ void PostResponse(PinBackend::BoolCallback result, bool value) {
       FROM_HERE, base::BindOnce(std::move(result), value));
 }
 
+PinBackend* g_instance_ = nullptr;
+
 }  // namespace
 
 // static
 PinBackend* PinBackend::GetInstance() {
-  static base::NoDestructor<PinBackend> instance;
-  return instance.get();
+  if (!g_instance_) {
+    g_instance_ = new PinBackend();
+  }
+  return g_instance_;
+}
+
+// static
+std::string PinBackend::ComputeSalt() {
+  // The salt needs to be base64 encoded because the pref service requires a
+  // UTF8 string.
+  std::string salt;
+  crypto::RandBytes(base::WriteInto(&salt, kSaltByteSize + 1), kSaltByteSize);
+  base::Base64Encode(salt, &salt);
+  DCHECK(!salt.empty());
+  return salt;
+}
+
+// static
+std::string PinBackend::ComputeSecret(const std::string& pin,
+                                      const std::string& salt,
+                                      Key::KeyType key_type) {
+  DCHECK(key_type == Key::KEY_TYPE_PASSWORD_PLAIN ||
+         key_type == Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234);
+  DCHECK(!pin.empty());
+  DCHECK(!salt.empty());
+  if (key_type != Key::KEY_TYPE_PASSWORD_PLAIN)
+    return pin;
+
+  Key key(pin);
+  key.Transform(chromeos::Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234, salt);
+  return key.GetSecret();
 }
 
 // static
 void PinBackend::ResetForTesting() {
-  new (GetInstance()) PinStorageCryptohome();
+  delete g_instance_;
+  g_instance_ = nullptr;
 }
 
 PinBackend::PinBackend() {
-  // Always use prefs backend.
-  // TODO(jdufault): Add support for cryptohome backend.
-  resolving_backend_ = false;
+  // base::Unretained is safe because the PinBackend instance is never
+  // destroyed.
+  PinStorageCryptohome::IsSupported(base::BindOnce(
+      &PinBackend::OnIsCryptohomeBackendSupported, base::Unretained(this)));
 }
 
 PinBackend::~PinBackend() {
@@ -58,7 +95,7 @@ void PinBackend::IsSet(const AccountId& account_id, BoolCallback result) {
     return;
   }
 
-  if (cryptohome_backend_) {
+  if (ShouldUseCryptohome(account_id)) {
     cryptohome_backend_->IsPinSetInCryptohome(account_id, std::move(result));
   } else {
     QuickUnlockStorage* storage = GetPrefsBackend(account_id);
@@ -136,8 +173,8 @@ void PinBackend::CanAuthenticate(const AccountId& account_id,
     return;
   }
 
-  if (cryptohome_backend_) {
-    cryptohome_backend_->IsPinSetInCryptohome(account_id, std::move(result));
+  if (ShouldUseCryptohome(account_id)) {
+    cryptohome_backend_->CanAuthenticate(account_id, std::move(result));
   } else {
     QuickUnlockStorage* storage = GetPrefsBackend(account_id);
     PostResponse(
@@ -148,19 +185,17 @@ void PinBackend::CanAuthenticate(const AccountId& account_id,
 }
 
 void PinBackend::TryAuthenticate(const AccountId& account_id,
-                                 const std::string& key,
-                                 const Key::KeyType& key_type,
+                                 const Key& key,
                                  BoolCallback result) {
   if (resolving_backend_) {
     on_cryptohome_support_received_.push_back(
         base::BindOnce(&PinBackend::TryAuthenticate, base::Unretained(this),
-                       account_id, key, key_type, std::move(result)));
+                       account_id, key, std::move(result)));
     return;
   }
 
-  if (cryptohome_backend_) {
-    cryptohome_backend_->TryAuthenticate(account_id, key, key_type,
-                                         std::move(result));
+  if (ShouldUseCryptohome(account_id)) {
+    cryptohome_backend_->TryAuthenticate(account_id, key, std::move(result));
   } else {
     QuickUnlockStorage* storage = GetPrefsBackend(account_id);
     DCHECK(storage);
@@ -168,24 +203,30 @@ void PinBackend::TryAuthenticate(const AccountId& account_id,
     if (!storage->HasStrongAuth()) {
       PostResponse(std::move(result), false);
     } else {
-      PostResponse(
-          std::move(result),
-          storage->pin_storage_prefs()->TryAuthenticatePin(key, key_type));
+      PostResponse(std::move(result),
+                   storage->pin_storage_prefs()->TryAuthenticatePin(key));
     }
   }
 }
 
-std::string PinBackend::ComputeSecret(const std::string& pin,
-                                      const std::string& salt,
-                                      Key::KeyType key_type) {
-  DCHECK(!pin.empty());
-  DCHECK(!salt.empty());
-  if (key_type != Key::KEY_TYPE_PASSWORD_PLAIN)
-    return pin;
+void PinBackend::OnIsCryptohomeBackendSupported(bool is_supported) {
+  if (is_supported)
+    cryptohome_backend_ = std::make_unique<PinStorageCryptohome>();
+  resolving_backend_ = false;
+  for (auto& callback : on_cryptohome_support_received_)
+    std::move(callback).Run();
+  on_cryptohome_support_received_.clear();
+}
 
-  Key key(pin);
-  key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, salt);
-  return key.GetSecret();
+bool PinBackend::ShouldUseCryptohome(const AccountId& account_id) {
+  if (!cryptohome_backend_)
+    return false;
+
+  // Even if cryptohome is supported, the user may have registered a PIN with
+  // the prefs backend from a previous version. If that's the case, we should
+  // talk to the prefs backend instead of the cryptohome backend.
+  QuickUnlockStorage* storage = GetPrefsBackend(account_id);
+  return !storage->pin_storage_prefs()->IsPinSet();
 }
 
 }  // namespace quick_unlock

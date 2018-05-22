@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/enterprise_user_session_metrics.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_cryptohome.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -623,6 +624,16 @@ void ExistingUserController::PerformLogin(
     new_user_context.SetSyncPasswordData(password_manager::PasswordHashData(
         user_context.GetAccountId().GetUserEmail(), password,
         auth_mode == LoginPerformer::AUTH_MODE_EXTENSION));
+  }
+
+  if (new_user_context.IsUsingPin()) {
+    base::Optional<Key> key = quick_unlock::PinStorageCryptohome::TransformKey(
+        new_user_context.GetAccountId(), *new_user_context.GetKey());
+    if (key) {
+      new_user_context.SetKey(*key);
+    } else {
+      new_user_context.SetIsUsingPin(false);
+    }
   }
 
   if (user_manager::UserManager::Get()->IsSupervisedAccountId(
