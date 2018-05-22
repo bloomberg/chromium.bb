@@ -195,7 +195,8 @@ message DeviceUnregisterRequest {
 message DeviceUnregisterResponse {
 }
 
-// Request from device to server to upload device certificate.
+// Request from device to server to upload a device certificate or an enrollment
+// identifier.
 // GoogleDMToken MUST be in HTTP Authorization header.
 message DeviceCertUploadRequest {
   enum CertificateType {
@@ -206,10 +207,13 @@ message DeviceCertUploadRequest {
     // Enrollment certificate used to obtain an enrollment identifier.
     ENTERPRISE_ENROLLMENT_CERTIFICATE = 2;
   }
+
   // Certificate in X.509 format.
   optional bytes device_certificate = 1;
-  // Type of certificate. If omitted, will be guessed from the certificate.
+  // Type of certificate. If omitted, will be guessed from the other fields.
   optional CertificateType certificate_type = 2;
+  // Enrollment identifier if provided.
+  optional string enrollment_id = 3;
 }
 
 // Response from server to device for cert upload request.
