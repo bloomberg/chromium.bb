@@ -472,7 +472,7 @@ void PasswordManager::OnPasswordFormSubmitted(
     const PasswordForm& password_form) {
   if (base::FeatureList::IsEnabled(
           password_manager::features::kNewPasswordFormParsing))
-    ProcessSubmittedForm(password_form.form_data);
+    ProcessSubmittedForm(password_form.form_data, driver);
   ProvisionallySavePassword(password_form, driver);
   pending_login_managers_.clear();
 }
@@ -487,7 +487,7 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::kNewPasswordFormParsing))
-    ProcessSubmittedForm(password_form.form_data);
+    ProcessSubmittedForm(password_form.form_data, driver);
   ProvisionallySavePassword(password_form, driver);
 
   if (CanProvisionalManagerSave())
@@ -669,8 +669,8 @@ void PasswordManager::CreateFormManagers(
   for (const autofill::PasswordForm& form : forms) {
     bool form_manager_exists =
         std::any_of(form_managers_.begin(), form_managers_.end(),
-                    [&form](const auto& form_manager) {
-                      return form_manager->DoesManage(form.form_data);
+                    [&form, driver](const auto& form_manager) {
+                      return form_manager->DoesManage(form.form_data, driver);
                     });
     if (!form_manager_exists)
       new_forms.push_back(&form.form_data);
@@ -685,10 +685,12 @@ void PasswordManager::CreateFormManagers(
   }
 }
 
-void PasswordManager::ProcessSubmittedForm(const FormData& submitted_form) {
+void PasswordManager::ProcessSubmittedForm(
+    const FormData& submitted_form,
+    const PasswordManagerDriver* driver) {
   NewPasswordFormManager* matching_form_manager = nullptr;
   for (const auto& manager : form_managers_) {
-    if (manager->SetSubmittedFormIfIsManaged(submitted_form)) {
+    if (manager->SetSubmittedFormIfIsManaged(submitted_form, driver)) {
       matching_form_manager = manager.get();
       break;
     }

@@ -35,13 +35,16 @@ class NewPasswordFormManager : public FormFetcher::Consumer {
   ~NewPasswordFormManager() override;
 
   // Compares |observed_form_| with |form| and returns true if they are the
-  // same.
-  bool DoesManage(const autofill::FormData& form) const;
+  // same and if |driver| is the same as |driver_|.
+  bool DoesManage(const autofill::FormData& form,
+                  const PasswordManagerDriver* driver) const;
 
-  // If |submitted_form| is managed by *this (i.e. DoesManage returns
-  // true) then saves |submitted_form| to |submitted_form_| field, sets
-  // |is_submitted| = true and returns true. Otherwise returns false.
-  bool SetSubmittedFormIfIsManaged(const autofill::FormData& submitted_form);
+  // If |submitted_form| is managed by *this (i.e. DoesManage returns true for
+  // |submitted_form| and |driver|) then saves |submitted_form| to
+  // |submitted_form_| field, sets |is_submitted| = true and returns true.
+  // Otherwise returns false.
+  bool SetSubmittedFormIfIsManaged(const autofill::FormData& submitted_form,
+                                   const PasswordManagerDriver* driver);
   bool is_submitted() { return is_submitted_; }
   void set_not_submitted() { is_submitted_ = false; }
 

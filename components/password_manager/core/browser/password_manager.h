@@ -230,8 +230,10 @@ class PasswordManager : public LoginModel {
                           const std::vector<autofill::PasswordForm>& forms);
 
   // Passes |submitted_form| to NewPasswordManager that manages it for using it
-  // after detecting submission success for saving.
-  void ProcessSubmittedForm(const autofill::FormData& submitted_form);
+  // after detecting submission success for saving. |driver| is needed to
+  // determine the match.
+  void ProcessSubmittedForm(const autofill::FormData& submitted_form,
+                            const PasswordManagerDriver* driver);
 
   // Returns the best match in |pending_login_managers_| for |form|. May return
   // nullptr if no match exists.

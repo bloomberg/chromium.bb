@@ -81,14 +81,16 @@ TEST_F(NewPasswordFormManagerTest, DoesManage) {
   fetcher.Fetch();
   NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
                                       observed_form_, &fetcher);
-  EXPECT_TRUE(form_manager.DoesManage(observed_form_));
+  EXPECT_TRUE(form_manager.DoesManage(observed_form_, &driver_));
+  // Forms on other drivers are not considered managed.
+  EXPECT_FALSE(form_manager.DoesManage(observed_form_, nullptr));
   FormData another_form = observed_form_;
   another_form.is_form_tag = false;
-  EXPECT_FALSE(form_manager.DoesManage(another_form));
+  EXPECT_FALSE(form_manager.DoesManage(another_form, &driver_));
 
   another_form = observed_form_;
   another_form.unique_renderer_id = observed_form_.unique_renderer_id + 1;
-  EXPECT_FALSE(form_manager.DoesManage(another_form));
+  EXPECT_FALSE(form_manager.DoesManage(another_form, &driver_));
 }
 
 TEST_F(NewPasswordFormManagerTest, DoesManageNoFormTag) {
@@ -100,7 +102,9 @@ TEST_F(NewPasswordFormManagerTest, DoesManageNoFormTag) {
   FormData another_form = observed_form_;
   // Simulate that new input was added by JavaScript.
   another_form.fields.push_back(FormFieldData());
-  EXPECT_TRUE(form_manager.DoesManage(another_form));
+  EXPECT_TRUE(form_manager.DoesManage(another_form, &driver_));
+  // Forms on other drivers are not considered managed.
+  EXPECT_FALSE(form_manager.DoesManage(another_form, nullptr));
 }
 
 TEST_F(NewPasswordFormManagerTest, Autofill) {
@@ -127,21 +131,29 @@ TEST_F(NewPasswordFormManagerTest, SetSubmitted) {
   NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
                                       observed_form_, &fetcher);
   EXPECT_FALSE(form_manager.is_submitted());
-  EXPECT_TRUE(form_manager.SetSubmittedFormIfIsManaged(observed_form_));
+  EXPECT_TRUE(
+      form_manager.SetSubmittedFormIfIsManaged(observed_form_, &driver_));
   EXPECT_TRUE(form_manager.is_submitted());
 
   FormData another_form = observed_form_;
   another_form.name += ASCIIToUTF16("1");
   // |another_form| is managed because the same |unique_renderer_id| as
   // |observed_form_|.
-  EXPECT_TRUE(form_manager.SetSubmittedFormIfIsManaged(another_form));
+  EXPECT_TRUE(form_manager.SetSubmittedFormIfIsManaged(another_form, &driver_));
   EXPECT_TRUE(form_manager.is_submitted());
 
   form_manager.set_not_submitted();
   EXPECT_FALSE(form_manager.is_submitted());
 
   another_form.unique_renderer_id = observed_form_.unique_renderer_id + 1;
-  EXPECT_FALSE(form_manager.SetSubmittedFormIfIsManaged(another_form));
+  EXPECT_FALSE(
+      form_manager.SetSubmittedFormIfIsManaged(another_form, &driver_));
+  EXPECT_FALSE(form_manager.is_submitted());
+
+  // An identical form but in a different frame (represented here by a null
+  // driver) is also not considered managed.
+  EXPECT_FALSE(
+      form_manager.SetSubmittedFormIfIsManaged(observed_form_, nullptr));
   EXPECT_FALSE(form_manager.is_submitted());
 }
 
