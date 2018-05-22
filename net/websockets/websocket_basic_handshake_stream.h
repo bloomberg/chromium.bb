@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "net/base/completion_once_callback.h"
@@ -29,9 +30,12 @@ class WebSocketEndpointLockManager;
 struct WebSocketExtensionParams;
 class WebSocketStreamRequest;
 
-class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
+class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream final
     : public WebSocketHandshakeStreamBase {
  public:
+  // Feature to enable connection reuse.
+  static const base::Feature kWebSocketHandshakeReuseConnection;
+
   // |connect_delegate| and |failure_message| must out-live this object.
   WebSocketBasicHandshakeStream(
       std::unique_ptr<ClientSocketHandle> connection,

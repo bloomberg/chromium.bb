@@ -21,6 +21,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/websocket_handshake_userdata_key.h"
+#include "net/websockets/websocket_basic_handshake_stream.h"
 #include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_handshake_constants.h"
@@ -117,7 +118,18 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
     create_helper->set_stream_request(this);
     HttpRequestHeaders headers;
     headers.SetHeader(websockets::kUpgrade, websockets::kWebSocketLowercase);
-    headers.SetHeader(HttpRequestHeaders::kConnection, websockets::kUpgrade);
+    if (base::FeatureList::IsEnabled(WebSocketBasicHandshakeStream::
+                                         kWebSocketHandshakeReuseConnection)) {
+      // "Keep-Alive" is included in the "Connection" header for consistency
+      // with Firefox, even though they don't send a Keep-Alive header and
+      // neither do we. Firefox writes "keep-alive" in lowercase, but hopefully
+      // no servers care about the difference.  TODO(ricea): See if we can do
+      // without the "Keep-Alive".
+      constexpr char kKeepAliveUpgrade[] = "Keep-Alive, Upgrade";
+      headers.SetHeader(HttpRequestHeaders::kConnection, kKeepAliveUpgrade);
+    } else {
+      headers.SetHeader(HttpRequestHeaders::kConnection, websockets::kUpgrade);
+    }
     headers.SetHeader(HttpRequestHeaders::kOrigin, origin.Serialize());
     headers.SetHeader(websockets::kSecWebSocketVersion,
                       websockets::kSupportedVersion);

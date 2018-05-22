@@ -26776,6 +26776,7 @@ from previous Chrome versions.
   <int value="-1575375861" label="enable-captive-portal-random-url"/>
   <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>
+  <int value="-1568559155" label="WebSocketHandshakeReuseConnection:enabled"/>
   <int value="-1560729847" label="AutofillCacheQueryResponses:enabled"/>
   <int value="-1559789642" label="RunAllFlashInAllowMode:enabled"/>
   <int value="-1557527869" label="LoadingWithMojo:disabled"/>
@@ -27698,6 +27699,7 @@ from previous Chrome versions.
   <int value="549483647" label="EnableUnifiedMultiDeviceSettings:disabled"/>
   <int value="550378029" label="reset-app-list-install-state"/>
   <int value="550387510" label="NTPAssetDownloadSuggestions:disabled"/>
+  <int value="557200974" label="WebSocketHandshakeReuseConnection:disabled"/>
   <int value="558873715" label="SiteDetails:disabled"/>
   <int value="562979188" label="DesktopIOSPromotion:enabled"/>
   <int value="564522013" label="Av1Decoder:disabled"/>
