@@ -396,10 +396,10 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // process. It does this due to idle timeout.
   bool RequestedTermination() const;
 
-  // Keeps the mapping from handle id to ServiceWorker object.
-  void AddServiceWorkerObject(int handle_id, WebServiceWorkerImpl* worker);
-  void RemoveServiceWorkerObject(int handle_id);
-  bool ContainsServiceWorkerObjectForTesting(int handle_id);
+  // Keeps the mapping from version id to ServiceWorker object.
+  void AddServiceWorkerObject(int64_t version_id, WebServiceWorkerImpl* worker);
+  void RemoveServiceWorkerObject(int64_t version_id);
+  bool ContainsServiceWorkerObjectForTesting(int64_t version_id);
 
   base::WeakPtr<ServiceWorkerContextClient> GetWeakPtr();
 

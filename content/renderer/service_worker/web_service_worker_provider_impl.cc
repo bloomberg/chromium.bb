@@ -61,7 +61,6 @@ void WebServiceWorkerProviderImpl::SetClient(
       context_->TakeController();
   if (!controller)
     return;
-  DCHECK_NE(blink::mojom::kInvalidServiceWorkerHandleId, controller->handle_id);
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
             controller->version_id);
   SetController(std::move(controller), context_->used_features(),

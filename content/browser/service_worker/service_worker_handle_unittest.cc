@@ -319,8 +319,6 @@ TEST_F(ServiceWorkerHandleTest,
   EXPECT_EQ(1u, events.size());
   EXPECT_FALSE(events[0]->source_info_for_client);
   EXPECT_TRUE(events[0]->source_info_for_service_worker);
-  EXPECT_EQ(sender_worker_handle->handle_id(),
-            events[0]->source_info_for_service_worker->handle_id);
   EXPECT_EQ(version_->version_id(),
             events[0]->source_info_for_service_worker->version_id);
 

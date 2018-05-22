@@ -455,8 +455,8 @@ struct ServiceWorkerContextClient::WorkerContextData {
     DCHECK(thread_checker.CalledOnValidThread());
   }
 
-  // Map from handle id to JavaScript ServiceWorker object.
-  std::map<int, WebServiceWorkerImpl*> workers_;
+  // Map from version id to JavaScript ServiceWorker object.
+  std::map<int64_t, WebServiceWorkerImpl*> workers_;
 
   mojo::Binding<mojom::ServiceWorkerEventDispatcher> event_dispatcher_binding;
 
@@ -729,7 +729,7 @@ ServiceWorkerContextClient::GetOrCreateServiceWorkerObject(
   if (!info)
     return nullptr;
 
-  auto found = context_->workers_.find(info->handle_id);
+  auto found = context_->workers_.find(info->version_id);
   if (found != context_->workers_.end()) {
     return found->second;
   }
@@ -1528,10 +1528,8 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
     return;
   }
 
-  DCHECK(event->source_info_for_service_worker->handle_id !=
-             blink::mojom::kInvalidServiceWorkerHandleId &&
-         event->source_info_for_service_worker->version_id !=
-             blink::mojom::kInvalidServiceWorkerVersionId);
+  DCHECK_NE(event->source_info_for_service_worker->version_id,
+            blink::mojom::kInvalidServiceWorkerVersionId);
   scoped_refptr<WebServiceWorkerImpl> worker = GetOrCreateServiceWorkerObject(
       std::move(event->source_info_for_service_worker));
   proxy_->DispatchExtendableMessageEvent(
@@ -1711,20 +1709,20 @@ bool ServiceWorkerContextClient::RequestedTermination() const {
 }
 
 void ServiceWorkerContextClient::AddServiceWorkerObject(
-    int handle_id,
+    int64_t version_id,
     WebServiceWorkerImpl* worker) {
-  DCHECK(!base::ContainsKey(context_->workers_, handle_id));
-  context_->workers_[handle_id] = worker;
+  DCHECK(!base::ContainsKey(context_->workers_, version_id));
+  context_->workers_[version_id] = worker;
 }
 
-void ServiceWorkerContextClient::RemoveServiceWorkerObject(int handle_id) {
-  DCHECK(base::ContainsKey(context_->workers_, handle_id));
-  context_->workers_.erase(handle_id);
+void ServiceWorkerContextClient::RemoveServiceWorkerObject(int64_t version_id) {
+  DCHECK(base::ContainsKey(context_->workers_, version_id));
+  context_->workers_.erase(version_id);
 }
 
 bool ServiceWorkerContextClient::ContainsServiceWorkerObjectForTesting(
-    int handle_id) {
-  return base::ContainsKey(context_->workers_, handle_id);
+    int64_t version_id) {
+  return base::ContainsKey(context_->workers_, version_id);
 }
 
 base::WeakPtr<ServiceWorkerContextClient>

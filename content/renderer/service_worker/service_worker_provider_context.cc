@@ -85,9 +85,9 @@ struct ServiceWorkerProviderContext::ProviderStateForClient {
   // ServiceWorkerRegistration object.
   std::map<int64_t, WebServiceWorkerRegistrationImpl*> registrations_;
 
-  // For service worker clients. Map from handle id to JavaScript ServiceWorker
+  // For service worker clients. Map from version id to JavaScript ServiceWorker
   // object.
-  std::map<int, WebServiceWorkerImpl*> workers_;
+  std::map<int64_t, WebServiceWorkerImpl*> workers_;
 };
 
 // For service worker clients.
@@ -237,7 +237,7 @@ ServiceWorkerProviderContext::GetOrCreateServiceWorkerObject(
   if (!info)
     return nullptr;
 
-  auto found = state_for_client_->workers_.find(info->handle_id);
+  auto found = state_for_client_->workers_.find(info->version_id);
   if (found != state_for_client_->workers_.end()) {
     return found->second;
   }
@@ -288,8 +288,6 @@ void ServiceWorkerProviderContext::SetController(
 
   // Propagate the controller to workers related to this provider.
   if (state->controller) {
-    DCHECK_NE(blink::mojom::kInvalidServiceWorkerHandleId,
-              state->controller->handle_id);
     DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
               state->controller->version_id);
     for (const auto& worker : state->worker_clients) {
@@ -382,23 +380,24 @@ bool ServiceWorkerProviderContext::
 }
 
 void ServiceWorkerProviderContext::AddServiceWorkerObject(
-    int handle_id,
+    int64_t version_id,
     WebServiceWorkerImpl* worker) {
   DCHECK(state_for_client_);
-  DCHECK(!base::ContainsKey(state_for_client_->workers_, handle_id));
-  state_for_client_->workers_[handle_id] = worker;
+  DCHECK(!base::ContainsKey(state_for_client_->workers_, version_id));
+  state_for_client_->workers_[version_id] = worker;
 }
 
-void ServiceWorkerProviderContext::RemoveServiceWorkerObject(int handle_id) {
+void ServiceWorkerProviderContext::RemoveServiceWorkerObject(
+    int64_t version_id) {
   DCHECK(state_for_client_);
-  DCHECK(base::ContainsKey(state_for_client_->workers_, handle_id));
-  state_for_client_->workers_.erase(handle_id);
+  DCHECK(base::ContainsKey(state_for_client_->workers_, version_id));
+  state_for_client_->workers_.erase(version_id);
 }
 
 bool ServiceWorkerProviderContext::ContainsServiceWorkerObjectForTesting(
-    int handle_id) {
+    int64_t version_id) {
   DCHECK(state_for_client_);
-  return base::ContainsKey(state_for_client_->workers_, handle_id);
+  return base::ContainsKey(state_for_client_->workers_, version_id);
 }
 
 void ServiceWorkerProviderContext::CountFeature(

@@ -220,11 +220,11 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   bool ContainsServiceWorkerRegistrationObjectForTesting(
       int64_t registration_id);
 
-  // For service worker clients. Keeps the mapping from handle to
+  // For service worker clients. Keeps the mapping from version id to
   // ServiceWorker object.
-  void AddServiceWorkerObject(int handle_id, WebServiceWorkerImpl* worker);
-  void RemoveServiceWorkerObject(int handle_id);
-  bool ContainsServiceWorkerObjectForTesting(int handle_id);
+  void AddServiceWorkerObject(int64_t version_id, WebServiceWorkerImpl* worker);
+  void RemoveServiceWorkerObject(int64_t version_id);
+  bool ContainsServiceWorkerObjectForTesting(int64_t version_id);
 
   // S13nServiceWorker:
   // For service worker clients.
