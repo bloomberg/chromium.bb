@@ -1128,6 +1128,15 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
 // The only exception is if there is a global pasteboard (for example on Mac).
 // http://crbug.com/30006
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
+#if defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (!views_mode_controller::IsViewsBrowserCocoa()) {
+    // TODO(http://crbug.com/843878): Remove the interactive UI test
+    // FindBarPlatformHelperMacInteractiveUITest.PreferPreviousSearch
+    // once http://crbug.com/843878 is fixed.
+    return;
+  }
+#endif
+
   // First we navigate to any page.
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
