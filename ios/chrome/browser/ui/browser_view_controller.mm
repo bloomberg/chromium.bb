@@ -261,6 +261,7 @@
 #include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/context_menu_params.h"
+#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -4738,7 +4739,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)viewSource {
   Tab* tab = [_model currentTab];
   DCHECK(tab);
-  CRWWebController* webController = tab.webController;
   NSString* script = @"document.documentElement.outerHTML;";
   __weak Tab* weakTab = tab;
   __weak BrowserViewController* weakSelf = self;
@@ -4763,8 +4763,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
                  atIndex:TabModelConstants::kTabPositionAutomatically
             inBackground:NO];
   };
-  [webController executeJavaScript:script
-                 completionHandler:completionHandlerBlock];
+  [tab.webState->GetJSInjectionReceiver()
+      executeJavaScript:script
+      completionHandler:completionHandlerBlock];
 }
 #endif  // !defined(NDEBUG)
 
