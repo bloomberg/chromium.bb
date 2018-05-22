@@ -1151,6 +1151,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "message_center_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=1",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "midi_unittests"
       },
       {
@@ -1725,6 +1735,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -3093,6 +3109,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "message_center_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "midi_unittests"
       },
       {
@@ -3512,6 +3534,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "message_center_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "midi_unittests"
       },
       {
@@ -3821,6 +3849,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gin_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gn_unittests"
       },
       {
         "swarming": {

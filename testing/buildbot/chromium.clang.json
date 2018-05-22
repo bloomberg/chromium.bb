@@ -296,6 +296,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "message_center_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "midi_unittests"
       },
       {
@@ -739,6 +745,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "message_center_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "midi_unittests"
       },
       {
@@ -1092,6 +1104,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -1158,6 +1176,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -1532,6 +1556,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -1598,6 +1628,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -1965,6 +2001,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -2031,6 +2073,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -2405,6 +2453,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -2471,6 +2525,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -2845,6 +2905,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -2911,6 +2977,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -3285,6 +3357,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -3351,6 +3429,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -3725,6 +3809,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -3791,6 +3881,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -7379,6 +7475,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "message_center_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "midi_unittests"
       },
       {
@@ -7812,6 +7914,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "message_center_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "midi_unittests"
       },
       {
@@ -8228,6 +8336,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -8654,6 +8768,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "message_center_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "midi_unittests"
       },
       {
@@ -9070,6 +9190,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "message_center_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "midi_unittests"
       },
       {
@@ -9406,6 +9532,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -9461,6 +9593,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -9873,6 +10011,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -9928,6 +10072,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -10268,6 +10418,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -10334,6 +10490,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -10708,6 +10870,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -10774,6 +10942,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -11148,6 +11322,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -11214,6 +11394,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -11588,6 +11774,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -11654,6 +11846,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -12028,6 +12226,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -12094,6 +12298,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -12468,6 +12678,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -12534,6 +12750,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -12908,6 +13130,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -12974,6 +13202,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -13348,6 +13582,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -13414,6 +13654,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -13788,6 +14034,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -13854,6 +14106,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -14228,6 +14486,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -14294,6 +14558,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -14722,6 +14992,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
@@ -15228,6 +15504,17 @@
             }
           ]
         },
+        "test": "gn_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10"
+            }
+          ]
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -15340,6 +15627,17 @@
           ]
         },
         "test": "media_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "message_center_unittests"
       },
       {
         "swarming": {
