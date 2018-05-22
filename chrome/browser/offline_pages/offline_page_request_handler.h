@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
-#include "net/url_request/url_request_job.h"
 
 namespace base {
 class FilePath;
@@ -24,16 +23,14 @@ class FilePath;
 
 namespace net {
 class FileStream;
+class HttpRequestHeaders;
+class HttpResponseHeaders;
 class IOBuffer;
 }  // namespace net
 
-namespace previews {
-class PreviewsDecider;
-}
-
 namespace offline_pages {
 
-// A request job that serves content from a trusted offline file, located either
+// A handler that serves content from a trusted offline file, located either
 // in internal directory or in public directory with digest validated, when a
 // http/https URL is being navigated on disconnected or poor network. If no
 // trusted offline file can be found, fall back to the default network handling
@@ -41,7 +38,7 @@ namespace offline_pages {
 //
 // The only header handled by this request job is:
 // * "X-Chrome-offline" custom header.
-class OfflinePageRequestHandler : public net::URLRequestJob {
+class OfflinePageRequestHandler {
  public:
   // This enum is used for UMA reporting. It contains all possible outcomes of
   // handling requests that might service offline page in different network
@@ -135,17 +132,48 @@ class OfflinePageRequestHandler : public net::URLRequestJob {
     bool archive_is_in_internal_dir;
   };
 
-  // Delegate that allows tests to overwrite certain behaviors.
+  // Delegate that allows the consumer to overwrite certain behaviors.
+  // All methods are called from IO thread.
   class Delegate {
    public:
+    using WebContentsGetter = base::Callback<content::WebContents*(void)>;
     using TabIdGetter = base::Callback<bool(content::WebContents*, int*)>;
 
-    virtual ~Delegate() {}
+    // Falls back to the default handling in the case that the offline content
+    // can't be found and served.
+    virtual void FallbackToDefault() = 0;
 
-    virtual content::ResourceRequestInfo::WebContentsGetter
-    GetWebContentsGetter(net::URLRequest* request) const = 0;
+    // Notifies that a start error has occurred.
+    virtual void NotifyStartError(int error) = 0;
 
+    // Notifies that the headers have been received. |file_size| indicates the
+    // total size to be read.
+    virtual void NotifyHeadersComplete(int64_t file_size) = 0;
+
+    // Notifies that ReadRawData() is completed. |bytes_read| is either >= 0 to
+    // indicate a successful read and count of bytes read, or < 0 to indicate an
+    // error.
+    virtual void NotifyReadRawDataComplete(int bytes_read) = 0;
+
+    // Sets |is_offline_page| flag in NavigationUIData.
+    virtual void SetOfflinePageNavigationUIData(bool is_offline_page) = 0;
+
+    // Returns true if the preview is allowed.
+    virtual bool ShouldAllowPreview() const = 0;
+
+    // Returns the page transition type for this navigation.
+    virtual int GetPageTransition() const = 0;
+
+    // Returns the getter to retrieve the web contents associated with this
+    // this navigation.
+    virtual WebContentsGetter GetWebContentsGetter() const = 0;
+
+    // Returns the getter to retrieve the ID of the tab where this navigation
+    // occurs.
     virtual TabIdGetter GetTabIdGetter() const = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   class ThreadSafeArchiveValidator final
@@ -163,31 +191,26 @@ class OfflinePageRequestHandler : public net::URLRequestJob {
   // state.
   static void ReportAggregatedRequestResult(AggregatedRequestResult result);
 
-  // Creates and returns a job to serve the offline page. Nullptr is returned if
-  // offline page cannot or should not be served. Embedder must gaurantee that
-  // |previews_decider| outlives the returned instance.
-  static OfflinePageRequestHandler* Create(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      previews::PreviewsDecider* previews_decider);
+  OfflinePageRequestHandler(
+      const GURL& url,
+      const net::HttpRequestHeaders& extra_request_headers,
+      Delegate* delegate);
 
-  ~OfflinePageRequestHandler() override;
+  ~OfflinePageRequestHandler();
 
-  // net::URLRequestJob overrides:
-  void Start() override;
-  void Kill() override;
-  int ReadRawData(net::IOBuffer* dest, int dest_size) override;
-  void GetResponseInfo(net::HttpResponseInfo* info) override;
-  void GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
-  bool CopyFragmentOnRedirect(const GURL& location) const override;
-  bool GetMimeType(std::string* mime_type) const override;
-  void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
+  void Start();
+  void Kill();
+  bool IsServingOfflinePage() const;
+
+  // Returns the http response headers to trigger a redirect.
+  scoped_refptr<net::HttpResponseHeaders> GetRedirectHeaders();
+
+  // Reads at most |dest_size| bytes of the raw data into |dest| buffer.
+  int ReadRawData(net::IOBuffer* dest, int dest_size);
 
   // Called when offline pages matching the request URL are found. The list is
   // sorted based on creation date in descending order.
   void OnOfflinePagesAvailable(const std::vector<Candidate>& candidates);
-
-  void SetDelegateForTesting(std::unique_ptr<Delegate> delegate);
 
  private:
   enum class FileValidationResult {
@@ -199,14 +222,9 @@ class OfflinePageRequestHandler : public net::URLRequestJob {
     FILE_VALIDATION_FAILED,
   };
 
-  OfflinePageRequestHandler(net::URLRequest* request,
-                            net::NetworkDelegate* network_delegate,
-                            previews::PreviewsDecider* previews_decider);
-
   void StartAsync();
 
-  // Restarts the request job in order to fall back to the default handling.
-  void FallbackToDefault();
+  NetworkState GetNetworkState() const;
 
   AccessEntryPoint GetAccessEntryPoint() const;
 
@@ -218,11 +236,10 @@ class OfflinePageRequestHandler : public net::URLRequestJob {
 
   void OnTrustedOfflinePageFound();
   void VisitTrustedOfflinePage();
-  void SetOfflinePageNavigationUIData(bool is_offline_page);
   void Redirect(const GURL& redirected_url);
 
   void OpenFile(const base::FilePath& file_path,
-                const net::CompletionCallback& callback);
+                const base::Callback<void(int)>& callback);
   void UpdateDigestOnBackground(
       scoped_refptr<net::IOBuffer> buffer,
       size_t len,
@@ -248,18 +265,14 @@ class OfflinePageRequestHandler : public net::URLRequestJob {
   void DidComputeActualDigestForServing(int result,
                                         const std::string& actual_digest);
 
-  std::unique_ptr<Delegate> delegate_;
+  GURL url_;
+  Delegate* delegate_;
 
   OfflinePageHeader offline_header_;
   NetworkState network_state_;
 
   // For redirect simulation.
   scoped_refptr<net::HttpResponseHeaders> fake_headers_for_redirect_;
-  base::TimeTicks receive_redirect_headers_end_;
-  base::Time redirect_response_time_;
-
-  // Used to determine if an URLRequest is eligible for offline previews.
-  previews::PreviewsDecider* previews_decider_;
 
   // To run any file related operations.
   scoped_refptr<base::TaskRunner> file_task_runner_;

@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/offline_pages/offline_page_request_job.h"
+#include "chrome/browser/offline_pages/offline_page_request_handler.h"
 
 #include <string>
 
@@ -22,11 +22,9 @@
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
-#include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
@@ -39,7 +37,6 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_redirect_job.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -74,56 +71,8 @@ enum class RequestResult {
   FILE_NOT_FOUND,
 };
 
-const char kUserDataKey[] = "offline_page_key";
-const size_t kMaxBufferSizeForValidation = 1024;
-
-// Contains the info to handle offline page request.
-class OfflinePageRequestInfo : public base::SupportsUserData::Data {
- public:
-  OfflinePageRequestInfo() : use_default_(false) {}
-  ~OfflinePageRequestInfo() override {}
-
-  static OfflinePageRequestInfo* GetFromRequest(net::URLRequest* request) {
-    return static_cast<OfflinePageRequestInfo*>(
-        request->GetUserData(&kUserDataKey));
-  }
-
-  bool use_default() const { return use_default_; }
-  void set_use_default(bool use_default) { use_default_ = use_default; }
-
- private:
-  // True if the next time this request is started, the request should be
-  // serviced from the default handler.
-  bool use_default_;
-
-  DISALLOW_COPY_AND_ASSIGN(OfflinePageRequestInfo);
-};
-
-class DefaultOfflinePageRequestHandlerDelegate
-    : public OfflinePageRequestHandler::Delegate {
- public:
-  DefaultOfflinePageRequestHandlerDelegate() {}
-
-  content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter(
-      net::URLRequest* request) const override {
-    const content::ResourceRequestInfo* info =
-        content::ResourceRequestInfo::ForRequest(request);
-    return info ? info->GetWebContentsGetterForRequest()
-                : content::ResourceRequestInfo::WebContentsGetter();
-  }
-
-  OfflinePageRequestHandler::Delegate::TabIdGetter GetTabIdGetter()
-      const override {
-    return base::Bind(&DefaultOfflinePageRequestHandlerDelegate::GetTabId);
-  }
-
- private:
-  static bool GetTabId(content::WebContents* web_contents, int* tab_id) {
-    return OfflinePageUtils::GetTabId(web_contents, tab_id);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultOfflinePageRequestHandlerDelegate);
-};
+// Consistent with the buffer size used in url request data reading.
+const size_t kMaxBufferSizeForValidation = 4096;
 
 void GetFileSize(const base::FilePath& file_path, int64_t* file_size) {
   bool succeeded = base::GetFileSize(file_path, file_size);
@@ -139,42 +88,6 @@ void UpdateDigest(
     scoped_refptr<net::IOBuffer> buffer,
     size_t len) {
   validator->Update(buffer->data(), len);
-}
-
-OfflinePageRequestHandler::NetworkState GetNetworkState(
-    net::URLRequest* request,
-    const OfflinePageHeader& offline_header,
-    previews::PreviewsDecider* previews_decider) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  if (offline_header.reason == OfflinePageHeader::Reason::NET_ERROR)
-    return OfflinePageRequestHandler::NetworkState::FLAKY_NETWORK;
-
-  if (net::NetworkChangeNotifier::IsOffline())
-    return OfflinePageRequestHandler::NetworkState::DISCONNECTED_NETWORK;
-
-  // If RELOAD is present in the offline header, load the live page.
-  if (offline_header.reason == OfflinePageHeader::Reason::RELOAD)
-    return OfflinePageRequestHandler::NetworkState::CONNECTED_NETWORK;
-
-  // If other reason is present in the offline header, force loading the offline
-  // page even when the network is connected.
-  if (offline_header.reason != OfflinePageHeader::Reason::NONE) {
-    return OfflinePageRequestHandler::NetworkState::
-        FORCE_OFFLINE_ON_CONNECTED_NETWORK;
-  }
-
-  // Checks if previews are allowed, the network is slow, and the request is
-  // allowed to be shown for previews. When reloading from an offline page or
-  // through other force checks, previews should not be considered; previews
-  // eligiblity is only checked when |offline_header.reason| is Reason::NONE.
-  if (previews_decider && previews_decider->ShouldAllowPreview(
-                              *request, previews::PreviewsType::OFFLINE)) {
-    return OfflinePageRequestHandler::NetworkState::PROHIBITIVELY_SLOW_NETWORK;
-  }
-
-  // Otherwise, the network state is a good network.
-  return OfflinePageRequestHandler::NetworkState::CONNECTED_NETWORK;
 }
 
 OfflinePageRequestHandler::AggregatedRequestResult
@@ -575,58 +488,60 @@ void OfflinePageRequestHandler::ReportAggregatedRequestResult(
       static_cast<int>(AggregatedRequestResult::AGGREGATED_REQUEST_RESULT_MAX));
 }
 
-// static
-OfflinePageRequestHandler* OfflinePageRequestHandler::Create(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    previews::PreviewsDecider* previews_decider) {
-  const content::ResourceRequestInfo* resource_request_info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (!resource_request_info)
-    return nullptr;
-
-  // Ignore the requests not for the main resource.
-  if (resource_request_info->GetResourceType() !=
-      content::RESOURCE_TYPE_MAIN_FRAME) {
-    return nullptr;
-  }
-
-  // Ignore non-http/https requests.
-  if (!request->url().SchemeIsHTTPOrHTTPS())
-    return nullptr;
-
-  // Ignore requests other than GET.
-  if (request->method() != "GET")
-    return nullptr;
-
-  OfflinePageRequestInfo* info =
-      OfflinePageRequestInfo::GetFromRequest(request);
-  if (info) {
-    // Fall back to default which is set when an offline page cannot be served,
-    // either page not found or online version desired.
-    if (info->use_default())
-      return nullptr;
-  } else {
-    request->SetUserData(&kUserDataKey,
-                         std::make_unique<OfflinePageRequestInfo>());
-  }
-
-  return new OfflinePageRequestHandler(request, network_delegate,
-                                       previews_decider);
-}
-
 OfflinePageRequestHandler::OfflinePageRequestHandler(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    previews::PreviewsDecider* previews_decider)
-    : net::URLRequestJob(request, network_delegate),
-      delegate_(new DefaultOfflinePageRequestHandlerDelegate()),
-      previews_decider_(previews_decider),
+    const GURL& url,
+    const net::HttpRequestHeaders& extra_request_headers,
+    Delegate* delegate)
+    : url_(url),
+      delegate_(delegate),
       candidate_index_(0),
       has_range_header_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  std::string offline_header_value;
+  extra_request_headers.GetHeader(kOfflinePageHeader, &offline_header_value);
+  // Note that |offline_header| will be empty if parsing from the header value
+  // fails.
+  offline_header_ = OfflinePageHeader(offline_header_value);
+
+  if (extra_request_headers.HasHeader(net::HttpRequestHeaders::kRange))
+    has_range_header_ = true;
+
+  network_state_ = GetNetworkState();
+}
 
 OfflinePageRequestHandler::~OfflinePageRequestHandler() {}
+
+OfflinePageRequestHandler::NetworkState
+OfflinePageRequestHandler::GetNetworkState() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (offline_header_.reason == OfflinePageHeader::Reason::NET_ERROR)
+    return OfflinePageRequestHandler::NetworkState::FLAKY_NETWORK;
+
+  if (net::NetworkChangeNotifier::IsOffline())
+    return OfflinePageRequestHandler::NetworkState::DISCONNECTED_NETWORK;
+
+  // If RELOAD is present in the offline header, load the live page.
+  if (offline_header_.reason == OfflinePageHeader::Reason::RELOAD)
+    return OfflinePageRequestHandler::NetworkState::CONNECTED_NETWORK;
+
+  // If other reason is present in the offline header, force loading the offline
+  // page even when the network is connected.
+  if (offline_header_.reason != OfflinePageHeader::Reason::NONE) {
+    return OfflinePageRequestHandler::NetworkState::
+        FORCE_OFFLINE_ON_CONNECTED_NETWORK;
+  }
+
+  // Checks if previews are allowed, the network is slow, and the request is
+  // allowed to be shown for previews. When reloading from an offline page or
+  // through other force checks, previews should not be considered; previews
+  // eligiblity is only checked when |offline_header.reason| is Reason::NONE.
+  if (delegate_->ShouldAllowPreview())
+    return OfflinePageRequestHandler::NetworkState::PROHIBITIVELY_SLOW_NETWORK;
+
+  // Otherwise, the network state is a good network.
+  return OfflinePageRequestHandler::NetworkState::CONNECTED_NETWORK;
+}
 
 void OfflinePageRequestHandler::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -635,32 +550,31 @@ void OfflinePageRequestHandler::Start() {
 }
 
 void OfflinePageRequestHandler::StartAsync() {
-  std::string offline_header_value;
-  request()->extra_request_headers().GetHeader(kOfflinePageHeader,
-                                               &offline_header_value);
-  // Note that |offline_header| will be empty if parsing from the header value
-  // fails.
-  offline_header_ = OfflinePageHeader(offline_header_value);
-
-  network_state_ =
-      GetNetworkState(request(), offline_header_, previews_decider_);
   if (network_state_ == NetworkState::CONNECTED_NETWORK) {
-    FallbackToDefault();
+    delegate_->FallbackToDefault();
     return;
   }
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&GetPagesToServeURL, request()->url(), offline_header_,
-                     network_state_, delegate_->GetWebContentsGetter(request()),
+      base::BindOnce(&GetPagesToServeURL, url_, offline_header_, network_state_,
+                     delegate_->GetWebContentsGetter(),
                      delegate_->GetTabIdGetter(),
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OfflinePageRequestHandler::Kill() {
   stream_.reset();
-  net::URLRequestJob::Kill();
   weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+bool OfflinePageRequestHandler::IsServingOfflinePage() const {
+  return candidates_.size() > 0 && candidate_index_ < candidates_.size();
+}
+
+scoped_refptr<net::HttpResponseHeaders>
+OfflinePageRequestHandler::GetRedirectHeaders() {
+  return fake_headers_for_redirect_;
 }
 
 int OfflinePageRequestHandler::ReadRawData(net::IOBuffer* dest, int dest_size) {
@@ -672,60 +586,12 @@ int OfflinePageRequestHandler::ReadRawData(net::IOBuffer* dest, int dest_size) {
                  weak_ptr_factory_.GetWeakPtr(), base::WrapRefCounted(dest)));
 }
 
-void OfflinePageRequestHandler::GetResponseInfo(net::HttpResponseInfo* info) {
-  if (!fake_headers_for_redirect_) {
-    net::URLRequestJob::GetResponseInfo(info);
-    return;
-  }
-
-  info->headers = fake_headers_for_redirect_;
-  info->request_time = redirect_response_time_;
-  info->response_time = redirect_response_time_;
-}
-
-void OfflinePageRequestHandler::GetLoadTimingInfo(
-    net::LoadTimingInfo* load_timing_info) const {
-  // Set send_start and send_end to receive_redirect_headers_end_ to be
-  // consistent with network cache behavior.
-  load_timing_info->send_start = receive_redirect_headers_end_;
-  load_timing_info->send_end = receive_redirect_headers_end_;
-  load_timing_info->receive_headers_end = receive_redirect_headers_end_;
-}
-
-bool OfflinePageRequestHandler::CopyFragmentOnRedirect(
-    const GURL& location) const {
-  return false;
-}
-
-bool OfflinePageRequestHandler::GetMimeType(std::string* mime_type) const {
-  if (candidates_.size() > 0 && candidate_index_ < candidates_.size()) {
-    *mime_type = "multipart/related";
-    return true;
-  }
-  return false;
-}
-
-void OfflinePageRequestHandler::SetExtraRequestHeaders(
-    const net::HttpRequestHeaders& headers) {
-  if (headers.HasHeader(net::HttpRequestHeaders::kRange))
-    has_range_header_ = true;
-}
-
-void OfflinePageRequestHandler::FallbackToDefault() {
-  OfflinePageRequestInfo* info =
-      OfflinePageRequestInfo::GetFromRequest(request());
-  DCHECK(info);
-  info->set_use_default(true);
-
-  net::URLRequestJob::NotifyRestartRequired();
-}
-
 void OfflinePageRequestHandler::OnOfflinePagesAvailable(
     const std::vector<Candidate>& candidates) {
   // If no offline page is found, restart the job to fall back to the default
   // handling.
   if (candidates.empty()) {
-    FallbackToDefault();
+    delegate_->FallbackToDefault();
     return;
   }
 
@@ -746,8 +612,8 @@ void OfflinePageRequestHandler::OnTrustedOfflinePageFound() {
   // after intermediate redirects for authentication. Previously this case was
   // not handled and some pages might be saved with same URLs. Though we fixed
   // the problem, we still need to support those pages already saved with this
-  if (request()->url() == GetCurrentOfflinePage().original_url &&
-      request()->url() != GetCurrentOfflinePage().url) {
+  if (url_ == GetCurrentOfflinePage().original_url &&
+      url_ != GetCurrentOfflinePage().url) {
     ReportRequestResult(RequestResult::REDIRECTED, network_state_);
     Redirect(GetCurrentOfflinePage().url);
     return;
@@ -759,7 +625,7 @@ void OfflinePageRequestHandler::OnTrustedOfflinePageFound() {
       base::Time::Now() - GetCurrentOfflinePage().creation_time >
           previews::params::OfflinePreviewFreshnessDuration()) {
     ReportRequestResult(RequestResult::PAGE_NOT_FRESH, network_state_);
-    FallbackToDefault();
+    delegate_->FallbackToDefault();
     return;
   }
 
@@ -795,34 +661,17 @@ void OfflinePageRequestHandler::VisitTrustedOfflinePage() {
   ReportOfflinePageSize(network_state_, GetCurrentOfflinePage());
   ReportExistenceOfRangeHeader(has_range_header_);
 
-  SetOfflinePageNavigationUIData(true /*is_offline_page*/);
+  delegate_->SetOfflinePageNavigationUIData(true /*is_offline_page*/);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(&VisitTrustedOfflinePageOnUI, offline_header_,
-                     network_state_, delegate_->GetWebContentsGetter(request()),
+                     network_state_, delegate_->GetWebContentsGetter(),
                      GetCurrentOfflinePage(),
                      candidates_[candidate_index_].archive_is_in_internal_dir));
 }
 
-void OfflinePageRequestHandler::SetOfflinePageNavigationUIData(
-    bool is_offline_page) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request());
-  ChromeNavigationUIData* navigation_data =
-      static_cast<ChromeNavigationUIData*>(info->GetNavigationUIData());
-  if (navigation_data) {
-    std::unique_ptr<OfflinePageNavigationUIData> offline_page_data =
-        std::make_unique<OfflinePageNavigationUIData>(is_offline_page);
-    navigation_data->SetOfflinePageNavigationUIData(
-        std::move(offline_page_data));
-  }
-}
-
 void OfflinePageRequestHandler::Redirect(const GURL& redirected_url) {
-  receive_redirect_headers_end_ = base::TimeTicks::Now();
-  redirect_response_time_ = base::Time::Now();
-
   std::string header_string = base::StringPrintf(
       "HTTP/1.1 %i Internal Redirect\n"
       // Clear referrer to avoid leak when going online.
@@ -839,21 +688,11 @@ void OfflinePageRequestHandler::Redirect(const GURL& redirected_url) {
           header_string.c_str(), header_string.length()));
   DCHECK(fake_headers_for_redirect_->IsRedirect(nullptr));
 
-  net::URLRequestJob::NotifyHeadersComplete();
-}
-
-void OfflinePageRequestHandler::SetDelegateForTesting(
-    std::unique_ptr<Delegate> delegate) {
-  delegate_ = std::move(delegate);
+  delegate_->NotifyHeadersComplete(0);
 }
 
 OfflinePageRequestHandler::AccessEntryPoint
 OfflinePageRequestHandler::GetAccessEntryPoint() const {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request());
-  if (!info)
-    return AccessEntryPoint::UNKNOWN;
-
   switch (offline_header_.reason) {
     case OfflinePageHeader::Reason::DOWNLOAD:
       return AccessEntryPoint::DOWNLOADS;
@@ -867,7 +706,8 @@ OfflinePageRequestHandler::GetAccessEntryPoint() const {
       break;
   }
 
-  ui::PageTransition transition = info->GetPageTransition();
+  ui::PageTransition transition =
+      static_cast<ui::PageTransition>(delegate_->GetPageTransition());
   if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK)) {
     return PageTransitionGetQualifier(transition) ==
                    static_cast<int>(ui::PAGE_TRANSITION_FROM_API)
@@ -911,7 +751,7 @@ bool OfflinePageRequestHandler::IsProcessingFileOrContentUrlIntent() const {
 
 void OfflinePageRequestHandler::OpenFile(
     const base::FilePath& file_path,
-    const net::CompletionCallback& callback) {
+    const base::Callback<void(int)>& callback) {
   if (!stream_)
     stream_ = std::make_unique<net::FileStream>(file_task_runner_);
 
@@ -1094,7 +934,7 @@ void OfflinePageRequestHandler::OnFileValidationDone(
                           ? RequestResult::FILE_NOT_FOUND
                           : RequestResult::DIGEST_MISMATCH,
                       network_state_);
-  FallbackToDefault();
+  delegate_->FallbackToDefault();
 }
 
 void OfflinePageRequestHandler::DidOpenForServing(int result) {
@@ -1106,12 +946,10 @@ void OfflinePageRequestHandler::DidOpenForServing(int result) {
 
     // If the file:// or content:// intent is being processed, don't fall
     // back to the default handling. Instead, we should fail the request.
-    if (IsProcessingFileOrContentUrlIntent()) {
-      NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                             net::ERR_FAILED));
-    } else {
-      FallbackToDefault();
-    }
+    if (IsProcessingFileOrContentUrlIntent())
+      delegate_->NotifyStartError(net::ERR_FAILED);
+    else
+      delegate_->FallbackToDefault();
     return;
   }
 
@@ -1134,13 +972,11 @@ void OfflinePageRequestHandler::DidSeekForServing(int64_t result) {
   ReportSeekResult(result);
 
   if (result < 0) {
-    NotifyStartError(net::URLRequestStatus(
-        net::URLRequestStatus::FAILED, net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+    delegate_->NotifyStartError(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
     return;
   }
 
-  set_expected_content_size(GetCurrentOfflinePage().file_size);
-  NotifyHeadersComplete();
+  delegate_->NotifyHeadersComplete(GetCurrentOfflinePage().file_size);
 }
 
 void OfflinePageRequestHandler::DidReadForServing(
@@ -1177,7 +1013,7 @@ void OfflinePageRequestHandler::DidReadForServing(
 }
 
 void OfflinePageRequestHandler::NotifyReadRawDataComplete(int result) {
-  ReadRawDataComplete(result);
+  delegate_->NotifyReadRawDataComplete(result);
 }
 
 void OfflinePageRequestHandler::DidComputeActualDigestForServing(
@@ -1187,15 +1023,14 @@ void OfflinePageRequestHandler::DidComputeActualDigestForServing(
   bool mismatch = actual_digest != GetCurrentOfflinePage().digest;
   ReportIntentDataChangedAfterValidation(mismatch);
   if (mismatch) {
-    SetOfflinePageNavigationUIData(false /*is_offline_page*/);
+    delegate_->SetOfflinePageNavigationUIData(false /*is_offline_page*/);
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&ClearOfflinePageData,
-                   delegate_->GetWebContentsGetter(request())));
+        base::Bind(&ClearOfflinePageData, delegate_->GetWebContentsGetter()));
     result = net::ERR_FAILED;
   }
 
-  ReadRawDataComplete(result);
+  NotifyReadRawDataComplete(result);
 }
 
 }  // namespace offline_pages

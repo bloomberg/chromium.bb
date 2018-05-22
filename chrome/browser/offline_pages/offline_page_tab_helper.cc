@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
-#include "chrome/browser/offline_pages/offline_page_request_job.h"
+#include "chrome/browser/offline_pages/offline_page_request_handler.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
@@ -267,8 +267,9 @@ void OfflinePageTabHelper::TryLoadingOfflinePageOnNetError(
     // Do not report aborted error since the error page is not shown on this
     // error.
     if (error_code != net::ERR_ABORTED) {
-      OfflinePageRequestJob::ReportAggregatedRequestResult(
-          OfflinePageRequestJob::AggregatedRequestResult::SHOW_NET_ERROR_PAGE);
+      OfflinePageRequestHandler::ReportAggregatedRequestResult(
+          OfflinePageRequestHandler::AggregatedRequestResult::
+              SHOW_NET_ERROR_PAGE);
     }
     return;
   }
@@ -293,8 +294,8 @@ void OfflinePageTabHelper::SelectPagesForURLDone(
     const std::vector<OfflinePageItem>& offline_pages) {
   // Bails out if no offline page is found.
   if (offline_pages.empty()) {
-    OfflinePageRequestJob::ReportAggregatedRequestResult(
-        OfflinePageRequestJob::AggregatedRequestResult::
+    OfflinePageRequestHandler::ReportAggregatedRequestResult(
+        OfflinePageRequestHandler::AggregatedRequestResult::
             PAGE_NOT_FOUND_ON_FLAKY_NETWORK);
     return;
   }
