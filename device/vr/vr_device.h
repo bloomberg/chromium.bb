@@ -46,8 +46,6 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual unsigned int GetId() const = 0;
   virtual void PauseTracking() = 0;
   virtual void ResumeTracking() = 0;
-  virtual void Blur() = 0;
-  virtual void Focus() = 0;
   virtual mojom::VRDisplayInfoPtr GetVRDisplayInfo() = 0;
   virtual void SetMagicWindowEnabled(bool enabled) = 0;
 

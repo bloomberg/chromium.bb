@@ -211,13 +211,6 @@ void VrGLThread::ExitFullscreen() {
       FROM_HERE, base::BindOnce(&VrShell::ExitFullscreen, weak_vr_shell_));
 }
 
-void VrGLThread::OnContentPaused(bool enabled) {
-  DCHECK(OnGlThread());
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VrShell::OnContentPaused, weak_vr_shell_, enabled));
-}
-
 void VrGLThread::Navigate(GURL gurl, NavigationMethod method) {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(

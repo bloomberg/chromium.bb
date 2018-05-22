@@ -322,19 +322,6 @@ void VrShell::PostToGlThread(const base::Location& from_here,
                                                       std::move(task));
 }
 
-void VrShell::OnContentPaused(bool paused) {
-  device::VRDevice* device = delegate_provider_->GetDevice();
-  if (!device)
-    return;
-
-  // TODO(mthiesse): The page is no longer visible when in menu mode. We
-  // should unfocus or otherwise let it know it's hidden.
-  if (paused)
-    device->Blur();
-  else
-    device->Focus();
-}
-
 void VrShell::Navigate(GURL url, NavigationMethod method) {
   JNIEnv* env = base::android::AttachCurrentThread();
 

@@ -68,7 +68,6 @@ class VrGLThread : public base::android::JavaHandlerThread,
                             gl::SurfaceTexture* texture) override;
   void UpdateGamepadData(device::GvrGamepadData) override;
   void ForceExitVr() override;
-  void OnContentPaused(bool enabled) override;
   void ToggleCardboardGamepad(bool enabled) override;
 
   // PlatformInputHandler
