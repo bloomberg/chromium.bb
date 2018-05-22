@@ -123,6 +123,9 @@ const char kCannotRepairHealthyExtension[] =
     "Cannot repair a healthy extension.";
 const char kCannotRepairPolicyExtension[] =
     "Cannot repair a policy-installed extension.";
+const char kCannotChangeHostPermissions[] =
+    "Cannot change host permissions for the given extension.";
+const char kInvalidHost[] = "Invalid host.";
 
 const char kUnpackedAppsFolder[] = "apps_target";
 const char kManifestFile[] = "manifest.json";
@@ -865,10 +868,8 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
   }
   if (update.run_on_all_urls) {
     ScriptingPermissionsModifier modifier(browser_context(), extension);
-    if (!modifier.CanAffectExtension()) {
-      return RespondNow(
-          Error("Cannot modify all urls of extension: " + extension->id()));
-    }
+    if (!modifier.CanAffectExtension())
+      return RespondNow(Error(kCannotChangeHostPermissions));
     modifier.SetAllowedOnAllUrls(*update.run_on_all_urls);
   }
 
@@ -1906,6 +1907,75 @@ DeveloperPrivateUpdateExtensionCommandFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+DeveloperPrivateAddHostPermissionFunction::
+    DeveloperPrivateAddHostPermissionFunction() = default;
+DeveloperPrivateAddHostPermissionFunction::
+    ~DeveloperPrivateAddHostPermissionFunction() = default;
+
+ExtensionFunction::ResponseAction
+DeveloperPrivateAddHostPermissionFunction::Run() {
+  std::unique_ptr<developer::AddHostPermission::Params> params(
+      developer::AddHostPermission::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  GURL host(params->host);
+  if (!host.is_valid() || host.path_piece().length() > 1 || host.has_query() ||
+      host.has_ref()) {
+    return RespondNow(Error(kInvalidHost));
+  }
+
+  const Extension* extension = GetExtensionById(params->extension_id);
+  if (!extension)
+    return RespondNow(Error(kNoSuchExtensionError));
+
+  ScriptingPermissionsModifier scripting_modifier(browser_context(), extension);
+  if (!scripting_modifier.CanAffectExtension())
+    return RespondNow(Error(kCannotChangeHostPermissions));
+
+  // Only grant withheld permissions. This also ensures that we won't grant
+  // any permission for a host that shouldn't be accessible to the extension,
+  // like chrome:-scheme urls.
+  if (!extension->permissions_data()
+           ->withheld_permissions()
+           .HasEffectiveAccessToURL(host)) {
+    return RespondNow(Error("Cannot grant a permission that wasn't withheld."));
+  }
+
+  scripting_modifier.GrantHostPermission(host);
+  return RespondNow(NoArguments());
+}
+
+DeveloperPrivateRemoveHostPermissionFunction::
+    DeveloperPrivateRemoveHostPermissionFunction() = default;
+DeveloperPrivateRemoveHostPermissionFunction::
+    ~DeveloperPrivateRemoveHostPermissionFunction() = default;
+
+ExtensionFunction::ResponseAction
+DeveloperPrivateRemoveHostPermissionFunction::Run() {
+  std::unique_ptr<developer::RemoveHostPermission::Params> params(
+      developer::RemoveHostPermission::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  GURL host(params->host);
+  if (!host.is_valid() || host.path_piece().length() > 1 || host.has_query() ||
+      host.has_ref()) {
+    return RespondNow(Error(kInvalidHost));
+  }
+
+  const Extension* extension = GetExtensionById(params->extension_id);
+  if (!extension)
+    return RespondNow(Error(kNoSuchExtensionError));
+
+  ScriptingPermissionsModifier scripting_modifier(browser_context(), extension);
+  if (!scripting_modifier.CanAffectExtension())
+    return RespondNow(Error(kCannotChangeHostPermissions));
+
+  if (!scripting_modifier.HasGrantedHostPermission(host))
+    return RespondNow(Error("Cannot remove a host that hasn't been granted."));
+
+  scripting_modifier.RemoveGrantedHostPermission(host);
+  return RespondNow(NoArguments());
+}
 
 }  // namespace api
 

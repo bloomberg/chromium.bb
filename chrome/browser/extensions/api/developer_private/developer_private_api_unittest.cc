@@ -71,6 +71,8 @@ namespace extensions {
 namespace {
 
 const char kGoodCrx[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
+constexpr char kInvalidHost[] = "invalid host";
+constexpr char kInvalidHostError[] = "Invalid host.";
 
 std::unique_ptr<KeyedService> BuildAPI(content::BrowserContext* context) {
   return std::make_unique<DeveloperPrivateAPI>(context);
@@ -1297,6 +1299,98 @@ TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileUserScript) {
   const Extension* extension = observer.WaitForExtensionInstalled();
   ASSERT_TRUE(extension);
   EXPECT_EQ("My user script", extension->name());
+}
+
+TEST_F(DeveloperPrivateApiUnitTest, GrantHostPermission) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("test").AddPermission("<all_urls>").Build();
+  service()->AddExtension(extension.get());
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+  EXPECT_TRUE(modifier.IsAllowedOnAllUrls());
+  modifier.SetAllowedOnAllUrls(false);
+
+  auto run_add_host_permission = [this, extension](base::StringPiece host,
+                                                   bool should_succeed,
+                                                   const char* expected_error) {
+    SCOPED_TRACE(host);
+    scoped_refptr<UIThreadExtensionFunction> function =
+        base::MakeRefCounted<api::DeveloperPrivateAddHostPermissionFunction>();
+
+    std::string args = base::StringPrintf(R"(["%s", "%s"])",
+                                          extension->id().c_str(), host.data());
+    if (should_succeed) {
+      EXPECT_TRUE(api_test_utils::RunFunction(function.get(), args, profile()))
+          << function->GetError();
+    } else {
+      EXPECT_EQ(expected_error, api_test_utils::RunFunctionAndReturnError(
+                                    function.get(), args, profile()));
+    }
+  };
+
+  GURL host("https://example.com");
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(host));
+  run_add_host_permission(host.spec(), true, nullptr);
+
+  run_add_host_permission(kInvalidHost, false, kInvalidHostError);
+  run_add_host_permission("https://example.com/foobar", false,
+                          kInvalidHostError);
+  run_add_host_permission("https://example.com/#foobar", false,
+                          kInvalidHostError);
+
+  GURL chrome_host("chrome://settings");
+  run_add_host_permission(chrome_host.spec(), false,
+                          "Cannot grant a permission that wasn't withheld.");
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(chrome_host));
+}
+
+TEST_F(DeveloperPrivateApiUnitTest, RemoveHostPermission) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("test").AddPermission("<all_urls>").Build();
+  service()->AddExtension(extension.get());
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+  EXPECT_TRUE(modifier.IsAllowedOnAllUrls());
+  modifier.SetAllowedOnAllUrls(false);
+
+  auto run_remove_host_permission = [this, extension](
+                                        base::StringPiece host,
+                                        bool should_succeed,
+                                        const char* expected_error) {
+    SCOPED_TRACE(host);
+    scoped_refptr<UIThreadExtensionFunction> function = base::MakeRefCounted<
+        api::DeveloperPrivateRemoveHostPermissionFunction>();
+    std::string args = base::StringPrintf(R"(["%s", "%s"])",
+                                          extension->id().c_str(), host.data());
+    if (should_succeed) {
+      EXPECT_TRUE(api_test_utils::RunFunction(function.get(), args, profile()))
+          << function->GetError();
+    } else {
+      EXPECT_EQ(expected_error, api_test_utils::RunFunctionAndReturnError(
+                                    function.get(), args, profile()));
+    }
+  };
+
+  GURL host("https://example.com");
+  run_remove_host_permission(host.spec(), false,
+                             "Cannot remove a host that hasn't been granted.");
+
+  modifier.GrantHostPermission(host);
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(host));
+
+  run_remove_host_permission("https://example.com/foobar", false,
+                             kInvalidHostError);
+  run_remove_host_permission("https://example.com/#foobar", false,
+                             kInvalidHostError);
+  run_remove_host_permission(kInvalidHost, false, kInvalidHostError);
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(host));
+
+  run_remove_host_permission(host.spec(), true, nullptr);
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(host));
 }
 
 class DeveloperPrivateZipInstallerUnitTest

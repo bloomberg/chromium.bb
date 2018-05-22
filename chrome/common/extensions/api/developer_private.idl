@@ -639,6 +639,22 @@ namespace developerPrivate {
     static void updateExtensionCommand(ExtensionCommandUpdate update,
                                        optional VoidCallback callback);
 
+    // Adds a new host permission to the extension. The extension will only
+    // have access to the host if it is within the requested permissions.
+    // |extensionId|: The id of the extension to modify.
+    // |host|: The host to add.
+    static void addHostPermission(DOMString extensionId,
+                                  DOMString host,
+                                  optional VoidCallback callback);
+
+    // Removes a host permission from the extension. This should only be called
+    // with a host that the extension has access to.
+    // |extensionId|: The id of the extension to modify.
+    // |host|: The host to remove.
+    static void removeHostPermission(DOMString extensionId,
+                                     DOMString host,
+                                     optional VoidCallback callback);
+
     [nocompile, deprecated="Use management.setEnabled"]
         static void enable(DOMString id,
                            boolean enabled,

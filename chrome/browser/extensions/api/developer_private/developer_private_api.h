@@ -753,6 +753,36 @@ class DeveloperPrivateUpdateExtensionCommandFunction
   ResponseAction Run() override;
 };
 
+class DeveloperPrivateAddHostPermissionFunction
+    : public DeveloperPrivateAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.addHostPermission",
+                             DEVELOPERPRIVATE_ADDHOSTPERMISSION);
+  DeveloperPrivateAddHostPermissionFunction();
+
+ private:
+  ~DeveloperPrivateAddHostPermissionFunction() override;
+
+  ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateAddHostPermissionFunction);
+};
+
+class DeveloperPrivateRemoveHostPermissionFunction
+    : public DeveloperPrivateAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.removeHostPermission",
+                             DEVELOPERPRIVATE_REMOVEHOSTPERMISSION);
+  DeveloperPrivateRemoveHostPermissionFunction();
+
+ private:
+  ~DeveloperPrivateRemoveHostPermissionFunction() override;
+
+  ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateRemoveHostPermissionFunction);
+};
+
 }  // namespace api
 
 }  // namespace extensions
