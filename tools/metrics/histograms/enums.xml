@@ -13291,6 +13291,7 @@ Called by update_net_error_codes.py.-->
   <int value="445" label="IsolateOriginsAndroid"/>
   <int value="446" label="SitePerProcessAndroid"/>
   <int value="447" label="ArcAppInstallEventLoggingEnabled"/>
+  <int value="448" label="UsageTimeLimit"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
