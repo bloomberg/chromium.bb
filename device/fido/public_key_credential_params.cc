@@ -33,7 +33,7 @@ cbor::CBORValue PublicKeyCredentialParams::ConvertToCBOR() const {
   for (const auto& credential : public_key_credential_params_) {
     cbor::CBORValue::MapValue cbor_credential_map;
     cbor_credential_map[cbor::CBORValue("type")] =
-        cbor::CBORValue(to_string(credential.type));
+        cbor::CBORValue(CredentialTypeToString(credential.type));
     cbor_credential_map[cbor::CBORValue("alg")] =
         cbor::CBORValue(credential.algorithm);
     credential_param_array.emplace_back(std::move(cbor_credential_map));

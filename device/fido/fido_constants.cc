@@ -54,4 +54,13 @@ const char kNoneAttestationValue[] = "none";
 
 const char kPublicKey[] = "public-key";
 
+const char* CredentialTypeToString(CredentialType type) {
+  switch (type) {
+    case CredentialType::kPublicKey:
+      return kPublicKey;
+  }
+  NOTREACHED();
+  return kPublicKey;
+}
+
 }  // namespace device
