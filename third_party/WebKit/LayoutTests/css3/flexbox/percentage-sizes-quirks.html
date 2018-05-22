@@ -2,10 +2,10 @@
 .flexbox {
     display: flex;
 }
-.column, .column .fixed {
+.column {
     height: 50px;
 }
-.row, .row .fixed {
+.row {
     width: 50px;
 }
 .container > div {
@@ -13,8 +13,6 @@
 }
 .row > div > div {
     height: 20px;
-}
-.flexbox > div {
     flex: 0 0 auto;
 }
 .column > .flexbox {
@@ -39,6 +37,8 @@
 <body onload="checkLayout('.flexbox')">
 <div id=log></div>
 
+<div>CompatMode: <script>document.write(document.compatMode)</script></div>
+
 <div class="container row">
     <div class="flexbox">
         <div style='width: 10px; min-width: 50%;' data-expected-width=25></div>
@@ -48,26 +48,8 @@
     </div>
 </div>
 
-<div class="container row" style='width: 100px'>
-    <div class="flexbox fixed">
-        <div style='width: 10px; min-width: 50%;' data-expected-width=25></div>
-        <div style='width: 50%;' data-expected-width=25></div>
-        <div style='width: 10px; max-width: 50%;' data-expected-width=10></div>
-        <div style='min-width: 10px; width: 100px; max-width: 50%;' data-expected-width=25></div>
-    </div>
-</div>
-
-<div class="container column" style='margin-bottom: 100px'>
-    <div class="flexbox" style="height: auto">
-        <div style='height: 10px; min-height: 50%;' data-expected-height=10></div>
-        <div style='height: 50%;' data-expected-height=0></div>
-        <div style='height: 10px; max-height: 50%;' data-expected-height=10></div>
-        <div style='min-height: 10px; height: 100px; max-height: 50%;' data-expected-height=100></div>
-    </div>
-</div>
-
-<div class="container column">
-    <div class="flexbox fixed">
+<div class="container column" style='margin-bottom: 50px'>
+    <div class="flexbox">
         <div style='height: 10px; min-height: 50%;' data-expected-height=25></div>
         <div style='height: 50%;' data-expected-height=25></div>
         <div style='height: 10px; max-height: 50%;' data-expected-height=10></div>
@@ -83,18 +65,6 @@
 
 <div class="container column">
     <div class="flexbox">
-        <div style="flex: 0 0 50%" data-expected-height=0></div>
-    </div>
-</div>
-
-<div class="container row">
-    <div class="flexbox fixed">
-        <div style="flex: 0 0 50%" data-expected-width=25></div>
-    </div>
-</div>
-
-<div class="container column">
-    <div class="flexbox fixed">
         <div style="flex: 0 0 50%" data-expected-height=25></div>
     </div>
 </div>
