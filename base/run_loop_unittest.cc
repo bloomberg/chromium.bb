@@ -638,7 +638,7 @@ TEST_P(RunLoopTest, NestingObservers) {
 
 TEST_P(RunLoopTest, DisallowRunningForTesting) {
   RunLoop::ScopedDisallowRunningForTesting disallow_running;
-  EXPECT_DCHECK_DEATH({ run_loop_.Run(); });
+  EXPECT_DCHECK_DEATH({ run_loop_.RunUntilIdle(); });
 }
 
 TEST_P(RunLoopTest, ExpiredDisallowRunningForTesting) {
