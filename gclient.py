@@ -1646,64 +1646,56 @@ it or fix the checkout.
       work_queue.enqueue(s)
     work_queue.flush({}, None, [], options=self._options, patch_refs=None)
 
-    def ShouldPrintRevision(dep):
+    def ShouldPrint(dep):
       return (not self._options.filter
               or dep.FuzzyMatchUrl(self._options.filter))
 
+    for dep in self.subtree():
+      if self._options.snapshot or self._options.actual:
+        dep.PinToActualRevision()
+
     if self._options.snapshot:
-      json_output = []
-      # First level at .gclient
-      for d in self.dependencies:
-        entries = {}
-        def GrabDeps(dep):
-          """Recursively grab dependencies."""
-          for d in dep.dependencies:
-            d.PinToActualRevision()
-            if ShouldPrintRevision(d):
-              entries[d.name] = d.url
-            GrabDeps(d)
-        GrabDeps(d)
-        json_output.append({
-            'name': d.name,
-            'solution_url': d.url,
-            'deps_file': d.deps_file,
-            'managed': d.managed,
-            'custom_deps': entries,
-        })
-      if self._options.output_json == '-':
-        print(json.dumps(json_output, indent=2, separators=(',', ': ')))
-      elif self._options.output_json:
-        with open(self._options.output_json, 'w') as f:
-          json.dump(json_output, f)
-      else:
-        # Print the snapshot configuration file
-        print(self.DEFAULT_SNAPSHOT_FILE_TEXT % {
-            'solution_list': pprint.pformat(json_output, indent=2),
-        })
+      json_output = [
+          {
+              'name': d.name,
+              'solution_url': d.url,
+              'deps_file': d.deps_file,
+              'managed': d.managed,
+              'custom_deps': {
+                  subdep.name: subdep.url
+                  for subdep in d.subtree()
+                  if ShouldPrint(subdep)
+              },
+          }
+          for d in self.dependencies
+          if ShouldPrint(d)
+      ]
+      output = json.dumps(json_output, indent=2, separators=(',', ': '))
+      if not self._options.output_json:
+        output = self.DEFAULT_SNAPSHOT_FILE_TEXT % {'solution_list': output}
+    elif self._options.output_json:
+      json_output = {
+          d.name: {
+              'url': d.url.split('@')[0],
+              'rev': d.url.split('@')[1] if '@' in d.url else None,
+          }
+          for d in self.subtree()
+          if ShouldPrint(d)
+      }
+      output = json.dumps(json_output, indent=2, separators=(',', ': '))
     else:
-      entries = {}
-      for d in self.root.subtree():
-        if self._options.actual:
-          d.PinToActualRevision()
-        if ShouldPrintRevision(d):
-          entries[d.name] = d.url
-      if self._options.output_json:
-        json_output = {
-            name: {
-                'url': rev.split('@')[0] if rev else None,
-                'rev': rev.split('@')[1] if rev and '@' in rev else None,
-            }
-            for name, rev in entries.iteritems()
-        }
-        if self._options.output_json == '-':
-          print(json.dumps(json_output, indent=2, separators=(',', ': ')))
-        else:
-          with open(self._options.output_json, 'w') as f:
-            json.dump(json_output, f)
-      else:
-        keys = sorted(entries.keys())
-        for x in keys:
-          print('%s: %s' % (x, entries[x]))
+      output = '\n'.join(
+          '%s: %s' % (d.name, d.url)
+          for d in self.subtree()
+          if ShouldPrint(d)
+      )
+
+    if self._options.output_json and self._options.output_json != '-':
+      with open(self._options.output_json, 'w') as f:
+        f.write(output)
+    else:
+      print(output)
+
     logging.info(str(self))
 
   def ParseDepsFile(self, expand_vars=None):

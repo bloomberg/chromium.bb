@@ -796,8 +796,10 @@ class GClientSmokeGIT(GClientSmokeBase):
     with open(output_json) as f:
       output_json = json.load(f)
 
+    self.maxDiff = None
     out = [{
-        'solution_url': self.git_base + 'repo_1',
+        'solution_url': '%srepo_1@%s' % (
+            self.git_base, self.githash('repo_1', 2)),
         'managed': True,
         'name': 'src',
         'deps_file': 'DEPS',
