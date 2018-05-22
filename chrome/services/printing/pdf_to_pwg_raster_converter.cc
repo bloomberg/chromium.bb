@@ -8,10 +8,10 @@
 #include <string>
 #include <utility>
 
+#include "components/printing/service/public/cpp/pdf_service_mojo_utils.h"
 #include "components/pwg_encoder/bitmap_image.h"
 #include "components/pwg_encoder/pwg_encoder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "pdf/pdf.h"
 #include "printing/pdf_render_settings.h"
 
@@ -96,22 +96,13 @@ base::ReadOnlySharedMemoryRegion RenderPdfPagesToPwgRaster(
     pwg_data += pwg_page;
   }
 
-  mojo::ScopedSharedBufferHandle pwg_handle =
-      mojo::SharedBufferHandle::Create(pwg_data.size());
-  mojo::ScopedSharedBufferHandle readonly_handle;
-  if (pwg_handle.is_valid()) {
-    mojo::ScopedSharedBufferMapping pwg_mapping =
-        pwg_handle->Map(pwg_data.size());
-    if (pwg_mapping) {
-      memcpy(pwg_mapping.get(), pwg_data.data(), pwg_data.size());
-      readonly_handle =
-          pwg_handle->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
-    }
-  }
-  if (!readonly_handle.is_valid())
+  base::MappedReadOnlyRegion region_mapping =
+      CreateReadOnlySharedMemoryRegion(pwg_data.size());
+  if (!region_mapping.region.IsValid() || !region_mapping.mapping.IsValid())
     return invalid_pwg_region;
 
-  return mojo::UnwrapReadOnlySharedMemoryRegion(std::move(readonly_handle));
+  memcpy(region_mapping.mapping.memory(), pwg_data.data(), pwg_data.size());
+  return std::move(region_mapping.region);
 }
 
 }  // namespace

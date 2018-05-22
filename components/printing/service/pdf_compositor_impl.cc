@@ -228,24 +228,15 @@ mojom::PdfCompositor::Status PdfCompositorImpl::CompositeToPdf(
   }
   doc->close();
 
-  const size_t size = wstream.bytesWritten();
-  mojo::ScopedSharedBufferHandle handle =
-      mojo::SharedBufferHandle::Create(size);
-  mojo::ScopedSharedBufferHandle readonly_handle;
-  if (handle.is_valid()) {
-    mojo::ScopedSharedBufferMapping mapping = handle->Map(size);
-    if (mapping) {
-      wstream.copyToAndReset(mapping.get());
-      readonly_handle =
-          handle->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
-    }
-  }
-  if (!readonly_handle.is_valid()) {
+  base::MappedReadOnlyRegion region_mapping =
+      CreateReadOnlySharedMemoryRegion(wstream.bytesWritten());
+  if (!region_mapping.region.IsValid() || !region_mapping.mapping.IsValid()) {
     DLOG(ERROR) << "CompositeToPdf: Cannot create new shared memory region.";
     return mojom::PdfCompositor::Status::HANDLE_MAP_ERROR;
   }
 
-  *region = mojo::UnwrapReadOnlySharedMemoryRegion(std::move(readonly_handle));
+  wstream.copyToAndReset(region_mapping.mapping.memory());
+  *region = std::move(region_mapping.region);
   return mojom::PdfCompositor::Status::SUCCESS;
 }
 

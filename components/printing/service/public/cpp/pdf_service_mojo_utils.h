@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/read_only_shared_memory_region.h"
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace base {
@@ -14,6 +15,10 @@ class SharedMemory;
 }  // namespace base
 
 namespace printing {
+
+// Similar to base::ReadOnlySharedMemoryRegion::Create(), except it works inside
+// sandboxed environments.
+base::MappedReadOnlyRegion CreateReadOnlySharedMemoryRegion(size_t size);
 
 std::unique_ptr<base::SharedMemory> GetShmFromMojoHandle(
     mojo::ScopedSharedBufferHandle handle);
