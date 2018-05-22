@@ -56,7 +56,6 @@ jumbo_component("wtf") {
     "assertions.cc",
     "assertions.h",
     "atomics.h",
-    "auto_reset.h",
     "bit_vector.cc",
     "bit_vector.h",
     "bloom_filter.h",

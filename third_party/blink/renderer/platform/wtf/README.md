@@ -70,8 +70,7 @@ The below is a list of major libraries. For a complete list, look at
 
   [StdLibExtras.h] (`DEFINE_STATIC_LOCAL` etc.),
   [Time.h],
-  [CryptographicallyRandomNumber.h],
-  [AutoReset.h],
+  [CryptographicallyRandomNumber.h]
 
 ## History
 
@@ -113,7 +112,6 @@ current location][4] Source/platform/wtf.
 [StdLibExtras.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/std_lib_extras.h
 [Time.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/time.h
 [CryptographicallyRandomNumber.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/cryptographically_random_number.h
-[AutoReset.h]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/wtf/auto_reset.h
 [1]: https://chromium.googlesource.com/chromium/src/+/e372c152fc6e57743ebc508fe17f6eb131b4ff8d
 [2]: https://chromium.googlesource.com/chromium/src/+/547a6ca360a56fbee3d5ea4a71ba18f91622455c
 [3]: https://chromium.googlesource.com/chromium/src/+/478890427ee03fd88e6f0f58ee8220512044bed9/third_party/WebKit/WebCore/kwq/KWQAssertions.h
