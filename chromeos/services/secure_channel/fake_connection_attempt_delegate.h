@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/connection_attempt_delegate.h"
 
 namespace chromeos {
@@ -25,17 +26,17 @@ class FakeConnectionAttemptDelegate : public ConnectionAttemptDelegate {
     return authenticated_channel_.get();
   }
 
-  const std::string& attempt_id() const { return attempt_id_; }
+  const base::UnguessableToken& attempt_id() const { return attempt_id_; }
 
  private:
   // ConnectionAttemptDelegate:
   void OnConnectionAttemptSucceeded(
-      const std::string& attempt_id,
+      const base::UnguessableToken& attempt_id,
       std::unique_ptr<AuthenticatedChannel> authenticated_channel) override;
   void OnConnectionAttemptFinishedWithoutConnection(
-      const std::string& attempt_id) override;
+      const base::UnguessableToken& attempt_id) override;
 
-  std::string attempt_id_;
+  base::UnguessableToken attempt_id_;
   std::unique_ptr<AuthenticatedChannel> authenticated_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConnectionAttemptDelegate);

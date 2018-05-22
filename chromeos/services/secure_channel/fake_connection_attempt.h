@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/connection_attempt.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
 
@@ -25,9 +26,10 @@ class FakeConnectionAttempt : public ConnectionAttempt<std::string> {
   FakeConnectionAttempt(ConnectionAttemptDelegate* delegate);
   ~FakeConnectionAttempt() override;
 
-  using IdToRequestMap = std::unordered_map<
-      std::string,
-      std::unique_ptr<PendingConnectionRequest<std::string>>>;
+  using IdToRequestMap =
+      std::unordered_map<base::UnguessableToken,
+                         std::unique_ptr<PendingConnectionRequest<std::string>>,
+                         base::UnguessableTokenHash>;
   const IdToRequestMap& id_to_request_map() const { return id_to_request_map_; }
 
   void set_client_data_for_extraction(

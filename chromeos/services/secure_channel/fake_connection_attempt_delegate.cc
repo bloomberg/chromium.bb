@@ -16,10 +16,10 @@ FakeConnectionAttemptDelegate::FakeConnectionAttemptDelegate() = default;
 FakeConnectionAttemptDelegate::~FakeConnectionAttemptDelegate() = default;
 
 void FakeConnectionAttemptDelegate::OnConnectionAttemptSucceeded(
-    const std::string& attempt_id,
+    const base::UnguessableToken& attempt_id,
     std::unique_ptr<AuthenticatedChannel> authenticated_channel) {
-  DCHECK(attempt_id_.empty());
-  DCHECK(!attempt_id.empty());
+  DCHECK(attempt_id_.is_empty());
+  DCHECK(!attempt_id.is_empty());
 
   attempt_id_ = attempt_id;
   authenticated_channel_ = std::move(authenticated_channel);
@@ -27,9 +27,9 @@ void FakeConnectionAttemptDelegate::OnConnectionAttemptSucceeded(
 
 void FakeConnectionAttemptDelegate::
     OnConnectionAttemptFinishedWithoutConnection(
-        const std::string& attempt_id) {
-  DCHECK(attempt_id_.empty());
-  DCHECK(!attempt_id.empty());
+        const base::UnguessableToken& attempt_id) {
+  DCHECK(attempt_id_.is_empty());
+  DCHECK(!attempt_id.is_empty());
   attempt_id_ = attempt_id;
 }
 

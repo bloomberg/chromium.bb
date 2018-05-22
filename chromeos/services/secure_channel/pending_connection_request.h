@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "base/guid.h"
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/pending_connection_request_delegate.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
@@ -40,12 +40,11 @@ class PendingConnectionRequest {
   // trying to connect after some number of failures.
   virtual void HandleConnectionFailure(FailureDetailType failure_detail) = 0;
 
-  // Note: Request ID is guaranteed to be unique among all requests.
-  const std::string& request_id() const { return request_id_; }
+  const base::UnguessableToken& request_id() const { return request_id_; }
 
  protected:
   PendingConnectionRequest(PendingConnectionRequestDelegate* delegate)
-      : delegate_(delegate), request_id_(base::GenerateGUID()) {
+      : delegate_(delegate), request_id_(base::UnguessableToken::Create()) {
     DCHECK(delegate_);
   }
 
@@ -60,7 +59,7 @@ class PendingConnectionRequest {
 
  private:
   PendingConnectionRequestDelegate* delegate_;
-  const std::string request_id_;
+  const base::UnguessableToken request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingConnectionRequest);
 };

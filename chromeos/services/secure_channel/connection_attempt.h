@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/connection_attempt_delegate.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
@@ -39,8 +40,7 @@ class ConnectionAttempt {
 
   virtual ~ConnectionAttempt() = default;
 
-  // Note: Attempt ID is guaranteed to be unique.
-  const std::string& attempt_id() const { return attempt_id_; }
+  const base::UnguessableToken& attempt_id() const { return attempt_id_; }
 
   // Associates |request| with this attempt. If the attempt succeeds, |request|
   // will be notified of success; on failure, |request| will be notified of a
@@ -66,7 +66,7 @@ class ConnectionAttempt {
 
  protected:
   ConnectionAttempt(ConnectionAttemptDelegate* delegate)
-      : delegate_(delegate), attempt_id_(base::GenerateGUID()) {
+      : delegate_(delegate), attempt_id_(base::UnguessableToken::Create()) {
     DCHECK(delegate);
   }
 
@@ -109,7 +109,7 @@ class ConnectionAttempt {
 
  private:
   ConnectionAttemptDelegate* delegate_;
-  const std::string attempt_id_;
+  const base::UnguessableToken attempt_id_;
 
   bool has_notified_delegate_ = false;
 

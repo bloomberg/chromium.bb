@@ -24,7 +24,7 @@ class FakePendingConnectionRequestDelegate
   ~FakePendingConnectionRequestDelegate() override;
 
   const base::Optional<FailedConnectionReason>& GetFailedConnectionReasonForId(
-      const std::string& request_id);
+      const base::UnguessableToken& request_id);
 
   void set_closure_for_next_delegate_callback(base::OnceClosure closure) {
     closure_for_next_delegate_callback_ = std::move(closure);
@@ -33,10 +33,12 @@ class FakePendingConnectionRequestDelegate
  private:
   // PendingConnectionRequestDelegate:
   void OnRequestFinishedWithoutConnection(
-      const std::string& request_id,
+      const base::UnguessableToken& request_id,
       FailedConnectionReason reason) override;
 
-  std::unordered_map<std::string, base::Optional<FailedConnectionReason>>
+  std::unordered_map<base::UnguessableToken,
+                     base::Optional<FailedConnectionReason>,
+                     base::UnguessableTokenHash>
       request_id_to_failed_connection_reason_map_;
 
   base::OnceClosure closure_for_next_delegate_callback_;

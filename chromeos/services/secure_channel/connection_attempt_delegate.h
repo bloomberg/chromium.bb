@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 
 namespace chromeos {
 
@@ -25,7 +26,7 @@ class ConnectionAttemptDelegate {
   // |attempt_id| corresponds to the ID returned by
   // ConnectionAttempt::attempt_id().
   virtual void OnConnectionAttemptSucceeded(
-      const std::string& attempt_id,
+      const base::UnguessableToken& attempt_id,
       std::unique_ptr<AuthenticatedChannel> authenticated_channel) = 0;
 
   // Invoked when a ConnectionAttempt has finished without achieving a
@@ -33,7 +34,7 @@ class ConnectionAttemptDelegate {
   // connection failures). |attempt_id| corresponds to the ID returned by
   // ConnectionAttempt::attempt_id().
   virtual void OnConnectionAttemptFinishedWithoutConnection(
-      const std::string& attempt_id) = 0;
+      const base::UnguessableToken& attempt_id) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConnectionAttemptDelegate);
