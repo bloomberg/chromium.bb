@@ -182,6 +182,8 @@ two targets can be substituted.
 **Note**: These targets are actually the open-source equivalents to the
 closed-source targets that get shipped to the Play Store.
 
+**Note**: For more in-depth differences, see [android_native_libraries.md](android_native_libraries.md).
+
 ## Updating your checkout
 
 To update an existing checkout, you can run
