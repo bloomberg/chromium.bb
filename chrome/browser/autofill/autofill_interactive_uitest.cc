@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -176,21 +177,19 @@ class AutofillManagerTestDelegateImpl
 
   // autofill::AutofillManagerTestDelegate:
   void DidPreviewFormData() override {
-    ASSERT_TRUE(loop_runner_ != nullptr);
-    ASSERT_TRUE(loop_runner_->loop_running());
+    ASSERT_TRUE(loop_runner_);
     loop_runner_->Quit();
   }
 
   void DidFillFormData() override {
-    ASSERT_TRUE(loop_runner_ != nullptr);
+    ASSERT_TRUE(loop_runner_);
     if (!is_expecting_dynamic_refill_)
-      ASSERT_TRUE(loop_runner_->loop_running());
+      ASSERT_TRUE(loop_runner_->running());
     loop_runner_->Quit();
   }
 
   void DidShowSuggestions() override {
-    ASSERT_TRUE(loop_runner_ != nullptr);
-    ASSERT_TRUE(loop_runner_->loop_running());
+    ASSERT_TRUE(loop_runner_);
     loop_runner_->Quit();
   }
 
@@ -198,14 +197,11 @@ class AutofillManagerTestDelegateImpl
     if (!waiting_for_text_change_)
       return;
     waiting_for_text_change_ = false;
-    ASSERT_TRUE(loop_runner_ != nullptr);
-    ASSERT_TRUE(loop_runner_->loop_running());
+    ASSERT_TRUE(loop_runner_);
     loop_runner_->Quit();
   }
 
-  void Reset() {
-    loop_runner_ = new content::MessageLoopRunner();
-  }
+  void Reset() { loop_runner_ = std::make_unique<base::RunLoop>(); }
 
   void Wait() {
     loop_runner_->Run();
@@ -221,7 +217,7 @@ class AutofillManagerTestDelegateImpl
   }
 
  private:
-  scoped_refptr<content::MessageLoopRunner> loop_runner_;
+  std::unique_ptr<base::RunLoop> loop_runner_;
   bool waiting_for_text_change_ = false;
   bool is_expecting_dynamic_refill_ = false;
 
@@ -1808,15 +1804,7 @@ class AutofillInteractiveIsolationTest
   }
 };
 
-// https://crbug.com/843935: Super flaky on ChromeOS.
-#if defined(OS_CHROMEOS)
-#define MAYBE_SimpleCrossSiteFill DISABLED_SimpleCrossSiteFill
-#else
-#define MAYBE_SimpleCrossSiteFill SimpleCrossSiteFill
-#endif
-
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveIsolationTest,
-                       MAYBE_SimpleCrossSiteFill) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
   CreateTestProfile();
 
   // Main frame is on a.com, iframe is on b.com.
@@ -1902,15 +1890,8 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_CrossSitePaymentForms) {
   SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
 }
 
-// https://crbug.com/843935: Super flaky on ChromeOS.
-#if defined(OS_CHROMEOS)
-#define MAYBE_DeletingFrameUnderSuggestion DISABLED_DeletingFrameUnderSuggestion
-#else
-#define MAYBE_DeletingFrameUnderSuggestion DeletingFrameUnderSuggestion
-#endif
-
 IN_PROC_BROWSER_TEST_P(AutofillInteractiveIsolationTest,
-                       MAYBE_DeletingFrameUnderSuggestion) {
+                       DeletingFrameUnderSuggestion) {
   CreateTestProfile();
 
   // Main frame is on a.com, iframe is on b.com.
