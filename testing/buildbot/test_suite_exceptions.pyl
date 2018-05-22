@@ -2251,29 +2251,6 @@
       },
     },
   },
-  'skia_unittests': {
-    'remove_from': [
-      # On chromium.android, unclear why these aren't run.
-      'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-rel',
-      'KitKat Phone Tester (dbg)',
-      'KitKat Phone Tester (rel)',
-      'KitKat Tablet Tester',
-      'Lollipop Phone Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow 64 bit Tester',
-      'Marshmallow Phone Tester (rel)',
-      'Marshmallow Tablet Tester',
-      'Nougat Phone Tester',
-       # chromium.android.fyi
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-      'x86 Cloud Tester',
-      # On chromium.linux, unclear why these aren't run on Cast.
-      'Cast Audio Linux',
-      'Cast Linux',
-    ],
-  },
   'snapshot_unittests': {
     'remove_from': [
       # chromium.chromiumos
