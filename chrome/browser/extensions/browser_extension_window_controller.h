@@ -12,14 +12,13 @@ class Browser;
 
 namespace extensions {
 class Extension;
-}
 
-class BrowserExtensionWindowController : public extensions::WindowController {
+class BrowserExtensionWindowController : public WindowController {
  public:
   explicit BrowserExtensionWindowController(Browser* browser);
   ~BrowserExtensionWindowController() override;
 
-  // extensions::WindowController implementation.
+  // WindowController implementation.
   int GetWindowId() const override;
   std::string GetWindowTypeText() const override;
   bool CanClose(Reason* reason) const override;
@@ -27,7 +26,7 @@ class BrowserExtensionWindowController : public extensions::WindowController {
                          const GURL& extension_url) const override;
   Browser* GetBrowser() const override;
   bool IsVisibleToTabsAPIForExtension(
-      const extensions::Extension* extension,
+      const Extension* extension,
       bool allow_dev_tools_windows) const override;
 
  private:
@@ -35,5 +34,7 @@ class BrowserExtensionWindowController : public extensions::WindowController {
 
   DISALLOW_COPY_AND_ASSIGN(BrowserExtensionWindowController);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_BROWSER_EXTENSION_WINDOW_CONTROLLER_H_

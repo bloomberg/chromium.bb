@@ -454,7 +454,7 @@ Browser::Browser(const CreateParams& params)
 
   // Create the extension window controller before sending notifications.
   extension_window_controller_.reset(
-      new BrowserExtensionWindowController(this));
+      new extensions::BrowserExtensionWindowController(this));
 
   SessionService* session_service =
       SessionServiceFactory::GetForProfileForSessionRestore(profile_);

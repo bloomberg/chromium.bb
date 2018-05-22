@@ -16,32 +16,32 @@
 #include "components/sessions/core/session_id.h"
 #include "extensions/common/extension.h"
 
+namespace extensions {
+
 BrowserExtensionWindowController::BrowserExtensionWindowController(
     Browser* browser)
-    : extensions::WindowController(browser->window(), browser->profile()),
+    : WindowController(browser->window(), browser->profile()),
       browser_(browser) {
-  extensions::WindowControllerList::GetInstance()->AddExtensionWindow(this);
+  WindowControllerList::GetInstance()->AddExtensionWindow(this);
 }
 
 BrowserExtensionWindowController::~BrowserExtensionWindowController() {
-  extensions::WindowControllerList::GetInstance()->RemoveExtensionWindow(this);
+  WindowControllerList::GetInstance()->RemoveExtensionWindow(this);
 }
 
 int BrowserExtensionWindowController::GetWindowId() const {
   return static_cast<int>(browser_->session_id().id());
 }
 
-namespace keys = extensions::tabs_constants;
-
 std::string BrowserExtensionWindowController::GetWindowTypeText() const {
-  return extensions::ExtensionTabUtil::GetBrowserWindowTypeText(*browser_);
+  return ExtensionTabUtil::GetBrowserWindowTypeText(*browser_);
 }
 
 bool BrowserExtensionWindowController::CanClose(Reason* reason) const {
   // Don't let an extension remove the window if the user is dragging tabs
   // in that window.
   if (!browser_->window()->IsTabStripEditable()) {
-    *reason = extensions::WindowController::REASON_NOT_EDITABLE;
+    *reason = WindowController::REASON_NOT_EDITABLE;
     return false;
   }
   return true;
@@ -59,7 +59,7 @@ Browser* BrowserExtensionWindowController::GetBrowser() const {
 }
 
 bool BrowserExtensionWindowController::IsVisibleToTabsAPIForExtension(
-    const extensions::Extension* extension,
+    const Extension* extension,
     bool allow_dev_tools_windows) const {
   DCHECK(extension);
   // Platform apps can only see their own windows.
@@ -68,3 +68,5 @@ bool BrowserExtensionWindowController::IsVisibleToTabsAPIForExtension(
 
   return !browser_->is_devtools() || allow_dev_tools_windows;
 }
+
+}  // namespace extensions
