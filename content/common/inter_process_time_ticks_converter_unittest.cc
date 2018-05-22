@@ -16,43 +16,38 @@ namespace content {
 namespace {
 
 struct TestParams {
-  int64_t local_lower_bound;
-  int64_t remote_lower_bound;
-  int64_t remote_upper_bound;
-  int64_t local_upper_bound;
-  int64_t test_time;
-  int64_t test_delta;
+  LocalTimeTicks local_lower_bound;
+  RemoteTimeTicks remote_lower_bound;
+  RemoteTimeTicks remote_upper_bound;
+  LocalTimeTicks local_upper_bound;
+  RemoteTimeTicks test_time;
+  RemoteTimeDelta test_delta;
 };
 
 struct TestResults {
-  int64_t result_time;
-  int32_t result_delta;
+  LocalTimeTicks result_time;
+  LocalTimeDelta result_delta;
   int64_t skew;
 };
 
-TestResults RunTest(const TestParams& params) {
-  TimeTicks local_lower_bound = TimeTicks::FromInternalValue(
-      params.local_lower_bound);
-  TimeTicks local_upper_bound = TimeTicks::FromInternalValue(
-      params.local_upper_bound);
-  TimeTicks remote_lower_bound = TimeTicks::FromInternalValue(
-      params.remote_lower_bound);
-  TimeTicks remote_upper_bound = TimeTicks::FromInternalValue(
-      params.remote_upper_bound);
-  TimeTicks test_time = TimeTicks::FromInternalValue(params.test_time);
+LocalTimeTicks GetLocalTimeTicks(int64_t value) {
+  return LocalTimeTicks::FromTimeTicks(
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(value));
+}
 
+RemoteTimeTicks GetRemoteTimeTicks(int64_t value) {
+  return RemoteTimeTicks::FromTimeTicks(
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(value));
+}
+
+TestResults RunTest(const TestParams& params) {
   InterProcessTimeTicksConverter converter(
-      LocalTimeTicks::FromTimeTicks(local_lower_bound),
-      LocalTimeTicks::FromTimeTicks(local_upper_bound),
-      RemoteTimeTicks::FromTimeTicks(remote_lower_bound),
-      RemoteTimeTicks::FromTimeTicks(remote_upper_bound));
+      params.local_lower_bound, params.local_upper_bound,
+      params.remote_lower_bound, params.remote_upper_bound);
 
   TestResults results;
-  results.result_time = converter.ToLocalTimeTicks(
-      RemoteTimeTicks::FromTimeTicks(
-          test_time)).ToTimeTicks().ToInternalValue();
-  results.result_delta = converter.ToLocalTimeDelta(
-      RemoteTimeDelta::FromRawDelta(params.test_delta)).ToInt32();
+  results.result_time = converter.ToLocalTimeTicks(params.test_time);
+  results.result_delta = converter.ToLocalTimeDelta(params.test_delta);
   results.skew = converter.GetSkewForMetrics().ToInternalValue();
   return results;
 }
@@ -60,29 +55,29 @@ TestResults RunTest(const TestParams& params) {
 TEST(InterProcessTimeTicksConverterTest, NullTime) {
   // Null / zero times should remain null.
   TestParams p;
-  p.local_lower_bound = 1;
-  p.remote_lower_bound = 2;
-  p.remote_upper_bound = 5;
-  p.local_upper_bound = 6;
-  p.test_time = 0;
-  p.test_delta = 0;
+  p.local_lower_bound = GetLocalTimeTicks(1);
+  p.remote_lower_bound = GetRemoteTimeTicks(2);
+  p.remote_upper_bound = GetRemoteTimeTicks(5);
+  p.local_upper_bound = GetLocalTimeTicks(6);
+  p.test_time = GetRemoteTimeTicks(0);
+  p.test_delta = RemoteTimeDelta();
   TestResults results = RunTest(p);
-  EXPECT_EQ(0, results.result_time);
-  EXPECT_EQ(0, results.result_delta);
+  EXPECT_EQ(GetLocalTimeTicks(0), results.result_time);
+  EXPECT_EQ(LocalTimeDelta(), results.result_delta);
 }
 
 TEST(InterProcessTimeTicksConverterTest, NoSkew) {
   // All times are monotonic and centered, so no adjustment should occur.
   TestParams p;
-  p.local_lower_bound = 1;
-  p.remote_lower_bound = 2;
-  p.remote_upper_bound = 5;
-  p.local_upper_bound = 6;
-  p.test_time = 3;
-  p.test_delta = 1;
+  p.local_lower_bound = GetLocalTimeTicks(1);
+  p.remote_lower_bound = GetRemoteTimeTicks(2);
+  p.remote_upper_bound = GetRemoteTimeTicks(5);
+  p.local_upper_bound = GetLocalTimeTicks(6);
+  p.test_time = GetRemoteTimeTicks(3);
+  p.test_delta = RemoteTimeDelta::FromMicroseconds(1);
   TestResults results = RunTest(p);
-  EXPECT_EQ(3, results.result_time);
-  EXPECT_EQ(1, results.result_delta);
+  EXPECT_EQ(GetLocalTimeTicks(3), results.result_time);
+  EXPECT_EQ(LocalTimeDelta::FromMicroseconds(1), results.result_delta);
   EXPECT_EQ(0, results.skew);
 }
 
@@ -90,15 +85,15 @@ TEST(InterProcessTimeTicksConverterTest, OffsetMidpoints) {
   // All times are monotonic, but not centered. Adjust the |remote_*| times so
   // they are centered within the |local_*| times.
   TestParams p;
-  p.local_lower_bound = 1;
-  p.remote_lower_bound = 3;
-  p.remote_upper_bound = 6;
-  p.local_upper_bound = 6;
-  p.test_time = 4;
-  p.test_delta = 1;
+  p.local_lower_bound = GetLocalTimeTicks(1);
+  p.remote_lower_bound = GetRemoteTimeTicks(3);
+  p.remote_upper_bound = GetRemoteTimeTicks(6);
+  p.local_upper_bound = GetLocalTimeTicks(6);
+  p.test_time = GetRemoteTimeTicks(4);
+  p.test_delta = RemoteTimeDelta::FromMicroseconds(1);
   TestResults results = RunTest(p);
-  EXPECT_EQ(3, results.result_time);
-  EXPECT_EQ(1, results.result_delta);
+  EXPECT_EQ(GetLocalTimeTicks(3), results.result_time);
+  EXPECT_EQ(LocalTimeDelta::FromMicroseconds(1), results.result_delta);
   EXPECT_EQ(1, results.skew);
 }
 
@@ -109,15 +104,15 @@ TEST(InterProcessTimeTicksConverterTest, DoubleEndedSkew) {
   // doesn't change. The ratio of local time to network time is 1:2, so we scale
   // |test_delta| to half.
   TestParams p;
-  p.local_lower_bound = 3;
-  p.remote_lower_bound = 1;
-  p.remote_upper_bound = 9;
-  p.local_upper_bound = 7;
-  p.test_time = 5;
-  p.test_delta = 2;
+  p.local_lower_bound = GetLocalTimeTicks(3);
+  p.remote_lower_bound = GetRemoteTimeTicks(1);
+  p.remote_upper_bound = GetRemoteTimeTicks(9);
+  p.local_upper_bound = GetLocalTimeTicks(7);
+  p.test_time = GetRemoteTimeTicks(5);
+  p.test_delta = RemoteTimeDelta::FromMicroseconds(2);
   TestResults results = RunTest(p);
-  EXPECT_EQ(5, results.result_time);
-  EXPECT_EQ(1, results.result_delta);
+  EXPECT_EQ(GetLocalTimeTicks(5), results.result_time);
+  EXPECT_EQ(LocalTimeDelta::FromMicroseconds(1), results.result_delta);
 }
 
 TEST(InterProcessTimeTicksConverterTest, FrontEndSkew) {
@@ -126,30 +121,30 @@ TEST(InterProcessTimeTicksConverterTest, FrontEndSkew) {
   // but since we use integers, the numbers truncate from 3.33 to 3 and 1.33
   // to 1.
   TestParams p;
-  p.local_lower_bound = 3;
-  p.remote_lower_bound = 1;
-  p.remote_upper_bound = 7;
-  p.local_upper_bound = 7;
-  p.test_time = 3;
-  p.test_delta = 2;
+  p.local_lower_bound = GetLocalTimeTicks(3);
+  p.remote_lower_bound = GetRemoteTimeTicks(1);
+  p.remote_upper_bound = GetRemoteTimeTicks(7);
+  p.local_upper_bound = GetLocalTimeTicks(7);
+  p.test_time = GetRemoteTimeTicks(3);
+  p.test_delta = RemoteTimeDelta::FromMicroseconds(2);
   TestResults results = RunTest(p);
-  EXPECT_EQ(4, results.result_time);
-  EXPECT_EQ(1, results.result_delta);
+  EXPECT_EQ(GetLocalTimeTicks(4), results.result_time);
+  EXPECT_EQ(LocalTimeDelta::FromMicroseconds(1), results.result_delta);
 }
 
 TEST(InterProcessTimeTicksConverterTest, BackEndSkew) {
   // Like the previous test, but |remote_lower_bound| is coherent and
   // |remote_upper_bound| is skewed.
   TestParams p;
-  p.local_lower_bound = 1;
-  p.remote_lower_bound = 1;
-  p.remote_upper_bound = 7;
-  p.local_upper_bound = 5;
-  p.test_time = 3;
-  p.test_delta = 2;
+  p.local_lower_bound = GetLocalTimeTicks(1);
+  p.remote_lower_bound = GetRemoteTimeTicks(1);
+  p.remote_upper_bound = GetRemoteTimeTicks(7);
+  p.local_upper_bound = GetLocalTimeTicks(5);
+  p.test_time = GetRemoteTimeTicks(3);
+  p.test_delta = RemoteTimeDelta::FromMicroseconds(2);
   TestResults results = RunTest(p);
-  EXPECT_EQ(2, results.result_time);
-  EXPECT_EQ(1, results.result_delta);
+  EXPECT_EQ(GetLocalTimeTicks(2), results.result_time);
+  EXPECT_EQ(LocalTimeDelta::FromMicroseconds(1), results.result_delta);
 }
 
 TEST(InterProcessTimeTicksConverterTest, Instantaneous) {
@@ -157,15 +152,15 @@ TEST(InterProcessTimeTicksConverterTest, Instantaneous) {
   // |remote_upper_bound| have the same value. No adjustments should be made and
   // no divide-by-zero errors should occur.
   TestParams p;
-  p.local_lower_bound = 1;
-  p.remote_lower_bound = 2;
-  p.remote_upper_bound = 2;
-  p.local_upper_bound = 3;
-  p.test_time = 2;
-  p.test_delta = 0;
+  p.local_lower_bound = GetLocalTimeTicks(1);
+  p.remote_lower_bound = GetRemoteTimeTicks(2);
+  p.remote_upper_bound = GetRemoteTimeTicks(2);
+  p.local_upper_bound = GetLocalTimeTicks(3);
+  p.test_time = GetRemoteTimeTicks(2);
+  p.test_delta = RemoteTimeDelta();
   TestResults results = RunTest(p);
-  EXPECT_EQ(2, results.result_time);
-  EXPECT_EQ(0, results.result_delta);
+  EXPECT_EQ(GetLocalTimeTicks(2), results.result_time);
+  EXPECT_EQ(LocalTimeDelta(), results.result_delta);
 }
 
 TEST(InterProcessTimeTicksConverterTest, OffsetInstantaneous) {
@@ -174,15 +169,15 @@ TEST(InterProcessTimeTicksConverterTest, OffsetInstantaneous) {
   // of |local_lower_bound| and |local_upper_bound|. An offset should be applied
   // to make the midpoints line up.
   TestParams p;
-  p.local_lower_bound = 1;
-  p.remote_lower_bound = 3;
-  p.remote_upper_bound = 3;
-  p.local_upper_bound = 3;
-  p.test_time = 3;
-  p.test_delta = 0;
+  p.local_lower_bound = GetLocalTimeTicks(1);
+  p.remote_lower_bound = GetRemoteTimeTicks(3);
+  p.remote_upper_bound = GetRemoteTimeTicks(3);
+  p.local_upper_bound = GetLocalTimeTicks(3);
+  p.test_time = GetRemoteTimeTicks(3);
+  p.test_delta = RemoteTimeDelta();
   TestResults results = RunTest(p);
-  EXPECT_EQ(2, results.result_time);
-  EXPECT_EQ(0, results.result_delta);
+  EXPECT_EQ(GetLocalTimeTicks(2), results.result_time);
+  EXPECT_EQ(LocalTimeDelta(), results.result_delta);
 }
 
 TEST(InterProcessTimeTicksConverterTest, DisjointInstantaneous) {
@@ -191,15 +186,15 @@ TEST(InterProcessTimeTicksConverterTest, DisjointInstantaneous) {
   // local_upper_bound].  So, all of the values should be adjusted so they are
   // exactly that value.
   TestParams p;
-  p.local_lower_bound = 1;
-  p.remote_lower_bound = 2;
-  p.remote_upper_bound = 2;
-  p.local_upper_bound = 1;
-  p.test_time = 2;
-  p.test_delta = 0;
+  p.local_lower_bound = GetLocalTimeTicks(1);
+  p.remote_lower_bound = GetRemoteTimeTicks(2);
+  p.remote_upper_bound = GetRemoteTimeTicks(2);
+  p.local_upper_bound = GetLocalTimeTicks(1);
+  p.test_time = GetRemoteTimeTicks(2);
+  p.test_delta = RemoteTimeDelta();
   TestResults results = RunTest(p);
-  EXPECT_EQ(1, results.result_time);
-  EXPECT_EQ(0, results.result_delta);
+  EXPECT_EQ(GetLocalTimeTicks(1), results.result_time);
+  EXPECT_EQ(LocalTimeDelta(), results.result_delta);
 }
 
 TEST(InterProcessTimeTicksConverterTest, RoundingNearEdges) {
@@ -209,37 +204,69 @@ TEST(InterProcessTimeTicksConverterTest, RoundingNearEdges) {
   for (int i = 1; i < kMaxRange; ++i) {
     for (int j = 1; j < kMaxRange; ++j) {
       TestParams p;
-      p.local_lower_bound = 1;
-      p.remote_lower_bound = 1;
-      p.remote_upper_bound = j;
-      p.local_upper_bound = i;
+      p.local_lower_bound = GetLocalTimeTicks(1);
+      p.remote_lower_bound = GetRemoteTimeTicks(1);
+      p.remote_upper_bound = GetRemoteTimeTicks(j);
+      p.local_upper_bound = GetLocalTimeTicks(i);
 
-      p.test_time = 1;
-      p.test_delta = 0;
+      p.test_time = GetRemoteTimeTicks(1);
+      p.test_delta = RemoteTimeDelta();
       TestResults results = RunTest(p);
-      EXPECT_LE(1, results.result_time);
-      EXPECT_EQ(0, results.result_delta);
+      EXPECT_LE(GetLocalTimeTicks(1), results.result_time);
+      EXPECT_EQ(LocalTimeDelta(), results.result_delta);
 
-      p.test_time = j;
-      p.test_delta = j - 1;
+      p.test_time = GetRemoteTimeTicks(j);
+      p.test_delta = RemoteTimeDelta::FromMicroseconds(j - 1);
       results = RunTest(p);
-      EXPECT_GE(i, results.result_time);
-      EXPECT_GE(i - 1, results.result_delta);
+      EXPECT_LE(results.result_time, GetLocalTimeTicks(i));
+      EXPECT_LE(results.result_delta, LocalTimeDelta::FromMicroseconds(i - 1));
     }
   }
 }
 
 TEST(InterProcessTimeTicksConverterTest, DisjointRanges) {
   TestParams p;
-  p.local_lower_bound = 10;
-  p.remote_lower_bound = 30;
-  p.remote_upper_bound = 41;
-  p.local_upper_bound = 20;
-  p.test_time = 41;
-  p.test_delta = 0;
+  p.local_lower_bound = GetLocalTimeTicks(10);
+  p.remote_lower_bound = GetRemoteTimeTicks(30);
+  p.remote_upper_bound = GetRemoteTimeTicks(41);
+  p.local_upper_bound = GetLocalTimeTicks(20);
+  p.test_time = GetRemoteTimeTicks(41);
+  p.test_delta = RemoteTimeDelta();
   TestResults results = RunTest(p);
-  EXPECT_EQ(20, results.result_time);
-  EXPECT_EQ(0, results.result_delta);
+  EXPECT_EQ(GetLocalTimeTicks(20), results.result_time);
+  EXPECT_EQ(LocalTimeDelta(), results.result_delta);
+}
+
+TEST(InterProcessTimeTicksConverterTest, LargeValue_LocalIsLargetThanRemote) {
+  constexpr auto kWeek = base::TimeTicks::kMicrosecondsPerWeek;
+  constexpr auto kHour = base::TimeTicks::kMicrosecondsPerHour;
+  TestParams p;
+  p.local_lower_bound = GetLocalTimeTicks(4 * kWeek);
+  p.remote_lower_bound = GetRemoteTimeTicks(4 * kWeek + 2 * kHour);
+  p.remote_upper_bound = GetRemoteTimeTicks(4 * kWeek + 4 * kHour);
+  p.local_upper_bound = GetLocalTimeTicks(4 * kWeek + 8 * kHour);
+
+  p.test_time = GetRemoteTimeTicks(4 * kWeek + 3 * kHour);
+  p.test_delta = RemoteTimeDelta();
+  TestResults results = RunTest(p);
+  EXPECT_EQ(GetLocalTimeTicks(4 * kWeek + 4 * kHour), results.result_time);
+  EXPECT_EQ(LocalTimeDelta(), results.result_delta);
+}
+
+TEST(InterProcessTimeTicksConverterTest, LargeValue_RemoteIsLargetThanLocal) {
+  constexpr auto kWeek = base::TimeTicks::kMicrosecondsPerWeek;
+  constexpr auto kHour = base::TimeTicks::kMicrosecondsPerHour;
+  TestParams p;
+  p.local_lower_bound = GetLocalTimeTicks(4 * kWeek);
+  p.remote_lower_bound = GetRemoteTimeTicks(5 * kWeek);
+  p.remote_upper_bound = GetRemoteTimeTicks(5 * kWeek + 2 * kHour);
+  p.local_upper_bound = GetLocalTimeTicks(4 * kWeek + kHour);
+
+  p.test_time = GetRemoteTimeTicks(5 * kWeek + kHour);
+  p.test_delta = RemoteTimeDelta();
+  TestResults results = RunTest(p);
+  EXPECT_EQ(GetLocalTimeTicks(4 * kWeek + kHour / 2), results.result_time);
+  EXPECT_EQ(LocalTimeDelta(), results.result_delta);
 }
 
 TEST(InterProcessTimeTicksConverterTest, ValuesOutsideOfRange) {

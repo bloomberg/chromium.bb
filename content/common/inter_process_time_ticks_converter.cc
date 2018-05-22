@@ -4,84 +4,78 @@
 
 #include "content/common/inter_process_time_ticks_converter.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 
 namespace content {
 
 InterProcessTimeTicksConverter::InterProcessTimeTicksConverter(
-    const LocalTimeTicks& local_lower_bound,
-    const LocalTimeTicks& local_upper_bound,
-    const RemoteTimeTicks& remote_lower_bound,
-    const RemoteTimeTicks& remote_upper_bound)
-    : remote_lower_bound_(remote_lower_bound.value_),
-      remote_upper_bound_(remote_upper_bound.value_) {
-  int64_t target_range = local_upper_bound.value_ - local_lower_bound.value_;
-  int64_t source_range = remote_upper_bound.value_ - remote_lower_bound.value_;
-  DCHECK_GE(target_range, 0);
-  DCHECK_GE(source_range, 0);
-  if (source_range <= target_range) {
+    LocalTimeTicks local_lower_bound,
+    LocalTimeTicks local_upper_bound,
+    RemoteTimeTicks remote_lower_bound,
+    RemoteTimeTicks remote_upper_bound)
+    : local_range_(local_upper_bound - local_lower_bound),
+      remote_lower_bound_(remote_lower_bound),
+      remote_upper_bound_(remote_upper_bound) {
+  RemoteTimeDelta remote_range = remote_upper_bound - remote_lower_bound;
+
+  DCHECK_LE(LocalTimeDelta(), local_range_);
+  DCHECK_LE(RemoteTimeDelta(), remote_range);
+
+  if (remote_range.ToTimeDelta() <= local_range_.ToTimeDelta()) {
     // We fit!  Center the source range on the target range.
-    numerator_ = 1;
-    denominator_ = 1;
+    range_conversion_rate_ = 1.0;
+    base::TimeDelta diff =
+        local_range_.ToTimeDelta() - remote_range.ToTimeDelta();
+
     local_base_time_ =
-        local_lower_bound.value_ + (target_range - source_range) / 2;
+        local_lower_bound + LocalTimeDelta::FromTimeDelta(diff / 2);
     // When converting times, remote bounds should fall within local bounds.
-    DCHECK_LE(local_lower_bound.value_,
-              ToLocalTimeTicks(remote_lower_bound).value_);
-    DCHECK_GE(local_upper_bound.value_,
-              ToLocalTimeTicks(remote_upper_bound).value_);
+    DCHECK_LE(local_lower_bound, ToLocalTimeTicks(remote_lower_bound));
+    DCHECK_LE(ToLocalTimeTicks(remote_upper_bound), local_upper_bound);
     return;
   }
 
   // Interpolate values so that remote range will be will exactly fit into the
   // local range, if possible.
-  numerator_ = target_range;
-  denominator_ = source_range;
-  local_base_time_ = local_lower_bound.value_;
-  // When converting times, remote bounds should equal local bounds.
-  DCHECK_EQ(local_lower_bound.value_,
-            ToLocalTimeTicks(remote_lower_bound).value_);
-  DCHECK_EQ(local_upper_bound.value_,
-            ToLocalTimeTicks(remote_upper_bound).value_);
-  DCHECK_EQ(target_range, Convert(source_range));
+  DCHECK_GT(remote_range.ToTimeDelta().InMicroseconds(), 0);
+  range_conversion_rate_ =
+      static_cast<double>(local_range_.ToTimeDelta().InMicroseconds()) /
+      remote_range.ToTimeDelta().InMicroseconds();
+  local_base_time_ = local_lower_bound;
 }
 
 LocalTimeTicks InterProcessTimeTicksConverter::ToLocalTimeTicks(
-    const RemoteTimeTicks& remote_ms) const {
+    RemoteTimeTicks remote_time_ticks) const {
   // If input time is "null", return another "null" time.
-  if (remote_ms.value_ == 0)
-    return LocalTimeTicks(0);
+  if (remote_time_ticks.is_null())
+    return LocalTimeTicks();
 
-  RemoteTimeDelta remote_delta = remote_ms - remote_lower_bound_;
+  RemoteTimeDelta remote_delta = remote_time_ticks - remote_lower_bound_;
 
-  DCHECK_LE(remote_ms.value_, remote_upper_bound_);
-  // For remote times that come before remote time range, apply just time
-  // offset and ignore scaling, so as to avoid extrapolation error for values
-  // long in the past.
-  if (remote_ms.value_ < remote_lower_bound_)
-    return LocalTimeTicks(local_base_time_ + remote_delta.value_);
-
-  return LocalTimeTicks(local_base_time_ +
-                        ToLocalTimeDelta(remote_delta).value_);
+  DCHECK_LE(remote_time_ticks, remote_upper_bound_);
+  return local_base_time_ + ToLocalTimeDelta(remote_delta);
 }
 
 LocalTimeDelta InterProcessTimeTicksConverter::ToLocalTimeDelta(
-    const RemoteTimeDelta& remote_delta) const {
-  DCHECK_GE(remote_upper_bound_, remote_lower_bound_ + remote_delta.value_);
-  return LocalTimeDelta(Convert(remote_delta.value_));
-}
+    RemoteTimeDelta remote_delta) const {
+  DCHECK_LE(remote_lower_bound_ + remote_delta, remote_upper_bound_);
 
-int64_t InterProcessTimeTicksConverter::Convert(int64_t value) const {
-  if (value <= 0) {
-    return value;
-  }
-  return numerator_ * value / denominator_;
+  // For remote times that come before remote time range, apply just time
+  // offset and ignore scaling, so as to avoid extrapolation error for values
+  // long in the past.
+  if (remote_delta <= RemoteTimeDelta())
+    return LocalTimeDelta::FromTimeDelta(remote_delta.ToTimeDelta());
+
+  return std::min(local_range_,
+                  LocalTimeDelta::FromTimeDelta(remote_delta.ToTimeDelta() *
+                                                range_conversion_rate_));
 }
 
 base::TimeDelta InterProcessTimeTicksConverter::GetSkewForMetrics() const {
-  return base::TimeTicks::FromInternalValue(remote_lower_bound_) -
-      base::TimeTicks::FromInternalValue(local_base_time_);
+  return remote_lower_bound_.ToTimeTicks() - local_base_time_.ToTimeTicks();
 }
 
 }  // namespace content
