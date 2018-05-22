@@ -38,15 +38,10 @@ namespace vr {
 
 namespace {
 const std::set<UiElementName> kFloorCeilingBackgroundElements = {
-    kBackgroundFront, kBackgroundLeft,   kBackgroundBack, kBackgroundRight,
-    kBackgroundTop,   kBackgroundBottom, kCeiling,        kFloor};
+    kSolidBackground, kCeiling, kFloor,
+};
 const std::set<UiElementName> kElementsVisibleInBrowsing = {
-    kBackgroundFront,
-    kBackgroundLeft,
-    kBackgroundBack,
-    kBackgroundRight,
-    kBackgroundTop,
-    kBackgroundBottom,
+    kSolidBackground,
     kCeiling,
     kFloor,
     kContentFrame,

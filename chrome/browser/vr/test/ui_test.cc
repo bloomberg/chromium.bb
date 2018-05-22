@@ -234,22 +234,11 @@ bool UiTest::OnDelayedFrame(base::TimeDelta delta) {
 
 void UiTest::GetBackgroundColor(SkColor* background_color) const {
   OnBeginFrame();
-  Rect* front =
-      static_cast<Rect*>(scene_->GetUiElementByName(kBackgroundFront));
-  ASSERT_NE(nullptr, front);
-  SkColor color = front->edge_color();
-
-  // While returning background color, ensure that all background panel elements
-  // share the same color.
-  for (auto name : {kBackgroundFront, kBackgroundLeft, kBackgroundBack,
-                    kBackgroundRight, kBackgroundTop, kBackgroundBottom}) {
-    const Rect* panel = static_cast<Rect*>(scene_->GetUiElementByName(name));
-    ASSERT_NE(nullptr, panel);
-    EXPECT_EQ(panel->center_color(), color);
-    EXPECT_EQ(panel->edge_color(), color);
-  }
-
-  *background_color = color;
+  Rect* background =
+      static_cast<Rect*>(scene_->GetUiElementByName(kSolidBackground));
+  ASSERT_NE(nullptr, background);
+  EXPECT_EQ(background->center_color(), background->edge_color());
+  *background_color = background->edge_color();
 }
 
 void UiTest::ClickElement(UiElement* element) {

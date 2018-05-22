@@ -1709,43 +1709,6 @@ void UiSceneCreator::CreateBackground() {
       background.get(), SetFullscreenFactor));
   scene_->AddUiElement(k2dBrowsingBackground, std::move(background));
 
-  auto element = Create<UiElement>(k2dBrowsingDefaultBackground, kPhaseNone);
-  VR_BIND_VISIBILITY(element, !model->background_loaded);
-  scene_->AddUiElement(k2dBrowsingBackground, std::move(element));
-
-  // Background solid-color panels.
-  struct Panel {
-    UiElementName name;
-    int x_offset;
-    int y_offset;
-    int z_offset;
-    int x_rotation;
-    int y_rotation;
-    int angle;
-  };
-  const std::vector<Panel> panels = {
-      {kBackgroundFront, 0, 0, -1, 0, 1, 0},
-      {kBackgroundLeft, -1, 0, 0, 0, 1, 1},
-      {kBackgroundBack, 0, 0, 1, 0, 1, 2},
-      {kBackgroundRight, 1, 0, 0, 0, 1, 3},
-      {kBackgroundTop, 0, 1, 0, 1, 0, 1},
-      {kBackgroundBottom, 0, -1, 0, 1, 0, -1},
-  };
-  for (auto& panel : panels) {
-    auto panel_element = Create<Rect>(panel.name, kPhaseBackground);
-    panel_element->SetSize(kSceneSize, kSceneSize);
-    panel_element->SetTranslate(panel.x_offset * kSceneSize / 2,
-                                panel.y_offset * kSceneSize / 2,
-                                panel.z_offset * kSceneSize / 2);
-    panel_element->SetRotate(panel.x_rotation, panel.y_rotation, 0,
-                             base::kPiFloat / 2 * panel.angle);
-    VR_BIND_COLOR(model_, panel_element.get(), &ColorScheme::world_background,
-                  &Rect::SetColor);
-    VR_BIND_VISIBILITY(panel_element, model->browsing_enabled());
-    scene_->AddUiElement(k2dBrowsingDefaultBackground,
-                         std::move(panel_element));
-  }
-
   auto stars = Create<Stars>(kStars, kPhaseBackground);
   stars->SetRotate(1, 0, 0, base::kPiFloat * 0.5);
   scene_->AddUiElement(k2dBrowsingTexturedBackground, std::move(stars));
@@ -1753,6 +1716,19 @@ void UiSceneCreator::CreateBackground() {
   auto grid = CreateGrid(model_, kNone);
   grid->SetOpacity(kGridOpacity);
   scene_->AddUiElement(k2dBrowsingTexturedBackground, std::move(grid));
+
+  // Fallback background.
+  auto element = Create<UiElement>(k2dBrowsingDefaultBackground, kPhaseNone);
+  VR_BIND_VISIBILITY(element, !model->background_loaded);
+  scene_->AddUiElement(k2dBrowsingBackground, std::move(element));
+
+  auto solid_background =
+      Create<FullScreenRect>(kSolidBackground, kPhaseBackground);
+  VR_BIND_COLOR(model_, solid_background.get(), &ColorScheme::world_background,
+                &Rect::SetColor);
+  VR_BIND_VISIBILITY(solid_background, model->browsing_enabled());
+  scene_->AddUiElement(k2dBrowsingDefaultBackground,
+                       std::move(solid_background));
 
   auto floor = CreateGrid(model_, kFloor);
   VR_BIND_COLOR(model_, floor.get(), &ColorScheme::floor,
