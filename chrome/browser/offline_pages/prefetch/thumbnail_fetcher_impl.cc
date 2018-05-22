@@ -12,21 +12,27 @@
 namespace offline_pages {
 namespace {
 
+using FetchCompleteStatus = ThumbnailFetcherImpl::FetchCompleteStatus;
+
 void FetchCompleteAndReportUMA(
-    ThumbnailFetcherImpl::ImageDataFetchedCallback callback,
+    ThumbnailFetcher::ImageDataFetchedCallback callback,
+    bool is_first_attempt,
     const std::string& image_data) {
-  auto status = ThumbnailFetcherImpl::FetchCompleteStatus::kSuccess;
+  auto status = is_first_attempt ? FetchCompleteStatus::kFirstAttemptSuccess
+                                 : FetchCompleteStatus::kSecondAttemptSuccess;
   if (image_data.empty()) {
-    status = ThumbnailFetcherImpl::FetchCompleteStatus::kEmptyImage;
+    status = is_first_attempt ? FetchCompleteStatus::kFirstAttemptEmptyImage
+                              : FetchCompleteStatus::kSecondAttemptEmptyImage;
     std::move(callback).Run(std::string());
   } else if (image_data.size() > ThumbnailFetcherImpl::kMaxThumbnailSize) {
-    status = ThumbnailFetcherImpl::FetchCompleteStatus::kTooLarge;
+    status = is_first_attempt ? FetchCompleteStatus::kFirstAttemptTooLarge
+                              : FetchCompleteStatus::kSecondAttemptTooLarge;
     std::move(callback).Run(std::string());
   } else {
-    std::move(callback).Run(std::move(image_data));
+    std::move(callback).Run(image_data);
   }
 
-  UMA_HISTOGRAM_ENUMERATION("OfflinePages.Prefetching.FetchThumbnail.Complete",
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.Prefetching.FetchThumbnail.Complete2",
                             status);
 }
 
@@ -43,6 +49,7 @@ void ThumbnailFetcherImpl::SetContentSuggestionsService(
 
 void ThumbnailFetcherImpl::FetchSuggestionImageData(
     const ClientId& client_id,
+    bool is_first_attempt,
     ImageDataFetchedCallback callback) {
   DCHECK(client_id.name_space == kSuggestedArticlesNamespace);
   DCHECK(content_suggestions_);
@@ -53,7 +60,8 @@ void ThumbnailFetcherImpl::FetchSuggestionImageData(
           ntp_snippets::Category::FromKnownCategory(
               ntp_snippets::KnownCategories::ARTICLES),
           client_id.id),
-      base::BindOnce(FetchCompleteAndReportUMA, std::move(callback)));
+      base::BindOnce(FetchCompleteAndReportUMA, std::move(callback),
+                     is_first_attempt));
 }
 
 }  // namespace offline_pages

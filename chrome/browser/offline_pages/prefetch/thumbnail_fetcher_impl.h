@@ -25,6 +25,7 @@ class ThumbnailFetcherImpl : public ThumbnailFetcher {
       ntp_snippets::ContentSuggestionsService* content_suggestions) override;
 
   void FetchSuggestionImageData(const ClientId& client_id,
+                                bool is_first_attempt,
                                 ImageDataFetchedCallback callback) override;
 
  private:

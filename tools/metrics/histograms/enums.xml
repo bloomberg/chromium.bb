@@ -33730,9 +33730,12 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OfflinePagesThumbnailFetchStatus">
-  <int value="0" label="Success"/>
-  <int value="1" label="No Image"/>
-  <int value="2" label="Image is too large"/>
+  <int value="0" label="1st attempt, Success"/>
+  <int value="1" label="1st attempt, No Image"/>
+  <int value="2" label="1st attempt, Image is too large"/>
+  <int value="3" label="2nd attempt, Success"/>
+  <int value="4" label="2nd attempt, No Image"/>
+  <int value="5" label="2nd attempt, Image is too large"/>
 </enum>
 
 <enum name="OfflinePageTrustedState">
