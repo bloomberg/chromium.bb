@@ -1400,7 +1400,11 @@ class Port(object):
                 filenames.remove('PRESUBMIT.py')
             for filename in filenames:
                 path = self._filesystem.join(flag_path, filename)
-                expectations[path] = self._filesystem.read_text_file(path)
+                try:
+                    expectations[path] = self._filesystem.read_text_file(path)
+                except UnicodeDecodeError:
+                    _log.error('Failed to read expectations file: \'%s\'', path)
+                    raise
 
         return expectations
 
