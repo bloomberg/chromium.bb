@@ -42243,7 +42243,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Recently sent logs"/>
   <int value="3" label="Disabled by user"/>
   <int value="4" label="Enabled by user"/>
-  <int value="5" label="Disabled by policy"/>
 </enum>
 
 <enum name="SoftwareReporterLogsUploadResult">
