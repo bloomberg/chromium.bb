@@ -5,6 +5,7 @@
 #ifndef SERVICES_NETWORK_PUBLIC_CPP_WEAK_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
 #define SERVICES_NETWORK_PUBLIC_CPP_WEAK_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
 
+#include "base/callback.h"
 #include "base/component_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -18,6 +19,12 @@ class COMPONENT_EXPORT(NETWORK_CPP) WeakWrapperSharedURLLoaderFactory
  public:
   explicit WeakWrapperSharedURLLoaderFactory(
       network::mojom::URLLoaderFactory* factory_ptr);
+
+  // A lazy variant. This is useful when transitionning code that sets up
+  // heavy-weight infrastructure, injects a shared_ptr<SharedURLLoaderFactory>
+  // into lots of places, but doesn't actually use it.
+  explicit WeakWrapperSharedURLLoaderFactory(
+      base::OnceCallback<network::mojom::URLLoaderFactory*()> make_factory_ptr);
 
   // Detaches from the raw mojom::URLLoaderFactory pointer. All subsequent calls
   // to CreateLoaderAndStart() will fail silently.
@@ -37,6 +44,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) WeakWrapperSharedURLLoaderFactory
 
  private:
   ~WeakWrapperSharedURLLoaderFactory() override;
+
+  // Uses whichever of make_factory_ptr_ or factory_ptr_ is relevant.
+  network::mojom::URLLoaderFactory* factory();
+
+  base::OnceCallback<network::mojom::URLLoaderFactory*()> make_factory_ptr_;
 
   // Not owned.
   network::mojom::URLLoaderFactory* factory_ptr_ = nullptr;
