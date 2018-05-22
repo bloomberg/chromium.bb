@@ -3040,7 +3040,6 @@ be describing additional metrics about the same event.
 
 <event name="TabManager.Background.ForegroundedOrClosed">
   <owner>chrisha@chromium.org</owner>
-  <owner>lpy@chromium.org</owner>
   <summary>
     Collects the duration in MS from when the tab is backgrounded to when it is
     brought to foreground or closed.
@@ -3074,7 +3073,7 @@ be describing additional metrics about the same event.
 
 <event
     name="TabManager.BackgroundTabOpening.ForegroundTab.ExpectedTaskQueueingDurationInfo">
-  <owner>zhenw@chromium.org</owner>
+  <owner>chrisha@chromium.org</owner>
   <summary>
     Collects the expected queueing duration of tasks and metadata for the
     foreground tab during a background tab opening session (the duration of time
@@ -3119,6 +3118,191 @@ be describing additional metrics about the same event.
   <metric name="SystemTabCount">
     <summary>
       Number of all tabs of the system, which includes all browser windows.
+    </summary>
+  </metric>
+</event>
+
+<event name="TabManager.LifecycleStateChange">
+  <owner>chrisha@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
+  <summary>
+    Collects information about when and why a lifecycle state change was
+    attempted, and information about the outcome of the attempt.
+  </summary>
+  <metric name="FailureGlobalBlacklist">
+    <summary>
+      Boolean indicating that the tab was explicitly opted out of the
+      intervention via the global blacklist.
+    </summary>
+  </metric>
+  <metric name="FailureHeuristicAudio">
+    <summary>
+      Booling indicating that the intervention was disallowed because the origin
+      has historically been observed emitting audio while in the background.
+    </summary>
+  </metric>
+  <metric name="FailureHeuristicFavicon">
+    <summary>
+      Booling indicating that the intervention was disallowed because the origin
+      has historically been observed updating its favicon while in the
+      background.
+    </summary>
+  </metric>
+  <metric name="FailureHeuristicInsufficientObservation">
+    <summary>
+      Booling indicating that the site is still being observed locally in order
+      to determine which features are in use. In the meantime, it is protected
+      from this intervention.
+    </summary>
+  </metric>
+  <metric name="FailureHeuristicNotifications">
+    <summary>
+      Booling indicating that the intervention was disallowed because the origin
+      has historically been observed making use of notifications while in the
+      background.
+    </summary>
+  </metric>
+  <metric name="FailureHeuristicTitle">
+    <summary>
+      Booling indicating that the intervention was disallowed because the origin
+      has historically been observed updating its tab title while in the
+      background.
+    </summary>
+  </metric>
+  <metric name="FailureLifecyclesEnterprisePolicyOptOut">
+    <summary>
+      Booling indicating that the browser was explicitly opted out of the
+      intervention via enterprise policy.
+    </summary>
+  </metric>
+  <metric name="FailureLifecyclesFeaturePolicyOptOut">
+    <summary>
+      Booling indicating that the tab explicitly opted out of the intervention
+      via feature policy.
+    </summary>
+  </metric>
+  <metric name="FailureLiveStateCapturing">
+    <summary>
+      Booling indicating that the intervention was disallowed because the tab is
+      currently capturing user media (making use of webcam or microphone, for
+      example).
+    </summary>
+  </metric>
+  <metric name="FailureLiveStateExtensionDisallowed">
+    <summary>
+      Booling indicating that the intervention was disallowed by an extension.
+    </summary>
+  </metric>
+  <metric name="FailureLiveStateFormEntry">
+    <summary>
+      Booling indicating that the intervention was disallowed because the tab
+      currently contains text form entry.
+    </summary>
+  </metric>
+  <metric name="FailureLiveStateIsPDF">
+    <summary>
+      Booling indicating that the intervention was disallowed because the tab is
+      currently hosting a PDF.
+    </summary>
+  </metric>
+  <metric name="FailureLiveStateMirroring">
+    <summary>
+      Booling indicating that the intervention was disallowed because the tab is
+      currently being mirrored (casting its contents, for example).
+    </summary>
+  </metric>
+  <metric name="FailureLiveStatePlayingAudio">
+    <summary>
+      Booling indicating that the intervention was disallowed because the tab is
+      currently playing audio.
+    </summary>
+  </metric>
+  <metric name="FailureLiveStateUsingWebSockets">
+    <summary>
+      Booling indicating that the intervention was disallowed because the tab is
+      currently using WebSockets.
+    </summary>
+  </metric>
+  <metric name="FailureLiveStateUsingWebUSB">
+    <summary>
+      Booling indicating that the intervention was disallowed because the tab is
+      currently using WebUSB.
+    </summary>
+  </metric>
+  <metric name="FailureLiveStateVisible">
+    <summary>
+      Booling indicating that the intervention was disallowed because the tab is
+      currently visible.
+    </summary>
+  </metric>
+  <metric name="LifecycleStateChangeReason">
+    <summary>
+      The reason the lifecycle state change was attempted. This corresponds to
+      the LifecycleStateChangeReason enumeration in lifecycle_state.h.
+    </summary>
+  </metric>
+  <metric name="NewLifecycleState">
+    <summary>
+      The lifecycle state the tab will be in after the state change. Corresponds
+      to a value from the LifecycleState enum defined in lifecycle_state.h.
+    </summary>
+  </metric>
+  <metric name="OldLifecycleState">
+    <summary>
+      The lifecycle state the tab was in prior to the state change. Corresponds
+      to a value from the LifecycleState enum defined in lifecycle_state.h.
+    </summary>
+  </metric>
+  <metric name="Outcome">
+    <summary>
+      Whether or not the state change was successful. The various Failure and
+      Success booleans encode the actual reasons for this outcome. Note that
+      multiple success and failure reasons may be encoded for a single decision.
+      The presence of any failure bit indicates a negative outcome. If only
+      success bits are present the outcome is positive.
+    </summary>
+  </metric>
+  <metric name="SuccessGlobalWhitelist">
+    <summary>
+      Booling indicating that the tab was explicitly opted in to the
+      intervention via the global whitelist.
+    </summary>
+  </metric>
+  <metric name="SuccessHeuristic">
+    <summary>
+      Booling indicating that the tab was deemed safe for the intervention via
+      local observations and heuristics.
+    </summary>
+  </metric>
+  <metric name="SuccessLifecyclesFeaturePolicyOptIn">
+    <summary>
+      Booling indicating that the tab explicitly opted in to the intervention
+      via feature policy.
+    </summary>
+  </metric>
+  <metric name="TimeSinceNavigationMs">
+    <summary>
+      The time elapsed (in milliseconds) since the top-level navigation was
+      committed that loaded this tab's content.
+    </summary>
+  </metric>
+  <metric name="TimeSinceVisibilityStateChangeMs">
+    <summary>
+      The amount of time that has passed (in milliseconds) since the last
+      visibility state change.
+    </summary>
+  </metric>
+  <metric name="TransitionForced">
+    <summary>
+      This is set if the transition to the new lifecycle state was forced by the
+      browser because the content took too long to respond to the lifecycle
+      event.
+    </summary>
+  </metric>
+  <metric name="VisibilityState">
+    <summary>
+      The current visibility state. This is an integer value corresponding to
+      the enumeration in content/public/browser/visibility.h.
     </summary>
   </metric>
 </event>
