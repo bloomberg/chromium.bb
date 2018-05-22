@@ -276,6 +276,9 @@ extern const char kTextToSpeechLangToVoiceName[];
 extern const char kTextToSpeechRate[];
 extern const char kTextToSpeechPitch[];
 extern const char kTextToSpeechVolume[];
+extern const char kFirstScreenStartTime[];
+extern const char kCurrentScreenStartTime[];
+extern const char kScreenTimeMinutesUsed[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];

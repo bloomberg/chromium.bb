@@ -37,6 +37,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
+#include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/first_run/goodies_displayer.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
@@ -1407,6 +1408,9 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     TetherService* tether_service = TetherService::Get(profile);
     if (tether_service)
       tether_service->StartTetherIfPossible();
+
+    if (user->GetType() == user_manager::USER_TYPE_CHILD)
+      ScreenTimeControllerFactory::GetForBrowserContext(profile);
   }
 
   UpdateEasyUnlockKeys(user_context_);
