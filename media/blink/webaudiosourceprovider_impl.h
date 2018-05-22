@@ -104,7 +104,8 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
   scoped_refptr<SwitchableAudioRendererSink> sink_;
   std::unique_ptr<AudioBus> bus_wrapper_;
 
-  // An inner class acting as a T filter where actual data can be tapped.
+  // An inner class acting as a T filter where actual data can be tapped. Must
+  // only be accessed while holding |sink_lock_|.
   class TeeFilter;
   const std::unique_ptr<TeeFilter> tee_filter_;
 
