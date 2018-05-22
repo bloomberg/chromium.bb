@@ -75,15 +75,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
   EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
 }
 
-// Flakily leaks (and fails) on LSAN. crbug.com/838420
-#if defined(LEAK_SANITIZER)
-#define MAYBE_MicrophonePermission DISABLED_MicrophonePermission
-#else
-#define MAYBE_MicrophonePermission MicrophonePermission
-#endif
-
-IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
-                       MAYBE_MicrophonePermission) {
+IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest, MicrophonePermission) {
   // Open a new NTP.
   content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
       browser(), GURL(chrome::kChromeUINewTabURL));
