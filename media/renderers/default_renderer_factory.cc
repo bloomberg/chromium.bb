@@ -8,42 +8,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
-#include "base/single_thread_task_runner.h"
-#include "build/build_config.h"
-#include "build/buildflag.h"
 #include "media/base/decoder_factory.h"
-#include "media/base/media_log.h"
-#include "media/base/media_switches.h"
-#include "media/filters/gpu_video_decoder.h"
-#include "media/media_buildflags.h"
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/renderer_impl.h"
 #include "media/renderers/video_renderer_impl.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "media/video/gpu_video_accelerator_factories.h"
-#include "third_party/libaom/av1_buildflags.h"
-
-#if !defined(OS_ANDROID)
-#include "media/filters/decrypting_audio_decoder.h"
-#include "media/filters/decrypting_video_decoder.h"
-#endif
-
-#if BUILDFLAG(ENABLE_AV1_DECODER)
-#include "media/filters/aom_video_decoder.h"
-#endif
-
-#if BUILDFLAG(ENABLE_FFMPEG)
-#include "media/filters/ffmpeg_audio_decoder.h"
-#endif
-
-#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-#include "media/filters/ffmpeg_video_decoder.h"
-#endif
-
-#if BUILDFLAG(ENABLE_LIBVPX)
-#include "media/filters/vpx_video_decoder.h"
-#endif
 
 namespace media {
 
@@ -53,7 +23,9 @@ DefaultRendererFactory::DefaultRendererFactory(
     const GetGpuFactoriesCB& get_gpu_factories_cb)
     : media_log_(media_log),
       decoder_factory_(decoder_factory),
-      get_gpu_factories_cb_(get_gpu_factories_cb) {}
+      get_gpu_factories_cb_(get_gpu_factories_cb) {
+  DCHECK(decoder_factory_);
+}
 
 DefaultRendererFactory::~DefaultRendererFactory() = default;
 
@@ -63,21 +35,8 @@ DefaultRendererFactory::CreateAudioDecoders(
   // Create our audio decoders and renderer.
   std::vector<std::unique_ptr<AudioDecoder>> audio_decoders;
 
-#if !defined(OS_ANDROID)
-  audio_decoders.push_back(
-      std::make_unique<DecryptingAudioDecoder>(media_task_runner, media_log_));
-#endif
-
-#if BUILDFLAG(ENABLE_FFMPEG)
-  audio_decoders.push_back(
-      std::make_unique<FFmpegAudioDecoder>(media_task_runner, media_log_));
-#endif
-
-  // Use an external decoder only if we cannot otherwise decode in the
-  // renderer.
-  if (decoder_factory_)
-    decoder_factory_->CreateAudioDecoders(media_task_runner, &audio_decoders);
-
+  decoder_factory_->CreateAudioDecoders(media_task_runner, media_log_,
+                                        &audio_decoders);
   return audio_decoders;
 }
 
@@ -87,61 +46,12 @@ DefaultRendererFactory::CreateVideoDecoders(
     const RequestOverlayInfoCB& request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space,
     GpuVideoAcceleratorFactories* gpu_factories) {
-  // TODO(crbug.com/789597): Move this (and CreateAudioDecoders) into a decoder
-  // factory, and just call |decoder_factory_| here.
-
   // Create our video decoders and renderer.
   std::vector<std::unique_ptr<VideoDecoder>> video_decoders;
 
-#if !defined(OS_ANDROID)
-  video_decoders.push_back(
-      std::make_unique<DecryptingVideoDecoder>(media_task_runner, media_log_));
-#endif
-
-  // Prefer an external decoder since one will only exist if it is hardware
-  // accelerated.
-  // Remember that |gpu_factories| will be null if HW video decode is turned
-  // off in chrome://flags.
-  if (gpu_factories) {
-    // |gpu_factories_| requires that its entry points be called on its
-    // |GetTaskRunner()|.  Since |pipeline_| will own decoders created from the
-    // factories, require that their message loops are identical.
-    DCHECK_EQ(gpu_factories->GetTaskRunner(), media_task_runner);
-
-    if (decoder_factory_) {
-      decoder_factory_->CreateVideoDecoders(
-          media_task_runner, gpu_factories, media_log_, request_overlay_info_cb,
-          target_color_space, &video_decoders);
-    }
-
-    // MojoVideoDecoder replaces any VDA for this platform when it's enabled.
-    bool enable_vda = !base::FeatureList::IsEnabled(media::kMojoVideoDecoder);
-#if defined(OS_WIN)
-    // D3D11VideoDecoder doesn't support as many cases as dxva yet, so don't
-    // turn off hw decode just because it's enabled.
-    // TODO(crbug.com/832171): Move the check for the most common unsupported
-    // cases for D3D11VideoDecoder to the renderer, to save an IPC hop.
-    enable_vda = true;
-#endif
-    if (enable_vda) {
-      video_decoders.push_back(std::make_unique<GpuVideoDecoder>(
-          gpu_factories, request_overlay_info_cb, target_color_space,
-          media_log_));
-    }
-  }
-
-#if BUILDFLAG(ENABLE_LIBVPX)
-  video_decoders.push_back(std::make_unique<OffloadingVpxVideoDecoder>());
-#endif
-
-#if BUILDFLAG(ENABLE_AV1_DECODER)
-  if (base::FeatureList::IsEnabled(kAv1Decoder))
-    video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log_));
-#endif
-
-#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-  video_decoders.push_back(std::make_unique<FFmpegVideoDecoder>(media_log_));
-#endif
+  decoder_factory_->CreateVideoDecoders(media_task_runner, gpu_factories,
+                                        media_log_, request_overlay_info_cb,
+                                        target_color_space, &video_decoders);
 
   return video_decoders;
 }

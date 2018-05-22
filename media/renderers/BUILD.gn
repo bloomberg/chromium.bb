@@ -13,6 +13,8 @@ source_set("renderers") {
   sources = [
     "audio_renderer_impl.cc",
     "audio_renderer_impl.h",
+    "default_decoder_factory.cc",
+    "default_decoder_factory.h",
     "default_renderer_factory.cc",
     "default_renderer_factory.h",
     "flinging_renderer_client_factory.cc",

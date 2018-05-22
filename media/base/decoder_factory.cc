@@ -14,6 +14,7 @@ DecoderFactory::~DecoderFactory() = default;
 
 void DecoderFactory::CreateAudioDecoders(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    MediaLog* media_log,
     std::vector<std::unique_ptr<AudioDecoder>>* audio_decoders) {}
 
 void DecoderFactory::CreateVideoDecoders(

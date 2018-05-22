@@ -38,6 +38,7 @@ class MEDIA_EXPORT DecoderFactory {
   // Decoders are single-threaded, each decoder should run on |task_runner|.
   virtual void CreateAudioDecoders(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      MediaLog* media_log,
       std::vector<std::unique_ptr<AudioDecoder>>* audio_decoders);
 
   // Creates video decoders and append them to the end of |video_decoders|.

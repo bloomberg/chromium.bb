@@ -18,6 +18,7 @@
 #include "media/base/null_video_sink.h"
 #include "media/base/renderer_factory.h"
 #include "media/cdm/default_cdm_factory.h"
+#include "media/renderers/default_decoder_factory.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 
@@ -60,9 +61,14 @@ std::unique_ptr<Renderer> TestMojoMediaClient::CreateRenderer(
     MediaLog* media_log,
     const std::string& /* audio_device_id */) {
   // If called the first time, do one time initialization.
+  if (!decoder_factory_) {
+    decoder_factory_.reset(new media::DefaultDecoderFactory(nullptr));
+  }
+
   if (!renderer_factory_) {
     renderer_factory_ = std::make_unique<DefaultRendererFactory>(
-        media_log, nullptr, DefaultRendererFactory::GetGpuFactoriesCB());
+        media_log, decoder_factory_.get(),
+        DefaultRendererFactory::GetGpuFactoriesCB());
   }
 
   // We cannot share AudioOutputStreamSink or NullVideoSink among different
