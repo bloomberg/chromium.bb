@@ -27652,6 +27652,8 @@ from previous Chrome versions.
   <int value="413695227" label="NTPSuggestionsStandaloneUI:enabled"/>
   <int value="415154056" label="enable-physical-keyboard-autocorrect"/>
   <int value="416887895" label="enable-password-change-support"/>
+  <int value="417709910"
+      label="AutofillSendExperimentIdsInPaymentsRPCs:disabled"/>
   <int value="422307097" label="PhysicalWeb:disabled"/>
   <int value="423615350" label="enable-tab-audio-muting"/>
   <int value="423855924" label="enable-tab-switcher-theme-colors"/>
@@ -28176,6 +28178,8 @@ from previous Chrome versions.
   <int value="1579461102" label="MemoryCoordinator:disabled"/>
   <int value="1586022426" label="AutofillCreditCardAssist:enabled"/>
   <int value="1589341623" label="disable-easy-unlock"/>
+  <int value="1590278995"
+      label="AutofillSendExperimentIdsInPaymentsRPCs:enabled"/>
   <int value="1591653786" label="SpeculativePreconnect:enabled"/>
   <int value="1593720927" label="GamepadVibration:disabled"/>
   <int value="1593917165" label="SimplifiedNTP:disabled"/>

@@ -350,6 +350,12 @@ const char kEnableAutofillNativeDropdownViewsDescription[] =
     "If enabled, the Autofill Dropdown will be built natively using Views, "
     "rather than painted directly to a canvas.";
 
+const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[] =
+    "Send experiment flag IDs in calls to Google Payments";
+const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[] =
+    "If enabled, adds the status of certain experiment variations when making "
+    "calls to Google Payments.";
+
 const char kEnableBreakingNewsPushName[] = "Breaking News Push";
 const char kEnableBreakingNewsPushDescription[] =
     "Listen for breaking news content suggestions (e.g. for New Tab Page) "

@@ -16,10 +16,13 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_http_header_provider.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -81,6 +84,22 @@ class PaymentsClientTest : public testing::Test,
 
   void EnableAutofillUpstreamSendPanFirstSixExperiment() {
     scoped_feature_list_.InitAndEnableFeature(kAutofillUpstreamSendPanFirstSix);
+  }
+
+  void DisableAutofillSendExperimentIdsInPaymentsRPCs() {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kAutofillSendExperimentIdsInPaymentsRPCs);
+  }
+
+  // Registers a field trial with the specified name and group and an associated
+  // google web property variation id.
+  void CreateFieldTrialWithId(const std::string& trial_name,
+                              const std::string& group_name,
+                              int variation_id) {
+    variations::AssociateGoogleVariationID(
+        variations::GOOGLE_WEB_PROPERTIES, trial_name, group_name,
+        static_cast<variations::VariationID>(variation_id));
+    base::FieldTrialList::CreateFieldTrial(trial_name, group_name)->group();
   }
 
   // PaymentsClientUnmaskDelegate:
@@ -300,6 +319,141 @@ TEST_F(PaymentsClientTest,
       "\"detected_values\":" + std::to_string(kAllDetectableValues);
   EXPECT_TRUE(GetUploadData().find(detected_values_string) ==
               std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTest) {
+  // Register a trial and variation id, so that there is data in variations
+  // headers. Also, the variations header provider may have been registered to
+  // observe some other field trial list, so reset it.
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  base::FieldTrialList field_trial_list_(nullptr);
+  CreateFieldTrialWithId("AutofillTest", "Group", 369);
+  StartGettingUploadDetails();
+
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+  std::string value;
+  EXPECT_TRUE(headers.GetHeader("X-Client-Data", &value));
+  // Note that experiment information is stored in X-Client-Data.
+  EXPECT_FALSE(value.empty());
+  // The fetcher's delegate is responsible for freeing the fetcher (and itself).
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+}
+
+TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTestExperimentFlagOff) {
+  // Register a trial and variation id, so that there is data in variations
+  // headers. Also, the variations header provider may have been registered to
+  // observe some other field trial list, so reset it.
+  DisableAutofillSendExperimentIdsInPaymentsRPCs();
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  base::FieldTrialList field_trial_list_(nullptr);
+  CreateFieldTrialWithId("AutofillTest", "Group", 369);
+  StartGettingUploadDetails();
+
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+  std::string value;
+  EXPECT_FALSE(headers.GetHeader("X-Client-Data", &value));
+  // Note that experiment information is stored in X-Client-Data.
+  EXPECT_TRUE(value.empty());
+  // The fetcher's delegate is responsible for freeing the fetcher (and itself).
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+}
+
+TEST_F(PaymentsClientTest, UploadCardVariationsTest) {
+  // Register a trial and variation id, so that there is data in variations
+  // headers. Also, the variations header provider may have been registered to
+  // observe some other field trial list, so reset it.
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  base::FieldTrialList field_trial_list_(nullptr);
+  CreateFieldTrialWithId("AutofillTest", "Group", 369);
+  StartUploading(/*include_cvc=*/true);
+
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+  std::string value;
+  EXPECT_TRUE(headers.GetHeader("X-Client-Data", &value));
+  // Note that experiment information is stored in X-Client-Data.
+  EXPECT_FALSE(value.empty());
+  // The fetcher's delegate is responsible for freeing the fetcher (and itself).
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+}
+
+TEST_F(PaymentsClientTest, UploadCardVariationsTestExperimentFlagOff) {
+  // Register a trial and variation id, so that there is data in variations
+  // headers. Also, the variations header provider may have been registered to
+  // observe some other field trial list, so reset it.
+  DisableAutofillSendExperimentIdsInPaymentsRPCs();
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  base::FieldTrialList field_trial_list_(nullptr);
+  CreateFieldTrialWithId("AutofillTest", "Group", 369);
+  StartUploading(/*include_cvc=*/true);
+
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+  std::string value;
+  EXPECT_FALSE(headers.GetHeader("X-Client-Data", &value));
+  // Note that experiment information is stored in X-Client-Data.
+  EXPECT_TRUE(value.empty());
+  // The fetcher's delegate is responsible for freeing the fetcher (and itself).
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+}
+
+TEST_F(PaymentsClientTest, UnmaskCardVariationsTest) {
+  // Register a trial and variation id, so that there is data in variations
+  // headers. Also, the variations header provider may have been registered to
+  // observe some other field trial list, so reset it.
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  base::FieldTrialList field_trial_list_(nullptr);
+  CreateFieldTrialWithId("AutofillTest", "Group", 369);
+  StartUnmasking();
+
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+  std::string value;
+  EXPECT_TRUE(headers.GetHeader("X-Client-Data", &value));
+  // Note that experiment information is stored in X-Client-Data.
+  EXPECT_FALSE(value.empty());
+  // The fetcher's delegate is responsible for freeing the fetcher (and itself).
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+}
+
+TEST_F(PaymentsClientTest, UnmaskCardVariationsTestExperimentOff) {
+  // Register a trial and variation id, so that there is data in variations
+  // headers. Also, the variations header provider may have been registered to
+  // observe some other field trial list, so reset it.
+  DisableAutofillSendExperimentIdsInPaymentsRPCs();
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  base::FieldTrialList field_trial_list_(nullptr);
+  CreateFieldTrialWithId("AutofillTest", "Group", 369);
+  StartUnmasking();
+
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+  std::string value;
+  EXPECT_FALSE(headers.GetHeader("X-Client-Data", &value));
+  // Note that experiment information is stored in X-Client-Data.
+  EXPECT_TRUE(value.empty());
+  // The fetcher's delegate is responsible for freeing the fetcher (and itself).
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
 }
 
 TEST_F(PaymentsClientTest,

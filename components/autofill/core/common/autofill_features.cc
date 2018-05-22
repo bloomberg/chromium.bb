@@ -50,6 +50,12 @@ const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout{
     "AutofillRestrictUnownedFieldsToFormlessCheckout",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether experiment ids should be sent through
+// Google Payments RPCs or not.
+const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs{
+    "AutofillSendExperimentIdsInPaymentsRPCs",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls attaching the autofill type predictions to their respective
 // element in the DOM.
 const base::Feature kAutofillShowTypePredictions{
