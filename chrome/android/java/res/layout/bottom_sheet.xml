@@ -47,14 +47,6 @@
 
     </FrameLayout>
 
-    <ImageView
-        android:id="@+id/bottom_sheet_toolbar_bottom_shadow"
-        android:src="@drawable/bottom_toolbar_shadow"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scaleType="fitXY"
-        android:contentDescription="@null" />
-
     <FrameLayout
         android:id="@+id/bottom_sheet_snackbar_container"
         android:layout_width="match_parent"
