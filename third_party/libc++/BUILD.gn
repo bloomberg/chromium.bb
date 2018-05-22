@@ -24,6 +24,9 @@ if (libcpp_is_static) {
   link_target_type = "shared_library"
 }
 target(link_target_type, "libc++") {
+  if (!libcpp_is_static) {
+    no_default_deps = true
+  }
   sources = [
     "trunk/src/algorithm.cpp",
     "trunk/src/any.cpp",
