@@ -183,6 +183,8 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
                             const GLuint* names);
 
   // Returns a cached scaler for the given request, or creates one on-demand.
+  // The scaler can be configured for source textures that may or may not be
+  // Y-flipped, but its results will always be Y-flipped.
   std::unique_ptr<GLHelper::ScalerInterface> TakeCachedScalerOrCreate(
       const CopyOutputRequest& for_request,
       bool flipped_source);

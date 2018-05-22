@@ -254,11 +254,12 @@ GLuint GLRendererCopier::RenderResultTexture(
     CacheScalerOrDelete(SourceOf(request), std::move(scaler));
   } else {
     DCHECK_SIZE_EQ(sampling_rect.size(), result_rect.size());
+    const bool flip_output = !flipped_source;
     gl->CopySubTextureCHROMIUM(
         source_texture, 0 /* source_level */, GL_TEXTURE_2D, result_texture,
         0 /* dest_level */, 0 /* xoffset */, 0 /* yoffset */, sampling_rect.x(),
         sampling_rect.y(), sampling_rect.width(), sampling_rect.height(),
-        !flipped_source, false, false);
+        flip_output, false, false);
   }
 
   // If |source_texture| was a copy, maybe cache it for future requests.
@@ -845,9 +846,10 @@ GLRendererCopier::TakeCachedScalerOrCreate(const CopyOutputRequest& for_request,
   const GLHelper::ScalerQuality quality = is_downscale_in_both_dimensions
                                               ? GLHelper::SCALER_QUALITY_GOOD
                                               : GLHelper::SCALER_QUALITY_BEST;
+  const bool flip_output = !flipped_source;
   return helper_.CreateScaler(quality, for_request.scale_from(),
-                              for_request.scale_to(), flipped_source, false,
-                              false);
+                              for_request.scale_to(), flipped_source,
+                              flip_output, false);
 }
 
 void GLRendererCopier::CacheScalerOrDelete(
