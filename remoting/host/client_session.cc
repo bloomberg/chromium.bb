@@ -98,8 +98,7 @@ ClientSession::~ClientSession() {
 void ClientSession::NotifyClientResolution(
     const protocol::ClientResolution& resolution) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(resolution.dips_width() > 0 && resolution.dips_height() > 0);
-
+  DCHECK(resolution.dips_width() >= 0 && resolution.dips_height() >= 0);
   VLOG(1) << "Received ClientResolution (dips_width="
           << resolution.dips_width() << ", dips_height="
           << resolution.dips_height() << ")";

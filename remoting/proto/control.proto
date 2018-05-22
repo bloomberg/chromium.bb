@@ -10,8 +10,10 @@ option optimize_for = LITE_RUNTIME;
 
 package remoting.protocol;
 
+// Set the host resolution to match the client. If none of the fields are
+// present, restore the host resolution instead.
 message ClientResolution {
-  // Width and height of the client in Density-Independent Pixels
+  // Width and height of the client in Density-Independent Pixels.
   optional int32 dips_width = 1;
   optional int32 dips_height = 2;
 

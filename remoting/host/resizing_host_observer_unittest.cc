@@ -197,6 +197,20 @@ TEST_F(ResizingHostObserverTest, RestoreFlag) {
   EXPECT_EQ(MakeResolution(640, 480), current_resolution_);
 }
 
+// Check that the size is restored if an empty ClientResolution is received.
+TEST_F(ResizingHostObserverTest, RestoreOnEmptyClientResolution) {
+  InitDesktopResizer(MakeResolution(640, 480), true,
+                     std::vector<ScreenResolution>(), true);
+  resizing_host_observer_->SetScreenResolution(MakeResolution(200, 100));
+  EXPECT_EQ(1, call_counts_.set_resolution);
+  EXPECT_EQ(0, call_counts_.restore_resolution);
+  EXPECT_EQ(MakeResolution(200, 100), current_resolution_);
+  resizing_host_observer_->SetScreenResolution(MakeResolution(0, 0));
+  EXPECT_EQ(1, call_counts_.set_resolution);
+  EXPECT_EQ(1, call_counts_.restore_resolution);
+  EXPECT_EQ(MakeResolution(640, 480), current_resolution_);
+}
+
 // Check that if the implementation supports exact size matching, it is used.
 TEST_F(ResizingHostObserverTest, SelectExactSize) {
   InitDesktopResizer(MakeResolution(640, 480), true,
