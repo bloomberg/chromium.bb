@@ -40,7 +40,9 @@ enum class ProcessedCrashCounts {
   kRendererForegroundVisibleSubframeIntentionalKill = 4,
   kRendererForegroundVisibleCrash = 5,
   kRendererForegroundVisibleSubframeCrash = 6,
-  kMaxValue = kRendererForegroundVisibleSubframeCrash
+  kGpuCrashAll = 7,
+  kRendererCrashAll = 8,
+  kMaxValue = kRendererCrashAll
 };
 
 void LogCount(ProcessedCrashCounts type) {
@@ -59,13 +61,17 @@ void LogProcessedMetrics(const CrashDumpObserver::TerminationInfo& info,
   const bool renderer_visible = info.renderer_has_visible_clients;
   const bool renderer_sub_frame = info.renderer_was_subframe;
 
-  if (info.process_type == content::PROCESS_TYPE_GPU && app_foreground &&
-      android_oom_kill) {
-    LogCount(ProcessedCrashCounts::kGpuForegroundOom);
+  if (info.process_type == content::PROCESS_TYPE_GPU) {
+    if (app_foreground && android_oom_kill) {
+      LogCount(ProcessedCrashCounts::kGpuForegroundOom);
+    }
+    if (has_crash_dump) {
+      LogCount(ProcessedCrashCounts::kGpuCrashAll);
+    }
   }
 
-  if (info.process_type == content::PROCESS_TYPE_RENDERER && app_foreground) {
-    if (renderer_visible) {
+  if (info.process_type == content::PROCESS_TYPE_RENDERER) {
+    if (app_foreground && renderer_visible) {
       if (android_oom_kill) {
         LogCount(
             renderer_sub_frame
@@ -79,12 +85,15 @@ void LogProcessedMetrics(const CrashDumpObserver::TerminationInfo& info,
                 : ProcessedCrashCounts::kRendererForegroundVisibleCrash);
       }
     }
-    if (intentional_kill) {
+    if (app_foreground && intentional_kill) {
       LogCount(ProcessedCrashCounts::kRendererForegroundIntentionalKill);
       if (renderer_visible && renderer_sub_frame) {
         LogCount(ProcessedCrashCounts::
                      kRendererForegroundVisibleSubframeIntentionalKill);
       }
+    }
+    if (has_crash_dump) {
+      LogCount(ProcessedCrashCounts::kRendererCrashAll);
     }
   }
 }
