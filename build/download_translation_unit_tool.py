@@ -24,13 +24,14 @@ LLVM_BUILD_PATH = os.path.join(CHROME_SRC, 'third_party', 'llvm-build',
                                'Release+Asserts')
 CLANG_UPDATE_PY = os.path.join(CHROME_SRC, 'tools', 'clang', 'scripts',
                                'update.py')
-CLANG_REVISION = os.popen(CLANG_UPDATE_PY + ' --print-revision').read().rstrip()
 
 CLANG_BUCKET = 'gs://chromium-browser-clang'
 
 
 def main():
-  targz_name = 'translation_unit-%s.tgz' % CLANG_REVISION
+  clang_revision = subprocess.check_output([sys.executable, CLANG_UPDATE_PY,
+                                            '--print-revision']).rstrip()
+  targz_name = 'translation_unit-%s.tgz' % clang_revision
 
   if sys.platform == 'win32' or sys.platform == 'cygwin':
     cds_full_url = CLANG_BUCKET + '/Win/' + targz_name
@@ -42,7 +43,7 @@ def main():
 
   os.chdir(LLVM_BUILD_PATH)
 
-  subprocess.check_call(['python', GSUTIL_PATH,
+  subprocess.check_call([sys.executable, GSUTIL_PATH,
                          'cp', cds_full_url, targz_name])
   tarfile.open(name=targz_name, mode='r:gz').extractall(path=LLVM_BUILD_PATH)
 
