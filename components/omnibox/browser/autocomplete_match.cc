@@ -494,7 +494,7 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
     }
   }
 
-  // |replacements| keeps all the substitions we're going to make to
+  // |replacements| keeps all the substitutions we're going to make to
   // from {destination_url} to {stripped_destination_url}.  |need_replacement|
   // is a helper variable that helps us keep track of whether we need
   // to apply the replacement.
@@ -663,7 +663,7 @@ TemplateURL* AutocompleteMatch::GetTemplateURL(
 }
 
 GURL AutocompleteMatch::ImageUrl() const {
-  return answer ? answer->second_line().image_url() : GURL(image_url);
+  return answer ? answer->image_url() : GURL(image_url);
 }
 
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
