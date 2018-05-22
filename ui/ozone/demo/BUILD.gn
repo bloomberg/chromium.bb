@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//gpu/vulkan/features.gni")
+
 group("demo") {
   deps = [
     ":ozone_demo",
@@ -51,11 +53,20 @@ executable("ozone_demo") {
     ":ozone_demo_lib",
     "//build/config:exe_and_shlib_deps",
     "//components/tracing:startup_tracing",
+    "//gpu/vulkan:buildflags",
     "//ui/events/ozone:events_ozone_layout",
     "//ui/gl",
     "//ui/gl/init",
     "//ui/ozone",
   ]
+
+  if (enable_vulkan) {
+    sources += [
+      "vulkan_renderer.cc",
+      "vulkan_renderer.h",
+    ]
+    deps += [ "//gpu/vulkan/init" ]
+  }
 }
 
 executable("skia_demo") {

@@ -73,7 +73,7 @@ bool VulkanRenderPass::AttachmentData::ValidateData(
     return false;
   }
 
-  if (start_layout < ImageLayoutType::IMAGE_LAYOUT_TYPE_IMAGE_VIEW ||
+  if (start_layout < ImageLayoutType::IMAGE_LAYOUT_UNDEFINED ||
       start_layout > ImageLayoutType::IMAGE_LAYOUT_TYPE_PRESENT) {
     DLOG(ERROR) << "Invalid Start Layout: " << static_cast<int>(start_layout);
     return false;

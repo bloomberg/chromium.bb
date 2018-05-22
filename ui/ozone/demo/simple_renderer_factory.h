@@ -5,8 +5,13 @@
 #ifndef UI_OZONE_DEMO_SIMPLE_RENDERER_FACTORY_H_
 #define UI_OZONE_DEMO_SIMPLE_RENDERER_FACTORY_H_
 
+#include "gpu/vulkan/buildflags.h"
 #include "ui/ozone/demo/renderer_factory.h"
 #include "ui/ozone/public/ozone_gpu_test_helper.h"
+
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/vulkan/vulkan_implementation.h"
+#endif
 
 namespace ui {
 
@@ -15,6 +20,9 @@ class SimpleRendererFactory : public RendererFactory {
   enum RendererType {
     GL,
     SOFTWARE,
+#if BUILDFLAG(ENABLE_VULKAN)
+    VULKAN,
+#endif
   };
 
   SimpleRendererFactory();
@@ -25,6 +33,10 @@ class SimpleRendererFactory : public RendererFactory {
                                            const gfx::Size& size) override;
 
  private:
+#if BUILDFLAG(ENABLE_VULKAN)
+  std::unique_ptr<gpu::VulkanImplementation> vulkan_implementation_;
+#endif
+
   RendererType type_ = SOFTWARE;
 
   // Helper for applications that do GL on main thread.
