@@ -172,6 +172,7 @@ TEST_F(DebugRecordingFileProviderTest,
   const uint32_t invalid_stream_type = 7;
   const uint32_t id = 1;
   EXPECT_CALL(*this, OnFileCreated(true)).Times(0);
+  testing::GTEST_FLAG(death_test_style) = "threadsafe";
   EXPECT_DCHECK_DEATH(file_provider_ptr_->CreateWavFile(
       static_cast<media::AudioDebugRecordingStreamType>(invalid_stream_type),
       id,
