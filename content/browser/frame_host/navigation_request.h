@@ -209,16 +209,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       mojom::TransferrableURLLoaderPtr transferrable_loader);
 
  private:
-  // This enum describes the result of a Content Security Policy (CSP) check for
-  // the request.
-  enum ContentSecurityPolicyCheckResult {
-    // The request should be allowed to continue. PASSED could mean that the
-    // request did not violate any CSP, or that it violated a report-only CSP.
-    CONTENT_SECURITY_POLICY_CHECK_PASSED,
-    // The request should be blocked because it violated an enforced CSP.
-    CONTENT_SECURITY_POLICY_CHECK_FAILED,
-  };
-
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,
                     mojom::BeginNavigationParamsPtr begin_params,
@@ -277,17 +267,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // be destroyed after this call.
   void CommitNavigation();
 
-  // Checks if CSP allows the navigation. This will check the frame-src and
-  // navigate-to directives.
-  // The net_error parameter will be set by this function to indicate how the
-  // failure should be handled (currently ERR_ABORTED or ERR_BLOCKED_BY_CLIENT
-  // depending on the directive that caused the failure).
-  bool IsAllowedByCSP(RenderFrameHostImpl* parent,
-                      bool is_redirect,
-                      bool is_response_check,
-                      CSPContext::CheckCSPDisposition disposition,
-                      net::Error& net_error);
-
   // Checks if the specified CSP context's relevant CSP directive
   // allows the navigation. This is called to perform the frame-src
   // and navigate-to checks.
@@ -297,16 +276,23 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
                                bool is_response_check,
                                CSPContext::CheckCSPDisposition disposition);
 
+  // Checks if CSP allows the navigation. This will check the frame-src and
+  // navigate-to directives.
+  // Returns net::OK if the checks pass, and net::ERR_ABORTED or
+  // net::ERR_BLOCKED_BY_CLIENT depending on which checks fail.
+  net::Error CheckCSPDirectives(RenderFrameHostImpl* parent,
+                                bool is_redirect,
+                                bool is_response_check,
+                                CSPContext::CheckCSPDisposition disposition);
+
   // Check whether a request should be allowed to continue or should be blocked
   // because it violates a CSP. This method can have two side effects:
   // - If a CSP is configured to send reports and the request violates the CSP,
   //   a report will be sent.
   // - The navigation request may be upgraded from HTTP to HTTPS if a CSP is
   //   configured to upgrade insecure requests.
-  ContentSecurityPolicyCheckResult CheckContentSecurityPolicy(
-      bool is_redirect,
-      bool is_response_check,
-      net::Error& net_error);
+  net::Error CheckContentSecurityPolicy(bool is_redirect,
+                                        bool is_response_check);
 
   // This enum describes the result of the credentialed subresource check for
   // the request.
