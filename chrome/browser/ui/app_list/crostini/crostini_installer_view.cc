@@ -116,7 +116,8 @@ bool CrostiniInstallerView::Accept() {
 }
 
 bool CrostiniInstallerView::Cancel() {
-  if (restart_id_ != crostini::CrostiniManager::kUninitializedRestartId) {
+  if (state_ != State::INSTALL_END &&
+      restart_id_ != crostini::CrostiniManager::kUninitializedRestartId) {
     // Abort the long-running flow, and prevent our RestartObserver methods
     // being called after "this" has been destroyed.
     crostini::CrostiniManager::GetInstance()->AbortRestartCrostini(profile_,
