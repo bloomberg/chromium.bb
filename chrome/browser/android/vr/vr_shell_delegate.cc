@@ -82,7 +82,7 @@ VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj)
 
 VrShellDelegate::~VrShellDelegate() {
   DVLOG(1) << __FUNCTION__ << "=" << this;
-  device::VRDevice* device = GetDevice();
+  device::GvrDevice* device = GetDevice();
   if (device)
     device->OnExitPresent();
   if (!on_present_result_callback_.is_null())
@@ -107,7 +107,7 @@ VrShellDelegate* VrShellDelegate::GetNativeVrShellDelegate(
 void VrShellDelegate::SetDelegate(VrShell* vr_shell,
                                   gvr::ViewerType viewer_type) {
   vr_shell_ = vr_shell;
-  device::VRDevice* device = GetDevice();
+  device::GvrDevice* device = GetDevice();
   // When VrShell is created, we disable magic window mode as the user is inside
   // the headset. As currently implemented, orientation-based magic window
   // doesn't make sense when the window is fixed and the user is moving.
@@ -137,7 +137,7 @@ void VrShellDelegate::RemoveDelegate() {
     pending_successful_present_request_ = false;
     base::ResetAndReturn(&on_present_result_callback_).Run(false);
   }
-  device::VRDevice* device = GetDevice();
+  device::GvrDevice* device = GetDevice();
   if (device) {
     device->SetMagicWindowEnabled(true);
     device->OnExitPresent();
@@ -252,7 +252,7 @@ void VrShellDelegate::DisplayActivate(JNIEnv* env,
 void VrShellDelegate::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (vr_shell_)
     return;
-  device::VRDevice* device = GetDevice();
+  device::GvrDevice* device = GetDevice();
   if (device)
     device->PauseTracking();
 }
@@ -260,7 +260,7 @@ void VrShellDelegate::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 void VrShellDelegate::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (vr_shell_)
     return;
-  device::VRDevice* device = GetDevice();
+  device::GvrDevice* device = GetDevice();
   if (device)
     device->ResumeTracking();
 }
@@ -280,7 +280,7 @@ bool VrShellDelegate::ShouldDisableGvrDevice() {
 void VrShellDelegate::SetDeviceId(unsigned int device_id) {
   device_id_ = device_id;
   if (vr_shell_) {
-    device::VRDevice* device = GetDevice();
+    device::GvrDevice* device = GetDevice();
     // See comment in VrShellDelegate::SetDelegate. This handles the case where
     // VrShell is created before the device code is initialized (like when
     // entering VR browsing on a non-webVR page).
@@ -315,7 +315,7 @@ void VrShellDelegate::RequestWebVRPresent(
 void VrShellDelegate::ExitWebVRPresent() {
   JNIEnv* env = AttachCurrentThread();
   Java_VrShellDelegate_exitWebVRPresent(env, j_vr_shell_delegate_);
-  device::VRDevice* device = GetDevice();
+  device::GvrDevice* device = GetDevice();
   if (device)
     device->OnExitPresent();
 }
@@ -341,8 +341,8 @@ void VrShellDelegate::OnListeningForActivateChanged(bool listening) {
                                                     listening);
 }
 
-device::VRDevice* VrShellDelegate::GetDevice() {
-  return VRDeviceManager::GetInstance()->GetDevice(device_id_);
+device::GvrDevice* VrShellDelegate::GetDevice() {
+  return device::GvrDelegateProviderFactory::GetDevice();
 }
 
 // ----------------------------------------------------------------------------

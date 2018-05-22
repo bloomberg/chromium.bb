@@ -143,6 +143,7 @@ std::unique_ptr<GvrDevice> GvrDevice::Create() {
 }
 
 GvrDevice::GvrDevice() : weak_ptr_factory_(this) {
+  GvrDelegateProviderFactory::SetDevice(this);
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider || delegate_provider->ShouldDisableGvrDevice())
     return;
@@ -158,6 +159,7 @@ GvrDevice::GvrDevice() : weak_ptr_factory_(this) {
 }
 
 GvrDevice::~GvrDevice() {
+  GvrDelegateProviderFactory::SetDevice(nullptr);
   if (!non_presenting_context_.obj())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();

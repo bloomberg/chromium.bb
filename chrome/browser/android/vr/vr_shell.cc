@@ -60,8 +60,8 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/url_constants.h"
 #include "device/vr/android/gvr/cardboard_gamepad_data_fetcher.h"
+#include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_fetcher.h"
-#include "device/vr/vr_device.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "jni/VrShellImpl_jni.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -434,7 +434,7 @@ void VrShell::ToggleCardboardGamepad(bool enabled) {
   }
 
   if (!cardboard_gamepad_source_active_ && enabled) {
-    device::VRDevice* device = delegate_provider_->GetDevice();
+    device::GvrDevice* device = delegate_provider_->GetDevice();
     if (!device)
       return;
 
@@ -453,7 +453,7 @@ void VrShell::ToggleGvrGamepad(bool enabled) {
   // Enable/disable updating gamepad state.
   if (enabled) {
     DCHECK(!gvr_gamepad_source_active_);
-    device::VRDevice* device = delegate_provider_->GetDevice();
+    device::GvrDevice* device = delegate_provider_->GetDevice();
     if (!device)
       return;
 
