@@ -168,6 +168,18 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
   // Setting the Language encoding flag so the file is told to be in utf-8.
   const uLong LANGUAGE_ENCODING_FLAG = 0x1 << 11;
 
+  // Indicates the compatibility of the file attribute information.
+  // Attributes of files are not avaiable in the FileSystem API. Therefore
+  // we don't store file attributes to an archive. However, other apps may use
+  // this field to determine the line record format for text files etc.
+  const int HOST_SYSTEM_CODE = 3;  // UNIX
+
+  // PKWARE .ZIP File Format Specification version 6.3.x
+  const int ZIP_SPECIFICATION_VERSION_CODE = 63;
+
+  const int VERSION_MADE_BY =
+      HOST_SYSTEM_CODE << 8 | ZIP_SPECIFICATION_VERSION_CODE;
+
   int open_result =
       zipOpenNewFileInZip4(zip_file_,                    // file
                            normalized_filename.c_str(),  // filename
@@ -185,7 +197,7 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
                            Z_DEFAULT_STRATEGY,       // strategy
                            nullptr,                  // password
                            0,                        // crcForCrypting
-                           0,                        // versionMadeBy
+                           VERSION_MADE_BY,          // versionMadeBy
                            LANGUAGE_ENCODING_FLAG);  // flagBase
   if (open_result != ZIP_OK) {
     CloseArchive(true /* has_error */);
