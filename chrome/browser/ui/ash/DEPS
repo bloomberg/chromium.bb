@@ -26,7 +26,8 @@ specific_include_rules = {
   "ash_shell_init\.cc": [
     "+ash",
   ],
-  # https://crbug.com/843315
+  # IsAcceleratorDeprecated and SetupWidgetInitParamsForContainer access
+  # ash::Shell in non Mash mode only.
   "ash_util\.cc": [
     "+ash/accelerators/accelerator_controller.h",
     "+ash/shell.h",
@@ -43,11 +44,6 @@ specific_include_rules = {
   "chrome_keyboard_ui\.cc": [
     "+ash/root_window_controller.h",
     "+ash/shell.h",
-  ],
-  # https://crbug.com/557406
-  "chrome_launcher_controller\.cc": [
-    "+ash/shell.h",
-    "+ash/strings/grit/ash_strings.h",
   ],
   # https://crbug.com/124222
   "chrome_new_window_client\.cc": [
