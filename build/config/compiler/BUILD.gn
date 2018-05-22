@@ -153,7 +153,7 @@ declare_args() {
   # lld doesn't have the bug.
   use_icf = (is_posix || is_fuchsia) && !using_sanitizer &&
             !(is_android && use_order_profiling) &&
-            ((use_lld && !is_nacl) ||
+            (use_lld ||
              (use_gold &&
               ((!is_android && linux_use_bundled_binutils) || is_chromeos ||
                !(current_cpu == "x86" || current_cpu == "x64"))))
@@ -398,7 +398,7 @@ config("compiler") {
     ldflags += [ "--gcc-toolchain=$_rebased_android_toolchain_root" ]
   }
 
-  if (((is_posix || is_fuchsia) && use_lld && !is_nacl) ||
+  if (((is_posix || is_fuchsia) && use_lld) ||
       (target_os == "chromeos" && is_android)) {
     # NOTE: Some Chrome OS builds globally disable LLD, but they also build some
     # targets against Android toolchains which should use LLD. Therefore we
@@ -473,6 +473,19 @@ config("compiler") {
     # but for now it looks like our build might rely on it
     # (https://crbug.com/829795).
     cflags += [ "-fmerge-all-constants" ]
+  }
+
+  if (use_lld) {
+    # TODO(thakis): Make the driver pass --color-diagnostics to the linker
+    # if -fcolor-diagnostics is passed to it, and pass -fcolor-diagnostics
+    # in ldflags instead.
+    if (is_win) {
+      # On Windows, we call the linker directly, instead of calling it through
+      # the driver.
+      ldflags += [ "--color-diagnostics" ]
+    } else {
+      ldflags += [ "-Wl,--color-diagnostics" ]
+    }
   }
 
   if (is_clang && !is_nacl && current_toolchain == host_toolchain &&
