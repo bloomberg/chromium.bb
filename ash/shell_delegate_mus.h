@@ -16,6 +16,7 @@ class Connector;
 
 namespace ash {
 
+// TODO(jamescook): Rename to ShellDelegateMash.
 class ShellDelegateMus : public ShellDelegate {
  public:
   explicit ShellDelegateMus(service_manager::Connector* connector);

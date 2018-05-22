@@ -961,6 +961,9 @@ void Shell::Init(ui::ContextFactory* context_factory,
                  std::unique_ptr<ui::ws2::GpuSupport> gpu_support) {
   const Config config = shell_port_->GetAshConfig();
 
+  // Config::MUS is deprecated. https://crbug.com/841941
+  DCHECK_NE(config, Config::MUS);
+
   // This creates the MessageCenter object which is used by some other objects
   // initialized here, so it needs to come early.
   message_center_controller_ = std::make_unique<MessageCenterController>();

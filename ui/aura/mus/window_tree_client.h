@@ -157,7 +157,6 @@ class AURA_EXPORT WindowTreeClient
 
   Config config() const { return config_; }
 
-  void DisableDragDropClient() { install_drag_drop_client_ = false; }
 
   service_manager::Connector* connector() { return connector_; }
   CaptureSynchronizer* capture_synchronizer() {
@@ -757,10 +756,6 @@ class AURA_EXPORT WindowTreeClient
   gfx::Insets normal_client_area_insets_;
 
   bool in_shutdown_ = false;
-
-  // Temporary while we have mushrome, once we switch to mash this can be
-  // removed.
-  bool install_drag_drop_client_ = true;
 
 #if defined(USE_OZONE)
   std::unique_ptr<PlatformEventSourceMus> platform_event_source_;

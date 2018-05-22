@@ -26,6 +26,7 @@ class WindowManager;
 // ShellPort implementation for mus (and parts of mash). See ash/README.md.
 // Often uses "classic" ash implementations because only the window server
 // pieces are in a different mojo service.
+// TODO(crbug.com/841941): Fold into ShellPortMash. Config::MUS is deprecated.
 class ShellPortMus : public ShellPort {
  public:
   explicit ShellPortMus(WindowManager* window_manager);

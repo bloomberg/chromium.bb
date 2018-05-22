@@ -15,7 +15,6 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/interfaces/docked_magnifier_controller.mojom.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
@@ -402,11 +401,6 @@ TEST_F(DockedMagnifierTest, AddRemoveDisplays) {
   base::RunLoop().RunUntilIdle();
   root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(1u, root_windows.size());
-  if (Shell::GetAshConfig() == Config::MUS) {
-    // TODO: Figure out why do we need to manually simulate the mouse cursor
-    // being teleported to the first display. https://crbug.com/814590.
-    GetEventGenerator().MoveMouseTo(gfx::Point(300, 400));
-  }
   viewport_widget = controller()->GetViewportWidgetForTesting();
   ASSERT_NE(nullptr, viewport_widget);
   EXPECT_EQ(root_windows[0], viewport_widget->GetNativeView()->GetRootWindow());

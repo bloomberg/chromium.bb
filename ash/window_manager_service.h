@@ -12,9 +12,6 @@
 #include <set>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/config.h"
-#include "ash/public/interfaces/wallpaper.mojom.h"
-#include "ash/shell_delegate.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -47,13 +44,9 @@ class WindowManager;
 // Hosts the window manager and the ash system user interface for mash.
 class ASH_EXPORT WindowManagerService : public service_manager::Service {
  public:
-  // If |observer| is non-null it is added to the WindowManager once created.
   // See WindowManager's constructor for details of
   // |show_primary_host_on_connect|.
-  explicit WindowManagerService(
-      bool show_primary_host_on_connect,
-      Config ash_config = Config::MASH,
-      std::unique_ptr<ash::ShellDelegate> shell_delegate = nullptr);
+  explicit WindowManagerService(bool show_primary_host_on_connect);
   ~WindowManagerService() override;
 
   WindowManager* window_manager() { return window_manager_.get(); }
@@ -92,10 +85,6 @@ class ASH_EXPORT WindowManagerService : public service_manager::Service {
       statistics_provider_;
 
   service_manager::BinderRegistry registry_;
-
-  std::unique_ptr<ShellDelegate> shell_delegate_;
-
-  const Config ash_config_;
 
   // Whether this class initialized NetworkHandler and needs to clean it up.
   bool network_handler_initialized_ = false;

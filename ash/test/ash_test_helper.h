@@ -14,7 +14,6 @@
 
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/session/test_session_controller_client.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/test/scoped_command_line.h"
 #include "ui/aura/test/mus/test_window_tree_client_setup.h"
@@ -41,7 +40,6 @@ class MashTestSuite;
 
 namespace ui {
 class ScopedAnimationDurationScaleMode;
-class InputDeviceClient;
 }
 
 namespace wm {
@@ -169,8 +167,6 @@ class AshTestHelper {
   int64_t next_display_id_ = 1;
 
   std::unique_ptr<TestSessionControllerClient> session_controller_client_;
-
-  std::unique_ptr<ui::InputDeviceClient> input_device_client_;
 
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
 
