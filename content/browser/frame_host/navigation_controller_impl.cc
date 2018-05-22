@@ -1601,8 +1601,8 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
       // (https://crbug.com/373041).
       // TODO(creis): For now, restrict this check to HTTP(S) origins, because
       // about:blank, file, and unique origins are more subtle to get right.
-      // We'll abstract out the relevant checks from IsURLInPageNavigation and
-      // share them here.  See https://crbug.com/618104.
+      // We'll abstract out the relevant checks from IsURLSameDocumentNavigation
+      // and share them here.  See https://crbug.com/618104.
       const GURL& dest_top_url = GetEntryAtIndex(entry_index)->GetURL();
       const GURL& current_top_url = GetLastCommittedEntry()->GetURL();
       if (current_top_url.SchemeIsHTTPOrHTTPS() &&
