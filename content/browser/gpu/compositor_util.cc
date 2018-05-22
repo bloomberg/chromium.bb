@@ -141,6 +141,11 @@ const GpuFeatureData GetGpuFeatureData(
        "Using Stage3d Baseline profile in Flash has been disabled, either via "
        "blacklist, about:flags or the command line.",
        true, true},
+      {"protected_video_decode",
+       SafeGetFeatureStatus(gpu_feature_info,
+                            gpu::GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE),
+       false, "Protected video decode has been disabled, via blacklist.", false,
+       true},
       {"video_decode",
        SafeGetFeatureStatus(gpu_feature_info,
                             gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),

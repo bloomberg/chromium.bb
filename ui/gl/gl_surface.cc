@@ -209,6 +209,10 @@ bool GLSurface::UseOverlaysForVideo() const {
   return false;
 }
 
+bool GLSurface::SupportsProtectedVideo() const {
+  return false;
+}
+
 bool GLSurface::SetDrawRectangle(const gfx::Rect& rect) {
   return false;
 }
@@ -456,6 +460,10 @@ bool GLSurfaceAdapter::SupportsDCLayers() const {
 
 bool GLSurfaceAdapter::UseOverlaysForVideo() const {
   return surface_->UseOverlaysForVideo();
+}
+
+bool GLSurfaceAdapter::SupportsProtectedVideo() const {
+  return surface_->SupportsProtectedVideo();
 }
 
 bool GLSurfaceAdapter::SetDrawRectangle(const gfx::Rect& rect) {

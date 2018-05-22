@@ -107,6 +107,9 @@ GPU_BLACKLIST_FEATURE_TEST(GpuRasterization,
 GPU_BLACKLIST_FEATURE_TEST(WebGL2,
                            GPU_FEATURE_TYPE_ACCELERATED_WEBGL2)
 
+GPU_BLACKLIST_FEATURE_TEST(ProtectedVideoDecode,
+                           GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE)
+
 // Test for invariant "Assume the newly last added entry has the largest ID".
 // See GpuControlList::GpuControlList.
 // It checks software_rendering_list.json

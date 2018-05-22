@@ -72,6 +72,7 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   bool OnMakeCurrent(gl::GLContext* context) override;
   bool SupportsDCLayers() const override;
   bool UseOverlaysForVideo() const override;
+  bool SupportsProtectedVideo() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
   void WaitForSnapshotRendering() override;
