@@ -20,7 +20,10 @@
 
 namespace offline_pages {
 namespace {
+
 using testing::_;
+using FetchCompleteStatus = ThumbnailFetcherImpl::FetchCompleteStatus;
+
 const char kClientID1[] = "client-id-1";
 
 ntp_snippets::Category ArticlesCategory() {
@@ -77,6 +80,8 @@ class ThumbnailFetcherImplTest : public testing::Test {
         std::make_unique<TestContentSuggestionsService>(&pref_service_);
     suggestions_provider_ =
         content_suggestions_->MakeRegisteredMockProvider({ArticlesCategory()});
+
+    fetcher_.SetContentSuggestionsService(content_suggestions_.get());
   }
 
  protected:
@@ -107,67 +112,112 @@ class ThumbnailFetcherImplTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_ =
       new base::TestMockTimeTaskRunner;
 
+  base::HistogramTester histogram_tester_;
+  ThumbnailFetcherImpl fetcher_;
+
  private:
   TestingPrefServiceSimple pref_service_;
   ntp_snippets::MockContentSuggestionsProvider* suggestions_provider_;
 };
 
-TEST_F(ThumbnailFetcherImplTest, Success) {
+TEST_F(ThumbnailFetcherImplTest, FirstAttempt_Success) {
   // Successfully fetch an image.
-  base::HistogramTester histogram_tester;
-  ThumbnailFetcherImpl fetcher;
-  fetcher.SetContentSuggestionsService(content_suggestions_.get());
   ExpectFetchThumbnail("abcdefg");
   base::MockCallback<ThumbnailFetcher::ImageDataFetchedCallback> callback;
   EXPECT_CALL(callback, Run("abcdefg"));
 
-  fetcher.FetchSuggestionImageData(
-      ClientId(kSuggestedArticlesNamespace, kClientID1), callback.Get());
+  fetcher_.FetchSuggestionImageData(
+      ClientId(kSuggestedArticlesNamespace, kClientID1), true, callback.Get());
   task_runner_->RunUntilIdle();
-  histogram_tester.ExpectTotalCount(
+
+  histogram_tester_.ExpectTotalCount(
       "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
-  histogram_tester.ExpectUniqueSample(
-      "OfflinePages.Prefetching.FetchThumbnail.Complete",
-      ThumbnailFetcher::FetchCompleteStatus::kSuccess, 1);
+  histogram_tester_.ExpectUniqueSample(
+      "OfflinePages.Prefetching.FetchThumbnail.Complete2",
+      FetchCompleteStatus::kFirstAttemptSuccess, 1);
 }
 
-TEST_F(ThumbnailFetcherImplTest, TooBig) {
-  base::HistogramTester histogram_tester;
-  ThumbnailFetcherImpl fetcher;
-  fetcher.SetContentSuggestionsService(content_suggestions_.get());
+TEST_F(ThumbnailFetcherImplTest, SecondAttempt_Success) {
+  // Successfully fetch an image.
+  ExpectFetchThumbnail("abcdefg");
+  base::MockCallback<ThumbnailFetcher::ImageDataFetchedCallback> callback;
+  EXPECT_CALL(callback, Run("abcdefg"));
+
+  fetcher_.FetchSuggestionImageData(
+      ClientId(kSuggestedArticlesNamespace, kClientID1), false, callback.Get());
+  task_runner_->RunUntilIdle();
+
+  histogram_tester_.ExpectTotalCount(
+      "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "OfflinePages.Prefetching.FetchThumbnail.Complete2",
+      FetchCompleteStatus::kSecondAttemptSuccess, 1);
+}
+
+TEST_F(ThumbnailFetcherImplTest, FirstAttempt_TooBig) {
   ExpectFetchThumbnail(
       std::string(ThumbnailFetcher::kMaxThumbnailSize + 1, 'x'));
   base::MockCallback<ThumbnailFetcher::ImageDataFetchedCallback> callback;
-  EXPECT_CALL(callback, Run("")).Times(1);
+  EXPECT_CALL(callback, Run(""));
 
-  fetcher.FetchSuggestionImageData(
-      ClientId(kSuggestedArticlesNamespace, kClientID1), callback.Get());
+  fetcher_.FetchSuggestionImageData(
+      ClientId(kSuggestedArticlesNamespace, kClientID1), true, callback.Get());
   task_runner_->RunUntilIdle();
 
-  histogram_tester.ExpectTotalCount(
+  histogram_tester_.ExpectTotalCount(
       "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
-  histogram_tester.ExpectUniqueSample(
-      "OfflinePages.Prefetching.FetchThumbnail.Complete",
-      ThumbnailFetcher::FetchCompleteStatus::kTooLarge, 1);
+  histogram_tester_.ExpectUniqueSample(
+      "OfflinePages.Prefetching.FetchThumbnail.Complete2",
+      FetchCompleteStatus::kFirstAttemptTooLarge, 1);
 }
 
-TEST_F(ThumbnailFetcherImplTest, EmptyImage) {
-  base::HistogramTester histogram_tester;
-  ThumbnailFetcherImpl fetcher;
-  fetcher.SetContentSuggestionsService(content_suggestions_.get());
-  ExpectFetchThumbnail(std::string());
+TEST_F(ThumbnailFetcherImplTest, SecondAttempt_TooBig) {
+  ExpectFetchThumbnail(
+      std::string(ThumbnailFetcher::kMaxThumbnailSize + 1, 'x'));
   base::MockCallback<ThumbnailFetcher::ImageDataFetchedCallback> callback;
-  EXPECT_CALL(callback, Run("")).Times(1);
+  EXPECT_CALL(callback, Run(""));
 
-  fetcher.FetchSuggestionImageData(
-      ClientId(kSuggestedArticlesNamespace, kClientID1), callback.Get());
+  fetcher_.FetchSuggestionImageData(
+      ClientId(kSuggestedArticlesNamespace, kClientID1), false, callback.Get());
   task_runner_->RunUntilIdle();
 
-  histogram_tester.ExpectTotalCount(
+  histogram_tester_.ExpectTotalCount(
       "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
-  histogram_tester.ExpectUniqueSample(
-      "OfflinePages.Prefetching.FetchThumbnail.Complete",
-      ThumbnailFetcher::FetchCompleteStatus::kEmptyImage, 1);
+  histogram_tester_.ExpectUniqueSample(
+      "OfflinePages.Prefetching.FetchThumbnail.Complete2",
+      FetchCompleteStatus::kSecondAttemptTooLarge, 1);
+}
+
+TEST_F(ThumbnailFetcherImplTest, FirstAttempt_EmptyImage) {
+  ExpectFetchThumbnail(std::string());
+  base::MockCallback<ThumbnailFetcher::ImageDataFetchedCallback> callback;
+  EXPECT_CALL(callback, Run(""));
+
+  fetcher_.FetchSuggestionImageData(
+      ClientId(kSuggestedArticlesNamespace, kClientID1), true, callback.Get());
+  task_runner_->RunUntilIdle();
+
+  histogram_tester_.ExpectTotalCount(
+      "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "OfflinePages.Prefetching.FetchThumbnail.Complete2",
+      FetchCompleteStatus::kFirstAttemptEmptyImage, 1);
+}
+
+TEST_F(ThumbnailFetcherImplTest, SecondAttempt_EmptyImage) {
+  ExpectFetchThumbnail(std::string());
+  base::MockCallback<ThumbnailFetcher::ImageDataFetchedCallback> callback;
+  EXPECT_CALL(callback, Run(""));
+
+  fetcher_.FetchSuggestionImageData(
+      ClientId(kSuggestedArticlesNamespace, kClientID1), false, callback.Get());
+  task_runner_->RunUntilIdle();
+
+  histogram_tester_.ExpectTotalCount(
+      "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "OfflinePages.Prefetching.FetchThumbnail.Complete2",
+      FetchCompleteStatus::kSecondAttemptEmptyImage, 1);
 }
 
 }  // namespace

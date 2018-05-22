@@ -323,7 +323,7 @@ void PrefetchDispatcherImpl::GeneratePageBundleRequested(
   // Reverse the order so that the fresher items are last. This is done because
   // the ids are popped from the end of the vector.
   std::reverse(ids->begin(), ids->end());
-  FetchThumbnails(std::move(ids));
+  FetchThumbnails(std::move(ids), /* is_first_attempt= */ true);
 }
 
 void PrefetchDispatcherImpl::DownloadCompleted(
@@ -349,7 +349,7 @@ void PrefetchDispatcherImpl::ItemDownloaded(int64_t offline_id,
                                             const ClientId& client_id) {
   auto ids = std::make_unique<IdsVector>();
   ids->emplace_back(offline_id, client_id);
-  FetchThumbnails(std::move(ids));
+  FetchThumbnails(std::move(ids), /* is_first_attempt= */ false);
 }
 
 void PrefetchDispatcherImpl::ArchiveImported(int64_t offline_id, bool success) {
@@ -388,7 +388,8 @@ void PrefetchDispatcherImpl::LogRequestResult(
 }
 
 void PrefetchDispatcherImpl::FetchThumbnails(
-    std::unique_ptr<PrefetchDispatcher::IdsVector> remaining_ids) {
+    std::unique_ptr<PrefetchDispatcher::IdsVector> remaining_ids,
+    bool is_first_attempt) {
   if (remaining_ids->empty())
     return;
 
@@ -401,28 +402,30 @@ void PrefetchDispatcherImpl::FetchThumbnails(
       offline_id,
       base::BindOnce(&PrefetchDispatcherImpl::ThumbnailExistenceChecked,
                      base::Unretained(this), offline_id, std::move(client_id),
-                     std::move(remaining_ids)));
+                     std::move(remaining_ids), is_first_attempt));
 }
 
 void PrefetchDispatcherImpl::ThumbnailExistenceChecked(
     const int64_t offline_id,
     ClientId client_id,
     std::unique_ptr<PrefetchDispatcher::IdsVector> remaining_ids,
+    bool is_first_attempt,
     bool thumbnail_exists) {
   if (thumbnail_exists) {
-    ThumbnailFetchComplete(offline_id, std::move(remaining_ids), std::string());
+    FetchThumbnails(std::move(remaining_ids), is_first_attempt);
   } else {
     auto complete_callback = base::BindOnce(
         &PrefetchDispatcherImpl::ThumbnailFetchComplete, base::Unretained(this),
-        offline_id, std::move(remaining_ids));
+        offline_id, std::move(remaining_ids), is_first_attempt);
     service_->GetThumbnailFetcher()->FetchSuggestionImageData(
-        client_id, std::move(complete_callback));
+        client_id, is_first_attempt, std::move(complete_callback));
   }
 }
 
 void PrefetchDispatcherImpl::ThumbnailFetchComplete(
     const int64_t offline_id,
     std::unique_ptr<PrefetchDispatcher::IdsVector> remaining_ids,
+    bool is_first_attempt,
     const std::string& image_data) {
   // Thumbnails are marked to expire after this delta. Expired thumbnails are
   // eventually deleted if their offline_id does not correspond to an offline
@@ -435,7 +438,7 @@ void PrefetchDispatcherImpl::ThumbnailFetchComplete(
     service_->GetOfflinePageModel()->StoreThumbnail(OfflinePageThumbnail(
         offline_id, base::Time::Now() + kThumbnailExpirationDelta, image_data));
   }
-  FetchThumbnails(std::move(remaining_ids));
+  FetchThumbnails(std::move(remaining_ids), is_first_attempt);
 }
 
 }  // namespace offline_pages

@@ -91,13 +91,20 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
   // Also, even though unlikely, concurrent calls to these methods are
   // supported. They will generate simultaneous download attempts but there will
   // be no impact in the consistency of stored data.
-  void FetchThumbnails(std::unique_ptr<IdsVector> remaining_ids);
+  // TODO(carlosk): This logic has become complex and holds too much state
+  // throughout the calls. It should be moved into a separate class (possibly
+  // internal to the implementation) to make it easier to maintain and
+  // understand.
+  void FetchThumbnails(std::unique_ptr<IdsVector> remaining_ids,
+                       bool is_first_attempt);
   void ThumbnailExistenceChecked(const int64_t offline_id,
                                  ClientId client_id,
                                  std::unique_ptr<IdsVector> remaining_ids,
+                                 bool is_first_attempt,
                                  bool thumbnail_exists);
   void ThumbnailFetchComplete(const int64_t offline_id,
                               std::unique_ptr<IdsVector> remaining_ids,
+                              bool is_first_attempt,
                               const std::string& image_data);
 
   PrefetchService* service_;

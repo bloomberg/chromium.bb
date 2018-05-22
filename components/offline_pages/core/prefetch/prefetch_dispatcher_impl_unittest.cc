@@ -189,15 +189,17 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
   }
 
   void ExpectFetchThumbnail(const std::string& thumbnail_data,
-                            const char* client_id = kClientID) {
-    EXPECT_CALL(*thumbnail_fetcher_,
-                FetchSuggestionImageData_(
-                    ClientId(kSuggestedArticlesNamespace, client_id), _))
+                            const bool first_attempt,
+                            const char* client_id) {
+    EXPECT_CALL(
+        *thumbnail_fetcher_,
+        FetchSuggestionImageData_(
+            ClientId(kSuggestedArticlesNamespace, client_id), first_attempt, _))
         .WillOnce(
             testing::Invoke(testing::CallbackToFunctor(base::BindRepeating(
                 [](const std::string& thumbnail_data,
                    scoped_refptr<base::TestMockTimeTaskRunner> task_runner,
-                   const ClientId& id,
+                   const ClientId& id, bool is_first_attemp,
                    ThumbnailFetcher::ImageDataFetchedCallback* callback) {
                   task_runner->PostTask(
                       FROM_HERE,
@@ -554,7 +556,7 @@ TEST_F(PrefetchDispatcherTest, NoNetworkRequestsAfterNewURLs) {
 }
 
 TEST_F(PrefetchDispatcherTest, ThumbnailFetchFailure_ItemDownloaded) {
-  ExpectFetchThumbnail("");
+  ExpectFetchThumbnail("", false, kClientID);
   ExpectHasThumbnailForOfflineId(kTestOfflineID, false);
   EXPECT_CALL(*offline_model_, StoreThumbnail(_)).Times(0);
   prefetch_dispatcher()->ItemDownloaded(
@@ -565,14 +567,14 @@ TEST_F(PrefetchDispatcherTest, ThumbnailFetchSuccess_ItemDownloaded) {
   std::string kThumbnailData = "abc";
   ExpectHasThumbnailForOfflineId(kTestOfflineID, false);
   EXPECT_CALL(*offline_model_, StoreThumbnail(ValidThumbnail()));
-  ExpectFetchThumbnail(kThumbnailData);
+  ExpectFetchThumbnail(kThumbnailData, false, kClientID);
   prefetch_dispatcher()->ItemDownloaded(
       kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID));
 }
 
 TEST_F(PrefetchDispatcherTest, ThumbnailAlreadyExists_ItemDownloaded) {
   ExpectHasThumbnailForOfflineId(kTestOfflineID, true);
-  EXPECT_CALL(*thumbnail_fetcher_, FetchSuggestionImageData_(_, _)).Times(0);
+  EXPECT_CALL(*thumbnail_fetcher_, FetchSuggestionImageData_(_, _, _)).Times(0);
   EXPECT_CALL(*offline_model_, StoreThumbnail(_)).Times(0);
   prefetch_dispatcher()->ItemDownloaded(
       kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID));
@@ -593,11 +595,11 @@ TEST_F(PrefetchDispatcherTest,
   InSequence in_sequence;
   // Case #1.
   ExpectHasThumbnailForOfflineId(kTestOfflineID1, false);
-  ExpectFetchThumbnail("abc", kClientID1);
+  ExpectFetchThumbnail("abc", true, kClientID1);
   EXPECT_CALL(*offline_model_, StoreThumbnail(_)).Times(1);
   // Case #2.
   ExpectHasThumbnailForOfflineId(kTestOfflineID2, false);
-  ExpectFetchThumbnail("", kClientID2);
+  ExpectFetchThumbnail("", true, kClientID2);
   // Case #3.
   ExpectHasThumbnailForOfflineId(kTestOfflineID3, true);
 

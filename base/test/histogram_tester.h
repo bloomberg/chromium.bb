@@ -59,6 +59,13 @@ class HistogramTester {
   void ExpectBucketCount(const std::string& name,
                          HistogramBase::Sample sample,
                          HistogramBase::Count expected_count) const;
+  template <typename T>
+  void ExpectBucketCount(const std::string& name,
+                         T sample,
+                         HistogramBase::Count expected_count) const {
+    ExpectBucketCount(name, static_cast<HistogramBase::Sample>(sample),
+                      expected_count);
+  }
 
   // We don't know the values of the samples, but we know how many there are.
   // This measures the diff from the snapshot taken when this object was
