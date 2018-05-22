@@ -20,6 +20,9 @@ class ChromeViewsTestBase : public views::ViewsTestBase {
   // views::ViewsTestBase:
   void SetUp() override;
 
+  // Subclasses can override to provide their own TestViewsDelegate
+  virtual std::unique_ptr<views::TestViewsDelegate> CreateTestViewsDelegate();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeViewsTestBase);
 };
