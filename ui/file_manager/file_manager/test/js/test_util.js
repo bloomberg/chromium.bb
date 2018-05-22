@@ -240,7 +240,7 @@ test.ENTRIES = {
 
 /**
  * Basic entry set for the local volume.
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<!TestEntryInfo>}
  * @const
  */
 test.BASIC_LOCAL_ENTRY_SET = [
@@ -257,7 +257,7 @@ test.BASIC_LOCAL_ENTRY_SET = [
  * TODO(hirono): Add a case for an entry cached by FileCache. For testing
  *               Drive, create more entries with Drive specific attributes.
  *
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<!TestEntryInfo>}
  * @const
  */
 test.BASIC_DRIVE_ENTRY_SET = [
@@ -269,6 +269,16 @@ test.BASIC_DRIVE_ENTRY_SET = [
   test.ENTRIES.unsupported,
   test.ENTRIES.testDocument,
   test.ENTRIES.testSharedDocument
+];
+
+/**
+ * Basic entry set for the local volume.
+ * @type {!Array<!TestEntryInfo>}
+ * @const
+ */
+test.CROSTINI_ENTRY_SET = [
+  test.ENTRIES.hello,
+  test.ENTRIES.world,
 ];
 
 /**
@@ -382,8 +392,8 @@ test.waitForElementLost = function(query) {
 /**
  * Adds specified TestEntryInfos to downloads and drive.
  *
- * @param {!Array<TestEntryInfo} downloads Entries for downloads.
- * @param {!Array<TestEntryInfo} drive Entries for drive.
+ * @param {!Array<!TestEntryInfo>} downloads Entries for downloads.
+ * @param {!Array<!TestEntryInfo>} drive Entries for drive.
  */
 test.addEntries = function(downloads, drive) {
   var fsDownloads =
@@ -410,7 +420,7 @@ test.addEntries = function(downloads, drive) {
 
 /**
  * Waits for the file list turns to the given contents.
- * @param {Array<Array<string>>} expected Expected contents of file list.
+ * @param {!Array<!Array<string>>} expected Expected contents of file list.
  * @param {{orderCheck:boolean=, ignoreName:boolean=, ignoreSize:boolean=,
  *     ignoreType:boolean=,ignoreDate:boolean=}=} opt_options
  *     Options of the comparison. If orderCheck is true, it also compares the

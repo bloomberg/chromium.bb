@@ -1171,13 +1171,16 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
     }.bind(this));
   }
 
-  // If a new file backed provided volume, or crostini is mounted,
+  // If a new file backed provided volume is mounted,
   // then redirect to it in the focused window.
+  // If crostini is mounted, redirect even if window is not focussed.
   // Note, that this is a temporary solution for https://crbug.com/427776.
-  if (window.isFocused() && event.added.length === 1 &&
-      ((event.added[0].volumeType === VolumeManagerCommon.VolumeType.PROVIDED &&
-        event.added[0].source === VolumeManagerCommon.Source.FILE) ||
-       event.added[0].volumeType === VolumeManagerCommon.VolumeType.CROSTINI)) {
+  if (event.added.length !== 1)
+    return;
+  if ((window.isFocused() &&
+       event.added[0].volumeType === VolumeManagerCommon.VolumeType.PROVIDED &&
+       event.added[0].source === VolumeManagerCommon.Source.FILE) ||
+      event.added[0].volumeType === VolumeManagerCommon.VolumeType.CROSTINI) {
     event.added[0].resolveDisplayRoot().then(function(displayRoot) {
       // Resolving a display root on FSP volumes is instant, despite the
       // asynchronous call.

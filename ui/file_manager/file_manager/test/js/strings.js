@@ -17,6 +17,8 @@ loadTimeData.data = new Proxy(
       DEFAULT_NEW_FOLDER_NAME: 'New Folder',
       DEFAULT_TASK_LABEL: '(default)',
       DELETE_FILE_NAME: 'Deleting "$1"...',
+      DIRECTORY_ALREADY_EXISTS: 'The folder named "$1" already exists. ' +
+          'Please choose a different name.',
       DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
       DATE_COLUMN_LABEL: 'Date modified',
       DELETE_ITEMS_REMAINING: 'Deleting $1 items...',

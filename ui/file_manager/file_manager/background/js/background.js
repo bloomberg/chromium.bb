@@ -496,12 +496,9 @@ FileBrowserBackgroundImpl.prototype.onMountCompletedInternal_ = function(
       .then(function(key) {
         let statusOK = event.status === 'success' ||
             event.status === 'error_path_already_mounted';
-        let volumeTypeOK =
-            (event.volumeMetadata.volumeType ===
-                 VolumeManagerCommon.VolumeType.PROVIDED &&
-             event.volumeMetadata.source === VolumeManagerCommon.Source.FILE) ||
-            event.volumeMetadata.volumeType ===
-                VolumeManagerCommon.VolumeType.CROSTINI;
+        let volumeTypeOK = event.volumeMetadata.volumeType ===
+                VolumeManagerCommon.VolumeType.PROVIDED &&
+            event.volumeMetadata.source === VolumeManagerCommon.Source.FILE;
         if (key === null && event.eventType === 'mount' && statusOK &&
             event.volumeMetadata.mountContext === 'user' && volumeTypeOK) {
           this.navigateToVolumeWhenReady_(event.volumeMetadata.volumeId);

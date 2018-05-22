@@ -1182,21 +1182,28 @@ FileManager.prototype = /** @struct */ {
                 str('ADD_NEW_SERVICES_BUTTON_LABEL'), '#add-new-services-menu',
                 'add-new-services') :
             null);
-    // Check if crostini is enabled to create linuxFilesItem.
+    this.setupCrostini_();
+    this.ui_.initDirectoryTree(directoryTree);
+  };
+
+  /**
+   * Check if crostini is enabled to create linuxFilesItem.
+   * @private
+   */
+  FileManager.prototype.setupCrostini_ = function() {
     chrome.fileManagerPrivate.isCrostiniEnabled((enabled) => {
-      if (!enabled)
-        return;
-      this.directoryTree.dataModel.linuxFilesItem = new NavigationModelFakeItem(
-          str('LINUX_FILES_ROOT_LABEL'), NavigationModelItemType.CROSTINI, {
-            isDirectory: true,
-            rootType: VolumeManagerCommon.RootType.CROSTINI,
-            toURL: function() {
-              return 'fake-entry://linux-files';
-            },
-          });
+      this.directoryTree.dataModel.linuxFilesItem = enabled ?
+          new NavigationModelFakeItem(
+              str('LINUX_FILES_ROOT_LABEL'), NavigationModelItemType.CROSTINI, {
+                isDirectory: true,
+                rootType: VolumeManagerCommon.RootType.CROSTINI,
+                toURL: function() {
+                  return 'fake-entry://linux-files';
+                },
+              }) :
+          null;
       this.directoryTree.redraw(false);
     });
-    this.ui_.initDirectoryTree(directoryTree);
   };
 
   /**
