@@ -153,7 +153,7 @@ public abstract class Stack {
     private int mLongPressSelected = -1;
 
     // Overscroll
-    private StackScroller mScroller;
+    protected StackScroller mScroller;
     private float mOverScrollOffset;
     private int mOverScrollDerivative;
     private int mOverScrollCounter;
@@ -1062,19 +1062,10 @@ public abstract class Stack {
     }
 
     /**
-     * Bounces back if we happen to overscroll the stack.
+     * Bounces the scroll position back to a valid value (e.g. to correct an overscroll or
+     * implement snapping).
      */
-    private void springBack(long time) {
-        if (mScroller.isFinished()) {
-            int minScroll = (int) getMinScroll(false);
-            int maxScroll = (int) getMaxScroll(false);
-            if (mScrollTarget < minScroll || mScrollTarget > maxScroll) {
-                mScroller.springBack(0, (int) mScrollTarget, 0, 0, minScroll, maxScroll, time);
-                setScrollTarget(MathUtils.clamp(mScrollTarget, minScroll, maxScroll), false);
-                requestUpdate();
-            }
-        }
-    }
+    protected abstract void springBack(long time);
 
     /**
      * Called on touch click event.

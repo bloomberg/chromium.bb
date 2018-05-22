@@ -296,6 +296,19 @@ public class OverlappingStack extends Stack {
         super.onUpOrCancel(time);
     }
 
+    @Override
+    protected void springBack(long time) {
+        if (mScroller.isFinished()) {
+            int minScroll = (int) getMinScroll(false);
+            int maxScroll = (int) getMaxScroll(false);
+            if (mScrollTarget < minScroll || mScrollTarget > maxScroll) {
+                mScroller.springBack(0, (int) mScrollTarget, 0, 0, minScroll, maxScroll, time);
+                setScrollTarget(MathUtils.clamp(mScrollTarget, minScroll, maxScroll), false);
+                requestUpdate();
+            }
+        }
+    }
+
     /**
      * @param context The current Android's context.
      */
