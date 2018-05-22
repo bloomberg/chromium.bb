@@ -62,7 +62,6 @@ LayoutUnit MultiColumnFragmentainerGroup::LogicalHeightInFlowThreadAt(
 }
 
 void MultiColumnFragmentainerGroup::ResetColumnHeight() {
-  actual_column_count_allowance_ = 0;
   max_logical_height_ = CalculateMaxColumnHeight();
 
   LayoutMultiColumnFlowThread* flow_thread =
@@ -137,24 +136,6 @@ bool MultiColumnFragmentainerGroup::RecalculateColumnHeight(
   // We may not have found our final height yet, but at least we've found a
   // height.
   is_logical_height_known_ = true;
-
-  unsigned column_count = UnclampedActualColumnCount();
-  if (column_count > LayoutMultiColumnFlowThread::ColumnCountClampMax() ||
-      (column_count > LayoutMultiColumnFlowThread::ColumnCountClampMin() &&
-       column_count > column_set_.UsedColumnCount())) {
-    // That's a lot of columns! We have either exceeded the maximum value, or we
-    // have overflowing columns, and the proposed count is within clamping
-    // range. Calculate allowance to make sure we have a legitimate reason for
-    // it, or else clamp it. We have quadratic performance complexity for
-    // painting columns.
-    if (!actual_column_count_allowance_) {
-      const auto* flow_thread = column_set_.MultiColumnFlowThread();
-      unsigned allowance = flow_thread->CalculateActualColumnCountAllowance();
-      DCHECK_GE(allowance, LayoutMultiColumnFlowThread::ColumnCountClampMin());
-      DCHECK_LE(allowance, LayoutMultiColumnFlowThread::ColumnCountClampMax());
-      actual_column_count_allowance_ = allowance;
-    }
-  }
 
   if (logical_height_ == old_column_height)
     return false;  // No change. We're done.
@@ -328,9 +309,36 @@ LayoutRect MultiColumnFragmentainerGroup::CalculateOverflow() const {
 }
 
 unsigned MultiColumnFragmentainerGroup::ActualColumnCount() const {
-  unsigned count = UnclampedActualColumnCount();
-  if (actual_column_count_allowance_)
-    count = std::min(count, actual_column_count_allowance_);
+  // We must always return a value of 1 or greater. Column count = 0 is a
+  // meaningless situation, and will confuse and cause problems in other parts
+  // of the code.
+  if (!IsLogicalHeightKnown())
+    return 1;
+  // Our flow thread portion determines our column count. We have as many
+  // columns as needed to fit all the content.
+  LayoutUnit flow_thread_portion_height = LogicalHeightInFlowThread();
+  if (!flow_thread_portion_height)
+    return 1;
+
+  LayoutUnit column_height = ColumnLogicalHeight();
+  unsigned count = (flow_thread_portion_height / column_height).Floor();
+  // flowThreadPortionHeight may be saturated, so detect the remainder manually.
+  if (count * column_height < flow_thread_portion_height)
+    count++;
+
+  static const unsigned kColumnCountClampMin = 10;
+  static const unsigned kColumnCountClampMax = 500;
+  if (count > kColumnCountClampMin) {
+    // To avoid performance problems, limit the maximum number of columns. Try
+    // to identify legitimate reasons for creating many columns, and allow many
+    // columns in such cases. We currently use a function of column height to
+    // determine this (limit the column count to the column height in pixels,
+    // but never clamp to less than 10 columns).
+    unsigned max_count = column_height.ToInt();
+    count = std::min(count, std::max(std::min(max_count, kColumnCountClampMax),
+                                     kColumnCountClampMin));
+  }
+
   DCHECK_GE(count, 1u);
   return count;
 }
@@ -638,28 +646,6 @@ void MultiColumnFragmentainerGroup::ColumnIntervalForVisualRect(
     }
   }
   DCHECK_LE(first_column, last_column);
-}
-
-unsigned MultiColumnFragmentainerGroup::UnclampedActualColumnCount() const {
-  // We must always return a value of 1 or greater. Column count = 0 is a
-  // meaningless situation, and will confuse and cause problems in other parts
-  // of the code.
-  if (!IsLogicalHeightKnown())
-    return 1;
-  // Our flow thread portion determines our column count. We have as many
-  // columns as needed to fit all the content.
-  LayoutUnit flow_thread_portion_height = LogicalHeightInFlowThread();
-  if (!flow_thread_portion_height)
-    return 1;
-
-  LayoutUnit column_height = ColumnLogicalHeight();
-  unsigned count = (flow_thread_portion_height / column_height).Floor();
-  // flowThreadPortionHeight may be saturated, so detect the remainder manually.
-  if (count * column_height < flow_thread_portion_height)
-    count++;
-
-  DCHECK_GE(count, 1u);
-  return count;
 }
 
 MultiColumnFragmentainerGroupList::MultiColumnFragmentainerGroupList(
