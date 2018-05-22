@@ -69,7 +69,6 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_active_info.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_buffer.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_compressed_texture_astc.h"
-#include "third_party/blink/renderer/modules/webgl/webgl_compressed_texture_atc.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_compressed_texture_etc.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_compressed_texture_etc1.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_compressed_texture_pvrtc.h"

@@ -28,7 +28,6 @@ enum WebGLExtensionName {
   kOESVertexArrayObjectName,
   kWebGLColorBufferFloatName,
   kWebGLCompressedTextureASTCName,
-  kWebGLCompressedTextureATCName,
   kWebGLCompressedTextureETCName,
   kWebGLCompressedTextureETC1Name,
   kWebGLCompressedTexturePVRTCName,

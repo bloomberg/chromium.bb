@@ -61,7 +61,6 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   Member<EXTTextureFilterAnisotropic> ext_texture_filter_anisotropic_;
   Member<OESTextureFloatLinear> oes_texture_float_linear_;
   Member<WebGLCompressedTextureASTC> webgl_compressed_texture_astc_;
-  Member<WebGLCompressedTextureATC> webgl_compressed_texture_atc_;
   Member<WebGLCompressedTextureETC> webgl_compressed_texture_etc_;
   Member<WebGLCompressedTextureETC1> webgl_compressed_texture_etc1_;
   Member<WebGLCompressedTexturePVRTC> webgl_compressed_texture_pvrtc_;

@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/modules/webgl/oes_vertex_array_object.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_color_buffer_float.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_compressed_texture_astc.h"
-#include "third_party/blink/renderer/modules/webgl/webgl_compressed_texture_atc.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_compressed_texture_etc.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_compressed_texture_etc1.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_compressed_texture_pvrtc.h"
@@ -168,8 +167,6 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension<OESVertexArrayObject>(oes_vertex_array_object_);
   RegisterExtension<WebGLColorBufferFloat>(webgl_color_buffer_float_);
   RegisterExtension<WebGLCompressedTextureASTC>(webgl_compressed_texture_astc_);
-  RegisterExtension<WebGLCompressedTextureATC>(
-      webgl_compressed_texture_atc_, kApprovedExtension, kBothPrefixes);
   RegisterExtension<WebGLCompressedTextureETC>(webgl_compressed_texture_etc_,
                                                kDraftExtension);
   RegisterExtension<WebGLCompressedTextureETC1>(webgl_compressed_texture_etc1_);
@@ -206,7 +203,6 @@ void WebGLRenderingContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(oes_vertex_array_object_);
   visitor->Trace(webgl_color_buffer_float_);
   visitor->Trace(webgl_compressed_texture_astc_);
-  visitor->Trace(webgl_compressed_texture_atc_);
   visitor->Trace(webgl_compressed_texture_etc_);
   visitor->Trace(webgl_compressed_texture_etc1_);
   visitor->Trace(webgl_compressed_texture_pvrtc_);

@@ -371,7 +371,6 @@ modules_idl_files =
           "webgl/webgl_buffer.idl",
           "webgl/webgl_color_buffer_float.idl",
           "webgl/webgl_compressed_texture_astc.idl",
-          "webgl/webgl_compressed_texture_atc.idl",
           "webgl/webgl_compressed_texture_etc.idl",
           "webgl/webgl_compressed_texture_etc1.idl",
           "webgl/webgl_compressed_texture_pvrtc.idl",
