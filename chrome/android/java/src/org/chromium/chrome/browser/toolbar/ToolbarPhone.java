@@ -848,6 +848,7 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     protected void updateToolbarBackground(int color) {
+        if (mToolbarBackground.getColor() == color) return;
         mToolbarBackground.setColor(color);
         invalidate();
     }
@@ -1965,6 +1966,7 @@ public class ToolbarPhone extends ToolbarLayout
         if (mTabSwitcherState == EXITING_TAB_SWITCHER) {
             mLocationBar.setUrlBarFocusable(true);
             mTabSwitcherState = STATIC_TAB;
+            updateVisualsForToolbarState();
         }
         if (mTabSwitcherState == ENTERING_TAB_SWITCHER) mTabSwitcherState = TAB_SWITCHER;
 
@@ -2569,6 +2571,12 @@ public class ToolbarPhone extends ToolbarLayout
         updateOverlayDrawables();
         updateShadowVisibility();
         updateUrlExpansionAnimation();
+
+        // This exception is to prevent early change of theme color when exiting the tab switcher
+        // since currently visual state does not map correctly to tab switcher state. See
+        // https://crbug.com/832594 for more info.
+        if (mTabSwitcherState != EXITING_TAB_SWITCHER) updateToolbarBackground(mVisualState);
+
         if (!visualStateChanged) {
             if (mVisualState == VisualState.NEW_TAB_NORMAL) {
                 updateNtpTransitionAnimation();
@@ -2581,7 +2589,6 @@ public class ToolbarPhone extends ToolbarLayout
         mUseLightToolbarDrawables = false;
         mUnfocusedLocationBarUsesTransparentBg = false;
         mLocationBarBackgroundAlpha = 255;
-        updateToolbarBackground(mVisualState);
         getProgressBar().setThemeColor(themeColorForProgressBar, isIncognito());
 
         if (inOrEnteringTabSwitcher) {
