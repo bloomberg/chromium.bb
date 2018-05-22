@@ -79,6 +79,7 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // LifecycleUnit:
   TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() override;
   base::string16 GetTitle() const override;
+  base::TimeTicks GetLastFocusedTime() const override;
   base::ProcessHandle GetProcessHandle() const override;
   SortKey GetSortKey() const override;
   content::Visibility GetVisibility() const override;

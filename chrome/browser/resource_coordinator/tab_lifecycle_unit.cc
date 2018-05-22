@@ -4,14 +4,18 @@
 
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/process/process_metrics.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/lifecycle_state.h"
+#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/navigation_controller.h"
@@ -155,6 +159,11 @@ base::string16 TabLifecycleUnitSource::TabLifecycleUnit::GetTitle() const {
   return GetWebContents()->GetTitle();
 }
 
+base::TimeTicks TabLifecycleUnitSource::TabLifecycleUnit::GetLastFocusedTime()
+    const {
+  return last_focused_time_;
+}
+
 base::ProcessHandle TabLifecycleUnitSource::TabLifecycleUnit::GetProcessHandle()
     const {
   content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
@@ -168,6 +177,15 @@ base::ProcessHandle TabLifecycleUnitSource::TabLifecycleUnit::GetProcessHandle()
 
 LifecycleUnit::SortKey TabLifecycleUnitSource::TabLifecycleUnit::GetSortKey()
     const {
+  if (base::FeatureList::IsEnabled(features::kTabRanker)) {
+    base::Optional<float> reactivation_score =
+        resource_coordinator::TabActivityWatcher::GetInstance()
+            ->CalculateReactivationScore(GetWebContents());
+    if (reactivation_score.has_value())
+      return SortKey(reactivation_score.value(), last_focused_time_);
+    return SortKey(SortKey::kMaxScore, last_focused_time_);
+  }
+
   return SortKey(last_focused_time_);
 }
 

@@ -48,8 +48,7 @@ void DiscardMetricsLifecycleUnitObserver::OnLifecycleUnitDestroyed(
 void DiscardMetricsLifecycleUnitObserver::OnDiscard(
     LifecycleUnit* lifecycle_unit) {
   discard_time_ = NowTicks();
-  last_focused_time_before_discard_ =
-      lifecycle_unit->GetSortKey().last_focused_time;
+  last_focused_time_before_discard_ = lifecycle_unit->GetLastFocusedTime();
 
   static int discard_count = 0;
   UMA_HISTOGRAM_CUSTOM_COUNTS("TabManager.Discarding.DiscardCount",

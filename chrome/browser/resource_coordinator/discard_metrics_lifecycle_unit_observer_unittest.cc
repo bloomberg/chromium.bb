@@ -45,6 +45,9 @@ class DummyLifecycleUnit : public LifecycleUnitBase {
     return nullptr;
   }
   base::string16 GetTitle() const override { return base::string16(); }
+  base::TimeTicks GetLastFocusedTime() const override {
+    return last_focused_time_;
+  };
   base::ProcessHandle GetProcessHandle() const override {
     return base::ProcessHandle();
   }

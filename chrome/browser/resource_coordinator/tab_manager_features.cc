@@ -39,6 +39,10 @@ const base::Feature kStaggeredBackgroundTabOpeningExperiment{
     "StaggeredBackgroundTabOpeningExperiment",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables using the Tab Ranker to score tabs for discarding instead of relying
+// on last focused time.
+const base::Feature kTabRanker{"TabRanker", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 namespace resource_coordinator {

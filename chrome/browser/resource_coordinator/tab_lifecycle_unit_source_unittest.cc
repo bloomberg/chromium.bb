@@ -83,8 +83,7 @@ class MockLifecycleUnitObserver : public LifecycleUnitObserver {
 };
 
 bool IsFocused(LifecycleUnit* lifecycle_unit) {
-  return lifecycle_unit->GetSortKey().last_focused_time ==
-         base::TimeTicks::Max();
+  return lifecycle_unit->GetLastFocusedTime() == base::TimeTicks::Max();
 }
 
 #define EXPECT_FOR_ALL_DISCARD_REASONS(lifecycle_unit, method, value)    \
@@ -146,7 +145,7 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
             EXPECT_TRUE(IsFocused(*first_lifecycle_unit));
           } else {
             EXPECT_EQ(time_before_first_tab,
-                      (*first_lifecycle_unit)->GetSortKey().last_focused_time);
+                      (*first_lifecycle_unit)->GetLastFocusedTime());
           }
         }));
     std::unique_ptr<content::WebContents> first_web_contents =
@@ -165,13 +164,13 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
 
           if (focus_tab_strip) {
             EXPECT_EQ(time_before_second_tab,
-                      (*first_lifecycle_unit)->GetSortKey().last_focused_time);
+                      (*first_lifecycle_unit)->GetLastFocusedTime());
             EXPECT_TRUE(IsFocused(*second_lifecycle_unit));
           } else {
             EXPECT_EQ(time_before_first_tab,
-                      (*first_lifecycle_unit)->GetSortKey().last_focused_time);
+                      (*first_lifecycle_unit)->GetLastFocusedTime());
             EXPECT_EQ(time_before_second_tab,
-                      (*second_lifecycle_unit)->GetSortKey().last_focused_time);
+                      (*second_lifecycle_unit)->GetLastFocusedTime());
           }
         }));
     std::unique_ptr<content::WebContents> second_web_contents =
@@ -192,9 +191,9 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
                   &second_lifecycle_unit);
 
     const base::TimeTicks first_tab_last_focused_time =
-        first_lifecycle_unit->GetSortKey().last_focused_time;
+        first_lifecycle_unit->GetLastFocusedTime();
     const base::TimeTicks second_tab_last_focused_time =
-        second_lifecycle_unit->GetSortKey().last_focused_time;
+        second_lifecycle_unit->GetLastFocusedTime();
 
     // Add a background tab to the focused tab strip.
     task_runner_->FastForwardBy(kShortDelay);
@@ -205,16 +204,15 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
 
           if (focus_tab_strip) {
             EXPECT_EQ(first_tab_last_focused_time,
-                      first_lifecycle_unit->GetSortKey().last_focused_time);
+                      first_lifecycle_unit->GetLastFocusedTime());
             EXPECT_TRUE(IsFocused(second_lifecycle_unit));
           } else {
             EXPECT_EQ(first_tab_last_focused_time,
-                      first_lifecycle_unit->GetSortKey().last_focused_time);
+                      first_lifecycle_unit->GetLastFocusedTime());
             EXPECT_EQ(second_tab_last_focused_time,
-                      second_lifecycle_unit->GetSortKey().last_focused_time);
+                      second_lifecycle_unit->GetLastFocusedTime());
           }
-          EXPECT_EQ(NowTicks(),
-                    third_lifecycle_unit->GetSortKey().last_focused_time);
+          EXPECT_EQ(NowTicks(), third_lifecycle_unit->GetLastFocusedTime());
         }));
     std::unique_ptr<content::WebContents> third_web_contents =
         CreateAndNavigateWebContents();
@@ -486,8 +484,7 @@ TEST_F(TabLifecycleUnitSourceTest, SwitchTabInFocusedTabStrip) {
   auto time_before_activate = NowTicks();
   tab_strip_model_->ActivateTabAt(0, true);
   EXPECT_TRUE(IsFocused(first_lifecycle_unit));
-  EXPECT_EQ(time_before_activate,
-            second_lifecycle_unit->GetSortKey().last_focused_time);
+  EXPECT_EQ(time_before_activate, second_lifecycle_unit->GetLastFocusedTime());
 
   // Expect notifications when tabs are closed.
   CloseTabsAndExpectNotifications(
