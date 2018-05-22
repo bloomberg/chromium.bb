@@ -34,5 +34,7 @@ VIEWS_EXPORT extern const ui::ClassProperty<BubbleDialogDelegateView*>* const
 // template instance before its specialization is declared in a
 // translation unit is a C++ error.
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, gfx::Insets*);
+DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT,
+                                        views::BubbleDialogDelegateView*);
 
 #endif  // UI_VIEWS_VIEW_PROPERTIES_H_
