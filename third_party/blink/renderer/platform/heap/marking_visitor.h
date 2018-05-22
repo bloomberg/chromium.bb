@@ -214,8 +214,7 @@ inline void MarkingVisitor::TraceMarkedBackingStore(void* value) {
   DCHECK(!thread_state->Heap().GetStackFrameDepth().IsEnabled());
   // No weak handling for write barriers. Modifying weakly reachable objects
   // strongifies them for the current cycle.
-  GCInfoTable::Get()
-      .GCInfoFromIndex(header->GcInfoIndex())
+  ThreadHeap::GcInfo(header->GcInfoIndex())
       ->trace_(thread_state->CurrentVisitor(), value);
 #endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
 }

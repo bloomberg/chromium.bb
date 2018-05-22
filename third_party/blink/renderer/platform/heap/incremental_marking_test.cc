@@ -34,9 +34,7 @@ class BackingVisitor : public Visitor {
     EXPECT_TRUE(header->IsValid());
     EXPECT_TRUE(header->IsMarked());
     header->Unmark();
-    GCInfoTable::Get()
-        .GCInfoFromIndex(header->GcInfoIndex())
-        ->trace_(this, header->Payload());
+    ThreadHeap::GcInfo(header->GcInfoIndex())->trace_(this, header->Payload());
   }
 
   void Visit(void* obj, TraceDescriptor desc) final {

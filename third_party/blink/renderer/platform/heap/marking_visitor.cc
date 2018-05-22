@@ -79,8 +79,7 @@ bool IsUninitializedMemory(void* object_pointer, size_t object_size) {
 }  // namespace
 
 void MarkingVisitor::ConservativelyMarkHeader(HeapObjectHeader* header) {
-  const GCInfo* gc_info =
-      GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
+  const GCInfo* gc_info = ThreadHeap::GcInfo(header->GcInfoIndex());
   if (gc_info->HasVTable() && !VTableInitialized(header->Payload())) {
     // We hit this branch when a GC strikes before GarbageCollected<>'s
     // constructor runs.
