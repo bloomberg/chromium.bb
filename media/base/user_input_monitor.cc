@@ -71,7 +71,7 @@ UserInputMonitorBase::EnableKeyPressMonitoringWithMapping() {
   if (++references_ == 1) {
     base::MappedReadOnlyRegion shmem =
         base::ReadOnlySharedMemoryRegion::Create(sizeof(uint32_t));
-    if (!shmem.region.IsValid() || !shmem.mapping.IsValid()) {
+    if (!shmem.IsValid()) {
       DVLOG(2) << "Error mapping key press count shmem.";
       return base::ReadOnlySharedMemoryRegion();
     }

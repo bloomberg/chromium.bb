@@ -71,8 +71,7 @@ TEST(UserInputMonitorTest, ReadWriteKeyPressMonitorCount) {
   std::unique_ptr<base::MappedReadOnlyRegion> shmem =
       std::make_unique<base::MappedReadOnlyRegion>(
           base::ReadOnlySharedMemoryRegion::Create(sizeof(uint32_t)));
-  ASSERT_TRUE(shmem->region.IsValid());
-  ASSERT_TRUE(shmem->mapping.IsValid());
+  ASSERT_TRUE(shmem->IsValid());
 
   constexpr uint32_t count = 10;
   WriteKeyPressMonitorCount(shmem->mapping, count);
