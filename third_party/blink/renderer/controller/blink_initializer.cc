@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/controller/blink_leak_detector.h"
 #include "third_party/blink/renderer/controller/bloated_renderer_detector.h"
 #include "third_party/blink/renderer/controller/dev_tools_frontend_impl.h"
-#include "third_party/blink/renderer/controller/oom_intervention_impl.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
@@ -53,6 +52,10 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "v8/include/v8.h"
+
+#if defined(OS_ANDROID)
+#include "third_party/blink/renderer/controller/oom_intervention_impl.h"
+#endif
 
 namespace blink {
 
@@ -135,9 +138,12 @@ void BlinkInitializer::RegisterInterfaces(
   if (!main_thread || !main_thread->GetTaskRunner())
     return;
 
+#if defined(OS_ANDROID)
   registry.AddInterface(
       ConvertToBaseCallback(CrossThreadBind(&OomInterventionImpl::Create)),
       main_thread->GetTaskRunner());
+#endif
+
   registry.AddInterface(
       ConvertToBaseCallback(CrossThreadBind(&BlinkLeakDetector::Create)),
       main_thread->GetTaskRunner());

@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
 
+#include <unistd.h>
+
+#include "base/files/file_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,6 +73,48 @@ TEST_F(OomInterventionImplTest, DetectedAndDeclined) {
 
   intervention.reset();
   EXPECT_FALSE(page->Paused());
+}
+
+TEST_F(OomInterventionImplTest, CalculatePMFAndSwap) {
+  const char kStatmFile[] = "100 40 25 0 0";
+  const char kStatusFile[] =
+      "First:  1\n Second: 2 kB\nVmSwap: 10 kB \n Third: 10 kB\n Last: 8";
+  base::FilePath statm_path;
+  EXPECT_TRUE(base::CreateTemporaryFile(&statm_path));
+  EXPECT_EQ(static_cast<int>(sizeof(kStatmFile)),
+            base::WriteFile(statm_path, kStatmFile, sizeof(kStatmFile)));
+  base::File statm_file(statm_path,
+                        base::File::FLAG_OPEN | base::File::FLAG_READ);
+  base::FilePath status_path;
+  EXPECT_TRUE(base::CreateTemporaryFile(&status_path));
+  EXPECT_EQ(static_cast<int>(sizeof(kStatusFile)),
+            base::WriteFile(status_path, kStatusFile, sizeof(kStatusFile)));
+  base::File status_file(status_path,
+                         base::File::FLAG_OPEN | base::File::FLAG_READ);
+
+  auto intervention = std::make_unique<OomInterventionImpl>(
+      WTF::BindRepeating(&OomInterventionImplTest::MockMemoryWorkloadCalculator,
+                         WTF::Unretained(this)));
+  intervention->statm_fd_.reset(statm_file.TakePlatformFile());
+  intervention->status_fd_.reset(status_file.TakePlatformFile());
+
+  mojom::blink::OomInterventionHostPtr host_ptr;
+  MockOomInterventionHost mock_host(mojo::MakeRequest(&host_ptr));
+  base::UnsafeSharedMemoryRegion shm =
+      base::UnsafeSharedMemoryRegion::Create(sizeof(OomInterventionMetrics));
+  uint64_t threshold = 80;
+  intervention->memory_workload_threshold_ = threshold;
+  memory_workload_ = threshold - 1;
+  intervention->StartDetection(std::move(host_ptr), std::move(shm), threshold,
+                               false /*trigger_intervention*/);
+
+  intervention->Check(nullptr);
+  OomInterventionMetrics* metrics = static_cast<OomInterventionMetrics*>(
+      intervention->shared_metrics_buffer_.memory());
+  uint64_t swap_kb = 10;
+  uint64_t pmf_kb = (40 - 25) * getpagesize() / 1024 + swap_kb;
+  EXPECT_EQ(pmf_kb, metrics->current_private_footprint_kb);
+  EXPECT_EQ(swap_kb, metrics->current_swap_kb);
 }
 
 }  // namespace blink
