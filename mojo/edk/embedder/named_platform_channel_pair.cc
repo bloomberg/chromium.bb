@@ -4,8 +4,6 @@
 
 #include "mojo/edk/embedder/named_platform_channel_pair.h"
 
-#include <windows.h>
-
 #include <memory>
 #include <string>
 #include <utility>
@@ -20,6 +18,10 @@
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
 #include "mojo/edk/embedder/platform_handle.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace mojo {
 namespace edk {
 
@@ -28,19 +30,30 @@ namespace {
 const char kMojoNamedPlatformChannelPipeSwitch[] =
     "mojo-named-platform-channel-pipe";
 
-std::wstring GeneratePipeName() {
+#if defined(OS_WIN)
+std::wstring GeneratePipeName(
+    const NamedPlatformChannelPair::Options& options) {
   return base::StringPrintf(L"%u.%u.%I64u", GetCurrentProcessId(),
                             GetCurrentThreadId(), base::RandUint64());
 }
+#else
+std::string GeneratePipeName(const NamedPlatformChannelPair::Options& options) {
+  return options.socket_dir
+      .AppendASCII(base::NumberToString(base::RandUint64()))
+      .value();
+}
+#endif
 
 }  // namespace
 
 NamedPlatformChannelPair::NamedPlatformChannelPair(
     const NamedPlatformChannelPair::Options& options)
-    : pipe_handle_(GeneratePipeName()) {
+    : pipe_handle_(GeneratePipeName(options)) {
   CreateServerHandleOptions server_handle_options;
+#if defined(OS_WIN)
   server_handle_options.security_descriptor = options.security_descriptor;
   server_handle_options.enforce_uniqueness = true;
+#endif
   server_handle_ = CreateServerHandle(pipe_handle_, server_handle_options);
   PCHECK(server_handle_.is_valid());
 }
@@ -73,12 +86,11 @@ void NamedPlatformChannelPair::PrepareToPassClientHandleToChildProcess(
   // Log a warning if the command line already has the switch, but "clobber" it
   // anyway, since it's reasonably likely that all the switches were just copied
   // from the parent.
-  LOG_IF(WARNING,
-         command_line->HasSwitch(kMojoNamedPlatformChannelPipeSwitch))
+  LOG_IF(WARNING, command_line->HasSwitch(kMojoNamedPlatformChannelPipeSwitch))
       << "Child command line already has switch --"
       << kMojoNamedPlatformChannelPipeSwitch << "="
       << command_line->GetSwitchValueNative(
-          kMojoNamedPlatformChannelPipeSwitch);
+             kMojoNamedPlatformChannelPipeSwitch);
   // (Any existing switch won't actually be removed from the command line, but
   // the last one appended takes precedence.)
   command_line->AppendSwitchNative(kMojoNamedPlatformChannelPipeSwitch,

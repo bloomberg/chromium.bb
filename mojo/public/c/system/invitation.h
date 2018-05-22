@@ -62,6 +62,15 @@ typedef uint32_t MojoInvitationTransportType;
 // See |MojoInvitationTransportHandle| for details.
 #define MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL ((MojoInvitationTransportType)0)
 
+// Similar to CHANNEL transport, but used for an endpoint which requires an
+// additional step to accept an inbound connection. This corresponds to a
+// bound listening socket on POSIX, or named pipe server handle on Windows.
+//
+// The remote endpoint should establish a working connection to the server side
+// and wrap the handle to that connection using a CHANNEL transport.
+#define MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER \
+  ((MojoInvitationTransportType)1)
+
 // A transport endpoint over which an invitation may be sent or received via
 // |MojoSendInvitation()| or |MojoAcceptInvitation()| respectively.
 struct MOJO_ALIGNAS(8) MojoInvitationTransportEndpoint {
@@ -355,6 +364,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoExtractMessagePipeFromInvitation(
 //   |MOJO_RESULT_FAILED_PRECONDITION| if there were no message pipes attached
 //       to the invitation. The caller may correct this situation and call
 //       again.
+//   |MOJO_RESULT_UNIMPLEMENTED| if the transport endpoint type is not supported
+//       by the system's version of Mojo.
 MOJO_SYSTEM_EXPORT MojoResult MojoSendInvitation(
     MojoHandle invitation_handle,
     const struct MojoPlatformProcessHandle* process_handle,
@@ -393,6 +404,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoSendInvitation(
 //   |MOJO_RESULT_ABORTED| if the system failed to receive any communication via
 //       |transport_endpoint|, possibly due to some configuration error. The
 //       caller may attempt to correct this situation and call again.
+//   |MOJO_RESULT_UNIMPLEMENTED| if the transport endpoint type is not supported
+//       by the system's version of Mojo.
 MOJO_SYSTEM_EXPORT MojoResult MojoAcceptInvitation(
     const struct MojoInvitationTransportEndpoint* transport_endpoint,
     const struct MojoAcceptInvitationOptions* options,

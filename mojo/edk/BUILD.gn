@@ -97,7 +97,6 @@ template("core_impl_source_set") {
     sources = [
       "embedder/connection_params.cc",
       "embedder/entrypoints.cc",
-      "embedder/named_platform_channel_pair_win.cc",
       "embedder/named_platform_handle_utils_win.cc",
       "embedder/platform_channel_pair.cc",
       "embedder/platform_channel_pair_win.cc",
@@ -197,6 +196,7 @@ template("core_impl_source_set") {
       deps += [ "//third_party/ashmem" ]
     }
     if (!is_nacl) {
+      sources += [ "embedder/named_platform_channel_pair.cc" ]
       deps += [ "//crypto" ]
     }
 
