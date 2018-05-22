@@ -102,6 +102,15 @@ struct TraversalLeft {
     return box.PrevLeafChild();
   }
 
+  static const InlineBox* ForwardNonPseudoLeafChildOf(const InlineBox& box) {
+    for (const InlineBox* runner = ForwardLeafChildOf(box); runner;
+         runner = ForwardLeafChildOf(*runner)) {
+      if (runner->GetLineLayoutItem().GetNode())
+        return runner;
+    }
+    return nullptr;
+  }
+
   static const InlineBox* ForwardLeafChildIgnoringLineBreakOf(
       const InlineBox& box) {
     return box.PrevLeafChildIgnoringLineBreak();
@@ -199,6 +208,15 @@ struct TraversalRight {
     return box.NextLeafChild();
   }
 
+  static const InlineBox* ForwardNonPseudoLeafChildOf(const InlineBox& box) {
+    for (const InlineBox* runner = ForwardLeafChildOf(box); runner;
+         runner = ForwardLeafChildOf(*runner)) {
+      if (runner->GetLineLayoutItem().GetNode())
+        return runner;
+    }
+    return nullptr;
+  }
+
   static const InlineBox* ForwardLeafChildIgnoringLineBreakOf(
       const InlineBox& box) {
     return box.NextLeafChildIgnoringLineBreak();
@@ -274,12 +292,9 @@ template <typename Traversal>
 bool FindForwardBoxInPossiblyBidiContext(const InlineBox*& box,
                                          int& offset,
                                          TextDirection primary_direction) {
-  // TODO(xiaochengh): Make |level| and |forward_box| const, and use additional
-  // variables for their changed values.
-  unsigned char level = box->BidiLevel();
-  const InlineBox* forward_box = Traversal::ForwardLeafChildOf(*box);
-
+  const unsigned char level = box->BidiLevel();
   if (box->Direction() == primary_direction) {
+    const InlineBox* const forward_box = Traversal::ForwardLeafChildOf(*box);
     if (!forward_box) {
       if (const InlineBox* logical_start =
               Traversal::LogicalStartBoxOf(primary_direction, *box)) {
@@ -291,10 +306,10 @@ bool FindForwardBoxInPossiblyBidiContext(const InlineBox*& box,
     if (forward_box->BidiLevel() >= level)
       return true;
 
-    level = forward_box->BidiLevel();
+    const unsigned char forward_level = forward_box->BidiLevel();
     const InlineBox* const backward_box =
-        Traversal::FindBackwardBidiRun(*box, level);
-    if (backward_box && backward_box->BidiLevel() == level)
+        Traversal::FindBackwardBidiRun(*box, forward_level);
+    if (backward_box && backward_box->BidiLevel() == forward_level)
       return true;
 
     box = forward_box;
@@ -302,15 +317,15 @@ bool FindForwardBoxInPossiblyBidiContext(const InlineBox*& box,
     return box->Direction() == primary_direction;
   }
 
-  while (forward_box && !forward_box->GetLineLayoutItem().GetNode())
-    forward_box = Traversal::ForwardLeafChildOf(*forward_box);
-
-  if (forward_box) {
-    box = forward_box;
+  const InlineBox* const forward_non_pseudo_box =
+      Traversal::ForwardNonPseudoLeafChildOf(*box);
+  if (forward_non_pseudo_box) {
+    box = forward_non_pseudo_box;
     offset = Traversal::CaretEndOffsetOf(*box);
     if (box->BidiLevel() > level) {
-      forward_box = Traversal::FindForwardBidiRun(*forward_box, level);
-      if (!forward_box || forward_box->BidiLevel() < level)
+      const InlineBox* const forward_bidi_run =
+          Traversal::FindForwardBidiRun(*forward_non_pseudo_box, level);
+      if (!forward_bidi_run || forward_bidi_run->BidiLevel() < level)
         return false;
     }
     return true;
