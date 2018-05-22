@@ -30,6 +30,9 @@ namespace {
 // Left margin for search icon.
 const CGFloat kSearchIconLeftMargin = 9;
 
+// Landscape inset for fake omnibox background container
+const CGFloat kBackgroundLandscapeInset = 169;
+
 }  // namespace
 
 @interface ContentSuggestionsHeaderView ()<ToolbarSnapshotProviding>
@@ -236,10 +239,13 @@ const CGFloat kSearchIconLeftMargin = 9;
 
   // Calculate the amount to shrink the width and height of background so that
   // it's where the focused adapative toolbar focuses.
+  CGFloat inset = IsLandscape() ? kBackgroundLandscapeInset : 0;
   self.backgroundLeadingConstraint.constant =
-      (safeAreaInsets.left + kExpandedLocationBarHorizontalMargin) * percent;
+      (safeAreaInsets.left + kExpandedLocationBarHorizontalMargin + inset) *
+      percent;
   self.backgroundTrailingConstraint.constant =
-      -(safeAreaInsets.right + kExpandedLocationBarHorizontalMargin) * percent;
+      -(safeAreaInsets.right + kExpandedLocationBarHorizontalMargin + inset) *
+      percent;
 
   CGFloat kLocationBarHeight =
       kAdaptiveToolbarHeight - 2 * kAdaptiveLocationBarVerticalMargin;
@@ -253,8 +259,8 @@ const CGFloat kSearchIconLeftMargin = 9;
 
   // Adjust the position of the search field's subviews by adjusting their
   // constraint constant value.
-  CGFloat constantDiff =
-      percent * (ntp_header::kMaxHorizontalMarginDiff + safeAreaInsets.left);
+  CGFloat constantDiff = percent * (ntp_header::kMaxHorizontalMarginDiff +
+                                    inset + safeAreaInsets.left);
   for (NSLayoutConstraint* constraint in constraints) {
     if (constraint.constant > 0)
       constraint.constant = constantDiff + ntp_header::kHintLabelSidePadding;
