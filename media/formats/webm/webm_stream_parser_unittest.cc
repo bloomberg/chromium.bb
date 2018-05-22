@@ -13,6 +13,7 @@
 #include "media/base/mock_media_log.h"
 #include "media/base/stream_parser.h"
 #include "media/base/test_data_util.h"
+#include "media/base/test_helpers.h"
 #include "media/base/text_track_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -91,7 +92,7 @@ class WebMStreamParserTest : public testing::Test {
 };
 
 TEST_F(WebMStreamParserTest, VerifyMediaTrackMetadata) {
-  EXPECT_MEDIA_LOG(testing::HasSubstr("Estimating WebM block duration"))
+  EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimatedAny())
       .Times(testing::AnyNumber());
   StreamParser::InitParameters params(kInfiniteDuration);
   params.detected_audio_track_count = 1;
@@ -118,7 +119,7 @@ TEST_F(WebMStreamParserTest, VerifyMediaTrackMetadata) {
 }
 
 TEST_F(WebMStreamParserTest, VerifyDetectedTrack_AudioOnly) {
-  EXPECT_MEDIA_LOG(testing::HasSubstr("Estimating WebM block duration"))
+  EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimatedAny())
       .Times(testing::AnyNumber());
   StreamParser::InitParameters params(kInfiniteDuration);
   params.detected_audio_track_count = 1;
@@ -140,7 +141,7 @@ TEST_F(WebMStreamParserTest, VerifyDetectedTrack_VideoOnly) {
 }
 
 TEST_F(WebMStreamParserTest, VerifyDetectedTracks_AVText) {
-  EXPECT_MEDIA_LOG(testing::HasSubstr("Estimating WebM block duration"))
+  EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimatedAny())
       .Times(testing::AnyNumber());
   StreamParser::InitParameters params(kInfiniteDuration);
   params.detected_audio_track_count = 1;
@@ -153,7 +154,7 @@ TEST_F(WebMStreamParserTest, VerifyDetectedTracks_AVText) {
 }
 
 TEST_F(WebMStreamParserTest, ColourElement) {
-  EXPECT_MEDIA_LOG(testing::HasSubstr("Estimating WebM block duration"))
+  EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimatedAny())
       .Times(testing::AnyNumber());
   StreamParser::InitParameters params(kInfiniteDuration);
   params.detected_audio_track_count = 0;
@@ -193,7 +194,7 @@ TEST_F(WebMStreamParserTest, ColourElement) {
 }
 
 TEST_F(WebMStreamParserTest, ColourElementWithUnspecifiedRange) {
-  EXPECT_MEDIA_LOG(testing::HasSubstr("Estimating WebM block duration"))
+  EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimatedAny())
       .Times(testing::AnyNumber());
   StreamParser::InitParameters params(kInfiniteDuration);
   params.detected_audio_track_count = 0;

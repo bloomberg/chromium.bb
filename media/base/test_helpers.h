@@ -331,6 +331,12 @@ MATCHER_P2(SkippingSpliceTooLittleOverlap,
                "result in loss of A/V sync.");
 }
 
+// Prefer WebMSimpleBlockDurationEstimated over this matcher, unless the actual
+// estimated duration value is unimportant to the test.
+MATCHER(WebMSimpleBlockDurationEstimatedAny, "") {
+  return CONTAINS_STRING(arg, "Estimating WebM block duration=");
+}
+
 MATCHER_P(WebMSimpleBlockDurationEstimated, estimated_duration_ms, "") {
   return CONTAINS_STRING(arg, "Estimating WebM block duration=" +
                                   base::IntToString(estimated_duration_ms));
