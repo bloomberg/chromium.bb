@@ -67,9 +67,11 @@ class PDFiumEngine : public PDFEngine,
   bool HandleEvent(const pp::InputEvent& event) override;
   uint32_t QuerySupportedPrintOutputFormats() override;
   void PrintBegin() override;
-  pp::Resource PrintPages(const PP_PrintPageNumberRange_Dev* page_ranges,
-                          uint32_t page_range_count,
-                          const PP_PrintSettings_Dev& print_settings) override;
+  pp::Resource PrintPages(
+      const PP_PrintPageNumberRange_Dev* page_ranges,
+      uint32_t page_range_count,
+      const PP_PrintSettings_Dev& print_settings,
+      const PP_PdfPrintSettings_Dev& pdf_print_settings) override;
   void PrintEnd() override;
   void StartFind(const std::string& text, bool case_sensitive) override;
   bool SelectFindResult(bool forward) override;
@@ -321,11 +323,14 @@ class PDFiumEngine : public PDFEngine,
   pp::Buffer_Dev PrintPagesAsRasterPDF(
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings);
+      const PP_PrintSettings_Dev& print_settings,
+      const PP_PdfPrintSettings_Dev& pdf_print_settings);
 
-  pp::Buffer_Dev PrintPagesAsPDF(const PP_PrintPageNumberRange_Dev* page_ranges,
-                                 uint32_t page_range_count,
-                                 const PP_PrintSettings_Dev& print_settings);
+  pp::Buffer_Dev PrintPagesAsPDF(
+      const PP_PrintPageNumberRange_Dev* page_ranges,
+      uint32_t page_range_count,
+      const PP_PrintSettings_Dev& print_settings,
+      const PP_PdfPrintSettings_Dev& pdf_print_settings);
 
   // Checks if |page| has selected text in a form element. If so, sets that as
   // the plugin's text selection.

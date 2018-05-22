@@ -79,8 +79,7 @@ TEST_F(PepperPrintingHostTest, GetDefaultPrintSettings) {
                                             PP_PRINTORIENTATION_NORMAL,
                                             PP_PRINTSCALINGOPTION_NONE,
                                             PP_FALSE,
-                                            PP_PRINTOUTPUTFORMAT_PDF,
-                                            1};
+                                            PP_PRINTOUTPUTFORMAT_PDF};
 
   // Construct the resource host.
   std::unique_ptr<PepperPrintSettingsManager> manager(
@@ -124,8 +123,6 @@ TEST_F(PepperPrintingHostTest, GetDefaultPrintSettings) {
             actual_settings.print_scaling_option);
   EXPECT_EQ(expected_settings.grayscale, actual_settings.grayscale);
   EXPECT_EQ(expected_settings.format, actual_settings.format);
-  EXPECT_EQ(expected_settings.num_pages_per_sheet,
-            actual_settings.num_pages_per_sheet);
 }
 
 }  // namespace content

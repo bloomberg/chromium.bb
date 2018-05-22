@@ -86,7 +86,6 @@ PepperPrintSettingsManager::Result ComputeDefaultPrintSettings() {
   settings.paper_size =
       PrintSizeToPPPrintSize(page_setup.physical_size(), device_units_per_inch);
   settings.dpi = print_settings.dpi();
-  settings.num_pages_per_sheet = print_settings.num_pages_per_sheet();
 
   // The remainder of the attributes are hard-coded to the defaults as set
   // elsewhere.

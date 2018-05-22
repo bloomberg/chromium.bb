@@ -36,7 +36,7 @@ class PPP_Printing_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnPluginMsgQuerySupportedFormats(PP_Instance instance, uint32_t* result);
   void OnPluginMsgBegin(PP_Instance instance,
-                        const std::string& settings_string,
+                        const PP_PrintSettings_Dev& settings,
                         int32_t* result);
   void OnPluginMsgPrintPages(
       PP_Instance instance,

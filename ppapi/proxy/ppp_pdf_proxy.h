@@ -47,6 +47,10 @@ class PPP_Pdf_Proxy : public InterfaceProxy {
   void OnPluginMsgRedo(PP_Instance instance);
   void OnPluginMsgReplaceSelection(PP_Instance instance,
                                    const std::string& text);
+  void OnPluginMsgPrintBegin(PP_Instance instance,
+                             const PP_PrintSettings_Dev& print_settings,
+                             const PP_PdfPrintSettings_Dev& pdf_print_settings,
+                             int32_t* result);
 
   // When this proxy is in the plugin side, this value caches the interface
   // pointer so we don't have to retrieve it from the dispatcher each time.

@@ -1195,24 +1195,29 @@ void PDFiumEngine::PrintBegin() {
 pp::Resource PDFiumEngine::PrintPages(
     const PP_PrintPageNumberRange_Dev* page_ranges,
     uint32_t page_range_count,
-    const PP_PrintSettings_Dev& print_settings) {
+    const PP_PrintSettings_Dev& print_settings,
+    const PP_PdfPrintSettings_Dev& pdf_print_settings) {
   ScopedSubstFont scoped_subst_font(this);
   if (!page_range_count)
     return pp::Resource();
 
   if ((print_settings.format & PP_PRINTOUTPUTFORMAT_PDF) &&
       HasPermission(PERMISSION_PRINT_HIGH_QUALITY)) {
-    return PrintPagesAsPDF(page_ranges, page_range_count, print_settings);
+    return PrintPagesAsPDF(page_ranges, page_range_count, print_settings,
+                           pdf_print_settings);
   }
-  if (HasPermission(PERMISSION_PRINT_LOW_QUALITY))
-    return PrintPagesAsRasterPDF(page_ranges, page_range_count, print_settings);
+  if (HasPermission(PERMISSION_PRINT_LOW_QUALITY)) {
+    return PrintPagesAsRasterPDF(page_ranges, page_range_count, print_settings,
+                                 pdf_print_settings);
+  }
   return pp::Resource();
 }
 
 pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPDF(
     const PP_PrintPageNumberRange_Dev* page_ranges,
     uint32_t page_range_count,
-    const PP_PrintSettings_Dev& print_settings) {
+    const PP_PrintSettings_Dev& print_settings,
+    const PP_PdfPrintSettings_Dev& pdf_print_settings) {
   DCHECK(page_range_count);
 
   // If document is not downloaded yet, disable printing.
@@ -1226,13 +1231,14 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPDF(
 #endif
 
   return print_.PrintPagesAsRasterPDF(page_ranges, page_range_count,
-                                      print_settings);
+                                      print_settings, pdf_print_settings);
 }
 
 pp::Buffer_Dev PDFiumEngine::PrintPagesAsPDF(
     const PP_PrintPageNumberRange_Dev* page_ranges,
     uint32_t page_range_count,
-    const PP_PrintSettings_Dev& print_settings) {
+    const PP_PrintSettings_Dev& print_settings,
+    const PP_PdfPrintSettings_Dev& pdf_print_settings) {
   DCHECK(page_range_count);
   DCHECK(doc_);
 
@@ -1247,7 +1253,8 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsPDF(
       pages_[page_number]->Unload();
   }
 
-  return print_.PrintPagesAsPDF(page_ranges, page_range_count, print_settings);
+  return print_.PrintPagesAsPDF(page_ranges, page_range_count, print_settings,
+                                pdf_print_settings);
 }
 
 void PDFiumEngine::KillFormFocus() {

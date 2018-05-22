@@ -51,6 +51,15 @@ struct PP_PdfPrintPresetOptions_Dev {
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PdfPrintPresetOptions_Dev, 24);
 
+struct PP_PdfPrintSettings_Dev {
+  // Used for N-up mode.
+  uint32_t num_pages_per_sheet;
+
+  // The scale factor percentage, where 100 indicates default scaling.
+  uint32_t scale_factor;
+};
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PdfPrintSettings_Dev, 8);
+
 struct PPP_Pdf_1_1 {
   // Returns an absolute URL if the position is over a link.
   PP_Var (*GetLinkAtPosition)(PP_Instance instance,
@@ -99,6 +108,16 @@ struct PPP_Pdf_1_1 {
 
   // Perform a redo operation.
   void (*Redo)(PP_Instance instance);
+
+  // This is a specialized version of PPP_Printing_Dev's Begin method.
+  // It functions in the same way, but takes an additional |pdf_print_settings|
+  // parameter. When the PPP_Pdf interface is available, use this instead of
+  // PPP_Printing_Dev's Begin method, in conjuction with PPP_Printing_Dev's
+  // other methods.
+  int32_t (*PrintBegin)(
+      PP_Instance instance,
+      const struct PP_PrintSettings_Dev* print_settings,
+      const struct PP_PdfPrintSettings_Dev* pdf_print_settings);
 };
 
 typedef PPP_Pdf_1_1 PPP_Pdf;
