@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -89,18 +90,19 @@ class VectorCharAppendBuffer final : public OutputBuffer {
   Vector<char>& buffer_;
 };
 
-void InternalNormalizeLineEndingsToCRLF(const CString& from,
-                                        OutputBuffer& buffer) {
-  // Compute the new length.
+template <typename CharType>
+size_t RequiredSizeForCRLF(const CharType* data, size_t length) {
   size_t new_len = 0;
-  const char* p = from.data();
-  while (p < from.data() + from.length()) {
-    char c = *p++;
+  const CharType* p = data;
+  while (p < data + length) {
+    CharType c = *p++;
     if (c == '\r') {
-      // Safe to look ahead because of trailing '\0'.
-      if (*p != '\n') {
+      if (p >= data + length || *p != '\n') {
         // Turn CR into CRLF.
         new_len += 2;
+      } else {
+        // We already have \r\n. We don't count this \r, and the
+        // following \n will count 2.
       }
     } else if (c == '\n') {
       // Turn LF into CRLF.
@@ -110,20 +112,14 @@ void InternalNormalizeLineEndingsToCRLF(const CString& from,
       new_len += 1;
     }
   }
-  if (new_len < from.length())
-    return;
+  return new_len;
+}
 
-  if (new_len == from.length()) {
-    buffer.Copy(from);
-    return;
-  }
-
-  p = from.data();
-  char* q = buffer.Allocate(new_len);
-
-  // Make a copy of the string.
-  while (p < from.data() + from.length()) {
-    char c = *p++;
+template <typename CharType>
+void NormalizeToCRLF(const CharType* src, size_t src_length, CharType* q) {
+  const CharType* p = src;
+  while (p < src + src_length) {
+    CharType c = *p++;
     if (c == '\r') {
       // Safe to look ahead because of trailing '\0'.
       if (*p != '\n') {
@@ -140,6 +136,20 @@ void InternalNormalizeLineEndingsToCRLF(const CString& from,
       *q++ = c;
     }
   }
+}
+
+void InternalNormalizeLineEndingsToCRLF(const CString& from,
+                                        OutputBuffer& buffer) {
+  size_t new_len = RequiredSizeForCRLF(from.data(), from.length());
+  if (new_len < from.length())
+    return;
+
+  if (new_len == from.length()) {
+    buffer.Copy(from);
+    return;
+  }
+
+  NormalizeToCRLF(from.data(), from.length(), buffer.Allocate(new_len));
 }
 
 }  // namespace
@@ -200,6 +210,26 @@ CString NormalizeLineEndingsToCRLF(const CString& from) {
   CStringBuffer buffer(result);
   InternalNormalizeLineEndingsToCRLF(from, buffer);
   return buffer.Buffer();
+}
+
+String NormalizeLineEndingsToCRLF(const String& src) {
+  size_t length = src.length();
+  if (length == 0)
+    return src;
+  if (src.Is8Bit()) {
+    size_t new_length = RequiredSizeForCRLF(src.Characters8(), length);
+    if (new_length == length)
+      return src;
+    StringBuffer<LChar> buffer(new_length);
+    NormalizeToCRLF(src.Characters8(), length, buffer.Characters());
+    return String::Adopt(buffer);
+  }
+  size_t new_length = RequiredSizeForCRLF(src.Characters16(), length);
+  if (new_length == length)
+    return src;
+  StringBuffer<UChar> buffer(new_length);
+  NormalizeToCRLF(src.Characters16(), length, buffer.Characters());
+  return String::Adopt(buffer);
 }
 
 void NormalizeLineEndingsToNative(const CString& from, Vector<char>& result) {

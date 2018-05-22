@@ -196,7 +196,8 @@ bool BuildSearchString(const HTMLFormElement& form,
     for (const auto& entry : form_data->Entries()) {
       if (!encoded_string->IsEmpty())
         encoded_string->push_back('&');
-      FormDataEncoder::EncodeStringAsFormData(*encoded_string, entry->name(),
+      FormDataEncoder::EncodeStringAsFormData(*encoded_string,
+                                              form_data->Encode(entry->name()),
                                               FormDataEncoder::kNormalizeCRLF);
       encoded_string->push_back('=');
       if (&control == text_element) {
@@ -204,7 +205,8 @@ bool BuildSearchString(const HTMLFormElement& form,
         is_element_found = true;
       } else {
         FormDataEncoder::EncodeStringAsFormData(
-            *encoded_string, entry->Value(), FormDataEncoder::kNormalizeCRLF);
+            *encoded_string, form_data->Encode(entry->Value()),
+            FormDataEncoder::kNormalizeCRLF);
       }
     }
   }

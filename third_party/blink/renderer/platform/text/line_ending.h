@@ -40,6 +40,7 @@ namespace blink {
 
 // Normalize all line-endings in the given string to CRLF.
 PLATFORM_EXPORT CString NormalizeLineEndingsToCRLF(const CString& from);
+PLATFORM_EXPORT String NormalizeLineEndingsToCRLF(const String& from);
 
 // Normalize all line-endings in the given string to LF and append the result to
 // the given buffer.

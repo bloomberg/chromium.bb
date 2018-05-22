@@ -58,9 +58,9 @@ class FormDataIterationSource final
       return false;
 
     const FormData::Entry& entry = *form_data_->Entries()[current_++];
-    name = form_data_->Decode(entry.name());
+    name = entry.name();
     if (entry.IsString()) {
-      value.SetUSVString(form_data_->Decode(entry.Value()));
+      value.SetUSVString(entry.Value());
     } else {
       DCHECK(entry.isFile());
       value.SetFile(entry.GetFile());
@@ -78,6 +78,12 @@ class FormDataIterationSource final
   size_t current_;
 };
 
+String Normalize(const String& input) {
+  // TODO(tkent): Should we convert the input to USVString?
+  // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#append-an-entry
+  return NormalizeLineEndingsToCRLF(input);
+}
+
 }  // namespace
 
 FormData::FormData(const WTF::TextEncoding& encoding) : encoding_(encoding) {}
@@ -93,8 +99,7 @@ void FormData::Trace(blink::Visitor* visitor) {
 }
 
 void FormData::append(const String& name, const String& value) {
-  entries_.push_back(
-      new Entry(EncodeAndNormalize(name), EncodeAndNormalize(value)));
+  entries_.push_back(new Entry(Normalize(name), Normalize(value)));
 }
 
 void FormData::append(ScriptState* script_state,
@@ -109,10 +114,10 @@ void FormData::append(ScriptState* script_state,
 }
 
 void FormData::deleteEntry(const String& name) {
-  const CString encoded_name = EncodeAndNormalize(name);
+  const String normalized_name = Normalize(name);
   size_t i = 0;
   while (i < entries_.size()) {
-    if (entries_[i]->name() == encoded_name) {
+    if (entries_[i]->name() == normalized_name) {
       entries_.EraseAt(i);
     } else {
       ++i;
@@ -121,11 +126,11 @@ void FormData::deleteEntry(const String& name) {
 }
 
 void FormData::get(const String& name, FormDataEntryValue& result) {
-  const CString encoded_name = EncodeAndNormalize(name);
+  const String normalized_name = Normalize(name);
   for (const auto& entry : Entries()) {
-    if (entry->name() == encoded_name) {
+    if (entry->name() == normalized_name) {
       if (entry->IsString()) {
-        result.SetUSVString(Decode(entry->Value()));
+        result.SetUSVString(entry->Value());
       } else {
         DCHECK(entry->isFile());
         result.SetFile(entry->GetFile());
@@ -138,13 +143,13 @@ void FormData::get(const String& name, FormDataEntryValue& result) {
 HeapVector<FormDataEntryValue> FormData::getAll(const String& name) {
   HeapVector<FormDataEntryValue> results;
 
-  const CString encoded_name = EncodeAndNormalize(name);
+  const String normalized_name = Normalize(name);
   for (const auto& entry : Entries()) {
-    if (entry->name() != encoded_name)
+    if (entry->name() != normalized_name)
       continue;
     FormDataEntryValue value;
     if (entry->IsString()) {
-      value.SetUSVString(Decode(entry->Value()));
+      value.SetUSVString(entry->Value());
     } else {
       DCHECK(entry->isFile());
       value.SetFile(entry->GetFile());
@@ -155,29 +160,29 @@ HeapVector<FormDataEntryValue> FormData::getAll(const String& name) {
 }
 
 bool FormData::has(const String& name) {
-  const CString encoded_name = EncodeAndNormalize(name);
+  const String normalized_name = Normalize(name);
   for (const auto& entry : Entries()) {
-    if (entry->name() == encoded_name)
+    if (entry->name() == normalized_name)
       return true;
   }
   return false;
 }
 
 void FormData::set(const String& name, const String& value) {
-  SetEntry(new Entry(EncodeAndNormalize(name), EncodeAndNormalize(value)));
+  SetEntry(new Entry(Normalize(name), Normalize(value)));
 }
 
 void FormData::set(const String& name, Blob* blob, const String& filename) {
-  SetEntry(new Entry(EncodeAndNormalize(name), blob, filename));
+  SetEntry(new Entry(Normalize(name), blob, filename));
 }
 
 void FormData::SetEntry(const Entry* entry) {
   DCHECK(entry);
-  const CString encoded_name = entry->name();
+  const String normalized_name = entry->name();
   bool found = false;
   size_t i = 0;
   while (i < entries_.size()) {
-    if (entries_[i]->name() != encoded_name) {
+    if (entries_[i]->name() != normalized_name) {
       ++i;
     } else if (found) {
       entries_.EraseAt(i);
@@ -196,17 +201,11 @@ void FormData::append(const String& name, int value) {
 }
 
 void FormData::append(const String& name, Blob* blob, const String& filename) {
-  entries_.push_back(new Entry(EncodeAndNormalize(name), blob, filename));
+  entries_.push_back(new Entry(Normalize(name), blob, filename));
 }
 
-CString FormData::EncodeAndNormalize(const String& string) const {
-  CString encoded_string =
-      encoding_.Encode(string, WTF::kEntitiesForUnencodables);
-  return NormalizeLineEndingsToCRLF(encoded_string);
-}
-
-String FormData::Decode(const CString& data) const {
-  return Encoding().Decode(data.data(), data.length());
+CString FormData::Encode(const String& string) const {
+  return encoding_.Encode(string, WTF::kEntitiesForUnencodables);
 }
 
 scoped_refptr<EncodedFormData> FormData::EncodeFormData(
@@ -215,9 +214,9 @@ scoped_refptr<EncodedFormData> FormData::EncodeFormData(
   Vector<char> encoded_data;
   for (const auto& entry : Entries()) {
     FormDataEncoder::AddKeyValuePairAsFormData(
-        encoded_data, entry->name(),
-        entry->isFile() ? EncodeAndNormalize(entry->GetFile()->name())
-                        : entry->Value(),
+        encoded_data, Encode(entry->name()),
+        entry->isFile() ? Encode(Normalize(entry->GetFile()->name()))
+                        : Encode(entry->Value()),
         encoding_type);
   }
   form_data->AppendData(encoded_data.data(), encoded_data.size());
@@ -231,7 +230,7 @@ scoped_refptr<EncodedFormData> FormData::EncodeMultiPartFormData() {
   for (const auto& entry : Entries()) {
     Vector<char> header;
     FormDataEncoder::BeginMultiPartHeader(header, form_data->Boundary().data(),
-                                          entry->name());
+                                          Encode(entry->name()));
 
     // If the current type is blob, then we also need to include the
     // filename.
@@ -288,7 +287,8 @@ scoped_refptr<EncodedFormData> FormData::EncodeMultiPartFormData() {
                               entry->GetBlob()->GetBlobDataHandle());
       }
     } else {
-      form_data->AppendData(entry->Value().data(), entry->Value().length());
+      CString encoded_value = Encode(entry->Value());
+      form_data->AppendData(encoded_value.data(), encoded_value.length());
     }
     form_data->AppendData("\r\n", 2);
   }
