@@ -3275,19 +3275,30 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
     }
 
     if (target_state == DocumentLifecycle::kPaintClean) {
-      if (!frame_->GetDocument()->Printing() ||
-          RuntimeEnabledFeatures::PrintBrowserEnabled())
+      // While printing a document, the paint walk is done by the printing
+      // component into a special canvas. There is no point doing a normal paint
+      // step (or animations update for BlinkGenPropertyTrees/SPv2) when in this
+      // mode.
+      //
+      // RuntimeEnabledFeatures::PrintBrowserEnabled is a mode which runs the
+      // browser normally, but renders every page as if it were being printed.
+      // See crbug.com/667547
+      bool print_mode_enabled = frame_->GetDocument()->Printing() &&
+                                !RuntimeEnabledFeatures::PrintBrowserEnabled();
+      if (!print_mode_enabled)
         PaintTree();
 
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-        base::Optional<CompositorElementIdSet> composited_element_ids =
-            CompositorElementIdSet();
-        PushPaintArtifactToCompositor(composited_element_ids.value());
-        // TODO(wkorman): Add a call to UpdateCompositorScrollAnimations here.
-        DocumentAnimations::UpdateAnimations(GetLayoutView()->GetDocument(),
-                                             DocumentLifecycle::kPaintClean,
-                                             composited_element_ids);
+        if (!print_mode_enabled) {
+          base::Optional<CompositorElementIdSet> composited_element_ids =
+              CompositorElementIdSet();
+          PushPaintArtifactToCompositor(composited_element_ids.value());
+          // TODO(wkorman): Add call to UpdateCompositorScrollAnimations here.
+          DocumentAnimations::UpdateAnimations(GetLayoutView()->GetDocument(),
+                                               DocumentLifecycle::kPaintClean,
+                                               composited_element_ids);
+        }
         // Notify the controller that the artifact has been pushed and some
         // lifecycle state can be freed (such as raster invalidations).
         paint_controller_->FinishCycle();
