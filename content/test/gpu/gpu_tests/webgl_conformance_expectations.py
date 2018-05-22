@@ -749,6 +749,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/ogles/GL/functions/functions_121_to_126.html',
               ['android', 'nvidia'], bug=740769)
 
+    # Flaky timeout on android_n5x_swarming_rel and
+    # android-marshmallow-arm64-rel.
+    self.Flaky('conformance/glsl/constructors/glsl-construct-mat3.html',
+               ['android'], bug=845411)
+    self.Flaky('conformance/glsl/bugs/sketchfab-lighting-shader-crash.html',
+               ['android'], bug=845438)
+
 
     ############
     # ChromeOS #
