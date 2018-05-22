@@ -507,9 +507,14 @@ def main():
       'Result details link do not match. The link returned by get_url_link'
       ' should be the same as that returned by upload.')
 
-  ui_screenshot_link = upload_screenshot_set(json_file, args.test_name,
+  ui_screenshot_set_link = upload_screenshot_set(json_file, args.test_name,
       args.bucket, builder_name, build_number)
 
+  if ui_screenshot_set_link:
+    ui_catalog_url = 'https://chrome-ui-catalog.appspot.com/'
+    ui_catalog_query = urllib.urlencode(
+        {'screenshot_source': ui_screenshot_set_link})
+    ui_screenshot_link = '%s?%s' % (ui_catalog_url, ui_catalog_query)
 
   if args.output_json:
     with open(json_file) as original_json_file:
@@ -518,7 +523,7 @@ def main():
           'result_details (logcats, flakiness links)': result_details_link
       }
 
-      if ui_screenshot_link:
+      if ui_screenshot_set_link:
         json_object['links']['ui screenshots'] = ui_screenshot_link
 
       with open(args.output_json, 'w') as f:
@@ -526,7 +531,7 @@ def main():
   else:
     print 'Result Details: %s' % result_details_link
 
-    if ui_screenshot_link:
+    if ui_screenshot_set_link:
       print 'UI Screenshots %s' % ui_screenshot_link
 
 
