@@ -19,6 +19,11 @@ void FakePendingConnectionRequest::HandleConnectionFailure(
   handled_failure_details_.push_back(failure_detail);
 }
 
+std::pair<std::string, mojom::ConnectionDelegatePtr>
+FakePendingConnectionRequest::ExtractClientData() {
+  return std::move(client_data_for_extraction_);
+}
+
 }  // namespace secure_channel
 
 }  // namespace chromeos

@@ -5,9 +5,13 @@
 #ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_PENDING_CONNECTION_REQUEST_H_
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_PENDING_CONNECTION_REQUEST_H_
 
+#include <string>
+#include <utility>
+
 #include "base/guid.h"
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/pending_connection_request_delegate.h"
+#include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
 namespace chromeos {
 
@@ -22,6 +26,14 @@ namespace secure_channel {
 template <typename FailureDetailType>
 class PendingConnectionRequest {
  public:
+  // Extracts |request|'s feature and ConnectionDelegate. This function deletes
+  // |request| as part of this process to ensure that it is no longer used after
+  // extraction is complete.
+  static std::pair<std::string, mojom::ConnectionDelegatePtr> ExtractClientData(
+      std::unique_ptr<PendingConnectionRequest<FailureDetailType>> request) {
+    return request->ExtractClientData();
+  }
+
   virtual ~PendingConnectionRequest() = default;
 
   // Handles a failed connection attempt. Derived classes may choose to stop
@@ -36,6 +48,10 @@ class PendingConnectionRequest {
       : delegate_(delegate), request_id_(base::GenerateGUID()) {
     DCHECK(delegate_);
   }
+
+  // Extracts the feature and ConnectionDelegate from this request.
+  virtual std::pair<std::string, mojom::ConnectionDelegatePtr>
+  ExtractClientData() = 0;
 
   void NotifyRequestFinishedWithoutConnection(
       PendingConnectionRequestDelegate::FailedConnectionReason reason) {

@@ -5,6 +5,11 @@
 #ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_CONNECTION_ATTEMPT_H_
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_CONNECTION_ATTEMPT_H_
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/macros.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/connection_attempt_delegate.h"
@@ -23,6 +28,15 @@ class AuthenticatedChannel;
 template <typename FailureDetailType>
 class ConnectionAttempt {
  public:
+  // Extracts all of the features and ConnectionDelegates owned by |attempt|'s
+  // PendingConnectionRequests. This function deletes |attempt| as part of this
+  // process to ensure that it is no longer used after extraction is complete.
+  static std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>
+  ExtractClientData(
+      std::unique_ptr<ConnectionAttempt<FailureDetailType>> attempt) {
+    return attempt->ExtractClientData();
+  }
+
   virtual ~ConnectionAttempt() = default;
 
   // Note: Attempt ID is guaranteed to be unique.
@@ -60,6 +74,11 @@ class ConnectionAttempt {
   // attempt.
   virtual void ProcessAddingNewConnectionRequest(
       std::unique_ptr<PendingConnectionRequest<FailureDetailType>> request) = 0;
+
+  // Extracts the features and ConnectionDelegates from all child
+  // PendingConnectionRequests.
+  virtual std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>
+  ExtractClientData() = 0;
 
   void OnConnectionAttemptSucceeded(
       std::unique_ptr<AuthenticatedChannel> authenticated_channel) {
