@@ -494,6 +494,77 @@ TEST_F(UseCounterTest, MutedDocuments) {
                    CSSPropertyFontWeight, 3);
 }
 
+TEST_F(UseCounterTest, CSSContainLayoutNonPositionedDescendants) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSContainLayoutPositionedDescendants;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style='contain: layout;'>"
+      "</div>");
+  document.View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+}
+
+TEST_F(UseCounterTest, CSSContainLayoutAbsolutelyPositionedDescendants) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSContainLayoutPositionedDescendants;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style='contain: layout;'>"
+      "  <div style='position: absolute;'></div>"
+      "</div>");
+  document.View()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+}
+
+TEST_F(UseCounterTest,
+       CSSContainLayoutAbsolutelyPositionedDescendantsAlreadyContainingBlock) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSContainLayoutPositionedDescendants;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style='position: relative; contain: layout;'>"
+      "  <div style='position: absolute;'></div>"
+      "</div>");
+  document.View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+}
+
+TEST_F(UseCounterTest, CSSContainLayoutFixedPositionedDescendants) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSContainLayoutPositionedDescendants;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style='contain: layout;'>"
+      "  <div style='position: fixed;'></div>"
+      "</div>");
+  document.View()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+}
+
+TEST_F(UseCounterTest,
+       CSSContainLayoutFixedPositionedDescendantsAlreadyContainingBlock) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSContainLayoutPositionedDescendants;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style='transform: translateX(100px); contain: layout;'>"
+      "  <div style='position: fixed;'></div>"
+      "</div>");
+  document.View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+}
+
 class DeprecationTest : public testing::Test {
  public:
   DeprecationTest()

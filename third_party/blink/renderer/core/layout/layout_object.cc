@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
@@ -1008,6 +1009,11 @@ inline void LayoutObject::InvalidateContainerPreferredLogicalWidths() {
 LayoutObject* LayoutObject::ContainerForAbsolutePosition(
     AncestorSkipInfo* skip_info) const {
   return FindAncestorByPredicate(this, skip_info, [](LayoutObject* candidate) {
+    if (!candidate->CanContainAbsolutePositionObjects() &&
+        candidate->StyleRef().ContainsLayout()) {
+      UseCounter::Count(candidate->GetDocument(),
+                        WebFeature::kCSSContainLayoutPositionedDescendants);
+    }
     return candidate->CanContainAbsolutePositionObjects();
   });
 }
@@ -1016,6 +1022,11 @@ LayoutObject* LayoutObject::ContainerForFixedPosition(
     AncestorSkipInfo* skip_info) const {
   DCHECK(!IsText());
   return FindAncestorByPredicate(this, skip_info, [](LayoutObject* candidate) {
+    if (!candidate->CanContainFixedPositionObjects() &&
+        candidate->StyleRef().ContainsLayout()) {
+      UseCounter::Count(candidate->GetDocument(),
+                        WebFeature::kCSSContainLayoutPositionedDescendants);
+    }
     return candidate->CanContainFixedPositionObjects();
   });
 }
