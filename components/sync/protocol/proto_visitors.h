@@ -923,33 +923,32 @@ VISIT_PROTO_FIELDS(const sync_pb::UserConsentSpecifics& proto) {
 }
 
 VISIT_PROTO_FIELDS(
-    const sync_pb::UserConsentSpecifics::ArcBackupAndRestoreConsent& proto) {
+    const sync_pb::UserConsentTypes::ArcBackupAndRestoreConsent& proto) {
   VISIT_REP(description_grd_ids);
   VISIT_ENUM(status);
 }
 
 VISIT_PROTO_FIELDS(
-    const sync_pb::UserConsentSpecifics::ArcGoogleLocationServiceConsent&
-        proto) {
+    const sync_pb::UserConsentTypes::ArcGoogleLocationServiceConsent& proto) {
   VISIT_REP(description_grd_ids);
   VISIT_ENUM(status);
 }
 
 VISIT_PROTO_FIELDS(
-    const sync_pb::UserConsentSpecifics::ArcMetricsAndUsageConsent& proto) {
+    const sync_pb::UserConsentTypes::ArcMetricsAndUsageConsent& proto) {
   VISIT_REP(description_grd_ids);
   VISIT_ENUM(status);
 }
 
 VISIT_PROTO_FIELDS(
-    const sync_pb::UserConsentSpecifics::ArcPlayTermsOfServiceConsent& proto) {
+    const sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent& proto) {
   VISIT(play_terms_of_service_text_length);
   VISIT(play_terms_of_service_hash);
   VISIT(confirmation_grd_id);
   VISIT_ENUM(status);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::UserConsentSpecifics::SyncConsent& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::UserConsentTypes::SyncConsent& proto) {
   VISIT_REP(description_grd_ids);
   VISIT(confirmation_grd_id);
   VISIT_ENUM(status);
@@ -965,43 +964,6 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics& proto) {
   VISIT(translation_event);
   VISIT(user_consent);
   VISIT(gaia_password_reuse_event);
-}
-
-VISIT_PROTO_FIELDS(
-    const sync_pb::UserEventSpecifics::UserConsent::ArcBackupAndRestoreConsent&
-        proto) {
-  VISIT_REP(description_grd_ids);
-  VISIT_ENUM(status);
-}
-
-VISIT_PROTO_FIELDS(
-    const sync_pb::UserEventSpecifics::UserConsent::
-        ArcGoogleLocationServiceConsent& proto) {
-  VISIT_REP(description_grd_ids);
-  VISIT_ENUM(status);
-}
-
-VISIT_PROTO_FIELDS(
-    const sync_pb::UserEventSpecifics::UserConsent::ArcMetricsAndUsageConsent&
-        proto) {
-  VISIT_REP(description_grd_ids);
-  VISIT_ENUM(status);
-}
-
-VISIT_PROTO_FIELDS(
-  const sync_pb::UserEventSpecifics::UserConsent::ArcPlayTermsOfServiceConsent&
-      proto) {
-  VISIT(play_terms_of_service_text_length);
-  VISIT(play_terms_of_service_hash);
-  VISIT(confirmation_grd_id);
-  VISIT_ENUM(status);
-}
-
-VISIT_PROTO_FIELDS(
-    const sync_pb::UserEventSpecifics::UserConsent::SyncConsent& proto) {
-  VISIT_REP(description_grd_ids);
-  VISIT(confirmation_grd_id);
-  VISIT_ENUM(status);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::Test& proto) {}

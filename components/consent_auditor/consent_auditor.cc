@@ -16,7 +16,8 @@
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/user_events/user_event_service.h"
 
-using UserEventSpecifics = sync_pb::UserEventSpecifics;
+using sync_pb::UserConsentTypes;
+using sync_pb::UserEventSpecifics;
 
 namespace consent_auditor {
 
@@ -43,16 +44,16 @@ UserEventSpecifics::UserConsent::Feature FeatureToProtoEnum(
   return UserEventSpecifics::UserConsent::FEATURE_UNSPECIFIED;
 }
 
-UserEventSpecifics::UserConsent::ConsentStatus StatusToProtoEnum(
+UserConsentTypes::ConsentStatus StatusToProtoEnum(
     consent_auditor::ConsentStatus status) {
   switch (status) {
     case consent_auditor::ConsentStatus::NOT_GIVEN:
-      return UserEventSpecifics::UserConsent::NOT_GIVEN;
+      return UserConsentTypes::NOT_GIVEN;
     case consent_auditor::ConsentStatus::GIVEN:
-      return UserEventSpecifics::UserConsent::GIVEN;
+      return UserConsentTypes::GIVEN;
   }
   NOTREACHED();
-  return UserEventSpecifics::UserConsent::CONSENT_STATUS_UNSPECIFIED;
+  return UserConsentTypes::CONSENT_STATUS_UNSPECIFIED;
 }
 
 }  // namespace
