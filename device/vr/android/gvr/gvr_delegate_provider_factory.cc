@@ -28,4 +28,6 @@ void GvrDelegateProviderFactory::Install(
   g_gvr_delegate_provider_factory = factory.release();
 }
 
+GvrDevice* GvrDelegateProviderFactory::device_ = nullptr;
+
 }  // namespace device

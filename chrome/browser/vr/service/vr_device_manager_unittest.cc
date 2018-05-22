@@ -32,6 +32,9 @@ class VRDeviceManagerForTesting : public VRDeviceManager {
   size_t NumberOfConnectedServices() {
     return VRDeviceManager::NumberOfConnectedServices();
   }
+
+  // Expose this test-only method as public for tests.
+  using VRDeviceManager::GetDevice;
 };
 
 class VRServiceImplForTesting : public VRServiceImpl {

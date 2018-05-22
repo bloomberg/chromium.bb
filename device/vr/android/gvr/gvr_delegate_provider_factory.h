@@ -14,11 +14,14 @@
 namespace device {
 
 class GvrDelegateProvider;
+class GvrDevice;
 
 class DEVICE_VR_EXPORT GvrDelegateProviderFactory {
  public:
   static GvrDelegateProvider* Create();
   static void Install(std::unique_ptr<GvrDelegateProviderFactory> factory);
+  static void SetDevice(GvrDevice* device) { device_ = device; }
+  static GvrDevice* GetDevice() { return device_; }
 
   virtual ~GvrDelegateProviderFactory() = default;
 
@@ -26,6 +29,8 @@ class DEVICE_VR_EXPORT GvrDelegateProviderFactory {
   GvrDelegateProviderFactory() = default;
 
   virtual GvrDelegateProvider* CreateGvrDelegateProvider() = 0;
+
+  static GvrDevice* device_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GvrDelegateProviderFactory);

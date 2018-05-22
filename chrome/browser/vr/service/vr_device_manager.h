@@ -46,13 +46,14 @@ class VRDeviceManager {
   void AddService(VRServiceImpl* service);
   void RemoveService(VRServiceImpl* service);
 
-  device::VRDevice* GetDevice(unsigned int index);
-
  protected:
   using ProviderList = std::vector<std::unique_ptr<device::VRDeviceProvider>>;
 
   // Used by tests to supply providers.
   explicit VRDeviceManager(ProviderList providers);
+
+  // Used by tests to check on device state.
+  device::VRDevice* GetDevice(unsigned int index);
 
   size_t NumberOfConnectedServices();
 

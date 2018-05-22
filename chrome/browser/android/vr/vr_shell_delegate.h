@@ -22,7 +22,7 @@
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace device {
-class VRDevice;
+class GvrDevice;
 }
 
 namespace vr {
@@ -64,7 +64,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
                               const base::android::JavaParamRef<jobject>& obj);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  device::VRDevice* GetDevice();
+  device::GvrDevice* GetDevice();
 
   void SendRequestPresentReply(
       bool success,
