@@ -88,7 +88,11 @@ NewPasswordFormManager::NewPasswordFormManager(
 }
 NewPasswordFormManager::~NewPasswordFormManager() = default;
 
-bool NewPasswordFormManager::DoesManage(const autofill::FormData& form) const {
+bool NewPasswordFormManager::DoesManage(
+    const autofill::FormData& form,
+    const PasswordManagerDriver* driver) const {
+  if (driver != driver_.get())
+    return false;
   if (observed_form_.is_form_tag != form.is_form_tag)
     return false;
   // All unowned input elements are considered as one synthetic form.
@@ -131,8 +135,9 @@ void NewPasswordFormManager::ProcessMatches(
 }
 
 bool NewPasswordFormManager::SetSubmittedFormIfIsManaged(
-    const autofill::FormData& submitted_form) {
-  if (!DoesManage(submitted_form))
+    const autofill::FormData& submitted_form,
+    const PasswordManagerDriver* driver) {
+  if (!DoesManage(submitted_form, driver))
     return false;
   submitted_form_ = submitted_form;
   is_submitted_ = true;

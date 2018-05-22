@@ -1151,17 +1151,85 @@ TEST_F(PasswordManagerTest, FormSubmitWithOnlyPasswordField) {
   form_manager_to_save->Save();
 }
 
-TEST_F(PasswordManagerTest, FillPasswordOnManyFrames) {
-  // A password form should be filled in all frames it appears in.
-  PasswordForm form(MakeSimpleForm());  // The observed and saved form.
+// Test that if there are two "similar" forms in different frames, both get
+// filled. This means slightly different things depending on whether the
+// kNewPasswordFormParsing feature is enabled or not, so it is covered by two
+// tests below.
+
+// If kNewPasswordFormParsing is enabled, then "similar" is governed by
+// NewPasswordFormManager::DoesManage, which in turn delegates to the unique
+// renderer ID of the forms being the same. Note, however, that such ID is only
+// unique within one renderer process. If different frames on the page are
+// rendered by different processes, two unrelated forms can end up with the same
+// ID. The test checks that nevertheless each of them gets assigned its own
+// NewPasswordFormManager and filled as expected.
+TEST_F(PasswordManagerTest, FillPasswordOnManyFrames_SameId) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kNewPasswordFormParsing);
+
+  // Two unrelated forms...
+  FormData form_data;
+  form_data.origin = GURL("http://www.google.com/a/LoginAuth");
+  form_data.action = GURL("http://www.google.com/a/Login");
+  form_data.fields.resize(2);
+  form_data.fields[0].name = ASCIIToUTF16("Email");
+  form_data.fields[0].value = ASCIIToUTF16("googleuser");
+  form_data.fields[0].form_control_type = "text";
+  form_data.fields[1].name = ASCIIToUTF16("Passwd");
+  form_data.fields[1].value = ASCIIToUTF16("p4ssword");
+  form_data.fields[1].form_control_type = "password";
+  PasswordForm first_form;
+  first_form.form_data = form_data;
+
+  form_data.origin = GURL("http://www.example.com/");
+  form_data.action = GURL("http://www.example.com/");
+  form_data.fields[0].name = ASCIIToUTF16("User");
+  form_data.fields[0].value = ASCIIToUTF16("exampleuser");
+  form_data.fields[1].name = ASCIIToUTF16("Pwd");
+  form_data.fields[1].value = ASCIIToUTF16("1234");
+  PasswordForm second_form;
+  second_form.form_data = form_data;
+
+  // Make the forms be "similar".
+  first_form.form_data.unique_renderer_id =
+      second_form.form_data.unique_renderer_id = 7654;
+
+  // The following expectation covers the calls from the old
+  // PasswordFormManager.
+  EXPECT_CALL(*store_, GetLogins(PasswordStore::FormDigest(PasswordForm()), _))
+      .Times(2);
 
   // Observe the form in the first frame.
-  std::vector<PasswordForm> observed;
-  observed.push_back(form);
+  EXPECT_CALL(*store_,
+              GetLogins(PasswordStore::FormDigest(first_form.form_data), _))
+      .WillOnce(WithArg<1>(InvokeConsumer(first_form)));
+  EXPECT_CALL(driver_, FillPasswordForm(_));
+  manager()->OnPasswordFormsParsed(&driver_, {first_form});
+
+  // Observe the form in the second frame.
+  MockPasswordManagerDriver driver_b;
+  EXPECT_CALL(*store_,
+              GetLogins(PasswordStore::FormDigest(second_form.form_data), _))
+      .WillOnce(WithArg<1>(InvokeConsumer(second_form)));
+  EXPECT_CALL(driver_b, FillPasswordForm(_));
+  manager()->OnPasswordFormsParsed(&driver_b, {second_form});
+}
+
+// If kNewPasswordFormParsing is disabled, "similar" is governed by
+// PasswordFormManager::DoesManage and is related to actual similarity of the
+// forms, including having the same signon realm (and hence origin). Should a
+// page have two frames with the same origin and a form, and those two forms be
+// similar, then it is important to ensure that the single governing
+// PasswordFormManager knows about both PasswordManagerDriver instances and
+// instructs them to fill.
+TEST_F(PasswordManagerTest, FillPasswordOnManyFrames_SameForm) {
+  PasswordForm same_form = MakeSimpleForm();
+
+  // Observe the form in the first frame.
   EXPECT_CALL(driver_, FillPasswordForm(_));
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillOnce(WithArg<1>(InvokeConsumer(form)));
-  manager()->OnPasswordFormsParsed(&driver_, observed);
+      .WillOnce(WithArg<1>(InvokeConsumer(same_form)));
+  manager()->OnPasswordFormsParsed(&driver_, {same_form});
 
   // Now the form will be seen the second time, in a different frame. The driver
   // for that frame should be told to fill it, but the store should not be asked
@@ -1169,7 +1237,7 @@ TEST_F(PasswordManagerTest, FillPasswordOnManyFrames) {
   MockPasswordManagerDriver driver_b;
   EXPECT_CALL(driver_b, FillPasswordForm(_));
   EXPECT_CALL(*store_, GetLogins(_, _)).Times(0);
-  manager()->OnPasswordFormsParsed(&driver_b, observed);
+  manager()->OnPasswordFormsParsed(&driver_b, {same_form});
 }
 
 TEST_F(PasswordManagerTest, SameDocumentNavigation) {
@@ -2324,7 +2392,8 @@ TEST_F(PasswordManagerTest, CreatingFormManagers) {
   manager()->OnPasswordFormsParsed(&driver_, observed);
   // Check that the form manager is created.
   EXPECT_EQ(1u, manager()->form_managers().size());
-  EXPECT_TRUE(manager()->form_managers()[0]->DoesManage(form.form_data));
+  EXPECT_TRUE(manager()->form_managers()[0]->DoesManage(form.form_data,
+                                                        client_.GetDriver()));
 
   // Check that receiving the same form the second time does not lead to
   // creating new form manager.
