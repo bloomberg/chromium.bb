@@ -43,6 +43,10 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 
 }  // namespace
 
+// Controls whether to enable Chrome OS Account Manager.
+const base::Feature kAccountManager{"ChromeOSAccountManager",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether enable Google Assistant feature.
 const base::Feature kAssistantFeature{"ChromeOSAssistant",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -681,6 +685,10 @@ bool IsVoiceInteractionFlagsEnabled() {
 bool IsVoiceInteractionEnabled() {
   return IsVoiceInteractionLocalesSupported() &&
          IsVoiceInteractionFlagsEnabled();
+}
+
+bool IsAccountManagerEnabled() {
+  return base::FeatureList::IsEnabled(kAccountManager);
 }
 
 bool IsAssistantFlagsEnabled() {
