@@ -168,4 +168,14 @@ TEST_F(SVGImageTest, SupportsSubsequenceCaching) {
       ToLayoutBoxModelObject(svg_root)->Layer()->SupportsSubsequenceCaching());
 }
 
+TEST_F(SVGImageTest, JankTrackerDisabled) {
+  const bool kDontPause = false;
+  Load("<svg xmlns='http://www.w3.org/2000/svg'></svg>", kDontPause);
+  LocalFrame* local_frame =
+      ToLocalFrame(GetImage().GetPageForTesting()->MainFrame());
+  EXPECT_TRUE(local_frame->GetDocument()->IsSVGDocument());
+  auto& jank_tracker = local_frame->View()->GetJankTracker();
+  EXPECT_FALSE(jank_tracker.IsActive());
+}
+
 }  // namespace blink

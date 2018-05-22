@@ -31,13 +31,6 @@ TEST_F(JankTrackerTest, SimpleBlockMovement) {
   EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
 }
 
-TEST_F(JankTrackerTest, SVGIgnored) {
-  const char data[] = "<svg></svg>";
-  GetFrame().ForceSynchronousDocumentInstall(
-      "image/svg+xml", SharedBuffer::Create(data, strlen(data)));
-  EXPECT_FALSE(GetJankTracker().IsActive());
-}
-
 TEST_F(JankTrackerTest, Transform) {
   SetBodyInnerHTML(R"HTML(
     <style>
