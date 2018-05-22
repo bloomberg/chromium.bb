@@ -1224,22 +1224,22 @@ bool H264Decoder::ProcessCurrentSlice() {
     return H264Decoder::kDecodeError;  \
   } while (0)
 
-void H264Decoder::SetStream(int32_t id, const uint8_t* ptr, size_t size) {
+void H264Decoder::SetStream(int32_t id,
+                            const uint8_t* ptr,
+                            size_t size,
+                            const DecryptConfig* decrypt_config) {
   DCHECK(ptr);
   DCHECK(size);
+  if (decrypt_config) {
+    NOTIMPLEMENTED();
+    state_ = kError;
+    return;
+  }
 
   DVLOG(4) << "New input stream id: " << id << " at: " << (void*)ptr
            << " size: " << size;
   stream_id_ = id;
   parser_.SetStream(ptr, size);
-}
-
-void H264Decoder::SetEncryptedStream(int32_t id,
-                                     const uint8_t* ptr,
-                                     size_t size,
-                                     const DecryptConfig& decrypt_config) {
-  state_ = kError;
-  NOTIMPLEMENTED();
 }
 
 H264Decoder::DecodeResult H264Decoder::Decode() {

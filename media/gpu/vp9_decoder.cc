@@ -26,22 +26,21 @@ VP9Decoder::VP9Decoder(std::unique_ptr<VP9Accelerator> accelerator)
 
 VP9Decoder::~VP9Decoder() = default;
 
-void VP9Decoder::SetStream(int32_t id, const uint8_t* ptr, size_t size) {
+void VP9Decoder::SetStream(int32_t id,
+                           const uint8_t* ptr,
+                           size_t size,
+                           const DecryptConfig* decrypt_config) {
   DCHECK(ptr);
   DCHECK(size);
-
+  if (decrypt_config) {
+    NOTIMPLEMENTED();
+    state_ = kError;
+    return;
+  }
   DVLOG(4) << "New input stream id: " << id << " at: " << (void*)ptr
            << " size: " << size;
   stream_id_ = id;
   parser_.SetStream(ptr, size);
-}
-
-void VP9Decoder::SetEncryptedStream(int32_t id,
-                                    const uint8_t* ptr,
-                                    size_t size,
-                                    const DecryptConfig& decrypt_config) {
-  state_ = kError;
-  NOTIMPLEMENTED();
 }
 
 bool VP9Decoder::Flush() {

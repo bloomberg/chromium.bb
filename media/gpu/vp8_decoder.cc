@@ -27,23 +27,23 @@ bool VP8Decoder::Flush() {
   return true;
 }
 
-void VP8Decoder::SetStream(int32_t id, const uint8_t* ptr, size_t size) {
+void VP8Decoder::SetStream(int32_t id,
+                           const uint8_t* ptr,
+                           size_t size,
+                           const DecryptConfig* decrypt_config) {
   DCHECK(ptr);
   DCHECK(size);
+  if (decrypt_config) {
+    NOTIMPLEMENTED();
+    state_ = kError;
+    return;
+  }
 
   DVLOG(4) << "New input stream id: " << id << " at: " << (void*)ptr
            << " size: " << size;
   stream_id_ = id;
   curr_frame_start_ = ptr;
   frame_size_ = size;
-}
-
-void VP8Decoder::SetEncryptedStream(int32_t id,
-                                    const uint8_t* ptr,
-                                    size_t size,
-                                    const DecryptConfig& decrypt_config) {
-  state_ = kError;
-  NOTIMPLEMENTED();
 }
 
 void VP8Decoder::Reset() {
