@@ -219,3 +219,8 @@ message RemountOptionsProto {
   // ID to assign to the mount.
   optional int32 mount_id = 2;
 }
+
+// Used for returning a list of hostnames from a parsed NetBios response packet.
+message HostnamesProto {
+  repeated string hostnames = 1;
+}
