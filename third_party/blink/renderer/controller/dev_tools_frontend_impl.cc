@@ -115,15 +115,6 @@ void DevToolsFrontendImpl::SendMessageToEmbedder(const String& message) {
     host_->DispatchEmbedderMessage(message);
 }
 
-void DevToolsFrontendImpl::ShowContextMenu(LocalFrame* target_frame,
-                                           float x,
-                                           float y,
-                                           ContextMenuProvider* menu_provider) {
-  WebLocalFrameImpl::FromFrame(target_frame)
-      ->ViewImpl()
-      ->ShowContextMenuAtPoint(x, y, menu_provider);
-}
-
 void DevToolsFrontendImpl::DestroyOnHostGone() {
   if (devtools_host_)
     devtools_host_->DisconnectClient();

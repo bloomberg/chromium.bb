@@ -306,8 +306,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Keyboard event to the Right Mouse button down event.
   WebInputEventResult SendContextMenuEvent();
 
-  void ShowContextMenuAtPoint(float x, float y, ContextMenuProvider*);
-
   void ShowContextMenuForElement(WebElement);
 
   // Notifies the WebView that a load has been committed. isNewNavigation

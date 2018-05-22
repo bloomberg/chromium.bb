@@ -78,10 +78,6 @@ class DevToolsFrontendImpl final
 
   // InspectorFrontendClient implementation.
   void SendMessageToEmbedder(const String&) override;
-  void ShowContextMenu(LocalFrame*,
-                       float x,
-                       float y,
-                       ContextMenuProvider*) override;
 
   Member<DevToolsHost> devtools_host_;
   String api_script_;
