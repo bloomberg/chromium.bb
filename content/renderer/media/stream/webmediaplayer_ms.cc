@@ -424,13 +424,22 @@ void WebMediaPlayerMS::TrackRemoved(const blink::WebMediaStreamTrack& track) {
 }
 
 void WebMediaPlayerMS::ActiveStateChanged(bool is_active) {
-  if (!is_active) {
-    // This makes the media element elegible to be garbage collected. Otherwise,
-    // the element will be considered active and will never be garbage
-    // collected.
-    SetNetworkState(kNetworkStateIdle);
-  }
   // The case when the stream becomes active is handled by TrackAdded().
+  if (is_active)
+    return;
+
+  // This makes the media element elegible to be garbage collected. Otherwise,
+  // the element will be considered active and will never be garbage
+  // collected.
+  SetNetworkState(kNetworkStateIdle);
+
+  // Stop the audio renderer to free up resources that are not required for an
+  // inactive stream. This is useful if the media element is not garbage
+  // collected.
+  // Note that the video renderer should not be stopped because the ended video
+  // track is expected to produce a black frame after becoming inactive.
+  if (audio_renderer_)
+    audio_renderer_->Stop();
 }
 
 void WebMediaPlayerMS::Reload() {
