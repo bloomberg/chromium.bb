@@ -16,9 +16,6 @@ class CreateElementFlags {
   bool IsCustomElementsV1() const { return custom_elements_v1_; }
   bool IsCustomElementsV0() const { return custom_elements_v0_; }
   bool WasAlreadyStarted() const { return already_started_; }
-  bool IsCreatedDuringDocumentWrite() const {
-    return created_during_document_write_;
-  }
 
   // https://html.spec.whatwg.org/#create-an-element-for-the-token
   static CreateElementFlags ByParser() {
@@ -52,8 +49,7 @@ class CreateElementFlags {
         async_custom_elements_(false),
         custom_elements_v1_(true),
         custom_elements_v0_(true),
-        already_started_(false),
-        created_during_document_write_(false) {}
+        already_started_(false) {}
 
   CreateElementFlags& SetCreatedByParser(bool flag) {
     created_by_parser_ = flag;
@@ -63,12 +59,6 @@ class CreateElementFlags {
   // For <script>.
   CreateElementFlags& SetAlreadyStarted(bool flag) {
     already_started_ = flag;
-    return *this;
-  }
-
-  // For <script>.
-  CreateElementFlags& SetCreatedDuringDocumentWrite(bool flag) {
-    created_during_document_write_ = flag;
     return *this;
   }
 
@@ -96,7 +86,6 @@ class CreateElementFlags {
   bool custom_elements_v0_ : 1;
 
   bool already_started_ : 1;
-  bool created_during_document_write_ : 1;
 };
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CREATE_ELEMENT_FLAGS_H_

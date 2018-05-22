@@ -37,8 +37,7 @@ inline SVGScriptElement::SVGScriptElement(Document& document,
     : SVGElement(SVGNames::scriptTag, document),
       SVGURIReference(this),
       loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
-                                     flags.WasAlreadyStarted(),
-                                     false)) {}
+                                     flags.WasAlreadyStarted())) {}
 
 SVGScriptElement* SVGScriptElement::Create(Document& document,
                                            const CreateElementFlags flags) {

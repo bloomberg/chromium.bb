@@ -17,12 +17,9 @@ ScriptElementBase* ScriptElementBase::FromElementIfPossible(Element* element) {
   return nullptr;
 }
 
-ScriptLoader* ScriptElementBase::InitializeScriptLoader(
-    bool parser_inserted,
-    bool already_started,
-    bool created_during_document_write) {
-  return ScriptLoader::Create(this, parser_inserted, already_started,
-                              created_during_document_write);
+ScriptLoader* ScriptElementBase::InitializeScriptLoader(bool parser_inserted,
+                                                        bool already_started) {
+  return ScriptLoader::Create(this, parser_inserted, already_started);
 }
 
 }  // namespace blink

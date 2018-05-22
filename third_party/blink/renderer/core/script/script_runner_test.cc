@@ -114,7 +114,7 @@ class MockScriptLoader final : public ScriptLoader {
 
  private:
   explicit MockScriptLoader(ScriptElementBase* element)
-      : ScriptLoader(element, false, false, false) {}
+      : ScriptLoader(element, false, false) {}
 
   static MockScriptLoader* Create(Document* document,
                                   ScriptSchedulingType scheduling_type) {
