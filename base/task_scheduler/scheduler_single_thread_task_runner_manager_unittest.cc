@@ -188,6 +188,7 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest,
 
 TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest,
        SharedWithBaseSyncPrimitivesDCHECKs) {
+  testing::GTEST_FLAG(death_test_style) = "threadsafe";
   EXPECT_DCHECK_DEATH({
     single_thread_task_runner_manager_->CreateSingleThreadTaskRunnerWithTraits(
         {WithBaseSyncPrimitives()}, SingleThreadTaskRunnerThreadMode::SHARED);
