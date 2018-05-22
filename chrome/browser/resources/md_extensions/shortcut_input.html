@@ -35,6 +35,10 @@
         right: -8px;
       }
 
+      :host-context([dir='rtl']) #clearContainer {
+        left: -8px;
+        right: inherit;
+      }
     </style>
     <div id="main">
       <paper-input id="input" placeholder="$i18n{shortcutTypeAShortcut}"
