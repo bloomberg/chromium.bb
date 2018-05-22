@@ -18,21 +18,22 @@
 
 namespace extensions {
 
-TopSitesGetFunction::TopSitesGetFunction()
-    : weak_ptr_factory_(this) {}
+TopSitesGetFunction::TopSitesGetFunction() = default;
+TopSitesGetFunction::~TopSitesGetFunction() = default;
 
-TopSitesGetFunction::~TopSitesGetFunction() {}
-
-bool TopSitesGetFunction::RunAsync() {
-  scoped_refptr<history::TopSites> ts =
-      TopSitesFactory::GetForProfile(GetProfile());
+ExtensionFunction::ResponseAction TopSitesGetFunction::Run() {
+  scoped_refptr<history::TopSites> ts = TopSitesFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context()));
   if (!ts)
-    return false;
+    return RespondNow(Error(kUnknownErrorDoNotUse));
 
   ts->GetMostVisitedURLs(
-      base::Bind(&TopSitesGetFunction::OnMostVisitedURLsAvailable,
-                 weak_ptr_factory_.GetWeakPtr()), false);
-  return true;
+      base::Bind(&TopSitesGetFunction::OnMostVisitedURLsAvailable, this),
+      false);
+
+  // GetMostVisitedURLs() will invoke the callback synchronously if the URLs are
+  // already populated.
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 void TopSitesGetFunction::OnMostVisitedURLsAvailable(
@@ -52,8 +53,7 @@ void TopSitesGetFunction::OnMostVisitedURLsAvailable(
     }
   }
 
-  SetResult(std::move(pages_value));
-  SendResponse(true);
+  Respond(OneArgument(std::move(pages_value)));
 }
 
 }  // namespace extensions
