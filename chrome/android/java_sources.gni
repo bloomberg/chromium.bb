@@ -1516,7 +1516,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/selection/SelectableListLayout.java",
   "java/src/org/chromium/chrome/browser/widget/selection/SelectableListToolbar.java",
   "java/src/org/chromium/chrome/browser/widget/textbubble/ArrowBubbleDrawable.java",
-  "java/src/org/chromium/chrome/browser/widget/textbubble/ImageTextBubble.java",
   "java/src/org/chromium/chrome/browser/widget/textbubble/TextBubble.java",
 ]
 

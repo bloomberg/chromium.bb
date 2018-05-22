@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
-import org.chromium.chrome.browser.widget.textbubble.ImageTextBubble;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -470,33 +469,18 @@ class ContextualSuggestionsMediator
             return;
         }
 
-        int extraInset = mModel.getSlimPeekEnabled()
-                ? mIphParentView.getResources().getDimensionPixelSize(
-                          R.dimen.contextual_suggestions_slim_peek_inset)
-                : 0;
-
         ViewRectProvider rectProvider = new ViewRectProvider(mIphParentView);
         rectProvider.setInsetPx(0,
-                mIphParentView.getResources().getDimensionPixelSize(R.dimen.toolbar_shadow_height)
-                        + extraInset,
+                mIphParentView.getResources().getDimensionPixelSize(R.dimen.toolbar_shadow_height),
                 0, 0);
-        if (mModel.getSlimPeekEnabled()) {
-            mHelpBubble = new ImageTextBubble(mIphParentView.getContext(), mIphParentView,
-                    R.string.contextual_suggestions_in_product_help,
-                    R.string.contextual_suggestions_in_product_help, true, rectProvider,
-                    R.drawable.ic_logo_googleg_24dp);
-            mModel.setToolbarArrowTintResourceId(R.color.google_blue_500);
-        } else {
-            mHelpBubble = new TextBubble(mIphParentView.getContext(), mIphParentView,
-                    R.string.contextual_suggestions_in_product_help,
-                    R.string.contextual_suggestions_in_product_help, rectProvider);
-        }
+        mHelpBubble = new TextBubble(mIphParentView.getContext(), mIphParentView,
+                R.string.contextual_suggestions_in_product_help,
+                R.string.contextual_suggestions_in_product_help, rectProvider);
 
         mHelpBubble.setDismissOnTouchInteraction(true);
         mHelpBubble.addOnDismissListener(() -> {
             tracker.dismissed(FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE);
             mHelpBubble = null;
-            mModel.setToolbarArrowTintResourceId(R.color.dark_mode_tint);
         });
 
         mHelpBubble.show();
