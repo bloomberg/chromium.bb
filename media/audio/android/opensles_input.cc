@@ -192,6 +192,11 @@ bool OpenSLESInputStream::IsMuted() {
   return false;
 }
 
+void OpenSLESInputStream::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  // Not supported. Do nothing.
+}
+
 bool OpenSLESInputStream::CreateRecorder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!engine_object_.Get());

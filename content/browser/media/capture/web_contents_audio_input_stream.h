@@ -48,6 +48,7 @@ class CONTENT_EXPORT WebContentsAudioInputStream
   bool SetAutomaticGainControl(bool enabled) override;
   bool GetAutomaticGainControl() override;
   bool IsMuted() override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
 
   // Create a new audio mirroring session, or return NULL on error.  |device_id|
   // should be in the format accepted by

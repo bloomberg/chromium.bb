@@ -48,6 +48,7 @@ class OpenSLESInputStream : public AudioInputStream {
   bool SetAutomaticGainControl(bool enabled) override;
   bool GetAutomaticGainControl() override;
   bool IsMuted() override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
 
  private:
   bool CreateRecorder();

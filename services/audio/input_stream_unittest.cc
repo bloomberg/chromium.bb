@@ -103,6 +103,7 @@ class MockStream : public media::AudioInputStream {
   MOCK_METHOD1(SetAutomaticGainControl, bool(bool));
   MOCK_METHOD0(GetAutomaticGainControl, bool());
   MOCK_METHOD0(IsMuted, bool());
+  MOCK_METHOD1(SetOutputDeviceForAec, void(const std::string&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockStream);

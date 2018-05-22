@@ -151,4 +151,9 @@ bool VirtualAudioInputStream::IsMuted() {
   return false;
 }
 
+void VirtualAudioInputStream::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  // Not supported. Do nothing.
+}
+
 }  // namespace media

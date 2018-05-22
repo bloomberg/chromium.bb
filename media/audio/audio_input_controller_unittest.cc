@@ -105,6 +105,7 @@ class MockAudioInputStream : public AudioInputStream {
   bool SetAutomaticGainControl(bool) override { return false; }
   bool GetAutomaticGainControl() override { return false; }
   bool IsMuted() override { return false; }
+  void SetOutputDeviceForAec(const std::string&) override {}
 
   MOCK_METHOD0(Open, bool());
   MOCK_METHOD1(SetVolume, void(double));

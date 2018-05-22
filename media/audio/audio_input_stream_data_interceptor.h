@@ -46,6 +46,7 @@ class MEDIA_EXPORT AudioInputStreamDataInterceptor
   bool IsMuted() override;
   bool SetAutomaticGainControl(bool enabled) override;
   bool GetAutomaticGainControl() override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
 
   // Implementation of AudioInputCallback
   void OnData(const AudioBus* source,

@@ -199,6 +199,11 @@ bool PulseAudioInputStream::IsMuted() {
   return muted_;
 }
 
+void PulseAudioInputStream::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  // Not supported. Do nothing.
+}
+
 // static, used by pa_stream_set_read_callback.
 void PulseAudioInputStream::ReadCallback(pa_stream* handle,
                                          size_t length,

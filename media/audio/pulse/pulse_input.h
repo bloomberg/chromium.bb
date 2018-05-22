@@ -40,6 +40,7 @@ class PulseAudioInputStream : public AgcAudioStream<AudioInputStream> {
   void SetVolume(double volume) override;
   double GetVolume() override;
   bool IsMuted() override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
 
  private:
   // PulseAudio Callbacks.

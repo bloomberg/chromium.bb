@@ -183,6 +183,11 @@ bool PCMQueueInAudioInputStream::GetAutomaticGainControl() {
   return false;
 }
 
+void PCMQueueInAudioInputStream::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  // Not supported. Do nothing.
+}
+
 void PCMQueueInAudioInputStream::HandleError(OSStatus err) {
   if (callback_)
     callback_->OnError();

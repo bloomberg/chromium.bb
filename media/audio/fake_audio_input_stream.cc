@@ -97,6 +97,11 @@ bool FakeAudioInputStream::GetAutomaticGainControl() {
   return false;
 }
 
+void FakeAudioInputStream::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  // Not supported. Do nothing.
+}
+
 void FakeAudioInputStream::ReadAudioFromSource() {
   DCHECK(audio_manager_->GetWorkerTaskRunner()->BelongsToCurrentThread());
   DCHECK(callback_);

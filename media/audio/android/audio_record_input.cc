@@ -142,4 +142,9 @@ bool AudioRecordInputStream::IsMuted() {
   return false;
 }
 
+void AudioRecordInputStream::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  // Do nothing. This is handled at a different layer on Android.
+}
+
 }  // namespace media

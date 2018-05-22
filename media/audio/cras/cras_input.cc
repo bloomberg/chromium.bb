@@ -337,6 +337,11 @@ bool CrasInputStream::IsMuted() {
   return false;
 }
 
+void CrasInputStream::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  // Not supported. Do nothing.
+}
+
 double CrasInputStream::GetVolumeRatioFromDecibels(double dB) const {
   return pow(10, dB / 20.0);
 }

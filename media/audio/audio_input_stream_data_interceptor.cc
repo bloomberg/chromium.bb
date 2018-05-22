@@ -80,6 +80,12 @@ bool AudioInputStreamDataInterceptor::GetAutomaticGainControl() {
   return stream_->GetAutomaticGainControl();
 }
 
+void AudioInputStreamDataInterceptor::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return stream_->SetOutputDeviceForAec(output_device_id);
+}
+
 void AudioInputStreamDataInterceptor::OnData(const AudioBus* source,
                                              base::TimeTicks capture_time,
                                              double volume) {
