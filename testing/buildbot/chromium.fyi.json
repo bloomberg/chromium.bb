@@ -5747,6 +5747,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -5813,6 +5819,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -5820,6 +5832,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -6449,6 +6467,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -6515,6 +6539,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "extensions_unittests"
       },
       {
@@ -6522,6 +6552,12 @@
           "can_use_on_swarming_builders": false
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {

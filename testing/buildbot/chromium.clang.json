@@ -972,6 +972,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -1050,6 +1056,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -1057,6 +1069,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -1376,6 +1394,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -1454,6 +1478,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -1461,6 +1491,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -1773,6 +1809,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -1851,6 +1893,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -1858,6 +1906,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -2177,6 +2231,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -2255,6 +2315,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -2262,6 +2328,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -2581,6 +2653,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -2659,6 +2737,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -2666,6 +2750,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -2985,6 +3075,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -3063,6 +3159,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -3070,6 +3172,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -3389,6 +3497,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -3467,6 +3581,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -3474,6 +3594,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -9884,6 +10010,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -9962,6 +10094,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -9969,6 +10107,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -10288,6 +10432,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -10366,6 +10516,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -10373,6 +10529,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -10692,6 +10854,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -10770,6 +10938,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -10777,6 +10951,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -11096,6 +11276,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -11174,6 +11360,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -11181,6 +11373,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -11500,6 +11698,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -11578,6 +11782,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -11585,6 +11795,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -11904,6 +12120,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -11982,6 +12204,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -11989,6 +12217,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -12308,6 +12542,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -12386,6 +12626,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -12393,6 +12639,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -12712,6 +12964,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -12790,6 +13048,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -12797,6 +13061,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -13116,6 +13386,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -13194,6 +13470,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -13201,6 +13483,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -13520,6 +13808,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -13598,6 +13892,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -13605,6 +13905,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
@@ -14394,6 +14700,17 @@
             }
           ]
         },
+        "test": "cc_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10"
+            }
+          ]
+        },
         "test": "chrome_app_unittests"
       },
       {
@@ -14527,6 +14844,17 @@
             }
           ]
         },
+        "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10"
+            }
+          ]
+        },
         "test": "extensions_unittests"
       },
       {
@@ -14539,6 +14867,17 @@
           ]
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "gfx_unittests"
       },
       {
         "swarming": {
