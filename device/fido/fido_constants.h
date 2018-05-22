@@ -294,14 +294,7 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kNoneAttestationValue[];
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const char kPublicKey[];
 
-constexpr const char* to_string(CredentialType type) {
-  switch (type) {
-    case CredentialType::kPublicKey:
-      return kPublicKey;
-  }
-  NOTREACHED();
-  return kPublicKey;
-}
+const char* CredentialTypeToString(CredentialType type);
 
 }  // namespace device
 

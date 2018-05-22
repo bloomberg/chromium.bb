@@ -61,7 +61,7 @@ cbor::CBORValue PublicKeyCredentialDescriptor::ConvertToCBOR() const {
   cbor::CBORValue::MapValue cbor_descriptor_map;
   cbor_descriptor_map[cbor::CBORValue(kCredentialIdKey)] = cbor::CBORValue(id_);
   cbor_descriptor_map[cbor::CBORValue(kCredentialTypeKey)] =
-      cbor::CBORValue(to_string(credential_type_));
+      cbor::CBORValue(CredentialTypeToString(credential_type_));
   return cbor::CBORValue(std::move(cbor_descriptor_map));
 }
 
