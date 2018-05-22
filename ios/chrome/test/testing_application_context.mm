@@ -11,6 +11,7 @@
 #include "components/network_time/network_time_tracker.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -83,6 +84,13 @@ PrefService* TestingApplicationContext::GetLocalState() {
 net::URLRequestContextGetter*
 TestingApplicationContext::GetSystemURLRequestContext() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  return nullptr;
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+TestingApplicationContext::GetSharedURLLoaderFactory() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  NOTREACHED();
   return nullptr;
 }
 

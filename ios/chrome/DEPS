@@ -4,6 +4,7 @@ include_rules = [
   "+ios/third_party",
   "+net",
   "+services/network/test",
+  "+services/network/public/cpp",
   "+sql",
   "+ui/base",
   "+ui/gfx",

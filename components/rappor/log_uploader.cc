@@ -14,7 +14,9 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace {
 
@@ -51,17 +53,17 @@ void RecordDiscardReason(DiscardReason reason) {
 
 namespace rappor {
 
-LogUploader::LogUploader(const GURL& server_url,
-                         const std::string& mime_type,
-                         net::URLRequestContextGetter* request_context)
+LogUploader::LogUploader(
+    const GURL& server_url,
+    const std::string& mime_type,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : server_url_(server_url),
       mime_type_(mime_type),
-      request_context_(request_context),
+      url_loader_factory_(std::move(url_loader_factory)),
       is_running_(false),
       has_callback_pending_(false),
-      upload_interval_(base::TimeDelta::FromSeconds(
-          kUnsentLogsIntervalSeconds)) {
-}
+      upload_interval_(
+          base::TimeDelta::FromSeconds(kUnsentLogsIntervalSeconds)) {}
 
 LogUploader::~LogUploader() {}
 
@@ -140,18 +142,23 @@ void LogUploader::StartScheduledUpload() {
             }
           }
         })");
-  current_fetch_ = net::URLFetcher::Create(server_url_, net::URLFetcher::POST,
-                                           this, traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      current_fetch_.get(), data_use_measurement::DataUseUserData::RAPPOR);
-  current_fetch_->SetRequestContext(request_context_.get());
-  current_fetch_->SetUploadData(mime_type_, queued_logs_.front());
 
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = server_url_;
   // We already drop cookies server-side, but we might as well strip them out
   // client-side as well.
-  current_fetch_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                               net::LOAD_DO_NOT_SEND_COOKIES);
-  current_fetch_->Start();
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request->method = "POST";
+  simple_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  simple_url_loader_->AttachStringForUpload(queued_logs_.front(), mime_type_);
+  // TODO re-add data use measurement once SimpleURLLoader supports it.
+  // ID=data_use_measurement::DataUseUserData::RAPPOR
+  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&LogUploader::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
 }
 
 // static
@@ -165,31 +172,27 @@ base::TimeDelta LogUploader::BackOffUploadInterval(base::TimeDelta interval) {
   return interval > max_interval ? max_interval : interval;
 }
 
-void LogUploader::OnURLFetchComplete(const net::URLFetcher* source) {
-  // We're not allowed to re-use the existing |URLFetcher|s, so free them here.
-  // Note however that |source| is aliased to the fetcher, so we should be
-  // careful not to delete it too early.
-  DCHECK_EQ(current_fetch_.get(), source);
-  std::unique_ptr<net::URLFetcher> fetch(std::move(current_fetch_));
-
-  const net::URLRequestStatus& request_status = source->GetStatus();
-
-  const int response_code = source->GetResponseCode();
+void LogUploader::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  int response_code = -1;
+  if (simple_url_loader_->ResponseInfo() &&
+      simple_url_loader_->ResponseInfo()->headers) {
+    response_code =
+        simple_url_loader_->ResponseInfo()->headers->response_code();
+  }
   DVLOG(2) << "Upload fetch complete response code: " << response_code;
 
-  if (request_status.status() != net::URLRequestStatus::SUCCESS) {
-    base::UmaHistogramSparse("Rappor.FailedUploadErrorCode",
-                             -request_status.error());
-    DVLOG(1) << "Rappor server upload failed with error: "
-             << request_status.error() << ": "
-             << net::ErrorToString(request_status.error());
-    DCHECK_EQ(-1, response_code);
+  int net_error = simple_url_loader_->NetError();
+  if (net_error != net::OK && (response_code == -1 || response_code == 200)) {
+    base::UmaHistogramSparse("Rappor.FailedUploadErrorCode", -net_error);
+    DVLOG(1) << "Rappor server upload failed with error: " << net_error << ": "
+             << net::ErrorToString(net_error);
   } else {
     // Log a histogram to track response success vs. failure rates.
     base::UmaHistogramSparse("Rappor.UploadResponseCode", response_code);
   }
 
-  const bool upload_succeeded = response_code == 200;
+  const bool upload_succeeded = !!response_body;
 
   // Determine whether this log should be retransmitted.
   DiscardReason reason = NUM_DISCARD_REASONS;

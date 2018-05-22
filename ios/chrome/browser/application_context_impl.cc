@@ -53,6 +53,8 @@
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
 ApplicationContextImpl::ApplicationContextImpl(
     base::SequencedTaskRunner* local_state_task_runner,
@@ -195,6 +197,23 @@ net::URLRequestContextGetter*
 ApplicationContextImpl::GetSystemURLRequestContext() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return ios_chrome_io_thread_->system_url_request_context_getter();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+ApplicationContextImpl::GetSharedURLLoaderFactory() {
+  if (!url_loader_factory_) {
+    auto url_loader_factory_params =
+        network::mojom::URLLoaderFactoryParams::New();
+    url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
+    url_loader_factory_params->is_corb_enabled = false;
+    GetSystemNetworkContext()->CreateURLLoaderFactory(
+        mojo::MakeRequest(&url_loader_factory_),
+        std::move(url_loader_factory_params));
+    shared_url_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            url_loader_factory_.get());
+  }
+  return shared_url_loader_factory_;
 }
 
 network::mojom::NetworkContext*

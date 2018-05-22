@@ -14,8 +14,8 @@ namespace metrics {
 class MetricsServiceClient;
 }
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace rappor {
@@ -44,9 +44,9 @@ class MetricsServicesManagerClient {
   virtual std::unique_ptr<const base::FieldTrial::EntropyProvider>
   CreateEntropyProvider() = 0;
 
-  // Returns the URL request context in which the metrics services should
-  // operate.
-  virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
+  // Returns the URL loader factory which the metrics services should use.
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactory() = 0;
 
   // Returns whether metrics reporting is enabled.
   virtual bool IsMetricsReportingEnabled() = 0;

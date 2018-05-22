@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 
 namespace component_updater {
 class ComponentUpdateService;
@@ -38,6 +39,7 @@ class ChromeNetLog;
 }
 
 namespace network {
+class SharedURLLoaderFactory;
 namespace mojom {
 class NetworkContext;
 }
@@ -89,6 +91,10 @@ class ApplicationContext {
 
   // Gets the URL request context associated with this application.
   virtual net::URLRequestContextGetter* GetSystemURLRequestContext() = 0;
+
+  // Gets the shared URL loader factory associated with this application.
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetSharedURLLoaderFactory() = 0;
 
   // Gets the NetworkContext object associated with the same context as
   // GetSystemURLRequestContext().

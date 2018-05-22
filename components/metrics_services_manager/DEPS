@@ -5,4 +5,5 @@ include_rules = [
   "+components/rappor",
   "+components/ukm",
   "+components/variations",
+  "+services/network",
 ]

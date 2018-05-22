@@ -16,6 +16,7 @@
 #include "components/rappor/rappor_pref_names.h"
 #include "components/rappor/rappor_prefs.h"
 #include "components/variations/variations_associated_data.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace rappor {
 
@@ -54,7 +55,7 @@ void RapporServiceImpl::AddDailyObserver(
 }
 
 void RapporServiceImpl::Initialize(
-    net::URLRequestContextGetter* request_context) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!IsInitialized());
   const GURL server_url = GURL(kDefaultServerUrl);
@@ -65,7 +66,7 @@ void RapporServiceImpl::Initialize(
   }
   DVLOG(1) << "RapporServiceImpl reporting to " << server_url.spec();
   InitializeInternal(
-      std::make_unique<LogUploader>(server_url, kMimeType, request_context),
+      std::make_unique<LogUploader>(server_url, kMimeType, url_loader_factory),
       internal::LoadCohort(pref_service_), internal::LoadSecret(pref_service_));
 }
 

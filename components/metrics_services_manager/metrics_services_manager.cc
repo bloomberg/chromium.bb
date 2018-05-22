@@ -16,6 +16,7 @@
 #include "components/rappor/rappor_service_impl.h"
 #include "components/ukm/ukm_service.h"
 #include "components/variations/service/variations_service.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace metrics_services_manager {
 
@@ -44,7 +45,7 @@ rappor::RapporServiceImpl* MetricsServicesManager::GetRapporServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!rappor_service_) {
     rappor_service_ = client_->CreateRapporServiceImpl();
-    rappor_service_->Initialize(client_->GetURLRequestContext());
+    rappor_service_->Initialize(client_->GetURLLoaderFactory());
   }
   return rappor_service_.get();
 }

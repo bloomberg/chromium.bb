@@ -11,16 +11,16 @@
 #include "base/compiler_specific.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/rappor/log_uploader_interface.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLFetcher;
-}
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace rappor {
 
@@ -29,15 +29,15 @@ namespace rappor {
 // at a fixed interval after the successful upload of the previous logs.  If an
 // upload fails, the uploader will keep retrying the upload with an exponential
 // backoff interval.
-class LogUploader : public net::URLFetcherDelegate,
-                    public LogUploaderInterface {
+class LogUploader : public LogUploaderInterface {
  public:
   // Constructor takes the |server_url| that logs should be uploaded to, the
   // |mime_type| of the uploaded data, and |request_context| to create uploads
   // with.
-  LogUploader(const GURL& server_url,
-              const std::string& mime_type,
-              net::URLRequestContextGetter* request_context);
+  LogUploader(
+      const GURL& server_url,
+      const std::string& mime_type,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // If the object is destroyed (or the program terminates) while logs are
   // queued, the logs are lost.
@@ -70,9 +70,8 @@ class LogUploader : public net::URLFetcherDelegate,
   // Drops excess logs until we are under the size limit.
   void DropExcessLogs();
 
-  // Implements net::URLFetcherDelegate. Called after transmission completes
-  // (whether successful or not).
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Called after transmission completes (whether successful or not).
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   // Called when the upload is completed.
   void OnUploadFinished(bool server_is_healthy);
@@ -83,14 +82,14 @@ class LogUploader : public net::URLFetcherDelegate,
   // The mime type to specify on uploaded logs.
   const std::string mime_type_;
 
-  // The request context used to send uploads.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  // The URL loader factory used to send uploads.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // True if the uploader is currently running.
   bool is_running_;
 
-  // The outstanding transmission that appears as a URL Fetch operation.
-  std::unique_ptr<net::URLFetcher> current_fetch_;
+  // The outstanding transmission.
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   // The logs that still need to be uploaded.
   base::queue<std::string> queued_logs_;
