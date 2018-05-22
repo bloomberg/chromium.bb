@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.compositor.layouts.phone.stack;
 
 import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.AnimatableAnimation.addAnimation;
+import static org.chromium.chrome.browser.compositor.layouts.components.LayoutTab.Property.MAX_CONTENT_HEIGHT;
 import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab.Property.DISCARD_AMOUNT;
+import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab.Property.SCALE;
 import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab.Property.SCROLL_OFFSET;
 
 import android.view.animation.Interpolator;
@@ -37,8 +39,6 @@ public abstract class StackAnimation {
         // Used for when the current state of the system is not animating
         NONE,
     }
-
-    public static final float SCALE_AMOUNT = 0.90f;
 
     protected static final int ENTER_STACK_TOOLBAR_ALPHA_DURATION = 100;
     protected static final int ENTER_STACK_TOOLBAR_ALPHA_DELAY = 100;
@@ -308,6 +308,12 @@ public abstract class StackAnimation {
                     addAnimation(set, tab, DISCARD_AMOUNT, tab.getDiscardAmount(), 0.0f,
                             UNDISCARD_ANIMATION_DURATION, 0);
                 }
+                addAnimation(set, tab, SCALE, tab.getScale(), mStack.getScaleAmount(),
+                        DISCARD_ANIMATION_DURATION, 0);
+
+                addAnimation(set, tab.getLayoutTab(), MAX_CONTENT_HEIGHT,
+                        tab.getLayoutTab().getMaxContentHeight(), mStack.getMaxTabHeight(),
+                        DISCARD_ANIMATION_DURATION, 0);
 
                 float newScrollOffset = mStack.screenToScroll(spacing * newIndex);
 
@@ -316,7 +322,7 @@ public abstract class StackAnimation {
                 // put it in the right place.
                 if (tab.getDiscardAmount() >= discardRange) {
                     tab.setScrollOffset(newScrollOffset);
-                    tab.setScale(SCALE_AMOUNT);
+                    tab.setScale(mStack.getScaleAmount());
                 } else {
                     float start = tab.getScrollOffset();
                     if (start != newScrollOffset) {

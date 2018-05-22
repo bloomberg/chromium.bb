@@ -285,6 +285,11 @@ public abstract class Stack {
         return visibleCount;
     }
 
+    /**
+     * The scale the tabs should be currently shown at (may change based on how many are open).
+     */
+    public abstract float getScaleAmount();
+
     /*
      * Main Interaction Methods for the rest of the application
      *
@@ -1356,13 +1361,11 @@ public abstract class Stack {
             // there will be more space on the bottom than top.
             final float horizontalPadding =
                     (parentWidth
-                            - layoutTab.getOriginalContentWidth() * StackAnimation.SCALE_AMOUNT
-                                    * stackScale)
+                            - layoutTab.getOriginalContentWidth() * getScaleAmount() * stackScale)
                     / 2.0f;
             final float verticalPadding =
                     (parentHeight
-                            - layoutTab.getOriginalContentHeight() * StackAnimation.SCALE_AMOUNT
-                                    * stackScale)
+                            - layoutTab.getOriginalContentHeight() * getScaleAmount() * stackScale)
                     / 2.0f;
 
             if (portrait) {
@@ -1401,8 +1404,7 @@ public abstract class Stack {
                 } else if (LocalizationUtils.isLayoutRtl()) {
                     // On RTL landscape, pos is a distance between tab's right and mLayout's right.
                     float posOffset = mLayout.getWidth()
-                            - layoutTab.getOriginalContentWidth() * StackAnimation.SCALE_AMOUNT
-                                    * stackScale;
+                            - layoutTab.getOriginalContentWidth() * getScaleAmount() * stackScale;
                     pos = -layoutTab.getX() + posOffset;
                     layoutTab.setX(-Math.min(pos, maxStackedPosition) + posOffset);
                 } else {
