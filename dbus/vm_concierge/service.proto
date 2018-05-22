@@ -90,6 +90,9 @@ message StartVmRequest {
   // file descriptor will be used for storage.
   // Ignored unless |start_termina| is true.
   bool use_fd_for_storage = 6;
+
+  // The owner of the vm.
+  string owner_id = 7;
 }
 
 // Information sent back by vm_concierge in response to a StartVm dbus message.
