@@ -219,10 +219,6 @@ void MaybeStartSwReporter(SwReporterInvocationType invocation_type,
 // Returns true if the sw_reporter is allowed to run due to enterprise policies.
 bool SwReporterIsAllowedByPolicy();
 
-// Returns true if the sw_reported is allowed to report back results due to
-// enterprise policies.
-bool SwReporterReportingIsAllowedByPolicy();
-
 // A delegate used by tests to implement test doubles (e.g., stubs, fakes, or
 // mocks).
 //

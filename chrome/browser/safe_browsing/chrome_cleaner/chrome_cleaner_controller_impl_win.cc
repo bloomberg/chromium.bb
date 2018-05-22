@@ -529,10 +529,6 @@ bool ChromeCleanerControllerImpl::IsAllowedByPolicy() {
   return safe_browsing::SwReporterIsAllowedByPolicy();
 }
 
-bool ChromeCleanerControllerImpl::IsReportingAllowedByPolicy() {
-  return safe_browsing::SwReporterReportingIsAllowedByPolicy();
-}
-
 ChromeCleanerControllerImpl::ChromeCleanerControllerImpl()
     : real_delegate_(std::make_unique<ChromeCleanerControllerDelegate>()),
       delegate_(real_delegate_.get()),
@@ -543,7 +539,9 @@ ChromeCleanerControllerImpl::ChromeCleanerControllerImpl()
 ChromeCleanerControllerImpl::~ChromeCleanerControllerImpl() = default;
 
 void ChromeCleanerControllerImpl::Init() {
-  logs_enabled_ = IsReportingAllowedByPolicy();
+  // The default value for logs is determined by whether the cleanup feature is
+  // enabled by policy.
+  logs_enabled_ = IsAllowedByPolicy();
 }
 
 void ChromeCleanerControllerImpl::NotifyObserver(Observer* observer) const {

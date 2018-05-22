@@ -207,9 +207,6 @@ class ChromeCleanerController {
   // Returns true if the cleaner is allowed to run by enterprise policy.
   virtual bool IsAllowedByPolicy() = 0;
 
-  // Returns true if cleaner reporting is allowed to run by enterprise policy.
-  virtual bool IsReportingAllowedByPolicy() = 0;
-
  protected:
   ChromeCleanerController();
   virtual ~ChromeCleanerController();

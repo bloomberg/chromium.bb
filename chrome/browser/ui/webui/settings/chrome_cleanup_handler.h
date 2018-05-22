@@ -12,7 +12,6 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "components/prefs/pref_change_registrar.h"
 
 class Profile;
 
@@ -46,9 +45,6 @@ class ChromeCleanupHandler
   void OnLogsEnabledChanged(bool logs_enabled) override;
 
  private:
-  // Called when prefs::kSwReporterReportingEnabled changes.
-  void OnLogsEnabledPrefChanged();
-
   // Callback for the "registerChromeCleanerObserver" message. This registers
   // this object as an observer of the Chrome Cleanup global state and
   // and retrieves the current cleanup state.
@@ -92,7 +88,6 @@ class ChromeCleanupHandler
   safe_browsing::ChromeCleanerController* controller_;
 
   Profile* profile_;
-  PrefChangeRegistrar logs_enabled_pref_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeCleanupHandler);
 };

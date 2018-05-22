@@ -96,7 +96,6 @@ enum SwReporterLogsUploadsEnabled {
   REPORTER_LOGS_UPLOADS_RECENTLY_SENT_LOGS = 2,
   REPORTER_LOGS_UPLOADS_DISABLED_BY_USER = 3,
   REPORTER_LOGS_UPLOADS_ENABLED_BY_USER = 4,
-  REPORTER_LOGS_UPLOADS_DISABLED_BY_POLICY = 5,
   REPORTER_LOGS_UPLOADS_MAX,
 };
 
@@ -861,13 +860,6 @@ class ReporterRunner {
   // started during the logs upload interval.
   bool ShouldSendReporterLogs(const std::string& suffix) {
     UMAHistogramReporter uma(suffix);
-
-    // The enterprise policy overrides all other choices.
-    if (!SwReporterReportingIsAllowedByPolicy()) {
-      uma.RecordLogsUploadEnabled(REPORTER_LOGS_UPLOADS_DISABLED_BY_POLICY);
-      return false;
-    }
-
     switch (invocation_type_) {
       case SwReporterInvocationType::kUnspecified:
       case SwReporterInvocationType::kMax:
@@ -1163,21 +1155,6 @@ bool SwReporterIsAllowedByPolicy() {
            !local_state->IsManagedPreference(prefs::kSwReporterEnabled) ||
            local_state->GetBoolean(prefs::kSwReporterEnabled);
   }();
-  return is_allowed;
-}
-
-bool SwReporterReportingIsAllowedByPolicy() {
-  // Reporting is allowed when cleanup is enabled by policy and when the
-  // specific reporting policy is allowed.  While the former policy is not
-  // dynamic, the latter one is.
-  bool is_allowed = SwReporterIsAllowedByPolicy();
-  if (is_allowed) {
-    PrefService* local_state = g_browser_process->local_state();
-    is_allowed =
-        !local_state ||
-        !local_state->IsManagedPreference(prefs::kSwReporterReportingEnabled) ||
-        local_state->GetBoolean(prefs::kSwReporterReportingEnabled);
-  }
   return is_allowed;
 }
 
