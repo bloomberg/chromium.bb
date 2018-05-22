@@ -30,6 +30,9 @@ constexpr char kNoValidKeyCodesErrorMsg[] =
 constexpr char kChildFrameErrorMsg[] =
     "lock() must be called from a top-level browsing context.";
 
+constexpr char kRequestFailedErrorMsg[] =
+    "lock() request could not be registered.";
+
 }  // namespace
 
 KeyboardLock::KeyboardLock(ExecutionContext* context)
@@ -118,6 +121,10 @@ void KeyboardLock::LockRequestFinished(
     case mojom::KeyboardLockRequestResult::kChildFrameError:
       request_keylock_resolver_->Reject(
           DOMException::Create(kInvalidStateError, kChildFrameErrorMsg));
+      break;
+    case mojom::KeyboardLockRequestResult::kRequestFailedError:
+      request_keylock_resolver_->Reject(
+          DOMException::Create(kInvalidStateError, kRequestFailedErrorMsg));
       break;
   }
   request_keylock_resolver_ = nullptr;

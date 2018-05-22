@@ -698,7 +698,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Requests Keyboard lock.  Note: the lock may not take effect until later.
   // If |codes| has no value then all keys will be locked, otherwise only the
   // keys specified will be intercepted and routed to the web page.
-  void RequestKeyboardLock(base::Optional<base::flat_set<ui::DomCode>> codes);
+  // Returns true if the lock request was successfully registered.
+  bool RequestKeyboardLock(base::Optional<base::flat_set<ui::DomCode>> codes);
 
   // Cancels a previous keyboard lock request.
   void CancelKeyboardLock();

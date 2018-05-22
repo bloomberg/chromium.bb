@@ -904,11 +904,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
   bool result = false;
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
       inner_contents, kKeyboardLockMethodCallWithAllKeys, &result));
-  // TODO(joedow): Update KeyboardLockServiceImpl to return an error if the lock
-  // request is not registered.  For this test, the end result is correct (no
-  // lock registered) but it would be good to return an error so the caller
-  // knows the registration failed.
-  ASSERT_TRUE(result);
+  ASSERT_FALSE(result);
 
   // Verify neither inner nor outer WebContents have a pending lock request.
   WebContentsImpl* inner_contents_impl =
