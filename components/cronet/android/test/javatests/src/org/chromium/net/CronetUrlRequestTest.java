@@ -2335,6 +2335,41 @@ public class CronetUrlRequestTest {
         assertTrue(CronetTestUtil.nativeGetTaggedBytes(tag) > priorBytes);
     }
 
+    @Test
+    @SmallTest
+    @Feature({"Cronet"})
+    /**
+     * Initiate many requests concurrently to make sure neither Cronet implementation crashes.
+     * Regression test for https://crbug.com/844031.
+     */
+    public void testManyRequests() throws Exception {
+        String url = NativeTestServer.getMultiRedirectURL();
+        final int numRequests = 2000;
+        TestUrlRequestCallback callbacks[] = new TestUrlRequestCallback[numRequests];
+        UrlRequest requests[] = new UrlRequest[numRequests];
+        for (int i = 0; i < numRequests; i++) {
+            // Share the first callback's executor to avoid creating too many single-threaded
+            // executors and hence too many threads.
+            if (i == 0) {
+                callbacks[i] = new TestUrlRequestCallback();
+            } else {
+                callbacks[i] = new TestUrlRequestCallback(callbacks[0].getExecutor());
+            }
+            UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                    url, callbacks[i], callbacks[i].getExecutor());
+            requests[i] = builder.build();
+        }
+        for (UrlRequest request : requests) {
+            request.start();
+        }
+        for (UrlRequest request : requests) {
+            request.cancel();
+        }
+        for (TestUrlRequestCallback callback : callbacks) {
+            callback.blockForDone();
+        }
+    }
+
     // Return connection migration disable load flag value.
     private static native int nativeGetConnectionMigrationDisableLoadFlag();
 }

@@ -26,8 +26,10 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
-
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 /**
  * {@link java.net.HttpURLConnection} backed CronetEngine.
  *
@@ -47,19 +49,20 @@ public final class JavaCronetEngine extends CronetEngineBase {
         final int threadPriority =
                 builder.threadPriority(THREAD_PRIORITY_BACKGROUND + THREAD_PRIORITY_MORE_FAVORABLE);
         this.mUserAgent = builder.getUserAgent();
-        this.mExecutorService = Executors.newCachedThreadPool(new ThreadFactory() {
-            @Override
-            public Thread newThread(final Runnable r) {
-                return Executors.defaultThreadFactory().newThread(new Runnable() {
+        this.mExecutorService = new ThreadPoolExecutor(10, 20, 50, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(), new ThreadFactory() {
                     @Override
-                    public void run() {
-                        Thread.currentThread().setName("JavaCronetEngine");
-                        android.os.Process.setThreadPriority(threadPriority);
-                        r.run();
+                    public Thread newThread(final Runnable r) {
+                        return Executors.defaultThreadFactory().newThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Thread.currentThread().setName("JavaCronetEngine");
+                                android.os.Process.setThreadPriority(threadPriority);
+                                r.run();
+                            }
+                        });
                     }
                 });
-            }
-        });
     }
 
     @Override

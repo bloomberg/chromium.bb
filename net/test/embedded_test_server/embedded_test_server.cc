@@ -352,13 +352,10 @@ std::unique_ptr<StreamSocket> EmbeddedTestServer::DoSSLUpgrade(
 }
 
 void EmbeddedTestServer::DoAcceptLoop() {
-  int rv = OK;
-  while (rv == OK) {
-    rv = listen_socket_->Accept(
-        &accepted_socket_, base::Bind(&EmbeddedTestServer::OnAcceptCompleted,
-                                      base::Unretained(this)));
-    if (rv == ERR_IO_PENDING)
-      return;
+  while (
+      listen_socket_->Accept(&accepted_socket_,
+                             base::Bind(&EmbeddedTestServer::OnAcceptCompleted,
+                                        base::Unretained(this))) == OK) {
     HandleAcceptResult(std::move(accepted_socket_));
   }
 }
