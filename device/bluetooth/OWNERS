@@ -3,7 +3,6 @@ ortuno@chromium.org
 # For changes related to Chrome OS.
 rkc@chromium.org
 
-per-file *.gyp*=*
 per-file BUILD.gn=*
 
 # TEAM: web-bluetooth@chromium.org

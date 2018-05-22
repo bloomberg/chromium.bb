@@ -33,7 +33,6 @@ per-file *buffer_types.*=reveman@chromium.org
 per-file *vector_icon*=estade@chromium.org
 
 # If you're doing structural changes get a review from one of the OWNERS.
-per-file *.gyp*=*
 per-file BUILD.gn=*
 
 # COMPONENT: UI>GFX

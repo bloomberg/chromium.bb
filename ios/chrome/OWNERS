@@ -5,11 +5,6 @@ sdefresne@chromium.org
 # These are for the common case of adding or renaming files. If you're doing
 # structural changes, please get a review from an OWNER.
 per-file BUILD.gn=*
-per-file ios_chrome.gyp=*
-per-file ios_chrome_resources.gyp=*
-per-file ios_chrome_resources_bundle.gypi=*
-per-file ios_chrome_tests.gyp=*
-per-file ios_share_extension_resources.gyp=*
 
 # TEAM: ios-directory-owners@chromium.org
 # OS: iOS
