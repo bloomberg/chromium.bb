@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -19,6 +20,8 @@ class PaintLayer;
 // Tracks "jank" from layout objects changing their visual location between
 // animation frames.
 class CORE_EXPORT JankTracker {
+  DISALLOW_NEW();
+
  public:
   JankTracker(LocalFrameView*);
   ~JankTracker() {}

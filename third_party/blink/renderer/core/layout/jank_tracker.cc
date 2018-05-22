@@ -110,7 +110,7 @@ void JankTracker::NotifyPrePaintFinished() {
 bool JankTracker::IsActive() {
   // This eliminates noise from the private Page object created by
   // SVGImage::DataChanged.
-  if (frame_view_->GetFrame().GetDocument()->IsSVGDocument())
+  if (frame_view_->GetFrame().GetChromeClient().IsSVGImageChromeClient())
     return false;
 
   if (has_fired_)
