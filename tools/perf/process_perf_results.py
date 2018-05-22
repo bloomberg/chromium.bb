@@ -169,7 +169,7 @@ def _handle_perf_logs(benchmark_directory_list, extra_links):
   logdog_file_name = _generate_unique_logdog_filename('Benchmarks_Logs')
   logdog_stream = logdog_helper.text(
       logdog_file_name, json.dumps(benchmark_logs_links, sort_keys=True,
-                                   indent=4, separators=(',', ':')))
+                                   indent=4, separators=(',', ': ')))
   extra_links['Benchmarks logs'] = logdog_stream
 
 
@@ -268,7 +268,7 @@ def _handle_perf_results(
     logdog_file_name = _generate_unique_logdog_filename('Results_Dashboard_')
     logdog_stream = logdog_helper.text(logdog_file_name,
         json.dumps(logdog_dict, sort_keys=True,
-            indent=4, separators=(',', ':')))
+            indent=4, separators=(',', ': ')))
     extra_links[logdog_label] = logdog_stream
     if upload_fail:
       return 1
