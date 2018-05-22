@@ -179,6 +179,10 @@
     "label": "//tools/battor_agent:battor_agent_unittests",
     "type": "console_test_launcher",
   },
+  "blink_common_unittests": {
+    "label": "//third_party/blink/common:blink_common_unittests",
+    "type": "console_test_launcher",
+  },
   "blink_heap_unittests": {
     "label": "//third_party/blink/renderer/platform/heap:blink_heap_unittests",
     "type": "console_test_launcher",

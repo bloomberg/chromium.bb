@@ -42,6 +42,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "blink_common_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "blink_heap_unittests"
       },
       {
@@ -529,6 +535,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "blink_common_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "blink_heap_unittests"
       },
       {
@@ -1002,6 +1014,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "battor_agent_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_common_unittests"
       },
       {
         "swarming": {
@@ -1481,6 +1499,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "battor_agent_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_common_unittests"
       },
       {
         "swarming": {
@@ -1972,6 +1996,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "battor_agent_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_common_unittests"
       },
       {
         "swarming": {

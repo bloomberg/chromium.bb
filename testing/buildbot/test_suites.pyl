@@ -437,6 +437,7 @@
   'chromium_gtests': {
     'angle_unittests': {},
     'base_unittests': {},
+    'blink_common_unittests': {},
     'blink_heap_unittests': {},
     'boringssl_crypto_tests': {},
     'boringssl_ssl_tests': {},
