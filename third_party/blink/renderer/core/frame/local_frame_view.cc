@@ -989,8 +989,7 @@ void LocalFrameView::PerformPreLayoutTasks() {
 }
 
 bool LocalFrameView::ShouldPerformScrollAnchoring() const {
-  return RuntimeEnabledFeatures::ScrollAnchoringEnabled() &&
-         !RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
+  return !RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
          scroll_anchor_.HasScroller() && GetLayoutBox() &&
          GetLayoutBox()->Style()->OverflowAnchor() != EOverflowAnchor::kNone &&
          !frame_->GetDocument()->FinishingOrIsPrinting();
@@ -1870,8 +1869,7 @@ void LocalFrameView::RestoreScrollbar() {
 
 bool LocalFrameView::RestoreScrollAnchor(
     const SerializedAnchor& serialized_anchor) {
-  return ShouldPerformScrollAnchoring() &&
-         scroll_anchor_.RestoreAnchor(serialized_anchor);
+  return false;
 }
 
 void LocalFrameView::ProcessUrlFragment(const KURL& url,
@@ -4509,8 +4507,6 @@ void LocalFrameView::DidChangeScrollOffset() {
 }
 
 void LocalFrameView::ClearScrollAnchor() {
-  if (!RuntimeEnabledFeatures::ScrollAnchoringEnabled())
-    return;
   scroll_anchor_.Clear();
 }
 

@@ -18,10 +18,9 @@ namespace blink {
 
 using Corner = ScrollAnchor::Corner;
 
-class ScrollAnchorTest : private ScopedScrollAnchoringForTest,
-                         public RenderingTest {
+class ScrollAnchorTest : public RenderingTest {
  public:
-  ScrollAnchorTest() : ScopedScrollAnchoringForTest(true) {}
+  ScrollAnchorTest() {}
 
  protected:
   void Update() {
@@ -76,9 +75,6 @@ class ScrollAnchorTest : private ScopedScrollAnchoringForTest,
         GetDocument().QuerySelectorAll(AtomicString(serialized.selector));
     EXPECT_EQ(ele_list->length(), 1u);
   }
-
- private:
-  std::unique_ptr<ScopedScrollAnchoringForTest> scroll_anchoring_;
 };
 
 // TODO(ymalik): Currently, this should be the first test in the file to avoid

@@ -196,8 +196,7 @@ void PaintLayerScrollableArea::Dispose() {
   // destroyed, because LayoutObjectChildList::removeChildNode skips the call to
   // willBeRemovedFromTree,
   // leaving the ScrollAnchor with a stale LayoutObject pointer.
-  if (RuntimeEnabledFeatures::ScrollAnchoringEnabled())
-    scroll_anchor_.Dispose();
+  scroll_anchor_.Dispose();
 
   GetLayoutBox()
       ->GetDocument()
@@ -524,8 +523,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
     if (scroll_type != kCompositorScroll)
       ShowOverlayScrollbars();
     frame_view->ClearFragmentAnchor();
-    if (RuntimeEnabledFeatures::ScrollAnchoringEnabled())
-      GetScrollAnchor()->Clear();
+    GetScrollAnchor()->Clear();
   }
 
   if (AXObjectCache* cache =
@@ -1099,8 +1097,7 @@ void PaintLayerScrollableArea::DidChangeGlobalRootScroller() {
 }
 
 bool PaintLayerScrollableArea::ShouldPerformScrollAnchoring() const {
-  return RuntimeEnabledFeatures::ScrollAnchoringEnabled() &&
-         scroll_anchor_.HasScroller() && GetLayoutBox() &&
+  return scroll_anchor_.HasScroller() && GetLayoutBox() &&
          GetLayoutBox()->Style()->OverflowAnchor() != EOverflowAnchor::kNone &&
          !GetLayoutBox()->GetDocument().FinishingOrIsPrinting();
 }
