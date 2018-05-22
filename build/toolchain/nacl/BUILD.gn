@@ -87,6 +87,7 @@ template("pnacl_toolchain") {
     toolchain_args = {
       is_clang = true
       current_cpu = "pnacl"
+      use_lld = false
     }
   }
 }
@@ -141,6 +142,7 @@ template("nacl_glibc_toolchain") {
       current_cpu = toolchain_cpu
       is_clang = false
       is_nacl_glibc = true
+      use_lld = false
     }
   }
 }
@@ -191,6 +193,7 @@ template("nacl_clang_toolchain") {
     toolchain_args = {
       current_cpu = toolchain_cpu
       is_clang = true
+      use_lld = false
     }
   }
 }
@@ -229,6 +232,7 @@ template("nacl_irt_toolchain") {
     toolchain_args = {
       current_cpu = toolchain_cpu
       is_clang = true
+      use_lld = false
     }
 
     # TODO(ncbray): depend on link script
