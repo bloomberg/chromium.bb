@@ -251,6 +251,22 @@ void CacheStorageManager::MatchAllCaches(
                                 std::move(callback));
 }
 
+void CacheStorageManager::WriteToCache(
+    const url::Origin& origin,
+    CacheStorageOwner owner,
+    const std::string& cache_name,
+    std::unique_ptr<ServiceWorkerFetchRequest> request,
+    std::unique_ptr<ServiceWorkerResponse> response,
+    CacheStorage::ErrorCallback callback) {
+  // Cache API should write through the dispatcher.
+  DCHECK_NE(owner, CacheStorageOwner::kCacheAPI);
+
+  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
+
+  cache_storage->WriteToCache(cache_name, std::move(request),
+                              std::move(response), std::move(callback));
+}
+
 void CacheStorageManager::SetBlobParametersForCache(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context) {
