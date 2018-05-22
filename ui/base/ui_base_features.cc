@@ -54,6 +54,14 @@ bool IsTouchableAppContextMenuEnabled() {
          switches::IsTouchableAppContextMenuEnabled();
 }
 
+// Enables GPU rasterization for all UI drawing (where not blacklisted).
+const base::Feature kUiGpuRasterization = {"UiGpuRasterization",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsUiGpuRasterizationEnabled() {
+  return base::FeatureList::IsEnabled(kUiGpuRasterization);
+}
+
 // Enables scrolling with layers under ui using the ui::Compositor.
 const base::Feature kUiCompositorScrollWithLayers = {
     "UiCompositorScrollWithLayers",

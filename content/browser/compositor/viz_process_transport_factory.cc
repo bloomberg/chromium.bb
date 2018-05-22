@@ -33,6 +33,7 @@
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/reflector.h"
 
 #if defined(OS_WIN)
@@ -563,9 +564,11 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
 
   if (!worker_context_provider_) {
     constexpr bool kSharedWorkerContextSupportsLocking = true;
-    constexpr bool kSharedWorkerContextSupportsGLES2 = false;
     constexpr bool kSharedWorkerContextSupportsRaster = true;
-    constexpr bool kSharedWorkerContextSupportsGrContext = false;
+    const bool kSharedWorkerContextSupportsGLES2 =
+        features::IsUiGpuRasterizationEnabled();
+    const bool kSharedWorkerContextSupportsGrContext =
+        features::IsUiGpuRasterizationEnabled();
 
     worker_context_provider_ = CreateContextProviderImpl(
         gpu_channel_host, GetGpuMemoryBufferManager(),
