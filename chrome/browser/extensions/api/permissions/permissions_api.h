@@ -9,8 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/common/permissions/permission_set.h"
 
 namespace extensions {
@@ -52,7 +52,7 @@ class PermissionsRemoveFunction : public UIThreadExtensionFunction {
 };
 
 // chrome.permissions.request
-class PermissionsRequestFunction : public ChromeAsyncExtensionFunction {
+class PermissionsRequestFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("permissions.request", PERMISSIONS_REQUEST)
 
@@ -66,7 +66,7 @@ class PermissionsRequestFunction : public ChromeAsyncExtensionFunction {
   ~PermissionsRequestFunction() override;
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
