@@ -68,9 +68,10 @@
 //     to 0, which is Chrome's blacklist. Any entries with a non-zero test_group
 //     ID will be applied if Chrome runs with --gpu-blacklist-test-group=ID.
 // 29. "gpu_series" is a list of gpu series names. Currently supported series
-//     include: "intel_ivybridge", "intel_sandybridge", "intel_haswell",
-//     "intel_broadwell", "intel_skylake", "intel_kabylake", "intel_coffeelake",
-//     "intel_cherryview".
+//     include: "intel_sandybridge", "intel_valleyview", "intel_ivybridge",
+//     "intel_haswell", "intel_cherryview", "intel_broadwell",
+//     "intel_apollolake", "intel_skylake", "intel_geminilake",
+//     "intel_kabylake", "intel_coffeelake".
 //
 // VERSION includes "op", "style", "value", and "value2".  "op" can be any of
 // the following values: "=", "<", "<=", ">", ">=", "any", "between".  "style"
