@@ -92,6 +92,7 @@ class MockRasterDecoder : public RasterDecoder {
   MOCK_METHOD1(RestoreVertexAttribArray, void(unsigned index));
 
   MOCK_METHOD0(GetQueryManager, QueryManager*());
+  MOCK_METHOD2(SetQueryCallback, void(unsigned int, base::OnceClosure));
   MOCK_METHOD0(GetGpuFenceManager, gpu::gles2::GpuFenceManager*());
   MOCK_METHOD1(SetIgnoreCachedStateForTest, void(bool ignore));
   MOCK_METHOD0(GetImageManagerForTest, gles2::ImageManager*());

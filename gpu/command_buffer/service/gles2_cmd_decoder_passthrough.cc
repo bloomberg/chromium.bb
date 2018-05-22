@@ -94,6 +94,12 @@ void APIENTRY GLDebugMessageCallback(GLenum source,
                     command_decoder->GetLogger());
 }
 
+void RunCallbacks(std::vector<base::OnceClosure> callbacks) {
+  for (base::OnceClosure& callback : callbacks) {
+    std::move(callback).Run();
+  }
+}
+
 }  // anonymous namespace
 
 PassthroughResources::PassthroughResources() : texture_object_map(nullptr) {}
@@ -174,25 +180,20 @@ ScopedTexture2DBindingReset::~ScopedTexture2DBindingReset() {
 }
 
 GLES2DecoderPassthroughImpl::PendingQuery::PendingQuery() = default;
-GLES2DecoderPassthroughImpl::PendingQuery::~PendingQuery() = default;
-GLES2DecoderPassthroughImpl::PendingQuery::PendingQuery(const PendingQuery&) =
-    default;
+GLES2DecoderPassthroughImpl::PendingQuery::~PendingQuery() {
+  // Run all callbacks when a query is destroyed even if it did not complete.
+  // This avoids leaks due to outstandsing callbacks.
+  RunCallbacks(std::move(callbacks));
+}
+
 GLES2DecoderPassthroughImpl::PendingQuery::PendingQuery(PendingQuery&&) =
-    default;
-GLES2DecoderPassthroughImpl::PendingQuery&
-GLES2DecoderPassthroughImpl::PendingQuery::operator=(const PendingQuery&) =
     default;
 GLES2DecoderPassthroughImpl::PendingQuery&
 GLES2DecoderPassthroughImpl::PendingQuery::operator=(PendingQuery&&) = default;
 
 GLES2DecoderPassthroughImpl::ActiveQuery::ActiveQuery() = default;
 GLES2DecoderPassthroughImpl::ActiveQuery::~ActiveQuery() = default;
-GLES2DecoderPassthroughImpl::ActiveQuery::ActiveQuery(const ActiveQuery&) =
-    default;
 GLES2DecoderPassthroughImpl::ActiveQuery::ActiveQuery(ActiveQuery&&) = default;
-GLES2DecoderPassthroughImpl::ActiveQuery&
-GLES2DecoderPassthroughImpl::ActiveQuery::operator=(const ActiveQuery&) =
-    default;
 GLES2DecoderPassthroughImpl::ActiveQuery&
 GLES2DecoderPassthroughImpl::ActiveQuery::operator=(ActiveQuery&&) = default;
 
@@ -1283,6 +1284,22 @@ size_t GLES2DecoderPassthroughImpl::GetCreatedBackTextureCountForTest() {
 
 gpu::QueryManager* GLES2DecoderPassthroughImpl::GetQueryManager() {
   return nullptr;
+}
+
+void GLES2DecoderPassthroughImpl::SetQueryCallback(unsigned int query_client_id,
+                                                   base::OnceClosure callback) {
+  GLuint service_id = query_id_map_.GetServiceIDOrInvalid(query_client_id);
+  for (auto& pending_query : pending_queries_) {
+    if (pending_query.service_id == service_id) {
+      pending_query.callbacks.push_back(std::move(callback));
+      return;
+    }
+  }
+
+  VLOG(1) << "GLES2DecoderPassthroughImpl::SetQueryCallback: No pending query "
+             "with ID "
+          << query_client_id << ". Running the callback immediately.";
+  std::move(callback).Run();
 }
 
 gpu::gles2::GpuFenceManager* GLES2DecoderPassthroughImpl::GetGpuFenceManager() {

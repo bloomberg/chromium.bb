@@ -207,6 +207,10 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // Gets the QueryManager for this context.
   QueryManager* GetQueryManager() override;
 
+  // Set a callback to be called when a query is complete.
+  void SetQueryCallback(unsigned int query_client_id,
+                        base::OnceClosure callback) override;
+
   // Gets the GpuFenceManager for this context.
   GpuFenceManager* GetGpuFenceManager() override;
 
@@ -520,9 +524,9 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   struct PendingQuery {
     PendingQuery();
     ~PendingQuery();
-    PendingQuery(const PendingQuery&);
+    PendingQuery(const PendingQuery&) = delete;
     PendingQuery(PendingQuery&&);
-    PendingQuery& operator=(const PendingQuery&);
+    PendingQuery& operator=(const PendingQuery&) = delete;
     PendingQuery& operator=(PendingQuery&&);
 
     GLenum target = GL_NONE;
@@ -531,6 +535,8 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     scoped_refptr<gpu::Buffer> shm;
     QuerySync* sync = nullptr;
     base::subtle::Atomic32 submit_count = 0;
+
+    std::vector<base::OnceClosure> callbacks;
   };
   base::circular_deque<PendingQuery> pending_queries_;
 
@@ -538,9 +544,9 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   struct ActiveQuery {
     ActiveQuery();
     ~ActiveQuery();
-    ActiveQuery(const ActiveQuery&);
+    ActiveQuery(const ActiveQuery&) = delete;
     ActiveQuery(ActiveQuery&&);
-    ActiveQuery& operator=(const ActiveQuery&);
+    ActiveQuery& operator=(const ActiveQuery&) = delete;
     ActiveQuery& operator=(ActiveQuery&&);
 
     GLuint service_id = 0;

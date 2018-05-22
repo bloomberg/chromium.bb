@@ -1093,17 +1093,7 @@ void InProcessCommandBuffer::SignalQuery(unsigned query_id,
 void InProcessCommandBuffer::SignalQueryOnGpuThread(
     unsigned query_id,
     base::OnceClosure callback) {
-  QueryManager* query_manager = decoder_->GetQueryManager();
-  if (query_manager) {
-    QueryManager::Query* query = query_manager->GetQuery(query_id);
-    if (query) {
-      query->AddCallback(std::move(callback));
-      return;
-    }
-  }
-
-  // Something went wrong, run callback immediately.
-  std::move(callback).Run();
+  decoder_->SetQueryCallback(query_id, std::move(callback));
 }
 
 void InProcessCommandBuffer::CreateGpuFence(uint32_t gpu_fence_id,
