@@ -19,7 +19,6 @@ if (enable_vulkan) {
     output_name = "vulkan_wrapper"
 
     if (is_linux) {
-      assert(use_x11, "Vulkan only support x11 at this point.")
       sources = [
         "vulkan_command_buffer.cc",
         "vulkan_command_buffer.h",
@@ -62,18 +61,8 @@ if (enable_vulkan) {
       deps = [
         "//base",
         "//third_party/shaderc:libshaderc",
-        "//ui/base",
         "//ui/gfx",
       ]
-
-      if (use_x11) {
-        sources += [
-          "vulkan_implementation_x11.cc",
-          "vulkan_implementation_x11.h",
-        ]
-        deps += [ "//ui/gfx/x" ]
-        configs += [ "//build/config/linux:x11" ]
-      }
     }
   }
 
@@ -101,6 +90,8 @@ if (enable_vulkan) {
       "//gpu/vulkan/init",
       "//testing/gmock",
       "//testing/gtest",
+      "//ui/gfx:native_widget_types",
+      "//ui/gfx/geometry",
     ]
 
     if (use_x11) {

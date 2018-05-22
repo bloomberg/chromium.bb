@@ -12,7 +12,12 @@
 #endif
 
 #if defined(USE_X11)
-#include "gpu/vulkan/vulkan_implementation_x11.h"
+#include "gpu/vulkan/x/vulkan_implementation_x11.h"  // nogncheck
+#endif
+
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 #endif
 
 namespace gpu {
@@ -22,6 +27,10 @@ std::unique_ptr<VulkanImplementation> CreateVulkanImplementation() {
   return std::make_unique<VulkanImplementationX11>();
 #elif defined(OS_ANDROID)
   return std::make_unique<VulkanImplementationAndroid>();
+#elif defined(USE_OZONE)
+  return ui::OzonePlatform::GetInstance()
+      ->GetSurfaceFactoryOzone()
+      ->CreateVulkanImplementation();
 #else
 #error Unsupported Vulkan Platform.
 #endif

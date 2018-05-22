@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/x11/x11_surface_factory.h"
 
+#include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -12,6 +13,10 @@
 #include "ui/ozone/common/gl_ozone_osmesa.h"
 #include "ui/ozone/platform/x11/gl_ozone_glx.h"
 #include "ui/ozone/platform/x11/gl_surface_egl_ozone_x11.h"
+
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/vulkan/x/vulkan_implementation_x11.h"
+#endif
 
 namespace ui {
 namespace {
@@ -75,5 +80,12 @@ GLOzone* X11SurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
       return nullptr;
   }
 }
+
+#if BUILDFLAG(ENABLE_VULKAN)
+std::unique_ptr<gpu::VulkanImplementation>
+X11SurfaceFactory::CreateVulkanImplementation() {
+  return std::make_unique<gpu::VulkanImplementationX11>();
+}
+#endif
 
 }  // namespace ui
