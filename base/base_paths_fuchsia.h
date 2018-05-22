@@ -18,6 +18,9 @@ enum {
   // Path to the directory which contains application libraries and resources.
   DIR_FUCHSIA_RESOURCES,
 
+  // Path to the directory which contains application user data.
+  DIR_APP_DATA,
+
   PATH_FUCHSIA_END,
 };
 

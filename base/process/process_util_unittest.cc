@@ -9,7 +9,6 @@
 
 #include <limits>
 
-#include "base/base_paths_fuchsia.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
@@ -73,6 +72,7 @@
 #include <zircon/process.h>
 #include <zircon/processargs.h>
 #include <zircon/syscalls.h>
+#include "base/base_paths_fuchsia.h"
 #endif
 
 namespace base {
