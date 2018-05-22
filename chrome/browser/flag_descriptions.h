@@ -244,6 +244,9 @@ extern const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[];
 extern const char kEnableAutofillNativeDropdownViewsName[];
 extern const char kEnableAutofillNativeDropdownViewsDescription[];
 
+extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[];
+extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[];
+
 extern const char kEnableBreakingNewsPushName[];
 extern const char kEnableBreakingNewsPushDescription[];
 

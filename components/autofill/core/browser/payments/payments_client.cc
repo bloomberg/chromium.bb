@@ -23,7 +23,9 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/payments/payments_request.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -456,12 +458,14 @@ PaymentsClient::PaymentsClient(net::URLRequestContextGetter* context_getter,
                                PrefService* pref_service,
                                identity::IdentityManager* identity_manager,
                                PaymentsClientUnmaskDelegate* unmask_delegate,
-                               PaymentsClientSaveDelegate* save_delegate)
+                               PaymentsClientSaveDelegate* save_delegate,
+                               bool is_off_the_record)
     : context_getter_(context_getter),
       pref_service_(pref_service),
       identity_manager_(identity_manager),
       unmask_delegate_(unmask_delegate),
       save_delegate_(save_delegate),
+      is_off_the_record_(is_off_the_record),
       has_retried_authorization_(false),
       weak_ptr_factory_(this) {}
 
@@ -573,6 +577,19 @@ void PaymentsClient::InitializeUrlFetcher() {
 
   url_fetcher_->SetUploadData(request_->GetRequestContentType(),
                               request_->GetRequestContent());
+
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSendExperimentIdsInPaymentsRPCs)) {
+    // Add Chrome experiment state to the request headers.
+    net::HttpRequestHeaders headers;
+    // User is always signed-in to be able to upload card to Google Payments.
+    variations::AppendVariationHeaders(url_fetcher_->GetOriginalURL(),
+                                       is_off_the_record_
+                                           ? variations::InIncognito::kYes
+                                           : variations::InIncognito::kNo,
+                                       variations::SignedIn::kYes, &headers);
+    url_fetcher_->SetExtraRequestHeaders(headers.ToString());
+  }
 }
 
 void PaymentsClient::CancelRequest() {

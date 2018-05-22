@@ -103,12 +103,14 @@ class PaymentsClient : public net::URLFetcherDelegate {
   // |context_getter| is reference counted so it has no lifetime or ownership
   // requirements. |pref_service| is used to get the registered preference
   // value, |identity_manager|, |unmask_delegate| and |save_delegate| must all
-  // outlive |this|. Either delegate might be nullptr.
+  // outlive |this|. Either delegate might be nullptr. |is_off_the_record|
+  // denotes incognito mode.
   PaymentsClient(net::URLRequestContextGetter* context_getter,
                  PrefService* pref_service,
                  identity::IdentityManager* identity_manager,
                  PaymentsClientUnmaskDelegate* unmask_delegate,
-                 PaymentsClientSaveDelegate* save_delegate);
+                 PaymentsClientSaveDelegate* save_delegate,
+                 bool is_off_the_record = false);
 
   ~PaymentsClient() override;
 
@@ -204,6 +206,9 @@ class PaymentsClient : public net::URLFetcherDelegate {
 
   // The OAuth2 token, or empty if not fetched.
   std::string access_token_;
+
+  // Denotes incognito mode.
+  bool is_off_the_record_;
 
   // True if |request_| has already retried due to a 401 response from the
   // server.

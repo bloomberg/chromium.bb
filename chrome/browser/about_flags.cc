@@ -2932,6 +2932,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillNativeDropdownViewsName,
      flag_descriptions::kEnableAutofillNativeDropdownViewsDescription,
      kOsDesktop, FEATURE_VALUE_TYPE(autofill::kAutofillExpandedPopupViews)},
+    {"enable-autofill-send-experiment-ids-in-payments-rpcs",
+     flag_descriptions::kEnableAutofillSendExperimentIdsInPaymentsRPCsName,
+     flag_descriptions::
+         kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillSendExperimentIdsInPaymentsRPCs)},
 
 #if defined(OS_WIN)
     {"windows10-custom-titlebar",
