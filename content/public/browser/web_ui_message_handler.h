@@ -15,6 +15,7 @@
 #include "content/public/browser/web_ui.h"
 
 class WebUIBrowserTest;
+class MojoWebUIBrowserTest;
 
 namespace base {
 class ListValue;
@@ -137,6 +138,7 @@ class CONTENT_EXPORT WebUIMessageHandler {
   // RenderViewReused.
   friend class WebUIImpl;
   friend class ::WebUIBrowserTest;
+  friend class ::MojoWebUIBrowserTest;
 
   // TODO(dbeam): disallow JavaScript when a renderer process crashes.
   // http://crbug.com/610450

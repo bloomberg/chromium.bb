@@ -100,7 +100,8 @@
           "mojom.ResetPasswordHandler",
           "mojom.SiteEngagementDetailsProvider",
           "mojom.UsbInternalsPageHandler",
-          "snippets_internals.mojom.PageHandlerFactory"
+          "snippets_internals.mojom.PageHandlerFactory",
+          "web_ui_test.mojom.TestRunner"
         ],
         "multidevice_setup" : [
           "chromeos.multidevice_setup.mojom.MultiDeviceSetup"

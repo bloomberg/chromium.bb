@@ -55,7 +55,8 @@ var outputFile = arguments[4];
 var testType = arguments[5];
 if (testType != 'extension' &&
     testType != 'unit' &&
-    testType != 'webui') {
+    testType != 'webui' &&
+    testType != 'mojo_webui') {
   print('Invalid test type: ' + testType);
   quit(-1);
 }
@@ -82,8 +83,8 @@ var genIncludes = [];
 
 /**
  * When true, add calls to set_preload_test_(fixture|name). This is needed when
- * |testType| === 'webui' to send an injection message before the page loads,
- * but is not required or supported by any other test type.
+ * |testType| === 'webui' || 'mojo_webui' to send an injection message before
+ * the page loads, but is not required or supported by any other test type.
  * @type {boolean}
  */
 var addSetPreloadInfo;
@@ -146,8 +147,10 @@ ${argHint}
   // 'extension' - browser_tests harness, js2extension rule,
   //               ExtensionJSBrowserTest superclass.
   // 'unit' - unit_tests harness, js2unit rule, V8UnitTest superclass.
+  // 'mojo_webui' - browser_tests harness, js2webui rule, MojoWebUIBrowserTest
+  // superclass. Uses Mojo to communicate test results.
   // 'webui' - browser_tests harness, js2webui rule, WebUIBrowserTest
-  // superclass.
+  // superclass. Uses chrome.send to communicate test results.
   if (testType === 'extension') {
     output('#include "chrome/test/base/extension_js_browser_test.h"');
     testing.Test.prototype.typedefCppFixture = 'ExtensionJSBrowserTest';
@@ -158,7 +161,12 @@ ${argHint}
     testing.Test.prototype.typedefCppFixture = 'V8UnitTest';
     testF = 'TEST_F';
     addSetPreloadInfo = false;
-  } else {
+  } else if (testType === 'mojo_webui') {
+    output('#include "chrome/test/base/mojo_web_ui_browser_test.h"');
+    testing.Test.prototype.typedefCppFixture = 'MojoWebUIBrowserTest';
+    testF = 'IN_PROC_BROWSER_TEST_F';
+    addSetPreloadInfo = true;
+  } else if (testType === 'webui') {
     output('#include "chrome/test/base/web_ui_browser_test.h"');
     testing.Test.prototype.typedefCppFixture = 'WebUIBrowserTest';
     testF = 'IN_PROC_BROWSER_TEST_F';

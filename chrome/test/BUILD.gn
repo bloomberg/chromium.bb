@@ -990,7 +990,10 @@ test("browser_tests") {
     ]
 
     if (include_js_tests) {
-      deps += [ "//chrome/test/data/webui:browser_tests_js_webui" ]
+      deps += [
+        "//chrome/test/data/webui:browser_tests_js_mojo_webui",
+        "//chrome/test/data/webui:browser_tests_js_webui",
+      ]
     }
 
     if (!is_fuchsia) {
@@ -4474,6 +4477,8 @@ if (!is_android) {
       "base/in_process_browser_test_mac.cc",
       "base/javascript_browser_test.cc",
       "base/javascript_browser_test.h",
+      "base/mojo_web_ui_browser_test.cc",
+      "base/mojo_web_ui_browser_test.h",
       "base/test_chrome_web_ui_controller_factory.cc",
       "base/test_chrome_web_ui_controller_factory.h",
       "base/ui_test_utils.cc",

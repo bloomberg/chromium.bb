@@ -11,7 +11,6 @@
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/web_ui.h"
 #include "net/base/filename_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 // static
 const base::FilePath::CharType

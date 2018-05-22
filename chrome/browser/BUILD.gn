@@ -4968,7 +4968,11 @@ static_library("test_support_ui") {
       "ui/webui/web_ui_test_handler.h",
     ]
 
-    deps += [ "//chrome/common:mojo_bindings" ]
+    deps += [
+      "//chrome:browser_tests_pak",
+      "//chrome/common:mojo_bindings",
+      "//chrome/test/data:web_ui_test_bindings",
+    ]
   }
 }
 

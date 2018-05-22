@@ -9,6 +9,8 @@
 // See assert.js for where this is used.
 this.traceAssertionsForTesting = true;
 
+var hasWindow = !!this.window;
+
 /**
  * Namespace for |Test|.
  * @type {Object}
@@ -793,8 +795,18 @@ function testDone(result) {
     }
     if (!result)
       result = testResult();
-    if (chrome.send) {
-      // For WebUI tests.
+
+    if (hasWindow && window.webUiTest) {
+      // For MojoWebUI tests.
+      var testRunner = new webUiTest.mojom.TestRunnerPtr();
+      Mojo.bindInterface(
+          webUiTest.mojom.TestRunner.name, mojo.makeRequest(testRunner).handle);
+      if (result[0])
+        testRunner.testComplete();
+      else
+        testRunner.testComplete(result[1]);
+    } else if (chrome.send) {
+      // For WebUI and v8 unit tests.
       chrome.send('testResult', result);
     } else if (window.domAutomationController.send) {
       // For extension tests.
@@ -1144,7 +1156,8 @@ function preloadJavascriptLibraries(testFixture, testName) {
   // events (and doesn't fire), whereas the window does not. Listening to the
   // capture phase allows this event to fire first.
   window.addEventListener('DOMContentLoaded', function() {
-    overrideChrome();
+    if (chrome.send)
+      overrideChrome();
 
     // Override globals at load time so they will be defined.
     assertTrue(deferGlobalOverrides);

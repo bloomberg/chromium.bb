@@ -28,8 +28,8 @@ WebUITestHandler::WebUITestHandler()
     : test_done_(false),
       test_succeeded_(false),
       run_test_done_(false),
-      run_test_succeeded_(false) {
-}
+      run_test_succeeded_(false),
+      binding_(this) {}
 
 WebUITestHandler::~WebUITestHandler() = default;
 
@@ -62,6 +62,25 @@ void WebUITestHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "testResult", base::BindRepeating(&WebUITestHandler::HandleTestResult,
                                         base::Unretained(this)));
+}
+
+void WebUITestHandler::BindToTestRunnerRequest(
+    web_ui_test::mojom::TestRunnerRequest request) {
+  binding_.Bind(std::move(request));
+}
+
+void WebUITestHandler::TestComplete(
+    const base::Optional<std::string>& message) {
+  // To ensure this gets done, do this before ASSERT* calls.
+  quit_closure_.Run();
+
+  SCOPED_TRACE("WebUITestHandler::TestComplete");
+
+  EXPECT_FALSE(test_done_);
+  test_done_ = true;
+  test_succeeded_ = !message.has_value();
+
+  EXPECT_TRUE(test_succeeded_) << *message;
 }
 
 void WebUITestHandler::HandleTestResult(const base::ListValue* test_result) {

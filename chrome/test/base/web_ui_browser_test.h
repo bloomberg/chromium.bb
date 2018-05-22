@@ -86,7 +86,7 @@ class WebUIBrowserTest : public JavaScriptBrowserTest {
   // the javascript for the given |preload_test_fixture| and
   // |preload_test_name|. chrome.send will be overridden to allow javascript
   // handler mocking.
-  void BrowsePreload(const GURL& browse_to);
+  virtual void BrowsePreload(const GURL& browse_to);
 
   // Called by javascript-generated test bodies to browse to a page and preload
   // the javascript for the given |preload_test_fixture| and
@@ -117,9 +117,17 @@ class WebUIBrowserTest : public JavaScriptBrowserTest {
   // Returns a mock WebUI object under test (if any).
   virtual content::WebUIMessageHandler* GetMockMessageHandler();
 
+  WebUITestHandler* test_handler() { return test_handler_.get(); }
+  content::WebUI* override_selected_web_ui() {
+    return override_selected_web_ui_;
+  }
+
   // Returns a file:// GURL constructed from |path| inside the test data dir for
   // webui tests.
   static GURL WebUITestDataPathToURL(const base::FilePath::StringType& path);
+
+  // Attaches mock and test handlers.
+  virtual void SetupHandlers();
 
  private:
   // Loads all libraries added with AddLibrary(), and calls |function_name| with
@@ -134,9 +142,6 @@ class WebUIBrowserTest : public JavaScriptBrowserTest {
                                  bool is_test,
                                  bool is_async,
                                  content::RenderViewHost* preload_host);
-
-  // Attaches mock and test handlers.
-  void SetupHandlers();
 
   // Handles test framework messages.
   std::unique_ptr<WebUITestHandler> test_handler_;

@@ -8,7 +8,9 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chrome/test/data/webui/web_ui_test.mojom.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
 class ListValue;
@@ -20,7 +22,8 @@ class RenderViewHost;
 }
 
 // This class registers test framework specific handlers on WebUI objects.
-class WebUITestHandler : public content::WebUIMessageHandler {
+class WebUITestHandler : public content::WebUIMessageHandler,
+                         public web_ui_test::mojom::TestRunner {
  public:
   WebUITestHandler();
   ~WebUITestHandler() override;
@@ -37,9 +40,14 @@ class WebUITestHandler : public content::WebUIMessageHandler {
   // error message on failure. Returns test pass/fail.
   bool RunJavaScriptTestWithResult(const base::string16& js_text);
 
-  // WebUIMessageHandler overrides.
-  // Add test handlers to the current WebUI object.
+  // Binds the Mojo test interface to this handler.
+  void BindToTestRunnerRequest(web_ui_test::mojom::TestRunnerRequest request);
+
+  // content::WebUIMessageHandler:
   void RegisterMessages() override;
+
+  // web_ui_test::mojom::TestRunner:
+  void TestComplete(const base::Optional<std::string>& message) override;
 
  private:
   // Receives testResult messages.
@@ -69,6 +77,8 @@ class WebUITestHandler : public content::WebUIMessageHandler {
 
   // Quits the currently running RunLoop.
   base::Closure quit_closure_;
+
+  mojo::Binding<web_ui_test::mojom::TestRunner> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUITestHandler);
 };
