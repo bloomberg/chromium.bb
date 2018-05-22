@@ -113,4 +113,9 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded,
                     int /* delegate id */,
                     int /* request_id */)
 
+IPC_MESSAGE_ROUTED3(MediaPlayerDelegateHostMsg_OnPictureInPictureSurfaceChanged,
+                    int /* delegate id */,
+                    viz::SurfaceId /* surface_id */,
+                    gfx::Size /* natural_size */)
+
 #endif  // CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_

@@ -7034,12 +7034,6 @@ void RenderFrameImpl::FrameDidCallFocus() {
   Send(new FrameHostMsg_FrameDidCallFocus(routing_id_));
 }
 
-void RenderFrameImpl::OnPictureInPictureSurfaceIdUpdated(
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size) {
-  GetFrameHost()->OnUpdatePictureInPictureSurfaceId(surface_id, natural_size);
-}
-
 void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {
   OnSetAccessibilityMode(new_mode);
 }

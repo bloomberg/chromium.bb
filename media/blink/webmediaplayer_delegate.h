@@ -123,6 +123,11 @@ class WebMediaPlayerDelegate {
   virtual void DidPictureInPictureModeEnd(int delegate_id,
                                           base::OnceClosure) = 0;
 
+  // Notify that the media player in Picture-in-Picture had a change of surface.
+  virtual void DidPictureInPictureSurfaceChange(int delegate_id,
+                                                const viz::SurfaceId&,
+                                                const gfx::Size&) = 0;
+
   // Notify that playback is stopped. This will drop wake locks and remove any
   // external controls.
   //

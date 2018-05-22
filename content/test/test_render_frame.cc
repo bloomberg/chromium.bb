@@ -109,10 +109,6 @@ class MockFrameHost : public mojom::FrameHost {
 
   void FrameSizeChanged(const gfx::Size& frame_size) override {}
 
-  void OnUpdatePictureInPictureSurfaceId(
-      const viz::SurfaceId& surface_id,
-      const gfx::Size& natural_size) override {}
-
  private:
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
       last_commit_params_;

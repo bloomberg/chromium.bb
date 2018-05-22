@@ -71,6 +71,9 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
       const gfx::Size&,
       blink::WebMediaPlayer::PipWindowSizeCallback) override;
   void DidPictureInPictureModeEnd(int delegate_id, base::OnceClosure) override;
+  void DidPictureInPictureSurfaceChange(int delegate_id,
+                                        const viz::SurfaceId&,
+                                        const gfx::Size&) override;
 
   // content::RenderFrameObserver overrides.
   void WasHidden() override;

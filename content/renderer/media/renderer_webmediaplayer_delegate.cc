@@ -140,6 +140,14 @@ void RendererWebMediaPlayerDelegate::DidPictureInPictureModeEnd(
       routing_id(), delegate_id, request_id));
 }
 
+void RendererWebMediaPlayerDelegate::DidPictureInPictureSurfaceChange(
+    int delegate_id,
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& natural_size) {
+  Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureSurfaceChanged(
+      routing_id(), delegate_id, surface_id, natural_size));
+}
+
 void RendererWebMediaPlayerDelegate::DidPause(int player_id) {
   DVLOG(2) << __func__ << "(" << player_id << ")";
   DCHECK(id_map_.Lookup(player_id));

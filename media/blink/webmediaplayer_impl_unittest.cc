@@ -227,6 +227,8 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
                     blink::WebMediaPlayer::PipWindowSizeCallback));
   MOCK_METHOD2(DidPictureInPictureModeEnd,
                void(int, blink::WebMediaPlayer::PipWindowClosedCallback));
+  MOCK_METHOD3(DidPictureInPictureSurfaceChange,
+               void(int, const viz::SurfaceId&, const gfx::Size&));
 
   void ClearStaleFlag(int player_id) override {
     DCHECK_EQ(player_id_, player_id);
@@ -373,8 +375,7 @@ class WebMediaPlayerImplTest : public testing::Test {
             &WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
             base::Unretained(this)),
         viz::TestContextProvider::Create(),
-        base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo),
-        base::BindRepeating(pip_surface_info_cb_.Get()));
+        base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo));
 
     auto compositor = std::make_unique<StrictMock<MockVideoFrameCompositor>>(
         params->video_frame_compositor_task_runner());
@@ -705,10 +706,6 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   // The WebMediaPlayerImpl instance under test.
   std::unique_ptr<WebMediaPlayerImpl> wmpi_;
-
-  // Callback used for updating Picture-in-Picture about new Surface info.
-  base::MockCallback<WebMediaPlayerParams::PipSurfaceInfoCB>
-      pip_surface_info_cb_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImplTest);
@@ -1356,13 +1353,16 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   InitializeWebMediaPlayerImpl();
 
   EXPECT_CALL(client_, IsInPictureInPictureMode()).WillRepeatedly(Return(true));
+  EXPECT_CALL(delegate_,
+              DidPictureInPictureSurfaceChange(delegate_.player_id(),
+                                               surface_id_, GetNaturalSize()))
+      .Times(2);
 
   wmpi_->OnSurfaceIdUpdated(surface_id_);
 
   EXPECT_CALL(delegate_,
               DidPictureInPictureModeStart(delegate_.player_id(), surface_id_,
                                            GetNaturalSize(), _));
-  EXPECT_CALL(pip_surface_info_cb_, Run(surface_id_, GetNaturalSize()));
 
   wmpi_->EnterPictureInPicture(base::DoNothing());
   wmpi_->OnSurfaceIdUpdated(surface_id_);

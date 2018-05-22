@@ -129,6 +129,10 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void OnPictureInPictureModeEnded(RenderFrameHost* render_frame_host,
                                    int delegate_id,
                                    int request_id);
+  void OnPictureInPictureSurfaceChanged(RenderFrameHost*,
+                                        int delegate_id,
+                                        const viz::SurfaceId&,
+                                        const gfx::Size&);
 
   // Clear |render_frame_host|'s tracking entry for its WakeLocks.
   void ClearWakeLocks(RenderFrameHost* render_frame_host);

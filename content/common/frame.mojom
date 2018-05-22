@@ -324,10 +324,4 @@ interface FrameHost {
   // correctly set the initial size of the frame in case of a cross-process
   // navigation.
   FrameSizeChanged(gfx.mojom.Size size);
-
-  // Sent by the renderer to update Picture-in-Picture with SurfaceId and video
-  // size to be used to show content in the Picture-in-Picture window.
-  OnUpdatePictureInPictureSurfaceId(
-      viz.mojom.SurfaceId surface_id,
-      gfx.mojom.Size natural_size);
 };

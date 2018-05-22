@@ -583,11 +583,6 @@ class CONTENT_EXPORT WebContentsDelegate {
                                          RenderFrameHost* subframe_host) const {
   }
 
-  // Updates the Picture-in-Picture controller with the relevant viz::SurfaceId
-  // and natural size of the video to be in Picture-in-Picture mode.
-  virtual void UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,
-                                               const gfx::Size& natural_size);
-
   // Notifies the Picture-in-Picture controller that there is a new player
   // entering Picture-in-Picture.
   // Returns the size of the Picture-in-Picture window.

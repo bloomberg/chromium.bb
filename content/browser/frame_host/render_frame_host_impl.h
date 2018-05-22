@@ -930,9 +930,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CancelInitialHistoryLoad() override;
   void UpdateEncoding(const std::string& encoding) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
-  void OnUpdatePictureInPictureSurfaceId(
-      const viz::SurfaceId& surface_id,
-      const gfx::Size& natural_size) override;
 
   // Registers Mojo interfaces that this frame host makes available.
   void RegisterMojoInterfaces();
