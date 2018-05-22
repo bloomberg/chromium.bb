@@ -28,7 +28,6 @@
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
-#include "google_apis/gaia/identity_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 #endif
 
@@ -40,7 +39,7 @@ namespace gcm {
 class GCMProfileService::IdentityObserver : public SigninManagerBase::Observer {
  public:
   IdentityObserver(SigninManagerBase* signin_manager,
-                   ProfileIdentityProvider* identity_provider,
+                   ProfileOAuth2TokenService* token_service,
                    net::URLRequestContextGetter* request_context,
                    GCMDriver* driver);
   ~IdentityObserver() override;
@@ -56,7 +55,7 @@ class GCMProfileService::IdentityObserver : public SigninManagerBase::Observer {
 
   GCMDriver* driver_;
   SigninManagerBase* signin_manager_;
-  IdentityProvider* identity_provider_;
+  ProfileOAuth2TokenService* token_service_;
   std::unique_ptr<GCMAccountTracker> gcm_account_tracker_;
 
   // The account ID that this service is responsible for. Empty when the service
@@ -70,12 +69,12 @@ class GCMProfileService::IdentityObserver : public SigninManagerBase::Observer {
 
 GCMProfileService::IdentityObserver::IdentityObserver(
     SigninManagerBase* signin_manager,
-    ProfileIdentityProvider* identity_provider,
+    ProfileOAuth2TokenService* token_service,
     net::URLRequestContextGetter* request_context,
     GCMDriver* driver)
     : driver_(driver),
       signin_manager_(signin_manager),
-      identity_provider_(identity_provider),
+      token_service_(token_service),
       weak_ptr_factory_(this) {
   signin_manager_->AddObserver(this);
 
@@ -117,10 +116,10 @@ void GCMProfileService::IdentityObserver::StartAccountTracker(
     return;
 
   std::unique_ptr<AccountTracker> gaia_account_tracker(
-      new AccountTracker(signin_manager_, identity_provider_, request_context));
+      new AccountTracker(signin_manager_, token_service_, request_context));
 
-  gcm_account_tracker_.reset(
-      new GCMAccountTracker(std::move(gaia_account_tracker), driver_));
+  gcm_account_tracker_.reset(new GCMAccountTracker(
+      std::move(gaia_account_tracker), token_service_, driver_));
 
   gcm_account_tracker_->Start();
 }
@@ -151,13 +150,13 @@ GCMProfileService::GCMProfileService(
     version_info::Channel channel,
     const std::string& product_category_for_subtypes,
     SigninManagerBase* signin_manager,
-    std::unique_ptr<ProfileIdentityProvider> identity_provider,
+    ProfileOAuth2TokenService* token_service,
     std::unique_ptr<GCMClientFactory> gcm_client_factory,
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
-    : profile_identity_provider_(std::move(identity_provider)),
-      signin_manager_(signin_manager),
+    : signin_manager_(signin_manager),
+      token_service_(token_service),
       request_context_(request_context) {
   driver_ = CreateGCMDriverDesktop(
       std::move(gcm_client_factory), prefs,
@@ -165,9 +164,8 @@ GCMProfileService::GCMProfileService(
       product_category_for_subtypes, ui_task_runner, io_task_runner,
       blocking_task_runner);
 
-  identity_observer_.reset(
-      new IdentityObserver(signin_manager_, profile_identity_provider_.get(),
-                           request_context_, driver_.get()));
+  identity_observer_.reset(new IdentityObserver(
+      signin_manager_, token_service_, request_context_, driver_.get()));
 }
 #endif  // BUILDFLAG(USE_GCM_FROM_PLATFORM)
 
@@ -191,8 +189,7 @@ void GCMProfileService::SetDriverForTesting(std::unique_ptr<GCMDriver> driver) {
 #if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
   if (identity_observer_) {
     identity_observer_ = std::make_unique<IdentityObserver>(
-        signin_manager_, profile_identity_provider_.get(), request_context_,
-        driver.get());
+        signin_manager_, token_service_, request_context_, driver.get());
   }
 #endif  // !BUILDFLAG(USE_GCM_FROM_PLATFORM)
 }

@@ -15,13 +15,11 @@
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/offline_pages/buildflags/buildflags.h"
-#include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/gcm/gcm_product_util.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #endif
@@ -58,9 +56,6 @@ GCMProfileServiceFactory::GCMProfileServiceFactory()
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
-#if !defined(OS_ANDROID)
-  DependsOn(LoginUIServiceFactory::GetInstance());
-#endif
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   DependsOn(offline_pages::PrefetchServiceFactory::GetInstance());
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -88,10 +83,7 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
       chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
       SigninManagerFactory::GetForProfile(profile),
-      std::unique_ptr<ProfileIdentityProvider>(new ProfileIdentityProvider(
-          SigninManagerFactory::GetForProfile(profile),
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-          LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile))),
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       std::unique_ptr<GCMClientFactory>(new GCMClientFactory),
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::UI),

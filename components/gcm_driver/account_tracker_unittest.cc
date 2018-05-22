@@ -15,7 +15,6 @@
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/http/http_status_code.h"
@@ -270,11 +269,8 @@ class IdentityAccountTrackerTest : public testing::Test {
     SigninManagerBase::RegisterPrefs(pref_service_.registry());
     account_tracker_service_.Initialize(test_signin_client_.get());
 
-    fake_identity_provider_.reset(
-        new FakeIdentityProvider(fake_oauth2_token_service_.get()));
-
     account_tracker_.reset(new AccountTracker(
-        fake_signin_manager_.get(), fake_identity_provider_.get(),
+        fake_signin_manager_.get(), fake_oauth2_token_service_.get(),
         new net::TestURLRequestContextGetter(message_loop_.task_runner())));
     account_tracker_->AddObserver(&observer_);
   }
@@ -358,16 +354,7 @@ class IdentityAccountTrackerTest : public testing::Test {
     observer()->Clear();
   }
 
-  std::string active_account_id() {
-    return identity_provider()->GetActiveAccountId();
-  }
-
  private:
-  FakeIdentityProvider* identity_provider() {
-    return static_cast<FakeIdentityProvider*>(
-        account_tracker_->identity_provider());
-  }
-
   base::MessageLoopForIO message_loop_;  // net:: stuff needs IO message loop.
   net::TestURLFetcherFactory test_fetcher_factory_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
@@ -375,7 +362,6 @@ class IdentityAccountTrackerTest : public testing::Test {
   std::unique_ptr<TestSigninClient> test_signin_client_;
   std::unique_ptr<SigninManagerForTest> fake_signin_manager_;
   std::unique_ptr<FakeProfileOAuth2TokenService> fake_oauth2_token_service_;
-  std::unique_ptr<FakeIdentityProvider> fake_identity_provider_;
 
   std::unique_ptr<AccountTracker> account_tracker_;
   AccountTrackerObserver observer_;

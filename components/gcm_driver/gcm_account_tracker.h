@@ -18,6 +18,8 @@
 #include "components/gcm_driver/gcm_connection_observer.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
+class ProfileOAuth2TokenService;
+
 namespace base {
 class Time;
 }
@@ -72,6 +74,7 @@ class GCMAccountTracker : public AccountTracker::Observer,
   // |account_tracker| is used to deliver information about the accounts present
   // in the browser context to |driver|.
   GCMAccountTracker(std::unique_ptr<AccountTracker> account_tracker,
+                    ProfileOAuth2TokenService* token_service,
                     GCMDriver* driver);
   ~GCMAccountTracker() override;
 
@@ -144,7 +147,8 @@ class GCMAccountTracker : public AccountTracker::Observer,
   // Account tracker.
   std::unique_ptr<AccountTracker> account_tracker_;
 
-  // GCM Driver. Not owned.
+  ProfileOAuth2TokenService* token_service_;
+
   GCMDriver* driver_;
 
   // State of the account.

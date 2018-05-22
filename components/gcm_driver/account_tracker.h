@@ -13,10 +13,10 @@
 #include "base/observer_list.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
-#include "google_apis/gaia/identity_provider.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class GoogleServiceAuthError;
+class ProfileOAuth2TokenService;
 
 namespace net {
 class URLRequestContextGetter;
@@ -45,7 +45,7 @@ class AccountTracker : public OAuth2TokenService::Observer,
                        public SigninManagerBase::Observer {
  public:
   AccountTracker(SigninManagerBase* signin_manager,
-                 IdentityProvider* identity_provider,
+                 ProfileOAuth2TokenService* token_service,
                  net::URLRequestContextGetter* request_context_getter);
   ~AccountTracker() override;
 
@@ -82,8 +82,6 @@ class AccountTracker : public OAuth2TokenService::Observer,
   // Sets the state of an account. Does not fire notifications.
   void SetAccountStateForTest(AccountIds ids, bool is_signed_in);
 
-  IdentityProvider* identity_provider() { return identity_provider_; }
-
   // Indicates if all user information has been fetched. If the result is false,
   // there are still unfinished fetchers.
   virtual bool IsAllUserInfoFetched() const;
@@ -110,7 +108,7 @@ class AccountTracker : public OAuth2TokenService::Observer,
   void DeleteFetcher(AccountIdFetcher* fetcher);
 
   SigninManagerBase* signin_manager_;
-  IdentityProvider* identity_provider_;
+  ProfileOAuth2TokenService* token_service_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   std::map<std::string, std::unique_ptr<AccountIdFetcher>> user_info_requests_;
   std::map<std::string, AccountState> accounts_;
