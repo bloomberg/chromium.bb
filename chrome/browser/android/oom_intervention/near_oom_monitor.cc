@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/chrome_features.h"
@@ -15,6 +16,10 @@ namespace {
 
 const char kSwapFreeThresholdRatioParamName[] = "swap_free_threshold_ratio";
 const char kUseComponentCallbacks[] = "use_component_callbacks";
+const char kRendererWorkloadThresholdDeprecated[] =
+    "renderer_workload_threshold";
+const char kRendererWorkloadThresholdPercentage[] =
+    "renderer_workload_threshold_percentage";
 
 // Default SwapFree/SwapTotal ratio for detecting near-OOM situation.
 // TODO(bashi): Confirm that this is appropriate.
@@ -28,13 +33,35 @@ constexpr base::TimeDelta kDefaultMonitoringDelta =
 constexpr base::TimeDelta kDefaultCooldownDelta =
     base::TimeDelta::FromSeconds(30);
 
+uint64_t GetRendererMemoryWorkloadThreshold() {
+  // Approximately 80MB for 512MB devices.
+  const uint64_t kDefaultMemoryWorkloadThresholdPercent = 16;
+
+  std::string threshold_str = base::GetFieldTrialParamValueByFeature(
+      features::kOomIntervention, kRendererWorkloadThresholdPercentage);
+  uint64_t threshold = 0;
+  size_t ram_size = base::SysInfo::AmountOfPhysicalMemory();
+  if (base::StringToUint64(threshold_str, &threshold)) {
+    return threshold * ram_size / 100;
+  }
+
+  // If the old trigger param is set, then enable intervention only on 512MB
+  // devices.
+  threshold_str = base::GetFieldTrialParamValueByFeature(
+      features::kOomIntervention, kRendererWorkloadThresholdDeprecated);
+  if (base::StringToUint64(threshold_str, &threshold)) {
+    if (ram_size > 512 * 1024 * 1024)
+      return 0;
+    return threshold;
+  }
+  return kDefaultMemoryWorkloadThresholdPercent * ram_size / 100;
+}
+
 }  // namespace
 
 // static
 NearOomMonitor* NearOomMonitor::Create() {
   if (!base::FeatureList::IsEnabled(features::kOomIntervention))
-    return nullptr;
-  if (!base::SysInfo::IsLowEndDevice())
     return nullptr;
 
   base::SystemMemoryInfoKB memory_info;
@@ -51,8 +78,12 @@ NearOomMonitor* NearOomMonitor::Create() {
       kDefaultSwapFreeThresholdRatio);
   int64_t swapfree_threshold =
       static_cast<int64_t>(memory_info.swap_total * threshold_ratio);
+
+  uint64_t renderer_workload_threshold = GetRendererMemoryWorkloadThreshold();
+  if (!renderer_workload_threshold)
+    return nullptr;
   return new NearOomMonitor(base::ThreadTaskRunnerHandle::Get(),
-                            swapfree_threshold);
+                            swapfree_threshold, renderer_workload_threshold);
 }
 
 // static
@@ -63,13 +94,15 @@ NearOomMonitor* NearOomMonitor::GetInstance() {
 
 NearOomMonitor::NearOomMonitor(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    int64_t swapfree_threshold)
+    int64_t swapfree_threshold,
+    uint64_t renderer_workload_threshold)
     : task_runner_(task_runner),
       check_callback_(
           base::Bind(&NearOomMonitor::Check, base::Unretained(this))),
       monitoring_interval_(kDefaultMonitoringDelta),
       cooldown_interval_(kDefaultCooldownDelta),
       swapfree_threshold_(swapfree_threshold),
+      renderer_workload_threshold_(renderer_workload_threshold),
       component_callback_is_enabled_(
           base::GetFieldTrialParamByFeatureAsBool(features::kOomIntervention,
                                                   kUseComponentCallbacks,
