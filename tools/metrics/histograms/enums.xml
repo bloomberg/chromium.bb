@@ -45880,6 +45880,7 @@ Full version information for the fingerprint enum values:
   <int value="52" label="kErrorCodeUpdatedButNotActive"/>
   <int value="53" label="kErrorCodeNoUpdate"/>
   <int value="54" label="kErrorCodeRollbackNotPossible"/>
+  <int value="55" label="kErrorCodeFirstActiveOmahaPingSentPersistenceError"/>
 </enum>
 
 <enum name="UpdateEngineInstallDateProvisioningSource">
