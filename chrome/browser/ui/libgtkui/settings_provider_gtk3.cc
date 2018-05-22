@@ -8,8 +8,6 @@
 #include "chrome/browser/ui/libgtkui/gtk_ui.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 
-#include "base/debug/stack_trace.h"
-
 namespace libgtkui {
 
 namespace {
@@ -77,7 +75,6 @@ SettingsProviderGtk3::FrameActionSettingWatcher::FrameActionSettingWatcher(
 }
 
 SettingsProviderGtk3::FrameActionSettingWatcher::~FrameActionSettingWatcher() {
-  base::debug::StackTrace().Print();
   if (signal_id_)
     g_signal_handler_disconnect(gtk_settings_get_default(), signal_id_);
 }
