@@ -40,8 +40,11 @@
       Search or type URL
     </message>
   </if>
-  <message name="IDS_OMNIBOX_TAB_SUGGEST_HINT" desc="The text prefixing a suggestion description to say that this suggestion will switch to another tab.">
+  <message name="IDS_OMNIBOX_TAB_SUGGEST_HINT" desc="The button text contents to say that this suggestion will switch to another tab.">
     Switch to this tab
+  </message>
+  <message name="IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT" desc="A shortened, one word version of button text to say that this suggestion will switch to another tab.">
+    Switch
   </message>
   <message name="IDS_PHYSICAL_WEB_OVERFLOW_DESCRIPTION" desc="The description in the omnibox dropdown indicating that multiple nearby devices are broadcasting URLs.">
     Physical Web suggestions
