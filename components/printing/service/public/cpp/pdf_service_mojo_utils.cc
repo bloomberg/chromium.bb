@@ -7,9 +7,25 @@
 #include <utility>
 
 #include "base/memory/shared_memory.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace printing {
+
+base::MappedReadOnlyRegion CreateReadOnlySharedMemoryRegion(size_t size) {
+  mojo::ScopedSharedBufferHandle handle =
+      mojo::SharedBufferHandle::Create(size);
+  base::WritableSharedMemoryRegion writable_region =
+      UnwrapWritableSharedMemoryRegion(std::move(handle));
+  base::WritableSharedMemoryMapping mapping = writable_region.Map();
+  if (!mapping.IsValid())
+    return {};
+
+  base::ReadOnlySharedMemoryRegion readonly_region =
+      base::WritableSharedMemoryRegion::ConvertToReadOnly(
+          std::move(writable_region));
+  return {std::move(readonly_region), std::move(mapping)};
+}
 
 std::unique_ptr<base::SharedMemory> GetShmFromMojoHandle(
     mojo::ScopedSharedBufferHandle handle) {

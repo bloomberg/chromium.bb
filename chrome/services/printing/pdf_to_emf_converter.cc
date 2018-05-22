@@ -10,7 +10,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
-#include "mojo/public/cpp/system/platform_handle.h"
+#include "components/printing/service/public/cpp/pdf_service_mojo_utils.h"
 #include "pdf/pdf.h"
 #include "printing/emf_win.h"
 #include "ui/gfx/gdi_util.h"
@@ -163,22 +163,16 @@ base::ReadOnlySharedMemoryRegion PdfToEmfConverter::RenderPdfPageToMetafile(
   metafile.FinishPage();
   metafile.FinishDocument();
 
-  mojo::ScopedSharedBufferHandle emf_handle =
-      mojo::SharedBufferHandle::Create(metafile.GetDataSize());
-  mojo::ScopedSharedBufferHandle readonly_handle;
-  if (emf_handle.is_valid()) {
-    mojo::ScopedSharedBufferMapping emf_mapping =
-        emf_handle->Map(metafile.GetDataSize());
-    if (emf_mapping &&
-        metafile.GetData(emf_mapping.get(), metafile.GetDataSize())) {
-      readonly_handle =
-          emf_handle->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
-    }
-  }
-  if (!readonly_handle.is_valid())
+  const uint32_t size = metafile.GetDataSize();
+  base::MappedReadOnlyRegion region_mapping =
+      CreateReadOnlySharedMemoryRegion(size);
+  if (!region_mapping.region.IsValid() || !region_mapping.mapping.IsValid())
     return invalid_emf_region;
 
-  return mojo::UnwrapReadOnlySharedMemoryRegion(std::move(readonly_handle));
+  if (!metafile.GetData(region_mapping.mapping.memory(), size))
+    return invalid_emf_region;
+
+  return std::move(region_mapping.region);
 }
 
 void PdfToEmfConverter::ConvertPage(uint32_t page_number,
