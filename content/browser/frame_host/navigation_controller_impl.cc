@@ -881,7 +881,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     LoadCommittedDetails* details,
-    bool is_navigation_within_page,
+    bool is_same_document_navigation,
     NavigationHandleImpl* navigation_handle) {
   is_initial_navigation_ = false;
 
@@ -916,7 +916,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
   details->type = ClassifyNavigation(rfh, params);
 
   // is_same_document must be computed before the entry gets committed.
-  details->is_same_document = is_navigation_within_page;
+  details->is_same_document = is_same_document_navigation;
 
   // Save reload type and timestamp for a reload navigation to detect
   // consecutive reloads when the next reload is requested.
