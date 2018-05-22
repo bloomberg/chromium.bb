@@ -2093,6 +2093,9 @@ void Document::UpdateStyleAndLayoutTree() {
     // NeedsLayoutTreeUpdate().
     GetSlotAssignmentEngine().RecalcSlotAssignments();
   }
+#if DCHECK_IS_ON()
+  SlotAssignmentRecalcForbiddenScope forbid_slot_assignment_recalc;
+#endif
 
   if (!NeedsLayoutTreeUpdate()) {
     if (Lifecycle().GetState() < DocumentLifecycle::kStyleClean) {

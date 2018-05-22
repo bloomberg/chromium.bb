@@ -87,6 +87,41 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   unsigned slot_count_ : 30;
 };
 
+#if DCHECK_IS_ON()
+class SlotAssignmentRecalcForbiddenScope final {
+  STACK_ALLOCATED();
+  DISALLOW_COPY_AND_ASSIGN(SlotAssignmentRecalcForbiddenScope);
+
+ public:
+  SlotAssignmentRecalcForbiddenScope() { Enter(); }
+  ~SlotAssignmentRecalcForbiddenScope() { Exit(); }
+
+  static bool IsSlotAssignmentRecalcForbidden() {
+    return GetMutableCounter() > 0;
+  }
+
+ private:
+  static void Enter() {
+    if (IsMainThread()) {
+      ++g_main_thread_counter_;
+    } else {
+      ++GetMutableCounter();
+    }
+  }
+  static void Exit() {
+    DCHECK(IsSlotAssignmentRecalcForbidden());
+    if (IsMainThread()) {
+      --g_main_thread_counter_;
+    } else {
+      --GetMutableCounter();
+    }
+  }
+
+  static unsigned& GetMutableCounter();
+  static unsigned g_main_thread_counter_;
+};
+#endif
+
 }  // namespace blink
 
 #endif  // HTMLSlotAssignment_h
