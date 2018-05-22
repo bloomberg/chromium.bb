@@ -14,6 +14,7 @@ import android.view.View;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
@@ -56,6 +57,7 @@ class ContextualSuggestionsMediator
     private final EnabledStateMonitor mEnabledStateMonitor;
     private final GestureStateListener mGestureStateListener;
     private final Handler mHandler = new Handler();
+    private final int mToolbarTransitionDuration;
 
     private @Nullable ContextualSuggestionsSource mSuggestionsSource;
     private @Nullable FetchHelper mFetchHelper;
@@ -95,6 +97,13 @@ class ContextualSuggestionsMediator
         mModel = model;
         mFullscreenManager = fullscreenManager;
         mIphParentView = iphParentView;
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_SLIM_PEEK_UI)) {
+            mModel.setSlimPeekEnabled(true);
+        }
+        mToolbarTransitionDuration =
+                iphParentView.getContext().getResources().getDimensionPixelSize(
+                        R.dimen.contextual_suggestions_toolbar_animation_duration);
 
         // Create a state monitor that will alert this mediator if the enabled state for contextual
         // suggestions changes.
@@ -325,7 +334,11 @@ class ContextualSuggestionsMediator
         mModel.setClusterList(new ClusterList(Collections.emptyList()));
         mModel.setCloseButtonOnClickListener(null);
         mModel.setMenuButtonVisibility(false);
-        mModel.setMenuButtonAlpha(0f);
+        if (!mModel.isSlimPeekEnabled()) {
+            mModel.setMenuButtonAlpha(0f);
+        } else {
+            mModel.setToolbarTranslationPercent(1.f);
+        }
         mModel.setMenuButtonDelegate(null);
         mModel.setDefaultToolbarClickListener(null);
         mModel.setTitle(null);
@@ -357,7 +370,11 @@ class ContextualSuggestionsMediator
             clearSuggestions();
         });
         mModel.setMenuButtonVisibility(false);
-        mModel.setMenuButtonAlpha(0f);
+        if (!mModel.isSlimPeekEnabled()) {
+            mModel.setMenuButtonAlpha(0f);
+        } else {
+            mModel.setToolbarTranslationPercent(1.f);
+        }
         mModel.setMenuButtonDelegate(this);
         mModel.setDefaultToolbarClickListener(view -> mCoordinator.expandBottomSheet());
         mModel.setTitle(title);
@@ -396,7 +413,7 @@ class ContextualSuggestionsMediator
             }
 
             @Override
-            public void onSheetOffsetChanged(float heightFraction) {
+            public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
                 if (mHelpBubble != null) mHelpBubble.dismiss();
 
                 // When sheet is fully hidden, clear suggestions if the sheet is not allowed to peek
@@ -409,6 +426,8 @@ class ContextualSuggestionsMediator
                         clearSuggestions();
                     }
                 }
+
+                if (mModel.isSlimPeekEnabled()) updateSlimPeekTranslation(offsetPx);
             }
 
             @Override
@@ -430,7 +449,9 @@ class ContextualSuggestionsMediator
 
             @Override
             public void onTransitionPeekToHalf(float transitionFraction) {
-                mModel.setMenuButtonAlpha(transitionFraction);
+                // If the slim peek UI is enabled, the menu button alpha will be animated with
+                // the rest of the toolbar contents.
+                if (!mModel.isSlimPeekEnabled()) mModel.setMenuButtonAlpha(transitionFraction);
             }
         };
 
@@ -484,6 +505,18 @@ class ContextualSuggestionsMediator
         }
 
         return new ClusterList(clusters);
+    }
+
+    private void updateSlimPeekTranslation(float bottomSheetOffsetPx) {
+        // When the sheet is closed, the toolbar translation is 1.0 to indicate the main
+        // toolbar content is fully translated. As the bottomSheetOffsetPx increases, the
+        // toolbar translation percent decreases. At 0.f the main toolbar content is not
+        // translated at all.
+        float adjustedOffset = bottomSheetOffsetPx - mCoordinator.getSheetPeekHeight();
+        float translationPercent =
+                adjustedOffset <= 0 ? 1.f : (1.f - (adjustedOffset / mToolbarTransitionDuration));
+        // TODO(twellington): Drop out early after 0.f has been sent once.
+        mModel.setToolbarTranslationPercent(Math.max(0.f, translationPercent));
     }
 
     @VisibleForTesting

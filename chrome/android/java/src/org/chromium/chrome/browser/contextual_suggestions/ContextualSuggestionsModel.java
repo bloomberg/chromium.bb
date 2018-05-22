@@ -28,6 +28,8 @@ class ContextualSuggestionsModel
         static final PropertyKey TITLE = new PropertyKey();
         static final PropertyKey TOOLBAR_SHADOW_VISIBILITY = new PropertyKey();
         static final PropertyKey DEFAULT_TOOLBAR_ON_CLICK_LISTENER = new PropertyKey();
+        static final PropertyKey SLIM_PEEK_ENABLED = new PropertyKey();
+        static final PropertyKey TOOLBAR_TRANSLATION_PERCENT = new PropertyKey();
 
         private PropertyKey() {}
     }
@@ -82,11 +84,13 @@ class ContextualSuggestionsModel
     ClusterListObservable mClusterListObservable = new ClusterListObservable();
     private OnClickListener mCloseButtonOnClickListener;
     private boolean mMenuButtonVisibility;
-    private float mMenuButtonAlpha;
+    private float mMenuButtonAlpha = 1.f;
     private ListMenuButton.Delegate mMenuButtonDelegate;
     private OnClickListener mDefaultToolbarOnClickListener;
     private String mTitle;
     private boolean mToolbarShadowVisibility;
+    private boolean mIsSlimPeekEnabled;
+    private float mToolbarTranslationPercent;
 
     /** @param clusterList The current list of clusters. */
     void setClusterList(ClusterList clusterList) {
@@ -184,5 +188,37 @@ class ContextualSuggestionsModel
      */
     OnClickListener getDefaultToolbarClickListener() {
         return mDefaultToolbarOnClickListener;
+    }
+
+    /** @param enabled Whether the slim peek UI is enabled. */
+    void setSlimPeekEnabled(boolean enabled) {
+        mIsSlimPeekEnabled = enabled;
+        notifyPropertyChanged(PropertyKey.SLIM_PEEK_ENABLED);
+    }
+
+    /** @return Whether the slim peek UI is enabled. */
+    boolean isSlimPeekEnabled() {
+        return mIsSlimPeekEnabled;
+    }
+
+    /**
+     * @param translation The toolbar translation percent where 1.f means the main toolbar content
+     *                    is fully translated and 0.f means it is not translated at all. This is
+     *                    used by the slim peek UI to animate from fully translated when the sheet
+     *                    is closed to not at all translated when the sheet is opened.
+     */
+    void setToolbarTranslationPercent(float translation) {
+        mToolbarTranslationPercent = translation;
+        notifyPropertyChanged(PropertyKey.TOOLBAR_TRANSLATION_PERCENT);
+    }
+
+    /**
+     * @param return The toolbar translation percent where 1.f means the main toolbar content is
+     *               fully translated and 0.f means it is not translated at all. This is used by
+     *               the slim peek UI to animate from fully translated when the sheet is closed
+     *               to not at all translated when the sheet is opened.
+     */
+    float getToolbarTranslationPercent() {
+        return mToolbarTranslationPercent;
     }
 }

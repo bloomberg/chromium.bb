@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModel.ClusterListObservable;
 import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
@@ -91,6 +92,15 @@ class ContentCoordinator {
                 mModel.setToolbarShadowVisibility(mRecyclerView.canScrollVertically(-1));
             }
         });
+
+        if (mModel.isSlimPeekEnabled()) {
+            ApiCompatibilityUtils.setPaddingRelative(mRecyclerView,
+                    ApiCompatibilityUtils.getPaddingStart(mRecyclerView),
+                    context.getResources().getDimensionPixelSize(
+                            R.dimen.bottom_control_container_slim_expanded_height),
+                    ApiCompatibilityUtils.getPaddingEnd(mRecyclerView),
+                    mRecyclerView.getPaddingBottom());
+        }
     }
 
     /** Destroy the content component. */

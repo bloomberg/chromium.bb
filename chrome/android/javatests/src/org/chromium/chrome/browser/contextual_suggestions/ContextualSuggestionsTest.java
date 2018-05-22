@@ -24,10 +24,16 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.MethodRule;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.params.MethodParamAnnotationRule;
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterProvider;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -50,7 +56,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
@@ -71,13 +77,15 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.concurrent.TimeoutException;
 
 /**
  * Tests related to displaying contextual suggestions in a bottom sheet.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET)
@@ -99,6 +107,16 @@ public class ContextualSuggestionsTest {
     @Rule
     public RenderTestRule mRenderTestRule = new RenderTestRule();
 
+    @Rule
+    public MethodRule mMethodParamAnnotationProcessor = new MethodParamAnnotationRule();
+    public static class SlimPeekUIParams implements ParameterProvider {
+        @Override
+        public Iterable<ParameterSet> getParameters() {
+            return Arrays.asList(new ParameterSet().value(false).name("DisableSlimPeekUI"),
+                    new ParameterSet().value(true).name("EnableSlimPeekUI"));
+        }
+    }
+
     private static final String TEST_PAGE =
             "/chrome/test/data/android/contextual_suggestions/contextual_suggestions_test.html";
 
@@ -116,6 +134,16 @@ public class ContextualSuggestionsTest {
     private BottomSheet mBottomSheet2;
 
     private CallbackHelper mToolbarShadowVisibleCallback = new CallbackHelper();
+
+    @ParameterAnnotations.UseMethodParameterBefore(SlimPeekUIParams.class)
+    public void setupSlimPeekUI(boolean slimPeekUIEnabled) {
+        if (slimPeekUIEnabled) {
+            mRenderTestRule.setVariantPrefix("slim-peek");
+            Features.getInstance().enable(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_SLIM_PEEK_UI);
+        } else {
+            Features.getInstance().disable(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_SLIM_PEEK_UI);
+        }
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -480,25 +508,28 @@ public class ContextualSuggestionsTest {
     @MediumTest
     @Feature({"ContextualSuggestions", "UiCatalogue"})
     @DisableFeatures(FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE)
-    public void testCaptureContextualSuggestionsBottomSheet()
+    @ParameterAnnotations.UseMethodParameter(SlimPeekUIParams.class)
+    public void testCaptureContextualSuggestionsBottomSheet(boolean slimPeekUIEnabled)
             throws InterruptedException, TimeoutException {
+        String postfix = slimPeekUIEnabled ? " (slim)" : "";
+
         forceShowSuggestions();
         BottomSheetTestRule.waitForWindowUpdates();
-        mScreenShooter.shoot("Contextual suggestions: peeking");
+        mScreenShooter.shoot("Contextual suggestions: peeking" + postfix);
 
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, false));
         BottomSheetTestRule.waitForWindowUpdates();
-        mScreenShooter.shoot("Contextual suggestions: half height, images loading");
+        mScreenShooter.shoot("Contextual suggestions: half height, images loading" + postfix);
 
         ThreadUtils.runOnUiThreadBlocking(() -> mFakeSource.runImageFetchCallbacks());
         BottomSheetTestRule.waitForWindowUpdates();
-        mScreenShooter.shoot("Contextual suggestions: half height, images loaded");
+        mScreenShooter.shoot("Contextual suggestions: half height, images loaded" + postfix);
 
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, false));
         BottomSheetTestRule.waitForWindowUpdates();
-        mScreenShooter.shoot("Contextual suggestions: full height");
+        mScreenShooter.shoot("Contextual suggestions: full height" + postfix);
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             RecyclerView view =
@@ -506,14 +537,15 @@ public class ContextualSuggestionsTest {
             view.scrollToPosition(5);
         });
         BottomSheetTestRule.waitForWindowUpdates();
-        mScreenShooter.shoot("Contextual suggestions: scrolled");
+        mScreenShooter.shoot("Contextual suggestions: scrolled" + postfix);
     }
 
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions", "RenderTest"})
     @DisableFeatures(FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE)
-    public void testRender() throws Exception {
+    @ParameterAnnotations.UseMethodParameter(SlimPeekUIParams.class)
+    public void testRender(boolean slimPeekUIEnabled) throws Exception {
         // Force suggestions to populate in the bottom sheet, then render the peeking bar.
         forceShowSuggestions();
         BottomSheetTestRule.waitForWindowUpdates();

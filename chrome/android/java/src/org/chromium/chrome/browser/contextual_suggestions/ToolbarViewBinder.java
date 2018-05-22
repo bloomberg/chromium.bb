@@ -29,6 +29,10 @@ class ToolbarViewBinder
             view.setShadowVisibility(model.getToolbarShadowVisibility());
         } else if (propertyKey == PropertyKey.DEFAULT_TOOLBAR_ON_CLICK_LISTENER) {
             view.setOnClickListener(model.getDefaultToolbarClickListener());
+        } else if (propertyKey == PropertyKey.SLIM_PEEK_ENABLED) {
+            view.setSlimPeekEnabled(model.isSlimPeekEnabled());
+        } else if (propertyKey == PropertyKey.TOOLBAR_TRANSLATION_PERCENT) {
+            view.setTranslationPercent(model.getToolbarTranslationPercent());
         } else {
             assert false : "Unhandled property detected.";
         }

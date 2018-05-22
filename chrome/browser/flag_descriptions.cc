@@ -175,9 +175,14 @@ const char kCompositedLayerBordersDescription[] =
     "layer compositing.";
 
 const char kContextualSuggestionsBottomSheetName[] =
-    "Enable Contextual Suggestions Bottom Sheet";
+    "Contextual Suggestions Bottom Sheet";
 const char kContextualSuggestionsBottomSheetDescription[] =
     "If enabled, shows contextual suggestions in the bottom sheet.";
+
+const char kContextualSuggestionsSlimPeekUIName[] =
+    "Contextual Suggestions Slim Peek UI";
+const char kContextualSuggestionsSlimPeekUIDescription[] =
+    "Use a slimmer peek UI for the contextual suggestions bottom sheet.";
 
 const char kCreditCardAssistName[] = "Credit Card Assisted Filling";
 const char kCreditCardAssistDescription[] =
