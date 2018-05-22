@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.annotation.StringRes;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -59,24 +58,12 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase {
         setContentView(LayoutInflater.from(LightweightFirstRunActivity.this)
                                .inflate(R.layout.lightweight_fre_tos, null));
 
-        NoUnderlineClickableSpan clickableTermsSpan = new NoUnderlineClickableSpan() {
-            @Override
-            public void onClick(View widget) {
-                showInfoPage(R.string.chrome_terms_of_service_url);
-            }
-        };
-        NoUnderlineClickableSpan clickablePrivacySpan = new NoUnderlineClickableSpan() {
-            @Override
-            public void onClick(View widget) {
-                showInfoPage(R.string.chrome_privacy_notice_url);
-            }
-        };
-        NoUnderlineClickableSpan clickableFamilyLinkPrivacySpan = new NoUnderlineClickableSpan() {
-            @Override
-            public void onClick(View widget) {
-                showInfoPage(R.string.family_link_privacy_policy_url);
-            }
-        };
+        NoUnderlineClickableSpan clickableTermsSpan = new NoUnderlineClickableSpan(
+                (view) -> showInfoPage(R.string.chrome_terms_of_service_url));
+        NoUnderlineClickableSpan clickablePrivacySpan = new NoUnderlineClickableSpan(
+                (view) -> showInfoPage(R.string.chrome_privacy_notice_url));
+        NoUnderlineClickableSpan clickableFamilyLinkPrivacySpan = new NoUnderlineClickableSpan(
+                (view) -> showInfoPage(R.string.family_link_privacy_policy_url));
         String associatedAppName =
                 IntentUtils.safeGetStringExtra(getIntent(), EXTRA_ASSOCIATED_APP_NAME);
         if (associatedAppName == null) {

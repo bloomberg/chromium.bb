@@ -312,12 +312,8 @@ public abstract class SigninFragmentBase
 
             // The clickable "Settings" link.
             mView.getDetailsDescriptionView().setMovementMethod(LinkMovementMethod.getInstance());
-            NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
-                @Override
-                public void onClick(View view) {
-                    onSettingsLinkClicked(view);
-                }
-            };
+            NoUnderlineClickableSpan settingsSpan =
+                    new NoUnderlineClickableSpan(this::onSettingsLinkClicked);
             mConsentTextTracker.setText(mView.getDetailsDescriptionView(),
                     R.string.signin_details_description, input -> {
                         return SpanApplier.applySpans(input.toString(),

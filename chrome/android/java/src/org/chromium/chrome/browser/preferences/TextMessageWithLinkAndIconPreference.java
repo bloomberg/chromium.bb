@@ -60,12 +60,10 @@ public class TextMessageWithLinkAndIconPreference extends TextMessagePreference 
 
         // Linkify <link></link> span.
         final SpannableString summaryWithLink = SpanApplier.applySpans(summaryString,
-                new SpanApplier.SpanInfo("<link>", "</link>", new NoUnderlineClickableSpan() {
-                    @Override
-                    public void onClick(View widget) {
-                        if (mLinkClickDelegate != null) mLinkClickDelegate.run();
-                    }
-                }));
+                new SpanApplier.SpanInfo(
+                        "<link>", "</link>", new NoUnderlineClickableSpan((widget) -> {
+                            if (mLinkClickDelegate != null) mLinkClickDelegate.run();
+                        })));
 
         super.setSummary(summaryWithLink);
     }

@@ -51,16 +51,13 @@ public class SogouPromoDialog extends PromoDialog {
     private final Callback<Boolean> mOnDismissedCallback;
 
     private final LocaleManager mLocaleManager;
-    private final ClickableSpan mSpan = new NoUnderlineClickableSpan() {
-        @Override
-        public void onClick(View widget) {
-            mChoice = CHOICE_SETTINGS;
-            Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                    getContext(), SearchEnginePreference.class.getName());
-            getContext().startActivity(intent);
-            dismiss();
-        }
-    };
+    private final ClickableSpan mSpan = new NoUnderlineClickableSpan((widget) -> {
+        mChoice = CHOICE_SETTINGS;
+        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                getContext(), SearchEnginePreference.class.getName());
+        getContext().startActivity(intent);
+        dismiss();
+    });
 
     @UserChoice
     private int mChoice = CHOICE_BACK_KEY;

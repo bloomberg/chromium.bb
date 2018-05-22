@@ -145,10 +145,9 @@ public class BluetoothChooserDialog
         if (mAdapter == null) {
             Log.i(TAG, "BluetoothChooserDialog: Default Bluetooth adapter not found.");
         }
-        mAdapterOffStatus =
-                SpanApplier.applySpans(mActivity.getString(R.string.bluetooth_adapter_off_help),
-                        new SpanInfo("<link>", "</link>",
-                                new BluetoothClickableSpan(LinkType.ADAPTER_OFF_HELP, mActivity)));
+        mAdapterOffStatus = SpanApplier.applySpans(
+                mActivity.getString(R.string.bluetooth_adapter_off_help),
+                new SpanInfo("<link>", "</link>", createLinkSpan(LinkType.ADAPTER_OFF_HELP)));
     }
 
     private Drawable getIconWithRowIconColorStateList(int icon) {
@@ -180,17 +179,14 @@ public class BluetoothChooserDialog
 
         SpannableString searching = SpanApplier.applySpans(
                 mActivity.getString(R.string.bluetooth_searching),
-                new SpanInfo("<link>", "</link>",
-                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mActivity)));
+                new SpanInfo("<link>", "</link>", createLinkSpan(LinkType.EXPLAIN_BLUETOOTH)));
 
         String positiveButton = mActivity.getString(R.string.bluetooth_confirm_button);
 
-        SpannableString statusIdleNoneFound =
-                SpanApplier.applySpans(mActivity.getString(R.string.bluetooth_not_seeing_it_idle),
-                        new SpanInfo("<link1>", "</link1>",
-                                new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mActivity)),
-                        new SpanInfo("<link2>", "</link2>",
-                                new BluetoothClickableSpan(LinkType.RESTART_SEARCH, mActivity)));
+        SpannableString statusIdleNoneFound = SpanApplier.applySpans(
+                mActivity.getString(R.string.bluetooth_not_seeing_it_idle),
+                new SpanInfo("<link1>", "</link1>", createLinkSpan(LinkType.EXPLAIN_BLUETOOTH)),
+                new SpanInfo("<link2>", "</link2>", createLinkSpan(LinkType.RESTART_SEARCH)));
 
         SpannableString statusActive = searching;
 
@@ -263,9 +259,9 @@ public class BluetoothChooserDialog
 
         // Compute the message to show the user.
         final SpanInfo permissionSpan = new SpanInfo("<permission_link>", "</permission_link>",
-                new BluetoothClickableSpan(LinkType.REQUEST_LOCATION_PERMISSION, mActivity));
+                createLinkSpan(LinkType.REQUEST_LOCATION_PERMISSION));
         final SpanInfo servicesSpan = new SpanInfo("<services_link>", "</services_link>",
-                new BluetoothClickableSpan(LinkType.REQUEST_LOCATION_SERVICES, mActivity));
+                createLinkSpan(LinkType.REQUEST_LOCATION_SERVICES));
         final SpannableString needLocationMessage;
         if (havePermission) {
             if (locationServicesOn) {
@@ -292,80 +288,70 @@ public class BluetoothChooserDialog
         SpannableString needLocationStatus = SpanApplier.applySpans(
                 mActivity.getString(R.string.bluetooth_need_location_permission_help),
                 new SpanInfo("<link>", "</link>",
-                        new BluetoothClickableSpan(
-                                     LinkType.NEED_LOCATION_PERMISSION_HELP, mActivity)));
+                        createLinkSpan(LinkType.NEED_LOCATION_PERMISSION_HELP)));
 
         mItemChooserDialog.setErrorState(needLocationMessage, needLocationStatus);
         return false;
     }
 
-    private class BluetoothClickableSpan extends NoUnderlineClickableSpan {
-        // The type of link this span represents.
-        private LinkType mLinkType;
+    private NoUnderlineClickableSpan createLinkSpan(LinkType linkType) {
+        return new NoUnderlineClickableSpan((view) -> onBluetoothLinkClick(view, linkType));
+    }
 
-        private Context mContext;
-
-        BluetoothClickableSpan(LinkType linkType, Context context) {
-            mLinkType = linkType;
-            mContext = context;
+    private void onBluetoothLinkClick(View view, LinkType linkType) {
+        if (mNativeBluetoothChooserDialogPtr == 0) {
+            return;
         }
 
-        @Override
-        public void onClick(View view) {
-            if (mNativeBluetoothChooserDialogPtr == 0) {
-                return;
+        switch (linkType) {
+            case EXPLAIN_BLUETOOTH: {
+                // No need to close the dialog here because
+                // ShowBluetoothOverviewLink will close it.
+                nativeShowBluetoothOverviewLink(mNativeBluetoothChooserDialogPtr);
+                break;
             }
-
-            switch (mLinkType) {
-                case EXPLAIN_BLUETOOTH: {
-                    // No need to close the dialog here because
-                    // ShowBluetoothOverviewLink will close it.
-                    nativeShowBluetoothOverviewLink(mNativeBluetoothChooserDialogPtr);
-                    break;
+            case ADAPTER_OFF: {
+                if (mAdapter != null && mAdapter.enable()) {
+                    mItemChooserDialog.signalInitializingAdapter();
+                } else {
+                    String unableToTurnOnAdapter =
+                            mActivity.getString(R.string.bluetooth_unable_to_turn_on_adapter);
+                    mItemChooserDialog.setErrorState(unableToTurnOnAdapter, mAdapterOffStatus);
                 }
-                case ADAPTER_OFF: {
-                    if (mAdapter != null && mAdapter.enable()) {
-                        mItemChooserDialog.signalInitializingAdapter();
-                    } else {
-                        String unableToTurnOnAdapter =
-                                mActivity.getString(R.string.bluetooth_unable_to_turn_on_adapter);
-                        mItemChooserDialog.setErrorState(unableToTurnOnAdapter, mAdapterOffStatus);
-                    }
-                    break;
-                }
-                case ADAPTER_OFF_HELP: {
-                    nativeShowBluetoothAdapterOffLink(mNativeBluetoothChooserDialogPtr);
-                    break;
-                }
-                case REQUEST_LOCATION_PERMISSION: {
-                    mItemChooserDialog.setIgnorePendingWindowFocusChangeForClose(true);
-                    mWindowAndroid.requestPermissions(
-                            new String[] {Manifest.permission.ACCESS_COARSE_LOCATION},
-                            BluetoothChooserDialog.this);
-                    break;
-                }
-                case REQUEST_LOCATION_SERVICES: {
-                    mItemChooserDialog.setIgnorePendingWindowFocusChangeForClose(true);
-                    mContext.startActivity(
-                            LocationUtils.getInstance().getSystemLocationSettingsIntent());
-                    break;
-                }
-                case NEED_LOCATION_PERMISSION_HELP: {
-                    nativeShowNeedLocationPermissionLink(mNativeBluetoothChooserDialogPtr);
-                    break;
-                }
-                case RESTART_SEARCH: {
-                    mItemChooserDialog.clear();
-                    nativeRestartSearch(mNativeBluetoothChooserDialogPtr);
-                    break;
-                }
-                default:
-                    assert false;
+                break;
             }
-
-            // Get rid of the highlight background on selection.
-            view.invalidate();
+            case ADAPTER_OFF_HELP: {
+                nativeShowBluetoothAdapterOffLink(mNativeBluetoothChooserDialogPtr);
+                break;
+            }
+            case REQUEST_LOCATION_PERMISSION: {
+                mItemChooserDialog.setIgnorePendingWindowFocusChangeForClose(true);
+                mWindowAndroid.requestPermissions(
+                        new String[] {Manifest.permission.ACCESS_COARSE_LOCATION},
+                        BluetoothChooserDialog.this);
+                break;
+            }
+            case REQUEST_LOCATION_SERVICES: {
+                mItemChooserDialog.setIgnorePendingWindowFocusChangeForClose(true);
+                mActivity.startActivity(
+                        LocationUtils.getInstance().getSystemLocationSettingsIntent());
+                break;
+            }
+            case NEED_LOCATION_PERMISSION_HELP: {
+                nativeShowNeedLocationPermissionLink(mNativeBluetoothChooserDialogPtr);
+                break;
+            }
+            case RESTART_SEARCH: {
+                mItemChooserDialog.clear();
+                nativeRestartSearch(mNativeBluetoothChooserDialogPtr);
+                break;
+            }
+            default:
+                assert false;
         }
+
+        // Get rid of the highlight background on selection.
+        view.invalidate();
     }
 
     @CalledByNative
@@ -413,10 +399,9 @@ public class BluetoothChooserDialog
     @VisibleForTesting
     @CalledByNative
     void notifyAdapterTurnedOff() {
-        SpannableString adapterOffMessage = SpanApplier.applySpans(
-                mActivity.getString(R.string.bluetooth_adapter_off),
-                new SpanInfo("<link>", "</link>",
-                        new BluetoothClickableSpan(LinkType.ADAPTER_OFF, mActivity)));
+        SpannableString adapterOffMessage =
+                SpanApplier.applySpans(mActivity.getString(R.string.bluetooth_adapter_off),
+                        new SpanInfo("<link>", "</link>", createLinkSpan(LinkType.ADAPTER_OFF)));
 
         mItemChooserDialog.setErrorState(adapterOffMessage, mAdapterOffStatus);
     }
