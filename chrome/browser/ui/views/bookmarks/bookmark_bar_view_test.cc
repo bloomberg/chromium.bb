@@ -867,6 +867,9 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
     views::MenuItemView* drop_menu = bb_view_->GetDropMenu();
     ASSERT_TRUE(drop_menu != NULL);
     ASSERT_TRUE(drop_menu->GetSubmenu()->IsShowing());
+    // The button should be highlighted now.
+    views::LabelButton* other_button = bb_view_->other_bookmarks_button();
+    ASSERT_EQ(views::Button::STATE_PRESSED, other_button->state());
 
     views::MenuItemView* target_menu =
         drop_menu->GetSubmenu()->GetMenuItemAt(0);
@@ -884,6 +887,9 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
 
   void Step6() {
     ASSERT_TRUE(model_->other_node()->GetChild(0)->url() == url_dragging_);
+    // The button should be in normal state now.
+    views::LabelButton* other_button = bb_view_->other_bookmarks_button();
+    ASSERT_EQ(views::Button::STATE_NORMAL, other_button->state());
     Done();
   }
 

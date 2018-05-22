@@ -476,6 +476,9 @@ void MenuController::Run(Widget* parent,
   // Set the selection, which opens the initial menu.
   SetSelection(root, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
 
+  if (button)
+    pressed_lock_ = std::make_unique<MenuButton::PressedLock>(button);
+
   if (for_drop_) {
     if (!is_nested_drag) {
       // Start the timer to hide the menu. This is needed as we get no
@@ -484,9 +487,6 @@ void MenuController::Run(Widget* parent,
     }
     return;
   }
-
-  if (button)
-    pressed_lock_.reset(new MenuButton::PressedLock(button));
 
   // Make sure Chrome doesn't attempt to shut down while the menu is showing.
   if (ViewsDelegate::GetInstance())

@@ -385,7 +385,8 @@ void MenuButton::DecrementPressedLocked() {
     if (should_disable_after_press_) {
       desired_state = STATE_DISABLED;
       should_disable_after_press_ = false;
-    } else if (ShouldEnterHoveredState()) {
+    } else if (GetWidget() && !GetWidget()->dragged_view() &&
+               ShouldEnterHoveredState()) {
       desired_state = STATE_HOVERED;
       GetInkDrop()->SetHovered(true);
     }
