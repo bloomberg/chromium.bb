@@ -2303,6 +2303,12 @@ fade_out_done_idle_cb(void *data)
 	struct shell_surface *shsurf = data;
 
 	weston_surface_destroy(shsurf->view->surface);
+
+	if (shsurf->output_destroy_listener.notify) {
+		wl_list_remove(&shsurf->output_destroy_listener.link);
+		shsurf->output_destroy_listener.notify = NULL;
+	}
+
 	free(shsurf);
 }
 
@@ -2420,6 +2426,12 @@ desktop_surface_removed(struct weston_desktop_surface *desktop_surface,
 				fade_out_done, shsurf);
 	} else {
 		weston_view_destroy(shsurf->view);
+
+		if (shsurf->output_destroy_listener.notify) {
+			wl_list_remove(&shsurf->output_destroy_listener.link);
+			shsurf->output_destroy_listener.notify = NULL;
+		}
+
 		free(shsurf);
 	}
 }
