@@ -25,6 +25,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "thread_name", nullptr},
     {"__metadata", "process_name", nullptr},
     {"__metadata", "process_uptime_seconds", nullptr},
+    {"__metadata", "chrome_library_address", nullptr},
     {"__metadata", "stackFrames", nullptr},
     {"__metadata", "typeNames", nullptr},
     {"ipc", "SyncChannel::Send", nullptr},
