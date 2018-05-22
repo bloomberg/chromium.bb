@@ -377,9 +377,9 @@ typedef struct SPEED_FEATURES {
   // Used if partition_search_type = FIXED_SIZE_PARTITION
   BLOCK_SIZE always_this_block_size;
 
-  // Drop less likely picked reference frames in the RD search
-  // Has three levels for now: 1, 2 and 3, where higher levels are more
-  // aggressive than lower ones.
+  // Drop less likely to be picked reference frames in the RD search.
+  // Has three levels for now: 0, 1 and 2, where higher levels prune more
+  // aggressively than lower ones. (0 means no pruning).
   int selective_ref_frame;
 
   // Prune extended partition types search

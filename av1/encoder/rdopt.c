@@ -9656,7 +9656,7 @@ static int inter_mode_search_order_independent_skip(const AV1_COMP *cpi,
   }
 
   if (sf->selective_ref_frame) {
-    if (sf->selective_ref_frame == 2 || x->cb_partition_scan) {
+    if (sf->selective_ref_frame >= 2 || x->cb_partition_scan) {
       if (ref_frame[0] == ALTREF2_FRAME || ref_frame[1] == ALTREF2_FRAME)
         if (get_relative_dist(
                 cm, cm->cur_frame->ref_frame_offset[ALTREF2_FRAME - LAST_FRAME],
