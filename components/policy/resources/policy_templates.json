@@ -3967,7 +3967,9 @@
       'tags': [],
       'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to set cookies.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          See also policies 'CookiesBlockedForUrls' and 'CookiesSessionOnlyForUrls'. Note that there must be no conflicting URL patterns between these three policies - it is unspecified which policy takes precedence.''',
     },
     {
       'name': 'CookiesBlockedForUrls',
@@ -3991,7 +3993,9 @@
       'tags': [],
       'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to set cookies.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          See also policies 'CookiesAllowedForUrls' and 'CookiesSessionOnlyForUrls'. Note that there must be no conflicting URL patterns between these three policies - it is unspecified which policy takes precedence.''',
     },
     {
       'name': 'CookiesSessionOnlyForUrls',
@@ -4011,13 +4015,15 @@
       },
       'example_value': ['https://www.example.com', '[*.]example.edu'],
       'id': 68,
-      'caption': '''Allow session only cookies on these sites''',
+      'caption': '''Limit cookies from matching URLs to the current session''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to set session only cookies.
+      'desc': '''Cookies set by pages matching these URL patterns will be limited to the current session, i.e. they will be deleted when the browser exits.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.
+          For URLs not covered by the patterns specified here, or for all URLs if this policy is not set, the global default value will be used either from the 'DefaultCookiesSetting' policy, if it is set, or the user's personal configuration otherwise.
 
           Note that if <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running in 'background mode', the session may not be closed when the last browser window is closed, but will instead stay active until the browser exits. Please see the 'BackgroundModeEnabled' policy for more information about configuring this behavior.
+
+          See also policies 'CookiesAllowedForUrls' and 'CookiesBlockedForUrls'. Note that there must be no conflicting URL patterns between these three policies - it is unspecified which policy takes precedence.
 
           If the "RestoreOnStartup" policy is set to restore URLs from previous sessions this policy will not be respected and cookies will be stored permanently for those sites.''',
     },
