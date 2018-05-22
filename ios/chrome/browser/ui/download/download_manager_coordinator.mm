@@ -145,6 +145,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 @synthesize animatesPresentation = _animatesPresentation;
 @synthesize downloadTask = _downloadTask;
 @synthesize webStateList = _webStateList;
+@synthesize bottomMarginHeightAnchor = _bottomMarginHeightAnchor;
 
 - (void)dealloc {
   [[InstallationNotifier sharedInstance] unregisterForNotifications:self];
@@ -155,6 +156,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 
   _viewController = [[DownloadManagerViewController alloc] init];
   _viewController.delegate = self;
+  _viewController.bottomMarginHeightAnchor = self.bottomMarginHeightAnchor;
   _mediator.SetDownloadTask(_downloadTask);
   _mediator.SetConsumer(_viewController);
 
