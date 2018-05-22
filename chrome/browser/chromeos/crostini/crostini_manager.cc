@@ -328,18 +328,23 @@ void CrostiniRestarterService::RunPendingCallbacks(
     ConciergeClientResult result) {
   auto key = std::make_pair(restarter->vm_name(), restarter->container_name());
   auto range = pending_map_.equal_range(key);
+  std::vector<scoped_refptr<CrostiniRestarter>> pending_restarters;
+  // Erase first, because restarter->RunCallback() may modify our maps.
   for (auto it = range.first; it != range.second; ++it) {
     CrostiniManager::RestartId restart_id = it->second;
-    restarter_map_[restart_id]->RunCallback(result);
+    pending_restarters.emplace_back(restarter_map_[restart_id]);
     restarter_map_.erase(restart_id);
   }
   pending_map_.erase(range.first, range.second);
+  for (const auto& pending_restarter : pending_restarters) {
+    pending_restarter->RunCallback(result);
+  }
 }
 
 void CrostiniRestarterService::Abort(CrostiniManager::RestartId restart_id) {
   auto it = restarter_map_.find(restart_id);
-  if (it == restarter_map_.end())
-    return;
+  DCHECK(it != restarter_map_.end())
+      << "Aborting a restarter that already finished";
 
   it->second->Abort();
   ErasePending(it->second.get());
