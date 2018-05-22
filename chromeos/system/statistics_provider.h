@@ -36,16 +36,6 @@ CHROMEOS_EXPORT extern const char kDevSwitchBootKey[];
 CHROMEOS_EXPORT extern const char kDevSwitchBootValueDev[];
 CHROMEOS_EXPORT extern const char kDevSwitchBootValueVerified[];
 
-// Firmware type and associated values. The values are from crossystem output
-// for the mainfw_type key. Normal and developer correspond to Chrome OS
-// firmware with MP and developer keys respectively, nonchrome indicates the
-// machine doesn't run on Chrome OS firmware. See crossystem source for more
-// details.
-CHROMEOS_EXPORT extern const char kFirmwareTypeKey[];
-CHROMEOS_EXPORT extern const char kFirmwareTypeValueDeveloper[];
-CHROMEOS_EXPORT extern const char kFirmwareTypeValueNonchrome[];
-CHROMEOS_EXPORT extern const char kFirmwareTypeValueNormal[];
-
 // HWID key.
 CHROMEOS_EXPORT extern const char kHardwareClassKey[];
 
