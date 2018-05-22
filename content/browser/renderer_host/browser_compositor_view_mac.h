@@ -229,7 +229,6 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
     ScreenUpdatesDisabled,
   } repaint_state_ = RepaintState::None;
   bool repaint_auto_resize_enabled_ = false;
-  bool is_first_navigation_ = true;
 
   base::WeakPtrFactory<BrowserCompositorMac> weak_factory_;
 };

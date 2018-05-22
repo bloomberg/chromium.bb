@@ -1142,7 +1142,7 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   host_->SetView(nullptr);
   host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_EQ(gfx::Size(), host_->old_visual_properties_->new_size);
+  EXPECT_EQ(nullptr, host_->old_visual_properties_);
 
   // Reset the view so we can exit the test cleanly.
   host_->SetView(view_.get());

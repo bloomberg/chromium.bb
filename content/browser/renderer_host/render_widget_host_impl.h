@@ -506,7 +506,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // We need to reset these flags when we want to repaint the contents of
   // browser plugin in this RWH. Resetting these flags will ensure we ignore
   // any previous pending acks that are not relevant upon repaint.
-  void ResetSizeAndRepaintPendingFlags();
+  void ResetSentVisualProperties();
 
   void DetachDelegate();
 

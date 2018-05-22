@@ -175,8 +175,8 @@ class InteractiveRenderWidget : public RenderWidget {
     return mock_input_handler_host_.get();
   }
 
-  const viz::LocalSurfaceId& local_surface_id() const {
-    return local_surface_id_;
+  const viz::LocalSurfaceId& local_surface_id_from_parent() const {
+    return local_surface_id_from_parent_;
   }
 
  protected:
@@ -381,12 +381,14 @@ TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
   visual_properties.max_size_for_auto_resize = gfx::Size(200, 200);
   visual_properties.local_surface_id = allocator.GetCurrentLocalSurfaceId();
   widget()->SynchronizeVisualProperties(visual_properties);
-  EXPECT_EQ(allocator.GetCurrentLocalSurfaceId(), widget()->local_surface_id());
+  EXPECT_EQ(allocator.GetCurrentLocalSurfaceId(),
+            widget()->local_surface_id_from_parent());
   EXPECT_FALSE(widget()->compositor()->HasNewLocalSurfaceIdRequest());
 
   constexpr gfx::Size size(200, 200);
   widget()->DidAutoResize(size);
-  EXPECT_EQ(allocator.GetCurrentLocalSurfaceId(), widget()->local_surface_id());
+  EXPECT_EQ(allocator.GetCurrentLocalSurfaceId(),
+            widget()->local_surface_id_from_parent());
   EXPECT_TRUE(widget()->compositor()->HasNewLocalSurfaceIdRequest());
 }
 

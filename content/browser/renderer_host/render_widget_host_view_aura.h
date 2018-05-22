@@ -675,8 +675,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   ui::EventPointerType last_pointer_type_before_focus_ =
       ui::EventPointerType::POINTER_TYPE_UNKNOWN;
 
-  bool is_first_navigation_ = true;
-
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
