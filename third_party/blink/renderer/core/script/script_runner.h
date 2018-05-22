@@ -102,9 +102,9 @@ class CORE_EXPORT ScriptRunner final
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  int number_of_in_order_scripts_with_pending_notification_;
+  int number_of_in_order_scripts_with_pending_notification_ = 0;
 
-  bool is_suspended_;
+  bool is_suspended_ = false;
 
 #ifndef NDEBUG
   // We expect to have one posted task in flight for each script in either
@@ -112,7 +112,7 @@ class CORE_EXPORT ScriptRunner final
   // when the ScriptRunner is suspended, or when we take a Script out the
   // async_scripts_to_be_executed_soon_ queue for streaming. We'll use this
   // variable to account & check this invariant for debugging.
-  int number_of_extra_tasks_;
+  int number_of_extra_tasks_ = 0;
 #endif
   DISALLOW_COPY_AND_ASSIGN(ScriptRunner);
 };
