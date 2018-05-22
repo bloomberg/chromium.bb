@@ -11,10 +11,20 @@
     },
 
     {
+      'target_name' : 'fake_mojo_service',
+      'dependencies' : [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+      ],
+      'includes' :
+          ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+
+    {
       'target_name' : 'multidevice_setup',
       'dependencies' : [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         'button_bar',
+        'fake_mojo_service',
         'start_setup_page',
         'setup_succeeded_page',
         'setup_failed_page',

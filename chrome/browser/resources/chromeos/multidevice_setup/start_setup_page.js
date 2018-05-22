@@ -33,26 +33,25 @@ Polymer({
     /**
      * Array of objects representing all available MultiDevice hosts. Each
      * object contains the name of the device type (e.g. "Pixel XL") and its
-     * Device ID.
+     * public key.
      *
-     * @type {!Array<{name: string, id: string}>}
+     * @type {!Array<{name: string, publicKey: string}>}
      */
     devices: {
       type: Array,
       value: () => [],
-      notify: true,
       observer: 'devicesChanged_',
     },
 
     /**
-     * Device ID for the currently selected host device.
+     * Public key for the currently selected host device.
      *
      * Undefined if the no list of potential hosts has been received from mojo
      * service.
      *
      * @type {string|undefined}
      */
-    selectedDeviceId: {
+    selectedPublicKey: {
       type: String,
       notify: true,
     },
@@ -64,7 +63,7 @@ Polymer({
   ],
 
   /**
-   * @param {!Array<{name: string, id: string}>} devices Device list.
+   * @param {!Array<{name: string, publicKey: string}>} devices Device list.
    * @return {string} Label for devices selection content.
    * @private
    */
@@ -80,7 +79,7 @@ Polymer({
   },
 
   /**
-   * @param {!Array<{name: string, id: string}>} devices Device list.
+   * @param {!Array<{name: string, publicKey: string}>} devices Device list.
    * @return {boolean} True if there are more than one potential host devices.
    * @private
    */
@@ -89,7 +88,7 @@ Polymer({
   },
 
   /**
-   * @param {!Array<{name: string, id: string}>} devices Device list.
+   * @param {!Array<{name: string, publicKey: string}>} devices Device list.
    * @return {boolean} True if there is exactly one potential host device.
    * @private
    */
@@ -98,7 +97,7 @@ Polymer({
   },
 
   /**
-   * @param {!Array<{name: string, id: string}>} devices Device list.
+   * @param {!Array<{name: string, publicKey: string}>} devices Device list.
    * @return {string} Name of the first device in device list if there are any.
    *     Returns an empty string otherwise.
    * @private
@@ -109,12 +108,12 @@ Polymer({
 
   /** @private */
   devicesChanged_: function() {
-    if (!this.selectedDeviceId && this.devices.length > 0)
-      this.selectedDeviceId = this.devices[0].id;
+    if (this.devices.length > 0)
+      this.selectedPublicKey = this.devices[0].publicKey;
   },
 
   /** @private */
   onDeviceDropdownSelectionChanged_: function() {
-    this.selectedDeviceId = this.$.deviceDropdown.value;
+    this.selectedPublicKey = this.$.deviceDropdown.value;
   },
 });
