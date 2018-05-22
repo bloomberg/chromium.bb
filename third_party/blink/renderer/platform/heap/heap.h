@@ -369,6 +369,15 @@ class PLATFORM_EXPORT ThreadHeap {
   // heap-page if one exists.
   BasePage* LookupPageForAddress(Address);
 
+  static const GCInfo* GcInfo(size_t gc_info_index) {
+    DCHECK_GE(gc_info_index, 1u);
+    DCHECK(gc_info_index < GCInfoTable::kMaxIndex);
+    DCHECK(g_gc_info_table);
+    const GCInfo* info = g_gc_info_table[gc_info_index];
+    DCHECK(info);
+    return info;
+  }
+
   static void ReportMemoryUsageHistogram();
   static void ReportMemoryUsageForTracing();
 
@@ -710,9 +719,7 @@ Address ThreadHeap::Reallocate(void* previous, size_t size) {
 
   size_t gc_info_index = GCInfoTrait<T>::Index();
   // TODO(haraken): We don't support reallocate() for finalizable objects.
-  DCHECK(!GCInfoTable::Get()
-              .GCInfoFromIndex(previous_header->GcInfoIndex())
-              ->HasFinalizer());
+  DCHECK(!ThreadHeap::GcInfo(previous_header->GcInfoIndex())->HasFinalizer());
   DCHECK_EQ(previous_header->GcInfoIndex(), gc_info_index);
   HeapAllocHooks::FreeHookIfEnabled(static_cast<Address>(previous));
   Address address;

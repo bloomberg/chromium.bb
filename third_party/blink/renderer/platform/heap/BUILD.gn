@@ -110,7 +110,6 @@ jumbo_source_set("blink_heap_unittests_sources") {
   sources = [
     "address_cache_test.cc",
     "blink_gc_memory_dump_provider_test.cc",
-    "gc_info_test.cc",
     "heap_compact_test.cc",
     "heap_stats_collector_test.cc",
     "heap_test.cc",
