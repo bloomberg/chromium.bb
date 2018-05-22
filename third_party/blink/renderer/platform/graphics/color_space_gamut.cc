@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
 
 #include "third_party/blink/public/platform/web_screen_info.h"
-#include "third_party/skia/include/core/SkColorSpaceXform.h"
+#include "third_party/skia/third_party/skcms/skcms.h"
 
 namespace blink {
 
@@ -17,30 +17,27 @@ ColorSpaceGamut GetColorSpaceGamut(const WebScreenInfo& screen_info) {
     return ColorSpaceGamut::kUnknown;
   // Return the gamut of the color space used for raster (this will return a
   // wide gamut for HDR profiles).
-  return ColorSpaceUtilities::GetColorSpaceGamut(
-      color_space.GetRasterColorSpace().ToSkColorSpace().get());
+  skcms_ICCProfile color_profile;
+  color_space.GetRasterColorSpace().ToSkColorSpace()->toProfile(&color_profile);
+  return ColorSpaceUtilities::GetColorSpaceGamut(&color_profile);
 }
 
-ColorSpaceGamut GetColorSpaceGamut(SkColorSpace* color_space) {
-  sk_sp<SkColorSpace> sc_rgb(SkColorSpace::MakeSRGBLinear());
-  std::unique_ptr<SkColorSpaceXform> transform(
-      SkColorSpaceXform::New(color_space, sc_rgb.get()));
-
-  if (!transform)
+ColorSpaceGamut GetColorSpaceGamut(const skcms_ICCProfile* color_profile) {
+  if (!color_profile)
     return ColorSpaceGamut::kUnknown;
 
-  unsigned char in[3][4];
-  float out[3][4];
+  skcms_ICCProfile sc_rgb = *skcms_sRGB_profile();
+  skcms_SetTransferFunction(&sc_rgb, skcms_Identity_TransferFunction());
+
+  unsigned char in[3][3];
+  float out[3][3];
   memset(in, 0, sizeof(in));
   in[0][0] = 255;
   in[1][1] = 255;
   in[2][2] = 255;
-  in[0][3] = 255;
-  in[1][3] = 255;
-  in[2][3] = 255;
-  bool color_converison_successful = transform->apply(
-      SkColorSpaceXform::kRGBA_F32_ColorFormat, out,
-      SkColorSpaceXform::kRGBA_8888_ColorFormat, in, 3, kOpaque_SkAlphaType);
+  bool color_converison_successful = skcms_Transform(
+      in, skcms_PixelFormat_RGB_888, skcms_AlphaFormat_Opaque, color_profile,
+      out, skcms_PixelFormat_RGB_fff, skcms_AlphaFormat_Opaque, &sc_rgb, 3);
   DCHECK(color_converison_successful);
   float score = out[0][0] * out[1][1] * out[2][2];
 

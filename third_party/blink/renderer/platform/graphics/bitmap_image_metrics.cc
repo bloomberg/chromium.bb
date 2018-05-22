@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/skia/third_party/skcms/skcms.h"
 
 namespace blink {
 
@@ -41,37 +42,28 @@ void BitmapImageMetrics::CountImageOrientation(
   orientation_histogram.Count(orientation);
 }
 
-void BitmapImageMetrics::CountImageGammaAndGamut(SkColorSpace* color_space) {
+void BitmapImageMetrics::CountImageGammaAndGamut(
+    const skcms_ICCProfile* color_profile) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, gamma_named_histogram,
                                   ("Blink.ColorSpace.Source", kGammaEnd));
-  gamma_named_histogram.Count(GetColorSpaceGamma(color_space));
+  gamma_named_histogram.Count(GetColorSpaceGamma(color_profile));
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, gamut_named_histogram,
       ("Blink.ColorGamut.Source", static_cast<int>(ColorSpaceGamut::kEnd)));
   gamut_named_histogram.Count(
-      static_cast<int>(ColorSpaceUtilities::GetColorSpaceGamut(color_space)));
-}
-
-void BitmapImageMetrics::CountOutputGammaAndGamut(SkColorSpace* color_space) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, gamma_named_histogram,
-                                  ("Blink.ColorSpace.Destination", kGammaEnd));
-  gamma_named_histogram.Count(GetColorSpaceGamma(color_space));
-
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, gamut_named_histogram,
-                                  ("Blink.ColorGamut.Destination",
-                                   static_cast<int>(ColorSpaceGamut::kEnd)));
-  gamut_named_histogram.Count(
-      static_cast<int>(ColorSpaceUtilities::GetColorSpaceGamut(color_space)));
+      static_cast<int>(ColorSpaceUtilities::GetColorSpaceGamut(color_profile)));
 }
 
 BitmapImageMetrics::Gamma BitmapImageMetrics::GetColorSpaceGamma(
-    SkColorSpace* color_space) {
+    const skcms_ICCProfile* color_profile) {
   Gamma gamma = kGammaNull;
-  if (color_space) {
-    if (color_space->gammaCloseToSRGB()) {
+  if (color_profile) {
+    if (skcms_TRCs_AreApproximateInverse(
+            color_profile, skcms_sRGB_Inverse_TransferFunction())) {
       gamma = kGammaSRGB;
-    } else if (color_space->gammaIsLinear()) {
+    } else if (skcms_TRCs_AreApproximateInverse(
+                   color_profile, skcms_Identity_TransferFunction())) {
       gamma = kGammaLinear;
     } else {
       gamma = kGammaNonStandard;

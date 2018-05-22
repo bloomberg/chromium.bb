@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/platform/platform_export.h"
 
-class SkColorSpace;
+struct skcms_ICCProfile;
 
 namespace blink {
 
@@ -32,7 +32,7 @@ enum class ColorSpaceGamut {
 namespace ColorSpaceUtilities {
 
 PLATFORM_EXPORT ColorSpaceGamut GetColorSpaceGamut(const WebScreenInfo&);
-ColorSpaceGamut GetColorSpaceGamut(SkColorSpace*);
+ColorSpaceGamut GetColorSpaceGamut(const skcms_ICCProfile*);
 
 }  // namespace ColorSpaceUtilities
 

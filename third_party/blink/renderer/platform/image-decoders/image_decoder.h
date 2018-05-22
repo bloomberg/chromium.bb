@@ -42,16 +42,17 @@
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
+#include "third_party/skia/third_party/skcms/skcms.h"
 
 namespace blink {
 
 #if SK_B32_SHIFT
-inline SkColorSpaceXform::ColorFormat XformColorFormat() {
-  return SkColorSpaceXform::kRGBA_8888_ColorFormat;
+inline skcms_PixelFormat XformColorFormat() {
+  return skcms_PixelFormat_RGBA_8888;
 }
 #else
-inline SkColorSpaceXform::ColorFormat XformColorFormat() {
-  return SkColorSpaceXform::kBGRA_8888_ColorFormat;
+inline skcms_PixelFormat XformColorFormat() {
+  return skcms_PixelFormat_BGRA_8888;
 }
 #endif
 
@@ -71,6 +72,37 @@ class PLATFORM_EXPORT ImagePlanes final {
  private:
   void* planes_[3];
   size_t row_bytes_[3];
+};
+
+class PLATFORM_EXPORT ColorProfile final {
+  USING_FAST_MALLOC(ColorProfile);
+  WTF_MAKE_NONCOPYABLE(ColorProfile);
+
+ public:
+  ColorProfile(const skcms_ICCProfile&, std::unique_ptr<uint8_t[]> = nullptr);
+  static std::unique_ptr<ColorProfile> Create(const void* buffer, size_t size);
+
+  const skcms_ICCProfile* GetProfile() const { return &profile_; }
+
+ private:
+  skcms_ICCProfile profile_;
+  std::unique_ptr<uint8_t[]> buffer_;
+};
+
+class PLATFORM_EXPORT ColorProfileTransform final {
+  USING_FAST_MALLOC(ColorProfileTransform);
+  WTF_MAKE_NONCOPYABLE(ColorProfileTransform);
+
+ public:
+  ColorProfileTransform(const skcms_ICCProfile* src_profile,
+                        const skcms_ICCProfile* dst_profile);
+
+  const skcms_ICCProfile* SrcProfile() const;
+  const skcms_ICCProfile* DstProfile() const;
+
+ private:
+  const skcms_ICCProfile* src_profile_;
+  skcms_ICCProfile dst_profile_;
 };
 
 // ImageDecoder is a base for all format-specific decoders
@@ -218,17 +250,17 @@ class PLATFORM_EXPORT ImageDecoder {
   // This returns the color space that will be included in the SkImageInfo of
   // SkImages created from this decoder. This will be nullptr unless the
   // decoder was created with the option ColorSpaceTagged.
-  sk_sp<SkColorSpace> ColorSpaceForSkImages() const;
+  sk_sp<SkColorSpace> ColorSpaceForSkImages();
 
   // This returns whether or not the image included a not-ignored embedded
-  // color space. This is independent of whether or not that space's transform
-  // has been baked into the pixel values.
-  bool HasEmbeddedColorSpace() const { return embedded_color_space_.get(); }
+  // color profile. This is independent of whether or not that profile's
+  // transform has been baked into the pixel values.
+  bool HasEmbeddedColorProfile() const { return embedded_color_profile_.get(); }
 
-  void SetEmbeddedColorSpace(sk_sp<SkColorSpace> src_space);
+  void SetEmbeddedColorProfile(std::unique_ptr<ColorProfile> profile);
 
   // Transformation from embedded color space to target color space.
-  SkColorSpaceXform* ColorTransform();
+  ColorProfileTransform* ColorTransform();
 
   AlphaOption GetAlphaOption() const {
     return premultiply_alpha_ ? kAlphaPremultiplied : kAlphaNotPremultiplied;
@@ -427,9 +459,11 @@ class PLATFORM_EXPORT ImageDecoder {
   bool failed_ = false;
   bool has_histogrammed_color_space_ = false;
 
-  sk_sp<SkColorSpace> embedded_color_space_ = nullptr;
+  std::unique_ptr<ColorProfile> embedded_color_profile_;
+  sk_sp<SkColorSpace> color_space_for_sk_images_;
+
   bool source_to_target_color_transform_needs_update_ = false;
-  std::unique_ptr<SkColorSpaceXform> source_to_target_color_transform_;
+  std::unique_ptr<ColorProfileTransform> source_to_target_color_transform_;
 };
 
 }  // namespace blink

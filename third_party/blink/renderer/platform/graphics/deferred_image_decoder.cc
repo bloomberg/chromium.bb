@@ -186,9 +186,9 @@ bool DeferredImageDecoder::IsSizeAvailable() {
   return metadata_decoder_ ? metadata_decoder_->IsSizeAvailable() : true;
 }
 
-bool DeferredImageDecoder::HasEmbeddedColorSpace() const {
-  return metadata_decoder_ ? metadata_decoder_->HasEmbeddedColorSpace()
-                           : has_embedded_color_space_;
+bool DeferredImageDecoder::HasEmbeddedColorProfile() const {
+  return metadata_decoder_ ? metadata_decoder_->HasEmbeddedColorProfile()
+                           : has_embedded_color_profile_;
 }
 
 IntSize DeferredImageDecoder::Size() const {
@@ -268,7 +268,7 @@ void DeferredImageDecoder::ActivateLazyDecoding() {
   // future.)
   can_yuv_decode_ = RuntimeEnabledFeatures::DecodeToYUVEnabled() &&
                     (filename_extension_ == "jpg");
-  has_embedded_color_space_ = metadata_decoder_->HasEmbeddedColorSpace();
+  has_embedded_color_profile_ = metadata_decoder_->HasEmbeddedColorProfile();
   color_space_for_sk_images_ = metadata_decoder_->ColorSpaceForSkImages();
 
   const bool is_single_frame =
