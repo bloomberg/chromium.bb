@@ -603,17 +603,39 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item,
   line_.should_create_line_box = true;
 
   NGInlineItemResult* item_result = AddItem(item, &line_info->Results());
-  item_result->layout_result =
-      NGBlockNode(ToLayoutBox(item.GetLayoutObject()))
-          .LayoutAtomicInline(constraint_space_,
-                              line_info->LineStyle().GetFontBaseline(),
-                              line_info->UseFirstLineStyle());
-  DCHECK(item_result->layout_result->PhysicalFragment());
+  // When we're just computing min/max content sizes, we can skip the full
+  // layout and just compute those sizes. On the other hand, for regular
+  // layout we need to do the full layout and get the layout result.
+  // Doing a full layout for min/max content can also have undesirable
+  // side effects when that falls back to legacy layout.
+  if (mode_ == NGLineBreakerMode::kContent) {
+    item_result->layout_result =
+        NGBlockNode(ToLayoutBox(item.GetLayoutObject()))
+            .LayoutAtomicInline(constraint_space_,
+                                line_info->LineStyle().GetFontBaseline(),
+                                line_info->UseFirstLineStyle());
+    DCHECK(item_result->layout_result->PhysicalFragment());
 
-  item_result->inline_size =
-      NGFragment(constraint_space_.GetWritingMode(),
-                 *item_result->layout_result->PhysicalFragment())
-          .InlineSize();
+    item_result->inline_size =
+        NGFragment(constraint_space_.GetWritingMode(),
+                   *item_result->layout_result->PhysicalFragment())
+            .InlineSize();
+  } else {
+    NGBlockNode block_node(ToLayoutBox(item.GetLayoutObject()));
+    base::Optional<MinMaxSize> child_minmax;
+    if (NeedMinMaxSizeForContentContribution(constraint_space_.GetWritingMode(),
+                                             block_node.Style())) {
+      MinMaxSizeInput input;
+      // TODO(layoutng): This is wrong for orthogonal writing modes.
+      child_minmax = block_node.ComputeMinMaxSize(input, &constraint_space_);
+    }
+
+    MinMaxSize sizes = ComputeMinAndMaxContentContribution(
+        constraint_space_.GetWritingMode(), block_node.Style(), child_minmax);
+    item_result->inline_size = mode_ == NGLineBreakerMode::kMinContent
+                                   ? sizes.min_size
+                                   : sizes.max_size;
+  }
 
   DCHECK(item.Style());
   item_result->margins =

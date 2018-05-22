@@ -41,6 +41,10 @@ crbug.com/811429 fast/text/font-format-support-cbdt-sbix-cff2-vertical.html [ Fa
 # Crashes/asserts/failures due to inline item reuse.
 crbug.com/591099 fast/css/getComputedStyle/getComputedStyle-resolved-values.html [ Crash ]
 
+# Fails because we don't yet special-case marquee like legacy does:
+# https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/layout_block.cc?l=1372&rcl=0e081149ecd6a83f6289e3aee5797936008a1e10
+crbug.com/591099 fast/block/marquee-width-shrinks-to-fit-in-fixed-size-container.html [ Failure ]
+
 # New passes
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-adjoining-opposite-float.html [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-due-to-large-margin-after-left-right.html [ Pass ]
@@ -415,13 +419,21 @@ crbug.com/591099 external/wpt/css/css-writing-modes/nested-orthogonal-001.html [
 crbug.com/591099 external/wpt/css/css-writing-modes/ortho-htb-alongside-vrl-floats-006.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/ortho-htb-alongside-vrl-floats-014.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001a.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001b.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001c.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001e.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001d.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001f.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001g.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001h.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001i.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001j.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001k.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001l.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001m.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001n.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001o.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001p.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001q.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001r.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/orthogonal-parent-shrink-to-fit-001s.html [ Failure ]
@@ -1355,6 +1367,7 @@ crbug.com/591099 svg/custom/getscreenctm-in-scrollable-div-area-nested.xhtml [ F
 crbug.com/591099 svg/custom/getscreenctm-in-scrollable-div-area.xhtml [ Failure ]
 crbug.com/591099 svg/custom/inline-svg-use-available-width-in-stf.html [ Failure ]
 crbug.com/591099 svg/custom/object-sizing-no-width-height.xhtml [ Failure ]
+crbug.com/591099 svg/custom/stf-container-with-intrinsic-ratio-svg.html [ Failure ]
 crbug.com/591099 svg/custom/text-match-highlight.html [ Failure ]
 crbug.com/591099 svg/custom/use-event-retargeting.html [ Failure ]
 crbug.com/591099 svg/filters/feTurbulence-bad-seeds.html [ Failure ]
