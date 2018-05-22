@@ -4,9 +4,6 @@
 
 package org.chromium.content.common;
 
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -16,6 +13,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.echo.mojom.Echo;
@@ -29,6 +27,7 @@ import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.services.service_manager.Connector;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Use the Connector and ServiceManagerConnectionImpl to connect echo service.
@@ -40,30 +39,15 @@ public class ServiceManagerConnectionImplTest {
 
     private static final String TEST_URL = "about://blank";
     private static final String TEST_STRING = "abcdefghijklmnopqrstuvwxyz";
-    private static final int MSG_ID = 0x123;
 
-    private static class TestThreadHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            // Quit loop.
-            if (msg.what == MSG_ID) {
-                Looper looper = Looper.myLooper();
-                looper.quit();
-            }
-        }
-    };
-    private TestThreadHandler mHandler;
+    private CallbackHelper mCallbackHelper;
 
     private class EchoStringResponseImpl implements EchoStringResponse {
         @Override
         public void call(String str) {
             // Verify they're equal.
             Assert.assertEquals("The sent out string should be same as received", str, TEST_STRING);
-
-            // Notify Looper to quit loop.
-            Message msg = new Message();
-            msg.what = MSG_ID;
-            mHandler.sendMessage(msg);
+            mCallbackHelper.notifyCalled();
         }
     }
 
@@ -74,12 +58,13 @@ public class ServiceManagerConnectionImplTest {
      */
     @Test
     @SmallTest
-    public void testConnectEchoService() throws InterruptedException, ExecutionException {
+    public void testConnectEchoService()
+            throws InterruptedException, ExecutionException, TimeoutException {
         final ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl(TEST_URL);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
-        Looper.prepare();
-        mHandler = new TestThreadHandler();
+        mCallbackHelper = new CallbackHelper();
+        final int callCount = mCallbackHelper.getCallCount();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -101,7 +86,7 @@ public class ServiceManagerConnectionImplTest {
             }
         });
 
-        // Infinte loop to wait the response from Echo service.
-        Looper.loop();
+        // Wait the response from Echo service.
+        mCallbackHelper.waitForCallback(callCount);
     }
 }
