@@ -15,7 +15,9 @@ class ScreenControls {
  public:
   virtual ~ScreenControls() {}
 
-  // Attempts to set new screen resolution in the session.
+  // If |resolution| is not empty, attempts to set new screen resolution in the
+  // session. If |resolution| is empty, attempts to restore the original screen
+  // resolution.
   virtual void SetScreenResolution(const ScreenResolution& resolution) = 0;
 };
 

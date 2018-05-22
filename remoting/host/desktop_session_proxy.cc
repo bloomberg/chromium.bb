@@ -370,9 +370,6 @@ void DesktopSessionProxy::SetScreenResolution(
     const ScreenResolution& resolution) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  if (resolution.IsEmpty())
-    return;
-
   screen_resolution_ = resolution;
 
   // Connect to the desktop session if it is not done yet.

@@ -45,6 +45,8 @@ class ResizingHostObserver : public ScreenControls {
       const base::Callback<base::TimeTicks(void)>& now_function);
 
  private:
+  void RestoreScreenResolution();
+
   std::unique_ptr<DesktopResizer> desktop_resizer_;
   ScreenResolution original_resolution_;
   bool restore_;
