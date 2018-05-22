@@ -15,7 +15,7 @@ class Tab;
 namespace gfx {
 class Path;
 class Point;
-class Size;
+class Rect;
 }
 namespace ui {
 class ListSelectionModel;
@@ -121,7 +121,8 @@ class TabController {
   // computing |clip|.
   virtual bool ShouldPaintTab(
       const Tab* tab,
-      const base::Callback<gfx::Path(const gfx::Size&)>& border_callback,
+      const base::RepeatingCallback<gfx::Path(const gfx::Rect&)>&
+          border_callback,
       gfx::Path* clip) = 0;
 
   // Returns true if tab loading throbbers can be painted to a composited layer.

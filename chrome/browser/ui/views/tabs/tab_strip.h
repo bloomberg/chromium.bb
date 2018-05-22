@@ -247,7 +247,8 @@ class TabStrip : public views::View,
                          const ui::MouseEvent& event) override;
   bool ShouldPaintTab(
       const Tab* tab,
-      const base::Callback<gfx::Path(const gfx::Size&)>& border_callback,
+      const base::RepeatingCallback<gfx::Path(const gfx::Rect&)>&
+          border_callback,
       gfx::Path* clip) override;
   bool CanPaintThrobberToLayer() const override;
   SkColor GetToolbarTopSeparatorColor() const override;
