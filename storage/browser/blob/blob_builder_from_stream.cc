@@ -322,8 +322,10 @@ BlobBuilderFromStream::BlobBuilderFromStream(
       weak_factory_(this) {
   DCHECK(context_);
 
-  AllocateMoreMemorySpace(length_hint, std::move(progress_client),
-                          std::move(data));
+  context_->mutable_memory_controller()->CallWhenStorageLimitsAreKnown(
+      base::BindOnce(&BlobBuilderFromStream::AllocateMoreMemorySpace,
+                     weak_factory_.GetWeakPtr(), length_hint,
+                     std::move(progress_client), std::move(data)));
 }
 
 BlobBuilderFromStream::~BlobBuilderFromStream() {

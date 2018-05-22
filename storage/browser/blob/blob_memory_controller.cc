@@ -724,7 +724,20 @@ void BlobMemoryController::NotifyMemoryItemsUsed(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE);
 }
 
+void BlobMemoryController::CallWhenStorageLimitsAreKnown(
+    base::OnceClosure callback) {
+  if (did_calculate_storage_limits_) {
+    std::move(callback).Run();
+    return;
+  }
+  on_calculate_limits_callbacks_.push_back(std::move(callback));
+  CalculateBlobStorageLimits();
+}
+
 void BlobMemoryController::CalculateBlobStorageLimits() {
+  if (did_schedule_limit_calculation_)
+    return;
+  did_schedule_limit_calculation_ = true;
   if (file_runner_) {
     PostTaskAndReplyWithResult(
         file_runner_.get(), FROM_HERE,
@@ -742,9 +755,14 @@ base::WeakPtr<BlobMemoryController> BlobMemoryController::GetWeakPtr() {
 }
 
 void BlobMemoryController::OnStorageLimitsCalculated(BlobStorageLimits limits) {
-  if (!limits.IsValid() || manual_limits_set_)
+  DCHECK(limits.IsValid());
+  if (manual_limits_set_)
     return;
   limits_ = limits;
+  did_calculate_storage_limits_ = true;
+  for (auto& callback : on_calculate_limits_callbacks_)
+    std::move(callback).Run();
+  on_calculate_limits_callbacks_.clear();
 }
 
 namespace {

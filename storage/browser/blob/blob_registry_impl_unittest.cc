@@ -33,7 +33,7 @@ namespace {
 
 const size_t kTestBlobStorageIPCThresholdBytes = 5;
 const size_t kTestBlobStorageMaxSharedMemoryBytes = 20;
-const size_t kTestBlobStorageMaxBytesDataItemSize = 13;
+const size_t kTestBlobStorageMaxBytesDataItemSize = 23;
 
 const size_t kTestBlobStorageMaxBlobMemorySize = 400;
 const uint64_t kTestBlobStorageMaxDiskSpace = 4000;
