@@ -2756,7 +2756,7 @@ TEST_F(NavigationControllerTest, SameDocument_Replace) {
 //     window.location.replace("#a");
 //     window.location='http://foo3/';
 //   </script>
-TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
+TEST_F(NavigationControllerTest, ClientRedirectAfterSameDocumentNavigation) {
   NavigationControllerImpl& controller = controller_impl();
 
   // Load an initial page.
@@ -2775,7 +2775,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
     navigation_entry_committed_counter_ = 0;
   }
 
-  // Navigate within the page using location.replace.
+  // Perform same-document navigation using location.replace.
   {
     const GURL url("http://foo2/#a");
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
