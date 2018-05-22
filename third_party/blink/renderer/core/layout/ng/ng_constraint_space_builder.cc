@@ -166,10 +166,16 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   NGLogicalSize percentage_resolution_size = percentage_resolution_size_;
   NGLogicalSize parent_percentage_resolution_size =
       parent_percentage_resolution_size_.value_or(percentage_resolution_size);
+  bool is_fixed_size_inline = is_fixed_size_inline_;
+  bool is_fixed_size_block = is_fixed_size_block_;
+  bool fixed_size_block_is_definite = fixed_size_block_is_definite_;
   if (!is_in_parallel_flow) {
     available_size.Flip();
     percentage_resolution_size.Flip();
     parent_percentage_resolution_size.Flip();
+    is_fixed_size_inline = is_fixed_size_block_;
+    is_fixed_size_block = is_fixed_size_inline_;
+    fixed_size_block_is_definite = true;
   }
 
   // If inline size is indefinite, use size of initial containing block.
@@ -212,29 +218,14 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
         {bfc_offset.line_offset, floats_bfc_offset.value().block_offset});
   }
 
-  if (is_in_parallel_flow) {
-    return base::AdoptRef(new NGConstraintSpace(
-        static_cast<WritingMode>(out_writing_mode), false,
-        static_cast<TextDirection>(text_direction_), available_size,
-        percentage_resolution_size,
-        parent_percentage_resolution_size.inline_size,
-        initial_containing_block_size_, fragmentainer_block_size_,
-        fragmentainer_space_at_bfc_start_, is_fixed_size_inline_,
-        is_fixed_size_block_, fixed_size_block_is_definite_, is_shrink_to_fit_,
-        is_intermediate_layout_,
-        static_cast<NGFragmentationType>(fragmentation_type_),
-        separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
-        use_first_line_style_, should_force_clearance_, adjoining_floats_,
-        margin_strut, bfc_offset, floats_bfc_offset, exclusion_space,
-        clearance_offset, baseline_requests_));
-  }
   return base::AdoptRef(new NGConstraintSpace(
-      out_writing_mode, true, static_cast<TextDirection>(text_direction_),
-      available_size, percentage_resolution_size,
-      parent_percentage_resolution_size.inline_size,
+      out_writing_mode, !is_in_parallel_flow,
+      static_cast<TextDirection>(text_direction_), available_size,
+      percentage_resolution_size, parent_percentage_resolution_size.inline_size,
       initial_containing_block_size_, fragmentainer_block_size_,
-      fragmentainer_space_at_bfc_start_, is_fixed_size_block_,
-      is_fixed_size_inline_, true, is_shrink_to_fit_, is_intermediate_layout_,
+      fragmentainer_space_at_bfc_start_, is_fixed_size_inline,
+      is_fixed_size_block, fixed_size_block_is_definite, is_shrink_to_fit_,
+      is_intermediate_layout_,
       static_cast<NGFragmentationType>(fragmentation_type_),
       separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
       use_first_line_style_, should_force_clearance_, adjoining_floats_,
