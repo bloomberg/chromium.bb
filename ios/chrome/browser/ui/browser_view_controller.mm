@@ -2291,6 +2291,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     self.popupMenuCoordinator = [[PopupMenuCoordinator alloc]
         initWithBaseViewController:self
                       browserState:self.browserState];
+    self.popupMenuCoordinator.incognitoTabTipPresenter =
+        self.incognitoTabTipBubblePresenter;
     self.popupMenuCoordinator.dispatcher = _dispatcher;
     self.popupMenuCoordinator.webStateList = [_model webStateList];
     self.popupMenuCoordinator.UIUpdater = _toolbarCoordinatorAdaptor;
@@ -2817,6 +2819,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     return;
 
   self.incognitoTabTipBubblePresenter = presenter;
+  self.popupMenuCoordinator.incognitoTabTipPresenter = presenter;
 
   [self.incognitoTabTipBubblePresenter
       presentInViewController:self
