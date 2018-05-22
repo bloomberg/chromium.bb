@@ -5181,9 +5181,11 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     // If the modeled rd is a lot worse than the best so far, breakout.
     // TODO(debargha, urvang): Improve the model and make the check below
     // tighter.
+    assert(cpi->sf.model_based_prune_tx_search_level >= 0 &&
+           cpi->sf.model_based_prune_tx_search_level <= 2);
     if (!model_skip &&
-        model_rd >
-            (4 - cpi->sf.model_based_prune_tx_search_level) * ref_best_rd)
+        model_rd / (4 - cpi->sf.model_based_prune_tx_search_level) >
+            ref_best_rd)
       return;
   }
 
