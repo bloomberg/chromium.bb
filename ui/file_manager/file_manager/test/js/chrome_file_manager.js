@@ -30,9 +30,6 @@ chrome.fileManagerPrivate = {
     timezone: 'Australia/Sydney',
     use24hourClock: false,
   },
-  listeners_: {
-    'onDirectoryChanged': [],
-  },
   profiles_: [{
     displayName: 'Test User',
     isCurrentProfile: true,
@@ -118,8 +115,9 @@ chrome.fileManagerPrivate = {
   grantAccess: (entryUrls, callback) => {
     setTimeout(callback, 0);
   },
-  isCrostiniEnabled: (callback) => {
-    setTimeout(callback, 0, true);
+  crostiniEnabled_: true,
+  isCrostiniEnabled: function(callback) {
+    setTimeout(callback, 0, this.crostiniEnabled_);
   },
   isUMAEnabled: (callback) => {
     setTimeout(callback, 0, false);
@@ -148,6 +146,9 @@ chrome.fileManagerPrivate = {
     addListener: function(l) {
       this.listeners_.push(l);
     },
+    removeListener: function(l) {
+      this.listeners_.splice(this.listeners_.indexOf(l), 1);
+    },
   },
   onDriveConnectionStatusChanged: {
     addListener: () => {},
@@ -159,7 +160,10 @@ chrome.fileManagerPrivate = {
     addListener: () => {},
   },
   onMountCompleted: {
-    addListener: () => {},
+    listeners_: [],
+    addListener: function(l) {
+      this.listeners_.push(l);
+    },
   },
   onPreferencesChanged: {
     addListener: () => {},
@@ -168,6 +172,15 @@ chrome.fileManagerPrivate = {
   openSettingsSubpage: (sub_page) => {},
   removeFileWatch: (entry, callback) => {
     setTimeout(callback, 0, true);
+  },
+  removeMount(volumeId) {
+    chrome.fileManagerPrivate.dispatchEvent_('onMountCompleted', {
+      status: 'success',
+      eventType: 'unmount',
+      volumeMetadata: {
+        volumeId: volumeId,
+      },
+    });
   },
   requestWebStoreAccessToken: (callback) => {
     setTimeout(callback, 0, chrome.fileManagerPrivate.token_);

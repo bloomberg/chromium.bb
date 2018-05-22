@@ -56,9 +56,7 @@ class FileManagerUITest : public InProcessBrowserTest {
   }
 };
 
-// TODO(crbug.com/819478): Disable UI Tests until CrOS FileApp testing
-// strategy reviewed.
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, DISABLED_UI) {
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, UI) {
   RunTest();
 }
 
