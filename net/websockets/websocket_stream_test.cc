@@ -386,9 +386,10 @@ INSTANTIATE_TEST_CASE_P(,
 
 using WebSocketMultiProtocolStreamCreateTest = WebSocketStreamCreateTest;
 
+// TODO(https://crbug.com/842575) Re-enable testing with HTTP2_HANDSHAKE_STREAM.
 INSTANTIATE_TEST_CASE_P(,
                         WebSocketMultiProtocolStreamCreateTest,
-                        Values(BASIC_HANDSHAKE_STREAM, HTTP2_HANDSHAKE_STREAM));
+                        Values(BASIC_HANDSHAKE_STREAM));
 
 // There are enough tests of the Sec-WebSocket-Extensions header that they
 // deserve their own test fixture.
@@ -408,9 +409,10 @@ class WebSocketStreamCreateExtensionTest
   }
 };
 
+// TODO(https://crbug.com/842575) Re-enable testing with HTTP2_HANDSHAKE_STREAM.
 INSTANTIATE_TEST_CASE_P(,
                         WebSocketStreamCreateExtensionTest,
-                        Values(BASIC_HANDSHAKE_STREAM, HTTP2_HANDSHAKE_STREAM));
+                        Values(BASIC_HANDSHAKE_STREAM));
 
 // Common code to construct expectations for authentication tests that receive
 // the auth challenge on one connection and then create a second connection to
