@@ -126,7 +126,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
     resource_host_ = host;
   }
 
-  void BeginDestruction();
   void Hibernate();
   bool IsHibernating() const { return hibernation_image_; }
   const CanvasColorParams& ColorParams() const { return color_params_; }
@@ -143,7 +142,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   enum HibernationEvent {
     kHibernationScheduled = 0,
     kHibernationAbortedDueToDestructionWhileHibernatePending = 1,
-    kHibernationAbortedDueToPendingDestruction = 2,
+    // kHibernationAbortedDueToPendingDestruction = 2, (obsolete)
     kHibernationAbortedDueToVisibilityChange = 3,
     kHibernationAbortedDueGpuContextLoss = 4,
     kHibernationAbortedDueToSwitchToUnacceleratedRendering = 5,
@@ -193,7 +192,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   int frames_since_last_commit_ = 0;
   size_t bytes_allocated_;
   bool have_recorded_draw_commands_;
-  bool destruction_in_progress_;
   SkFilterQuality filter_quality_;
   bool is_hidden_;
   bool is_deferral_enabled_;

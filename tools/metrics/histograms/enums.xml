@@ -4747,7 +4747,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="0" label="HibernationScheduled"/>
   <int value="1"
       label="HibernationAbortedDueToDestructionWhileHibernatePending"/>
-  <int value="2" label="HibernationAbortedDueToPendingDestruction"/>
+  <int value="2" label="HibernationAbortedDueToPendingDestruction (obsolete)"/>
   <int value="3" label="HibernationAbortedDueToVisibilityChange"/>
   <int value="4" label="HibernationAbortedDueGpuContextLoss"/>
   <int value="5" label="HibernationAbortedDueToSwitchToUnacceleratedRendering"/>

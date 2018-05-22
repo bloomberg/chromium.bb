@@ -133,7 +133,6 @@ TEST_F(SharedGpuContextTest, Canvas2DLayerBridgeAutoRecovery) {
           color_params);
   EXPECT_TRUE(bridge->IsAccelerated());
   EXPECT_TRUE(SharedGpuContext::IsValidWithoutRestoring());
-  bridge->BeginDestruction();
 }
 
 TEST_F(SharedGpuContextTest, IsValidWithoutRestoring) {
