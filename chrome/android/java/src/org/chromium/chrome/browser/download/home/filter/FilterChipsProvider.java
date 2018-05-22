@@ -4,21 +4,26 @@
 
 package org.chromium.chrome.browser.download.home.filter;
 
+import android.os.Handler;
+
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.browser.download.home.filter.chips.Chip;
 import org.chromium.chrome.browser.download.home.filter.chips.ChipsProvider;
+import org.chromium.components.offline_items_collection.OfflineItem;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A {@link ChipsProvider} implementation that wraps a subset of {@link Filters} to be used as a
  * chip selector for filtering downloads.
- * TODO(dtrainor): Hook in as an observer to the download list data source.
  */
-public class FilterChipsProvider implements ChipsProvider {
+public class FilterChipsProvider implements ChipsProvider, OfflineItemFilterObserver {
     private static final int INVALID_INDEX = -1;
 
     /** A delegate responsible for handling UI actions like selecting filters. */
@@ -28,13 +33,16 @@ public class FilterChipsProvider implements ChipsProvider {
     }
 
     private final Delegate mDelegate;
+    private final OfflineItemFilterSource mSource;
 
+    private final Handler mHandler = new Handler();
     private final ObserverList<Observer> mObservers = new ObserverList<ChipsProvider.Observer>();
     private final List<Chip> mSortedChips = new ArrayList<>();
 
     /** Builds a new FilterChipsBackend. */
-    public FilterChipsProvider(Delegate delegate) {
+    public FilterChipsProvider(Delegate delegate, OfflineItemFilterSource source) {
         mDelegate = delegate;
+        mSource = source;
 
         Chip noneChip = new Chip(Filters.NONE, R.string.download_manager_ui_all_downloads,
                 R.string.download_manager_ui_all_downloads, R.drawable.ic_play_arrow_white_24dp,
@@ -61,6 +69,9 @@ public class FilterChipsProvider implements ChipsProvider {
         mSortedChips.add(imagesChip);
         mSortedChips.add(sitesChip);
         mSortedChips.add(otherChip);
+
+        mSource.addObserver(this);
+        generateFilterStates();
     }
 
     /**
@@ -124,7 +135,45 @@ public class FilterChipsProvider implements ChipsProvider {
         return mSortedChips;
     }
 
-    private void onChipSelected(int id) {
+    // OfflineItemFilterObserver implementation.
+    // Post calls to generateFilterStates() avoid re-entrancy.
+    @Override
+    public void onItemsAdded(Collection<OfflineItem> items) {
+        mHandler.post(() -> generateFilterStates());
+    }
+
+    @Override
+    public void onItemsRemoved(Collection<OfflineItem> items) {
+        mHandler.post(() -> generateFilterStates());
+    }
+
+    @Override
+    public void onItemUpdated(OfflineItem oldItem, OfflineItem item) {
+        if (oldItem.filter == item.filter) return;
+        mHandler.post(() -> generateFilterStates());
+    }
+
+    private void generateFilterStates() {
+        // Build a set of all filter types in our data set.
+        Set</* @FilterType */ Integer> filters = new HashSet<>();
+        filters.add(Filters.NONE);
+        for (OfflineItem item : mSource.getItems()) {
+            filters.add(Filters.fromOfflineItem(item.filter));
+        }
+
+        // Set the enabled states correctly for all filter types.
+        for (Chip chip : mSortedChips) setFilterEnabled(chip.id, filters.contains(chip.id));
+
+        // Validate that selection is on a valid type.
+        for (Chip chip : mSortedChips) {
+            if (chip.selected && !chip.enabled) {
+                onChipSelected(Filters.NONE);
+                break;
+            }
+        }
+    }
+
+    private void onChipSelected(@FilterType int id) {
         setFilterSelected(id);
         mDelegate.onFilterSelected(id);
     }
