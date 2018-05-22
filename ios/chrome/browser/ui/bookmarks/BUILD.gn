@@ -53,6 +53,7 @@ source_set("bookmarks") {
     "resources:bookmark_black_select",
     "resources:bookmark_blue_check",
     "resources:bookmark_blue_folder",
+    "resources:bookmark_blue_new_folder",
     "resources:bookmark_gray_back",
     "resources:bookmark_gray_check",
     "resources:bookmark_gray_close",

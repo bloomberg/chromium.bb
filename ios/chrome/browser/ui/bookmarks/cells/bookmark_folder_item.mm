@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_folder_item.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/experimental_flags.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -23,6 +25,8 @@ const CGFloat kImageViewLeadingOffset = 1.0;
 // Width by which to indent folder cell's content. This is multiplied by the
 // |indentationLevel| of the cell.
 const CGFloat kFolderCellIndentationWidth = 32.0;
+// The amount in points by which to inset horizontally the cell contents.
+const CGFloat kFolderCellHorizonalInset = 17.0;
 }  // namespace
 
 #pragma mark - BookmarkFolderItem
@@ -39,7 +43,11 @@ const CGFloat kFolderCellIndentationWidth = 32.0;
 
 - (instancetype)initWithType:(NSInteger)type style:(BookmarkFolderStyle)style {
   if ((self = [super initWithType:type])) {
-    self.cellClass = [LegacyTableViewBookmarkFolderCell class];
+    if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+      self.cellClass = [TableViewBookmarkFolderCell class];
+    } else {
+      self.cellClass = [LegacyTableViewBookmarkFolderCell class];
+    }
     self.style = style;
   }
   return self;
@@ -48,30 +56,150 @@ const CGFloat kFolderCellIndentationWidth = 32.0;
 - (void)configureCell:(UITableViewCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
-  LegacyTableViewBookmarkFolderCell* folderCell =
-      base::mac::ObjCCastStrict<LegacyTableViewBookmarkFolderCell>(cell);
-
-  switch (self.style) {
-    case BookmarkFolderStyleNewFolder: {
-      folderCell.textLabel.text =
-          l10n_util::GetNSString(IDS_IOS_BOOKMARK_CREATE_GROUP);
-      folderCell.imageView.image =
-          [UIImage imageNamed:@"bookmark_gray_new_folder"];
-      folderCell.accessibilityIdentifier = @"Create New Folder";
-      break;
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    TableViewBookmarkFolderCell* folderCell =
+        base::mac::ObjCCastStrict<TableViewBookmarkFolderCell>(cell);
+    switch (self.style) {
+      case BookmarkFolderStyleNewFolder: {
+        folderCell.folderTitleLabel.text =
+            l10n_util::GetNSString(IDS_IOS_BOOKMARK_CREATE_GROUP);
+        folderCell.folderImageView.image =
+            [UIImage imageNamed:@"bookmark_blue_new_folder"];
+        folderCell.accessibilityIdentifier =
+            kBookmarkCreateNewFolderCellIdentifier;
+        break;
+      }
+      case BookmarkFolderStyleFolderEntry: {
+        folderCell.folderTitleLabel.text = self.title;
+        folderCell.accessibilityIdentifier = self.title;
+        folderCell.accessibilityLabel = self.title;
+        folderCell.checked = self.isCurrentFolder;
+        // In order to indent the cell's content we need to modify its
+        // indentation constraint.
+        folderCell.indentationConstraint.constant =
+            folderCell.indentationConstraint.constant +
+            kFolderCellIndentationWidth * self.indentationLevel;
+        folderCell.folderImageView.image =
+            [UIImage imageNamed:@"bookmark_blue_folder"];
+        break;
+      }
     }
-    case BookmarkFolderStyleFolderEntry: {
-      folderCell.textLabel.text = self.title;
-      folderCell.accessibilityIdentifier = self.title;
-      folderCell.accessibilityLabel = self.title;
-      folderCell.checked = self.isCurrentFolder;
-      folderCell.indentationLevel = self.indentationLevel;
-      folderCell.indentationWidth = kFolderCellIndentationWidth;
-      folderCell.imageView.image =
-          [UIImage imageNamed:@"bookmark_gray_folder_new"];
-      break;
+  } else {
+    LegacyTableViewBookmarkFolderCell* folderCell =
+        base::mac::ObjCCastStrict<LegacyTableViewBookmarkFolderCell>(cell);
+    switch (self.style) {
+      case BookmarkFolderStyleNewFolder: {
+        folderCell.textLabel.text =
+            l10n_util::GetNSString(IDS_IOS_BOOKMARK_CREATE_GROUP);
+        folderCell.imageView.image =
+            [UIImage imageNamed:@"bookmark_gray_new_folder"];
+        folderCell.accessibilityIdentifier = @"Create New Folder";
+        break;
+      }
+      case BookmarkFolderStyleFolderEntry: {
+        folderCell.textLabel.text = self.title;
+        folderCell.accessibilityIdentifier = self.title;
+        folderCell.accessibilityLabel = self.title;
+        folderCell.checked = self.isCurrentFolder;
+        folderCell.indentationLevel = self.indentationLevel;
+        folderCell.indentationWidth = kFolderCellIndentationWidth;
+        folderCell.imageView.image =
+            [UIImage imageNamed:@"bookmark_gray_folder_new"];
+        break;
+      }
     }
   }
+}
+
+@end
+
+#pragma mark - TableViewBookmarkFolderCell
+
+@interface TableViewBookmarkFolderCell ()
+@property(nonatomic, strong, readwrite)
+    NSLayoutConstraint* indentationConstraint;
+@end
+
+@implementation TableViewBookmarkFolderCell
+@synthesize checked = _checked;
+@synthesize folderImageView = _folderImageView;
+@synthesize folderTitleLabel = _folderTitleLabel;
+@synthesize indentationConstraint = _indentationConstraint;
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style
+              reuseIdentifier:(NSString*)reuseIdentifier {
+  self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+  if (self) {
+    self.selectionStyle = UITableViewCellSelectionStyleGray;
+    self.accessibilityTraits |= UIAccessibilityTraitButton;
+
+    self.folderImageView = [[UIImageView alloc] init];
+    self.folderImageView.contentMode = UIViewContentModeScaleAspectFit;
+    [self.folderImageView
+        setContentHuggingPriority:UILayoutPriorityRequired
+                          forAxis:UILayoutConstraintAxisHorizontal];
+    [self.folderImageView
+        setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
+
+    self.folderTitleLabel = [[UILabel alloc] init];
+    self.folderTitleLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    self.folderTitleLabel.adjustsFontForContentSizeCategory = YES;
+    [self.folderTitleLabel
+        setContentHuggingPriority:UILayoutPriorityDefaultLow
+                          forAxis:UILayoutConstraintAxisHorizontal];
+
+    // Container StackView.
+    UIStackView* horizontalStack =
+        [[UIStackView alloc] initWithArrangedSubviews:@[
+          self.folderImageView, self.folderTitleLabel
+        ]];
+    horizontalStack.axis = UILayoutConstraintAxisHorizontal;
+    horizontalStack.spacing = kBookmarkCellViewSpacing;
+    horizontalStack.distribution = UIStackViewDistributionFill;
+    horizontalStack.alignment = UIStackViewAlignmentCenter;
+    horizontalStack.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.contentView addSubview:horizontalStack];
+
+    // Set up constraints.
+    self.indentationConstraint = [horizontalStack.leadingAnchor
+        constraintEqualToAnchor:self.contentView.leadingAnchor
+                       constant:kFolderCellHorizonalInset];
+    [NSLayoutConstraint activateConstraints:@[
+      [horizontalStack.topAnchor
+          constraintEqualToAnchor:self.contentView.topAnchor
+                         constant:kBookmarkCellVerticalInset],
+      [horizontalStack.bottomAnchor
+          constraintEqualToAnchor:self.contentView.bottomAnchor
+                         constant:-kBookmarkCellVerticalInset],
+      [horizontalStack.trailingAnchor
+          constraintEqualToAnchor:self.contentView.trailingAnchor
+                         constant:-kFolderCellHorizonalInset],
+      self.indentationConstraint,
+    ]];
+  }
+  return self;
+}
+
+- (void)setChecked:(BOOL)checked {
+  if (checked != _checked) {
+    _checked = checked;
+    UIImageView* checkImageView =
+        checked ? [[UIImageView alloc]
+                      initWithImage:[UIImage imageNamed:@"bookmark_blue_check"]]
+                : nil;
+    self.accessoryView = checkImageView;
+  }
+}
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  self.checked = NO;
+  self.indentationWidth = 0;
+  self.imageView.image = nil;
+  self.indentationConstraint.constant = kFolderCellHorizonalInset;
 }
 
 @end
