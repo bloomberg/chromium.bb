@@ -1915,7 +1915,6 @@ TEST_P(VisualViewportTest, PinchZoomGestureScrollsVisualViewportOnly) {
 }
 
 TEST_P(VisualViewportTest, ResizeWithScrollAnchoring) {
-  ScopedScrollAnchoringForTest scroll_anchoring(true);
   InitializeWithDesktopSettings();
   WebView()->Resize(IntSize(800, 600));
 

@@ -219,10 +219,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableRemotePlaybackAPI))
     WebRuntimeFeatures::EnableRemotePlaybackAPI(false);
 
-  WebRuntimeFeatures::EnableScrollAnchoring(
-      base::FeatureList::IsEnabled(features::kScrollAnchoring) ||
-      enableExperimentalWebPlatformFeatures);
-
   WebRuntimeFeatures::EnableUserActivationV2(
       base::FeatureList::IsEnabled(features::kUserActivationV2));
 

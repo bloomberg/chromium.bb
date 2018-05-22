@@ -645,11 +645,6 @@ const char kEnableUseZoomForDsfChoiceDefault[] = "Default";
 const char kEnableUseZoomForDsfChoiceEnabled[] = "Enabled";
 const char kEnableUseZoomForDsfChoiceDisabled[] = "Disabled";
 
-const char kEnableScrollAnchoringName[] = "Scroll Anchoring";
-const char kEnableScrollAnchoringDescription[] =
-    "Adjusts scroll position to prevent visible jumps when offscreen content "
-    "changes.";
-
 const char kEnableScrollAnchorSerializationName[] =
     "Scroll Anchor Serialization";
 const char kEnableScrollAnchorSerializationDescription[] =

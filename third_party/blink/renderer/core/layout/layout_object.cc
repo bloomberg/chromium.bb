@@ -3127,8 +3127,7 @@ void LayoutObject::WillBeRemovedFromTree() {
   if (Parent()->IsSVG())
     Parent()->SetNeedsBoundariesUpdate();
 
-  if (RuntimeEnabledFeatures::ScrollAnchoringEnabled() &&
-      bitfields_.IsScrollAnchorObject()) {
+  if (bitfields_.IsScrollAnchorObject()) {
     // Clear the bit first so that anchor.clear() doesn't recurse into
     // findReferencingScrollAnchors.
     bitfields_.SetIsScrollAnchorObject(false);

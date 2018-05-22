@@ -321,10 +321,6 @@ const base::Feature kRunVideoCaptureServiceInBrowserProcess{
     "RunVideoCaptureServiceInBrowserProcess",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
-const base::Feature kScrollAnchoring{"ScrollAnchoring",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Save the scroll anchor and use it to restore scroll position.
 const base::Feature kScrollAnchorSerialization{
     "ScrollAnchorSerialization", base::FEATURE_DISABLED_BY_DEFAULT};

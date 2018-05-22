@@ -1101,12 +1101,6 @@
       name: "ScriptedSpeech",
       status: "stable",
     },
-    // Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
-    {
-      name: "ScrollAnchoring",
-      settable_from_internals: true,
-      status: "experimental",
-    },
     // Serialize and restore scroll anchors.
     {
       name: "ScrollAnchorSerialization",

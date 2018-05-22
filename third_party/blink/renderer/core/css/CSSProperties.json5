@@ -2267,7 +2267,6 @@
       name: "overflow-anchor",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: false,
-      runtime_flag: "ScrollAnchoring",
       field_template: "keyword",
       keywords: [
         "visible", "none", "auto"

@@ -388,10 +388,6 @@ void WebRuntimeFeatures::EnableExpensiveBackgroundTimerThrottling(bool enable) {
   RuntimeEnabledFeatures::SetExpensiveBackgroundTimerThrottlingEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableScrollAnchoring(bool enable) {
-  RuntimeEnabledFeatures::SetScrollAnchoringEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableScrollAnchorSerialization(bool enable) {
   RuntimeEnabledFeatures::SetScrollAnchorSerializationEnabled(enable);
 }
