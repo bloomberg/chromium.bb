@@ -1396,22 +1396,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // hierarchy).
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) {}
 
-  // Debugging -----------------------------------------------------------------
-
-#if !defined(NDEBUG)
-  // Returns string containing a graph of the views hierarchy in graphViz DOT
-  // language (http://graphviz.org/). Can be called within debugger and save
-  // to a file to compile/view.
-  // Note: Assumes initial call made with first = true.
-  virtual std::string PrintViewGraph(bool first);
-
-  // Some classes may own an object which contains the children to displayed in
-  // the views hierarchy. The above function gives the class the flexibility to
-  // decide which object should be used to obtain the children, but this
-  // function makes the decision explicit.
-  std::string DoPrintViewGraph(bool first, View* view_with_children);
-#endif
-
  private:
   friend class internal::PreEventDispatchHandler;
   friend class internal::PostEventDispatchHandler;
