@@ -9,6 +9,13 @@ config("config") {
   include_dirs = [ "src/EarlGrey" ]
 }
 
+config("disable_deprecated_errors") {
+  cflags = [
+    "-Wno-deprecated",
+    "-Wno-deprecated-declarations",
+  ]
+}
+
 ios_framework_bundle("earl_grey") {
   output_name = "EarlGrey"
   info_plist = "Info.plist"
@@ -18,6 +25,7 @@ ios_framework_bundle("earl_grey") {
     "src/EarlGrey/Action/GREYAction.h",
     "src/EarlGrey/Action/GREYActionBlock.h",
     "src/EarlGrey/Action/GREYActionBlock.m",
+    "src/EarlGrey/Action/GREYActions+Internal.h",
     "src/EarlGrey/Action/GREYActions.h",
     "src/EarlGrey/Action/GREYActions.m",
     "src/EarlGrey/Action/GREYBaseAction.h",
@@ -66,6 +74,8 @@ ios_framework_bundle("earl_grey") {
     "src/EarlGrey/Additions/NSURL+GREYAdditions.m",
     "src/EarlGrey/Additions/NSURLConnection+GREYAdditions.h",
     "src/EarlGrey/Additions/NSURLConnection+GREYAdditions.m",
+    "src/EarlGrey/Additions/NSURLSession+GREYAdditions.h",
+    "src/EarlGrey/Additions/NSURLSession+GREYAdditions.m",
     "src/EarlGrey/Additions/UIAnimation+GREYAdditions.h",
     "src/EarlGrey/Additions/UIAnimation+GREYAdditions.m",
     "src/EarlGrey/Additions/UIApplication+GREYAdditions.h",
@@ -97,11 +107,13 @@ ios_framework_bundle("earl_grey") {
     "src/EarlGrey/Assertion/GREYAssertionBlock.h",
     "src/EarlGrey/Assertion/GREYAssertionBlock.m",
     "src/EarlGrey/Assertion/GREYAssertionDefines.h",
+    "src/EarlGrey/Assertion/GREYAssertions+Internal.h",
     "src/EarlGrey/Assertion/GREYAssertions.h",
     "src/EarlGrey/Assertion/GREYAssertions.m",
     "src/EarlGrey/Common/GREYAnalytics.h",
     "src/EarlGrey/Common/GREYAnalytics.m",
     "src/EarlGrey/Common/GREYAnalyticsDelegate.h",
+    "src/EarlGrey/Common/GREYAppleInternals.h",
     "src/EarlGrey/Common/GREYConfiguration.h",
     "src/EarlGrey/Common/GREYConfiguration.m",
     "src/EarlGrey/Common/GREYConstants.h",
@@ -118,6 +130,7 @@ ios_framework_bundle("earl_grey") {
     "src/EarlGrey/Common/GREYFailureFormatter.m",
     "src/EarlGrey/Common/GREYFailureScreenshotter.h",
     "src/EarlGrey/Common/GREYFailureScreenshotter.m",
+    "src/EarlGrey/Common/GREYFatalAsserts.h",
     "src/EarlGrey/Common/GREYLogger.h",
     "src/EarlGrey/Common/GREYLogger.m",
     "src/EarlGrey/Common/GREYObjcRuntime.h",
@@ -135,12 +148,16 @@ ios_framework_bundle("earl_grey") {
     "src/EarlGrey/Common/GREYTestCaseInvocation.m",
     "src/EarlGrey/Common/GREYTestHelper.h",
     "src/EarlGrey/Common/GREYTestHelper.m",
+    "src/EarlGrey/Common/GREYThrowDefines.h",
     "src/EarlGrey/Common/GREYVisibilityChecker.h",
     "src/EarlGrey/Common/GREYVisibilityChecker.m",
+    "src/EarlGrey/Core/EarlGreyImpl.h",
+    "src/EarlGrey/Core/EarlGreyImpl.m",
     "src/EarlGrey/Core/GREYAutomationSetup.h",
     "src/EarlGrey/Core/GREYAutomationSetup.m",
     "src/EarlGrey/Core/GREYElementFinder.h",
     "src/EarlGrey/Core/GREYElementFinder.m",
+    "src/EarlGrey/Core/GREYElementInteraction+Internal.h",
     "src/EarlGrey/Core/GREYElementInteraction.h",
     "src/EarlGrey/Core/GREYElementInteraction.m",
     "src/EarlGrey/Core/GREYInteraction.h",
@@ -156,7 +173,6 @@ ios_framework_bundle("earl_grey") {
     "src/EarlGrey/Delegate/GREYUIWebViewDelegate.h",
     "src/EarlGrey/Delegate/GREYUIWebViewDelegate.m",
     "src/EarlGrey/EarlGrey.h",
-    "src/EarlGrey/EarlGrey.m",
     "src/EarlGrey/Event/GREYSyntheticEvents.h",
     "src/EarlGrey/Event/GREYSyntheticEvents.m",
     "src/EarlGrey/Event/GREYTouchInfo.h",
@@ -221,6 +237,7 @@ ios_framework_bundle("earl_grey") {
     "src/EarlGrey/Synchronization/GREYSyncAPI.m",
     "src/EarlGrey/Synchronization/GREYTimedIdlingResource.h",
     "src/EarlGrey/Synchronization/GREYTimedIdlingResource.m",
+    "src/EarlGrey/Synchronization/GREYUIThreadExecutor+Internal.h",
     "src/EarlGrey/Synchronization/GREYUIThreadExecutor.h",
     "src/EarlGrey/Synchronization/GREYUIThreadExecutor.m",
     "src/EarlGrey/Synchronization/GREYUIWebViewIdlingResource.h",
@@ -234,48 +251,46 @@ ios_framework_bundle("earl_grey") {
   ]
   public_headers = [
     "src/EarlGrey/EarlGrey.h",
+    "src/EarlGrey/Core/EarlGreyImpl.h",
     "src/EarlGrey/Action/GREYAction.h",
     "src/EarlGrey/Action/GREYActionBlock.h",
     "src/EarlGrey/Action/GREYActions.h",
-    "src/EarlGrey/Action/GREYBaseAction.h",
-    "src/EarlGrey/Action/GREYPinchAction.h",
-    "src/EarlGrey/Action/GREYScrollActionError.h",
-    "src/EarlGrey/AppSupport/GREYIdlingResource.h",
+    "src/EarlGrey/Matcher/GREYAllOf.h",
+    "src/EarlGrey/Matcher/GREYAnyOf.h",
     "src/EarlGrey/Assertion/GREYAssertion.h",
     "src/EarlGrey/Assertion/GREYAssertionBlock.h",
     "src/EarlGrey/Assertion/GREYAssertionDefines.h",
     "src/EarlGrey/Assertion/GREYAssertions.h",
+    "src/EarlGrey/Action/GREYBaseAction.h",
+    "src/EarlGrey/Matcher/GREYBaseMatcher.h",
+    "src/EarlGrey/Synchronization/GREYCondition.h",
     "src/EarlGrey/Common/GREYConfiguration.h",
     "src/EarlGrey/Common/GREYConstants.h",
+    "src/EarlGrey/Provider/GREYDataEnumerator.h",
     "src/EarlGrey/Common/GREYDefines.h",
-    "src/EarlGrey/Common/GREYElementHierarchy.h",
-    "src/EarlGrey/Common/GREYScreenshotUtil.h",
-    "src/EarlGrey/Common/GREYStopwatch.h",
-    "src/EarlGrey/Common/GREYTestHelper.h",
+    "src/EarlGrey/Matcher/GREYDescription.h",
+    "src/EarlGrey/Synchronization/GREYDispatchQueueIdlingResource.h",
     "src/EarlGrey/Core/GREYElementFinder.h",
+    "src/EarlGrey/Common/GREYElementHierarchy.h",
     "src/EarlGrey/Core/GREYElementInteraction.h",
-    "src/EarlGrey/Core/GREYInteraction.h",
+    "src/EarlGrey/Matcher/GREYElementMatcherBlock.h",
     "src/EarlGrey/Exception/GREYFailureHandler.h",
     "src/EarlGrey/Exception/GREYFrameworkException.h",
-    "src/EarlGrey/Matcher/GREYAllOf.h",
-    "src/EarlGrey/Matcher/GREYAnyOf.h",
-    "src/EarlGrey/Matcher/GREYBaseMatcher.h",
-    "src/EarlGrey/Matcher/GREYDescription.h",
-    "src/EarlGrey/Matcher/GREYElementMatcherBlock.h",
+    "src/EarlGrey/AppSupport/GREYIdlingResource.h",
+    "src/EarlGrey/Core/GREYInteraction.h",
     "src/EarlGrey/Matcher/GREYLayoutConstraint.h",
+    "src/EarlGrey/Synchronization/GREYManagedObjectContextIdlingResource.h",
     "src/EarlGrey/Matcher/GREYMatcher.h",
     "src/EarlGrey/Matcher/GREYMatchers.h",
-    "src/EarlGrey/Matcher/GREYNot.h",
-    "src/EarlGrey/Provider/GREYDataEnumerator.h",
-    "src/EarlGrey/Provider/GREYProvider.h",
-    "src/EarlGrey/Synchronization/GREYManagedObjectContextIdlingResource.h",
     "src/EarlGrey/Synchronization/GREYNSTimerIdlingResource.h",
+    "src/EarlGrey/Matcher/GREYNot.h",
     "src/EarlGrey/Synchronization/GREYOperationQueueIdlingResource.h",
-    "src/EarlGrey/Synchronization/GREYDispatchQueueIdlingResource.h",
+    "src/EarlGrey/Provider/GREYProvider.h",
+    "src/EarlGrey/Common/GREYScreenshotUtil.h",
+    "src/EarlGrey/Action/GREYScrollActionError.h",
     "src/EarlGrey/Synchronization/GREYSyncAPI.h",
-    "src/EarlGrey/Synchronization/GREYCondition.h",
+    "src/EarlGrey/Common/GREYTestHelper.h",
     "src/EarlGrey/Synchronization/GREYUIThreadExecutor.h",
-    "src/EarlGrey/Traversal/GREYTraversal.h",
   ]
   deps = [
     "//build/config/ios:xctest",
@@ -294,7 +309,6 @@ ios_framework_bundle("earl_grey") {
     "UIKit.framework",
     "XCTest.framework",
   ]
-
   public_configs = [ ":config" ]
 
   configs -= [
@@ -305,5 +319,9 @@ ios_framework_bundle("earl_grey") {
     "//build/config/compiler:no_chromium_code",
     "//build/config/compiler:enable_arc",
     "//build/config/gcc:symbol_visibility_default",
+
+    # earl_grey internally uses deprecated methods.
+    # Disable the warning about deprecation usage.
+    ":disable_deprecated_errors",
   ]
 }
