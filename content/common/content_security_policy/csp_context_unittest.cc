@@ -251,27 +251,40 @@ TEST(CSPContextTest, ShouldModifyRequestUrlForCsp) {
   CSPContextTest context;
   context.AddContentSecurityPolicy(BuildPolicy(
       CSPDirective::UpgradeInsecureRequests, std::vector<CSPSource>()));
-  GURL new_url;
   // An HTTP subresource or form submission should be upgraded.
-  EXPECT_TRUE(context.ShouldModifyRequestUrlForCsp(GURL("http://example.com"),
-                                                   true, &new_url));
-  EXPECT_EQ(GURL("https://example.com"), new_url);
-  EXPECT_TRUE(context.ShouldModifyRequestUrlForCsp(
-      GURL("http://example.com:80"), true, &new_url));
-  EXPECT_EQ(GURL("https://example.com:443"), new_url);
+  EXPECT_TRUE(context.ShouldModifyRequestUrlForCsp(true));
+
+  // Main-frame navigation requests should not be modified.
+  EXPECT_FALSE(context.ShouldModifyRequestUrlForCsp(false));
+}
+
+// Tests that URLs passed to ModifyRequestUrlForCsp are modified according to
+// the spec for upgrades.
+TEST(CSPContextTest, ModifyRequestUrlForCsp) {
+  CSPContextTest context;
+  GURL test_url;
+
+  test_url = GURL("http://example.com");
+  context.ModifyRequestUrlForCsp(&test_url);
+  EXPECT_EQ(GURL("https://example.com"), test_url);
+
+  test_url = GURL("http://example.com:80");
+  context.ModifyRequestUrlForCsp(&test_url);
+  EXPECT_EQ(GURL("https://example.com:443"), test_url);
+
   // Non-standard ports should not be modified.
-  EXPECT_TRUE(context.ShouldModifyRequestUrlForCsp(
-      GURL("http://example-weird-port.com:8088"), true, &new_url));
-  EXPECT_EQ(GURL("https://example-weird-port.com:8088"), new_url);
+  test_url = GURL("http://example-weird-port.com:8088");
+  context.ModifyRequestUrlForCsp(&test_url);
+  EXPECT_EQ(GURL("https://example-weird-port.com:8088"), test_url);
 
   // Non-HTTP URLs don't need to be modified.
-  EXPECT_FALSE(context.ShouldModifyRequestUrlForCsp(GURL("https://example.com"),
-                                                    true, &new_url));
-  EXPECT_FALSE(context.ShouldModifyRequestUrlForCsp(
-      GURL("data:text/html,<html></html>"), true, &new_url));
-  // Nor do main-frame navigation requests.
-  EXPECT_FALSE(context.ShouldModifyRequestUrlForCsp(GURL("http://example.com"),
-                                                    false, &new_url));
+  test_url = GURL("https://example.com");
+  context.ModifyRequestUrlForCsp(&test_url);
+  EXPECT_EQ(GURL("https://example.com"), test_url);
+
+  test_url = GURL("data:text/html,<html></html>");
+  context.ModifyRequestUrlForCsp(&test_url);
+  EXPECT_EQ(GURL("data:text/html,<html></html>"), test_url);
 }
 
 }  // namespace content

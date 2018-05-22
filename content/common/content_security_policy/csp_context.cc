@@ -54,23 +54,24 @@ bool CSPContext::IsAllowedByCsp(CSPDirective::Name directive_name,
 }
 
 bool CSPContext::ShouldModifyRequestUrlForCsp(
-    const GURL& url,
-    bool is_subresource_or_form_submission,
-    GURL* new_url) {
+    bool is_subresource_or_form_submission) {
   for (const auto& policy : policies_) {
-    if (url.scheme() == "http" &&
-        ContentSecurityPolicy::ShouldUpgradeInsecureRequest(policy) &&
+    if (ContentSecurityPolicy::ShouldUpgradeInsecureRequest(policy) &&
         is_subresource_or_form_submission) {
-      *new_url = url;
-      GURL::Replacements replacements;
-      replacements.SetSchemeStr("https");
-      if (url.port() == "80")
-        replacements.SetPortStr("443");
-      *new_url = new_url->ReplaceComponents(replacements);
       return true;
     }
   }
   return false;
+}
+
+void CSPContext::ModifyRequestUrlForCsp(GURL* url) {
+  if (url->scheme() == "http") {
+    GURL::Replacements replacements;
+    replacements.SetSchemeStr("https");
+    if (url->port() == "80")
+      replacements.SetPortStr("443");
+    *url = url->ReplaceComponents(replacements);
+  }
 }
 
 void CSPContext::SetSelf(const url::Origin origin) {
