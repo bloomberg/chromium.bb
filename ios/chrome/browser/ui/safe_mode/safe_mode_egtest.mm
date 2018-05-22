@@ -5,9 +5,11 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_view_controller.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
@@ -61,6 +63,16 @@ void AssertTryAgainButtonOnPage() {
 @end
 
 @implementation SafeModeTestCase
+
+// Per crbug.com/845186, Disable flakey iPad Retina tests that are limited
+// to iOS 10.2.
++ (NSArray*)testInvocations {
+#if TARGET_IPHONE_SIMULATOR
+  if (IsIPadIdiom() && !base::ios::IsRunningOnOrLater(10, 3, 0))
+    return @[];
+#endif  // TARGET_IPHONE_SIMULATOR
+  return [super testInvocations];
+}
 
 // Tests that Safe Mode crash upload screen is displayed when there are crash
 // reports to upload.

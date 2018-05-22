@@ -4,6 +4,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#include "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
@@ -94,6 +95,16 @@ id<GREYMatcher> KeyboardNextKey() {
 @end
 
 @implementation SCPaymentsEditorTestCase
+
+// Per crbug.com/845186, Disable flakey iPad Retina tests that are limited
+// to iOS 10.2.
++ (NSArray*)testInvocations {
+#if TARGET_IPHONE_SIMULATOR
+  if (IsIPadIdiom() && !base::ios::IsRunningOnOrLater(10, 3, 0))
+    return @[];
+#endif  // TARGET_IPHONE_SIMULATOR
+  return [super testInvocations];
+}
 
 - (void)setUp {
   [super setUp];

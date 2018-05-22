@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -164,6 +165,16 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   IOSChromeContentSuggestionsServiceFactory::GetInstance()->SetTestingFactory(
       browserState, CreateChromeContentSuggestionsServiceWithProviders);
   [super tearDown];
+}
+
+// Per crbug.com/845186, Disable flakey iPad Retina tests that are limited
+// to iOS 10.2.
++ (NSArray*)testInvocations {
+#if TARGET_IPHONE_SIMULATOR
+  if (IsIPadIdiom() && !base::ios::IsRunningOnOrLater(10, 3, 0))
+    return @[];
+#endif  // TARGET_IPHONE_SIMULATOR
+  return [super testInvocations];
 }
 
 - (void)setUp {
