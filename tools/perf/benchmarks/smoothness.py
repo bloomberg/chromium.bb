@@ -210,8 +210,7 @@ class SmoothnessGpuRasterizationFiltersCases(_Smoothness):
     return 'smoothness.gpu_rasterization.tough_filters_cases'
 
 
-@benchmark.Owner(emails=['bokan@chromium.org', 'nzolghadr@chromium.org',
-                         'rbyers@chromium.org'])
+@benchmark.Owner(emails=['bokan@chromium.org', 'nzolghadr@chromium.org'])
 class SmoothnessSyncScrollKeyMobileSites(_Smoothness):
   """Measures rendering statistics for the key mobile sites with synchronous
   (main thread) scrolling.
