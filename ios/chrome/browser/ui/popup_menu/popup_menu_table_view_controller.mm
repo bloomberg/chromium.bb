@@ -92,6 +92,8 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
       width = MAX(width, ceil(sizeForCell.width));
       height += ceil(sizeForCell.height);
     }
+    // Add the separator height (only available the non-final sections).
+    height += [self tableView:self.tableView heightForFooterInSection:section];
   }
   height +=
       self.tableView.contentInset.top + self.tableView.contentInset.bottom;

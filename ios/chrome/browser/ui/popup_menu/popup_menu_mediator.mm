@@ -548,23 +548,23 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
 // Creates the menu items for the tab grid menu.
 - (void)createTabGridMenuItems {
-  NSMutableArray* items = [NSMutableArray arrayWithArray:[self itemsForNewTab]];
+  NSMutableArray* closeItems = [NSMutableArray array];
   if (self.isIncognito) {
     PopupMenuToolsItem* closeAllIncognitoTabs = CreateTableViewItem(
         IDS_IOS_TOOLS_MENU_CLOSE_ALL_INCOGNITO_TABS,
         PopupMenuActionCloseAllIncognitoTabs, @"popup_menu_new_incognito_tab",
         kToolsMenuCloseAllIncognitoTabsId);
     closeAllIncognitoTabs.destructiveAction = YES;
-    [items addObject:closeAllIncognitoTabs];
+    [closeItems addObject:closeAllIncognitoTabs];
   }
 
   PopupMenuToolsItem* closeTab =
       CreateTableViewItem(IDS_IOS_TOOLS_MENU_CLOSE_TAB, PopupMenuActionCloseTab,
                           @"popup_menu_close_tab", kToolsMenuCloseTabId);
   closeTab.destructiveAction = YES;
-  [items addObject:closeTab];
+  [closeItems addObject:closeTab];
 
-  self.items = @[ items ];
+  self.items = @[ [self itemsForNewTab], closeItems ];
 }
 
 // Creates the menu items for the tools menu.
@@ -692,9 +692,6 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
     self.readingListItem.badgeText = l10n_util::GetNSStringWithFixup(
         IDS_IOS_READING_LIST_CELL_NEW_FEATURE_BADGE);
   }
-
-  // TODO(crbug.com/828367): Once the "unseen items effect" is defined,
-  // implement it.
 
   // Recent Tabs.
   TableViewItem* recentTabs = CreateTableViewItem(
