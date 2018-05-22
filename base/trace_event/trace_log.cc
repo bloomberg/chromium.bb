@@ -49,6 +49,12 @@
 #include "base/trace_event/trace_event_etw_export_win.h"
 #endif
 
+#if defined(OS_ANDROID)
+// The linker assigns the virtual address of the start of current library to
+// this symbol.
+extern char __executable_start;
+#endif
+
 namespace base {
 namespace trace_event {
 
@@ -1548,6 +1554,13 @@ void TraceLog::AddMetadataEventsWhileLocked() {
   InitializeMetadataEvent(
       AddEventToThreadSharedChunkWhileLocked(nullptr, false), current_thread_id,
       "process_uptime_seconds", "uptime", process_uptime.InSeconds());
+
+#if defined(OS_ANDROID)
+  InitializeMetadataEvent(
+      AddEventToThreadSharedChunkWhileLocked(nullptr, false), current_thread_id,
+      "chrome_library_address", "start_address",
+      base::StringPrintf("%p", &__executable_start));
+#endif
 
   if (!process_labels_.empty()) {
     std::vector<base::StringPiece> labels;
