@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -170,6 +171,8 @@ class PdfConverterImpl : public PdfConverter {
 
   void OnFailed(const std::string& error_message);
 
+  void RecordConversionMetrics();
+
   PdfRenderSettings settings_;
 
   // Document loaded callback.
@@ -180,6 +183,11 @@ class PdfConverterImpl : public PdfConverter {
   // Use containers that keeps element pointers valid after push() and pop().
   using GetPageCallbacks = base::queue<GetPageCallbackData>;
   GetPageCallbacks get_page_callbacks_;
+
+  // Keep track of document size and page counts for metrics.
+  size_t bytes_generated_ = 0;
+  uint32_t pages_generated_ = 0;
+  uint32_t page_count_ = 0;
 
   std::unique_ptr<PdfToEmfConverterClientImpl>
       pdf_to_emf_converter_client_impl_;
@@ -245,6 +253,8 @@ PdfConverterImpl::PdfConverterImpl(
 
 PdfConverterImpl::~PdfConverterImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  RecordConversionMetrics();
 }
 
 void PdfConverterImpl::Initialize(
@@ -292,6 +302,7 @@ void PdfConverterImpl::OnPageCount(mojom::PdfToEmfConverterPtr converter,
       &PdfConverterImpl::OnFailed, weak_ptr_factory_.GetWeakPtr(),
       std::string("Connection to PdfToEmfConverter error.")));
   std::move(start_callback_).Run(page_count);
+  page_count_ = page_count;
 }
 
 void PdfConverterImpl::GetPage(
@@ -322,8 +333,14 @@ void PdfConverterImpl::OnPageDone(base::ReadOnlySharedMemoryRegion emf_region,
   std::unique_ptr<MetafilePlayer> metafile;
   if (emf_region.IsValid()) {
     base::ReadOnlySharedMemoryMapping mapping = emf_region.Map();
-    if (mapping.IsValid())
+    if (mapping.IsValid()) {
+      size_t mapping_size = mapping.size();
       metafile = GetMetaFileFromMapping(std::move(mapping));
+      if (metafile) {
+        ++pages_generated_;
+        bytes_generated_ += mapping_size;
+      }
+    }
   }
 
   base::WeakPtr<PdfConverterImpl> weak_this = weak_ptr_factory_.GetWeakPtr();
@@ -361,6 +378,41 @@ void PdfConverterImpl::OnFailed(const std::string& error_message) {
   }
 
   Stop();
+}
+
+void PdfConverterImpl::RecordConversionMetrics() {
+  if (!page_count_ || page_count_ != pages_generated_) {
+    // TODO(thestig): Consider adding UMA to track failure rates.
+    return;
+  }
+
+  DCHECK(bytes_generated_);
+  size_t average_page_size_in_kb = bytes_generated_ / 1024;
+  average_page_size_in_kb /= page_count_;
+  switch (settings_.mode) {
+    case PdfRenderSettings::Mode::NORMAL:
+      UMA_HISTOGRAM_MEMORY_KB("Printing.ConversionSize.Emf",
+                              average_page_size_in_kb);
+      return;
+    case PdfRenderSettings::Mode::TEXTONLY:
+      // Intentionally not logged.
+      return;
+    case PdfRenderSettings::Mode::GDI_TEXT:
+      UMA_HISTOGRAM_MEMORY_KB("Printing.ConversionSize.EmfWithGdiText",
+                              average_page_size_in_kb);
+      return;
+    case PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2:
+      UMA_HISTOGRAM_MEMORY_KB("Printing.ConversionSize.PostScript2",
+                              average_page_size_in_kb);
+      return;
+    case PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3:
+      UMA_HISTOGRAM_MEMORY_KB("Printing.ConversionSize.PostScript3",
+                              average_page_size_in_kb);
+      return;
+    default:
+      NOTREACHED();
+      return;
+  }
 }
 
 }  // namespace
