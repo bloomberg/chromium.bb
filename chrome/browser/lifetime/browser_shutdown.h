@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSER_SHUTDOWN_H_
-#define CHROME_BROWSER_BROWSER_SHUTDOWN_H_
+#ifndef CHROME_BROWSER_LIFETIME_BROWSER_SHUTDOWN_H_
+#define CHROME_BROWSER_LIFETIME_BROWSER_SHUTDOWN_H_
 
 #include "build/build_config.h"
 
@@ -96,4 +96,4 @@ void StartShutdownTracing();
 
 }  // namespace browser_shutdown
 
-#endif  // CHROME_BROWSER_BROWSER_SHUTDOWN_H_
+#endif  // CHROME_BROWSER_LIFETIME_BROWSER_SHUTDOWN_H_

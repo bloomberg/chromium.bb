@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "chrome/browser/background/background_mode_optimizer.h"
-#include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/lifetime/browser_shutdown.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
