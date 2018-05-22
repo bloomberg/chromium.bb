@@ -27,7 +27,7 @@ class AudioSinkManagerInstance : public AudioSinkManager {
 
 // static
 AudioSinkManager* AudioSinkManager::Get() {
-  base::NoDestructor<AudioSinkManagerInstance> sink_manager_instance;
+  static base::NoDestructor<AudioSinkManagerInstance> sink_manager_instance;
   return sink_manager_instance.get();
 }
 
