@@ -66,11 +66,13 @@
   // Set the consumer first before calling [self.mediator initObservers] and
   // then [self.mediator reloadSessions].
   self.mediator.consumer = recentTabsTableViewController;
+  // TODO(crbug.com/845636) : Currently, the image data source must be set
+  // before the mediator starts updating its consumer. Fix this so that order of
+  // calls does not matter.
+  recentTabsTableViewController.imageDataSource = self.mediator;
   recentTabsTableViewController.delegate = self.mediator;
   [self.mediator initObservers];
   [self.mediator reloadSessions];
-  // Set the datasource for favicons.
-  recentTabsTableViewController.imageDataSource = self.mediator;
 
   // Present RecentTabsNavigationController.
   self.recentTabsNavigationController = [[TableViewNavigationController alloc]
