@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
+#include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -123,6 +124,9 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
       policy::AppInstallEventLogManagerWrapper::CreateForProfile(user_profile);
     }
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(user_profile);
+
+    if (user->GetType() == user_manager::USER_TYPE_CHILD)
+      ScreenTimeControllerFactory::GetForBrowserContext(user_profile);
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()
     // so that the Launcher and other Profile dependent classes are created.

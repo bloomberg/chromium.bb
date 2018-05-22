@@ -844,6 +844,19 @@ const char kTextToSpeechPitch[] = "settings.tts.speech_pitch";
 // system volume, and higher than 1.0 is louder.
 const char kTextToSpeechVolume[] = "settings.tts.speech_volume";
 
+// This is a timestamp to keep track of the screen start time when a unichrome
+// user starts using the device for the first time of the day. Used to calculate
+// the screen time limit and this will be refreshed daily.
+const char kFirstScreenStartTime[] = "screen_time.first_screen.start_time";
+
+// This is a timestamp to keep track of the screen start time for the current
+// active screen. The pref is used to restore the screen start time after
+// browser crashes and device reboots.
+const char kCurrentScreenStartTime[] = "screen_time.current_screen.start_time";
+
+// How much screen time in minutes has been used.
+const char kScreenTimeMinutesUsed[] = "screen_time.time_usage";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

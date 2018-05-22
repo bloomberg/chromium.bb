@@ -57,6 +57,7 @@
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/session_manager/core/session_manager_observer.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -104,16 +105,16 @@ bool IsFingerprintAuthenticationAvailableForUsers(
 
 // Observer to start ScreenLocker when locking the screen is requested.
 class ScreenLockObserver : public SessionManagerClient::StubDelegate,
-                           public content::NotificationObserver,
-                           public UserAddingScreen::Observer {
+                           public UserAddingScreen::Observer,
+                           public session_manager::SessionManagerObserver {
  public:
   ScreenLockObserver() : session_started_(false) {
-    registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
-                   content::NotificationService::AllSources());
+    session_manager::SessionManager::Get()->AddObserver(this);
     DBusThreadManager::Get()->GetSessionManagerClient()->SetStubDelegate(this);
   }
 
   ~ScreenLockObserver() override {
+    session_manager::SessionManager::Get()->RemoveObserver(this);
     if (DBusThreadManager::IsInitialized()) {
       DBusThreadManager::Get()->GetSessionManagerClient()->SetStubDelegate(
           nullptr);
@@ -127,24 +128,28 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
     ScreenLocker::HandleShowLockScreenRequest();
   }
 
-  // NotificationObserver overrides:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    if (type == chrome::NOTIFICATION_SESSION_STARTED) {
-      session_started_ = true;
-
-      // The user session has just started, so the user has logged in. Mark a
-      // strong authentication to allow them to use PIN to unlock the device.
-      user_manager::User* user =
-          content::Details<user_manager::User>(details).ptr();
-      quick_unlock::QuickUnlockStorage* quick_unlock_storage =
-          quick_unlock::QuickUnlockFactory::GetForUser(user);
-      if (quick_unlock_storage)
-        quick_unlock_storage->MarkStrongAuth();
-    } else {
-      NOTREACHED() << "Unexpected notification " << type;
+  // session_manager::SessionManagerObserver:
+  void OnSessionStateChanged() override {
+    // Only set MarkStrongAuth for the first time session becomes active, which
+    // is when user first sign-in.
+    // For unlocking case which state changes from active->lock->active, it
+    // should be handled in OnPasswordAuthSuccess.
+    if (session_started_ ||
+        session_manager::SessionManager::Get()->session_state() !=
+            session_manager::SessionState::ACTIVE) {
+      return;
     }
+
+    session_started_ = true;
+
+    // The user session has just started, so the user has logged in. Mark a
+    // strong authentication to allow them to use PIN to unlock the device.
+    user_manager::User* user =
+        user_manager::UserManager::Get()->GetActiveUser();
+    quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+        quick_unlock::QuickUnlockFactory::GetForUser(user);
+    if (quick_unlock_storage)
+      quick_unlock_storage->MarkStrongAuth();
   }
 
   // UserAddingScreen::Observer overrides:
@@ -155,7 +160,6 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
 
  private:
   bool session_started_;
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockObserver);
 };
@@ -573,8 +577,11 @@ void ScreenLocker::Hide() {
   }
 
   DCHECK(screen_locker_);
-  SessionControllerClient::Get()->RunUnlockAnimation(
-      base::BindOnce(&ScreenLocker::ScheduleDeletion));
+  SessionControllerClient::Get()->RunUnlockAnimation(base::BindOnce([]() {
+    session_manager::SessionManager::Get()->SetSessionState(
+        session_manager::SessionState::ACTIVE);
+    ScreenLocker::ScheduleDeletion();
+  }));
 }
 
 // static
@@ -628,9 +635,6 @@ ScreenLocker::~ScreenLocker() {
   DBusThreadManager::Get()
       ->GetSessionManagerClient()
       ->NotifyLockScreenDismissed();
-
-  session_manager::SessionManager::Get()->SetSessionState(
-      session_manager::SessionState::ACTIVE);
 
   if (saved_ime_state_.get()) {
     input_method::InputMethodManager::Get()->SetState(saved_ime_state_);
