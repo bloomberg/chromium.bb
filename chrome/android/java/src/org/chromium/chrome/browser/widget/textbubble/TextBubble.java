@@ -19,6 +19,7 @@ import android.widget.PopupWindow.OnDismissListener;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -45,7 +46,7 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
      */
     private static final Set<TextBubble> sBubbles = new HashSet<>();
 
-    protected final Context mContext;
+    private final Context mContext;
     private final Handler mHandler;
     private final View mRootView;
 
@@ -74,6 +75,12 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
      * default and means the bubble will stay visible indefinitely.
      */
     private long mAutoDismissTimeoutMs;
+    private boolean mDismissOnTouchInteraction;
+
+    // Pass through for the internal PopupWindow.  This class needs to intercept these for API
+    // purposes, but they are still useful to callers.
+    private ObserverList<OnDismissListener> mDismissListeners = new ObserverList<>();
+    private OnTouchListener mTouchListener;
 
     // Content specific variables.
     /** The resource id for the string to show in the bubble. */
@@ -85,7 +92,7 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
     private final int mAccessibilityStringId;
 
     /** The content view shown in the popup window. */
-    protected View mContentView;
+    private View mContentView;
 
     /**
      * Constructs a {@link TextBubble} instance using the default arrow drawable background. Creates
@@ -167,12 +174,6 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
         mDrawable.setShowArrow(showArrow);
 
         mContentView = createContentView();
-        // On some versions of Android, the LayoutParams aren't set until after the popup window
-        // is shown. Explicitly set the LayoutParams to avoid crashing. See
-        // https://crbug.com/713759.
-        mContentView.setLayoutParams(
-                new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-
         mPopupWindow = new AnchoredPopupWindow(
                 context, rootView, mDrawable, mContentView, anchorRectProvider);
         mPopupWindow.setMargin(
@@ -308,21 +309,18 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
 
     }
 
-    /**
-     * @return The content view to show in the TextBubble.
-     */
-    protected View createContentView() {
+    private View createContentView() {
         View view = LayoutInflater.from(mContext).inflate(R.layout.textbubble_text, null);
-        setText((TextView) view);
-        return view;
-    }
+        ((TextView) view)
+                .setText(AccessibilityUtil.isAccessibilityEnabled() ? mAccessibilityStringId
+                                                                    : mStringId);
 
-    /**
-     * @param view The {@link TextView} to set text on.
-     */
-    protected void setText(TextView view) {
-        view.setText(
-                AccessibilityUtil.isAccessibilityEnabled() ? mAccessibilityStringId : mStringId);
+        // On some versions of Android, the LayoutParams aren't set until after the popup window
+        // is shown. Explicitly set the LayoutParams to avoid crashing. See crbug.com/713759.
+        view.setLayoutParams(
+                new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+
+        return view;
     }
 
     /**
