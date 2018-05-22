@@ -371,6 +371,12 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
                      const base::Closure& callback,
                      base::CancelableTaskTracker* tracker);
 
+  // Expires all visits before and including the given time, updating the URLs
+  // accordingly.
+  void ExpireHistoryBeforeForTesting(base::Time end_time,
+                                     base::OnceClosure callback,
+                                     base::CancelableTaskTracker* tracker);
+
   // Removes all visits to the given URLs in the specified time range. Calls
   // ExpireHistoryBetween() to delete local visits, and handles deletion of
   // synced visits if appropriate.

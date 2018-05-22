@@ -311,7 +311,7 @@ void ExpireHistoryBackend::ExpireVisitsInternal(
   }
 }
 
-void ExpireHistoryBackend::ExpireHistoryBefore(base::Time end_time) {
+void ExpireHistoryBackend::ExpireHistoryBeforeForTesting(base::Time end_time) {
   if (!main_db_)
     return;
 

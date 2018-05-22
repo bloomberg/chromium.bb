@@ -92,8 +92,8 @@ class ExpireHistoryBackend {
   void ExpireVisits(const VisitVector& visits);
 
   // Expires all visits before and including the given time, updating the URLs
-  // accordingly. Currently only used for testing.
-  void ExpireHistoryBefore(base::Time end_time);
+  // accordingly.
+  void ExpireHistoryBeforeForTesting(base::Time end_time);
 
   // Returns the current cut-off time before which we will start expiring stuff.
   // Note that this as an absolute time rather than a delta, so the caller

@@ -354,6 +354,14 @@ void AddUrlToHistoryWithTimestamp(int index,
   WaitForHistoryDBThread(index);
 }
 
+void ExpireHistoryBefore(int index, base::Time end_time) {
+  history::HistoryService* history_service = GetHistoryServiceFromClient(index);
+  base::CancelableTaskTracker task_tracker;
+  history_service->ExpireHistoryBeforeForTesting(end_time, base::DoNothing(),
+                                                 &task_tracker);
+  WaitForHistoryDBThread(index);
+}
+
 void DeleteUrlFromHistory(int index, const GURL& url) {
   GetHistoryServiceFromClient(index)->DeleteURL(url);
   if (test()->use_verifier())
@@ -466,6 +474,24 @@ bool CheckSyncHasURLMetadata(int index, const GURL& url) {
 
   std::string storage_key(sizeof(row.id()), 0);
   base::WriteBigEndian<history::URLID>(&storage_key[0], row.id());
+
+  syncer::EntityMetadataMap metadata_map(batch.TakeAllMetadata());
+  for (const auto& kv : metadata_map) {
+    if (kv.first == storage_key)
+      return true;
+  }
+  return false;
+}
+
+bool CheckSyncHasMetadataForURLID(int index, history::URLID url_id) {
+  history::URLRow row;
+  history::HistoryService* service = GetHistoryServiceFromClient(index);
+
+  syncer::MetadataBatch batch;
+  GetMetadataBatchFromHistoryService(service, &batch);
+
+  std::string storage_key(sizeof(url_id), 0);
+  base::WriteBigEndian<history::URLID>(&storage_key[0], url_id);
 
   syncer::EntityMetadataMap metadata_map(batch.TakeAllMetadata());
   for (const auto& kv : metadata_map) {

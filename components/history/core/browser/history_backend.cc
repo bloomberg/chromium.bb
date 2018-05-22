@@ -2527,6 +2527,13 @@ void HistoryBackend::ExpireHistory(
   }
 }
 
+void HistoryBackend::ExpireHistoryBeforeForTesting(base::Time end_time) {
+  if (!db_)
+    return;
+
+  expirer_.ExpireHistoryBeforeForTesting(end_time);
+}
+
 void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
   if (!db_)
     return;
