@@ -186,6 +186,8 @@ public abstract class ChromeFeatureList {
             "ContextualSearchTapDisableOverride";
     public static final String CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET =
             "ContextualSuggestionsBottomSheet";
+    public static final String CONTEXTUAL_SUGGESTIONS_SLIM_PEEK_UI =
+            "ContextualSuggestionsSlimPeekUI";
     public static final String CUSTOM_CONTEXT_MENU = "CustomContextMenu";
     public static final String CUSTOM_FEEDBACK_UI = "CustomFeedbackUi";
     // Enables the Data Reduction Proxy menu item in the main menu rather than under Settings on

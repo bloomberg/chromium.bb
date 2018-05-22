@@ -136,6 +136,9 @@ extern const char kCompositedLayerBordersDescription[];
 extern const char kContextualSuggestionsBottomSheetName[];
 extern const char kContextualSuggestionsBottomSheetDescription[];
 
+extern const char kContextualSuggestionsSlimPeekUIName[];
+extern const char kContextualSuggestionsSlimPeekUIDescription[];
+
 extern const char kCreditCardAssistName[];
 extern const char kCreditCardAssistDescription[];
 

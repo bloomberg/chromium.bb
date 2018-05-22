@@ -8,10 +8,23 @@
     xmlns:chrome="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical" >
+    android:layout_height="wrap_content" >
+
+    <org.chromium.chrome.browser.widget.TintedImageView
+        android:id="@+id/arrow"
+        android:layout_height="@dimen/bottom_control_container_slim_peek_height"
+        android:layout_width="match_parent"
+        android:background="@android:color/white"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:src="@drawable/ic_expand_less_black_24dp"
+        android:scaleType="center"
+        android:visibility="gone"
+        chrome:chrometint="@color/dark_mode_tint" />
 
     <LinearLayout
+        android:id="@+id/main_content"
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_control_container_peek_height"
         android:orientation="horizontal"
@@ -60,6 +73,7 @@
         android:id="@+id/shadow"
         android:layout_width="match_parent"
         android:layout_height="@dimen/toolbar_shadow_height"
+        android:layout_marginTop="@dimen/bottom_control_container_peek_height"
         android:src="@drawable/modern_toolbar_shadow"
         android:scaleType="fitXY"
         android:contentDescription="@null"

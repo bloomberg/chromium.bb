@@ -56,7 +56,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         }
 
         @Override
-        public void onSheetOffsetChanged(float heightFraction) {
+        public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
             mLastOffsetChangedValue = heightFraction;
             mOffsetChangedCallbackHelper.notifyCalled();
         }

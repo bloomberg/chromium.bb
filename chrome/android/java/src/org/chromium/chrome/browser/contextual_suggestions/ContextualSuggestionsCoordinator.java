@@ -95,7 +95,7 @@ public class ContextualSuggestionsCoordinator {
         mContentCoordinator =
                 new ContentCoordinator(mActivity, mBottomSheetController.getBottomSheet());
         mBottomSheetContent = new ContextualSuggestionsBottomSheetContent(
-                mContentCoordinator, mToolbarCoordinator);
+                mContentCoordinator, mToolbarCoordinator, mModel.isSlimPeekEnabled());
         assert mBottomSheetContent != null;
         mBottomSheetController.requestShowContent(mBottomSheetContent, false);
     }
@@ -175,6 +175,11 @@ public class ContextualSuggestionsCoordinator {
         HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity, mProfile,
                 currentTab != null ? currentTab.getUrl() : null,
                 ContextUtils.getApplicationContext().getPackageName() + "." + FEEDBACK_CATEGORY);
+    }
+
+    /** @return The height of the bottom sheet when it's peeking. */
+    float getSheetPeekHeight() {
+        return mActivity.getBottomSheet().getSheetHeightForState(BottomSheet.SHEET_STATE_PEEK);
     }
 
     @VisibleForTesting

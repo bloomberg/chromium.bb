@@ -259,6 +259,9 @@ public class BottomSheet extends FrameLayout
     /** Whether or not scroll events are currently being blocked for the 'velocity' swipe logic. */
     private boolean mVelocityLogicBlockSwipe;
 
+    /** Whether or not the slim peek UI should be used for the current sheet content. */
+    private boolean mUseSlimPeek;
+
     /**
      * An interface defining content that can be displayed inside of the bottom sheet for Chrome
      * Home.
@@ -300,6 +303,11 @@ public class BottomSheet extends FrameLayout
          * @return Whether swiping the sheet down hard enough will cause the sheet to be dismissed.
          */
         boolean swipeToDismissEnabled();
+
+        /**
+         * @return Whether a slimmer peek UI should be used for this content.
+         */
+        boolean useSlimPeek();
     }
 
     /**
@@ -760,6 +768,9 @@ public class BottomSheet extends FrameLayout
         // If the desired content is already showing, do nothing.
         if (mSheetContent == content) return;
 
+        // TODO(twellington): Handle updates to the peek UI while the sheet is showing?
+        if (content != null && mUseSlimPeek != content.useSlimPeek()) updatePeekUI(content);
+
         List<Animator> animators = new ArrayList<>();
         mContentSwapAnimatorSet = new AnimatorSet();
         mContentSwapAnimatorSet.addListener(new AnimatorListenerAdapter() {
@@ -827,6 +838,24 @@ public class BottomSheet extends FrameLayout
         if (mSheetContent == null || isInOverviewMode() || SysUtils.isLowEndDevice()) {
             mContentSwapAnimatorSet.end();
         }
+    }
+
+    /**
+     * Updates the peek UI for the current BottomSheetcontent.
+     * @param content The current {@link BottomSheetContent}
+     */
+    private void updatePeekUI(BottomSheetContent content) {
+        mUseSlimPeek = content.useSlimPeek();
+
+        int peekHeightId = mUseSlimPeek ? R.dimen.bottom_control_container_slim_expanded_height
+                                        : R.dimen.bottom_control_container_peek_height;
+        mDefaultToolbarView.getLayoutParams().height =
+                getResources().getDimensionPixelSize(peekHeightId);
+
+        int toolbarHeightId = mUseSlimPeek ? R.dimen.bottom_control_container_slim_peek_height
+                                           : R.dimen.bottom_control_container_peek_height;
+        mToolbarHeight = getResources().getDimensionPixelSize(toolbarHeightId);
+        updateSheetStateRatios();
     }
 
     /**
@@ -1178,7 +1207,9 @@ public class BottomSheet extends FrameLayout
                     MathUtils.areFloatsEqual(hiddenFullRatio, 0) ? 0 : hiddenFullRatio;
         }
 
-        for (BottomSheetObserver o : mObservers) o.onSheetOffsetChanged(mLastOffsetRatioSent);
+        for (BottomSheetObserver o : mObservers) {
+            o.onSheetOffsetChanged(mLastOffsetRatioSent, getCurrentOffsetPx());
+        }
 
         if (MathUtils.areFloatsEqual(
                     offsetWithBrowserControls, getSheetHeightForState(SHEET_STATE_PEEK))) {

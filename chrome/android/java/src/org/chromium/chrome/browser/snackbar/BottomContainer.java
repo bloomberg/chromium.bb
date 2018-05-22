@@ -49,7 +49,7 @@ public class BottomContainer extends FrameLayout implements FullscreenListener {
     public void setBottomSheet(BottomSheet sheet) {
         sheet.addObserver(new EmptyBottomSheetObserver() {
             @Override
-            public void onSheetOffsetChanged(float heightFraction) {
+            public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
                 // We only care about the height of the bottom sheet between its hidden and peeking
                 // state (the UI should stack). Once the sheet is opened, the bottom container
                 // stays in place, becoming obscured by the sheet.

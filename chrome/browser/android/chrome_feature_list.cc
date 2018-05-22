@@ -84,6 +84,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchTapDisableOverride,
     &kContextualSuggestionsBottomSheet,
     &kContextualSuggestionsEnterprisePolicyBypass,
+    &kContextualSuggestionsSlimPeekUI,
     &kCustomContextMenu,
     &kCustomFeedbackUi,
     &kDontPrefetchLibraries,
@@ -239,6 +240,9 @@ const base::Feature kContextualSuggestionsBottomSheet{
 const base::Feature kContextualSuggestionsEnterprisePolicyBypass{
     "ContextualSuggestionsEnterprisePolicyBypass",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContextualSuggestionsSlimPeekUI{
+    "ContextualSuggestionsSlimPeekUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCustomContextMenu{"CustomContextMenu",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

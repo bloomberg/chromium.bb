@@ -47,6 +47,7 @@ class ToolbarCoordinator {
         mModelChangeProcessor.onPropertyChanged(mModel, PropertyKey.TITLE);
         mModelChangeProcessor.onPropertyChanged(
                 mModel, PropertyKey.DEFAULT_TOOLBAR_ON_CLICK_LISTENER);
+        mModelChangeProcessor.onPropertyChanged(mModel, PropertyKey.SLIM_PEEK_ENABLED);
     }
 
     /** @return The content {@link View}. */

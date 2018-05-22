@@ -217,6 +217,8 @@
     <!-- Should match toolbar_height_no_shadow -->
     <dimen name="control_container_height">56dp</dimen>
     <dimen name="bottom_control_container_peek_height">48dp</dimen>
+    <dimen name="bottom_control_container_slim_peek_height">40dp</dimen>
+    <dimen name="bottom_control_container_slim_expanded_height">56dp</dimen>
     <dimen name="custom_tabs_control_container_height">56dp</dimen>
     <dimen name="fullscreen_activity_control_container_height">0dp</dimen>
 
@@ -557,6 +559,8 @@
     <!-- Contextual Suggestions Dimensions -->
     <dimen name="contextual_suggestions_publisher_margin_top">12dp</dimen>
     <dimen name="contextual_suggestions_toolbar_icon_size">48dp</dimen>
+    <dimen name="contextual_suggestions_toolbar_animation_duration">72dp</dimen>
+    <dimen name="contextual_suggestions_toolbar_max_translation">18dp</dimen>
 
     <!-- Defaults for TabbedModeFirstRunActivity values. -->
     <item type="dimen" name="dialog_fixed_width_major">100%</item>

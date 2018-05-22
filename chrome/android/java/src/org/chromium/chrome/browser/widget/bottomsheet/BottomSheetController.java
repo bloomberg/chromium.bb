@@ -199,7 +199,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             }
 
             @Override
-            public void onSheetOffsetChanged(float heightFraction) {
+            public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
                 mSnackbarManager.dismissAllSnackbars();
             }
         });
