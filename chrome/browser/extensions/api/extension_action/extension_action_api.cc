@@ -543,13 +543,11 @@ ExtensionActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
   return RespondNow(OneArgument(std::move(list)));
 }
 
-BrowserActionOpenPopupFunction::BrowserActionOpenPopupFunction()
-    : response_sent_(false) {
-}
+BrowserActionOpenPopupFunction::BrowserActionOpenPopupFunction() = default;
 
-bool BrowserActionOpenPopupFunction::RunAsync() {
+ExtensionFunction::ResponseAction BrowserActionOpenPopupFunction::Run() {
   // We only allow the popup in the active window.
-  Profile* profile = GetProfile();
+  Profile* profile = Profile::FromBrowserContext(browser_context());
   Browser* browser = chrome::FindLastActiveWithProfile(profile);
   // It's possible that the last active browser actually corresponds to the
   // associated incognito profile, and this won't be returned by
@@ -566,13 +564,11 @@ bool BrowserActionOpenPopupFunction::RunAsync() {
   // Otherwise, try to open a popup in the active browser.
   // TODO(justinlin): Remove toolbar check when http://crbug.com/308645 is
   // fixed.
-  if (!browser ||
-      !browser->window()->IsActive() ||
+  if (!browser || !browser->window()->IsActive() ||
       !browser->window()->IsToolbarVisible() ||
-      !ExtensionActionAPI::Get(GetProfile())->ShowExtensionActionPopup(
+      !ExtensionActionAPI::Get(profile)->ShowExtensionActionPopup(
           extension_.get(), browser, false)) {
-    error_ = kOpenPopupError;
-    return false;
+    return RespondNow(Error(kOpenPopupError));
   }
 
   // Even if this is for an incognito window, we want to use the normal profile.
@@ -590,17 +586,15 @@ bool BrowserActionOpenPopupFunction::RunAsync() {
       FROM_HERE,
       base::BindOnce(&BrowserActionOpenPopupFunction::OpenPopupTimedOut, this),
       base::TimeDelta::FromSeconds(10));
-  return true;
+  return RespondLater();
 }
 
 void BrowserActionOpenPopupFunction::OpenPopupTimedOut() {
-  if (response_sent_)
+  if (did_respond())
     return;
 
   DVLOG(1) << "chrome.browserAction.openPopup did not show a popup.";
-  error_ = kOpenPopupError;
-  SendResponse(false);
-  response_sent_ = true;
+  Respond(Error(kOpenPopupError));
 }
 
 void BrowserActionOpenPopupFunction::Observe(
@@ -608,7 +602,7 @@ void BrowserActionOpenPopupFunction::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD, type);
-  if (response_sent_)
+  if (did_respond())
     return;
 
   ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
@@ -616,8 +610,7 @@ void BrowserActionOpenPopupFunction::Observe(
       host->extension()->id() != extension_->id())
     return;
 
-  SendResponse(true);
-  response_sent_ = true;
+  Respond(NoArguments());
   registrar_.RemoveAll();
 }
 
