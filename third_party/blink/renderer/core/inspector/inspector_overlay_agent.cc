@@ -32,6 +32,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -67,7 +68,6 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -516,7 +516,7 @@ void InspectorOverlayAgent::UpdateAllLifecyclePhases() {
   if (IsEmpty())
     return;
 
-  AutoReset<bool> scoped(&in_layout_, true);
+  base::AutoReset<bool> scoped(&in_layout_, true);
   if (needs_update_) {
     needs_update_ = false;
     RebuildOverlayPage();

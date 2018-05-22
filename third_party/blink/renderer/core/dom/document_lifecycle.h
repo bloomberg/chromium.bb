@@ -31,11 +31,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_LIFECYCLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_LIFECYCLE_H_
 
+#include "base/auto_reset.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 #if DCHECK_IS_ON()
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -205,7 +205,7 @@ class CORE_EXPORT DocumentLifecycle {
         : auto_reset_(&document_lifecycle.check_no_transition_, true) {}
 
    private:
-    AutoReset<bool> auto_reset_;
+    base::AutoReset<bool> auto_reset_;
   };
 
   DocumentLifecycle();

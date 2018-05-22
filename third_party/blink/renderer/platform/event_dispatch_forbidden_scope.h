@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_EVENT_DISPATCH_FORBIDDEN_SCOPE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_EVENT_DISPATCH_FORBIDDEN_SCOPE_H_
 
+#include "base/auto_reset.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -45,7 +45,7 @@ class EventDispatchForbiddenScope {
 
     ~AllowUserAgentEvents() { DCHECK(!count_); }
 
-    AutoReset<unsigned> change_;
+    base::AutoReset<unsigned> change_;
   };
 
  private:

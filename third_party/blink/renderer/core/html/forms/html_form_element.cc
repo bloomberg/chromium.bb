@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 
 #include <limits>
+#include "base/auto_reset.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/radio_node_list_or_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -60,7 +61,6 @@
 #include "third_party/blink/renderer/core/loader/form_submission.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -343,7 +343,8 @@ void HTMLFormElement::PrepareForSubmission(
 
   bool should_submit;
   {
-    AutoReset<bool> submit_event_handler_scope(&in_user_js_submit_event_, true);
+    base::AutoReset<bool> submit_event_handler_scope(&in_user_js_submit_event_,
+                                                     true);
     frame->Client()->DispatchWillSendSubmitEvent(this);
     should_submit =
         DispatchEvent(Event::CreateCancelableBubble(EventTypeNames::submit)) ==
@@ -355,7 +356,7 @@ void HTMLFormElement::PrepareForSubmission(
   }
   if (!planned_navigation_)
     return;
-  AutoReset<bool> submit_scope(&is_submitting_, true);
+  base::AutoReset<bool> submit_scope(&is_submitting_, true);
   ScheduleFormSubmission(planned_navigation_);
   planned_navigation_ = nullptr;
 }
@@ -396,7 +397,7 @@ void HTMLFormElement::Submit(Event* event,
 
   // Delay dispatching 'close' to dialog until done submitting.
   EventQueueScope scope_for_dialog_close;
-  AutoReset<bool> submit_scope(&is_submitting_, true);
+  base::AutoReset<bool> submit_scope(&is_submitting_, true);
 
   if (event && !submit_button) {
     // In a case of implicit submission without a submit button, 'submit'

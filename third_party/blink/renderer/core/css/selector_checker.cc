@@ -29,6 +29,7 @@
 
 #include "third_party/blink/renderer/core/css/selector_checker.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
 #include "third_party/blink/renderer/core/css/part_names.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -62,7 +63,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -236,8 +236,8 @@ SelectorChecker::MatchStatus SelectorChecker::MatchSelector(
         context.pseudo_id != result.dynamic_pseudo)
       return kSelectorFailsCompletely;
 
-    AutoReset<PseudoId> dynamic_pseudo_scope(&result.dynamic_pseudo,
-                                             kPseudoIdNone);
+    base::AutoReset<PseudoId> dynamic_pseudo_scope(&result.dynamic_pseudo,
+                                                   kPseudoIdNone);
     match = MatchForRelation(context, result);
   } else {
     match = MatchForSubSelector(context, result);

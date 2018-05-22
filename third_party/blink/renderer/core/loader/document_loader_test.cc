@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 
 #include <queue>
+#include "base/auto_reset.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -105,7 +105,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
         // Serve the first byte to the real WebURLLoaderCLient, which
         // should trigger frameDetach() due to committing a provisional
         // load.
-        AutoReset<bool> dispatching(&dispatching_did_receive_data_, true);
+        base::AutoReset<bool> dispatching(&dispatching_did_receive_data_, true);
         DispatchOneByte();
       }
       // Serve the remaining bytes to complete the load.

@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
 
+#include "base/auto_reset.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -49,7 +50,6 @@
 #include "third_party/blink/renderer/platform/memory_coordinator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -835,7 +835,7 @@ bool NormalPageArena::ShrinkObject(HeapObjectHeader* header, size_t new_size) {
 Address NormalPageArena::LazySweepPages(size_t allocation_size,
                                         size_t gc_info_index) {
   DCHECK(!HasCurrentAllocationArea());
-  AutoReset<bool> is_lazy_sweeping(&is_lazy_sweeping_, true);
+  base::AutoReset<bool> is_lazy_sweeping(&is_lazy_sweeping_, true);
   Address result = nullptr;
   while (!SweepingCompleted()) {
     BasePage* page = first_unswept_page_;

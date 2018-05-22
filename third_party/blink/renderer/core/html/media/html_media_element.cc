@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_availability.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
@@ -99,7 +100,6 @@
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -3590,7 +3590,8 @@ bool HTMLMediaElement::HasPendingActivity() const {
     // Disable potential updating of playback position, as that will
     // require v8 allocations; not allowed while GCing
     // (hasPendingActivity() is called during a v8 GC.)
-    AutoReset<bool> scope(&official_playback_position_needs_update_, false);
+    base::AutoReset<bool> scope(&official_playback_position_needs_update_,
+                                false);
 
     // When playing or if playback may continue, timeupdate events may be fired.
     if (CouldPlayIfEnoughData())

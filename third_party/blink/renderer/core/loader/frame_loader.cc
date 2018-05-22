@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 
 #include <memory>
+#include "base/auto_reset.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_network_provider.h"
@@ -101,7 +102,6 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -1028,7 +1028,7 @@ void FrameLoader::StopAllLoaders() {
   if (in_stop_all_loaders_)
     return;
 
-  AutoReset<bool> in_stop_all_loaders(&in_stop_all_loaders_, true);
+  base::AutoReset<bool> in_stop_all_loaders(&in_stop_all_loaders_, true);
 
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
@@ -1097,8 +1097,8 @@ bool FrameLoader::PrepareForCommit() {
   // At this point, the provisional document loader should not detach, because
   // then the FrameLoader would not have any attached DocumentLoaders.
   if (document_loader_) {
-    AutoReset<bool> in_detach_document_loader(&protect_provisional_loader_,
-                                              true);
+    base::AutoReset<bool> in_detach_document_loader(
+        &protect_provisional_loader_, true);
     DetachDocumentLoader(document_loader_);
   }
   // 'abort' listeners can also detach the frame.
@@ -1165,7 +1165,7 @@ void FrameLoader::RestoreScrollPositionAndViewState() {
       !GetDocumentLoader()->GetHistoryItem() || in_restore_scroll_) {
     return;
   }
-  AutoReset<bool> in_restore_scroll(&in_restore_scroll_, true);
+  base::AutoReset<bool> in_restore_scroll(&in_restore_scroll_, true);
   RestoreScrollPositionAndViewState(
       GetDocumentLoader()->LoadType(), kHistoryDifferentDocumentLoad,
       GetDocumentLoader()->GetHistoryItem()->GetViewState(),
@@ -1692,7 +1692,7 @@ void FrameLoader::DispatchDidClearDocumentOfWindowObject() {
 
   if (dispatching_did_clear_window_object_in_main_world_)
     return;
-  AutoReset<bool> in_did_clear_window_object(
+  base::AutoReset<bool> in_did_clear_window_object(
       &dispatching_did_clear_window_object_in_main_world_, true);
   // We just cleared the document, not the entire window object, but for the
   // embedder that's close enough.
@@ -1706,7 +1706,7 @@ void FrameLoader::DispatchDidClearWindowObjectInMainWorld() {
 
   if (dispatching_did_clear_window_object_in_main_world_)
     return;
-  AutoReset<bool> in_did_clear_window_object(
+  base::AutoReset<bool> in_did_clear_window_object(
       &dispatching_did_clear_window_object_in_main_world_, true);
   Client()->DispatchDidClearWindowObjectInMainWorld();
 }

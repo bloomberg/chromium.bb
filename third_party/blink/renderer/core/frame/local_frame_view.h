@@ -29,6 +29,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/shape_properties.h"
@@ -60,7 +61,6 @@
 #include "third_party/blink/renderer/platform/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/platform/ukm_time_aggregator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -955,7 +955,7 @@ class CORE_EXPORT LocalFrameView final
         : scope_(&view->in_update_scrollbars_, true) {}
 
    private:
-    AutoReset<bool> scope_;
+    base::AutoReset<bool> scope_;
   };
 
  private:

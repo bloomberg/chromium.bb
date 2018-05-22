@@ -4,11 +4,11 @@
 
 #include "third_party/blink/renderer/core/frame/frame_view_auto_size_info.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -39,7 +39,7 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
   if (in_auto_size_)
     return;
 
-  AutoReset<bool> change_in_auto_size(&in_auto_size_, true);
+  base::AutoReset<bool> change_in_auto_size(&in_auto_size_, true);
 
   Document* document = frame_view_->GetFrame().GetDocument();
   if (!document || !document->IsActive())

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/vr/vr_display.h"
 
+#include "base/auto_reset.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -34,7 +35,6 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 #include <array>
@@ -825,7 +825,7 @@ void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason,
   if (reason == device::mojom::blink::VRDisplayEventReason::MOUNTED)
     gesture_indicator = Frame::NotifyUserActivation(doc->GetFrame());
 
-  AutoReset<bool> in_activate(&in_display_activate_, true);
+  base::AutoReset<bool> in_activate(&in_display_activate_, true);
 
   navigator_vr_->DispatchVREvent(
       VRDisplayEvent::Create(EventTypeNames::vrdisplayactivate, this, reason));
@@ -891,7 +891,7 @@ void VRDisplay::ProcessScheduledAnimations(double timestamp) {
     // Run the callback, making sure that in_animation_frame_ is only
     // true for the vrDisplay rAF and not for a legacy window rAF
     // that may be called later.
-    AutoReset<bool> animating(&in_animation_frame_, true);
+    base::AutoReset<bool> animating(&in_animation_frame_, true);
     pending_vrdisplay_raf_ = false;
     did_submit_this_frame_ = false;
     scripted_animation_controller_->ServiceScriptedAnimations(

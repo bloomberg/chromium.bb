@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_map.h"
@@ -19,7 +20,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -196,7 +196,7 @@ bool ScriptWrappableMarkingVisitor::AdvanceTracing(
   CHECK(ThreadState::Current());
   CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   CHECK(tracing_in_progress_);
-  WTF::AutoReset<bool>(&advancing_tracing_, true);
+  base::AutoReset<bool>(&advancing_tracing_, true);
   while (actions.force_completion ==
              v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION ||
          WTF::CurrentTimeTicksInMilliseconds() < deadline_in_ms) {

@@ -19,6 +19,7 @@
 
 #include "third_party/blink/renderer/core/layout/svg/svg_text_layout_engine.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_svg_text_path.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
@@ -30,7 +31,6 @@
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
 #include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -258,8 +258,8 @@ static bool DefinesTextLengthWithSpacing(const InlineFlowBox* start) {
 void SVGTextLayoutEngine::LayoutCharactersInTextBoxes(InlineFlowBox* start) {
   bool text_length_spacing_in_effect =
       text_length_spacing_in_effect_ || DefinesTextLengthWithSpacing(start);
-  AutoReset<bool> text_length_spacing_scope(&text_length_spacing_in_effect_,
-                                            text_length_spacing_in_effect);
+  base::AutoReset<bool> text_length_spacing_scope(
+      &text_length_spacing_in_effect_, text_length_spacing_in_effect);
 
   for (InlineBox* child = start->FirstChild(); child;
        child = child->NextOnLine()) {

@@ -20,11 +20,11 @@
 
 #include "third_party/blink/renderer/core/svg/svg_title_element.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/dom/child_list_mutation_scope.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/svg_names.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -62,7 +62,7 @@ void SVGTitleElement::SetText(const String& value) {
 
   {
     // Avoid calling Document::setTitleElement() during intermediate steps.
-    AutoReset<bool> inhibit_title_update_scope(
+    base::AutoReset<bool> inhibit_title_update_scope(
         &ignore_title_updates_when_children_change_, !value.IsEmpty());
     RemoveChildren(kOmitSubtreeModifiedEvent);
   }

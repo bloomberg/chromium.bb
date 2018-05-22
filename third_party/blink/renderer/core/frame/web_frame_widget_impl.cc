@@ -33,6 +33,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
@@ -81,7 +82,6 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 namespace {
@@ -443,7 +443,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
 
   // FIXME: pass event to m_localRoot's WebDevToolsAgentImpl once available.
 
-  AutoReset<const WebInputEvent*> current_event_change(
+  base::AutoReset<const WebInputEvent*> current_event_change(
       &CurrentInputEvent::current_input_event_, &input_event);
 
   DCHECK(Client());

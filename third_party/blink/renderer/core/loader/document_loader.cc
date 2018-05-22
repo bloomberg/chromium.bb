@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 
 #include <memory>
+#include "base/auto_reset.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -93,7 +94,6 @@
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -762,7 +762,7 @@ void DocumentLoader::DataReceived(Resource* resource,
     return;
   }
 
-  AutoReset<bool> reentrancy_protector(&in_data_received_, true);
+  base::AutoReset<bool> reentrancy_protector(&in_data_received_, true);
   ProcessData(data, length);
   ProcessDataBuffer();
 }
@@ -1171,7 +1171,7 @@ void DocumentLoader::ResumeParser() {
 
   if (committed_data_buffer_ && !committed_data_buffer_->IsEmpty()) {
     // Don't recursively process data.
-    AutoReset<bool> reentrancy_protector(&in_data_received_, true);
+    base::AutoReset<bool> reentrancy_protector(&in_data_received_, true);
 
     // Append data to the parser that may have been received while the parser
     // was blocked.

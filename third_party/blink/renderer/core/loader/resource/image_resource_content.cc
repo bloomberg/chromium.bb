@@ -421,7 +421,7 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
 
 #if DCHECK_IS_ON()
   DCHECK(!is_update_image_being_called_);
-  AutoReset<bool> scope(&is_update_image_being_called_, true);
+  base::AutoReset<bool> scope(&is_update_image_being_called_, true);
 #endif
 
   CHECK_NE(GetContentStatus(), ResourceStatus::kNotStarted);

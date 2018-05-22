@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/fileapi/file_reader.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_array_buffer.h"
@@ -42,7 +43,6 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -333,7 +333,7 @@ void FileReader::abort() {
   DCHECK_NE(kDone, state_);
   state_ = kDone;
 
-  AutoReset<bool> firing_events(&still_firing_events_, true);
+  base::AutoReset<bool> firing_events(&still_firing_events_, true);
 
   // Setting error implicitly makes |result| return null.
   error_ = FileError::CreateDOMException(FileError::kAbortErr);
@@ -380,7 +380,7 @@ void FileReader::Terminate() {
 }
 
 void FileReader::DidStartLoading() {
-  AutoReset<bool> firing_events(&still_firing_events_, true);
+  base::AutoReset<bool> firing_events(&still_firing_events_, true);
   FireEvent(EventTypeNames::loadstart);
 }
 
@@ -391,7 +391,7 @@ void FileReader::DidReceiveData() {
     last_progress_notification_time_ms_ = now;
   } else if (now - last_progress_notification_time_ms_ >
              kProgressNotificationIntervalMS) {
-    AutoReset<bool> firing_events(&still_firing_events_, true);
+    base::AutoReset<bool> firing_events(&still_firing_events_, true);
     FireEvent(EventTypeNames::progress);
     last_progress_notification_time_ms_ = now;
   }
@@ -407,7 +407,7 @@ void FileReader::DidFinishLoading() {
   // use this separate variable to keep the wrapper of this FileReader alive.
   // An alternative would be to keep any ActiveScriptWrappables alive that is on
   // the stack.
-  AutoReset<bool> firing_events(&still_firing_events_, true);
+  base::AutoReset<bool> firing_events(&still_firing_events_, true);
 
   // It's important that we change m_loadingState before firing any events
   // since any of the events could call abort(), which internally checks
@@ -434,7 +434,7 @@ void FileReader::DidFail(FileError::ErrorCode error_code) {
   if (loading_state_ == kLoadingStateAborted)
     return;
 
-  AutoReset<bool> firing_events(&still_firing_events_, true);
+  base::AutoReset<bool> firing_events(&still_firing_events_, true);
 
   DCHECK_EQ(kLoadingStateLoading, loading_state_);
   loading_state_ = kLoadingStateNone;

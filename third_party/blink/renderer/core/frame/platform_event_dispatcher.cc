@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/frame/platform_event_dispatcher.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -44,7 +44,7 @@ void PlatformEventDispatcher::NotifyControllers() {
     return;
 
   {
-    AutoReset<bool> change_is_dispatching(&is_dispatching_, true);
+    base::AutoReset<bool> change_is_dispatching(&is_dispatching_, true);
     // HashSet m_controllers can be updated during an iteration, and it stops
     // the iteration.  Thus we store it into a Vector to access all elements.
     HeapVector<Member<PlatformEventController>> snapshot_vector;

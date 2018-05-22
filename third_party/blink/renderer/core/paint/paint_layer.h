@@ -46,6 +46,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_H_
 
 #include <memory>
+#include "base/auto_reset.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -60,7 +61,6 @@
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
 #include "third_party/blink/renderer/platform/graphics/squashing_disallowed_reasons.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -91,7 +91,7 @@ class CORE_EXPORT DisableCompositingQueryAsserts {
   DisableCompositingQueryAsserts();
 
  private:
-  AutoReset<CompositingQueryMode> disabler_;
+  base::AutoReset<CompositingQueryMode> disabler_;
   DISALLOW_COPY_AND_ASSIGN(DisableCompositingQueryAsserts);
 };
 

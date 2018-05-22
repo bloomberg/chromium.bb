@@ -29,6 +29,7 @@
 
 #include "third_party/blink/renderer/core/editing/selection_controller.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/public/web/web_selection.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -54,7 +55,6 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 SelectionController* SelectionController::Create(LocalFrame& frame) {
@@ -1239,7 +1239,7 @@ void SelectionController::SendContextMenuEvent(
     return;
 
   // Context menu events are always allowed to perform a selection.
-  AutoReset<bool> mouse_down_may_start_select_change(
+  base::AutoReset<bool> mouse_down_may_start_select_change(
       &mouse_down_may_start_select_, true);
 
   if (mev.Event().menu_source_type != kMenuSourceTouchHandle &&

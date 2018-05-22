@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/url/dom_url.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
@@ -33,7 +34,6 @@
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/url/url_search_params.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -97,7 +97,7 @@ void DOMURL::UpdateSearchParams(const String& query_string) {
   if (!search_params_)
     return;
 
-  AutoReset<bool> scope(&is_in_update_, true);
+  base::AutoReset<bool> scope(&is_in_update_, true);
 #if DCHECK_IS_ON()
   DCHECK_EQ(search_params_->UrlObject(), this);
 #endif

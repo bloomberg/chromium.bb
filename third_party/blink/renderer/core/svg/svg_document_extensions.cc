@@ -21,10 +21,10 @@
 
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/svg/animation/smil_time_container.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
-#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -136,7 +136,7 @@ void SVGDocumentExtensions::InvalidateSVGRootsWithRelativeLengthDescendents(
     SubtreeLayoutScope* scope) {
 #if DCHECK_IS_ON()
   DCHECK(!in_relative_length_svg_roots_invalidation_);
-  AutoReset<bool> in_relative_length_svg_roots_change(
+  base::AutoReset<bool> in_relative_length_svg_roots_change(
       &in_relative_length_svg_roots_invalidation_, true);
 #endif
 
