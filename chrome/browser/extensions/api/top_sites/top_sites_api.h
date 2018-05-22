@@ -5,13 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_TOP_SITES_TOP_SITES_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_TOP_SITES_TOP_SITES_API_H_
 
-#include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "components/history/core/browser/history_types.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
-class TopSitesGetFunction : public ChromeAsyncExtensionFunction {
+class TopSitesGetFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("topSites.get", TOPSITES_GET)
 
@@ -21,13 +20,10 @@ class TopSitesGetFunction : public ChromeAsyncExtensionFunction {
   ~TopSitesGetFunction() override;
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   void OnMostVisitedURLsAvailable(const history::MostVisitedURLList& data);
-
-  // For callbacks may be run after destruction.
-  base::WeakPtrFactory<TopSitesGetFunction> weak_ptr_factory_;
 };
 
 }  // namespace extensions
