@@ -17,7 +17,6 @@ import android.webkit.GeolocationPermissions;
 import android.webkit.TokenBindingService;
 import android.webkit.WebStorage;
 import android.webkit.WebViewDatabase;
-import android.webkit.WebViewFactory;
 
 import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
 
@@ -70,6 +69,7 @@ public class WebViewChromiumAwInit {
     private AwServiceWorkerController mServiceWorkerController;
     private AwTracingController mAwTracingController;
     private VariationsSeedLoader mSeedLoader;
+    private Thread mSetUpResourcesThread;
 
     // Guards accees to the other members, and is notifyAll() signalled on the UI thread
     // when the chromium process has been started.
@@ -116,18 +116,7 @@ public class WebViewChromiumAwInit {
                 return;
             }
 
-            final PackageInfo webViewPackageInfo = WebViewFactory.getLoadedPackageInfo();
             final Context context = ContextUtils.getApplicationContext();
-
-            // Make sure that ResourceProvider is initialized before starting the browser process.
-            Thread startUpResourcesThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    // Run this in parallel as it takes some time.
-                    setUpResources(webViewPackageInfo, context);
-                }
-            });
-            startUpResourcesThread.start();
 
             // We are rewriting Java resources in the background.
             // NOTE: Any reference to Java resources will cause a crash.
@@ -145,12 +134,8 @@ public class WebViewChromiumAwInit {
             initPlatSupportLibrary();
             doNetworkInitializations(context);
 
-            try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
-                         "WebViewChromiumAwInit.startUpResourcesThread_join")) {
-                startUpResourcesThread.join();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            waitUntilSetUpResources();
+
             // NOTE: Finished writing Java resources. From this point on, it's safe to use them.
 
             AwBrowserProcess.configureChildProcessLauncher();
@@ -194,6 +179,33 @@ public class WebViewChromiumAwInit {
             mServiceWorkerController = awBrowserContext.getServiceWorkerController();
 
             mFactory.getRunQueue().drainQueue();
+        }
+    }
+
+    /**
+     * Set up resources on a background thread.
+     * @param context The context.
+     */
+    public void setUpResourcesOnBackgroundThread(PackageInfo webViewPackageInfo, Context context) {
+        assert mSetUpResourcesThread == null : "This method shouldn't be called twice.";
+
+        // Make sure that ResourceProvider is initialized before starting the browser process.
+        mSetUpResourcesThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // Run this in parallel as it takes some time.
+                setUpResources(webViewPackageInfo, context);
+            }
+        });
+        mSetUpResourcesThread.start();
+    }
+
+    private void waitUntilSetUpResources() {
+        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
+                     "WebViewChromiumAwInit.waitUntilSetUpResources")) {
+            mSetUpResourcesThread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

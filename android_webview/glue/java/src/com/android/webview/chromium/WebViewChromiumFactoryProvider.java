@@ -222,6 +222,9 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             // WebView needs to make sure to always use the wrapped application context.
             ContextUtils.initApplicationContext(ResourcesContextWrapperFactory.get(ctx));
 
+            mAwInit.setUpResourcesOnBackgroundThread(
+                    packageInfo, ContextUtils.getApplicationContext());
+
             try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
                          "WebViewChromiumFactoryProvider.initCommandLine")) {
                 // This may take ~20 ms only on userdebug devices.
