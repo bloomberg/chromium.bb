@@ -157,6 +157,7 @@ typedef struct AV1EncoderConfig {
   int sframe_mode;
   int sframe_enabled;
   int lag_in_frames;  // how many frames lag before we start encoding
+  int fwd_kf_enabled;
 
   // ----------------------------------------------------------------
   // DATARATE CONTROL OPTIONS

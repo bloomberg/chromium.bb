@@ -607,6 +607,11 @@ typedef struct aom_codec_enc_cfg {
    * keyframing settings (kf)
    */
 
+  /*!\brief Option to enable forward reference key frame
+   *
+   */
+  int fwd_kf_enabled;
+
   /*!\brief Keyframe placement mode
    *
    * This value indicates whether the encoder should place keyframes at a

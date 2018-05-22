@@ -364,15 +364,16 @@ static const arg_def_t maxsection_pct =
     ARG_DEF(NULL, "maxsection-pct", 1, "GOP max bitrate (% of target)");
 static const arg_def_t *rc_twopass_args[] = { &bias_pct, &minsection_pct,
                                               &maxsection_pct, NULL };
-
+static const arg_def_t fwd_kf_enabled =
+    ARG_DEF(NULL, "enable-fwd-kf", 1, "Enable forward reference keyframes");
 static const arg_def_t kf_min_dist =
     ARG_DEF(NULL, "kf-min-dist", 1, "Minimum keyframe interval (frames)");
 static const arg_def_t kf_max_dist =
     ARG_DEF(NULL, "kf-max-dist", 1, "Maximum keyframe interval (frames)");
 static const arg_def_t kf_disabled =
     ARG_DEF(NULL, "disable-kf", 0, "Disable keyframe placement");
-static const arg_def_t *kf_args[] = { &kf_min_dist, &kf_max_dist, &kf_disabled,
-                                      NULL };
+static const arg_def_t *kf_args[] = { &fwd_kf_enabled, &kf_min_dist,
+                                      &kf_max_dist, &kf_disabled, NULL };
 static const arg_def_t sframe_dist =
     ARG_DEF(NULL, "sframe-dist", 1, "S-Frame interval (frames)");
 static const arg_def_t sframe_mode =
@@ -1225,6 +1226,8 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
 
       if (global->passes < 2)
         warn("option %s ignored in one-pass mode.\n", arg.name);
+    } else if (arg_match(&arg, &fwd_kf_enabled, argi)) {
+      config->cfg.fwd_kf_enabled = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &kf_min_dist, argi)) {
       config->cfg.kf_min_dist = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &kf_max_dist, argi)) {
@@ -1413,6 +1416,7 @@ static void show_stream_config(struct stream_state *stream,
   SHOW(rc_2pass_vbr_bias_pct);
   SHOW(rc_2pass_vbr_minsection_pct);
   SHOW(rc_2pass_vbr_maxsection_pct);
+  SHOW(fwd_kf_enabled);
   SHOW(kf_mode);
   SHOW(kf_min_dist);
   SHOW(kf_max_dist);

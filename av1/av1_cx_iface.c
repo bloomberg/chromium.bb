@@ -446,6 +446,7 @@ static aom_codec_err_t set_encoder_config(
     const struct av1_extracfg *extra_cfg) {
   const int is_vbr = cfg->rc_end_usage == AOM_VBR;
   oxcf->profile = cfg->g_profile;
+  oxcf->fwd_kf_enabled = cfg->fwd_kf_enabled;
   oxcf->max_threads = (int)cfg->g_threads;
   oxcf->width = cfg->g_w;
   oxcf->height = cfg->g_h;
@@ -1776,6 +1777,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         2000,  // rc_two_pass_vbrmax_section
 
         // keyframing settings (kf)
+        0,            // fwd_kf_enabled
         AOM_KF_AUTO,  // g_kfmode
         0,            // kf_min_dist
         9999,         // kf_max_dist
