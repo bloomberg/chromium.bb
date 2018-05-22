@@ -199,7 +199,7 @@ class LinearGradient final : public Gradient {
                                   uint32_t flags,
                                   const SkMatrix& local_matrix,
                                   SkColor fallback_color) const override {
-    SkPoint pts[2] = {p0_.Data(), p1_.Data()};
+    SkPoint pts[2] = {FloatPointToSkPoint(p0_), FloatPointToSkPoint(p1_)};
     return PaintShader::MakeLinearGradient(
         pts, colors.data(), pos.data(), static_cast<int>(colors.size()),
         tile_mode, flags, &local_matrix, fallback_color);
@@ -247,9 +247,9 @@ class RadialGradient final : public Gradient {
     const SkScalar radius0 = std::max(WebCoreFloatToSkScalar(r0_), 0.0f);
     const SkScalar radius1 = std::max(WebCoreFloatToSkScalar(r1_), 0.0f);
     return PaintShader::MakeTwoPointConicalGradient(
-        p0_.Data(), radius0, p1_.Data(), radius1, colors.data(), pos.data(),
-        static_cast<int>(colors.size()), tile_mode, flags,
-        adjusted_local_matrix, fallback_color);
+        FloatPointToSkPoint(p0_), radius0, FloatPointToSkPoint(p1_), radius1,
+        colors.data(), pos.data(), static_cast<int>(colors.size()), tile_mode,
+        flags, adjusted_local_matrix, fallback_color);
   }
 
  private:

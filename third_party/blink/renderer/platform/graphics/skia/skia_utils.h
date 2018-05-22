@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkScalar.h"
 
@@ -103,6 +104,11 @@ inline WindRule SkFillTypeToWindRule(SkPath::FillType fill_type) {
       break;
   }
   return RULE_NONZERO;
+}
+
+inline SkPoint FloatPointToSkPoint(const FloatPoint& point) {
+  return SkPoint::Make(WebCoreFloatToSkScalar(point.X()),
+                       WebCoreFloatToSkScalar(point.Y()));
 }
 
 SkMatrix PLATFORM_EXPORT AffineTransformToSkMatrix(const AffineTransform&);

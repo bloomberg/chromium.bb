@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 
 namespace blink {
 
@@ -203,10 +204,10 @@ void FillQuad(GraphicsContext& context,
               const Color& color,
               bool antialias) {
   SkPath path;
-  path.moveTo(quad[0]);
-  path.lineTo(quad[1]);
-  path.lineTo(quad[2]);
-  path.lineTo(quad[3]);
+  path.moveTo(FloatPointToSkPoint(quad[0]));
+  path.lineTo(FloatPointToSkPoint(quad[1]));
+  path.lineTo(FloatPointToSkPoint(quad[2]));
+  path.lineTo(FloatPointToSkPoint(quad[3]));
   PaintFlags flags(context.FillFlags());
   flags.setAntiAlias(antialias);
   flags.setColor(color.Rgb());
