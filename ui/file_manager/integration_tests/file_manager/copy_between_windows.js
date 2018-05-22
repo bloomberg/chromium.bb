@@ -5,6 +5,12 @@
 'use strict';
 
 /**
+ * Query used to find USB removable volume.
+ */
+var USB_VOLUME_QUERY = '#directory-tree > .tree-item > .tree-row > ' +
+    '.item-icon[volume-type-icon="removable"]';
+
+/**
  * Opens two window of given root paths.
  * @param {string} rootPath1 Root path of the first window.
  * @param {string} rootPath2 Root path of the second window.
@@ -22,139 +28,74 @@ function openTwoWindows(rootPath1, rootPath2) {
       return windowIds;
     });
   });
-};
+}
 
 /**
  * Copies a file between two windows.
- * @param {string} windowId1 ID of the source window.
- * @param {string} windowId2 ID of the destination window.
+ * @param {string} window1 ID of the source window.
+ * @param {string} window2 ID of the destination window.
  * @param {TestEntryInfo} file Test entry info to be copied.
  * @return {Promise} Promise fulfilled on success.
  */
-function copyBetweenWindows(windowId1, windowId2, file) {
-  // Select the file.
-  return remoteCall.waitForFiles(windowId1, [file.getExpectedRow()]).
-  then(function() {
-    return remoteCall.callRemoteTestUtil('selectFile',
-                                         windowId1,
-                                         [file.nameText]);
-  }).
-  then(function(result) {
-    chrome.test.assertTrue(result);
-    remoteCall.callRemoteTestUtil('execCommand', windowId1, ['copy']);
-  }).
-  then(function() {
-    return remoteCall.waitForFiles(windowId2, []);
-  }).
-  then(function() {
-    // Paste it.
-    return remoteCall.callRemoteTestUtil('execCommand', windowId2, ['paste']);
-  }).
-  then(function() {
-    return remoteCall.waitForFiles(windowId2,
-                                   [file.getExpectedRow()],
-                                   {ignoreLastModifiedTime: true});
-  });
-};
+function copyBetweenWindows(window1, window2, file) {
+  if (!file || !file.nameText)
+    chrome.test.assertTrue(false, 'copyBetweenWindows invalid file name');
 
-var REMOVABLE_VOLUME_QUERY = '#directory-tree > .tree-item > .tree-row ' +
-    '.item-icon[volume-type-icon="removable"]';
+  const flag = {ignoreLastModifiedTime: true};
+  const name = file.nameText;
 
+  return remoteCall.waitForFiles(window1, [file.getExpectedRow()])
+      .then(function() {
+        return remoteCall.callRemoteTestUtil('fakeMouseClick', window1, []);
+      })
+      .then(function() {
+        return remoteCall.callRemoteTestUtil('selectFile', window1, [name]);
+      })
+      .then(function(result) {
+        if (!result)
+          chrome.test.assertTrue(false, 'Failed: selectFile ' + name);
+        return remoteCall.callRemoteTestUtil('execCommand', window1, ['copy']);
+      })
+      .then(function() {
+        return remoteCall.callRemoteTestUtil('fakeMouseClick', window2, []);
+      })
+      .then(function() {
+        return remoteCall.callRemoteTestUtil('execCommand', window2, ['paste']);
+      })
+      .then(function() {
+        return remoteCall.waitForFiles(window2, [file.getExpectedRow()], flag);
+      });
+}
+
+/**
+ * Tests file copy+paste from Drive to Downloads.
+ */
 testcase.copyBetweenWindowsDriveToLocal = function() {
-  var windowId1;
-  var windowId2;
+  var window1;
+  var window2;
   StepsRunner.run([
-      // Make a file in a drive directory.
-      function() {
-        addEntries(['drive'], [ENTRIES.hello], this.next);
-      },
-      // Open windows.
-      function(result) {
-        chrome.test.assertTrue(result);
-        openTwoWindows(RootPath.DRIVE, RootPath.DOWNLOADS).then(this.next);
-      },
-      // Wait for a file in the Drive directory.
-      function(appIds) {
-        windowId1 = appIds[0];
-        windowId2 = appIds[1];
-        remoteCall.waitForFiles(
-            windowId1,
-            [ENTRIES.hello.getExpectedRow()]).then(this.next);
-      },
-      // Copy a file between windows.
-      function() {
-        copyBetweenWindows(windowId1,
-                           windowId2,
-                           ENTRIES.hello).then(this.next);
-      },
-      function() {
-        checkIfNoErrorsOccured(this.next);
-      }
-  ]);
-};
-
-testcase.copyBetweenWindowsDriveToUsb = function() {
-  var windowId1;
-  var windowId2;
-  StepsRunner.run([
-      // Make a file in a drive directory.
-      function() {
-        addEntries(['drive'], [ENTRIES.hello], this.next);
-      },
-      // Open windows.
-      function(result) {
-        chrome.test.assertTrue(result);
-        openTwoWindows(RootPath.DRIVE, RootPath.DRIVE).then(this.next);
-      },
-      // Wait for a file in the Drive directory.
-      function(appIds) {
-        windowId1 = appIds[0];
-        windowId2 = appIds[1];
-        remoteCall.waitForFiles(
-            windowId1,
-            [ENTRIES.hello.getExpectedRow()]).then(this.next);
-      },
-      // Mount a fake USB volume.
-      function() {
-        chrome.test.sendMessage(JSON.stringify({name: 'mountFakeUsb'}),
-                                this.next);
-      },
-      // Wait for the mount.
-      function(result) {
-        remoteCall.waitForElement(windowId2, REMOVABLE_VOLUME_QUERY).
-            then(this.next);
-      },
-      // Click the USB volume.
-      function() {
-        remoteCall.callRemoteTestUtil(
-            'fakeMouseClick', windowId2, [REMOVABLE_VOLUME_QUERY], this.next);
-      },
-      // Copy a file between windows.
-      function(appIds) {
-        copyBetweenWindows(windowId1, windowId2, ENTRIES.hello).then(this.next);
-      },
-      function() {
-        checkIfNoErrorsOccured(this.next);
-      }
-    ]);
-};
-
-testcase.copyBetweenWindowsLocalToDrive = function() {
-  var windowId1;
-  var windowId2;
-  StepsRunner.run([
-    // Make a file in a local directory.
+    // Open two Files app windows.
     function() {
-      addEntries(['local'], [ENTRIES.hello], this.next);
-    },
-    // Open windows.
-    function(result) {
-      chrome.test.assertTrue(result);
       openTwoWindows(RootPath.DOWNLOADS, RootPath.DRIVE).then(this.next);
     },
-    // Copy a file between windows.
-    function(appIds) {
-      copyBetweenWindows(appIds[0], appIds[1], ENTRIES.hello).then(this.next);
+    // Check: Downloads window is empty.
+    function(appIdArray) {
+      window1 = appIdArray[0];
+      window2 = appIdArray[1];
+      remoteCall.waitForFiles(window1, []).then(this.next);
+    },
+    // Add hello file to Drive.
+    function() {
+      addEntries(['drive'], [ENTRIES.hello], this.next);
+    },
+    // Check: Drive hello file.
+    function() {
+      remoteCall.waitForFiles(window2, [ENTRIES.hello.getExpectedRow()])
+          .then(this.next);
+    },
+    // Copy Drive hello file to Downloads.
+    function() {
+      copyBetweenWindows(window2, window1, ENTRIES.hello).then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);
@@ -162,118 +103,295 @@ testcase.copyBetweenWindowsLocalToDrive = function() {
   ]);
 };
 
-testcase.copyBetweenWindowsLocalToUsb = function() {
-  var windowId1;
-  var windowId2;
+/**
+ * Tests file copy+paste from Downloads to Drive.
+ */
+testcase.copyBetweenWindowsLocalToDrive = function() {
+  var window1;
+  var window2;
   StepsRunner.run([
-    // Make a file in a local directory.
+    // Open two Files app windows.
+    function() {
+      openTwoWindows(RootPath.DOWNLOADS, RootPath.DRIVE).then(this.next);
+    },
+    // Check: Drive window is empty.
+    function(appIdArray) {
+      window1 = appIdArray[0];
+      window2 = appIdArray[1];
+      remoteCall.waitForFiles(window2, []).then(this.next);
+    },
+    // Add hello file to Downloads.
     function() {
       addEntries(['local'], [ENTRIES.hello], this.next);
     },
-    // Open windows.
-    function(result) {
-      chrome.test.assertTrue(result);
-      openTwoWindows(RootPath.DOWNLOADS, RootPath.DOWNLOADS).then(this.next);
-    },
-    // Wait for a file in the Downloads directory.
-    function(appIds) {
-      windowId1 = appIds[0];
-      windowId2 = appIds[1];
-      remoteCall.waitForFiles(windowId2, [ENTRIES.hello.getExpectedRow()]).
-          then(this.next);
-    },
-    // Mount a fake USB volume.
+    // Check: Downloads hello file.
     function() {
-      chrome.test.sendMessage(JSON.stringify({name: 'mountFakeUsb'}),
-                              this.next);
+      remoteCall.waitForFiles(window1, [ENTRIES.hello.getExpectedRow()])
+          .then(this.next);
     },
-    // Wait for the mount.
-    function(result) {
-      remoteCall.waitForElement(windowId2, REMOVABLE_VOLUME_QUERY).
-          then(this.next);
-    },
-    // Click the USB volume.
+    // Copy Downloads hello file to Drive.
     function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', windowId2, [REMOVABLE_VOLUME_QUERY], this.next);
+      copyBetweenWindows(window1, window2, ENTRIES.hello).then(this.next);
     },
-    // Copy a file between windows.
     function() {
-      copyBetweenWindows(windowId1, windowId2, ENTRIES.hello).then(this.next);
+      checkIfNoErrorsOccured(this.next);
     }
   ]);
 };
 
+/**
+ * Tests file copy+paste from Drive to USB.
+ */
+testcase.copyBetweenWindowsDriveToUsb = function() {
+  var window1;
+  var window2;
+  StepsRunner.run([
+    // Add photos to Downloads.
+    function() {
+      addEntries(['local'], [ENTRIES.photos], this.next);
+    },
+    // Check: photos was added.
+    function(result) {
+      if (!result)
+        chrome.test.assertTrue(false, 'Failed: adding Downloads photos');
+      // Open two Files app windows.
+      openTwoWindows(RootPath.DOWNLOADS, RootPath.DRIVE).then(this.next);
+    },
+    // Check: Drive window is empty.
+    function(appIdArray) {
+      window1 = appIdArray[0];
+      window2 = appIdArray[1];
+      remoteCall.waitForFiles(window2, []).then(this.next);
+    },
+    // Click to switch back to the Downloads window.
+    function() {
+      remoteCall.callRemoteTestUtil('fakeMouseClick', window1, [], this.next);
+    },
+    // Check: Downloads window is showing photos.
+    function() {
+      remoteCall.waitForFiles(window1, [ENTRIES.photos.getExpectedRow()])
+          .then(this.next);
+    },
+    // Mount an empty USB volume in the Downloads window.
+    function() {
+      chrome.test.sendMessage(
+          JSON.stringify({name: 'mountFakeUsbEmpty'}), this.next);
+    },
+    // Wait for the USB mount.
+    function() {
+      remoteCall.waitForElement(window1, USB_VOLUME_QUERY).then(this.next);
+    },
+    // Click to open the USB volume.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', window1, [USB_VOLUME_QUERY], this.next);
+    },
+    // Check: Downloads window is showing an empty USB volume.
+    function() {
+      remoteCall.waitForFiles(window1, []).then(this.next);
+    },
+    // Add hello file to Drive.
+    function() {
+      addEntries(['drive'], [ENTRIES.hello], this.next);
+    },
+    // Check Drive hello file, copy it to USB.
+    function() {
+      copyBetweenWindows(window2, window1, ENTRIES.hello).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};
+
+/**
+ * Tests file copy+paste from Downloads to USB.
+ */
+testcase.copyBetweenWindowsLocalToUsb = function() {
+  var window1;
+  var window2;
+  StepsRunner.run([
+    // Add photos to Drive.
+    function() {
+      addEntries(['drive'], [ENTRIES.photos], this.next);
+    },
+    // Check: photos was added.
+    function(result) {
+      if (!result)
+        chrome.test.assertTrue(false, 'Failed: adding Drive photos');
+      // Open two Files app windows.
+      openTwoWindows(RootPath.DRIVE, RootPath.DOWNLOADS).then(this.next);
+    },
+    // Check: Downloads window is empty.
+    function(appIdArray) {
+      window1 = appIdArray[0];
+      window2 = appIdArray[1];
+      remoteCall.waitForFiles(window2, []).then(this.next);
+    },
+    // Click to switch back to the Drive window.
+    function() {
+      remoteCall.callRemoteTestUtil('fakeMouseClick', window1, [], this.next);
+    },
+    // Check: Drive window is showing photos.
+    function() {
+      remoteCall.waitForFiles(window1, [ENTRIES.photos.getExpectedRow()])
+          .then(this.next);
+    },
+    // Mount an empty USB volume in the Drive window.
+    function() {
+      chrome.test.sendMessage(
+          JSON.stringify({name: 'mountFakeUsbEmpty'}), this.next);
+    },
+    // Wait for the USB mount.
+    function() {
+      remoteCall.waitForElement(window1, USB_VOLUME_QUERY).then(this.next);
+    },
+    // Click to open the USB volume.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', window1, [USB_VOLUME_QUERY], this.next);
+    },
+    // Check: Drive window is showing an empty USB volume.
+    function() {
+      remoteCall.waitForFiles(window1, []).then(this.next);
+    },
+    // Add hello file to Downloads.
+    function() {
+      addEntries(['local'], [ENTRIES.hello], this.next);
+    },
+    // Check Downloads hello file, copy it to USB.
+    function() {
+      copyBetweenWindows(window2, window1, ENTRIES.hello).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};
+
+/**
+ * Tests file copy+paste from USB to Drive.
+ */
 testcase.copyBetweenWindowsUsbToDrive = function() {
-  var windowId1;
-  var windowId2;
+  var window1;
+  var window2;
   StepsRunner.run([
-    // Open windows.
+    // Add photos to Downloads.
     function() {
+      addEntries(['local'], [ENTRIES.photos], this.next);
+    },
+    // Check: photos was added.
+    function(result) {
+      if (!result)
+        chrome.test.assertTrue(false, 'Failed: adding Downloads photos');
+      // Open two Files app windows.
       openTwoWindows(RootPath.DOWNLOADS, RootPath.DRIVE).then(this.next);
     },
-    // Mount a fake USB.
-    function(appIds) {
-      windowId1 = appIds[0];
-      windowId2 = appIds[1];
-      chrome.test.sendMessage(JSON.stringify({name: 'mountFakeUsb'}),
-                              this.next);
+    // Check: Drive window is empty.
+    function(appIdArray) {
+      window1 = appIdArray[0];
+      window2 = appIdArray[1];
+      remoteCall.waitForFiles(window2, []).then(this.next);
     },
-    // Add a file to USB.
-    function(result) {
-      addEntries(['usb'], [ENTRIES.hello], this.next);
+    // Click to switch back to the Downloads window.
+    function() {
+      remoteCall.callRemoteTestUtil('fakeMouseClick', window1, [], this.next);
     },
-    // Wait for the mount.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForElement(windowId1, REMOVABLE_VOLUME_QUERY).
-          then(this.next);
+    // Check: Downloads window is showing photos.
+    function() {
+      remoteCall.waitForFiles(window1, [ENTRIES.photos.getExpectedRow()])
+          .then(this.next);
     },
-    // Click the volume.
+    // Mount an empty USB volume in the Downloads window.
+    function() {
+      chrome.test.sendMessage(
+          JSON.stringify({name: 'mountFakeUsbEmpty'}), this.next);
+    },
+    // Wait for the USB mount.
+    function() {
+      remoteCall.waitForElement(window1, USB_VOLUME_QUERY).then(this.next);
+    },
+    // Click to open the USB volume.
     function() {
       remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', windowId1, [REMOVABLE_VOLUME_QUERY], this.next);
+          'fakeMouseClick', window1, [USB_VOLUME_QUERY], this.next);
     },
-    // Copy a file between windows.
+    // Check: Downloads window is showing an empty USB volume.
     function() {
-      copyBetweenWindows(windowId1, windowId2, ENTRIES.hello).then(this.next);
+      remoteCall.waitForFiles(window1, []).then(this.next);
+    },
+    // Add hello file to the USB volume.
+    function() {
+      addEntries(['usb'], [ENTRIES.hello], this.next);
+    },
+    // Check USB hello file, copy it to Drive.
+    function() {
+      copyBetweenWindows(window1, window2, ENTRIES.hello).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
     }
   ]);
 };
 
+/**
+ * Tests file copy+paste from USB to Downloads.
+ */
 testcase.copyBetweenWindowsUsbToLocal = function() {
-  var windowId1;
-  var windowId2;
+  var window1;
+  var window2;
   StepsRunner.run([
-    // Open windows.
+    // Add photos to Drive.
     function() {
-      openTwoWindows(RootPath.DOWNLOADS, RootPath.DRIVE).then(this.next);
+      addEntries(['drive'], [ENTRIES.photos], this.next);
     },
-    // Mount a fake USB.
-    function(appIds) {
-      windowId1 = appIds[0];
-      windowId2 = appIds[1];
-      chrome.test.sendMessage(JSON.stringify({name: 'mountFakeUsb'}),
-                              this.next);
-    },
-    // Add a file to USB.
+    // Check: photos was added.
     function(result) {
-      addEntries(['usb'], [ENTRIES.hello], this.next);
+      if (!result)
+        chrome.test.assertTrue(false, 'Failed: adding Drive photos');
+      // Open two Files app windows.
+      openTwoWindows(RootPath.DRIVE, RootPath.DOWNLOADS).then(this.next);
     },
-    // Wait for the mount.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForElement(windowId1, REMOVABLE_VOLUME_QUERY).
-          then(this.next);
+    // Check: Downloads window is empty.
+    function(appIdArray) {
+      window1 = appIdArray[0];
+      window2 = appIdArray[1];
+      remoteCall.waitForFiles(window2, []).then(this.next);
     },
-    // Click the volume.
+    // Click to switch back to the Drive window.
+    function() {
+      remoteCall.callRemoteTestUtil('fakeMouseClick', window1, [], this.next);
+    },
+    // Check: Drive window is showing photos.
+    function() {
+      remoteCall.waitForFiles(window1, [ENTRIES.photos.getExpectedRow()])
+          .then(this.next);
+    },
+    // Mount an empty USB volume in the Drive window.
+    function() {
+      chrome.test.sendMessage(
+          JSON.stringify({name: 'mountFakeUsbEmpty'}), this.next);
+    },
+    // Wait for the USB mount.
+    function() {
+      remoteCall.waitForElement(window1, USB_VOLUME_QUERY).then(this.next);
+    },
+    // Click to open the USB volume.
     function() {
       remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', windowId1, [REMOVABLE_VOLUME_QUERY], this.next);
+          'fakeMouseClick', window1, [USB_VOLUME_QUERY], this.next);
     },
-    // Copy a file between windows.
-    function(appIds) {
-      copyBetweenWindows(windowId1, windowId2, ENTRIES.hello).then(this.next);
+    // Check: Drive window is showing an empty USB volume.
+    function() {
+      remoteCall.waitForFiles(window1, []).then(this.next);
+    },
+    // Add hello file to the USB volume.
+    function() {
+      addEntries(['usb'], [ENTRIES.hello], this.next);
+    },
+    // Check USB hello file, copy it to Downloads.
+    function() {
+      copyBetweenWindows(window1, window2, ENTRIES.hello).then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);

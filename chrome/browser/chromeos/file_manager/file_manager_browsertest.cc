@@ -331,9 +331,16 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("openFileDialogCancelDrive"),
                       TestCase("openFileDialogEscapeDrive")));
 
-// Test does too much? Flaky on all bots: http://crbug.com/500966
+// Test does too much? Flaky on all bots https://crbug.com/500966
+// Enabled in DEBUG and RELEASE https://crbug.com/845087
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
+    defined(LEAK_SANITIZER)
+#define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
+#else
+#define MAYBE_CopyBetweenWindows CopyBetweenWindows
+#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_CopyBetweenWindows, /* copy_between_windows.js */
+    MAYBE_CopyBetweenWindows, /* copy_between_windows.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("copyBetweenWindowsLocalToDrive"),
                       TestCase("copyBetweenWindowsLocalToUsb"),
