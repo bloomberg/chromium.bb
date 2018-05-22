@@ -290,7 +290,11 @@
       },
     },
     'ui_android_unittests': {},
-    'webview_instrumentation_test_apk': {},
+    'webview_instrumentation_test_apk': {
+      'swarming': {
+        'shards': 7,
+      },
+    },
   },
 
   'aura_gtests': {
@@ -460,6 +464,7 @@
     'content_unittests': {
       'android_swarming': {
         'hard_timeout': 960,
+        'shards': 3,
       },
     },
     'crypto_unittests': {},
@@ -504,6 +509,7 @@
     'unit_tests': {
       'android_swarming': {
         'hard_timeout': 900,
+        'shards': 5,
       },
     },
     'url_unittests': {},

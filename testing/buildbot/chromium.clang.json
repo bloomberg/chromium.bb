@@ -4908,7 +4908,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 3
         },
         "test": "content_unittests"
       },
@@ -6178,7 +6179,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 5
         },
         "test": "unit_tests"
       },
@@ -7186,7 +7188,8 @@
               "device_os": "MMB29Q",
               "device_type": "bullhead"
             }
-          ]
+          ],
+          "shards": 7
         },
         "test": "webview_instrumentation_test_apk"
       },

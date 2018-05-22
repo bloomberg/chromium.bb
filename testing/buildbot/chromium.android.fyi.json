@@ -4029,7 +4029,8 @@
             {
               "device_type": "coho"
             }
-          ]
+          ],
+          "shards": 3
         },
         "test": "content_unittests"
       },
@@ -4758,7 +4759,8 @@
             {
               "device_type": "coho"
             }
-          ]
+          ],
+          "shards": 5
         },
         "test": "unit_tests"
       },
@@ -4854,7 +4856,8 @@
             {
               "device_type": "coho"
             }
-          ]
+          ],
+          "shards": 7
         },
         "test": "webview_instrumentation_test_apk"
       },
@@ -5308,7 +5311,8 @@
             {
               "device_type": "gce_x86"
             }
-          ]
+          ],
+          "shards": 3
         },
         "test": "content_unittests"
       },
@@ -6013,7 +6017,8 @@
             {
               "device_type": "gce_x86"
             }
-          ]
+          ],
+          "shards": 5
         },
         "test": "unit_tests"
       },
@@ -6082,7 +6087,8 @@
               "device_type": "gce_x86"
             }
           ],
-          "hard_timeout": 960
+          "hard_timeout": 960,
+          "shards": 7
         },
         "test": "webview_instrumentation_test_apk"
       }

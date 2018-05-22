@@ -1634,6 +1634,7 @@
             },
           ],
         },
+        'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
         },
