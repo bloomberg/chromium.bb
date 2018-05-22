@@ -149,6 +149,10 @@ MHTMLArchive::MHTMLArchive() = default;
 
 MHTMLArchive* MHTMLArchive::Create(const KURL& url,
                                    scoped_refptr<const SharedBuffer> data) {
+  // |data| may be null if archive file is empty.
+  if (!data)
+    return nullptr;
+
   // MHTML pages can only be loaded from local URLs, http/https URLs, and
   // content URLs(Android specific).  The latter is now allowed due to full
   // sandboxing enforcement on MHTML pages.
