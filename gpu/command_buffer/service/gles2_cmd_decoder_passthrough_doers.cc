@@ -3012,7 +3012,7 @@ error::Error GLES2DecoderPassthroughImpl::DoQueryCounterEXT(
   pending_query.shm = std::move(buffer);
   pending_query.sync = sync;
   pending_query.submit_count = submit_count;
-  pending_queries_.push_back(pending_query);
+  pending_queries_.push_back(std::move(pending_query));
 
   return ProcessQueries(false);
 }
@@ -3071,7 +3071,7 @@ error::Error GLES2DecoderPassthroughImpl::DoBeginQueryEXT(
   query.service_id = service_id;
   query.shm = std::move(buffer);
   query.sync = sync;
-  active_queries_[target] = query;
+  active_queries_[target] = std::move(query);
 
   return error::kNoError;
 }
@@ -3118,7 +3118,7 @@ error::Error GLES2DecoderPassthroughImpl::DoEndQueryEXT(GLenum target,
   pending_query.shm = std::move(active_query.shm);
   pending_query.sync = active_query.sync;
   pending_query.submit_count = submit_count;
-  pending_queries_.push_back(pending_query);
+  pending_queries_.push_back(std::move(pending_query));
 
   return ProcessQueries(false);
 }

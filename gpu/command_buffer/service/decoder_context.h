@@ -104,6 +104,11 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface {
   // Gets the QueryManager for this context.
   virtual QueryManager* GetQueryManager() = 0;
 
+  // Set a callback to be called when a query is complete.  If the query is
+  // invalid, the callback must be called immediately.
+  virtual void SetQueryCallback(unsigned int query_client_id,
+                                base::OnceClosure callback) = 0;
+
   // Gets the GpuFenceManager for this context.
   virtual gles2::GpuFenceManager* GetGpuFenceManager() = 0;
 

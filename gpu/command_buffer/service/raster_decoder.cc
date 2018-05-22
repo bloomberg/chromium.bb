@@ -318,6 +318,8 @@ class RasterDecoderImpl final : public RasterDecoder,
   void RestoreVertexAttribArray(unsigned index) override;
   void RestoreAllExternalTextureBindingsIfNeeded() override;
   QueryManager* GetQueryManager() override;
+  void SetQueryCallback(unsigned int query_client_id,
+                        base::OnceClosure callback) override;
   gles2::GpuFenceManager* GetGpuFenceManager() override;
   bool HasPendingQueries() const override;
   void ProcessPendingQueries(bool did_finish) override;
@@ -1257,6 +1259,18 @@ void RasterDecoderImpl::RestoreAllExternalTextureBindingsIfNeeded() {
 
 QueryManager* RasterDecoderImpl::GetQueryManager() {
   return query_manager_.get();
+}
+
+void RasterDecoderImpl::SetQueryCallback(unsigned int query_client_id,
+                                         base::OnceClosure callback) {
+  QueryManager::Query* query = query_manager_->GetQuery(query_client_id);
+  if (query) {
+    query->AddCallback(std::move(callback));
+  } else {
+    VLOG(1) << "RasterDecoderImpl::SetQueryCallback: No query with ID "
+            << query_client_id << ". Running the callback immediately.";
+    std::move(callback).Run();
+  }
 }
 
 GpuFenceManager* RasterDecoderImpl::GetGpuFenceManager() {

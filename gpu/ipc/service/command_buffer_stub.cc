@@ -692,18 +692,15 @@ void CommandBufferStub::OnSignalAck(uint32_t id) {
 
 void CommandBufferStub::OnSignalQuery(uint32_t query_id, uint32_t id) {
   if (decoder_context_) {
-    QueryManager* query_manager = decoder_context_->GetQueryManager();
-    if (query_manager) {
-      QueryManager::Query* query = query_manager->GetQuery(query_id);
-      if (query) {
-        query->AddCallback(base::BindOnce(&CommandBufferStub::OnSignalAck,
-                                          this->AsWeakPtr(), id));
-        return;
-      }
-    }
+    decoder_context_->SetQueryCallback(
+        query_id,
+        base::BindOnce(&CommandBufferStub::OnSignalAck, this->AsWeakPtr(), id));
+  } else {
+    // Something went wrong, run callback immediately.
+    VLOG(1) << "CommandBufferStub::OnSignalQueryk: No decoder to set query "
+               "callback on. Running the callback immediately.";
+    OnSignalAck(id);
   }
-  // Something went wrong, run callback immediately.
-  OnSignalAck(id);
 }
 
 void CommandBufferStub::OnCreateGpuFenceFromHandle(
