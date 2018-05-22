@@ -13,8 +13,4 @@ SyncSetupInProgressHandle::~SyncSetupInProgressHandle() {
   on_destroy_.Run();
 }
 
-SyncService::SyncTokenStatus::SyncTokenStatus()
-    : connection_status(CONNECTION_NOT_ATTEMPTED),
-      last_get_token_error(GoogleServiceAuthError::AuthErrorNone()) {}
-
 }  // namespace syncer

@@ -24,7 +24,7 @@ class TestSyncService : public syncer::FakeSyncService {
   bool ConfigurationDone() const override;
   syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
-  syncer::SyncService::SyncTokenStatus GetSyncTokenStatus() const override;
+  syncer::SyncTokenStatus GetSyncTokenStatus() const override;
 
   void SetCanSyncStart(bool can_sync_start) {
     can_sync_start_ = can_sync_start;

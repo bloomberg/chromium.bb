@@ -7,6 +7,7 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace syncer {
 

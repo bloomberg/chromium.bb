@@ -24,6 +24,7 @@
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "components/sync/driver/sync_token_status.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/engine/fake_sync_engine.h"
 #include "components/sync/model/model_type_store_test_util.h"
@@ -553,8 +554,7 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
   InitializeForNthSync();
 
   // Initial status.
-  ProfileSyncService::SyncTokenStatus token_status =
-      service()->GetSyncTokenStatus();
+  syncer::SyncTokenStatus token_status = service()->GetSyncTokenStatus();
   ASSERT_EQ(syncer::CONNECTION_NOT_ATTEMPTED, token_status.connection_status);
   ASSERT_TRUE(token_status.connection_status_update_time.is_null());
   ASSERT_TRUE(token_status.token_request_time.is_null());

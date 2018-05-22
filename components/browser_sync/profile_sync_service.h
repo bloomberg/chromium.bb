@@ -277,7 +277,7 @@ class ProfileSyncService : public syncer::SyncService,
   void RegisterDataTypeController(std::unique_ptr<syncer::DataTypeController>
                                       data_type_controller) override;
   void ReenableDatatype(syncer::ModelType type) override;
-  SyncTokenStatus GetSyncTokenStatus() const override;
+  syncer::SyncTokenStatus GetSyncTokenStatus() const override;
   std::string QuerySyncStatusSummaryString() override;
   bool QueryDetailedSyncStatus(syncer::SyncStatus* result) override;
   base::Time GetLastSyncedTime() const override;

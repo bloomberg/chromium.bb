@@ -8,6 +8,7 @@
 
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/progress_marker_map.h"
+#include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/cycle/model_neutral_state.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
@@ -61,9 +62,8 @@ syncer::SyncCycleSnapshot TestSyncService::GetLastCycleSnapshot() const {
   return syncer::SyncCycleSnapshot();
 }
 
-syncer::SyncService::SyncTokenStatus TestSyncService::GetSyncTokenStatus()
-    const {
-  syncer::SyncService::SyncTokenStatus token;
+syncer::SyncTokenStatus TestSyncService::GetSyncTokenStatus() const {
+  syncer::SyncTokenStatus token;
 
   if (is_in_auth_error_) {
     token.connection_status = syncer::ConnectionStatus::CONNECTION_AUTH_ERROR;

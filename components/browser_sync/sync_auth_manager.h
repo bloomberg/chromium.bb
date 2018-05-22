@@ -12,8 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/signin/core/browser/account_info.h"
-// TODO(treib): Needed for SyncTokenStatus. Move that to its own file instead.
-#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_token_status.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
@@ -74,7 +73,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer,
 
   // Returns the state of the access token and token request, for display in
   // internals UI.
-  syncer::SyncService::SyncTokenStatus GetSyncTokenStatus() const;
+  syncer::SyncTokenStatus GetSyncTokenStatus() const;
 
   // Called by ProfileSyncService when the status of the connection to the Sync
   // server changed. Updates auth error state accordingly.
@@ -138,7 +137,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer,
   net::BackoffEntry request_access_token_backoff_;
 
   // Info about the state of our access token, for display in the internals UI.
-  syncer::SyncService::SyncTokenStatus token_status_;
+  syncer::SyncTokenStatus token_status_;
 
   base::WeakPtrFactory<SyncAuthManager> weak_ptr_factory_;
 

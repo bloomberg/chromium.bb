@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/sync_status.h"
 #include "components/sync/engine/sync_string_conversions.h"
@@ -21,6 +22,7 @@
 #include "components/sync/protocol/proto_enum_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
+#include "url/gurl.h"
 
 namespace syncer {
 
@@ -219,7 +221,7 @@ std::string GetLastSyncedTimeString(base::Time last_synced_time) {
       time_since_last_sync));
 }
 
-std::string GetConnectionStatus(const SyncService::SyncTokenStatus& status) {
+std::string GetConnectionStatus(const SyncTokenStatus& status) {
   switch (status.connection_status) {
     case CONNECTION_NOT_ATTEMPTED:
       return "not attempted";
@@ -387,8 +389,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   SyncStatus full_status;
   bool is_status_valid = service->QueryDetailedSyncStatus(&full_status);
   const SyncCycleSnapshot& snapshot = service->GetLastCycleSnapshot();
-  const SyncService::SyncTokenStatus& token_status =
-      service->GetSyncTokenStatus();
+  const SyncTokenStatus& token_status = service->GetSyncTokenStatus();
 
   // Summary.
   if (is_status_valid)

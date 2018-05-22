@@ -94,13 +94,12 @@ bool SyncAuthManager::RefreshTokenIsAvailable() const {
          token_service_->RefreshTokenIsAvailable(account_id);
 }
 
-syncer::SyncService::SyncTokenStatus SyncAuthManager::GetSyncTokenStatus()
-    const {
+syncer::SyncTokenStatus SyncAuthManager::GetSyncTokenStatus() const {
   // Need to make a copy because this method is const, and we might want to
   // clear |next_token_request_time|.
   // TODO(treib): See if we can keep |token_status_.next_token_request_time| in
   // the correct state instead.
-  syncer::SyncService::SyncTokenStatus status = token_status_;
+  syncer::SyncTokenStatus status = token_status_;
   if (!request_access_token_retry_timer_.IsRunning()) {
     status.next_token_request_time = base::Time();
   }
