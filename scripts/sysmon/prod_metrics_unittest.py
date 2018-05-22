@@ -41,29 +41,14 @@ class TestModuleFunctions(cros_test_lib.TestCase):
     with self.assertRaises(ValueError):
       prod_metrics._get_data_center({'hostname': 'foo'})
 
-
-class TestAtestSource(cros_test_lib.TestCase):
-  """Tests for AtestSource."""
-
-  def test_query_atest_for_servers(self):
-    """Test _QueryAtestForServer()."""
-    source = prod_metrics._AtestSource('atest')
+  def test__get_servers(self):
     with mock.patch('subprocess.check_output') as check_output:
-      check_output.return_value = 'dummy atest output'
-      source._query_atest_for_servers()
-      check_output.assert_called_once_with(
-          ['atest', 'server', 'list', '--json'])
-
-  def test_get_servers(self):
-    """Test get_servers()."""
-    source = prod_metrics._AtestSource(atest_program='atest')
-    with mock.patch.object(source, '_query_atest_for_servers') as query:
-      query.return_value = (
+      check_output.return_value = (
           '[{"status": "primary", "roles": ["shard"],'
           ' "date_modified": "2016-12-13 20:41:54",'
           ' "hostname": "chromeos-server71.cbf.corp.google.com",'
           ' "note": null,'' "date_created": "2016-12-13 20:41:54"}]')
-      got = list(source.get_servers())
+      got = list(prod_metrics._get_servers())
     self.assertEqual(got,
                      [prod_metrics.Server(
                          hostname='chromeos-server71',

@@ -24,50 +24,29 @@ logger = logging.getLogger(__name__)
 
 
 def collect_prod_hosts():
-  source = _AtestSource(_ATEST_PROGRAM)
   sinks = (_TsMonSink(_METRIC_ROOT_PATH), _LoggingSink())
-  servers = list(source.get_servers())
+  servers = list(_get_servers())
   for sink in sinks:
     sink.write_servers(servers)
 
 
-class _AtestSource(object):
-  """Source for prod host information, using atest."""
+def _get_servers():
+  """Get server information from atest.
 
-  def __init__(self, atest_program):
-    """Initialize instance.
-
-    Args:
-      atest_program: atest program as full path or name on the search path.
-      parser: Parser to use for atest output.
-    """
-    self._atest_program = atest_program
-
-  def _query_atest_for_servers(self):
-    """Run atest to get host information.
-
-    Returns:
-      atest output as a string (specifically, a bytestring)
-    """
-    return subprocess.check_output(
-        [self._atest_program, 'server', 'list', '--json'])
-
-  def get_servers(self):
-    """Get server information from this source.
-
-    Returns:
-      Iterable of Server instances.
-    """
-    server_dicts = json.loads(self._query_atest_for_servers())
-    for server in server_dicts:
-      yield Server(
-          hostname=_get_hostname(server),
-          data_center=_get_data_center(server),
-          status=server['status'],
-          roles=tuple(server['roles']),
-          created=server['date_created'],
-          modified=server['date_modified'],
-          note=server['note'])
+  Returns:
+    Iterable of Server instances.
+  """
+  output = subprocess.check_output([_ATEST_PROGRAM, 'server', 'list', '--json'])
+  server_dicts = json.loads(output)
+  for server in server_dicts:
+    yield Server(
+        hostname=_get_hostname(server),
+        data_center=_get_data_center(server),
+        status=server['status'],
+        roles=tuple(server['roles']),
+        created=server['date_created'],
+        modified=server['date_modified'],
+        note=server['note'])
 
 
 def _get_hostname(server):
