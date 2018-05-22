@@ -56,6 +56,7 @@ class TtsControllerImpl : public TtsController {
   ~TtsControllerImpl() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TtsControllerTest, TestTtsControllerShutdown);
   FRIEND_TEST_ALL_PREFIXES(TtsControllerTest, TestGetMatchingVoice);
   FRIEND_TEST_ALL_PREFIXES(TtsControllerTest,
                            TestTtsControllerUtteranceDefaults);
@@ -87,6 +88,8 @@ class TtsControllerImpl : public TtsController {
   // pulled from user prefs, and may not be the same as other platforms.
   void UpdateUtteranceDefaults(Utterance* utterance);
 
+  virtual const PrefService* GetPrefService(const Utterance* utterance);
+
   friend struct base::DefaultSingletonTraits<TtsControllerImpl>;
 
   // The current utterance being spoken.
@@ -107,9 +110,6 @@ class TtsControllerImpl : public TtsController {
 
   // The delegate that processes TTS requests with user-installed extensions.
   TtsEngineDelegate* tts_engine_delegate_;
-
-  // A mock pref service that should be used for testing only.
-  PrefService* pref_service_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsControllerImpl);
 };
