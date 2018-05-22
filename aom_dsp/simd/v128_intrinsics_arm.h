@@ -29,7 +29,7 @@ SIMD_INLINE v64 v128_high_v64(v128 a) { return vget_high_s64(a); }
 SIMD_INLINE v128 v128_from_v64(v64 a, v64 b) { return vcombine_s64(b, a); }
 
 SIMD_INLINE v128 v128_from_64(uint64_t a, uint64_t b) {
-  return vcombine_s64((uint64x1_t)b, (uint64x1_t)a);
+  return vcombine_s64((int64x1_t)b, (int64x1_t)a);
 }
 
 SIMD_INLINE v128 v128_from_32(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
@@ -338,13 +338,12 @@ SIMD_INLINE v128 v128_zip_32(v64 x, v64 y) {
 }
 
 SIMD_INLINE v128 v128_ziplo_64(v128 a, v128 b) {
-  return v128_from_v64(vget_low_u64((uint64x2_t)a),
-                       vget_low_u64((uint64x2_t)b));
+  return v128_from_v64(vget_low_s64((int64x2_t)a), vget_low_s64((int64x2_t)b));
 }
 
 SIMD_INLINE v128 v128_ziphi_64(v128 a, v128 b) {
-  return v128_from_v64(vget_high_u64((uint64x2_t)a),
-                       vget_high_u64((uint64x2_t)b));
+  return v128_from_v64(vget_high_s64((int64x2_t)a),
+                       vget_high_s64((int64x2_t)b));
 }
 
 SIMD_INLINE v128 v128_unziplo_8(v128 x, v128 y) {
@@ -570,16 +569,18 @@ SIMD_INLINE v128 v128_shl_n_byte(v128 a, unsigned int n) {
 SIMD_INLINE v128 v128_shr_n_byte(v128 a, unsigned int n) {
   return n < 8
              ? v128_from_64(
-                   vshr_n_u64(vreinterpret_u64_s64(vget_high_s64(a)), n * 8),
-                   vorr_u64(
+                   (uint64_t)vshr_n_u64(vreinterpret_u64_s64(vget_high_s64(a)),
+                                        n * 8),
+                   (uint64_t)vorr_u64(
                        vshr_n_u64(vreinterpret_u64_s64(vget_low_s64(a)), n * 8),
                        vshl_n_u64(vreinterpret_u64_s64(vget_high_s64(a)),
                                   (8 - n) * 8)))
-             : (n == 8
-                    ? v128_from_64(0, vreinterpret_u64_s64(vget_high_s64(a)))
-                    : v128_from_64(
-                          0, vshr_n_u64(vreinterpret_u64_s64(vget_high_s64(a)),
-                                        (n - 8) * 8)));
+             : (n == 8 ? v128_from_64(0, (uint64_t)vreinterpret_u64_s64(
+                                             vget_high_s64(a)))
+                       : v128_from_64(
+                             0, (uint64_t)vshr_n_u64(
+                                    vreinterpret_u64_s64(vget_high_s64(a)),
+                                    (n - 8) * 8)));
 }
 
 SIMD_INLINE v128 v128_shl_n_8(v128 a, unsigned int c) {

@@ -169,7 +169,8 @@ SIMD_INLINE ssd64_internal v64_ssd_u8_init() {
 SIMD_INLINE ssd64_internal v64_ssd_u8(ssd64_internal s, v64 a, v64 b) {
   uint8x8_t t = vabd_u8(vreinterpret_u8_s64(a), vreinterpret_u8_s64(b));
   uint64x2_t r = vpaddlq_u32(vpaddlq_u16(vmull_u8(t, t)));
-  return vadd_u64(s, vadd_u64(vget_high_u64(r), vget_low_u64(r)));
+  return (ssd64_internal)vadd_u64((uint64x1_t)s,
+                                  vadd_u64(vget_high_u64(r), vget_low_u64(r)));
 }
 
 SIMD_INLINE uint32_t v64_ssd_u8_sum(ssd64_internal s) {
