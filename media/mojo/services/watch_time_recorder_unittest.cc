@@ -11,6 +11,7 @@
 #include "base/hash.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -69,7 +70,7 @@ class WatchTimeRecorderTest : public testing::Test {
                   bool is_encrypted) {
     Initialize(mojom::PlaybackProperties::New(
         kUnknownAudioCodec, kUnknownVideoCodec, has_audio, has_video, false,
-        is_mse, is_encrypted, false, gfx::Size(800, 600)));
+        false, is_mse, is_encrypted, false, gfx::Size(800, 600)));
   }
 
   void ExpectWatchTime(const std::vector<base::StringPiece>& keys,
@@ -77,7 +78,9 @@ class WatchTimeRecorderTest : public testing::Test {
     for (int i = 0; i <= static_cast<int>(WatchTimeKey::kWatchTimeKeyMax);
          ++i) {
       const base::StringPiece test_key =
-          WatchTimeKeyToString(static_cast<WatchTimeKey>(i));
+          ConvertWatchTimeKeyToStringForUma(static_cast<WatchTimeKey>(i));
+      if (test_key.empty())
+        continue;
       auto it = std::find(keys.begin(), keys.end(), test_key);
       if (it == keys.end()) {
         histogram_tester_->ExpectTotalCount(test_key.as_string(), 0);
@@ -161,8 +164,13 @@ TEST_F(WatchTimeRecorderTest, TestBasicReporting) {
 
   for (int i = 0; i <= static_cast<int>(WatchTimeKey::kWatchTimeKeyMax); ++i) {
     const WatchTimeKey key = static_cast<WatchTimeKey>(i);
-    SCOPED_TRACE(WatchTimeKeyToString(key));
 
+    auto key_str = ConvertWatchTimeKeyToStringForUma(key);
+    SCOPED_TRACE(key_str.empty() ? base::NumberToString(i)
+                                 : key_str.as_string());
+
+    // Values for |is_background| and |is_muted| don't matter in this test since
+    // they don't prevent the muted or background keys from being recorded.
     Initialize(true, false, true, true);
     wtr_->RecordWatchTime(WatchTimeKey::kWatchTimeKeyMax, kWatchTime1);
     wtr_->RecordWatchTime(key, kWatchTime1);
@@ -176,10 +184,8 @@ TEST_F(WatchTimeRecorderTest, TestBasicReporting) {
     wtr_->FinalizeWatchTime({key});
     base::RunLoop().RunUntilIdle();
 
-    if (WatchTimeRecorder::ShouldReportUmaForTesting(key)) {
-      const base::StringPiece key_str = WatchTimeKeyToString(key);
+    if (!key_str.empty())
       ExpectWatchTime({key_str}, kWatchTime2);
-    }
 
     // These keys are only reported for a full finalize.
     ExpectMtbrTime({}, base::TimeDelta());
@@ -199,6 +205,7 @@ TEST_F(WatchTimeRecorderTest, TestBasicReporting) {
       case WatchTimeKey::kAudioBackgroundAll:
       case WatchTimeKey::kAudioVideoAll:
       case WatchTimeKey::kAudioVideoBackgroundAll:
+      case WatchTimeKey::kAudioVideoMutedAll:
       case WatchTimeKey::kVideoAll:
       case WatchTimeKey::kVideoBackgroundAll:
         ExpectUkmWatchTime({UkmEntry::kWatchTimeName}, kWatchTime2);
@@ -217,6 +224,10 @@ TEST_F(WatchTimeRecorderTest, TestBasicReporting) {
       case WatchTimeKey::kAudioVideoEme:
       case WatchTimeKey::kAudioVideoSrc:
       case WatchTimeKey::kAudioVideoEmbeddedExperience:
+      case WatchTimeKey::kAudioVideoMutedMse:
+      case WatchTimeKey::kAudioVideoMutedEme:
+      case WatchTimeKey::kAudioVideoMutedSrc:
+      case WatchTimeKey::kAudioVideoMutedEmbeddedExperience:
       case WatchTimeKey::kAudioVideoBackgroundMse:
       case WatchTimeKey::kAudioVideoBackgroundEme:
       case WatchTimeKey::kAudioVideoBackgroundSrc:
@@ -236,6 +247,7 @@ TEST_F(WatchTimeRecorderTest, TestBasicReporting) {
       case WatchTimeKey::kAudioBattery:
       case WatchTimeKey::kAudioBackgroundBattery:
       case WatchTimeKey::kAudioVideoBattery:
+      case WatchTimeKey::kAudioVideoMutedBattery:
       case WatchTimeKey::kAudioVideoBackgroundBattery:
       case WatchTimeKey::kVideoBattery:
       case WatchTimeKey::kVideoBackgroundBattery:
@@ -247,24 +259,28 @@ TEST_F(WatchTimeRecorderTest, TestBasicReporting) {
       case WatchTimeKey::kAudioBackgroundAc:
       case WatchTimeKey::kAudioVideoAc:
       case WatchTimeKey::kAudioVideoBackgroundAc:
+      case WatchTimeKey::kAudioVideoMutedAc:
       case WatchTimeKey::kVideoAc:
       case WatchTimeKey::kVideoBackgroundAc:
         ExpectUkmWatchTime({UkmEntry::kWatchTime_ACName}, kWatchTime2);
         break;
 
       case WatchTimeKey::kAudioVideoDisplayFullscreen:
+      case WatchTimeKey::kAudioVideoMutedDisplayFullscreen:
       case WatchTimeKey::kVideoDisplayFullscreen:
         ExpectUkmWatchTime({UkmEntry::kWatchTime_DisplayFullscreenName},
                            kWatchTime2);
         break;
 
       case WatchTimeKey::kAudioVideoDisplayInline:
+      case WatchTimeKey::kAudioVideoMutedDisplayInline:
       case WatchTimeKey::kVideoDisplayInline:
         ExpectUkmWatchTime({UkmEntry::kWatchTime_DisplayInlineName},
                            kWatchTime2);
         break;
 
       case WatchTimeKey::kAudioVideoDisplayPictureInPicture:
+      case WatchTimeKey::kAudioVideoMutedDisplayPictureInPicture:
       case WatchTimeKey::kVideoDisplayPictureInPicture:
         ExpectUkmWatchTime({UkmEntry::kWatchTime_DisplayPictureInPictureName},
                            kWatchTime2);
@@ -272,6 +288,7 @@ TEST_F(WatchTimeRecorderTest, TestBasicReporting) {
 
       case WatchTimeKey::kAudioNativeControlsOn:
       case WatchTimeKey::kAudioVideoNativeControlsOn:
+      case WatchTimeKey::kAudioVideoMutedNativeControlsOn:
       case WatchTimeKey::kVideoNativeControlsOn:
         ExpectUkmWatchTime({UkmEntry::kWatchTime_NativeControlsOnName},
                            kWatchTime2);
@@ -279,6 +296,7 @@ TEST_F(WatchTimeRecorderTest, TestBasicReporting) {
 
       case WatchTimeKey::kAudioNativeControlsOff:
       case WatchTimeKey::kAudioVideoNativeControlsOff:
+      case WatchTimeKey::kAudioVideoMutedNativeControlsOff:
       case WatchTimeKey::kVideoNativeControlsOff:
         ExpectUkmWatchTime({UkmEntry::kWatchTime_NativeControlsOffName},
                            kWatchTime2);
@@ -365,9 +383,9 @@ TEST_F(WatchTimeRecorderTest, TestDiscardMetrics) {
   EXPECT_TRUE(test_recorder_->EntryHasMetric(entry, name));
 
 TEST_F(WatchTimeRecorderTest, TestFinalizeNoDuplication) {
-  mojom::PlaybackPropertiesPtr properties =
-      mojom::PlaybackProperties::New(kCodecAAC, kCodecH264, true, true, false,
-                                     false, false, false, gfx::Size(800, 600));
+  mojom::PlaybackPropertiesPtr properties = mojom::PlaybackProperties::New(
+      kCodecAAC, kCodecH264, true, true, false, false, false, false, false,
+      gfx::Size(800, 600));
   Initialize(properties.Clone());
 
   // Verify that UKM is reported along with the watch time.
@@ -400,6 +418,7 @@ TEST_F(WatchTimeRecorderTest, TestFinalizeNoDuplication) {
     test_recorder_->ExpectEntrySourceHasUrl(entry, GURL(kTestOrigin));
 
     EXPECT_UKM(UkmEntry::kIsBackgroundName, properties->is_background);
+    EXPECT_UKM(UkmEntry::kIsMutedName, properties->is_muted);
     EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
     EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
     EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);
@@ -430,9 +449,9 @@ TEST_F(WatchTimeRecorderTest, TestFinalizeNoDuplication) {
 }
 
 TEST_F(WatchTimeRecorderTest, FinalizeWithoutWatchTime) {
-  mojom::PlaybackPropertiesPtr properties =
-      mojom::PlaybackProperties::New(kCodecAAC, kCodecH264, true, true, false,
-                                     false, false, false, gfx::Size(800, 600));
+  mojom::PlaybackPropertiesPtr properties = mojom::PlaybackProperties::New(
+      kCodecAAC, kCodecH264, true, true, false, false, false, false, false,
+      gfx::Size(800, 600));
   Initialize(properties.Clone());
 
   // Finalize everything. UKM is only recorded at destruction, so this should do
@@ -462,6 +481,7 @@ TEST_F(WatchTimeRecorderTest, FinalizeWithoutWatchTime) {
     test_recorder_->ExpectEntrySourceHasUrl(entry, GURL(kTestOrigin));
 
     EXPECT_UKM(UkmEntry::kIsBackgroundName, properties->is_background);
+    EXPECT_UKM(UkmEntry::kIsMutedName, properties->is_muted);
     EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
     EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
     EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);
@@ -492,9 +512,9 @@ TEST_F(WatchTimeRecorderTest, FinalizeWithoutWatchTime) {
 }
 
 TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
-  mojom::PlaybackPropertiesPtr properties =
-      mojom::PlaybackProperties::New(kCodecAAC, kCodecH264, true, true, false,
-                                     false, false, false, gfx::Size(800, 600));
+  mojom::PlaybackPropertiesPtr properties = mojom::PlaybackProperties::New(
+      kCodecAAC, kCodecH264, true, true, false, false, false, false, false,
+      gfx::Size(800, 600));
   Initialize(properties.Clone());
 
   constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(4);
@@ -509,6 +529,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
 
     EXPECT_UKM(UkmEntry::kWatchTimeName, kWatchTime.InMilliseconds());
     EXPECT_UKM(UkmEntry::kIsBackgroundName, properties->is_background);
+    EXPECT_UKM(UkmEntry::kIsMutedName, properties->is_muted);
     EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
     EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
     EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);
@@ -538,9 +559,9 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
 }
 
 TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
-  mojom::PlaybackPropertiesPtr properties =
-      mojom::PlaybackProperties::New(kCodecOpus, kCodecVP9, true, true, false,
-                                     true, true, false, gfx::Size(800, 600));
+  mojom::PlaybackPropertiesPtr properties = mojom::PlaybackProperties::New(
+      kCodecOpus, kCodecVP9, true, true, false, false, true, true, false,
+      gfx::Size(800, 600));
   Initialize(properties.Clone());
 
   constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(54);
@@ -601,6 +622,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
     EXPECT_UKM(UkmEntry::kVideoDecoderNameName, 5);
 
     EXPECT_UKM(UkmEntry::kIsBackgroundName, properties->is_background);
+    EXPECT_UKM(UkmEntry::kIsMutedName, properties->is_muted);
     EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
     EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
     EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);
@@ -617,10 +639,10 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
   }
 }
 
-TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoBackground) {
-  mojom::PlaybackPropertiesPtr properties =
-      mojom::PlaybackProperties::New(kCodecAAC, kCodecH264, true, true, true,
-                                     false, false, false, gfx::Size(800, 600));
+TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoBackgroundMuted) {
+  mojom::PlaybackPropertiesPtr properties = mojom::PlaybackProperties::New(
+      kCodecAAC, kCodecH264, true, true, true, true, false, false, false,
+      gfx::Size(800, 600));
   Initialize(properties.Clone());
 
   constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(54);
@@ -635,6 +657,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoBackground) {
 
     EXPECT_UKM(UkmEntry::kWatchTimeName, kWatchTime.InMilliseconds());
     EXPECT_UKM(UkmEntry::kIsBackgroundName, properties->is_background);
+    EXPECT_UKM(UkmEntry::kIsMutedName, properties->is_muted);
     EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
     EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
     EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);

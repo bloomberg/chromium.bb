@@ -75,38 +75,15 @@ static const char kWatchTimeAudioVideoBackgroundAc[] =
 static const char kWatchTimeAudioVideoBackgroundEmbeddedExperience[] =
     "Media.WatchTime.AudioVideo.Background.EmbeddedExperience";
 
-static const char kWatchTimeVideoAll[] = "Media.WatchTime.Video.All";
-static const char kWatchTimeVideoMse[] = "Media.WatchTime.Video.MSE";
-static const char kWatchTimeVideoEme[] = "Media.WatchTime.Video.EME";
-static const char kWatchTimeVideoSrc[] = "Media.WatchTime.Video.SRC";
-static const char kWatchTimeVideoBattery[] = "Media.WatchTime.Video.Battery";
-static const char kWatchTimeVideoAc[] = "Media.WatchTime.Video.AC";
-static const char kWatchTimeVideoDisplayFullscreen[] =
-    "Media.WatchTime.Video.DisplayFullscreen";
-static const char kWatchTimeVideoDisplayInline[] =
-    "Media.WatchTime.Video.DisplayInline";
-static const char kWatchTimeVideoDisplayPictureInPicture[] =
-    "Media.WatchTime.Video.DisplayPictureInPicture";
-static const char kWatchTimeVideoEmbeddedExperience[] =
-    "Media.WatchTime.Video.EmbeddedExperience";
-static const char kWatchTimeVideoNativeControlsOn[] =
-    "Media.WatchTime.Video.NativeControlsOn";
-static const char kWatchTimeVideoNativeControlsOff[] =
-    "Media.WatchTime.Video.NativeControlsOff";
-static const char kWatchTimeVideoBackgroundAll[] =
-    "Media.WatchTime.Video.Background.All";
-static const char kWatchTimeVideoBackgroundMse[] =
-    "Media.WatchTime.Video.Background.MSE";
-static const char kWatchTimeVideoBackgroundEme[] =
-    "Media.WatchTime.Video.Background.EME";
-static const char kWatchTimeVideoBackgroundSrc[] =
-    "Media.WatchTime.Video.Background.SRC";
-static const char kWatchTimeVideoBackgroundBattery[] =
-    "Media.WatchTime.Video.Background.Battery";
-static const char kWatchTimeVideoBackgroundAc[] =
-    "Media.WatchTime.Video.Background.AC";
-static const char kWatchTimeVideoBackgroundEmbeddedExperience[] =
-    "Media.WatchTime.Video.Background.EmbeddedExperience";
+// Audio+video muted watch time metrics.
+static const char kWatchTimeAudioVideoMutedAll[] =
+    "Media.WatchTime.AudioVideo.Muted.All";
+static const char kWatchTimeAudioVideoMutedMse[] =
+    "Media.WatchTime.AudioVideo.Muted.MSE";
+static const char kWatchTimeAudioVideoMutedEme[] =
+    "Media.WatchTime.AudioVideo.Muted.EME";
+static const char kWatchTimeAudioVideoMutedSrc[] =
+    "Media.WatchTime.AudioVideo.Muted.SRC";
 
 const char kWatchTimeUnderflowCount[] = "UnderflowCount";
 
@@ -146,7 +123,8 @@ const char kDiscardedWatchTimeAudioVideoMse[] =
 const char kDiscardedWatchTimeAudioVideoEme[] =
     "Media.WatchTime.AudioVideo.Discarded.EME";
 
-base::StringPiece WatchTimeKeyToString(WatchTimeKey key) {
+base::StringPiece ConvertWatchTimeKeyToStringForUma(WatchTimeKey key) {
+  // WARNING: Returning a non-empty value will log the key to UMA.
   switch (key) {
     case WatchTimeKey::kAudioAll:
       return kWatchTimeAudioAll;
@@ -218,44 +196,47 @@ base::StringPiece WatchTimeKeyToString(WatchTimeKey key) {
       return kWatchTimeAudioVideoBackgroundAc;
     case WatchTimeKey::kAudioVideoBackgroundEmbeddedExperience:
       return kWatchTimeAudioVideoBackgroundEmbeddedExperience;
+    case WatchTimeKey::kAudioVideoMutedAll:
+      return kWatchTimeAudioVideoMutedAll;
+    case WatchTimeKey::kAudioVideoMutedMse:
+      return kWatchTimeAudioVideoMutedMse;
+    case WatchTimeKey::kAudioVideoMutedEme:
+      return kWatchTimeAudioVideoMutedEme;
+    case WatchTimeKey::kAudioVideoMutedSrc:
+      return kWatchTimeAudioVideoMutedSrc;
+    // WARNING: Returning a non-empty value will log the key to UMA.
+
+    // The following keys are not reported to UMA and thus have no conversion.
+    // We don't report keys to UMA that we don't have a strong use case for
+    // since UMA requires us to break out each state manually (ac, inline, etc).
+    case WatchTimeKey::kAudioVideoMutedBattery:
+    case WatchTimeKey::kAudioVideoMutedAc:
+    case WatchTimeKey::kAudioVideoMutedEmbeddedExperience:
+    case WatchTimeKey::kAudioVideoMutedDisplayFullscreen:
+    case WatchTimeKey::kAudioVideoMutedDisplayInline:
+    case WatchTimeKey::kAudioVideoMutedDisplayPictureInPicture:
+    case WatchTimeKey::kAudioVideoMutedNativeControlsOn:
+    case WatchTimeKey::kAudioVideoMutedNativeControlsOff:
     case WatchTimeKey::kVideoAll:
-      return kWatchTimeVideoAll;
     case WatchTimeKey::kVideoMse:
-      return kWatchTimeVideoMse;
     case WatchTimeKey::kVideoEme:
-      return kWatchTimeVideoEme;
     case WatchTimeKey::kVideoSrc:
-      return kWatchTimeVideoSrc;
     case WatchTimeKey::kVideoBattery:
-      return kWatchTimeVideoBattery;
     case WatchTimeKey::kVideoAc:
-      return kWatchTimeVideoAc;
     case WatchTimeKey::kVideoDisplayFullscreen:
-      return kWatchTimeVideoDisplayFullscreen;
     case WatchTimeKey::kVideoDisplayInline:
-      return kWatchTimeVideoDisplayInline;
     case WatchTimeKey::kVideoDisplayPictureInPicture:
-      return kWatchTimeVideoDisplayPictureInPicture;
     case WatchTimeKey::kVideoEmbeddedExperience:
-      return kWatchTimeVideoEmbeddedExperience;
     case WatchTimeKey::kVideoNativeControlsOn:
-      return kWatchTimeVideoNativeControlsOn;
     case WatchTimeKey::kVideoNativeControlsOff:
-      return kWatchTimeVideoNativeControlsOff;
     case WatchTimeKey::kVideoBackgroundAll:
-      return kWatchTimeVideoBackgroundAll;
     case WatchTimeKey::kVideoBackgroundMse:
-      return kWatchTimeVideoBackgroundMse;
     case WatchTimeKey::kVideoBackgroundEme:
-      return kWatchTimeVideoBackgroundEme;
     case WatchTimeKey::kVideoBackgroundSrc:
-      return kWatchTimeVideoBackgroundSrc;
     case WatchTimeKey::kVideoBackgroundBattery:
-      return kWatchTimeVideoBackgroundBattery;
     case WatchTimeKey::kVideoBackgroundAc:
-      return kWatchTimeVideoBackgroundAc;
     case WatchTimeKey::kVideoBackgroundEmbeddedExperience:
-      return kWatchTimeVideoBackgroundEmbeddedExperience;
+      return base::StringPiece();
   };
 
   NOTREACHED();

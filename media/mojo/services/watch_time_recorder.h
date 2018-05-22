@@ -40,9 +40,6 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
 
   void UpdateUnderflowCount(int32_t count) override;
 
-  // Test helper method for determining if keys are not reported to UMA.
-  static bool ShouldReportUmaForTesting(WatchTimeKey key);
-
  private:
   // Records a UKM event based on |aggregate_watch_time_info_|; only recorded
   // with a complete finalize (destruction or empty FinalizeWatchTime call).

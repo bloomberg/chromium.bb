@@ -17,6 +17,7 @@ struct PlaybackProperties {
   bool has_audio;          // Note: Due to the above, we also need these
   bool has_video;          // booleans for audio and video presence.
   bool is_background;      // Is report for playback in the background?
+  bool is_muted;           // Is report for muted playback?
   bool is_mse;
   bool is_eme;
   bool is_embedded_media_experience;  // Playback from 'Downloads' on Android.

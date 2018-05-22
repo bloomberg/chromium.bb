@@ -26,6 +26,7 @@ WatchTimeReporter::WatchTimeReporter(
     const base::TickClock* tick_clock)
     : WatchTimeReporter(std::move(properties),
                         false /* is_background */,
+                        false /* is_muted */,
                         std::move(get_media_time_cb),
                         provider,
                         task_runner,
@@ -34,17 +35,29 @@ WatchTimeReporter::WatchTimeReporter(
 WatchTimeReporter::WatchTimeReporter(
     mojom::PlaybackPropertiesPtr properties,
     bool is_background,
+    bool is_muted,
     GetMediaTimeCB get_media_time_cb,
     mojom::MediaMetricsProvider* provider,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const base::TickClock* tick_clock)
     : properties_(std::move(properties)),
       is_background_(is_background),
+      is_muted_(is_muted),
       get_media_time_cb_(std::move(get_media_time_cb)),
       reporting_timer_(tick_clock) {
   DCHECK(!get_media_time_cb_.is_null());
   DCHECK(properties_->has_audio || properties_->has_video);
   DCHECK_EQ(is_background, properties_->is_background);
+
+  // The background reporter receives play/pause events instead of visibility
+  // changes, so it must always be visible to function correctly.
+  if (is_background_)
+    DCHECK(is_visible_);
+
+  // The muted reporter receives play/pause events instead of volume changes, so
+  // its volume must always be audible to function correctly.
+  if (is_muted_)
+    DCHECK_EQ(volume_, 1.0);
 
   if (base::PowerMonitor* pm = base::PowerMonitor::Get())
     pm->AddObserver(this);
@@ -52,7 +65,11 @@ WatchTimeReporter::WatchTimeReporter(
   provider->AcquireWatchTimeRecorder(properties_->Clone(),
                                      mojo::MakeRequest(&recorder_));
 
-  if (is_background_ || !ShouldReportWatchTime())
+  reporting_timer_.SetTaskRunner(task_runner);
+
+  // If this is a sub-reporter or we shouldn't report watch time, we're done. We
+  // don't support muted+background reporting currently.
+  if (is_background_ || is_muted_ || !ShouldReportWatchTime())
     return;
 
   // Background watch time is reported by creating an background only watch time
@@ -61,14 +78,25 @@ WatchTimeReporter::WatchTimeReporter(
   auto prop_copy = properties_.Clone();
   prop_copy->is_background = true;
   background_reporter_.reset(new WatchTimeReporter(
-      std::move(prop_copy), true /* is_background */, get_media_time_cb_,
-      provider, task_runner, tick_clock));
+      std::move(prop_copy), true /* is_background */, false /* is_muted */,
+      get_media_time_cb_, provider, task_runner, tick_clock));
 
-  reporting_timer_.SetTaskRunner(task_runner);
+  // Muted watch time is only reported for audio+video playback.
+  if (!properties_->has_video || !properties_->has_audio)
+    return;
+
+  // Similar to the above, muted watch time is reported by creating a muted only
+  // watch time reporter which receives play when muted and pause when audible.
+  prop_copy = properties_.Clone();
+  prop_copy->is_muted = true;
+  muted_reporter_.reset(new WatchTimeReporter(
+      std::move(prop_copy), false /* is_background */, true /* is_muted */,
+      get_media_time_cb_, provider, task_runner, tick_clock));
 }
 
 WatchTimeReporter::~WatchTimeReporter() {
   background_reporter_.reset();
+  muted_reporter_.reset();
 
   // This is our last chance, so finalize now if there's anything remaining.
   MaybeFinalizeWatchTime(FinalizeTime::IMMEDIATELY);
@@ -79,6 +107,8 @@ WatchTimeReporter::~WatchTimeReporter() {
 void WatchTimeReporter::OnPlaying() {
   if (background_reporter_ && !is_visible_)
     background_reporter_->OnPlaying();
+  if (muted_reporter_ && !volume_)
+    muted_reporter_->OnPlaying();
 
   is_playing_ = true;
   MaybeStartReportingTimer(get_media_time_cb_.Run());
@@ -87,6 +117,8 @@ void WatchTimeReporter::OnPlaying() {
 void WatchTimeReporter::OnPaused() {
   if (background_reporter_)
     background_reporter_->OnPaused();
+  if (muted_reporter_)
+    muted_reporter_->OnPaused();
 
   is_playing_ = false;
   MaybeFinalizeWatchTime(FinalizeTime::ON_NEXT_UPDATE);
@@ -95,6 +127,8 @@ void WatchTimeReporter::OnPaused() {
 void WatchTimeReporter::OnSeeking() {
   if (background_reporter_)
     background_reporter_->OnSeeking();
+  if (muted_reporter_)
+    muted_reporter_->OnSeeking();
 
   // Seek is a special case that does not have hysteresis, when this is called
   // the seek is imminent, so finalize the previous playback immediately.
@@ -105,27 +139,45 @@ void WatchTimeReporter::OnVolumeChange(double volume) {
   if (background_reporter_)
     background_reporter_->OnVolumeChange(volume);
 
+  // The muted reporter should never receive volume changes.
+  DCHECK(!is_muted_);
+
   const double old_volume = volume_;
   volume_ = volume;
 
   // We're only interesting in transitions in and out of the muted state.
-  if (!old_volume && volume)
+  if (!old_volume && volume) {
+    if (muted_reporter_)
+      muted_reporter_->OnPaused();
     MaybeStartReportingTimer(get_media_time_cb_.Run());
-  else if (old_volume && !volume_)
+  } else if (old_volume && !volume_) {
+    if (muted_reporter_ && is_playing_)
+      muted_reporter_->OnPlaying();
     MaybeFinalizeWatchTime(FinalizeTime::ON_NEXT_UPDATE);
+  }
 }
 
 void WatchTimeReporter::OnShown() {
+  // The background reporter should never receive visibility changes.
+  DCHECK(!is_background_);
+
   if (background_reporter_)
     background_reporter_->OnPaused();
+  if (muted_reporter_)
+    muted_reporter_->OnShown();
 
   is_visible_ = true;
   MaybeStartReportingTimer(get_media_time_cb_.Run());
 }
 
 void WatchTimeReporter::OnHidden() {
+  // The background reporter should never receive visibility changes.
+  DCHECK(!is_background_);
+
   if (background_reporter_ && is_playing_)
     background_reporter_->OnPlaying();
+  if (muted_reporter_)
+    muted_reporter_->OnHidden();
 
   is_visible_ = false;
   MaybeFinalizeWatchTime(FinalizeTime::ON_NEXT_UPDATE);
@@ -138,11 +190,15 @@ void WatchTimeReporter::OnError(PipelineStatus status) {
   recorder_->OnError(status);
   if (background_reporter_)
     background_reporter_->OnError(status);
+  if (muted_reporter_)
+    muted_reporter_->OnError(status);
 }
 
 void WatchTimeReporter::OnUnderflow() {
   if (background_reporter_)
     background_reporter_->OnUnderflow();
+  if (muted_reporter_)
+    muted_reporter_->OnUnderflow();
 
   if (!reporting_timer_.IsRunning())
     return;
@@ -154,6 +210,9 @@ void WatchTimeReporter::OnUnderflow() {
 }
 
 void WatchTimeReporter::OnNativeControlsEnabled() {
+  if (muted_reporter_)
+    muted_reporter_->OnNativeControlsEnabled();
+
   if (!reporting_timer_.IsRunning()) {
     has_native_controls_ = true;
     return;
@@ -170,6 +229,9 @@ void WatchTimeReporter::OnNativeControlsEnabled() {
 }
 
 void WatchTimeReporter::OnNativeControlsDisabled() {
+  if (muted_reporter_)
+    muted_reporter_->OnNativeControlsDisabled();
+
   if (!reporting_timer_.IsRunning()) {
     has_native_controls_ = false;
     return;
@@ -202,6 +264,8 @@ void WatchTimeReporter::SetAudioDecoderName(const std::string& name) {
   recorder_->SetAudioDecoderName(name);
   if (background_reporter_)
     background_reporter_->SetAudioDecoderName(name);
+  if (muted_reporter_)
+    muted_reporter_->SetAudioDecoderName(name);
 }
 
 void WatchTimeReporter::SetVideoDecoderName(const std::string& name) {
@@ -209,12 +273,16 @@ void WatchTimeReporter::SetVideoDecoderName(const std::string& name) {
   recorder_->SetVideoDecoderName(name);
   if (background_reporter_)
     background_reporter_->SetVideoDecoderName(name);
+  if (muted_reporter_)
+    muted_reporter_->SetVideoDecoderName(name);
 }
 
 void WatchTimeReporter::SetAutoplayInitiated(bool autoplay_initiated) {
   recorder_->SetAutoplayInitiated(autoplay_initiated);
   if (background_reporter_)
     background_reporter_->SetAutoplayInitiated(autoplay_initiated);
+  if (muted_reporter_)
+    muted_reporter_->SetAutoplayInitiated(autoplay_initiated);
 }
 
 void WatchTimeReporter::OnPowerStateChange(bool on_battery_power) {
@@ -252,6 +320,9 @@ void WatchTimeReporter::MaybeStartReportingTimer(
   // Don't start the timer if any of our state indicates we shouldn't; this
   // check is important since the various event handlers do not have to care
   // about the state of other events.
+  //
+  // TODO(dalecurtis): We should only consider |volume_| when there is actually
+  // an audio track; requires updating lots of tests to fix.
   if (!ShouldReportWatchTime() || !is_playing_ || !volume_ || !is_visible_) {
     // If we reach this point the timer should already have been stopped or
     // there is a pending finalize in flight.
@@ -333,8 +404,10 @@ void WatchTimeReporter::UpdateWatchTime() {
   do {                                                                    \
     recorder_->RecordWatchTime(                                           \
         (properties_->has_video && properties_->has_audio)                \
-            ? (is_background_ ? WatchTimeKey::kAudioVideoBackground##key  \
-                              : WatchTimeKey::kAudioVideo##key)           \
+            ? (is_background_                                             \
+                   ? WatchTimeKey::kAudioVideoBackground##key             \
+                   : (is_muted_ ? WatchTimeKey::kAudioVideoMuted##key     \
+                                : WatchTimeKey::kAudioVideo##key))        \
             : properties_->has_video                                      \
                   ? (is_background_ ? WatchTimeKey::kVideoBackground##key \
                                     : WatchTimeKey::kVideo##key)          \
@@ -394,7 +467,8 @@ void WatchTimeReporter::UpdateWatchTime() {
     DCHECK(!is_background_);                                      \
     recorder_->RecordWatchTime(                                   \
         (properties_->has_video && properties_->has_audio)        \
-            ? WatchTimeKey::kAudioVideo##key                      \
+            ? (is_muted_ ? WatchTimeKey::kAudioVideoMuted##key    \
+                         : WatchTimeKey::kAudioVideo##key)        \
             : properties_->has_audio ? WatchTimeKey::kAudio##key  \
                                      : WatchTimeKey::kVideo##key, \
         value);                                                   \
@@ -419,14 +493,16 @@ void WatchTimeReporter::UpdateWatchTime() {
   }
 
 // Similar to RECORD_WATCH_TIME but ignores background and audio watch time.
-#define RECORD_DISPLAY_WATCH_TIME(key, value)                       \
-  do {                                                              \
-    DCHECK(properties_->has_video);                                 \
-    DCHECK(!is_background_);                                        \
-    recorder_->RecordWatchTime(properties_->has_audio               \
-                                   ? WatchTimeKey::kAudioVideo##key \
-                                   : WatchTimeKey::kVideo##key,     \
-                               value);                              \
+#define RECORD_DISPLAY_WATCH_TIME(key, value)                  \
+  do {                                                         \
+    DCHECK(properties_->has_video);                            \
+    DCHECK(!is_background_);                                   \
+    recorder_->RecordWatchTime(                                \
+        properties_->has_audio                                 \
+            ? (is_muted_ ? WatchTimeKey::kAudioVideoMuted##key \
+                         : WatchTimeKey::kAudioVideo##key)     \
+            : WatchTimeKey::kVideo##key,                       \
+        value);                                                \
   } while (0)
 
   // Similar to the block above for display type.
@@ -492,7 +568,9 @@ void WatchTimeReporter::UpdateWatchTime() {
            WatchTimeKey::kAudioBackgroundAc, WatchTimeKey::kAudioVideoBattery,
            WatchTimeKey::kAudioVideoAc,
            WatchTimeKey::kAudioVideoBackgroundBattery,
-           WatchTimeKey::kAudioVideoBackgroundAc, WatchTimeKey::kVideoBattery,
+           WatchTimeKey::kAudioVideoBackgroundAc,
+           WatchTimeKey::kAudioVideoMutedBattery,
+           WatchTimeKey::kAudioVideoMutedAc, WatchTimeKey::kVideoBattery,
            WatchTimeKey::kVideoAc, WatchTimeKey::kVideoBackgroundAc,
            WatchTimeKey::kVideoBackgroundBattery});
     }
@@ -503,18 +581,24 @@ void WatchTimeReporter::UpdateWatchTime() {
                                WatchTimeKey::kAudioNativeControlsOff,
                                WatchTimeKey::kAudioVideoNativeControlsOn,
                                WatchTimeKey::kAudioVideoNativeControlsOff,
+                               WatchTimeKey::kAudioVideoMutedNativeControlsOn,
+                               WatchTimeKey::kAudioVideoMutedNativeControlsOff,
                                WatchTimeKey::kVideoNativeControlsOn,
                                WatchTimeKey::kVideoNativeControlsOff});
     }
 
     if (is_display_type_change_pending) {
-      keys_to_finalize.insert(keys_to_finalize.end(),
-                              {WatchTimeKey::kAudioVideoDisplayFullscreen,
-                               WatchTimeKey::kAudioVideoDisplayInline,
-                               WatchTimeKey::kAudioVideoDisplayPictureInPicture,
-                               WatchTimeKey::kVideoDisplayFullscreen,
-                               WatchTimeKey::kVideoDisplayInline,
-                               WatchTimeKey::kVideoDisplayPictureInPicture});
+      keys_to_finalize.insert(
+          keys_to_finalize.end(),
+          {WatchTimeKey::kAudioVideoDisplayFullscreen,
+           WatchTimeKey::kAudioVideoDisplayInline,
+           WatchTimeKey::kAudioVideoDisplayPictureInPicture,
+           WatchTimeKey::kAudioVideoMutedDisplayFullscreen,
+           WatchTimeKey::kAudioVideoMutedDisplayInline,
+           WatchTimeKey::kAudioVideoMutedDisplayPictureInPicture,
+           WatchTimeKey::kVideoDisplayFullscreen,
+           WatchTimeKey::kVideoDisplayInline,
+           WatchTimeKey::kVideoDisplayPictureInPicture});
     }
 
     if (!keys_to_finalize.empty())
@@ -554,6 +638,9 @@ void WatchTimeReporter::UpdateWatchTime() {
 
 void WatchTimeReporter::OnDisplayTypeChanged(
     blink::WebMediaPlayer::DisplayType display_type) {
+  if (muted_reporter_)
+    muted_reporter_->OnDisplayTypeChanged(display_type);
+
   display_type_ = display_type;
 
   if (!reporting_timer_.IsRunning())
