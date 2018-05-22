@@ -493,6 +493,8 @@ core_dependency_idl_files =
                     "css/property_registration.idl",
                     "css/cssom/css_unit_values.idl",
                     "css/cssom/element_computed_style_map.idl",
+                    "dom/accessibility_role.idl",
+                    "dom/aria_attributes.idl",
                     "dom/child_node.idl",
                     "dom/document_or_shadow_root.idl",
                     "dom/global_event_handlers.idl",
