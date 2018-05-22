@@ -1721,6 +1721,11 @@ TEST_F(TileManagerTest, ActivateAndDrawWhenOOM) {
 
 class PixelInspectTileManagerTest : public TileManagerTest {
  public:
+  ~PixelInspectTileManagerTest() override {
+    // Ensure that the host impl doesn't outlive |raster_buffer_provider_|.
+    TakeHostImpl();
+  }
+
   void SetUp() override {
     TileManagerTest::SetUp();
     // Use a RasterBufferProvider that will let us inspect pixels.
