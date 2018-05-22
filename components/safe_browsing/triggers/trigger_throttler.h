@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/time/clock.h"
 
+class PrefService;
+
 namespace safe_browsing {
 // Default quota for ad sampler trigger.
 extern const size_t kAdSamplerTriggerDefaultQuota;
@@ -34,6 +36,8 @@ enum class TriggerType {
   AD_SAMPLE = 2,
   GAIA_PASSWORD_REUSE = 3,
   SUSPICIOUS_SITE = 4,
+  kMinTriggerType = SECURITY_INTERSTITIAL,
+  kMaxTriggerType = SUSPICIOUS_SITE,
 };
 
 struct TriggerTypeHash {
@@ -44,7 +48,7 @@ struct TriggerTypeHash {
 
 // A map for storing a list of event timestamps for different trigger types.
 using TriggerTimestampMap =
-    std::unordered_map<TriggerType, std::vector<time_t>, TriggerTypeHash>;
+    std::unordered_map<TriggerType, std::vector<base::Time>, TriggerTypeHash>;
 
 // A pair containing a TriggerType and its associated daily report quota.
 using TriggerTypeAndQuotaItem = std::pair<TriggerType, int>;
@@ -53,7 +57,7 @@ using TriggerTypeAndQuotaItem = std::pair<TriggerType, int>;
 // and throttles them if they fire too often.
 class TriggerThrottler {
  public:
-  TriggerThrottler();
+  TriggerThrottler(PrefService* local_state_prefs);
   virtual ~TriggerThrottler();
 
   // Check if the the specified |trigger_type| has quota available and is
@@ -74,8 +78,22 @@ class TriggerThrottler {
   // Called to periodically clean-up the list of event timestamps.
   void CleanupOldEvents();
 
+  // Loads trigger events that have been stored in preferences and adds them
+  // to |trigger_events_|.
+  void LoadTriggerEventsFromPref();
+
+  // Updates preferences with current contents of |trigger_events_|.
+  void WriteTriggerEventsToPref();
+
   // Returns the daily quota for the specified trigger.
   size_t GetDailyQuotaForTrigger(const TriggerType trigger_type) const;
+
+  // Resets |local_state_prefs_|. For testing.
+  void ResetPrefsForTesting(PrefService* local_state_prefs);
+
+  // Pref service for accessing local state prefs (ie: unsynced, tied to the
+  // browser not to a profile). Used to persist quota.
+  PrefService* local_state_prefs_;
 
   // Can be set for testing.
   base::Clock* clock_;

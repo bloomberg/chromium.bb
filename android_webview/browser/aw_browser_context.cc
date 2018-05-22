@@ -180,7 +180,8 @@ void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
   safe_browsing_trigger_manager_ =
       std::make_unique<safe_browsing::TriggerManager>(
           safe_browsing_ui_manager_.get(),
-          /*referrer_chain_provider=*/nullptr);
+          /*referrer_chain_provider=*/nullptr,
+          /*local_state_prefs=*/nullptr);
   safe_browsing_whitelist_manager_ = CreateSafeBrowsingWhitelistManager();
 
   content::WebUIControllerFactory::RegisterFactory(

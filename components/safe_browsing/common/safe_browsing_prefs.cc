@@ -174,6 +174,8 @@ const char kSafeBrowsingScoutGroupSelected[] =
     "safebrowsing.scout_group_selected";
 const char kSafeBrowsingScoutReportingEnabled[] =
     "safebrowsing.scout_reporting_enabled";
+const char kSafeBrowsingTriggerEventTimestamps[] =
+    "safebrowsing.trigger_event_timestamps";
 const char kSafeBrowsingUnhandledSyncPasswordReuses[] =
     "safebrowsing.unhandled_sync_password_reuses";
 const char kSafeBrowsingWhitelistDomains[] =
@@ -382,6 +384,10 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kPasswordProtectionLoginURLs);
   registry->RegisterIntegerPref(prefs::kPasswordProtectionWarningTrigger,
                                 PASSWORD_PROTECTION_OFF);
+}
+
+void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kSafeBrowsingTriggerEventTimestamps);
 }
 
 void SetExtendedReportingPrefAndMetric(

@@ -94,10 +94,11 @@ DataCollectorsContainer::DataCollectorsContainer() {}
 DataCollectorsContainer::~DataCollectorsContainer() {}
 
 TriggerManager::TriggerManager(BaseUIManager* ui_manager,
-                               ReferrerChainProvider* referrer_chain_provider)
+                               ReferrerChainProvider* referrer_chain_provider,
+                               PrefService* local_state_prefs)
     : ui_manager_(ui_manager),
       referrer_chain_provider_(referrer_chain_provider),
-      trigger_throttler_(new TriggerThrottler()),
+      trigger_throttler_(new TriggerThrottler(local_state_prefs)),
       weak_factory_(this) {}
 
 TriggerManager::~TriggerManager() {}
