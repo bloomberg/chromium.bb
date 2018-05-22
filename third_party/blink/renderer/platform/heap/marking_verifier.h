@@ -22,7 +22,8 @@ class MarkingVerifier final : public Visitor {
     if (header->IsFree() || !header->IsMarked())
       return;
 
-    const GCInfo* info = ThreadHeap::GcInfo(header->GcInfoIndex());
+    const GCInfo* info =
+        GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
     const bool can_verify =
         !info->HasVTable() || blink::VTableInitialized(header->Payload());
     if (can_verify) {
