@@ -193,6 +193,8 @@ class CORE_EXPORT MultiColumnFragmentainerGroup {
   // to a column, even if said point is not inside any of the columns.
   unsigned ColumnIndexAtVisualPoint(const LayoutPoint& visual_point) const;
 
+  unsigned UnclampedActualColumnCount() const;
+
   const LayoutMultiColumnSet& column_set_;
 
   LayoutUnit logical_top_;
@@ -206,6 +208,8 @@ class CORE_EXPORT MultiColumnFragmentainerGroup {
 
   // Maximum logical height allowed.
   LayoutUnit max_logical_height_;
+
+  unsigned actual_column_count_allowance_ = 0;
 
   bool is_logical_height_known_ = false;
 };
