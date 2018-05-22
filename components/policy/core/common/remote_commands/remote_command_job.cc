@@ -20,16 +20,15 @@ constexpr base::TimeDelta kDefaultCommandExpirationTime =
 
 }  // namespace
 
-namespace em = enterprise_management;
-
 RemoteCommandJob::~RemoteCommandJob() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (status_ == RUNNING)
     Terminate();
 }
 
-bool RemoteCommandJob::Init(base::TimeTicks now,
-                            const em::RemoteCommand& command) {
+bool RemoteCommandJob::Init(
+    base::TimeTicks now,
+    const enterprise_management::RemoteCommand& command) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(NOT_INITIALIZED, status_);
 
@@ -63,32 +62,9 @@ bool RemoteCommandJob::Init(base::TimeTicks now,
     return false;
   }
 
-  switch (command.type()) {
-    case em::RemoteCommand_Type_COMMAND_ECHO_TEST: {
-      SYSLOG(INFO) << "Remote echo test command " << unique_id_
-                   << " initialized.";
-      break;
-    }
-    case em::RemoteCommand_Type_DEVICE_REBOOT: {
-      SYSLOG(INFO) << "Remote reboot command " << unique_id_ << " initialized.";
-      break;
-    }
-    case em::RemoteCommand_Type_DEVICE_SCREENSHOT: {
-      SYSLOG(INFO) << "Remote screenshot command " << unique_id_
-                   << " initialized.";
-      break;
-    }
-    case em::RemoteCommand_Type_DEVICE_SET_VOLUME: {
-      SYSLOG(INFO) << "Remote set volume command " << unique_id_
-                   << " initialized.";
-      break;
-    }
-    case em::RemoteCommand_Type_DEVICE_FETCH_STATUS: {
-      SYSLOG(INFO) << "Remote fetch device status command " << unique_id_
-                   << " initialized.";
-      break;
-    }
-  }
+  SYSLOG(INFO) << "Remote command type " << command.type() << " with id "
+               << command.command_id() << " initialized.";
+
   status_ = NOT_STARTED;
   return true;
 }

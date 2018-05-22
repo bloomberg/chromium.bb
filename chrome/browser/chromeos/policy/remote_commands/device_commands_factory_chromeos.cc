@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_fetch_status_job.h"
@@ -43,6 +44,9 @@ DeviceCommandsFactoryChromeOS::BuildJobForType(em::RemoteCommand_Type type) {
       return base::WrapUnique<RemoteCommandJob>(
           new DeviceCommandFetchStatusJob());
     default:
+      // Other types of commands should be sent to UserCommandsFactoryChromeOS
+      // instead of here.
+      NOTREACHED();
       return nullptr;
   }
 }

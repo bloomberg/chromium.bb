@@ -91,6 +91,12 @@ class ArcPolicyBridge : public KeyedService,
   static ArcPolicyBridge* GetForBrowserContext(
       content::BrowserContext* context);
 
+  // Set the ArcPolicyBridge that will be returned by GetForBrowserContext in
+  // testing code.
+  static void SetForTesting(ArcPolicyBridge* arc_policy_bridge);
+
+  base::WeakPtr<ArcPolicyBridge> GetWeakPtr();
+
   ArcPolicyBridge(content::BrowserContext* context,
                   ArcBridgeService* bridge_service);
   ArcPolicyBridge(content::BrowserContext* context,
@@ -127,6 +133,10 @@ class ArcPolicyBridge : public KeyedService,
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,
                        const policy::PolicyMap& previous,
                        const policy::PolicyMap& current) override;
+
+  void OnCommandReceived(
+      const std::string& command,
+      mojom::PolicyInstance::OnCommandReceivedCallback callback);
 
  private:
   void InitializePolicyService();

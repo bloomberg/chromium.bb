@@ -374,7 +374,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     external_data_manager_ = new MockCloudExternalDataManager;
     external_data_manager_->SetPolicyStore(store_);
     manager_.reset(new UserCloudPolicyManagerChromeOS(
-        std::move(store),
+        profile_, std::move(store),
         base::WrapUnique<MockCloudExternalDataManager>(external_data_manager_),
         base::FilePath(), enforcement_type, fetch_timeout,
         base::BindOnce(

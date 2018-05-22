@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_REMOTE_COMMANDS_DEVICE_COMMANDS_FACTORY_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_REMOTE_COMMANDS_DEVICE_COMMANDS_FACTORY_CHROMEOS_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
 

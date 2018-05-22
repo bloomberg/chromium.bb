@@ -1398,6 +1398,10 @@ message RemoteCommand {
 
     // Force a refresh of device status (attributes and logs).
     DEVICE_FETCH_STATUS = 3;
+
+    // Forwards a user command received from the management server to the ARC++
+    // side. The payload is opaque to Chrome OS.
+    USER_ARC_COMMAND = 4;
   }
 
   // The command type.
@@ -1423,6 +1427,7 @@ message RemoteCommand {
 // This protobuf defines the execution result of a single remote command
 // which will be sent back to the server.
 message RemoteCommandResult {
+  // If you change this, update policy.mojom/CommandResultType.
   enum ResultType {
     RESULT_IGNORED = 0;  // The command was ignored as obsolete.
     RESULT_FAILURE = 1;  // The command could not be executed.

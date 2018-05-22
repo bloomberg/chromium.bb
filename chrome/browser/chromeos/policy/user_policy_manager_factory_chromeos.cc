@@ -398,7 +398,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   } else {
     std::unique_ptr<UserCloudPolicyManagerChromeOS> manager =
         std::make_unique<UserCloudPolicyManagerChromeOS>(
-            std::move(store), std::move(external_data_manager),
+            profile, std::move(store), std::move(external_data_manager),
             component_policy_cache_dir, enforcement_type,
             policy_refresh_timeout,
             base::BindOnce(&OnUserPolicyFatalError, account_id,
