@@ -673,7 +673,9 @@ class MyActivity(object):
 
   def print_access_errors(self):
     if self.access_errors:
-      print ('\nAccess Errors:\n%s' % ''.join(self.access_errors))
+      logging.error('Access Errors:')
+      for error in self.access_errors:
+        logging.error(error.rstrip())
 
   def get_reviews(self):
     num_instances = len(rietveld_instances) + len(gerrit_instances)
