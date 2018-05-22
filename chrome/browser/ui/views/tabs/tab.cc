@@ -75,23 +75,28 @@ using MD = ui::MaterialDesignController;
 
 namespace {
 
-const int kExtraLeftPaddingToBalanceCloseButtonPadding = 2;
+constexpr int kExtraLeftPaddingToBalanceCloseButtonPadding = 2;
 
 // When a non-pinned tab becomes a pinned tab the width of the tab animates. If
 // the width of a pinned tab is at least kPinnedTabExtraWidthToRenderAsNormal
 // larger than the desired pinned tab width then the tab is rendered as a normal
 // tab. This is done to avoid having the title immediately disappear when
 // transitioning a tab from normal to pinned tab.
-const int kPinnedTabExtraWidthToRenderAsNormal = 30;
+constexpr int kPinnedTabExtraWidthToRenderAsNormal = 30;
 
 // How opaque to make the hover state (out of 1).
-const double kHoverOpacity = 0.33;
+constexpr double kHoverOpacity = 0.33;
 
 // Opacity of the active tab background painted over inactive selected tabs.
-const double kSelectedTabOpacity = 0.3;
+constexpr double kSelectedTabOpacity = 0.3;
 
 // Inactive selected tabs have their throb value scaled by this.
-const double kSelectedTabThrobScale = 0.95 - kSelectedTabOpacity;
+constexpr double kSelectedTabThrobScale = 0.95 - kSelectedTabOpacity;
+
+// Height of the separator painted on the left edge of the tab for the material
+// refresh mode.
+constexpr int kTabSeparatorHeight = 20;
+constexpr int kTabSeparatorTouchHeight = 24;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Drawing and utility functions
@@ -148,22 +153,24 @@ gfx::Path GetInteriorPath(float scale,
   gfx::Path left_path;
   if (MD::IsRefreshUi()) {
     const float radius = (endcap_width / 2) * scale;
-
     const float stroke_thickness = TabStrip::ShouldDrawStrokes() ? 1 : 0;
 
     // Bottom right.
-    right_path.moveTo(right, bottom);
+    right_path.moveTo(right - scaled_horizontal_inset, bottom);
+    right_path.rLineTo(0, stroke_thickness);
 
     right_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
-                     SkPath::kCW_Direction, right - radius, bottom - radius);
+                     SkPath::kCW_Direction,
+                     right - radius - scaled_horizontal_inset, bottom - radius);
 
     // Right vertical.
-    right_path.lineTo(right - radius, radius + stroke_thickness);
+    right_path.lineTo(right - radius - scaled_horizontal_inset,
+                      radius - stroke_thickness);
 
     // Top right.
-    right_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
-                     SkPath::kCCW_Direction, right - radius * 2,
-                     stroke_thickness);
+    right_path.arcTo(
+        radius, radius, 0, SkPath::kSmall_ArcSize, SkPath::kCCW_Direction,
+        right - radius * 2 - scaled_horizontal_inset, stroke_thickness);
 
     // Top edge.
     right_path.lineTo(0, stroke_thickness);
@@ -171,20 +178,22 @@ gfx::Path GetInteriorPath(float scale,
     right_path.close();
 
     // Top left.
-    left_path.moveTo(radius * 2, stroke_thickness);
+    left_path.moveTo(radius * 2 + scaled_horizontal_inset, stroke_thickness);
 
     left_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
-                    SkPath::kCCW_Direction, radius, radius + stroke_thickness);
+                    SkPath::kCCW_Direction, radius + scaled_horizontal_inset,
+                    radius);
 
     // Left vertical.
-    left_path.lineTo(radius, bottom - radius);
+    left_path.lineTo(radius + scaled_horizontal_inset, bottom - radius);
 
     // Bottom left.
     left_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
-                    SkPath::kCW_Direction, 0, bottom);
+                    SkPath::kCW_Direction, scaled_horizontal_inset,
+                    bottom + stroke_thickness);
 
     // Bottom edge.
-    left_path.lineTo(right, bottom);
+    left_path.lineTo(right, bottom + stroke_thickness);
     left_path.lineTo(right, stroke_thickness);
     left_path.close();
   } else {
@@ -237,7 +246,7 @@ gfx::Path GetBorderPath(float scale,
   gfx::Path path;
 
   path.moveTo(0, bottom);
-  path.rLineTo(0, -1);
+  path.rLineTo(0, -stroke_thickness);
 
   if (MD::IsRefreshUi()) {
     const float radius = (endcap_width / 2) * scale;
@@ -1205,7 +1214,9 @@ void Tab::PaintSeparator(gfx::Canvas* canvas, SkColor inactive_color) {
 
   const int tab_height = GetContentsBounds().height();
   gfx::RectF separator_bounds;
-  separator_bounds.set_size(gfx::SizeF(1, 20));
+  separator_bounds.set_size(gfx::SizeF(1, MD::IsTouchOptimizedUiEnabled()
+                                              ? kTabSeparatorTouchHeight
+                                              : kTabSeparatorHeight));
   separator_bounds.set_origin(gfx::PointF(
       GetTabEndcapWidth() / 2, (tab_height - separator_bounds.height()) / 2));
   // The following will paint the separator using an opacity that should
