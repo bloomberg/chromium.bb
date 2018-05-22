@@ -43,14 +43,10 @@ component("controller") {
     "controller_export.h",
     "dev_tools_frontend_impl.cc",
     "dev_tools_frontend_impl.h",
+    "oom_intervention_impl.cc",
+    "oom_intervention_impl.h",
   ]
 
-  if (is_android) {
-    sources += [
-      "oom_intervention_impl.cc",
-      "oom_intervention_impl.h",
-    ]
-  }
   if (is_mac) {
     libs = [
       "AppKit.framework",
@@ -128,12 +124,10 @@ jumbo_source_set("webkit_unit_tests_sources") {
 
   sources = [
     "bloated_renderer_detector_test.cc",
+    "oom_intervention_impl_test.cc",
     "tests/run_all_tests.cc",
   ]
   sources += bindings_unittest_files
-  if (is_android) {
-    sources += [ "oom_intervention_impl_test.cc" ]
-  }
 
   deps = [
     ":controller",
