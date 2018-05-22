@@ -1875,12 +1875,14 @@
   },
   'notification_helper_unittests': {
     'remove_from': [
-      # chromium.win, this unit test requires WinRT, which only exists on Windows 8 or above.
+      # The test uses WinRT, which only exists in Windows 8 or above.
+      # (https://crbug.com/813553)
+      # chromium.win
       'Win 7 Tests x64 (1)',
       'Win7 (32) Tests',
       'Win7 Tests (1)',
       'Win7 Tests (dbg)(1)',
-      # chromium.clang, the following bots run on Windows 7, where the unit test doesn't run.
+      # chromium.clang; all these bots run Windows 7.
       'CrWinAsan',
       'CrWinAsan(dll)',
       'CrWinAsanCov',
@@ -1898,7 +1900,7 @@
       'ToTWinCFI64',
       'ToTWinLibcxx64',
       'ToTWinThinLTO64',
-      # chromium.fyi
+      # chromium.fyi; all these bots run Windows 7.
       'Out of Process Profiling Windows',
     ],
   },
