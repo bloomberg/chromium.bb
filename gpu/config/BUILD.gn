@@ -158,6 +158,11 @@ source_set("config_sources") {
   include_dirs = [ "//third_party/mesa/src/include" ]
 
   if (is_win) {
+    libs = [
+      "dxguid.lib",
+      "setupapi.lib",
+    ]
+
     if (is_chrome_branded && is_official_build) {
       sources += [
         "//third_party/amd/AmdCfxPxExt.h",
@@ -168,7 +173,7 @@ source_set("config_sources") {
   if (is_mac) {
     libs = [ "OpenGL.framework" ]
   }
-  if (is_win || is_linux || is_mac) {
+  if (is_linux || is_mac) {
     deps += [ "//third_party/angle:angle_gpu_info_util" ]
   }
 }
