@@ -179,6 +179,14 @@ class CONTENT_EXPORT CacheStorageCache {
   // the cache's size.
   void GetSizeThenClose(SizeCallback callback);
 
+  // Puts the request/response pair in the cache. This is a public member to
+  // directly bypass the batch operations and write into the cache. This is used
+  // by non-CacheAPI owners. The Cache Storage API uses batch operations defined
+  // in the dispatcher.
+  void Put(std::unique_ptr<ServiceWorkerFetchRequest> request,
+           std::unique_ptr<ServiceWorkerResponse> response,
+           ErrorCallback callback);
+
   // Async operations in progress will cancel and not run their callbacks.
   virtual ~CacheStorageCache();
 

@@ -704,6 +704,26 @@ void CacheStorage::MatchAllCaches(
       scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
+void CacheStorage::WriteToCache(
+    const std::string& cache_name,
+    std::unique_ptr<ServiceWorkerFetchRequest> request,
+    std::unique_ptr<ServiceWorkerResponse> response,
+    CacheStorage::ErrorCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!initialized_)
+    LazyInit();
+
+  quota_manager_proxy_->NotifyStorageAccessed(
+      storage::QuotaClient::kServiceWorkerCache, origin_,
+      StorageType::kTemporary);
+
+  scheduler_->ScheduleOperation(base::BindOnce(
+      &CacheStorage::WriteToCacheImpl, weak_factory_.GetWeakPtr(), cache_name,
+      std::move(request), std::move(response),
+      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+}
+
 void CacheStorage::GetSizeThenCloseAllCaches(SizeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -1063,6 +1083,24 @@ void CacheStorage::MatchAllCachesDidMatchAll(
     return;
   }
   std::move(callback).Run(CacheStorageError::kErrorNotFound, nullptr);
+}
+
+void CacheStorage::WriteToCacheImpl(
+    const std::string& cache_name,
+    std::unique_ptr<ServiceWorkerFetchRequest> request,
+    std::unique_ptr<ServiceWorkerResponse> response,
+    CacheStorage::ErrorCallback callback) {
+  CacheStorageCacheHandle cache_handle = GetLoadedCache(cache_name);
+
+  if (!cache_handle.value()) {
+    std::move(callback).Run(CacheStorageError::kErrorCacheNameNotFound);
+    return;
+  }
+
+  CacheStorageCache* cache_ptr = cache_handle.value();
+  DCHECK(cache_ptr);
+
+  cache_ptr->Put(std::move(request), std::move(response), std::move(callback));
 }
 
 void CacheStorage::AddCacheHandleRef(CacheStorageCache* cache) {

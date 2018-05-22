@@ -417,6 +417,24 @@ class CacheStorageManagerTest : public testing::Test {
     return callback_error_ == CacheStorageError::kSuccess;
   }
 
+  bool Write(const url::Origin& origin,
+             CacheStorageOwner owner,
+             const std::string& cache_name,
+             const std::string& request_url) {
+    auto request = std::make_unique<ServiceWorkerFetchRequest>();
+    request->url = GURL(request_url);
+
+    auto response = std::make_unique<ServiceWorkerResponse>();
+
+    base::RunLoop loop;
+    cache_manager_->WriteToCache(
+        origin, owner, cache_name, std::move(request), std::move(response),
+        base::BindOnce(&CacheStorageManagerTest::ErrorCallback,
+                       base::Unretained(this), base::Unretained(&loop)));
+    loop.Run();
+    return callback_bool_;
+  }
+
   bool CachePut(CacheStorageCache* cache,
                 const GURL& url,
                 FetchResponseType response_type = FetchResponseType::kDefault) {
@@ -1843,6 +1861,30 @@ TEST_P(CacheStorageManagerTestP, StorageMatchAll_IgnoreVary) {
   match_params->ignore_vary = true;
   EXPECT_TRUE(
       StorageMatchAllWithRequest(origin1_, request, std::move(match_params)));
+}
+
+TEST_P(CacheStorageManagerTestP, StorageWriteToCache) {
+  EXPECT_TRUE(Open(origin1_, "foo", CacheStorageOwner::kBackgroundFetch));
+
+  EXPECT_TRUE(Write(origin1_, CacheStorageOwner::kBackgroundFetch, "foo",
+                    "http://example.com/foo"));
+
+  // Match request we just wrote.
+  EXPECT_TRUE(StorageMatch(origin1_, "foo", GURL("http://example.com/foo"),
+                           nullptr, CacheStorageOwner::kBackgroundFetch));
+
+  // Don't match with different origin.
+  EXPECT_FALSE(StorageMatch(origin2_, "foo", GURL("http://example.com/foo"),
+                            nullptr, CacheStorageOwner::kBackgroundFetch));
+  // Don't match with different cache name.
+  EXPECT_FALSE(StorageMatch(origin1_, "bar", GURL("http://example.com/foo"),
+                            nullptr, CacheStorageOwner::kBackgroundFetch));
+  // Don't match with different request.
+  EXPECT_FALSE(StorageMatch(origin1_, "foo", GURL("http://example.com/bar"),
+                            nullptr, CacheStorageOwner::kBackgroundFetch));
+  // Don't match with different owner.
+  EXPECT_FALSE(StorageMatch(origin1_, "foo", GURL("http://example.com/foo"),
+                            nullptr, CacheStorageOwner::kCacheAPI));
 }
 
 class CacheStorageQuotaClientTest : public CacheStorageManagerTest {

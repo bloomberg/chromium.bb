@@ -101,6 +101,16 @@ class CONTENT_EXPORT CacheStorageManager {
                       blink::mojom::QueryParamsPtr match_params,
                       CacheStorageCache::ResponseCallback callback);
 
+  // Method to support writing to a cache directly from CacheStorageManager.
+  // This should be used by non-CacheAPI owners. The Cache API writes are
+  // handled via the dispatcher.
+  void WriteToCache(const url::Origin& origin,
+                    CacheStorageOwner owner,
+                    const std::string& cache_name,
+                    std::unique_ptr<ServiceWorkerFetchRequest> request,
+                    std::unique_ptr<ServiceWorkerResponse> response,
+                    CacheStorage::ErrorCallback callback);
+
   // This must be called before creating any of the public *Cache functions
   // above.
   void SetBlobParametersForCache(

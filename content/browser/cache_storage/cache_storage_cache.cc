@@ -1216,6 +1216,15 @@ void CacheStorageCache::Put(blink::mojom::BatchOperationPtr operation,
 
   std::unique_ptr<ServiceWorkerResponse> response =
       std::make_unique<ServiceWorkerResponse>(*operation->response);
+
+  Put(std::move(request), std::move(response), std::move(callback));
+}
+
+void CacheStorageCache::Put(std::unique_ptr<ServiceWorkerFetchRequest> request,
+                            std::unique_ptr<ServiceWorkerResponse> response,
+                            ErrorCallback callback) {
+  DCHECK(BACKEND_OPEN == backend_state_ || initializing_);
+
   blink::mojom::BlobPtr blob;
   blink::mojom::BlobPtr side_data_blob;
 
@@ -1225,7 +1234,7 @@ void CacheStorageCache::Put(blink::mojom::BatchOperationPtr operation,
     side_data_blob = response->side_data_blob->Clone();
 
   UMA_HISTOGRAM_ENUMERATION("ServiceWorkerCache.Cache.AllWritesResponseType",
-                            operation->response->response_type);
+                            response->response_type);
 
   auto put_context = std::make_unique<PutContext>(
       std::move(request), std::move(response), std::move(blob),
