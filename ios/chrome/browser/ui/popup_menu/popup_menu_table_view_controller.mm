@@ -187,6 +187,12 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
       base::RecordAction(UserMetricsAction("MobileMenuHelp"));
       [self.dispatcher showHelpPage];
       break;
+#if !defined(NDEBUG)
+    case PopupMenuActionViewSource:
+      [self.dispatcher viewSource];
+      break;
+#endif  // !defined(NDEBUG)
+
     case PopupMenuActionBookmarks:
       base::RecordAction(UserMetricsAction("MobileMenuAllBookmarks"));
       [self.dispatcher showBookmarksManager];
