@@ -730,6 +730,8 @@ const FeatureEntry::Choice kTLS13VariantChoices[] = {
      switches::kTLS13VariantDisabled},
     {flag_descriptions::kTLS13VariantDraft23, switches::kTLS13Variant,
      switches::kTLS13VariantDraft23},
+    {flag_descriptions::kTLS13VariantDraft28, switches::kTLS13Variant,
+     switches::kTLS13VariantDraft28},
 };
 
 #if !defined(OS_ANDROID)

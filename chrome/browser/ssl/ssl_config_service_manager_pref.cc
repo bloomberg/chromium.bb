@@ -158,6 +158,9 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
   } else if (tls13_variant == "draft23") {
     tls13_value = switches::kTLS13VariantDraft23;
     version_value = switches::kSSLVersionTLSv13;
+  } else if (tls13_variant == "draft28") {
+    tls13_value = switches::kTLS13VariantDraft28;
+    version_value = switches::kSSLVersionTLSv13;
   }
 
   if (tls13_value) {
@@ -279,6 +282,8 @@ SSLConfigServiceManagerPref::GetSSLConfigFromPrefs() const {
       config->version_max = network::mojom::SSLVersion::kTLS12;
   } else if (tls13_variant_str == switches::kTLS13VariantDraft23) {
     config->tls13_variant = network::mojom::TLS13Variant::kDraft23;
+  } else if (tls13_variant_str == switches::kTLS13VariantDraft28) {
+    config->tls13_variant = network::mojom::TLS13Variant::kDraft28;
   }
 
   config->disabled_cipher_suites = disabled_cipher_suites_;

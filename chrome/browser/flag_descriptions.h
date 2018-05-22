@@ -972,6 +972,7 @@ extern const char kTLS13VariantDescription[];
 extern const char kTLS13VariantDisabled[];
 extern const char kTLS13VariantDeprecated[];
 extern const char kTLS13VariantDraft23[];
+extern const char kTLS13VariantDraft28[];
 
 extern const char kSuggestionsWithSubStringMatchName[];
 extern const char kSuggestionsWithSubStringMatchDescription[];
