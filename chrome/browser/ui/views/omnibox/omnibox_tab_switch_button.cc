@@ -36,7 +36,7 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
                                  SK_ColorBLACK));
   if (!calculated_widths_) {
     icon_only_width_ = MdTextButton::CalculatePreferredSize().width();
-    SetText(base::ASCIIToUTF16("Switch"));
+    SetText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT));
     short_text_width_ = MdTextButton::CalculatePreferredSize().width();
     SetText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT));
     full_text_width_ = MdTextButton::CalculatePreferredSize().width();
@@ -53,7 +53,7 @@ void OmniboxTabSwitchButton::ProvideWidthHint(size_t parent_width) {
   if (full_text_width_ < parent_width / 5) {
     SetText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT));
   } else if (short_text_width_ < parent_width / 5) {
-    SetText(base::ASCIIToUTF16("Switch"));
+    SetText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT));
   } else if (icon_only_width_ < parent_width / 5) {
     SetText(base::ASCIIToUTF16(""));
   } else {
