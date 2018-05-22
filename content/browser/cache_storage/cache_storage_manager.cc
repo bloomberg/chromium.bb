@@ -461,9 +461,8 @@ void CacheStorageManager::DeleteOriginDidClose(
   // CacheStorage operations posted after GetSizeThenCloseAllCaches is called.
   cache_storage.reset();
 
-  // TODO(crbug.com/838908): Update QuotaClient ID depending on owner.
   quota_manager_proxy_->NotifyStorageModified(
-      storage::QuotaClient::kServiceWorkerCache, origin,
+      CacheStorageQuotaClient::GetIDFromOwner(owner), origin,
       blink::mojom::StorageType::kTemporary, -1 * origin_size);
 
   if (owner == CacheStorageOwner::kCacheAPI)
@@ -509,7 +508,7 @@ CacheStorage* CacheStorageManager::FindOrCreateCacheStorage(
     CacheStorage* cache_storage = new CacheStorage(
         ConstructOriginPath(root_path_, origin, owner), IsMemoryBacked(),
         cache_task_runner_.get(), request_context_getter_, quota_manager_proxy_,
-        blob_context_, this, origin);
+        blob_context_, this, origin, owner);
     cache_storage_map_[{origin, owner}] = base::WrapUnique(cache_storage);
     return cache_storage;
   }

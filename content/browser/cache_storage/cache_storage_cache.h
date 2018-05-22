@@ -43,6 +43,7 @@ class CacheStorageCacheHandle;
 class CacheStorageCacheObserver;
 class CacheStorageScheduler;
 class TestCacheStorageCache;
+enum class CacheStorageOwner;
 
 namespace proto {
 class CacheMetadata;
@@ -80,6 +81,7 @@ class CONTENT_EXPORT CacheStorageCache {
 
   static std::unique_ptr<CacheStorageCache> CreateMemoryCache(
       const url::Origin& origin,
+      CacheStorageOwner owner,
       const std::string& cache_name,
       CacheStorage* cache_storage,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
@@ -88,6 +90,7 @@ class CONTENT_EXPORT CacheStorageCache {
       std::unique_ptr<crypto::SymmetricKey> cache_padding_key);
   static std::unique_ptr<CacheStorageCache> CreatePersistentCache(
       const url::Origin& origin,
+      CacheStorageOwner owner,
       const std::string& cache_name,
       CacheStorage* cache_storage,
       const base::FilePath& path,
@@ -250,6 +253,7 @@ class CONTENT_EXPORT CacheStorageCache {
 
   CacheStorageCache(
       const url::Origin& origin,
+      CacheStorageOwner owner,
       const std::string& cache_name,
       const base::FilePath& path,
       CacheStorage* cache_storage,
@@ -448,6 +452,7 @@ class CONTENT_EXPORT CacheStorageCache {
   std::unique_ptr<disk_cache::Backend> backend_;
 
   url::Origin origin_;
+  CacheStorageOwner owner_;
   const std::string cache_name_;
   base::FilePath path_;
 
