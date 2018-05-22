@@ -95,13 +95,27 @@ class LocalEmulationServer:
     self._server = self._server_class(("0.0.0.0", self._port),
       self._handler_class)
     event = threading.Event()
-    def WaitForRunning(event):
-      event.set()
+
+    def StartServer():
       self._server.serve_forever()
+
+    def WaitForRunning(event):
+      while not event.is_set():
+        try:
+          s = socket.create_connection(("127.0.0.1", self._port))
+          event.set()
+          s.close()
+        except:
+          pass
+
+    start_thread = threading.Thread(target=StartServer)
+    start_thread.daemon = True
+    start_thread.start()
+
     thread = threading.Thread(target=WaitForRunning, args=[event])
-    thread.daemon = True
     thread.start()
     if not event.wait(timeout=timeout):
+      event.set()
       raise Exception("Emulation server didn't start in %d seconds" % timeout)
 
   def Shutdown(self):
