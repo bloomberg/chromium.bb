@@ -441,6 +441,11 @@ class DriveTestVolume : public TestVolume {
                         entry.last_modified_time);
         break;
     }
+
+    // Files and directories in drive will only appear after CheckUpdates
+    // has completed.
+    CheckForUpdates();
+    content::RunAllTasksUntilIdle();
   }
 
   // Creates an empty directory with the given |name| and |modification_time|.
