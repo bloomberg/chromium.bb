@@ -1149,6 +1149,8 @@ NSString* StringForItemCount(long count) {
   if (IsUIRefreshPhase1Enabled()) {
     _tabSwitcherButton =
         [TabStripCenteredButton buttonWithType:UIButtonTypeCustom];
+    if (UseRTLLayout())
+      [_tabSwitcherButton setTransform:CGAffineTransformMakeScale(-1, 1)];
   } else {
     _tabSwitcherButton = [UIButton buttonWithType:UIButtonTypeCustom];
   }
