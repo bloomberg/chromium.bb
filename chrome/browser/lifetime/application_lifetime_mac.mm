@@ -9,8 +9,8 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 
 #include "base/logging.h"
-#include "chrome/browser/browser_shutdown.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
+#include "chrome/browser/lifetime/browser_shutdown.h"
 #include "ui/views/widget/widget.h"
 
 namespace chrome {
