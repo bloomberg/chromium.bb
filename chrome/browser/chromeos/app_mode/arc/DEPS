@@ -1,9 +1,0 @@
-specific_include_rules = {
-  ".*test.*": [
-   "!ash",
-  ],
-  # TODO(mash): http://crbug.com/756056.
-  "arc_kiosk_app_launcher\.cc": [
-    "+ash/wm/window_util.h",
-  ],
-}
