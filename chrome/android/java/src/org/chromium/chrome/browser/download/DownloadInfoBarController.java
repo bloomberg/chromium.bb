@@ -333,6 +333,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     private boolean isVisibleToUser(OfflineItem offlineItem) {
         if (offlineItem.isTransient) return false;
         if (offlineItem.isOffTheRecord != mIsIncognito) return false;
+        if (offlineItem.isSuggested) return false;
         if (LegacyHelpers.isLegacyDownload(offlineItem.id)) {
             if (TextUtils.isEmpty(offlineItem.filePath)) {
                 return false;
@@ -359,6 +360,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
             boolean userCancel, boolean itemWasRemoved) {
         if (updatedItem != null && mIgnoredItems.contains(updatedItem.id)) return;
 
+        preProcessUpdatedItem(updatedItem);
         boolean isNewDownload = forceShowDownloadStarted
                 || (updatedItem != null && updatedItem.state == OfflineItemState.IN_PROGRESS
                            && !mSeenItems.contains(updatedItem.id));
@@ -414,6 +416,13 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                             && downloadCount.inProgress == 1;
                 } else if (!shouldShowResult) {
                     if (mEndTimerRunnable == null && downloadCount.inProgress > 0) {
+                        nextState = DownloadInfoBarState.DOWNLOADING;
+                    }
+
+                    boolean currentlyShowingPending = mCurrentInfo != null
+                            && mCurrentInfo.resultState != null
+                            && mCurrentInfo.resultState == OfflineItemState.PENDING;
+                    if (currentlyShowingPending && itemResumedFromPending(updatedItem)) {
                         nextState = DownloadInfoBarState.DOWNLOADING;
                     }
                     if (itemWasRemoved && mTrackedItems.size() == 0) {
@@ -519,7 +528,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
             stringRes = R.plurals.multiple_download_pending;
             info.icon = R.drawable.ic_error_outline_googblue_24dp;
         } else {
-            assert false;
+            assert false : "Unexptected offlineItemState " + offlineItemState + " and infoBarState "
+                           + infoBarState;
         }
 
         OfflineItem itemToShow = null;
@@ -531,23 +541,25 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         }
 
         DownloadCount downloadCount = getDownloadCount();
-
         if (infoBarState == DownloadInfoBarState.DOWNLOADING) {
             if (showAccelerating) {
                 info.message =
                         getContext().getString(R.string.download_infobar_speeding_up_download);
             } else {
-                if (totalDownloadingSizeBytes == 0L) {
+                int inProgressDownloadCount =
+                        downloadCount.inProgress == 0 ? 1 : downloadCount.inProgress;
+                if (totalDownloadingSizeBytes <= 0L) {
                     info.message = getContext().getResources().getQuantityString(
-                            R.plurals.download_infobar_downloading_files, downloadCount.inProgress);
+                            R.plurals.download_infobar_downloading_files, inProgressDownloadCount,
+                            inProgressDownloadCount);
                 } else {
                     String bytesString =
                             Formatter.formatFileSize(getContext(), totalDownloadingSizeBytes);
-                    info.message = downloadCount.inProgress == 1
+                    info.message = inProgressDownloadCount == 1
                             ? getContext().getString(
                                       R.string.downloading_file_with_bytes, bytesString)
                             : getContext().getString(R.string.downloading_multiple_files_with_bytes,
-                                      downloadCount.inProgress, bytesString);
+                                      inProgressDownloadCount, bytesString);
                 }
             }
 
@@ -571,7 +583,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
             }
         }
 
-        info.resultState = offlineItemState;
+        info.resultState = isResultState(offlineItemState) ? offlineItemState : null;
 
         if (info.equals(mCurrentInfo)) return;
 
@@ -606,6 +618,29 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     private void clearEndTimerRunnable() {
         mHandler.removeCallbacks(mEndTimerRunnable);
         mEndTimerRunnable = null;
+    }
+
+    private boolean isResultState(@OfflineItemState int offlineItemState) {
+        return offlineItemState == OfflineItemState.COMPLETE
+                || offlineItemState == OfflineItemState.FAILED
+                || offlineItemState == OfflineItemState.PENDING;
+    }
+
+    private void preProcessUpdatedItem(OfflineItem updatedItem) {
+        if (updatedItem == null) return;
+
+        // INTERRUPTED downloads should be treated as PENDING in the infobar. From here onwards,
+        // there should be no INTERRUPTED state in the core logic.
+        if (updatedItem.state == OfflineItemState.INTERRUPTED) {
+            updatedItem.state = OfflineItemState.PENDING;
+        }
+    }
+
+    private boolean itemResumedFromPending(OfflineItem updatedItem) {
+        if (updatedItem == null || !mTrackedItems.containsKey(updatedItem.id)) return false;
+
+        return mTrackedItems.get(updatedItem.id).state == OfflineItemState.PENDING
+                && updatedItem.state == OfflineItemState.IN_PROGRESS;
     }
 
     /**
@@ -745,10 +780,10 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                     break;
                 case OfflineItemState.CANCELLED:
                     break;
-                case OfflineItemState.PENDING: // intentional fall through
-                case OfflineItemState.INTERRUPTED:
+                case OfflineItemState.PENDING:
                     downloadCount.pending++;
                     break;
+                case OfflineItemState.INTERRUPTED: // intentional fall through
                 case OfflineItemState.PAUSED: // intentional fall through
                 default:
                     assert false;
@@ -764,11 +799,6 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
      */
     private void clearFinishedItems(Integer... states) {
         Set<Integer> statesToRemove = new HashSet<>(Arrays.asList(states));
-        if (statesToRemove.contains(OfflineItemState.PENDING)) {
-            // INTERRUPTED downloads are also treated as PENDING for the infobar.
-            statesToRemove.add(OfflineItemState.INTERRUPTED);
-        }
-
         List<ContentId> idsToRemove = new ArrayList<>();
         for (ContentId id : mTrackedItems.keySet()) {
             OfflineItem item = mTrackedItems.get(id);
