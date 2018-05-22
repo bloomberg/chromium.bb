@@ -209,7 +209,6 @@ class SVGElementResourceClient final
   explicit SVGElementResourceClient(SVGElement*);
 
   void ResourceContentChanged(InvalidationModeMask) override;
-  void Invalidate(InvalidationModeMask) override;
   void ResourceElementChanged() override;
   void ResourceDestroyed(LayoutSVGResourceContainer*) override;
 
