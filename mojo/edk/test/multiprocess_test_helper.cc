@@ -153,7 +153,7 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
   // NOTE: In the case of named pipes, it's important that the server handle be
   // created before the child process is launched; otherwise the server binding
   // the pipe path can race with child's connection to the pipe.
-  ScopedPlatformHandle server_handle;
+  ScopedInternalPlatformHandle server_handle;
   if (launch_type == LaunchType::CHILD || launch_type == LaunchType::PEER) {
     server_handle = channel.PassServerHandle();
   } else if (launch_type == LaunchType::NAMED_CHILD ||

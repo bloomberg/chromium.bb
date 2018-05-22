@@ -28,27 +28,27 @@ constexpr base::char16 kDefaultSecurityDescriptor[] =
 
 }  // namespace
 
-ScopedPlatformHandle CreateClientHandle(
+ScopedInternalPlatformHandle CreateClientHandle(
     const NamedPlatformHandle& named_handle) {
   if (!named_handle.is_valid())
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
 
   base::string16 pipe_name = named_handle.pipe_name();
 
   // Note: This may block.
   if (!WaitNamedPipeW(pipe_name.c_str(), NMPWAIT_USE_DEFAULT_WAIT))
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
 
   const DWORD kDesiredAccess = GENERIC_READ | GENERIC_WRITE;
   // The SECURITY_ANONYMOUS flag means that the server side cannot impersonate
   // the client.
   const DWORD kFlags =
       SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS | FILE_FLAG_OVERLAPPED;
-  ScopedPlatformHandle handle(
-      PlatformHandle(CreateFileW(pipe_name.c_str(), kDesiredAccess,
-                                 0,  // No sharing.
-                                 nullptr, OPEN_EXISTING, kFlags,
-                                 nullptr)));  // No template file.
+  ScopedInternalPlatformHandle handle(
+      InternalPlatformHandle(CreateFileW(pipe_name.c_str(), kDesiredAccess,
+                                         0,  // No sharing.
+                                         nullptr, OPEN_EXISTING, kFlags,
+                                         nullptr)));  // No template file.
   // The server may have stopped accepting a connection between the
   // WaitNamedPipe() and CreateFile(). If this occurs, an invalid handle is
   // returned.
@@ -58,11 +58,11 @@ ScopedPlatformHandle CreateClientHandle(
   return handle;
 }
 
-ScopedPlatformHandle CreateServerHandle(
+ScopedInternalPlatformHandle CreateServerHandle(
     const NamedPlatformHandle& named_handle,
     const CreateServerHandleOptions& options) {
   if (!named_handle.is_valid())
-    return ScopedPlatformHandle();
+    return ScopedInternalPlatformHandle();
 
   PSECURITY_DESCRIPTOR security_desc = nullptr;
   ULONG security_desc_len = 0;
@@ -80,7 +80,7 @@ ScopedPlatformHandle CreateServerHandle(
                               : PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED;
   const DWORD kPipeMode =
       PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_REJECT_REMOTE_CLIENTS;
-  PlatformHandle handle(
+  InternalPlatformHandle handle(
       CreateNamedPipeW(named_handle.pipe_name().c_str(), kOpenMode, kPipeMode,
                        options.enforce_uniqueness ? 1 : 255,  // Max instances.
                        4096,  // Out buffer size.
@@ -88,7 +88,7 @@ ScopedPlatformHandle CreateServerHandle(
                        5000,  // Timeout in milliseconds.
                        &security_attributes));
   handle.needs_connection = true;
-  return ScopedPlatformHandle(handle);
+  return ScopedInternalPlatformHandle(handle);
 }
 
 }  // namespace edk

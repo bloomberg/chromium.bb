@@ -110,8 +110,9 @@ class WtsSessionProcessDelegate::Core
   void OnProcessLaunchDetected(base::ProcessId pid);
 
   void ReportFatalError();
-  void ReportProcessLaunched(base::win::ScopedHandle worker_process,
-                             mojo::edk::ScopedPlatformHandle server_handle);
+  void ReportProcessLaunched(
+      base::win::ScopedHandle worker_process,
+      mojo::edk::ScopedInternalPlatformHandle server_handle);
 
   // The task runner all public methods of this class should be called on.
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
@@ -148,7 +149,7 @@ class WtsSessionProcessDelegate::Core
 
   // If launching elevated, this holds the server handle after launch, until
   // the final process launches.
-  mojo::edk::ScopedPlatformHandle elevated_server_handle_;
+  mojo::edk::ScopedInternalPlatformHandle elevated_server_handle_;
 
   // If launching elevated, this is the pid of the launcher process.
   base::ProcessId elevated_launcher_pid_ = base::kNullProcessId;
@@ -554,7 +555,7 @@ void WtsSessionProcessDelegate::Core::ReportFatalError() {
 
 void WtsSessionProcessDelegate::Core::ReportProcessLaunched(
     base::win::ScopedHandle worker_process,
-    mojo::edk::ScopedPlatformHandle server_handle) {
+    mojo::edk::ScopedInternalPlatformHandle server_handle) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!worker_process_.IsValid());
 

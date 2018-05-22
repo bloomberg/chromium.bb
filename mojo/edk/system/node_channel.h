@@ -50,12 +50,14 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
     virtual void OnAddBrokerClient(const ports::NodeName& from_node,
                                    const ports::NodeName& client_name,
                                    base::ProcessHandle process_handle) = 0;
-    virtual void OnBrokerClientAdded(const ports::NodeName& from_node,
-                                     const ports::NodeName& client_name,
-                                     ScopedPlatformHandle broker_channel) = 0;
-    virtual void OnAcceptBrokerClient(const ports::NodeName& from_node,
-                                      const ports::NodeName& broker_name,
-                                      ScopedPlatformHandle broker_channel) = 0;
+    virtual void OnBrokerClientAdded(
+        const ports::NodeName& from_node,
+        const ports::NodeName& client_name,
+        ScopedInternalPlatformHandle broker_channel) = 0;
+    virtual void OnAcceptBrokerClient(
+        const ports::NodeName& from_node,
+        const ports::NodeName& broker_name,
+        ScopedInternalPlatformHandle broker_channel) = 0;
     virtual void OnEventMessage(const ports::NodeName& from_node,
                                 Channel::MessagePtr message) = 0;
     virtual void OnRequestPortMerge(const ports::NodeName& from_node,
@@ -65,7 +67,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
                                        const ports::NodeName& name) = 0;
     virtual void OnIntroduce(const ports::NodeName& from_node,
                              const ports::NodeName& name,
-                             ScopedPlatformHandle channel_handle) = 0;
+                             ScopedInternalPlatformHandle channel_handle) = 0;
     virtual void OnBroadcast(const ports::NodeName& from_node,
                              Channel::MessagePtr message) = 0;
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
@@ -133,14 +135,14 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   void AddBrokerClient(const ports::NodeName& client_name,
                        ScopedProcessHandle process_handle);
   void BrokerClientAdded(const ports::NodeName& client_name,
-                         ScopedPlatformHandle broker_channel);
+                         ScopedInternalPlatformHandle broker_channel);
   void AcceptBrokerClient(const ports::NodeName& broker_name,
-                          ScopedPlatformHandle broker_channel);
+                          ScopedInternalPlatformHandle broker_channel);
   void RequestPortMerge(const ports::PortName& connector_port_name,
                         const std::string& token);
   void RequestIntroduction(const ports::NodeName& name);
   void Introduce(const ports::NodeName& name,
-                 ScopedPlatformHandle channel_handle);
+                 ScopedInternalPlatformHandle channel_handle);
   void SendChannelMessage(Channel::MessagePtr message);
   void Broadcast(Channel::MessagePtr message);
 
@@ -173,9 +175,10 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   ~NodeChannel() override;
 
   // Channel::Delegate:
-  void OnChannelMessage(const void* payload,
-                        size_t payload_size,
-                        std::vector<ScopedPlatformHandle> handles) override;
+  void OnChannelMessage(
+      const void* payload,
+      size_t payload_size,
+      std::vector<ScopedInternalPlatformHandle> handles) override;
   void OnChannelError(Channel::Error error) override;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

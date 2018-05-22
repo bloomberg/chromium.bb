@@ -816,9 +816,9 @@ TEST_F(MessageTest, ExtendPayloadWithHandlesAttached) {
   MojoHandle handles[5];
   CreateMessagePipe(&handles[0], &handles[1]);
   PlatformChannelPair channel;
-  ASSERT_EQ(MOJO_RESULT_OK, CreatePlatformHandleWrapper(
+  ASSERT_EQ(MOJO_RESULT_OK, CreateInternalPlatformHandleWrapper(
                                 channel.PassServerHandle(), &handles[2]));
-  ASSERT_EQ(MOJO_RESULT_OK, CreatePlatformHandleWrapper(
+  ASSERT_EQ(MOJO_RESULT_OK, CreateInternalPlatformHandleWrapper(
                                 channel.PassClientHandle(), &handles[3]));
   handles[4] = SharedBufferHandle::Create(64).release().value();
 
@@ -865,9 +865,9 @@ TEST_F(MessageTest, ExtendPayloadWithHandlesAttachedViaExtension) {
   MojoHandle handles[5];
   CreateMessagePipe(&handles[0], &handles[4]);
   PlatformChannelPair channel;
-  ASSERT_EQ(MOJO_RESULT_OK, CreatePlatformHandleWrapper(
+  ASSERT_EQ(MOJO_RESULT_OK, CreateInternalPlatformHandleWrapper(
                                 channel.PassServerHandle(), &handles[1]));
-  ASSERT_EQ(MOJO_RESULT_OK, CreatePlatformHandleWrapper(
+  ASSERT_EQ(MOJO_RESULT_OK, CreateInternalPlatformHandleWrapper(
                                 channel.PassClientHandle(), &handles[2]));
   handles[3] = SharedBufferHandle::Create(64).release().value();
 

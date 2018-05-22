@@ -56,7 +56,7 @@ int DesktopProcessMain() {
   mojo::edk::ScopedIPCSupport ipc_support(
       io_task_runner->task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
-  mojo::edk::ScopedPlatformHandle parent_pipe =
+  mojo::edk::ScopedInternalPlatformHandle parent_pipe =
       mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
           *command_line);
   if (!parent_pipe.is_valid()) {

@@ -19,7 +19,7 @@ struct iovec;  // Declared in <sys/uio.h>.
 
 namespace mojo {
 namespace edk {
-class ScopedPlatformHandle;
+class ScopedInternalPlatformHandle;
 
 // The maximum number of handles that can be sent "at once" using
 // |PlatformChannelSendmsgWithHandles()|. This must be less than the Linux
@@ -31,16 +31,16 @@ const size_t kPlatformChannelMaxNumHandles = 128;
 // never raise |SIGPIPE|. (Note: On Mac, the suppression of |SIGPIPE| is set up
 // by |PlatformChannelPair|.)
 MOJO_SYSTEM_IMPL_EXPORT ssize_t
-PlatformChannelWrite(const ScopedPlatformHandle& h,
+PlatformChannelWrite(const ScopedInternalPlatformHandle& h,
                      const void* bytes,
                      size_t num_bytes);
 MOJO_SYSTEM_IMPL_EXPORT ssize_t
-PlatformChannelWritev(const ScopedPlatformHandle& h,
+PlatformChannelWritev(const ScopedInternalPlatformHandle& h,
                       struct iovec* iov,
                       size_t num_iov);
 
-// Writes data, and the given set of |PlatformHandle|s (i.e., file descriptors)
-// over the Unix domain socket given by |h| (e.g., created using
+// Writes data, and the given set of |InternalPlatformHandle|s (i.e., file
+// descriptors) over the Unix domain socket given by |h| (e.g., created using
 // |PlatformChannelPair()|). All the handles must be valid, and there must be at
 // least one and at most |kPlatformChannelMaxNumHandles| handles. The return
 // value is as for |sendmsg()|, namely -1 on failure and otherwise the number of
@@ -48,19 +48,19 @@ PlatformChannelWritev(const ScopedPlatformHandle& h,
 // specified by |iov|). (The handles are not closed, regardless of success or
 // failure.)
 MOJO_SYSTEM_IMPL_EXPORT ssize_t PlatformChannelSendmsgWithHandles(
-    const ScopedPlatformHandle& h,
+    const ScopedInternalPlatformHandle& h,
     struct iovec* iov,
     size_t num_iov,
-    const std::vector<ScopedPlatformHandle>& platform_handles);
+    const std::vector<ScopedInternalPlatformHandle>& platform_handles);
 
 // Wrapper around |recvmsg()|, which will extract any attached file descriptors
-// (in the control message) to |PlatformHandle|s (and append them to
+// (in the control message) to |InternalPlatformHandle|s (and append them to
 // |platform_handles|). (This also handles |EINTR|.)
 MOJO_SYSTEM_IMPL_EXPORT ssize_t PlatformChannelRecvmsg(
-    const ScopedPlatformHandle& h,
+    const ScopedInternalPlatformHandle& h,
     void* buf,
     size_t num_bytes,
-    base::circular_deque<ScopedPlatformHandle>* platform_handles,
+    base::circular_deque<ScopedInternalPlatformHandle>* platform_handles,
     bool block = false);
 
 // Returns false if |server_handle| encounters an unrecoverable error.
@@ -69,8 +69,8 @@ MOJO_SYSTEM_IMPL_EXPORT ssize_t PlatformChannelRecvmsg(
 // |connection_handle| will be invalid. If |check_peer_user| is True, the
 // connection will be rejected if the peer is running as a different user.
 MOJO_SYSTEM_IMPL_EXPORT bool ServerAcceptConnection(
-    const ScopedPlatformHandle& server_handle,
-    ScopedPlatformHandle* connection_handle,
+    const ScopedInternalPlatformHandle& server_handle,
+    ScopedInternalPlatformHandle* connection_handle,
     bool check_peer_user = true);
 
 }  // namespace edk

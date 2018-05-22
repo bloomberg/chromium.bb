@@ -69,19 +69,19 @@ class MessageView {
     offset_ += num_bytes;
   }
 
-  std::vector<ScopedPlatformHandle> TakeHandles() {
+  std::vector<ScopedInternalPlatformHandle> TakeHandles() {
     return std::move(handles_);
   }
   Channel::MessagePtr TakeMessage() { return std::move(message_); }
 
-  void SetHandles(std::vector<ScopedPlatformHandle> handles) {
+  void SetHandles(std::vector<ScopedInternalPlatformHandle> handles) {
     handles_ = std::move(handles);
   }
 
  private:
   Channel::MessagePtr message_;
   size_t offset_;
-  std::vector<ScopedPlatformHandle> handles_;
+  std::vector<ScopedInternalPlatformHandle> handles_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
@@ -143,11 +143,11 @@ class ChannelPosix : public Channel,
     leak_handle_ = true;
   }
 
-  bool GetReadPlatformHandles(
+  bool GetReadInternalPlatformHandles(
       size_t num_handles,
       const void* extra_header,
       size_t extra_header_size,
-      std::vector<ScopedPlatformHandle>* handles) override {
+      std::vector<ScopedInternalPlatformHandle>* handles) override {
     if (num_handles > std::numeric_limits<uint16_t>::max())
       return false;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -172,12 +172,13 @@ class ChannelPosix : public Channel,
     for (size_t i = 0, mach_port_index = 0; i < num_handles; ++i) {
       if (mach_port_index < num_mach_ports &&
           mach_ports[mach_port_index].index == i) {
-        handles->at(i).reset(PlatformHandle(
+        handles->at(i).reset(InternalPlatformHandle(
             static_cast<mach_port_t>(mach_ports[mach_port_index].mach_port)));
-        DCHECK_EQ(handles->at(i).get().type, PlatformHandle::Type::MACH);
+        DCHECK_EQ(handles->at(i).get().type,
+                  InternalPlatformHandle::Type::MACH);
         // These are actually just Mach port names until they're resolved from
         // the remote process.
-        handles->at(i).get().type = PlatformHandle::Type::MACH_NAME;
+        handles->at(i).get().type = InternalPlatformHandle::Type::MACH_NAME;
         mach_port_index++;
       } else {
         if (incoming_platform_handles_.empty())
@@ -280,7 +281,7 @@ class ChannelPosix : public Channel,
       read_watcher_.reset();
       base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
 
-      ScopedPlatformHandle accept_fd;
+      ScopedInternalPlatformHandle accept_fd;
       ServerAcceptConnection(handle_, &accept_fd);
       if (!accept_fd.is_valid()) {
         OnError(Error::kConnectionFailed);
@@ -358,7 +359,8 @@ class ChannelPosix : public Channel,
       message_view.advance_data_offset(bytes_written);
 
       ssize_t result;
-      std::vector<ScopedPlatformHandle> handles = message_view.TakeHandles();
+      std::vector<ScopedInternalPlatformHandle> handles =
+          message_view.TakeHandles();
       if (!handles.empty()) {
         iovec iov = {const_cast<void*>(message_view.data()),
                      message_view.data_num_bytes()};
@@ -457,10 +459,11 @@ class ChannelPosix : public Channel,
   }
 
 #if defined(OS_MACOSX)
-  bool OnControlMessage(Message::MessageType message_type,
-                        const void* payload,
-                        size_t payload_size,
-                        std::vector<ScopedPlatformHandle> handles) override {
+  bool OnControlMessage(
+      Message::MessageType message_type,
+      const void* payload,
+      size_t payload_size,
+      std::vector<ScopedInternalPlatformHandle> handles) override {
     switch (message_type) {
       case Message::MessageType::HANDLES_SENT: {
         if (payload_size == 0)
@@ -499,7 +502,7 @@ class ChannelPosix : public Channel,
 
     auto start =
         std::find_if(handles_to_close_.begin(), handles_to_close_.end(),
-                     [&fds](const ScopedPlatformHandle& handle) {
+                     [&fds](const ScopedInternalPlatformHandle& handle) {
                        return handle.get().handle == fds[0];
                      });
     if (start == handles_to_close_.end())
@@ -520,7 +523,7 @@ class ChannelPosix : public Channel,
     if (i != num_fds)
       return false;
 
-    // Close the FDs by erase()ing their ScopedPlatformHandles.
+    // Close the FDs by erase()ing their ScopedInternalPlatformHandles.
     handles_to_close_.erase(start, it);
     return true;
   }
@@ -546,14 +549,14 @@ class ChannelPosix : public Channel,
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.
   scoped_refptr<Channel> self_;
 
-  ScopedPlatformHandle handle_;
+  ScopedInternalPlatformHandle handle_;
   scoped_refptr<base::TaskRunner> io_task_runner_;
 
   // These watchers must only be accessed on the IO thread.
   std::unique_ptr<base::MessagePumpForIO::FdWatchController> read_watcher_;
   std::unique_ptr<base::MessagePumpForIO::FdWatchController> write_watcher_;
 
-  base::circular_deque<ScopedPlatformHandle> incoming_platform_handles_;
+  base::circular_deque<ScopedInternalPlatformHandle> incoming_platform_handles_;
 
   // Protects |pending_write_| and |outgoing_messages_|.
   base::Lock write_lock_;
@@ -565,7 +568,7 @@ class ChannelPosix : public Channel,
 
 #if defined(OS_MACOSX)
   base::Lock handles_to_close_lock_;
-  std::vector<ScopedPlatformHandle> handles_to_close_;
+  std::vector<ScopedInternalPlatformHandle> handles_to_close_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChannelPosix);

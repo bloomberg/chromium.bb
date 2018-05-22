@@ -600,8 +600,9 @@ void ArcPrintServiceImpl::Print(mojom::PrintJobInstancePtr instance,
   settings->set_color(FromArcColorMode(attr->color_mode));
   settings->set_copies(print_job->copies);
   settings->set_duplex_mode(FromArcDuplexMode(attr->duplex_mode));
-  mojo::edk::ScopedPlatformHandle scoped_handle;
-  PassWrappedPlatformHandle(print_job->data.release().value(), &scoped_handle);
+  mojo::edk::ScopedInternalPlatformHandle scoped_handle;
+  PassWrappedInternalPlatformHandle(print_job->data.release().value(),
+                                    &scoped_handle);
 
   mojom::PrintJobHostPtr host_proxy;
   auto job = std::make_unique<PrintJobHostImpl>(

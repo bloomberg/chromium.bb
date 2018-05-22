@@ -117,10 +117,10 @@ void ArcContentFileSystemFileStreamReader::OnOpenFile(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!file_);
 
-  mojo::edk::ScopedPlatformHandle platform_handle;
-  if (mojo::edk::PassWrappedPlatformHandle(
+  mojo::edk::ScopedInternalPlatformHandle platform_handle;
+  if (mojo::edk::PassWrappedInternalPlatformHandle(
           handle.release().value(), &platform_handle) != MOJO_RESULT_OK) {
-    LOG(ERROR) << "PassWrappedPlatformHandle failed";
+    LOG(ERROR) << "PassWrappedInternalPlatformHandle failed";
     callback.Run(net::ERR_FAILED);
     return;
   }

@@ -122,7 +122,7 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
     size_t num_bytes,
     const ports::PortName* ports,
     size_t num_ports,
-    ScopedPlatformHandle* platform_handles,
+    ScopedInternalPlatformHandle* platform_handles,
     size_t num_platform_handles) {
   if (num_bytes != sizeof(SerializedState)) {
     LOG(ERROR) << "Invalid serialized shared buffer dispatcher (bad size)";
@@ -140,7 +140,7 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   if (num_ports)
     return nullptr;
 
-  ScopedPlatformHandle handles[2];
+  ScopedInternalPlatformHandle handles[2];
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && \
     (!defined(OS_MACOSX) || defined(OS_IOS))
   if (serialized_state->access_mode ==
@@ -177,8 +177,8 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
       return nullptr;
   }
   auto region = base::subtle::PlatformSharedMemoryRegion::Take(
-      CreateSharedMemoryRegionHandleFromPlatformHandles(std::move(handles[0]),
-                                                        std::move(handles[1])),
+      CreateSharedMemoryRegionHandleFromInternalPlatformHandles(
+          std::move(handles[0]), std::move(handles[1])),
       mode, static_cast<size_t>(serialized_state->num_bytes), guid);
   if (!region.IsValid()) {
     LOG(ERROR)
@@ -320,9 +320,10 @@ void SharedBufferDispatcher::StartSerialize(uint32_t* num_bytes,
 #endif
 }
 
-bool SharedBufferDispatcher::EndSerialize(void* destination,
-                                          ports::PortName* ports,
-                                          ScopedPlatformHandle* handles) {
+bool SharedBufferDispatcher::EndSerialize(
+    void* destination,
+    ports::PortName* ports,
+    ScopedInternalPlatformHandle* handles) {
   SerializedState* serialized_state =
       static_cast<SerializedState*>(destination);
   base::AutoLock lock(lock_);
@@ -355,14 +356,14 @@ bool SharedBufferDispatcher::EndSerialize(void* destination,
     (!defined(OS_MACOSX) || defined(OS_IOS))
   if (region.GetMode() ==
       base::subtle::PlatformSharedMemoryRegion::Mode::kWritable) {
-    ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+    ExtractInternalPlatformHandlesFromSharedMemoryRegionHandle(
         region.PassPlatformHandle(), &handles[0], &handles[1]);
     return true;
   }
 #endif
 
-  ScopedPlatformHandle ignored_handle;
-  ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+  ScopedInternalPlatformHandle ignored_handle;
+  ExtractInternalPlatformHandlesFromSharedMemoryRegionHandle(
       region.PassPlatformHandle(), &handles[0], &ignored_handle);
   return true;
 }

@@ -309,7 +309,7 @@ TEST_F(SecurityKeyIpcServerTest, InitialIpcConnectionTimeout_ConnectOnly) {
       channel_handle,
       /*request_timeout=*/base::TimeDelta::FromMilliseconds(500)));
   base::Time start_time(base::Time::NowFromSystemTime());
-  mojo::edk::ScopedPlatformHandle client_handle =
+  mojo::edk::ScopedInternalPlatformHandle client_handle =
       mojo::edk::CreateClientHandle(channel_handle);
   WaitForOperationComplete();
   base::TimeDelta elapsed_time = base::Time::NowFromSystemTime() - start_time;

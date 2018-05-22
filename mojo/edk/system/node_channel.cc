@@ -292,10 +292,10 @@ void NodeChannel::AcceptPeer(const ports::NodeName& sender_name,
 void NodeChannel::AddBrokerClient(const ports::NodeName& client_name,
                                   ScopedProcessHandle process_handle) {
   AddBrokerClientData* data;
-  std::vector<ScopedPlatformHandle> handles;
+  std::vector<ScopedInternalPlatformHandle> handles;
 #if defined(OS_WIN)
-  handles.emplace_back(
-      ScopedPlatformHandle(PlatformHandle(process_handle.release())));
+  handles.emplace_back(ScopedInternalPlatformHandle(
+      InternalPlatformHandle(process_handle.release())));
 #endif
   Channel::MessagePtr message =
       CreateMessage(MessageType::ADD_BROKER_CLIENT, sizeof(AddBrokerClientData),
@@ -309,10 +309,11 @@ void NodeChannel::AddBrokerClient(const ports::NodeName& client_name,
   WriteChannelMessage(std::move(message));
 }
 
-void NodeChannel::BrokerClientAdded(const ports::NodeName& client_name,
-                                    ScopedPlatformHandle broker_channel) {
+void NodeChannel::BrokerClientAdded(
+    const ports::NodeName& client_name,
+    ScopedInternalPlatformHandle broker_channel) {
   BrokerClientAddedData* data;
-  std::vector<ScopedPlatformHandle> handles;
+  std::vector<ScopedInternalPlatformHandle> handles;
   if (broker_channel.is_valid())
     handles.push_back(std::move(broker_channel));
   Channel::MessagePtr message =
@@ -323,10 +324,11 @@ void NodeChannel::BrokerClientAdded(const ports::NodeName& client_name,
   WriteChannelMessage(std::move(message));
 }
 
-void NodeChannel::AcceptBrokerClient(const ports::NodeName& broker_name,
-                                     ScopedPlatformHandle broker_channel) {
+void NodeChannel::AcceptBrokerClient(
+    const ports::NodeName& broker_name,
+    ScopedInternalPlatformHandle broker_channel) {
   AcceptBrokerClientData* data;
-  std::vector<ScopedPlatformHandle> handles;
+  std::vector<ScopedInternalPlatformHandle> handles;
   if (broker_channel.is_valid())
     handles.push_back(std::move(broker_channel));
   Channel::MessagePtr message =
@@ -357,9 +359,9 @@ void NodeChannel::RequestIntroduction(const ports::NodeName& name) {
 }
 
 void NodeChannel::Introduce(const ports::NodeName& name,
-                            ScopedPlatformHandle channel_handle) {
+                            ScopedInternalPlatformHandle channel_handle) {
   IntroductionData* data;
-  std::vector<ScopedPlatformHandle> handles;
+  std::vector<ScopedInternalPlatformHandle> handles;
   if (channel_handle.is_valid())
     handles.push_back(std::move(channel_handle));
   Channel::MessagePtr message = CreateMessage(
@@ -407,7 +409,7 @@ void NodeChannel::RelayEventMessage(const ports::NodeName& destination,
   // above stated assumption. We should not leak handles in cases where we
   // outlive the broker, as we may continue existing and eventually accept a new
   // broker invitation.
-  std::vector<ScopedPlatformHandle> handles = message->TakeHandles();
+  std::vector<ScopedInternalPlatformHandle> handles = message->TakeHandles();
   for (auto& handle : handles)
     ignore_result(handle.release());
 
@@ -419,7 +421,7 @@ void NodeChannel::RelayEventMessage(const ports::NodeName& destination,
   // moves them back to the relayed message. This is necessary because the
   // message may contain fds which need to be attached to the outer message so
   // that they can be transferred to the broker.
-  std::vector<ScopedPlatformHandle> handles = message->TakeHandles();
+  std::vector<ScopedInternalPlatformHandle> handles = message->TakeHandles();
   size_t num_bytes = sizeof(RelayEventMessageData) + message->data_num_bytes();
   RelayEventMessageData* data;
   Channel::MessagePtr relay_message = CreateMessage(
@@ -467,9 +469,10 @@ NodeChannel::~NodeChannel() {
   ShutDown();
 }
 
-void NodeChannel::OnChannelMessage(const void* payload,
-                                   size_t payload_size,
-                                   std::vector<ScopedPlatformHandle> handles) {
+void NodeChannel::OnChannelMessage(
+    const void* payload,
+    size_t payload_size,
+    std::vector<ScopedInternalPlatformHandle> handles) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   RequestContext request_context(RequestContext::Source::SYSTEM);
@@ -581,7 +584,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
     case MessageType::ACCEPT_BROKER_CLIENT: {
       const AcceptBrokerClientData* data;
       if (GetMessagePayload(payload, payload_size, &data)) {
-        ScopedPlatformHandle broker_channel;
+        ScopedInternalPlatformHandle broker_channel;
         if (handles.size() > 1) {
           DLOG(ERROR) << "Dropping invalid AcceptBrokerClient message.";
           break;
@@ -636,7 +639,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
           DLOG(ERROR) << "Dropping invalid introduction message.";
           break;
         }
-        ScopedPlatformHandle channel_handle;
+        ScopedInternalPlatformHandle channel_handle;
         if (handles.size() == 1) {
           channel_handle = std::move(handles.at(0));
         }
@@ -836,7 +839,8 @@ void NodeChannel::WriteChannelMessage(Channel::MessagePtr message) {
 
     // Rewrite outgoing handles if we have a handle to the destination process.
     if (remote_process_handle_.is_valid()) {
-      std::vector<ScopedPlatformHandle> handles = message->TakeHandles();
+      std::vector<ScopedInternalPlatformHandle> handles =
+          message->TakeHandles();
       if (!Channel::Message::RewriteHandles(base::GetCurrentProcessHandle(),
                                             remote_process_handle_.get(),
                                             &handles)) {

@@ -152,7 +152,7 @@ MojoResult CreateOrExtendSerializedEventMessage(
   DispatcherHeader* new_dispatcher_headers;
   char* new_dispatcher_data;
   size_t total_num_dispatchers = num_new_dispatchers;
-  std::vector<ScopedPlatformHandle> handles;
+  std::vector<ScopedInternalPlatformHandle> handles;
   if (original_message) {
     DCHECK(original_header);
     size_t original_dispatcher_headers_size =
@@ -582,7 +582,7 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
       dispatcher_headers + header->num_dispatchers);
   size_t port_index = 0;
   size_t platform_handle_index = 0;
-  std::vector<ScopedPlatformHandle> msg_handles =
+  std::vector<ScopedInternalPlatformHandle> msg_handles =
       channel_message_->TakeHandles();
   for (size_t i = 0; i < header->num_dispatchers; ++i) {
     const DispatcherHeader& dh = dispatcher_headers[i];
@@ -610,7 +610,7 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
       return MOJO_RESULT_ABORTED;
     }
 
-    ScopedPlatformHandle* out_handles =
+    ScopedInternalPlatformHandle* out_handles =
         !msg_handles.empty() ? msg_handles.data() + platform_handle_index
                              : nullptr;
     dispatchers[i].dispatcher = Dispatcher::Deserialize(

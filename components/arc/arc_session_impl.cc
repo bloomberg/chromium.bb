@@ -114,7 +114,7 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
   // connected socket's file descriptor. This is designed to run on a
   // blocking thread.
   static mojo::ScopedMessagePipeHandle ConnectMojoInternal(
-      mojo::edk::ScopedPlatformHandle socket_fd,
+      mojo::edk::ScopedInternalPlatformHandle socket_fd,
       base::ScopedFD cancel_fd);
 
   // Called when Mojo connection is established or canceled.
@@ -150,10 +150,10 @@ base::ScopedFD ArcSessionDelegateImpl::ConnectMojo(
   // For production, |socket_fd| passed from session_manager is either a valid
   // socket or a valid file descriptor (/dev/null). For testing, |socket_fd|
   // might be invalid.
-  mojo::edk::PlatformHandle raw_handle(socket_fd.release());
+  mojo::edk::InternalPlatformHandle raw_handle(socket_fd.release());
   raw_handle.needs_connection = true;
 
-  mojo::edk::ScopedPlatformHandle mojo_socket_fd(raw_handle);
+  mojo::edk::ScopedInternalPlatformHandle mojo_socket_fd(raw_handle);
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&ArcSessionDelegateImpl::ConnectMojoInternal,
@@ -165,14 +165,14 @@ base::ScopedFD ArcSessionDelegateImpl::ConnectMojo(
 
 // static
 mojo::ScopedMessagePipeHandle ArcSessionDelegateImpl::ConnectMojoInternal(
-    mojo::edk::ScopedPlatformHandle socket_fd,
+    mojo::edk::ScopedInternalPlatformHandle socket_fd,
     base::ScopedFD cancel_fd) {
   if (!WaitForSocketReadable(socket_fd.get().handle, cancel_fd.get())) {
     VLOG(1) << "Mojo connection was cancelled.";
     return mojo::ScopedMessagePipeHandle();
   }
 
-  mojo::edk::ScopedPlatformHandle scoped_fd;
+  mojo::edk::ScopedInternalPlatformHandle scoped_fd;
   if (!mojo::edk::ServerAcceptConnection(socket_fd, &scoped_fd,
                                          /* check_peer_user = */ false) ||
       !scoped_fd.is_valid()) {
@@ -192,7 +192,7 @@ mojo::ScopedMessagePipeHandle ArcSessionDelegateImpl::ConnectMojoInternal(
       mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
                                   channel_pair.PassServerHandle()));
 
-  std::vector<mojo::edk::ScopedPlatformHandle> handles;
+  std::vector<mojo::edk::ScopedInternalPlatformHandle> handles;
   handles.emplace_back(channel_pair.PassClientHandle());
 
   // We need to send the length of the message as a single byte, so make sure it

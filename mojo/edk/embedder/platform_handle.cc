@@ -26,7 +26,7 @@
 namespace mojo {
 namespace edk {
 
-void PlatformHandle::CloseIfNecessary() {
+void InternalPlatformHandle::CloseIfNecessary() {
 #if defined(OS_WIN)
   // Take local ownership of the process handle in |owning_process| if it's
   // a handle to a remote process. We do this before the generic handle validity

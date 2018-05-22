@@ -176,13 +176,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   // will close.
   //
   // NOTE: Transit MAY still fail after this call returns. Implementations
-  // should not assume PlatformHandle ownership has transferred until
+  // should not assume InternalPlatformHandle ownership has transferred until
   // CompleteTransitAndClose() is called. In other words, if CancelTransit() is
-  // called, the implementation should retain its PlatformHandles in working
-  // condition.
+  // called, the implementation should retain its InternalPlatformHandles in
+  // working condition.
   virtual bool EndSerialize(void* destination,
                             ports::PortName* ports,
-                            ScopedPlatformHandle* handles);
+                            ScopedInternalPlatformHandle* handles);
 
   // Does whatever is necessary to begin transit of the dispatcher.  This
   // should return |true| if transit is OK, or false if the underlying resource
@@ -205,7 +205,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
       size_t num_bytes,
       const ports::PortName* ports,
       size_t num_ports,
-      ScopedPlatformHandle* platform_handles,
+      ScopedInternalPlatformHandle* platform_handles,
       size_t platform_handle_count);
 
  protected:

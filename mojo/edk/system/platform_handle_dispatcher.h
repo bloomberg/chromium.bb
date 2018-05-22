@@ -18,9 +18,9 @@ namespace edk {
 class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher : public Dispatcher {
  public:
   static scoped_refptr<PlatformHandleDispatcher> Create(
-      ScopedPlatformHandle platform_handle);
+      ScopedInternalPlatformHandle platform_handle);
 
-  ScopedPlatformHandle PassPlatformHandle();
+  ScopedInternalPlatformHandle PassInternalPlatformHandle();
 
   // Dispatcher:
   Type GetType() const override;
@@ -30,7 +30,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher : public Dispatcher {
                       uint32_t* num_handles) override;
   bool EndSerialize(void* destination,
                     ports::PortName* ports,
-                    ScopedPlatformHandle* handles) override;
+                    ScopedInternalPlatformHandle* handles) override;
   bool BeginTransit() override;
   void CompleteTransitAndClose() override;
   void CancelTransit() override;
@@ -40,17 +40,17 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher : public Dispatcher {
       size_t num_bytes,
       const ports::PortName* ports,
       size_t num_ports,
-      ScopedPlatformHandle* handles,
+      ScopedInternalPlatformHandle* handles,
       size_t num_handles);
 
  private:
-  PlatformHandleDispatcher(ScopedPlatformHandle platform_handle);
+  PlatformHandleDispatcher(ScopedInternalPlatformHandle platform_handle);
   ~PlatformHandleDispatcher() override;
 
   base::Lock lock_;
   bool in_transit_ = false;
   bool is_closed_ = false;
-  ScopedPlatformHandle platform_handle_;
+  ScopedInternalPlatformHandle platform_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformHandleDispatcher);
 };

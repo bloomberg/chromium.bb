@@ -173,7 +173,7 @@ void GpuArcVideoServiceHost::OnBootstrapVideoAcceleratorFactory(
                                   channel_pair.PassServerHandle()));
 
   MojoHandle wrapped_handle;
-  MojoResult wrap_result = mojo::edk::CreatePlatformHandleWrapper(
+  MojoResult wrap_result = mojo::edk::CreateInternalPlatformHandleWrapper(
       channel_pair.PassClientHandle(), &wrapped_handle);
   if (wrap_result != MOJO_RESULT_OK) {
     LOG(ERROR) << "Pipe failed to wrap handles. Closing: " << wrap_result;

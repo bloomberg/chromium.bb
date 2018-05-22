@@ -42,13 +42,13 @@ class MOJO_SYSTEM_IMPL_EXPORT NamedPlatformChannelPair {
 
   // Note: It is NOT acceptable to use this handle as a generic pipe channel. It
   // MUST be passed to OutgoingBrokerClientInvitation::Send() only.
-  ScopedPlatformHandle PassServerHandle();
+  ScopedInternalPlatformHandle PassServerHandle();
 
   // To be called in the child process, after the parent process called
   // |PrepareToPassClientHandleToChildProcess()| and launched the child (using
   // the provided data), to create a client handle connected to the server
   // handle (in the parent process).
-  static ScopedPlatformHandle PassClientHandleFromParentProcess(
+  static ScopedInternalPlatformHandle PassClientHandleFromParentProcess(
       const base::CommandLine& command_line);
 
   // Prepares to pass the client channel to a new child process, to be launched
@@ -62,7 +62,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NamedPlatformChannelPair {
 
  private:
   NamedPlatformHandle pipe_handle_;
-  ScopedPlatformHandle server_handle_;
+  ScopedInternalPlatformHandle server_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(NamedPlatformChannelPair);
 };

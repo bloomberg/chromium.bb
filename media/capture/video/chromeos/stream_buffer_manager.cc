@@ -314,8 +314,9 @@ void StreamBufferManager::RegisterBuffer(StreamType stream_type) {
       device_context_->SetErrorState(FROM_HERE, "Failed to dup fd");
       return;
     }
-    MojoResult result = mojo::edk::CreatePlatformHandleWrapper(
-        mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(dup_fd)),
+    MojoResult result = mojo::edk::CreateInternalPlatformHandleWrapper(
+        mojo::edk::ScopedInternalPlatformHandle(
+            mojo::edk::InternalPlatformHandle(dup_fd)),
         &wrapped_handle);
     if (result != MOJO_RESULT_OK) {
       device_context_->SetErrorState(FROM_HERE,
@@ -684,8 +685,8 @@ void StreamBufferManager::SubmitCaptureResult(uint32_t frame_number,
   // Wait on release fence before delivering the result buffer to client.
   if (stream_buffer->release_fence.is_valid()) {
     const int kSyncWaitTimeoutMs = 1000;
-    mojo::edk::ScopedPlatformHandle fence;
-    MojoResult result = mojo::edk::PassWrappedPlatformHandle(
+    mojo::edk::ScopedInternalPlatformHandle fence;
+    MojoResult result = mojo::edk::PassWrappedInternalPlatformHandle(
         stream_buffer->release_fence.release().value(), &fence);
     if (result != MOJO_RESULT_OK) {
       device_context_->SetErrorState(FROM_HERE,

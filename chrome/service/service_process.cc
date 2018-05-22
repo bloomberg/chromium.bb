@@ -330,7 +330,7 @@ bool ServiceProcess::OnIPCClientDisconnect() {
 mojo::ScopedMessagePipeHandle ServiceProcess::CreateChannelMessagePipe() {
   if (!server_handle_.is_valid()) {
 #if defined(OS_MACOSX)
-    mojo::edk::PlatformHandle platform_handle(
+    mojo::edk::InternalPlatformHandle platform_handle(
         service_process_state_->GetServiceProcessChannel().release());
     platform_handle.needs_connection = true;
     server_handle_.reset(platform_handle);
@@ -343,7 +343,7 @@ mojo::ScopedMessagePipeHandle ServiceProcess::CreateChannelMessagePipe() {
     DCHECK(server_handle_.is_valid());
   }
 
-  mojo::edk::ScopedPlatformHandle channel_handle;
+  mojo::edk::ScopedInternalPlatformHandle channel_handle;
 #if defined(OS_POSIX)
   channel_handle = mojo::edk::DuplicatePlatformHandle(server_handle_.get());
 #elif defined(OS_WIN)

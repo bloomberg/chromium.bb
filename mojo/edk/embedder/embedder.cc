@@ -51,17 +51,18 @@ std::string GenerateRandomToken() {
   return base::HexEncode(random_bytes, 16);
 }
 
-MojoResult CreatePlatformHandleWrapper(
-    ScopedPlatformHandle platform_handle,
+MojoResult CreateInternalPlatformHandleWrapper(
+    ScopedInternalPlatformHandle platform_handle,
     MojoHandle* platform_handle_wrapper_handle) {
-  return Core::Get()->CreatePlatformHandleWrapper(
+  return Core::Get()->CreateInternalPlatformHandleWrapper(
       std::move(platform_handle), platform_handle_wrapper_handle);
 }
 
-MojoResult PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
-                                     ScopedPlatformHandle* platform_handle) {
-  return Core::Get()->PassWrappedPlatformHandle(platform_handle_wrapper_handle,
-                                                platform_handle);
+MojoResult PassWrappedInternalPlatformHandle(
+    MojoHandle platform_handle_wrapper_handle,
+    ScopedInternalPlatformHandle* platform_handle) {
+  return Core::Get()->PassWrappedInternalPlatformHandle(
+      platform_handle_wrapper_handle, platform_handle);
 }
 
 scoped_refptr<base::TaskRunner> GetIOTaskRunner() {

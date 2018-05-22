@@ -299,7 +299,7 @@ void DataPipeConsumerDispatcher::StartSerialize(uint32_t* num_bytes,
 bool DataPipeConsumerDispatcher::EndSerialize(
     void* destination,
     ports::PortName* ports,
-    ScopedPlatformHandle* platform_handles) {
+    ScopedInternalPlatformHandle* platform_handles) {
   SerializedState* state = static_cast<SerializedState*>(destination);
   memcpy(&state->options, &options_, sizeof(MojoCreateDataPipeOptions));
   memset(state->padding, 0, sizeof(state->padding));
@@ -320,8 +320,8 @@ bool DataPipeConsumerDispatcher::EndSerialize(
 
   ports[0] = control_port_.name();
 
-  ScopedPlatformHandle ignored_handle;
-  ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+  ScopedInternalPlatformHandle ignored_handle;
+  ExtractInternalPlatformHandlesFromSharedMemoryRegionHandle(
       region_handle.PassPlatformHandle(), &platform_handles[0],
       &ignored_handle);
   if (!platform_handles[0].is_valid() || ignored_handle.is_valid())
@@ -361,7 +361,7 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
                                         size_t num_bytes,
                                         const ports::PortName* ports,
                                         size_t num_ports,
-                                        ScopedPlatformHandle* handles,
+                                        ScopedInternalPlatformHandle* handles,
                                         size_t num_handles) {
   if (num_ports != 1 || num_handles != 1 ||
       num_bytes != sizeof(SerializedState)) {
@@ -379,10 +379,11 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
   if (node_controller->node()->GetPort(ports[0], &port) != ports::OK)
     return nullptr;
 
-  ScopedPlatformHandle buffer_handle;
+  ScopedInternalPlatformHandle buffer_handle;
   std::swap(buffer_handle, handles[0]);
-  auto region_handle = CreateSharedMemoryRegionHandleFromPlatformHandles(
-      std::move(buffer_handle), ScopedPlatformHandle());
+  auto region_handle =
+      CreateSharedMemoryRegionHandleFromInternalPlatformHandles(
+          std::move(buffer_handle), ScopedInternalPlatformHandle());
   auto region = base::subtle::PlatformSharedMemoryRegion::Take(
       std::move(region_handle),
       base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,

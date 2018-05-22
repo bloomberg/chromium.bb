@@ -67,7 +67,7 @@ void FakeSecurityKeyIpcClient::CloseIpcConnection() {
 
 bool FakeSecurityKeyIpcClient::ConnectViaIpc(
     const mojo::edk::NamedPlatformHandle& channel_handle) {
-  mojo::edk::ScopedPlatformHandle handle =
+  mojo::edk::ScopedInternalPlatformHandle handle =
       mojo::edk::CreateClientHandle(channel_handle);
   if (!handle.is_valid()) {
     return false;

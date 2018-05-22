@@ -57,7 +57,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
                       uint32_t* num_handles) override;
   bool EndSerialize(void* destination,
                     ports::PortName* ports,
-                    ScopedPlatformHandle* handles) override;
+                    ScopedInternalPlatformHandle* handles) override;
   bool BeginTransit() override;
   void CompleteTransitAndClose() override;
   void CancelTransit() override;
@@ -67,7 +67,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
       size_t num_bytes,
       const ports::PortName* ports,
       size_t num_ports,
-      ScopedPlatformHandle* handles,
+      ScopedInternalPlatformHandle* handles,
       size_t num_handles);
 
  private:

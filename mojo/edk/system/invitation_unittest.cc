@@ -84,7 +84,7 @@ TEST_F(InvitationTest, InvalidArguments) {
   PlatformChannelPair channel;
   MojoPlatformHandle endpoint_handle;
   endpoint_handle.struct_size = sizeof(endpoint_handle);
-  EXPECT_EQ(MOJO_RESULT_OK, ScopedPlatformHandleToMojoPlatformHandle(
+  EXPECT_EQ(MOJO_RESULT_OK, ScopedInternalPlatformHandleToMojoPlatformHandle(
                                 channel.PassServerHandle(), &endpoint_handle));
   MojoInvitationTransportEndpoint valid_endpoint;
   valid_endpoint.struct_size = sizeof(valid_endpoint);
@@ -237,7 +237,7 @@ base::Process InvitationTest::LaunchChildTestClient(
 
   MojoPlatformHandle endpoint_handle;
   endpoint_handle.struct_size = sizeof(endpoint_handle);
-  CHECK_EQ(MOJO_RESULT_OK, ScopedPlatformHandleToMojoPlatformHandle(
+  CHECK_EQ(MOJO_RESULT_OK, ScopedInternalPlatformHandleToMojoPlatformHandle(
                                channel.PassServerHandle(), &endpoint_handle));
 
   MojoHandle invitation;
@@ -274,13 +274,13 @@ base::Process InvitationTest::LaunchChildTestClient(
 class TestClientBase : public InvitationTest {
  public:
   static MojoHandle AcceptInvitation() {
-    ScopedPlatformHandle channel_endpoint =
+    ScopedInternalPlatformHandle channel_endpoint =
         PlatformChannelPair::PassClientHandleFromParentProcess(
             *base::CommandLine::ForCurrentProcess());
     MojoPlatformHandle endpoint_handle;
     endpoint_handle.struct_size = sizeof(endpoint_handle);
     CHECK_EQ(MOJO_RESULT_OK,
-             ScopedPlatformHandleToMojoPlatformHandle(
+             ScopedInternalPlatformHandleToMojoPlatformHandle(
                  std::move(channel_endpoint), &endpoint_handle));
 
     MojoInvitationTransportEndpoint transport_endpoint;

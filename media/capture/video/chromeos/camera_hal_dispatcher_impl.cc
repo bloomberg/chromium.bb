@@ -210,8 +210,9 @@ void CameraHalDispatcherImpl::CreateSocket(base::WaitableEvent* started) {
   DCHECK(blocking_io_task_runner_->BelongsToCurrentThread());
 
   base::FilePath socket_path(kArcCamera3SocketPath);
-  mojo::edk::ScopedPlatformHandle socket_fd = mojo::edk::CreateServerHandle(
-      mojo::edk::NamedPlatformHandle(socket_path.value()));
+  mojo::edk::ScopedInternalPlatformHandle socket_fd =
+      mojo::edk::CreateServerHandle(
+          mojo::edk::NamedPlatformHandle(socket_path.value()));
   if (!socket_fd.is_valid()) {
     LOG(ERROR) << "Failed to create the socket file: " << kArcCamera3SocketPath;
     started->Signal();
@@ -256,7 +257,7 @@ void CameraHalDispatcherImpl::CreateSocket(base::WaitableEvent* started) {
 }
 
 void CameraHalDispatcherImpl::StartServiceLoop(
-    mojo::edk::ScopedPlatformHandle socket_fd,
+    mojo::edk::ScopedInternalPlatformHandle socket_fd,
     base::WaitableEvent* started) {
   DCHECK(blocking_io_task_runner_->BelongsToCurrentThread());
   DCHECK(!proxy_fd_.is_valid());
@@ -280,7 +281,7 @@ void CameraHalDispatcherImpl::StartServiceLoop(
       return;
     }
 
-    mojo::edk::ScopedPlatformHandle accepted_fd;
+    mojo::edk::ScopedInternalPlatformHandle accepted_fd;
     if (mojo::edk::ServerAcceptConnection(proxy_fd_, &accepted_fd, false) &&
         accepted_fd.is_valid()) {
       VLOG(1) << "Accepted a connection";
@@ -297,7 +298,7 @@ void CameraHalDispatcherImpl::StartServiceLoop(
           mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
                                       channel_pair.PassServerHandle()));
 
-      std::vector<mojo::edk::ScopedPlatformHandle> handles;
+      std::vector<mojo::edk::ScopedInternalPlatformHandle> handles;
       handles.emplace_back(channel_pair.PassClientHandle());
 
       struct iovec iov = {const_cast<char*>(token.c_str()), token.length()};

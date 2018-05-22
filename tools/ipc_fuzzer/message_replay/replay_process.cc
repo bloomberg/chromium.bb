@@ -70,14 +70,14 @@ void InitializeMojo() {
 
 std::unique_ptr<mojo::edk::IncomingBrokerClientInvitation>
 InitializeMojoIPCChannel() {
-  mojo::edk::ScopedPlatformHandle platform_channel;
+  mojo::edk::ScopedInternalPlatformHandle platform_channel;
 #if defined(OS_WIN)
   platform_channel =
       mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
           *base::CommandLine::ForCurrentProcess());
 #elif defined(OS_POSIX)
-  platform_channel.reset(
-      mojo::edk::PlatformHandle(base::GlobalDescriptors::GetInstance()->Get(
+  platform_channel.reset(mojo::edk::InternalPlatformHandle(
+      base::GlobalDescriptors::GetInstance()->Get(
           service_manager::kMojoIPCChannel)));
 #endif
   CHECK(platform_channel.is_valid());

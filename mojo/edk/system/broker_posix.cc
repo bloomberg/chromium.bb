@@ -24,14 +24,14 @@ namespace edk {
 namespace {
 
 Channel::MessagePtr WaitForBrokerMessage(
-    const ScopedPlatformHandle& platform_handle,
+    const ScopedInternalPlatformHandle& platform_handle,
     BrokerMessageType expected_type,
     size_t expected_num_handles,
     size_t expected_data_size,
-    std::vector<ScopedPlatformHandle>* incoming_handles) {
+    std::vector<ScopedInternalPlatformHandle>* incoming_handles) {
   Channel::MessagePtr message(new Channel::Message(
       sizeof(BrokerMessageHeader) + expected_data_size, expected_num_handles));
-  base::circular_deque<ScopedPlatformHandle> incoming_platform_handles;
+  base::circular_deque<ScopedInternalPlatformHandle> incoming_platform_handles;
   ssize_t read_result = PlatformChannelRecvmsg(
       platform_handle, const_cast<void*>(message->data()),
       message->data_num_bytes(), &incoming_platform_handles, true /* block */);
@@ -66,7 +66,7 @@ Channel::MessagePtr WaitForBrokerMessage(
 
 }  // namespace
 
-Broker::Broker(ScopedPlatformHandle platform_handle)
+Broker::Broker(ScopedInternalPlatformHandle platform_handle)
     : sync_channel_(std::move(platform_handle)) {
   CHECK(sync_channel_.is_valid());
 
@@ -77,7 +77,7 @@ Broker::Broker(ScopedPlatformHandle platform_handle)
   PCHECK(flags != -1);
 
   // Wait for the first message, which should contain a handle.
-  std::vector<ScopedPlatformHandle> incoming_platform_handles;
+  std::vector<ScopedInternalPlatformHandle> incoming_platform_handles;
   if (WaitForBrokerMessage(sync_channel_, BrokerMessageType::INIT, 1, 0,
                            &incoming_platform_handles)) {
     inviter_channel_ = std::move(incoming_platform_handles[0]);
@@ -86,7 +86,7 @@ Broker::Broker(ScopedPlatformHandle platform_handle)
 
 Broker::~Broker() = default;
 
-ScopedPlatformHandle Broker::GetInviterPlatformHandle() {
+ScopedInternalPlatformHandle Broker::GetInviterInternalPlatformHandle() {
   return std::move(inviter_channel_);
 }
 
@@ -118,7 +118,7 @@ base::WritableSharedMemoryRegion Broker::GetWritableSharedMemoryRegion(
   constexpr size_t kNumExpectedHandles = 2;
 #endif
 
-  std::vector<ScopedPlatformHandle> incoming_platform_handles;
+  std::vector<ScopedInternalPlatformHandle> incoming_platform_handles;
   Channel::MessagePtr message = WaitForBrokerMessage(
       sync_channel_, BrokerMessageType::BUFFER_RESPONSE, kNumExpectedHandles,
       sizeof(BufferResponseData), &incoming_platform_handles);
@@ -131,7 +131,7 @@ base::WritableSharedMemoryRegion Broker::GetWritableSharedMemoryRegion(
       incoming_platform_handles.emplace_back();
     return base::WritableSharedMemoryRegion::Deserialize(
         base::subtle::PlatformSharedMemoryRegion::Take(
-            CreateSharedMemoryRegionHandleFromPlatformHandles(
+            CreateSharedMemoryRegionHandleFromInternalPlatformHandles(
                 std::move(incoming_platform_handles[0]),
                 std::move(incoming_platform_handles[1])),
             base::subtle::PlatformSharedMemoryRegion::Mode::kWritable,

@@ -250,10 +250,10 @@ Channel::MessagePtr Channel::Message::Deserialize(const void* data,
   }
 
 #if defined(OS_WIN)
-  std::vector<ScopedPlatformHandle> handles(num_handles);
+  std::vector<ScopedInternalPlatformHandle> handles(num_handles);
   for (size_t i = 0; i < num_handles; i++) {
-    handles[i] = ScopedPlatformHandle(
-        PlatformHandle(base::win::Uint32ToHandle(message->handles_[i].handle)));
+    handles[i] = ScopedInternalPlatformHandle(InternalPlatformHandle(
+        base::win::Uint32ToHandle(message->handles_[i].handle)));
   }
   message->SetHandles(std::move(handles));
 #endif
@@ -343,8 +343,8 @@ bool Channel::Message::has_mach_ports() const {
     return false;
 
   for (const auto& handle : handle_vector_) {
-    if (handle.get().type == PlatformHandle::Type::MACH ||
-        handle.get().type == PlatformHandle::Type::MACH_NAME) {
+    if (handle.get().type == InternalPlatformHandle::Type::MACH ||
+        handle.get().type == InternalPlatformHandle::Type::MACH_NAME) {
       return true;
     }
   }
@@ -366,7 +366,7 @@ Channel::Message::Header* Channel::Message::header() const {
 }
 
 void Channel::Message::SetHandles(
-    std::vector<ScopedPlatformHandle> new_handles) {
+    std::vector<ScopedInternalPlatformHandle> new_handles) {
   if (is_legacy_message()) {
     // Old semantics for ChromeOS and Android
     if (legacy_header()->num_handles == 0) {
@@ -401,8 +401,9 @@ void Channel::Message::SetHandles(
           {0, static_cast<uint32_t>(MACH_PORT_NULL)};
     }
     for (size_t i = 0; i < handle_vector_.size(); i++) {
-      if (handle_vector_[i].get().type == PlatformHandle::Type::MACH ||
-          handle_vector_[i].get().type == PlatformHandle::Type::MACH_NAME) {
+      if (handle_vector_[i].get().type == InternalPlatformHandle::Type::MACH ||
+          handle_vector_[i].get().type ==
+              InternalPlatformHandle::Type::MACH_NAME) {
         mach_port_t port = handle_vector_[i].get().port;
         mach_ports_header_->entries[mach_port_index].index = i;
         mach_ports_header_->entries[mach_port_index].mach_port = port;
@@ -414,7 +415,7 @@ void Channel::Message::SetHandles(
 #endif
 }
 
-std::vector<ScopedPlatformHandle> Channel::Message::TakeHandles() {
+std::vector<ScopedInternalPlatformHandle> Channel::Message::TakeHandles() {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   if (mach_ports_header_) {
     for (size_t i = 0; i < max_handles_; ++i) {
@@ -431,15 +432,16 @@ std::vector<ScopedPlatformHandle> Channel::Message::TakeHandles() {
   return std::move(handle_vector_);
 }
 
-std::vector<ScopedPlatformHandle> Channel::Message::TakeHandlesForTransport() {
+std::vector<ScopedInternalPlatformHandle>
+Channel::Message::TakeHandlesForTransport() {
 #if defined(OS_WIN)
   // Not necessary on Windows.
   NOTREACHED();
-  return std::vector<ScopedPlatformHandle>();
+  return std::vector<ScopedInternalPlatformHandle>();
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   for (auto it = handle_vector_.begin(); it != handle_vector_.end();) {
-    if (it->get().type == PlatformHandle::Type::MACH ||
-        it->get().type == PlatformHandle::Type::MACH_NAME) {
+    if (it->get().type == InternalPlatformHandle::Type::MACH ||
+        it->get().type == InternalPlatformHandle::Type::MACH_NAME) {
       // For Mach port names, we can can just leak them. They're not real
       // ports anyways. For real ports, they're leaked because this is a child
       // process and the remote process will take ownership.
@@ -463,7 +465,7 @@ std::vector<ScopedPlatformHandle> Channel::Message::TakeHandlesForTransport() {
 bool Channel::Message::RewriteHandles(
     base::ProcessHandle from_process,
     base::ProcessHandle to_process,
-    std::vector<ScopedPlatformHandle>* handles) {
+    std::vector<ScopedInternalPlatformHandle>* handles) {
   bool success = true;
   for (size_t i = 0; i < handles->size(); ++i) {
     if (!(*handles)[i].is_valid()) {
@@ -706,10 +708,10 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
 
     const uint16_t num_handles =
         header ? header->num_handles : legacy_header->num_handles;
-    std::vector<ScopedPlatformHandle> handles;
+    std::vector<ScopedInternalPlatformHandle> handles;
     if (num_handles > 0) {
-      if (!GetReadPlatformHandles(num_handles, extra_header, extra_header_size,
-                                  &handles)) {
+      if (!GetReadInternalPlatformHandles(num_handles, extra_header,
+                                          extra_header_size, &handles)) {
         return false;
       }
 
@@ -744,10 +746,11 @@ void Channel::OnError(Error error) {
     delegate_->OnChannelError(error);
 }
 
-bool Channel::OnControlMessage(Message::MessageType message_type,
-                               const void* payload,
-                               size_t payload_size,
-                               std::vector<ScopedPlatformHandle> handles) {
+bool Channel::OnControlMessage(
+    Message::MessageType message_type,
+    const void* payload,
+    size_t payload_size,
+    std::vector<ScopedInternalPlatformHandle> handles) {
   return false;
 }
 

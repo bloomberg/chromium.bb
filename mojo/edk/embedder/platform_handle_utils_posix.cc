@@ -11,13 +11,14 @@
 namespace mojo {
 namespace edk {
 
-ScopedPlatformHandle DuplicatePlatformHandle(PlatformHandle platform_handle) {
+ScopedInternalPlatformHandle DuplicatePlatformHandle(
+    InternalPlatformHandle platform_handle) {
   DCHECK(platform_handle.is_valid());
   // Note that |dup()| returns -1 on error (which is exactly the value we use
-  // for invalid |PlatformHandle| FDs).
-  PlatformHandle duped(dup(platform_handle.handle));
+  // for invalid |InternalPlatformHandle| FDs).
+  InternalPlatformHandle duped(dup(platform_handle.handle));
   duped.needs_connection = platform_handle.needs_connection;
-  return ScopedPlatformHandle(duped);
+  return ScopedInternalPlatformHandle(duped);
 }
 
 }  // namespace edk

@@ -37,10 +37,11 @@ class MojoConnectionDelegateImpl : public DriveFsHost::MojoConnectionDelegate {
   }
 
   void AcceptMojoConnection(base::ScopedFD handle) override {
-    invitation_.Send(base::kNullProcessHandle,
-                     {mojo::edk::TransportProtocol::kLegacy,
-                      mojo::edk::ScopedPlatformHandle(
-                          mojo::edk::PlatformHandle(handle.release()))});
+    invitation_.Send(
+        base::kNullProcessHandle,
+        {mojo::edk::TransportProtocol::kLegacy,
+         mojo::edk::ScopedInternalPlatformHandle(
+             mojo::edk::InternalPlatformHandle(handle.release()))});
   }
 
  private:

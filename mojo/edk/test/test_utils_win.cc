@@ -14,7 +14,7 @@ namespace mojo {
 namespace edk {
 namespace test {
 
-bool BlockingWrite(const PlatformHandle& handle,
+bool BlockingWrite(const InternalPlatformHandle& handle,
                    const void* buffer,
                    size_t bytes_to_write,
                    size_t* bytes_written) {
@@ -34,7 +34,7 @@ bool BlockingWrite(const PlatformHandle& handle,
   return true;
 }
 
-bool BlockingRead(const PlatformHandle& handle,
+bool BlockingRead(const InternalPlatformHandle& handle,
                   void* buffer,
                   size_t buffer_size,
                   size_t* bytes_read) {
@@ -54,7 +54,7 @@ bool BlockingRead(const PlatformHandle& handle,
   return true;
 }
 
-bool NonBlockingRead(const PlatformHandle& handle,
+bool NonBlockingRead(const InternalPlatformHandle& handle,
                      void* buffer,
                      size_t buffer_size,
                      size_t* bytes_read) {
@@ -79,7 +79,8 @@ bool NonBlockingRead(const PlatformHandle& handle,
   return true;
 }
 
-ScopedPlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp) {
+ScopedInternalPlatformHandle InternalPlatformHandleFromFILE(
+    base::ScopedFILE fp) {
   CHECK(fp);
 
   HANDLE rv = INVALID_HANDLE_VALUE;
@@ -88,11 +89,11 @@ ScopedPlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp) {
       reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(fp.get()))),
       GetCurrentProcess(), &rv, 0, TRUE, DUPLICATE_SAME_ACCESS))
       << "DuplicateHandle";
-  return ScopedPlatformHandle(PlatformHandle(rv));
+  return ScopedInternalPlatformHandle(InternalPlatformHandle(rv));
 }
 
-base::ScopedFILE FILEFromPlatformHandle(ScopedPlatformHandle h,
-                                        const char* mode) {
+base::ScopedFILE FILEFromInternalPlatformHandle(ScopedInternalPlatformHandle h,
+                                                const char* mode) {
   CHECK(h.is_valid());
   // Microsoft's documentation for |_open_osfhandle()| only discusses these
   // flags (and |_O_WTEXT|). Hmmm.

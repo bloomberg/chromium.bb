@@ -33,7 +33,7 @@ namespace mojo {
 namespace edk {
 namespace {
 
-void WaitReadable(PlatformHandle h) {
+void WaitReadable(InternalPlatformHandle h) {
   struct pollfd pfds = {};
   pfds.fd = h.handle;
   pfds.events = POLLIN;
@@ -65,8 +65,8 @@ class PlatformChannelPairPosixTest : public testing::Test {
 
 TEST_F(PlatformChannelPairPosixTest, NoSigPipe) {
   PlatformChannelPair channel_pair;
-  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle();
-  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle();
+  ScopedInternalPlatformHandle server_handle = channel_pair.PassServerHandle();
+  ScopedInternalPlatformHandle client_handle = channel_pair.PassClientHandle();
 
   // Write to the client.
   static const char kHello[] = "hello";
@@ -106,8 +106,8 @@ TEST_F(PlatformChannelPairPosixTest, NoSigPipe) {
 
 TEST_F(PlatformChannelPairPosixTest, SendReceiveData) {
   PlatformChannelPair channel_pair;
-  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle();
-  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle();
+  ScopedInternalPlatformHandle server_handle = channel_pair.PassServerHandle();
+  ScopedInternalPlatformHandle client_handle = channel_pair.PassClientHandle();
 
   for (size_t i = 0; i < 10; i++) {
     std::string send_string(1 << i, 'A' + i);
@@ -119,7 +119,7 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveData) {
     WaitReadable(client_handle.get());
 
     char buf[10000] = {};
-    base::circular_deque<ScopedPlatformHandle> received_handles;
+    base::circular_deque<ScopedInternalPlatformHandle> received_handles;
     ssize_t result = PlatformChannelRecvmsg(client_handle, buf, sizeof(buf),
                                             &received_handles);
     EXPECT_EQ(static_cast<ssize_t>(send_string.size()), result);
@@ -135,8 +135,8 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
   static const char kHello[] = "hello";
 
   PlatformChannelPair channel_pair;
-  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle();
-  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle();
+  ScopedInternalPlatformHandle server_handle = channel_pair.PassServerHandle();
+  ScopedInternalPlatformHandle client_handle = channel_pair.PassClientHandle();
 
 // Reduce the number of FDs opened on OS X to avoid test flake.
 #if defined(OS_MACOSX)
@@ -149,14 +149,15 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
     // Make |i| files, with the j-th file consisting of j copies of the digit
     // |c|.
     const char c = '0' + (i % 10);
-    std::vector<ScopedPlatformHandle> platform_handles;
+    std::vector<ScopedInternalPlatformHandle> platform_handles;
     for (size_t j = 1; j <= i; j++) {
       base::FilePath unused;
       base::ScopedFILE fp(
           base::CreateAndOpenTemporaryFileInDir(temp_dir.GetPath(), &unused));
       ASSERT_TRUE(fp);
       ASSERT_EQ(j, fwrite(std::string(j, c).data(), 1, j, fp.get()));
-      platform_handles.push_back(test::PlatformHandleFromFILE(std::move(fp)));
+      platform_handles.push_back(
+          test::InternalPlatformHandleFromFILE(std::move(fp)));
       ASSERT_TRUE(platform_handles.back().is_valid());
     }
 
@@ -170,7 +171,7 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
     WaitReadable(client_handle.get());
 
     char buf[10000] = {};
-    base::circular_deque<ScopedPlatformHandle> received_handles;
+    base::circular_deque<ScopedInternalPlatformHandle> received_handles;
     // We assume that the |recvmsg()| actually reads all the data.
     EXPECT_EQ(static_cast<ssize_t>(sizeof(kHello)),
               PlatformChannelRecvmsg(client_handle, buf, sizeof(buf),
@@ -179,7 +180,7 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
     EXPECT_EQ(i, received_handles.size());
 
     for (size_t j = 0; j < received_handles.size(); j++) {
-      base::ScopedFILE fp(test::FILEFromPlatformHandle(
+      base::ScopedFILE fp(test::FILEFromInternalPlatformHandle(
           std::move(received_handles.front()), "rb"));
       received_handles.pop_front();
       ASSERT_TRUE(fp);
@@ -199,8 +200,8 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
   static const char kHello[] = "hello";
 
   PlatformChannelPair channel_pair;
-  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle();
-  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle();
+  ScopedInternalPlatformHandle server_handle = channel_pair.PassServerHandle();
+  ScopedInternalPlatformHandle client_handle = channel_pair.PassClientHandle();
 
   const std::string file_contents("hello world");
 
@@ -211,8 +212,8 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
     ASSERT_TRUE(fp);
     ASSERT_EQ(file_contents.size(),
               fwrite(file_contents.data(), 1, file_contents.size(), fp.get()));
-    std::vector<ScopedPlatformHandle> platform_handles(1);
-    platform_handles[0] = test::PlatformHandleFromFILE(std::move(fp));
+    std::vector<ScopedInternalPlatformHandle> platform_handles(1);
+    platform_handles[0] = test::InternalPlatformHandleFromFILE(std::move(fp));
     ASSERT_TRUE(platform_handles.back().is_valid());
 
     // Send the FD (+ "hello").
@@ -226,8 +227,8 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
   WaitReadable(client_handle.get());
 
   // Start with an invalid handle in the vector.
-  base::circular_deque<ScopedPlatformHandle> received_handles;
-  received_handles.push_back(ScopedPlatformHandle());
+  base::circular_deque<ScopedInternalPlatformHandle> received_handles;
+  received_handles.push_back(ScopedInternalPlatformHandle());
 
   char buf[100] = {};
   // We assume that the |recvmsg()| actually reads all the data.
@@ -240,8 +241,8 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
   EXPECT_TRUE(received_handles[1].is_valid());
 
   {
-    base::ScopedFILE fp(
-        test::FILEFromPlatformHandle(std::move(received_handles[1]), "rb"));
+    base::ScopedFILE fp(test::FILEFromInternalPlatformHandle(
+        std::move(received_handles[1]), "rb"));
     ASSERT_TRUE(fp);
     rewind(fp.get());
     char read_buf[100];

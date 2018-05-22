@@ -69,7 +69,7 @@ SenderPipe::PipePair::PipePair() {
              // nothing to do with Send() timeout.
       nullptr);
   PCHECK(handle != INVALID_HANDLE_VALUE);
-  receiver_.reset(mojo::edk::PlatformHandle(handle));
+  receiver_.reset(mojo::edk::InternalPlatformHandle(handle));
 
   // Allow the handle to be inherited by child processes.
   SECURITY_ATTRIBUTES security_attributes;
@@ -84,7 +84,7 @@ SenderPipe::PipePair::PipePair() {
       SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS | FILE_FLAG_OVERLAPPED,
       nullptr);
   PCHECK(handle != INVALID_HANDLE_VALUE);
-  sender_.reset(mojo::edk::PlatformHandle(handle));
+  sender_.reset(mojo::edk::InternalPlatformHandle(handle));
 
   // Since a client has connected, ConnectNamedPipe() should return zero and
   // GetLastError() should return ERROR_PIPE_CONNECTED.

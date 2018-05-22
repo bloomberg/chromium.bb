@@ -31,8 +31,8 @@ SenderPipe::PipePair::PipePair() {
   PCHECK(fcntl(fds[0], F_SETNOSIGPIPE, 1) == 0);
   PCHECK(fcntl(fds[1], F_SETNOSIGPIPE, 1) == 0);
 #endif
-  receiver_.reset(mojo::edk::PlatformHandle(fds[0]));
-  sender_.reset(mojo::edk::PlatformHandle(fds[1]));
+  receiver_.reset(mojo::edk::InternalPlatformHandle(fds[0]));
+  sender_.reset(mojo::edk::InternalPlatformHandle(fds[1]));
 }
 
 SenderPipe::PipePair::PipePair(PipePair&& other) = default;

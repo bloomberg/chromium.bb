@@ -31,9 +31,10 @@ namespace {
 
 const size_t kMaxBatchReadCapacity = 256 * 1024;
 
-bool UnwrapPlatformHandle(ScopedPlatformHandle handle,
-                          Channel::Message::HandleInfoEntry* info_out,
-                          std::vector<ScopedPlatformHandle>* handles_out) {
+bool UnwrapInternalPlatformHandle(
+    ScopedInternalPlatformHandle handle,
+    Channel::Message::HandleInfoEntry* info_out,
+    std::vector<ScopedInternalPlatformHandle>* handles_out) {
   DCHECK(handle.get().is_valid());
 
   if (!handle.get().is_valid_fd()) {
@@ -53,8 +54,8 @@ bool UnwrapPlatformHandle(ScopedPlatformHandle handle,
   zx_status_t result = fdio_transfer_fd(handle.get().as_fd(), 0, handles, info);
   if (result > 0) {
     // On success, the fd in |handle| has been transferred and is no longer
-    // valid. Release from the ScopedPlatformHandle to avoid close()ing an
-    // invalid handle.
+    // valid. Release from the ScopedInternalPlatformHandle to avoid close()ing
+    // an invalid handle.
     ignore_result(handle.release());
   } else if (result == ZX_ERR_UNAVAILABLE) {
     // No luck, try cloning instead.
@@ -74,22 +75,23 @@ bool UnwrapPlatformHandle(ScopedPlatformHandle handle,
   for (int i = 0; i < result; ++i) {
     DCHECK_EQ(PA_HND_TYPE(info[0]), PA_HND_TYPE(info[i]));
     DCHECK_EQ(0u, PA_HND_SUBTYPE(info[i]));
-    handles_out->emplace_back(PlatformHandle::ForHandle(handles[i]));
+    handles_out->emplace_back(InternalPlatformHandle::ForHandle(handles[i]));
   }
 
   return true;
 }
 
-ScopedPlatformHandle WrapPlatformHandles(
+ScopedInternalPlatformHandle WrapInternalPlatformHandles(
     Channel::Message::HandleInfoEntry info,
     base::circular_deque<base::ScopedZxHandle>* handles) {
-  ScopedPlatformHandle out_handle;
+  ScopedInternalPlatformHandle out_handle;
   if (!info.type) {
-    out_handle.reset(PlatformHandle::ForHandle(handles->front().release()));
+    out_handle.reset(
+        InternalPlatformHandle::ForHandle(handles->front().release()));
     handles->pop_front();
   } else {
     if (info.count > FDIO_MAX_HANDLES)
-      return ScopedPlatformHandle();
+      return ScopedInternalPlatformHandle();
 
     // Fetch the required number of handles from |handles| and set up type info.
     zx_handle_t fd_handles[FDIO_MAX_HANDLES] = {};
@@ -105,7 +107,7 @@ ScopedPlatformHandle WrapPlatformHandles(
         fdio_create_fd(fd_handles, fd_infos, info.count, out_fd.receive());
     if (result != ZX_OK) {
       DLOG(ERROR) << "fdio_create_fd: " << zx_status_get_string(result);
-      return ScopedPlatformHandle();
+      return ScopedInternalPlatformHandle();
     }
 
     // The handles are owned by FDIO now, so |release()| them before removing
@@ -115,7 +117,7 @@ ScopedPlatformHandle WrapPlatformHandles(
       handles->pop_front();
     }
 
-    out_handle.reset(PlatformHandle::ForFd(out_fd.release()));
+    out_handle.reset(InternalPlatformHandle::ForFd(out_fd.release()));
   }
   return out_handle;
 }
@@ -155,9 +157,9 @@ class MessageView {
     offset_ += num_bytes;
   }
 
-  std::vector<ScopedPlatformHandle> TakeHandles() {
+  std::vector<ScopedInternalPlatformHandle> TakeHandles() {
     if (handles_.empty())
-      return std::vector<ScopedPlatformHandle>();
+      return std::vector<ScopedInternalPlatformHandle>();
 
     // We can only pass Fuchsia handles via IPC, so unwrap any FDIO file-
     // descriptors in |handles_| into the underlying handles, and serialize the
@@ -166,12 +168,12 @@ class MessageView {
         message_->mutable_extra_header());
     memset(handles_info, 0, message_->extra_header_size());
 
-    std::vector<ScopedPlatformHandle> in_handles = std::move(handles_);
+    std::vector<ScopedInternalPlatformHandle> in_handles = std::move(handles_);
     handles_.reserve(in_handles.size());
     for (size_t i = 0; i < in_handles.size(); i++) {
-      if (!UnwrapPlatformHandle(std::move(in_handles[i]), &handles_info[i],
-                                &handles_))
-        return std::vector<ScopedPlatformHandle>();
+      if (!UnwrapInternalPlatformHandle(std::move(in_handles[i]),
+                                        &handles_info[i], &handles_))
+        return std::vector<ScopedInternalPlatformHandle>();
     }
     return std::move(handles_);
   }
@@ -179,7 +181,7 @@ class MessageView {
  private:
   Channel::MessagePtr message_;
   size_t offset_;
-  std::vector<ScopedPlatformHandle> handles_;
+  std::vector<ScopedInternalPlatformHandle> handles_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
@@ -236,11 +238,11 @@ class ChannelFuchsia : public Channel,
     leak_handle_ = true;
   }
 
-  bool GetReadPlatformHandles(
+  bool GetReadInternalPlatformHandles(
       size_t num_handles,
       const void* extra_header,
       size_t extra_header_size,
-      std::vector<ScopedPlatformHandle>* handles) override {
+      std::vector<ScopedInternalPlatformHandle>* handles) override {
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
     if (num_handles > std::numeric_limits<uint16_t>::max())
       return false;
@@ -271,7 +273,8 @@ class ChannelFuchsia : public Channel,
     handles->reserve(num_handles);
     for (size_t i = 0; i < num_handles; ++i) {
       handles->emplace_back(
-          WrapPlatformHandles(handles_info[i], &incoming_handles_).release());
+          WrapInternalPlatformHandles(handles_info[i], &incoming_handles_)
+              .release());
     }
     return true;
   }
@@ -378,7 +381,7 @@ class ChannelFuchsia : public Channel,
     do {
       message_view.advance_data_offset(write_bytes);
 
-      std::vector<ScopedPlatformHandle> outgoing_handles =
+      std::vector<ScopedInternalPlatformHandle> outgoing_handles =
           message_view.TakeHandles();
       zx_handle_t handles[ZX_CHANNEL_MAX_MSG_HANDLES] = {};
       size_t handles_count = outgoing_handles.size();
@@ -433,7 +436,7 @@ class ChannelFuchsia : public Channel,
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.
   scoped_refptr<Channel> self_;
 
-  ScopedPlatformHandle handle_;
+  ScopedInternalPlatformHandle handle_;
   scoped_refptr<base::TaskRunner> io_task_runner_;
 
   // These members are only used on the IO thread.

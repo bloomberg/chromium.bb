@@ -22,7 +22,7 @@ using Result = SenderPipe::Result;
 class SenderPipeTest : public testing::Test {
  public:
   void SetUp() override {
-    mojo::edk::ScopedPlatformHandle write_handle;
+    mojo::edk::ScopedInternalPlatformHandle write_handle;
 
     SenderPipe::PipePair pipes;
     read_handle_ = pipes.PassReceiver();
@@ -52,7 +52,7 @@ class SenderPipeTest : public testing::Test {
   }
 
  private:
-  mojo::edk::ScopedPlatformHandle read_handle_;
+  mojo::edk::ScopedInternalPlatformHandle read_handle_;
   std::unique_ptr<SenderPipe> sender_pipe_;
   std::vector<char> buffer_;
 };

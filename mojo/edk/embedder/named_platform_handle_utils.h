@@ -42,11 +42,11 @@ struct CreateServerHandleOptions {
 
 // Creates a client platform handle from |handle|. This may block until |handle|
 // is ready to receive connections.
-MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle
+MOJO_SYSTEM_IMPL_EXPORT ScopedInternalPlatformHandle
 CreateClientHandle(const NamedPlatformHandle& handle);
 
 // Creates a server platform handle from |handle|.
-MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle
+MOJO_SYSTEM_IMPL_EXPORT ScopedInternalPlatformHandle
 CreateServerHandle(const NamedPlatformHandle& handle,
                    const CreateServerHandleOptions& options = {});
 

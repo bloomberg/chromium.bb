@@ -33,7 +33,8 @@ TEST(PlatformHandleDispatcherTest, Basic) {
   EXPECT_EQ(sizeof(kHelloWorld),
             fwrite(kHelloWorld, 1, sizeof(kHelloWorld), fp.get()));
 
-  ScopedPlatformHandle h(test::PlatformHandleFromFILE(std::move(fp)));
+  ScopedInternalPlatformHandle h(
+      test::InternalPlatformHandleFromFILE(std::move(fp)));
   EXPECT_FALSE(fp);
   ASSERT_TRUE(h.is_valid());
 
@@ -42,10 +43,10 @@ TEST(PlatformHandleDispatcherTest, Basic) {
   EXPECT_FALSE(h.is_valid());
   EXPECT_EQ(Dispatcher::Type::PLATFORM_HANDLE, dispatcher->GetType());
 
-  h = dispatcher->PassPlatformHandle();
+  h = dispatcher->PassInternalPlatformHandle();
   EXPECT_TRUE(h.is_valid());
 
-  fp = test::FILEFromPlatformHandle(std::move(h), "rb");
+  fp = test::FILEFromInternalPlatformHandle(std::move(h), "rb");
   EXPECT_FALSE(h.is_valid());
   EXPECT_TRUE(fp);
 
@@ -56,7 +57,7 @@ TEST(PlatformHandleDispatcherTest, Basic) {
   EXPECT_STREQ(kHelloWorld, read_buffer);
 
   // Try getting the handle again. (It should fail cleanly.)
-  h = dispatcher->PassPlatformHandle();
+  h = dispatcher->PassInternalPlatformHandle();
   EXPECT_FALSE(h.is_valid());
 
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher->Close());
@@ -75,7 +76,7 @@ TEST(PlatformHandleDispatcherTest, Serialization) {
 
   scoped_refptr<PlatformHandleDispatcher> dispatcher =
       PlatformHandleDispatcher::Create(
-          test::PlatformHandleFromFILE(std::move(fp)));
+          test::InternalPlatformHandleFromFILE(std::move(fp)));
 
   uint32_t num_bytes = 0;
   uint32_t num_ports = 0;
@@ -87,14 +88,15 @@ TEST(PlatformHandleDispatcherTest, Serialization) {
   EXPECT_EQ(0u, num_ports);
   EXPECT_EQ(1u, num_handles);
 
-  ScopedPlatformHandle received_handle;
+  ScopedInternalPlatformHandle received_handle;
   EXPECT_TRUE(dispatcher->EndSerialize(nullptr, nullptr, &received_handle));
 
   dispatcher->CompleteTransitAndClose();
 
   EXPECT_TRUE(received_handle.is_valid());
 
-  ScopedPlatformHandle handle = dispatcher->PassPlatformHandle();
+  ScopedInternalPlatformHandle handle =
+      dispatcher->PassInternalPlatformHandle();
   EXPECT_FALSE(handle.is_valid());
 
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, dispatcher->Close());
@@ -108,7 +110,8 @@ TEST(PlatformHandleDispatcherTest, Serialization) {
   EXPECT_FALSE(received_handle.is_valid());
   EXPECT_TRUE(dispatcher->GetType() == Dispatcher::Type::PLATFORM_HANDLE);
 
-  fp = test::FILEFromPlatformHandle(dispatcher->PassPlatformHandle(), "rb");
+  fp = test::FILEFromInternalPlatformHandle(
+      dispatcher->PassInternalPlatformHandle(), "rb");
   EXPECT_TRUE(fp);
 
   rewind(fp.get());

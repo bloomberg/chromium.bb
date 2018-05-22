@@ -199,12 +199,14 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   void OnAddBrokerClient(const ports::NodeName& from_node,
                          const ports::NodeName& client_name,
                          base::ProcessHandle process_handle) override;
-  void OnBrokerClientAdded(const ports::NodeName& from_node,
-                           const ports::NodeName& client_name,
-                           ScopedPlatformHandle broker_channel) override;
-  void OnAcceptBrokerClient(const ports::NodeName& from_node,
-                            const ports::NodeName& broker_name,
-                            ScopedPlatformHandle broker_channel) override;
+  void OnBrokerClientAdded(
+      const ports::NodeName& from_node,
+      const ports::NodeName& client_name,
+      ScopedInternalPlatformHandle broker_channel) override;
+  void OnAcceptBrokerClient(
+      const ports::NodeName& from_node,
+      const ports::NodeName& broker_name,
+      ScopedInternalPlatformHandle broker_channel) override;
   void OnEventMessage(const ports::NodeName& from_node,
                       Channel::MessagePtr message) override;
   void OnRequestPortMerge(const ports::NodeName& from_node,
@@ -214,7 +216,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
                              const ports::NodeName& name) override;
   void OnIntroduce(const ports::NodeName& from_node,
                    const ports::NodeName& name,
-                   ScopedPlatformHandle channel_handle) override;
+                   ScopedInternalPlatformHandle channel_handle) override;
   void OnBroadcast(const ports::NodeName& from_node,
                    Channel::MessagePtr message) override;
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))

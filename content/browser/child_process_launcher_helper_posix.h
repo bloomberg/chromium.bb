@@ -18,7 +18,7 @@ class FilePath;
 
 namespace mojo {
 namespace edk {
-struct PlatformHandle;
+struct InternalPlatformHandle;
 }  // namespace mojo
 }  // namespace edk
 
@@ -33,7 +33,7 @@ namespace internal {
 
 std::unique_ptr<PosixFileDescriptorInfo> CreateDefaultPosixFilesToMap(
     int child_process_id,
-    const mojo::edk::PlatformHandle& mojo_client_handle,
+    const mojo::edk::InternalPlatformHandle& mojo_client_handle,
     bool include_service_required_files,
     const std::string& process_type,
     base::CommandLine* command_line);

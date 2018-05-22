@@ -16,7 +16,7 @@
 
 namespace heap_profiling {
 
-ReceiverPipe::ReceiverPipe(mojo::edk::ScopedPlatformHandle handle)
+ReceiverPipe::ReceiverPipe(mojo::edk::ScopedInternalPlatformHandle handle)
     : ReceiverPipeBase(std::move(handle)),
       read_buffer_(new char[SenderPipe::kPipeSize]) {
   ZeroOverlapped();

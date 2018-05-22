@@ -173,7 +173,7 @@ bool ServiceProcessState::Initialize() {
   return true;
 }
 
-mojo::edk::ScopedPlatformHandle
+mojo::edk::ScopedInternalPlatformHandle
 ServiceProcessState::GetServiceProcessChannel() {
   DCHECK(state_);
   NSDictionary* ns_launchd_conf = base::mac::CFToNSCast(state_->launchd_conf);
@@ -183,7 +183,8 @@ ServiceProcessState::GetServiceProcessChannel() {
       [socket_dict objectForKey:GetServiceProcessLaunchDSocketKey()];
   DCHECK_EQ([sockets count], 1U);
   int socket = [[sockets objectAtIndex:0] intValue];
-  return mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(socket));
+  return mojo::edk::ScopedInternalPlatformHandle(
+      mojo::edk::InternalPlatformHandle(socket));
 }
 
 bool CheckServiceProcessReady() {

@@ -203,7 +203,8 @@ void NodeController::AcceptBrokerClientInvitation(
   // synchronously as the first message from the broker.
   base::ElapsedTimer timer;
   broker_.reset(new Broker(connection_params.TakeChannelHandle()));
-  ScopedPlatformHandle platform_handle = broker_->GetInviterPlatformHandle();
+  ScopedInternalPlatformHandle platform_handle =
+      broker_->GetInviterInternalPlatformHandle();
 
   if (!platform_handle.is_valid()) {
     // Most likely the inviter's side of the channel has already been closed and
@@ -330,7 +331,7 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
 
 #if !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_FUCHSIA)
   PlatformChannelPair node_channel;
-  ScopedPlatformHandle server_handle = node_channel.PassServerHandle();
+  ScopedInternalPlatformHandle server_handle = node_channel.PassServerHandle();
   // BrokerHost owns itself.
   BrokerHost* broker_host = new BrokerHost(
       target_process.get(), connection_params.TakeChannelHandle(),
@@ -798,7 +799,7 @@ void NodeController::OnAcceptInvitation(const ports::NodeName& from_node,
 
     if (!inviter) {
       // Yes, we're the broker. We can initialize the client directly.
-      channel->AcceptBrokerClient(name_, ScopedPlatformHandle());
+      channel->AcceptBrokerClient(name_, ScopedInternalPlatformHandle());
     } else {
       // We aren't the broker, so wait for a broker connection.
       base::AutoLock lock(broker_lock_);
@@ -849,9 +850,10 @@ void NodeController::OnAddBrokerClient(const ports::NodeName& from_node,
   sender->BrokerClientAdded(client_name, broker_channel.PassClientHandle());
 }
 
-void NodeController::OnBrokerClientAdded(const ports::NodeName& from_node,
-                                         const ports::NodeName& client_name,
-                                         ScopedPlatformHandle broker_channel) {
+void NodeController::OnBrokerClientAdded(
+    const ports::NodeName& from_node,
+    const ports::NodeName& client_name,
+    ScopedInternalPlatformHandle broker_channel) {
   scoped_refptr<NodeChannel> client = GetPeerChannel(client_name);
   if (!client) {
     DLOG(ERROR) << "BrokerClientAdded for unknown client " << client_name;
@@ -869,9 +871,10 @@ void NodeController::OnBrokerClientAdded(const ports::NodeName& from_node,
   client->AcceptBrokerClient(from_node, std::move(broker_channel));
 }
 
-void NodeController::OnAcceptBrokerClient(const ports::NodeName& from_node,
-                                          const ports::NodeName& broker_name,
-                                          ScopedPlatformHandle broker_channel) {
+void NodeController::OnAcceptBrokerClient(
+    const ports::NodeName& from_node,
+    const ports::NodeName& broker_name,
+    ScopedInternalPlatformHandle broker_channel) {
   DCHECK(!GetConfiguration().is_broker_process);
 
   // This node should already have an inviter in bootstrap mode.
@@ -1021,7 +1024,7 @@ void NodeController::OnRequestIntroduction(const ports::NodeName& from_node,
   scoped_refptr<NodeChannel> new_friend = GetPeerChannel(name);
   if (!new_friend) {
     // We don't know who they're talking about!
-    requestor->Introduce(name, ScopedPlatformHandle());
+    requestor->Introduce(name, ScopedInternalPlatformHandle());
   } else {
     PlatformChannelPair new_channel;
     requestor->Introduce(name, new_channel.PassServerHandle());
@@ -1031,7 +1034,7 @@ void NodeController::OnRequestIntroduction(const ports::NodeName& from_node,
 
 void NodeController::OnIntroduce(const ports::NodeName& from_node,
                                  const ports::NodeName& name,
-                                 ScopedPlatformHandle channel_handle) {
+                                 ScopedInternalPlatformHandle channel_handle) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   if (!channel_handle.is_valid()) {
@@ -1108,7 +1111,7 @@ void NodeController::OnRelayEventMessage(const ports::NodeName& from_node,
   // Note that we explicitly mark the handles as being owned by the sending
   // process before rewriting them, in order to accommodate RewriteHandles'
   // internal sanity checks.
-  std::vector<ScopedPlatformHandle> handles = message->TakeHandles();
+  std::vector<ScopedInternalPlatformHandle> handles = message->TakeHandles();
   for (auto& handle : handles)
     handle.get().owning_process = from_process;
   if (!Channel::Message::RewriteHandles(
@@ -1117,12 +1120,12 @@ void NodeController::OnRelayEventMessage(const ports::NodeName& from_node,
   }
   message->SetHandles(std::move(handles));
 #else
-  std::vector<ScopedPlatformHandle> handles = message->TakeHandles();
+  std::vector<ScopedInternalPlatformHandle> handles = message->TakeHandles();
   for (auto& handle : handles) {
-    if (handle.get().type == PlatformHandle::Type::MACH_NAME) {
+    if (handle.get().type == InternalPlatformHandle::Type::MACH_NAME) {
       MachPortRelay* relay = GetMachPortRelay();
       if (!relay) {
-        handle.get().type = PlatformHandle::Type::MACH;
+        handle.get().type = InternalPlatformHandle::Type::MACH;
         handle.get().port = MACH_PORT_NULL;
         DLOG(ERROR) << "Receiving Mach ports without a port relay from "
                     << from_node << ".";

@@ -21,7 +21,7 @@ namespace mojo {
 namespace edk {
 
 BrokerHost::BrokerHost(base::ProcessHandle client_process,
-                       ScopedPlatformHandle platform_handle,
+                       ScopedInternalPlatformHandle platform_handle,
                        const ProcessErrorCallback& process_error_callback)
     : process_error_callback_(process_error_callback)
 #if defined(OS_WIN)
@@ -49,7 +49,7 @@ BrokerHost::~BrokerHost() {
 }
 
 bool BrokerHost::PrepareHandlesForClient(
-    std::vector<ScopedPlatformHandle>* handles) {
+    std::vector<ScopedInternalPlatformHandle>* handles) {
 #if defined(OS_WIN)
   if (!Channel::Message::RewriteHandles(base::GetCurrentProcessHandle(),
                                         client_process_.get(), handles)) {
@@ -63,7 +63,7 @@ bool BrokerHost::PrepareHandlesForClient(
   return true;
 }
 
-bool BrokerHost::SendChannel(ScopedPlatformHandle handle) {
+bool BrokerHost::SendChannel(ScopedInternalPlatformHandle handle) {
   CHECK(handle.is_valid());
   CHECK(channel_);
 
@@ -76,7 +76,7 @@ bool BrokerHost::SendChannel(ScopedPlatformHandle handle) {
   Channel::MessagePtr message =
       CreateBrokerMessage(BrokerMessageType::INIT, 1, nullptr);
 #endif
-  std::vector<ScopedPlatformHandle> handles(1);
+  std::vector<ScopedInternalPlatformHandle> handles(1);
   handles[0] = std::move(handle);
 
   // This may legitimately fail on Windows if the client process is in another
@@ -108,9 +108,9 @@ void BrokerHost::OnBufferRequest(uint32_t num_bytes) {
   base::subtle::PlatformSharedMemoryRegion region =
       base::subtle::PlatformSharedMemoryRegion::CreateWritable(num_bytes);
 
-  std::vector<ScopedPlatformHandle> handles(2);
+  std::vector<ScopedInternalPlatformHandle> handles(2);
   if (region.IsValid()) {
-    ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+    ExtractInternalPlatformHandlesFromSharedMemoryRegionHandle(
         region.PassPlatformHandle(), &handles[0], &handles[1]);
 #if !defined(OS_POSIX) || defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
     (defined(OS_MACOSX) && !defined(OS_IOS))
@@ -137,9 +137,10 @@ void BrokerHost::OnBufferRequest(uint32_t num_bytes) {
   channel_->Write(std::move(message));
 }
 
-void BrokerHost::OnChannelMessage(const void* payload,
-                                  size_t payload_size,
-                                  std::vector<ScopedPlatformHandle> handles) {
+void BrokerHost::OnChannelMessage(
+    const void* payload,
+    size_t payload_size,
+    std::vector<ScopedInternalPlatformHandle> handles) {
   if (payload_size < sizeof(BrokerMessageHeader))
     return;
 

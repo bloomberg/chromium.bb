@@ -32,11 +32,11 @@ using HandlePassingInformation = base::FileHandleMappingVector;
 #error "Unsupported."
 #endif
 
-// This is used to create a pair of |PlatformHandle|s that are connected by a
-// suitable (platform-specific) bidirectional "pipe" (e.g., socket on POSIX,
-// named pipe on Windows). The resulting handles can then be used in the same
-// process (e.g., in tests) or between processes. (The "server" handle is the
-// one that will be used in the process that created the pair, whereas the
+// This is used to create a pair of |InternalPlatformHandle|s that are connected
+// by a suitable (platform-specific) bidirectional "pipe" (e.g., socket on
+// POSIX, named pipe on Windows). The resulting handles can then be used in the
+// same process (e.g., in tests) or between processes. (The "server" handle is
+// the one that will be used in the process that created the pair, whereas the
 // "client" handle is the one that will be used in a different process.)
 //
 // This class provides facilities for passing the client handle to a child
@@ -62,22 +62,22 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
   PlatformChannelPair(bool client_is_blocking = false);
   ~PlatformChannelPair();
 
-  ScopedPlatformHandle PassServerHandle();
+  ScopedInternalPlatformHandle PassServerHandle();
 
   // For in-process use (e.g., in tests or to pass over another channel).
-  ScopedPlatformHandle PassClientHandle();
+  ScopedInternalPlatformHandle PassClientHandle();
 
   // To be called in the child process, after the parent process called
   // |PrepareToPassClientHandleToChildProcess()| and launched the child (using
   // the provided data), to create a client handle connected to the server
   // handle (in the parent process).
   // TODO(jcivelli): remove the command_line param. http://crbug.com/670106
-  static ScopedPlatformHandle PassClientHandleFromParentProcess(
+  static ScopedInternalPlatformHandle PassClientHandleFromParentProcess(
       const base::CommandLine& command_line);
 
   // Like above, but gets the handle from the passed in string.
-  static ScopedPlatformHandle PassClientHandleFromParentProcessFromString(
-      const std::string& value);
+  static ScopedInternalPlatformHandle
+  PassClientHandleFromParentProcessFromString(const std::string& value);
 
   // Prepares to pass the client channel to a new child process, to be launched
   // using |LaunchProcess()| (from base/launch.h). Modifies |*command_line| and
@@ -96,7 +96,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
   // TODO(wez): Consider incorporating this call into other platform
   // implementations.
   static void PrepareToPassHandleToChildProcess(
-      const PlatformHandle& handle,
+      const InternalPlatformHandle& handle,
       base::CommandLine* command_line,
       HandlePassingInformation* handle_passing_info);
 #endif
@@ -106,8 +106,8 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
   void ChildProcessLaunched();
 
  private:
-  ScopedPlatformHandle server_handle_;
-  ScopedPlatformHandle client_handle_;
+  ScopedInternalPlatformHandle server_handle_;
+  ScopedInternalPlatformHandle client_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformChannelPair);
 };

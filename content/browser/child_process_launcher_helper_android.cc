@@ -59,9 +59,9 @@ void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
          !command_line()->HasSwitch(service_manager::switches::kNoSandbox));
 }
 
-mojo::edk::ScopedPlatformHandle
+mojo::edk::ScopedInternalPlatformHandle
 ChildProcessLauncherHelper::PrepareMojoPipeHandlesOnClientThread() {
-  return mojo::edk::ScopedPlatformHandle();
+  return mojo::edk::ScopedInternalPlatformHandle();
 }
 
 std::unique_ptr<PosixFileDescriptorInfo>

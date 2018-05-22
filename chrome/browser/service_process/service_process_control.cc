@@ -54,7 +54,7 @@ void ConnectAsyncWithBackoff(
     scoped_refptr<base::TaskRunner> response_task_runner,
     base::OnceCallback<void(std::unique_ptr<mojo::edk::PeerConnection>)>
         response_callback) {
-  mojo::edk::ScopedPlatformHandle os_pipe_handle =
+  mojo::edk::ScopedInternalPlatformHandle os_pipe_handle =
       mojo::edk::CreateClientHandle(os_pipe);
   if (!os_pipe_handle.is_valid()) {
     if (num_retries_left == 0) {

@@ -18,7 +18,7 @@
 
 namespace heap_profiling {
 
-ReceiverPipe::ReceiverPipe(mojo::edk::ScopedPlatformHandle handle)
+ReceiverPipe::ReceiverPipe(mojo::edk::ScopedInternalPlatformHandle handle)
     : ReceiverPipeBase(std::move(handle)),
       controller_(FROM_HERE),
       read_buffer_(new char[SenderPipe::kPipeSize]) {}
@@ -35,7 +35,7 @@ void ReceiverPipe::StartReadingOnIOThread() {
 void ReceiverPipe::OnFileCanReadWithoutBlocking(int fd) {
   ssize_t bytes_read = 0;
   do {
-    base::circular_deque<mojo::edk::PlatformHandle> dummy_for_receive;
+    base::circular_deque<mojo::edk::InternalPlatformHandle> dummy_for_receive;
 
     bytes_read = HANDLE_EINTR(
         read(handle_.get().handle, read_buffer_.get(), SenderPipe::kPipeSize));

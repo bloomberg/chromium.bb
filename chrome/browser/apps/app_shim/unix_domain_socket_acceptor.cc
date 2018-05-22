@@ -41,7 +41,7 @@ bool UnixDomainSocketAcceptor::Listen() {
 // Called by libevent when we can read from the fd without blocking.
 void UnixDomainSocketAcceptor::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK(fd == listen_handle_.get().handle);
-  mojo::edk::ScopedPlatformHandle connection_handle;
+  mojo::edk::ScopedInternalPlatformHandle connection_handle;
   if (!mojo::edk::ServerAcceptConnection(listen_handle_, &connection_handle)) {
     Close();
     delegate_->OnListenError();

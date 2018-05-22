@@ -253,10 +253,10 @@ void ArcFileSystemBridge::OnOpenFile(const GURL& url_decoded,
   DCHECK_EQ(id_to_url_.count(id), 0u);
   id_to_url_[id] = url_decoded;
 
-  mojo::edk::ScopedPlatformHandle platform_handle{
-      mojo::edk::PlatformHandle(fd.release())};
+  mojo::edk::ScopedInternalPlatformHandle platform_handle{
+      mojo::edk::InternalPlatformHandle(fd.release())};
   MojoHandle wrapped_handle = MOJO_HANDLE_INVALID;
-  MojoResult result = mojo::edk::CreatePlatformHandleWrapper(
+  MojoResult result = mojo::edk::CreateInternalPlatformHandleWrapper(
       std::move(platform_handle), &wrapped_handle);
   if (result != MOJO_RESULT_OK) {
     LOG(ERROR) << "Failed to wrap handle: " << result;

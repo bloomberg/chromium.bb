@@ -9,14 +9,15 @@
 namespace mojo {
 namespace edk {
 
-ScopedPlatformHandle DuplicatePlatformHandle(PlatformHandle platform_handle) {
+ScopedInternalPlatformHandle DuplicatePlatformHandle(
+    InternalPlatformHandle platform_handle) {
   DCHECK(platform_handle.is_valid());
   zx_handle_t duped;
   // zx_handle_duplicate won't touch |duped| in case of failure.
   zx_status_t result = zx_handle_duplicate(platform_handle.as_handle(),
                                            ZX_RIGHT_SAME_RIGHTS, &duped);
   DLOG_IF(ERROR, result != ZX_OK) << "zx_duplicate_handle failed: " << result;
-  return ScopedPlatformHandle(PlatformHandle::ForHandle(duped));
+  return ScopedInternalPlatformHandle(InternalPlatformHandle::ForHandle(duped));
 }
 
 }  // namespace edk

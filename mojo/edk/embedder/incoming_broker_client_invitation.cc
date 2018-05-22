@@ -27,7 +27,7 @@ IncomingBrokerClientInvitation::Accept(ConnectionParams params) {
 std::unique_ptr<IncomingBrokerClientInvitation>
 IncomingBrokerClientInvitation::AcceptFromCommandLine(
     TransportProtocol protocol) {
-  ScopedPlatformHandle platform_channel =
+  ScopedInternalPlatformHandle platform_channel =
       PlatformChannelPair::PassClientHandleFromParentProcess(
           *base::CommandLine::ForCurrentProcess());
   DCHECK(platform_channel.is_valid());

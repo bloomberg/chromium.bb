@@ -22,7 +22,7 @@
 
 namespace {
 
-void CreateAppShimHost(mojo::edk::ScopedPlatformHandle handle) {
+void CreateAppShimHost(mojo::edk::ScopedInternalPlatformHandle handle) {
   // AppShimHost takes ownership of itself.
   (new AppShimHost)->ServeChannel(std::move(handle));
 }
@@ -157,7 +157,7 @@ void AppShimHostManager::ListenOnIOThread() {
 }
 
 void AppShimHostManager::OnClientConnected(
-    mojo::edk::ScopedPlatformHandle handle) {
+    mojo::edk::ScopedInternalPlatformHandle handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
       ->PostTask(FROM_HERE,

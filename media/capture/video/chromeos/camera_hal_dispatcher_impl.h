@@ -78,7 +78,7 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
 
   // Waits for incoming connections (from HAL process or from client processes).
   // Runs on |blocking_io_thread_|.
-  void StartServiceLoop(mojo::edk::ScopedPlatformHandle socket_fd,
+  void StartServiceLoop(mojo::edk::ScopedInternalPlatformHandle socket_fd,
                         base::WaitableEvent* started);
 
   void AddClientObserverOnProxyThread(
@@ -95,7 +95,7 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
 
   void StopOnProxyThread();
 
-  mojo::edk::ScopedPlatformHandle proxy_fd_;
+  mojo::edk::ScopedInternalPlatformHandle proxy_fd_;
   base::ScopedFD cancel_pipe_;
 
   base::Thread proxy_thread_;

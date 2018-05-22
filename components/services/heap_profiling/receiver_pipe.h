@@ -29,7 +29,7 @@ class ReceiverPipeBase : public base::RefCountedThreadSafe<ReceiverPipeBase> {
  protected:
   friend class base::RefCountedThreadSafe<ReceiverPipeBase>;
 
-  explicit ReceiverPipeBase(mojo::edk::ScopedPlatformHandle handle);
+  explicit ReceiverPipeBase(mojo::edk::ScopedInternalPlatformHandle handle);
   virtual ~ReceiverPipeBase();
 
   // Callback that indicates an error has occurred and the connection should
@@ -46,7 +46,7 @@ class ReceiverPipeBase : public base::RefCountedThreadSafe<ReceiverPipeBase> {
   scoped_refptr<base::TaskRunner> receiver_task_runner_;
   scoped_refptr<StreamReceiver> receiver_;
 
-  mojo::edk::ScopedPlatformHandle handle_;
+  mojo::edk::ScopedInternalPlatformHandle handle_;
 };
 
 }  // namespace heap_profiling

@@ -20,14 +20,14 @@ namespace test {
 
 // On success, |bytes_written| is updated to the number of bytes written;
 // otherwise it is untouched.
-bool BlockingWrite(const PlatformHandle& handle,
+bool BlockingWrite(const InternalPlatformHandle& handle,
                    const void* buffer,
                    size_t bytes_to_write,
                    size_t* bytes_written);
 
 // On success, |bytes_read| is updated to the number of bytes read; otherwise it
 // is untouched.
-bool BlockingRead(const PlatformHandle& handle,
+bool BlockingRead(const InternalPlatformHandle& handle,
                   void* buffer,
                   size_t buffer_size,
                   size_t* bytes_read);
@@ -36,17 +36,18 @@ bool BlockingRead(const PlatformHandle& handle,
 // and updates |bytes_read| to the number of bytes read (0 if the read would
 // block); otherwise it returns false and leaves |bytes_read| untouched.
 // |handle| must already be in non-blocking mode.
-bool NonBlockingRead(const PlatformHandle& handle,
+bool NonBlockingRead(const InternalPlatformHandle& handle,
                      void* buffer,
                      size_t buffer_size,
                      size_t* bytes_read);
 
-// Gets a (scoped) |PlatformHandle| from the given (scoped) |FILE|.
-ScopedPlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp);
+// Gets a (scoped) |InternalPlatformHandle| from the given (scoped) |FILE|.
+ScopedInternalPlatformHandle InternalPlatformHandleFromFILE(
+    base::ScopedFILE fp);
 
-// Gets a (scoped) |FILE| from a (scoped) |PlatformHandle|.
-base::ScopedFILE FILEFromPlatformHandle(ScopedPlatformHandle h,
-                                        const char* mode);
+// Gets a (scoped) |FILE| from a (scoped) |InternalPlatformHandle|.
+base::ScopedFILE FILEFromInternalPlatformHandle(ScopedInternalPlatformHandle h,
+                                                const char* mode);
 
 }  // namespace test
 }  // namespace edk

@@ -30,13 +30,13 @@ const size_t kMaxBrokerMessageSize = 256;
 
 bool TakeHandlesFromBrokerMessage(Channel::Message* message,
                                   size_t num_handles,
-                                  ScopedPlatformHandle* out_handles) {
+                                  ScopedInternalPlatformHandle* out_handles) {
   if (message->num_handles() != num_handles) {
     DLOG(ERROR) << "Received unexpected number of handles in broker message";
     return false;
   }
 
-  std::vector<ScopedPlatformHandle> handles = message->TakeHandles();
+  std::vector<ScopedInternalPlatformHandle> handles = message->TakeHandles();
   DCHECK_EQ(handles.size(), num_handles);
   DCHECK(out_handles);
 
@@ -45,7 +45,7 @@ bool TakeHandlesFromBrokerMessage(Channel::Message* message,
   return true;
 }
 
-Channel::MessagePtr WaitForBrokerMessage(PlatformHandle platform_handle,
+Channel::MessagePtr WaitForBrokerMessage(InternalPlatformHandle platform_handle,
                                          BrokerMessageType expected_type) {
   char buffer[kMaxBrokerMessageSize];
   DWORD bytes_read = 0;
@@ -86,7 +86,8 @@ Channel::MessagePtr WaitForBrokerMessage(PlatformHandle platform_handle,
 
 }  // namespace
 
-Broker::Broker(ScopedPlatformHandle handle) : sync_channel_(std::move(handle)) {
+Broker::Broker(ScopedInternalPlatformHandle handle)
+    : sync_channel_(std::move(handle)) {
   CHECK(sync_channel_.is_valid());
   Channel::MessagePtr message =
       WaitForBrokerMessage(sync_channel_.get(), BrokerMessageType::INIT);
@@ -116,7 +117,7 @@ Broker::Broker(ScopedPlatformHandle handle) : sync_channel_(std::move(handle)) {
 
 Broker::~Broker() {}
 
-ScopedPlatformHandle Broker::GetInviterPlatformHandle() {
+ScopedInternalPlatformHandle Broker::GetInviterInternalPlatformHandle() {
   return std::move(inviter_channel_);
 }
 
@@ -137,7 +138,7 @@ base::WritableSharedMemoryRegion Broker::GetWritableSharedMemoryRegion(
     return base::WritableSharedMemoryRegion();
   }
 
-  ScopedPlatformHandle handle;
+  ScopedInternalPlatformHandle handle;
   Channel::MessagePtr response = WaitForBrokerMessage(
       sync_channel_.get(), BrokerMessageType::BUFFER_RESPONSE);
   if (response && TakeHandlesFromBrokerMessage(response.get(), 1, &handle)) {
@@ -146,8 +147,8 @@ base::WritableSharedMemoryRegion Broker::GetWritableSharedMemoryRegion(
       return base::WritableSharedMemoryRegion();
     return base::WritableSharedMemoryRegion::Deserialize(
         base::subtle::PlatformSharedMemoryRegion::Take(
-            CreateSharedMemoryRegionHandleFromPlatformHandles(
-                std::move(handle), ScopedPlatformHandle()),
+            CreateSharedMemoryRegionHandleFromInternalPlatformHandles(
+                std::move(handle), ScopedInternalPlatformHandle()),
             base::subtle::PlatformSharedMemoryRegion::Mode::kWritable,
             num_bytes,
             base::UnguessableToken::Deserialize(data->guid_high,

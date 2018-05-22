@@ -25,9 +25,9 @@ namespace mojo {
 namespace edk {
 
 #if defined(OS_WIN)
-struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
-  PlatformHandle() : PlatformHandle(INVALID_HANDLE_VALUE) {}
-  explicit PlatformHandle(HANDLE handle)
+struct MOJO_SYSTEM_IMPL_EXPORT InternalPlatformHandle {
+  InternalPlatformHandle() : InternalPlatformHandle(INVALID_HANDLE_VALUE) {}
+  explicit InternalPlatformHandle(HANDLE handle)
       : handle(handle), owning_process(base::GetCurrentProcessHandle()) {}
 
   void CloseIfNecessary();
@@ -39,7 +39,7 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
   // A Windows HANDLE may be duplicated to another process but not yet sent to
   // that process. This tracks the handle's owning process and this process
   // handle (if not null, i.e., the current process) is *owned* by this
-  // PlatformHandle.
+  // InternalPlatformHandle.
   base::ProcessHandle owning_process;
 
   // A Windows HANDLE may be an unconnected named pipe. In this case, we need to
@@ -48,17 +48,17 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
 };
 #elif defined(OS_FUCHSIA)
 // TODO(fuchsia): Find a clean way to share this with the POSIX version.
-// |zx_handle_t| is a typedef of |int|, so we only allow PlatformHandle to be
-// created via explicit For<type>() creator functions.
-struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
+// |zx_handle_t| is a typedef of |int|, so we only allow InternalPlatformHandle
+// to be created via explicit For<type>() creator functions.
+struct MOJO_SYSTEM_IMPL_EXPORT InternalPlatformHandle {
  public:
-  static PlatformHandle ForHandle(zx_handle_t handle) {
-    PlatformHandle platform_handle;
+  static InternalPlatformHandle ForHandle(zx_handle_t handle) {
+    InternalPlatformHandle platform_handle;
     platform_handle.handle = handle;
     return platform_handle;
   }
-  static PlatformHandle ForFd(int fd) {
-    PlatformHandle platform_handle;
+  static InternalPlatformHandle ForFd(int fd) {
+    InternalPlatformHandle platform_handle;
     DCHECK_LT(fd, FDIO_MAX_FD);
     platform_handle.fd = fd;
     return platform_handle;
@@ -76,11 +76,11 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
   int fd = -1;
 };
 #elif defined(OS_POSIX)
-struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
-  PlatformHandle() {}
-  explicit PlatformHandle(int handle) : handle(handle) {}
+struct MOJO_SYSTEM_IMPL_EXPORT InternalPlatformHandle {
+  InternalPlatformHandle() {}
+  explicit InternalPlatformHandle(int handle) : handle(handle) {}
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  explicit PlatformHandle(mach_port_t port)
+  explicit InternalPlatformHandle(mach_port_t port)
       : type(Type::MACH), port(port) {}
 #endif
 

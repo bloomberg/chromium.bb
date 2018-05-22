@@ -12,7 +12,7 @@ namespace mojo {
 namespace edk {
 
 ConnectionParams::ConnectionParams(TransportProtocol protocol,
-                                   ScopedPlatformHandle channel)
+                                   ScopedInternalPlatformHandle channel)
     : protocol_(protocol), channel_(std::move(channel)) {
   // TODO(rockot): Support other protocols.
   DCHECK_EQ(TransportProtocol::kLegacy, protocol);
@@ -25,7 +25,7 @@ ConnectionParams::ConnectionParams(ConnectionParams&& params) {
 ConnectionParams& ConnectionParams::operator=(ConnectionParams&& params) =
     default;
 
-ScopedPlatformHandle ConnectionParams::TakeChannelHandle() {
+ScopedInternalPlatformHandle ConnectionParams::TakeChannelHandle() {
   return std::move(channel_);
 }
 

@@ -134,7 +134,7 @@ class ServiceProcess : public ServiceIPCServer::Client,
   scoped_refptr<ServiceURLRequestContextGetter> request_context_getter_;
 
 #if defined(OS_POSIX)
-  mojo::edk::ScopedPlatformHandle server_handle_;
+  mojo::edk::ScopedInternalPlatformHandle server_handle_;
 #elif defined(OS_WIN)
   mojo::edk::NamedPlatformHandle server_handle_;
 #endif

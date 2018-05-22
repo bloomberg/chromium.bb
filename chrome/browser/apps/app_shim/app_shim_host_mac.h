@@ -36,7 +36,7 @@ class AppShimHost : public IPC::Listener,
   // Creates a new server-side IPC channel at |handle|, which should contain a
   // file descriptor of a channel created by an UnixDomainSocketAcceptor,
   // and begins listening for messages on it.
-  void ServeChannel(mojo::edk::ScopedPlatformHandle handle);
+  void ServeChannel(mojo::edk::ScopedInternalPlatformHandle handle);
 
  protected:
   // IPC::Listener implementation.
