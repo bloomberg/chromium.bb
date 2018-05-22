@@ -113,9 +113,6 @@ syncer::SyncCredentials SyncAuthManager::GetCredentials() const {
 
   const AccountInfo account_info = GetAuthenticatedAccountInfo();
   credentials.account_id = account_info.account_id;
-  // TODO(treib): This is not a good precondition for calling this method. Get
-  // rid of it here, and instead check at call sites as appropriate.
-  DCHECK(!credentials.account_id.empty());
   credentials.email = account_info.email;
   credentials.sync_token = access_token_;
 
