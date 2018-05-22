@@ -103,8 +103,8 @@ const CGFloat kRegularLayoutButtonWidth = 168;
 - (void)layoutSubviews {
   [super layoutSubviews];
 
-  CGRect contentViewFrame =
-      UIEdgeInsetsInsetRect(self.frame, self.safeAreaInsetFromNTPView);
+  CGRect contentViewFrame = self.frame;
+  contentViewFrame.size.height -= self.safeAreaInsetFromNTPView.bottom;
   contentViewFrame.origin.y = 0;
   self.contentView.frame = contentViewFrame;
 

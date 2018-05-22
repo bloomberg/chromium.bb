@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
+#include "ios/web/public/features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -239,8 +240,34 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   }
   self.automaticallyAdjustsScrollViewInsets = NO;
   self.collectionView.translatesAutoresizingMaskIntoConstraints = NO;
-  ApplyVisualConstraints(@[ @"V:|[collection]|", @"H:|[collection]|" ],
-                         @{@"collection" : self.collectionView});
+
+  if (base::FeatureList::IsEnabled(
+          web::features::kBrowserContainerFullscreen) &&
+      !IsUIRefreshPhase1Enabled()) {
+    // Add a fake status bar at the top.
+    UIView* fakeStatusBar = [[UIView alloc] init];
+    fakeStatusBar.backgroundColor = ntp_home::kNTPBackgroundColor();
+    fakeStatusBar.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:fakeStatusBar];
+    AddSameConstraintsToSides(
+        self.view, fakeStatusBar,
+        LayoutSides::kTop | LayoutSides::kTrailing | LayoutSides::kLeading);
+    if (@available(iOS 11.0, *)) {
+      [fakeStatusBar.bottomAnchor
+          constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor]
+          .active = YES;
+    } else {
+      [fakeStatusBar.bottomAnchor
+          constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor]
+          .active = YES;
+    }
+    ApplyVisualConstraints(
+        @[ @"V:|[statusBar][collection]|", @"H:|[collection]|" ],
+        @{@"collection" : self.collectionView, @"statusBar" : fakeStatusBar});
+  } else {
+    ApplyVisualConstraints(@[ @"V:|[collection]|", @"H:|[collection]|" ],
+                           @{@"collection" : self.collectionView});
+  }
 
   UILongPressGestureRecognizer* longPressRecognizer =
       [[UILongPressGestureRecognizer alloc]
