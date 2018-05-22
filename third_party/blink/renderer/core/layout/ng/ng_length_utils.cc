@@ -15,9 +15,6 @@
 #include "third_party/blink/renderer/platform/length.h"
 
 namespace blink {
-// TODO(layout-ng):
-// - replaced calculations
-// - Take scrollbars into account
 
 bool NeedMinMaxSize(const NGConstraintSpace& constraint_space,
                     const ComputedStyle& style) {
@@ -332,6 +329,21 @@ MinMaxSize ComputeMinAndMaxContentContribution(
   computed_sizes.max_size = std::max(computed_sizes.max_size, min);
 
   return computed_sizes;
+}
+
+MinMaxSize ComputeMinAndMaxContentContribution(
+    WritingMode writing_mode,
+    NGLayoutInputNode node,
+    const MinMaxSizeInput& input,
+    const NGConstraintSpace* constraint_space) {
+  base::Optional<MinMaxSize> minmax;
+  if (NeedMinMaxSizeForContentContribution(writing_mode, node.Style())) {
+    // TODO(layoutng): This is wrong for orthogonal writing modes.
+    minmax = node.ComputeMinMaxSize(input, constraint_space);
+  }
+
+  return ComputeMinAndMaxContentContribution(writing_mode, node.Style(),
+                                             minmax);
 }
 
 LayoutUnit ComputeInlineSizeForFragment(

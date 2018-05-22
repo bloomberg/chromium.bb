@@ -179,15 +179,8 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
       // following inline siblings and descendants.
       child_sizes = child.ComputeMinMaxSize(child_input);
     } else {
-      base::Optional<MinMaxSize> child_minmax;
-      if (NeedMinMaxSizeForContentContribution(Style().GetWritingMode(),
-                                               child_style)) {
-        // TODO(layoutng): This is wrong for orthogonal writing modes.
-        child_minmax = child.ComputeMinMaxSize(child_input);
-      }
-
       child_sizes = ComputeMinAndMaxContentContribution(
-          Style().GetWritingMode(), child_style, child_minmax);
+          Style().GetWritingMode(), child, child_input);
     }
 
     // Determine the max inline contribution of the child.
