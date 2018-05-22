@@ -145,10 +145,7 @@ class BackgroundFetchDataManager::RegistrationData {
 
   uint64_t GetDownloaded() const { return complete_requests_downloaded_bytes_; }
 
-  int GetTotalNumberOfRequests() const {
-    return pending_requests_.size() + active_requests_.size() +
-           completed_requests_.size();
-  }
+  size_t GetNumCompletedRequests() const { return completed_requests_.size(); }
 
  private:
   BackgroundFetchRegistrationId registration_id_;
@@ -602,6 +599,21 @@ void BackgroundFetchDataManager::GetDeveloperIdsForServiceWorker(
 
   std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
                           developer_ids);
+}
+
+void BackgroundFetchDataManager::GetNumCompletedRequests(
+    const BackgroundFetchRegistrationId& registration_id,
+    NumRequestsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundFetchPersistence)) {
+    // TODO(crbug.com/826257): Create database task to get number of requests.
+    return;
+  }
+
+  std::move(callback).Run(registrations_.find(registration_id.unique_id())
+                              ->second->GetNumCompletedRequests());
 }
 
 bool BackgroundFetchDataManager::IsActive(
