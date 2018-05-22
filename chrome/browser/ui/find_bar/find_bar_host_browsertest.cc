@@ -1567,6 +1567,15 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextSecret) {
 // Find text in regular window, send IDC_FIND_NEXT to incognito. It should
 // search for the first phrase.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextShared) {
+#if defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (!views_mode_controller::IsViewsBrowserCocoa()) {
+    // TODO(http://crbug.com/843878): Remove the interactive UI test
+    // FindBarPlatformHelperMacInteractiveUITest.IncognitoFindNextShared
+    // once http://crbug.com/843878 is fixed.
+    return;
+  }
+#endif
+
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   // On Mac this updates the find pboard.
