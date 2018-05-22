@@ -9,12 +9,10 @@ import static org.chromium.chrome.browser.util.ViewUtils.dpToPx;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.support.annotation.ColorRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.StringRes;
 import android.text.Layout;
 import android.text.SpannableString;
-import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
 import android.text.style.BulletSpan;
 import android.text.style.ForegroundColorSpan;
@@ -65,27 +63,6 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
                 int bottom, CharSequence text, int start, int end, boolean first, Layout l) {
             // Do not draw the standard bullet point. We will include the Unicode bullet point
             // symbol in the text instead.
-        }
-    }
-
-    private static class IncognitoClickableSpan extends NoUnderlineClickableSpan {
-        private final @ColorRes int mColor;
-        private final IncognitoNewTabPageManager mManager;
-
-        public IncognitoClickableSpan(Context context, IncognitoNewTabPageManager manager) {
-            mColor =
-                    ApiCompatibilityUtils.getColor(context.getResources(), R.color.google_blue_300);
-            mManager = manager;
-        }
-
-        @Override
-        public void onClick(View view) {
-            mManager.loadIncognitoLearnMore();
-        }
-
-        @Override
-        public void updateDrawState(TextPaint drawState) {
-            drawState.setColor(mColor);
         }
     }
 
@@ -349,8 +326,10 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
         concatenatedText.append(mContext.getResources().getString(R.string.learn_more));
         SpannableString textWithLearnMoreLink = new SpannableString(concatenatedText.toString());
 
-        textWithLearnMoreLink.setSpan(new IncognitoClickableSpan(mContext, getManager()),
-                subtitleText.length() + 1, textWithLearnMoreLink.length(), 0 /* flags */);
+        NoUnderlineClickableSpan span = new NoUnderlineClickableSpan(
+                R.color.google_blue_300, (view) -> getManager().loadIncognitoLearnMore());
+        textWithLearnMoreLink.setSpan(
+                span, subtitleText.length() + 1, textWithLearnMoreLink.length(), 0 /* flags */);
         mSubtitle.setText(textWithLearnMoreLink);
         mSubtitle.setMovementMethod(LinkMovementMethod.getInstance());
     }

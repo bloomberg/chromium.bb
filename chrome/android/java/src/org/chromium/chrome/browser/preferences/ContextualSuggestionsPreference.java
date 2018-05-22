@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 import android.text.SpannableString;
-import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
@@ -76,22 +75,20 @@ public class ContextualSuggestionsPreference
     private void initialize() {
         final TextMessagePreference message =
                 (TextMessagePreference) findPreference(PREF_CONTEXTUAL_SUGGESTIONS_MESSAGE);
+        final NoUnderlineClickableSpan span = new NoUnderlineClickableSpan((widget) -> {
+            Context context = getActivity();
+            if (ChromeSigninController.get().isSignedIn()) {
+                Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                        context, SyncCustomizationFragment.class.getName());
+                IntentUtils.safeStartActivity(context, intent);
+            } else {
+                startActivity(AccountSigninActivity.createIntentForDefaultSigninFlow(
+                        context, SigninAccessPoint.SETTINGS, false));
+            }
+        });
         final SpannableString spannable = SpanApplier.applySpans(
                 getResources().getString(R.string.contextual_suggestions_message),
-                new SpanApplier.SpanInfo("<link>", "</link>", new NoUnderlineClickableSpan() {
-                    @Override
-                    public void onClick(View widget) {
-                        Context context = getActivity();
-                        if (ChromeSigninController.get().isSignedIn()) {
-                            Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                                    context, SyncCustomizationFragment.class.getName());
-                            IntentUtils.safeStartActivity(context, intent);
-                        } else {
-                            startActivity(AccountSigninActivity.createIntentForDefaultSigninFlow(
-                                    context, SigninAccessPoint.SETTINGS, false));
-                        }
-                    }
-                }));
+                new SpanApplier.SpanInfo("<link>", "</link>", span));
         message.setTitle(spannable);
 
         updateSwitch();

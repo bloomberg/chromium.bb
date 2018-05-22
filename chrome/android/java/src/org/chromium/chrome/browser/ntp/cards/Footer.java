@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -49,12 +48,8 @@ public class Footer extends OptionalLeaf {
             super(LayoutInflater.from(root.getContext())
                             .inflate(R.layout.new_tab_page_footer, root, false));
 
-            NoUnderlineClickableSpan link = new NoUnderlineClickableSpan() {
-                @Override
-                public void onClick(View view) {
-                    navigationDelegate.navigateToHelpPage();
-                }
-            };
+            NoUnderlineClickableSpan link =
+                    new NoUnderlineClickableSpan((view) -> navigationDelegate.navigateToHelpPage());
 
             TextView textView = (TextView) itemView.findViewById(R.id.text);
             textView.setText(SpanApplier.applySpans(

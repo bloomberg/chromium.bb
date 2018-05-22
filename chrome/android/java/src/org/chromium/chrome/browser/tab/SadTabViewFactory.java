@@ -83,13 +83,10 @@ public class SadTabViewFactory {
      */
     private static CharSequence getHelpMessage(
             Context context, final Runnable suggestionAction, final boolean showSendFeedback) {
-        NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan() {
-            @Override
-            public void onClick(View view) {
-                SadTabViewFactory.recordEvent(showSendFeedback, SadTabEvent.HELP_LINK_CLICKED);
-                suggestionAction.run();
-            }
-        };
+        NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan((view) -> {
+            SadTabViewFactory.recordEvent(showSendFeedback, SadTabEvent.HELP_LINK_CLICKED);
+            suggestionAction.run();
+        });
 
         if (showSendFeedback) {
             SpannableString learnMoreLink =

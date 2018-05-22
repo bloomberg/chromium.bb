@@ -90,29 +90,21 @@ public class ToSAndUMAFirstRunFragment extends Fragment implements FirstRunFragm
 
         mTosAndPrivacy.setMovementMethod(LinkMovementMethod.getInstance());
 
-        NoUnderlineClickableSpan clickableTermsSpan = new NoUnderlineClickableSpan() {
-            @Override
-            public void onClick(View widget) {
-                if (!isAdded()) return;
-                getPageDelegate().showInfoPage(R.string.chrome_terms_of_service_url);
-            }
-        };
+        NoUnderlineClickableSpan clickableTermsSpan = new NoUnderlineClickableSpan((view1) -> {
+            if (!isAdded()) return;
+            getPageDelegate().showInfoPage(R.string.chrome_terms_of_service_url);
+        });
 
-        NoUnderlineClickableSpan clickablePrivacySpan = new NoUnderlineClickableSpan() {
-            @Override
-            public void onClick(View widget) {
-                if (!isAdded()) return;
-                getPageDelegate().showInfoPage(R.string.chrome_privacy_notice_url);
-            }
-        };
+        NoUnderlineClickableSpan clickablePrivacySpan = new NoUnderlineClickableSpan((view1) -> {
+            if (!isAdded()) return;
+            getPageDelegate().showInfoPage(R.string.chrome_privacy_notice_url);
+        });
 
-        NoUnderlineClickableSpan clickableFamilyLinkPrivacySpan = new NoUnderlineClickableSpan() {
-            @Override
-            public void onClick(View widget) {
-                if (!isAdded()) return;
-                getPageDelegate().showInfoPage(R.string.family_link_privacy_policy_url);
-            }
-        };
+        NoUnderlineClickableSpan clickableFamilyLinkPrivacySpan =
+                new NoUnderlineClickableSpan((view1) -> {
+                    if (!isAdded()) return;
+                    getPageDelegate().showInfoPage(R.string.family_link_privacy_policy_url);
+                });
 
         final CharSequence tosAndPrivacyText;
         Bundle freProperties = getPageDelegate().getProperties();
