@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/sync/driver/sync_token_status.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"

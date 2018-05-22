@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/connection_status.h"
 
 namespace ukm {
@@ -52,8 +53,7 @@ SyncDisableObserver::~SyncDisableObserver() {}
 // static
 SyncDisableObserver::SyncState SyncDisableObserver::GetSyncState(
     syncer::SyncService* sync_service) {
-  syncer::SyncService::SyncTokenStatus status =
-      sync_service->GetSyncTokenStatus();
+  syncer::SyncTokenStatus status = sync_service->GetSyncTokenStatus();
   SyncState state;
   state.history_enabled = sync_service->GetPreferredDataTypes().Has(
       syncer::HISTORY_DELETE_DIRECTIVES);

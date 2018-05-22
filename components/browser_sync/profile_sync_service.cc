@@ -2091,8 +2091,7 @@ ProfileSyncService::GetDeviceInfoSyncControllerDelegateOnUIThread() {
       ->GetControllerDelegateOnUIThread();
 }
 
-syncer::SyncService::SyncTokenStatus ProfileSyncService::GetSyncTokenStatus()
-    const {
+syncer::SyncTokenStatus ProfileSyncService::GetSyncTokenStatus() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return auth_manager_->GetSyncTokenStatus();
 }

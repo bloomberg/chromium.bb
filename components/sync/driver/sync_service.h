@@ -17,11 +17,10 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/data_type_encryption_handler.h"
 #include "components/sync/driver/sync_service_observer.h"
-#include "components/sync/engine/connection_status.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 
 struct AccountInfo;
 class GoogleServiceAuthError;
+class GURL;
 
 namespace sync_sessions {
 class OpenTabsUIDelegate;
@@ -37,6 +36,7 @@ class GlobalIdMapper;
 class ProtocolEventObserver;
 class SyncClient;
 class SyncCycleSnapshot;
+struct SyncTokenStatus;
 class TypeDebugInfoObserver;
 struct SyncStatus;
 struct UserShare;
@@ -90,24 +90,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   enum SyncStopDataFate {
     KEEP_DATA,
     CLEAR_DATA,
-  };
-
-  // Status of sync server connection, sync token and token request.
-  struct SyncTokenStatus {
-    SyncTokenStatus();
-
-    // Sync server connection status reported by sync engine.
-    base::Time connection_status_update_time;
-    ConnectionStatus connection_status;
-
-    // Times when OAuth2 access token is requested and received.
-    base::Time token_request_time;
-    base::Time token_receive_time;
-
-    // Error returned by OAuth2TokenService for token request and time when
-    // next request is scheduled.
-    GoogleServiceAuthError last_get_token_error;
-    base::Time next_token_request_time;
   };
 
   ~SyncService() override {}

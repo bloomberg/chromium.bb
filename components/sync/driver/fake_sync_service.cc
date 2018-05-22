@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/driver/data_type_controller.h"
+#include "components/sync/driver/sync_token_status.h"
 #include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/user_share.h"
 
@@ -156,8 +157,8 @@ void FakeSyncService::RegisterDataTypeController(
 
 void FakeSyncService::ReenableDatatype(ModelType type) {}
 
-FakeSyncService::SyncTokenStatus FakeSyncService::GetSyncTokenStatus() const {
-  return FakeSyncService::SyncTokenStatus();
+syncer::SyncTokenStatus FakeSyncService::GetSyncTokenStatus() const {
+  return syncer::SyncTokenStatus();
 }
 
 std::string FakeSyncService::QuerySyncStatusSummaryString() {

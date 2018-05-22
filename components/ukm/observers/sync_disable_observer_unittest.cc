@@ -6,6 +6,8 @@
 
 #include "base/observer_list.h"
 #include "components/sync/driver/fake_sync_service.h"
+#include "components/sync/driver/sync_token_status.h"
+#include "components/sync/engine/connection_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ukm {
@@ -56,8 +58,8 @@ class MockSyncService : public syncer::FakeSyncService {
   syncer::ModelTypeSet GetPreferredDataTypes() const override {
     return preferred_data_types_;
   }
-  SyncTokenStatus GetSyncTokenStatus() const override {
-    SyncTokenStatus status;
+  syncer::SyncTokenStatus GetSyncTokenStatus() const override {
+    syncer::SyncTokenStatus status;
     status.connection_status = connection_status_;
     return status;
   }
