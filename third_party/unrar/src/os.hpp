@@ -22,7 +22,9 @@
 
 #ifdef _WIN_ALL
 
-#define STRICT
+#ifndef STRICT
+#define STRICT 1
+#endif
 
 #if !defined(CHROMIUM_UNRAR)
 #define UNICODE
