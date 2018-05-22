@@ -244,7 +244,8 @@ const std::string& CrostiniRegistryService::Registration::Localize(
 }
 
 CrostiniRegistryService::CrostiniRegistryService(Profile* profile)
-    : prefs_(profile->GetPrefs()),
+    : profile_(profile),
+      prefs_(profile->GetPrefs()),
       base_icon_path_(profile->GetPath().AppendASCII(kCrostiniIconFolder)),
       clock_(base::DefaultClock::GetInstance()),
       weak_ptr_factory_(this) {}
@@ -695,8 +696,8 @@ void CrostiniRegistryService::RequestIcon(const std::string& app_id,
   }
 
   crostini::CrostiniManager::GetInstance()->GetContainerAppIcons(
-      registration->vm_name, registration->container_name, desktop_file_ids,
-      app_list::kTileIconSize, icon_scale,
+      profile_, registration->vm_name, registration->container_name,
+      desktop_file_ids, app_list::kTileIconSize, icon_scale,
       base::BindOnce(&CrostiniRegistryService::OnContainerAppIcon,
                      weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor));
 }

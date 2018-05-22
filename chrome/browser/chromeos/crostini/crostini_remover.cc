@@ -49,7 +49,7 @@ void CrostiniRemover::OnConciergeStarted(ConciergeClientResult result) {
     return;
   }
   CrostiniManager::GetInstance()->StopVm(
-      kCrostiniDefaultVmName,
+      profile_, kCrostiniDefaultVmName,
       base::BindOnce(&CrostiniRemover::StopVmFinished, this));
 }
 
