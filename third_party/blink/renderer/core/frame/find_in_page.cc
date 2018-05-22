@@ -93,7 +93,7 @@ void FindInPage::RequestFind(int identifier,
   if (/* (1) */ options.find_next && /* (2) */ current_selection.IsNull() &&
       /* (3) */ !(result && !active_now)) {
     // Force report of the actual count.
-    frame_->IncreaseMatchCount(0, identifier);
+    EnsureTextFinder().IncreaseMatchCount(identifier, 0);
     return;
   }
 
@@ -159,14 +159,6 @@ void FindInPage::StopFinding(WebLocalFrame::StopFindAction action) {
   }
 }
 
-void WebLocalFrameImpl::IncreaseMatchCount(int count, int identifier) {
-  find_in_page_->IncreaseMatchCount(count, identifier);
-}
-
-void FindInPage::IncreaseMatchCount(int count, int identifier) {
-  EnsureTextFinder().IncreaseMatchCount(identifier, count);
-}
-
 int FindInPage::FindMatchMarkersVersion() const {
   if (GetTextFinder())
     return GetTextFinder()->FindMatchMarkersVersion();
@@ -179,14 +171,27 @@ WebFloatRect FindInPage::ActiveFindMatchRect() {
   return WebFloatRect();
 }
 
-int WebLocalFrameImpl::SelectNearestFindMatch(const WebFloatPoint& point,
-                                              WebRect* selection_rect) {
-  return find_in_page_->SelectNearestFindMatch(point, selection_rect);
-};
-
-int FindInPage::SelectNearestFindMatch(const WebFloatPoint& point,
-                                       WebRect* selection_rect) {
-  return EnsureTextFinder().SelectNearestFindMatch(point, selection_rect);
+void FindInPage::ActivateNearestFindResult(
+    const WebFloatPoint& point,
+    ActivateNearestFindResultCallback callback) {
+  WebRect active_match_rect;
+  const int ordinal =
+      EnsureTextFinder().SelectNearestFindMatch(point, &active_match_rect);
+  if (ordinal == -1) {
+    // Something went wrong, so send a no-op reply (force the frame to report
+    // the current match count) in case the host is waiting for a response due
+    // to rate-limiting.
+    int number_of_matches = EnsureTextFinder().TotalMatchCount();
+    std::move(callback).Run(WebRect(), number_of_matches,
+                            -1 /* active_match_ordinal */,
+                            !EnsureTextFinder().FrameScoping() ||
+                                !number_of_matches /* final_reply */);
+    return;
+  }
+  // Call callback with current active match's rect and its ordinal,
+  // and don't update total number of matches.
+  std::move(callback).Run(active_match_rect, -1 /* number_of_matches */,
+                          ordinal, true /* final_reply*/);
 }
 
 void FindInPage::GetNearestFindResult(const WebFloatPoint& point,

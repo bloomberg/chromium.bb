@@ -5106,7 +5106,7 @@ TEST_F(WebFrameTest, FindInPageMatchRects) {
         static_cast<FloatRect>(web_match_rects[result_index]);
 
     // Select the match by the center of its rect.
-    EXPECT_EQ(main_frame->GetFindInPageForTesting()->SelectNearestFindMatch(
+    EXPECT_EQ(main_frame->EnsureTextFinder().SelectNearestFindMatch(
                   result_rect.Center(), nullptr),
               result_index + 1);
 
@@ -11707,16 +11707,16 @@ TEST_F(WebFrameSimTest, FindInPageSelectNextMatch) {
   ASSERT_EQ(2ul, web_match_rects.size());
 
   FloatRect result_rect = static_cast<FloatRect>(web_match_rects[0]);
-  frame->GetFindInPageForTesting()->SelectNearestFindMatch(result_rect.Center(),
-                                                           nullptr);
+  frame->EnsureTextFinder().SelectNearestFindMatch(result_rect.Center(),
+                                                   nullptr);
 
   LocalFrame* local_frame = ToLocalFrame(WebView().GetPage()->MainFrame());
   VisualViewport& visual_viewport = local_frame->GetPage()->GetVisualViewport();
   EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(box1_rect));
 
   result_rect = static_cast<FloatRect>(web_match_rects[1]);
-  frame->GetFindInPageForTesting()->SelectNearestFindMatch(result_rect.Center(),
-                                                           nullptr);
+  frame->EnsureTextFinder().SelectNearestFindMatch(result_rect.Center(),
+                                                   nullptr);
 
   EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(box2_rect))
       << "Box [" << box2_rect.ToString() << "] is not visible in viewport ["

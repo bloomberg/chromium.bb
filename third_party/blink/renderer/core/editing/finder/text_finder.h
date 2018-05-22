@@ -99,6 +99,7 @@ class CORE_EXPORT TextFinder final
 
   void ResetActiveMatch() { active_match_ = nullptr; }
 
+  bool FrameScoping() const { return frame_scoping_; }
   int TotalMatchCount() const { return total_match_count_; }
   bool ScopingInProgress() const { return scoping_in_progress_; }
   void IncreaseMarkerVersion() { ++find_match_markers_version_; }

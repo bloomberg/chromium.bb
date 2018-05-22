@@ -219,10 +219,8 @@ class FindRequestManager::FrameObserver : public WebContentsObserver {
 FindRequestManager::ActivateNearestFindResultState::
 ActivateNearestFindResultState() = default;
 FindRequestManager::ActivateNearestFindResultState::
-ActivateNearestFindResultState(float x, float y)
-    : current_request_id(GetNextID()),
-      x(x),
-      y(y) {}
+    ActivateNearestFindResultState(float x, float y)
+    : current_request_id(GetNextID()), point(x, y) {}
 FindRequestManager::ActivateNearestFindResultState::
 ~ActivateNearestFindResultState() {}
 
@@ -374,6 +372,19 @@ void FindRequestManager::OnFindReply(RenderFrameHostImpl* rfh,
   FinalUpdateReceived(request_id, rfh);
 }
 
+void FindRequestManager::OnActivateNearestFindResultReply(
+    RenderFrameHostImpl* rfh,
+    int request_id,
+    const gfx::Rect& active_match_rect,
+    int number_of_matches,
+    int active_match_ordinal,
+    bool final_update) {
+  if (active_match_ordinal > 0)
+    contents_->SetFocusedFrame(rfh->frame_tree_node(), rfh->GetSiteInstance());
+  OnFindReply(rfh, request_id, number_of_matches, active_match_rect,
+              active_match_ordinal, final_update);
+}
+
 void FindRequestManager::RemoveFrame(RenderFrameHost* rfh) {
   if (current_session_id_ == kInvalidId || !CheckFrame(rfh))
     return;
@@ -460,7 +471,7 @@ void FindRequestManager::ActivateNearestFindResult(float x, float y) {
       // Lifetime of FindRequestManager > RenderFrameHost > Mojo connection,
       // so it's safe to bind |this| and |rfh|.
       rfh->GetFindInPage()->GetNearestFindResult(
-          gfx::PointF(activate_.x, activate_.y),
+          activate_.point,
           base::BindOnce(&FindRequestManager::OnGetNearestFindResultReply,
                          base::Unretained(this), rfh,
                          activate_.current_request_id));
@@ -468,7 +479,7 @@ void FindRequestManager::ActivateNearestFindResult(float x, float y) {
   }
 }
 
-void FindRequestManager::OnGetNearestFindResultReply(RenderFrameHost* rfh,
+void FindRequestManager::OnGetNearestFindResultReply(RenderFrameHostImpl* rfh,
                                                      int request_id,
                                                      float distance) {
   if (request_id != activate_.current_request_id ||
@@ -762,9 +773,14 @@ void FindRequestManager::RemoveNearestFindResultPendingReply(
   activate_.pending_replies.erase(it);
   if (activate_.pending_replies.empty() &&
       CheckFrame(activate_.nearest_frame)) {
-    activate_.nearest_frame->Send(new FrameMsg_ActivateNearestFindResult(
-        activate_.nearest_frame->GetRoutingID(),
-        current_session_id_, activate_.x, activate_.y));
+    // Lifetime of FindRequestManager > activate_.nearest_frame  > Mojo
+    // connection, so it's safe to bind |this| and |activate_.nearest_frame|
+    activate_.nearest_frame->GetFindInPage()->ActivateNearestFindResult(
+        activate_.point,
+        base::BindOnce(&FindRequestManager::OnActivateNearestFindResultReply,
+                       base::Unretained(this),
+                       base::Unretained(activate_.nearest_frame),
+                       current_session_id_));
   }
 }
 

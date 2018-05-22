@@ -1050,9 +1050,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnClearFocusedElement();
   void OnBlinkFeatureUsageReport(const std::set<int>& features);
   void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);
-#if defined(OS_ANDROID)
-  void OnActivateNearestFindResult(int request_id, float x, float y);
-#endif
   void OnSetOverlayRoutingToken(const base::UnguessableToken& token);
   void OnNotifyUserActivation();
 

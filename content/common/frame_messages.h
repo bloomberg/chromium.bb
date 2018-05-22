@@ -1015,38 +1015,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_EnableAutoResize,
 // renderer.
 IPC_MESSAGE_ROUTED0(FrameMsg_DisableAutoResize)
 
-#if defined(OS_ANDROID)
-// Request the distance to the nearest find result in a frame from the point at
-// (x, y), defined in fractions of the content document's width and height. The
-// distance will be returned via FrameHostMsg_GetNearestFindResult_Reply.  Note
-// that |nfr_request_id| is a completely seperate ID from the |request_id| used
-// in other find-related IPCs. It is specifically used to uniquely identify a
-// nearest find result request, rather than a find request.
-IPC_MESSAGE_ROUTED3(FrameMsg_GetNearestFindResult,
-                    int /* nfr_request_id */,
-                    float /* x */,
-                    float /* y */)
-
-// Activates a find result. The point (x,y) is in fractions of the content
-// document's width and height.
-IPC_MESSAGE_ROUTED3(FrameMsg_ActivateNearestFindResult,
-                    int /* request_id */,
-                    float /* x */,
-                    float /* y */)
-
-// Sent when the browser wants the bounding boxes of the current find matches.
-//
-// If match rects are already cached on the browser side, |current_version|
-// should be the version number from the FrameHostMsg_FindMatchRects_Reply
-// they came in, so the renderer can tell if it needs to send updated rects.
-// Otherwise just pass -1 to always receive the list of rects.
-//
-// There must be an active search string (it is probably most useful to call
-// this immediately after a FrameHostMsg_Find_Reply message arrives with
-// final_update set to true).
-IPC_MESSAGE_ROUTED1(FrameMsg_FindMatchRects, int /* current_version */)
-#endif
-
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
 IPC_MESSAGE_ROUTED1(FrameMsg_SelectPopupMenuItem,

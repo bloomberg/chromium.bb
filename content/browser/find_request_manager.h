@@ -55,6 +55,14 @@ class CONTENT_EXPORT FindRequestManager {
                    int active_match_ordinal,
                    bool final_update);
 
+  // Called when a reply for ActivateNearestFindResult is received.
+  void OnActivateNearestFindResultReply(RenderFrameHostImpl* rfh,
+                                        int request_id,
+                                        const gfx::Rect& active_match_rect,
+                                        int number_of_matches,
+                                        int active_match_ordinal,
+                                        bool final_update);
+
   // Removes a frame from the set of frames being searched. This should be
   // called whenever a frame is discovered to no longer exist.
   void RemoveFrame(RenderFrameHost* rfh);
@@ -69,7 +77,7 @@ class CONTENT_EXPORT FindRequestManager {
 
   // Called when a reply is received from a frame in response to the
   // GetNearestFindResult mojo call.
-  void OnGetNearestFindResultReply(RenderFrameHost* rfh,
+  void OnGetNearestFindResultReply(RenderFrameHostImpl* rfh,
                                    int request_id,
                                    float distance);
 
@@ -182,17 +190,13 @@ class CONTENT_EXPORT FindRequestManager {
     // its replies.
     int current_request_id = kInvalidId;
 
-    // The x value of the requested point, in find-in-page coordinates.
-    float x = 0.0f;
+    // The value of the requested point, in find-in-page coordinates.
+    gfx::PointF point = gfx::PointF(0.0f, 0.0f);
 
-    // The y value of the requested point, in find-in-page coordinates.
-    float y = 0.0f;
-
-    // The distance to the nearest result found so far.
     float nearest_distance = FLT_MAX;
 
     // The frame containing the nearest result found so far.
-    RenderFrameHost* nearest_frame = nullptr;
+    RenderFrameHostImpl* nearest_frame = nullptr;
 
     // Nearest find result replies are still pending for these frames.
     std::unordered_set<RenderFrameHost*> pending_replies;
