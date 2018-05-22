@@ -12,7 +12,8 @@
 
 #include <math.h>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "./aom_dsp_rtcd.h"
 #include "./aom_scale_rtcd.h"
 #include "aom_mem/aom_mem.h"

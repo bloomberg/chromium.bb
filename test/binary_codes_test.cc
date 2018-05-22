@@ -15,7 +15,8 @@
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "test/acm_random.h"
 #include "aom/aom_integer.h"
 #include "aom_dsp/bitreader.h"

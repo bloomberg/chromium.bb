@@ -144,7 +144,7 @@ verify_aom_test_environment() {
 # is available.
 aom_config_option_enabled() {
   aom_config_option="${1}"
-  aom_config_file="${LIBAOM_CONFIG_PATH}/aom_config.h"
+  aom_config_file="${LIBAOM_CONFIG_PATH}/config/aom_config.h"
   config_line=$(grep "${aom_config_option}" "${aom_config_file}")
   if echo "${config_line}" | egrep -q '1$'; then
     echo yes

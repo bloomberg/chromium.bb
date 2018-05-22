@@ -17,7 +17,8 @@ extern "C" {
 #endif
 
 #include <assert.h>
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom/aom_integer.h"
 #include "aom_dsp/bitwriter.h"
 #include "aom_dsp/bitwriter_buffer.h"

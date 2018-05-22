@@ -12,7 +12,8 @@
 #include <assert.h>
 #include <smmintrin.h>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "./av1_rtcd.h"
 
 void av1_filter_intra_edge_sse4_1(uint8_t *p, int sz, int strength) {

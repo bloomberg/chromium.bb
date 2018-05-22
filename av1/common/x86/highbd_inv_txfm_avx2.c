@@ -12,7 +12,8 @@
 #include <immintrin.h>
 
 #include "./av1_rtcd.h"
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "av1/common/av1_inv_txfm1d_cfg.h"
 
 // Note:

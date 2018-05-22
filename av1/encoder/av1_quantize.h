@@ -12,7 +12,8 @@
 #ifndef AV1_ENCODER_QUANTIZE_H_
 #define AV1_ENCODER_QUANTIZE_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "av1/common/quant_common.h"
 #include "av1/common/scan.h"
 #include "av1/encoder/block.h"

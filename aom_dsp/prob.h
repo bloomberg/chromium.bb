@@ -15,7 +15,8 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "./aom_dsp_common.h"
 
 #include "aom_ports/bitops.h"

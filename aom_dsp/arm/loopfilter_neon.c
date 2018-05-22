@@ -12,7 +12,8 @@
 #include <arm_neon.h>
 
 #include "./aom_dsp_rtcd.h"
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom/aom_integer.h"
 
 void aom_lpf_vertical_4_dual_neon(uint8_t *s, int p, const uint8_t *blimit0,

@@ -12,7 +12,8 @@
 #ifndef AV1_DECODER_DETOKENIZE_H_
 #define AV1_DECODER_DETOKENIZE_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "av1/common/scan.h"
 #include "av1/decoder/decoder.h"
 

@@ -16,7 +16,8 @@
 // backwards due to ANS's stack like behavior.
 
 #include <assert.h>
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom/aom_integer.h"
 #include "aom_dsp/ans.h"
 #include "aom_dsp/answriter.h"

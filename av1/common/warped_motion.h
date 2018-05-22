@@ -18,7 +18,8 @@
 #include <math.h>
 #include <assert.h>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom_ports/mem.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "av1/common/mv.h"

@@ -11,7 +11,8 @@
 #ifndef AOM_DSP_AOM_CONVOLVE_H_
 #define AOM_DSP_AOM_CONVOLVE_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom/aom_integer.h"
 
 #ifdef __cplusplus

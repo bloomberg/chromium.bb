@@ -12,7 +12,8 @@
 #ifndef AV1_ENCODER_HASH_MOTION_H_
 #define AV1_ENCODER_HASH_MOTION_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom/aom_integer.h"
 #include "aom_scale/yv12config.h"
 #include "third_party/vector/vector.h"

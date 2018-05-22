@@ -15,7 +15,8 @@
 #include <memory>
 #include <string>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "./ivfdec.h"
 #include "./obudec.h"
 #include "tools/obu_parser.h"

@@ -12,8 +12,8 @@
 #ifndef AOM_PORTS_MEM_H_
 #define AOM_PORTS_MEM_H_
 
-#include "aom_config.h"
 #include "aom/aom_integer.h"
+#include "config/aom_config.h"
 
 #if (defined(__GNUC__) && __GNUC__) || defined(__SUNPRO_C)
 #define DECLARE_ALIGNED(n, typ, val) typ val __attribute__((aligned(n)))

@@ -11,10 +11,9 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
 #include "av1/common/common.h"
-
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/extend.h"
 #include "av1/encoder/lookahead.h"

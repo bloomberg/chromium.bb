@@ -12,9 +12,9 @@
 #ifndef AV1_COMMON_LOOPFILTER_H_
 #define AV1_COMMON_LOOPFILTER_H_
 
-#include "aom_ports/mem.h"
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
+#include "aom_ports/mem.h"
 #include "av1/common/blockd.h"
 #include "av1/common/seg_common.h"
 

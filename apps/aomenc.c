@@ -11,7 +11,7 @@
 
 #include "apps/aomenc.h"
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
 #include <assert.h>
 #include <limits.h>

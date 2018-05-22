@@ -12,7 +12,7 @@
 #ifndef _AOM_DSP_INTRAPRED_COMMON_H
 #define _AOM_DSP_INTRAPRED_COMMON_H
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
 // Weights are quadratic from '1' to '1 / block_size', scaled by
 // 2^sm_weight_log2_scale.

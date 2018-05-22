@@ -11,7 +11,8 @@
 
 #include <assert.h>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom_scale/yv12config.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_scale/aom_scale.h"

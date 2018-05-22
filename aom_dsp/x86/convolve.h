@@ -13,7 +13,8 @@
 
 #include <assert.h>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom/aom_integer.h"
 #include "aom_ports/mem.h"
 #include "aom_dsp/aom_convolve.h"

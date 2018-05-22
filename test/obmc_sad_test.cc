@@ -14,8 +14,9 @@
 #include "test/function_equivalence_test.h"
 #include "test/register_state_check.h"
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 #include "./aom_dsp_rtcd.h"
+
 #include "aom/aom_integer.h"
 
 #define MAX_SB_SQUARE (MAX_SB_SIZE * MAX_SB_SIZE)

@@ -17,8 +17,9 @@
 #include "test/register_state_check.h"
 #include "test/function_equivalence_test.h"
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 #include "./aom_dsp_rtcd.h"
+
 #include "aom/aom_integer.h"
 
 #include "./av1_rtcd.h"

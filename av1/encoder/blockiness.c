@@ -10,7 +10,8 @@
  */
 
 #include "./av1_rtcd.h"
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "./aom_dsp_rtcd.h"
 #include "av1/common/common.h"
 #include "av1/common/filter.h"

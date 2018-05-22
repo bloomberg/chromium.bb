@@ -13,7 +13,7 @@
  * \brief Provides the high level interface to wrap encoder algorithms.
  *
  */
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
 #if HAVE_FEXCEPT
 #define _GNU_SOURCE

@@ -12,7 +12,7 @@
 #ifndef AV1_COMMON_BLOCKD_H_
 #define AV1_COMMON_BLOCKD_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/mem.h"

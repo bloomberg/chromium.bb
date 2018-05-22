@@ -17,7 +17,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "./aom_config.h"
+
+#include "config/aom_config.h"
 
 typedef union {
   uint8_t u8[8];

@@ -18,7 +18,8 @@
 extern "C" {
 #endif
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom_scale/yv12config.h"
 
 // metrics used for calculating ssim, ssim2, dssim, and ssimc

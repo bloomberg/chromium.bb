@@ -14,7 +14,8 @@
 #include <emmintrin.h>  // SSE2
 #include <tmmintrin.h>  // SSSE3
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "./av1_rtcd.h"
 #include "aom/aom_integer.h"
 #include "aom_dsp/x86/transpose_sse2.h"

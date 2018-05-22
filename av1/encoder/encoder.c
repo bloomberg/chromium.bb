@@ -13,7 +13,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
 #include "av1/common/alloccommon.h"
 #include "av1/common/cdef.h"

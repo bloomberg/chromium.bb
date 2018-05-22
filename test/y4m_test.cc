@@ -13,7 +13,8 @@
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "./y4menc.h"
 #include "test/md5_helper.h"
 #include "test/util.h"

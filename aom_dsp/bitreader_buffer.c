@@ -8,7 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "./bitreader_buffer.h"
 
 size_t aom_rb_bytes_read(struct aom_read_bit_buffer *rb) {

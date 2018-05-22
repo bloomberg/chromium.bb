@@ -12,7 +12,8 @@
 #ifndef AOM_DSP_QUANTIZE_H_
 #define AOM_DSP_QUANTIZE_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom_dsp/aom_dsp_common.h"
 
 #ifdef __cplusplus

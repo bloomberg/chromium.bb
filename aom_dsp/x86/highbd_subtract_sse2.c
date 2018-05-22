@@ -13,7 +13,8 @@
 #include <emmintrin.h>
 #include <stddef.h>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "./aom_dsp_rtcd.h"
 
 typedef void (*SubtractWxHFuncType)(int16_t *diff, ptrdiff_t diff_stride,

@@ -13,7 +13,8 @@
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom_ports/mem.h"
 #include "test/codec_factory.h"
 #include "test/decode_test_driver.h"

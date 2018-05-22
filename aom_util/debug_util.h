@@ -12,7 +12,8 @@
 #ifndef AOM_UTIL_DEBUG_UTIL_H_
 #define AOM_UTIL_DEBUG_UTIL_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom_dsp/prob.h"
 
 #ifdef __cplusplus

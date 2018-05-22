@@ -15,8 +15,9 @@
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 #include "./av1_rtcd.h"
+
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/mem.h"
 #include "av1/common/idct.h"

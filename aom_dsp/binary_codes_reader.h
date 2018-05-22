@@ -18,7 +18,8 @@ extern "C" {
 
 #include <assert.h>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom/aom_integer.h"
 #include "aom_dsp/bitreader.h"
 #include "aom_dsp/bitreader_buffer.h"

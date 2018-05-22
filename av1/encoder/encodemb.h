@@ -12,7 +12,8 @@
 #ifndef AV1_ENCODER_ENCODEMB_H_
 #define AV1_ENCODER_ENCODEMB_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "av1/common/onyxc_int.h"
 #include "av1/encoder/block.h"
 #include "av1/encoder/tokenize.h"

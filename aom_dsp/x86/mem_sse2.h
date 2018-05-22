@@ -14,7 +14,8 @@
 
 #include <emmintrin.h>  // SSE2
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom/aom_integer.h"
 
 static INLINE __m128i loadh_epi64(const void *const src, const __m128i s) {

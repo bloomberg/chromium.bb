@@ -9,7 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_mem/aom_mem.h"
 #include "av1/common/av1_loopfilter.h"

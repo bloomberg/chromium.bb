@@ -17,7 +17,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "./aom_dsp_rtcd.h"
 #include "aom_dsp/psnr.h"
 #include "aom_dsp/ssim.h"

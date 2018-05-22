@@ -12,8 +12,9 @@
 #include <cstdlib>
 #include <new>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 #include "./av1_rtcd.h"
+
 #include "aom_ports/aom_timer.h"
 #include "av1/encoder/hash.h"
 #include "test/acm_random.h"

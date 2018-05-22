@@ -9,7 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "av1/common/entropy.h"
 
 static const aom_cdf_prob

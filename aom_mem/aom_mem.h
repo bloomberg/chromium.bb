@@ -12,8 +12,8 @@
 #ifndef AOM_MEM_AOM_MEM_H_
 #define AOM_MEM_AOM_MEM_H_
 
-#include "aom_config.h"
 #include "aom/aom_integer.h"
+#include "config/aom_config.h"
 
 #if defined(__uClinux__)
 #include <lddk.h>

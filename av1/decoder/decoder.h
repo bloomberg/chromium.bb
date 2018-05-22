@@ -12,7 +12,7 @@
 #ifndef AV1_DECODER_DECODER_H_
 #define AV1_DECODER_DECODER_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
 #include "aom/aom_codec.h"
 #include "aom_dsp/bitreader.h"

@@ -12,7 +12,8 @@
 #ifndef TEST_TRANSFORM_TEST_BASE_H_
 #define TEST_TRANSFORM_TEST_BASE_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom_mem/aom_mem.h"
 #include "aom/aom_codec.h"
 #include "aom_dsp/txfm_common.h"

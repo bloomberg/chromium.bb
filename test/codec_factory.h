@@ -11,7 +11,8 @@
 #ifndef TEST_CODEC_FACTORY_H_
 #define TEST_CODEC_FACTORY_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom/aom_decoder.h"
 #include "aom/aom_encoder.h"
 #if CONFIG_AV1_ENCODER

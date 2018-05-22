@@ -25,7 +25,9 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include "./aom_config.h"
+
+#include "config/aom_config.h"
+
 #include "av1/encoder/encoder.h"
 
 #define SPACES_PER_TAB 2

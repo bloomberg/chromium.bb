@@ -20,7 +20,7 @@
 #include "aom_mem/aom_mem.h"
 #include "aom/aom_integer.h"
 #include "aom_ports/bitops.h"
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
 #ifdef __cplusplus
 extern "C" {

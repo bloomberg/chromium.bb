@@ -140,8 +140,8 @@ list(APPEND AOM_LIBYUV_SOURCES
             "${AOM_ROOT}/third_party/libyuv/source/scale_win.cc")
 
 list(APPEND AOM_SOURCES
-            "${AOM_CONFIG_DIR}/aom_config.c"
-            "${AOM_CONFIG_DIR}/aom_config.h"
+            "${AOM_CONFIG_DIR}/config/aom_config.c"
+            "${AOM_CONFIG_DIR}/config/aom_config.h"
             "${AOM_ROOT}/aom/aom.h"
             "${AOM_ROOT}/aom/aom_codec.h"
             "${AOM_ROOT}/aom/aom_decoder.h"

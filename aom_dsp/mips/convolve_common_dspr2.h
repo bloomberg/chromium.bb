@@ -14,7 +14,8 @@
 
 #include <assert.h>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom/aom_integer.h"
 #include "aom_dsp/mips/common_dspr2.h"
 

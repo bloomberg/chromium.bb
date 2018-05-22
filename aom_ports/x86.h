@@ -17,8 +17,8 @@
 #include <intrin.h> /* For __cpuidex, __rdtsc */
 #endif
 
-#include "aom_config.h"
 #include "aom/aom_integer.h"
+#include "config/aom_config.h"
 
 #ifdef __cplusplus
 extern "C" {

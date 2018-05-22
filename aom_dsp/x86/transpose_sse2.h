@@ -14,7 +14,7 @@
 
 #include <emmintrin.h>  // SSE2
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
 static INLINE __m128i transpose_8bit_4x4(const __m128i *const in) {
   // Unpack 16 bit elements. Goes from:

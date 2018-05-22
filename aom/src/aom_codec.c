@@ -16,7 +16,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom/aom_integer.h"
 #include "aom/internal/aom_codec_internal.h"
 #include "aom_version.h"

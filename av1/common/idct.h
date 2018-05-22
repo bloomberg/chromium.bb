@@ -12,7 +12,8 @@
 #ifndef AV1_COMMON_IDCT_H_
 #define AV1_COMMON_IDCT_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "av1/common/blockd.h"
 #include "av1/common/common.h"
 #include "av1/common/enums.h"

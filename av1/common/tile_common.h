@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
 struct AV1Common;
 

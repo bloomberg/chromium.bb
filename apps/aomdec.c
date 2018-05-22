@@ -16,7 +16,7 @@
 #include <string.h>
 #include <limits.h>
 
-#include "aom_config.h"
+#include "config/aom_config.h"
 
 #if CONFIG_OS_SUPPORT
 #if HAVE_UNISTD_H

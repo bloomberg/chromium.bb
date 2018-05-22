@@ -12,7 +12,7 @@
 #ifndef AV1_COMMON_ENTROPYMV_H_
 #define AV1_COMMON_ENTROPYMV_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
 #include "aom_dsp/prob.h"
 

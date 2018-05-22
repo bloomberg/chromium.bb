@@ -11,7 +11,9 @@
 
 #ifndef AV1_COMMON_LOOPFILTER_THREAD_H_
 #define AV1_COMMON_LOOPFILTER_THREAD_H_
-#include "./aom_config.h"
+
+#include "config/aom_config.h"
+
 #include "av1/common/av1_loopfilter.h"
 #include "aom_util/aom_thread.h"
 

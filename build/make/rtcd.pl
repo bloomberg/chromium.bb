@@ -297,7 +297,7 @@ sub arm() {
 
   common_top;
   print <<EOF;
-#include "aom_config.h"
+#include "config/aom_config.h"
 
 #ifdef RTCD_C
 #include "aom_ports/arm.h"
@@ -323,7 +323,7 @@ sub mips() {
   common_top;
 
   print <<EOF;
-#include "aom_config.h"
+#include "config/aom_config.h"
 
 #ifdef RTCD_C
 static void setup_rtcd_internal(void)
@@ -348,7 +348,7 @@ sub ppc() {
   common_top;
 
   print <<EOF;
-#include "aom_config.h"
+#include "config/aom_config.h"
 
 #ifdef RTCD_C
 static void setup_rtcd_internal(void)
@@ -368,7 +368,7 @@ sub unoptimized() {
   determine_indirection "c";
   common_top;
   print <<EOF;
-#include "aom_config.h"
+#include "config/aom_config.h"
 
 #ifdef RTCD_C
 static void setup_rtcd_internal(void)

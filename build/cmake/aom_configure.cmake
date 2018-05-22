@@ -309,16 +309,18 @@ if(EMSCRIPTEN)
 endif()
 
 # Generate aom_config templates.
-set(aom_config_asm_template "${AOM_CONFIG_DIR}/aom_config.asm.cmake")
-set(aom_config_h_template "${AOM_CONFIG_DIR}/aom_config.h.cmake")
+set(aom_config_asm_template "${AOM_CONFIG_DIR}/config/aom_config.asm.cmake")
+set(aom_config_h_template "${AOM_CONFIG_DIR}/config/aom_config.h.cmake")
 execute_process(COMMAND
                   ${CMAKE_COMMAND} -DAOM_CONFIG_DIR=${AOM_CONFIG_DIR}
                   -DAOM_ROOT=${AOM_ROOT} -P
                   "${AOM_ROOT}/build/cmake/generate_aom_config_templates.cmake")
 
 # Generate aom_config.{asm,h}.
-configure_file("${aom_config_asm_template}" "${AOM_CONFIG_DIR}/aom_config.asm")
-configure_file("${aom_config_h_template}" "${AOM_CONFIG_DIR}/aom_config.h")
+configure_file("${aom_config_asm_template}"
+               "${AOM_CONFIG_DIR}/config/aom_config.asm")
+configure_file("${aom_config_h_template}"
+               "${AOM_CONFIG_DIR}/config/aom_config.h")
 
 # Read the current git hash.
 find_package(Git)
@@ -327,7 +329,7 @@ if(NOT GIT_FOUND)
 endif()
 
 configure_file("${AOM_ROOT}/build/cmake/aom_config.c.template"
-               "${AOM_CONFIG_DIR}/aom_config.c")
+               "${AOM_CONFIG_DIR}/config/aom_config.c")
 
 # Find Perl and generate the RTCD sources.
 find_package(Perl)

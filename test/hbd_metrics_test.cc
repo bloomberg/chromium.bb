@@ -16,7 +16,9 @@
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/acm_random.h"
 #include "test/util.h"
-#include "./aom_config.h"
+
+#include "config/aom_config.h"
+
 #include "aom_dsp/psnr.h"
 #include "aom_dsp/ssim.h"
 #include "aom_ports/mem.h"

@@ -12,7 +12,8 @@
 #include <smmintrin.h> /* SSE4.1 */
 
 #include "./av1_rtcd.h"
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "av1/common/av1_txfm.h"
 #include "av1/common/x86/highbd_txfm_utility_sse4.h"
 #include "av1/encoder/av1_fwd_txfm1d_cfg.h"

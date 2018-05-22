@@ -13,7 +13,8 @@
 #define AOM_DSP_BITWRITER_H_
 
 #include <assert.h>
-#include "./aom_config.h"
+
+#include "config/aom_config.h"
 
 #include "aom_dsp/daalaboolwriter.h"
 #include "aom_dsp/prob.h"

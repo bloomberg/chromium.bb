@@ -25,7 +25,7 @@
 #define EMSCRIPTEN_KEEPALIVE
 #endif
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
 #include "aom/aom_decoder.h"
 #include "aom/aomdx.h"

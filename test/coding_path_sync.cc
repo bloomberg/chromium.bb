@@ -13,7 +13,7 @@
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/acm_random.h"
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
 #include "aom_ports/mem.h"  // ROUND_POWER_OF_TWO
 #include "aom/aomcx.h"

@@ -14,7 +14,7 @@
 
 #include <emmintrin.h>  // SSE2
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
 
 static INLINE void highbd_transpose6x6_sse2(__m128i *x0, __m128i *x1,
                                             __m128i *x2, __m128i *x3,

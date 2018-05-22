@@ -12,7 +12,8 @@
 #ifndef AOM_DSP_AOM_DSP_COMMON_H_
 #define AOM_DSP_AOM_DSP_COMMON_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom/aom_integer.h"
 #include "aom_ports/mem.h"
 

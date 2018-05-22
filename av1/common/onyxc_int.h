@@ -12,7 +12,8 @@
 #ifndef AV1_COMMON_ONYXC_INT_H_
 #define AV1_COMMON_ONYXC_INT_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "./av1_rtcd.h"
 #include "aom/internal/aom_codec_internal.h"
 #include "aom_util/aom_thread.h"

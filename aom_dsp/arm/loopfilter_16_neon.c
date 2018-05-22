@@ -12,7 +12,8 @@
 #include <arm_neon.h>
 
 #include "./aom_dsp_rtcd.h"
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom/aom_integer.h"
 
 static INLINE void loop_filter_neon_16(uint8x16_t qblimit,  // blimit

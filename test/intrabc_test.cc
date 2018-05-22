@@ -11,7 +11,8 @@
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "av1/common/blockd.h"
 #include "av1/common/enums.h"
 #include "av1/common/mv.h"

@@ -12,7 +12,8 @@
 #ifndef AV1_DECODER_DTHREAD_H_
 #define AV1_DECODER_DTHREAD_H_
 
-#include "./aom_config.h"
+#include "config/aom_config.h"
+
 #include "aom_util/aom_thread.h"
 #include "aom/internal/aom_codec_internal.h"
 
