@@ -19,6 +19,21 @@
             ]
         }
     ],
+    "AllowClientHintsToThirdParty": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "AllowClientHintsToThirdParty",
+                    "enable_features": [
+                        "AllowClientHintsToThirdParty"
+                    ]
+                }
+            ]
+        }
+    ],
     "AmpBackgroundTab": [
         {
             "platforms": [
