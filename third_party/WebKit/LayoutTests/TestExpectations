@@ -1763,10 +1763,6 @@ crbug.com/567837 fast/hidpi/static [ Skip ]
 crbug.com/538697 [ Win ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
 crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
-# This test failed to rebaseline correctly on mac with "webkit-patch rebaseline cl".
-# We'll have to rebaseline from the waterfall bots after it lands.
-crbug.com/826878 [ Mac ] virtual/color_space/fast/canvas/color-space/toDataURL-color-managed-round-trip.html [ Failure ]
-
 # ====== Out of Blink CORS related tests BEGIN ======
 # TODO(toyoshim, tyoshino, kinuko): Make following tests pass.
 # See crbug.com/736308 for more details. Since outofblink-cors is still under

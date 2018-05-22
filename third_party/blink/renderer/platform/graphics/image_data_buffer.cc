@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSwizzle.h"
 #include "third_party/skia/include/encode/SkJpegEncoder.h"
 
@@ -119,6 +120,13 @@ const unsigned char* ImageDataBuffer::Pixels() const {
 bool ImageDataBuffer::EncodeImage(const String& mime_type,
                                   const double& quality,
                                   Vector<unsigned char>* encoded_image) const {
+  return EncodeImageInternal(mime_type, quality, encoded_image, pixmap_);
+}
+
+bool ImageDataBuffer::EncodeImageInternal(const String& mime_type,
+                                          const double& quality,
+                                          Vector<unsigned char>* encoded_image,
+                                          const SkPixmap& pixmap) const {
   DCHECK(is_valid_);
 
   if (mime_type == "image/jpeg") {
@@ -130,19 +138,19 @@ bool ImageDataBuffer::EncodeImage(const String& mime_type,
     // kRespect or kIgnore, but the JPEG encoder does not support kIgnore with
     // F16 for some reason, so we switch to kRespect in that case, with no
     // consequence on the encoded output.
-    options.fBlendBehavior = pixmap_.colorType() == kRGBA_F16_SkColorType
+    options.fBlendBehavior = pixmap.colorType() == kRGBA_F16_SkColorType
                                  ? SkTransferFunctionBehavior::kRespect
                                  : SkTransferFunctionBehavior::kIgnore;
     if (options.fQuality == 100) {
       options.fDownsample = SkJpegEncoder::Downsample::k444;
     }
-    return ImageEncoder::Encode(encoded_image, pixmap_, options);
+    return ImageEncoder::Encode(encoded_image, pixmap, options);
   }
 
   if (mime_type == "image/webp") {
     SkWebpEncoder::Options options = ImageEncoder::ComputeWebpOptions(
         quality, SkTransferFunctionBehavior::kIgnore);
-    return ImageEncoder::Encode(encoded_image, pixmap_, options);
+    return ImageEncoder::Encode(encoded_image, pixmap, options);
   }
 
   DCHECK_EQ(mime_type, "image/png");
@@ -150,7 +158,7 @@ bool ImageDataBuffer::EncodeImage(const String& mime_type,
   options.fFilterFlags = SkPngEncoder::FilterFlag::kSub;
   options.fZLibLevel = 3;
   options.fUnpremulBehavior = SkTransferFunctionBehavior::kIgnore;
-  return ImageEncoder::Encode(encoded_image, pixmap_, options);
+  return ImageEncoder::Encode(encoded_image, pixmap, options);
 }
 
 String ImageDataBuffer::ToDataURL(const String& mime_type,
@@ -158,8 +166,22 @@ String ImageDataBuffer::ToDataURL(const String& mime_type,
   DCHECK(is_valid_);
   DCHECK(MIMETypeRegistry::IsSupportedImageMIMETypeForEncoding(mime_type));
 
+  // toDataURL always encodes in sRGB and does not include the color space
+  // information.
+  sk_sp<SkImage> skia_image = nullptr;
+  SkPixmap pixmap = pixmap_;
+  if (pixmap.colorSpace()) {
+    if (!pixmap.colorSpace()->isSRGB()) {
+      skia_image = SkImage::MakeFromRaster(pixmap, nullptr, nullptr);
+      skia_image = skia_image->makeColorSpace(
+          SkColorSpace::MakeSRGB(), SkTransferFunctionBehavior::kIgnore);
+      skia_image->peekPixels(&pixmap);
+    }
+    pixmap.setColorSpace(nullptr);
+  }
+
   Vector<unsigned char> result;
-  if (!EncodeImage(mime_type, quality, &result))
+  if (!EncodeImageInternal(mime_type, quality, &result, pixmap))
     return "data:,";
 
   return "data:" + mime_type + ";base64," + Base64Encode(result);

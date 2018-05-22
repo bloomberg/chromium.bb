@@ -129,7 +129,6 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   // Used for OffscreenCanvas only
   Member<ScriptPromiseResolver> script_promise_resolver_;
 
-  void LoadStaticBitmapImage();
   bool EncodeImage(const double&);
 
   // PNG, JPEG

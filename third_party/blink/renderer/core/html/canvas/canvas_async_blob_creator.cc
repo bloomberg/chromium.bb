@@ -190,12 +190,39 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
       callback_(ToV8PersistentCallbackFunction(callback)),
       script_promise_resolver_(resolver) {
   DCHECK(image);
+  // We use pixmap to access the image pixels. Make the image unaccelerated if
+  // necessary.
+  image_ = image_->MakeUnaccelerated();
+
   sk_sp<SkImage> skia_image = image_->PaintImageForCurrentFrame().GetSkImage();
   DCHECK(skia_image);
-  if (skia_image->peekPixels(&src_data_))
+
+  // If image is lazy decoded, we can either draw it on a canvas or
+  // call readPixels() to trigger decoding. We expect drawing on a very small
+  // canvas to be faster than readPixels().
+  if (skia_image->isLazyGenerated()) {
+    SkImageInfo info = SkImageInfo::MakeN32(1, 1, skia_image->alphaType());
+    sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
+    if (surface) {
+      SkPaint paint;
+      paint.setBlendMode(SkBlendMode::kSrc);
+      surface->getCanvas()->drawImage(skia_image.get(), 0, 0, &paint);
+    }
+  }
+
+  // toBlob always encodes in sRGB and does not include the color space
+  // information.
+  if (skia_image->colorSpace()) {
+    image_ = image_->ConvertToColorSpace(SkColorSpace::MakeSRGB(),
+                                         SkTransferFunctionBehavior::kIgnore);
+    skia_image = image_->PaintImageForCurrentFrame().GetSkImage();
+  }
+
+  if (skia_image->peekPixels(&src_data_)) {
+    src_data_.setColorSpace(nullptr);
     static_bitmap_image_loaded_ = true;
-  else
-    LoadStaticBitmapImage();
+  }
+  DCHECK(!src_data_.colorSpace());
 
   idle_task_status_ = kIdleTaskNotSupported;
   num_rows_completed_ = 0;
@@ -274,32 +301,6 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
         WTF::Bind(&CanvasAsyncBlobCreator::IdleTaskStartTimeoutEvent,
                   WrapPersistent(this), quality),
         kIdleTaskStartTimeoutDelayMs);
-  }
-}
-
-void CanvasAsyncBlobCreator::LoadStaticBitmapImage() {
-  DCHECK(image_ && !static_bitmap_image_loaded_);
-  if (image_->IsTextureBacked()) {
-    image_ = image_->MakeUnaccelerated();
-    sk_sp<SkImage> skia_image =
-        image_->PaintImageForCurrentFrame().GetSkImage();
-    if (skia_image->peekPixels(&src_data_))
-      static_bitmap_image_loaded_ = true;
-  } else {
-    // If image is lazy decoded, we can either draw it on a canvas or
-    // call readPixels() to trigger decoding. We expect drawing on a very small
-    // canvas to be faster than readPixels().
-    sk_sp<SkImage> skia_image =
-        image_->PaintImageForCurrentFrame().GetSkImage();
-    SkImageInfo info = SkImageInfo::MakeN32(1, 1, skia_image->alphaType());
-    sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
-    if (surface) {
-      SkPaint paint;
-      paint.setBlendMode(SkBlendMode::kSrc);
-      surface->getCanvas()->drawImage(skia_image.get(), 0, 0, &paint);
-      if (skia_image->peekPixels(&src_data_))
-        static_bitmap_image_loaded_ = true;
-    }
   }
 }
 

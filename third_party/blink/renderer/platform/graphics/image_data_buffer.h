@@ -51,6 +51,7 @@ class PLATFORM_EXPORT ImageDataBuffer {
   bool EncodeImage(const String& mime_type,
                    const double& quality,
                    Vector<unsigned char>* encoded_image) const;
+
   const unsigned char* Pixels() const;
   const IntSize& size() const { return size_; }
   int Height() const { return size_.Height(); }
@@ -64,6 +65,11 @@ class PLATFORM_EXPORT ImageDataBuffer {
   ImageDataBuffer(scoped_refptr<StaticBitmapImage>);
 
   bool IsValid() { return is_valid_; }  // Only used by Create()
+
+  bool EncodeImageInternal(const String& mime_type,
+                           const double& quality,
+                           Vector<unsigned char>* encoded_image,
+                           const SkPixmap& pixmap) const;
 
   sk_sp<SkImage> retained_image_;
   SkPixmap pixmap_;
