@@ -4998,17 +4998,25 @@ if (!is_android) {
         "//chrome:chrome_framework",
       ]
 
-      # The browser window can be views or Cocoa on Mac. Test accordingly.
       if (mac_views_browser) {
         # Aura depended tests.
         sources -= [ "../browser/ui/views/bookmarks/bookmark_bar_view_test.cc" ]
-      } else {
-        sources += [
-          "../browser/ui/cocoa/extensions/browser_action_button_interactive_uitest.mm",
-          "../browser/ui/cocoa/permission_bubble/permission_bubble_cocoa_interactive_uitest.mm",
-          "../browser/ui/cocoa/translate/translate_bubble_test_utils_views_cocoa.mm",
-        ]
       }
+
+      # The browser window can be views or Cocoa on Mac, but this is chosen at
+      # runtime. This block captures tests that only run with a Cocoa browser.
+      sources += [
+        "../browser/ui/cocoa/extensions/browser_action_button_interactive_uitest.mm",
+
+        # Note permission_bubble_cocoa_interactive_uitest tests both Cocoa and
+        # toolkit-views secondary UI. It should not be deleted with the Cocoa
+        # bubble (but it can be deleted with the Cocoa browser window).
+        "../browser/ui/cocoa/permission_bubble/permission_bubble_cocoa_interactive_uitest.mm",
+
+        # The translate bubble tests only obsolete Cocoa UI and doesn't link.
+        # Ensure the corresponding file is deleted when removing the next line.
+        # "../browser/ui/cocoa/translate/translate_bubble_test_utils_views_cocoa.mm",
+      ]
     }
 
     if (use_x11) {
