@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "components/sync/engine/sync_manager.h"
+#include "components/sync/engine/sync_credentials.h"
 
 namespace syncer {
 

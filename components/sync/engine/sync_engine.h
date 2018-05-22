@@ -24,7 +24,7 @@
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/engine/sync_backend_registrar.h"
-#include "components/sync/engine/sync_manager.h"
+#include "components/sync/engine/sync_credentials.h"
 #include "components/sync/engine/sync_manager_factory.h"
 
 class GURL;

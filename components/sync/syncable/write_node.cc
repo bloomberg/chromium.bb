@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/hash_util.h"
+#include "components/sync/base/passphrase_type.h"
 #include "components/sync/engine/engine_util.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/typed_url_specifics.pb.h"

@@ -26,8 +26,8 @@
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "components/sync/engine/model_type_configurer.h"
+#include "components/sync/engine/sync_credentials.h"
 #include "components/sync/engine/sync_engine.h"
-#include "components/sync/engine/sync_manager.h"
 #include "components/sync/protocol/encryption.pb.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 

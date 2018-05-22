@@ -212,6 +212,8 @@ jumbo_static_library("sync") {
     "engine/sync_auth_provider.h",
     "engine/sync_backend_registrar.cc",
     "engine/sync_backend_registrar.h",
+    "engine/sync_credentials.cc",
+    "engine/sync_credentials.h",
     "engine/sync_encryption_handler.cc",
     "engine/sync_encryption_handler.h",
     "engine/sync_engine.cc",

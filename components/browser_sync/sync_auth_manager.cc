@@ -11,8 +11,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/sync_prefs.h"
-// TODO(treib): Needed for SyncCredentials. Move that to its own file instead.
-#include "components/sync/engine/sync_manager.h"
+#include "components/sync/engine/sync_credentials.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
