@@ -733,18 +733,14 @@ void SVGElementResourceClient::ResourceContentChanged(
                                                           invalidation_mask);
   }
 
+  // Special case for filter invalidation.
+  if (invalidation_mask & SVGResourceClient::kSkipAncestorInvalidation)
+    return;
+
   bool needs_layout =
       invalidation_mask & SVGResourceClient::kLayoutInvalidation;
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
       *layout_object, needs_layout);
-}
-
-void SVGElementResourceClient::Invalidate(
-    InvalidationModeMask invalidation_mask) {
-  if (LayoutObject* layout_object = element_->GetLayoutObject()) {
-    LayoutSVGResourceContainer::MarkClientForInvalidation(*layout_object,
-                                                          invalidation_mask);
-  }
 }
 
 void SVGElementResourceClient::ResourceElementChanged() {

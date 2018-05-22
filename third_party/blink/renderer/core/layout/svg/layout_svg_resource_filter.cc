@@ -127,13 +127,13 @@ void LayoutSVGResourceFilter::PrimitiveAttributeChanged(
     if (!primitive.SetFilterEffectAttribute(effect, attribute))
       return;
     node_map->InvalidateDependentEffects(effect);
-
-    // Issue paint invalidations for the image on the screen.
-    filter.key->Invalidate(SVGResourceClient::kPaintInvalidation);
   }
   if (LocalSVGResource* resource =
-          ToSVGFilterElement(GetElement())->AssociatedResource())
-    resource->NotifyContentChanged(SVGResourceClient::kPaintInvalidation);
+          ToSVGFilterElement(GetElement())->AssociatedResource()) {
+    resource->NotifyContentChanged(
+        SVGResourceClient::kPaintInvalidation |
+        SVGResourceClient::kSkipAncestorInvalidation);
+  }
 }
 
 }  // namespace blink
