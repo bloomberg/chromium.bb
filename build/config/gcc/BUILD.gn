@@ -119,7 +119,7 @@ config("executable_ldconfig") {
     }
   }
 
-  if ((!is_android || !use_gold) && current_os != "aix") {
+  if (!is_android && current_os != "aix") {
     # Find the path containing shared libraries for this toolchain
     # relative to the build directory. ${root_out_dir} will be a
     # subdirectory of ${root_build_dir} when cross compiling.
@@ -127,11 +127,6 @@ config("executable_ldconfig") {
     if (shlib_subdir != ".") {
       _rpath_link += "/$shlib_subdir"
     }
-    if (is_android) {
-      _rebased_sysroot = rebase_path(link_sysroot, root_build_dir)
-      _rpath_link += ":$_rebased_sysroot/usr/lib"
-    }
-
     ldflags += [
       "-Wl,-rpath-link=$_rpath_link",
 
