@@ -13,6 +13,10 @@
 class PrefRegistrySimple;
 class PrefService;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace chromeos {
 
 // The controller to track each user's screen time usage and inquiry time limit
@@ -45,7 +49,7 @@ class ScreenTimeController : public KeyedService,
   // Registers preferences.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  explicit ScreenTimeController(PrefService* pref_service);
+  explicit ScreenTimeController(content::BrowserContext* context);
   ~ScreenTimeController() override;
 
   // Returns the screen time duration. This includes time in
@@ -56,15 +60,20 @@ class ScreenTimeController : public KeyedService,
   void CheckTimeLimit();
 
  private:
+  // The types of time limit notifications. |SCREEN_TIME| is used when the
+  // the screen time limit is about to be used up, and |BED_TIME| is used when
+  // the bed time is approaching.
+  enum TimeLimitNotificationType { kScreenTime, kBedTime };
+
   // Show and update the lock screen when necessary.
   // |force_lock_by_policy|: If true, force to lock the screen based on the
   //                         screen time policy.
   // |come_back_time|:       When the screen is available again.
   void LockScreen(bool force_lock_by_policy, base::Time come_back_time);
 
-  // Show nofication when the screen is going to be locked.
-  // |time_remaining|: time left before the lock down.
-  void ShowNotification(base::TimeDelta time_remaining);
+  // Show a notification indicating the remaining screen time.
+  void ShowNotification(ScreenTimeController::TimeLimitNotificationType type,
+                        const base::TimeDelta& time_remaining);
 
   // Reset time tracking relevant prefs and local timestamps.
   void RefreshScreenLimit();
@@ -86,6 +95,7 @@ class ScreenTimeController : public KeyedService,
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
 
+  content::BrowserContext* context_;
   PrefService* pref_service_;
   base::OneShotTimer warning_notification_timer_;
   base::OneShotTimer exit_notification_timer_;

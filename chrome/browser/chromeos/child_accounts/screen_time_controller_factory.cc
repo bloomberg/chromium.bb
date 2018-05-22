@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace chromeos {
@@ -32,8 +31,7 @@ ScreenTimeControllerFactory::~ScreenTimeControllerFactory() = default;
 
 KeyedService* ScreenTimeControllerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new ScreenTimeController(
-      Profile::FromBrowserContext(context)->GetPrefs());
+  return new ScreenTimeController(context);
 }
 
 }  // namespace chromeos

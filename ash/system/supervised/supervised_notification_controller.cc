@@ -4,7 +4,7 @@
 
 #include "ash/system/supervised/supervised_notification_controller.h"
 
-#include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -85,7 +85,7 @@ void SupervisedNotificationController::CreateOrUpdateNotification() {
               message_center::NotifierId::SYSTEM_COMPONENT,
               kNotifierSupervisedUser),
           message_center::RichNotificationData(), nullptr,
-          kNotificationSupervisedIcon,
+          kNotificationSupervisedUserIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   // AddNotification does an update if the notification already exists.
