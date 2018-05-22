@@ -50,7 +50,6 @@ const char kSessionManagerGetServerBackedStateKeys[] =
     "GetServerBackedStateKeys";
 const char kSessionManagerInitMachineInfo[] = "InitMachineInfo";
 const char kSessionManagerCheckArcAvailability[] = "CheckArcAvailability";
-const char kSessionManagerStartArcInstance[] = "StartArcInstance";
 const char kSessionManagerStartArcMiniContainer[] = "StartArcMiniContainer";
 const char kSessionManagerUpgradeArcContainer[] = "UpgradeArcContainer";
 const char kSessionManagerStopArcInstance[] = "StopArcInstance";
