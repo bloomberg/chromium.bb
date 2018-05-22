@@ -1,14 +1,13 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="multidevice_setup_shared_css.html">
 <link rel="import" href="ui_page.html">
 <link rel="import" href="ui_page_container_behavior.html">
 
 <dom-module id="start-setup-page">
   <template>
-    <style include="md-select multidevice-setup-shared"></style>
+    <style include="multidevice-setup-shared"></style>
     <ui-page header-text="[[headerText]]" icon-name="google-g">
       <span slot="message" inner-h-t-m-l="[[messageHtml]]"></span>
       <div slot="additional-content">
@@ -22,10 +21,9 @@
         </div>
         <div hidden$="[[!doesDeviceListHaveMultipleElements_(devices)]]">
           <select id="deviceDropdown"
-              class="md-select"
               on-change="onDeviceDropdownSelectionChanged_">
             <template is="dom-repeat" items="[[devices]]">
-              <option value$="[[item.id]]">
+              <option value$="[[item.publicKey]]">
                 [[item.name]]
               </option>
             </template>

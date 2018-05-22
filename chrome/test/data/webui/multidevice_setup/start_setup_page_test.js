@@ -32,9 +32,9 @@ cr.define('multidevice_setup', () => {
 
       const START = 'start-setup-page';
       const DEVICES = [
-        {name: 'Pixel XL', id: 'abcdxl'},
-        {name: 'Nexus 6P', id: 'PpPpPp'},
-        {name: 'Nexus 5', id: '12345'},
+        {name: 'Pixel XL', publicKey: 'abcdxl'},
+        {name: 'Nexus 6P', publicKey: 'PpPpPp'},
+        {name: 'Nexus 5', publicKey: '12345'},
       ];
 
       setup(() => {
@@ -63,17 +63,18 @@ cr.define('multidevice_setup', () => {
                 startSetupPageElement.querySelectorAll('* /deep/ option')
                     .length,
                 DEVICES.length);
-            assertEquals(startSetupPageElement.selectedDeviceId, 'abcdxl');
+            assertEquals(startSetupPageElement.selectedPublicKey, 'abcdxl');
           });
 
       test(
-          'selectedDeviceId changes when dropdown options are selected', () => {
+          'selectedPublicKey changes when dropdown options are selected',
+          () => {
             selectOptionByTextContent('Nexus 6P');
-            assertEquals(startSetupPageElement.selectedDeviceId, 'PpPpPp');
+            assertEquals(startSetupPageElement.selectedPublicKey, 'PpPpPp');
             selectOptionByTextContent('Nexus 5');
-            assertEquals(startSetupPageElement.selectedDeviceId, '12345');
+            assertEquals(startSetupPageElement.selectedPublicKey, '12345');
             selectOptionByTextContent('Pixel XL');
-            assertEquals(startSetupPageElement.selectedDeviceId, 'abcdxl');
+            assertEquals(startSetupPageElement.selectedPublicKey, 'abcdxl');
           });
     });
   }

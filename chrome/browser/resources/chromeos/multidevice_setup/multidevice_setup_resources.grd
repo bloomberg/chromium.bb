@@ -18,6 +18,12 @@
       <structure name="IDR_MULTIDEVICE_SETUP_BUTTON_BAR_JS"
                  file="button_bar.js"
                  type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_FAKE_MOJO_SERVICE_HTML"
+                 file="fake_mojo_service.html"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_FAKE_MOJO_SERVICE_JS"
+                 file="fake_mojo_service.js"
+                 type="chrome_html" />
       <structure name="IDR_MULTIDEVICE_SETUP_I18N_SETUP_HTML"
                  file="i18n_setup.html"
                  type="chrome_html" />

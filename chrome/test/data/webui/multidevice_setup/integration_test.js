@@ -37,6 +37,14 @@ cr.define('multidevice_setup', () => {
             multiDeviceSetupElement.$$('button-bar /deep/ #backward');
       });
 
+      // From SetupFailedPage
+
+      test('SetupFailedPage backward button closes UI', done => {
+        multiDeviceSetupElement.addEventListener('ui-closed', () => done());
+        multiDeviceSetupElement.visiblePageName_ = FAILURE;
+        backwardButton.click();
+      });
+
       test('SetupFailedPage forward button goes to start page', () => {
         multiDeviceSetupElement.visiblePageName_ = FAILURE;
         forwardButton.click();
@@ -46,11 +54,7 @@ cr.define('multidevice_setup', () => {
             START);
       });
 
-      test('SetupFailedPage backward button closes UI', done => {
-        multiDeviceSetupElement.addEventListener('ui-closed', () => done());
-        multiDeviceSetupElement.visiblePageName_ = FAILURE;
-        backwardButton.click();
-      });
+      // From SetupSucceededPage
 
       test('SetupSucceededPage forward button closes UI', done => {
         multiDeviceSetupElement.visiblePageName_ = SUCCESS;
@@ -58,17 +62,42 @@ cr.define('multidevice_setup', () => {
         forwardButton.click();
       });
 
+      // From StartSetupPage
+
       test('StartSetupPage backward button closes UI', done => {
-        multiDeviceSetupElement.visiblePageName_ = START;
+        assertEquals(multiDeviceSetupElement.visiblePageName_, START);
         multiDeviceSetupElement.addEventListener('ui-closed', () => done());
         backwardButton.click();
       });
 
-      test('StartSetupPage backward button closes UI', done => {
-        multiDeviceSetupElement.visiblePageName_ = START;
-        multiDeviceSetupElement.addEventListener('ui-closed', () => done());
-        backwardButton.click();
-      });
+      test(
+          'StartSetupPage forward button goes to success page if mojo works',
+          done => {
+            multiDeviceSetupElement.addEventListener(
+                'visible-page-name_-changed', () => {
+                  if (multiDeviceSetupElement.$$('iron-pages > .iron-selected')
+                          .is == SUCCESS)
+                    done();
+                });
+            assertEquals(multiDeviceSetupElement.visiblePageName_, START);
+            forwardButton.click();
+          });
+
+      test(
+          'StartSetupPage forward button goes to failure page if mojo fails',
+          done => {
+            multiDeviceSetupElement.mojoService_.responseCode =
+                multidevice_setup.SetBetterTogetherHostResponseCode
+                    .ERROR_OFFLINE;
+            multiDeviceSetupElement.addEventListener(
+                'visible-page-name_-changed', () => {
+                  if (multiDeviceSetupElement.$$('iron-pages > .iron-selected')
+                          .is == FAILURE)
+                    done();
+                });
+            assertEquals(multiDeviceSetupElement.visiblePageName_, START);
+            forwardButton.click();
+          });
     });
   }
   return {registerIntegrationTests: registerIntegrationTests};
