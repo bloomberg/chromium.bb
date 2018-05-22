@@ -1273,6 +1273,11 @@ MojoResult Core::SendInvitation(
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (!transport_endpoint->platform_handles)
     return MOJO_RESULT_INVALID_ARGUMENT;
+  if (transport_endpoint->type != MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL &&
+      transport_endpoint->type !=
+          MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER) {
+    return MOJO_RESULT_UNIMPLEMENTED;
+  }
 
   scoped_refptr<Dispatcher> dispatcher = GetDispatcher(invitation_handle);
   if (!dispatcher || dispatcher->GetType() != Dispatcher::Type::INVITATION)
@@ -1285,6 +1290,11 @@ MojoResult Core::SendInvitation(
       &transport_endpoint->platform_handles[0], &endpoint_handle);
   if (result != MOJO_RESULT_OK || !endpoint_handle.is_valid())
     return MOJO_RESULT_INVALID_ARGUMENT;
+
+#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_FUCHSIA))
+  if (transport_endpoint->type == MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER)
+    endpoint_handle.get().needs_connection = true;
+#endif
 
   // At this point everything else has been validated, so we can take ownership
   // of the dispatcher.
@@ -1339,6 +1349,11 @@ MojoResult Core::AcceptInvitation(
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (!transport_endpoint->platform_handles)
     return MOJO_RESULT_INVALID_ARGUMENT;
+  if (transport_endpoint->type != MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL &&
+      transport_endpoint->type !=
+          MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER) {
+    return MOJO_RESULT_UNIMPLEMENTED;
+  }
 
   if (!invitation_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -1354,6 +1369,11 @@ MojoResult Core::AcceptInvitation(
     *invitation_handle = MOJO_HANDLE_INVALID;
     return MOJO_RESULT_INVALID_ARGUMENT;
   }
+
+#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_FUCHSIA))
+  if (transport_endpoint->type == MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER)
+    endpoint_handle.get().needs_connection = true;
+#endif
 
   RequestContext request_context;
   ConnectionParams connection_params(TransportProtocol::kLegacy,

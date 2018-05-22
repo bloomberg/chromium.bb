@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -34,6 +35,10 @@ class MOJO_SYSTEM_IMPL_EXPORT NamedPlatformChannelPair {
     // empty, a default security descriptor will be used. See
     // kDefaultSecurityDescriptor in named_platform_handle_utils_win.cc.
     base::string16 security_descriptor;
+#else
+    // On POSIX, every new NamedPlatformChannelPair creates a new server socket
+    // with a random name. This controls the directory where that happens.
+    base::FilePath socket_dir;
 #endif
   };
 
