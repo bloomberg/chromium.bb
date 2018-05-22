@@ -19,14 +19,16 @@ per-file md_extensions_strings.grdp=*
 per-file media_router_strings.grdp*=imcheng@chromium.org
 per-file media_router_strings.grdp*=mfoltz@chromium.org
 
+per-file printing_strings.grdp=file://printing/OWNERS
+
 per-file settings*strings*=file://chrome/browser/resources/settings/OWNERS
 
-per-file main_dll_loader_win.cc=scottmg@chromium.org
+# Non-GRD rules.
+
+per-file *.plist=file://chrome/browser/ui/cocoa/OWNERS
 
 per-file chrome_crash_reporter_client*=scottmg@chromium.org
 per-file chrome_crash_reporter_client*=rsesek@chromium.org
-
-per-file *.plist=file://chrome/browser/ui/cocoa/OWNERS
 
 per-file chrome_exe_main_mac.cc=kerrnel@chromium.org
 per-file chrome_exe_main_mac.cc=mark@chromium.org
@@ -36,3 +38,5 @@ per-file chrome_manifest.json=file://ipc/SECURITY_OWNERS
 
 per-file chrome_renderer_manifest.json=set noparent
 per-file chrome_renderer_manifest.json=file://ipc/SECURITY_OWNERS
+
+per-file main_dll_loader_win.cc=scottmg@chromium.org
