@@ -23,7 +23,6 @@ struct RequestMetadata {
 
   std::string mime_type;
   int http_response_code;
-  bool from_http_cache;
   std::string content_location_header;
 };
 
