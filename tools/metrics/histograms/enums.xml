@@ -982,6 +982,8 @@ uploading your change for review.  These are checked by presubmit scripts.
     Renderer hosting visible subframe is crashed (with crash report) while app
     is foreground.
   </int>
+  <int value="7" label="All GPU process crashes"/>
+  <int value="8" label="All renderer process crashes"/>
 </enum>
 
 <enum name="AndroidResourceExtractionStatus">
