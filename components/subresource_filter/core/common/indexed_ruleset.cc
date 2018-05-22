@@ -22,7 +22,9 @@ using FindRuleStrategy =
 // RulesetIndexer --------------------------------------------------------------
 
 // static
-const int RulesetIndexer::kIndexedFormatVersion = 19;
+// Keep this in sync with the version number in
+// tools/perf/core/default_local_state.json.
+const int RulesetIndexer::kIndexedFormatVersion = 20;
 
 RulesetIndexer::RulesetIndexer()
     : blacklist_(&builder_), whitelist_(&builder_), deactivation_(&builder_) {}

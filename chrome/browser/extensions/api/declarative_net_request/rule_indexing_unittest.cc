@@ -223,8 +223,9 @@ TEST_P(RuleIndexingTest, InvalidRedirectRulePriority) {
 TEST_P(RuleIndexingTest, NoApplicableResourceTypes) {
   TestRule rule = CreateGenericRule();
   rule.condition->excluded_resource_types = std::vector<std::string>(
-      {"sub_frame", "stylesheet", "script", "image", "font", "object",
-       "xmlhttprequest", "ping", "media", "websocket", "other"});
+      {"main_frame", "sub_frame", "stylesheet", "script", "image", "font",
+       "object", "xmlhttprequest", "ping", "csp_report", "media", "websocket",
+       "other"});
   AddRule(rule);
   LoadAndExpectError(
       ParseInfo(ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES, 0u)

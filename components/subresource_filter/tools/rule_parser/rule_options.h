@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "components/url_pattern_index/proto/rules.pb.h"
+#include "components/url_pattern_index/url_pattern_index.h"
 
 namespace subresource_filter {
 
@@ -43,8 +44,7 @@ static constexpr TypeMask kAllActivationTypes =
     type_mask_for(url_pattern_index::proto::ACTIVATION_TYPE_ALL);
 
 static constexpr TypeMask kDefaultElementTypes =
-    kAllElementTypes &
-    ~type_mask_for(url_pattern_index::proto::ELEMENT_TYPE_POPUP);
+    url_pattern_index::kDefaultProtoElementTypesMask;
 
 // A list of items mapping element type options to their names.
 const struct {

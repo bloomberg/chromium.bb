@@ -130,7 +130,7 @@ void FilterTool::PrintResult(bool blocked,
                              base::StringPiece type) {
   *output_ << (blocked ? "BLOCKED " : "ALLOWED ");
   if (rule) {
-    *output_ << url_pattern_index::FlatUrlRuleToString(rule) << " ";
+    *output_ << url_pattern_index::FlatUrlRuleToFilterlistString(rule) << " ";
   }
   *output_ << document_origin << " " << url << " " << type << std::endl;
 }
@@ -188,7 +188,8 @@ void FilterTool::MatchBatchImpl(std::istream* request_stream,
 
   for (auto rule_and_count : matched_rules) {
     if (rule_and_count.second >= min_match_count) {
-      *output_ << url_pattern_index::FlatUrlRuleToString(rule_and_count.first)
+      *output_ << url_pattern_index::FlatUrlRuleToFilterlistString(
+                      rule_and_count.first)
                       .c_str()
                << std::endl;
     }

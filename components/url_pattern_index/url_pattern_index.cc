@@ -252,6 +252,17 @@ class UrlRuleFlatBufferConverter {
     static_assert(flat::ElementType_ANY <= std::numeric_limits<uint16_t>::max(),
                   "Element types can not be stored in uint16_t.");
 
+    // Handle the default case. Note this means we end up adding
+    // flat::ElementType_CSP_REPORT as an element type when there is no
+    // corresponding proto::ElementType for it. However this should not matter
+    // in practice since subresource_filter does not do matching on CSP reports
+    // currently. If subresource_filter started to do so, add support for CSP
+    // reports in proto::ElementType.
+    if (rule_.element_types() == kDefaultProtoElementTypesMask) {
+      element_types_ = kDefaultFlatElementTypesMask;
+      return true;
+    }
+
     const ElementTypeMap& element_type_map = GetElementTypeMap();
     // Ensure all proto::ElementType(s) are mapped in |element_type_map|.
     DCHECK_EQ(proto::ELEMENT_TYPE_ALL, GetKeysMask(element_type_map));

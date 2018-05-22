@@ -14,7 +14,7 @@ struct UrlRule;
 }
 
 // Prints a UrlRule in string form.
-std::string FlatUrlRuleToString(const flat::UrlRule* flat_rule);
+std::string FlatUrlRuleToFilterlistString(const flat::UrlRule* flat_rule);
 
 }  // namespace url_pattern_index
 
