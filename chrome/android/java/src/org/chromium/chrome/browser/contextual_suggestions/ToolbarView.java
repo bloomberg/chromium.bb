@@ -10,8 +10,10 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.ListMenuButton;
+import org.chromium.chrome.browser.widget.TintedImageView;
 
 /** The toolbar view, containing an icon, title and close button. */
 public class ToolbarView extends FrameLayout {
@@ -19,7 +21,7 @@ public class ToolbarView extends FrameLayout {
     private ListMenuButton mMenuButton;
     private TextView mTitle;
     private View mShadow;
-    private View mArrow;
+    private TintedImageView mArrow;
     private View mMainView;
 
     private int mMaxTranslationPx;
@@ -33,7 +35,7 @@ public class ToolbarView extends FrameLayout {
         super.onFinishInflate();
 
         mMainView = findViewById(R.id.main_content);
-        mArrow = findViewById(R.id.arrow);
+        mArrow = (TintedImageView) findViewById(R.id.arrow);
         mCloseButton = findViewById(R.id.close_button);
         mMenuButton = findViewById(R.id.more);
         mTitle = (TextView) findViewById(R.id.title);
@@ -65,6 +67,10 @@ public class ToolbarView extends FrameLayout {
 
     void setShadowVisibility(boolean visible) {
         mShadow.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
+    void setArrowTintResourceId(int resourceId) {
+        mArrow.setTint(ApiCompatibilityUtils.getColorStateList(getResources(), resourceId));
     }
 
     void setSlimPeekEnabled(boolean slimPeekEnabled) {
