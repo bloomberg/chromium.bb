@@ -178,7 +178,8 @@
 // Sample usage:
 //   UMA_HISTOGRAM_TIMES("My.Timing.Histogram", time_delta);
 
-// Short timings - up to 10 seconds.
+// Short timings - up to 10 seconds. For high-resolution (microseconds) timings,
+// see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES.
 #define UMA_HISTOGRAM_TIMES(name, sample) UMA_HISTOGRAM_CUSTOM_TIMES(          \
     name, sample, base::TimeDelta::FromMilliseconds(1),                        \
     base::TimeDelta::FromSeconds(10), 50)
@@ -206,10 +207,32 @@
 // Sample usage:
 //   UMA_HISTOGRAM_CUSTOM_TIMES("Very.Long.Timing.Histogram", time_delta,
 //       base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(1), 100);
-#define UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count)       \
-    STATIC_HISTOGRAM_POINTER_BLOCK(name, AddTime(sample),                      \
-        base::Histogram::FactoryTimeGet(name, min, max, bucket_count,          \
-            base::HistogramBase::kUmaTargetedHistogramFlag))
+#define UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) \
+  STATIC_HISTOGRAM_POINTER_BLOCK(                                        \
+      name, AddTimeMillisecondsGranularity(sample),                      \
+      base::Histogram::FactoryTimeGet(                                   \
+          name, min, max, bucket_count,                                  \
+          base::HistogramBase::kUmaTargetedHistogramFlag))
+
+// Same as UMA_HISTOGRAM_CUSTOM_TIMES but reports |sample| in microseconds,
+// dropping the report if this client doesn't have a high-resolution clock.
+//
+// Note: dropping reports on clients with low-resolution clocks means these
+// reports will be biased to a portion of the population on Windows. See
+// Windows.HasHighResolutionTimeTicks for the affected sample.
+//
+// Sample usage:
+//  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+//      "High.Resolution.TimingMicroseconds.Histogram", time_delta,
+//      base::TimeDelta::FromMicroseconds(1),
+//      base::TimeDelta::FromMilliseconds(10), 100);
+#define UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(name, sample, min, max, \
+                                                bucket_count)           \
+  STATIC_HISTOGRAM_POINTER_BLOCK(                                       \
+      name, AddTimeMicrosecondsGranularity(sample),                     \
+      base::Histogram::FactoryMicrosecondsTimeGet(                      \
+          name, min, max, bucket_count,                                 \
+          base::HistogramBase::kUmaTargetedHistogramFlag))
 
 // Scoped class which logs its time on this earth as a UMA statistic. This is
 // recommended for when you want a histogram which measures the time it takes

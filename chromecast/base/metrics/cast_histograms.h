@@ -22,11 +22,13 @@
     histogram_pointer->histogram_add_method_invocation;                        \
   } while (0)
 
-#define UMA_HISTOGRAM_CUSTOM_TIMES_NO_CACHE( \
-    name, sample, min, max, bucket_count) \
-    STATIC_HISTOGRAM_POINTER_BLOCK_NO_CACHE(name, AddTime(sample), \
-        base::Histogram::FactoryTimeGet(name, min, max, bucket_count, \
-            base::Histogram::kUmaTargetedHistogramFlag))
+#define UMA_HISTOGRAM_CUSTOM_TIMES_NO_CACHE(name, sample, min, max, \
+                                            bucket_count)           \
+  STATIC_HISTOGRAM_POINTER_BLOCK_NO_CACHE(                          \
+      name, AddTimeMillisecondsGranularity(sample),                 \
+      base::Histogram::FactoryTimeGet(                              \
+          name, min, max, bucket_count,                             \
+          base::Histogram::kUmaTargetedHistogramFlag))
 
 #define UMA_HISTOGRAM_CUSTOM_COUNTS_NO_CACHE(name, sample, min, max, \
                                              bucket_count, count) \

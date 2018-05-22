@@ -125,10 +125,15 @@ class BASE_EXPORT Histogram : public HistogramBase {
                                        base::TimeDelta maximum,
                                        uint32_t bucket_count,
                                        int32_t flags);
+  static HistogramBase* FactoryMicrosecondsTimeGet(const std::string& name,
+                                                   base::TimeDelta minimum,
+                                                   base::TimeDelta maximum,
+                                                   uint32_t bucket_count,
+                                                   int32_t flags);
 
-  // Overloads of the above two functions that take a const char* |name| param,
-  // to avoid code bloat from the std::string constructor being inlined into
-  // call sites.
+  // Overloads of the above functions that take a const char* |name| param, to
+  // avoid code bloat from the std::string constructor being inlined into call
+  // sites.
   static HistogramBase* FactoryGet(const char* name,
                                    Sample minimum,
                                    Sample maximum,
@@ -139,6 +144,11 @@ class BASE_EXPORT Histogram : public HistogramBase {
                                        base::TimeDelta maximum,
                                        uint32_t bucket_count,
                                        int32_t flags);
+  static HistogramBase* FactoryMicrosecondsTimeGet(const char* name,
+                                                   base::TimeDelta minimum,
+                                                   base::TimeDelta maximum,
+                                                   uint32_t bucket_count,
+                                                   int32_t flags);
 
   // Create a histogram using data in persistent storage.
   static std::unique_ptr<HistogramBase> PersistentCreate(

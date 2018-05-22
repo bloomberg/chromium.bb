@@ -112,8 +112,16 @@ void HistogramBase::AddKiB(Sample value, int count) {
   AddScaled(value, count, 1024);
 }
 
-void HistogramBase::AddTime(const TimeDelta& time) {
+void HistogramBase::AddTimeMillisecondsGranularity(const TimeDelta& time) {
   Add(static_cast<Sample>(time.InMilliseconds()));
+}
+
+void HistogramBase::AddTimeMicrosecondsGranularity(const TimeDelta& time) {
+  // Intentionally drop high-resolution reports on clients with low-resolution
+  // clocks. High-resolution metrics cannot make use of low-resolution data and
+  // reporting it merely adds noise to the metric. https://crbug.com/807615#c16
+  if (TimeTicks::IsHighResolution())
+    Add(static_cast<Sample>(time.InMicroseconds()));
 }
 
 void HistogramBase::AddBoolean(bool value) {

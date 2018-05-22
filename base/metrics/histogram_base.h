@@ -189,8 +189,12 @@ class BASE_EXPORT HistogramBase {
   void AddKilo(Sample value, int count);  // scale=1000
   void AddKiB(Sample value, int count);   // scale=1024
 
-  // 2 convenient functions that call Add(Sample).
-  void AddTime(const TimeDelta& time);
+  // Convenient functions that call Add(Sample).
+  void AddTime(const TimeDelta& time) { AddTimeMillisecondsGranularity(time); }
+  void AddTimeMillisecondsGranularity(const TimeDelta& time);
+  // Note: AddTimeMicrosecondsGranularity() drops the report if this client
+  // doesn't have a high-resolution clock.
+  void AddTimeMicrosecondsGranularity(const TimeDelta& time);
   void AddBoolean(bool value);
 
   virtual void AddSamples(const HistogramSamples& samples) = 0;
