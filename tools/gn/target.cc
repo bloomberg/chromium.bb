@@ -581,8 +581,10 @@ void Target::PullDependentTargetLibs() {
 void Target::PullRecursiveHardDeps() {
   for (const auto& pair : GetDeps(DEPS_LINKED)) {
     // Direct hard dependencies.
-    if (pair.ptr->hard_dep())
+    if (hard_dep() || pair.ptr->hard_dep()) {
       recursive_hard_deps_.insert(pair.ptr);
+      continue;
+    }
 
     // If |pair.ptr| is binary target and |pair.ptr| has no public header,
     // |this| target does not need to have |pair.ptr|'s hard_deps as its

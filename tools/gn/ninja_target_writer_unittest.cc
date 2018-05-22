@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "tools/gn/ninja_action_target_writer.h"
 #include "tools/gn/ninja_target_writer.h"
 #include "tools/gn/target.h"
 #include "tools/gn/test_with_scope.h"
@@ -94,6 +95,23 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
     EXPECT_EQ("obj/foo/base.stamp", dep[0].value());
   }
 
+  {
+    std::ostringstream stream;
+    NinjaActionTargetWriter writer(&action, stream);
+    writer.Run();
+    EXPECT_EQ(
+        "rule __foo_action___rule\n"
+        "  command =  ../../foo/script.py\n"
+        "  description = ACTION //foo:action()\n"
+        "  restat = 1\n"
+        "\n"
+        "build: __foo_action___rule | ../../foo/script.py"
+        " ../../foo/action_source.txt ./target\n"
+        "\n"
+        "build obj/foo/action.stamp: stamp\n",
+        stream.str());
+  }
+
   // Input deps for action which should depend on the base since its a hard dep
   // that is a (indirect) dependency, as well as the the action source.
   {
@@ -104,9 +122,10 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
 
     ASSERT_EQ(1u, dep.size());
     EXPECT_EQ("obj/foo/action.inputdeps.stamp", dep[0].value());
-    EXPECT_EQ("build obj/foo/action.inputdeps.stamp: stamp ../../foo/script.py "
-                  "../../foo/action_source.txt obj/foo/base.stamp\n",
-              stream.str());
+    EXPECT_EQ(
+        "build obj/foo/action.inputdeps.stamp: stamp ../../foo/script.py "
+        "../../foo/action_source.txt ./target\n",
+        stream.str());
   }
 }
 

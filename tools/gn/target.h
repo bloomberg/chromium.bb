@@ -170,10 +170,9 @@ class Target : public Item {
   // Returns true if targets depending on this one should have an order
   // dependency.
   bool hard_dep() const {
-    return output_type_ == ACTION ||
-           output_type_ == ACTION_FOREACH ||
-           output_type_ == COPY_FILES ||
-           output_type_ == CREATE_BUNDLE;
+    return output_type_ == ACTION || output_type_ == ACTION_FOREACH ||
+           output_type_ == COPY_FILES || output_type_ == CREATE_BUNDLE ||
+           output_type_ == BUNDLE_DATA;
   }
 
   // Returns the iterator range which can be used in range-based for loops
