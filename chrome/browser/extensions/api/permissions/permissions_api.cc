@@ -8,6 +8,7 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
@@ -142,70 +143,61 @@ PermissionsRequestFunction::PermissionsRequestFunction() {}
 
 PermissionsRequestFunction::~PermissionsRequestFunction() {}
 
-bool PermissionsRequestFunction::RunAsync() {
-  results_ = Request::Results::Create(false);
-
+ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
   if (!user_gesture() &&
       !ignore_user_gesture_for_tests &&
       extension_->location() != Manifest::COMPONENT) {
-    error_ = kUserGestureRequiredError;
-    return false;
+    return RespondNow(Error(kUserGestureRequiredError));
   }
 
   gfx::NativeWindow native_window =
       ChromeExtensionFunctionDetails(this).GetNativeWindowForUI();
-  if (!native_window) {
-    error_ = "Could not find an active window.";
-    return false;
-  }
+  if (!native_window)
+    return RespondNow(Error("Could not find an active window."));
 
   std::unique_ptr<Request::Params> params(Request::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  std::string error;
   requested_permissions_ = helpers::UnpackPermissionSet(
       params->permissions,
-      ExtensionPrefs::Get(GetProfile())->AllowFileAccess(extension_->id()),
-      &error_);
+      ExtensionPrefs::Get(browser_context())->AllowFileAccess(extension_->id()),
+      &error);
   if (!requested_permissions_.get())
-    return false;
+    return RespondNow(Error(error));
 
   // Make sure they're only requesting permissions supported by this API.
   APIPermissionSet apis = requested_permissions_->apis();
   for (APIPermissionSet::const_iterator i = apis.begin();
        i != apis.end(); ++i) {
     if (!i->info()->supports_optional()) {
-      error_ = ErrorUtils::FormatErrorMessage(
-          kNotWhitelistedError, i->name());
-      return false;
+      return RespondNow(Error(
+          ErrorUtils::FormatErrorMessage(kNotWhitelistedError, i->name())));
     }
   }
 
   // The requested permissions must be defined as optional in the manifest.
   if (!PermissionsParser::GetOptionalPermissions(extension())
            .Contains(*requested_permissions_)) {
-    error_ = kNotInOptionalPermissionsError;
-    return false;
+    return RespondNow(Error(kNotInOptionalPermissionsError));
   }
 
   // Automatically declines api permissions requests, which are blocked by
   // enterprise policy.
-  if (!ExtensionManagementFactory::GetForBrowserContext(GetProfile())
+  if (!ExtensionManagementFactory::GetForBrowserContext(browser_context())
            ->IsPermissionSetAllowed(extension(), *requested_permissions_)) {
-    error_ = kBlockedByEnterprisePolicy;
-    return false;
+    return RespondNow(Error(kBlockedByEnterprisePolicy));
   }
 
   // We don't need to prompt the user if the requested permissions are a subset
   // of the granted permissions set.
   std::unique_ptr<const PermissionSet> granted =
-      ExtensionPrefs::Get(GetProfile())
+      ExtensionPrefs::Get(browser_context())
           ->GetGrantedPermissions(extension()->id());
   if (granted.get() && granted->Contains(*requested_permissions_)) {
-    PermissionsUpdater perms_updater(GetProfile());
+    PermissionsUpdater perms_updater(browser_context());
     perms_updater.AddPermissions(extension(), *requested_permissions_);
-    results_ = Request::Results::Create(true);
-    SendResponse(true);
-    return true;
+    return RespondNow(ArgumentList(Request::Results::Create(true)));
   }
 
   // Filter out the granted permissions so we only prompt for new ones.
@@ -232,35 +224,40 @@ bool PermissionsRequestFunction::RunAsync() {
   if (auto_confirm_for_tests == PROCEED || has_no_warnings ||
       extension_->location() == Manifest::COMPONENT) {
     OnInstallPromptDone(ExtensionInstallPrompt::Result::ACCEPTED);
-  } else if (auto_confirm_for_tests == ABORT) {
-    // Pretend the user clicked cancel.
-    OnInstallPromptDone(ExtensionInstallPrompt::Result::USER_CANCELED);
-  } else {
-    CHECK_EQ(DO_NOT_SKIP, auto_confirm_for_tests);
-    install_ui_.reset(new ExtensionInstallPrompt(GetProfile(), native_window));
-    install_ui_->ShowDialog(
-        base::Bind(&PermissionsRequestFunction::OnInstallPromptDone, this),
-        extension(), nullptr,
-        std::make_unique<ExtensionInstallPrompt::Prompt>(
-            ExtensionInstallPrompt::PERMISSIONS_PROMPT),
-        requested_permissions_->Clone(),
-        ExtensionInstallPrompt::GetDefaultShowDialogCallback());
+    return AlreadyResponded();
   }
 
-  return true;
+  if (auto_confirm_for_tests == ABORT) {
+    // Pretend the user clicked cancel.
+    OnInstallPromptDone(ExtensionInstallPrompt::Result::USER_CANCELED);
+    return AlreadyResponded();
+  }
+
+  CHECK_EQ(DO_NOT_SKIP, auto_confirm_for_tests);
+  install_ui_.reset(new ExtensionInstallPrompt(
+      Profile::FromBrowserContext(browser_context()), native_window));
+  install_ui_->ShowDialog(
+      base::Bind(&PermissionsRequestFunction::OnInstallPromptDone, this),
+      extension(), nullptr,
+      std::make_unique<ExtensionInstallPrompt::Prompt>(
+          ExtensionInstallPrompt::PERMISSIONS_PROMPT),
+      requested_permissions_->Clone(),
+      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
+
+  // ExtensionInstallPrompt::ShowDialog() can call the response synchronously.
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 void PermissionsRequestFunction::OnInstallPromptDone(
     ExtensionInstallPrompt::Result result) {
-  if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
-    PermissionsUpdater perms_updater(GetProfile());
+  bool granted = result == ExtensionInstallPrompt::Result::ACCEPTED;
+  if (granted) {
+    PermissionsUpdater perms_updater(browser_context());
     perms_updater.AddPermissions(extension(), *requested_permissions_);
-
-    results_ = Request::Results::Create(true);
   }
 
-  SendResponse(true);
-  Release();  // Balanced in RunAsync().
+  Respond(ArgumentList(Request::Results::Create(granted)));
+  Release();  // Balanced in Run().
 }
 
 }  // namespace extensions
