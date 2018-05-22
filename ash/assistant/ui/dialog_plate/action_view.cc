@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/ui/dialog_plate/logo_view.h"
+#include "ash/assistant/ui/dialog_plate/stub_logo_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -28,7 +28,7 @@ ActionView::ActionView(AssistantController* assistant_controller,
     : assistant_controller_(assistant_controller),
       listener_(listener),
       keyboard_action_view_(new views::ImageView()),
-      voice_action_view_(new LogoView()) {
+      voice_action_view_(new StubLogoView()) {
   InitLayout();
   UpdateState();
 
@@ -105,10 +105,10 @@ void ActionView::UpdateState() {
 
   switch (interaction_model->mic_state()) {
     case MicState::kClosed:
-      voice_action_view_->SetState(LogoView::State::kMic);
+      voice_action_view_->SetState(StubLogoView::State::kMic);
       break;
     case MicState::kOpen:
-      voice_action_view_->SetState(LogoView::State::kListening);
+      voice_action_view_->SetState(StubLogoView::State::kListening);
       break;
   }
 
