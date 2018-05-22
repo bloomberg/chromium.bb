@@ -986,7 +986,7 @@ void TabStrip::OnMouseEventInTab(views::View* source,
 
 bool TabStrip::ShouldPaintTab(
     const Tab* tab,
-    const base::Callback<gfx::Path(const gfx::Size&)>& border_callback,
+    const base::RepeatingCallback<gfx::Path(const gfx::Rect&)>& border_callback,
     gfx::Path* clip) {
   if (!MaySetClip())
     return true;
@@ -1009,7 +1009,7 @@ bool TabStrip::ShouldPaintTab(
     if (current_x > next_x)
       return true;  // Can happen during dragging.
 
-    *clip = border_callback.Run(tab_at(index + 1)->size());
+    *clip = border_callback.Run(tab_at(index + 1)->bounds());
     clip->offset(SkIntToScalar(next_x - current_x), 0);
   } else if (index > active_index && index > 0) {
     const gfx::Rect& previous_bounds(tab_at(index - 1)->bounds());
@@ -1021,7 +1021,7 @@ bool TabStrip::ShouldPaintTab(
       return true;  // Can happen during dragging.
 
     if (previous_bounds.right() - Tab::GetOverlap() != current_x) {
-      *clip = border_callback.Run(tab_at(index - 1)->size());
+      *clip = border_callback.Run(tab_at(index - 1)->bounds());
       clip->offset(SkIntToScalar(previous_x - current_x), 0);
     }
   }
