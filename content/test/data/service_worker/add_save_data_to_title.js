@@ -5,6 +5,8 @@
 this.onfetch = function(event) {
     var value = event.request.headers.get('Save-Data');
     var blob = new Blob(['<title>save-data='+ value + '</title>']);
-    var response = new Response(blob);
+    var response = new Response(blob, {
+        headers: { 'Content-Type': 'text/html' }
+    });
     event.respondWith(response);
 };
