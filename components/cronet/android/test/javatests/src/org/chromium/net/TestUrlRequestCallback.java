@@ -64,17 +64,16 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
     private final ConditionVariable mStepBlock = new ConditionVariable();
 
     // Executor Service for Cronet callbacks.
-    private final ExecutorService mExecutorService =
-            Executors.newSingleThreadExecutor(new ExecutorThreadFactory());
+    private final ExecutorService mExecutorService;
     private Thread mExecutorThread;
 
     // position() of ByteBuffer prior to read() call.
     private int mBufferPositionBeforeRead;
 
-    private class ExecutorThreadFactory implements ThreadFactory {
+    private static class ExecutorThreadFactory implements ThreadFactory {
         @Override
         public Thread newThread(final Runnable r) {
-            mExecutorThread = new Thread(new Runnable() {
+            return new Thread(new Runnable() {
                 @Override
                 public void run() {
                     StrictMode.ThreadPolicy threadPolicy = StrictMode.getThreadPolicy();
@@ -90,7 +89,6 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
                     }
                 }
             });
-            return mExecutorThread;
         }
     }
 
@@ -112,6 +110,34 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
         // the cancellation task.
         CANCEL_ASYNC_WITHOUT_PAUSE,
         THROW_SYNC
+    }
+
+    /**
+     * Set {@code mExecutorThread}.
+     */
+    private void fillInExecutorThread() {
+        mExecutorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                mExecutorThread = Thread.currentThread();
+            }
+        });
+    }
+
+    /**
+     * Create a {@link TestUrlRequestCallback} with a new single-threaded executor.
+     */
+    public TestUrlRequestCallback() {
+        this(Executors.newSingleThreadExecutor(new ExecutorThreadFactory()));
+    }
+
+    /**
+     * Create a {@link TestUrlRequestCallback} using a custom single-threaded executor.
+     * NOTE(pauljensen): {@code executorService} should be a new single-threaded executor.
+     */
+    public TestUrlRequestCallback(ExecutorService executorService) {
+        mExecutorService = executorService;
+        fillInExecutorThread();
     }
 
     public void setAutoAdvance(boolean autoAdvance) {
