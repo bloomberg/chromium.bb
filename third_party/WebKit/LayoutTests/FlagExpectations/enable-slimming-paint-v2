@@ -67,7 +67,6 @@ Bug(none) webmidi/ [ Skip ]
 Bug(none) xmlviewer/ [ Skip ]
 
 Bug(none) virtual/android/ [ Skip ]
-Bug(none) virtual/color_space/ [ Skip ]
 Bug(none) virtual/enable_asmjs/ [ Skip ]
 Bug(none) virtual/enable_wasm/ [ Skip ]
 Bug(none) virtual/exotic-color-space/ [ Skip ]
