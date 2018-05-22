@@ -2818,25 +2818,6 @@
   },
   'vr_pixeltests': {
     'remove_from': [
-      # chromium.android
-      'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-rel',
-      'KitKat Phone Tester (dbg)',
-      'KitKat Phone Tester (rel)',
-      'KitKat Tablet Tester',
-      'Lollipop Phone Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow 64 bit Tester',
-      'Marshmallow Phone Tester (rel)',
-      'Marshmallow Tablet Tester',
-       # chromium.android.fyi
-      'Nougat Phone Tester chromium.android.fyi',
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-      'x64 Device Tester',
-      'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroid x64',
       # chromium.fyi
       'Chromium Win 10 GCE Tests',
       'Out of Process Profiling Android',
