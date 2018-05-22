@@ -48,21 +48,17 @@ js2gtest("browser_tests_js_webui") {
     "accessibility_audit_browsertest.js",
     "assertions.js",
     "async_gen.js",
-    "bluetooth_internals_browsertest.js",
     "certificate_viewer_dialog_test.js",
     "chrome_send_browsertest.js",
     "cr_components/cr_components_browsertest.js",
     "cr_elements/cr_elements_browsertest.js",
-    "engagement/site_engagement_browsertest.js",
     "extensions/a11y/extensions_a11y_test.js",
     "extensions/cr_extensions_browsertest.js",
-    "interventions_internals_browsertest.js",
     "load_time_data_browsertest.js",
     "md_bookmarks/md_bookmarks_browsertest.js",
     "md_downloads/downloads_browsertest.js",
     "md_history/md_history_browsertest.js",
     "md_user_manager/user_manager_browsertest.js",
-    "media/media_engagement_browsertest.js",
     "media_router/media_router_elements_browsertest.js",
     "mock4js_browsertest.js",
     "net_internals/bandwidth_view.js",
@@ -110,10 +106,6 @@ js2gtest("browser_tests_js_webui") {
     "//chrome/browser/resources/signin/dice_sync_confirmation/sync_confirmation_browser_proxy.js",
   ]
 
-  if (is_win || is_mac || is_desktop_linux || is_chromeos) {
-    sources += [ "discards/discards_browsertest.js" ]
-  }
-
   if (is_chromeos) {
     sources += [
       "multidevice_setup/multidevice_setup_browsertest.js",
@@ -140,6 +132,27 @@ js2gtest("browser_tests_js_webui") {
       "print_preview/print_preview_ui_browsertest.js",
     ]
   }
+  deps = [
+    "//chrome/browser/ui",
+    "//skia",
+  ]
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+}
+
+js2gtest("browser_tests_js_mojo_webui") {
+  test_type = "mojo_webui"
+
+  sources = [
+    "bluetooth_internals_browsertest.js",
+    "engagement/site_engagement_browsertest.js",
+    "interventions_internals_browsertest.js",
+    "media/media_engagement_browsertest.js",
+  ]
+
+  if (is_win || is_mac || is_desktop_linux || is_chromeos) {
+    sources += [ "discards/discards_browsertest.js" ]
+  }
+
   deps = [
     "//chrome/browser/ui",
     "//skia",
