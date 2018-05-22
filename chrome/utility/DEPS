@@ -46,6 +46,8 @@ specific_include_rules = {
     "+ash/components/autoclick/autoclick_application.h",
     "+ash/components/quick_launch/public",
     "+ash/components/quick_launch/quick_launch_application.h",
+    "+ash/components/shortcut_viewer/public",
+    "+ash/components/shortcut_viewer/shortcut_viewer_application.h",
     "+ash/components/touch_hud/public",
     "+ash/components/touch_hud/touch_hud_application.h",
     "+ash/public/interfaces",

@@ -1,8 +1,7 @@
 include_rules = [
-  # Restrict access to //chrome in order to make it easy to migrate the KSV
-  # launching code and unittest in the future if we want KSV to be a completely
-  # independent mojo app under mustash.
+  "-ash"
   "-chrome",
+  "+ash/components/shortcut_viewer/public",
   "+chrome/browser/ui/ash/ksv",
 ]
 
@@ -11,9 +10,10 @@ specific_include_rules = {
     "+ash/components/shortcut_viewer",
     "+chrome/browser/ui/views",
   ],
-  # https://crbug.com/833673
+  # https://crbug.com/841020
   "keyboard_shortcut_viewer_util\.cc": [
     "+ash/components/shortcut_viewer/views/keyboard_shortcut_view.h",
+    "+ash/public/cpp",
     "+ash/shell.h",
   ],
 }

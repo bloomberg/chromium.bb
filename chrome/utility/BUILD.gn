@@ -148,6 +148,8 @@ static_library("utility") {
       "//ash/components/autoclick:lib",
       "//ash/components/quick_launch:lib",
       "//ash/components/quick_launch/public/mojom",
+      "//ash/components/shortcut_viewer:lib",
+      "//ash/components/shortcut_viewer/public/mojom",
       "//ash/components/touch_hud:lib",
       "//ash/components/touch_hud/public/mojom",
       "//chrome/services/file_util:lib",

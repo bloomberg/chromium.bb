@@ -125,6 +125,10 @@ const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 // Whether this device has an internal stylus.
 const char kHasInternalStylus[] = "has-internal-stylus";
 
+// Uses a mojo app to implement the Keyboard Shortcut Viewer feature. Exists so
+// the mojo app version can be tested independently from the classic version.
+const char kKeyboardShortcutViewerApp[] = "keyboard-shortcut-viewer-app";
+
 // Draws a circle at each touch point, similar to the Android OS developer
 // option "Show taps".
 const char kShowTaps[] = "show-taps";
