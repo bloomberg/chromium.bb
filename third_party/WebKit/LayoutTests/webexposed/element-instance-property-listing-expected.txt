@@ -31,6 +31,46 @@ namespace http://www.w3.org/1999/xhtml
     property animate
     property append
     property appendChild
+    property ariaActiveDescendant
+    property ariaAtomic
+    property ariaAutoComplete
+    property ariaBusy
+    property ariaChecked
+    property ariaColCount
+    property ariaColIndex
+    property ariaColSpan
+    property ariaControls
+    property ariaCurrent
+    property ariaDescribedBy
+    property ariaDetails
+    property ariaDisabled
+    property ariaExpanded
+    property ariaHasPopup
+    property ariaHidden
+    property ariaLabel
+    property ariaLabelledBy
+    property ariaLevel
+    property ariaLive
+    property ariaModal
+    property ariaMultiLine
+    property ariaMultiSelectable
+    property ariaOrientation
+    property ariaOwns
+    property ariaPlaceholder
+    property ariaPosInSet
+    property ariaPressed
+    property ariaRelevant
+    property ariaRequired
+    property ariaRoleDescription
+    property ariaRowCount
+    property ariaRowIndex
+    property ariaRowSpan
+    property ariaSelected
+    property ariaSort
+    property ariaValueMax
+    property ariaValueMin
+    property ariaValueNow
+    property ariaValueText
     property assignedSlot
     property attachShadow
     property attributeStyleMap
@@ -227,6 +267,7 @@ namespace http://www.w3.org/1999/xhtml
     property replaceWith
     property requestFullscreen
     property requestPointerLock
+    property role
     property scroll
     property scrollBy
     property scrollHeight
@@ -1147,6 +1188,46 @@ namespace http://www.w3.org/2000/svg
     property animate
     property append
     property appendChild
+    property ariaActiveDescendant
+    property ariaAtomic
+    property ariaAutoComplete
+    property ariaBusy
+    property ariaChecked
+    property ariaColCount
+    property ariaColIndex
+    property ariaColSpan
+    property ariaControls
+    property ariaCurrent
+    property ariaDescribedBy
+    property ariaDetails
+    property ariaDisabled
+    property ariaExpanded
+    property ariaHasPopup
+    property ariaHidden
+    property ariaLabel
+    property ariaLabelledBy
+    property ariaLevel
+    property ariaLive
+    property ariaModal
+    property ariaMultiLine
+    property ariaMultiSelectable
+    property ariaOrientation
+    property ariaOwns
+    property ariaPlaceholder
+    property ariaPosInSet
+    property ariaPressed
+    property ariaRelevant
+    property ariaRequired
+    property ariaRoleDescription
+    property ariaRowCount
+    property ariaRowIndex
+    property ariaRowSpan
+    property ariaSelected
+    property ariaSort
+    property ariaValueMax
+    property ariaValueMin
+    property ariaValueNow
+    property ariaValueText
     property assignedSlot
     property attachShadow
     property attributeStyleMap
@@ -1327,6 +1408,7 @@ namespace http://www.w3.org/2000/svg
     property replaceWith
     property requestFullscreen
     property requestPointerLock
+    property role
     property scroll
     property scrollBy
     property scrollHeight
