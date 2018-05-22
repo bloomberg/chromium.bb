@@ -205,8 +205,8 @@ class RootInlineBox : public InlineFlowBox {
     return InlineFlowBox::LogicalBottomLayoutOverflow(LineBottom());
   }
 
-  Node* GetLogicalStartBoxWithNode(InlineBox*&) const;
-  Node* GetLogicalEndBoxWithNode(InlineBox*&) const;
+  const InlineBox* GetLogicalStartNonPseudoBox() const;
+  const InlineBox* GetLogicalEndNonPseudoBox() const;
 
   const char* BoxName() const override;
 

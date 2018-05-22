@@ -768,31 +768,26 @@ bool RootInlineBox::IncludeLeadingForBox(InlineBox* box) const {
            (box->GetLineLayoutItem().IsText() && !box->IsText()));
 }
 
-Node* RootInlineBox::GetLogicalStartBoxWithNode(InlineBox*& start_box) const {
+const InlineBox* RootInlineBox::GetLogicalStartNonPseudoBox() const {
   Vector<InlineBox*> leaf_boxes_in_logical_order;
   CollectLeafBoxesInLogicalOrder(leaf_boxes_in_logical_order);
   for (size_t i = 0; i < leaf_boxes_in_logical_order.size(); ++i) {
-    if (leaf_boxes_in_logical_order[i]->GetLineLayoutItem().NonPseudoNode()) {
-      start_box = leaf_boxes_in_logical_order[i];
-      return start_box->GetLineLayoutItem().NonPseudoNode();
-    }
+    if (leaf_boxes_in_logical_order[i]->GetLineLayoutItem().NonPseudoNode())
+      return leaf_boxes_in_logical_order[i];
   }
-  start_box = nullptr;
   return nullptr;
 }
 
-Node* RootInlineBox::GetLogicalEndBoxWithNode(InlineBox*& end_box) const {
+const InlineBox* RootInlineBox::GetLogicalEndNonPseudoBox() const {
   Vector<InlineBox*> leaf_boxes_in_logical_order;
   CollectLeafBoxesInLogicalOrder(leaf_boxes_in_logical_order);
   for (size_t i = leaf_boxes_in_logical_order.size(); i > 0; --i) {
     if (leaf_boxes_in_logical_order[i - 1]
             ->GetLineLayoutItem()
             .NonPseudoNode()) {
-      end_box = leaf_boxes_in_logical_order[i - 1];
-      return end_box->GetLineLayoutItem().NonPseudoNode();
+      return leaf_boxes_in_logical_order[i - 1];
     }
   }
-  end_box = nullptr;
   return nullptr;
 }
 

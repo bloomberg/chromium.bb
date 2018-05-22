@@ -4781,10 +4781,12 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
     // We hit this case for Mac behavior when the Y coordinate is below the last
     // box.
     DCHECK(move_caret_to_boundary);
-    InlineBox* logically_last_box;
-    if (last_root_box_with_children->GetLogicalEndBoxWithNode(
-            logically_last_box))
-      return PositionWithAffinity(PositionForBox(logically_last_box, false));
+    if (const InlineBox* logically_last_box =
+            last_root_box_with_children->GetLogicalEndNonPseudoBox()) {
+      // TODO(layout-dev): Change |PositionForBox()| to take |const InlineBox*|.
+      return PositionWithAffinity(
+          PositionForBox(const_cast<InlineBox*>(logically_last_box), false));
+    }
   }
 
   // Can't reach this. We have a root line box, but it has no kids.

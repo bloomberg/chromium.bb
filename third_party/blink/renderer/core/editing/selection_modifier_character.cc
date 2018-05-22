@@ -127,12 +127,11 @@ struct TraversalLeft {
         visible_position, anchor);
   }
 
-  static Node* LogicalStartBoxOf(TextDirection direction,
-                                 const InlineBox& box,
-                                 InlineBox*& result_box) {
+  static const InlineBox* LogicalStartBoxOf(TextDirection direction,
+                                            const InlineBox& box) {
     if (direction == TextDirection::kLtr)
-      return box.Root().GetLogicalStartBoxWithNode(result_box);
-    return box.Root().GetLogicalEndBoxWithNode(result_box);
+      return box.Root().GetLogicalStartNonPseudoBox();
+    return box.Root().GetLogicalEndNonPseudoBox();
   }
 
   static bool IsOvershot(int offset, const InlineBox& box) {
@@ -225,12 +224,11 @@ struct TraversalRight {
         visible_position, anchor);
   }
 
-  static Node* LogicalStartBoxOf(TextDirection direction,
-                                 const InlineBox& box,
-                                 InlineBox*& result_box) {
+  static const InlineBox* LogicalStartBoxOf(TextDirection direction,
+                                            const InlineBox& box) {
     if (direction == TextDirection::kLtr)
-      return box.Root().GetLogicalEndBoxWithNode(result_box);
-    return box.Root().GetLogicalStartBoxWithNode(result_box);
+      return box.Root().GetLogicalEndNonPseudoBox();
+    return box.Root().GetLogicalStartNonPseudoBox();
   }
 
   static bool IsOvershot(int offset, const InlineBox& box) {
@@ -283,9 +281,8 @@ bool FindForwardBoxInPossiblyBidiContext(const InlineBox*& box,
 
   if (box->Direction() == primary_direction) {
     if (!forward_box) {
-      InlineBox* logical_start = nullptr;
-      if (Traversal::LogicalStartBoxOf(primary_direction, *box,
-                                       logical_start)) {
+      if (const InlineBox* logical_start =
+              Traversal::LogicalStartBoxOf(primary_direction, *box)) {
         box = logical_start;
         offset = Traversal::CaretMinOffsetOf(primary_direction, *box);
       }

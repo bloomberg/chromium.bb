@@ -186,11 +186,12 @@ PositionWithAffinityTemplate<Strategy> StartPositionForLine(
   }
 
   const RootInlineBox& root_box = inline_box->Root();
-  const auto& node_and_box = Ordering::StartNodeAndBoxOf(root_box);
-  Node* const start_node = std::get<Node*>(node_and_box);
-  InlineBox* const start_box = std::get<InlineBox*>(node_and_box);
-  if (!start_node)
+  const InlineBox* const start_box = Ordering::StartNonPseudoBoxOf(root_box);
+  if (!start_box)
     return PositionWithAffinityTemplate<Strategy>();
+
+  const Node* const start_node = start_box->GetLineLayoutItem().NonPseudoNode();
+  DCHECK(start_node);
   return PositionWithAffinityTemplate<Strategy>(
       start_node->IsTextNode()
           ? PositionTemplate<Strategy>(ToText(start_node),
@@ -201,30 +202,19 @@ PositionWithAffinityTemplate<Strategy> StartPositionForLine(
 // Provides start and end of line in logical order for implementing Home and End
 // keys.
 struct LogicalOrdering {
-  static std::pair<Node*, InlineBox*> StartNodeAndBoxOf(
-      const RootInlineBox& root_box) {
-    InlineBox* start_box;
-    Node* const start_node = root_box.GetLogicalStartBoxWithNode(start_box);
-    if (!start_node)
-      return {nullptr, nullptr};
-    return {start_node, start_box};
+  static const InlineBox* StartNonPseudoBoxOf(const RootInlineBox& root_box) {
+    return root_box.GetLogicalStartNonPseudoBox();
   }
 
-  static std::pair<Node*, InlineBox*> EndNodeAndBoxOf(
-      const RootInlineBox& root_box) {
-    InlineBox* end_box;
-    Node* const end_node = root_box.GetLogicalEndBoxWithNode(end_box);
-    if (!end_node)
-      return {nullptr, nullptr};
-    return {end_node, end_box};
+  static const InlineBox* EndNonPseudoBoxOf(const RootInlineBox& root_box) {
+    return root_box.GetLogicalEndNonPseudoBox();
   }
 };
 
 // Provides start end end of line in visual order for implementing expanding
 // selection in line granularity.
 struct VisualOrdering {
-  static std::pair<Node*, InlineBox*> StartNodeAndBoxOf(
-      const RootInlineBox& root_box) {
+  static const InlineBox* StartNonPseudoBoxOf(const RootInlineBox& root_box) {
     // Generated content (e.g. list markers and CSS :before and :after
     // pseudoelements) have no corresponding DOM element, and so cannot be
     // represented by a VisiblePosition. Use whatever follows instead.
@@ -233,13 +223,12 @@ struct VisualOrdering {
     for (InlineBox* inline_box = root_box.FirstLeafChild(); inline_box;
          inline_box = inline_box->NextLeafChild()) {
       if (inline_box->GetLineLayoutItem().NonPseudoNode())
-        return {inline_box->GetLineLayoutItem().NonPseudoNode(), inline_box};
+        return inline_box;
     }
-    return {nullptr, nullptr};
+    return nullptr;
   }
 
-  static std::pair<Node*, InlineBox*> EndNodeAndBoxOf(
-      const RootInlineBox& root_box) {
+  static const InlineBox* EndNonPseudoBoxOf(const RootInlineBox& root_box) {
     // Generated content (e.g. list markers and CSS :before and :after
     // pseudo elements) have no corresponding DOM element, and so cannot be
     // represented by a VisiblePosition. Use whatever precedes instead.
@@ -248,9 +237,9 @@ struct VisualOrdering {
     for (InlineBox* inline_box = root_box.LastLeafChild(); inline_box;
          inline_box = inline_box->PrevLeafChild()) {
       if (inline_box->GetLineLayoutItem().NonPseudoNode())
-        return {inline_box->GetLineLayoutItem().NonPseudoNode(), inline_box};
+        return inline_box;
     }
-    return {nullptr, nullptr};
+    return nullptr;
   }
 };
 
@@ -442,19 +431,19 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
   }
 
   const RootInlineBox& root_box = inline_box->Root();
-  const auto& node_and_box = Ordering::EndNodeAndBoxOf(root_box);
-  Node* const end_node = std::get<Node*>(node_and_box);
-  InlineBox* const end_box = std::get<InlineBox*>(node_and_box);
-  if (!end_node)
+  const InlineBox* const end_box = Ordering::EndNonPseudoBoxOf(root_box);
+  if (!end_box)
     return PositionWithAffinityTemplate<Strategy>();
 
+  const Node* const end_node = end_box->GetLineLayoutItem().NonPseudoNode();
+  DCHECK(end_node);
   if (IsHTMLBRElement(*end_node)) {
     return PositionWithAffinityTemplate<Strategy>(
         PositionTemplate<Strategy>::BeforeNode(*end_node),
         TextAffinity::kUpstreamIfPossible);
   }
   if (end_box->IsInlineTextBox() && end_node->IsTextNode()) {
-    InlineTextBox* end_text_box = ToInlineTextBox(end_box);
+    const InlineTextBox* end_text_box = ToInlineTextBox(end_box);
     int end_offset = end_text_box->Start();
     if (!end_text_box->IsLineBreak())
       end_offset += end_text_box->Len();
