@@ -330,7 +330,7 @@ bool OmniboxResultView::IsSelected() const {
 }
 
 void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition) {
-  model_->OpenMatch(disposition);
+  model_->OpenMatch(model_index_, disposition);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
