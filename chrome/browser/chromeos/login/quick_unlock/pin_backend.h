@@ -27,6 +27,14 @@ class PinBackend {
   // Fetch the PinBackend instance.
   static PinBackend* GetInstance();
 
+  // Computes a new salt.
+  static std::string ComputeSalt();
+
+  // Computes the secret for a given |pin| and |salt|.
+  static std::string ComputeSecret(const std::string& pin,
+                                   const std::string& salt,
+                                   Key::KeyType key_type);
+
   // Use GetInstance().
   PinBackend();
   ~PinBackend();
@@ -52,19 +60,21 @@ class PinBackend {
 
   // Try to authenticate.
   void TryAuthenticate(const AccountId& account_id,
-                       const std::string& key,
-                       const Key::KeyType& key_type,
+                       const Key& key,
                        BoolCallback result);
-
-  // Computes the secret for a given |pin| and |salt|.
-  std::string ComputeSecret(const std::string& pin,
-                            const std::string& salt,
-                            Key::KeyType key_type);
 
   // Resets any cached state for testing purposes.
   static void ResetForTesting();
 
  private:
+  // Called when we know if the cryptohome supports PIN.
+  void OnIsCryptohomeBackendSupported(bool is_supported);
+
+  // Returns true if the cryptohome backend should be used. Sometimes the prefs
+  // backend should be used even when cryptohome is available, ie, when there is
+  // an non-migrated PIN key.
+  bool ShouldUseCryptohome(const AccountId& account_id);
+
   // True if still trying to determine which backend should be used.
   bool resolving_backend_ = true;
   // Determining if the device supports cryptohome-based keys requires an async

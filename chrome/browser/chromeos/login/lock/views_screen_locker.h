@@ -84,6 +84,7 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void UpdatePinKeyboardState(const AccountId& account_id);
   void OnAllowedInputMethodsChanged();
   void OnDevChannelInfoUpdated();
+  void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);
 
   std::unique_ptr<UserBoardViewMojo> user_board_view_mojo_;
   std::unique_ptr<UserSelectionScreen> user_selection_screen_;

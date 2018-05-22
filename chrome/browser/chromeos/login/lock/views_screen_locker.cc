@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
@@ -318,14 +319,9 @@ void ViewsScreenLocker::OnDeviceInfoUpdated(const std::string& bluetooth_name) {
 }
 
 void ViewsScreenLocker::UpdatePinKeyboardState(const AccountId& account_id) {
-  quick_unlock::QuickUnlockStorage* quick_unlock_storage =
-      quick_unlock::QuickUnlockFactory::GetForAccountId(account_id);
-  if (!quick_unlock_storage)
-    return;
-
-  bool is_enabled = quick_unlock_storage->IsPinAuthenticationAvailable();
-  LoginScreenClient::Get()->login_screen()->SetPinEnabledForUser(account_id,
-                                                                 is_enabled);
+  quick_unlock::PinBackend::GetInstance()->CanAuthenticate(
+      account_id, base::BindOnce(&ViewsScreenLocker::OnPinCanAuthenticate,
+                                 weak_factory_.GetWeakPtr(), account_id));
 }
 
 void ViewsScreenLocker::OnAllowedInputMethodsChanged() {
@@ -344,6 +340,12 @@ void ViewsScreenLocker::OnAllowedInputMethodsChanged() {
 void ViewsScreenLocker::OnDevChannelInfoUpdated() {
   LoginScreenClient::Get()->login_screen()->SetDevChannelInfo(
       os_version_label_text_, enterprise_info_text_, bluetooth_name_);
+}
+
+void ViewsScreenLocker::OnPinCanAuthenticate(const AccountId& account_id,
+                                             bool can_authenticate) {
+  LoginScreenClient::Get()->login_screen()->SetPinEnabledForUser(
+      account_id, can_authenticate);
 }
 
 }  // namespace chromeos

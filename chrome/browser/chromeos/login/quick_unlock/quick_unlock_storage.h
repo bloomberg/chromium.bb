@@ -52,7 +52,7 @@ class QuickUnlockStorage : public KeyedService {
 
   // Tries to authenticate the given pin. This will consume a pin unlock
   // attempt. This always returns false if HasStrongAuth returns false.
-  bool TryAuthenticatePin(const std::string& pin, Key::KeyType key_type);
+  bool TryAuthenticatePin(const Key& key);
 
   // Creates a new authentication token to be used by the quickSettingsPrivate
   // API for authenticating requests. Resets the expiration timer and

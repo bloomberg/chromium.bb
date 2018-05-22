@@ -54,7 +54,7 @@ class PinStoragePrefs {
 
   // Tries to authenticate the given pin. This will consume an unlock attempt.
   // This always returns false if IsPinAuthenticationAvailable returns false.
-  bool TryAuthenticatePin(const std::string& pin, Key::KeyType key_type);
+  bool TryAuthenticatePin(const Key& key);
 
  private:
   friend class chromeos::PinStoragePrefsTestApi;

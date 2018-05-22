@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chromeos/login/auth/user_context.h"
 
 class AccountId;
@@ -22,6 +24,14 @@ class PinStorageCryptohome {
  public:
   using BoolCallback = base::OnceCallback<void(bool)>;
 
+  // Check to see if the cryptohome implementation can store PINs.
+  static void IsSupported(BoolCallback result);
+
+  // Transforms |key| for usage in PIN. Returns nullopt if the key could not be
+  // transformed.
+  static base::Optional<Key> TransformKey(const AccountId& account_id,
+                                          const Key& key);
+
   PinStorageCryptohome();
   ~PinStorageCryptohome();
 
@@ -31,12 +41,20 @@ class PinStorageCryptohome {
               const std::string& pin,
               BoolCallback did_set);
   void RemovePin(const UserContext& user_context, BoolCallback did_remove);
+  void CanAuthenticate(const AccountId& account_id, BoolCallback result) const;
   void TryAuthenticate(const AccountId& account_id,
-                       const std::string& key,
-                       const Key::KeyType& key_type,
+                       const Key& key,
                        BoolCallback result);
 
  private:
+  void OnSystemSaltObtained(const std::string& system_salt);
+
+  bool salt_obtained_ = false;
+  std::string system_salt_;
+  std::vector<base::OnceClosure> system_salt_callbacks_;
+
+  base::WeakPtrFactory<PinStorageCryptohome> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(PinStorageCryptohome);
 };
 
