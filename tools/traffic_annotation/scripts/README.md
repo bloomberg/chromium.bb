@@ -1,7 +1,6 @@
 # Traffic Annotation Scripts
 This file describes the scripts in `tools/traffic_annotation/scripts`.
 
-
 # check_annotations.py
 Runs traffic annotation tests on the changed files or all repository. The tests
 are run in error resilient mode. Requires a compiled build directory to run.
@@ -19,3 +18,7 @@ This test may take a few hours to run and requires a compiled build directory.
 
 # annotation_tools.py
 Provides tools for annotation test scripts.
+
+# update_annotations_sheet.py
+This script updates the Google sheet that presents all network traffic
+annotations.
