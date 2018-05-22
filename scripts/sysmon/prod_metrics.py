@@ -24,10 +24,9 @@ logger = logging.getLogger(__name__)
 
 
 def collect_prod_hosts():
-  sinks = (_TsMonSink(_METRIC_ROOT_PATH), _LoggingSink())
   servers = list(_get_servers())
-  for sink in sinks:
-    sink.write_servers(servers)
+  sink = _TsMonSink(_METRIC_ROOT_PATH)
+  sink.write_servers(servers)
 
 
 def _get_servers():
@@ -103,6 +102,7 @@ class _TsMonSink(object):
     self._ignored_metric.reset()
 
     for server in servers:
+      logger.debug('Server: %r', server)
       fields = {
           'target_hostname': server.hostname,
           'target_data_center': server.data_center,
@@ -149,16 +149,3 @@ def _is_ignored(server):
   if server.hostname.startswith('chromeos15-'):
     return True
   return False
-
-
-class _LoggingSink(object):
-  """Sink using Python's logging facilities."""
-
-  def write_servers(self, servers):
-    """Write server information.
-
-    Args:
-      servers: Iterable of Server instances.
-    """
-    for server in servers:
-      logger.debug('Server: %r', server)
