@@ -1708,6 +1708,14 @@ const char kTranslateRankerEnforcementDescription[] =
     "Improved Translate UI triggering logic. TranslateRanker decides whether "
     "or not Translate UI should be triggered in a given context.";
 
+const char kTreatInsecureOriginAsSecureName[] =
+    "Insecure origins treated as secure";
+const char kTreatInsecureOriginAsSecureDescription[] =
+    "Treat given (insecure) origins as secure origins. Multiple origins can be "
+    "supplied as a comma-separated list. For the definition of secure "
+    "contexts, "
+    "see https://w3c.github.io/webappsec-secure-contexts/";
+
 const char kTrySupportedChannelLayoutsName[] =
     "Causes audio output streams to check if channel layouts other than the "
     "default hardware layout are available.";

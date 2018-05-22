@@ -4,4 +4,5 @@ include_rules = [
   "+components/strings/grit/components_strings.h",
   "+components/variations",
   "+ui/base",
+  "+url",
 ]

@@ -182,6 +182,9 @@ std::set<std::string> GetAllSwitchesAndFeaturesForTesting() {
       case flags_ui::FeatureEntry::SINGLE_DISABLE_VALUE:
         result.insert(entry.command_line_switch);
         break;
+      case flags_ui::FeatureEntry::ORIGIN_LIST_VALUE:
+        // Do nothing, origin list values are not added as feature flags.
+        break;
       case flags_ui::FeatureEntry::MULTI_VALUE:
         for (int j = 0; j < entry.num_options; ++j) {
           result.insert(entry.ChoiceForOption(j).command_line_switch);

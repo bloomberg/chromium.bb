@@ -72,6 +72,17 @@ void SetFeatureEntryEnabled(flags_ui::FlagsStorage* flags_storage,
                             const std::string& internal_name,
                             bool enable);
 
+// Sets a flag value with a list of origins given by |value|. Origins in |value|
+// can be separated by a comma or whitespace. Invalid URLs will be dropped when
+// setting the command line flag.
+// E.g. SetOriginListFlag("test-flag",
+//                        "http://example.test1 http://example.test2",
+//                        flags_storage);
+// will add --test-flag=http://example.test to the command line.
+void SetOriginListFlag(const std::string& internal_name,
+                       const std::string& value,
+                       flags_ui::FlagsStorage* flags_storage);
+
 // Removes all switches that were added to a command line by a previous call to
 // |ConvertFlagsToSwitches()|.
 void RemoveFlagsSwitches(base::CommandLine::SwitchMap* switch_list);

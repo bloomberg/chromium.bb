@@ -87,6 +87,11 @@
                   <span jsvalues=".innerHTML:description"></span> –
                   <span class="platforms" jscontent="supported_platforms.join(', ')"></span>
                 </p>
+                <div jsdisplay="origin_list_value!==null">
+                  <textarea class="experiment-origin-list-value"
+                      jsvalues=".internal_name:internal_name; .value:origin_list_value"
+                      tabindex="7"></textarea>
+                </div>
                 <a class="permalink" jsvalues="href: '#' + internal_name"
                     jscontent="'#' + internal_name" tabindex="6"></a>
               </div>
@@ -126,6 +131,11 @@
                   <span jsvalues=".innerHTML:description"></span> –
                   <span class="platforms" jscontent="supported_platforms.join(', ')"></span>
                 </p>
+                <div jsdisplay="origin_list_value!==null">
+                  <textarea class="experiment-origin-list-value"
+                      jsvalues=".internal_name:internal_name; .value:origin_list_value"
+                      tabindex="7"></textarea>
+                </div>
                 <a class="permalink" jsvalues="href: '#' + internal_name"
                     jscontent="'#' + internal_name" tabindex="6"></a>
               </div>
@@ -177,7 +187,7 @@
                 </p>
                 <a class="permalink"
                     jsvalues="href: '#' + internal_name"
-                    jscontent="'#' + internal_name" tabindex="7"></a>
+                    jscontent="'#' + internal_name" tabindex="8"></a>
               </div>
               <div class="flex experiment-actions">Not available on your platform.</div>
             </div>
@@ -194,7 +204,7 @@
         <div class="flex restart-notice" jstcache="0">$i18n{flagsRestartNotice}</div>
         <div class="flex">
 <if expr="not is_ios">
-          <button class="experiment-restart-button" type="button" tabindex="8">
+          <button class="experiment-restart-button" type="button" tabindex="9">
 <if expr="not is_chromeos">
           Relaunch Now
 </if>

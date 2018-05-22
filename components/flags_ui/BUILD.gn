@@ -26,6 +26,7 @@ static_library("flags_ui") {
     "//components/strings",
     "//components/variations",
     "//ui/base",
+    "//url",
   ]
 }
 

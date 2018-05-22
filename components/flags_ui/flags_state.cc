@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -25,6 +26,8 @@
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace flags_ui {
 
@@ -116,6 +119,7 @@ void AddInternalName(const FeatureEntry& e, std::set<std::string>* names) {
   switch (e.type) {
     case FeatureEntry::SINGLE_VALUE:
     case FeatureEntry::SINGLE_DISABLE_VALUE:
+    case FeatureEntry::ORIGIN_LIST_VALUE:
       names->insert(e.internal_name);
       break;
     case FeatureEntry::MULTI_VALUE:
@@ -134,6 +138,7 @@ bool ValidateFeatureEntry(const FeatureEntry& e) {
   switch (e.type) {
     case FeatureEntry::SINGLE_VALUE:
     case FeatureEntry::SINGLE_DISABLE_VALUE:
+    case FeatureEntry::ORIGIN_LIST_VALUE:
       DCHECK_EQ(0, e.num_options);
       DCHECK(!e.choices);
       return true;
@@ -174,6 +179,7 @@ bool IsDefaultValue(const FeatureEntry& entry,
   switch (entry.type) {
     case FeatureEntry::SINGLE_VALUE:
     case FeatureEntry::SINGLE_DISABLE_VALUE:
+    case FeatureEntry::ORIGIN_LIST_VALUE:
       return enabled_entries.count(entry.internal_name) == 0;
     case FeatureEntry::MULTI_VALUE:
     case FeatureEntry::ENABLE_DISABLE_VALUE:
@@ -233,6 +239,51 @@ base::FieldTrial* RegisterFeatureVariationParameters(
                   << " with group " << internal::kTrialGroupAboutFlags;
   }
   return trial;
+}
+
+// Returns true if |value| is safe to include in a command line string in the
+// form of --flag=value.
+bool IsSafeValue(const std::string& value) {
+  // Punctuation characters at the end ("-", ".", ":", "/") are allowed because
+  // origins can contain those (e.g. http://example.test). Comma is allowed
+  // because it's used as the separator character.
+  static const char kAllowedChars[] =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      "abcdefghijklmnopqrstuvwxyz"
+      "0123456789"
+      "-.:/,";
+  return value.find_first_not_of(kAllowedChars) == std::string::npos;
+}
+
+// Sanitizes |value| which contains a list of origins separated by whitespace
+// and/or comma. The sanitized value is added as a command line argument, so
+// this is a security critical operation: The sanitized value must have no
+// whitespaces, each individual origin must be separated by a comma, and each
+// origin must represent a url::Origin().
+std::string SanitizeOriginListFlag(const std::string& value) {
+  const std::string input = base::CollapseWhitespaceASCII(value, false);
+  const std::string delimiters = " ,";
+  base::StringTokenizer tokenizer(input, delimiters);
+  std::vector<std::string> origin_strings;
+  while (tokenizer.GetNext()) {
+    const std::string token = tokenizer.token();
+    if (token.empty()) {
+      continue;
+    }
+    const GURL url(token);
+    if (!url.is_valid() ||
+        (!url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsWSOrWSS())) {
+      continue;
+    }
+    const std::string origin = url::Origin::Create(url).Serialize();
+    if (!IsSafeValue(origin)) {
+      continue;
+    }
+    origin_strings.push_back(origin);
+  }
+  const std::string result = base::JoinString(origin_strings, ",");
+  CHECK(IsSafeValue(result));
+  return result;
 }
 
 }  // namespace
@@ -347,20 +398,20 @@ void FlagsState::SetFeatureEntryEnabled(FlagsStorage* flags_storage,
   std::set<std::string> enabled_entries;
   GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
 
-  const FeatureEntry* e = nullptr;
-  for (size_t i = 0; i < num_feature_entries_; ++i) {
-    if (feature_entries_[i].internal_name == internal_name) {
-      e = feature_entries_ + i;
-      break;
-    }
-  }
+  const FeatureEntry* e = FindFeatureEntryByName(internal_name);
   DCHECK(e);
 
-  if (e->type == FeatureEntry::SINGLE_VALUE) {
+  if (e->type == FeatureEntry::SINGLE_VALUE ||
+      e->type == FeatureEntry::ORIGIN_LIST_VALUE) {
     if (enable)
       needs_restart_ |= enabled_entries.insert(internal_name).second;
     else
       needs_restart_ |= (enabled_entries.erase(internal_name) > 0);
+
+    // If an origin list was enabled or disabled, update the command line flag.
+    if (e->type == FeatureEntry::ORIGIN_LIST_VALUE)
+      DidModifyOriginListFlag(*e, enable);
+
   } else if (e->type == FeatureEntry::SINGLE_DISABLE_VALUE) {
     if (!enable)
       needs_restart_ |= enabled_entries.insert(internal_name).second;
@@ -385,6 +436,21 @@ void FlagsState::SetFeatureEntryEnabled(FlagsStorage* flags_storage,
   }
 
   flags_storage->SetFlags(enabled_entries);
+}
+
+void FlagsState::SetOriginListFlag(const std::string& internal_name,
+                                   const std::string& value,
+                                   FlagsStorage* flags_storage) {
+  const FeatureEntry* entry = FindFeatureEntryByName(internal_name);
+  DCHECK(entry);
+
+  std::set<std::string> enabled_entries;
+  GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
+  // const bool enabled =
+  //    enabled_entries.find(entry->internal_name) != enabled_entries.end();
+  const bool enabled = base::ContainsKey(enabled_entries, entry->internal_name);
+  switch_values_[entry->command_line_switch] = value;
+  DidModifyOriginListFlag(*entry, enabled);
 }
 
 void FlagsState::RemoveFlagsSwitches(
@@ -547,6 +613,14 @@ void FlagsState::GetFlagFeatureEntries(
                 (is_default_value &&
                  entry.type == FeatureEntry::SINGLE_DISABLE_VALUE));
         break;
+      case FeatureEntry::ORIGIN_LIST_VALUE:
+        data->SetBoolean("enabled", !is_default_value);
+        switch_values_[entry.internal_name] =
+            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                entry.command_line_switch);
+        data->SetString("origin_list_value",
+                        switch_values_[entry.internal_name]);
+        break;
       case FeatureEntry::MULTI_VALUE:
       case FeatureEntry::ENABLE_DISABLE_VALUE:
       case FeatureEntry::FEATURE_VALUE:
@@ -665,6 +739,14 @@ void FlagsState::AddSwitchesToCommandLine(
       continue;
     }
 
+    const FeatureEntry* feature_entry = FindFeatureEntryByName(entry_name);
+    if (feature_entry &&
+        feature_entry->type == FeatureEntry::ORIGIN_LIST_VALUE) {
+      // This is not a feature value that can be enabled/disabled, it's a
+      // command line argument that takes a list of origins. Skip it.
+      continue;
+    }
+
     const SwitchEntry& entry = entry_it->second;
     if (!entry.feature_name.empty()) {
       feature_switches[entry.feature_name] = entry.feature_state;
@@ -780,6 +862,16 @@ void FlagsState::GenerateFlagsToSwitchesMapping(
         AddSwitchMapping(e.internal_name, e.command_line_switch,
                          e.command_line_value, name_to_switch_map);
         break;
+
+      case FeatureEntry::ORIGIN_LIST_VALUE: {
+        const std::string value =
+            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                e.command_line_switch);
+        AddSwitchMapping(e.internal_name, e.command_line_switch, value,
+                         name_to_switch_map);
+        break;
+      }
+
       case FeatureEntry::MULTI_VALUE:
         for (int j = 0; j < e.num_options; ++j) {
           AddSwitchMapping(
@@ -787,6 +879,7 @@ void FlagsState::GenerateFlagsToSwitchesMapping(
               e.ChoiceForOption(j).command_line_value, name_to_switch_map);
         }
         break;
+
       case FeatureEntry::ENABLE_DISABLE_VALUE:
         AddSwitchMapping(e.NameForOption(0), std::string(), std::string(),
                          name_to_switch_map);
@@ -795,6 +888,7 @@ void FlagsState::GenerateFlagsToSwitchesMapping(
         AddSwitchMapping(e.NameForOption(2), e.disable_command_line_switch,
                          e.disable_command_line_value, name_to_switch_map);
         break;
+
       case FeatureEntry::FEATURE_VALUE:
       case FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
         for (int j = 0; j < e.num_options; ++j) {
@@ -811,6 +905,42 @@ void FlagsState::GenerateFlagsToSwitchesMapping(
         break;
     }
   }
+}
+
+void FlagsState::DidModifyOriginListFlag(const FeatureEntry& entry,
+                                         bool enabled) {
+  // Remove the switch if it exists.
+  base::CommandLine* current_cl = base::CommandLine::ForCurrentProcess();
+  base::CommandLine new_cl(current_cl->GetProgram());
+  const base::CommandLine::SwitchMap switches = current_cl->GetSwitches();
+  for (const auto& it : switches) {
+    const auto& switch_name = it.first;
+    const auto& switch_value = it.second;
+    if (switch_name != entry.command_line_switch) {
+      if (switch_value.empty()) {
+        new_cl.AppendSwitch(switch_name);
+      } else {
+        new_cl.AppendSwitchNative(switch_name, switch_value);
+      }
+    }
+  }
+  *current_cl = new_cl;
+
+  if (enabled) {
+    current_cl->AppendSwitchASCII(
+        entry.command_line_switch,
+        SanitizeOriginListFlag(switch_values_[entry.command_line_switch]));
+  }
+}
+
+const FeatureEntry* FlagsState::FindFeatureEntryByName(
+    const std::string& internal_name) const {
+  for (size_t i = 0; i < num_feature_entries_; ++i) {
+    if (feature_entries_[i].internal_name == internal_name) {
+      return feature_entries_ + i;
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace flags_ui
