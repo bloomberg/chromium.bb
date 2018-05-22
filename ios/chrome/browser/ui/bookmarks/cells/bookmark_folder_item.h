@@ -34,6 +34,23 @@ typedef NS_ENUM(NSInteger, BookmarkFolderStyle) {
 @end
 
 // TableViewCell that displays BookmarkFolderItem data.
+@interface TableViewBookmarkFolderCell : UITableViewCell
+
+// The leading constraint used to set the cell's leading indentation. The
+// default indentationLevel property doesn't affect any custom Cell subviews,
+// changing |indentationConstraint| constant property will.
+@property(nonatomic, strong, readonly)
+    NSLayoutConstraint* indentationConstraint;
+// The folder image displayed by this cell.
+@property(nonatomic, strong) UIImageView* folderImageView;
+// The folder title displayed by this cell.
+@property(nonatomic, strong) UILabel* folderTitleLabel;
+// Whether the cell is displaying a checkmark.
+@property(nonatomic, assign, getter=isChecked) BOOL checked;
+
+@end
+
+// TableViewCell that displays BookmarkFolderItem data.
 @interface LegacyTableViewBookmarkFolderCell : UITableViewCell
 
 // Whether the cell is displaying a checkmark.

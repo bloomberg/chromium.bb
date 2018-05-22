@@ -76,6 +76,15 @@ imageset("bookmark_blue_folder") {
   ]
 }
 
+imageset("bookmark_blue_new_folder") {
+  sources = [
+    "bookmark_blue_new_folder.imageset/Contents.json",
+    "bookmark_blue_new_folder.imageset/bookmark_blue_new_folder.png",
+    "bookmark_blue_new_folder.imageset/bookmark_blue_new_folder@2x.png",
+    "bookmark_blue_new_folder.imageset/bookmark_blue_new_folder@3x.png",
+  ]
+}
+
 imageset("bookmark_gray_back") {
   sources = [
     "bookmark_gray_back.imageset/Contents.json",

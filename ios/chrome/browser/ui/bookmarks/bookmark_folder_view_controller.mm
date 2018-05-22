@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
@@ -113,9 +114,15 @@ using bookmarks::BookmarkNode;
   DCHECK(bookmarkModel);
   DCHECK(bookmarkModel->loaded());
   DCHECK(selectedFolder == NULL || selectedFolder->is_folder());
-  self =
-      [super initWithTableViewStyle:UITableViewStylePlain
-                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    self =
+        [super initWithTableViewStyle:UITableViewStylePlain
+                          appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  } else {
+    self =
+        [super initWithTableViewStyle:UITableViewStylePlain
+                          appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  }
   if (self) {
     _allowsCancel = allowsCancel;
     _allowsNewFolders = allowsNewFolders;
@@ -187,12 +194,17 @@ using bookmarks::BookmarkNode;
   // Configure the table view.
   self.tableView.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-  self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-
-  // To support the pre UIRefresh we need to set the insets since
-  // UITableViewCell lines itself up with the tableView separator insets. The
-  // following line won't be needed for UIRefresh.
-  [self.tableView setSeparatorInset:UIEdgeInsetsMake(0, 51, 0, 0)];
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    // Add a tableFooterView in order to disable separators at the bottom of the
+    // tableView.
+    self.tableView.tableFooterView = [[UIView alloc] init];
+  } else {
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    // To support the pre UIRefresh we need to set the insets since
+    // UITableViewCell lines itself up with the tableView separator insets. The
+    // following line won't be needed for UIRefresh.
+    [self.tableView setSeparatorInset:UIEdgeInsetsMake(0, 51, 0, 0)];
+  }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -391,19 +403,30 @@ using bookmarks::BookmarkNode;
     [self.tableViewModel
         removeSectionWithIdentifier:SectionIdentifierBookmarkFolders];
 
-  // Add default add Folder section if needed.
+  // Creates Folders Section
+  [self.tableViewModel
+      addSectionWithIdentifier:SectionIdentifierBookmarkFolders];
+
+  // Adds default "Add Folder" item if needed.
   if ([self shouldShowDefaultSection]) {
-    [self.tableViewModel addSectionWithIdentifier:SectionIdentifierAddFolder];
     BookmarkFolderItem* createFolderItem =
         [[BookmarkFolderItem alloc] initWithType:ItemTypeBookmarkFolder
                                            style:BookmarkFolderStyleNewFolder];
-    [self.tableViewModel addItem:createFolderItem
-         toSectionWithIdentifier:SectionIdentifierAddFolder];
+    // On UIRefresh we add the "Add Folder" Item to the same section as the rest
+    // of the folder entries.
+    if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+      [self.tableViewModel addItem:createFolderItem
+           toSectionWithIdentifier:SectionIdentifierBookmarkFolders];
+    } else {
+      [self.tableViewModel
+          insertSectionWithIdentifier:SectionIdentifierAddFolder
+                              atIndex:0];
+      [self.tableViewModel addItem:createFolderItem
+           toSectionWithIdentifier:SectionIdentifierAddFolder];
+    }
   }
 
   // Add Folders entries.
-  [self.tableViewModel
-      addSectionWithIdentifier:SectionIdentifierBookmarkFolders];
   for (NSUInteger row = 0; row < _folders.size(); row++) {
     const BookmarkNode* folderNode = self.folders[row];
     BookmarkFolderItem* folderItem = [[BookmarkFolderItem alloc]
