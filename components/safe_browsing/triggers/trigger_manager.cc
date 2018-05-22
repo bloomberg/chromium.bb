@@ -195,7 +195,8 @@ bool TriggerManager::StartCollectingThreatDetailsWithReason(
     const SBErrorOptions& error_display_options,
     TriggerManagerReason* reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!CanStartDataCollection(error_display_options, trigger_type))
+  if (!CanStartDataCollectionWithReason(error_display_options, trigger_type,
+                                        reason))
     return false;
 
   // Ensure we're not already collecting ThreatDetails on this tab. Create an

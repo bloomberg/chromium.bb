@@ -45,9 +45,10 @@ class SuspiciousSiteTriggerTest : public content::RenderViewHostTestHarness {
     prefs_.SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, true);
   }
 
-  void CreateTrigger() {
+  void CreateTrigger(bool monitor_mode) {
     safe_browsing::SuspiciousSiteTrigger::CreateForWebContents(
-        web_contents(), &trigger_manager_, &prefs_, nullptr, nullptr);
+        web_contents(), &trigger_manager_, &prefs_, nullptr, nullptr,
+        monitor_mode);
     safe_browsing::SuspiciousSiteTrigger* trigger =
         safe_browsing::SuspiciousSiteTrigger::FromWebContents(web_contents());
     // Give the trigger a test task runner that we can synchronize on.
@@ -151,7 +152,7 @@ class SuspiciousSiteTriggerTest : public content::RenderViewHostTestHarness {
 TEST_F(SuspiciousSiteTriggerTest, RegularPageNonSuspicious) {
   // In a normal case where there are no suspicious URLs on the page, the
   // trigger should not fire.
-  CreateTrigger();
+  CreateTrigger(/*monitor_mode=*/false);
 
   EXPECT_CALL(*get_trigger_manager(),
               StartCollectingThreatDetailsWithReason(_, _, _, _, _, _, _))
@@ -177,7 +178,7 @@ TEST_F(SuspiciousSiteTriggerTest, RegularPageNonSuspicious) {
 TEST_F(SuspiciousSiteTriggerTest, SuspiciousHitDuringLoad) {
   // When a suspicious site is detected in the middle of a page load, a report
   // is created after the page load has finished.
-  CreateTrigger();
+  CreateTrigger(/*monitor_mode=*/false);
 
   EXPECT_CALL(*get_trigger_manager(),
               StartCollectingThreatDetailsWithReason(_, _, _, _, _, _, _))
@@ -215,7 +216,7 @@ TEST_F(SuspiciousSiteTriggerTest, SuspiciousHitDuringLoad) {
 TEST_F(SuspiciousSiteTriggerTest, SuspiciousHitAfterLoad) {
   // When a suspicious site is detected in after a page load, a report is
   // created immediately.
-  CreateTrigger();
+  CreateTrigger(/*monitor_mode=*/false);
 
   EXPECT_CALL(*get_trigger_manager(),
               StartCollectingThreatDetailsWithReason(_, _, _, _, _, _, _))
@@ -252,7 +253,7 @@ TEST_F(SuspiciousSiteTriggerTest, SuspiciousHitAfterLoad) {
 
 TEST_F(SuspiciousSiteTriggerTest, ReportRejectedByTriggerManager) {
   // If the trigger manager rejects the report then no report is sent.
-  CreateTrigger();
+  CreateTrigger(/*monitor_mode=*/false);
 
   EXPECT_CALL(*get_trigger_manager(),
               StartCollectingThreatDetailsWithReason(_, _, _, _, _, _, _))
@@ -294,7 +295,7 @@ TEST_F(SuspiciousSiteTriggerTest, ReportRejectedByTriggerManager) {
 TEST_F(SuspiciousSiteTriggerTest, NewNavigationMidLoad_NotSuspicious) {
   // Exercise what happens when a new navigation begins in the middle of a page
   // load when no suspicious site is detected.
-  CreateTrigger();
+  CreateTrigger(/*monitor_mode=*/false);
 
   EXPECT_CALL(*get_trigger_manager(),
               StartCollectingThreatDetailsWithReason(_, _, _, _, _, _, _))
@@ -325,7 +326,7 @@ TEST_F(SuspiciousSiteTriggerTest, NewNavigationMidLoad_Suspicious) {
   // load when a suspicious site was detected. The report of the first site
   // must be cancelled because we were waiting for the first load to finish
   // before beginning the report.
-  CreateTrigger();
+  CreateTrigger(/*monitor_mode=*/false);
 
   EXPECT_CALL(*get_trigger_manager(),
               StartCollectingThreatDetailsWithReason(_, _, _, _, _, _, _))
@@ -357,5 +358,69 @@ TEST_F(SuspiciousSiteTriggerTest, NewNavigationMidLoad_Suspicious) {
   // Ensure that the repot got cancelled by the second load.
   ExpectEventHistogramCount(
       SuspiciousSiteTriggerEvent::PENDING_REPORT_CANCELLED_BY_LOAD, 1);
+}
+
+TEST_F(SuspiciousSiteTriggerTest, MonitorMode_NotSuspicious) {
+  // Testing the trigger in monitoring mode, it should never send reports.
+  // In a normal case where there are no suspicious URLs on the page, the
+  // trigger should not fire.
+  CreateTrigger(/*monitor_mode=*/true);
+
+  EXPECT_CALL(*get_trigger_manager(),
+              StartCollectingThreatDetailsWithReason(_, _, _, _, _, _, _))
+      .Times(0);
+  EXPECT_CALL(*get_trigger_manager(),
+              FinishCollectingThreatDetails(_, _, _, _, _, _))
+      .Times(0);
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kCleanUrl);
+  CreateAndNavigateSubFrame(kCleanUrl, main_frame);
+  CreateAndNavigateSubFrame(kCleanUrl, main_frame);
+  FinishAllNavigations();
+
+  // One page load start and finish. No suspicious sites and no reports sent.
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::PAGE_LOAD_START, 1);
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::PAGE_LOAD_FINISH, 1);
+  ExpectEventHistogramCount(
+      SuspiciousSiteTriggerEvent::SUSPICIOUS_SITE_DETECTED, 0);
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::REPORT_STARTED, 0);
+  ExpectNoReportRejection();
+}
+
+TEST_F(SuspiciousSiteTriggerTest, MonitorMode_SuspiciousHitDuringLoad) {
+  // Testing the trigger in monitoring mode, it should never send reports.
+  // When a suspicious site is detected in the middle of a page load, a report
+  // is created after the page load has finished.
+  CreateTrigger(/*monitor_mode=*/true);
+
+  EXPECT_CALL(*get_trigger_manager(),
+              StartCollectingThreatDetailsWithReason(_, _, _, _, _, _, _))
+      .Times(0);
+  EXPECT_CALL(*get_trigger_manager(),
+              FinishCollectingThreatDetails(_, _, _, _, _, _))
+      .Times(0);
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kCleanUrl);
+  CreateAndNavigateSubFrame(kSuspiciousUrl, main_frame);
+  TriggerSuspiciousSite();
+  CreateAndNavigateSubFrame(kCleanUrl, main_frame);
+  FinishAllNavigations();
+
+  WaitForTaskRunnerIdle();
+
+  // One page load start and finish. One suspicious site detected and one
+  // possible report that gets skipped.
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::PAGE_LOAD_START, 1);
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::PAGE_LOAD_FINISH, 1);
+  ExpectEventHistogramCount(
+      SuspiciousSiteTriggerEvent::SUSPICIOUS_SITE_DETECTED, 1);
+  ExpectEventHistogramCount(
+      SuspiciousSiteTriggerEvent::REPORT_POSSIBLE_BUT_SKIPPED, 1);
+
+  // No reports are started or finished, no delay timer fired.
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::REPORT_STARTED, 0);
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::REPORT_FINISHED, 0);
+  ExpectEventHistogramCount(SuspiciousSiteTriggerEvent::REPORT_DELAY_TIMER, 0);
+  ExpectNoReportRejection();
 }
 }  // namespace safe_browsing

@@ -60,9 +60,12 @@ enum class SuspiciousSiteTriggerEvent {
   // The trigger tried to finish the report but it was rejected by the trigger
   // manager.
   REPORT_FINISH_FAILED = 8,
+  // The trigger could have sent a report but it was skipped, typically because
+  // the trigger was out of quota.
+  REPORT_POSSIBLE_BUT_SKIPPED = 9,
   // New events must be added before kMaxValue, and the value of kMaxValue
   // updated.
-  kMaxValue = REPORT_FINISH_FAILED
+  kMaxValue = REPORT_POSSIBLE_BUT_SKIPPED
 };
 
 // Notify a suspicious site trigger on a particular tab that a suspicious site
@@ -95,9 +98,13 @@ class SuspiciousSiteTrigger
     LOADING_WILL_REPORT = 2,
     // A page load finished and a report for the page has started.
     REPORT_STARTED = 3,
+    // The trigger is in monitoring mode where it listens for events and
+    // increments some metrics but never sends reports. The trigger will never
+    // leave this state.
+    MONITOR_MODE = 4,
     // New states must be added before kMaxValue and the value of kMaxValue
     // updated.
-    kMaxValue = REPORT_STARTED
+    kMaxValue = MONITOR_MODE
   };
 
   ~SuspiciousSiteTrigger() override;
@@ -107,7 +114,8 @@ class SuspiciousSiteTrigger
       TriggerManager* trigger_manager,
       PrefService* prefs,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      history::HistoryService* history_service);
+      history::HistoryService* history_service,
+      bool monitor_mode);
 
   // content::WebContentsObserver implementations.
   void DidStartLoading() override;
@@ -121,13 +129,13 @@ class SuspiciousSiteTrigger
   friend class content::WebContentsUserData<SuspiciousSiteTrigger>;
   friend class SuspiciousSiteTriggerTest;
 
-
   SuspiciousSiteTrigger(
       content::WebContents* web_contents,
       TriggerManager* trigger_manager,
       PrefService* prefs,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      history::HistoryService* history_service);
+      history::HistoryService* history_service,
+      bool monitor_mode);
 
   // Tries to start a report. Returns whether a report started successfully.
   // If a report is started, a delayed callback will also begin to notify
@@ -136,6 +144,11 @@ class SuspiciousSiteTrigger
 
   // Calls into the trigger manager to finish the active report and send it.
   void FinishReport();
+
+  // Called when a suspicious site is detected while in monitor mode. We update
+  // metrics if we determine that a report could have been sent had the trigger
+  // been active.
+  void SuspiciousSiteDetectedWhenMonitoring();
 
   // Called when the report delay timer fires, indicating that the active
   // report should be completed and sent.

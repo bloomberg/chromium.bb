@@ -55,10 +55,12 @@ SuspiciousSiteTrigger::SuspiciousSiteTrigger(
     TriggerManager* trigger_manager,
     PrefService* prefs,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    history::HistoryService* history_service)
+    history::HistoryService* history_service,
+    bool monitor_mode)
     : content::WebContentsObserver(web_contents),
       finish_report_delay_ms_(kSuspiciousSiteCollectionPeriodMilliseconds),
-      current_state_(TriggerState::IDLE),
+      current_state_(monitor_mode ? TriggerState::MONITOR_MODE
+                                  : TriggerState::IDLE),
       trigger_manager_(trigger_manager),
       prefs_(prefs),
       url_loader_factory_(url_loader_factory),
@@ -75,12 +77,13 @@ void SuspiciousSiteTrigger::CreateForWebContents(
     TriggerManager* trigger_manager,
     PrefService* prefs,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    history::HistoryService* history_service) {
+    history::HistoryService* history_service,
+    bool monitor_mode) {
   if (!FromWebContents(web_contents)) {
-    web_contents->SetUserData(UserDataKey(),
-                              base::WrapUnique(new SuspiciousSiteTrigger(
-                                  web_contents, trigger_manager, prefs,
-                                  url_loader_factory, history_service)));
+    web_contents->SetUserData(
+        UserDataKey(), base::WrapUnique(new SuspiciousSiteTrigger(
+                           web_contents, trigger_manager, prefs,
+                           url_loader_factory, history_service, monitor_mode)));
   }
 }
 
@@ -133,6 +136,20 @@ void SuspiciousSiteTrigger::FinishReport() {
   }
 }
 
+void SuspiciousSiteTrigger::SuspiciousSiteDetectedWhenMonitoring() {
+  DCHECK_EQ(TriggerState::MONITOR_MODE, current_state_);
+  SBErrorOptions error_options =
+      TriggerManager::GetSBErrorDisplayOptions(*prefs_, *web_contents());
+  TriggerManagerReason reason;
+  if (trigger_manager_->CanStartDataCollectionWithReason(
+          error_options, TriggerType::SUSPICIOUS_SITE, &reason) ||
+      reason == TriggerManagerReason::DAILY_QUOTA_EXCEEDED) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kSuspiciousSiteTriggerEventMetricName,
+        SuspiciousSiteTriggerEvent::REPORT_POSSIBLE_BUT_SKIPPED);
+  }
+}
+
 void SuspiciousSiteTrigger::DidStartLoading() {
   UMA_HISTOGRAM_ENUMERATION(kSuspiciousSiteTriggerEventMetricName,
                             SuspiciousSiteTriggerEvent::PAGE_LOAD_START);
@@ -164,6 +181,10 @@ void SuspiciousSiteTrigger::DidStartLoading() {
       current_state_ = TriggerState::LOADING;
       FinishReport();
       return;
+
+    case TriggerState::MONITOR_MODE:
+      // No-op, monitoring only.
+      return;
   }
 }
 
@@ -194,6 +215,10 @@ void SuspiciousSiteTrigger::DidStopLoading() {
 
     case TriggerState::REPORT_STARTED:
       // No-op. Let the report continue running.
+      return;
+
+    case TriggerState::MONITOR_MODE:
+      // No-op, monitoring only.
       return;
   }
 }
@@ -229,6 +254,11 @@ void SuspiciousSiteTrigger::SuspiciousSiteDetected() {
     case TriggerState::REPORT_STARTED:
       // No-op. The current report should capture all suspicious sites.
       return;
+
+    case TriggerState::MONITOR_MODE:
+      // We monitor how often a suspicious site hit could result in a report.
+      SuspiciousSiteDetectedWhenMonitoring();
+      return;
   }
 }
 
@@ -241,6 +271,7 @@ void SuspiciousSiteTrigger::ReportDelayTimerFired() {
     case TriggerState::IDLE:
     case TriggerState::LOADING:
     case TriggerState::LOADING_WILL_REPORT:
+    case TriggerState::MONITOR_MODE:
       // Invalid, expecting to be in REPORT_STARTED state.
       return;
 

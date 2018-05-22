@@ -57,12 +57,16 @@ void TriggerCreator::MaybeCreateTriggersForWebContents(
         HistoryServiceFactory::GetForProfile(
             profile, ServiceAccessType::EXPLICIT_ACCESS));
   }
-  if (trigger_manager->CanStartDataCollection(options,
-                                              TriggerType::SUSPICIOUS_SITE)) {
+  TriggerManagerReason reason;
+  if (trigger_manager->CanStartDataCollectionWithReason(
+          options, TriggerType::SUSPICIOUS_SITE, &reason) ||
+      reason == TriggerManagerReason::DAILY_QUOTA_EXCEEDED) {
+    bool monitor_mode = reason == TriggerManagerReason::DAILY_QUOTA_EXCEEDED;
     safe_browsing::SuspiciousSiteTrigger::CreateForWebContents(
         web_contents, trigger_manager, profile->GetPrefs(), url_loader_factory,
         HistoryServiceFactory::GetForProfile(
-            profile, ServiceAccessType::EXPLICIT_ACCESS));
+            profile, ServiceAccessType::EXPLICIT_ACCESS),
+        monitor_mode);
   }
 }
 
