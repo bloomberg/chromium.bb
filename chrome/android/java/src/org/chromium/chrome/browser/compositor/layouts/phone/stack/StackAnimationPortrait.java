@@ -54,7 +54,7 @@ class StackAnimationPortrait extends StackAnimation {
             StackTab tab = tabs[i];
 
             tab.resetOffset();
-            tab.setScale(SCALE_AMOUNT);
+            tab.setScale(mStack.getScaleAmount());
             tab.setAlpha(1.f);
             tab.getLayoutTab().setToolbarAlpha(0.f);
             tab.getLayoutTab().setBorderScale(1.f);
@@ -79,8 +79,8 @@ class StackAnimationPortrait extends StackAnimation {
                         ENTER_STACK_RESIZE_DELAY);
                 addAnimation(set, tab, Y_IN_STACK_INFLUENCE, 0.0f, 1.0f,
                         ENTER_STACK_BORDER_ALPHA_DURATION, 0);
-                addAnimation(
-                        set, tab, SCALE, 1.0f, SCALE_AMOUNT, ENTER_STACK_BORDER_ALPHA_DURATION, 0);
+                addAnimation(set, tab, SCALE, 1.0f, mStack.getScaleAmount(),
+                        ENTER_STACK_BORDER_ALPHA_DURATION, 0);
                 addAnimation(set, tab.getLayoutTab(), TOOLBAR_ALPHA, 1.f, 0.f,
                         ENTER_STACK_BORDER_ALPHA_DURATION, ENTER_STACK_TOOLBAR_ALPHA_DELAY);
                 addAnimation(set, tab.getLayoutTab(), TOOLBAR_Y_OFFSET, 0.f,

@@ -13,6 +13,16 @@ import org.chromium.chrome.browser.compositor.layouts.phone.StackLayoutBase;
  */
 public class NonOverlappingStack extends Stack {
     /**
+     * The scale the tabs should be shown at when there's exactly one tab open.
+     */
+    private static final float SCALE_FRACTION_SINGLE_TAB = 0.80f;
+
+    /**
+     * The scale the tabs should be shown at when there are two or more tabs open.
+     */
+    private static final float SCALE_FRACTION_MULTIPLE_TABS = 0.60f;
+
+    /**
      * The percentage of the screen that defines the spacing between tabs by default (no pinch).
      */
     private static final float SPACING_SCREEN = 1.0f;
@@ -48,6 +58,20 @@ public class NonOverlappingStack extends Stack {
      */
     public NonOverlappingStack(Context context, StackLayoutBase layout) {
         super(context, layout);
+    }
+
+    private int getNonDyingTabCount() {
+        int dyingCount = 0;
+        for (int i = 0; i < mStackTabs.length; i++) {
+            if (mStackTabs[i].isDying()) dyingCount++;
+        }
+        return mStackTabs.length - dyingCount;
+    }
+
+    @Override
+    public float getScaleAmount() {
+        if (getNonDyingTabCount() > 1) return SCALE_FRACTION_MULTIPLE_TABS;
+        return SCALE_FRACTION_SINGLE_TAB;
     }
 
     @Override
@@ -99,8 +123,8 @@ public class NonOverlappingStack extends Stack {
 
     @Override
     protected int computeSpacing(int layoutTabCount) {
-        return (int) Math.round(getScrollDimensionSize() * StackAnimation.SCALE_AMOUNT
-                + EXTRA_SPACE_BETWEEN_TABS_DP);
+        return (int) Math.round(
+                getScrollDimensionSize() * getScaleAmount() + EXTRA_SPACE_BETWEEN_TABS_DP);
     }
 
     @Override
@@ -134,5 +158,13 @@ public class NonOverlappingStack extends Stack {
     @Override
     public float scrollToScreen(float scrollSpace) {
         return scrollSpace;
+    }
+
+    @Override
+    public float getMaxTabHeight() {
+        // We want to maintain a constant tab height (via cropping) even as the width is changed as
+        // a result of changing the scale.
+        if (getNonDyingTabCount() > 1) return super.getMaxTabHeight();
+        return (SCALE_FRACTION_MULTIPLE_TABS / SCALE_FRACTION_SINGLE_TAB) * super.getMaxTabHeight();
     }
 }

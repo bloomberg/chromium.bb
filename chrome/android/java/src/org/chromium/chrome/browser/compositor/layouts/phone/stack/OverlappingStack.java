@@ -19,6 +19,8 @@ import org.chromium.ui.base.LocalizationUtils;
  * The overlapping tab stack we use when the HorizontalTabSwitcherAndroid flag is not enabled.
  */
 public class OverlappingStack extends Stack {
+    private static final float SCALE_AMOUNT = 0.90f;
+
     /**
      * The percentage of the screen that defines the spacing between tabs by default (no pinch).
      */
@@ -69,6 +71,11 @@ public class OverlappingStack extends Stack {
      */
     public OverlappingStack(Context context, StackLayoutBase layout) {
         super(context, layout);
+    }
+
+    @Override
+    public float getScaleAmount() {
+        return SCALE_AMOUNT;
     }
 
     @Override
