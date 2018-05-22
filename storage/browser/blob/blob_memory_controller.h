@@ -170,8 +170,8 @@ class STORAGE_EXPORT BlobMemoryController {
 
   const BlobStorageLimits& limits() const { return limits_; }
   void set_limits_for_testing(const BlobStorageLimits& limits) {
+    OnStorageLimitsCalculated(limits);
     manual_limits_set_ = true;
-    limits_ = limits;
   }
 
   void ShrinkMemoryAllocation(ShareableBlobDataItem* item);
@@ -189,6 +189,13 @@ class STORAGE_EXPORT BlobMemoryController {
 
   size_t GetAvailableMemoryForBlobs() const;
   uint64_t GetAvailableFileSpaceForBlobs() const;
+
+  // The given callback will be called when we've finished calculating blob
+  // storage limits. Usually limits are calculated at some point after startup,
+  // but calling this method may cause them to be calculated sooner.
+  // If limits have already been calculated |callback| will be called
+  // synchronously.
+  void CallWhenStorageLimitsAreKnown(base::OnceClosure callback);
 
  private:
   class FileQuotaAllocationTask;
@@ -263,6 +270,9 @@ class STORAGE_EXPORT BlobMemoryController {
   // our configuration task.
   bool manual_limits_set_ = false;
   BlobStorageLimits limits_;
+  bool did_schedule_limit_calculation_ = false;
+  bool did_calculate_storage_limits_ = false;
+  std::vector<base::OnceClosure> on_calculate_limits_callbacks_;
 
   // Memory bookkeeping. These numbers are all disjoint.
   // This is the amount of memory we're using for blobs in RAM, including the
