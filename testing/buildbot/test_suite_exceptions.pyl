@@ -2381,6 +2381,25 @@
       'Linux TSan Tests',
     ],
   },
+  'performance_test_suite': {
+    'modifications': {
+      'Mac10.13 Tests (dbg)': {
+        'args': [
+          '--browser=debug',
+        ],
+      },
+      'Win10 Tests x64 (dbg)': {
+        'args': [
+          '--browser=debug',
+        ],
+      },
+      'Win7 Tests (dbg)(1)': {
+        'args': [
+          '--browser=debug',
+        ],
+      },
+    }
+  },
   'telemetry_perf_unittests': {
     'modifications': {
       # chromium.android
