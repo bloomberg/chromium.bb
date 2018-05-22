@@ -28,6 +28,19 @@ void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
   std::vector<ProcessCoordinationUnitImpl*> processes =
       ProcessCoordinationUnitImpl::GetAllProcessCoordinationUnits();
 
+  base::TimeDelta time_since_last_measurement;
+  if (!last_measurement_batch_time_.is_null()) {
+    // Use the end of the measurement batch as a proxy for when every
+    // measurement was acquired. For the purpose of estimating CPU usage
+    // over the duration from last measurement, it'll be near enough. The error
+    // will average out, and there's an inherent race in knowing when a
+    // measurement was actually acquired in any case.
+    time_since_last_measurement =
+        measurement_batch->batch_ended_time - last_measurement_batch_time_;
+    DCHECK_LE(base::TimeDelta(), time_since_last_measurement);
+  }
+  last_measurement_batch_time_ = measurement_batch->batch_ended_time;
+
   for (const auto& measurement : measurement_batch->measurements) {
     for (auto it = processes.begin(); it != processes.end(); ++it) {
       ProcessCoordinationUnitImpl* process = *it;
@@ -37,7 +50,21 @@ void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
       //     PID.
       if (process->GetProperty(mojom::PropertyType::kPID, &process_pid) &&
           static_cast<base::ProcessId>(process_pid) == measurement->pid) {
-        process->SetCPUUsage(measurement->cpu_usage);
+        if (process->cumulative_cpu_usage().is_zero() ||
+            time_since_last_measurement.is_zero()) {
+          // Imitate the behavior of GetPlatformIndependentCPUUsage, which
+          // yields zero for the initial measurement of each process.
+          process->SetCPUUsage(0.0);
+        } else {
+          base::TimeDelta cumulative_cpu_delta =
+              measurement->cpu_usage - process->cumulative_cpu_usage();
+
+          double cpu_usage =
+              static_cast<double>(cumulative_cpu_delta.InMicroseconds() * 100) /
+              time_since_last_measurement.InMicroseconds();
+          process->SetCPUUsage(cpu_usage);
+        }
+        process->set_cumulative_cpu_usage(measurement->cpu_usage);
         process->set_private_footprint_kb(measurement->private_footprint_kb);
 
         // Remove found processes.

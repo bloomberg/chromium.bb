@@ -28,11 +28,8 @@ struct ProcessResourceMeasurement {
   // Identifies the process associated with this measurement.
   mojo_base.mojom.ProcessId pid;
 
-  // The CPU usage accrued to this process since it was last measured, this is
-  // in units of CPU cores over the measurement interval.
-  // See base/process/process_metrics.h for the details, but a 1.0 means a
-  // single core was consumed fully since last measurement.
-  double cpu_usage = 0.0;
+  // The cumulative CPU usage accrued to this process from its start.
+  mojo_base.mojom.TimeDelta cpu_usage;
 
   // The private memory footprint of the process.
   uint32 private_footprint_kb = 0;
@@ -42,8 +39,8 @@ struct ProcessResourceMeasurementBatch {
   // These times bracket the capture of the entire dump, e.g. each distinct
   // measurement is captured somewhere between |batch_started_time| and
   // |batch_ended_time|.
-  mojo_base.mojom.Time batch_started_time;
-  mojo_base.mojom.Time batch_ended_time;
+  mojo_base.mojom.TimeTicks batch_started_time;
+  mojo_base.mojom.TimeTicks batch_ended_time;
 
   array<ProcessResourceMeasurement> measurements;
 };
