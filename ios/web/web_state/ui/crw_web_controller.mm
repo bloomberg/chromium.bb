@@ -271,6 +271,10 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // |self.view| from within this class, as |self.view| triggers creation while
   // |self.containerView| will return nil if the view hasn't been instantiated.
   CRWWebControllerContainerView* _containerView;
+  // YES if the current URL load was triggered in Web Controller. NO by default
+  // and after web usage was disabled. Used by |-loadCurrentURLIfNecessary| to
+  // prevent extra loads.
+  BOOL _currentURLLoadWasTrigerred;
   // If |_contentView| contains a native view rather than a web view, this
   // is its controller. If it's a web view, this is nil.
   id<CRWNativeContent> _nativeController;
@@ -1068,6 +1072,7 @@ GURL URLEscapedForHistory(const GURL& url) {
       _touchTrackingRecognizer.touchTrackingDelegate = nil;
       _touchTrackingRecognizer = nil;
       [self resetContainerView];
+      _currentURLLoadWasTrigerred = NO;
     }
   }
 }
@@ -1850,6 +1855,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (!_containerView)
     return;
 
+  _currentURLLoadWasTrigerred = YES;
+
   // Reset current WebUI if one exists.
   [self clearWebUI];
 
@@ -1899,7 +1906,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)loadCurrentURLIfNecessary {
   if (_webProcessCrashed) {
     [self loadCurrentURL];
-  } else if (!_containerView) {
+  } else if (!_currentURLLoadWasTrigerred) {
     [self ensureContainerViewCreated];
 
     // TODO(crbug.com/796608): end the practice of calling |loadCurrentURL|
@@ -5557,6 +5564,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 #pragma mark Testing-Only Methods
 
 - (void)injectWebViewContentView:(CRWWebViewContentView*)webViewContentView {
+  _currentURLLoadWasTrigerred = NO;
   [self removeWebView];
 
   [_containerView displayWebViewContentView:webViewContentView];
@@ -5564,6 +5572,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)resetInjectedWebViewContentView {
+  _currentURLLoadWasTrigerred = NO;
   [self setWebView:nil];
   [self resetContainerView];
 }
