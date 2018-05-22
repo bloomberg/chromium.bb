@@ -622,16 +622,10 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item,
             .InlineSize();
   } else {
     NGBlockNode block_node(ToLayoutBox(item.GetLayoutObject()));
-    base::Optional<MinMaxSize> child_minmax;
-    if (NeedMinMaxSizeForContentContribution(constraint_space_.GetWritingMode(),
-                                             block_node.Style())) {
-      MinMaxSizeInput input;
-      // TODO(layoutng): This is wrong for orthogonal writing modes.
-      child_minmax = block_node.ComputeMinMaxSize(input, &constraint_space_);
-    }
-
+    MinMaxSizeInput input;
     MinMaxSize sizes = ComputeMinAndMaxContentContribution(
-        constraint_space_.GetWritingMode(), block_node.Style(), child_minmax);
+        constraint_space_.GetWritingMode(), block_node, input,
+        &constraint_space_);
     item_result->inline_size = mode_ == NGLineBreakerMode::kMinContent
                                    ? sizes.min_size
                                    : sizes.max_size;

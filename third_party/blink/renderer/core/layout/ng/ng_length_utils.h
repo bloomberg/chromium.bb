@@ -17,6 +17,7 @@
 namespace blink {
 class ComputedStyle;
 class Length;
+struct MinMaxSizeInput;
 class NGConstraintSpace;
 class NGBlockNode;
 class NGLayoutInputNode;
@@ -86,6 +87,18 @@ CORE_EXPORT MinMaxSize
 ComputeMinAndMaxContentContribution(WritingMode writing_mode,
                                     const ComputedStyle&,
                                     const base::Optional<MinMaxSize>&);
+
+// A version of ComputeMinAndMaxContentContribution that does not require you
+// to compute the min/max content size of the node. Instead, this function
+// will compute it if necessary.
+// writing_mode is the desired output writing mode (ie. often the writing mode
+// of the parent); node is the node of which to compute the min/max content
+// contribution.
+MinMaxSize ComputeMinAndMaxContentContribution(
+    WritingMode writing_mode,
+    NGLayoutInputNode node,
+    const MinMaxSizeInput& input,
+    const NGConstraintSpace* space = nullptr);
 
 // Resolves the given length to a layout unit, constraining it by the min
 // logical width and max logical width properties from the ComputedStyle

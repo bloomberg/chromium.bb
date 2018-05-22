@@ -633,15 +633,9 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
       NGBlockNode float_node = unpositioned_float->node;
       const ComputedStyle& float_style = float_node.Style();
 
-      base::Optional<MinMaxSize> child_minmax;
-      if (NeedMinMaxSizeForContentContribution(writing_mode, float_style)) {
-        MinMaxSizeInput zero_input;  // Floats don't intrude into floats.
-        // TODO(layoutng): This is wrong for orthogonal writing modes.
-        child_minmax = float_node.ComputeMinMaxSize(zero_input);
-      }
-
+      MinMaxSizeInput zero_input;  // Floats don't intrude into floats.
       MinMaxSize child_sizes = ComputeMinAndMaxContentContribution(
-          writing_mode, float_style, child_minmax);
+          writing_mode, float_node, zero_input);
       LayoutUnit child_inline_margins =
           ComputeMinMaxMargins(style, float_node).InlineSum();
 
