@@ -254,7 +254,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
     test_rvh()->GetWidget()->DidUpdateVisualProperties(metadata);
 
     // Reset pending flags for size/paint.
-    test_rvh()->GetWidget()->ResetSizeAndRepaintPendingFlags();
+    test_rvh()->GetWidget()->ResetSentVisualProperties();
 
     // Create the overlay, and set the contents of the overlay window.
     overlay_.reset(new OverscrollNavigationOverlay(contents(), root_window()));

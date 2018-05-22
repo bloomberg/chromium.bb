@@ -226,7 +226,7 @@ void DelegatedFrameHost::SynchronizeVisualProperties(
   pending_local_surface_id_ = new_pending_local_surface_id;
   pending_surface_dip_size_ = new_pending_dip_size;
 
-  if (!client_->DelegatedFrameHostIsVisible()) {
+  if (!client_->DelegatedFrameHostIsVisible() || !HasNavigated()) {
     // If the tab is resized while hidden, reset the fallback so that the next
     // time user switches back to it the page is blank. This is preferred to
     // showing contents of old size. Don't call EvictDelegatedFrame to avoid
@@ -236,10 +236,10 @@ void DelegatedFrameHost::SynchronizeVisualProperties(
       client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
           viz::SurfaceId());
     }
-    // Don't update the SurfaceLayer when invisible to avoid blocking on
-    // renderers that do not submit CompositorFrames. Next time the renderer
-    // is visible, SynchronizeVisualProperties will be called again. See
-    // WasShown.
+    // Don't update the SurfaceLayer when invisible or hasn't navigated yet to
+    // avoid blocking on renderers that do not submit CompositorFrames. Next
+    // time the renderer is visible, SynchronizeVisualProperties will be called
+    // again. See WasShown.
     return;
   }
 
@@ -276,6 +276,10 @@ SkColor DelegatedFrameHost::GetGutterColor() const {
   // make the initial switch to fullscreen mode look better by using black as
   // the gutter color.
   return client_->DelegatedFrameHostGetGutterColor();
+}
+
+bool DelegatedFrameHost::HasNavigated() const {
+  return first_parent_sequence_number_after_navigation_.has_value();
 }
 
 gfx::Size DelegatedFrameHost::GetRequestedRendererSize() const {

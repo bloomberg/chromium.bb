@@ -568,8 +568,6 @@ void RenderViewTest::Resize(gfx::Size new_size,
   visual_properties.browser_controls_shrink_blink_size = false;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted;
   visual_properties.display_mode = blink::kWebDisplayModeBrowser;
-  visual_properties.content_source_id =
-      static_cast<RenderViewImpl*>(view_)->GetContentSourceId();
   std::unique_ptr<IPC::Message> resize_message(
       new ViewMsg_SynchronizeVisualProperties(0, visual_properties));
   OnMessageReceived(*resize_message);

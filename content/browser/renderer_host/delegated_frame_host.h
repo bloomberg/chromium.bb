@@ -206,6 +206,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void UnlockResources();
 
   SkColor GetGutterColor() const;
+  bool HasNavigated() const;
 
   void CreateCompositorFrameSinkSupport();
   void ResetCompositorFrameSinkSupport();
@@ -251,7 +252,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   std::unique_ptr<viz::FrameEvictor> frame_evictor_;
 
-  uint32_t first_parent_sequence_number_after_navigation_ = 0;
+  base::Optional<uint32_t> first_parent_sequence_number_after_navigation_;
   bool received_frame_after_navigation_ = false;
 
   std::vector<std::unique_ptr<viz::CopyOutputRequest>>

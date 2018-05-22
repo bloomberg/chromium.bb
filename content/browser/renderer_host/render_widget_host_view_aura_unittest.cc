@@ -2817,7 +2817,7 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
                   .compositor_viewport_pixel_size.ToString());  // backing size
   }
 
-  widget_host_->ResetSizeAndRepaintPendingFlags();
+  widget_host_->ResetSentVisualProperties();
   sink_->ClearMessages();
 
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
@@ -2831,7 +2831,7 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
   EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SynchronizeVisualProperties::ID),
             sink_->GetMessageAt(0)->type());
 
-  widget_host_->ResetSizeAndRepaintPendingFlags();
+  widget_host_->ResetSentVisualProperties();
   sink_->ClearMessages();
 
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(1.0f);
@@ -3237,6 +3237,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
+  view_->DidNavigate();
   view_->SetSize(view_size);
   view_->Show();
   sink_->ClearMessages();
@@ -3278,7 +3279,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
   root_window->SetLayoutManager(new FullscreenLayoutManager(root_window));
   view_->InitAsFullscreen(parent_view_);
   view_->Show();
-  widget_host_->ResetSizeAndRepaintPendingFlags();
+  widget_host_->ResetSentVisualProperties();
   sink_->ClearMessages();
 
   // Call SynchronizeVisualProperties to flush the old screen info.
@@ -3305,7 +3306,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
         root_window->GetHost()->compositor());
   }
 
-  widget_host_->ResetSizeAndRepaintPendingFlags();
+  widget_host_->ResetSentVisualProperties();
   sink_->ClearMessages();
 
   // Make sure the corrent screen size is set along in the resize
@@ -3535,6 +3536,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
       view_->GetNativeView(),
       parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
+  view_->DidNavigate();
   view_->SetSize(view_rect.size());
 
   // Swap a frame.
@@ -3623,6 +3625,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
 
   ASSERT_TRUE(view_->delegated_frame_host_);
 
+  view_->DidNavigate();
   view_->SetSize(gfx::Size(300, 300));
   ASSERT_TRUE(view_->HasPrimarySurface());
   EXPECT_EQ(gfx::Size(300, 300), view_->window_->layer()->size());
@@ -3658,6 +3661,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
 
+  view_->DidNavigate();
   view_->SetSize(gfx::Size(300, 300));
   ASSERT_TRUE(view_->HasPrimarySurface());
   EXPECT_EQ(gfx::Size(300, 300), view_->window_->layer()->size());
@@ -3746,6 +3750,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
     aura::client::ParentWindowWithContext(
         views[i]->GetNativeView(),
         parent_view_->GetNativeView()->GetRootWindow(), gfx::Rect());
+    views[i]->DidNavigate();
     views[i]->SetSize(view_rect.size());
     ASSERT_TRUE(views[i]->HasPrimarySurface());
   }
@@ -3882,6 +3887,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
         views[i]->GetNativeView(),
         parent_view_->GetNativeView()->GetRootWindow(),
         gfx::Rect());
+    views[i]->DidNavigate();
     views[i]->SetSize(view_rect.size());
   }
 
@@ -3960,6 +3966,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
         views[i]->GetNativeView(),
         parent_view_->GetNativeView()->GetRootWindow(),
         gfx::Rect());
+    views[i]->DidNavigate();
     views[i]->SetSize(view_rect.size());
   }
 
@@ -4086,7 +4093,7 @@ TEST_F(RenderWidgetHostViewAuraTest, VisibleViewportTest) {
   // Defaults to full height of the view.
   EXPECT_EQ(100, view_->GetVisibleViewportSize().height());
 
-  widget_host_->ResetSizeAndRepaintPendingFlags();
+  widget_host_->ResetSentVisualProperties();
   sink_->ClearMessages();
   view_->SetInsets(gfx::Insets(0, 0, 40, 0));
 
@@ -6173,30 +6180,20 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   if (base::FeatureList::IsEnabled(features::kMash))
     return;
 
-  constexpr base::TimeDelta kTimeout = base::TimeDelta::FromMicroseconds(10);
-
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
 
-  widget_host_->set_new_content_rendering_delay_for_testing(kTimeout);
-
-  viz::LocalSurfaceId id0 = view_->GetLocalSurfaceId();
-  EXPECT_TRUE(id0.is_valid());
-
-  // No new LocalSurfaceId should be allocated for the first navigation but the
-  // timer should fire.
-  widget_host_->DidNavigate(1);
   viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
-  EXPECT_EQ(id0, id1);
-  {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), 2 * kTimeout);
-    run_loop.Run();
-  }
-  EXPECT_TRUE(widget_host_->new_content_rendering_timeout_fired());
+  EXPECT_TRUE(id1.is_valid());
+
+  widget_host_->set_new_content_rendering_delay_for_testing(
+      base::TimeDelta::FromMicroseconds(10));
+
+  // Start the first navigation so that all subsequent navigations will be
+  // embedded.
+  widget_host_->DidNavigate(1);
   widget_host_->reset_new_content_rendering_timeout_fired();
 
   // Start the timer. Verify that a new LocalSurfaceId is allocated.
@@ -6213,7 +6210,8 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), 2 * kTimeout);
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMicroseconds(20));
     run_loop.Run();
   }
   EXPECT_TRUE(widget_host_->new_content_rendering_timeout_fired());
@@ -6230,7 +6228,8 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), 2 * kTimeout);
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMicroseconds(20));
     run_loop.Run();
   }
   EXPECT_FALSE(widget_host_->new_content_rendering_timeout_fired());
@@ -6247,6 +6246,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
+  view_->DidNavigate();
   view_->Show();
   viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
   view_->Hide();
@@ -6266,6 +6266,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
+  view_->DidNavigate();
   view_->Show();
   viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
   view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
@@ -6285,6 +6286,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
+  view_->DidNavigate();
   view_->Show();
   viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
   view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
@@ -6304,6 +6306,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
+  view_->DidNavigate();
   view_->Show();
 
   // Create and initialize the second view.

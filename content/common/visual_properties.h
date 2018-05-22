@@ -70,11 +70,6 @@ struct CONTENT_EXPORT VisualProperties {
   // The display mode.
   blink::WebDisplayMode display_mode = blink::kWebDisplayModeUndefined;
 
-  // This variable is increased after each cross-document navigation. If the
-  // renderer receives a VisualProperties with stale content_source_id, it still
-  // performs the resize but doesn't use the given LocalSurfaceId.
-  uint32_t content_source_id = 0u;
-
   // This represents the latest capture sequence number requested. When this is
   // incremented, that means the caller wants to synchronize surfaces which
   // should cause a new LocalSurfaceId to be generated.

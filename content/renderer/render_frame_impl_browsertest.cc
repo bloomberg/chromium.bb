@@ -198,7 +198,6 @@ TEST_F(RenderFrameImplTest, FrameResize) {
   visual_properties.top_controls_height = 0.f;
   visual_properties.browser_controls_shrink_blink_size = false;
   visual_properties.is_fullscreen_granted = false;
-  visual_properties.content_source_id = frame_widget()->GetContentSourceId();
 
   ViewMsg_SynchronizeVisualProperties resize_message(0, visual_properties);
   frame_widget()->OnMessageReceived(resize_message);

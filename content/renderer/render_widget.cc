@@ -612,7 +612,8 @@ void RenderWidget::SetPopupOriginAdjustmentsForEmulation(
   popup_view_origin_for_emulation_ = emulator->applied_widget_rect().origin();
   popup_screen_origin_for_emulation_ =
       emulator->original_screen_rect().origin();
-  UpdateSurfaceAndScreenInfo(local_surface_id_, compositor_viewport_pixel_size_,
+  UpdateSurfaceAndScreenInfo(local_surface_id_from_parent_,
+                             compositor_viewport_pixel_size_,
                              emulator->original_screen_info());
 }
 
@@ -786,18 +787,18 @@ void RenderWidget::OnSynchronizeVisualProperties(
 void RenderWidget::OnEnableDeviceEmulation(
     const blink::WebDeviceEmulationParams& params) {
   if (!screen_metrics_emulator_) {
-    VisualProperties resize_params;
-    resize_params.screen_info = screen_info_;
-    resize_params.new_size = size_;
-    resize_params.compositor_viewport_pixel_size =
+    VisualProperties visual_properties;
+    visual_properties.screen_info = screen_info_;
+    visual_properties.new_size = size_;
+    visual_properties.compositor_viewport_pixel_size =
         compositor_viewport_pixel_size_;
-    resize_params.local_surface_id = local_surface_id_;
-    resize_params.content_source_id = current_content_source_id_;
-    resize_params.visible_viewport_size = visible_viewport_size_;
-    resize_params.is_fullscreen_granted = is_fullscreen_granted_;
-    resize_params.display_mode = display_mode_;
+    visual_properties.local_surface_id = local_surface_id_from_parent_;
+    visual_properties.visible_viewport_size = visible_viewport_size_;
+    visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
+    visual_properties.display_mode = display_mode_;
     screen_metrics_emulator_.reset(new RenderWidgetScreenMetricsEmulator(
-        this, params, resize_params, view_screen_rect_, window_screen_rect_));
+        this, params, visual_properties, view_screen_rect_,
+        window_screen_rect_));
     screen_metrics_emulator_->Apply();
   } else {
     screen_metrics_emulator_->ChangeEmulationParams(params);
@@ -1238,10 +1239,6 @@ gfx::Size RenderWidget::GetSizeForWebWidget() const {
 }
 
 void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
-  // The content_source_id that the browser sends us should never be larger than
-  // |current_content_source_id_|.
-  DCHECK_GE(1u << 30, current_content_source_id_ - params.content_source_id);
-
   // Inform the rendering thread of the color space indicate the presence of HDR
   // capabilities.
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
@@ -1328,8 +1325,8 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   compositor_->Initialize(std::move(layer_tree_host),
                           std::move(animation_host));
 
-  UpdateSurfaceAndScreenInfo(local_surface_id_, compositor_viewport_pixel_size_,
-                             screen_info_);
+  UpdateSurfaceAndScreenInfo(local_surface_id_from_parent_,
+                             compositor_viewport_pixel_size_, screen_info_);
   compositor_->SetRasterColorSpace(
       screen_info_.color_space.GetRasterColorSpace());
   compositor_->SetContentSourceId(current_content_source_id_);
@@ -1746,7 +1743,7 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
       screen_info_.device_scale_factor != new_screen_info.device_scale_factor;
   ScreenInfo previous_original_screen_info = GetOriginalScreenInfo();
 
-  local_surface_id_ = new_local_surface_id;
+  local_surface_id_from_parent_ = new_local_surface_id;
   compositor_viewport_pixel_size_ = new_compositor_viewport_pixel_size;
   screen_info_ = new_screen_info;
 
@@ -1756,7 +1753,8 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
     // DSF used by the compositor during device emulation!
     compositor_->SetViewportSizeAndScale(
         compositor_viewport_pixel_size_,
-        GetOriginalScreenInfo().device_scale_factor, local_surface_id_);
+        GetOriginalScreenInfo().device_scale_factor,
+        local_surface_id_from_parent_);
   }
 
   if (orientation_changed)
@@ -2168,8 +2166,9 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
       compositor_->RequestNewLocalSurfaceId();
     gfx::Size new_compositor_viewport_pixel_size =
         gfx::ScaleToCeiledSize(size_, GetWebScreenInfo().device_scale_factor);
-    UpdateSurfaceAndScreenInfo(
-        local_surface_id_, new_compositor_viewport_pixel_size, screen_info_);
+    UpdateSurfaceAndScreenInfo(local_surface_id_from_parent_,
+                               new_compositor_viewport_pixel_size,
+                               screen_info_);
   }
 }
 
