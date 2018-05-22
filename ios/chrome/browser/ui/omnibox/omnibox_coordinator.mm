@@ -9,6 +9,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
@@ -31,6 +32,9 @@
 // View controller managed by this coordinator.
 @property(nonatomic, strong) OmniboxViewController* viewController;
 
+// The mediator for the omnibox.
+@property(nonatomic, strong) OmniboxMediator* mediator;
+
 @end
 
 @implementation OmniboxCoordinator {
@@ -43,6 +47,7 @@
 @synthesize keyboardDelegate = _keyboardDelegate;
 @synthesize dispatcher = _dispatcher;
 @synthesize viewController = _viewController;
+@synthesize mediator = _mediator;
 
 - (void)start {
   BOOL isIncognito = self.browserState->IsOffTheRecord();
@@ -59,10 +64,12 @@
                                         tintColor:tintColor
                                         incognito:isIncognito];
 
+  self.mediator = [[OmniboxMediator alloc] init];
+  self.mediator.consumer = self.viewController;
+
   DCHECK(self.editController);
-  // TODO(crbug.com/818637): implement left view provider.
   _editView = std::make_unique<OmniboxViewIOS>(
-      self.textField, self.editController, nullptr, self.browserState);
+      self.textField, self.editController, self.mediator, self.browserState);
 
   // Configure the textfield.
   SetA11yLabelAndUiAutomationName(self.textField, IDS_ACCNAME_LOCATION,
@@ -97,6 +104,7 @@
   _editView.reset();
   self.editController = nil;
   self.viewController = nil;
+  self.mediator = nil;
 }
 
 - (void)updateOmniboxState {

@@ -32,7 +32,10 @@
 @property(nonatomic, assign) BOOL incognito;
 
 // Sets the leading button's image.
-- (void)setPlaceholderImage:(UIImage*)image;
+- (void)setLeadingImage:(UIImage*)image;
+
+// Shows or hides the leading button.
+- (void)setLeadingImageHidden:(BOOL)hidden;
 
 @end
 
