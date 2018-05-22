@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/net/shill_error.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "components/login/localized_values_builder.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -262,6 +263,7 @@ void AddConfigLocalizedStrings(content::WebUIDataSource* html_source) {
   } localized_strings[] = {
       {"networkCAUseDefault", IDS_SETTINGS_INTERNET_NETWORK_CA_USE_DEFAULT},
       {"networkCADoNotCheck", IDS_SETTINGS_INTERNET_NETWORK_CA_DO_NOT_CHECK},
+      {"networkNoUserCert", IDS_SETTINGS_INTERNET_NETWORK_NO_USER_CERT},
       {"networkCertificateName",
        IDS_SETTINGS_INTERNET_NETWORK_CERTIFICATE_NAME},
       {"networkCertificateNameHardwareBacked",
@@ -297,6 +299,8 @@ void AddErrorLocalizedStrings(content::WebUIDataSource* html_source) {
        IDS_NETWORK_ERROR_CANNOT_CHANGE_SHARED_CONFIG},
       {"Error.PolicyControlled", IDS_NETWORK_ERROR_POLICY_CONTROLLED},
       {"networkErrorNoUserCertificate", IDS_NETWORK_ERROR_NO_USER_CERT},
+      {NetworkConnectionHandler::kErrorPassphraseRequired,
+       IDS_NETWORK_ERROR_PASSPHRASE_REQUIRED},
       {"networkErrorUnknown", IDS_NETWORK_ERROR_UNKNOWN},
       // TODO(stevenjb): Move this id to settings_strings.grdp:
       {"networkErrorNotHardwareBacked",
