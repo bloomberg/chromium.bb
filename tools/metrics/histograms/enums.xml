@@ -18755,6 +18755,7 @@ Called by update_net_error_codes.py.-->
       label="V8ExtendableCookieChangeEvent_Deleted_AttributeGetter"/>
   <int value="2461" label="ShapeOutsideContentBoxDifferentFromMarginBox"/>
   <int value="2462" label="ShapeOutsidePaddingBoxDifferentFromMarginBox"/>
+  <int value="2463" label="CSSContainLayoutPositionedDescendants"/>
 </enum>
 
 <enum name="FeedbackSource">
