@@ -868,7 +868,7 @@ bool VisitedLinkMaster::CreateApartURLTable(
 
   // Create the shared memory object.
   *memory = base::ReadOnlySharedMemoryRegion::Create(alloc_size);
-  if (!memory->region.IsValid() || !memory->mapping.IsValid())
+  if (!memory->IsValid())
     return false;
 
   memset(memory->mapping.memory(), 0, alloc_size);

@@ -32,7 +32,7 @@ MappedReadOnlyRegion ReadOnlySharedMemoryRegion::Create(size_t size) {
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
   ReadOnlySharedMemoryRegion region(std::move(handle));
 
-  if (!region.IsValid())
+  if (!region.IsValid() || !mapping.IsValid())
     return {};
 
   return {std::move(region), std::move(mapping)};

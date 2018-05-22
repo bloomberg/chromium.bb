@@ -88,7 +88,7 @@ void PwgRasterConverterHelper::Convert(
 
   base::MappedReadOnlyRegion memory =
       base::ReadOnlySharedMemoryRegion::Create(data->size());
-  if (!memory.region.IsValid() || !memory.mapping.IsValid()) {
+  if (!memory.IsValid()) {
     RunCallback(base::ReadOnlySharedMemoryRegion());
     return;
   }

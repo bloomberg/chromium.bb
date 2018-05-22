@@ -21,8 +21,7 @@ TEST(AudioServiceUserInputMonitorTest, CreateWithValidHandle) {
   std::unique_ptr<base::MappedReadOnlyRegion> shmem =
       std::make_unique<base::MappedReadOnlyRegion>(
           base::ReadOnlySharedMemoryRegion::Create(sizeof(uint32_t)));
-  ASSERT_TRUE(shmem->region.IsValid());
-  ASSERT_TRUE(shmem->mapping.IsValid());
+  ASSERT_TRUE(shmem->IsValid());
 
   mojo::ScopedSharedBufferHandle handle =
       mojo::WrapReadOnlySharedMemoryRegion(shmem->region.Duplicate());
@@ -38,8 +37,7 @@ TEST(AudioServiceUserInputMonitorTest, GetKeyPressCount) {
   std::unique_ptr<base::MappedReadOnlyRegion> shmem =
       std::make_unique<base::MappedReadOnlyRegion>(
           base::ReadOnlySharedMemoryRegion::Create(sizeof(uint32_t)));
-  ASSERT_TRUE(shmem->region.IsValid());
-  ASSERT_TRUE(shmem->mapping.IsValid());
+  ASSERT_TRUE(shmem->IsValid());
 
   mojo::ScopedSharedBufferHandle handle =
       mojo::WrapReadOnlySharedMemoryRegion(shmem->region.Duplicate());
@@ -55,8 +53,7 @@ TEST(AudioServiceUserInputMonitorTest, GetKeyPressCountAfterMemoryUnmap) {
   std::unique_ptr<base::MappedReadOnlyRegion> shmem =
       std::make_unique<base::MappedReadOnlyRegion>(
           base::ReadOnlySharedMemoryRegion::Create(sizeof(uint32_t)));
-  ASSERT_TRUE(shmem->region.IsValid());
-  ASSERT_TRUE(shmem->mapping.IsValid());
+  ASSERT_TRUE(shmem->IsValid());
 
   mojo::ScopedSharedBufferHandle handle =
       mojo::WrapReadOnlySharedMemoryRegion(shmem->region.Duplicate());

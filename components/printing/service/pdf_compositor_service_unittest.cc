@@ -143,7 +143,7 @@ class PdfCompositorServiceTest : public service_manager::test::ServiceTest {
     size_t len = stream.bytesWritten();
     base::MappedReadOnlyRegion memory =
         base::ReadOnlySharedMemoryRegion::Create(len);
-    CHECK(memory.mapping.IsValid());
+    CHECK(memory.IsValid());
     stream.copyTo(memory.mapping.memory());
     return mojo::WrapReadOnlySharedMemoryRegion(std::move(memory.region));
   }

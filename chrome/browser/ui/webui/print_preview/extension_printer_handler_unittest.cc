@@ -293,7 +293,7 @@ class FakePwgRasterConverter : public PwgRasterConverter {
 
     base::MappedReadOnlyRegion memory =
         base::ReadOnlySharedMemoryRegion::Create(data->size());
-    if (!memory.mapping.IsValid()) {
+    if (!memory.IsValid()) {
       ADD_FAILURE() << "Failed to create pwg raster shared memory.";
       std::move(callback).Run(std::move(invalid_pwg_region));
       return;

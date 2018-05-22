@@ -24,7 +24,10 @@ class BASE_EXPORT ReadOnlySharedMemoryRegion {
   using MappingType = ReadOnlySharedMemoryMapping;
   // Creates a new ReadOnlySharedMemoryRegion instance of a given size along
   // with the WritableSharedMemoryMapping which provides the only way to modify
-  // the content of the newly created region.
+  // the content of the newly created region. The returned region and mapping
+  // are guaranteed to either be both valid or both invalid. Use
+  // |MappedReadOnlyRegion::IsValid()| as a shortcut for checking creation
+  // success.
   //
   // This means that the caller's process is the only process that can modify
   // the region content. If you need to pass write access to another process,
@@ -99,6 +102,13 @@ class BASE_EXPORT ReadOnlySharedMemoryRegion {
 struct MappedReadOnlyRegion {
   ReadOnlySharedMemoryRegion region;
   WritableSharedMemoryMapping mapping;
+  // Helper function to check return value of
+  // ReadOnlySharedMemoryRegion::Create(). |region| and |mapping| either both
+  // valid or invalid.
+  bool IsValid() {
+    DCHECK_EQ(region.IsValid(), mapping.IsValid());
+    return region.IsValid() && mapping.IsValid();
+  }
 };
 
 }  // namespace base
