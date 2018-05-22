@@ -242,7 +242,8 @@ public class Tab
     private boolean mIsShowingTabModalDialog;
 
     private Bitmap mFavicon;
-
+    private int mFaviconWidth;
+    private int mFaviconHeight;
     private String mFaviconUrl;
 
     /**
@@ -2499,17 +2500,43 @@ public class Tab
         return mWebContentsDelegate;
     }
 
+    private boolean isIdealFaviconSize(int width, int height) {
+        return width == mIdealFaviconSize && height == mIdealFaviconSize;
+    }
+
+    /**
+     * @param width new favicon's width.
+     * @param height new favicon's height.
+     * @return true iff the new favicon should replace the current one.
+     */
+    private boolean isBetterFavicon(int width, int height) {
+        if (isIdealFaviconSize(width, height)) return true;
+
+        // Prefer square favicons over rectangular ones
+        if (mFaviconWidth != mFaviconHeight && width == height) return true;
+        if (mFaviconWidth == mFaviconHeight && width != height) return false;
+
+        // Do not update favicon if it's already at least as big as the ideal size in both dimens
+        if (mFaviconWidth >= mIdealFaviconSize && mFaviconHeight >= mIdealFaviconSize) return false;
+
+        // Update favicon if the new one is larger in one dimen, but not smaller in the other
+        return (width > mFaviconWidth && !(height < mFaviconHeight))
+                || (!(width < mFaviconWidth) && height > mFaviconHeight);
+    }
+
     @CalledByNative
     protected void onFaviconAvailable(Bitmap icon) {
         if (icon == null) return;
         String url = getUrl();
         boolean pageUrlChanged = !url.equals(mFaviconUrl);
         // This method will be called multiple times if the page has more than one favicon.
-        // we are trying to use the 16x16 DP icon here, Bitmap.createScaledBitmap will return
-        // the origin bitmap if it is already 16x16 DP.
-        if (pageUrlChanged || (icon.getWidth() == mIdealFaviconSize
-                && icon.getHeight() == mIdealFaviconSize)) {
+        // We are trying to use the |mIdealFaviconSize|x|mIdealFaviconSize| DP icon here, or the
+        // first one larger than that received. Bitmap.createScaledBitmap will return the original
+        // bitmap if it is already |mIdealFaviconSize|x|mIdealFaviconSize| DP.
+        if (pageUrlChanged || isBetterFavicon(icon.getWidth(), icon.getHeight())) {
             mFavicon = Bitmap.createScaledBitmap(icon, mIdealFaviconSize, mIdealFaviconSize, true);
+            mFaviconWidth = icon.getWidth();
+            mFaviconHeight = icon.getHeight();
             mFaviconUrl = url;
         }
 
