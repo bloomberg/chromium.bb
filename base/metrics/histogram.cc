@@ -268,6 +268,16 @@ HistogramBase* Histogram::FactoryTimeGet(const std::string& name,
                     flags);
 }
 
+HistogramBase* Histogram::FactoryMicrosecondsTimeGet(const std::string& name,
+                                                     TimeDelta minimum,
+                                                     TimeDelta maximum,
+                                                     uint32_t bucket_count,
+                                                     int32_t flags) {
+  return FactoryGet(name, static_cast<Sample>(minimum.InMicroseconds()),
+                    static_cast<Sample>(maximum.InMicroseconds()), bucket_count,
+                    flags);
+}
+
 HistogramBase* Histogram::FactoryGet(const char* name,
                                      Sample minimum,
                                      Sample maximum,
@@ -283,6 +293,15 @@ HistogramBase* Histogram::FactoryTimeGet(const char* name,
                                          int32_t flags) {
   return FactoryTimeGet(std::string(name), minimum, maximum, bucket_count,
                         flags);
+}
+
+HistogramBase* Histogram::FactoryMicrosecondsTimeGet(const char* name,
+                                                     TimeDelta minimum,
+                                                     TimeDelta maximum,
+                                                     uint32_t bucket_count,
+                                                     int32_t flags) {
+  return FactoryMicrosecondsTimeGet(std::string(name), minimum, maximum,
+                                    bucket_count, flags);
 }
 
 std::unique_ptr<HistogramBase> Histogram::PersistentCreate(

@@ -71,7 +71,7 @@ void UmaHistogramCustomTimes(const std::string& name,
                              int buckets) {
   HistogramBase* histogram = Histogram::FactoryTimeGet(
       name, min, max, buckets, HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->AddTime(sample);
+  histogram->AddTimeMillisecondsGranularity(sample);
 }
 
 void UmaHistogramTimes(const std::string& name, TimeDelta sample) {

@@ -64,10 +64,11 @@
     name, sample, base::TimeDelta::FromMilliseconds(1),                        \
     base::TimeDelta::FromSeconds(10), 50)
 
-#define LOCAL_HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count)     \
-    STATIC_HISTOGRAM_POINTER_BLOCK(name, AddTime(sample),                      \
-        base::Histogram::FactoryTimeGet(name, min, max, bucket_count,          \
-                                        base::HistogramBase::kNoFlags))
+#define LOCAL_HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) \
+  STATIC_HISTOGRAM_POINTER_BLOCK(                                          \
+      name, AddTimeMillisecondsGranularity(sample),                        \
+      base::Histogram::FactoryTimeGet(name, min, max, bucket_count,        \
+                                      base::HistogramBase::kNoFlags))
 
 //------------------------------------------------------------------------------
 // Memory histograms.

@@ -85,8 +85,7 @@ HistogramBase* GetLatencyHistogram(StringPiece histogram_name,
   DCHECK(!histogram_name.empty());
   DCHECK(!histogram_label.empty());
   DCHECK(!task_type_suffix.empty());
-  // Mimics the UMA_HISTOGRAM_TIMES macro except we don't specify bounds with
-  // TimeDeltas as FactoryTimeGet assumes millisecond granularity. The minimums
+  // Mimics the UMA_HISTOGRAM_HIGH_RESOLUTION_CUSTOM_TIMES macro. The minimums
   // and maximums were chosen to place the 1ms mark at around the 70% range
   // coverage for buckets giving us good info for tasks that have a latency
   // below 1ms (most of them) and enough info to assess how bad the latency is
@@ -94,8 +93,10 @@ HistogramBase* GetLatencyHistogram(StringPiece histogram_name,
   const std::string histogram = JoinString(
       {"TaskScheduler", histogram_name, histogram_label, task_type_suffix},
       ".");
-  return Histogram::FactoryGet(histogram, 1, 20000, 50,
-                               HistogramBase::kUmaTargetedHistogramFlag);
+  return Histogram::FactoryMicrosecondsTimeGet(
+      histogram, TimeDelta::FromMicroseconds(1),
+      TimeDelta::FromMilliseconds(20), 50,
+      HistogramBase::kUmaTargetedHistogramFlag);
 }
 
 // Upper bound for the
@@ -461,7 +462,7 @@ void TaskTracker::RecordLatencyHistogram(
             [task_traits.may_block() || task_traits.with_base_sync_primitives()
                  ? 1
                  : 0]
-                ->Add(task_latency.InMicroseconds());
+                ->AddTimeMicrosecondsGranularity(task_latency);
 }
 
 void TaskTracker::RunOrSkipTask(Task task,

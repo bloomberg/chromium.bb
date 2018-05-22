@@ -182,10 +182,11 @@ ComputeNativeWindowOcclusionStatusImpl(
   if (window_evaluator.HasAtLeastOneVisibleWindow())
     iterator->Iterate(&window_evaluator);
 
-  // Record the duration of the call to ComputeNativeWindowOcclusionStatus().
-  base::TimeDelta duration = base::TimeTicks::Now() - calculation_start_time;
-  UMA_HISTOGRAM_COUNTS_10M("Windows.ComputeNativeWindowOcclusionTime",
-                           duration.InMicroseconds());
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "Windows.ComputeNativeWindowOcclusionTime",
+      base::TimeTicks::Now() - calculation_start_time,
+      base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+      50);
 
   return window_evaluator.TakeResult();
 }
