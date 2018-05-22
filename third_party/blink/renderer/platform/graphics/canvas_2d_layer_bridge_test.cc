@@ -82,12 +82,7 @@ class Canvas2DLayerBridgePtr {
 
   ~Canvas2DLayerBridgePtr() { Clear(); }
 
-  void Clear() {
-    if (layer_bridge_) {
-      layer_bridge_->BeginDestruction();
-      layer_bridge_.reset();
-    }
-  }
+  void Clear() { layer_bridge_.reset(); }
 
   void operator=(std::unique_ptr<Canvas2DLayerBridge> layer_bridge) {
     DCHECK(!layer_bridge_);  // Existing ref must be removed with Clear()
@@ -923,40 +918,6 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernationIsPending)
   platform->RunUntilIdle();
   // This test passes by not crashing, which proves that the WeakPtr logic
   // is sound.
-}
-
-#if CANVAS2D_HIBERNATION_ENABLED
-TEST_F(Canvas2DLayerBridgeTest, HibernationAbortedDueToPendingTeardown)
-#else
-TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToPendingTeardown)
-#endif
-{
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
-  Canvas2DLayerBridgePtr bridge(std::make_unique<Canvas2DLayerBridge>(
-      IntSize(300, 300), 0, Canvas2DLayerBridge::kEnableAcceleration,
-      CanvasColorParams()));
-  bridge->DontUseIdleSchedulingForTesting();
-  DrawSomething(bridge);
-
-  // Register an alternate Logger for tracking hibernation events
-  std::unique_ptr<MockLogger> mock_logger = std::make_unique<MockLogger>();
-  MockLogger* mock_logger_ptr = mock_logger.get();
-  bridge->SetLoggerForTesting(std::move(mock_logger));
-
-  // Test entering hibernation
-  EXPECT_CALL(
-      *mock_logger_ptr,
-      ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
-  EXPECT_CALL(
-      *mock_logger_ptr,
-      ReportHibernationEvent(
-          Canvas2DLayerBridge::kHibernationAbortedDueToPendingDestruction))
-      .Times(1);
-  bridge->SetIsHidden(true);
-  bridge->BeginDestruction();
-  platform->RunUntilIdle();
-
-  testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED

@@ -68,7 +68,6 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
       msaa_sample_count_(msaa_sample_count),
       bytes_allocated_(0),
       have_recorded_draw_commands_(false),
-      destruction_in_progress_(false),
       filter_quality_(kLow_SkFilterQuality),
       is_hidden_(false),
       is_deferral_enabled_(true),
@@ -96,8 +95,21 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
 }
 
 Canvas2DLayerBridge::~Canvas2DLayerBridge() {
-  BeginDestruction();
-  DCHECK(destruction_in_progress_);
+  if (IsHibernating())
+    logger_->ReportHibernationEvent(kHibernationEndedWithTeardown);
+  ResetResourceProvider();
+
+  if (layer_ && acceleration_mode_ != kDisableAcceleration) {
+    GraphicsLayer::UnregisterContentsLayer(layer_.get());
+    layer_->ClearTexture();
+    // Orphaning the layer is required to trigger the recration of a new layer
+    // in the case where destruction is caused by a canvas resize. Test:
+    // virtual/gpu/fast/canvas/canvas-resize-after-paint-without-layout.html
+    layer_->RemoveFromParent();
+  }
+
+  DCHECK(!bytes_allocated_);
+
   if (layer_) {
     layer_->ClearClient();
     layer_ = nullptr;
@@ -190,11 +202,6 @@ void Canvas2DLayerBridge::Hibernate() {
   DCHECK(hibernation_scheduled_);
 
   hibernation_scheduled_ = false;
-
-  if (destruction_in_progress_) {
-    logger_->ReportHibernationEvent(kHibernationAbortedDueToPendingDestruction);
-    return;
-  }
 
   if (!resource_provider_) {
     logger_->ReportHibernationEvent(kHibernationAbortedBecauseNoSurface);
@@ -386,31 +393,7 @@ void Canvas2DLayerBridge::DisableDeferral(DisableDeferralReason reason) {
     resource_host_->RestoreCanvasMatrixClipStack(resource_provider_->Canvas());
 }
 
-void Canvas2DLayerBridge::BeginDestruction() {
-  if (destruction_in_progress_)
-    return;
-  if (IsHibernating())
-    logger_->ReportHibernationEvent(kHibernationEndedWithTeardown);
-  hibernation_image_.reset();
-  recorder_.reset();
-  destruction_in_progress_ = true;
-  SetIsHidden(true);
-  ResetResourceProvider();
-
-  if (layer_ && acceleration_mode_ != kDisableAcceleration) {
-    GraphicsLayer::UnregisterContentsLayer(layer_.get());
-    layer_->ClearTexture();
-    // Orphaning the layer is required to trigger the recration of a new layer
-    // in the case where destruction is caused by a canvas resize. Test:
-    // virtual/gpu/fast/canvas/canvas-resize-after-paint-without-layout.html
-    layer_->RemoveFromParent();
-  }
-
-  DCHECK(!bytes_allocated_);
-}
-
 void Canvas2DLayerBridge::SetFilterQuality(SkFilterQuality filter_quality) {
-  DCHECK(!destruction_in_progress_);
   filter_quality_ = filter_quality;
   if (resource_provider_)
     resource_provider_->SetFilterQuality(filter_quality);
@@ -419,16 +402,15 @@ void Canvas2DLayerBridge::SetFilterQuality(SkFilterQuality filter_quality) {
 }
 
 void Canvas2DLayerBridge::SetIsHidden(bool hidden) {
-  bool new_hidden_value = hidden || destruction_in_progress_;
-  if (is_hidden_ == new_hidden_value)
+  if (is_hidden_ == hidden)
     return;
 
-  is_hidden_ = new_hidden_value;
+  is_hidden_ = hidden;
   if (resource_provider_)
     resource_provider_->SetResourceRecyclingEnabled(!IsHidden());
 
   if (CANVAS2D_HIBERNATION_ENABLED && resource_provider_ && IsHidden() &&
-      !destruction_in_progress_ && !hibernation_scheduled_) {
+      !hibernation_scheduled_) {
     if (layer_)
       layer_->ClearTexture();
     logger_->ReportHibernationEvent(kHibernationScheduled);
@@ -514,7 +496,6 @@ void Canvas2DLayerBridge::SkipQueuedDrawCommands() {
 }
 
 void Canvas2DLayerBridge::FlushRecording() {
-  DCHECK(!destruction_in_progress_);
 
   if (have_recorded_draw_commands_ && GetOrCreateResourceProvider()) {
     TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushRecording");
@@ -540,9 +521,6 @@ bool Canvas2DLayerBridge::IsValid() const {
 }
 
 bool Canvas2DLayerBridge::CheckResourceProviderValid() {
-  DCHECK(!destruction_in_progress_);
-  if (destruction_in_progress_)
-    return false;
   if (IsHibernating())
     return true;
   if (!layer_ || acceleration_mode_ == kDisableAcceleration)
@@ -565,9 +543,8 @@ bool Canvas2DLayerBridge::CheckResourceProviderValid() {
 }
 
 bool Canvas2DLayerBridge::Restore() {
-  DCHECK(!destruction_in_progress_);
   DCHECK(context_lost_);
-  if (destruction_in_progress_ || !IsAccelerated())
+  if (!IsAccelerated())
     return false;
   DCHECK(!resource_provider_);
 
@@ -609,14 +586,6 @@ bool Canvas2DLayerBridge::PrepareTransferableResource(
     cc::SharedBitmapIdRegistrar* bitmap_registrar,
     viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
-  if (destruction_in_progress_) {
-    // It can be hit in the following sequence.
-    // 1. Canvas draws something.
-    // 2. The compositor begins the frame.
-    // 3. Javascript makes a context be lost.
-    // 4. Here.
-    return false;
-  }
 
   DCHECK(layer_);  // This explodes if FinalizeFrame() was not called.
 
@@ -653,7 +622,6 @@ bool Canvas2DLayerBridge::PrepareTransferableResource(
 }
 
 cc::Layer* Canvas2DLayerBridge::Layer() {
-  DCHECK(!destruction_in_progress_);
   // Trigger lazy layer creation
   GetOrCreateResourceProvider(kPreferAcceleration);
   return layer_.get();
@@ -687,7 +655,6 @@ void Canvas2DLayerBridge::DidDraw(const FloatRect& rect) {
 
 void Canvas2DLayerBridge::FinalizeFrame() {
   TRACE_EVENT0("blink", "Canvas2DLayerBridge::FinalizeFrame");
-  DCHECK(!destruction_in_progress_);
 
   // Make sure surface is ready for painting: fix the rendering mode now
   // because it will be too late during the paint invalidation phase.
@@ -712,7 +679,6 @@ void Canvas2DLayerBridge::FinalizeFrame() {
 }
 
 void Canvas2DLayerBridge::DoPaintInvalidation(const FloatRect& dirty_rect) {
-  DCHECK(!destruction_in_progress_);
   if (layer_ && acceleration_mode_ != kDisableAcceleration)
     layer_->SetNeedsDisplayRect(EnclosingIntRect(dirty_rect));
 }
