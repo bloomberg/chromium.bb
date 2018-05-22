@@ -130,4 +130,15 @@ void MediaPerceptionPrivateSetAnalyticsComponentFunction::
   Respond(OneArgument(component_state.ToValue()));
 }
 
+MediaPerceptionPrivateSetComponentProcessStateFunction::
+    MediaPerceptionPrivateSetComponentProcessStateFunction() = default;
+
+MediaPerceptionPrivateSetComponentProcessStateFunction::
+    ~MediaPerceptionPrivateSetComponentProcessStateFunction() = default;
+
+ExtensionFunction::ResponseAction
+MediaPerceptionPrivateSetComponentProcessStateFunction::Run() {
+  return RespondNow(Error("Not implemented."));
+}
+
 }  // namespace extensions

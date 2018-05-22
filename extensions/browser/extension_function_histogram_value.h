@@ -1315,6 +1315,7 @@ enum HistogramValue {
   CECPRIVATE_QUERYDISPLAYCECPOWERSTATE,
   DEVELOPERPRIVATE_ADDHOSTPERMISSION,
   DEVELOPERPRIVATE_REMOVEHOSTPERMISSION,
+  MEDIAPERCEPTIONPRIVATE_SETCOMPONENTPROCESSSTATE,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
