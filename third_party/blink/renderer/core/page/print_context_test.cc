@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
@@ -62,7 +63,7 @@ class MockPageContextCanvas : public SkCanvas {
   Vector<Operation> recorded_operations_;
 };
 
-class PrintContextTest : public RenderingTest {
+class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
  protected:
   explicit PrintContextTest(LocalFrameClient* local_frame_client = nullptr)
       : RenderingTest(local_frame_client) {}
@@ -148,7 +149,9 @@ class PrintContextFrameTest : public PrintContextTest {
   EXPECT_EQ(expectedWidth, actualRect.width());                               \
   EXPECT_EQ(expectedHeight, actualRect.height());
 
-TEST_F(PrintContextTest, LinkTarget) {
+INSTANTIATE_PAINT_TEST_CASE_P(PrintContextTest);
+
+TEST_P(PrintContextTest, LinkTarget) {
   MockPageContextCanvas canvas;
   SetBodyInnerHTML(
       AbsoluteBlockHtmlForLink(50, 60, 70, 80, "http://www.google.com") +
@@ -165,7 +168,7 @@ TEST_F(PrintContextTest, LinkTarget) {
   EXPECT_SKRECT_EQ(150, 160, 170, 180, operations[1].rect);
 }
 
-TEST_F(PrintContextTest, LinkTargetUnderAnonymousBlockBeforeBlock) {
+TEST_P(PrintContextTest, LinkTargetUnderAnonymousBlockBeforeBlock) {
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   MockPageContextCanvas canvas;
   SetBodyInnerHTML("<div style='padding-top: 50px'>" +
@@ -185,7 +188,7 @@ TEST_F(PrintContextTest, LinkTargetUnderAnonymousBlockBeforeBlock) {
   EXPECT_SKRECT_EQ(0, 60, 122, 20, operations[1].rect);
 }
 
-TEST_F(PrintContextTest, LinkTargetContainingABlock) {
+TEST_P(PrintContextTest, LinkTargetContainingABlock) {
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   MockPageContextCanvas canvas;
   SetBodyInnerHTML(
@@ -201,7 +204,7 @@ TEST_F(PrintContextTest, LinkTargetContainingABlock) {
   EXPECT_SKRECT_EQ(0, 50, 133, 30, operations[0].rect);
 }
 
-TEST_F(PrintContextTest, LinkTargetUnderInInlines) {
+TEST_P(PrintContextTest, LinkTargetUnderInInlines) {
   MockPageContextCanvas canvas;
   SetBodyInnerHTML(
       "<span><b><i><img style='width: 40px; height: 40px'><br>" +
@@ -216,7 +219,7 @@ TEST_F(PrintContextTest, LinkTargetUnderInInlines) {
   EXPECT_SKRECT_EQ(0, 40, 144, 40, operations[0].rect);
 }
 
-TEST_F(PrintContextTest, LinkTargetUnderRelativelyPositionedInline) {
+TEST_P(PrintContextTest, LinkTargetUnderRelativelyPositionedInline) {
   MockPageContextCanvas canvas;
   SetBodyInnerHTML(
         + "<span style='position: relative; top: 50px; left: 50px'><b><i><img style='width: 1px; height: 40px'><br>"
@@ -230,7 +233,7 @@ TEST_F(PrintContextTest, LinkTargetUnderRelativelyPositionedInline) {
   EXPECT_SKRECT_EQ(50, 90, 155, 50, operations[0].rect);
 }
 
-TEST_F(PrintContextTest, LinkTargetSvg) {
+TEST_P(PrintContextTest, LinkTargetSvg) {
   MockPageContextCanvas canvas;
   SetBodyInnerHTML(R"HTML(
     <svg width='100' height='100'>
@@ -252,7 +255,7 @@ TEST_F(PrintContextTest, LinkTargetSvg) {
   EXPECT_GE(90, operations[1].rect.y());
 }
 
-TEST_F(PrintContextTest, LinkedTarget) {
+TEST_P(PrintContextTest, LinkedTarget) {
   MockPageContextCanvas canvas;
   GetDocument().SetBaseURLOverride(KURL("http://a.com/"));
   SetBodyInnerHTML(
@@ -277,7 +280,7 @@ TEST_F(PrintContextTest, LinkedTarget) {
   EXPECT_SKRECT_EQ(250, 260, 0, 0, operations[1].rect);
 }
 
-TEST_F(PrintContextTest, EmptyLinkedTarget) {
+TEST_P(PrintContextTest, EmptyLinkedTarget) {
   MockPageContextCanvas canvas;
   GetDocument().SetBaseURLOverride(KURL("http://a.com/"));
   SetBodyInnerHTML(AbsoluteBlockHtmlForLink(50, 60, 70, 80, "#fragment") +
@@ -293,7 +296,7 @@ TEST_F(PrintContextTest, EmptyLinkedTarget) {
   EXPECT_SKRECT_EQ(250, 260, 0, 0, operations[1].rect);
 }
 
-TEST_F(PrintContextTest, LinkTargetBoundingBox) {
+TEST_P(PrintContextTest, LinkTargetBoundingBox) {
   MockPageContextCanvas canvas;
   SetBodyInnerHTML(
       AbsoluteBlockHtmlForLink(50, 60, 70, 20, "http://www.google.com",
@@ -307,7 +310,9 @@ TEST_F(PrintContextTest, LinkTargetBoundingBox) {
   EXPECT_SKRECT_EQ(50, 60, 200, 100, operations[0].rect);
 }
 
-TEST_F(PrintContextFrameTest, WithSubframe) {
+INSTANTIATE_PAINT_TEST_CASE_P(PrintContextFrameTest);
+
+TEST_P(PrintContextFrameTest, WithSubframe) {
   GetDocument().SetBaseURLOverride(KURL("http://a.com/"));
   SetBodyInnerHTML(R"HTML(
     <style>::-webkit-scrollbar { display: none }</style>
@@ -333,7 +338,7 @@ TEST_F(PrintContextFrameTest, WithSubframe) {
   EXPECT_SKRECT_EQ(350, 360, 270, 280, operations[1].rect);
 }
 
-TEST_F(PrintContextFrameTest, WithScrolledSubframe) {
+TEST_P(PrintContextFrameTest, WithScrolledSubframe) {
   GetDocument().SetBaseURLOverride(KURL("http://a.com/"));
   SetBodyInnerHTML(R"HTML(
     <style>::-webkit-scrollbar { display: none }</style>
@@ -368,7 +373,7 @@ TEST_F(PrintContextFrameTest, WithScrolledSubframe) {
 }
 
 // This tests that we properly resize and re-layout pages for printing.
-TEST_F(PrintContextFrameTest, BasicPrintPageLayout) {
+TEST_P(PrintContextFrameTest, BasicPrintPageLayout) {
   FloatSize page_size(400, 400);
   float maximum_shrink_ratio = 1.1;
   auto* node = GetDocument().documentElement();
@@ -393,7 +398,7 @@ TEST_F(PrintContextFrameTest, BasicPrintPageLayout) {
 // TODO(weili): This test fails when the iframe isn't the root scroller - e.g.
 // Adding ScopedImplicitRootScrollerForTest disabler(false);
 // https://crbug.com/841602.
-TEST_F(PrintContextFrameTest, DISABLED_SubframePrintPageLayout) {
+TEST_P(PrintContextFrameTest, DISABLED_SubframePrintPageLayout) {
   SetBodyInnerHTML(R"HTML(
       <div style='border: 0px; margin: 0px; background-color: #0000FF;
       width:800px; height:400px'></div>
