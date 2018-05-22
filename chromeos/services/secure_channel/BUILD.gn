@@ -10,6 +10,8 @@ static_library("secure_channel") {
     "authenticated_channel.h",
     "authenticated_channel_impl.cc",
     "authenticated_channel_impl.h",
+    "channel_impl.cc",
+    "channel_impl.h",
     "connect_to_device_operation.h",
     "connect_to_device_operation_base.h",
     "connect_to_device_operation_factory.h",
@@ -21,6 +23,10 @@ static_library("secure_channel") {
     "pending_connection_request_base.h",
     "pending_connection_request_delegate.cc",
     "pending_connection_request_delegate.h",
+    "single_client_message_proxy.cc",
+    "single_client_message_proxy.h",
+    "single_client_message_proxy_impl.cc",
+    "single_client_message_proxy_impl.h",
   ]
 
   deps = [
@@ -47,10 +53,14 @@ static_library("test_support") {
     "fake_connection_attempt_delegate.h",
     "fake_connection_delegate.cc",
     "fake_connection_delegate.h",
+    "fake_message_receiver.cc",
+    "fake_message_receiver.h",
     "fake_pending_connection_request.cc",
     "fake_pending_connection_request.h",
     "fake_pending_connection_request_delegate.cc",
     "fake_pending_connection_request_delegate.h",
+    "fake_single_client_message_proxy.cc",
+    "fake_single_client_message_proxy.h",
   ]
 
   deps = [
@@ -70,6 +80,7 @@ source_set("unit_tests") {
     "connect_to_device_operation_factory_base_unittest.cc",
     "connection_attempt_base_unittest.cc",
     "pending_connection_request_base_unittest.cc",
+    "single_client_message_proxy_impl_unittest.cc",
   ]
 
   deps = [
