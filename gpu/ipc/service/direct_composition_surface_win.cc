@@ -1511,6 +1511,15 @@ bool DirectCompositionSurfaceWin::UseOverlaysForVideo() const {
   return AreOverlaysSupported();
 }
 
+bool DirectCompositionSurfaceWin::SupportsProtectedVideo() const {
+  if (!AreOverlaysSupported())
+    return false;
+
+  // TODO: Check the gpu driver date (or a function) which we know this new
+  // support is enabled.
+  return true;
+}
+
 bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
   if (root_surface_) {
     // TODO(sunnyps): Remove after https://crbug.com/724999 is fixed.

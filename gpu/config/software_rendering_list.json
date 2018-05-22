@@ -1604,6 +1604,51 @@
       "features": [
         "accelerated_webgl"
       ]
+    },
+    {
+      "id": 154,
+      "description": "Protected video decoding with swap chain is for Windows and Intel only",
+      "features": [
+        "protected_video_decode"
+      ],
+      "exceptions": [
+        {
+          "os": {
+            "type": "win",
+            "version": {
+              "op": ">=",
+              "value": "10.0"
+            }
+          },
+          "vendor_id": "0x8086"
+        }
+      ]
+    },
+    {
+      "id": 155,
+      "description": "Older Intel GPUs cannot support protected video decoding in swap chains",
+      "features": [
+        "protected_video_decode"
+      ],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": ">=",
+          "value": "10.0"
+         }
+      },
+      "vendor_id": "0x8086",
+      "gpu_series": [
+        "intel_sandybridge",
+        "intel_valleyview",
+        "intel_ivybridge",
+        "intel_haswell",
+        "intel_cherryview",
+        "intel_broadwell",
+        "intel_apollolake",
+        "intel_skylake",
+        "intel_geminilake"
+      ]
     }
   ]
 }

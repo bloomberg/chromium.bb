@@ -41,6 +41,8 @@ std::unique_ptr<GpuBlacklist> GpuBlacklist::Create(
                             GPU_FEATURE_TYPE_GPU_RASTERIZATION);
   list->AddSupportedFeature("accelerated_webgl2",
                             GPU_FEATURE_TYPE_ACCELERATED_WEBGL2);
+  list->AddSupportedFeature("protected_video_decode",
+                            GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE);
   return list;
 }
 
