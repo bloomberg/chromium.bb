@@ -73,18 +73,6 @@ ACRONYMS = [
 ]
 
 
-def lower_first(name):
-    """Return name with first letter or initial acronym lowercased.
-
-    E.g., 'SetURL' becomes 'setURL', but 'URLFoo' becomes 'urlFoo'.
-    """
-    # TODO(tkent): Remove dependency to ACRONYMS. crbug.com/843927
-    for acronym in ACRONYMS:
-        if name.startswith(acronym):
-            return name.replace(acronym, acronym.lower(), 1)
-    return name[0].lower() + name[1:]
-
-
 def upper_first(name):
     """Return name with first letter or initial acronym uppercased.
        The acronym must have a capital letter following it to be considered.

@@ -19,7 +19,7 @@ const char OriginTrials::k{{feature.name}}TrialName[] = "{{feature.origin_trial_
 {% for feature in features %}
 {% if feature.origin_trial_feature_name %}
 
-bool OriginTrials::{{feature.first_lowered_name}}Enabled(const ExecutionContext* executionContext) {
+bool OriginTrials::{{feature.tokenized_name.to_lower_camel_case()}}Enabled(const ExecutionContext* executionContext) {
   if (RuntimeEnabledFeatures::{{feature.name}}EnabledByRuntimeFlag())
     return true;
 {% if feature.origin_trial_os %}

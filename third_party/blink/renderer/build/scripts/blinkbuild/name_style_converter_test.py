@@ -69,6 +69,7 @@ class SmartTokenizerTest(unittest.TestCase):
         self.assertEqual(tokenize_name('Point2D'), ['Point', '2D'])
         self.assertEqual(tokenize_name('CanvasRenderingContext2DState'),
                          ['Canvas', 'Rendering', 'Context', '2D', 'State'])
+        self.assertEqual(tokenize_name('Accelerated2dCanvas'), ['Accelerated', '2d', 'Canvas'])
 
         self.assertEqual(tokenize_name('RTCDTMFSender'), ['RTC', 'DTMF', 'Sender'])
 
@@ -127,6 +128,18 @@ class NameStyleConverterTest(unittest.TestCase):
 
         converter = NameStyleConverter('SVGElement')
         self.assertEqual(converter.to_upper_camel_case(), 'SVGElement')
+
+    def test_lower_camel_case(self):
+        converter = NameStyleConverter('someSuperThing')
+        self.assertEqual(converter.to_lower_camel_case(), 'someSuperThing')
+        converter = NameStyleConverter('SVGElement')
+        self.assertEqual(converter.to_lower_camel_case(), 'svgElement')
+        converter = NameStyleConverter('documentURI')
+        self.assertEqual(converter.to_lower_camel_case(), 'documentURI')
+        converter = NameStyleConverter('-webkit-margin-start')
+        self.assertEqual(converter.to_lower_camel_case(), 'webkitMarginStart')
+        converter = NameStyleConverter('Accelerated2dCanvas')
+        self.assertEqual(converter.to_lower_camel_case(), 'accelerated2dCanvas')
 
     def test_macro_case(self):
         converter = NameStyleConverter('WebGLBaz2D')

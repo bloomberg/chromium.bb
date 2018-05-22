@@ -7,9 +7,9 @@ interface InternalRuntimeFlags {
     {% for feature in standard_features %}
     {%+ if feature.condition %}[Conditional={{feature.condition}}] {% endif -%}
     {% if feature.settable_from_internals %}
-    attribute boolean {{feature.first_lowered_name}}Enabled;
+    attribute boolean {{feature.tokenized_name.to_lower_camel_case()}}Enabled;
     {% else %}
-    readonly attribute boolean {{feature.first_lowered_name}}Enabled;
+    readonly attribute boolean {{feature.tokenized_name.to_lower_camel_case()}}Enabled;
     {% endif %}
     {% endfor %}
 };
