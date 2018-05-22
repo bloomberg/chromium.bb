@@ -83,7 +83,6 @@ class OESVertexArrayObject;
 class WebGLActiveInfo;
 class WebGLBuffer;
 class WebGLCompressedTextureASTC;
-class WebGLCompressedTextureATC;
 class WebGLCompressedTextureETC;
 class WebGLCompressedTextureETC1;
 class WebGLCompressedTexturePVRTC;
@@ -624,7 +623,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   friend class OESVertexArrayObject;
   friend class WebGLDebugShaders;
   friend class WebGLCompressedTextureASTC;
-  friend class WebGLCompressedTextureATC;
   friend class WebGLCompressedTextureETC;
   friend class WebGLCompressedTextureETC1;
   friend class WebGLCompressedTexturePVRTC;

@@ -52,8 +52,6 @@ blink_modules_sources("webgl") {
     "webgl_color_buffer_float.h",
     "webgl_compressed_texture_astc.cc",
     "webgl_compressed_texture_astc.h",
-    "webgl_compressed_texture_atc.cc",
-    "webgl_compressed_texture_atc.h",
     "webgl_compressed_texture_etc.cc",
     "webgl_compressed_texture_etc.h",
     "webgl_compressed_texture_etc1.cc",

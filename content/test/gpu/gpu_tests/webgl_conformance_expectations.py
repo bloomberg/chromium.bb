@@ -49,8 +49,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # failures.
     self.Skip('WebglExtension_WEBGL_compressed_texture_astc',
         ['win', 'mac', 'linux'])
-    self.Skip('WebglExtension_WEBGL_compressed_texture_atc',
-        ['win', 'mac', 'linux'])
     self.Skip('WebglExtension_WEBGL_compressed_texture_etc1',
         ['win', 'mac', 'linux'])
     self.Skip('WebglExtension_WEBGL_compressed_texture_pvrtc',
@@ -716,8 +714,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/misc/' +
         'tex-video-using-tex-unit-non-zero.html',
         ['android', 'nvidia'], bug=830901)
-    self.Fail('WebglExtension_WEBGL_compressed_texture_atc',
-        ['android', ('nvidia', 'NVIDIA Tegra')])
 
     # Nexus 9 and Shield TV (NVIDIA GPUs currently on the waterfall)
     self.Fail('conformance/ogles/GL/array/array_001_to_006.html',
