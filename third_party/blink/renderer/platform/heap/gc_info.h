@@ -151,38 +151,61 @@ struct GCInfo {
   bool has_v_table_;
 };
 
-// s_gcInfoTable holds the per-class GCInfo descriptors; each HeapObjectHeader
-// keeps an index into this table.
-extern PLATFORM_EXPORT GCInfo const** g_gc_info_table;
-
 #if DCHECK_IS_ON()
 PLATFORM_EXPORT void AssertObjectHasGCInfo(const void*, size_t gc_info_index);
 #endif
 
-class GCInfoTable {
-  STATIC_ONLY(GCInfoTable);
-
+class PLATFORM_EXPORT GCInfoTable {
  public:
-  PLATFORM_EXPORT static void EnsureGCInfoIndex(const GCInfo*, size_t*);
-
-  static void Init();
-
-  static size_t GcInfoIndex() { return gc_info_index_; }
-
-  // The (max + 1) GCInfo index supported.
+  // At maximum |kMaxIndex - 1| indices are supported.
   //
   // We assume that 14 bits is enough to represent all possible types: during
   // telemetry runs, we see about 1,000 different types; looking at the output
   // of the Oilpan GC Clang plugin, there appear to be at most about 6,000
   // types. Thus 14 bits should be more than twice as many bits as we will ever
   // need.
-  static const size_t kMaxIndex = 1 << 14;
+  static constexpr size_t kMaxIndex = 1 << 14;
+
+  static GCInfoTable& Get() {
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(GCInfoTable, table, ());
+    return table;
+  }
+
+  inline const GCInfo* GCInfoFromIndex(size_t index) {
+    DCHECK_GE(index, 1u);
+    DCHECK(index < kMaxIndex);
+    DCHECK(table_);
+    const GCInfo* info = table_[index];
+    DCHECK(info);
+    return info;
+  }
+
+  void EnsureGCInfoIndex(const GCInfo*, size_t*);
+
+  size_t GcInfoIndex() { return current_index_; }
 
  private:
-  static void Resize();
+  FRIEND_TEST_ALL_PREFIXES(GCInfoTest, InitialEmpty);
+  FRIEND_TEST_ALL_PREFIXES(GCInfoTest, ResizeToMaxIndex);
 
-  static size_t gc_info_index_;
-  static size_t gc_info_table_size_;
+  // Use GCInfoTable::Get() for retrieving the global table outside of testing
+  // code.
+  GCInfoTable();
+
+  void Resize();
+
+  // Holds the per-class GCInfo descriptors; each HeapObjectHeader keeps an
+  // index into this table.
+  const GCInfo** table_ = nullptr;
+
+  // GCInfo indices start from 1 for heap objects, with 0 being treated
+  // specially as the index for freelist entries and large heap objects.
+  size_t current_index_ = 0;
+
+  // The limit (exclusive) of the currently allocated table.
+  size_t limit_ = 0;
+
+  Mutex table_mutex_;
 };
 
 // GCInfoAtBaseType should be used when returning a unique 14 bit integer
@@ -198,9 +221,8 @@ struct GCInfoAtBaseType {
     };
 
     static size_t gc_info_index = 0;
-    DCHECK(g_gc_info_table);
     if (!AcquireLoad(&gc_info_index))
-      GCInfoTable::EnsureGCInfoIndex(&kGcInfo, &gc_info_index);
+      GCInfoTable::Get().EnsureGCInfoIndex(&kGcInfo, &gc_info_index);
     DCHECK_GE(gc_info_index, 1u);
     DCHECK(gc_info_index < GCInfoTable::kMaxIndex);
     return gc_info_index;
