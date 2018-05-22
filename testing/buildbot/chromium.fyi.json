@@ -1590,6 +1590,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "viz_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "webkit_unit_tests"
       },
       {
@@ -2032,6 +2038,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "viz_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "webkit_unit_tests"
       },
       {
@@ -2424,6 +2436,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "views_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "viz_unittests"
       },
       {
         "swarming": {
@@ -5604,6 +5622,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "viz_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "webkit_unit_tests"
       },
       {
@@ -6051,6 +6075,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "views_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "viz_unittests"
       },
       {
         "swarming": {
@@ -6774,6 +6804,12 @@
           "can_use_on_swarming_builders": false
         },
         "test": "views_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "viz_unittests"
       },
       {
         "swarming": {
@@ -8836,6 +8872,15 @@
           "can_use_on_swarming_builders": true
         },
         "test": "views_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "viz_unittests"
       },
       {
         "args": [
