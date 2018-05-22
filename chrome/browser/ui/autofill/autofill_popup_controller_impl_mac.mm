@@ -50,7 +50,8 @@ AutofillPopupControllerImplMac::AutofillPopupControllerImplMac(
                                   element_bounds,
                                   text_direction),
       touch_bar_controller_(nil),
-      is_credit_card_popup_(delegate->IsCreditCardPopup()) {}
+      is_credit_card_popup_(delegate->GetPopupType() ==
+                            PopupType::kCreditCards) {}
 
 AutofillPopupControllerImplMac::~AutofillPopupControllerImplMac() {}
 

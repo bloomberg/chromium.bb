@@ -413,8 +413,8 @@ void PasswordAutofillManager::ClearPreviewedForm() {
   password_manager_driver_->ClearPreviewedForm();
 }
 
-bool PasswordAutofillManager::IsCreditCardPopup() const {
-  return false;
+autofill::PopupType PasswordAutofillManager::GetPopupType() const {
+  return autofill::PopupType::kPasswords;
 }
 
 autofill::AutofillDriver* PasswordAutofillManager::GetAutofillDriver() {

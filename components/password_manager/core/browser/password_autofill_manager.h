@@ -46,7 +46,7 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
                                    base::string16* body) override;
   bool RemoveSuggestion(const base::string16& value, int identifier) override;
   void ClearPreviewedForm() override;
-  bool IsCreditCardPopup() const override;
+  autofill::PopupType GetPopupType() const override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   void RegisterDeletionCallback(base::OnceClosure deletion_callback) override;
 

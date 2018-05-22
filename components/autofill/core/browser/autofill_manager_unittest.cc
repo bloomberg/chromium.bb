@@ -5419,6 +5419,45 @@ TEST_F(AutofillManagerTest, NoCreditCardSuggestionsForNonPrefixTokenMatch) {
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
+TEST_F(AutofillManagerTest, GetPopupType_CreditCardForm) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  for (const FormFieldData& field : form.fields) {
+    EXPECT_EQ(PopupType::kCreditCards,
+              autofill_manager_->GetPopupType(form, field));
+  }
+}
+
+TEST_F(AutofillManagerTest, GetPopupType_AddressForm) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  for (const FormFieldData& field : form.fields) {
+    EXPECT_EQ(PopupType::kAddresses,
+              autofill_manager_->GetPopupType(form, field));
+  }
+}
+
+TEST_F(AutofillManagerTest, GetPopupType_PersonalInformationForm) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestPersonalInformationFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  for (const FormFieldData& field : form.fields) {
+    EXPECT_EQ(PopupType::kPersonalInformation,
+              autofill_manager_->GetPopupType(form, field));
+  }
+}
+
 // Test that ShouldShowCreditCardSigninPromo behaves as expected for a credit
 // card form with an impression limit of three and no impressions yet.
 TEST_F(AutofillManagerTest,

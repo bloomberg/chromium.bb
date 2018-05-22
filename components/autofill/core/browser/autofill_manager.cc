@@ -271,10 +271,39 @@ bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
   return field.value.size() <= kShowScanCreditCardMaxValueLength;
 }
 
-bool AutofillManager::IsCreditCardPopup(const FormData& form,
+PopupType AutofillManager::GetPopupType(const FormData& form,
                                         const FormFieldData& field) {
-  AutofillField* autofill_field = GetAutofillField(form, field);
-  return autofill_field && autofill_field->Type().group() == CREDIT_CARD;
+  const AutofillField* autofill_field = GetAutofillField(form, field);
+  if (!autofill_field)
+    return PopupType::kUnspecified;
+
+  switch (autofill_field->Type().group()) {
+    case NO_GROUP:
+    case PASSWORD_FIELD:
+    case TRANSACTION:
+    case USERNAME_FIELD:
+    case UNFILLABLE:
+      return PopupType::kUnspecified;
+
+    case CREDIT_CARD:
+      return PopupType::kCreditCards;
+
+    case ADDRESS_HOME:
+    case ADDRESS_BILLING:
+      return PopupType::kAddresses;
+
+    case NAME:
+    case NAME_BILLING:
+    case EMAIL:
+    case COMPANY:
+    case PHONE_HOME:
+    case PHONE_BILLING:
+      return FormHasAddressField(form) ? PopupType::kAddresses
+                                       : PopupType::kPersonalInformation;
+
+    default:
+      NOTREACHED();
+  }
 }
 
 bool AutofillManager::ShouldShowCreditCardSigninPromo(
@@ -1533,6 +1562,18 @@ AutofillField* AutofillManager::GetAutofillField(const FormData& form,
     return nullptr;
 
   return autofill_field;
+}
+
+bool AutofillManager::FormHasAddressField(const FormData& form) {
+  for (const FormFieldData& field : form.fields) {
+    const AutofillField* autofill_field = GetAutofillField(form, field);
+    if (autofill_field && (autofill_field->Type().group() == ADDRESS_HOME ||
+                           autofill_field->Type().group() == ADDRESS_BILLING)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool AutofillManager::UpdateCachedForm(const FormData& live_form,
