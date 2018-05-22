@@ -619,18 +619,6 @@ class ClientManager {
         }
     }
 
-    /** TODO(mattcary): remove when downstream uses are removed. **/
-    public synchronized void setPrerenderCellularForSession(
-            CustomTabsSessionToken session, boolean prerender) {
-        setSpeculateLoadOnCellularForSession(session, prerender);
-    }
-
-    /** TODO(mattcary): remove when downstream uses are removed. **/
-    public synchronized void setSpeculationModeForSession(
-            CustomTabsSessionToken session, int mode) {
-        // No-op.
-    }
-
     /**
      * Sets whether hidden tab speculation can be used.
      */

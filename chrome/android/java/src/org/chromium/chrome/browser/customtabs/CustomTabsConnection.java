@@ -937,11 +937,6 @@ public class CustomTabsConnection {
         return mClientManager.shouldSpeculateLoadOnCellularForSession(session);
     }
 
-    /** TODO(mattcary): remove when downstream uses are removed **/
-    public boolean shouldPrerenderOnCellularForSession(CustomTabsSessionToken session) {
-        return mClientManager.shouldSpeculateLoadOnCellularForSession(session);
-    }
-
     /** @see ClientManager#shouldSendNavigationInfoForSession(CustomTabsSessionToken) */
     public boolean shouldSendNavigationInfoForSession(CustomTabsSessionToken session) {
         return mClientManager.shouldSendNavigationInfoForSession(session);
