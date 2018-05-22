@@ -35,8 +35,9 @@ struct NetworkContextParams {
   string user_agent;
 
   // String to send as the Accept-Language header. This can be changed later
-  // by calling SetAcceptLanguage on the NetworkContext.
-  string? accept_language;
+  // by calling SetAcceptLanguage on the NetworkContext. If empty, the header
+  // will not be added.
+  string accept_language;
 
   // Whether Brotli content-encoding should be enabled for HTTPS responses.
   bool enable_brotli = true;

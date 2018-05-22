@@ -637,12 +637,10 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   if (network_quality_estimator)
     builder->set_network_quality_estimator(network_quality_estimator);
 
-  std::string accept_language = network_context_params->accept_language
-                                    ? *network_context_params->accept_language
-                                    : "en-us,en";
   std::unique_ptr<net::StaticHttpUserAgentSettings> user_agent_settings =
       std::make_unique<net::StaticHttpUserAgentSettings>(
-          accept_language, network_context_params->user_agent);
+          network_context_params->accept_language,
+          network_context_params->user_agent);
   // Borrow an alias for future use before giving the builder ownership.
   if (out_http_user_agent_settings)
     *out_http_user_agent_settings = user_agent_settings.get();
