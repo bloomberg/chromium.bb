@@ -40,7 +40,7 @@ constexpr char kGoogleCom[] = "google.com";
 // ChromeShellDelegate if the current throttle corresponds to a navigation
 // passing thru different domains or schemes, except if |current_url| has a
 // scheme different than http(s).
-void MaybeRemoveComingFromArcFlag(content::WebContents* tab,
+void MaybeRemoveComingFromArcFlag(content::WebContents* web_contents,
                                   const GURL& previous_url,
                                   const GURL& current_url) {
   // Let ArcExternalProtocolDialog handle these cases.
@@ -55,9 +55,9 @@ void MaybeRemoveComingFromArcFlag(content::WebContents* tab,
   const char* key =
       arc::ArcWebContentsData::ArcWebContentsData::kArcTransitionFlag;
   arc::ArcWebContentsData* arc_data =
-      static_cast<arc::ArcWebContentsData*>(tab->GetUserData(key));
+      static_cast<arc::ArcWebContentsData*>(web_contents->GetUserData(key));
   if (arc_data)
-    tab->RemoveUserData(key);
+    web_contents->RemoveUserData(key);
 }
 
 // Compares the host name of the referrer and target URL to decide whether
@@ -266,7 +266,7 @@ AppsNavigationThrottle::WillStartRequest() {
   Browser* browser =
       chrome::FindBrowserWithWebContents(navigation_handle()->GetWebContents());
   if (browser)
-    chrome::SetIntentPickerViewVisibility(browser, false);
+    chrome::SetIntentPickerViewVisibility(browser, /*visible=*/false);
   return HandleRequest();
 }
 
@@ -400,18 +400,18 @@ void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
 }
 
 // static
-void AppsNavigationThrottle::CloseOrGoBack(content::WebContents* tab) {
-  DCHECK(tab);
-  if (tab->GetController().CanGoBack())
-    tab->GetController().GoBack();
+void AppsNavigationThrottle::CloseOrGoBack(content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  if (web_contents->GetController().CanGoBack())
+    web_contents->GetController().GoBack();
   else
-    tab->ClosePage();
+    web_contents->ClosePage();
 }
 
 void AppsNavigationThrottle::CancelNavigation() {
-  content::WebContents* tab = navigation_handle()->GetWebContents();
-  if (tab && tab->GetController().IsInitialNavigation()) {
-    // Workaround for b/79167225, closing |tab| here may be dangerous.
+  content::WebContents* web_contents = navigation_handle()->GetWebContents();
+  if (web_contents && web_contents->GetController().IsInitialNavigation()) {
+    // Workaround for b/79167225, closing |web_contents| here may be dangerous.
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::BindOnce(&AppsNavigationThrottle::CloseTab,
@@ -518,9 +518,9 @@ AppsNavigationThrottle::HandleRequest() {
 
 void AppsNavigationThrottle::CloseTab() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::WebContents* tab = navigation_handle()->GetWebContents();
-  if (tab)
-    tab->ClosePage();
+  content::WebContents* web_contents = navigation_handle()->GetWebContents();
+  if (web_contents)
+    web_contents->ClosePage();
 }
 
 }  // namespace chromeos
