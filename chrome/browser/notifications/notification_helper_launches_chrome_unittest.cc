@@ -260,9 +260,6 @@ TEST_F(NotificationHelperLaunchesChrome, ChromeLaunchTest) {
       IID_PPV_ARGS(&notification_activator)));
   ASSERT_TRUE(notification_activator);
 
-  EXPECT_HRESULT_SUCCEEDED(
-      ::CoAllowSetForegroundWindow(notification_activator.Get(), nullptr));
-
   // The notification_helper server is now invoked upon the request of creating
   // the object instance. The server module now holds a reference of the
   // instance object, the notification_helper.exe process is alive waiting for
