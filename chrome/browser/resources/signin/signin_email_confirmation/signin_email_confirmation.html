@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <link rel="import" href="chrome://resources/html/polymer.html">
     <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
+    <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -12,7 +13,7 @@
     <link rel="import" href="chrome://resources/html/cr.html">
     <link rel="import" href="chrome://resources/html/load_time_data.html">
     <link rel="import" href="chrome://resources/html/util.html">
-    <style is="custom-style" include="signin-dialog-shared">
+    <style is="custom-style" include="signin-dialog-shared paper-button-style">
       .container {
         /* The sign-in confirmation dialog uses a width that is larger than
          * the other sign-in dialogs to fit cases when the user has an email
@@ -89,10 +90,10 @@
         </paper-radio-group>
       </div>
       <div class="action-container">
-        <paper-button class="primary-action" id="confirmButton">
+        <paper-button class="action-button" id="confirmButton">
           $i18n{signinEmailConfirmationConfirmLabel}
         </paper-button>
-        <paper-button class="secondary-action" id="closeButton">
+        <paper-button id="closeButton">
           $i18n{signinEmailConfirmationCloseLabel}
         </paper-button>
       </div>

@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
@@ -14,7 +15,7 @@
 
 <dom-module id="sync-confirmation-app">
   <template>
-    <style include="signin-dialog-shared">
+    <style include="signin-dialog-shared paper-button-style">
       :host {
         display: block;
         /* Saves space for button row. */
@@ -35,13 +36,13 @@
         width: 100%;
       }
 
-      .secondary-action {
+      paper-button:not(.action-button) {
         -webkit-margin-start: 16px;
       }
 
 <if expr="is_macosx or is_linux">
       /* This works together with the button-flip in signin-dialog-shared. */
-      .secondary-action {
+      paper-button:not(.action-button) {
         -webkit-margin-end: 16px;
         -webkit-margin-start: 0;
       }
@@ -191,15 +192,15 @@
       </div>
     </div>
     <div class="action-container">
-      <paper-button class="primary-action" id="confirmButton"
+      <paper-button class="action-button" id="confirmButton"
           on-click="onConfirm_" consent-confirmation>
         $i18n{syncConfirmationConfirmLabel}
       </paper-button>
-      <paper-button class="secondary-action" on-click="onUndo_"
+      <paper-button on-click="onUndo_"
           hidden="[[isConsentBump_]]">
         $i18n{syncConfirmationUndoLabel}
       </paper-button>
-      <paper-button class="secondary-action" on-click="onMoreOptions_"
+      <paper-button on-click="onMoreOptions_"
           hidden="[[!isConsentBump_]]">
         $i18n{syncConfirmationMoreOptionsLabel}
       </paper-button>
@@ -235,11 +236,11 @@
           </cr-radio-button>
         </paper-radio-group>
         <div class="action-container">
-          <paper-button class="primary-action" on-click="onOK_"
+          <paper-button class="action-button" on-click="onOK_"
               consent-confirmation>
             $i18n{syncConfirmationOptionsConfirmLabel}
           </paper-button>
-          <paper-button class="secondary-action" on-click="onBack_">
+          <paper-button on-click="onBack_">
             $i18n{syncConfirmationOptionsBackLabel}
           </paper-button>
         </div>
