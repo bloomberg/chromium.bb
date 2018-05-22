@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "content/child/child_process.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/renderer/service_worker/service_worker_dispatcher.h"
+#include "content/renderer/service_worker/service_worker_context_client.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/web_service_worker_impl.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
@@ -315,10 +315,8 @@ WebServiceWorkerRegistrationImpl::GetOrCreateServiceWorkerObject(
               std::move(info));
     }
   } else {
-    ServiceWorkerDispatcher* dispatcher =
-        ServiceWorkerDispatcher::GetThreadSpecificInstance();
-    DCHECK(dispatcher);
-    service_worker = dispatcher->GetOrCreateServiceWorker(std::move(info));
+    service_worker = ServiceWorkerContextClient::ThreadSpecificInstance()
+                         ->GetOrCreateServiceWorkerObject(std::move(info));
   }
   return service_worker;
 }

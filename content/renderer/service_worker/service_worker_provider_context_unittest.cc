@@ -17,7 +17,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
-#include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/web_service_worker_impl.h"
 #include "content/renderer/service_worker/web_service_worker_registration_impl.h"
@@ -262,10 +261,6 @@ class ServiceWorkerProviderContextTest : public testing::Test {
  public:
   ServiceWorkerProviderContextTest() = default;
 
-  void SetUp() override {
-    dispatcher_ = std::make_unique<ServiceWorkerDispatcher>();
-  }
-
   void EnableS13nServiceWorker() {
     scoped_feature_list_.InitAndEnableFeature(
         network::features::kNetworkService);
@@ -304,7 +299,6 @@ class ServiceWorkerProviderContextTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  std::unique_ptr<ServiceWorkerDispatcher> dispatcher_;
 
   // S13nServiceWorker:
   base::test::ScopedFeatureList scoped_feature_list_;
