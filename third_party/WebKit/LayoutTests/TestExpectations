@@ -4720,3 +4720,6 @@ crbug.com/843691 fast/css/opacity-float.html [ Failure ]
 # Flaky recently as of 2018-5-21
 crbug.com/845267 [ Mac10.13 ] http/tests/inspector-protocol/page/page-lifecycleEvents.js [ Failure Pass ]
 crbug.com/845266 [ Mac ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Failure Timeout Pass ]
+
+# Sheriff 2018-05-22
+crbug.com/845610 [ Win ] http/tests/inspector-protocol/target/target-browser-context.js [ Pass Failure ]
