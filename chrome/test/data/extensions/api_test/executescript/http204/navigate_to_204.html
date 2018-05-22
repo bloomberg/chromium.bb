@@ -2,13 +2,15 @@
 <html>
 <body>
 <script>
-// Navigate to a page that replies with 204 No Content.
-var a = document.createElement('a');
-a.href = '../../../../page204.html';
-if (location.search) {
-  a.hostname = location.search.slice(1);
-}
-location.href = a.href;
+  window.onload = function() {
+    // Navigate to a page that replies with 204 No Content.
+    var a = document.createElement('a');
+    a.href = '../../../../page204.html';
+    if (location.search) {
+      a.hostname = location.search.slice(1);
+    }
+    location.href = a.href;
+  }
 </script>
 </body>
 </html>
