@@ -20,6 +20,8 @@
 #import "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_empty_background.h"
@@ -113,6 +115,25 @@ const CGFloat kShadowOpacity = 0.12f;
 const CGFloat kShadowRadius = 12.0f;
 }  // namespace
 
+// An AlertCoordinator with the "Action Sheet" style that does not provide an
+// anchor rect to its UIPopoverPresentationController. This is used by the
+// legacy bookmarks implementation in order to consistently render as an action
+// sheet and not as a popover.
+@interface LegacyBookmarksActionSheetCoordinator : AlertCoordinator
+@end
+
+@implementation LegacyBookmarksActionSheetCoordinator
+
+- (UIAlertController*)alertControllerWithTitle:(NSString*)title
+                                       message:(NSString*)message {
+  return [UIAlertController
+      alertControllerWithTitle:title
+                       message:message
+                preferredStyle:UIAlertControllerStyleActionSheet];
+}
+
+@end
+
 @interface BookmarkHomeViewController ()<
     BookmarkEditViewControllerDelegate,
     BookmarkFolderEditorViewControllerDelegate,
@@ -192,6 +213,9 @@ const CGFloat kShadowRadius = 12.0f;
 // or syncing.
 @property(nonatomic, strong) BookmarkHomeWaitingView* spinnerView;
 
+// The action sheet coordinator, if one is currently being shown.
+@property(nonatomic, strong) AlertCoordinator* actionSheetCoordinator;
+
 @end
 
 @implementation BookmarkHomeViewController
@@ -213,6 +237,7 @@ const CGFloat kShadowRadius = 12.0f;
 @synthesize moreButton = _moreButton;
 @synthesize spinnerView = _spinnerView;
 @synthesize emptyTableBackgroundView = _emptyTableBackgroundView;
+@synthesize actionSheetCoordinator = _actionSheetCoordinator;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -661,23 +686,6 @@ const CGFloat kShadowRadius = 12.0f;
 
   NOTREACHED();
   return;
-}
-
-- (void)handleShowContextMenuForNode:(const bookmarks::BookmarkNode*)node {
-  if (node->is_url()) {
-    [self presentViewController:[self contextMenuForSingleBookmarkURL:node]
-                       animated:YES
-                     completion:nil];
-    return;
-  }
-
-  if (node->is_folder()) {
-    [self presentViewController:[self contextMenuForSingleBookmarkFolder:node]
-                       animated:YES
-                     completion:nil];
-    return;
-  }
-  NOTREACHED();
 }
 
 - (void)handleMoveNode:(const bookmarks::BookmarkNode*)node
@@ -1245,48 +1253,47 @@ const CGFloat kShadowRadius = 12.0f;
   // Center button is shown and is clickable only when at least
   // one node is selected.
   DCHECK(nodes.size() > 0);
+
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
+        initWithBaseViewController:self
+                             title:nil
+                           message:nil
+                     barButtonItem:self.moreButton];
+  } else {
+    self.actionSheetCoordinator = [[LegacyBookmarksActionSheetCoordinator alloc]
+        initWithBaseViewController:self
+                             title:nil
+                           message:nil];
+  }
+
   switch (self.contextBarState) {
-    case BookmarksContextBarDefault:
-      // Center button is disabled in default state.
-      NOTREACHED();
-      break;
-    case BookmarksContextBarBeginSelection:
-      // Center button is disabled in start state.
-      NOTREACHED();
-      break;
     case BookmarksContextBarSingleURLSelection:
-      // More clicked, show action sheet with context menu.
-      [self presentViewController:
-                [self contextMenuForSingleBookmarkURL:*(nodes.begin())]
-                         animated:YES
-                       completion:nil];
+      [self configureCoordinator:self.actionSheetCoordinator
+            forSingleBookmarkURL:*(nodes.begin())];
       break;
     case BookmarksContextBarMultipleURLSelection:
-      // More clicked, show action sheet with context menu.
-      [self
-          presentViewController:[self contextMenuForMultipleBookmarkURLs:nodes]
-                       animated:YES
-                     completion:nil];
+      [self configureCoordinator:self.actionSheetCoordinator
+          forMultipleBookmarkURLs:nodes];
       break;
     case BookmarksContextBarSingleFolderSelection:
-      // More clicked, show action sheet with context menu.
-      [self presentViewController:
-                [self contextMenuForSingleBookmarkFolder:*(nodes.begin())]
-                         animated:YES
-                       completion:nil];
+      [self configureCoordinator:self.actionSheetCoordinator
+          forSingleBookmarkFolder:*(nodes.begin())];
       break;
     case BookmarksContextBarMultipleFolderSelection:
     case BookmarksContextBarMixedSelection:
-      // More clicked, show action sheet with context menu.
-      [self presentViewController:
-                [self contextMenuForMixedAndMultiFolderSelection:nodes]
-                         animated:YES
-                       completion:nil];
+      [self configureCoordinator:self.actionSheetCoordinator
+          forMixedAndMultiFolderSelection:nodes];
       break;
+    case BookmarksContextBarDefault:
+    case BookmarksContextBarBeginSelection:
     case BookmarksContextBarNone:
-    default:
+      // Center button is disabled in these states.
       NOTREACHED();
+      break;
   }
+
+  [self.actionSheetCoordinator start];
 }
 
 // Called when the trailing button, "Select" or "Cancel" is clicked.
@@ -1407,186 +1414,134 @@ const CGFloat kShadowRadius = 12.0f;
 
 #pragma mark - Context Menu
 
-- (void)prepareAlertControllerForDisplay:(UIAlertController*)alert {
-  if (!experimental_flags::IsBookmarksUIRebootEnabled()) {
-    return;
-  }
+- (void)configureCoordinator:(AlertCoordinator*)coordinator
+     forMultipleBookmarkURLs:(const std::set<const BookmarkNode*>)nodes {
+  __weak BookmarkHomeViewController* weakSelf = self;
+  coordinator.alertController.view.accessibilityIdentifier =
+      @"bookmark_context_menu";
 
-  UIPopoverPresentationController* presentationController =
-      alert.popoverPresentationController;
-  presentationController.sourceView = self.navigationController.toolbar;
-  CGFloat midX = CGRectGetMidX(self.navigationController.toolbar.bounds);
-  presentationController.sourceRect = CGRectMake(midX, 0, 1, 1);
+  [coordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN)
+                action:^{
+                  std::vector<const BookmarkNode*> nodes =
+                      [weakSelf getEditNodesInVector];
+                  [weakSelf openAllNodes:nodes inIncognito:NO newTab:NO];
+                }
+                 style:UIAlertActionStyleDefault];
+
+  [coordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)
+                action:^{
+                  std::vector<const BookmarkNode*> nodes =
+                      [weakSelf getEditNodesInVector];
+                  [weakSelf openAllNodes:nodes inIncognito:YES newTab:NO];
+                }
+                 style:UIAlertActionStyleDefault];
+
+  [coordinator addItemWithTitle:l10n_util::GetNSString(
+                                    IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)
+                         action:^{
+                           [weakSelf moveNodes:nodes];
+                         }
+                          style:UIAlertActionStyleDefault];
+
+  [coordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                         action:nil
+                          style:UIAlertActionStyleCancel];
 }
 
-- (UIAlertController*)contextMenuForMultipleBookmarkURLs:
-    (const std::set<const bookmarks::BookmarkNode*>)nodes {
+- (void)configureCoordinator:(AlertCoordinator*)coordinator
+        forSingleBookmarkURL:(const BookmarkNode*)node {
   __weak BookmarkHomeViewController* weakSelf = self;
-  UIAlertController* alert = [UIAlertController
-      alertControllerWithTitle:nil
-                       message:nil
-                preferredStyle:UIAlertControllerStyleActionSheet];
-  alert.view.accessibilityIdentifier = @"bookmark_context_menu";
-  [self prepareAlertControllerForDisplay:alert];
+  std::string urlString = node->url().possibly_invalid_spec();
+  coordinator.alertController.view.accessibilityIdentifier =
+      @"bookmark_context_menu";
 
-  UIAlertAction* cancelAction =
-      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                               style:UIAlertActionStyleCancel
-                             handler:nil];
+  [coordinator addItemWithTitle:l10n_util::GetNSString(
+                                    IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)
+                         action:^{
+                           [weakSelf editNode:node];
+                         }
+                          style:UIAlertActionStyleDefault];
 
-  UIAlertAction* openAllAction = [UIAlertAction
-      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN)
-                style:UIAlertActionStyleDefault
-              handler:^(UIAlertAction* _Nonnull action) {
-                std::vector<const BookmarkNode*> nodes =
-                    [weakSelf getEditNodesInVector];
-                [weakSelf openAllNodes:nodes inIncognito:NO newTab:NO];
-              }];
+  [coordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)
+                action:^{
+                  std::vector<const BookmarkNode*> nodes = {node};
+                  [weakSelf openAllNodes:nodes inIncognito:NO newTab:YES];
+                }
+                 style:UIAlertActionStyleDefault];
 
-  UIAlertAction* openInIncognitoAction = [UIAlertAction
-      actionWithTitle:l10n_util::GetNSString(
-                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)
-                style:UIAlertActionStyleDefault
-              handler:^(UIAlertAction* _Nonnull action) {
-                std::vector<const BookmarkNode*> nodes =
-                    [weakSelf getEditNodesInVector];
-                [weakSelf openAllNodes:nodes inIncognito:YES newTab:NO];
-              }];
+  [coordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)
+                action:^{
+                  std::vector<const BookmarkNode*> nodes = {node};
+                  [weakSelf openAllNodes:nodes inIncognito:YES newTab:YES];
+                }
+                 style:UIAlertActionStyleDefault];
 
-  UIAlertAction* moveAction = [UIAlertAction
-      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)
-                style:UIAlertActionStyleDefault
-              handler:^(UIAlertAction* _Nonnull action) {
-                [weakSelf moveNodes:nodes];
-              }];
-  [alert addAction:openAllAction];
-  [alert addAction:openInIncognitoAction];
-  [alert addAction:moveAction];
-  [alert addAction:cancelAction];
-  return alert;
+  [coordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_COPY)
+                action:^{
+                  UIPasteboard* pasteboard = [UIPasteboard generalPasteboard];
+                  pasteboard.string = base::SysUTF8ToNSString(urlString);
+                  [weakSelf setTableViewEditing:NO];
+                }
+                 style:UIAlertActionStyleDefault];
+
+  [coordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                         action:nil
+                          style:UIAlertActionStyleCancel];
 }
 
-- (UIAlertController*)contextMenuForSingleBookmarkURL:
-    (const BookmarkNode*)node {
+- (void)configureCoordinator:(AlertCoordinator*)coordinator
+     forSingleBookmarkFolder:(const BookmarkNode*)node {
   __weak BookmarkHomeViewController* weakSelf = self;
-  UIAlertController* alert = [UIAlertController
-      alertControllerWithTitle:nil
-                       message:nil
-                preferredStyle:UIAlertControllerStyleActionSheet];
-  alert.view.accessibilityIdentifier = @"bookmark_context_menu";
-  [self prepareAlertControllerForDisplay:alert];
+  coordinator.alertController.view.accessibilityIdentifier =
+      @"bookmark_context_menu";
 
-  UIAlertAction* cancelAction =
-      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                               style:UIAlertActionStyleCancel
-                             handler:nil];
+  [coordinator addItemWithTitle:l10n_util::GetNSString(
+                                    IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)
+                         action:^{
+                           [weakSelf editNode:node];
+                         }
+                          style:UIAlertActionStyleDefault];
 
-  UIAlertAction* editAction = [UIAlertAction
-      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)
-                style:UIAlertActionStyleDefault
-              handler:^(UIAlertAction* _Nonnull action) {
-                [weakSelf editNode:node];
-              }];
+  [coordinator addItemWithTitle:l10n_util::GetNSString(
+                                    IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)
+                         action:^{
+                           std::set<const BookmarkNode*> nodes;
+                           nodes.insert(node);
+                           [weakSelf moveNodes:nodes];
+                         }
+                          style:UIAlertActionStyleDefault];
 
-  void (^copyHandler)(UIAlertAction*) = ^(UIAlertAction*) {
-    UIPasteboard* pasteboard = [UIPasteboard generalPasteboard];
-    std::string urlString = node->url().possibly_invalid_spec();
-    pasteboard.string = base::SysUTF8ToNSString(urlString);
-    [self setTableViewEditing:NO];
-  };
-  UIAlertAction* copyAction = [UIAlertAction
-      actionWithTitle:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_COPY)
-                style:UIAlertActionStyleDefault
-              handler:copyHandler];
-
-  UIAlertAction* openInNewTabAction = [UIAlertAction
-      actionWithTitle:l10n_util::GetNSString(
-                          IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)
-                style:UIAlertActionStyleDefault
-              handler:^(UIAlertAction* _Nonnull action) {
-                std::vector<const BookmarkNode*> nodes = {node};
-                [weakSelf openAllNodes:nodes inIncognito:NO newTab:YES];
-              }];
-
-  UIAlertAction* openInIncognitoAction = [UIAlertAction
-      actionWithTitle:l10n_util::GetNSString(
-                          IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)
-                style:UIAlertActionStyleDefault
-              handler:^(UIAlertAction* _Nonnull action) {
-                std::vector<const BookmarkNode*> nodes = {node};
-                [weakSelf openAllNodes:nodes inIncognito:YES newTab:YES];
-              }];
-
-  [alert addAction:editAction];
-  [alert addAction:openInNewTabAction];
-  [alert addAction:openInIncognitoAction];
-  [alert addAction:copyAction];
-  [alert addAction:cancelAction];
-  return alert;
+  [coordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                         action:nil
+                          style:UIAlertActionStyleCancel];
 }
 
-- (UIAlertController*)contextMenuForSingleBookmarkFolder:
-    (const BookmarkNode*)node {
+- (void)configureCoordinator:(AlertCoordinator*)coordinator
+    forMixedAndMultiFolderSelection:
+        (const std::set<const bookmarks::BookmarkNode*>)nodes {
   __weak BookmarkHomeViewController* weakSelf = self;
-  UIAlertController* alert = [UIAlertController
-      alertControllerWithTitle:nil
-                       message:nil
-                preferredStyle:UIAlertControllerStyleActionSheet];
-  alert.view.accessibilityIdentifier = @"bookmark_context_menu";
-  [self prepareAlertControllerForDisplay:alert];
+  coordinator.alertController.view.accessibilityIdentifier =
+      @"bookmark_context_menu";
 
-  UIAlertAction* cancelAction =
-      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                               style:UIAlertActionStyleCancel
-                             handler:nil];
+  [coordinator addItemWithTitle:l10n_util::GetNSString(
+                                    IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)
+                         action:^{
+                           [weakSelf moveNodes:nodes];
+                         }
+                          style:UIAlertActionStyleDefault];
 
-  UIAlertAction* editAction = [UIAlertAction
-      actionWithTitle:l10n_util::GetNSString(
-                          IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)
-                style:UIAlertActionStyleDefault
-              handler:^(UIAlertAction* _Nonnull action) {
-                [weakSelf editNode:node];
-              }];
-
-  void (^moveHandler)(UIAlertAction*) = ^(UIAlertAction*) {
-    std::set<const BookmarkNode*> nodes;
-    nodes.insert(node);
-    [weakSelf moveNodes:nodes];
-  };
-  UIAlertAction* moveAction = [UIAlertAction
-      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)
-                style:UIAlertActionStyleDefault
-              handler:moveHandler];
-  [alert addAction:editAction];
-  [alert addAction:moveAction];
-  [alert addAction:cancelAction];
-  return alert;
-}
-
-- (UIAlertController*)contextMenuForMixedAndMultiFolderSelection:
-    (const std::set<const bookmarks::BookmarkNode*>)nodes {
-  __weak BookmarkHomeViewController* weakSelf = self;
-  UIAlertController* alert = [UIAlertController
-      alertControllerWithTitle:nil
-                       message:nil
-                preferredStyle:UIAlertControllerStyleActionSheet];
-  alert.view.accessibilityIdentifier = @"bookmark_context_menu";
-  [self prepareAlertControllerForDisplay:alert];
-
-  UIAlertAction* cancelAction =
-      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                               style:UIAlertActionStyleCancel
-                             handler:nil];
-
-  UIAlertAction* moveAction = [UIAlertAction
-      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)
-                style:UIAlertActionStyleDefault
-              handler:^(UIAlertAction* _Nonnull action) {
-                [weakSelf moveNodes:nodes];
-              }];
-  [alert addAction:moveAction];
-  [alert addAction:cancelAction];
-  return alert;
+  [coordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                         action:nil
+                          style:UIAlertActionStyleCancel];
 }
 
 #pragma mark - Favicon Handling
@@ -1695,7 +1650,32 @@ const CGFloat kShadowRadius = 12.0f;
     return;
   }
 
-  [self handleShowContextMenuForNode:node];
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
+        initWithBaseViewController:self
+                             title:nil
+                           message:nil
+                              rect:CGRectMake(touchPoint.x, touchPoint.y, 1, 1)
+                              view:self.tableView];
+  } else {
+    self.actionSheetCoordinator = [[LegacyBookmarksActionSheetCoordinator alloc]
+        initWithBaseViewController:self
+                             title:nil
+                           message:nil];
+  }
+
+  if (node->is_url()) {
+    [self configureCoordinator:self.actionSheetCoordinator
+          forSingleBookmarkURL:node];
+  } else if (node->is_folder()) {
+    [self configureCoordinator:self.actionSheetCoordinator
+        forSingleBookmarkFolder:node];
+  } else {
+    NOTREACHED();
+    return;
+  }
+
+  [self.actionSheetCoordinator start];
 }
 
 #pragma mark - BookmarkHomeSharedStateObserver
