@@ -657,6 +657,20 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
                           @"popup_menu_help", kToolsMenuHelpId);
   [actionsArray addObject:help];
 
+#if !defined(NDEBUG)
+  NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
+  if ([standardDefaults boolForKey:@"DevViewSource"]) {
+    PopupMenuToolsItem* item =
+        [[PopupMenuToolsItem alloc] initWithType:kItemTypeEnumZero];
+    item.title = @"View Source";
+    item.actionIdentifier = PopupMenuActionViewSource;
+    item.accessibilityIdentifier = @"View Source";
+
+    // Debug menu, not localized, only visible if turned on by a default.
+    [actionsArray addObject:item];
+  }
+#endif  // !defined(NDEBUG)
+
   return actionsArray;
 }
 
