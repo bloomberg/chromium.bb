@@ -20,13 +20,7 @@ CacheStorageQuotaClient::~CacheStorageQuotaClient() {}
 
 storage::QuotaClient::ID CacheStorageQuotaClient::id() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  switch (owner_) {
-    case CacheStorageOwner::kCacheAPI:
-      return kServiceWorkerCache;
-    case CacheStorageOwner::kBackgroundFetch:
-      return kBackgroundFetch;
-  }
-  NOTREACHED();
+  return GetIDFromOwner(owner_);
 }
 
 void CacheStorageQuotaClient::OnQuotaManagerDestroyed() {
@@ -94,6 +88,17 @@ bool CacheStorageQuotaClient::DoesSupport(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   return type == blink::mojom::StorageType::kTemporary;
+}
+
+// static
+storage::QuotaClient::ID CacheStorageQuotaClient::GetIDFromOwner(
+    CacheStorageOwner owner) {
+  switch (owner) {
+    case CacheStorageOwner::kCacheAPI:
+      return kServiceWorkerCache;
+    case CacheStorageOwner::kBackgroundFetch:
+      return kBackgroundFetch;
+  }
 }
 
 }  // namespace content

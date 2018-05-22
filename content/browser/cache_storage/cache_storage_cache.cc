@@ -27,6 +27,7 @@
 #include "content/browser/cache_storage/cache_storage_blob_to_disk_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_cache_observer.h"
+#include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
@@ -419,6 +420,7 @@ struct CacheStorageCache::QueryCacheContext {
 // static
 std::unique_ptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
     const url::Origin& origin,
+    CacheStorageOwner owner,
     const std::string& cache_name,
     CacheStorage* cache_storage,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
@@ -426,7 +428,7 @@ std::unique_ptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
     base::WeakPtr<storage::BlobStorageContext> blob_context,
     std::unique_ptr<crypto::SymmetricKey> cache_padding_key) {
   CacheStorageCache* cache = new CacheStorageCache(
-      origin, cache_name, base::FilePath(), cache_storage,
+      origin, owner, cache_name, base::FilePath(), cache_storage,
       std::move(request_context_getter), std::move(quota_manager_proxy),
       blob_context, 0 /* cache_size */, 0 /* cache_padding */,
       std::move(cache_padding_key));
@@ -438,6 +440,7 @@ std::unique_ptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
 // static
 std::unique_ptr<CacheStorageCache> CacheStorageCache::CreatePersistentCache(
     const url::Origin& origin,
+    CacheStorageOwner owner,
     const std::string& cache_name,
     CacheStorage* cache_storage,
     const base::FilePath& path,
@@ -448,7 +451,7 @@ std::unique_ptr<CacheStorageCache> CacheStorageCache::CreatePersistentCache(
     int64_t cache_padding,
     std::unique_ptr<crypto::SymmetricKey> cache_padding_key) {
   CacheStorageCache* cache = new CacheStorageCache(
-      origin, cache_name, path, cache_storage,
+      origin, owner, cache_name, path, cache_storage,
       std::move(request_context_getter), std::move(quota_manager_proxy),
       blob_context, cache_size, cache_padding, std::move(cache_padding_key));
   cache->SetObserver(cache_storage);
@@ -725,6 +728,7 @@ CacheStorageCache::~CacheStorageCache() {
 
 CacheStorageCache::CacheStorageCache(
     const url::Origin& origin,
+    CacheStorageOwner owner,
     const std::string& cache_name,
     const base::FilePath& path,
     CacheStorage* cache_storage,
@@ -735,6 +739,7 @@ CacheStorageCache::CacheStorageCache(
     int64_t cache_padding,
     std::unique_ptr<crypto::SymmetricKey> cache_padding_key)
     : origin_(origin),
+      owner_(owner),
       cache_name_(cache_name),
       path_(path),
       cache_storage_(cache_storage),
@@ -1532,7 +1537,7 @@ void CacheStorageCache::UpdateCacheSizeGotSize(
   last_reported_size_ = PaddedCacheSize();
 
   quota_manager_proxy_->NotifyStorageModified(
-      storage::QuotaClient::kServiceWorkerCache, origin_,
+      CacheStorageQuotaClient::GetIDFromOwner(owner_), origin_,
       blink::mojom::StorageType::kTemporary, size_delta);
 
   if (cache_storage_)

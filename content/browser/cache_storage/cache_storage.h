@@ -40,6 +40,7 @@ class CacheStorageCacheHandle;
 class CacheStorageIndex;
 class CacheStorageManager;
 class CacheStorageScheduler;
+enum class CacheStorageOwner;
 
 namespace cache_storage_manager_unittest {
 class CacheStorageManagerTest;
@@ -76,7 +77,8 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       CacheStorageManager* cache_storage_manager,
-      const url::Origin& origin);
+      const url::Origin& origin,
+      CacheStorageOwner owner);
 
   // Any unfinished asynchronous operations may not complete or call their
   // callbacks.
@@ -291,6 +293,9 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
 
   // The origin that this CacheStorage is associated with.
   url::Origin origin_;
+
+  // The owner that this CacheStorage is associated with.
+  CacheStorageOwner owner_;
 
   // The manager that owns this cache storage. Only set to null by
   // RemoveManager() when this cache storage is being deleted.
