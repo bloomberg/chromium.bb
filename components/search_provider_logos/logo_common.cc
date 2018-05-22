@@ -14,22 +14,22 @@ LogoMetadata::LogoMetadata() = default;
 LogoMetadata::LogoMetadata(const LogoMetadata&) = default;
 LogoMetadata::LogoMetadata(LogoMetadata&&) noexcept = default;
 LogoMetadata& LogoMetadata::operator=(const LogoMetadata&) = default;
-LogoMetadata& LogoMetadata::operator=(LogoMetadata&&) = default;
+LogoMetadata& LogoMetadata::operator=(LogoMetadata&&) noexcept = default;
 LogoMetadata::~LogoMetadata() = default;
 
 EncodedLogo::EncodedLogo() = default;
 EncodedLogo::EncodedLogo(const EncodedLogo&) = default;
 EncodedLogo::EncodedLogo(EncodedLogo&&) noexcept = default;
 EncodedLogo& EncodedLogo::operator=(const EncodedLogo&) = default;
-EncodedLogo& EncodedLogo::operator=(EncodedLogo&&) = default;
+EncodedLogo& EncodedLogo::operator=(EncodedLogo&&) noexcept = default;
 EncodedLogo::~EncodedLogo() = default;
 
 Logo::Logo() = default;
 Logo::~Logo() = default;
 
 LogoCallbacks::LogoCallbacks() = default;
-LogoCallbacks::LogoCallbacks(LogoCallbacks&&) = default;
-LogoCallbacks& LogoCallbacks::operator=(LogoCallbacks&&) = default;
+LogoCallbacks::LogoCallbacks(LogoCallbacks&&) noexcept = default;
+LogoCallbacks& LogoCallbacks::operator=(LogoCallbacks&&) noexcept = default;
 LogoCallbacks::~LogoCallbacks() = default;
 
 }  // namespace search_provider_logos
