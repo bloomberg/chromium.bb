@@ -15,6 +15,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "components/subresource_filter/content/browser/activation_state_computing_navigation_throttle.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
+#include "components/subresource_filter/content/browser/navigation_console_logger.h"
 #include "components/subresource_filter/content/browser/page_load_statistics.h"
 #include "components/subresource_filter/content/browser/subframe_navigation_filtering_throttle.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
@@ -161,8 +162,9 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
       if (filter->activation_state().enable_logging) {
         DCHECK(filter->activation_state().activation_level !=
                ActivationLevel::DISABLED);
-        frame_host->AddMessageToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING,
-                                        kActivationConsoleMessage);
+        NavigationConsoleLogger::LogMessageOnCommit(
+            navigation_handle, content::CONSOLE_MESSAGE_LEVEL_WARNING,
+            kActivationConsoleMessage);
       }
     }
     ActivationLevel level = filter ? filter->activation_state().activation_level

@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
+#include "components/subresource_filter/content/browser/navigation_console_logger.h"
 #include "components/subresource_filter/content/browser/page_load_statistics.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
@@ -109,8 +110,10 @@ void ContentSubresourceFilterDriverFactory::NotifyPageActivationComputed(
 
   if (warning &&
       activation_options().activation_level == ActivationLevel::ENABLED) {
-    DCHECK(on_commit_warning_messages_.empty());
-    on_commit_warning_messages_.push_back(kActivationWarningConsoleMessage);
+    NavigationConsoleLogger::LogMessageOnCommit(
+        navigation_handle, content::CONSOLE_MESSAGE_LEVEL_WARNING,
+        kActivationWarningConsoleMessage);
+
     // Do not disallow enforcement if activated via devtools.
     if (!forced_activation_via_devtools) {
       activation_decision_ = ActivationDecision::ACTIVATION_DISABLED;
@@ -151,29 +154,14 @@ void ContentSubresourceFilterDriverFactory::DidStartNavigation(
 void ContentSubresourceFilterDriverFactory::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument()) {
+      navigation_handle->IsSameDocument() ||
+      !navigation_handle->HasCommitted()) {
     return;
   }
-
-  std::vector<std::string> log_messages =
-      std::move(on_commit_warning_messages_);
-
-  if (!navigation_handle->HasCommitted())
-    return;
-
-  DCHECK(on_commit_warning_messages_.empty());
 
   if (activation_decision_ == ActivationDecision::UNKNOWN) {
     activation_decision_ = ActivationDecision::ACTIVATION_DISABLED;
     matched_configuration_ = Configuration();
-    return;
-  }
-
-  content::RenderFrameHost* frame_host =
-      navigation_handle->GetRenderFrameHost();
-  for (auto& warning_message : log_messages) {
-    frame_host->AddMessageToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING,
-                                    warning_message);
   }
 }
 
