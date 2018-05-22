@@ -23,7 +23,7 @@
 
 namespace {
 
-static const int kMaxNumThreadsMinus1 = 7;
+static const int kNumMultiThreadDecoders = 3;
 
 class AV1DecodeMultiThreadedTest
     : public ::libaom_test::CodecTestWith4Params<int, int, int, int>,
@@ -41,9 +41,10 @@ class AV1DecodeMultiThreadedTest
     cfg.allow_lowbitdepth = 1;
     single_thread_dec_ = codec_->CreateDecoder(cfg, 0);
 
-    for (int t = 0; t < kMaxNumThreadsMinus1; ++t) {
-      cfg.threads = t + 2;
-      multi_thread_dec_[t] = codec_->CreateDecoder(cfg, 0);
+    // Test cfg.threads == powers of 2.
+    for (int i = 0; i < kNumMultiThreadDecoders; ++i) {
+      cfg.threads <<= 1;
+      multi_thread_dec_[i] = codec_->CreateDecoder(cfg, 0);
     }
 
 #if CONFIG_AV1
@@ -51,10 +52,10 @@ class AV1DecodeMultiThreadedTest
       single_thread_dec_->Control(AV1_SET_DECODE_TILE_ROW, -1);
       single_thread_dec_->Control(AV1_SET_DECODE_TILE_COL, -1);
     }
-    for (int t = 0; t < kMaxNumThreadsMinus1; ++t) {
-      if (multi_thread_dec_[t]->IsAV1()) {
-        multi_thread_dec_[t]->Control(AV1_SET_DECODE_TILE_ROW, -1);
-        multi_thread_dec_[t]->Control(AV1_SET_DECODE_TILE_COL, -1);
+    for (int i = 0; i < kNumMultiThreadDecoders; ++i) {
+      if (multi_thread_dec_[i]->IsAV1()) {
+        multi_thread_dec_[i]->Control(AV1_SET_DECODE_TILE_ROW, -1);
+        multi_thread_dec_[i]->Control(AV1_SET_DECODE_TILE_COL, -1);
       }
     }
 #endif
@@ -62,7 +63,8 @@ class AV1DecodeMultiThreadedTest
 
   virtual ~AV1DecodeMultiThreadedTest() {
     delete single_thread_dec_;
-    for (int t = 0; t < kMaxNumThreadsMinus1; ++t) delete multi_thread_dec_[t];
+    for (int i = 0; i < kNumMultiThreadDecoders; ++i)
+      delete multi_thread_dec_[i];
   }
 
   virtual void SetUp() {
@@ -95,8 +97,8 @@ class AV1DecodeMultiThreadedTest
   virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
     UpdateMD5(single_thread_dec_, pkt, &md5_single_thread_);
 
-    for (int t = 0; t < kMaxNumThreadsMinus1; ++t)
-      UpdateMD5(multi_thread_dec_[t], pkt, &md5_multi_thread_[t]);
+    for (int i = 0; i < kNumMultiThreadDecoders; ++i)
+      UpdateMD5(multi_thread_dec_[i], pkt, &md5_multi_thread_[i]);
   }
 
   void DoTest() {
@@ -112,16 +114,16 @@ class AV1DecodeMultiThreadedTest
 
     const char *md5_single_thread_str = md5_single_thread_.Get();
 
-    for (int t = 0; t < kMaxNumThreadsMinus1; ++t) {
-      const char *md5_multi_thread_str = md5_multi_thread_[t].Get();
+    for (int i = 0; i < kNumMultiThreadDecoders; ++i) {
+      const char *md5_multi_thread_str = md5_multi_thread_[i].Get();
       ASSERT_STREQ(md5_single_thread_str, md5_multi_thread_str);
     }
   }
 
   ::libaom_test::MD5 md5_single_thread_;
-  ::libaom_test::MD5 md5_multi_thread_[kMaxNumThreadsMinus1];
+  ::libaom_test::MD5 md5_multi_thread_[kNumMultiThreadDecoders];
   ::libaom_test::Decoder *single_thread_dec_;
-  ::libaom_test::Decoder *multi_thread_dec_[kMaxNumThreadsMinus1];
+  ::libaom_test::Decoder *multi_thread_dec_[kNumMultiThreadDecoders];
 
  private:
   int n_tile_cols_;
@@ -136,8 +138,8 @@ class AV1DecodeMultiThreadedTest
 TEST_P(AV1DecodeMultiThreadedTest, MD5Match) {
   cfg_.large_scale_tile = 0;
   single_thread_dec_->Control(AV1_SET_TILE_MODE, 0);
-  for (int t = 0; t < kMaxNumThreadsMinus1; ++t)
-    multi_thread_dec_[t]->Control(AV1_SET_TILE_MODE, 0);
+  for (int i = 0; i < kNumMultiThreadDecoders; ++i)
+    multi_thread_dec_[i]->Control(AV1_SET_TILE_MODE, 0);
   DoTest();
 }
 
@@ -146,8 +148,8 @@ class AV1DecodeMultiThreadedTestLarge : public AV1DecodeMultiThreadedTest {};
 TEST_P(AV1DecodeMultiThreadedTestLarge, MD5Match) {
   cfg_.large_scale_tile = 0;
   single_thread_dec_->Control(AV1_SET_TILE_MODE, 0);
-  for (int t = 0; t < kMaxNumThreadsMinus1; ++t)
-    multi_thread_dec_[t]->Control(AV1_SET_TILE_MODE, 0);
+  for (int i = 0; i < kNumMultiThreadDecoders; ++i)
+    multi_thread_dec_[i]->Control(AV1_SET_TILE_MODE, 0);
   DoTest();
 }
 
@@ -166,8 +168,8 @@ class AV1DecodeMultiThreadedLSTestLarge
 TEST_P(AV1DecodeMultiThreadedLSTestLarge, MD5Match) {
   cfg_.large_scale_tile = 1;
   single_thread_dec_->Control(AV1_SET_TILE_MODE, 1);
-  for (int t = 0; t < kMaxNumThreadsMinus1; ++t)
-    multi_thread_dec_[t]->Control(AV1_SET_TILE_MODE, 1);
+  for (int i = 0; i < kNumMultiThreadDecoders; ++i)
+    multi_thread_dec_[i]->Control(AV1_SET_TILE_MODE, 1);
   DoTest();
 }
 
