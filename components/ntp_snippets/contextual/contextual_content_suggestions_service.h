@@ -56,13 +56,6 @@ class ContextualContentSuggestionsService : public KeyedService {
       const GURL& url,
       ntp_snippets::ImageFetchedCallback callback);
 
-  // Fetches an image for a given contextual suggestion ID.
-  // Asynchronous if cache or network is queried.
-  // TODO(wylieb): Remove this method if possible.
-  virtual void FetchContextualSuggestionImageLegacy(
-      const ntp_snippets::ContentSuggestion::ID& suggestion_id,
-      ntp_snippets::ImageFetchedCallback callback);
-
   void FetchDone(FetchClustersCallback callback,
                  ReportFetchMetricsCallback metrics_callback,
                  ContextualSuggestionsResult result);

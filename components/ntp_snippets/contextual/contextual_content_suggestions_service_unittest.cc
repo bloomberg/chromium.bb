@@ -128,22 +128,6 @@ class ContextualContentSuggestionsServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ContextualContentSuggestionsServiceTest);
 };
 
-
-TEST_F(ContextualContentSuggestionsServiceTest,
-       ShouldFetchEmptyImageIfNotFound) {
-  base::MockCallback<ImageFetchedCallback> mock_image_fetched_callback;
-  const std::string kEmpty;
-  ContentSuggestion::ID id(
-      Category::FromKnownCategory(KnownCategories::CONTEXTUAL), kEmpty);
-  EXPECT_CALL(mock_image_fetched_callback,
-              Run(Property(&gfx::Image::IsEmpty, true)));
-  source()->FetchContextualSuggestionImageLegacy(
-      id, mock_image_fetched_callback.Get());
-  // TODO(gaschler): Verify with a mock that the image fetcher is not called if
-  // the id is unknown.
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_F(ContextualContentSuggestionsServiceTest,
        ShouldFetchContextualSuggestionsClusters) {
   MockClustersCallback mock_callback;
