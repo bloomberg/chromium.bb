@@ -1,10 +1,5 @@
 [
   {
-    "prefix": "color_space",
-    "base": "fast/canvas/color-space",
-    "args": ["--force-color-profile=srgb"]
-  },
-  {
     "prefix": "custom-user-timing",
     "base": "http/tests/performance-timing/custom-user-timing",
     "args": ["--enable-blink-features=CustomUserTiming"]
