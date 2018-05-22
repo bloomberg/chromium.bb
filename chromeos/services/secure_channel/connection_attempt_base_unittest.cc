@@ -129,7 +129,9 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
                      bool should_run_next_operation = true) {
     // Before failing the operation, check to see how many failure details each
     // request has been passed.
-    std::unordered_map<std::string, size_t> id_to_num_details_map;
+    std::unordered_map<base::UnguessableToken, size_t,
+                       base::UnguessableTokenHash>
+        id_to_num_details_map;
     for (const auto* request : active_requests_) {
       id_to_num_details_map[request->request_id()] =
           request->handled_failure_details().size();
@@ -174,7 +176,7 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
   }
 
   void VerifyDelegateNotNotified() {
-    EXPECT_TRUE(fake_delegate_->attempt_id().empty());
+    EXPECT_TRUE(fake_delegate_->attempt_id().is_empty());
   }
 
   void VerifyDelegateNotifiedOfFailure() {

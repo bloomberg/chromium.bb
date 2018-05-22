@@ -8,6 +8,7 @@
 #include <ostream>
 
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 
 namespace chromeos {
 
@@ -32,7 +33,7 @@ class PendingConnectionRequestDelegate {
   // |request_id| corresponds to the ID returned by
   // PendingConnectionRequest::request_id().
   virtual void OnRequestFinishedWithoutConnection(
-      const std::string& request_id,
+      const base::UnguessableToken& request_id,
       FailedConnectionReason reason) = 0;
 
  private:

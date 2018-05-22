@@ -18,12 +18,12 @@ FakePendingConnectionRequestDelegate::~FakePendingConnectionRequestDelegate() =
 
 const base::Optional<PendingConnectionRequestDelegate::FailedConnectionReason>&
 FakePendingConnectionRequestDelegate::GetFailedConnectionReasonForId(
-    const std::string& request_id) {
+    const base::UnguessableToken& request_id) {
   return request_id_to_failed_connection_reason_map_[request_id];
 }
 
 void FakePendingConnectionRequestDelegate::OnRequestFinishedWithoutConnection(
-    const std::string& request_id,
+    const base::UnguessableToken& request_id,
     FailedConnectionReason reason) {
   request_id_to_failed_connection_reason_map_[request_id] = reason;
 

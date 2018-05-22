@@ -98,7 +98,7 @@ class ConnectionAttemptBase : public ConnectionAttempt<FailureDetailType>,
 
   // PendingConnectionRequestDelegate:
   void OnRequestFinishedWithoutConnection(
-      const std::string& request_id,
+      const base::UnguessableToken& request_id,
       PendingConnectionRequestDelegate::FailedConnectionReason reason)
       override {
     size_t removed_element_count = id_to_request_map_.erase(request_id);
@@ -160,8 +160,9 @@ class ConnectionAttemptBase : public ConnectionAttempt<FailureDetailType>,
   std::unique_ptr<ConnectToDeviceOperation<FailureDetailType>>
       current_operation_;
   std::unordered_map<
-      std::string,
-      std::unique_ptr<PendingConnectionRequest<FailureDetailType>>>
+      base::UnguessableToken,
+      std::unique_ptr<PendingConnectionRequest<FailureDetailType>>,
+      base::UnguessableTokenHash>
       id_to_request_map_;
   scoped_refptr<base::TaskRunner> task_runner_;
 
