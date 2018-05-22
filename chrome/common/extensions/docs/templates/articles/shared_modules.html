@@ -38,9 +38,9 @@ a Shared Module that exports its resources:
   "name": "My Shared Module",
   <b>"export": {
     // Optional list of extension IDs explicitly allowed to
-    // import this Shared Module's resources.  If no whitelist
+    // import this Shared Module's resources.  If no allowlist
     // is given, all extensions are allowed to import it.
-    "whitelist": [
+    "allowlist": [
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
     ]
@@ -109,7 +109,7 @@ when needed by a dependent extension, and automatically uninstalled
 when the last extension which references it is uninstalled.  In order
 to upload an extension which uses a Shared Module, the Shared Module
 must be published in the Chrome Web Store and the extension must
-not be restricted from using the Shared Module by its whitelist.
+not be restricted from using the Shared Module by its allowlist.
 </p>
 
 <p>
