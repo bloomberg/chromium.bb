@@ -1684,26 +1684,6 @@
         }
       },
       {
-        "args": [
-          "--smoke-test-mode",
-          "--test-shard-map-filename=smoke_test_benchmark_shard_map.json",
-          "--browser=debug"
-        ],
-        "isolate_name": "performance_test_suite",
-        "merge": {
-          "args": [
-            "--smoke-test-mode"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "performance_test_suite",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "hard_timeout": 960,
-          "shards": 12
-        }
-      },
-      {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
@@ -2942,26 +2922,6 @@
         "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
-        }
-      },
-      {
-        "args": [
-          "--smoke-test-mode",
-          "--test-shard-map-filename=smoke_test_benchmark_shard_map.json",
-          "--browser=debug"
-        ],
-        "isolate_name": "performance_test_suite",
-        "merge": {
-          "args": [
-            "--smoke-test-mode"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "performance_test_suite",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "hard_timeout": 960,
-          "shards": 12
         }
       },
       {
