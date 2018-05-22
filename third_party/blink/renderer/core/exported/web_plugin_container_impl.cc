@@ -46,6 +46,7 @@
 #include "third_party/blink/public/web/web_dom_message_event.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_print_preset_options.h"
@@ -73,6 +74,7 @@
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
+#include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -302,6 +304,13 @@ void WebPluginContainerImpl::SetPlugin(WebPlugin* plugin) {
 
   element_->ResetInstance();
   web_plugin_ = plugin;
+}
+
+void WebPluginContainerImpl::UsePluginAsFindHandler() {
+  WebLocalFrameImpl* frame =
+      WebLocalFrameImpl::FromFrame(element_->GetDocument().GetFrame());
+  if (frame)
+    frame->GetFindInPage()->SetPluginFindHandler(this);
 }
 
 float WebPluginContainerImpl::DeviceScaleFactor() {
@@ -764,6 +773,12 @@ void WebPluginContainerImpl::Dispose() {
 
   RequestTouchEventType(kTouchEventRequestTypeNone);
   SetWantsWheelEvents(false);
+
+  if (WebLocalFrameImpl* frame =
+          WebLocalFrameImpl::FromFrame(element_->GetDocument().GetFrame())) {
+    if (frame->GetFindInPage()->PluginFindHandler() == this)
+      frame->GetFindInPage()->SetPluginFindHandler(nullptr);
+  }
 
   if (web_plugin_) {
     CHECK(web_plugin_->Container() == this);

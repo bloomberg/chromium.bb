@@ -25,7 +25,7 @@ class FindInPageTest : public testing::Test {
     web_view_helper_.Initialize();
     WebLocalFrameImpl& frame_impl = *web_view_helper_.LocalMainFrame();
     document_ = static_cast<Document*>(frame_impl.GetDocument());
-    find_in_page_ = frame_impl.GetFindInPageForTesting();
+    find_in_page_ = frame_impl.GetFindInPage();
   }
 
   Document& GetDocument() const;

@@ -135,6 +135,9 @@ class WebPluginContainer {
   // The caller is then responsible for destroying the old plugin.
   virtual void SetPlugin(WebPlugin*) = 0;
 
+  // Sets |this| as find handler for the associated frame.
+  virtual void UsePluginAsFindHandler() = 0;
+
   virtual float DeviceScaleFactor() = 0;
   virtual float PageScaleFactor() = 0;
   virtual float PageZoomFactor() = 0;

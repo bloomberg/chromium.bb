@@ -361,14 +361,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void RenderWidgetWillHandleMouseEvent();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  // Get/set the plugin which will be used to handle document find requests.
-  void set_plugin_find_handler(PepperPluginInstanceImpl* plugin) {
-    plugin_find_handler_ = plugin;
-  }
-  PepperPluginInstanceImpl* plugin_find_handler() {
-    return plugin_find_handler_;
-  }
-
   // Notification that a PPAPI plugin has been created.
   void PepperPluginCreated(RendererPpapiHost* host);
 
@@ -1414,8 +1406,6 @@ class CONTENT_EXPORT RenderFrameImpl
   base::string16 pepper_composition_text_;
 
   PluginPowerSaverHelper* plugin_power_saver_helper_;
-
-  PepperPluginInstanceImpl* plugin_find_handler_;
 #endif
 
   RendererWebCookieJarImpl cookie_jar_;

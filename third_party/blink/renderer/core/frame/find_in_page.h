@@ -10,12 +10,13 @@
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
-class TextFinder;
 class WebLocalFrameImpl;
 class WebString;
 struct WebFindOptions;
@@ -76,6 +77,12 @@ class CORE_EXPORT FindInPage final
   // Otherwise creates it and then returns.
   TextFinder& EnsureTextFinder();
 
+  void SetPluginFindHandler(WebPluginContainer* plugin);
+
+  WebPluginContainer* PluginFindHandler() const;
+
+  WebPlugin* GetWebPluginForFind();
+
   void BindToRequest(mojom::blink::FindInPageAssociatedRequest request);
 
   void Dispose();
@@ -96,6 +103,8 @@ class CORE_EXPORT FindInPage final
 
   // Will be initialized after first call to ensureTextFinder().
   Member<TextFinder> text_finder_;
+
+  WebPluginContainer* plugin_find_handler_;
 
   const Member<WebLocalFrameImpl> frame_;
 
