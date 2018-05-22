@@ -172,9 +172,6 @@ class WebStateImpl;
 - (void)executeUserJavaScript:(NSString*)script
             completionHandler:(web::JavaScriptResultBlock)completion;
 
-// Dismisses the soft keyboard.
-- (void)dismissKeyboard;
-
 // Requires that the next load rebuild the web view. This is expensive, and
 // should be used only in the case where something has changed that the web view
 // only checks on creation, such that the whole object needs to be rebuilt.

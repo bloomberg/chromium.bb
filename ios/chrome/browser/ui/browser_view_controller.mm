@@ -1456,7 +1456,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Keyboard shouldn't overlay the ecoutez window, so dismiss find in page and
   // dismiss the keyboard.
   [self closeFindInPage];
-  [[_model currentTab].webController dismissKeyboard];
+  [_model.currentTab.view endEditing:NO];
+  id nativeController = [self nativeControllerForTab:_model.currentTab];
+  if ([nativeController respondsToSelector:@selector(dismissKeyboard)])
+    [nativeController dismissKeyboard];
 
   // Ensure that voice search objects are created.
   [self ensureVoiceSearchControllerCreated];
@@ -4948,7 +4951,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // Dismiss the omnibox (if open).
   [self.dispatcher cancelOmniboxEdit];
   // Dismiss the soft keyboard (if open).
-  [[_model currentTab].webController dismissKeyboard];
+  [_model.currentTab.view endEditing:NO];
+  id nativeController = [self nativeControllerForTab:_model.currentTab];
+  if ([nativeController respondsToSelector:@selector(dismissKeyboard)])
+    [nativeController dismissKeyboard];
   // Dismiss Find in Page focus.
   [self updateFindBar:NO shouldFocus:NO];
 

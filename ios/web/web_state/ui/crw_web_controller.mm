@@ -1000,12 +1000,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   DCHECK(!_webView);
 }
 
-- (void)dismissKeyboard {
-  [_webView endEditing:YES];
-  if ([self.nativeController respondsToSelector:@selector(dismissKeyboard)])
-    [self.nativeController dismissKeyboard];
-}
-
 - (id<CRWNativeContent>)nativeController {
   return [_containerView nativeController];
 }
