@@ -909,7 +909,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         'gclient_gn_args = [\'false_var\', \'false_str_var\', \'true_var\', '
             '\'true_str_var\', \'str_var\', \'cond_var\']',
         'allowed_hosts = [',
-        '  "git://127.0.0.1:20000/git/",',
+        '  "' + self.git_base + '",',
         ']',
         '',
         'deps = {',
@@ -921,7 +921,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '  # src',
         '  "src": {',
-        '    "url": "git://127.0.0.1:20000/git/repo_6",',
+        '    "url": "' + self.git_base + 'repo_6",',
         '  },',
         '',
         '  # src -> src/mac_repo',
@@ -1022,7 +1022,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  "false_var": False,',
         '',
         '  # src',
-        '  "git_base": \'git://127.0.0.1:20000/git/\',',
+        '  "git_base": \'' + self.git_base + '\',',
         '',
         '  # src',
         '  "hook1_contents": \'git_hooked1\',',
@@ -1044,9 +1044,9 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '}',
         '',
-        '# git://127.0.0.1:20000/git/repo_2@%s, DEPS' % (
+        '# ' + self.git_base + 'repo_2@%s, DEPS' % (
                  self.githash('repo_2', 1)[:7]),
-        '# git://127.0.0.1:20000/git/repo_8, DEPS'
+        '# ' + self.git_base + 'repo_8, DEPS'
     ], deps_contents.splitlines())
 
   def testFlattenPinAllDeps(self):
@@ -1070,7 +1070,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         'gclient_gn_args = [\'false_var\', \'false_str_var\', \'true_var\', '
             '\'true_str_var\', \'str_var\', \'cond_var\']',
         'allowed_hosts = [',
-        '  "git://127.0.0.1:20000/git/",',
+        '  "' + self.git_base + '",',
         ']',
         '',
         'deps = {',
@@ -1082,7 +1082,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '  # src',
         '  "src": {',
-        '    "url": "git://127.0.0.1:20000/git/repo_6@%s",' % (
+        '    "url": "' + self.git_base + 'repo_6@%s",' % (
                  self.githash('repo_6', 1)),
         '  },',
         '',
@@ -1184,7 +1184,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  "false_var": False,',
         '',
         '  # src',
-        '  "git_base": \'git://127.0.0.1:20000/git/\',',
+        '  "git_base": \'' + self.git_base + '\',',
         '',
         '  # src',
         '  "hook1_contents": \'git_hooked1\',',
@@ -1206,9 +1206,9 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '}',
         '',
-        '# git://127.0.0.1:20000/git/repo_2@%s, DEPS' % (
+        '# ' + self.git_base + 'repo_2@%s, DEPS' % (
             self.githash('repo_2', 1)),
-        '# git://127.0.0.1:20000/git/repo_8@%s, DEPS' % (
+        '# ' + self.git_base + 'repo_8@%s, DEPS' % (
             self.githash('repo_8', 1)),
     ], deps_contents.splitlines())
 
@@ -1238,7 +1238,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         'deps = {',
         '  # src',
         '  "src": {',
-        '    "url": "git://127.0.0.1:20000/git/repo_10",',
+        '    "url": "' + self.git_base + 'repo_10",',
         '  },',
         '',
         '  # src -> src/repo9 -> src/repo8 -> src/recursed_os_repo',
@@ -1293,25 +1293,25 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '}',
         '',
-        '# git://127.0.0.1:20000/git/repo_11, DEPS',
-        '# git://127.0.0.1:20000/git/repo_8, DEPS',
-        '# git://127.0.0.1:20000/git/repo_9, DEPS',
+        '# ' + self.git_base + 'repo_11, DEPS',
+        '# ' + self.git_base + 'repo_8, DEPS',
+        '# ' + self.git_base + 'repo_9, DEPS',
     ], deps_contents.splitlines())
 
     with open(output_deps_files) as f:
       deps_files_contents = json.load(f)
 
     self.assertEqual([
-      {'url': 'git://127.0.0.1:20000/git/repo_11', 'deps_file': 'DEPS',
-       'hierarchy': [['src', 'git://127.0.0.1:20000/git/repo_10'],
-                     ['src/repo11', 'git://127.0.0.1:20000/git/repo_11']]},
-      {'url': 'git://127.0.0.1:20000/git/repo_8', 'deps_file': 'DEPS',
-       'hierarchy': [['src', 'git://127.0.0.1:20000/git/repo_10'],
-                     ['src/repo9', 'git://127.0.0.1:20000/git/repo_9'],
-                     ['src/repo8', 'git://127.0.0.1:20000/git/repo_8']]},
-      {'url': 'git://127.0.0.1:20000/git/repo_9', 'deps_file': 'DEPS',
-       'hierarchy': [['src', 'git://127.0.0.1:20000/git/repo_10'],
-                     ['src/repo9', 'git://127.0.0.1:20000/git/repo_9']]},
+      {'url': self.git_base + 'repo_11', 'deps_file': 'DEPS',
+       'hierarchy': [['src', self.git_base + 'repo_10'],
+                     ['src/repo11', self.git_base + 'repo_11']]},
+      {'url': self.git_base + 'repo_8', 'deps_file': 'DEPS',
+       'hierarchy': [['src', self.git_base + 'repo_10'],
+                     ['src/repo9', self.git_base + 'repo_9'],
+                     ['src/repo8', self.git_base + 'repo_8']]},
+      {'url': self.git_base + 'repo_9', 'deps_file': 'DEPS',
+       'hierarchy': [['src', self.git_base + 'repo_10'],
+                     ['src/repo9', self.git_base + 'repo_9']]},
     ], deps_files_contents)
 
   def testFlattenCipd(self):
@@ -1333,7 +1333,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         'deps = {',
         '  # src',
         '  "src": {',
-        '    "url": "git://127.0.0.1:20000/git/repo_14",',
+        '    "url": "' + self.git_base + 'repo_14",',
         '  },',
         '',
         '  # src -> src/cipd_dep:package0',
