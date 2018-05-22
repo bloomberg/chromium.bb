@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
-#include "base/stl_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
@@ -48,11 +47,12 @@ NameValuePairsParser::NameValuePairsParser(NameValueMap* map)
 
 void NameValuePairsParser::AddNameValuePair(const std::string& key,
                                             const std::string& value) {
-  if (!base::ContainsKey(*map_, key)) {
+  const auto it = map_->find(key);
+  if (it == map_->end()) {
     (*map_)[key] = value;
     VLOG(1) << "name: " << key << ", value: " << value;
-  } else {
-    LOG(WARNING) << "Key " << key << " already has value " << (*map_)[key]
+  } else if (it->second != value) {
+    LOG(WARNING) << "Key " << key << " already has value " << it->second
                  << ", ignoring new value: " << value;
   }
 }
