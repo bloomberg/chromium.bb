@@ -85,74 +85,6 @@ static VideoDecoderName ConvertVideoDecoderNameToEnum(const std::string& name) {
   return VideoDecoderName::kUnknown;
 }
 
-static bool ShouldReportToUma(WatchTimeKey key) {
-  switch (key) {
-    // These keys are not currently reported to UMA, but are used for UKM metric
-    // calculations. To report them in the future just add the keys to report to
-    // the lower list and add histograms.xml entries for them.
-    case WatchTimeKey::kVideoAll:
-    case WatchTimeKey::kVideoMse:
-    case WatchTimeKey::kVideoEme:
-    case WatchTimeKey::kVideoSrc:
-    case WatchTimeKey::kVideoBattery:
-    case WatchTimeKey::kVideoAc:
-    case WatchTimeKey::kVideoDisplayFullscreen:
-    case WatchTimeKey::kVideoDisplayInline:
-    case WatchTimeKey::kVideoDisplayPictureInPicture:
-    case WatchTimeKey::kVideoEmbeddedExperience:
-    case WatchTimeKey::kVideoNativeControlsOn:
-    case WatchTimeKey::kVideoNativeControlsOff:
-    case WatchTimeKey::kVideoBackgroundAll:
-    case WatchTimeKey::kVideoBackgroundMse:
-    case WatchTimeKey::kVideoBackgroundEme:
-    case WatchTimeKey::kVideoBackgroundSrc:
-    case WatchTimeKey::kVideoBackgroundBattery:
-    case WatchTimeKey::kVideoBackgroundAc:
-    case WatchTimeKey::kVideoBackgroundEmbeddedExperience:
-      return false;
-
-    case WatchTimeKey::kAudioAll:
-    case WatchTimeKey::kAudioMse:
-    case WatchTimeKey::kAudioEme:
-    case WatchTimeKey::kAudioSrc:
-    case WatchTimeKey::kAudioBattery:
-    case WatchTimeKey::kAudioAc:
-    case WatchTimeKey::kAudioEmbeddedExperience:
-    case WatchTimeKey::kAudioNativeControlsOn:
-    case WatchTimeKey::kAudioNativeControlsOff:
-    case WatchTimeKey::kAudioBackgroundAll:
-    case WatchTimeKey::kAudioBackgroundMse:
-    case WatchTimeKey::kAudioBackgroundEme:
-    case WatchTimeKey::kAudioBackgroundSrc:
-    case WatchTimeKey::kAudioBackgroundBattery:
-    case WatchTimeKey::kAudioBackgroundAc:
-    case WatchTimeKey::kAudioBackgroundEmbeddedExperience:
-    case WatchTimeKey::kAudioVideoAll:
-    case WatchTimeKey::kAudioVideoMse:
-    case WatchTimeKey::kAudioVideoEme:
-    case WatchTimeKey::kAudioVideoSrc:
-    case WatchTimeKey::kAudioVideoBattery:
-    case WatchTimeKey::kAudioVideoAc:
-    case WatchTimeKey::kAudioVideoDisplayFullscreen:
-    case WatchTimeKey::kAudioVideoDisplayInline:
-    case WatchTimeKey::kAudioVideoDisplayPictureInPicture:
-    case WatchTimeKey::kAudioVideoEmbeddedExperience:
-    case WatchTimeKey::kAudioVideoNativeControlsOn:
-    case WatchTimeKey::kAudioVideoNativeControlsOff:
-    case WatchTimeKey::kAudioVideoBackgroundAll:
-    case WatchTimeKey::kAudioVideoBackgroundMse:
-    case WatchTimeKey::kAudioVideoBackgroundEme:
-    case WatchTimeKey::kAudioVideoBackgroundSrc:
-    case WatchTimeKey::kAudioVideoBackgroundBattery:
-    case WatchTimeKey::kAudioVideoBackgroundAc:
-    case WatchTimeKey::kAudioVideoBackgroundEmbeddedExperience:
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
 static void RecordWatchTimeInternal(
     base::StringPiece key,
     base::TimeDelta value,
@@ -236,9 +168,10 @@ void WatchTimeRecorder::FinalizeWatchTime(
     // Report only certain keys to UMA and only if they have at met the minimum
     // watch time requirement. Otherwise, for SRC/MSE/EME keys, log them to the
     // discard metric.
-    if (ShouldReportToUma(kv.first)) {
+    base::StringPiece key_str = ConvertWatchTimeKeyToStringForUma(kv.first);
+    if (!key_str.empty()) {
       if (kv.second >= kMinimumElapsedWatchTime) {
-        RecordWatchTimeInternal(WatchTimeKeyToString(kv.first), kv.second);
+        RecordWatchTimeInternal(key_str, kv.second);
       } else if (kv.second > base::TimeDelta()) {
         auto it = std::find_if(extended_metrics_keys_.begin(),
                                extended_metrics_keys_.end(),
@@ -264,7 +197,7 @@ void WatchTimeRecorder::FinalizeWatchTime(
   // Check for watch times entries that have corresponding MTBR entries and
   // report the MTBR value using watch_time / |underflow_count|. Do this only
   // for foreground reporters since we only have UMA keys for foreground.
-  if (!properties_->is_background) {
+  if (!properties_->is_background && !properties_->is_muted) {
     for (auto& mapping : extended_metrics_keys_) {
       auto it = watch_time_info_.find(mapping.watch_time_key);
       if (it == watch_time_info_.end() || it->second < kMinimumElapsedWatchTime)
@@ -308,11 +241,6 @@ void WatchTimeRecorder::UpdateUnderflowCount(int32_t count) {
   underflow_count_ = count;
 }
 
-// static
-bool WatchTimeRecorder::ShouldReportUmaForTesting(WatchTimeKey key) {
-  return ShouldReportToUma(key);
-}
-
 void WatchTimeRecorder::RecordUkmPlaybackData() {
   // UKM may be unavailable in content_shell or other non-chrome/ builds; it
   // may also be unavailable if browser shutdown has started; so this may be a
@@ -329,6 +257,7 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
 
   builder.SetIsTopFrame(is_top_frame_);
   builder.SetIsBackground(properties_->is_background);
+  builder.SetIsMuted(properties_->is_muted);
   builder.SetPlayerID(player_id_);
 
   bool recorded_all_metric = false;
@@ -336,6 +265,7 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
     if (kv.first == WatchTimeKey::kAudioAll ||
         kv.first == WatchTimeKey::kAudioBackgroundAll ||
         kv.first == WatchTimeKey::kAudioVideoAll ||
+        kv.first == WatchTimeKey::kAudioVideoMutedAll ||
         kv.first == WatchTimeKey::kAudioVideoBackgroundAll ||
         kv.first == WatchTimeKey::kVideoAll ||
         kv.first == WatchTimeKey::kVideoBackgroundAll) {
@@ -351,6 +281,7 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
     } else if (kv.first == WatchTimeKey::kAudioAc ||
                kv.first == WatchTimeKey::kAudioBackgroundAc ||
                kv.first == WatchTimeKey::kAudioVideoAc ||
+               kv.first == WatchTimeKey::kAudioVideoMutedAc ||
                kv.first == WatchTimeKey::kAudioVideoBackgroundAc ||
                kv.first == WatchTimeKey::kVideoAc ||
                kv.first == WatchTimeKey::kVideoBackgroundAc) {
@@ -358,25 +289,32 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
     } else if (kv.first == WatchTimeKey::kAudioBattery ||
                kv.first == WatchTimeKey::kAudioBackgroundBattery ||
                kv.first == WatchTimeKey::kAudioVideoBattery ||
+               kv.first == WatchTimeKey::kAudioVideoMutedBattery ||
                kv.first == WatchTimeKey::kAudioVideoBackgroundBattery ||
                kv.first == WatchTimeKey::kVideoBattery ||
                kv.first == WatchTimeKey::kVideoBackgroundBattery) {
       builder.SetWatchTime_Battery(kv.second.InMilliseconds());
     } else if (kv.first == WatchTimeKey::kAudioNativeControlsOn ||
                kv.first == WatchTimeKey::kAudioVideoNativeControlsOn ||
+               kv.first == WatchTimeKey::kAudioVideoMutedNativeControlsOn ||
                kv.first == WatchTimeKey::kVideoNativeControlsOn) {
       builder.SetWatchTime_NativeControlsOn(kv.second.InMilliseconds());
     } else if (kv.first == WatchTimeKey::kAudioNativeControlsOff ||
                kv.first == WatchTimeKey::kAudioVideoNativeControlsOff ||
+               kv.first == WatchTimeKey::kAudioVideoMutedNativeControlsOff ||
                kv.first == WatchTimeKey::kVideoNativeControlsOff) {
       builder.SetWatchTime_NativeControlsOff(kv.second.InMilliseconds());
     } else if (kv.first == WatchTimeKey::kAudioVideoDisplayFullscreen ||
+               kv.first == WatchTimeKey::kAudioVideoMutedDisplayFullscreen ||
                kv.first == WatchTimeKey::kVideoDisplayFullscreen) {
       builder.SetWatchTime_DisplayFullscreen(kv.second.InMilliseconds());
     } else if (kv.first == WatchTimeKey::kAudioVideoDisplayInline ||
+               kv.first == WatchTimeKey::kAudioVideoMutedDisplayInline ||
                kv.first == WatchTimeKey::kVideoDisplayInline) {
       builder.SetWatchTime_DisplayInline(kv.second.InMilliseconds());
     } else if (kv.first == WatchTimeKey::kAudioVideoDisplayPictureInPicture ||
+               kv.first ==
+                   WatchTimeKey::kAudioVideoMutedDisplayPictureInPicture ||
                kv.first == WatchTimeKey::kVideoDisplayPictureInPicture) {
       builder.SetWatchTime_DisplayPictureInPicture(kv.second.InMilliseconds());
     }

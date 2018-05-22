@@ -47,6 +47,18 @@ enum class WatchTimeKey : int {
   kAudioVideoBackgroundBattery,
   kAudioVideoBackgroundAc,
   kAudioVideoBackgroundEmbeddedExperience,
+  kAudioVideoMutedAll,
+  kAudioVideoMutedMse,
+  kAudioVideoMutedEme,
+  kAudioVideoMutedSrc,
+  kAudioVideoMutedBattery,
+  kAudioVideoMutedAc,
+  kAudioVideoMutedEmbeddedExperience,
+  kAudioVideoMutedDisplayFullscreen,
+  kAudioVideoMutedDisplayInline,
+  kAudioVideoMutedDisplayPictureInPicture,
+  kAudioVideoMutedNativeControlsOn,
+  kAudioVideoMutedNativeControlsOff,
   kVideoAll,
   kVideoMse,
   kVideoEme,
@@ -98,7 +110,10 @@ MEDIA_EXPORT extern const char kDiscardedWatchTimeAudioVideoSrc[];
 MEDIA_EXPORT extern const char kDiscardedWatchTimeAudioVideoMse[];
 MEDIA_EXPORT extern const char kDiscardedWatchTimeAudioVideoEme[];
 
-MEDIA_EXPORT base::StringPiece WatchTimeKeyToString(WatchTimeKey key);
+// Returns the UMA key name associated with a given WatchTimeKey or an empty
+// string if they key should not be logged to UMA.
+MEDIA_EXPORT base::StringPiece ConvertWatchTimeKeyToStringForUma(
+    WatchTimeKey key);
 
 }  // namespace media
 

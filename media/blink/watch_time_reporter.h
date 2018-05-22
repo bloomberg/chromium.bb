@@ -44,6 +44,10 @@ namespace media {
 // collection starts. As with other events, there is hysteresis on change
 // between the foreground and background.
 //
+// Similarly, there are both muted and unmuted buckets for watch time. E.g., if
+// a playback is muted the unmuted collection stops and muted collection starts.
+// As with other events, there is hysteresis between mute and unmute.
+//
 // Power events (on/off battery power), native controls changes, or display type
 // changes have a similar hysteresis, but unlike the aforementioned properties,
 // will not stop metric collection.
@@ -156,6 +160,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // Internal constructor for marking background status.
   WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
                     bool is_background,
+                    bool is_muted,
                     GetMediaTimeCB get_media_time_cb,
                     mojom::MediaMetricsProvider* provider,
                     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -178,6 +183,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // Initialized during construction.
   const mojom::PlaybackPropertiesPtr properties_;
   const bool is_background_;
+  const bool is_muted_;
   const GetMediaTimeCB get_media_time_cb_;
   mojom::WatchTimeRecorderPtr recorder_;
 
@@ -230,6 +236,10 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // Special case reporter for handling background video watch time. Configured
   // as an audio only WatchTimeReporter with |is_background_| set to true.
   std::unique_ptr<WatchTimeReporter> background_reporter_;
+
+  // Similar to the above, but for muted audio+video watch time. Configured as
+  // an audio+video WatchTimeReporter with |is_muted_| set to true.
+  std::unique_ptr<WatchTimeReporter> muted_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(WatchTimeReporter);
 };
