@@ -2,14 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# ksv: Keyboard Shortcut Viewer
-source_set("shortcut_viewer") {
+import("//services/service_manager/public/service_manifest.gni")
+
+# KSV: Keyboard Shortcut Viewer
+source_set("lib") {
   sources = [
     "keyboard_shortcut_item.cc",
     "keyboard_shortcut_item.h",
     "keyboard_shortcut_viewer_metadata.cc",
     "keyboard_shortcut_viewer_metadata.h",
     "ksv_export.h",
+    "shortcut_viewer_application.cc",
+    "shortcut_viewer_application.h",
     "views/bubble_view.cc",
     "views/bubble_view.h",
     "views/keyboard_shortcut_item_list_view.cc",
@@ -30,6 +34,7 @@ source_set("shortcut_viewer") {
     "//ash/public/cpp",
     "//ash/public/cpp/resources:ash_public_unscaled_resources",
     "//cc/paint",
+    "//services/service_manager/public/cpp/",
     "//ui/accessibility",
     "//ui/aura",
     "//ui/chromeos/events",
@@ -38,7 +43,14 @@ source_set("shortcut_viewer") {
     "//ui/events/devices",
     "//ui/events/ozone:events_ozone_layout",
     "//ui/views",
+    "//ui/views/mus",
+    "//ui/views/mus:resources",
   ]
+}
+
+service_manifest("manifest") {
+  name = "shortcut_viewer_app"
+  source = "manifest.json"
 }
 
 source_set("unit_tests") {
@@ -47,7 +59,7 @@ source_set("unit_tests") {
     "views/keyboard_shortcut_view_unittest.cc",
   ]
   deps = [
-    ":shortcut_viewer",
+    ":lib",
     "//ash:test_support_without_content",
     "//services/ui/public/cpp/input_devices:test_support",
     "//testing/gtest",
