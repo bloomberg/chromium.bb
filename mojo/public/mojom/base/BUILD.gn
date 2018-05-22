@@ -27,9 +27,11 @@ mojom_component("base") {
   if (is_win) {
     sources += [ "logfont_win.mojom" ]
   }
-
-  if (is_posix && !is_android && !is_fuchsia && !is_mac) {
-    enabled_features = [ "shared_memory_region_uses_fd_pair" ]
+  enabled_features = []
+  if (is_win) {
+    enabled_features += [ "file_path_is_string16" ]
+  } else {
+    enabled_features += [ "file_path_is_string" ]
   }
 
   output_prefix = "mojo_base_mojom"
