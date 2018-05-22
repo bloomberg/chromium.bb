@@ -106,6 +106,8 @@ struct gl_output_state {
 
 	struct weston_matrix output_matrix;
 
+	EGLSyncKHR begin_render_sync, end_render_sync;
+
 	/* struct timeline_render_point::link */
 	struct wl_list timeline_render_point_list;
 };
@@ -367,11 +369,11 @@ timeline_render_point_handler(int fd, uint32_t mask, void *data)
 }
 
 static EGLSyncKHR
-timeline_create_render_sync(struct gl_renderer *gr)
+create_render_sync(struct gl_renderer *gr)
 {
 	static const EGLint attribs[] = { EGL_NONE };
 
-	if (!weston_timeline_enabled_ || !gr->has_native_fence_sync)
+	if (!gr->has_native_fence_sync)
 		return EGL_NO_SYNC_KHR;
 
 	return gr->create_sync(gr->egl_display, EGL_SYNC_NATIVE_FENCE_ANDROID,
@@ -400,12 +402,12 @@ timeline_submit_render_sync(struct gl_renderer *gr,
 
 	fd = gr->dup_native_fence_fd(gr->egl_display, sync);
 	if (fd == EGL_NO_NATIVE_FENCE_FD_ANDROID)
-		goto out;
+		return;
 
 	trp = zalloc(sizeof *trp);
 	if (trp == NULL) {
 		close(fd);
-		goto out;
+		return;
 	}
 
 	trp->type = type;
@@ -417,9 +419,6 @@ timeline_submit_render_sync(struct gl_renderer *gr,
 						 trp);
 
 	wl_list_insert(&go->timeline_render_point_list, &trp->link);
-
-out:
-	gr->destroy_sync(gr->egl_display, sync);
 }
 
 static struct egl_image*
@@ -1254,12 +1253,16 @@ gl_renderer_repaint_output(struct weston_output *output,
 	pixman_box32_t *rects;
 	pixman_region32_t buffer_damage, total_damage;
 	enum gl_border_status border_damage = BORDER_STATUS_CLEAN;
-	EGLSyncKHR begin_render_sync, end_render_sync;
 
 	if (use_output(output) < 0)
 		return;
 
-	begin_render_sync = timeline_create_render_sync(gr);
+	if (go->begin_render_sync != EGL_NO_SYNC_KHR)
+		gr->destroy_sync(gr->egl_display, go->begin_render_sync);
+	if (go->end_render_sync != EGL_NO_SYNC_KHR)
+		gr->destroy_sync(gr->egl_display, go->end_render_sync);
+
+	go->begin_render_sync = create_render_sync(gr);
 
 	/* Calculate the viewport */
 	glViewport(go->borders[GL_RENDERER_BORDER_LEFT].width,
@@ -1309,7 +1312,7 @@ gl_renderer_repaint_output(struct weston_output *output,
 	pixman_region32_copy(&output->previous_damage, output_damage);
 	wl_signal_emit(&output->frame_signal, output);
 
-	end_render_sync = timeline_create_render_sync(gr);
+	go->end_render_sync = create_render_sync(gr);
 
 	if (gr->swap_buffers_with_damage) {
 		pixman_region32_init(&buffer_damage);
@@ -1360,9 +1363,10 @@ gl_renderer_repaint_output(struct weston_output *output,
 	/* We have to submit the render sync objects after swap buffers, since
 	 * the objects get assigned a valid sync file fd only after a gl flush.
 	 */
-	timeline_submit_render_sync(gr, compositor, output, begin_render_sync,
+	timeline_submit_render_sync(gr, compositor, output,
+				    go->begin_render_sync,
 				    TIMELINE_RENDER_POINT_TYPE_BEGIN);
-	timeline_submit_render_sync(gr, compositor, output, end_render_sync,
+	timeline_submit_render_sync(gr, compositor, output, go->end_render_sync,
 				    TIMELINE_RENDER_POINT_TYPE_END);
 }
 
@@ -3065,6 +3069,9 @@ gl_renderer_output_create(struct weston_output *output,
 
 	wl_list_init(&go->timeline_render_point_list);
 
+	go->begin_render_sync = EGL_NO_SYNC_KHR;
+	go->end_render_sync = EGL_NO_SYNC_KHR;
+
 	output->renderer_state = go;
 
 	return 0;
@@ -3124,6 +3131,11 @@ gl_renderer_output_destroy(struct weston_output *output)
 	wl_list_for_each_safe(trp, tmp, &go->timeline_render_point_list, link)
 		timeline_render_point_destroy(trp);
 
+	if (go->begin_render_sync != EGL_NO_SYNC_KHR)
+		gr->destroy_sync(gr->egl_display, go->begin_render_sync);
+	if (go->end_render_sync != EGL_NO_SYNC_KHR)
+		gr->destroy_sync(gr->egl_display, go->end_render_sync);
+
 	free(go);
 }
 
@@ -3131,6 +3143,23 @@ static EGLSurface
 gl_renderer_output_surface(struct weston_output *output)
 {
 	return get_output_state(output)->egl_surface;
+}
+
+static int
+gl_renderer_create_fence_fd(struct weston_output *output)
+{
+	struct gl_output_state *go = get_output_state(output);
+	struct gl_renderer *gr = get_renderer(output->compositor);
+	int fd;
+
+	if (go->end_render_sync == EGL_NO_SYNC_KHR)
+		return -1;
+
+	fd = gr->dup_native_fence_fd(gr->egl_display, go->end_render_sync);
+	if (fd == EGL_NO_NATIVE_FENCE_FD_ANDROID)
+		return -1;
+
+	return fd;
 }
 
 static void
@@ -3815,5 +3844,6 @@ WL_EXPORT struct gl_renderer_interface gl_renderer_interface = {
 	.output_destroy = gl_renderer_output_destroy,
 	.output_surface = gl_renderer_output_surface,
 	.output_set_border = gl_renderer_output_set_border,
+	.create_fence_fd = gl_renderer_create_fence_fd,
 	.print_egl_error_state = gl_renderer_print_egl_error_state
 };

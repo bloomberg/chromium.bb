@@ -113,6 +113,13 @@ struct gl_renderer_interface {
 				  int32_t width, int32_t height,
 				  int32_t tex_width, unsigned char *data);
 
+	/* Create fence sync FD to wait for GPU rendering.
+	 *
+	 * Return FD on success, -1 on failure or unsupported
+	 * EGL_ANDROID_native_fence_sync extension.
+	 */
+	int (*create_fence_fd)(struct weston_output *output);
+
 	void (*print_egl_error_state)(void);
 };
 
