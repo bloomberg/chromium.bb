@@ -15,6 +15,9 @@
       nullptr, nullptr, nullptr, 0, nullptr, nullptr, nullptr
 #define SINGLE_VALUE_TYPE(command_line_switch) \
   SINGLE_VALUE_TYPE_AND_VALUE(command_line_switch, "")
+#define ORIGIN_LIST_VALUE_TYPE(command_line_switch, switch_value) \
+  flags_ui::FeatureEntry::ORIGIN_LIST_VALUE, command_line_switch, \
+      switch_value, nullptr, nullptr, nullptr, 0, nullptr, nullptr, nullptr
 #define SINGLE_DISABLE_VALUE_TYPE_AND_VALUE(command_line_switch, switch_value) \
   flags_ui::FeatureEntry::SINGLE_DISABLE_VALUE, command_line_switch,           \
       switch_value, nullptr, nullptr, nullptr, 0, nullptr, nullptr, nullptr

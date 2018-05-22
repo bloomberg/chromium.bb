@@ -36,6 +36,14 @@ function renderTemplate(experimentalFeaturesData) {
     };
   }
 
+  elements = document.getElementsByClassName('experiment-origin-list-value');
+  for (var i = 0; i < elements.length; ++i) {
+    elements[i].onchange = function() {
+      handleSetOriginListFlag(this, this.value);
+      return false;
+    };
+  }
+
   elements = document.getElementsByClassName('experiment-restart-button');
   for (var i = 0; i < elements.length; ++i) {
     elements[i].onclick = restartBrowser;
@@ -206,6 +214,11 @@ function handleEnableExperimentalFeature(node, enable) {
   experimentChangesUiUpdates(node, enable ? 1 : 0);
 }
 
+function handleSetOriginListFlag(node, value) {
+  chrome.send('setOriginListFlag', [String(node.internal_name), String(value)]);
+  $('needs-restart').classList.add('show');
+}
+
 /**
  * Invoked when the selection of a multi-value choice is changed to the
  * specified index.
@@ -286,6 +299,9 @@ FlagSearch.prototype = {
           this.clearSearch.bind(this));
 
       window.addEventListener('keyup', function(e) {
+          if (document.activeElement.nodeName == "TEXTAREA") {
+            return;
+          }
           switch(e.key) {
             case '/':
               this.searchBox_.focus();

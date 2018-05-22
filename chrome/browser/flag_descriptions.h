@@ -1043,6 +1043,9 @@ extern const char kTraceUploadUrlChoiceTesting[];
 extern const char kTranslateRankerEnforcementName[];
 extern const char kTranslateRankerEnforcementDescription[];
 
+extern const char kTreatInsecureOriginAsSecureName[];
+extern const char kTreatInsecureOriginAsSecureDescription[];
+
 extern const char kTrySupportedChannelLayoutsName[];
 extern const char kTrySupportedChannelLayoutsDescription[];
 

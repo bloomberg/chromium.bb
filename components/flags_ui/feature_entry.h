@@ -73,6 +73,10 @@ struct FeatureEntry {
     // feature is overriden to be enabled and empty set of parameters is used
     // boiling down to the default behavior in the code.
     FEATURE_WITH_PARAMS_VALUE,
+
+    // Corresponds to a command line switch where the value is treatead as a
+    // list of url::Origins. Default state is disabled like SINGLE_VALUE.
+    ORIGIN_LIST_VALUE
   };
 
   // Describes state of a feature.

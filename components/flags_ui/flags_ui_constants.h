@@ -15,6 +15,7 @@ extern const char kFlagsJS[];
 // Must match the constants used in the resource files.
 extern const char kEnableExperimentalFeature[];
 extern const char kRequestExperimentalFeatures[];
+extern const char kSetOriginListFlag[];
 extern const char kResetAllFlags[];
 extern const char kRestartBrowser[];
 

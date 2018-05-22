@@ -12,6 +12,7 @@ const char kFlagsJS[] = "flags.js";
 // Message handlers.
 const char kEnableExperimentalFeature[] = "enableExperimentalFeature";
 const char kRequestExperimentalFeatures[] = "requestExperimentalFeatures";
+const char kSetOriginListFlag[] = "setOriginListFlag";
 const char kResetAllFlags[] = "resetAllFlags";
 const char kRestartBrowser[] = "restartBrowser";
 

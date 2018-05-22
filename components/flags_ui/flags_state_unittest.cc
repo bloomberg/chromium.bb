@@ -46,12 +46,16 @@ const char kFlags7[] = "flag7";
 const char kFlags8[] = "flag8";
 const char kFlags9[] = "flag9";
 const char kFlags10[] = "flag10";
+const char kFlags11[] = "flag11";
 
 const char kSwitch1[] = "switch";
 const char kSwitch2[] = "switch2";
 const char kSwitch3[] = "switch3";
 const char kSwitch6[] = "switch6";
 const char kValueForSwitch2[] = "value_for_switch2";
+
+const char kStringSwitch[] = "string_switch";
+const char kValueForStringSwitch[] = "value_for_string_switch";
 
 const char kMultiSwitch1[] = "multi_switch1";
 const char kMultiSwitch2[] = "multi_switch2";
@@ -143,7 +147,10 @@ static FeatureEntry kEntries[] = {
      0,  // Ends up being mapped to the current platform.
      FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr, nullptr,
      nullptr, &kTestFeature2, 4, nullptr, kTestVariations2, kTestTrial},
-};
+    {kFlags11, kDummyName, kDummyDescription,
+     0,  // Ends up being mapped to the current platform.
+     FeatureEntry::ORIGIN_LIST_VALUE, kStringSwitch, kValueForStringSwitch,
+     nullptr, nullptr, nullptr /* feature */, 0, nullptr, nullptr, nullptr}};
 
 class FlagsStateTest : public ::testing::Test {
  protected:
@@ -886,7 +893,7 @@ TEST_F(FlagsStateTest, GetFlagFeatureEntries) {
                                       &supported_entries, &unsupported_entries,
                                       base::Bind(&SkipFeatureEntry));
   // All |kEntries| except for |kFlags3| should be supported.
-  EXPECT_EQ(9u, supported_entries.GetSize());
+  EXPECT_EQ(10u, supported_entries.GetSize());
   EXPECT_EQ(1u, unsupported_entries.GetSize());
   EXPECT_EQ(arraysize(kEntries),
             supported_entries.GetSize() + unsupported_entries.GetSize());

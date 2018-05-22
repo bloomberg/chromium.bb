@@ -4583,6 +4583,7 @@ if (!is_android) {
 
   test("interactive_ui_tests") {
     sources = [
+      "../browser/about_flags_browsertest.cc",
       "../browser/apps/app_browsertest_util.cc",
       "../browser/apps/app_browsertest_util.h",
       "../browser/apps/app_pointer_lock_interactive_uitest.cc",
