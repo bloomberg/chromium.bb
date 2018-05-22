@@ -2,6 +2,7 @@
 <html i18n-values="dir:textdirection;lang:language" dir="$i18n{textdirection}">
   <head>
     <meta charset="utf-8">
+    <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
     <link rel="import" href="chrome://resources/html/polymer.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -10,7 +11,7 @@
     <link rel="import" href="chrome://resources/html/cr.html">
     <link rel="import" href="chrome://resources/html/load_time_data.html">
     <link rel="import" href="chrome://resources/html/util.html">
-    <style is="custom-style" include="signin-dialog-shared">
+    <style is="custom-style" include="signin-dialog-shared paper-button-style">
       .details {
         line-height: 20px;
         margin-bottom: 8px;
@@ -82,13 +83,13 @@
         <p>$i18n{profileBlockedRemoveProfileSuggestion}</p>
       </div>
       <div class="action-container">
-        <paper-button class="primary-action" id="switchButton">
+        <paper-button class="action-button" id="switchButton">
           $i18n{signinErrorSwitchLabel}
         </paper-button>
-        <paper-button class="secondary-action" id="closeButton">
+        <paper-button id="closeButton">
           $i18n{signinErrorCloseLabel}
         </paper-button>
-        <paper-button class="primary-action" id="confirmButton" hidden>
+        <paper-button id="confirmButton" hidden>
           $i18n{signinErrorOkLabel}
         </paper-button>
       </div>
