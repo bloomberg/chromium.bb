@@ -50,26 +50,23 @@
 #include "base/timer/timer.h"
 #include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_manager.h"
+#include "media/audio/mac/audio_manager_mac.h"
 #include "media/base/audio_block_fifo.h"
 #include "media/base/audio_parameters.h"
 
 namespace media {
 
-class AudioManagerMac;
-
 class MEDIA_EXPORT AUAudioInputStream
     : public AgcAudioStream<AudioInputStream> {
  public:
-  enum class VoiceProcessingMode { DISABLED = 0, ENABLED = 1 };
-
   // The ctor takes all the usual parameters, plus |manager| which is the
   // the audio manager who is creating this object.
-  AUAudioInputStream(AudioManagerMac* manager,
-                     const AudioParameters& input_params,
-                     AudioDeviceID audio_device_id,
-                     const AudioManager::LogCallback& log_callback,
-                     VoiceProcessingMode voice_processing_mode);
+  AUAudioInputStream(
+      AudioManagerMac* manager,
+      const AudioParameters& input_params,
+      AudioDeviceID audio_device_id,
+      const AudioManager::LogCallback& log_callback,
+      AudioManagerBase::VoiceProcessingMode voice_processing_mode);
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioInputStream::Close().
   ~AUAudioInputStream() override;

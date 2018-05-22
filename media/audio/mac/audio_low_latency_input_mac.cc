@@ -20,7 +20,6 @@
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "media/audio/mac/audio_manager_mac.h"
 #include "media/audio/mac/scoped_audio_unit.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -165,7 +164,7 @@ AUAudioInputStream::AUAudioInputStream(
     const AudioParameters& input_params,
     AudioDeviceID audio_device_id,
     const AudioManager::LogCallback& log_callback,
-    VoiceProcessingMode voice_processing_mode)
+    AudioManagerBase::VoiceProcessingMode voice_processing_mode)
     : manager_(manager),
       input_params_(input_params),
       number_of_frames_provided_(0),
@@ -184,7 +183,7 @@ AUAudioInputStream::AUAudioInputStream(
       audio_unit_render_has_worked_(false),
       noise_reduction_suppressed_(false),
       use_voice_processing_(voice_processing_mode ==
-                            VoiceProcessingMode::ENABLED),
+                            AudioManagerBase::VoiceProcessingMode::kEnabled),
       last_sample_time_(0.0),
       last_number_of_frames_(0),
       total_lost_frames_(0),
