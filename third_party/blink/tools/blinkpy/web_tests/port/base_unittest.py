@@ -34,6 +34,7 @@ import unittest
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.executive_mock import MockExecutive
+from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.common.system.output_capture import OutputCapture
 from blinkpy.common.system.platform_info_mock import MockPlatformInfo
 from blinkpy.common.system.system_host import SystemHost
@@ -43,7 +44,7 @@ from blinkpy.web_tests.port.base import Port, VirtualTestSuite
 from blinkpy.web_tests.port.test import add_unit_tests_to_mock_filesystem, LAYOUT_TEST_DIR, TestPort
 
 
-class PortTest(unittest.TestCase):
+class PortTest(LoggingTestCase):
 
     def make_port(self, executive=None, with_tests=False, port_name=None, **kwargs):
         host = MockSystemHost()
@@ -330,6 +331,23 @@ class PortTest(unittest.TestCase):
 
         self.assertEqual('\n'.join(port.expectations_dict().values()), '')
         self.assertEqual('\n'.join(port.all_expectations_dict().values()), 'bb\naa')
+
+    def test_flag_specific_expectations_identify_unreadable_file(self):
+        port = self.make_port(port_name='foo')
+        port.port_name = 'foo'
+
+        non_utf8_file = ('/mock-checkout/third_party/WebKit/LayoutTests/'
+                         'FlagExpectations/non-utf8-file')
+        invalid_utf8 = '\xC0'
+        port.host.filesystem.write_binary_file(non_utf8_file, invalid_utf8)
+
+        with self.assertRaises(UnicodeDecodeError):
+            port.all_expectations_dict()
+
+        # The UnicodeDecodeError does not indicate which file we failed to read,
+        # so ensure that the file is identified in a log message.
+        self.assertLog(['ERROR: Failed to read expectations file: \'' +
+                        non_utf8_file + '\'\n'])
 
     def test_driver_flag_from_file(self):
         # primary_driver_flag() comes from additional-driver-flag.setting file or
