@@ -532,9 +532,8 @@ public class Stack {
                 // Build the AnimatorSet using the TabSwitcherAnimationFactory.
                 // This will give us the appropriate AnimatorSet based on the current
                 // state of the tab switcher and the OverviewAnimationType specified.
-                mTabAnimations =
-                        mAnimationFactory.createAnimatorSetForType(type, mStackTabs, focusIndex,
-                                sourceIndex, mSpacing, mWarpSize, getDiscardRange());
+                mTabAnimations = mAnimationFactory.createAnimatorSetForType(
+                        type, mStackTabs, focusIndex, sourceIndex, mSpacing, getDiscardRange());
             }
 
             if (mTabAnimations != null) mTabAnimations.start();
@@ -2168,15 +2167,63 @@ public class Stack {
     }
 
     private float approxScreen(StackTab tab, float globalScrollOffset) {
-        return StackTab.scrollToScreen(tab.getScrollOffset() + globalScrollOffset, mWarpSize);
+        return scrollToScreen(tab.getScrollOffset() + globalScrollOffset);
     }
 
-    private float scrollToScreen(float scrollSpace) {
-        return StackTab.scrollToScreen(scrollSpace, mWarpSize);
+    /**
+     * The scroll space does not map linearly to the screen so it creates a nice slow down
+     * effect at the top of the screen while scrolling.
+     * Warps x so it matches y(x) = x - warpSize on the positive side and 0 on the negative side
+     * with a smooth transition between [0, 2 * warpSize].
+     * @see #screenToScroll(float)
+     *
+     * [-oo, 0] -> 0
+     * [0, 2 * warpSize] -> warpSize * ((x-warpSize) / 2 * warpSize + 0.5) ^ 2.
+     * [2 * warpSize, +oo] -> x
+     * @param x        The offset in scroll space.
+     * @param warpSize The size in scroll space of the slow down effect.
+     * @return         The offset on screen corresponding to the scroll space offset.
+     */
+    private float scrollToScreen(float x, float warpSize) {
+        if (x <= 0) return 0;
+        if (x >= 2 * warpSize) return x - warpSize;
+        x = (x - warpSize) / (2.0f * warpSize) + 0.5f;
+        return x * x * warpSize;
     }
 
-    private float screenToScroll(float screenSpace) {
-        return StackTab.screenToScroll(screenSpace, mWarpSize);
+    /**
+     * Public version of scrollToScreen(float, float) that uses the current warp size.
+     * @param scrollSpace The offset in scroll space.
+     * @return            The offset on screen corresponding to the scroll space offset.
+     */
+    public float scrollToScreen(float scrollSpace) {
+        return scrollToScreen(scrollSpace, mWarpSize);
+    }
+
+    /**
+     * Unwarps x so it matches the above warp function.
+     * @see #scrollToScreen(float)
+     *
+     * [-oo, 0] -> -warpSize
+     * [0, warpSize] -> 2 * warpSize * sqrt(x / warpSize).
+     * [warpSize, +oo] -> x + warpSize
+     * @param x        The screen space offset.
+     * @param warpSize The size in scroll space of the slow down effect.
+     * @return         The offset in scroll space corresponding to the offset on screen.
+     */
+    private float screenToScroll(float x, float warpSize) {
+        if (x <= 0) return 0;
+        if (x >= warpSize) return x + warpSize;
+        return (float) Math.sqrt(x * warpSize) * 2;
+    }
+
+    /**
+     * Public version of screenToScroll(float, float) that uses the current warp size.
+     * @param scrollSpace The offset in screen space.
+     * @return            The offset in scroll space corresponding to the offset on screen.
+     */
+    public float screenToScroll(float screenSpace) {
+        return screenToScroll(screenSpace, mWarpSize);
     }
 
     /**
@@ -2307,8 +2354,8 @@ public class Stack {
                 StackTab tab = mStackTabs[i];
                 float tabScrollOffset = tab.getScrollOffset();
                 float tabScrollSpace = tabScrollOffset + scrollOffset;
-                float tabScreen = StackTab.scrollToScreen(tabScrollSpace, mWarpSize);
-                float tabScrollSpaceFinal = StackTab.screenToScroll(tabScreen, warp);
+                float tabScreen = scrollToScreen(tabScrollSpace, mWarpSize);
+                float tabScrollSpaceFinal = screenToScroll(tabScreen, warp);
                 float scrollDelta = tabScrollSpaceFinal - tabScrollSpace;
                 tab.setScrollOffset(tabScrollOffset + scrollDelta);
             }

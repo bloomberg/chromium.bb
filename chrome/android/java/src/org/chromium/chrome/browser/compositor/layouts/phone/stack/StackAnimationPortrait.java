@@ -36,9 +36,9 @@ class StackAnimationPortrait extends StackAnimation {
 
     @Override
     protected ChromeAnimation<?> createEnterStackAnimatorSet(
-            StackTab[] tabs, int focusIndex, int spacing, float warpSize) {
+            StackTab[] tabs, int focusIndex, int spacing) {
         ChromeAnimation<Animatable<?>> set = new ChromeAnimation<Animatable<?>>();
-        final float initialScrollOffset = StackTab.screenToScroll(0, warpSize);
+        final float initialScrollOffset = mStack.screenToScroll(0);
 
         float trailingScrollOffset = 0.f;
         if (focusIndex >= 0 && focusIndex < tabs.length - 1) {
@@ -59,7 +59,7 @@ class StackAnimationPortrait extends StackAnimation {
             tab.getLayoutTab().setToolbarAlpha(0.f);
             tab.getLayoutTab().setBorderScale(1.f);
 
-            float scrollOffset = StackTab.screenToScroll(i * spacing, warpSize);
+            float scrollOffset = mStack.screenToScroll(i * spacing);
 
             if (i < focusIndex) {
                 tab.getLayoutTab().setMaxContentHeight(mStack.getMaxTabHeight());
@@ -98,7 +98,7 @@ class StackAnimationPortrait extends StackAnimation {
 
     @Override
     protected ChromeAnimation<?> createTabFocusedAnimatorSet(
-            StackTab[] tabs, int focusIndex, int spacing, float warpSize) {
+            StackTab[] tabs, int focusIndex, int spacing) {
         ChromeAnimation<Animatable<?>> set = new ChromeAnimation<Animatable<?>>();
         for (int i = 0; i < tabs.length; ++i) {
             StackTab tab = tabs[i];
@@ -180,7 +180,7 @@ class StackAnimationPortrait extends StackAnimation {
     }
 
     @Override
-    protected ChromeAnimation<?> createReachTopAnimatorSet(StackTab[] tabs, float warpSize) {
+    protected ChromeAnimation<?> createReachTopAnimatorSet(StackTab[] tabs) {
         ChromeAnimation<Animatable<?>> set = new ChromeAnimation<Animatable<?>>();
 
         float screenTarget = 0.0f;
@@ -189,8 +189,7 @@ class StackAnimationPortrait extends StackAnimation {
                 break;
             }
             addAnimation(set, tabs[i], SCROLL_OFFSET, tabs[i].getScrollOffset(),
-                    StackTab.screenToScroll(screenTarget, warpSize), REACH_TOP_ANIMATION_DURATION,
-                    0);
+                    mStack.screenToScroll(screenTarget), REACH_TOP_ANIMATION_DURATION, 0);
             screenTarget += tabs[i].getLayoutTab().getScaledContentHeight();
         }
 

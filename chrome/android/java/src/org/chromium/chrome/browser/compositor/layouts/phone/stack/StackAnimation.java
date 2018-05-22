@@ -151,34 +151,33 @@ public abstract class StackAnimation {
      * @param focusIndex    The index of the tab that is the focus of this animation.
      * @param sourceIndex   The index of the tab that triggered this animation.
      * @param spacing       The default spacing between the tabs.
-     * @param warpSize      The warp size of the transform from scroll space to screen space.
      * @param discardRange  The range of the discard amount value.
      * @return              The resulting TabSwitcherAnimation that will animate the tabs.
      */
     public ChromeAnimation<?> createAnimatorSetForType(OverviewAnimationType type, StackTab[] tabs,
-            int focusIndex, int sourceIndex, int spacing, float warpSize, float discardRange) {
+            int focusIndex, int sourceIndex, int spacing, float discardRange) {
         ChromeAnimation<?> set = null;
 
         if (tabs != null) {
             switch (type) {
                 case ENTER_STACK:
-                    set = createEnterStackAnimatorSet(tabs, focusIndex, spacing, warpSize);
+                    set = createEnterStackAnimatorSet(tabs, focusIndex, spacing);
                     break;
                 case TAB_FOCUSED:
-                    set = createTabFocusedAnimatorSet(tabs, focusIndex, spacing, warpSize);
+                    set = createTabFocusedAnimatorSet(tabs, focusIndex, spacing);
                     break;
                 case VIEW_MORE:
                     set = createViewMoreAnimatorSet(tabs, sourceIndex);
                     break;
                 case REACH_TOP:
-                    set = createReachTopAnimatorSet(tabs, warpSize);
+                    set = createReachTopAnimatorSet(tabs);
                     break;
                 case DISCARD:
                 // Purposeful fall through
                 case DISCARD_ALL:
                 // Purposeful fall through
                 case UNDISCARD:
-                    set = createUpdateDiscardAnimatorSet(tabs, spacing, warpSize, discardRange);
+                    set = createUpdateDiscardAnimatorSet(tabs, spacing, discardRange);
                     break;
                 case NEW_TAB_OPENED:
                     set = createNewTabOpenedAnimatorSet(tabs, focusIndex, discardRange);
@@ -212,12 +211,11 @@ public abstract class StackAnimation {
      * @param focusIndex The focused index.  In this case, this is the index of
      *                   the tab that was being viewed before entering the stack.
      * @param spacing    The default spacing between tabs.
-     * @param warpSize   The warp size of the transform from scroll space to screen space.
      * @return           The TabSwitcherAnimation instance that will tween the
      *                   tabs to create the appropriate animation.
      */
     protected abstract ChromeAnimation<?> createEnterStackAnimatorSet(
-            StackTab[] tabs, int focusIndex, int spacing, float warpSize);
+            StackTab[] tabs, int focusIndex, int spacing);
 
     /**
      * Responsible for generating the animations that shows a tab being
@@ -228,12 +226,11 @@ public abstract class StackAnimation {
      * @param focusIndex The focused index.  In this case, this is the index of
      *                   the tab clicked and is being brought up to view.
      * @param spacing    The default spacing between tabs.
-     * @param warpSize   The warp size of the transform from scroll space to screen space.
      * @return           The TabSwitcherAnimation instance that will tween the
      *                   tabs to create the appropriate animation.
      */
     protected abstract ChromeAnimation<?> createTabFocusedAnimatorSet(
-            StackTab[] tabs, int focusIndex, int spacing, float warpSize);
+            StackTab[] tabs, int focusIndex, int spacing);
 
     /**
      * Responsible for generating the animations that Shows more of the selected tab.
@@ -254,12 +251,10 @@ public abstract class StackAnimation {
      *
      * @param tabs          The tabs that make up the stack.  These are the
      *                      tabs that will be affected by the TabSwitcherAnimation.
-     * @param warpSize     The warp size of the transform from scroll space to screen space.
      * @return              The TabSwitcherAnimation instance that will tween the
      *                      tabs to create the appropriate animation.
      */
-    protected abstract ChromeAnimation<?> createReachTopAnimatorSet(
-            StackTab[] tabs, float warpSize);
+    protected abstract ChromeAnimation<?> createReachTopAnimatorSet(StackTab[] tabs);
 
     /**
      * Responsible for generating the animations that moves the tabs back in from
@@ -269,13 +264,12 @@ public abstract class StackAnimation {
      * @param tabs         The tabs that make up the stack. These are the
      *                     tabs that will be affected by the TabSwitcherAnimation.
      * @param spacing      The default spacing between tabs.
-     * @param warpSize     The warp size of the transform from scroll space to screen space.
      * @param discardRange The maximum value the discard amount.
      * @return             The TabSwitcherAnimation instance that will tween the
      *                     tabs to create the appropriate animation.
      */
     protected ChromeAnimation<?> createUpdateDiscardAnimatorSet(
-            StackTab[] tabs, int spacing, float warpSize, float discardRange) {
+            StackTab[] tabs, int spacing, float discardRange) {
         ChromeAnimation<Animatable<?>> set = new ChromeAnimation<Animatable<?>>();
 
         int dyingTabsCount = 0;
@@ -315,7 +309,7 @@ public abstract class StackAnimation {
                             UNDISCARD_ANIMATION_DURATION, 0);
                 }
 
-                float newScrollOffset = StackTab.screenToScroll(spacing * newIndex, warpSize);
+                float newScrollOffset = mStack.screenToScroll(spacing * newIndex);
 
                 // If the tab is not dying we want to readjust it's position
                 // based on the new spacing requirements.  For a fully discarded tab, just
