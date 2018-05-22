@@ -162,6 +162,9 @@ CHROMEOS_EXPORT extern const char kVoiceInteractionLocales[];
 CHROMEOS_EXPORT extern const char kWaitForInitialPolicyFetchForTest[];
 CHROMEOS_EXPORT extern const char kWakeOnWifiPacket[];
 
+// Controls whether to enable Chrome OS Account Manager.
+CHROMEOS_EXPORT extern const base::Feature kAccountManager;
+
 // Controls whether enable Google Assistant feature.
 CHROMEOS_EXPORT extern const base::Feature kAssistantFeature;
 
@@ -190,6 +193,9 @@ CHROMEOS_EXPORT bool IsVoiceInteractionFlagsEnabled();
 
 // Returns true if voice interaction is enabled.
 CHROMEOS_EXPORT bool IsVoiceInteractionEnabled();
+
+// Returns true if Chrome OS Account Manager is enabled.
+CHROMEOS_EXPORT bool IsAccountManagerEnabled();
 
 // Returns true if Google Assistant flags are enabled.
 CHROMEOS_EXPORT bool IsAssistantFlagsEnabled();
