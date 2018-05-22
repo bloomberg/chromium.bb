@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 
+#include "components/viz/common/surfaces/surface_id.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/media_content_type.h"
@@ -62,6 +63,11 @@ IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_EndPictureInPictureMode,
 // Messages from the browser to the renderer acknowledging changes happened.
 // ----------------------------------------------------------------------------
 
+IPC_MESSAGE_ROUTED3(MediaPlayerDelegateMsg_OnPictureInPictureModeStarted_ACK,
+                    int /* delegate id */,
+                    int /* request_id */,
+                    gfx::Size /* window_size */)
+
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_OnPictureInPictureModeEnded_ACK,
                     int /* delegate id */,
                     int /* request_id */)
@@ -97,8 +103,11 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
                     int /* delegate_id, distinguishes instances */,
                     gfx::Size /* new size of video */)
 
-IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnPictureInPictureSourceChanged,
-                    int /* delegate id */)
+IPC_MESSAGE_ROUTED4(MediaPlayerDelegateHostMsg_OnPictureInPictureModeStarted,
+                    int /* delegate id */,
+                    viz::SurfaceId /* surface_id */,
+                    gfx::Size /* natural_size */,
+                    int /* request_id */)
 
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded,
                     int /* delegate id */,

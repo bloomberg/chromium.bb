@@ -273,6 +273,11 @@ void WebContentsDelegate::UpdatePictureInPictureSurfaceId(
     const viz::SurfaceId& surface_id,
     const gfx::Size& natural_size) {}
 
+gfx::Size WebContentsDelegate::EnterPictureInPicture(const viz::SurfaceId&,
+                                                     const gfx::Size&) {
+  return gfx::Size();
+}
+
 void WebContentsDelegate::ExitPictureInPicture() {}
 
 }  // namespace content

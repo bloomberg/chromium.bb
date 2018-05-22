@@ -17,12 +17,14 @@ async_test(t => {
   video.onloadedmetadata = t.step_func(function() {
     assert_true(isPictureInPictureButtonEnabled(video), "button should exist");
 
-    clickPictureInPictureButton(video, t.step_func(() => {
-      assert_false(isPictureInPictureButtonEnabled(video), "button should not exist");
-    }));
-  });
+    video.addEventListener('enterpictureinpicture', t.step_func(() => {
+      setTimeout(t.step_func_done(() => {
+        assert_true(isPictureInPictureButtonEnabled(video), "button should exist");
+      }));
+    }), { once: true });
 
-  video.onenterpictureinpicture = t.step_func_done();
+    clickPictureInPictureButton(video);
+  });
 });
 </script>
 </body>

@@ -33,6 +33,10 @@ namespace gfx {
 class Size;
 }  // namespace size
 
+namespace viz {
+class SurfaceId;
+}  // namespace viz
+
 namespace content {
 
 // This class manages all RenderFrame based media related managers at the
@@ -117,8 +121,11 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void OnMediaMutedStatusChanged(RenderFrameHost* render_frame_host,
                                  int delegate_id,
                                  bool muted);
-  void OnPictureInPictureSourceChanged(RenderFrameHost* render_frame_host,
-                                       int delegate_id);
+  void OnPictureInPictureModeStarted(RenderFrameHost* render_frame_host,
+                                     int delegate_id,
+                                     const viz::SurfaceId&,
+                                     const gfx::Size& natural_size,
+                                     int request_id);
   void OnPictureInPictureModeEnded(RenderFrameHost* render_frame_host,
                                    int delegate_id,
                                    int request_id);

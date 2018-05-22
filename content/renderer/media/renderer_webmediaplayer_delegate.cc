@@ -16,6 +16,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
+#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -117,16 +118,22 @@ void RendererWebMediaPlayerDelegate::DidPlayerMutedStatusChange(int delegate_id,
                                                            delegate_id, muted));
 }
 
-void RendererWebMediaPlayerDelegate::DidPictureInPictureSourceChange(
-    int delegate_id) {
-  Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureSourceChanged(
-      routing_id(), delegate_id));
+void RendererWebMediaPlayerDelegate::DidPictureInPictureModeStart(
+    int delegate_id,
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& natural_size,
+    blink::WebMediaPlayer::PipWindowSizeCallback callback) {
+  int request_id = next_picture_in_picture_callback_id_++;
+  enter_picture_in_picture_callback_map_.insert(
+      std::make_pair(request_id, std::move(callback)));
+  Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureModeStarted(
+      routing_id(), delegate_id, surface_id, natural_size, request_id));
 }
 
 void RendererWebMediaPlayerDelegate::DidPictureInPictureModeEnd(
     int delegate_id,
     base::OnceClosure callback) {
-  int request_id = next_exit_picture_in_picture_callback_id_++;
+  int request_id = next_picture_in_picture_callback_id_++;
   exit_picture_in_picture_callback_map_.insert(
       std::make_pair(request_id, std::move(callback)));
   Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded(
@@ -255,6 +262,9 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
                         OnPictureInPictureModeEnded)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_OnPictureInPictureModeEnded_ACK,
                         OnPictureInPictureModeEndedAck)
+    IPC_MESSAGE_HANDLER(
+        MediaPlayerDelegateMsg_OnPictureInPictureModeStarted_ACK,
+        OnPictureInPictureModeStartedAck)
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
   return true;
@@ -374,6 +384,17 @@ void RendererWebMediaPlayerDelegate::OnPictureInPictureModeEndedAck(
 
   std::move(iter->second).Run();
   exit_picture_in_picture_callback_map_.erase(iter);
+}
+
+void RendererWebMediaPlayerDelegate::OnPictureInPictureModeStartedAck(
+    int player_id,
+    int request_id,
+    const gfx::Size& window_size) {
+  auto iter = enter_picture_in_picture_callback_map_.find(request_id);
+  DCHECK(iter != enter_picture_in_picture_callback_map_.end());
+
+  std::move(iter->second).Run(blink::WebSize(window_size));
+  enter_picture_in_picture_callback_map_.erase(iter);
 }
 
 void RendererWebMediaPlayerDelegate::ScheduleUpdateTask() {

@@ -134,8 +134,8 @@ bool MediaWebContentsObserver::OnMessageReceived(
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
                         OnMediaSizeChanged)
     IPC_MESSAGE_HANDLER(
-        MediaPlayerDelegateHostMsg_OnPictureInPictureSourceChanged,
-        OnPictureInPictureSourceChanged)
+        MediaPlayerDelegateHostMsg_OnPictureInPictureModeStarted,
+        OnPictureInPictureModeStarted)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded,
                         OnPictureInPictureModeEnded)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -274,12 +274,24 @@ void MediaWebContentsObserver::OnMediaSizeChanged(
   web_contents_impl()->MediaResized(size, id);
 }
 
-void MediaWebContentsObserver::OnPictureInPictureSourceChanged(
+void MediaWebContentsObserver::OnPictureInPictureModeStarted(
     RenderFrameHost* render_frame_host,
-    int delegate_id) {
+    int delegate_id,
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& natural_size,
+    int request_id) {
+  DCHECK(surface_id.is_valid());
   pip_player_ = MediaPlayerId(render_frame_host, delegate_id);
 
   UpdateVideoLock();
+
+  gfx::Size window_size =
+      web_contents_impl()->EnterPictureInPicture(surface_id, natural_size);
+
+  render_frame_host->Send(
+      new MediaPlayerDelegateMsg_OnPictureInPictureModeStarted_ACK(
+          render_frame_host->GetRoutingID(), delegate_id, request_id,
+          window_size));
 }
 
 void MediaWebContentsObserver::OnPictureInPictureModeEnded(

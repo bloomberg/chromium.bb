@@ -34,7 +34,7 @@ class PictureInPictureWindowControllerImpl
   ~PictureInPictureWindowControllerImpl() override;
 
   // PictureInPictureWindowController:
-  CONTENT_EXPORT void Show() override;
+  CONTENT_EXPORT gfx::Size Show() override;
   CONTENT_EXPORT void Close() override;
   CONTENT_EXPORT void EmbedSurface(const viz::SurfaceId& surface_id,
                                    const gfx::Size& natural_size) override;
