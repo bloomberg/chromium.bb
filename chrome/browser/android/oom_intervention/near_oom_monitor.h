@@ -39,11 +39,16 @@ class NearOomMonitor {
   void OnLowMemory(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& jcaller);
 
+  uint64_t renderer_workload_threshold() const {
+    return renderer_workload_threshold_;
+  }
+
  protected:
   static NearOomMonitor* Create();
 
   NearOomMonitor(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                 int64_t swapfree_threshold);
+                 int64_t swapfree_threshold,
+                 uint64_t renderer_workload_threshold);
 
   // Gets system memory info. This is a virtual method so that we can override
   // this for testing.
@@ -72,6 +77,7 @@ class NearOomMonitor {
   base::TimeTicks next_check_time_;
 
   int64_t swapfree_threshold_;
+  uint64_t renderer_workload_threshold_;
 
   CallbackList callbacks_;
 
