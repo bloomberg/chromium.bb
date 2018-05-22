@@ -68,9 +68,13 @@ class SecureChannelPendingConnectionRequestBaseTest : public testing::Test {
     fake_connection_delegate_ = std::make_unique<FakeConnectionDelegate>();
     fake_pending_connection_request_delegate_ =
         std::make_unique<FakePendingConnectionRequestDelegate>();
+    auto fake_connection_delegate_interface_ptr =
+        fake_connection_delegate_->GenerateInterfacePtr();
+    fake_connection_delegate_proxy_ =
+        fake_connection_delegate_interface_ptr.get();
     test_pending_connection_request_ =
         std::make_unique<TestPendingConnectionRequest>(
-            kTestFeature, fake_connection_delegate_->GenerateInterfacePtr(),
+            kTestFeature, std::move(fake_connection_delegate_interface_ptr),
             fake_pending_connection_request_delegate_.get());
   }
 
@@ -110,10 +114,20 @@ class SecureChannelPendingConnectionRequestBaseTest : public testing::Test {
     return fake_connection_delegate_->connection_attempt_failure_reason();
   }
 
+  std::pair<std::string, mojom::ConnectionDelegatePtr> ExtractClientData() {
+    return PendingConnectionRequest<TestFailureDetail>::ExtractClientData(
+        std::move(test_pending_connection_request_));
+  }
+
+  mojom::ConnectionDelegate::Proxy_* fake_connection_delegate_proxy() {
+    return fake_connection_delegate_proxy_;
+  }
+
  private:
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<FakeConnectionDelegate> fake_connection_delegate_;
+  mojom::ConnectionDelegate::Proxy_* fake_connection_delegate_proxy_ = nullptr;
   std::unique_ptr<FakePendingConnectionRequestDelegate>
       fake_pending_connection_request_delegate_;
 
@@ -153,6 +167,13 @@ TEST_F(SecureChannelPendingConnectionRequestBaseTest,
   EXPECT_EQ(PendingConnectionRequestDelegate::FailedConnectionReason::
                 kRequestCanceledByClient,
             *GetFailedConnectionReason());
+}
+
+TEST_F(SecureChannelPendingConnectionRequestBaseTest, ExtractClientData) {
+  auto extracted_client_data = ExtractClientData();
+  EXPECT_EQ(kTestFeature, extracted_client_data.first);
+  EXPECT_EQ(fake_connection_delegate_proxy(),
+            extracted_client_data.second.get());
 }
 
 }  // namespace secure_channel

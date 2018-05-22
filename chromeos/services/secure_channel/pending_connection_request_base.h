@@ -5,6 +5,9 @@
 #ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_PENDING_CONNECTION_REQUEST_BASE_H_
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_PENDING_CONNECTION_REQUEST_BASE_H_
 
+#include <memory>
+
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
@@ -75,6 +78,11 @@ class PendingConnectionRequestBase
   // types, which should use StopRequestDueToConnectionFailures() instead.
   using PendingConnectionRequest<
       FailureDetailType>::NotifyRequestFinishedWithoutConnection;
+
+  std::pair<std::string, mojom::ConnectionDelegatePtr> ExtractClientData()
+      override {
+    return std::make_pair(feature_, std::move(connection_delegate_ptr_));
+  }
 
   void OnFinishedWithoutConnection(
       PendingConnectionRequestDelegate::FailedConnectionReason reason) {

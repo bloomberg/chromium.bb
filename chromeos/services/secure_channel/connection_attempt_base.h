@@ -19,6 +19,7 @@
 #include "chromeos/services/secure_channel/connection_attempt.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
 #include "chromeos/services/secure_channel/pending_connection_request_delegate.h"
+#include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
 namespace chromeos {
 
@@ -82,6 +83,17 @@ class ConnectionAttemptBase : public ConnectionAttempt<FailureDetailType>,
     // received a request yet, start up an operation.
     if (was_empty)
       StartNextConnectToDeviceOperation();
+  }
+
+  std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>
+  ExtractClientData() override {
+    std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>> data_list;
+    for (auto& map_entry : id_to_request_map_) {
+      data_list.push_back(
+          PendingConnectionRequest<FailureDetailType>::ExtractClientData(
+              std::move(map_entry.second)));
+    }
+    return data_list;
   }
 
   // PendingConnectionRequestDelegate:

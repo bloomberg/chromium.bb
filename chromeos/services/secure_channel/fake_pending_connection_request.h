@@ -6,10 +6,12 @@
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_FAKE_PENDING_CONNECTION_REQUEST_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
+#include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
 namespace chromeos {
 
@@ -29,6 +31,12 @@ class FakePendingConnectionRequest
     return handled_failure_details_;
   }
 
+  void set_client_data_for_extraction(
+      std::pair<std::string, mojom::ConnectionDelegatePtr>
+          client_data_for_extraction) {
+    client_data_for_extraction_ = std::move(client_data_for_extraction);
+  }
+
   // Make NotifyRequestFinishedWithoutConnection() public for testing.
   using PendingConnectionRequest<
       std::string>::NotifyRequestFinishedWithoutConnection;
@@ -37,7 +45,13 @@ class FakePendingConnectionRequest
   // PendingConnectionRequest<std::string>:
   void HandleConnectionFailure(std::string failure_detail) override;
 
+  std::pair<std::string, mojom::ConnectionDelegatePtr> ExtractClientData()
+      override;
+
   std::vector<std::string> handled_failure_details_;
+
+  std::pair<std::string, mojom::ConnectionDelegatePtr>
+      client_data_for_extraction_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePendingConnectionRequest);
 };

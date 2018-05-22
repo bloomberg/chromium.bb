@@ -24,6 +24,11 @@ void FakeConnectionAttempt::ProcessAddingNewConnectionRequest(
   id_to_request_map_[request->request_id()] = std::move(request);
 }
 
+std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>
+FakeConnectionAttempt::ExtractClientData() {
+  return std::move(client_data_for_extraction_);
+}
+
 }  // namespace secure_channel
 
 }  // namespace chromeos
