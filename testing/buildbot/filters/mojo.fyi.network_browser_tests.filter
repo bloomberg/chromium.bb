@@ -35,9 +35,6 @@
 -PKPModelClientTest.PKPEnforced/0
 -PKPModelClientTest.PKPEnforced/1
 
-# Task manager and network service. https://crbug.com/822415
--TaskManagerUtilityProcessBrowserTest.UtilityJSHeapMemory
-
 # https://crbug.com/721398
 -WebViewTest.ClearData
 -WebViewTest.ClearDataCache

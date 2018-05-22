@@ -806,7 +806,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerUtilityProcessBrowserTest,
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
       MatchUtility(proxy_resolver_name), ColumnSpecifier::V8_MEMORY_USED,
       minimal_heap_size));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyUtility()));
   ASSERT_NO_FATAL_FAILURE(
       WaitForTaskManagerRows(1, MatchUtility(proxy_resolver_name)));
 }
