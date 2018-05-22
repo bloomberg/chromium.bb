@@ -17,7 +17,6 @@
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
@@ -206,15 +205,11 @@ class GCMAccountTrackerTest : public testing::Test {
   std::unique_ptr<TestSigninClient> test_signin_client_;
   std::unique_ptr<SigninManagerForTest> fake_signin_manager_;
   std::unique_ptr<FakeProfileOAuth2TokenService> fake_token_service_;
-  std::unique_ptr<FakeIdentityProvider> fake_identity_provider_;
   std::unique_ptr<GCMAccountTracker> tracker_;
 };
 
 GCMAccountTrackerTest::GCMAccountTrackerTest() {
   fake_token_service_.reset(new FakeProfileOAuth2TokenService());
-
-  fake_identity_provider_.reset(
-      new FakeIdentityProvider(fake_token_service_.get()));
 
   test_signin_client_.reset(new TestSigninClient(&pref_service_));
 #if defined(OS_CHROMEOS)
@@ -232,11 +227,11 @@ GCMAccountTrackerTest::GCMAccountTrackerTest() {
   account_tracker_service_.Initialize(test_signin_client_.get());
 
   std::unique_ptr<AccountTracker> gaia_account_tracker(new AccountTracker(
-      fake_signin_manager_.get(), fake_identity_provider_.get(),
+      fake_signin_manager_.get(), fake_token_service_.get(),
       new net::TestURLRequestContextGetter(message_loop_.task_runner())));
 
-  tracker_.reset(
-      new GCMAccountTracker(std::move(gaia_account_tracker), &driver_));
+  tracker_.reset(new GCMAccountTracker(std::move(gaia_account_tracker),
+                                       fake_token_service_.get(), &driver_));
 }
 
 GCMAccountTrackerTest::~GCMAccountTrackerTest() {

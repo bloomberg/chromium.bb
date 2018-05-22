@@ -12,7 +12,6 @@
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
@@ -68,10 +67,7 @@ IOSChromeGCMProfileServiceFactory::BuildServiceInstanceFor(
       browser_state->GetRequestContext(), ::GetChannel(),
       GetProductCategoryForSubtypes(),
       ios::SigninManagerFactory::GetForBrowserState(browser_state),
-      base::WrapUnique(new ProfileIdentityProvider(
-          ios::SigninManagerFactory::GetForBrowserState(browser_state),
-          OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
-          base::Closure())),
+      OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       base::WrapUnique(new gcm::GCMClientFactory),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),

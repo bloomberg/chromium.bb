@@ -8,20 +8,21 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace gcm {
 
 AccountTracker::AccountTracker(
     SigninManagerBase* signin_manager,
-    IdentityProvider* identity_provider,
+    ProfileOAuth2TokenService* token_service,
     net::URLRequestContextGetter* request_context_getter)
     : signin_manager_(signin_manager),
-      identity_provider_(identity_provider),
+      token_service_(token_service),
       request_context_getter_(request_context_getter),
       shutdown_called_(false) {
   signin_manager_->AddObserver(this);
-  identity_provider_->GetTokenService()->AddObserver(this);
+  token_service_->AddObserver(this);
 }
 
 AccountTracker::~AccountTracker() {
@@ -31,7 +32,7 @@ AccountTracker::~AccountTracker() {
 void AccountTracker::Shutdown() {
   shutdown_called_ = true;
   user_info_requests_.clear();
-  identity_provider_->GetTokenService()->RemoveObserver(this);
+  token_service_->RemoveObserver(this);
   signin_manager_->RemoveObserver(this);
 }
 
@@ -95,8 +96,7 @@ void AccountTracker::GoogleSigninSucceeded(const std::string& account_id,
                                            const std::string& username) {
   TRACE_EVENT0("identity", "AccountTracker::GoogleSigninSucceeded");
 
-  std::vector<std::string> accounts =
-      identity_provider_->GetTokenService()->GetAccounts();
+  std::vector<std::string> accounts = token_service_->GetAccounts();
 
   DVLOG(1) << "LOGIN " << accounts.size() << " accounts available.";
 
@@ -186,9 +186,8 @@ void AccountTracker::StartFetchingUserInfo(const std::string& account_key) {
   }
 
   DVLOG(1) << "StartFetching " << account_key;
-  AccountIdFetcher* fetcher =
-      new AccountIdFetcher(identity_provider_->GetTokenService(),
-                           request_context_getter_.get(), this, account_key);
+  AccountIdFetcher* fetcher = new AccountIdFetcher(
+      token_service_, request_context_getter_.get(), this, account_key);
   user_info_requests_[account_key] = base::WrapUnique(fetcher);
   fetcher->Start();
 }

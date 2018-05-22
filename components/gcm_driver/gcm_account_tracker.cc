@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/gcm_driver/gcm_driver.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/ip_endpoint.h"
 
@@ -46,9 +47,11 @@ GCMAccountTracker::AccountInfo::~AccountInfo() {
 
 GCMAccountTracker::GCMAccountTracker(
     std::unique_ptr<AccountTracker> account_tracker,
+    ProfileOAuth2TokenService* token_service,
     GCMDriver* driver)
     : OAuth2TokenService::Consumer(kGCMAccountTrackerName),
       account_tracker_(account_tracker.release()),
+      token_service_(token_service),
       driver_(driver),
       shutdown_called_(false),
       reporting_weak_ptr_factory_(this) {}
@@ -323,14 +326,13 @@ void GCMAccountTracker::GetAllNeededTokens() {
 }
 
 void GCMAccountTracker::GetToken(AccountInfos::iterator& account_iter) {
-  DCHECK(GetTokenService());
   DCHECK_EQ(account_iter->second.state, TOKEN_NEEDED);
 
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(kGCMGroupServerScope);
   scopes.insert(kGCMCheckinServerScope);
   std::unique_ptr<OAuth2TokenService::Request> request =
-      GetTokenService()->StartRequest(account_iter->first, scopes, this);
+      token_service_->StartRequest(account_iter->first, scopes, this);
 
   pending_token_requests_.push_back(std::move(request));
   account_iter->second.state = GETTING_TOKEN;
@@ -359,11 +361,6 @@ void GCMAccountTracker::OnAccountSignedOut(const AccountIds& ids) {
   iter->second.access_token.clear();
   iter->second.state = ACCOUNT_REMOVED;
   ReportTokens();
-}
-
-OAuth2TokenService* GCMAccountTracker::GetTokenService() {
-  DCHECK(account_tracker_->identity_provider());
-  return account_tracker_->identity_provider()->GetTokenService();
 }
 
 }  // namespace gcm
