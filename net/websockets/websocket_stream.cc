@@ -323,16 +323,7 @@ void Delegate::OnResponseStarted(URLRequest* request, int net_error) {
   const int response_code = request->GetResponseCode();
   DVLOG(3) << "OnResponseStarted (response code " << response_code << ")";
 
-  if (request->response_info().connection_info ==
-      HttpResponseInfo::CONNECTION_INFO_HTTP2) {
-    if (response_code == HTTP_OK) {
-      owner_->PerformUpgrade();
-      return;
-    }
-
-    owner_->ReportFailure(net_error);
-    return;
-  }
+  // TODO(https://crbug.com/842575) Re-implement WebSocket over HTTP/2.
 
   switch (response_code) {
     case HTTP_SWITCHING_PROTOCOLS:
