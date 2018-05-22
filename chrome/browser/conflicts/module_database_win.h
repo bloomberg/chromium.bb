@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -211,10 +210,6 @@ class ModuleDatabase {
 
   // Records metrics on third-party modules.
   ThirdPartyMetricsRecorder third_party_metrics_;
-
-  // Weak pointer factory for this object. This is used when bouncing
-  // incoming events to |task_runner_|.
-  base::WeakPtrFactory<ModuleDatabase> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleDatabase);
 };

@@ -54,8 +54,7 @@ ModuleDatabase::ModuleDatabase(
       // ModuleDatabase owns |module_inspector_|, so it is safe to use
       // base::Unretained().
       module_inspector_(base::Bind(&ModuleDatabase::OnModuleInspected,
-                                   base::Unretained(this))),
-      weak_ptr_factory_(this) {
+                                   base::Unretained(this))) {
   AddObserver(&third_party_metrics_);
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -138,12 +137,14 @@ void ModuleDatabase::OnModuleLoad(content::ProcessType process_type,
                                   uintptr_t module_load_address) {
   // Messages can arrive from any thread (UI thread for calls over IPC, and
   // anywhere at all for calls from ModuleWatcher), so bounce if necessary.
+  // It is safe to use base::Unretained() because this class is a singleton that
+  // is never freed.
   if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&ModuleDatabase::OnModuleLoad,
-                   weak_ptr_factory_.GetWeakPtr(), process_type, module_path,
-                   module_size, module_time_date_stamp, module_load_address));
+        base::Bind(&ModuleDatabase::OnModuleLoad, base::Unretained(this),
+                   process_type, module_path, module_size,
+                   module_time_date_stamp, module_load_address));
     return;
   }
 
