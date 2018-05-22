@@ -64,6 +64,26 @@ class PageCoordinationUnitImpl
   // Returns the main frame CU or nullptr if this page has no main frame.
   FrameCoordinationUnitImpl* GetMainFrameCoordinationUnit() const;
 
+  // Accessors.
+  base::TimeTicks usage_estimate_time() const { return usage_estimate_time_; }
+  void set_usage_estimate_time(base::TimeTicks usage_estimate_time) {
+    usage_estimate_time_ = usage_estimate_time;
+  }
+  base::TimeDelta cumulative_cpu_usage_estimate() const {
+    return cumulative_cpu_usage_estimate_;
+  }
+  void set_cumulative_cpu_usage_estimate(
+      base::TimeDelta cumulative_cpu_usage_estimate) {
+    cumulative_cpu_usage_estimate_ = cumulative_cpu_usage_estimate;
+  }
+  uint64_t private_footprint_kb_estimate() const {
+    return private_footprint_kb_estimate_;
+  }
+  void set_private_footprint_kb_estimate(
+      uint64_t private_footprint_kb_estimate) {
+    private_footprint_kb_estimate_ = private_footprint_kb_estimate;
+  }
+
  private:
   friend class FrameCoordinationUnitImpl;
 
@@ -80,6 +100,19 @@ class PageCoordinationUnitImpl
   base::TimeTicks visibility_change_time_;
   // Main frame navigation committed time.
   base::TimeTicks navigation_committed_time_;
+
+  // The time the most recent resource usage estimate applies to.
+  base::TimeTicks usage_estimate_time_;
+
+  // The most current CPU usage estimate. Note that this estimate is most
+  // generously described as "piecewise linear", as it attributes the CPU
+  // cost incurred since the last measurement was made equally to pages
+  // hosted by a process. If, e.g. a frame has come into existence and vanished
+  // from a given process between measurements, the entire cost to that frame
+  // will be mis-attributed to other frames hosted in that process.
+  base::TimeDelta cumulative_cpu_usage_estimate_;
+  // The most current memory footprint estimate.
+  uint64_t private_footprint_kb_estimate_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PageCoordinationUnitImpl);
 };

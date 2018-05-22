@@ -8,6 +8,7 @@
 #include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/mock_coordination_unit_graphs.h"
+#include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/system_coordination_unit_impl.h"
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
@@ -81,8 +82,8 @@ mojom::ProcessResourceMeasurementBatchPtr CreateMeasurementBatch(
         mojom::ProcessResourceMeasurement::New();
     measurement->pid = i;
     measurement->cpu_usage =
-        base::TimeDelta::FromMicroseconds(i) + additional_cpu_time;
-    measurement->private_footprint_kb = static_cast<uint32_t>(i);
+        base::TimeDelta::FromMicroseconds(i * 10) + additional_cpu_time;
+    measurement->private_footprint_kb = static_cast<uint32_t>(i * 100);
 
     batch->measurements.push_back(std::move(measurement));
   }
@@ -123,39 +124,76 @@ TEST_F(SystemCoordinationUnitImplTest, DistributeMeasurementBatch) {
   EXPECT_TRUE(cu_graph.process->GetProperty(mojom::PropertyType::kCPUUsage,
                                             &cpu_usage));
   EXPECT_EQ(0, cpu_usage);
-  EXPECT_EQ(1u, cu_graph.process->private_footprint_kb());
+  EXPECT_EQ(100u, cu_graph.process->private_footprint_kb());
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(10u),
+            cu_graph.process->cumulative_cpu_usage());
 
   EXPECT_TRUE(cu_graph.other_process->GetProperty(
       mojom::PropertyType::kCPUUsage, &cpu_usage));
   EXPECT_EQ(0, cpu_usage);
-  EXPECT_EQ(2u, cu_graph.other_process->private_footprint_kb());
+  EXPECT_EQ(200u, cu_graph.other_process->private_footprint_kb());
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(20u),
+            cu_graph.other_process->cumulative_cpu_usage());
+
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(5),
+            cu_graph.page->cumulative_cpu_usage_estimate());
+  EXPECT_EQ(50u, cu_graph.page->private_footprint_kb_estimate());
+
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(25),
+            cu_graph.other_page->cumulative_cpu_usage_estimate());
+  EXPECT_EQ(250u, cu_graph.other_page->private_footprint_kb_estimate());
 
   // Dispatch another batch, and verify the CPUUsage is appropriately updated.
   cu_graph.system->DistributeMeasurementBatch(
-      CreateMeasurementBatch(start_time + base::TimeDelta::FromMicroseconds(1),
-                             3, base::TimeDelta::FromMicroseconds(1)));
+      CreateMeasurementBatch(start_time + base::TimeDelta::FromMicroseconds(10),
+                             3, base::TimeDelta::FromMicroseconds(10)));
   EXPECT_TRUE(cu_graph.process->GetProperty(mojom::PropertyType::kCPUUsage,
                                             &cpu_usage));
   EXPECT_EQ(100000, cpu_usage);
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(20u),
+            cu_graph.process->cumulative_cpu_usage());
   EXPECT_TRUE(cu_graph.other_process->GetProperty(
       mojom::PropertyType::kCPUUsage, &cpu_usage));
   EXPECT_EQ(100000, cpu_usage);
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(30u),
+            cu_graph.other_process->cumulative_cpu_usage());
+
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(10),
+            cu_graph.page->cumulative_cpu_usage_estimate());
+  EXPECT_EQ(50u, cu_graph.page->private_footprint_kb_estimate());
+
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(40),
+            cu_graph.other_page->cumulative_cpu_usage_estimate());
+  EXPECT_EQ(250u, cu_graph.other_page->private_footprint_kb_estimate());
 
   // Now test that a measurement batch that leaves out a process clears the
-  // properties of that process.
+  // properties of that process - except for cumulative CPU, which can only
+  // go forwards.
   cu_graph.system->DistributeMeasurementBatch(
-      CreateMeasurementBatch(start_time + base::TimeDelta::FromMicroseconds(2),
-                             1, base::TimeDelta::FromMicroseconds(31)));
+      CreateMeasurementBatch(start_time + base::TimeDelta::FromMicroseconds(20),
+                             1, base::TimeDelta::FromMicroseconds(310)));
 
   EXPECT_TRUE(cu_graph.process->GetProperty(mojom::PropertyType::kCPUUsage,
                                             &cpu_usage));
   EXPECT_EQ(3000000, cpu_usage);
-  EXPECT_EQ(1u, cu_graph.process->private_footprint_kb());
+  EXPECT_EQ(100u, cu_graph.process->private_footprint_kb());
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(320u),
+            cu_graph.process->cumulative_cpu_usage());
 
   EXPECT_TRUE(cu_graph.other_process->GetProperty(
       mojom::PropertyType::kCPUUsage, &cpu_usage));
   EXPECT_EQ(0, cpu_usage);
   EXPECT_EQ(0u, cu_graph.other_process->private_footprint_kb());
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(30u),
+            cu_graph.other_process->cumulative_cpu_usage());
+
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(160),
+            cu_graph.page->cumulative_cpu_usage_estimate());
+  EXPECT_EQ(50u, cu_graph.page->private_footprint_kb_estimate());
+
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(190),
+            cu_graph.other_page->cumulative_cpu_usage_estimate());
+  EXPECT_EQ(50u, cu_graph.other_page->private_footprint_kb_estimate());
 }
 
 }  // namespace resource_coordinator

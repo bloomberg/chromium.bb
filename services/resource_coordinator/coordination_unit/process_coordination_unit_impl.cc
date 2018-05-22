@@ -78,7 +78,7 @@ void ProcessCoordinationUnitImpl::SetPID(int64_t pid) {
   SetProperty(mojom::PropertyType::kPID, pid);
 }
 
-std::set<FrameCoordinationUnitImpl*>
+const std::set<FrameCoordinationUnitImpl*>&
 ProcessCoordinationUnitImpl::GetFrameCoordinationUnits() const {
   return frame_coordination_units_;
 }
