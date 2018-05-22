@@ -46,6 +46,19 @@ public class StackScroller {
         sViscousFluidNormalize = 1.0f / viscousFluid(1.0f);
     }
 
+    public final void setFrictionMultiplier(float frictionMultiplier) {
+        mScrollerX.setFrictionMultiplier(frictionMultiplier);
+        mScrollerY.setFrictionMultiplier(frictionMultiplier);
+    }
+
+    public final void setXSnapDistance(int snapDistance) {
+        mScrollerX.setSnapDistance(snapDistance);
+    }
+
+    public final void setYSnapDistance(int snapDistance) {
+        mScrollerY.setSnapDistance(snapDistance);
+    }
+
     /**
      *
      * Returns whether the scroller has finished scrolling.
@@ -313,6 +326,11 @@ public class StackScroller {
 
         // Fling friction
         private final float mFlingFriction = ViewConfiguration.getScrollFriction();
+        private float mFrictionMultiplier = 1.f;
+
+        // If this is non-zero, we enable logic to force the ending scroll position to be an integer
+        // multiple of this number.
+        private int mSnapDistance;
 
         // Current state of the animation.
         private int mState = SPLINE;
@@ -383,6 +401,18 @@ public class StackScroller {
             mPhysicalCoeff = SensorManager.GRAVITY_EARTH // g (m/s^2)
                     * 39.37f // inch/meter
                     * ppi * 0.84f; // look and feel tuning
+        }
+
+        void setFrictionMultiplier(float frictionMultiplier) {
+            mFrictionMultiplier = frictionMultiplier;
+        }
+
+        private float getFriction() {
+            return mFlingFriction * mFrictionMultiplier;
+        }
+
+        void setSnapDistance(int snapDistance) {
+            mSnapDistance = snapDistance;
         }
 
         void updateScroll(float q) {
@@ -491,8 +521,27 @@ public class StackScroller {
             double totalDistance = 0.0;
 
             if (velocity != 0) {
-                mDuration = mSplineDuration = getSplineFlingDuration(velocity);
                 totalDistance = getSplineFlingDistance(velocity);
+
+                if (mSnapDistance != 0) {
+                    final double signedDistance = totalDistance *= Math.signum(velocity);
+                    final double newPositionPreSnapping = mCurrentPosition + signedDistance;
+                    double newPositionPostSnapping =
+                            Math.round(newPositionPreSnapping / mSnapDistance) * mSnapDistance;
+
+                    if (Math.round(newPositionPostSnapping / mSnapDistance)
+                            == Math.round((double) mCurrentPosition / mSnapDistance)) {
+                        // If we would snap to the current tab, give a boost to move over to the
+                        // next one.
+                        newPositionPostSnapping += Math.signum(velocity) * mSnapDistance;
+                    }
+
+                    totalDistance = Math.abs(newPositionPostSnapping - mCurrentPosition);
+                    velocity = Math.round(
+                            Math.signum(velocity) * getSplineFlingDistanceInverse(totalDistance));
+                }
+
+                mDuration = mSplineDuration = getSplineFlingDuration(velocity);
             }
 
             mSplineDistance = (int) (totalDistance * Math.signum(velocity));
@@ -511,14 +560,20 @@ public class StackScroller {
         }
 
         private double getSplineDeceleration(int velocity) {
-            return Math.log(INFLEXION * Math.abs(velocity) / (mFlingFriction * mPhysicalCoeff));
+            return Math.log(INFLEXION * Math.abs(velocity) / (getFriction() * mPhysicalCoeff));
+        }
+
+        // Note: this always returns a positive velocity. The desired velocity may be negative (with
+        // the same magnitude).
+        private int getSplineDecelerationInverse(double deceleration) {
+            return (int) Math.round(
+                    Math.exp(deceleration) * (getFriction() * mPhysicalCoeff) / INFLEXION);
         }
 
         private double getSplineFlingDistance(int velocity) {
             final double l = getSplineDeceleration(velocity);
             final double decelMinusOne = DECELERATION_RATE - 1.0;
-            return mFlingFriction * mPhysicalCoeff
-                    * Math.exp(DECELERATION_RATE / decelMinusOne * l);
+            return getFriction() * mPhysicalCoeff * Math.exp(DECELERATION_RATE / decelMinusOne * l);
         }
 
         /* Returns the duration, expressed in milliseconds */
@@ -526,6 +581,18 @@ public class StackScroller {
             final double l = getSplineDeceleration(velocity);
             final double decelMinusOne = DECELERATION_RATE - 1.0;
             return (int) (1000.0 * Math.exp(l / decelMinusOne));
+        }
+
+        // This lets us get the required fling velocity to make the scroller move a certain
+        // distance. We use this to implement snapping by calculating where a fling of a given
+        // velocity would move the scroller to, rounding to the nearest multiple of the current snap
+        // distance, and inverting to get the final velocity to use (close enough to the initial
+        // velocity that it's really noticeable that we changed it).
+        private int getSplineFlingDistanceInverse(double distance) {
+            double decelMinusOne = DECELERATION_RATE - 1.0;
+            double splineDeceleration = Math.log(distance / (getFriction() * mPhysicalCoeff))
+                    * decelMinusOne / DECELERATION_RATE;
+            return getSplineDecelerationInverse(splineDeceleration);
         }
 
         private void fitOnBounceCurve(int start, int end, int velocity) {

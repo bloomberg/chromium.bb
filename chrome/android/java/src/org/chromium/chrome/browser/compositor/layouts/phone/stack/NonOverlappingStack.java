@@ -54,6 +54,12 @@ public class NonOverlappingStack extends Stack {
     private static final float STACK_LANDSCAPE_Y_OFFSET_PROPORTION = 0.f;
 
     /**
+     * Multiplier for adjusting the scrolling friction from the amount provided by
+     * ViewConfiguration.
+     */
+    private static final float FRICTION_MULTIPLIER = 0.2f;
+
+    /**
      * @param layout The parent layout.
      */
     public NonOverlappingStack(Context context, StackLayoutBase layout) {
@@ -82,8 +88,31 @@ public class NonOverlappingStack extends Stack {
     }
 
     @Override
+    public void contextChanged(Context context) {
+        super.contextChanged(context);
+        mScroller.setFrictionMultiplier(FRICTION_MULTIPLIER);
+        // This is what computeSpacing() returns when there are >= 2 tabs
+        final int snapDistance =
+                (int) Math.round(getScrollDimensionSize() * SCALE_FRACTION_MULTIPLE_TABS
+                        + EXTRA_SPACE_BETWEEN_TABS_DP);
+        // Really we're scrolling in the x direction, but the scroller is always wired up to the y
+        // direction for both portrait and landscape mode.
+        mScroller.setYSnapDistance(snapDistance);
+    }
+
+    @Override
     public void onPinch(long time, float x0, float y0, float x1, float y1, boolean firstEvent) {
         return;
+    }
+
+    @Override
+    protected void springBack(long time) {
+        if (mScroller.isFinished()) {
+            int newTarget = Math.round(mScrollTarget / mSpacing) * mSpacing;
+            mScroller.springBack(0, (int) mScrollTarget, 0, 0, newTarget, newTarget, time);
+            setScrollTarget(newTarget, false);
+            requestUpdate();
+        }
     }
 
     @Override
