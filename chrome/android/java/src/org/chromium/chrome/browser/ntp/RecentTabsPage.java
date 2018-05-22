@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
-import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -128,7 +127,6 @@ public class RecentTabsPage
         mInForeground = inForeground;
         if (mInForeground) {
             mForegroundTimeMs = SystemClock.elapsedRealtime();
-            StartupMetrics.getInstance().recordOpenedRecents();
             mRecentTabsManager.recordRecentTabMetrics();
         } else {
             RecordHistogram.recordLongTimesHistogram("NewTabPage.RecentTabsPage.TimeVisibleAndroid",

@@ -39,7 +39,6 @@ import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.ui.UiUtils;
@@ -340,7 +339,6 @@ public class UrlBar extends AutocompleteEditText {
         }
 
         if (focused) {
-            StartupMetrics.getInstance().recordFocusedOmnibox();
             mPendingScroll = false;
         }
 

@@ -708,7 +708,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/metrics/OneShotImpressionListener.java",
   "java/src/org/chromium/chrome/browser/metrics/PackageMetrics.java",
   "java/src/org/chromium/chrome/browser/metrics/PageLoadMetrics.java",
-  "java/src/org/chromium/chrome/browser/metrics/StartupMetrics.java",
   "java/src/org/chromium/chrome/browser/metrics/StartupPageLoadMetricsObserver.java",
   "java/src/org/chromium/chrome/browser/metrics/UkmUtilsForTest.java",
   "java/src/org/chromium/chrome/browser/metrics/UmaSessionStats.java",

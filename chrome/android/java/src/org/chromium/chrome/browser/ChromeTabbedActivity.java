@@ -85,7 +85,6 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.ActivityStopMetrics;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.MainIntentBehaviorMetrics;
-import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.TabModalLifetimeHandler;
@@ -653,8 +652,6 @@ public class ChromeTabbedActivity
             CookiesFetcher.restoreCookies();
         }
 
-        StartupMetrics.getInstance().recordHistogram(false);
-
         if (FeatureUtilities.isTabModelMergingEnabled()) {
             boolean inMultiWindowMode = MultiWindowUtils.getInstance().isInMultiWindowMode(this);
             // Merge tabs if the activity is not in multi-window mode and mMergeTabsOnResume is true
@@ -708,19 +705,12 @@ public class ChromeTabbedActivity
         if (getActivityTab() != null) getActivityTab().setIsAllowedToReturnToExternalApp(false);
 
         mTabModelSelectorImpl.saveState();
-        StartupMetrics.getInstance().recordHistogram(true);
         mActivityStopMetrics.onStopWithNative(this);
 
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putLong(LAST_BACKGROUNDED_TIME_MS_PREF, System.currentTimeMillis())
                 .apply();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        StartupMetrics.getInstance().updateIntent(getIntent());
     }
 
     @Override
@@ -1656,7 +1646,6 @@ public class ChromeTabbedActivity
         } else if (id == R.id.all_bookmarks_menu_id) {
             if (currentTab != null) {
                 getCompositorViewHolder().hideKeyboard(() -> {
-                    StartupMetrics.getInstance().recordOpenedBookmarks();
                     BookmarkUtils.showBookmarkManager(ChromeTabbedActivity.this);
                 });
                 if (currentTabIsNtp) {
@@ -2145,7 +2134,6 @@ public class ChromeTabbedActivity
         if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
         if (getAppMenuHandler() != null) getAppMenuHandler().hideAppMenu();
         setStatusBarColor(null, Color.BLACK);
-        StartupMetrics.getInstance().recordOpenedTabSwitcher();
     }
 
     @Override

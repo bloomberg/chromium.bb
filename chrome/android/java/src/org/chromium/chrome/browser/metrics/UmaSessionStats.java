@@ -10,7 +10,6 @@ import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
@@ -28,8 +27,6 @@ import org.chromium.content_public.browser.WebContents;
  * and the framework's MetricService.
  */
 public class UmaSessionStats {
-    public static final String LAST_USED_TIME_PREF = "umasessionstats.lastusedtime";
-
     private static final String SAMSUNG_MULTWINDOW_PACKAGE = "com.sec.feature.multiwindow";
 
     private static long sNativeUmaSessionStats;
@@ -151,10 +148,6 @@ public class UmaSessionStats {
         }
 
         nativeUmaEndSession(sNativeUmaSessionStats);
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(LAST_USED_TIME_PREF, System.currentTimeMillis())
-                .apply();
     }
 
     /**
