@@ -9,13 +9,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
 #if defined(OS_IOS)
 #include "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
 namespace {
@@ -101,6 +101,20 @@ TEST(BindObjcBlockTest, TestSixArguments) {
   c.Run(1, 2, "infinite", "improbability", 3, "drive");
   EXPECT_EQ(result1, "infiniteimprobabilitydrive");
   EXPECT_EQ(result2, 6);
+}
+
+TEST(BindObjcBlockTest, TestBlockMoveable) {
+  base::OnceClosure c;
+  __block BOOL invoked_block = NO;
+  {
+    base::mac::ScopedNSAutoreleasePool autorelease_pool;
+    c = base::BindOnce(base::RetainBlock(^(std::unique_ptr<BOOL> v) {
+                         invoked_block = *v;
+                       }),
+                       std::make_unique<BOOL>(YES));
+  };
+  std::move(c).Run();
+  EXPECT_TRUE(invoked_block);
 }
 
 #if defined(OS_IOS)
