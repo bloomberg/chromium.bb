@@ -279,7 +279,6 @@ public abstract class SigninFragmentBase
 
         mView.getRefuseButton().setOnClickListener(this::onRefuseButtonClicked);
         mView.getAcceptButton().setVisibility(View.GONE);
-        mView.getAcceptButton().setOnClickListener(this::onAcceptButtonClicked);
         mView.getMoreButton().setVisibility(View.VISIBLE);
         mView.getMoreButton().setOnClickListener(view -> {
             mView.getScrollView().smoothScrollBy(0, mView.getScrollView().getHeight());
@@ -297,9 +296,49 @@ public abstract class SigninFragmentBase
         }
 
         updateConsentText();
+        setHasAccounts(true); // Assume there are accounts, updateAccounts will set the real value.
         return mView;
     }
 
+    /**
+     * Account picker is hidden if there are no accounts on the device. Also, accept button
+     * becomes "Add account" button in this case.
+     */
+    private void setHasAccounts(boolean hasAccounts) {
+        if (hasAccounts) {
+            mView.getAccountPickerView().setVisibility(View.VISIBLE);
+            mConsentTextTracker.setText(mView.getAcceptButton(), R.string.signin_accept_button);
+            mView.getAcceptButton().setOnClickListener(this::onAcceptButtonClicked);
+
+            // The clickable "Settings" link.
+            mView.getDetailsDescriptionView().setMovementMethod(LinkMovementMethod.getInstance());
+            NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
+                @Override
+                public void onClick(View view) {
+                    onSettingsLinkClicked(view);
+                }
+            };
+            mConsentTextTracker.setText(mView.getDetailsDescriptionView(),
+                    R.string.signin_details_description, input -> {
+                        return SpanApplier.applySpans(input.toString(),
+                                new SpanApplier.SpanInfo(
+                                        SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, settingsSpan));
+                    });
+        } else {
+            mView.getAccountPickerView().setVisibility(View.GONE);
+            mConsentTextTracker.setText(mView.getAcceptButton(), R.string.signin_add_account);
+            mView.getAcceptButton().setOnClickListener(this::onAddAccountButtonClicked);
+
+            mConsentTextTracker.setText(mView.getDetailsDescriptionView(),
+                    R.string.signin_details_description, input -> {
+                        return SpanApplier.applySpans(input.toString(),
+                                new SpanApplier.SpanInfo(
+                                        SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, null));
+                    });
+        }
+    }
+
+    /** Sets texts for immutable elements. Accept button text is set by {@link #setHasAccounts}. */
     private void updateConsentText() {
         // TODO(https://crbug.com/814728): Change texts if mIsChildAccount is true.
         mConsentTextTracker.setText(mView.getTitleView(), R.string.signin_title);
@@ -310,23 +349,7 @@ public abstract class SigninFragmentBase
         mConsentTextTracker.setText(mView.getGoogleServicesDescriptionView(),
                 R.string.signin_google_services_description);
         mConsentTextTracker.setText(mView.getRefuseButton(), mCancelButtonTextId);
-        mConsentTextTracker.setText(mView.getAcceptButton(), R.string.signin_accept_button);
         mConsentTextTracker.setText(mView.getMoreButton(), R.string.more);
-
-        // The clickable "Settings" link.
-        mView.getDetailsDescriptionView().setMovementMethod(LinkMovementMethod.getInstance());
-        NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
-            @Override
-            public void onClick(View widget) {
-                onSettingsLinkClicked(widget);
-            }
-        };
-        mConsentTextTracker.setText(
-                mView.getDetailsDescriptionView(), R.string.signin_details_description, input -> {
-                    return SpanApplier.applySpans(input.toString(),
-                            new SpanApplier.SpanInfo(
-                                    SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, settingsSpan));
-                });
     }
 
     private void updateProfileData() {
@@ -372,6 +395,11 @@ public abstract class SigninFragmentBase
         // Record the fact that the user consented to the consent text by clicking on a button
         recordConsent((TextView) button);
         seedAccountsAndSignin(false);
+    }
+
+    private void onAddAccountButtonClicked(View button) {
+        if (!areControlsEnabled()) return;
+        addAccount();
     }
 
     private void onSettingsLinkClicked(View view) {
@@ -573,9 +601,12 @@ public abstract class SigninFragmentBase
         if (mAccountNames == null) return;
 
         if (mAccountNames.isEmpty()) {
-            // TODO(https://crbug.com/814728): Hide account picker and change accept button text.
             mSelectedAccountName = null;
+            mAccountSelectionPending = false;
+            setHasAccounts(false);
             return;
+        } else {
+            setHasAccounts(true);
         }
 
         if (mAccountSelectionPending) {
