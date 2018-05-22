@@ -4,6 +4,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
 #include "extensions/browser/api/dns/mock_host_resolver_creator.h"
 #include "extensions/browser/api/sockets_udp/sockets_udp_api.h"
@@ -71,7 +72,15 @@ IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, SocketsUdpCreateGood) {
   ASSERT_TRUE(socketId > 0);
 }
 
-IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, SocketsUdpExtension) {
+// Disable SocketsUdpExtension on Mac ASAN due to time out.
+// See https://crbug.com/844402
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_SocketsUdpExtension DISABLED_SocketsUdpExtension
+#else
+#define MAYBE_SocketsUdpExtension SocketsUdpExtension
+#endif
+
+IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, MAYBE_SocketsUdpExtension) {
   std::unique_ptr<net::SpawnedTestServer> test_server(
       new net::SpawnedTestServer(
           net::SpawnedTestServer::TYPE_UDP_ECHO,
