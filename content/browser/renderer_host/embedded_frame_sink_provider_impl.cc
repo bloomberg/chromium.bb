@@ -14,7 +14,9 @@ EmbeddedFrameSinkProviderImpl::EmbeddedFrameSinkProviderImpl(
     viz::HostFrameSinkManager* host_frame_sink_manager,
     uint32_t renderer_client_id)
     : host_frame_sink_manager_(host_frame_sink_manager),
-      renderer_client_id_(renderer_client_id) {}
+      renderer_client_id_(renderer_client_id) {
+  DCHECK(host_frame_sink_manager);
+}
 
 EmbeddedFrameSinkProviderImpl::~EmbeddedFrameSinkProviderImpl() = default;
 
