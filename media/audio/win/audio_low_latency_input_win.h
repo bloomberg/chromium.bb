@@ -112,6 +112,7 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   void SetVolume(double volume) override;
   double GetVolume() override;
   bool IsMuted() override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
 
   bool started() const { return started_; }
 

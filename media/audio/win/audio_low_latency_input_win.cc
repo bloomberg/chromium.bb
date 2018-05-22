@@ -365,6 +365,11 @@ bool WASAPIAudioInputStream::IsMuted() {
   return is_muted != FALSE;
 }
 
+void WASAPIAudioInputStream::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  // Not supported. Do nothing.
+}
+
 void WASAPIAudioInputStream::Run() {
   ScopedCOMInitializer com_init(ScopedCOMInitializer::kMTA);
 

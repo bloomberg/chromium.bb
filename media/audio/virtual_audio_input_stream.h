@@ -58,6 +58,7 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
   bool SetAutomaticGainControl(bool enabled) override;
   bool GetAutomaticGainControl() override;
   bool IsMuted() override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
 
   // Attaches an AudioConverter::InputCallback to be used as input. This
   // VirtualAudioInputStream must outlive all attached streams, so any attached

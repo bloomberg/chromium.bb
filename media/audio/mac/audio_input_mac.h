@@ -45,6 +45,7 @@ class PCMQueueInAudioInputStream : public AudioInputStream {
   bool SetAutomaticGainControl(bool enabled) override;
   bool GetAutomaticGainControl() override;
   bool IsMuted() override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
 
  private:
   // Issue the OnError to |callback_|;

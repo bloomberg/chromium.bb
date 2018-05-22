@@ -357,6 +357,11 @@ bool AlsaPcmInputStream::IsMuted() {
   return false;
 }
 
+void AlsaPcmInputStream::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  // Not supported. Do nothing.
+}
+
 void AlsaPcmInputStream::HandleError(const char* method, int error) {
   LOG(WARNING) << method << ": " << wrapper_->StrError(error);
   if (callback_)

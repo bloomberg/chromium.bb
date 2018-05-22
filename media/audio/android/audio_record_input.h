@@ -43,6 +43,7 @@ class MEDIA_EXPORT AudioRecordInputStream : public AudioInputStream {
   bool SetAutomaticGainControl(bool enabled) override;
   bool GetAutomaticGainControl() override;
   bool IsMuted() override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
 
   // Called from Java when data is available.
   void OnData(JNIEnv* env,

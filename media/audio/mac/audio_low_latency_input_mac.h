@@ -83,6 +83,7 @@ class MEDIA_EXPORT AUAudioInputStream
   void SetVolume(double volume) override;
   double GetVolume() override;
   bool IsMuted() override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
 
   // Returns the current hardware sample rate for the default input device.
   static int HardwareSampleRate();

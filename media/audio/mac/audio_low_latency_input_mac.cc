@@ -893,6 +893,11 @@ bool AUAudioInputStream::IsMuted() {
   return result == noErr && muted != 0;
 }
 
+void AUAudioInputStream::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  // TODO(ossu): Implement.
+}
+
 // static
 OSStatus AUAudioInputStream::DataIsAvailable(void* context,
                                              AudioUnitRenderActionFlags* flags,

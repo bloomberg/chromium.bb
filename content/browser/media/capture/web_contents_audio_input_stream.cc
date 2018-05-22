@@ -441,4 +441,9 @@ bool WebContentsAudioInputStream::IsMuted() {
   return false;
 }
 
+void WebContentsAudioInputStream::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  // Not supported. Do nothing.
+}
+
 }  // namespace content
