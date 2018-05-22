@@ -164,6 +164,34 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         return new WebViewChromiumAwInit(this);
     }
 
+    private void deleteContentsOnPackageDowngrade(PackageInfo packageInfo) {
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+        try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
+                     "WebViewChromiumFactoryProvider.deleteContentsOnPackageDowngrade")) {
+            // Use shared preference to check for package downgrade.
+            // Since N, getSharedPreferences creates the preference dir if it doesn't exist,
+            // causing a disk write.
+            mWebViewPrefs = ContextUtils.getApplicationContext().getSharedPreferences(
+                    CHROMIUM_PREFS_NAME, Context.MODE_PRIVATE);
+            int lastVersion = mWebViewPrefs.getInt(VERSION_CODE_PREF, 0);
+            int currentVersion = packageInfo.versionCode;
+            if (!versionCodeGE(currentVersion, lastVersion)) {
+                // The WebView package has been downgraded since we last ran in this
+                // application. Delete the WebView data directory's contents.
+                String dataDir = PathUtils.getDataDirectory();
+                Log.i(TAG,
+                        "WebView package downgraded from " + lastVersion + " to "
+                                + currentVersion + "; deleting contents of " + dataDir);
+                deleteContents(new File(dataDir));
+            }
+            if (lastVersion != currentVersion) {
+                mWebViewPrefs.edit().putInt(VERSION_CODE_PREF, currentVersion).apply();
+            }
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+    }
+
     @TargetApi(Build.VERSION_CODES.N) // For getSystemService() and isUserUnlocked().
     private void initialize(WebViewDelegate webViewDelegate) {
         long startTime = SystemClock.elapsedRealtime();
@@ -196,6 +224,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
             try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
                          "WebViewChromiumFactoryProvider.initCommandLine")) {
+                // This may take ~20 ms only on userdebug devices.
                 CommandLineUtil.initCommandLine();
             }
 
@@ -218,37 +247,18 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             ThreadUtils.setWillOverrideUiThread();
             BuildInfo.setBrowserPackageInfo(packageInfo);
 
-            // Load chromium library.
-            AwBrowserProcess.loadLibrary(mWebViewDelegate.getDataDirectorySuffix());
-
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
             try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
-                         "WebViewChromiumFactoryProvider.loadPlatSupportLibrary")) {
-                // Load glue-layer support library.
-                System.loadLibrary("webviewchromium_plat_support");
-
-                // Use shared preference to check for package downgrade.
-                // Since N, getSharedPreferences creates the preference dir if it doesn't exist,
-                // causing a disk write.
-                mWebViewPrefs = ContextUtils.getApplicationContext().getSharedPreferences(
-                        CHROMIUM_PREFS_NAME, Context.MODE_PRIVATE);
-                int lastVersion = mWebViewPrefs.getInt(VERSION_CODE_PREF, 0);
-                int currentVersion = packageInfo.versionCode;
-                if (!versionCodeGE(currentVersion, lastVersion)) {
-                    // The WebView package has been downgraded since we last ran in this
-                    // application. Delete the WebView data directory's contents.
-                    String dataDir = PathUtils.getDataDirectory();
-                    Log.i(TAG,
-                            "WebView package downgraded from " + lastVersion + " to "
-                                    + currentVersion + "; deleting contents of " + dataDir);
-                    deleteContents(new File(dataDir));
-                }
-                if (lastVersion != currentVersion) {
-                    mWebViewPrefs.edit().putInt(VERSION_CODE_PREF, currentVersion).apply();
-                }
-            } finally {
-                StrictMode.setThreadPolicy(oldPolicy);
+                         "WebViewChromiumFactoryProvider.loadChromiumLibrary")) {
+                AwBrowserProcess.loadLibrary(mWebViewDelegate.getDataDirectorySuffix());
             }
+
+            try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
+                         "WebViewChromiumFactoryProvider.loadGlueLayerPlatSupportLibrary")) {
+                System.loadLibrary("webviewchromium_plat_support");
+            }
+
+            deleteContentsOnPackageDowngrade(packageInfo);
+
             // Now safe to use WebView data directory.
 
             mAwInit.startVariationsInit();
