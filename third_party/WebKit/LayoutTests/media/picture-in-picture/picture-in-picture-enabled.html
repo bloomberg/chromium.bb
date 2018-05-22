@@ -7,13 +7,14 @@
 <script src="../../external/wpt/picture-in-picture/resources/picture-in-picture-helpers.js"></script>
 <body></body>
 <script>
-promise_test(t => {
+promise_test(async t => {
   assert_true(document.pictureInPictureEnabled);
 
   internals.settings.setPictureInPictureEnabled(false);
   assert_false(document.pictureInPictureEnabled);
 
+  const video = await loadVideo(document, '../content/test.ogv');
   return promise_rejects(t, 'NotSupportedError',
-    requestPictureInPictureWithTrustedClick(document.createElement('video')));
+    requestPictureInPictureWithTrustedClick(video));
 });
 </script>
