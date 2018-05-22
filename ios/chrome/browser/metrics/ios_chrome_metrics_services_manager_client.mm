@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/tabs/tab_model_list.h"
 #include "ios/chrome/browser/variations/ios_chrome_variations_service_client.h"
 #include "ios/chrome/browser/variations/ios_ui_string_overrider_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -89,9 +90,9 @@ IOSChromeMetricsServicesManagerClient::CreateEntropyProvider() {
   return GetMetricsStateManager()->CreateDefaultEntropyProvider();
 }
 
-net::URLRequestContextGetter*
-IOSChromeMetricsServicesManagerClient::GetURLRequestContext() {
-  return GetApplicationContext()->GetSystemURLRequestContext();
+scoped_refptr<network::SharedURLLoaderFactory>
+IOSChromeMetricsServicesManagerClient::GetURLLoaderFactory() {
+  return GetApplicationContext()->GetSharedURLLoaderFactory();
 }
 
 bool IOSChromeMetricsServicesManagerClient::IsMetricsReportingEnabled() {

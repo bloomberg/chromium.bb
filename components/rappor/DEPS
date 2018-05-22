@@ -6,5 +6,6 @@ include_rules = [
   "+crypto",
   "+mojo/public/cpp",
   "+net",
+  "+services/network",
   "+third_party/smhasher",
 ]

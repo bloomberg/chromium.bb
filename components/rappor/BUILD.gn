@@ -43,6 +43,7 @@ static_library("rappor") {
     "//components/variations",
     "//crypto",
     "//net",
+    "//services/network/public/cpp:cpp",
     "//third_party/smhasher:cityhash",
   ]
 }
@@ -104,6 +105,8 @@ source_set("unit_tests") {
     "//components/metrics",
     "//components/prefs:test_support",
     "//net:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp:cpp",
     "//testing/gtest",
     "//url",
   ]

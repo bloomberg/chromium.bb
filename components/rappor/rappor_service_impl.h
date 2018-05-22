@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "components/metrics/daily_event.h"
@@ -24,8 +25,8 @@
 class PrefRegistrySimple;
 class PrefService;
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace rappor {
@@ -52,7 +53,8 @@ class RapporServiceImpl : public RapporService {
 
   // Initializes the rappor service, including loading the cohort and secret
   // preferences from disk.
-  void Initialize(net::URLRequestContextGetter* context);
+  void Initialize(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // Updates the settings for metric recording and uploading.
   // The RapporServiceImpl must be initialized before this method is called.

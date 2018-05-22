@@ -41,7 +41,7 @@ class IOSChromeMetricsServicesManagerClient
       override;
   std::unique_ptr<const base::FieldTrial::EntropyProvider>
   CreateEntropyProvider() override;
-  net::URLRequestContextGetter* GetURLRequestContext() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsMetricsReportingEnabled() override;
   bool IsMetricsConsentGiven() override;
   bool IsIncognitoSessionActive() override;
