@@ -220,11 +220,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // and thus to keep it on MemoryCache, even after script execution, as long
   // as ScriptLoader is alive. crbug.com/778799
   Member<Resource> resource_keep_alive_;
-
-  // The context document at the time when PrepareScript() is executed.
-  // This is only used to check whether the script element is moved between
-  // documents and thus doesn't retain a strong reference.
-  WeakMember<Document> original_document_;
 };
 
 }  // namespace blink

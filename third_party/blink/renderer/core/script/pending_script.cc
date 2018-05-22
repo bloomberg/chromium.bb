@@ -53,7 +53,8 @@ PendingScript::PendingScript(ScriptElementBase* element,
       starting_position_(starting_position),
       parser_blocking_load_start_time_(0),
       virtual_time_pauser_(CreateWebScopedVirtualTimePauser(element)),
-      client_(nullptr) {}
+      client_(nullptr),
+      original_context_document_(element->GetDocument().ContextDocument()) {}
 
 PendingScript::~PendingScript() {}
 
@@ -112,6 +113,7 @@ void PendingScript::MarkParserBlockingLoadStartTime() {
 void PendingScript::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(client_);
+  visitor->Trace(original_context_document_);
 }
 
 bool PendingScript::IsControlledByScriptRunner() const {

@@ -128,6 +128,9 @@ class CORE_EXPORT PendingScript
     DCHECK_EQ(scheduling_type_, ScriptSchedulingType::kNotSet);
     scheduling_type_ = scheduling_type;
   }
+  Document* OriginalContextDocument() const {
+    return original_context_document_;
+  }
 
  protected:
   PendingScript(ScriptElementBase*, const TextPosition& starting_position);
@@ -152,6 +155,12 @@ class CORE_EXPORT PendingScript
 
   WebScopedVirtualTimePauser virtual_time_pauser_;
   Member<PendingScriptClient> client_;
+
+  // The context document at the time when PrepareScript() is executed.
+  // This is only used to check whether the script element is moved between
+  // documents and thus doesn't retain a strong reference.
+  WeakMember<Document> original_context_document_;
+
   DISALLOW_COPY_AND_ASSIGN(PendingScript);
 };
 
