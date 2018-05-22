@@ -30,6 +30,8 @@
 #include "base/nix/xdg_util.h"
 #elif defined(OS_MACOSX)
 #include "base/base_paths_mac.h"
+#elif defined(OS_FUCHSIA)
+#include "base/base_paths_fuchsia.h"
 #endif
 
 namespace content {
@@ -124,6 +126,9 @@ void ShellBrowserContext::InitWhileIOAllowed() {
   path_ = path_.Append("Chromium Content Shell");
 #elif defined(OS_ANDROID)
   CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &path_));
+  path_ = path_.Append(FILE_PATH_LITERAL("content_shell"));
+#elif defined(OS_FUCHSIA)
+  CHECK(base::PathService::Get(base::DIR_APP_DATA, &path_));
   path_ = path_.Append(FILE_PATH_LITERAL("content_shell"));
 #else
   NOTIMPLEMENTED();

@@ -42,6 +42,13 @@ bool PathProviderFuchsia(int key, FilePath* result) {
     case DIR_SOURCE_ROOT:
       *result = GetPackageRoot();
       return true;
+    case DIR_APP_DATA:
+      // TODO(https://crbug.com/840598): Switch to /data when minfs supports
+      // mmap().
+      DLOG(WARNING) << "Using /tmp as app data dir, changes will NOT be "
+                       "persisted! (crbug.com/840598)";
+      *result = FilePath("/tmp");
+      return true;
     case DIR_CACHE:
       *result = FilePath("/data");
       return true;
