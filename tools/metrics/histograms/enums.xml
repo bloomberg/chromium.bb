@@ -43981,6 +43981,7 @@ would be helpful to identify which type is being sent.
   <int value="6" label="A pending report was cancelled"/>
   <int value="7" label="A report failed to start"/>
   <int value="8" label="An active report failed to finish"/>
+  <int value="9" label="A report was possible but skipped"/>
 </enum>
 
 <enum name="SuspiciousSiteTriggerState">
@@ -43988,6 +43989,7 @@ would be helpful to identify which type is being sent.
   <int value="1" label="A page is loading"/>
   <int value="2" label="A report will begin when the page loads"/>
   <int value="3" label="A report has started"/>
+  <int value="4" label="The trigger is in monitor mode"/>
 </enum>
 
 <enum name="SwapchainFormat">
