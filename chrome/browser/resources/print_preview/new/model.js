@@ -303,14 +303,17 @@ Polymer({
    * @private
    */
   updateSettingsFromDestination_: function() {
-    const caps = (!!this.destination && !!this.destination.capabilities) ?
-        this.destination.capabilities.printer :
-        null;
+    if (!this.destination)
+      return;
 
     if (this.destination.capabilities == this.lastDestinationCapabilities_)
       return;
 
     this.lastDestinationCapabilities_ = this.destination.capabilities;
+
+    const caps = !!this.destination.capabilities ?
+        this.destination.capabilities.printer :
+        null;
     this.updateSettingsAvailabilityFromDestination_(caps);
 
     if (!caps)
