@@ -29,6 +29,8 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
+import org.chromium.chrome.browser.compositor.layouts.phone.stack.NonOverlappingStack;
+import org.chromium.chrome.browser.compositor.layouts.phone.stack.OverlappingStack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.Stack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
@@ -348,7 +350,12 @@ public abstract class StackLayoutBase
             mStacks.subList(lists.size(), mStacks.size()).clear();
         }
         while (mStacks.size() < lists.size()) {
-            Stack stack = new Stack(getContext(), this);
+            Stack stack;
+            if (isHorizontalTabSwitcherFlagEnabled()) {
+                stack = new NonOverlappingStack(getContext(), this);
+            } else {
+                stack = new OverlappingStack(getContext(), this);
+            }
             stack.notifySizeChanged(mWidth, mHeight, mOrientation);
             mStacks.add(stack);
         }
