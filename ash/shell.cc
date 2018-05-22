@@ -477,19 +477,19 @@ void Shell::OnDictationEnded() {
 }
 
 void Shell::CreateKeyboard() {
-  if (keyboard::IsKeyboardEnabled()) {
-    if (keyboard::KeyboardController::GetInstance()) {
-      for (auto* const controller : GetAllRootWindowControllers()) {
-        controller->DeactivateKeyboard(
-            keyboard::KeyboardController::GetInstance());
-      }
+  if (!keyboard::IsKeyboardEnabled())
+    return;
+
+  if (keyboard::KeyboardController::GetInstance()) {
+    for (auto* const controller : GetAllRootWindowControllers()) {
+      controller->DeactivateKeyboard(
+          keyboard::KeyboardController::GetInstance());
     }
-    keyboard::KeyboardController::ResetInstance(
-        new keyboard::KeyboardController(shell_delegate_->CreateKeyboardUI(),
-                                         virtual_keyboard_controller_.get()));
-    for (auto& observer : shell_observers_)
-      observer.OnKeyboardControllerCreated();
   }
+  keyboard::KeyboardController::ResetInstance(new keyboard::KeyboardController(
+      shell_delegate_->CreateKeyboardUI(), virtual_keyboard_controller_.get()));
+  for (auto& observer : shell_observers_)
+    observer.OnKeyboardControllerCreated();
 
   GetPrimaryRootWindowController()->ActivateKeyboard(
       keyboard::KeyboardController::GetInstance());
