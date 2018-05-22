@@ -1936,11 +1936,12 @@ TEST_F(InputMethodMacTest, MonitorCompositionRangeForActiveWidget) {
 
 TEST_F(RenderWidgetHostViewMacTest, ClearCompositorFrame) {
   BrowserCompositorMac* browser_compositor = rwhv_mac_->BrowserCompositor();
-  EXPECT_NE(browser_compositor->Compositor(), nullptr);
-  EXPECT_TRUE(browser_compositor->Compositor()->IsLocked());
+  ui::Compositor* ui_compositor = browser_compositor->GetCompositorForTesting();
+  EXPECT_NE(ui_compositor, nullptr);
+  EXPECT_TRUE(ui_compositor->IsLocked());
   rwhv_mac_->ClearCompositorFrame();
-  EXPECT_NE(browser_compositor->Compositor(), nullptr);
-  EXPECT_FALSE(browser_compositor->Compositor()->IsLocked());
+  EXPECT_EQ(browser_compositor->GetCompositorForTesting(), ui_compositor);
+  EXPECT_FALSE(ui_compositor->IsLocked());
 }
 
 // This test verifies that in AutoResize mode a child-allocated

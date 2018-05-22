@@ -12,6 +12,13 @@
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
 
+// NSViews that can be drawn as a ui::Layer directly will implement this
+// interface. Calling cr_setParentLayer will embed the ui::Layer of the NSView
+// under |parentUiLayer|.
+@interface NSView (UICompositor)
+- (void)cr_setParentUiLayer:(ui::Layer*)parentUiLayer;
+@end
+
 namespace views {
 namespace {
 
@@ -32,6 +39,8 @@ void EnsureNativeViewHasNoChildWidgets(NSView* native_view) {
 }  // namespace
 
 NativeViewHostMac::NativeViewHostMac(NativeViewHost* host) : host_(host) {
+  // Ensure that |host_| have its own ui::Layer and that it draw nothing.
+  host_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
 }
 
 NativeViewHostMac::~NativeViewHostMac() {
@@ -44,6 +53,9 @@ void NativeViewHostMac::AttachNativeView() {
   DCHECK(host_->native_view());
   DCHECK(!native_view_);
   native_view_.reset([host_->native_view() retain]);
+
+  if ([native_view_ respondsToSelector:@selector(cr_setParentUiLayer:)])
+    [native_view_ cr_setParentUiLayer:host_->layer()];
 
   EnsureNativeViewHasNoChildWidgets(native_view_);
   BridgedNativeWidget* bridge = NativeWidgetMac::GetBridgeForNativeWindow(
@@ -70,6 +82,9 @@ void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
   DCHECK(native_view_ == host_->native_view());
   [host_->native_view() setHidden:YES];
   [host_->native_view() removeFromSuperview];
+
+  if ([native_view_ respondsToSelector:@selector(cr_setParentUiLayer:)])
+    [native_view_ cr_setParentUiLayer:nullptr];
 
   EnsureNativeViewHasNoChildWidgets(host_->native_view());
   BridgedNativeWidget* bridge = NativeWidgetMac::GetBridgeForNativeWindow(

@@ -35,6 +35,10 @@ namespace gfx {
 class Vector2d;
 }
 
+namespace ui {
+class Layer;
+}
+
 CONTENT_EXPORT
 @interface WebContentsViewCocoa : BaseView {
  @private
@@ -128,6 +132,8 @@ class WebContentsViewMac : public WebContentsView,
   // CloseTabAfterEventTracking() implementation.
   void CloseTab();
 
+  void SetParentUiLayer(ui::Layer* parent_ui_layer);
+
   WebContentsImpl* web_contents() { return web_contents_; }
   WebContentsViewDelegate* delegate() { return delegate_.get(); }
 
@@ -155,6 +161,8 @@ class WebContentsViewMac : public WebContentsView,
 
   // Whether to allow other views.
   bool allow_other_views_;
+
+  ui::Layer* parent_ui_layer_ = nullptr;
 
   std::unique_ptr<PopupMenuHelper> popup_menu_helper_;
 
