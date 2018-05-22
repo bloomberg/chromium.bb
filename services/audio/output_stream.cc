@@ -178,6 +178,10 @@ void OutputStream::OnControllerPaused() {
 void OutputStream::OnControllerError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
 
+  // Stop checking the audio level to avoid using this object while it's being
+  // torn down.
+  poll_timer_.Stop();
+
   // Only propagate platform errors to the observer.
   observer_.ResetWithReason(
       media::mojom::AudioOutputStreamObserver::kPlatformErrorDisconnectReason,
