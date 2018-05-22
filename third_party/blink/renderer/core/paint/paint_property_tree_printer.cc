@@ -81,6 +81,7 @@ class PropertyTreePrinterTraits<ClipPaintPropertyNode> {
       const ObjectPaintProperties& properties,
       PropertyTreePrinter<ClipPaintPropertyNode>& printer) {
     printer.AddNode(properties.FragmentClip());
+    printer.AddNode(properties.ClipPathClip());
     printer.AddNode(properties.MaskClip());
     printer.AddNode(properties.CssClip());
     printer.AddNode(properties.CssClipFixedPosition());
@@ -100,6 +101,7 @@ class PropertyTreePrinterTraits<EffectPaintPropertyNode> {
     printer.AddNode(properties.Effect());
     printer.AddNode(properties.Filter());
     printer.AddNode(properties.Mask());
+    printer.AddNode(properties.ClipPath());
   }
 };
 
@@ -141,6 +143,7 @@ void UpdateDebugNames(const LayoutObject& object,
   SetDebugName(properties.SvgLocalToBorderBoxTransform(),
                "SvgLocalToBorderBoxTransform", object);
   SetDebugName(properties.ScrollTranslation(), "ScrollTranslation", object);
+
   SetDebugName(properties.FragmentClip(), "FragmentClip", object);
   SetDebugName(properties.ClipPathClip(), "ClipPathClip", object);
   SetDebugName(properties.MaskClip(), "MaskClip", object);
@@ -152,6 +155,7 @@ void UpdateDebugNames(const LayoutObject& object,
   SetDebugName(properties.InnerBorderRadiusClip(), "InnerBorderRadiusClip",
                object);
   SetDebugName(properties.OverflowClip(), "OverflowClip", object);
+
   SetDebugName(properties.Effect(), "Effect", object);
   SetDebugName(properties.Filter(), "Filter", object);
   SetDebugName(properties.Mask(), "Mask", object);
