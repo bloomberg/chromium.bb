@@ -27,16 +27,6 @@ void VRDeviceBase::PauseTracking() {}
 
 void VRDeviceBase::ResumeTracking() {}
 
-void VRDeviceBase::Blur() {
-  for (VRDisplayImpl* display : displays_)
-    display->OnBlur();
-}
-
-void VRDeviceBase::Focus() {
-  for (VRDisplayImpl* display : displays_)
-    display->OnFocus();
-}
-
 void VRDeviceBase::OnExitPresent() {
   if (!presenting_display_)
     return;

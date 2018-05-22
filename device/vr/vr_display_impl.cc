@@ -43,14 +43,6 @@ void VRDisplayImpl::OnExitPresent() {
   client_->OnExitPresent();
 }
 
-void VRDisplayImpl::OnBlur() {
-  client_->OnBlur();
-}
-
-void VRDisplayImpl::OnFocus() {
-  client_->OnFocus();
-}
-
 void VRDisplayImpl::OnActivate(mojom::VRDisplayEventReason reason,
                                base::Callback<void(bool)> on_handled) {
   client_->OnActivate(reason, std::move(on_handled));

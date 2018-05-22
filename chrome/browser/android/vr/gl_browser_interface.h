@@ -39,7 +39,6 @@ class GlBrowserInterface {
                                     gl::SurfaceTexture* texture) = 0;
   virtual void UpdateGamepadData(device::GvrGamepadData) = 0;
   virtual void ForceExitVr() = 0;
-  virtual void OnContentPaused(bool enabled) = 0;
   virtual void ToggleCardboardGamepad(bool enabled) = 0;
   virtual void ReportUiActivityResultForTesting(
       const VrUiTestActivityResult& result) = 0;

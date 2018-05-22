@@ -36,8 +36,6 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
 
   virtual void OnChanged(mojom::VRDisplayInfoPtr vr_device_info);
   virtual void OnExitPresent();
-  virtual void OnBlur();
-  virtual void OnFocus();
   virtual void OnActivate(mojom::VRDisplayEventReason reason,
                           base::Callback<void(bool)> on_handled);
   virtual void OnDeactivate(mojom::VRDisplayEventReason reason);

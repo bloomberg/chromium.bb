@@ -28,8 +28,6 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
   unsigned int GetId() const override;
   void PauseTracking() override;
   void ResumeTracking() override;
-  void Blur() override;
-  void Focus() override;
   void OnExitPresent() override;
   mojom::VRDisplayInfoPtr GetVRDisplayInfo() final;
   void SetMagicWindowEnabled(bool enabled) final;
