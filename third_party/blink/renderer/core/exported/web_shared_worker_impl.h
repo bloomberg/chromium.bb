@@ -52,7 +52,6 @@ namespace blink {
 
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
-class WebServiceWorkerNetworkProvider;
 class WebSharedWorkerClient;
 class WebString;
 class WebURL;
@@ -119,8 +118,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   // Unique worker token used by DevTools to attribute different instrumentation
   // to the same worker.
   base::UnguessableToken devtools_worker_token_;
-
-  std::unique_ptr<WebServiceWorkerNetworkProvider> network_provider_;
 
   Persistent<WorkerInspectorProxy> worker_inspector_proxy_;
 
