@@ -151,11 +151,6 @@ class BASE_EXPORT RunLoop {
   // and RunLoop static methods can be used on it.
   class BASE_EXPORT Delegate {
    public:
-    // A Callback which returns true if the Delegate should return from the
-    // topmost Run() when it becomes idle. The Delegate is responsible for
-    // probing this when it becomes idle.
-    using ShouldQuitWhenIdleCallback = RepeatingCallback<bool(void)>;
-
     Delegate();
     virtual ~Delegate();
 
@@ -209,8 +204,6 @@ class BASE_EXPORT RunLoop {
     // RegisterDelegateForCurrentThread().
     bool bound_ = false;
 
-    ShouldQuitWhenIdleCallback should_quit_when_idle_callback_;
-
     // Thread-affine per its use of TLS.
     THREAD_CHECKER(bound_thread_checker_);
 
@@ -221,16 +214,6 @@ class BASE_EXPORT RunLoop {
   // once per thread before using RunLoop methods on it. |delegate| is from then
   // on forever bound to that thread (including its destruction).
   static void RegisterDelegateForCurrentThread(Delegate* delegate);
-
-  // Akin to RegisterDelegateForCurrentThread but overrides an existing Delegate
-  // (there must be one). Returning the overridden Delegate which the caller is
-  // now in charge of driving. |override_should_quit_when_idle_callback|
-  // specifies will replace the overridden Delegate's
-  // |should_quit_when_idle_callback_|, giving full control to |delegate|.
-  static Delegate* OverrideDelegateForCurrentThreadForTesting(
-      Delegate* delegate,
-      Delegate::ShouldQuitWhenIdleCallback
-          overriding_should_quit_when_idle_callback);
 
   // Quits the active RunLoop (when idle) -- there must be one. These were
   // introduced as prefered temporary replacements to the long deprecated
