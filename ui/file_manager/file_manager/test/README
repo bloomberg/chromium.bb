@@ -1,8 +1,6 @@
 This is a testing system and development tool for CrOS FileManager.
 
-This is currently experimental and may change or be removed.
-
-Contact joelhockey@ or sashab@ before adding any dependencies.
+Contact joelhockey@ or sashab@ before adding any dependencies or new tests.
 
 Usage:
 1/ Run ./scripts/create_test_main.py
