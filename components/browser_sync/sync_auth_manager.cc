@@ -227,23 +227,6 @@ void SyncAuthManager::OnRefreshTokenAvailable(const std::string& account_id) {
     return;
   }
 
-  sync_service_->OnRefreshTokenAvailable();
-}
-
-void SyncAuthManager::OnRefreshTokenRevoked(const std::string& account_id) {
-  if (account_id != GetAuthenticatedAccountInfo().account_id) {
-    return;
-  }
-
-  UpdateAuthErrorState(
-      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
-
-  ClearAccessTokenAndRequest();
-
-  sync_service_->OnRefreshTokenRevoked();
-}
-
-void SyncAuthManager::OnRefreshTokensLoaded() {
   GoogleServiceAuthError token_error =
       token_service_->GetAuthError(GetAuthenticatedAccountInfo().account_id);
   if (token_error == GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
@@ -264,8 +247,27 @@ void SyncAuthManager::OnRefreshTokensLoaded() {
     ClearAccessTokenAndRequest();
 
     sync_service_->OnCredentialsRejectedByClient();
+    // TODO(treib): We can probably early-out here - no point in also calling
+    // OnRefreshTokenAvailable on the ProfileSyncService.
   }
 
+  sync_service_->OnRefreshTokenAvailable();
+}
+
+void SyncAuthManager::OnRefreshTokenRevoked(const std::string& account_id) {
+  if (account_id != GetAuthenticatedAccountInfo().account_id) {
+    return;
+  }
+
+  UpdateAuthErrorState(
+      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+
+  ClearAccessTokenAndRequest();
+
+  sync_service_->OnRefreshTokenRevoked();
+}
+
+void SyncAuthManager::OnRefreshTokensLoaded() {
   // This notification gets fired when OAuth2TokenService loads the tokens from
   // storage. Initialize the engine if sync is enabled. If the sync token was
   // not loaded, GetCredentials() will generate invalid credentials to cause the

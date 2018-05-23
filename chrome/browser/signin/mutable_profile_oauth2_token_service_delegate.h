@@ -30,10 +30,6 @@ class MutableProfileOAuth2TokenServiceDelegate
       public WebDataServiceConsumer,
       public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
-  // Refresh token guaranteed to be invalid. Can be passed to
-  // UpdateCredentials() to force an authentication error.
-  static const char kInvalidRefreshToken[];
-
   MutableProfileOAuth2TokenServiceDelegate(
       SigninClient* client,
       SigninErrorController* signin_error_controller,

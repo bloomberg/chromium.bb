@@ -109,21 +109,17 @@ void RecordTokenChanged(const std::string& existing_token,
   DCHECK(!new_token.empty());
   TokenStateTransition transition = TokenStateTransition::kCount;
   if (existing_token.empty()) {
-    transition =
-        (new_token ==
-         MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken)
-            ? TokenStateTransition::kNoneToInvalid
-            : TokenStateTransition::kNoneToRegular;
+    transition = (new_token == OAuth2TokenServiceDelegate::kInvalidRefreshToken)
+                     ? TokenStateTransition::kNoneToInvalid
+                     : TokenStateTransition::kNoneToRegular;
   } else if (existing_token ==
-             MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken) {
+             OAuth2TokenServiceDelegate::kInvalidRefreshToken) {
     transition = TokenStateTransition::kInvalidToRegular;
   } else {
     // Existing token is a regular token.
-    transition =
-        (new_token ==
-         MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken)
-            ? TokenStateTransition::kRegularToInvalid
-            : TokenStateTransition::kRegularToRegular;
+    transition = (new_token == OAuth2TokenServiceDelegate::kInvalidRefreshToken)
+                     ? TokenStateTransition::kRegularToInvalid
+                     : TokenStateTransition::kRegularToRegular;
   }
   DCHECK_NE(TokenStateTransition::kCount, transition);
   RecordTokenStateTransition(transition);
@@ -132,7 +128,7 @@ void RecordTokenChanged(const std::string& existing_token,
 // Record metrics when a token was loaded.
 void RecordTokenLoaded(const std::string& token) {
   RecordTokenStateTransition(
-      (token == MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken)
+      (token == OAuth2TokenServiceDelegate::kInvalidRefreshToken)
           ? TokenStateTransition::kLoadInvalid
           : TokenStateTransition::kLoadRegular);
 }
@@ -140,7 +136,7 @@ void RecordTokenLoaded(const std::string& token) {
 // Record metrics when a token was revoked.
 void RecordTokenRevoked(const std::string& token) {
   RecordTokenStateTransition(
-      (token == MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken)
+      (token == OAuth2TokenServiceDelegate::kInvalidRefreshToken)
           ? TokenStateTransition::kInvalidToNone
           : TokenStateTransition::kRegularToNone);
 }
@@ -215,10 +211,6 @@ bool ShouldMigrateToDice(signin::AccountConsistencyMethod account_consistency,
 }
 
 }  // namespace
-
-// static
-const char MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken[] =
-    "invalid_refresh_token";
 
 // This class sends a request to GAIA to revoke the given refresh token from
 // the server.  This is a best effort attempt only.  This class deletes itself

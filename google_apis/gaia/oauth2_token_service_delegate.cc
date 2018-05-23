@@ -6,6 +6,10 @@
 
 #include "google_apis/gaia/oauth2_token_service.h"
 
+// static
+const char OAuth2TokenServiceDelegate::kInvalidRefreshToken[] =
+    "invalid_refresh_token";
+
 OAuth2TokenServiceDelegate::ScopedBatchChange::ScopedBatchChange(
     OAuth2TokenServiceDelegate* delegate)
     : delegate_(delegate) {
