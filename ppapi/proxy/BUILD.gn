@@ -277,6 +277,8 @@ component("proxy") {
   deps = [
     ":common",
     "//base",
+    "//device/base/synchronization",
+    "//device/gamepad/public/cpp:shared_with_blink",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common",
     "//gpu/ipc/common:command_buffer_traits",
