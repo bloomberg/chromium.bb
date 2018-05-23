@@ -21,6 +21,4 @@ mojom("interfaces") {
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
   ]
-
-  use_once_callback = true
 }

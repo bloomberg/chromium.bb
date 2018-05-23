@@ -24,8 +24,6 @@ mojom("fake_bluetooth_interfaces") {
     ":mojom",
   ]
 
-  use_once_callback = true
-
   # This mojom interface is exposed publicly to layout tests which use
   # prepackaged redistributable JS bindings. It is therefore not desirable to
   # scramble these messages.
