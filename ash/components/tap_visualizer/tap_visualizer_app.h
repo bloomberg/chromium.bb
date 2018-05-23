@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMPONENTS_TOUCH_HUD_TOUCH_HUD_APPLICATION_H_
-#define ASH_COMPONENTS_TOUCH_HUD_TOUCH_HUD_APPLICATION_H_
+#ifndef ASH_COMPONENTS_TAP_VISUALIZER_TAP_VISUALIZER_APP_H_
+#define ASH_COMPONENTS_TAP_VISUALIZER_TAP_VISUALIZER_APP_H_
 
 #include <stdint.h>
 
@@ -19,21 +19,21 @@ namespace views {
 class AuraInit;
 }  // namespace views
 
-namespace touch_hud {
+namespace tap_visualizer {
 
-class TouchHudRenderer;
+class TapRenderer;
 
 // Application that paints touch tap points as circles. Creates a fullscreen
 // transparent widget on each display to draw the taps.
-class TouchHudApplication : public service_manager::Service,
-                            public views::PointerWatcher,
-                            public display::DisplayObserver {
+class TapVisualizerApp : public service_manager::Service,
+                         public views::PointerWatcher,
+                         public display::DisplayObserver {
  public:
-  TouchHudApplication();
-  ~TouchHudApplication() override;
+  TapVisualizerApp();
+  ~TapVisualizerApp() override;
 
  private:
-  friend class TouchHudApplicationTestApi;
+  friend class TapVisualizerAppTestApi;
 
   // Starts showing touches on all displays.
   void Start();
@@ -54,13 +54,13 @@ class TouchHudApplication : public service_manager::Service,
   void CreateWidgetForDisplay(int64_t display_id);
 
   // Maps display::Display::id() to the renderer for that display.
-  std::map<int64_t, std::unique_ptr<TouchHudRenderer>> display_id_to_renderer_;
+  std::map<int64_t, std::unique_ptr<TapRenderer>> display_id_to_renderer_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
 
-  DISALLOW_COPY_AND_ASSIGN(TouchHudApplication);
+  DISALLOW_COPY_AND_ASSIGN(TapVisualizerApp);
 };
 
-}  // namespace touch_hud
+}  // namespace tap_visualizer
 
-#endif  // ASH_COMPONENTS_TOUCH_HUD_TOUCH_HUD_APPLICATION_H_
+#endif  // ASH_COMPONENTS_TAP_VISUALIZER_TAP_VISUALIZER_APP_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMPONENTS_TOUCH_HUD_TOUCH_HUD_RENDERER_H_
-#define ASH_COMPONENTS_TOUCH_HUD_TOUCH_HUD_RENDERER_H_
+#ifndef ASH_COMPONENTS_TAP_VISUALIZER_TAP_RENDERER_H_
+#define ASH_COMPONENTS_TAP_VISUALIZER_TAP_RENDERER_H_
 
 #include <map>
 #include <memory>
@@ -18,20 +18,20 @@ namespace views {
 class Widget;
 }
 
-namespace touch_hud {
+namespace tap_visualizer {
 class TouchPointView;
 
 // Renders touch points into a widget.
-class TouchHudRenderer {
+class TapRenderer {
  public:
-  explicit TouchHudRenderer(std::unique_ptr<views::Widget> widget);
-  ~TouchHudRenderer();
+  explicit TapRenderer(std::unique_ptr<views::Widget> widget);
+  ~TapRenderer();
 
   // Receives a touch event and draws its touch point.
   void HandleTouchEvent(const ui::PointerEvent& event);
 
  private:
-  friend class TouchHudApplicationTestApi;
+  friend class TapVisualizerAppTestApi;
 
   // The widget containing the touch point views.
   std::unique_ptr<views::Widget> widget_;
@@ -39,9 +39,9 @@ class TouchHudRenderer {
   // A map of touch ids to TouchPointView.
   std::map<int, TouchPointView*> points_;
 
-  DISALLOW_COPY_AND_ASSIGN(TouchHudRenderer);
+  DISALLOW_COPY_AND_ASSIGN(TapRenderer);
 };
 
-}  // namespace touch_hud
+}  // namespace tap_visualizer
 
-#endif  // ASH_COMPONENTS_TOUCH_HUD_TOUCH_HUD_RENDERER_H_
+#endif  // ASH_COMPONENTS_TAP_VISUALIZER_TAP_RENDERER_H_

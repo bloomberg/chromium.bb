@@ -3882,9 +3882,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDisallowUnsafeHttpDownloads)},
 
 #if defined(OS_CHROMEOS)
-    {"show-taps-app", flag_descriptions::kShowTapsAppName,
-     flag_descriptions::kShowTapsAppDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kShowTapsApp)},
+    {"tap-visualizer-app", flag_descriptions::kTapVisualizerAppName,
+     flag_descriptions::kTapVisualizerAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kTapVisualizerApp)},
 #endif
 
     {"enable-websocket-auth-connection-reuse",

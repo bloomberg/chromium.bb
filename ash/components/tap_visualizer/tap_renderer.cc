@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/components/touch_hud/touch_hud_renderer.h"
+#include "ash/components/tap_visualizer/tap_renderer.h"
 
 #include "base/logging.h"
 #include "base/time/time.h"
@@ -19,7 +19,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace touch_hud {
+namespace tap_visualizer {
 
 const int kPointRadius = 20;
 const SkColor kProjectionFillColor = SkColorSetRGB(0xF5, 0xF5, 0xDC);
@@ -115,14 +115,14 @@ class TouchPointView : public views::View, public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(TouchPointView);
 };
 
-TouchHudRenderer::TouchHudRenderer(std::unique_ptr<views::Widget> widget)
+TapRenderer::TapRenderer(std::unique_ptr<views::Widget> widget)
     : widget_(std::move(widget)) {
   DCHECK(widget_);
 }
 
-TouchHudRenderer::~TouchHudRenderer() = default;
+TapRenderer::~TapRenderer() = default;
 
-void TouchHudRenderer::HandleTouchEvent(const ui::PointerEvent& event) {
+void TapRenderer::HandleTouchEvent(const ui::PointerEvent& event) {
   DCHECK(event.IsTouchPointerEvent());
   const int id = event.pointer_details().id;
   if (event.type() == ui::ET_POINTER_DOWN) {
@@ -150,4 +150,4 @@ void TouchHudRenderer::HandleTouchEvent(const ui::PointerEvent& event) {
   }
 }
 
-}  // namespace touch_hud
+}  // namespace tap_visualizer

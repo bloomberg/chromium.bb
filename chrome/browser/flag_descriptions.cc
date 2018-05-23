@@ -3012,10 +3012,6 @@ const char kShowTapsDescription[] =
     "when projecting or mirroring the display. Similar to the Android OS "
     "developer option.";
 
-const char kShowTapsAppName[] = "Show taps with mojo app";
-const char kShowTapsAppDescription[] =
-    "Use the out-of-process touch HUD mojo app to show tap points.";
-
 const char kShowTouchHudName[] = "Show HUD for touch points";
 const char kShowTouchHudDescription[] =
     "Shows a trail of colored dots for the last few touch points. Pressing "
@@ -3026,6 +3022,10 @@ const char kSysInternalsName[] = "Enable Sys-Internals";
 const char kSysInternalsDescription[] =
     "If enabled, user can monitor system information at "
     "chrome://sys-internals.";
+
+const char kTapVisualizerAppName[] = "Show taps with mojo app";
+const char kTapVisualizerAppDescription[] =
+    "Use an out-of-process mojo app to show touch points.";
 
 const char kTeamDrivesName[] = "Enable Team Drives Integration";
 const char kTeamDrivesDescription[] =

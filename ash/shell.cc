@@ -22,7 +22,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
-#include "ash/components/touch_hud/public/mojom/constants.mojom.h"
+#include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/detachable_base/detachable_base_notification_controller.h"
@@ -1289,9 +1289,9 @@ void Shell::Init(ui::ContextFactory* context_factory,
   // TODO(jamescook): Make this work in ash_shell_with_content.
   if (shell_delegate_->GetShellConnector() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowTaps) &&
-      features::IsShowTapsAppEnabled()) {
+      base::FeatureList::IsEnabled(features::kTapVisualizerApp)) {
     shell_delegate_->GetShellConnector()->StartService(
-        touch_hud::mojom::kServiceName);
+        tap_visualizer::mojom::kServiceName);
   }
 
   if (config != Config::MASH) {

@@ -9,7 +9,7 @@
   <release seq="1">
     <includes>
       <include name="IDR_ASH_SHELL_QUICK_LAUNCH_MANIFEST" file="../../ash/components/quick_launch/manifest.json" type="BINDATA" use_base_dir="false" />
-      <include name="IDR_ASH_SHELL_TOUCH_HUD_MANIFEST" file="../../ash/components/touch_hud/manifest.json" type="BINDATA" use_base_dir="false" />
+      <include name="IDR_ASH_SHELL_TAP_VISUALIZER_MANIFEST" file="../../ash/components/tap_visualizer/manifest.json" type="BINDATA" use_base_dir="false" />
       <include name="IDR_ASH_SHELL_FONT_SERVICE_MANIFEST" file="../../components/services/font/manifest.json" type="BINDATA" use_base_dir="false" />
       <include name="IDR_ASH_SHELL_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY" file="${root_gen_dir}\ash\shell\ash_content_packaged_services_manifest_overlay.json" type="BINDATA" use_base_dir="false"/>
     </includes>

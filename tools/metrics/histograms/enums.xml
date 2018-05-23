@@ -26560,6 +26560,7 @@ from previous Chrome versions.
   <int value="-2029912304" label="StaleWhileRevalidate2:enabled"/>
   <int value="-2028232016" label="spurious-power-button-lid-angle-change"/>
   <int value="-2025367104" label="enable-material-design-ntp"/>
+  <int value="-2021954068" label="TapVisualizerApp:disabled"/>
   <int value="-2020721975" label="smart-virtual-keyboard"/>
   <int value="-2020024440" label="scroll-end-effect"/>
   <int value="-2017953534" label="enable-hosted-app-shim-creation"/>
@@ -27043,7 +27044,6 @@ from previous Chrome versions.
   <int value="-1034344165" label="V8NoTurbo:disabled"/>
   <int value="-1033738911" label="enable-mac-views-dialogs"/>
   <int value="-1031350684" label="PdfIsolation:disabled"/>
-  <int value="-1031331956" label="ShowTapsApp:enabled"/>
   <int value="-1029920490" label="IdleTimeSpellChecking:enabled"/>
   <int value="-1028733699" label="MacViewsWebUIDialogs:disabled"/>
   <int value="-1027254093" label="LockScreenNotifications:disabled"/>
@@ -27144,7 +27144,6 @@ from previous Chrome versions.
   <int value="-810684526"
       label="AutofillToolkitViewsCreditCardDialogsMac:disabled"/>
   <int value="-802348444" label="disable-site-engagement-service"/>
-  <int value="-802348432" label="ShowTapsApp:disabled"/>
   <int value="-798187384" label="try-supported-channel-layouts"/>
   <int value="-795600188" label="disable-async-dns"/>
   <int value="-793921836" label="ShowAllDialogsWithViewsToolkit:disabled"/>
@@ -27247,6 +27246,7 @@ from previous Chrome versions.
   <int value="-548495403" label="AutofillDynamicForms:enabled"/>
   <int value="-548082154" label="protect-sync-credential:disabled"/>
   <int value="-541611402" label="OfflinePagesPrefetching:enabled"/>
+  <int value="-540150399" label="TapVisualizerApp:enabled"/>
   <int value="-536289234" label="ssl-interstitial-v2-colorful"/>
   <int value="-536230323" label="SingleClickAutofill:disabled"/>
   <int value="-535662704" label="BundledConnectionHelp:enabled"/>

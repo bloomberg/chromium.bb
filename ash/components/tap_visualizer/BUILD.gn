@@ -6,10 +6,10 @@ import("//services/service_manager/public/service_manifest.gni")
 
 source_set("lib") {
   sources = [
-    "touch_hud_application.cc",
-    "touch_hud_application.h",
-    "touch_hud_renderer.cc",
-    "touch_hud_renderer.h",
+    "tap_renderer.cc",
+    "tap_renderer.h",
+    "tap_visualizer_app.cc",
+    "tap_visualizer_app.h",
   ]
 
   deps = [
@@ -31,14 +31,14 @@ source_set("lib") {
 }
 
 service_manifest("manifest") {
-  name = "touch_hud_app"
+  name = "tap_visualizer_app"
   source = "manifest.json"
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "touch_hud_application_unittest.cc",
+    "tap_visualizer_app_unittest.cc",
   ]
   deps = [
     ":lib",

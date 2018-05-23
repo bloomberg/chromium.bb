@@ -8,7 +8,7 @@
 
 #include "ash/ash_service.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
-#include "ash/components/touch_hud/public/mojom/constants.mojom.h"
+#include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
@@ -71,7 +71,8 @@ std::vector<content::ContentBrowserClient::ServiceManifestInfo>
 ShellContentBrowserClient::GetExtraServiceManifests() {
   return {
       {quick_launch::mojom::kServiceName, IDR_ASH_SHELL_QUICK_LAUNCH_MANIFEST},
-      {touch_hud::mojom::kServiceName, IDR_ASH_SHELL_TOUCH_HUD_MANIFEST},
+      {tap_visualizer::mojom::kServiceName,
+       IDR_ASH_SHELL_TAP_VISUALIZER_MANIFEST},
       {font_service::mojom::kServiceName, IDR_ASH_SHELL_FONT_SERVICE_MANIFEST}};
 }
 
@@ -79,8 +80,8 @@ void ShellContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
   (*services)[quick_launch::mojom::kServiceName] = OutOfProcessServiceInfo(
       base::ASCIIToUTF16(quick_launch::mojom::kServiceName));
-  (*services)[touch_hud::mojom::kServiceName] = OutOfProcessServiceInfo(
-      base::ASCIIToUTF16(touch_hud::mojom::kServiceName));
+  (*services)[tap_visualizer::mojom::kServiceName] = OutOfProcessServiceInfo(
+      base::ASCIIToUTF16(tap_visualizer::mojom::kServiceName));
   (*services)[font_service::mojom::kServiceName] = OutOfProcessServiceInfo(
       base::ASCIIToUTF16(font_service::mojom::kServiceName));
 }
