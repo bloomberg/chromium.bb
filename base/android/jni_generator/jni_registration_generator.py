@@ -11,9 +11,21 @@ to register all native methods that exist within an application."""
 
 import argparse
 import jni_generator
+import multiprocessing
 import string
 import sys
 from util import build_utils
+
+
+# All but FULL_CLASS_NAME, which is used only for sorting.
+MERGEABLE_KEYS = [
+    'CLASS_PATH_DECLARATIONS',
+    'FORWARD_DECLARATIONS',
+    'JNI_NATIVE_METHOD',
+    'JNI_NATIVE_METHOD_ARRAY',
+    'REGISTER_MAIN_DEX_NATIVES',
+    'REGISTER_NON_MAIN_DEX_NATIVES',
+]
 
 
 def GenerateJNIHeader(java_file_paths, output_file, args):
@@ -28,33 +40,42 @@ def GenerateJNIHeader(java_file_paths, output_file, args):
       output_file: A relative path to output file.
       args: All input arguments.
   """
-  registration_dict = {}
-  # Sort the file list to make sure the order is deterministic.
-  java_file_paths.sort()
-  for path in java_file_paths:
-    if path in args.no_register_java:
-      continue
-    with open(path) as f:
-      contents = jni_generator.RemoveComments(f.read())
-    natives = jni_generator.ExtractNatives(contents, 'long')
-    if len(natives) == 0:
-      continue
-    namespace = jni_generator.ExtractJNINamespace(contents)
-    fully_qualified_class = jni_generator.ExtractFullyQualifiedJavaClassName(
-        path, contents)
-    jni_params = jni_generator.JniParams(fully_qualified_class)
-    jni_params.ExtractImportsAndInnerClasses(contents)
-    main_dex = jni_generator.IsMainDexJavaClass(contents)
-    header_generator = HeaderGenerator(
-        namespace, fully_qualified_class, natives, jni_params,
-        registration_dict, main_dex)
-    header_generator.AddContent()
+  # Without multiprocessing, script takes ~13 seconds for chrome_public_apk
+  # on a z620. With multiprocessing, takes ~2 seconds.
+  pool = multiprocessing.Pool()
+  paths = (p for p in java_file_paths if p not in args.no_register_java)
+  results = [d for d in pool.imap_unordered(_DictForPath, paths) if d]
+  pool.close()
 
-  header_content = CreateFromDict(registration_dict)
+  # Sort to make output deterministic.
+  results.sort(key=lambda d: d['FULL_CLASS_NAME'])
+
+  combined_dict = {}
+  for key in MERGEABLE_KEYS:
+    combined_dict[key] = ''.join(d.get(key, '') for d in results)
+
+  header_content = CreateFromDict(combined_dict)
   if output_file:
     jni_generator.WriteOutput(output_file, header_content)
   else:
     print header_content
+
+
+def _DictForPath(path):
+  with open(path) as f:
+    contents = jni_generator.RemoveComments(f.read())
+  natives = jni_generator.ExtractNatives(contents, 'long')
+  if len(natives) == 0:
+    return None
+  namespace = jni_generator.ExtractJNINamespace(contents)
+  fully_qualified_class = jni_generator.ExtractFullyQualifiedJavaClassName(
+      path, contents)
+  jni_params = jni_generator.JniParams(fully_qualified_class)
+  jni_params.ExtractImportsAndInnerClasses(contents)
+  main_dex = jni_generator.IsMainDexJavaClass(contents)
+  header_generator = HeaderGenerator(
+      namespace, fully_qualified_class, natives, jni_params, main_dex)
+  return header_generator.Generate()
 
 
 def CreateFromDict(registration_dict):
@@ -78,26 +99,27 @@ def CreateFromDict(registration_dict):
 #include "base/android/jni_generator/jni_generator_helper.h"
 #include "base/android/jni_int_wrapper.h"
 
-// Step 1: Forward declaration.
+
+// Step 1: Forward declarations (classes).
 ${CLASS_PATH_DECLARATIONS}
+
+// Step 2: Forward declarations (methods).
 
 ${FORWARD_DECLARATIONS}
 
-// Step 2: Method declarations.
+// Step 3: Method declarations.
+
 ${JNI_NATIVE_METHOD_ARRAY}
 ${JNI_NATIVE_METHOD}
-
-// Step 3: Main dex and non-main dex registration functions.
+// Step 4: Main dex and non-main dex registration functions.
 
 bool RegisterMainDexNatives(JNIEnv* env) {
 ${REGISTER_MAIN_DEX_NATIVES}
-
   return true;
 }
 
 bool RegisterNonMainDexNatives(JNIEnv* env) {
 ${REGISTER_NON_MAIN_DEX_NATIVES}
-
   return true;
 }
 
@@ -106,52 +128,48 @@ ${REGISTER_NON_MAIN_DEX_NATIVES}
   if len(registration_dict['FORWARD_DECLARATIONS']) == 0:
     return ''
 
-  # Ensure all values exist.
-  registration_dict.setdefault('CLASS_PATH_DECLARATIONS', '')
-  registration_dict.setdefault('FORWARD_DECLARATIONS', '')
-  registration_dict.setdefault('JNI_NATIVE_METHOD', '')
-  registration_dict.setdefault('JNI_NATIVE_METHOD_ARRAY', '')
-  registration_dict.setdefault('REGISTER_MAIN_DEX_NATIVES', '')
-  registration_dict.setdefault('REGISTER_NON_MAIN_DEX_NATIVES', '')
-
-  return jni_generator.WrapOutput(template.substitute(registration_dict))
+  return template.substitute(registration_dict)
 
 
 class HeaderGenerator(object):
   """Generates an inline header file for JNI registration."""
 
   def __init__(self, namespace, fully_qualified_class, natives, jni_params,
-               registration_dict, main_dex):
+               main_dex):
     self.namespace = namespace
     self.natives = natives
     self.fully_qualified_class = fully_qualified_class
     self.jni_params = jni_params
     self.class_name = self.fully_qualified_class.split('/')[-1]
-    self.registration_dict = registration_dict
     self.main_dex = main_dex
     self.helper = jni_generator.HeaderFileGeneratorHelper(
         self.class_name, fully_qualified_class)
+    self.registration_dict = None
 
-  def AddContent(self):
+  def Generate(self):
+    self.registration_dict = {'FULL_CLASS_NAME': self.fully_qualified_class}
     self._AddClassPathDeclarations()
     self._AddForwardDeclaration()
     self._AddJNINativeMethodsArrays()
     self._AddRegisterNativesCalls()
     self._AddRegisterNativesFunctions()
+    return self.registration_dict
 
-  def _AppendToDict(self, key, value):
-    cur_value = self.registration_dict.get(key, '')
-    self.registration_dict[key] = cur_value + value
+  def _SetDictValue(self, key, value):
+    self.registration_dict[key] = jni_generator.WrapOutput(value)
 
   def _AddClassPathDeclarations(self):
     classes = self.helper.GetUniqueClasses(self.natives)
-    self._AppendToDict('CLASS_PATH_DECLARATIONS',
+    self._SetDictValue('CLASS_PATH_DECLARATIONS',
         self.helper.GetClassPathLines(classes, declare_only=True))
 
   def _AddForwardDeclaration(self):
     """Add the content of the forward declaration to the dictionary."""
-    template = string.Template('JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}'
-                               '(JNIEnv* env, ${PARAMS_IN_STUB});\n')
+    template = string.Template("""\
+JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}(
+    JNIEnv* env,
+    ${PARAMS_IN_STUB});
+""")
     forward_declaration = ''
     for native in self.natives:
       value = {
@@ -160,13 +178,13 @@ class HeaderGenerator(object):
           'PARAMS_IN_STUB': jni_generator.GetParamsInStub(native),
       }
       forward_declaration += template.substitute(value)
-    self._AppendToDict('FORWARD_DECLARATIONS', forward_declaration)
+    self._SetDictValue('FORWARD_DECLARATIONS', forward_declaration)
 
   def _AddRegisterNativesCalls(self):
     """Add the body of the RegisterNativesImpl method to the dictionary."""
-    template = string.Template("""
-if (!${REGISTER_NAME}(env))
-  return false;
+    template = string.Template("""\
+  if (!${REGISTER_NAME}(env))
+    return false;
 """)
     value = {
         'REGISTER_NAME':
@@ -175,9 +193,9 @@ if (!${REGISTER_NAME}(env))
     }
     register_body = template.substitute(value)
     if self.main_dex:
-      self._AppendToDict('REGISTER_MAIN_DEX_NATIVES', register_body)
+      self._SetDictValue('REGISTER_MAIN_DEX_NATIVES', register_body)
     else:
-      self._AppendToDict('REGISTER_NON_MAIN_DEX_NATIVES', register_body)
+      self._SetDictValue('REGISTER_NON_MAIN_DEX_NATIVES', register_body)
 
   def _AddJNINativeMethodsArrays(self):
     """Returns the implementation of the array of native methods."""
@@ -185,21 +203,21 @@ if (!${REGISTER_NAME}(env))
 static const JNINativeMethod kMethods_${JAVA_CLASS}[] = {
 ${KMETHODS}
 };
+
 """)
     open_namespace = ''
     close_namespace = ''
     if self.namespace:
-      all_namespaces = ['namespace %s {' % ns
-                        for ns in self.namespace.split('::')]
-      open_namespace = '\n'.join(all_namespaces)
-      all_namespaces = ['}  // namespace %s' % ns
-                        for ns in self.namespace.split('::')]
+      parts = self.namespace.split('::')
+      all_namespaces = ['namespace %s {' % ns for ns in parts]
+      open_namespace = '\n'.join(all_namespaces) + '\n'
+      all_namespaces = ['}  // namespace %s' % ns for ns in parts]
       all_namespaces.reverse()
-      close_namespace = '\n'.join(all_namespaces) + '\n'
+      close_namespace = '\n'.join(all_namespaces) + '\n\n'
 
-    entry = (open_namespace + self._SubstituteNativeMethods(template) +
-             close_namespace)
-    self._AppendToDict('JNI_NATIVE_METHOD_ARRAY', entry)
+    body = self._SubstituteNativeMethods(template)
+    self._SetDictValue('JNI_NATIVE_METHOD_ARRAY',
+                       ''.join((open_namespace, body, close_namespace)))
 
   def _GetKMethodsString(self, clazz):
     ret = []
@@ -214,8 +232,8 @@ ${KMETHODS}
                                'reinterpret_cast<void*>(${STUB_NAME}) },')
     values = {
         'NAME': native.name,
-        'JNI_SIGNATURE': self.jni_params.Signature(native.params,
-                                                   native.return_type, True),
+        'JNI_SIGNATURE': self.jni_params.Signature(
+            native.params, native.return_type),
         'STUB_NAME': self.helper.GetStubName(native)
     }
     return template.substitute(values)
@@ -237,13 +255,14 @@ ${KMETHODS}
                   'KMETHODS': kmethods}
         ret += [template.substitute(values)]
     if not ret: return ''
-    return '\n' + '\n'.join(ret)
+    return '\n'.join(ret)
 
   def GetJNINativeMethodsString(self):
     """Returns the implementation of the array of native methods."""
     template = string.Template("""\
 static const JNINativeMethod kMethods_${JAVA_CLASS}[] = {
 ${KMETHODS}
+
 };
 """)
     return self._SubstituteNativeMethods(template)
@@ -255,33 +274,35 @@ ${KMETHODS}
       return ''
     template = string.Template("""\
 JNI_REGISTRATION_EXPORT bool ${REGISTER_NAME}(JNIEnv* env) {
-${NATIVES}
+${NATIVES}\
   return true;
 }
+
 """)
     values = {
       'REGISTER_NAME': jni_generator.GetRegistrationFunctionName(
           self.fully_qualified_class),
       'NATIVES': natives
     }
-    self._AppendToDict('JNI_NATIVE_METHOD', template.substitute(values))
+    self._SetDictValue('JNI_NATIVE_METHOD', template.substitute(values))
 
   def _GetRegisterNativesImplString(self):
     """Returns the shared implementation for RegisterNatives."""
     template = string.Template("""\
   const int kMethods_${JAVA_CLASS}Size =
       arraysize(${NAMESPACE}kMethods_${JAVA_CLASS});
-
-  if (env->RegisterNatives(${JAVA_CLASS}_clazz(env),
-                           ${NAMESPACE}kMethods_${JAVA_CLASS},
-                           kMethods_${JAVA_CLASS}Size) < 0) {
-    jni_generator::HandleRegistrationError(
-        env, ${JAVA_CLASS}_clazz(env), __FILE__);
+  if (env->RegisterNatives(
+      ${JAVA_CLASS}_clazz(env),
+      ${NAMESPACE}kMethods_${JAVA_CLASS},
+      kMethods_${JAVA_CLASS}Size) < 0) {
+    jni_generator::HandleRegistrationError(env,
+        ${JAVA_CLASS}_clazz(env),
+        __FILE__);
     return false;
   }
+
 """)
     return self._SubstituteNativeMethods(template)
-
 
 
 def main(argv):
