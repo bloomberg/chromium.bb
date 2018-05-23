@@ -4,8 +4,8 @@
 
 module device.mojom;
 
-import "device/media_transfer_protocol/public/mojom/mtp_file_entry.mojom";
-import "device/media_transfer_protocol/public/mojom/mtp_storage_info.mojom";
+import "services/device/public/mojom/mtp_file_entry.mojom";
+import "services/device/public/mojom/mtp_storage_info.mojom";
 
 interface MtpManagerClient {
   // Notifies the client that a storage is attached.

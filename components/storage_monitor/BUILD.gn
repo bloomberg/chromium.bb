@@ -56,10 +56,7 @@ static_library("storage_monitor") {
   }
 
   if (is_chromeos && use_dbus) {
-    deps += [
-      "//device/media_transfer_protocol/public/mojom",
-      "//services/device/public/mojom",
-    ]
+    deps += [ "//services/device/public/mojom" ]
     sources += [
       "mtp_manager_client_chromeos.cc",
       "mtp_manager_client_chromeos.h",

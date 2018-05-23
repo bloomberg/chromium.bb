@@ -1,4 +1,7 @@
 include_rules = [
-  "+device/media_transfer_protocol",
+  # The media transfer protocol daemon uses D-Bus.
+  "+chromeos/dbus",
+  "+dbus",
   "+services/device/public/mojom",
+  "+third_party/cros_system_api/dbus",
 ]

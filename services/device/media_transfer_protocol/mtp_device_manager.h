@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "services/device/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "services/device/public/mojom/mtp_manager.mojom.h"
 
 #if !defined(OS_CHROMEOS)

@@ -121,6 +121,8 @@ void StorageMonitorCros::Init() {
     GetConnector()->BindInterface(device::mojom::kServiceName,
                                   mojo::MakeRequest(&mtp_device_manager_));
   }
+  // |mtp_manager_client_| needs to be initialized for both tests and
+  // production code, so keep it out of the if condition.
   mtp_manager_client_ = std::make_unique<MtpManagerClientChromeOS>(
       receiver(), mtp_device_manager_.get());
 }

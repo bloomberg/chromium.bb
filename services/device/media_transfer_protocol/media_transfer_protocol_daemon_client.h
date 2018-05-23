@@ -6,8 +6,8 @@
 // responsible for communicating with PTP / MTP capable devices like cameras
 // and smartphones.
 
-#ifndef DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
-#define DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
+#ifndef SERVICES_DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
+#define SERVICES_DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -19,8 +19,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "device/media_transfer_protocol/public/mojom/mtp_file_entry.mojom.h"
-#include "device/media_transfer_protocol/public/mojom/mtp_storage_info.mojom.h"
+#include "services/device/public/mojom/mtp_file_entry.mojom.h"
+#include "services/device/public/mojom/mtp_storage_info.mojom.h"
 
 #if !defined(OS_CHROMEOS)
 #error "Only used on ChromeOS"
@@ -67,8 +67,8 @@ class MediaTransferProtocolDaemonClient {
 
   // A callback to handle the result of GetFileInfo.
   // The argument is a vector of file entries.
-  using GetFileInfoCallback =
-      base::Callback<void(const std::vector<mojom::MtpFileEntry>& file_entries)>;
+  using GetFileInfoCallback = base::Callback<void(
+      const std::vector<mojom::MtpFileEntry>& file_entries)>;
 
   // A callback to handle the result of ReadFileChunkById.
   // The argument is a string containing the file data.
@@ -217,4 +217,4 @@ class MediaTransferProtocolDaemonClient {
 
 }  // namespace device
 
-#endif  // DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
+#endif  // SERVICES_DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
