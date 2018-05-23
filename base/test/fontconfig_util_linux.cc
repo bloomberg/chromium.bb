@@ -413,28 +413,6 @@ void TearDownFontconfig() {
   FcFini();
 }
 
-bool LoadFontIntoFontconfig(const FilePath& path) {
-  if (!PathExists(path)) {
-    LOG(ERROR) << "You are missing " << path.value() << ". Try re-running "
-               << "build/install-build-deps.sh. "
-               << "Please make sure that "
-               << "third_party/test_fonts/ has downloaded "
-               << "and extracted the test_fonts."
-               << "Also see "
-               << "https://chromium.googlesource.com/chromium/src/+/master/"
-               << "docs/layout_tests_linux.md";
-    return false;
-  }
-
-  if (!FcConfigAppFontAddFile(
-          NULL, reinterpret_cast<const FcChar8*>(path.value().c_str()))) {
-    LOG(ERROR) << "Failed to load font " << path.value();
-    return false;
-  }
-
-  return true;
-}
-
 bool LoadConfigFileIntoFontconfig(const FilePath& path) {
   // Unlike other FcConfig functions, FcConfigParseAndLoad() doesn't default to
   // the current config when passed NULL. So that's cool.

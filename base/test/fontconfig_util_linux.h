@@ -18,10 +18,6 @@ void SetUpFontconfig();
 // Deinitializes Fontconfig.
 void TearDownFontconfig();
 
-// Loads the font file at |path| into the current config, returning true on
-// success.
-bool LoadFontIntoFontconfig(const FilePath& path);
-
 // Instructs Fontconfig to load |path|, an XML configuration file, into the
 // current config, returning true on success.
 bool LoadConfigFileIntoFontconfig(const FilePath& path);
