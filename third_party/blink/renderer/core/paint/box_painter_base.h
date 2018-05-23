@@ -64,7 +64,6 @@ class BoxPainterBase {
                       BackgroundBleedAvoidance,
                       BackgroundImageGeometry&,
                       SkBlendMode = SkBlendMode::kSrcOver,
-                      bool flow_box_has_multiple_fragments = false,
                       const LayoutSize flow_box_size = LayoutSize());
 
   void PaintMaskImages(const PaintInfo&,
@@ -143,25 +142,51 @@ class BoxPainterBase {
   };
 
  protected:
+  FloatRoundedRect BackgroundRoundedRectAdjustedForBleedAvoidance(
+      const LayoutRect& border_rect,
+      const LayoutSize& flow_box_size,
+      BackgroundBleedAvoidance,
+      bool include_logical_left_edge,
+      bool include_logical_right_edge) const;
+  FloatRoundedRect RoundedBorderRectForClip(
+      const FillLayerInfo&,
+      const FillLayer&,
+      const LayoutRect&,
+      const LayoutSize& flow_box_size,
+      BackgroundBleedAvoidance,
+      LayoutRectOutsets border_padding_insets) const;
+
+  void PaintFillLayerBackground(GraphicsContext&,
+                                const FillLayerInfo&,
+                                Image*,
+                                SkBlendMode,
+                                const BackgroundImageGeometry&,
+                                LayoutRect scrolled_paint_rect);
   LayoutRectOutsets BorderOutsets(const FillLayerInfo&) const;
+  LayoutRectOutsets PaddingOutsets(const FillLayerInfo&) const;
+
   void PaintFillLayerTextFillBox(GraphicsContext&,
                                  const FillLayerInfo&,
                                  Image*,
                                  SkBlendMode composite_op,
                                  const BackgroundImageGeometry&,
                                  const LayoutRect&,
-                                 const LayoutRect& scrolled_paint_rect,
-                                 bool flow_box_has_multiple_fragments);
+                                 const LayoutRect& scrolled_paint_rect);
   virtual void PaintTextClipMask(GraphicsContext&,
                                  const IntRect& mask_rect,
-                                 const LayoutPoint& paint_offset,
-                                 bool flow_box_has_multiple_fragments) = 0;
+                                 const LayoutPoint& paint_offset) = 0;
   virtual LayoutRect AdjustForScrolledContent(const PaintInfo&,
                                               const FillLayerInfo&,
                                               const LayoutRect&) = 0;
   virtual FillLayerInfo GetFillLayerInfo(const Color&,
                                          const FillLayer&,
                                          BackgroundBleedAvoidance) const = 0;
+  virtual FloatRoundedRect GetBackgroundRoundedRect(
+      const LayoutRect& border_rect,
+      const LayoutSize& flow_box_size,
+      bool include_logical_left_edge,
+      bool include_logical_right_edge) const;
+
   static void PaintInsetBoxShadow(const PaintInfo&,
                                   const FloatRoundedRect&,
                                   const ComputedStyle&,
@@ -173,8 +198,8 @@ class BoxPainterBase {
   Member<const Document> document_;
   const ComputedStyle& style_;
   Member<Node> node_;
-  const LayoutRectOutsets border_;
-  const LayoutRectOutsets padding_;
+  LayoutRectOutsets border_;
+  LayoutRectOutsets padding_;
   const PaintLayer* paint_layer_;
 };
 

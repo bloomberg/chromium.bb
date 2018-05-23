@@ -136,10 +136,9 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
 
       NGPaintFragment* operator*() const { return current_; }
       NGPaintFragment* operator->() const { return current_; }
-      iterator& operator++() {
+      void operator++() {
         CHECK(current_);
         current_ = current_->next_fragment_;
-        return *this;
       }
       bool operator==(const iterator& other) const {
         return current_ == other.current_;

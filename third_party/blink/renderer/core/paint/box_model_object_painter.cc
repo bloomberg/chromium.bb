@@ -72,8 +72,7 @@ bool BoxModelObjectPainter::
 
 void BoxModelObjectPainter::PaintTextClipMask(GraphicsContext& context,
                                               const IntRect& mask_rect,
-                                              const LayoutPoint& paint_offset,
-                                              bool) {
+                                              const LayoutPoint& paint_offset) {
   PaintInfo paint_info(context, mask_rect, PaintPhase::kTextClip,
                        kGlobalPaintNormalPhase, 0);
   if (flow_box_) {
@@ -93,6 +92,24 @@ void BoxModelObjectPainter::PaintTextClipMask(GraphicsContext& context,
                                   : LayoutSize();
     box_model_.Paint(paint_info, paint_offset - local_offset);
   }
+}
+
+FloatRoundedRect BoxModelObjectPainter::GetBackgroundRoundedRect(
+    const LayoutRect& border_rect,
+    const LayoutSize& flow_box_size,
+    bool include_logical_left_edge,
+    bool include_logical_right_edge) const {
+  FloatRoundedRect border = BoxPainterBase::GetBackgroundRoundedRect(
+      border_rect, flow_box_size, include_logical_left_edge,
+      include_logical_right_edge);
+  if (flow_box_ && (flow_box_->NextForSameLayoutObject() ||
+                    flow_box_->PrevForSameLayoutObject())) {
+    FloatRoundedRect segment_border = box_model_.StyleRef().GetRoundedBorderFor(
+        LayoutRect(LayoutPoint(), LayoutSize(FlooredIntSize(flow_box_size))),
+        include_logical_left_edge, include_logical_right_edge);
+    border.SetRadii(segment_border.GetRadii());
+  }
+  return border;
 }
 
 LayoutRect BoxModelObjectPainter::AdjustForScrolledContent(

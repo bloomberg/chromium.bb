@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
 
 namespace blink {
 
@@ -270,7 +269,7 @@ void NGPaintFragment::PaintInlineBoxForDescendants(
     NGPhysicalOffset offset) const {
   for (const auto& child : Children()) {
     if (child->GetLayoutObject() == layout_object) {
-      NGInlineBoxFragmentPainter(*child).Paint(
+      NGBoxFragmentPainter(*child).PaintInlineBox(
           paint_info, paint_offset + offset.ToLayoutPoint() /*, paint_offset*/);
       continue;
     }

@@ -269,6 +269,57 @@ bool BoxPainterBase::CalculateFillLayerOcclusionCulling(
   return is_non_associative;
 }
 
+FloatRoundedRect BoxPainterBase::BackgroundRoundedRectAdjustedForBleedAvoidance(
+    const LayoutRect& border_rect,
+    const LayoutSize& flow_box_size,
+    BackgroundBleedAvoidance bleed_avoidance,
+    bool include_logical_left_edge,
+    bool include_logical_right_edge) const {
+  if (bleed_avoidance == kBackgroundBleedShrinkBackground) {
+    // Inset the background rect by a "safe" amount: 1/2 border-width for opaque
+    // border styles, 1/6 border-width for double borders.
+
+    // TODO(fmalita): we should be able to fold these parameters into
+    // BoxBorderInfo or BoxDecorationData and avoid calling getBorderEdgeInfo
+    // redundantly here.
+    BorderEdge edges[4];
+    style_.GetBorderEdgeInfo(edges, include_logical_left_edge,
+                             include_logical_right_edge);
+
+    // Use the most conservative inset to avoid mixed-style corner issues.
+    float fractional_inset = 1.0f / 2;
+    for (auto& edge : edges) {
+      if (edge.BorderStyle() == EBorderStyle::kDouble) {
+        fractional_inset = 1.0f / 6;
+        break;
+      }
+    }
+
+    FloatRectOutsets insets(
+        -fractional_inset * edges[static_cast<unsigned>(BoxSide::kTop)].Width(),
+        -fractional_inset *
+            edges[static_cast<unsigned>(BoxSide::kRight)].Width(),
+        -fractional_inset *
+            edges[static_cast<unsigned>(BoxSide::kBottom)].Width(),
+        -fractional_inset *
+            edges[static_cast<unsigned>(BoxSide::kLeft)].Width());
+
+    FloatRoundedRect background_rounded_rect = GetBackgroundRoundedRect(
+        border_rect, flow_box_size, include_logical_left_edge,
+        include_logical_right_edge);
+    FloatRect inset_rect(background_rounded_rect.Rect());
+    inset_rect.Expand(insets);
+    FloatRoundedRect::Radii inset_radii(background_rounded_rect.GetRadii());
+    inset_radii.Shrink(-insets.Top(), -insets.Bottom(), -insets.Left(),
+                       -insets.Right());
+    return FloatRoundedRect(inset_rect, inset_radii);
+  }
+
+  return GetBackgroundRoundedRect(border_rect, flow_box_size,
+                                  include_logical_left_edge,
+                                  include_logical_right_edge);
+}
+
 BoxPainterBase::FillLayerInfo::FillLayerInfo(
     const Document& doc,
     const ComputedStyle& style,
@@ -408,94 +459,16 @@ inline bool PaintFastBottomLayer(const DisplayItemClient& image_client,
 
   return true;
 }
-// Inset the background rect by a "safe" amount: 1/2 border-width for opaque
-// border styles, 1/6 border-width for double borders.
-FloatRoundedRect BackgroundRoundedRectAdjustedForBleedAvoidance(
-    const ComputedStyle& style,
-    const LayoutRect& border_rect,
-    bool flow_box_has_multiple_fragments,
-    bool include_logical_left_edge,
-    bool include_logical_right_edge,
-    FloatRoundedRect background_rounded_rect) {
-  // TODO(fmalita): we should be able to fold these parameters into
-  // BoxBorderInfo or BoxDecorationData and avoid calling getBorderEdgeInfo
-  // redundantly here.
-  BorderEdge edges[4];
-  style.GetBorderEdgeInfo(edges, include_logical_left_edge,
-                          include_logical_right_edge);
 
-  // Use the most conservative inset to avoid mixed-style corner issues.
-  float fractional_inset = 1.0f / 2;
-  for (auto& edge : edges) {
-    if (edge.BorderStyle() == EBorderStyle::kDouble) {
-      fractional_inset = 1.0f / 6;
-      break;
-    }
-  }
+}  // anonymous namespace
 
-  FloatRectOutsets insets(
-      -fractional_inset * edges[static_cast<unsigned>(BoxSide::kTop)].Width(),
-      -fractional_inset * edges[static_cast<unsigned>(BoxSide::kRight)].Width(),
-      -fractional_inset *
-          edges[static_cast<unsigned>(BoxSide::kBottom)].Width(),
-      -fractional_inset * edges[static_cast<unsigned>(BoxSide::kLeft)].Width());
-
-  FloatRect inset_rect(background_rounded_rect.Rect());
-  inset_rect.Expand(insets);
-  FloatRoundedRect::Radii inset_radii(background_rounded_rect.GetRadii());
-  inset_radii.Shrink(-insets.Top(), -insets.Bottom(), -insets.Left(),
-                     -insets.Right());
-  return FloatRoundedRect(inset_rect, inset_radii);
-}
-
-FloatRoundedRect RoundedBorderRectForClip(
-    const ComputedStyle& style,
-    const BoxPainterBase::FillLayerInfo& info,
-    const FillLayer& bg_layer,
-    const LayoutRect& rect,
-    bool flow_box_has_multiple_fragments,
-    const LayoutSize& flow_box_size,
-    BackgroundBleedAvoidance bleed_avoidance,
-    LayoutRectOutsets border_padding_insets) {
-  if (!info.is_rounded_fill)
-    return FloatRoundedRect();
-
-  FloatRoundedRect border = style.GetRoundedBorderFor(
-      rect, info.include_left_edge, info.include_right_edge);
-  if (flow_box_has_multiple_fragments) {
-    FloatRoundedRect segment_border = style.GetRoundedBorderFor(
-        LayoutRect(LayoutPoint(), LayoutSize(FlooredIntSize(flow_box_size))),
-        info.include_left_edge, info.include_right_edge);
-    border.SetRadii(segment_border.GetRadii());
-  }
-
-  if (info.is_border_fill &&
-      bleed_avoidance == kBackgroundBleedShrinkBackground) {
-    border = BackgroundRoundedRectAdjustedForBleedAvoidance(
-        style, rect, flow_box_has_multiple_fragments, info.include_left_edge,
-        info.include_right_edge, border);
-  }
-
-  // Clip to the padding or content boxes as necessary.
-  if (bg_layer.Clip() == EFillBox::kContent) {
-    border = style.GetRoundedInnerBorderFor(
-        LayoutRect(border.Rect()), border_padding_insets,
-        info.include_left_edge, info.include_right_edge);
-  } else if (bg_layer.Clip() == EFillBox::kPadding) {
-    border = style.GetRoundedInnerBorderFor(LayoutRect(border.Rect()),
-                                            info.include_left_edge,
-                                            info.include_right_edge);
-  }
-  return border;
-}
-
-void PaintFillLayerBackground(GraphicsContext& context,
-                              const BoxPainterBase::FillLayerInfo& info,
-                              Node* node,
-                              Image* image,
-                              SkBlendMode composite_op,
-                              const BackgroundImageGeometry& geometry,
-                              LayoutRect scrolled_paint_rect) {
+void BoxPainterBase::PaintFillLayerBackground(
+    GraphicsContext& context,
+    const FillLayerInfo& info,
+    Image* image,
+    SkBlendMode composite_op,
+    const BackgroundImageGeometry& geometry,
+    LayoutRect scrolled_paint_rect) {
   // Paint the color first underneath all images, culled if background image
   // occludes it.
   // TODO(trchen): In the !bgLayer.hasRepeatXY() case, we could improve the
@@ -512,7 +485,7 @@ void PaintFillLayerBackground(GraphicsContext& context,
   if (info.should_paint_image && !geometry.DestRect().IsEmpty() && image) {
     TRACE_EVENT1(
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data",
-        InspectorPaintImageEvent::Data(node, *info.image, image->Rect(),
+        InspectorPaintImageEvent::Data(node_, *info.image, image->Rect(),
                                        FloatRect(scrolled_paint_rect)));
     context.DrawTiledImage(image, FloatRect(geometry.DestRect()),
                            FloatPoint(geometry.Phase()),
@@ -521,22 +494,33 @@ void PaintFillLayerBackground(GraphicsContext& context,
   }
 }
 
-LayoutRectOutsets AdjustOutsetsForEdgeInclusion(
-    const LayoutRectOutsets outsets,
-    const BoxPainterBase::FillLayerInfo& info) {
-  LayoutRectOutsets adjusted = outsets;
-  if (!info.include_right_edge)
-    adjusted.SetRight(LayoutUnit());
-  if (!info.include_left_edge)
-    adjusted.SetLeft(LayoutUnit());
-  return adjusted;
-}
-
-}  // anonymous namespace
-
 LayoutRectOutsets BoxPainterBase::BorderOutsets(
     const FillLayerInfo& info) const {
-  return AdjustOutsetsForEdgeInclusion(border_, info);
+  LayoutRectOutsets borders = border_;
+  if (!info.include_right_edge)
+    borders.SetRight(LayoutUnit());
+  if (!info.include_left_edge)
+    borders.SetLeft(LayoutUnit());
+  return borders;
+}
+
+LayoutRectOutsets BoxPainterBase::PaddingOutsets(
+    const FillLayerInfo& info) const {
+  LayoutRectOutsets paddings = padding_;
+  if (!info.include_right_edge)
+    paddings.SetRight(LayoutUnit());
+  if (!info.include_left_edge)
+    paddings.SetLeft(LayoutUnit());
+  return paddings;
+}
+
+FloatRoundedRect BoxPainterBase::GetBackgroundRoundedRect(
+    const LayoutRect& border_rect,
+    const LayoutSize& flow_box_size,
+    bool include_logical_left_edge,
+    bool include_logical_right_edge) const {
+  return style_.GetRoundedBorderFor(border_rect, include_logical_left_edge,
+                                    include_logical_right_edge);
 }
 
 void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
@@ -546,7 +530,6 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
                                     BackgroundBleedAvoidance bleed_avoidance,
                                     BackgroundImageGeometry& geometry,
                                     SkBlendMode op,
-                                    bool flow_box_has_multiple_fragments,
                                     const LayoutSize flow_box_size) {
   GraphicsContext& context = paint_info.context;
   if (rect.IsEmpty())
@@ -585,9 +568,9 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
   }
 
   LayoutRectOutsets border_padding_insets = -(border_ + padding_);
-  FloatRoundedRect border_rect = RoundedBorderRectForClip(
-      style_, info, bg_layer, rect, flow_box_has_multiple_fragments,
-      flow_box_size, bleed_avoidance, border_padding_insets);
+  FloatRoundedRect border_rect =
+      RoundedBorderRectForClip(info, bg_layer, rect, flow_box_size,
+                               bleed_avoidance, border_padding_insets);
 
   // Fast path for drawing simple color backgrounds.
   if (PaintFastBottomLayer(display_item_, node_, paint_info, info, rect,
@@ -602,8 +585,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
   }
   if (bg_layer.Clip() == EFillBox::kText) {
     PaintFillLayerTextFillBox(context, info, image.get(), composite_op,
-                              geometry, rect, scrolled_paint_rect,
-                              flow_box_has_multiple_fragments);
+                              geometry, rect, scrolled_paint_rect);
     return;
   }
 
@@ -616,9 +598,9 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
 
       // Clip to the padding or content boxes as necessary.
       LayoutRect clip_rect = scrolled_paint_rect;
-      clip_rect.Contract(AdjustOutsetsForEdgeInclusion(border_, info));
+      clip_rect.Contract(BorderOutsets(info));
       if (bg_layer.Clip() == EFillBox::kContent)
-        clip_rect.Contract(AdjustOutsetsForEdgeInclusion(padding_, info));
+        clip_rect.Contract(PaddingOutsets(info));
       background_clip_state_saver.Save();
       // TODO(chrishtr): this should be pixel-snapped.
       context.Clip(FloatRect(clip_rect));
@@ -632,8 +614,8 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
       break;
   }
 
-  PaintFillLayerBackground(context, info, node_, image.get(), composite_op,
-                           geometry, scrolled_paint_rect);
+  PaintFillLayerBackground(context, info, image.get(), composite_op, geometry,
+                           scrolled_paint_rect);
 }
 
 void BoxPainterBase::PaintFillLayerTextFillBox(
@@ -643,8 +625,7 @@ void BoxPainterBase::PaintFillLayerTextFillBox(
     SkBlendMode composite_op,
     const BackgroundImageGeometry& geometry,
     const LayoutRect& rect,
-    const LayoutRect& scrolled_paint_rect,
-    bool flow_box_has_multiple_fragments) {
+    const LayoutRect& scrolled_paint_rect) {
   // First figure out how big the mask has to be. It should be no bigger
   // than what we need to actually render, so we should intersect the dirty
   // rect with the border box of the background.
@@ -657,7 +638,7 @@ void BoxPainterBase::PaintFillLayerTextFillBox(
   context.Clip(mask_rect);
   context.BeginLayer(1, composite_op);
 
-  PaintFillLayerBackground(context, info, node_, image, SkBlendMode::kSrcOver,
+  PaintFillLayerBackground(context, info, image, SkBlendMode::kSrcOver,
                            geometry, scrolled_paint_rect);
 
   // Create the text mask layer and draw the text into the mask. We do this by
@@ -665,11 +646,41 @@ void BoxPainterBase::PaintFillLayerTextFillBox(
   // they should just add their contents to the clip.
   context.BeginLayer(1, SkBlendMode::kDstIn);
 
-  PaintTextClipMask(context, mask_rect, scrolled_paint_rect.Location(),
-                    flow_box_has_multiple_fragments);
+  PaintTextClipMask(context, mask_rect, scrolled_paint_rect.Location());
 
   context.EndLayer();  // Text mask layer.
   context.EndLayer();  // Background layer.
+}
+
+FloatRoundedRect BoxPainterBase::RoundedBorderRectForClip(
+    const BoxPainterBase::FillLayerInfo& info,
+    const FillLayer& bg_layer,
+    const LayoutRect& rect,
+    const LayoutSize& flow_box_size,
+    BackgroundBleedAvoidance bleed_avoidance,
+    LayoutRectOutsets border_padding_insets) const {
+  if (!info.is_rounded_fill)
+    return FloatRoundedRect();
+
+  FloatRoundedRect border =
+      info.is_border_fill ? BackgroundRoundedRectAdjustedForBleedAvoidance(
+                                rect, flow_box_size, bleed_avoidance,
+                                info.include_left_edge, info.include_right_edge)
+                          : GetBackgroundRoundedRect(rect, flow_box_size,
+                                                     info.include_left_edge,
+                                                     info.include_right_edge);
+
+  // Clip to the padding or content boxes as necessary.
+  if (bg_layer.Clip() == EFillBox::kContent) {
+    border = style_.GetRoundedInnerBorderFor(
+        LayoutRect(border.Rect()), border_padding_insets,
+        info.include_left_edge, info.include_right_edge);
+  } else if (bg_layer.Clip() == EFillBox::kPadding) {
+    border = style_.GetRoundedInnerBorderFor(LayoutRect(border.Rect()),
+                                             info.include_left_edge,
+                                             info.include_right_edge);
+  }
+  return border;
 }
 
 void BoxPainterBase::PaintBorder(const ImageResourceObserver& obj,
@@ -716,6 +727,7 @@ void BoxPainterBase::PaintMaskImages(const PaintInfo& paint_info,
     // prevent a flash of unmasked content.
     if (mask_box_image)
       all_mask_images_loaded &= mask_box_image->IsLoaded();
+
     all_mask_images_loaded &= mask_layers.ImagesAreLoaded();
 
     paint_info.context.BeginLayer(1, SkBlendMode::kDstIn);
