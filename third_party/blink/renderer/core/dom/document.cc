@@ -2953,6 +2953,9 @@ void Document::open(Document* entered_document,
     return;
   }
 
+  if (!AllowedToUseDynamicMarkUpInsertion("open", exception_state))
+    return;
+
   if (entered_document) {
     if (!GetSecurityOrigin()->IsSameSchemeHostPort(
             entered_document->GetSecurityOrigin())) {
@@ -3221,6 +3224,9 @@ void Document::close(ExceptionState& exception_state) {
         "Custom Element constructor should not use close().");
     return;
   }
+
+  if (!AllowedToUseDynamicMarkUpInsertion("close", exception_state))
+    return;
 
   close();
 }
@@ -3717,6 +3723,9 @@ void Document::write(LocalDOMWindow* calling_window,
     return;
   }
 
+  if (!AllowedToUseDynamicMarkUpInsertion("write", exception_state))
+    return;
+
   StringBuilder builder;
   for (const String& string : text)
     builder.Append(string);
@@ -3734,6 +3743,9 @@ void Document::writeln(LocalDOMWindow* calling_window,
         "This document can only write `TrustedHTML` objects.");
     return;
   }
+
+  if (!AllowedToUseDynamicMarkUpInsertion("writeln", exception_state))
+    return;
 
   StringBuilder builder;
   for (const String& string : text)
@@ -6019,6 +6031,32 @@ void Document::ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy) {
 
   InitializeFeaturePolicy(declared_policy, container_policy,
                           parent_feature_policy);
+}
+
+bool Document::AllowedToUseDynamicMarkUpInsertion(
+    const char* api_name,
+    ExceptionState& exception_state) {
+  if (!IsSupportedInFeaturePolicy(
+          mojom::FeaturePolicyFeature::kDocumentStreamInsertion)) {
+    return true;
+  }
+  if (!frame_ || frame_->IsFeatureEnabled(
+                     mojom::FeaturePolicyFeature::kDocumentStreamInsertion)) {
+    return true;
+  }
+
+  // TODO(ekaramad): Throwing an exception seems an ideal resolution to mishaps
+  // in using the API against the policy. But this cannot be applied to cross-
+  // origin as there are security risks involved. We should perhaps unload the
+  // whole frame instead of throwing.
+  exception_state.ThrowDOMException(
+      kNotAllowedError,
+      String::Format(
+          "The use of method '%s' has been blocked by feature policy. The "
+          "feature "
+          "'document-stream-insertion' is disabled in this document.",
+          api_name));
+  return false;
 }
 
 ukm::UkmRecorder* Document::UkmRecorder() {
