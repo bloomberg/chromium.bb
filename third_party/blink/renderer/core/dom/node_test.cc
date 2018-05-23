@@ -31,14 +31,6 @@ class FakeMediaControls : public HTMLDivElement {
 
 class NodeTest : public EditingTestBase {
  protected:
-  ShadowRoot* AttachShadowTo(Element* element) {
-    ShadowRootInit shadow_root_init;
-    shadow_root_init.setMode("open");
-    return element->attachShadow(
-        ToScriptStateForMainWorld(GetDocument().GetFrame()), shadow_root_init,
-        ASSERT_NO_EXCEPTION);
-  }
-
   LayoutObject* ReattachLayoutTreeForNode(Node& node) {
     node.LazyReattachIfAttached();
     GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
@@ -274,13 +266,14 @@ TEST_F(NodeTest, AttachContext_PreviousInFlow_InsideDisplayContents) {
 
 TEST_F(NodeTest, AttachContext_PreviousInFlow_Slotted) {
   SetBodyContent("<div id=host><span id=inline></span></div>");
-  ShadowRoot* shadow_root =
-      AttachShadowTo(GetDocument().getElementById("host"));
-  shadow_root->SetInnerHTMLFromString(
+  ShadowRoot& shadow_root =
+      GetDocument().getElementById("host")->AttachShadowRootInternal(
+          ShadowRootType::kOpen);
+  shadow_root.SetInnerHTMLFromString(
       "<div id=root style='display:contents'><span></span><slot></slot></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* root = shadow_root->getElementById("root");
+  Element* root = shadow_root.getElementById("root");
   Element* span = GetDocument().getElementById("inline");
   LayoutObject* previous_in_flow = ReattachLayoutTreeForNode(*root);
 
