@@ -42,7 +42,7 @@ namespace {
 // please take a look at GetCachedDeletedPageInfoWrappersByUrlPredicateSync.
 #define INFO_WRAPPER_FIELDS                                                  \
   "offline_id, system_download_id, client_namespace, client_id, file_path, " \
-  "request_origin, access_count, creation_time"
+  "request_origin, access_count, creation_time, online_url"
 #define INFO_WRAPPER_FIELD_COUNT 8
 
 struct DeletedPageInfoWrapper {
@@ -56,6 +56,7 @@ struct DeletedPageInfoWrapper {
   // Used by metric collection only:
   int access_count;
   base::Time creation_time;
+  GURL url;
 };
 
 DeletedPageInfoWrapper CreateInfoWrapper(const sql::Statement& statement) {
@@ -70,6 +71,7 @@ DeletedPageInfoWrapper CreateInfoWrapper(const sql::Statement& statement) {
   info_wrapper.access_count = statement.ColumnInt(6);
   info_wrapper.creation_time =
       store_utils::FromDatabaseTime(statement.ColumnInt64(7));
+  info_wrapper.url = GURL(statement.ColumnString(8));
   return info_wrapper;
 }
 
@@ -134,7 +136,8 @@ DeletePageTaskResult DeletePagesByDeletedPageInfoWrappersSync(
       if (DeletePageEntryByOfflineIdSync(db, info_wrapper.offline_id)) {
         deleted_page_infos.emplace_back(
             info_wrapper.offline_id, info_wrapper.system_download_id,
-            info_wrapper.client_id, info_wrapper.request_origin);
+            info_wrapper.client_id, info_wrapper.request_origin,
+            info_wrapper.url);
       }
     }
   }
