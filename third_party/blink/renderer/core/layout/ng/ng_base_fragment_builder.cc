@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_base_fragment_builder.h"
 
+#include "third_party/blink/renderer/core/style/computed_style.h"
+
 namespace blink {
 
 NGBaseFragmentBuilder::NGBaseFragmentBuilder(

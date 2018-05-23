@@ -6,9 +6,6 @@
 #define NGInlineLayoutAlgorithm_h
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -23,7 +20,10 @@ class NGConstraintSpace;
 class NGInlineBreakToken;
 class NGInlineNode;
 class NGInlineItem;
-class NGLineBoxFragmentBuilder;
+class NGInlineLayoutStateStack;
+class NGLineInfo;
+struct NGInlineBoxState;
+struct NGInlineItemResult;
 struct NGPositionedFloat;
 
 // A class for laying out an inline formatting context, i.e. a block with inline
@@ -40,6 +40,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   NGInlineLayoutAlgorithm(NGInlineNode,
                           const NGConstraintSpace&,
                           NGInlineBreakToken* = nullptr);
+  ~NGInlineLayoutAlgorithm() override;
 
   void CreateLine(NGLineInfo*, NGExclusionSpace*);
 

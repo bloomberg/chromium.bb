@@ -8,15 +8,14 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+
 namespace blink {
 
 class NGPhysicalFragment;
@@ -39,8 +38,6 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
                     TextDirection);
 
   ~NGFragmentBuilder() override;
-
-  using WeakBoxList = PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>;
 
   NGFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit);
   NGFragmentBuilder& SetPadding(const NGBoxStrut&);

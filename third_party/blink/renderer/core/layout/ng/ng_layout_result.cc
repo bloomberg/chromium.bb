@@ -9,7 +9,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 
 namespace blink {
 
@@ -46,8 +45,8 @@ NGLayoutResult::NGLayoutResult(
   positioned_floats_.swap(positioned_floats);
 }
 
-// Keep the implementation of the destructor here, to avoid dependencies on
-// NGUnpositionedFloat in the header file.
+// Define the destructor here, so that we can forward-declare more in the
+// header.
 NGLayoutResult::~NGLayoutResult() = default;
 
 scoped_refptr<NGLayoutResult> NGLayoutResult::CloneWithoutOffset() const {

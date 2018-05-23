@@ -12,7 +12,6 @@
 
 namespace blink {
 
-class NGPhysicalBoxFragment;
 struct NGBaselineRequest;
 struct NGLineHeightMetrics;
 

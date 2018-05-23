@@ -13,4 +13,8 @@ NGPositionedFloat::NGPositionedFloat(
     const NGBfcOffset& bfc_offset)
     : layout_result(layout_result), bfc_offset(bfc_offset) {}
 
+// Define the destructor here, so that we can forward-declare more in the header
+// file.
+NGPositionedFloat::~NGPositionedFloat() = default;
+
 }  // namespace blink

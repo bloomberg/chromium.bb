@@ -8,12 +8,14 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
+
+class NGBlockBreakToken;
+class NGLayoutResult;
 
 // Struct that keeps all information needed to position floats in LayoutNG.
 struct CORE_EXPORT NGUnpositionedFloat
@@ -31,6 +33,8 @@ struct CORE_EXPORT NGUnpositionedFloat
         margins, available_size, percentage_size, origin_bfc_line_offset,
         bfc_line_offset, node, token));
   }
+
+  ~NGUnpositionedFloat();
 
   NGBlockNode node;
   scoped_refptr<NGBlockBreakToken> token;
@@ -68,14 +72,7 @@ struct CORE_EXPORT NGUnpositionedFloat
                       LayoutUnit origin_bfc_line_offset,
                       LayoutUnit bfc_line_offset,
                       NGBlockNode node,
-                      NGBlockBreakToken* token)
-      : node(node),
-        token(token),
-        available_size(available_size),
-        percentage_size(percentage_size),
-        origin_bfc_line_offset(origin_bfc_line_offset),
-        bfc_line_offset(bfc_line_offset),
-        margins(margins) {}
+                      NGBlockBreakToken* token);
 };
 
 }  // namespace blink

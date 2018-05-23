@@ -19,7 +19,6 @@ namespace blink {
 class ComputedStyle;
 class LayoutObject;
 class LayoutText;
-class NGInlineItem;
 
 // NGInlineItemsBuilder builds a string and a list of NGInlineItem from inlines.
 //

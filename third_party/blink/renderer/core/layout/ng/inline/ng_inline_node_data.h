@@ -13,11 +13,6 @@ namespace blink {
 
 // Data which is required for inline nodes.
 struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
-  // The constructor and destructor can't be implicit or inlined, because they
-  // need full definition of NGOffsetMapping.
-  NGInlineNodeData();
-  ~NGInlineNodeData();
-
  private:
   const NGInlineItemsData& ItemsData(bool is_first_line) const {
     return !is_first_line || !first_line_items_
