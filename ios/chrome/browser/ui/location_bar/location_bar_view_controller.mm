@@ -28,7 +28,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
 
 @interface LocationBarViewController ()
 // The injected edit view.
-@property(nonatomic, strong) UIView* locationBarEditView;
+@property(nonatomic, strong) UIView* editView;
 
 // The view that displays current location when the omnibox is not focused.
 @property(nonatomic, strong) LocationBarSteadyView* locationBarSteadyView;
@@ -42,7 +42,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
 @end
 
 @implementation LocationBarViewController
-@synthesize locationBarEditView = _locationBarEditView;
+@synthesize editView = _editView;
 @synthesize locationBarSteadyView = _locationBarSteadyView;
 @synthesize incognito = _incognito;
 @synthesize delegate = _delegate;
@@ -67,12 +67,12 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }
 
 - (void)setEditView:(UIView*)editView {
-  DCHECK(!self.locationBarEditView);
-  self.locationBarEditView = editView;
+  DCHECK(!self.editView);
+  _editView = editView;
 }
 
 - (void)switchToEditing:(BOOL)editing {
-  self.locationBarEditView.hidden = !editing;
+  self.editView.hidden = !editing;
   self.locationBarSteadyView.hidden = editing;
 }
 
@@ -116,11 +116,11 @@ typedef NS_ENUM(int, TrailingButtonState) {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  DCHECK(self.locationBarEditView) << "The edit view must be set at this point";
+  DCHECK(self.editView) << "The edit view must be set at this point";
 
-  [self.view addSubview:self.locationBarEditView];
-  self.locationBarEditView.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(self.locationBarEditView, self.view);
+  [self.view addSubview:self.editView];
+  self.editView.translatesAutoresizingMaskIntoConstraints = NO;
+  AddSameConstraints(self.editView, self.view);
 
   [self.view addSubview:self.locationBarSteadyView];
   self.locationBarSteadyView.translatesAutoresizingMaskIntoConstraints = NO;
