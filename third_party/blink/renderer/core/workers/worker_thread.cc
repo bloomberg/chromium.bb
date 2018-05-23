@@ -156,7 +156,7 @@ void WorkerThread::ImportModuleScript(
 
 void WorkerThread::TerminateChildThreadsOnWorkerThread() {
   DCHECK(IsCurrentThread());
-  PerformShutdownOnWorkerThread();
+  PrepareForShutdownOnWorkerThread();
   for (WorkerThread* child : child_threads_)
     child->Terminate();
 }
