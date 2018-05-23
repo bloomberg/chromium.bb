@@ -88,8 +88,7 @@ class CORE_EXPORT HTMLCanvasElement final
       public CanvasRenderingContextHost,
       public WebSurfaceLayerBridgeObserver,
       public ImageBitmapSource,
-      public OffscreenCanvasPlaceholder,
-      public CanvasResourceHost {
+      public OffscreenCanvasPlaceholder {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
   USING_PRE_FINALIZER(HTMLCanvasElement, Dispose);
@@ -206,8 +205,7 @@ class CORE_EXPORT HTMLCanvasElement final
   void UnregisterContentsLayer(cc::Layer*) override;
 
   // CanvasResourceHost implementation
-  void NotifySurfaceInvalid() override;
-  void RestoreCanvasMatrixClipStack(PaintCanvas*) const override;
+  void NotifyGpuContextLost() override;
   void SetNeedsCompositingUpdate() override;
   void UpdateMemoryUsage() override;
 

@@ -471,12 +471,6 @@ void HTMLCanvasElement::DisableAcceleration(
   SetNeedsCompositingUpdate();
 }
 
-void HTMLCanvasElement::RestoreCanvasMatrixClipStack(
-    PaintCanvas* canvas) const {
-  if (context_)
-    context_->RestoreCanvasMatrixClipStack(canvas);
-}
-
 void HTMLCanvasElement::SetNeedsCompositingUpdate() {
   Element::SetNeedsCompositingUpdate();
 }
@@ -1099,7 +1093,7 @@ void HTMLCanvasElement::CreateCanvas2DLayerBridgeInternal(
     SetNeedsCompositingUpdate();
 }
 
-void HTMLCanvasElement::NotifySurfaceInvalid() {
+void HTMLCanvasElement::NotifyGpuContextLost() {
   if (Is2d())
     context_->LoseContext(CanvasRenderingContext::kRealLostContext);
 }

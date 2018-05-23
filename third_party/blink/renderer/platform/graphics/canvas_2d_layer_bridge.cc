@@ -532,7 +532,7 @@ bool Canvas2DLayerBridge::CheckResourceProviderValid() {
     context_lost_ = true;
     ResetResourceProvider();
     if (resource_host_)
-      resource_host_->NotifySurfaceInvalid();
+      resource_host_->NotifyGpuContextLost();
     CanvasMetrics::CountCanvasContextUsage(
         CanvasMetrics::kAccelerated2DCanvasGPUContextLost);
     return false;

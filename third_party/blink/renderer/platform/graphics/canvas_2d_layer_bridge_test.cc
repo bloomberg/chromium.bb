@@ -458,7 +458,7 @@ class MockLogger : public Canvas2DLayerBridge::Logger {
 
 class MockCanvasResourceHost : public CanvasResourceHost {
  public:
-  void NotifySurfaceInvalid() override {}
+  void NotifyGpuContextLost() override {}
   void SetNeedsCompositingUpdate() override {}
   void UpdateMemoryUsage() override {}
   MOCK_CONST_METHOD1(RestoreCanvasMatrixClipStack, void(PaintCanvas*));
