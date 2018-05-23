@@ -48,14 +48,15 @@ NET_EXPORT std::string EscapeNonASCII(base::StringPiece input);
 // Escapes characters in text suitable for use as an external protocol handler
 // command.
 // We %XX everything except alphanumerics and -_.!~*'() and the restricted
-// chracters (;/?:@&=+$,#[]) and a valid percent escape sequence (%XX).
+// characters (;/?:@&=+$,#[]) and a valid percent escape sequence (%XX).
 NET_EXPORT std::string EscapeExternalHandlerValue(base::StringPiece text);
 
 // Appends the given character to the output string, escaping the character if
-// the character would be interpretted as an HTML delimiter.
+// the character would be interpreted as an HTML or Polymer binding delimiter.
 NET_EXPORT void AppendEscapedCharForHTML(char c, std::string* output);
 
-// Escapes chars that might cause this text to be interpretted as HTML tags.
+// Escapes chars that might cause this text to be interpreted as HTML tags or
+// Polymer bindings.
 NET_EXPORT std::string EscapeForHTML(base::StringPiece text);
 NET_EXPORT base::string16 EscapeForHTML(base::StringPiece16 text);
 
@@ -120,7 +121,7 @@ NET_EXPORT std::string UnescapeURLComponent(base::StringPiece escaped_text,
                                             UnescapeRule::Type rules);
 
 // Unescapes the given substring as a URL, and then tries to interpret the
-// result as being encoded as UTF-8. If the result is convertable into UTF-8, it
+// result as being encoded as UTF-8. If the result is convertible into UTF-8, it
 // will be returned as converted. If it is not, the original escaped string will
 // be converted into a base::string16 and returned.  |adjustments| provides
 // information on how the original string was adjusted to get the string
