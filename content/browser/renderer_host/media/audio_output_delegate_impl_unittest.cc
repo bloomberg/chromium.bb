@@ -83,10 +83,10 @@ class MockEventHandler : public media::AudioOutputDelegate::EventHandler {
  public:
   void OnStreamCreated(
       int stream_id,
-      const base::SharedMemory* shared_memory,
+      const base::UnsafeSharedMemoryRegion* shared_memory_region,
       std::unique_ptr<base::CancelableSyncSocket> socket) override {
     EXPECT_EQ(stream_id, kStreamId);
-    EXPECT_NE(shared_memory, nullptr);
+    EXPECT_NE(shared_memory_region, nullptr);
     EXPECT_NE(socket.get(), nullptr);
     GotOnStreamCreated();
   }

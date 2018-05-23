@@ -8,8 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/shared_memory.h"
-#include "base/memory/shared_memory_handle.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -240,14 +239,16 @@ TEST(OldRenderFrameAudioOutputStreamFactoryTest, CreateStream) {
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);
 
-  base::SharedMemory shared_memory;
-  ASSERT_TRUE(shared_memory.CreateAndMapAnonymous(100));
+  base::UnsafeSharedMemoryRegion shared_memory_region =
+      base::UnsafeSharedMemoryRegion::Create(100);
+  ASSERT_TRUE(shared_memory_region.IsValid());
 
   auto local = std::make_unique<base::CancelableSyncSocket>();
   auto remote = std::make_unique<base::CancelableSyncSocket>();
   ASSERT_TRUE(
       base::CancelableSyncSocket::CreatePair(local.get(), remote.get()));
-  event_handler->OnStreamCreated(kStreamId, &shared_memory, std::move(remote));
+  event_handler->OnStreamCreated(kStreamId, &shared_memory_region,
+                                 std::move(remote));
 
   base::RunLoop().RunUntilIdle();
   // Make sure we got the callback from creating stream.
