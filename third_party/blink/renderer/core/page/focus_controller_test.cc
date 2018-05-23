@@ -7,7 +7,7 @@
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/core/dom/shadow_root_init.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
@@ -36,10 +36,7 @@ TEST_F(FocusControllerTest, DoNotCrash1) {
       "tabindex='0'></p>");
   // <div> with shadow root
   Element* host = ToElement(GetDocument().body()->firstChild());
-  ShadowRootInit init;
-  init.setMode("open");
-  host->attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()), init,
-                     ASSERT_NO_EXCEPTION);
+  host->AttachShadowRootInternal(ShadowRootType::kOpen);
   // "This test is for crbug.com/609012"
   Node* text = host->nextSibling();
   // <p>
@@ -63,10 +60,7 @@ TEST_F(FocusControllerTest, DoNotCrash2) {
   Node* text = target->nextSibling();
   // <div> with shadow root
   Element* host = ToElement(text->nextSibling());
-  ShadowRootInit init;
-  init.setMode("open");
-  host->attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()), init,
-                     ASSERT_NO_EXCEPTION);
+  host->AttachShadowRootInternal(ShadowRootType::kOpen);
 
   // Set sequential focus navigation point at text node.
   GetDocument().SetSequentialFocusNavigationStartingPoint(text);
