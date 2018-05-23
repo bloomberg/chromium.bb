@@ -526,9 +526,10 @@ const viz::FrameSinkId& RenderWidgetHostImpl::GetFrameSinkId() const {
   return frame_sink_id_;
 }
 
-void RenderWidgetHostImpl::ResetSentVisualProperties() {
+void RenderWidgetHostImpl::ResetSizeAndRepaintPendingFlags() {
   visual_properties_ack_pending_ = false;
-  old_visual_properties_.reset();
+  if (old_visual_properties_)
+    old_visual_properties_->new_size = gfx::Size();
 }
 
 void RenderWidgetHostImpl::SendScreenRects() {
@@ -801,6 +802,8 @@ bool RenderWidgetHostImpl::GetVisualProperties(
       visual_properties->local_surface_id = local_surface_id;
   }
 
+  visual_properties->content_source_id = current_content_source_id_;
+
   if (screen_orientation_type_for_testing_) {
     visual_properties->screen_info.orientation_type =
         *screen_orientation_type_for_testing_;
@@ -858,7 +861,10 @@ bool RenderWidgetHostImpl::GetVisualProperties(
       old_visual_properties_->visible_viewport_size !=
           visual_properties->visible_viewport_size ||
       old_visual_properties_->capture_sequence_number !=
-          visual_properties->capture_sequence_number;
+          visual_properties->capture_sequence_number ||
+      (enable_surface_synchronization_ &&
+       old_visual_properties_->content_source_id !=
+           visual_properties->content_source_id);
 
   // We should throttle sending updated VisualProperties to the renderer to
   // the rate of commit. This ensures we don't overwhelm the renderer with
@@ -1849,7 +1855,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   suppress_events_until_keydown_ = false;
 
   // Reset some fields in preparation for recovering from a crash.
-  ResetSentVisualProperties();
+  ResetSizeAndRepaintPendingFlags();
   // After the renderer crashes, the view is destroyed and so the
   // RenderWidgetHost cannot track its visibility anymore. We assume such
   // RenderWidgetHost to be invisible for the sake of internal accounting - be

@@ -2328,6 +2328,7 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   visual_properties.top_controls_height = 0.f;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted();
   visual_properties.display_mode = display_mode_;
+  visual_properties.content_source_id = GetContentSourceId();
   OnSynchronizeVisualProperties(visual_properties);
 }
 
