@@ -832,6 +832,13 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
         return;
       }
 
+      if (reason == DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE) {
+        OnDownloadCanceled(
+            download, DownloadController::CANCEL_REASON_NO_EXTERNAL_STORAGE);
+        callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+        return;
+      }
+
       // If we cannot reserve the path and the WebContent is already gone, there
       // is no way to prompt user for a dialog. This could happen after chrome
       // gets killed, and user tries to resume a download while another app has
