@@ -50,12 +50,6 @@ class PLATFORM_EXPORT ScriptWrappableVisitor {
     NOTREACHED();
   }
 
-  template <typename T>
-  static const char* NameCallback(const void* traceable) {
-    // Mixns never inherit from TraceWrapperBase.
-    return NameInHeapSnapshot(static_cast<const T*>(traceable));
-  }
-
   // Trace all wrappers of |tracable|.
   //
   // If you cannot use TraceWrapperMember & the corresponding TraceWrappers()
@@ -123,15 +117,6 @@ class PLATFORM_EXPORT ScriptWrappableVisitor {
   }
 
  private:
-  static const char* NameInHeapSnapshot(const TraceWrapperBase* traceable) {
-    return traceable->NameInHeapSnapshot();
-  }
-
-  static const char* NameInHeapSnapshot(...) {
-    // Default case for all non-TraceWrapperBase classes.
-    return "InternalNode";
-  }
-
   // Helper method to invoke the virtual Visit method with wrapper descriptor.
   template <typename T>
   void Visit(const T* traceable) {

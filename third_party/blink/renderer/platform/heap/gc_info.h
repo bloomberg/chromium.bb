@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_GC_INFO_H_
 
 #include "third_party/blink/renderer/platform/heap/finalizer_traits.h"
+#include "third_party/blink/renderer/platform/heap/name_traits.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -33,8 +34,10 @@ namespace blink {
 struct GCInfo {
   bool HasFinalizer() const { return non_trivial_finalizer_; }
   bool HasVTable() const { return has_v_table_; }
+
   TraceCallback trace_;
   FinalizationCallback finalize_;
+  NameCallback name_;
   bool non_trivial_finalizer_;
   bool has_v_table_;
 };
@@ -107,8 +110,9 @@ struct GCInfoAtBaseType {
   static size_t Index() {
     static_assert(sizeof(T), "T must be fully defined");
     static const GCInfo kGcInfo = {
-        TraceTrait<T>::Trace, FinalizerTrait<T>::Finalize,
-        FinalizerTrait<T>::kNonTrivialFinalizer, std::is_polymorphic<T>::value,
+        TraceTrait<T>::Trace,          FinalizerTrait<T>::Finalize,
+        NameTrait<T>::GetName,         FinalizerTrait<T>::kNonTrivialFinalizer,
+        std::is_polymorphic<T>::value,
     };
     static size_t gc_info_index = 0;
     if (!AcquireLoad(&gc_info_index))

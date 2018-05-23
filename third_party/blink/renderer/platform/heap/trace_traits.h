@@ -56,8 +56,7 @@ class AdjustPointerTrait<T, false> {
 
   static TraceWrapperDescriptor GetTraceWrapperDescriptor(void* self) {
     return {self, TraceTrait<T>::TraceWrappers,
-            ScriptWrappableVisitor::MissedWriteBarrier<T>,
-            ScriptWrappableVisitor::NameCallback<T>};
+            ScriptWrappableVisitor::MissedWriteBarrier<T>};
   }
 
   static HeapObjectHeader* GetHeapObjectHeader(void* self) {
