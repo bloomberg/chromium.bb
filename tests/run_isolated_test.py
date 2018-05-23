@@ -55,7 +55,7 @@ def json_dumps(data):
   return json.dumps(data, sort_keys=True, separators=(',', ':'))
 
 
-def genTree(path):
+def read_tree(path):
   """Returns a dict with {filepath: content}."""
   if not os.path.isdir(path):
     return None
@@ -760,8 +760,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertIsInstance(
         isolate_cache, local_caching.DiskContentAddressedCache)
     named_cache_manager = run_isolated.process_named_cache_options(
-        parser, options)
-    self.assertIsInstance(named_cache_manager, local_caching.CacheManager)
+        parser, options, time_fn=lambda: fake_time)
+    self.assertIsInstance(named_cache_manager, local_caching.NamedCache)
 
     # Add items to these caches.
     small = '0123456789'
@@ -773,14 +773,14 @@ class RunIsolatedTest(RunIsolatedTestBase):
       isolate_cache.write(big_digest, [big])
       fake_time = now + 2
       isolate_cache.write(small_digest, [small])
-    with named_cache_manager.open(time_fn=lambda: fake_time):
+    with named_cache_manager:
       fake_time = now + 1
       put_to_named_cache(named_cache_manager, u'first', u'big', big)
       fake_time = now + 3
       put_to_named_cache(named_cache_manager, u'second', u'small', small)
 
     # Ensures the cache contain the expected data.
-    actual = genTree(np)
+    actual = read_tree(np)
     # Figure out the cache path names.
     cache_small = [
         os.path.dirname(n) for n in actual if os.path.basename(n) == 'small'][0]
@@ -801,7 +801,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
           '{"items":[["%s",[10140,%s]],["%s",[10,%s]]],"version":2}' % (
           big_digest, now+1, small_digest, now+2),
     }
-    self.assertEqual(expected, genTree(ip))
+    self.assertEqual(expected, read_tree(ip))
 
     # Request triming.
     fake_free_space[0] = 1020
@@ -823,7 +823,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     # - DiskContentAddressedCache.trim() keeps its own internal counter while
     #   deleting files so it ignores get_free_space() output while deleting
     #   files.
-    actual = genTree(np)
+    actual = read_tree(np)
     expected = {
       os.path.join(cache_small, u'small'): small,
       u'state.json':
@@ -837,7 +837,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
           '{"items":[["%s",[10,%s]]],"version":2}' %
           (small_digest, now+2),
     }
-    self.assertEqual(expected, genTree(ip))
+    self.assertEqual(expected, read_tree(ip))
 
 
 class RunIsolatedTestRun(RunIsolatedTestBase):

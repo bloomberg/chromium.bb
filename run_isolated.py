@@ -1023,7 +1023,7 @@ def clean_caches(isolate_cache, named_cache_manager):
   """
   # TODO(maruel): Trim CIPD cache the same way.
   total = 0
-  with named_cache_manager.open():
+  with named_cache_manager:
     oldest_isolated = isolate_cache.get_oldest()
     oldest_named = named_cache_manager.get_oldest()
     trimmers = [
@@ -1159,7 +1159,7 @@ def create_option_parser():
   return parser
 
 
-def process_named_cache_options(parser, options):
+def process_named_cache_options(parser, options, time_fn=None):
   """Validates named cache options and returns a CacheManager."""
   if options.named_caches and not options.named_cache_root:
     parser.error('--named-cache is specified, but --named-cache-root is empty')
@@ -1183,7 +1183,7 @@ def process_named_cache_options(parser, options):
         # 3 weeks.
         max_age_secs=21*24*60*60)
     root_dir = unicode(os.path.abspath(options.named_cache_root))
-    return local_caching.CacheManager(root_dir, policies)
+    return local_caching.NamedCache(root_dir, policies, time_fn=time_fn)
   return None
 
 
@@ -1296,11 +1296,13 @@ def main(args):
   def install_named_caches(run_dir):
     # WARNING: this function depends on "options" variable defined in the outer
     # function.
+    assert unicode(run_dir), repr(run_dir)
+    assert os.path.isabs(run_dir), run_dir
     caches = [
       (os.path.join(run_dir, unicode(relpath)), name)
       for name, relpath in options.named_caches
     ]
-    with named_cache_manager.open():
+    with named_cache_manager:
       for path, name in caches:
         named_cache_manager.install(path, name)
     try:
@@ -1312,7 +1314,7 @@ def main(args):
       #
       # If the Swarming bot cannot clean up the cache, it will handle it like
       # any other bot file that could not be removed.
-      with named_cache_manager.open():
+      with named_cache_manager:
         for path, name in caches:
           try:
             named_cache_manager.uninstall(path, name)
