@@ -1219,6 +1219,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       prefs::kNoteTakingAppsLockScreenWhitelist, false /*allow_wildcards*/));
   handlers->AddHandler(
       std::make_unique<SecondaryGoogleAccountSigninPolicyHandler>());
+  handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
+      key::kUsageTimeLimit, prefs::kUsageTimeLimit, chrome_schema,
+      SCHEMA_STRICT,
+      SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
+      SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)

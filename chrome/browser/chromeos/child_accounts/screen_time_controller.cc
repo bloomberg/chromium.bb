@@ -41,9 +41,10 @@ constexpr char kTimeLimitNotifierId[] = "family-link";
 
 // static
 void ScreenTimeController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterTimePref(prefs::kFirstScreenStartTime, base::Time());
   registry->RegisterTimePref(prefs::kCurrentScreenStartTime, base::Time());
+  registry->RegisterTimePref(prefs::kFirstScreenStartTime, base::Time());
   registry->RegisterIntegerPref(prefs::kScreenTimeMinutesUsed, 0);
+  registry->RegisterDictionaryPref(prefs::kUsageTimeLimit);
 }
 
 ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
