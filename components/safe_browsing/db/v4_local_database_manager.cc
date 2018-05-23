@@ -42,7 +42,8 @@ const char* const kV3Suffix = ".V3.";
 // safely deleted from the disk. There's no overlap allowed between the files
 // on this list and the list returned by GetListInfos().
 const char* const kStoreFileNamesToDelete[] = {
-    "AnyIpMalware.store", "ChromeFilenameClientIncident.store"};
+    "AnyIpMalware.store", "ChromeFilenameClientIncident.store",
+    "UrlSuspiciousSiteId.store"};
 
 ListInfos GetListInfos() {
 // NOTE(vakh): When adding a store here, add the corresponding store-specific
@@ -85,7 +86,7 @@ ListInfos GetListInfos() {
                GetUrlCsdWhitelistId(), SB_THREAT_TYPE_CSD_WHITELIST),
       ListInfo(kSyncOnlyOnChromeBuilds, "UrlSubresourceFilter.store",
                GetUrlSubresourceFilterId(), SB_THREAT_TYPE_SUBRESOURCE_FILTER),
-      ListInfo(kSyncOnlyOnChromeBuilds, "UrlSuspiciousSiteId.store",
+      ListInfo(kSyncOnlyOnChromeBuilds, "UrlSuspiciousSite.store",
                GetUrlSuspiciousSiteId(), SB_THREAT_TYPE_SUSPICIOUS_SITE),
       ListInfo(kSyncNever, "", GetChromeUrlApiId(), SB_THREAT_TYPE_API_ABUSE),
   });
