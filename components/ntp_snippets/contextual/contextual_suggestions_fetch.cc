@@ -6,12 +6,16 @@
 
 #include "base/base64.h"
 #include "base/base64url.h"
+#include "base/command_line.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/ntp_snippets/contextual/contextual_suggestion.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
 #include "components/ntp_snippets/contextual/proto/chrome_search_api_request_context.pb.h"
 #include "components/ntp_snippets/contextual/proto/get_pivots_request.pb.h"
 #include "components/ntp_snippets/contextual/proto/get_pivots_response.pb.h"
@@ -29,8 +33,11 @@ namespace contextual_suggestions {
 
 namespace {
 
-static constexpr char kFetchEndpoint[] =
-    "https://www.google.com/httpservice/web/ExploreService/GetPivots/";
+static constexpr char kFetchEndpointUrlKey[] =
+    "contextual-suggestions-fetch-endpoint";
+static constexpr char kDefaultFetchEndpointUrl[] = "https://www.google.com";
+static constexpr char kFetchEndpointServicePath[] =
+    "/httpservice/web/ExploreService/GetPivots/";
 
 static constexpr int kNumberOfSuggestionsToFetch = 10;
 static constexpr int kMinNumberOfClusters = 1;
@@ -165,7 +172,24 @@ ContextualSuggestionsFetch::~ContextualSuggestionsFetch() = default;
 
 // static
 const std::string ContextualSuggestionsFetch::GetFetchEndpoint() {
-  return kFetchEndpoint;
+  std::string fetch_endpoint;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kFetchEndpointUrlKey)) {
+    fetch_endpoint =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            kFetchEndpointUrlKey);
+  } else {
+    fetch_endpoint = base::GetFieldTrialParamValueByFeature(
+        kContextualSuggestionsBottomSheet, kFetchEndpointUrlKey);
+  }
+
+  if (!base::StartsWith(fetch_endpoint, "https://",
+                        base::CompareCase::INSENSITIVE_ASCII)) {
+    fetch_endpoint = kDefaultFetchEndpointUrl;
+  }
+
+  fetch_endpoint.append(kFetchEndpointServicePath);
+
+  return fetch_endpoint;
 }
 
 void ContextualSuggestionsFetch::Start(
