@@ -223,33 +223,7 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded(
   }
   frame_view->ClearFrameIsScrollableDidChange();
 
-  if (frame_view && !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    if (cc::Layer* scroll_layer =
-            GraphicsLayerToCcLayer(frame_view->LayerForScrolling())) {
-      UpdateUserInputScrollable(frame_view);
-      scroll_layer->SetBounds(
-          static_cast<gfx::Size>(frame_view->ContentsSize()));
-    }
-  }
-
   UpdateUserInputScrollable(&page_->GetVisualViewport());
-
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    const FrameTree& tree = frame_view->GetPage()->MainFrame()->Tree();
-    for (const Frame* child = tree.FirstChild(); child;
-         child = child->Tree().NextSibling()) {
-      if (!child->IsLocalFrame())
-        continue;
-      LocalFrameView* frame_view = ToLocalFrame(child)->View();
-      if (!frame_view || frame_view->ShouldThrottleRendering())
-        continue;
-      if (cc::Layer* scroll_layer =
-              GraphicsLayerToCcLayer(frame_view->LayerForScrolling())) {
-        scroll_layer->SetBounds(
-            static_cast<gfx::Size>(frame_view->ContentsSize()));
-      }
-    }
-  }
 }
 
 static void ClearPositionConstraintExceptForLayer(GraphicsLayer* layer,
@@ -563,8 +537,7 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
 
   // Update the viewport layer registration if the outer viewport may have
   // changed.
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-      IsForRootLayer(scrollable_area))
+  if (IsForRootLayer(scrollable_area))
     page_->GetChromeClient().RegisterViewportLayers();
 
   CompositorAnimationTimeline* timeline;
@@ -794,9 +767,6 @@ void ScrollingCoordinator::Reset(LocalFrame* frame) {
   vertical_scrollbars_.clear();
   frame->View()->GetScrollingContext()->GetLayersWithTouchRects()->clear();
   frame->View()->ClearFrameIsScrollableDidChange();
-
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    SetShouldUpdateScrollLayerPositionOnMainThread(frame, 0);
 }
 
 // Note that in principle this could be called more often than

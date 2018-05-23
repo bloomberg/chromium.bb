@@ -416,12 +416,6 @@ LayoutRect NodeRectInRootFrame(const Node* node, bool ignore_border) {
   DCHECK(node->GetLayoutObject());
   DCHECK(!node->GetDocument().View()->NeedsLayout());
 
-  if (node->IsDocumentNode() &&
-      !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    LocalFrameView* view = ToDocument(node)->GetFrame()->View();
-    return LayoutRect(view->ContentsToRootFrame(
-        view->LayoutViewportScrollableArea()->VisibleContentRect()));
-  }
   LayoutRect rect = node->GetDocument().GetFrame()->View()->AbsoluteToRootFrame(
       node->BoundingBox());
 
