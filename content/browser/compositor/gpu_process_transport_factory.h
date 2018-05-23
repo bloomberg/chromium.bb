@@ -168,7 +168,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   scoped_refptr<viz::RasterContextProvider> shared_worker_context_provider_;
 
   bool is_gpu_compositing_disabled_ = false;
-  bool disable_display_vsync_ = false;
+  bool disable_frame_rate_limit_ = false;
   bool wait_for_all_pipeline_stages_before_draw_ = false;
 #if BUILDFLAG(ENABLE_VULKAN)
   bool shared_vulkan_context_provider_initialized_ = false;

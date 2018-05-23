@@ -1306,6 +1306,9 @@ bool GpuProcessHost::LaunchGpuProcess() {
       browser_command_line, switches::kGLSwitchesCopiedFromGpuProcessHost,
       switches::kGLSwitchesCopiedFromGpuProcessHostNumSwitches);
 
+  if (browser_command_line.HasSwitch(switches::kDisableFrameRateLimit))
+    cmd_line->AppendSwitch(switches::kDisableGpuVsync);
+
   std::vector<const char*> gpu_workarounds;
   gpu::GpuDriverBugList::AppendAllWorkarounds(&gpu_workarounds);
   cmd_line->CopySwitchesFrom(browser_command_line, gpu_workarounds.data(),

@@ -54,6 +54,7 @@
 #include "chromecast/service/cast_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "components/viz/common/switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/storage_partition.h"
@@ -228,8 +229,8 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
 #if BUILDFLAG(IS_CAST_AUDIO_ONLY)
     {switches::kDisableGpu, ""},
 #if defined(OS_ANDROID)
+    {switches::kDisableFrameRateLimit, ""},
     {switches::kDisableGLDrawingForTests, ""},
-    {switches::kDisableGpuVsync, ""},
     {switches::kDisableGpuCompositing, ""},
     {cc::switches::kDisableThreadedAnimation, ""},
 #endif  // defined(OS_ANDROID)

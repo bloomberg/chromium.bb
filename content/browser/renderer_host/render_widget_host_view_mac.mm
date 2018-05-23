@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/viz/common/switches.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/input/motion_event_web.h"
@@ -52,7 +53,6 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
-#include "ui/gl/gl_switches.h"
 
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
@@ -313,10 +313,10 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetWidgetForIme() {
 }
 
 void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
-  static bool is_vsync_disabled =
+  static bool is_frame_rate_limit_disabled =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuVsync);
-  if (!is_vsync_disabled) {
+          switches::kDisableFrameRateLimit);
+  if (!is_frame_rate_limit_disabled) {
     display_link_ = ui::DisplayLinkMac::GetForDisplay(display_.id());
     if (!display_link_.get()) {
       // Note that on some headless systems, the display link will fail to be

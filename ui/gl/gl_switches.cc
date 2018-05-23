@@ -40,12 +40,7 @@ const char kDisableD3D11[]                  = "disable-d3d11";
 // Disables use of ES3 backend (use ES2 backend instead).
 const char kDisableES3GLContext[]           = "disable-es3-gl-context";
 
-// Stop the GPU from synchronizing on the vsync before presenting.
-// We can select from the options below:
-//  beginframe: Next frame can start without any delay on cc::scheduler in
-//              renderer compositors.
-//  gpu: Disable display and browser vsync.
-//  default: Set both flags.
+// Stop the GPU from synchronizing presentation with vblank.
 const char kDisableGpuVsync[]               = "disable-gpu-vsync";
 
 // Turns on GPU logging (debug build only).
