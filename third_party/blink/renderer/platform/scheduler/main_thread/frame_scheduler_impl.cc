@@ -118,21 +118,6 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                      this,
                      &tracing_controller_,
                      VisibilityStateToString),
-      page_visibility_(kDefaultPageVisibility,
-                       "FrameScheduler.PageVisibility",
-                       this,
-                       &tracing_controller_,
-                       PageVisibilityStateToString),
-      page_frozen_(false,
-                   "FrameScheduler.PageFrozen",
-                   this,
-                   &tracing_controller_,
-                   FrozenStateToString),
-      keep_active_(main_thread_scheduler->SchedulerKeepActive(),
-                   "FrameScheduler.KeepActive",
-                   this,
-                   &tracing_controller_,
-                   KeepActiveStateToString),
       frame_paused_(false,
                     "FrameScheduler.FramePaused",
                     this,
@@ -157,6 +142,23 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                              this,
                              &tracing_controller_,
                              YesNoStateToString),
+      page_frozen_for_tracing_(parent_page_scheduler_->IsFrozen(),
+                               "FrameScheduler.PageFrozen",
+                               this,
+                               &tracing_controller_,
+                               FrozenStateToString),
+      page_visibility_for_tracing_(parent_page_scheduler_->IsPageVisible()
+                                       ? PageVisibilityState::kVisible
+                                       : PageVisibilityState::kHidden,
+                                   "FrameScheduler.PageVisibility",
+                                   this,
+                                   &tracing_controller_,
+                                   PageVisibilityStateToString),
+      page_keep_active_for_tracing_(parent_page_scheduler_->KeepActive(),
+                                    "FrameScheduler.KeepActive",
+                                    this,
+                                    &tracing_controller_,
+                                    KeepActiveStateToString),
       weak_factory_(this) {}
 
 namespace {
@@ -239,7 +241,7 @@ void FrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
     return;
   UMA_HISTOGRAM_BOOLEAN("RendererScheduler.IPC.FrameVisibility", frame_visible);
   frame_visible_ = frame_visible;
-  UpdateThrottling();
+  UpdatePolicy();
 }
 
 bool FrameSchedulerImpl::IsFrameVisible() const {
@@ -257,7 +259,7 @@ void FrameSchedulerImpl::SetCrossOrigin(bool cross_origin) {
   } else {
     frame_origin_type_ = FrameOriginType::kSameOriginFrame;
   }
-  UpdateThrottling();
+  UpdatePolicy();
 }
 
 bool FrameSchedulerImpl::IsCrossOrigin() const {
@@ -500,8 +502,7 @@ void FrameSchedulerImpl::DidCloseActiveConnection() {
 void FrameSchedulerImpl::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetBoolean("frame_visible", frame_visible_);
-  state->SetBoolean("page_visible",
-                    page_visibility_ == PageVisibilityState::kVisible);
+  state->SetBoolean("page_visible", parent_page_scheduler_->IsPageVisible());
   state->SetBoolean("cross_origin", IsCrossOrigin());
   state->SetString("frame_type",
                    frame_type_ == FrameScheduler::FrameType::kMainFrame
@@ -541,19 +542,14 @@ void FrameSchedulerImpl::AsValueInto(
   }
 }
 
-void FrameSchedulerImpl::SetPageVisibility(
+void FrameSchedulerImpl::SetPageVisibilityForTracing(
     PageVisibilityState page_visibility) {
-  DCHECK(parent_page_scheduler_);
-  if (page_visibility_ == page_visibility)
-    return;
-  page_visibility_ = page_visibility;
-  if (page_visibility_ == PageVisibilityState::kVisible)
-    page_frozen_ = false;  // visible page must not be frozen.
-  UpdatePolicy();
+  page_visibility_for_tracing_ = page_visibility;
 }
 
 bool FrameSchedulerImpl::IsPageVisible() const {
-  return page_visibility_ == PageVisibilityState::kVisible;
+  return parent_page_scheduler_ ? parent_page_scheduler_->IsPageVisible()
+                                : true;
 }
 
 void FrameSchedulerImpl::SetPaused(bool frame_paused) {
@@ -565,15 +561,12 @@ void FrameSchedulerImpl::SetPaused(bool frame_paused) {
   UpdatePolicy();
 }
 
-void FrameSchedulerImpl::SetPageFrozen(bool frozen) {
-  DCHECK(!frozen || page_visibility_ == PageVisibilityState::kHidden);
-  page_frozen_ = frozen;
-  UpdatePolicy();
+void FrameSchedulerImpl::SetPageFrozenForTracing(bool frozen) {
+  page_frozen_for_tracing_ = frozen;
 }
 
-void FrameSchedulerImpl::SetKeepActive(bool keep_active) {
-  keep_active_ = keep_active;
-  UpdatePolicy();
+void FrameSchedulerImpl::SetPageKeepActiveForTracing(bool keep_active) {
+  page_keep_active_for_tracing_ = keep_active;
 }
 
 void FrameSchedulerImpl::UpdatePolicy() {
@@ -598,11 +591,13 @@ void FrameSchedulerImpl::UpdateQueuePolicy(
     TaskQueue::QueueEnabledVoter* voter) {
   if (!queue || !voter)
     return;
+  DCHECK(parent_page_scheduler_);
   bool queue_paused = frame_paused_ && queue->CanBePaused();
-  bool queue_frozen = page_frozen_ && queue->CanBeFrozen();
+  bool queue_frozen =
+      parent_page_scheduler_->IsFrozen() && queue->CanBeFrozen();
   // Override freezing if keep-active is true.
   if (queue_frozen && !queue->FreezeWhenKeepActive())
-    queue_frozen = !keep_active_;
+    queue_frozen = !parent_page_scheduler_->KeepActive();
   voter->SetQueueEnabled(!queue_paused && !queue_frozen);
 }
 
@@ -620,8 +615,9 @@ FrameScheduler::ThrottlingState FrameSchedulerImpl::CalculateThrottlingState(
     return FrameScheduler::ThrottlingState::kNotThrottled;
 
   if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled() &&
-      parent_page_scheduler_->IsFrozen() && !keep_active_) {
-    DCHECK(page_visibility_ == PageVisibilityState::kHidden);
+      parent_page_scheduler_->IsFrozen() &&
+      !parent_page_scheduler_->KeepActive()) {
+    DCHECK(!parent_page_scheduler_->IsPageVisible());
     return FrameScheduler::ThrottlingState::kStopped;
   }
   if (type == ObserverType::kLoader &&
@@ -647,7 +643,7 @@ FrameSchedulerImpl::OnActiveConnectionCreated() {
 bool FrameSchedulerImpl::ShouldThrottleTimers() const {
   if (parent_page_scheduler_ && parent_page_scheduler_->IsAudioPlaying())
     return false;
-  if (page_visibility_ == PageVisibilityState::kHidden)
+  if (!parent_page_scheduler_->IsPageVisible())
     return true;
   return RuntimeEnabledFeatures::TimerThrottlingForHiddenFramesEnabled() &&
          !frame_visible_ && IsCrossOrigin();
