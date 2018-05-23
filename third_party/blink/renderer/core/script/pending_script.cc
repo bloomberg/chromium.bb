@@ -144,11 +144,6 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
   bool error_occurred = false;
   Script* script = GetSource(document_url, error_occurred);
 
-  // Consider as if "the script's script is null" retrospectively,
-  // if the MIME check fails, which is considered as load failure.
-  if (!CheckMIMETypeBeforeRunScript(context_document))
-    error_occurred = true;
-
   if (!error_occurred && !IsExternal()) {
     bool should_bypass_main_world_csp =
         frame->GetScriptController().ShouldBypassMainWorldCSP();
