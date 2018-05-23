@@ -1412,6 +1412,12 @@ class CORE_EXPORT Document : public ContainerNode,
 
   SlotAssignmentEngine& GetSlotAssignmentEngine();
 
+#if DCHECK_IS_ON()
+  bool IsSlotAssignmentRecalcForbidden() {
+    return slot_assignment_recalc_forbidden_recursion_depth_ > 0;
+  }
+#endif
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 
@@ -1808,6 +1814,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // the document to recorde UKM.
   std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
   int64_t ukm_source_id_;
+
+#if DCHECK_IS_ON()
+  unsigned slot_assignment_recalc_forbidden_recursion_depth_;
+#endif
 
   bool needs_to_record_ukm_outlive_time_;
 

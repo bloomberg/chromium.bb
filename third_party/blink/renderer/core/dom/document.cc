@@ -676,6 +676,9 @@ Document::Document(const DocumentInit& initializer,
       engagement_level_(mojom::blink::EngagementLevel::NONE),
       secure_context_state_(SecureContextState::kUnknown),
       ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()),
+#if DCHECK_IS_ON()
+      slot_assignment_recalc_forbidden_recursion_depth_(0),
+#endif
       needs_to_record_ukm_outlive_time_(false) {
   if (frame_) {
     DCHECK(frame_->GetPage());
@@ -2094,7 +2097,8 @@ void Document::UpdateStyleAndLayoutTree() {
     GetSlotAssignmentEngine().RecalcSlotAssignments();
   }
 #if DCHECK_IS_ON()
-  SlotAssignmentRecalcForbiddenScope forbid_slot_assignment_recalc;
+  NestingLevelIncrementer slot_assignment_recalc_forbidden_scope(
+      slot_assignment_recalc_forbidden_recursion_depth_);
 #endif
 
   if (!NeedsLayoutTreeUpdate()) {
