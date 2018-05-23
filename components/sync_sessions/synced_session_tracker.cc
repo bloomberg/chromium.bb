@@ -540,10 +540,6 @@ bool SyncedSessionTracker::GetTabNodeFromLocalTabId(SessionID tab_id,
   return reused_existing_tab;
 }
 
-bool SyncedSessionTracker::IsLocalTabNodeAssociated(int tab_node_id) const {
-  return LookupTabIdFromTabNodeId(local_session_tag_, tab_node_id).is_valid();
-}
-
 void SyncedSessionTracker::ReassociateLocalTab(int tab_node_id,
                                                SessionID new_tab_id) {
   DCHECK(!local_session_tag_.empty());
