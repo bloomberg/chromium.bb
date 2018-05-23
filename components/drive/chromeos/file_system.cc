@@ -12,8 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "components/drive/chromeos/about_resource_loader.h"
-#include "components/drive/chromeos/change_list_loader.h"
-#include "components/drive/chromeos/directory_loader.h"
+#include "components/drive/chromeos/default_corpus_change_list_loader.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system/copy_operation.h"
 #include "components/drive/chromeos/file_system/create_directory_operation.h"
@@ -330,8 +329,7 @@ FileSystem::FileSystem(PrefService* pref_service,
 FileSystem::~FileSystem() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  directory_loader_->RemoveObserver(this);
-  change_list_loader_->RemoveObserver(this);
+  default_corpus_change_list_loader_->RemoveObserver(this);
 }
 
 void FileSystem::Reset(const FileOperationCallback& callback) {
@@ -354,19 +352,14 @@ void FileSystem::ResetComponents() {
 
   about_resource_loader_ =
       std::make_unique<internal::AboutResourceLoader>(scheduler_);
-  start_page_token_loader_ = std::make_unique<internal::StartPageTokenLoader>(
-      drive::util::kTeamDriveIdDefaultCorpus, scheduler_);
   loader_controller_ = std::make_unique<internal::LoaderController>();
-  change_list_loader_ = std::make_unique<internal::ChangeListLoader>(
-      logger_, blocking_task_runner_.get(), resource_metadata_, scheduler_,
-      about_resource_loader_.get(), start_page_token_loader_.get(),
-      loader_controller_.get());
-  change_list_loader_->AddObserver(this);
-  directory_loader_ = std::make_unique<internal::DirectoryLoader>(
-      logger_, blocking_task_runner_.get(), resource_metadata_, scheduler_,
-      about_resource_loader_.get(), start_page_token_loader_.get(),
-      loader_controller_.get());
-  directory_loader_->AddObserver(this);
+
+  default_corpus_change_list_loader_ =
+      std::make_unique<internal::DefaultCorpusChangeListLoader>(
+          logger_, blocking_task_runner_.get(), resource_metadata_, scheduler_,
+          about_resource_loader_.get(), loader_controller_.get());
+
+  default_corpus_change_list_loader_->AddObserver(this);
 
   sync_client_ = std::make_unique<internal::SyncClient>(
       blocking_task_runner_.get(), delegate, scheduler_, resource_metadata_,
@@ -411,7 +404,7 @@ void FileSystem::CheckForUpdates() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << "CheckForUpdates";
 
-  change_list_loader_->CheckForUpdates(
+  default_corpus_change_list_loader_->CheckForUpdates(
       base::Bind(&FileSystem::OnUpdateChecked, weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -672,11 +665,8 @@ void FileSystem::ReadDirectory(
   if (entries_callback && hide_hosted_docs)
     entries_callback = base::Bind(&FilterHostedDocuments, entries_callback);
 
-  directory_loader_->ReadDirectory(
+  default_corpus_change_list_loader_->ReadDirectory(
       directory_path, entries_callback, completion_callback);
-
-  // Also start loading all of the user's contents.
-  change_list_loader_->LoadIfNeeded(base::DoNothing());
 }
 
 void FileSystem::GetAvailableSpace(
@@ -895,7 +885,7 @@ void FileSystem::GetMetadata(
   DCHECK(callback);
 
   FileSystemMetadata metadata;
-  metadata.refreshing = change_list_loader_->IsRefreshing();
+  metadata.refreshing = default_corpus_change_list_loader_->IsRefreshing();
 
   // Metadata related to delta update.
   metadata.last_update_check_time = last_update_check_time_;
