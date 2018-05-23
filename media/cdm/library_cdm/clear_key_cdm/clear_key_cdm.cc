@@ -37,7 +37,6 @@
 #include "base/path_service.h"
 #include "media/base/media.h"
 #include "media/cdm/library_cdm/clear_key_cdm/ffmpeg_cdm_audio_decoder.h"
-#include "media/cdm/library_cdm/clear_key_cdm/ffmpeg_cdm_video_decoder.h"
 
 #if !defined COMPONENT_BUILD
 static base::AtExitManager g_at_exit_manager;

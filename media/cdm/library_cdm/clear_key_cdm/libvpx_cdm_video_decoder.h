@@ -25,7 +25,7 @@ class LibvpxCdmVideoDecoder : public CdmVideoDecoder {
   ~LibvpxCdmVideoDecoder() override;
 
   // CdmVideoDecoder implementation.
-  bool Initialize(const cdm::VideoDecoderConfig& config) override;
+  bool Initialize(const cdm::VideoDecoderConfig_2& config) override;
   void Deinitialize() override;
   void Reset() override;
   cdm::Status DecodeFrame(const uint8_t* compressed_frame,
