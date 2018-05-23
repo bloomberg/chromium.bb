@@ -120,9 +120,9 @@ Tree link: https://github.com/PolymerElements/iron-menu-behavior/tree/v2.0.1
 
 Name: iron-meta
 Repository: https://github.com/PolymerElements/iron-meta.git
-Tree: v1.1.2
-Revision: bae96531b63ea6d4ce982f5592248aea849c0f5a
-Tree link: https://github.com/PolymerElements/iron-meta/tree/v1.1.2
+Tree: v2.1.1
+Revision: d9cd307d9faf2acc9e8f79a31d852c7851c35620
+Tree link: https://github.com/PolymerElements/iron-meta/tree/v2.1.1
 
 Name: iron-overlay-behavior
 Repository: https://github.com/PolymerElements/iron-overlay-behavior.git
