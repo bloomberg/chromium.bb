@@ -106,10 +106,40 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
       break;
     case Events::COMPONENT_UPDATE_ERROR:
       complete_event = true;
-      UMA_HISTOGRAM_ENUMERATION(
-          "Extensions.ExtensionUpdaterUpdateResults",
-          ExtensionUpdaterUpdateResult::UPDATE_ERROR,
-          ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+      {
+        update_client::CrxUpdateItem update_item;
+        if (!update_client_->GetCrxUpdateState(extension_id, &update_item)) {
+          NOTREACHED();
+        }
+        switch (update_item.error_category) {
+          case update_client::ErrorCategory::kUpdateCheck:
+            UMA_HISTOGRAM_ENUMERATION(
+                "Extensions.ExtensionUpdaterUpdateResults",
+                ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR,
+                ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+            break;
+          case update_client::ErrorCategory::kDownload:
+            UMA_HISTOGRAM_ENUMERATION(
+                "Extensions.ExtensionUpdaterUpdateResults",
+                ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR,
+                ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+            break;
+          case update_client::ErrorCategory::kUnpack:
+          case update_client::ErrorCategory::kInstall:
+            UMA_HISTOGRAM_ENUMERATION(
+                "Extensions.ExtensionUpdaterUpdateResults",
+                ExtensionUpdaterUpdateResult::UPDATE_INSTALL_ERROR,
+                ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+            break;
+          case update_client::ErrorCategory::kNone:
+          case update_client::ErrorCategory::kService:
+            UMA_HISTOGRAM_ENUMERATION(
+                "Extensions.ExtensionUpdaterUpdateResults",
+                ExtensionUpdaterUpdateResult::UPDATE_SERVICE_ERROR,
+                ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+            break;
+        }
+      }
       break;
     case Events::COMPONENT_NOT_UPDATED:
       complete_event = true;
@@ -127,15 +157,18 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
     case Events::COMPONENT_UPDATE_FOUND: {
       UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionUpdaterUpdateFoundCount",
                                1);
-      update_client::CrxUpdateItem update_item;
-      if (update_client_->GetCrxUpdateState(extension_id, &update_item)) {
-        VLOG(3) << "UpdateService::OnEvent COMPONENT_UPDATE_FOUND: "
-                << extension_id << " " << update_item.next_version.GetString();
-        UpdateDetails update_info(extension_id, update_item.next_version);
-        content::NotificationService::current()->Notify(
-            extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
-            content::NotificationService::AllBrowserContextsAndSources(),
-            content::Details<UpdateDetails>(&update_info));
+      {
+        update_client::CrxUpdateItem update_item;
+        if (update_client_->GetCrxUpdateState(extension_id, &update_item)) {
+          VLOG(3) << "UpdateService::OnEvent COMPONENT_UPDATE_FOUND: "
+                  << extension_id << " "
+                  << update_item.next_version.GetString();
+          UpdateDetails update_info(extension_id, update_item.next_version);
+          content::NotificationService::current()->Notify(
+              extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
+              content::NotificationService::AllBrowserContextsAndSources(),
+              content::Details<UpdateDetails>(&update_info));
+        }
       }
       break;
     }

@@ -15,6 +15,7 @@
 #include "base/version.h"
 #include "components/update_client/crx_downloader.h"
 #include "components/update_client/update_client.h"
+#include "components/update_client/update_client_errors.h"
 
 namespace update_client {
 
@@ -34,7 +35,7 @@ struct CrxUpdateItem {
   base::Version next_version;
   std::string next_fp;
 
-  int error_category = 0;
+  ErrorCategory error_category = ErrorCategory::kNone;
   int error_code = 0;
   int extra_code1 = 0;
 };

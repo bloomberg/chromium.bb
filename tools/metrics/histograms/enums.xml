@@ -16079,7 +16079,11 @@ Called by update_net_error_codes.py.-->
 <enum name="ExtensionUpdaterUpdateResult">
   <int value="0" label="No update"/>
   <int value="1" label="Update success"/>
-  <int value="2" label="Update error"/>
+  <int value="2" label="(DEPRECATED) Update error"/>
+  <int value="3" label="Update check error"/>
+  <int value="4" label="Update download error"/>
+  <int value="5" label="Update install error"/>
+  <int value="6" label="Update service error"/>
 </enum>
 
 <enum name="ExtensionViewType">

@@ -454,11 +454,16 @@ void ExtensionUpdater::OnExtensionDownloadFailed(
 
   switch (error) {
     case Error::CRX_FETCH_FAILED:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.ExtensionUpdaterUpdateResults",
+          ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR,
+          ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+      break;
     case Error::MANIFEST_FETCH_FAILED:
     case Error::MANIFEST_INVALID:
       UMA_HISTOGRAM_ENUMERATION(
           "Extensions.ExtensionUpdaterUpdateResults",
-          ExtensionUpdaterUpdateResult::UPDATE_ERROR,
+          ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR,
           ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
       break;
     case Error::NO_UPDATE_AVAILABLE:
@@ -624,11 +629,11 @@ void ExtensionUpdater::Observe(int type,
   // If installing this file didn't succeed, we may need to re-download it.
   const Extension* extension = content::Details<const Extension>(details).ptr();
 
-  UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionUpdaterUpdateResults",
-                            extension
-                                ? ExtensionUpdaterUpdateResult::UPDATE_SUCCESS
-                                : ExtensionUpdaterUpdateResult::UPDATE_ERROR,
-                            ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.ExtensionUpdaterUpdateResults",
+      extension ? ExtensionUpdaterUpdateResult::UPDATE_SUCCESS
+                : ExtensionUpdaterUpdateResult::UPDATE_INSTALL_ERROR,
+      ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
 
   extensions::CrxInstaller* installer =
       content::Source<extensions::CrxInstaller>(source).ptr();

@@ -177,10 +177,10 @@ TEST_F(PingManagerTest, SendPing) {
     component.next_version_ = base::Version("2.0");
     component.previous_fp_ = "prev fp";
     component.next_fp_ = "next fp";
-    component.error_category_ = 1;
+    component.error_category_ = ErrorCategory::kDownload;
     component.error_code_ = 2;
     component.extra_code1_ = -1;
-    component.diff_error_category_ = 10;
+    component.diff_error_category_ = ErrorCategory::kService;
     component.diff_error_code_ = 20;
     component.diff_extra_code1_ = -10;
     component.crx_diffurls_.push_back(GURL("http://host/path"));
@@ -196,7 +196,7 @@ TEST_F(PingManagerTest, SendPing) {
                   "<app appid=\"abc\">"
                   "<event eventtype=\"3\" eventresult=\"0\" errorcat=\"1\" "
                   "errorcode=\"2\" extracode1=\"-1\" diffresult=\"0\" "
-                  "differrorcat=\"10\" "
+                  "differrorcat=\"4\" "
                   "differrorcode=\"20\" diffextracode1=\"-10\" "
                   "previousfp=\"prev fp\" nextfp=\"next fp\" "
                   "previousversion=\"1.0\" nextversion=\"2.0\"/></app>"))
