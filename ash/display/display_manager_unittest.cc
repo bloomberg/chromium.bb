@@ -26,6 +26,7 @@
 #include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
@@ -3465,6 +3466,42 @@ TEST_F(DisplayManagerFontTest,
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_TRUE(IsTextSubpixelPositioningEnabled());
   EXPECT_EQ(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
+}
+
+namespace {
+
+// DisplayZoomTest ensures that the feature is enabled before the test begins.
+class DisplayZoomTest : public DisplayManagerTest {
+ public:
+  DisplayZoomTest() = default;
+  ~DisplayZoomTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kEnableDisplayZoomSetting);
+    DisplayManagerTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayZoomTest);
+};
+
+}  // namespace
+
+TEST_F(DisplayZoomTest, CheckFirstInitializationOfDisplayZoom) {
+  int64_t id = display_manager()->GetDisplayAt(0).id();
+  const float ui_scale = 1.25f;
+
+  display_manager()->RegisterDisplayProperty(
+      id, display::Display::ROTATE_0, ui_scale, nullptr, gfx::Size(), 1.f, 1.f);
+
+  const display::ManagedDisplayInfo& info =
+      display_manager()->GetDisplayInfo(id);
+
+  EXPECT_FLOAT_EQ(info.zoom_factor(), 1.f / ui_scale);
+  EXPECT_FLOAT_EQ(info.configured_ui_scale(), 1.f);
 }
 
 TEST_F(DisplayManagerTest, CheckInitializationOfRotationProperty) {
