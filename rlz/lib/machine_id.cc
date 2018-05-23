@@ -25,15 +25,17 @@ bool GetMachineId(std::string* machine_id) {
   // prevents the RLZ server from correlating two RLZ pings from the same
   // Chrome OS device.
   //
-  // The Id should be 50 characters long and begin with "nonce-".  Generate 22
+  // The Id should be 50 characters long and begin with "nonce-".  Generate 23
   // cryptographically random bytes, then convert to a printable string using
-  // 2 hex digits per byte for a string of length 44 characters.
-  unsigned char bytes[22];
+  // 2 hex digits per byte for a string of length 46 characters. Truncate last
+  // hex character for 45 characters.
+  unsigned char bytes[23];
   std::string str_bytes;
   base::RandBytes(bytes, sizeof(bytes));
   rlz_lib::BytesToString(bytes, sizeof(bytes), &str_bytes);
+  str_bytes.resize(45);
   machine_id->clear();
-  base::StringAppendF(machine_id, "nonce-%s", str_bytes.c_str());
+  base::StringAppendF(machine_id, "NONCE%s", str_bytes.c_str());
   DCHECK_EQ(50u, machine_id->length());
   return true;
 
