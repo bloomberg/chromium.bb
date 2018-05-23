@@ -191,11 +191,6 @@ void BrowserProcessSubThread::IOThreadCleanUp() {
   // Destroy all URLRequests started by URLFetchers.
   net::URLFetcher::CancelAll();
 
-  // If any child processes are still running, terminate them and
-  // and delete the BrowserChildProcessHost instances to release whatever
-  // IO thread only resources they are referencing.
-  BrowserChildProcessHostImpl::TerminateAll();
-
   for (BrowserChildProcessHostIterator it(PROCESS_TYPE_UTILITY); !it.Done();
        ++it) {
     UtilityProcessHost* utility_process =
@@ -214,15 +209,26 @@ void BrowserProcessSubThread::IOThreadCleanUp() {
       const int kMaxSecondsToWaitForNetworkProcess = 10;
       ChildProcessHostImpl* child_process =
           static_cast<ChildProcessHostImpl*>(it.GetHost());
+      auto& process = child_process->peer_process();
+      if (!process.IsValid())
+        continue;
+      base::ScopedAllowBaseSyncPrimitives scoped_allow_base_sync_primitives;
       const base::TimeTicks start_time = base::TimeTicks::Now();
-      child_process->peer_process().WaitForExitWithTimeout(
+      process.WaitForExitWithTimeout(
           base::TimeDelta::FromSeconds(kMaxSecondsToWaitForNetworkProcess),
           nullptr);
-      // Record time spent for the method call. Don't include failures.
-      UMA_HISTOGRAM_TIMES("NetworkService.ShutdownTime",
-                          base::TimeTicks::Now() - start_time);
+      // Record time spent for the method call.
+      base::TimeDelta network_wait_time = base::TimeTicks::Now() - start_time;
+      UMA_HISTOGRAM_TIMES("NetworkService.ShutdownTime", network_wait_time);
+      LOG(ERROR) << "Waited " << network_wait_time.InMilliseconds()
+                 << " ms for network service";
     }
   }
+
+  // If any child processes are still running, terminate them and
+  // and delete the BrowserChildProcessHost instances to release whatever
+  // IO thread only resources they are referencing.
+  BrowserChildProcessHostImpl::TerminateAll();
 
   // Unregister GpuMemoryBuffer dump provider before IO thread is shut down.
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
