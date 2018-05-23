@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/css/active_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_global_rule_set.h"
 #include "third_party/blink/renderer/core/css/document_style_sheet_collection.h"
+#include "third_party/blink/renderer/core/css/invalidation/pending_invalidations.h"
 #include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
@@ -215,7 +216,11 @@ class CORE_EXPORT StyleEngine final
 
   bool HasResolver() const { return resolver_; }
 
-  StyleInvalidator& GetStyleInvalidator() { return style_invalidator_; }
+  PendingInvalidations& GetPendingNodeInvalidations() {
+    return pending_invalidations_;
+  }
+  // Push all pending invalidations on the document.
+  void InvalidateStyle();
   bool MediaQueryAffectedByViewportChange();
   bool MediaQueryAffectedByDeviceChange();
   bool HasViewportDependentMediaQueries() {
@@ -438,7 +443,7 @@ class CORE_EXPORT StyleEngine final
   Member<ViewportStyleResolver> viewport_resolver_;
   Member<MediaQueryEvaluator> media_query_evaluator_;
   Member<CSSGlobalRuleSet> global_rule_set_;
-  StyleInvalidator style_invalidator_;
+  PendingInvalidations pending_invalidations_;
 
   // This is a set of rendered elements which had one or more of its rendered
   // children removed since the last lifecycle update. For such elements we need

@@ -20,98 +20,53 @@ class Element;
 class HTMLSlotElement;
 class InvalidationSet;
 
-// Performs deferred style invalidation for DOM subtrees.
-//
-// Suppose we have a large DOM tree with the style rules
-// .a .b { ... }
-// ...
-// and user script adds or removes class 'a' from an element.
-//
-// The cached computed styles for any of the element's
-// descendants that have class b are now outdated.
-//
-// The user script might subsequently make many more DOM
-// changes, so we don't immediately traverse the element's
-// descendants for class b.
-//
-// Instead, we record the need for this traversal by
-// calling ScheduleInvalidationSetsForNode with
-// InvalidationLists obtained from RuleFeatureSet.
-//
-// When we next read computed styles, for example from
-// user script or to render a frame, Invalidate(Document&)
-// is called to traverse the DOM and perform all
-// the pending style invalidations.
-//
-// If an element is removed from the DOM tree, we call
-// ClearInvalidation(ContainerNode&).
-//
-// When there are sibling rules and elements are added
-// or removed from the tree, we call
-// ScheduleSiblingInvalidationsAsDescendants for the
-// potentially affected siblings.
-//
-// When there are pending invalidations for an element's
-// siblings, and the element is being removed, we call
-// RescheduleSiblingInvalidationsAsDescendants to
-// reshedule the invalidations as descendant invalidations
-// on the element's parent.
+// Applies deferred style invalidation for DOM subtrees.
 //
 // See https://goo.gl/3ane6s and https://goo.gl/z0Z9gn
 // for more detailed overviews of style invalidation.
-// TODO: unify these documents into an .md file in the repo.
-
 class CORE_EXPORT StyleInvalidator {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
-  StyleInvalidator();
+  StyleInvalidator(PendingInvalidationMap&);
+
   ~StyleInvalidator();
   void Invalidate(Document&);
-  void ScheduleInvalidationSetsForNode(const InvalidationLists&,
-                                       ContainerNode&);
-  void ScheduleSiblingInvalidationsAsDescendants(
-      const InvalidationLists&,
-      ContainerNode& scheduling_parent);
-  void RescheduleSiblingInvalidationsAsDescendants(Element&);
-  void ClearInvalidation(ContainerNode&);
-
-  void Trace(blink::Visitor* visitor) {
-    visitor->Trace(pending_invalidation_map_);
-  }
 
  private:
-  struct RecursionData {
-    RecursionData()
-        : invalidate_custom_pseudo_(false),
-          whole_subtree_invalid_(false),
-          tree_boundary_crossing_(false),
-          insertion_point_crossing_(false),
-          invalidates_slotted_(false) {}
+  class SiblingData;
 
-    void PushInvalidationSet(const InvalidationSet&);
-    bool MatchesCurrentInvalidationSets(Element&) const;
-    bool MatchesCurrentInvalidationSetsAsSlotted(Element&) const;
+  void PushInvalidationSetsForContainerNode(ContainerNode&, SiblingData&);
+  void PushInvalidationSet(const InvalidationSet&);
+  bool WholeSubtreeInvalid() const { return whole_subtree_invalid_; }
 
-    bool HasInvalidationSets() const {
-      return !WholeSubtreeInvalid() && invalidation_sets_.size();
-    }
+  void Invalidate(Element&, SiblingData&);
+  void InvalidateShadowRootChildren(Element&);
+  void InvalidateChildren(Element&);
+  void InvalidateSlotDistributedElements(HTMLSlotElement&) const;
+  bool CheckInvalidationSetsAgainstElement(Element&, SiblingData&);
 
-    bool WholeSubtreeInvalid() const { return whole_subtree_invalid_; }
-    void SetWholeSubtreeInvalid() { whole_subtree_invalid_ = true; }
+  bool MatchesCurrentInvalidationSets(Element&) const;
+  bool MatchesCurrentInvalidationSetsAsSlotted(Element&) const;
 
-    bool TreeBoundaryCrossing() const { return tree_boundary_crossing_; }
-    bool InsertionPointCrossing() const { return insertion_point_crossing_; }
-    bool InvalidatesSlotted() const { return invalidates_slotted_; }
+  bool HasInvalidationSets() const {
+    return !WholeSubtreeInvalid() && invalidation_sets_.size();
+  }
 
-    using DescendantInvalidationSets = Vector<const InvalidationSet*, 16>;
-    DescendantInvalidationSets invalidation_sets_;
-    bool invalidate_custom_pseudo_;
-    bool whole_subtree_invalid_;
-    bool tree_boundary_crossing_;
-    bool insertion_point_crossing_;
-    bool invalidates_slotted_;
-  };
+  void SetWholeSubtreeInvalid() { whole_subtree_invalid_ = true; }
+
+  bool TreeBoundaryCrossing() const { return tree_boundary_crossing_; }
+  bool InsertionPointCrossing() const { return insertion_point_crossing_; }
+  bool InvalidatesSlotted() const { return invalidates_slotted_; }
+
+  PendingInvalidationMap& pending_invalidation_map_;
+  using DescendantInvalidationSets = Vector<const InvalidationSet*, 16>;
+  DescendantInvalidationSets invalidation_sets_;
+  bool invalidate_custom_pseudo_ = false;
+  bool whole_subtree_invalid_ = false;
+  bool tree_boundary_crossing_ = false;
+  bool insertion_point_crossing_ = false;
+  bool invalidates_slotted_ = false;
 
   class SiblingData {
     STACK_ALLOCATED();
@@ -120,7 +75,7 @@ class CORE_EXPORT StyleInvalidator {
     SiblingData() : element_index_(0) {}
 
     void PushInvalidationSet(const SiblingInvalidationSet&);
-    bool MatchCurrentInvalidationSets(Element&, RecursionData&);
+    bool MatchCurrentInvalidationSets(Element&, StyleInvalidator&);
 
     bool IsEmpty() const { return invalidation_entries_.IsEmpty(); }
     void Advance() { element_index_++; }
@@ -141,35 +96,28 @@ class CORE_EXPORT StyleInvalidator {
     unsigned element_index_;
   };
 
-  void Invalidate(Element&, RecursionData&, SiblingData&);
-  void InvalidateShadowRootChildren(Element&, RecursionData&);
-  void InvalidateChildren(Element&, RecursionData&);
-  void InvalidateSlotDistributedElements(HTMLSlotElement&,
-                                         const RecursionData&) const;
-  bool CheckInvalidationSetsAgainstElement(Element&,
-                                           RecursionData&,
-                                           SiblingData&);
-  void PushInvalidationSetsForContainerNode(ContainerNode&,
-                                            RecursionData&,
-                                            SiblingData&);
-
+  // Saves the state of a StyleInvalidator and automatically restores it when
+  // this object is destroyed.
   class RecursionCheckpoint {
+    STACK_ALLOCATED();
+
    public:
-    RecursionCheckpoint(RecursionData* data)
-        : prev_invalidation_sets_size_(data->invalidation_sets_.size()),
-          prev_invalidate_custom_pseudo_(data->invalidate_custom_pseudo_),
-          prev_whole_subtree_invalid_(data->whole_subtree_invalid_),
-          tree_boundary_crossing_(data->tree_boundary_crossing_),
-          insertion_point_crossing_(data->insertion_point_crossing_),
-          invalidates_slotted_(data->invalidates_slotted_),
-          data_(data) {}
+    RecursionCheckpoint(StyleInvalidator* invalidator)
+        : prev_invalidation_sets_size_(invalidator->invalidation_sets_.size()),
+          prev_invalidate_custom_pseudo_(
+              invalidator->invalidate_custom_pseudo_),
+          prev_whole_subtree_invalid_(invalidator->whole_subtree_invalid_),
+          tree_boundary_crossing_(invalidator->tree_boundary_crossing_),
+          insertion_point_crossing_(invalidator->insertion_point_crossing_),
+          invalidates_slotted_(invalidator->invalidates_slotted_),
+          invalidator_(invalidator) {}
     ~RecursionCheckpoint() {
-      data_->invalidation_sets_.Shrink(prev_invalidation_sets_size_);
-      data_->invalidate_custom_pseudo_ = prev_invalidate_custom_pseudo_;
-      data_->whole_subtree_invalid_ = prev_whole_subtree_invalid_;
-      data_->tree_boundary_crossing_ = tree_boundary_crossing_;
-      data_->insertion_point_crossing_ = insertion_point_crossing_;
-      data_->invalidates_slotted_ = invalidates_slotted_;
+      invalidator_->invalidation_sets_.Shrink(prev_invalidation_sets_size_);
+      invalidator_->invalidate_custom_pseudo_ = prev_invalidate_custom_pseudo_;
+      invalidator_->whole_subtree_invalid_ = prev_whole_subtree_invalid_;
+      invalidator_->tree_boundary_crossing_ = tree_boundary_crossing_;
+      invalidator_->insertion_point_crossing_ = insertion_point_crossing_;
+      invalidator_->invalidates_slotted_ = invalidates_slotted_;
     }
 
    private:
@@ -179,16 +127,8 @@ class CORE_EXPORT StyleInvalidator {
     bool tree_boundary_crossing_;
     bool insertion_point_crossing_;
     bool invalidates_slotted_;
-    RecursionData* data_;
+    StyleInvalidator* invalidator_;
   };
-
-  using PendingInvalidationMap =
-      HeapHashMap<Member<ContainerNode>, PendingInvalidations>;
-
-  PendingInvalidations& EnsurePendingInvalidations(ContainerNode&);
-
-  PendingInvalidationMap pending_invalidation_map_;
-  DISALLOW_COPY_AND_ASSIGN(StyleInvalidator);
 };
 
 }  // namespace blink

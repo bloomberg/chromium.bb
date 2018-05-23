@@ -1870,7 +1870,7 @@ void Document::UpdateStyleInvalidationIfNeeded() {
   if (!ChildNeedsStyleInvalidation() && !NeedsStyleInvalidation())
     return;
   TRACE_EVENT0("blink", "Document::updateStyleInvalidationIfNeeded");
-  GetStyleEngine().GetStyleInvalidator().Invalidate(*this);
+  GetStyleEngine().InvalidateStyle();
 }
 
 void Document::SetupFontBuilder(ComputedStyle& document_style) {

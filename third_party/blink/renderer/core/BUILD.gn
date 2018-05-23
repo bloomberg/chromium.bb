@@ -1673,7 +1673,7 @@ jumbo_source_set("unit_tests") {
     "css/drag_update_test.cc",
     "css/font_face_cache_test.cc",
     "css/invalidation/invalidation_set_test.cc",
-    "css/invalidation/style_invalidator_test.cc",
+    "css/invalidation/pending_invalidations_test.cc",
     "css/media_query_evaluator_test.cc",
     "css/media_query_list_test.cc",
     "css/media_query_matcher_test.cc",

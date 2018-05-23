@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
+#include "third_party/blink/renderer/core/css/invalidation/pending_invalidations.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -12,25 +12,25 @@
 
 namespace blink {
 
-class StyleInvalidatorTest : public testing::Test {
+class PendingInvalidationsTest : public testing::Test {
  protected:
   void SetUp() override;
 
   Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
   StyleEngine& GetStyleEngine() { return GetDocument().GetStyleEngine(); }
-  StyleInvalidator& GetStyleInvalidator() {
-    return GetDocument().GetStyleEngine().GetStyleInvalidator();
+  PendingInvalidations& GetPendingNodeInvalidations() {
+    return GetDocument().GetStyleEngine().GetPendingNodeInvalidations();
   }
 
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
-void StyleInvalidatorTest::SetUp() {
+void PendingInvalidationsTest::SetUp() {
   dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
 }
 
-TEST_F(StyleInvalidatorTest, ScheduleOnDocumentNode) {
+TEST_F(PendingInvalidationsTest, ScheduleOnDocumentNode) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<div id='d'></div><i id='i'></i><span></span>");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -44,12 +44,13 @@ TEST_F(StyleInvalidatorTest, ScheduleOnDocumentNode) {
 
   InvalidationLists lists;
   lists.descendants.push_back(set);
-  GetStyleInvalidator().ScheduleInvalidationSetsForNode(lists, GetDocument());
+  GetPendingNodeInvalidations().ScheduleInvalidationSetsForNode(lists,
+                                                                GetDocument());
 
   EXPECT_TRUE(GetDocument().NeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
 
-  GetStyleInvalidator().Invalidate(GetDocument());
+  GetStyleEngine().InvalidateStyle();
 
   EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());

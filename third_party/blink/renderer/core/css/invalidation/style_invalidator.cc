@@ -29,160 +29,27 @@ static const unsigned char* g_style_invalidator_tracing_enabled = nullptr;
     TRACE_STYLE_INVALIDATOR_INVALIDATION(element, reason);
 
 void StyleInvalidator::Invalidate(Document& document) {
-  RecursionData recursion_data;
   SiblingData sibling_data;
   if (UNLIKELY(document.NeedsStyleInvalidation()))
-    PushInvalidationSetsForContainerNode(document, recursion_data,
-                                         sibling_data);
+    PushInvalidationSetsForContainerNode(document, sibling_data);
   if (Element* document_element = document.documentElement())
-    Invalidate(*document_element, recursion_data, sibling_data);
+    Invalidate(*document_element, sibling_data);
   document.ClearChildNeedsStyleInvalidation();
   document.ClearNeedsStyleInvalidation();
   pending_invalidation_map_.clear();
 }
 
-void StyleInvalidator::ScheduleInvalidationSetsForNode(
-    const InvalidationLists& invalidation_lists,
-    ContainerNode& node) {
-  DCHECK(node.InActiveDocument());
-  bool requires_descendant_invalidation = false;
-
-  if (node.GetStyleChangeType() < kSubtreeStyleChange) {
-    for (auto& invalidation_set : invalidation_lists.descendants) {
-      if (invalidation_set->WholeSubtreeInvalid()) {
-        node.SetNeedsStyleRecalc(kSubtreeStyleChange,
-                                 StyleChangeReasonForTracing::Create(
-                                     StyleChangeReason::kStyleInvalidator));
-        requires_descendant_invalidation = false;
-        break;
-      }
-
-      if (invalidation_set->InvalidatesSelf())
-        node.SetNeedsStyleRecalc(kLocalStyleChange,
-                                 StyleChangeReasonForTracing::Create(
-                                     StyleChangeReason::kStyleInvalidator));
-
-      if (!invalidation_set->IsEmpty())
-        requires_descendant_invalidation = true;
-    }
-  }
-
-  if (!requires_descendant_invalidation &&
-      (invalidation_lists.siblings.IsEmpty() || !node.nextSibling()))
-    return;
-
-  node.SetNeedsStyleInvalidation();
-
-  PendingInvalidations& pending_invalidations =
-      EnsurePendingInvalidations(node);
-  if (node.nextSibling()) {
-    for (auto& invalidation_set : invalidation_lists.siblings) {
-      if (pending_invalidations.Siblings().Contains(invalidation_set))
-        continue;
-      pending_invalidations.Siblings().push_back(invalidation_set);
-    }
-  }
-
-  if (!requires_descendant_invalidation)
-    return;
-
-  for (auto& invalidation_set : invalidation_lists.descendants) {
-    DCHECK(!invalidation_set->WholeSubtreeInvalid());
-    if (invalidation_set->IsEmpty())
-      continue;
-    if (pending_invalidations.Descendants().Contains(invalidation_set))
-      continue;
-    pending_invalidations.Descendants().push_back(invalidation_set);
-  }
-}
-
-void StyleInvalidator::ScheduleSiblingInvalidationsAsDescendants(
-    const InvalidationLists& invalidation_lists,
-    ContainerNode& scheduling_parent) {
-  DCHECK(invalidation_lists.descendants.IsEmpty());
-
-  if (invalidation_lists.siblings.IsEmpty())
-    return;
-
-  PendingInvalidations& pending_invalidations =
-      EnsurePendingInvalidations(scheduling_parent);
-
-  scheduling_parent.SetNeedsStyleInvalidation();
-
-  for (auto& invalidation_set : invalidation_lists.siblings) {
-    if (invalidation_set->WholeSubtreeInvalid()) {
-      scheduling_parent.SetNeedsStyleRecalc(
-          kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                   StyleChangeReason::kStyleInvalidator));
-      return;
-    }
-    if (invalidation_set->InvalidatesSelf() &&
-        !pending_invalidations.Descendants().Contains(invalidation_set))
-      pending_invalidations.Descendants().push_back(invalidation_set);
-
-    if (DescendantInvalidationSet* descendants =
-            ToSiblingInvalidationSet(*invalidation_set).SiblingDescendants()) {
-      if (descendants->WholeSubtreeInvalid()) {
-        scheduling_parent.SetNeedsStyleRecalc(
-            kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                     StyleChangeReason::kStyleInvalidator));
-        return;
-      }
-      if (!pending_invalidations.Descendants().Contains(descendants))
-        pending_invalidations.Descendants().push_back(descendants);
-    }
-  }
-}
-
-void StyleInvalidator::RescheduleSiblingInvalidationsAsDescendants(
-    Element& element) {
-  DCHECK(element.parentNode());
-  auto pending_invalidations_iterator =
-      pending_invalidation_map_.find(&element);
-  if (pending_invalidations_iterator == pending_invalidation_map_.end() ||
-      pending_invalidations_iterator->value.Siblings().IsEmpty())
-    return;
-  PendingInvalidations& pending_invalidations =
-      pending_invalidations_iterator->value;
-
-  InvalidationLists invalidation_lists;
-  for (const auto& invalidation_set : pending_invalidations.Siblings()) {
-    invalidation_lists.descendants.push_back(invalidation_set);
-    if (DescendantInvalidationSet* descendants =
-            ToSiblingInvalidationSet(*invalidation_set).SiblingDescendants()) {
-      invalidation_lists.descendants.push_back(descendants);
-    }
-  }
-  ScheduleInvalidationSetsForNode(invalidation_lists, *element.parentNode());
-}
-
-void StyleInvalidator::ClearInvalidation(ContainerNode& node) {
-  if (!node.NeedsStyleInvalidation())
-    return;
-  pending_invalidation_map_.erase(&node);
-  node.ClearNeedsStyleInvalidation();
-}
-
-PendingInvalidations& StyleInvalidator::EnsurePendingInvalidations(
-    ContainerNode& node) {
-  auto it = pending_invalidation_map_.find(&node);
-  if (it != pending_invalidation_map_.end())
-    return it->value;
-  PendingInvalidationMap::AddResult add_result =
-      pending_invalidation_map_.insert(&node, PendingInvalidations());
-  return add_result.stored_value->value;
-}
-
-StyleInvalidator::StyleInvalidator() {
+StyleInvalidator::StyleInvalidator(
+    PendingInvalidationMap& pending_invalidation_map)
+    : pending_invalidation_map_(pending_invalidation_map) {
   g_style_invalidator_tracing_enabled =
       TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
           TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"));
-  InvalidationSet::CacheTracingFlag();
 }
 
 StyleInvalidator::~StyleInvalidator() = default;
 
-void StyleInvalidator::RecursionData::PushInvalidationSet(
+void StyleInvalidator::PushInvalidationSet(
     const InvalidationSet& invalidation_set) {
   DCHECK(!whole_subtree_invalid_);
   DCHECK(!invalidation_set.WholeSubtreeInvalid());
@@ -198,8 +65,7 @@ void StyleInvalidator::RecursionData::PushInvalidationSet(
   invalidation_sets_.push_back(&invalidation_set);
 }
 
-ALWAYS_INLINE bool
-StyleInvalidator::RecursionData::MatchesCurrentInvalidationSets(
+ALWAYS_INLINE bool StyleInvalidator::MatchesCurrentInvalidationSets(
     Element& element) const {
   if (invalidate_custom_pseudo_ && element.ShadowPseudoId() != g_null_atom) {
     TRACE_STYLE_INVALIDATOR_INVALIDATION_IF_ENABLED(element,
@@ -218,7 +84,7 @@ StyleInvalidator::RecursionData::MatchesCurrentInvalidationSets(
   return false;
 }
 
-bool StyleInvalidator::RecursionData::MatchesCurrentInvalidationSetsAsSlotted(
+bool StyleInvalidator::MatchesCurrentInvalidationSetsAsSlotted(
     Element& element) const {
   DCHECK(invalidates_slotted_);
 
@@ -244,9 +110,9 @@ void StyleInvalidator::SiblingData::PushInvalidationSet(
 
 bool StyleInvalidator::SiblingData::MatchCurrentInvalidationSets(
     Element& element,
-    RecursionData& recursion_data) {
+    StyleInvalidator& style_invalidator) {
   bool this_element_needs_style_recalc = false;
-  DCHECK(!recursion_data.WholeSubtreeInvalid());
+  DCHECK(!style_invalidator.WholeSubtreeInvalid());
 
   unsigned index = 0;
   while (index < invalidation_entries_.size()) {
@@ -277,7 +143,7 @@ bool StyleInvalidator::SiblingData::MatchCurrentInvalidationSets(
       }
 
       if (!descendants->IsEmpty())
-        recursion_data.PushInvalidationSet(*descendants);
+        style_invalidator.PushInvalidationSet(*descendants);
     }
   }
   return this_element_needs_style_recalc;
@@ -285,11 +151,10 @@ bool StyleInvalidator::SiblingData::MatchCurrentInvalidationSets(
 
 void StyleInvalidator::PushInvalidationSetsForContainerNode(
     ContainerNode& node,
-    RecursionData& recursion_data,
     SiblingData& sibling_data) {
   auto pending_invalidations_iterator = pending_invalidation_map_.find(&node);
   DCHECK(pending_invalidations_iterator != pending_invalidation_map_.end());
-  PendingInvalidations& pending_invalidations =
+  NodeInvalidationSets& pending_invalidations =
       pending_invalidations_iterator->value;
 
   for (const auto& invalidation_set : pending_invalidations.Siblings()) {
@@ -304,7 +169,7 @@ void StyleInvalidator::PushInvalidationSetsForContainerNode(
   if (!pending_invalidations.Descendants().IsEmpty()) {
     for (const auto& invalidation_set : pending_invalidations.Descendants()) {
       CHECK(invalidation_set->IsAlive());
-      recursion_data.PushInvalidationSet(*invalidation_set);
+      PushInvalidationSet(*invalidation_set);
     }
     if (UNLIKELY(*g_style_invalidator_tracing_enabled)) {
       TRACE_EVENT_INSTANT1(
@@ -319,107 +184,96 @@ void StyleInvalidator::PushInvalidationSetsForContainerNode(
 
 ALWAYS_INLINE bool StyleInvalidator::CheckInvalidationSetsAgainstElement(
     Element& element,
-    RecursionData& recursion_data,
     SiblingData& sibling_data) {
-  if (recursion_data.WholeSubtreeInvalid())
+  if (WholeSubtreeInvalid())
     return false;
 
   bool this_element_needs_style_recalc = false;
   if (element.GetStyleChangeType() >= kSubtreeStyleChange) {
-    recursion_data.SetWholeSubtreeInvalid();
+    SetWholeSubtreeInvalid();
   } else {
-    this_element_needs_style_recalc =
-        recursion_data.MatchesCurrentInvalidationSets(element);
-    if (UNLIKELY(!sibling_data.IsEmpty()))
+    this_element_needs_style_recalc = MatchesCurrentInvalidationSets(element);
+    if (UNLIKELY(!sibling_data.IsEmpty())) {
       this_element_needs_style_recalc |=
-          sibling_data.MatchCurrentInvalidationSets(element, recursion_data);
+          sibling_data.MatchCurrentInvalidationSets(element, *this);
+    }
   }
 
   if (UNLIKELY(element.NeedsStyleInvalidation()))
-    PushInvalidationSetsForContainerNode(element, recursion_data, sibling_data);
+    PushInvalidationSetsForContainerNode(element, sibling_data);
 
   return this_element_needs_style_recalc;
 }
 
-void StyleInvalidator::InvalidateShadowRootChildren(
-    Element& element,
-    RecursionData& recursion_data) {
+void StyleInvalidator::InvalidateShadowRootChildren(Element& element) {
   if (ShadowRoot* root = element.GetShadowRoot()) {
-    if (!recursion_data.TreeBoundaryCrossing() &&
-        !root->ChildNeedsStyleInvalidation() && !root->NeedsStyleInvalidation())
+    if (!TreeBoundaryCrossing() && !root->ChildNeedsStyleInvalidation() &&
+        !root->NeedsStyleInvalidation())
       return;
-    RecursionCheckpoint checkpoint(&recursion_data);
+    RecursionCheckpoint checkpoint(this);
     SiblingData sibling_data;
-    if (!recursion_data.WholeSubtreeInvalid()) {
+    if (!WholeSubtreeInvalid()) {
       if (UNLIKELY(root->NeedsStyleInvalidation())) {
-        PushInvalidationSetsForContainerNode(*root, recursion_data,
-                                             sibling_data);
+        PushInvalidationSetsForContainerNode(*root, sibling_data);
       }
     }
     for (Element* child = ElementTraversal::FirstChild(*root); child;
          child = ElementTraversal::NextSibling(*child)) {
-      Invalidate(*child, recursion_data, sibling_data);
+      Invalidate(*child, sibling_data);
     }
     root->ClearChildNeedsStyleInvalidation();
     root->ClearNeedsStyleInvalidation();
   }
 }
 
-void StyleInvalidator::InvalidateChildren(Element& element,
-                                          RecursionData& recursion_data) {
+void StyleInvalidator::InvalidateChildren(Element& element) {
   SiblingData sibling_data;
   if (UNLIKELY(!!element.GetShadowRoot())) {
-    InvalidateShadowRootChildren(element, recursion_data);
+    InvalidateShadowRootChildren(element);
   }
 
   for (Element* child = ElementTraversal::FirstChild(element); child;
        child = ElementTraversal::NextSibling(*child)) {
-    Invalidate(*child, recursion_data, sibling_data);
+    Invalidate(*child, sibling_data);
   }
 }
 
-void StyleInvalidator::Invalidate(Element& element,
-                                  RecursionData& recursion_data,
-                                  SiblingData& sibling_data) {
+void StyleInvalidator::Invalidate(Element& element, SiblingData& sibling_data) {
   sibling_data.Advance();
-  RecursionCheckpoint checkpoint(&recursion_data);
+  RecursionCheckpoint checkpoint(this);
 
-  bool this_element_needs_style_recalc = CheckInvalidationSetsAgainstElement(
-      element, recursion_data, sibling_data);
+  bool this_element_needs_style_recalc =
+      CheckInvalidationSetsAgainstElement(element, sibling_data);
 
-  if (recursion_data.HasInvalidationSets() ||
-      element.ChildNeedsStyleInvalidation())
-    InvalidateChildren(element, recursion_data);
+  if (HasInvalidationSets() || element.ChildNeedsStyleInvalidation())
+    InvalidateChildren(element);
 
   if (this_element_needs_style_recalc) {
-    DCHECK(!recursion_data.WholeSubtreeInvalid());
+    DCHECK(!WholeSubtreeInvalid());
     element.SetNeedsStyleRecalc(kLocalStyleChange,
                                 StyleChangeReasonForTracing::Create(
                                     StyleChangeReason::kStyleInvalidator));
   }
 
-  if (recursion_data.InsertionPointCrossing() && element.IsV0InsertionPoint())
+  if (InsertionPointCrossing() && element.IsV0InsertionPoint())
     element.SetNeedsStyleRecalc(kSubtreeStyleChange,
                                 StyleChangeReasonForTracing::Create(
                                     StyleChangeReason::kStyleInvalidator));
-  if (recursion_data.InvalidatesSlotted() && IsHTMLSlotElement(element))
-    InvalidateSlotDistributedElements(ToHTMLSlotElement(element),
-                                      recursion_data);
+  if (InvalidatesSlotted() && IsHTMLSlotElement(element))
+    InvalidateSlotDistributedElements(ToHTMLSlotElement(element));
 
   element.ClearChildNeedsStyleInvalidation();
   element.ClearNeedsStyleInvalidation();
 }
 
 void StyleInvalidator::InvalidateSlotDistributedElements(
-    HTMLSlotElement& slot,
-    const RecursionData& recursion_data) const {
+    HTMLSlotElement& slot) const {
   for (auto& distributed_node : slot.FlattenedAssignedNodes()) {
     if (distributed_node->NeedsStyleRecalc())
       continue;
     if (!distributed_node->IsElementNode())
       continue;
-    if (recursion_data.MatchesCurrentInvalidationSetsAsSlotted(
-            ToElement(*distributed_node)))
+    if (MatchesCurrentInvalidationSetsAsSlotted(ToElement(*distributed_node)))
       distributed_node->SetNeedsStyleRecalc(
           kLocalStyleChange, StyleChangeReasonForTracing::Create(
                                  StyleChangeReason::kStyleInvalidator));
