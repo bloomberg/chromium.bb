@@ -28,7 +28,7 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
  public:
   SoftwareRenderer(const RendererSettings* settings,
                    OutputSurface* output_surface,
-                   cc::DisplayResourceProvider* resource_provider);
+                   DisplayResourceProvider* resource_provider);
 
   ~SoftwareRenderer() override;
 

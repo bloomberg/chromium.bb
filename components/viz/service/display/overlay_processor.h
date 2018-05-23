@@ -9,10 +9,10 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "cc/output/overlay_candidate.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/service/display/ca_layer_overlay.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
+#include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace cc {
@@ -44,9 +44,9 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
     // and adds any additional passes necessary to represent overlays to
     // |render_passes|.
     virtual bool Attempt(const SkMatrix44& output_color_matrix,
-                         cc::DisplayResourceProvider* resource_provider,
+                         DisplayResourceProvider* resource_provider,
                          RenderPass* render_pass,
-                         cc::OverlayCandidateList* candidates,
+                         OverlayCandidateList* candidates,
                          std::vector<gfx::Rect>* content_bounds) = 0;
 
     virtual StrategyType GetUMAEnum() const;
@@ -66,12 +66,12 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   // Attempt to replace quads from the specified root render pass with overlays
   // or CALayers. This must be called every frame.
   void ProcessForOverlays(
-      cc::DisplayResourceProvider* resource_provider,
+      DisplayResourceProvider* resource_provider,
       RenderPassList* render_passes,
       const SkMatrix44& output_color_matrix,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_background_filters,
-      cc::OverlayCandidateList* overlay_candidates,
+      OverlayCandidateList* overlay_candidates,
       CALayerOverlayList* ca_layer_overlays,
       DCLayerOverlayList* dc_layer_overlays,
       gfx::Rect* damage_rect,
@@ -85,23 +85,23 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
 
  private:
   bool ProcessForCALayers(
-      cc::DisplayResourceProvider* resource_provider,
+      DisplayResourceProvider* resource_provider,
       RenderPass* render_pass,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_background_filters,
-      cc::OverlayCandidateList* overlay_candidates,
+      OverlayCandidateList* overlay_candidates,
       CALayerOverlayList* ca_layer_overlays,
       gfx::Rect* damage_rect);
   bool ProcessForDCLayers(
-      cc::DisplayResourceProvider* resource_provider,
+      DisplayResourceProvider* resource_provider,
       RenderPassList* render_passes,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_background_filters,
-      cc::OverlayCandidateList* overlay_candidates,
+      OverlayCandidateList* overlay_candidates,
       DCLayerOverlayList* dc_layer_overlays,
       gfx::Rect* damage_rect);
   // Update |damage_rect| by removing damage casued by |candidates|.
-  void UpdateDamageRect(cc::OverlayCandidateList* candidates,
+  void UpdateDamageRect(OverlayCandidateList* candidates,
                         const gfx::Rect& previous_frame_underlay_rect,
                         gfx::Rect* damage_rect);
 

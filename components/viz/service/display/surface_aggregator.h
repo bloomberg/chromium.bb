@@ -19,12 +19,9 @@
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/color_space.h"
 
-namespace cc {
-class DisplayResourceProvider;
-}  // namespace cc
-
 namespace viz {
 class CompositorFrame;
+class DisplayResourceProvider;
 class Surface;
 class SurfaceClient;
 class SurfaceDrawQuad;
@@ -36,7 +33,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   using FrameSinkIdMap = base::flat_map<FrameSinkId, LocalSurfaceId>;
 
   SurfaceAggregator(SurfaceManager* manager,
-                    cc::DisplayResourceProvider* provider,
+                    DisplayResourceProvider* provider,
                     bool aggregate_only_damaged);
   ~SurfaceAggregator();
 
@@ -202,7 +199,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                              const std::vector<ReturnedResource>& resources);
 
   SurfaceManager* manager_;
-  cc::DisplayResourceProvider* provider_;
+  DisplayResourceProvider* provider_;
 
   // Every Surface has its own RenderPass ID namespace. This structure maps
   // each source (SurfaceId, RenderPass id) to a unified ID namespace that's

@@ -11,7 +11,7 @@ namespace cc {
 const std::unordered_map<viz::ResourceId, viz::ResourceId>&
 SendResourceAndGetChildToParentMap(
     const std::vector<viz::ResourceId>& resource_ids,
-    DisplayResourceProvider* resource_provider,
+    viz::DisplayResourceProvider* resource_provider,
     LayerTreeResourceProvider* child_resource_provider,
     viz::ContextProvider* child_context_provider) {
   DCHECK(resource_provider);

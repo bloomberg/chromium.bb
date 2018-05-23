@@ -17,7 +17,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
-#include "cc/resources/display_resource_provider.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -32,6 +31,7 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/test/fake_output_surface.h"
@@ -465,13 +465,13 @@ class FakeRendererGL : public GLRenderer {
  public:
   FakeRendererGL(const RendererSettings* settings,
                  OutputSurface* output_surface,
-                 cc::DisplayResourceProvider* resource_provider)
+                 DisplayResourceProvider* resource_provider)
       : GLRenderer(settings, output_surface, resource_provider, nullptr) {}
 
   FakeRendererGL(
       const RendererSettings* settings,
       OutputSurface* output_surface,
-      cc::DisplayResourceProvider* resource_provider,
+      DisplayResourceProvider* resource_provider,
       scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
       : GLRenderer(settings,
                    output_surface,
@@ -515,7 +515,7 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
 
@@ -633,7 +633,7 @@ class GLRendererShaderTest : public GLRendererTest {
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProvider> resource_provider_;
   scoped_refptr<TestContextProvider> child_context_provider_;
   std::unique_ptr<cc::LayerTreeResourceProvider> child_resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
@@ -774,7 +774,7 @@ TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
       std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), shared_bitmap_manager.get());
 
@@ -812,7 +812,7 @@ TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
       std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), shared_bitmap_manager.get());
 
@@ -848,7 +848,7 @@ TEST_F(GLRendererTest, OpaqueBackground) {
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
       std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), shared_bitmap_manager.get());
 
@@ -893,7 +893,7 @@ TEST_F(GLRendererTest, TransparentBackground) {
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
       std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), shared_bitmap_manager.get());
 
@@ -931,7 +931,7 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
       std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), shared_bitmap_manager.get());
 
@@ -989,7 +989,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
       std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), shared_bitmap_manager.get());
 
@@ -1084,7 +1084,7 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
       std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), shared_bitmap_manager.get());
 
@@ -1172,7 +1172,7 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
       std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), shared_bitmap_manager.get());
 
@@ -1245,7 +1245,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
       std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), shared_bitmap_manager.get());
 
@@ -1445,7 +1445,7 @@ TEST_F(GLRendererTest, NoResourceLeak) {
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
       std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), shared_bitmap_manager.get());
 
@@ -1507,7 +1507,7 @@ class GLRendererSkipTest : public GLRendererTest {
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
 
@@ -1580,7 +1580,7 @@ TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
 
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
       std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), shared_bitmap_manager.get());
 
@@ -1996,7 +1996,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
   OutputSurfaceMockGLES2Interface* gl_ = nullptr;
   std::unique_ptr<StrictMock<MockOutputSurface>> output_surface_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
 
@@ -2021,9 +2021,9 @@ class TestOverlayProcessor : public OverlayProcessor {
 
     MOCK_METHOD5(Attempt,
                  bool(const SkMatrix44& output_color_matrix,
-                      cc::DisplayResourceProvider* resource_provider,
+                      DisplayResourceProvider* resource_provider,
                       RenderPass* render_pass,
-                      cc::OverlayCandidateList* candidates,
+                      OverlayCandidateList* candidates,
                       std::vector<gfx::Rect>* content_bounds));
   };
 
@@ -2041,7 +2041,7 @@ class TestOverlayProcessor : public OverlayProcessor {
     // to be traditionally composited. Candidates with |overlay_handled| set to
     // true must also have their |display_rect| converted to integer
     // coordinates if necessary.
-    void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override {}
+    void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
   };
 
   explicit TestOverlayProcessor(OutputSurface* surface)
@@ -2211,9 +2211,9 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
     bool AllowCALayerOverlays() override { return false; }
     bool AllowDCLayerOverlays() override { return false; }
 
-    void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override {
+    void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
       ASSERT_EQ(1U, surfaces->size());
-      cc::OverlayCandidate& candidate = surfaces->back();
+      OverlayCandidate& candidate = surfaces->back();
       candidate.overlay_handled = true;
     }
   };
@@ -2384,7 +2384,7 @@ TEST_F(GLRendererTest, OutputColorMatrixTest) {
       FakeOutputSurface::Create3d(std::move(provider)));
   cc::FakeOutputSurfaceClient output_surface_client;
   output_surface->BindToClient(&output_surface_client);
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), nullptr);
   RendererSettings settings;
@@ -2470,7 +2470,7 @@ TEST_F(GLRendererTest, GenerateMipmap) {
       FakeOutputSurface::Create3d(std::move(provider)));
   cc::FakeOutputSurfaceClient output_surface_client;
   output_surface->BindToClient(&output_surface_client);
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), nullptr);
   RendererSettings settings;
@@ -2532,7 +2532,7 @@ class GLRendererPartialSwapTest : public GLRendererTest {
         FakeOutputSurface::Create3d(std::move(provider)));
     output_surface->BindToClient(&output_surface_client);
 
-    std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+    std::unique_ptr<DisplayResourceProvider> resource_provider =
         cc::FakeResourceProvider::CreateDisplayResourceProvider(
             output_surface->context_provider(), nullptr);
 
@@ -2626,7 +2626,7 @@ class DCLayerValidator : public OverlayCandidateValidator {
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
   bool AllowCALayerOverlays() override { return false; }
   bool AllowDCLayerOverlays() override { return true; }
-  void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override {}
+  void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
 };
 
 // Test that SetEnableDCLayersCHROMIUM is properly called when enabling
@@ -2781,7 +2781,7 @@ class GLRendererWithMockContextTest : public ::testing::Test {
   cc::FakeOutputSurfaceClient output_surface_client_;
   MockContextSupport* context_support_ptr_;
   std::unique_ptr<OutputSurface> output_surface_;
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<GLRenderer> renderer_;
 };
 
@@ -2805,9 +2805,9 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
     ~Strategy() override = default;
 
     bool Attempt(const SkMatrix44& output_color_matrix,
-                 cc::DisplayResourceProvider* resource_provider,
+                 DisplayResourceProvider* resource_provider,
                  RenderPass* render_pass,
-                 cc::OverlayCandidateList* candidates,
+                 OverlayCandidateList* candidates,
                  std::vector<gfx::Rect>* content_bounds) override {
       content_bounds->insert(content_bounds->end(), content_bounds_.begin(),
                              content_bounds_.end());
@@ -2847,7 +2847,7 @@ class GLRendererSwapWithBoundsTest : public GLRendererTest {
         FakeOutputSurface::Create3d(std::move(provider)));
     output_surface->BindToClient(&output_surface_client);
 
-    std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+    std::unique_ptr<DisplayResourceProvider> resource_provider =
         cc::FakeResourceProvider::CreateDisplayResourceProvider(
             output_surface->context_provider(), nullptr);
 
@@ -2900,7 +2900,7 @@ class CALayerValidator : public OverlayCandidateValidator {
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
   bool AllowCALayerOverlays() override { return true; }
   bool AllowDCLayerOverlays() override { return false; }
-  void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override {}
+  void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
 };
 
 class MockCALayerGLES2Interface : public TestGLES2Interface {
@@ -2981,7 +2981,7 @@ class CALayerGLRendererTest : public GLRendererTest {
   MockCALayerGLES2Interface* gl_;
   CALayerValidator validator_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
-  std::unique_ptr<cc::DisplayResourceProvider> display_resource_provider_;
+  std::unique_ptr<DisplayResourceProvider> display_resource_provider_;
   std::unique_ptr<RendererSettings> settings_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
@@ -3756,7 +3756,7 @@ class FramebufferWatchingGLRenderer : public FakeRendererGL {
  public:
   FramebufferWatchingGLRenderer(RendererSettings* settings,
                                 OutputSurface* output_surface,
-                                cc::DisplayResourceProvider* resource_provider)
+                                DisplayResourceProvider* resource_provider)
       : FakeRendererGL(settings, output_surface, resource_provider) {}
 
   void BindFramebufferToOutputSurface() override {
@@ -3794,7 +3794,7 @@ TEST_F(GLRendererTest, UndamagedRenderPassStillDrawnWhenNoPartialSwap) {
   auto output_surface = FakeOutputSurface::Create3d(std::move(provider));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), nullptr);
 

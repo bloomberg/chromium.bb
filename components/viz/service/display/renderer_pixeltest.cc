@@ -196,7 +196,7 @@ void CreateTestTwoColoredTextureDrawQuad(
     SkColor background_color,
     bool premultiplied_alpha,
     const SharedQuadState* shared_state,
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     cc::LayerTreeResourceProvider* child_resource_provider,
     SharedBitmapManager* shared_bitmap_manager,
     scoped_refptr<ContextProvider> child_context_provider,
@@ -268,7 +268,7 @@ void CreateTestTextureDrawQuad(
     SkColor background_color,
     bool premultiplied_alpha,
     const SharedQuadState* shared_state,
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     cc::LayerTreeResourceProvider* child_resource_provider,
     SharedBitmapManager* shared_bitmap_manager,
     scoped_refptr<ContextProvider> child_context_provider,
@@ -327,7 +327,7 @@ void CreateTestTextureDrawQuad(
     SkColor background_color,
     bool premultiplied_alpha,
     const SharedQuadState* shared_state,
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     cc::LayerTreeResourceProvider* child_resource_provider,
     SharedBitmapManager* shared_bitmap_manager,
     scoped_refptr<ContextProvider> child_context_provider,
@@ -349,7 +349,7 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
     cc::VideoResourceUpdater* video_resource_updater,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     cc::LayerTreeResourceProvider* child_resource_provider,
     ContextProvider* child_context_provider) {
   const bool with_alpha = (video_frame->format() == media::PIXEL_FORMAT_I420A);
@@ -468,7 +468,7 @@ void CreateTestY16TextureDrawQuad_FromVideoFrame(
     cc::VideoResourceUpdater* video_resource_updater,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     cc::LayerTreeResourceProvider* child_resource_provider,
     ContextProvider* child_context_provider) {
   cc::VideoFrameExternalResources resources =
@@ -553,7 +553,7 @@ void CreateTestYUVVideoDrawQuad_Striped(
     cc::VideoResourceUpdater* video_resource_updater,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     cc::LayerTreeResourceProvider* child_resource_provider,
     ContextProvider* child_context_provider) {
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
@@ -617,7 +617,7 @@ void CreateTestYUVVideoDrawQuad_TwoColor(
     uint8_t v_foreground,
     RenderPass* render_pass,
     cc::VideoResourceUpdater* video_resource_updater,
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     cc::LayerTreeResourceProvider* child_resource_provider,
     ContextProvider* child_context_provider) {
   const gfx::Rect rect(background_size);
@@ -679,7 +679,7 @@ void CreateTestYUVVideoDrawQuad_Solid(
     cc::VideoResourceUpdater* video_resource_updater,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     cc::LayerTreeResourceProvider* child_resource_provider,
     ContextProvider* child_context_provider) {
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
@@ -718,7 +718,7 @@ void CreateTestYUVVideoDrawQuad_NV12(
     cc::VideoResourceUpdater* video_resource_updater,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     cc::LayerTreeResourceProvider* child_resource_provider,
     scoped_refptr<ContextProvider> child_context_provider) {
   gfx::ColorSpace gfx_color_space = gfx::ColorSpace::CreateREC601();
@@ -783,7 +783,7 @@ void CreateTestY16TextureDrawQuad_TwoColor(
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
     const gfx::Rect& foreground_rect,
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     cc::LayerTreeResourceProvider* child_resource_provider,
     ContextProvider* child_context_provider) {
   std::unique_ptr<unsigned char, base::AlignedFreeDeleter> memory(

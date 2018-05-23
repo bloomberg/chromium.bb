@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "cc/output/overlay_candidate.h"
+#include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/service/viz_service_export.h"
 
@@ -33,7 +33,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
   // to be traditionally composited. Candidates with |overlay_handled| set to
   // true must also have their |display_rect| converted to integer
   // coordinates if necessary.
-  virtual void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) = 0;
+  virtual void CheckOverlaySupport(OverlayCandidateList* surfaces) = 0;
 
   virtual ~OverlayCandidateValidator() {}
 };

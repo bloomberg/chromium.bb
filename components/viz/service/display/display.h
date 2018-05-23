@@ -12,12 +12,12 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
-#include "cc/resources/display_resource_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/software_output_device_client.h"
@@ -160,7 +160,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   SkiaOutputSurface* skia_output_surface_;
   std::unique_ptr<OutputSurface> output_surface_;
   std::unique_ptr<DisplayScheduler> scheduler_;
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;
   // This may be null if the Display is on a thread without a MessageLoop.
   scoped_refptr<base::SingleThreadTaskRunner> current_task_runner_;

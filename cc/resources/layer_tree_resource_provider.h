@@ -116,7 +116,7 @@ class CC_EXPORT LayerTreeResourceProvider {
 
   base::flat_map<viz::ResourceId, ImportedResource> imported_resources_;
   // The ResourceIds in LayerTreeResourceProvider start from 1 to avoid
-  // conflicts with id from DisplayResourceProvider.
+  // conflicts with id from viz::DisplayResourceProvider.
   viz::ResourceId next_id_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeResourceProvider);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/display_resource_provider.h"
+#include "components/viz/service/display/display_resource_provider.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 
 #include <stddef.h>
@@ -41,7 +41,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-namespace cc {
+namespace viz {
 namespace {
 
 MATCHER_P(MatchesSyncToken, sync_token, "") {
@@ -50,7 +50,7 @@ MATCHER_P(MatchesSyncToken, sync_token, "") {
   return other == sync_token;
 }
 
-static void ReleaseSharedBitmapCallback(viz::SharedBitmapId shared_bitmap_id,
+static void ReleaseSharedBitmapCallback(SharedBitmapId shared_bitmap_id,
                                         bool* release_called,
                                         gpu::SyncToken* release_sync_token,
                                         bool* lost_resource_result,
@@ -61,18 +61,17 @@ static void ReleaseSharedBitmapCallback(viz::SharedBitmapId shared_bitmap_id,
   *lost_resource_result = lost_resource;
 }
 
-static viz::SharedBitmapId CreateAndFillSharedBitmap(
-    viz::SharedBitmapManager* manager,
-    const gfx::Size& size,
-    viz::ResourceFormat format,
-    uint32_t value) {
-  viz::SharedBitmapId shared_bitmap_id = viz::SharedBitmap::GenerateId();
+static SharedBitmapId CreateAndFillSharedBitmap(SharedBitmapManager* manager,
+                                                const gfx::Size& size,
+                                                ResourceFormat format,
+                                                uint32_t value) {
+  SharedBitmapId shared_bitmap_id = SharedBitmap::GenerateId();
 
   std::unique_ptr<base::SharedMemory> shm =
-      viz::bitmap_allocation::AllocateMappedBitmap(size, viz::RGBA_8888);
+      bitmap_allocation::AllocateMappedBitmap(size, RGBA_8888);
   manager->ChildAllocatedSharedBitmap(
-      viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(shm.get(), size,
-                                                            viz::RGBA_8888),
+      bitmap_allocation::DuplicateAndCloseMappedBitmap(shm.get(), size,
+                                                       RGBA_8888),
       shared_bitmap_id);
 
   std::fill_n(static_cast<uint32_t*>(shm->memory()), size.GetArea(), value);
@@ -97,7 +96,7 @@ class ContextSharedData {
 
   void ProduceTexture(const GLbyte* mailbox_name,
                       const gpu::SyncToken& sync_token,
-                      scoped_refptr<viz::TestTexture> texture) {
+                      scoped_refptr<TestTexture> texture) {
     uint32_t sync_point = static_cast<uint32_t>(sync_token.release_count());
 
     unsigned mailbox = 0;
@@ -108,9 +107,8 @@ class ContextSharedData {
     sync_point_for_mailbox_[mailbox] = sync_point;
   }
 
-  scoped_refptr<viz::TestTexture> ConsumeTexture(
-      const GLbyte* mailbox_name,
-      const gpu::SyncToken& sync_token) {
+  scoped_refptr<TestTexture> ConsumeTexture(const GLbyte* mailbox_name,
+                                            const gpu::SyncToken& sync_token) {
     unsigned mailbox = 0;
     memcpy(&mailbox, mailbox_name, sizeof(mailbox));
     DCHECK(mailbox && mailbox < next_mailbox_);
@@ -120,7 +118,7 @@ class ContextSharedData {
     // ProduceTexture.
     if (sync_point_for_mailbox_[mailbox] > sync_token.release_count()) {
       NOTREACHED();
-      return scoped_refptr<viz::TestTexture>();
+      return scoped_refptr<TestTexture>();
     }
     return textures_[mailbox];
   }
@@ -130,13 +128,12 @@ class ContextSharedData {
 
   uint64_t next_fence_sync_;
   unsigned next_mailbox_;
-  using TextureMap =
-      std::unordered_map<unsigned, scoped_refptr<viz::TestTexture>>;
+  using TextureMap = std::unordered_map<unsigned, scoped_refptr<TestTexture>>;
   TextureMap textures_;
   std::unordered_map<unsigned, uint32_t> sync_point_for_mailbox_;
 };
 
-class ResourceProviderContext : public viz::TestWebGraphicsContext3D {
+class ResourceProviderContext : public TestWebGraphicsContext3D {
  public:
   static std::unique_ptr<ResourceProviderContext> Create(
       ContextSharedData* shared_data) {
@@ -256,18 +253,18 @@ class ResourceProviderContext : public viz::TestWebGraphicsContext3D {
   GLuint createAndConsumeTextureCHROMIUM(const GLbyte* mailbox) override {
     GLuint texture_id = createTexture();
     base::AutoLock lock_for_texture_access(namespace_->lock);
-    scoped_refptr<viz::TestTexture> texture =
+    scoped_refptr<TestTexture> texture =
         shared_data_->ConsumeTexture(mailbox, last_waited_sync_token_);
     namespace_->textures.Replace(texture_id, texture);
     return texture_id;
   }
 
   void GetPixels(const gfx::Size& size,
-                 viz::ResourceFormat format,
+                 ResourceFormat format,
                  uint8_t* pixels) {
     CheckTextureIsBound(GL_TEXTURE_2D);
     base::AutoLock lock_for_texture_access(namespace_->lock);
-    scoped_refptr<viz::TestTexture> texture = BoundTexture(GL_TEXTURE_2D);
+    scoped_refptr<TestTexture> texture = BoundTexture(GL_TEXTURE_2D);
     ASSERT_EQ(texture->size, size);
     ASSERT_EQ(texture->format, format);
     memcpy(pixels, texture->data.get(), TextureSizeBytes(size, format));
@@ -280,13 +277,13 @@ class ResourceProviderContext : public viz::TestWebGraphicsContext3D {
  private:
   void AllocateTexture(const gfx::Size& size, GLenum format) {
     CheckTextureIsBound(GL_TEXTURE_2D);
-    viz::ResourceFormat texture_format = viz::RGBA_8888;
+    ResourceFormat texture_format = RGBA_8888;
     switch (format) {
       case GL_RGBA:
-        texture_format = viz::RGBA_8888;
+        texture_format = RGBA_8888;
         break;
       case GL_BGRA_EXT:
-        texture_format = viz::BGRA_8888;
+        texture_format = BGRA_8888;
         break;
     }
     base::AutoLock lock_for_texture_access(namespace_->lock);
@@ -300,7 +297,7 @@ class ResourceProviderContext : public viz::TestWebGraphicsContext3D {
                  const void* pixels) {
     CheckTextureIsBound(GL_TEXTURE_2D);
     base::AutoLock lock_for_texture_access(namespace_->lock);
-    scoped_refptr<viz::TestTexture> texture = BoundTexture(GL_TEXTURE_2D);
+    scoped_refptr<TestTexture> texture = BoundTexture(GL_TEXTURE_2D);
     ASSERT_TRUE(texture->data.get());
     ASSERT_TRUE(xoffset >= 0 && xoffset + width <= texture->size.width());
     ASSERT_TRUE(yoffset >= 0 && yoffset + height <= texture->size.height());
@@ -320,7 +317,7 @@ class ResourceProviderContext : public viz::TestWebGraphicsContext3D {
 
   struct PendingProduceTexture {
     GLbyte mailbox[GL_MAILBOX_SIZE_CHROMIUM];
-    scoped_refptr<viz::TestTexture> texture;
+    scoped_refptr<TestTexture> texture;
   };
   ContextSharedData* shared_data_;
   gpu::SyncToken last_waited_sync_token_;
@@ -336,8 +333,7 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
     if (use_gpu_) {
       auto context3d(ResourceProviderContext::Create(shared_data_.get()));
       context3d_ = context3d.get();
-      context_provider_ =
-          viz::TestContextProvider::Create(std::move(context3d));
+      context_provider_ = TestContextProvider::Create(std::move(context3d));
       context_provider_->UnboundTestContext3d()
           ->set_support_texture_format_bgra8888(true);
       context_provider_->BindToCurrentThread();
@@ -346,14 +342,14 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
           ResourceProviderContext::Create(shared_data_.get());
       child_context_ = child_context_owned.get();
       child_context_provider_ =
-          viz::TestContextProvider::Create(std::move(child_context_owned));
+          TestContextProvider::Create(std::move(child_context_owned));
       child_context_provider_->UnboundTestContext3d()
           ->set_support_texture_format_bgra8888(true);
       child_context_provider_->BindToCurrentThread();
       gpu_memory_buffer_manager_ =
-          std::make_unique<viz::TestGpuMemoryBufferManager>();
+          std::make_unique<TestGpuMemoryBufferManager>();
     } else {
-      shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
+      shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
     }
 
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
@@ -367,24 +363,23 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
   bool use_gpu() const { return use_gpu_; }
 
   void MakeChildResourceProvider() {
-    child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
+    child_resource_provider_ = std::make_unique<cc::LayerTreeResourceProvider>(
         child_context_provider_.get(), child_needs_sync_token_);
   }
 
-  static void CollectResources(
-      std::vector<viz::ReturnedResource>* array,
-      const std::vector<viz::ReturnedResource>& returned) {
+  static void CollectResources(std::vector<ReturnedResource>* array,
+                               const std::vector<ReturnedResource>& returned) {
     array->insert(array->end(), returned.begin(), returned.end());
   }
 
-  static viz::ReturnCallback GetReturnCallback(
-      std::vector<viz::ReturnedResource>* array) {
+  static ReturnCallback GetReturnCallback(
+      std::vector<ReturnedResource>* array) {
     return base::BindRepeating(&DisplayResourceProviderTest::CollectResources,
                                array);
   }
 
   static void SetResourceFilter(DisplayResourceProvider* resource_provider,
-                                viz::ResourceId id,
+                                ResourceId id,
                                 GLenum filter) {
     DisplayResourceProvider::ScopedSamplerGL sampler(resource_provider, id,
                                                      GL_TEXTURE_2D, filter);
@@ -392,11 +387,11 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
 
   ResourceProviderContext* context() { return context3d_; }
 
-  viz::ResourceId CreateChildMailbox(gpu::SyncToken* release_sync_token,
-                                     bool* lost_resource,
-                                     bool* release_called,
-                                     gpu::SyncToken* sync_token,
-                                     viz::ResourceFormat format) {
+  ResourceId CreateChildMailbox(gpu::SyncToken* release_sync_token,
+                                bool* lost_resource,
+                                bool* release_called,
+                                gpu::SyncToken* sync_token,
+                                ResourceFormat format) {
     if (use_gpu()) {
       unsigned texture = child_context_->createTexture();
       gpu::Mailbox gpu_mailbox;
@@ -405,46 +400,45 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
       child_context_->genSyncToken(sync_token->GetData());
       EXPECT_TRUE(sync_token->HasData());
 
-      std::unique_ptr<viz::SingleReleaseCallback> callback =
-          viz::SingleReleaseCallback::Create(base::BindRepeating(
-              ReleaseSharedBitmapCallback, viz::SharedBitmapId(),
-              release_called, release_sync_token, lost_resource));
-      viz::TransferableResource gl_resource = viz::TransferableResource::MakeGL(
+      std::unique_ptr<SingleReleaseCallback> callback =
+          SingleReleaseCallback::Create(base::BindRepeating(
+              ReleaseSharedBitmapCallback, SharedBitmapId(), release_called,
+              release_sync_token, lost_resource));
+      TransferableResource gl_resource = TransferableResource::MakeGL(
           gpu_mailbox, GL_LINEAR, GL_TEXTURE_2D, *sync_token);
       gl_resource.format = format;
       return child_resource_provider_->ImportResource(gl_resource,
                                                       std::move(callback));
     } else {
       gfx::Size size(64, 64);
-      viz::SharedBitmapId shared_bitmap_id = CreateAndFillSharedBitmap(
+      SharedBitmapId shared_bitmap_id = CreateAndFillSharedBitmap(
           shared_bitmap_manager_.get(), size, format, 0);
 
-      std::unique_ptr<viz::SingleReleaseCallback> callback =
-          viz::SingleReleaseCallback::Create(base::BindRepeating(
+      std::unique_ptr<SingleReleaseCallback> callback =
+          SingleReleaseCallback::Create(base::BindRepeating(
               ReleaseSharedBitmapCallback, shared_bitmap_id, release_called,
               release_sync_token, lost_resource));
       return child_resource_provider_->ImportResource(
-          viz::TransferableResource::MakeSoftware(shared_bitmap_id, size,
-                                                  format),
+          TransferableResource::MakeSoftware(shared_bitmap_id, size, format),
           std::move(callback));
     }
   }
 
-  viz::ResourceId MakeGpuResourceAndSendToDisplay(
+  ResourceId MakeGpuResourceAndSendToDisplay(
       char c,
       GLuint filter,
       GLuint target,
       const gpu::SyncToken& sync_token,
       DisplayResourceProvider* resource_provider) {
-    viz::ReturnCallback return_callback = base::DoNothing();
+    ReturnCallback return_callback = base::DoNothing();
 
     int child = resource_provider->CreateChild(return_callback);
 
     gpu::Mailbox gpu_mailbox;
     gpu_mailbox.name[0] = c;
     gpu_mailbox.name[1] = 0;
-    auto resource = viz::TransferableResource::MakeGL(gpu_mailbox, GL_LINEAR,
-                                                      target, sync_token);
+    auto resource = TransferableResource::MakeGL(gpu_mailbox, GL_LINEAR, target,
+                                                 sync_token);
     resource.id = 11;
     resource_provider->ReceiveFromChild(child, {resource});
     auto& map = resource_provider->GetChildToParentMap(child);
@@ -457,12 +451,12 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
   const std::unique_ptr<ContextSharedData> shared_data_;
   ResourceProviderContext* context3d_ = nullptr;
   ResourceProviderContext* child_context_ = nullptr;
-  scoped_refptr<viz::TestContextProvider> context_provider_;
-  scoped_refptr<viz::TestContextProvider> child_context_provider_;
-  std::unique_ptr<viz::TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  scoped_refptr<TestContextProvider> context_provider_;
+  scoped_refptr<TestContextProvider> child_context_provider_;
+  std::unique_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
-  std::unique_ptr<LayerTreeResourceProvider> child_resource_provider_;
-  std::unique_ptr<viz::TestSharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<cc::LayerTreeResourceProvider> child_resource_provider_;
+  std::unique_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
 };
 
 INSTANTIATE_TEST_CASE_P(DisplayResourceProviderTests,
@@ -478,19 +472,19 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
                              gpu::CommandBufferId::FromUnsafeValue(0x123),
                              0x42);
   auto mailbox = gpu::Mailbox::Generate();
-  viz::TransferableResource gl_resource = viz::TransferableResource::MakeGL(
+  TransferableResource gl_resource = TransferableResource::MakeGL(
       mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token1);
-  viz::ResourceId id1 = child_resource_provider_->ImportResource(
-      gl_resource, viz::SingleReleaseCallback::Create(base::DoNothing()));
-  std::vector<viz::ReturnedResource> returned_to_child;
+  ResourceId id1 = child_resource_provider_->ImportResource(
+      gl_resource, SingleReleaseCallback::Create(base::DoNothing()));
+  std::vector<ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
   // Transfer some resources to the parent.
-  std::vector<viz::ResourceId> resource_ids_to_transfer;
+  std::vector<ResourceId> resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(id1);
 
-  std::vector<viz::TransferableResource> list;
+  std::vector<TransferableResource> list;
   child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list,
                                                 child_context_provider_.get());
   ASSERT_EQ(1u, list.size());
@@ -499,7 +493,7 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
   resource_provider_->ReceiveFromChild(child_id, list);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
-  std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       resource_provider_->GetChildToParentMap(child_id);
 
   unsigned parent_id = resource_map[list.front().id];
@@ -507,12 +501,11 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
   DisplayResourceProvider::LockSetForExternalUse lock_set(
       resource_provider_.get());
 
-  viz::ResourceMetadata metadata = lock_set.LockResource(parent_id);
+  ResourceMetadata metadata = lock_set.LockResource(parent_id);
   ASSERT_EQ(metadata.mailbox, mailbox);
   ASSERT_TRUE(metadata.sync_token.HasData());
 
-  resource_provider_->DeclareUsedResourcesFromChild(child_id,
-                                                    viz::ResourceIdSet());
+  resource_provider_->DeclareUsedResourcesFromChild(child_id, ResourceIdSet());
   // The resource should not be returned due to the external use lock.
   EXPECT_EQ(0u, returned_to_child.size());
 
@@ -521,8 +514,7 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
                              0x456);
   sync_token2.SetVerifyFlush();
   lock_set.UnlockResources(sync_token2);
-  resource_provider_->DeclareUsedResourcesFromChild(child_id,
-                                                    viz::ResourceIdSet());
+  resource_provider_->DeclareUsedResourcesFromChild(child_id, ResourceIdSet());
   // The resource should be returned after the lock is released.
   EXPECT_EQ(1u, returned_to_child.size());
   EXPECT_EQ(sync_token2, returned_to_child[0].sync_token);
@@ -531,4 +523,4 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
 }
 
 }  // namespace
-}  // namespace cc
+}  // namespace viz

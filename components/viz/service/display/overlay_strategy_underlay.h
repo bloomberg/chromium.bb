@@ -37,9 +37,9 @@ class VIZ_SERVICE_EXPORT OverlayStrategyUnderlay
   ~OverlayStrategyUnderlay() override;
 
   bool Attempt(const SkMatrix44& output_color_matrix,
-               cc::DisplayResourceProvider* resource_provider,
+               DisplayResourceProvider* resource_provider,
                RenderPass* render_pass,
-               cc::OverlayCandidateList* candidate_list,
+               OverlayCandidateList* candidate_list,
                std::vector<gfx::Rect>* content_bounds) override;
 
   OverlayProcessor::StrategyType GetUMAEnum() const override;

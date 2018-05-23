@@ -205,7 +205,7 @@ void Display::SetOutputIsSecure(bool secure) {
 }
 
 void Display::InitializeRenderer() {
-  resource_provider_ = std::make_unique<cc::DisplayResourceProvider>(
+  resource_provider_ = std::make_unique<DisplayResourceProvider>(
       output_surface_->context_provider(), bitmap_manager_);
 
   if (output_surface_->context_provider()) {

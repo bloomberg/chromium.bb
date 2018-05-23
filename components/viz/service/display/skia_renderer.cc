@@ -61,7 +61,7 @@ struct SkiaRenderer::DrawRenderPassDrawQuadParams {
 
 namespace {
 
-bool IsTextureResource(cc::DisplayResourceProvider* resource_provider,
+bool IsTextureResource(DisplayResourceProvider* resource_provider,
                        ResourceId resource_id) {
   return resource_provider->GetResourceType(resource_id) ==
          ResourceType::kTexture;
@@ -78,7 +78,7 @@ class SkiaRenderer::ScopedSkImageBuilder {
   const SkImage* sk_image() const { return sk_image_; }
 
  private:
-  std::unique_ptr<cc::DisplayResourceProvider::ScopedReadLockSkImage> lock_;
+  std::unique_ptr<DisplayResourceProvider::ScopedReadLockSkImage> lock_;
   const SkImage* sk_image_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSkImageBuilder);
@@ -92,9 +92,8 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
       skia_renderer->non_root_surface_ ||
       !IsTextureResource(resource_provider, resource_id)) {
     // TODO(penghuang): remove this code when DDL is used everywhere.
-    lock_ =
-        std::make_unique<cc::DisplayResourceProvider::ScopedReadLockSkImage>(
-            resource_provider, resource_id);
+    lock_ = std::make_unique<DisplayResourceProvider::ScopedReadLockSkImage>(
+        resource_provider, resource_id);
     sk_image_ = lock_->sk_image();
   } else {
     // Look up the image from promise_images_by resource_id and return the
@@ -170,7 +169,7 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
   const SkImage* sk_image() const { return sk_image_; }
 
  private:
-  std::unique_ptr<cc::DisplayResourceProvider::ScopedReadLockSkImage> lock_;
+  std::unique_ptr<DisplayResourceProvider::ScopedReadLockSkImage> lock_;
   SkImage* sk_image_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedYUVSkImageBuilder);
@@ -178,7 +177,7 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
 
 SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
                            OutputSurface* output_surface,
-                           cc::DisplayResourceProvider* resource_provider,
+                           DisplayResourceProvider* resource_provider,
                            SkiaOutputSurface* skia_output_surface)
     : DirectRenderer(settings, output_surface, resource_provider),
       skia_output_surface_(skia_output_surface),
@@ -209,7 +208,7 @@ void SkiaRenderer::BeginDrawingFrame() {
     read_lock_fence = sync_queries_->StartNewFrame();
   } else {
     read_lock_fence =
-        base::MakeRefCounted<cc::DisplayResourceProvider::SynchronousFence>(
+        base::MakeRefCounted<DisplayResourceProvider::SynchronousFence>(
             output_surface_->context_provider()->ContextGL());
   }
   resource_provider_->SetReadLockFence(read_lock_fence.get());

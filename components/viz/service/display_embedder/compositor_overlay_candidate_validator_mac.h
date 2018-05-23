@@ -23,7 +23,7 @@ class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorMac
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override;
   bool AllowCALayerOverlays() override;
   bool AllowDCLayerOverlays() override;
-  void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override;
+  void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
 
   // CompositorOverlayCandidateValidator implementation.
   void SetSoftwareMirrorMode(bool enabled) override;

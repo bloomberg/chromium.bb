@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_OVERLAY_CANDIDATE_H_
-#define CC_OUTPUT_OVERLAY_CANDIDATE_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_CANDIDATE_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_CANDIDATE_H_
 
 #include <map>
 #include <vector>
 
-#include "cc/cc_export.h"
+#include "build/build_config.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/resources/resource_id.h"
+#include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -23,31 +24,28 @@ class Rect;
 }
 
 namespace viz {
+class DisplayResourceProvider;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
-}  // namespace viz
 
-namespace cc {
-class DisplayResourceProvider;
-
-class CC_EXPORT OverlayCandidate {
+class VIZ_SERVICE_EXPORT OverlayCandidate {
  public:
   // Returns true and fills in |candidate| if |draw_quad| is of a known quad
   // type and contains an overlayable resource.
   static bool FromDrawQuad(DisplayResourceProvider* resource_provider,
                            const SkMatrix44& output_color_matrix,
-                           const viz::DrawQuad* quad,
+                           const DrawQuad* quad,
                            OverlayCandidate* candidate);
   // Returns true if |quad| will not block quads underneath from becoming
   // an overlay.
-  static bool IsInvisibleQuad(const viz::DrawQuad* quad);
+  static bool IsInvisibleQuad(const DrawQuad* quad);
 
   // Returns true if any any of the quads in the list given by |quad_list_begin|
   // and |quad_list_end| are visible and on top of |candidate|.
   static bool IsOccluded(const OverlayCandidate& candidate,
-                         viz::QuadList::ConstIterator quad_list_begin,
-                         viz::QuadList::ConstIterator quad_list_end);
+                         QuadList::ConstIterator quad_list_begin,
+                         QuadList::ConstIterator quad_list_end);
 
   OverlayCandidate();
   OverlayCandidate(const OverlayCandidate& other);
@@ -104,22 +102,23 @@ class CC_EXPORT OverlayCandidate {
 
  private:
   static bool FromDrawQuadResource(DisplayResourceProvider* resource_provider,
-                                   const viz::DrawQuad* quad,
-                                   viz::ResourceId resource_id,
+                                   const DrawQuad* quad,
+                                   ResourceId resource_id,
                                    bool y_flipped,
                                    OverlayCandidate* candidate);
   static bool FromTextureQuad(DisplayResourceProvider* resource_provider,
-                              const viz::TextureDrawQuad* quad,
+                              const TextureDrawQuad* quad,
                               OverlayCandidate* candidate);
   static bool FromTileQuad(DisplayResourceProvider* resource_provider,
-                           const viz::TileDrawQuad* quad,
+                           const TileDrawQuad* quad,
                            OverlayCandidate* candidate);
   static bool FromStreamVideoQuad(DisplayResourceProvider* resource_provider,
-                                  const viz::StreamVideoDrawQuad* quad,
+                                  const StreamVideoDrawQuad* quad,
                                   OverlayCandidate* candidate);
 };
 
-class CC_EXPORT OverlayCandidateList : public std::vector<OverlayCandidate> {
+class VIZ_SERVICE_EXPORT OverlayCandidateList
+    : public std::vector<OverlayCandidate> {
  public:
   OverlayCandidateList();
   OverlayCandidateList(const OverlayCandidateList&);
@@ -130,7 +129,7 @@ class CC_EXPORT OverlayCandidateList : public std::vector<OverlayCandidate> {
   OverlayCandidateList& operator=(OverlayCandidateList&&);
 
   // [id] == candidate's |display_rect| for all promotable resources.
-  using PromotionHintInfoMap = std::map<viz::ResourceId, gfx::RectF>;
+  using PromotionHintInfoMap = std::map<ResourceId, gfx::RectF>;
 
   // For android, this provides a set of resources that could be promoted to
   // overlay, if one backs them with a SurfaceView.
@@ -140,6 +139,6 @@ class CC_EXPORT OverlayCandidateList : public std::vector<OverlayCandidate> {
   void AddPromotionHint(const OverlayCandidate& candidate);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_OVERLAY_CANDIDATE_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_CANDIDATE_H_

@@ -12,10 +12,10 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "cc/resources/display_resource_provider.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/service/display/ca_layer_overlay.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
+#include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
@@ -46,7 +46,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
  public:
   DirectRenderer(const RendererSettings* settings,
                  OutputSurface* output_surface,
-                 cc::DisplayResourceProvider* resource_provider);
+                 DisplayResourceProvider* resource_provider);
   virtual ~DirectRenderer();
 
   void Initialize();
@@ -83,7 +83,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     gfx::Transform projection_matrix;
     gfx::Transform window_matrix;
 
-    cc::OverlayCandidateList overlay_list;
+    OverlayCandidateList overlay_list;
     CALayerOverlayList ca_layer_overlay_list;
     DCLayerOverlayList dc_layer_overlay_list;
   };
@@ -202,7 +202,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 
   const RendererSettings* const settings_;
   OutputSurface* const output_surface_;
-  cc::DisplayResourceProvider* const resource_provider_;
+  DisplayResourceProvider* const resource_provider_;
   // This can be replaced by test implementations.
   std::unique_ptr<OverlayProcessor> overlay_processor_;
 

@@ -7,13 +7,15 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "cc/resources/display_resource_provider.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
+#include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
+
+namespace viz {
 
 namespace {
 
@@ -22,9 +24,8 @@ namespace {
 // before returning from ProcessForOverlays.
 class SendPromotionHintsBeforeReturning {
  public:
-  SendPromotionHintsBeforeReturning(
-      cc::DisplayResourceProvider* resource_provider,
-      cc::OverlayCandidateList* candidates)
+  SendPromotionHintsBeforeReturning(DisplayResourceProvider* resource_provider,
+                                    OverlayCandidateList* candidates)
       : resource_provider_(resource_provider), candidates_(candidates) {}
   ~SendPromotionHintsBeforeReturning() {
     resource_provider_->SendPromotionHints(
@@ -32,16 +33,14 @@ class SendPromotionHintsBeforeReturning {
   }
 
  private:
-  cc::DisplayResourceProvider* resource_provider_;
-  cc::OverlayCandidateList* candidates_;
+  DisplayResourceProvider* resource_provider_;
+  OverlayCandidateList* candidates_;
 
   DISALLOW_COPY_AND_ASSIGN(SendPromotionHintsBeforeReturning);
 };
 #endif
 
 }  // namespace
-
-namespace viz {
 
 OverlayProcessor::StrategyType OverlayProcessor::Strategy::GetUMAEnum() const {
   return StrategyType::kUnknown;
@@ -67,11 +66,11 @@ gfx::Rect OverlayProcessor::GetAndResetOverlayDamage() {
 }
 
 bool OverlayProcessor::ProcessForCALayers(
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     RenderPass* render_pass,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
     const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
-    cc::OverlayCandidateList* overlay_candidates,
+    OverlayCandidateList* overlay_candidates,
     CALayerOverlayList* ca_layer_overlays,
     gfx::Rect* damage_rect) {
   OverlayCandidateValidator* overlay_validator =
@@ -95,11 +94,11 @@ bool OverlayProcessor::ProcessForCALayers(
 }
 
 bool OverlayProcessor::ProcessForDCLayers(
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     RenderPassList* render_passes,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
     const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
-    cc::OverlayCandidateList* overlay_candidates,
+    OverlayCandidateList* overlay_candidates,
     DCLayerOverlayList* dc_layer_overlays,
     gfx::Rect* damage_rect) {
   OverlayCandidateValidator* overlay_validator =
@@ -116,12 +115,12 @@ bool OverlayProcessor::ProcessForDCLayers(
 }
 
 void OverlayProcessor::ProcessForOverlays(
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     RenderPassList* render_passes,
     const SkMatrix44& output_color_matrix,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
     const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
-    cc::OverlayCandidateList* candidates,
+    OverlayCandidateList* candidates,
     CALayerOverlayList* ca_layer_overlays,
     DCLayerOverlayList* dc_layer_overlays,
     gfx::Rect* damage_rect,
@@ -193,12 +192,12 @@ void OverlayProcessor::ProcessForOverlays(
 // previous frame. This only handles the common case of a single underlay quad
 // for fullscreen video.
 void OverlayProcessor::UpdateDamageRect(
-    cc::OverlayCandidateList* candidates,
+    OverlayCandidateList* candidates,
     const gfx::Rect& previous_frame_underlay_rect,
     gfx::Rect* damage_rect) {
   gfx::Rect output_surface_overlay_damage_rect;
   gfx::Rect this_frame_underlay_rect;
-  for (const cc::OverlayCandidate& overlay : *candidates) {
+  for (const OverlayCandidate& overlay : *candidates) {
     if (overlay.plane_z_order >= 0) {
       const gfx::Rect overlay_display_rect =
           ToEnclosedRect(overlay.display_rect);

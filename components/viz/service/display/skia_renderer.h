@@ -34,7 +34,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // TODO(penghuang): Remove skia_output_surface when DDL is used everywhere.
   SkiaRenderer(const RendererSettings* settings,
                OutputSurface* output_surface,
-               cc::DisplayResourceProvider* resource_provider,
+               DisplayResourceProvider* resource_provider,
                SkiaOutputSurface* skia_output_surface = nullptr);
   ~SkiaRenderer() override;
 
@@ -160,7 +160,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // the compositor thread. And the sync token will be released when the DDL
   // for the current frame is replayed on the GPU thread.
   // It is only used with DDL.
-  cc::DisplayResourceProvider::LockSetForExternalUse lock_set_for_external_use_;
+  DisplayResourceProvider::LockSetForExternalUse lock_set_for_external_use_;
 
   // Promise images created from resources used in the current frame. This map
   // will be cleared when the frame is done and before all resources in

@@ -82,7 +82,7 @@ bool CompositorOverlayCandidateValidatorOzone::AllowDCLayerOverlays() {
 }
 
 void CompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
-    cc::OverlayCandidateList* surfaces) {
+    OverlayCandidateList* surfaces) {
   // SW mirroring copies out of the framebuffer, so we can't remove any
   // quads for overlaying, otherwise the output is incorrect.
   if (software_mirror_active_) {

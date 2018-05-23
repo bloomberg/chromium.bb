@@ -230,12 +230,11 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
   sk_sp<SkImage> filter_image;
 
   // The original contents, bound for sampling.
-  std::unique_ptr<cc::DisplayResourceProvider::ScopedSamplerGL>
+  std::unique_ptr<DisplayResourceProvider::ScopedSamplerGL>
       bypass_quad_resource_lock;
 
   // A mask to be applied when drawing the RPDQ.
-  std::unique_ptr<cc::DisplayResourceProvider::ScopedSamplerGL>
-      mask_resource_lock;
+  std::unique_ptr<DisplayResourceProvider::ScopedSamplerGL> mask_resource_lock;
 
   // Whether a color matrix needs to be applied by the shaders when drawing
   // the RPDQ.
@@ -302,7 +301,7 @@ class GLRenderer::ScopedUseGrContext {
 GLRenderer::GLRenderer(
     const RendererSettings* settings,
     OutputSurface* output_surface,
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
     : DirectRenderer(settings, output_surface, resource_provider),
       shared_geometry_quad_(QuadVertexRect()),
@@ -447,8 +446,7 @@ void GLRenderer::BeginDrawingFrame() {
     read_lock_fence = sync_queries_.StartNewFrame();
   } else {
     read_lock_fence =
-        base::MakeRefCounted<cc::DisplayResourceProvider::SynchronousFence>(
-            gl_);
+        base::MakeRefCounted<DisplayResourceProvider::SynchronousFence>(gl_);
   }
   resource_provider_->SetReadLockFence(read_lock_fence.get());
 
@@ -1177,7 +1175,7 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
               src_image, src_rect, params->dst_rect, quad->filters_scale,
               std::move(filter), &offset, &subset, quad->filters_origin);
         } else {
-          cc::DisplayResourceProvider::ScopedReadLockGL
+          DisplayResourceProvider::ScopedReadLockGL
               prefilter_bypass_quad_texture_lock(
                   resource_provider_, params->bypass_quad_texture.resource_id);
           params->contents_and_bypass_color_space =
@@ -1210,7 +1208,7 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
     DrawRenderPassDrawQuadParams* params) {
   if (params->quad->mask_resource_id()) {
     params->mask_resource_lock.reset(
-        new cc::DisplayResourceProvider::ScopedSamplerGL(
+        new DisplayResourceProvider::ScopedSamplerGL(
             resource_provider_, params->quad->mask_resource_id(), GL_TEXTURE1,
             GL_LINEAR));
   }
@@ -1234,7 +1232,7 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
     params->source_needs_flip = params->flip_texture;
   } else {
     params->bypass_quad_resource_lock =
-        std::make_unique<cc::DisplayResourceProvider::ScopedSamplerGL>(
+        std::make_unique<DisplayResourceProvider::ScopedSamplerGL>(
             resource_provider_, params->bypass_quad_texture.resource_id,
             GL_LINEAR);
     DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
@@ -1867,7 +1865,7 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
   float edge[24];
   SetupQuadForClippingAndAntialiasing(device_transform, quad, &aa_quad,
                                       clip_region, &local_quad, edge);
-  cc::DisplayResourceProvider::ScopedSamplerGL quad_resource_lock(
+  DisplayResourceProvider::ScopedSamplerGL quad_resource_lock(
       resource_provider_, resource_id,
       quad->nearest_neighbor ? GL_NEAREST : GL_LINEAR);
   SamplerType sampler =
@@ -1937,7 +1935,7 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
                       ? GL_LINEAR
                       : GL_NEAREST;
 
-  cc::DisplayResourceProvider::ScopedSamplerGL quad_resource_lock(
+  DisplayResourceProvider::ScopedSamplerGL quad_resource_lock(
       resource_provider_, resource_id, filter);
   SamplerType sampler =
       SamplerTypeFromTextureTarget(quad_resource_lock.target());
@@ -2059,9 +2057,9 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
           ? UV_TEXTURE_MODE_UV
           : UV_TEXTURE_MODE_U_V;
 
-  cc::DisplayResourceProvider::ScopedSamplerGL y_plane_lock(
+  DisplayResourceProvider::ScopedSamplerGL y_plane_lock(
       resource_provider_, quad->y_plane_resource_id(), GL_TEXTURE1, GL_LINEAR);
-  cc::DisplayResourceProvider::ScopedSamplerGL u_plane_lock(
+  DisplayResourceProvider::ScopedSamplerGL u_plane_lock(
       resource_provider_, quad->u_plane_resource_id(), GL_TEXTURE2, GL_LINEAR);
   DCHECK_EQ(y_plane_lock.target(), u_plane_lock.target());
   DCHECK_EQ(y_plane_lock.color_space(), u_plane_lock.color_space());
@@ -2090,17 +2088,17 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   }
 
   // TODO(jbauman): Use base::Optional when available.
-  std::unique_ptr<cc::DisplayResourceProvider::ScopedSamplerGL> v_plane_lock;
+  std::unique_ptr<DisplayResourceProvider::ScopedSamplerGL> v_plane_lock;
   if (uv_texture_mode == UV_TEXTURE_MODE_U_V) {
-    v_plane_lock.reset(new cc::DisplayResourceProvider::ScopedSamplerGL(
+    v_plane_lock.reset(new DisplayResourceProvider::ScopedSamplerGL(
         resource_provider_, quad->v_plane_resource_id(), GL_TEXTURE3,
         GL_LINEAR));
     DCHECK_EQ(y_plane_lock.target(), v_plane_lock->target());
     DCHECK_EQ(y_plane_lock.color_space(), v_plane_lock->color_space());
   }
-  std::unique_ptr<cc::DisplayResourceProvider::ScopedSamplerGL> a_plane_lock;
+  std::unique_ptr<DisplayResourceProvider::ScopedSamplerGL> a_plane_lock;
   if (alpha_texture_mode == YUV_HAS_ALPHA_TEXTURE) {
-    a_plane_lock.reset(new cc::DisplayResourceProvider::ScopedSamplerGL(
+    a_plane_lock.reset(new DisplayResourceProvider::ScopedSamplerGL(
         resource_provider_, quad->a_plane_resource_id(), GL_TEXTURE4,
         GL_LINEAR));
     DCHECK_EQ(y_plane_lock.target(), a_plane_lock->target());
@@ -2223,8 +2221,8 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
       gl_, &highp_threshold_cache_, settings_->highp_threshold_min,
       quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
 
-  cc::DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_,
-                                                     quad->resource_id());
+  DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_,
+                                                 quad->resource_id());
 
   SetUseProgram(ProgramKey::VideoStream(tex_coord_precision),
                 lock.color_space(),
@@ -2275,7 +2273,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   SetBlendEnabled(draw_cache_.needs_blending);
 
   // Assume the current active textures is 0.
-  cc::DisplayResourceProvider::ScopedSamplerGL locked_quad(
+  DisplayResourceProvider::ScopedSamplerGL locked_quad(
       resource_provider_, draw_cache_.resource_id,
       draw_cache_.nearest_neighbor ? GL_NEAREST : GL_LINEAR);
 
@@ -2366,8 +2364,8 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
       gl_, &highp_threshold_cache_, settings_->highp_threshold_min,
       quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
 
-  cc::DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_,
-                                                     quad->resource_id());
+  DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_,
+                                                 quad->resource_id());
   const SamplerType sampler = SamplerTypeFromTextureTarget(lock.target());
 
   bool need_tex_clamp_rect = !quad->resource_size_in_pixels().IsEmpty() &&
@@ -2767,7 +2765,7 @@ void GLRenderer::SwapBuffersComplete() {
     // that once a swap buffer has completed we can remove the oldest buffers
     // from the queue, but only once we've swapped another frame afterward.
     if (swapping_overlay_resources_.size() > 1) {
-      cc::DisplayResourceProvider::ScopedBatchReturnResources returner(
+      DisplayResourceProvider::ScopedBatchReturnResources returner(
           resource_provider_);
       swapping_overlay_resources_.pop_front();
     }
@@ -2785,7 +2783,7 @@ void GLRenderer::SwapBuffersComplete() {
 void GLRenderer::DidReceiveTextureInUseResponses(
     const gpu::TextureInUseResponses& responses) {
   DCHECK(settings_->release_overlay_resources_after_gpu_query);
-  cc::DisplayResourceProvider::ScopedBatchReturnResources returner(
+  DisplayResourceProvider::ScopedBatchReturnResources returner(
       resource_provider_);
   for (const gpu::TextureInUseResponse& response : responses) {
     if (response.in_use)
@@ -3100,7 +3098,7 @@ void GLRenderer::ScheduleCALayers() {
     unsigned texture_id = 0;
     if (contents_resource_id) {
       pending_overlay_resources_.push_back(
-          std::make_unique<cc::DisplayResourceProvider::ScopedReadLockGL>(
+          std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
               resource_provider_, contents_resource_id));
       texture_id = pending_overlay_resources_.back()->texture_id();
     }
@@ -3152,7 +3150,7 @@ void GLRenderer::ScheduleDCLayers() {
     for (const auto& contents_resource_id : dc_layer_overlay.resources) {
       if (contents_resource_id) {
         pending_overlay_resources_.push_back(
-            std::make_unique<cc::DisplayResourceProvider::ScopedReadLockGL>(
+            std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
                 resource_provider_, contents_resource_id));
         texture_ids[i] = pending_overlay_resources_.back()->texture_id();
         ids_to_send = i + 1;
@@ -3201,7 +3199,7 @@ void GLRenderer::ScheduleOverlays() {
   if (current_frame()->overlay_list.empty())
     return;
 
-  cc::OverlayCandidateList& overlays = current_frame()->overlay_list;
+  OverlayCandidateList& overlays = current_frame()->overlay_list;
   for (const auto& overlay_candidate : overlays) {
     unsigned texture_id = 0;
     if (overlay_candidate.use_output_surface_for_resource) {
@@ -3209,7 +3207,7 @@ void GLRenderer::ScheduleOverlays() {
       DCHECK(texture_id || IsContextLost());
     } else {
       pending_overlay_resources_.push_back(
-          std::make_unique<cc::DisplayResourceProvider::ScopedReadLockGL>(
+          std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
               resource_provider_, overlay_candidate.resource_id));
       texture_id = pending_overlay_resources_.back()->texture_id();
     }

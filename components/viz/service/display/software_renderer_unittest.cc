@@ -59,7 +59,7 @@ class SoftwareRendererTest : public testing::Test {
         cc::FakeResourceProvider::CreateLayerTreeResourceProvider(nullptr);
   }
 
-  cc::DisplayResourceProvider* resource_provider() const {
+  DisplayResourceProvider* resource_provider() const {
     return resource_provider_.get();
   }
 
@@ -120,7 +120,7 @@ class SoftwareRendererTest : public testing::Test {
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<cc::LayerTreeResourceProvider> child_resource_provider_;
   std::unique_ptr<SoftwareRenderer> renderer_;
 };

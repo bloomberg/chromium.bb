@@ -22,22 +22,22 @@ OverlayStrategyUnderlay::~OverlayStrategyUnderlay() {}
 
 bool OverlayStrategyUnderlay::Attempt(
     const SkMatrix44& output_color_matrix,
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     RenderPass* render_pass,
-    cc::OverlayCandidateList* candidate_list,
+    OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
   QuadList& quad_list = render_pass->quad_list;
   for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
-    cc::OverlayCandidate candidate;
-    if (!cc::OverlayCandidate::FromDrawQuad(
-            resource_provider, output_color_matrix, *it, &candidate) ||
+    OverlayCandidate candidate;
+    if (!OverlayCandidate::FromDrawQuad(resource_provider, output_color_matrix,
+                                        *it, &candidate) ||
         (opaque_mode_ == OpaqueMode::RequireOpaqueCandidates &&
          !candidate.is_opaque)) {
       continue;
     }
 
     // Add the overlay.
-    cc::OverlayCandidateList new_candidate_list = *candidate_list;
+    OverlayCandidateList new_candidate_list = *candidate_list;
     new_candidate_list.push_back(candidate);
     new_candidate_list.back().plane_z_order = -1;
     new_candidate_list.front().is_opaque = false;
@@ -49,7 +49,7 @@ bool OverlayStrategyUnderlay::Attempt(
     // need to switch out the video quad with a black transparent one.
     if (new_candidate_list.back().overlay_handled) {
       new_candidate_list.back().is_unoccluded =
-          !cc::OverlayCandidate::IsOccluded(candidate, quad_list.cbegin(), it);
+          !OverlayCandidate::IsOccluded(candidate, quad_list.cbegin(), it);
       quad_list.ReplaceExistingQuadWithOpaqueTransparentSolidColor(it);
       candidate_list->swap(new_candidate_list);
 
