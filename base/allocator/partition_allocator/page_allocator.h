@@ -133,12 +133,31 @@ BASE_EXPORT WARN_UNUSED_RESULT bool RecommitSystemPages(
 // based on the original page content, or a page of zeroes.
 BASE_EXPORT void DiscardSystemPages(void* address, size_t length);
 
-ALWAYS_INLINE uintptr_t RoundUpToSystemPage(uintptr_t address) {
+// Rounds up |address| to the next multiple of |kSystemPageSize|. Returns
+// 0 for an |address| of 0.
+constexpr ALWAYS_INLINE uintptr_t RoundUpToSystemPage(uintptr_t address) {
   return (address + kSystemPageOffsetMask) & kSystemPageBaseMask;
 }
 
-ALWAYS_INLINE uintptr_t RoundDownToSystemPage(uintptr_t address) {
+// Rounds down |address| to the previous multiple of |kSystemPageSize|. Returns
+// 0 for an |address| of 0.
+constexpr ALWAYS_INLINE uintptr_t RoundDownToSystemPage(uintptr_t address) {
   return address & kSystemPageBaseMask;
+}
+
+// Rounds up |address| to the next multiple of |kPageAllocationGranularity|.
+// Returns 0 for an |address| of 0.
+constexpr ALWAYS_INLINE uintptr_t
+RoundUpToPageAllocationGranularity(uintptr_t address) {
+  return (address + kPageAllocationGranularityOffsetMask) &
+         kPageAllocationGranularityBaseMask;
+}
+
+// Rounds down |address| to the previous multiple of
+// |kPageAllocationGranularity|. Returns 0 for an |address| of 0.
+constexpr ALWAYS_INLINE uintptr_t
+RoundDownToPageAllocationGranularity(uintptr_t address) {
+  return address & kPageAllocationGranularityBaseMask;
 }
 
 // Reserves (at least) |size| bytes of address space, aligned to

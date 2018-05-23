@@ -34,6 +34,37 @@ constexpr size_t kHugeMemoryAmount =
 
 }  // namespace
 
+TEST(PageAllocatorTest, Rounding) {
+  EXPECT_EQ(0u, RoundUpToSystemPage(0u));
+  EXPECT_EQ(kSystemPageSize, RoundUpToSystemPage(1));
+  EXPECT_EQ(kSystemPageSize, RoundUpToSystemPage(kSystemPageSize - 1));
+  EXPECT_EQ(kSystemPageSize, RoundUpToSystemPage(kSystemPageSize));
+  EXPECT_EQ(2 * kSystemPageSize, RoundUpToSystemPage(kSystemPageSize + 1));
+  EXPECT_EQ(0u, RoundDownToSystemPage(0u));
+  EXPECT_EQ(0u, RoundDownToSystemPage(kSystemPageSize - 1));
+  EXPECT_EQ(kSystemPageSize, RoundDownToSystemPage(kSystemPageSize));
+  EXPECT_EQ(kSystemPageSize, RoundDownToSystemPage(kSystemPageSize + 1));
+  EXPECT_EQ(kSystemPageSize, RoundDownToSystemPage(2 * kSystemPageSize - 1));
+  EXPECT_EQ(0u, RoundUpToPageAllocationGranularity(0u));
+  EXPECT_EQ(kPageAllocationGranularity, RoundUpToPageAllocationGranularity(1));
+  EXPECT_EQ(kPageAllocationGranularity,
+            RoundUpToPageAllocationGranularity(kPageAllocationGranularity - 1));
+  EXPECT_EQ(kPageAllocationGranularity,
+            RoundUpToPageAllocationGranularity(kPageAllocationGranularity));
+  EXPECT_EQ(2 * kPageAllocationGranularity,
+            RoundUpToPageAllocationGranularity(kPageAllocationGranularity + 1));
+  EXPECT_EQ(0u, RoundDownToPageAllocationGranularity(0u));
+  EXPECT_EQ(
+      0u, RoundDownToPageAllocationGranularity(kPageAllocationGranularity - 1));
+  EXPECT_EQ(kPageAllocationGranularity,
+            RoundDownToPageAllocationGranularity(kPageAllocationGranularity));
+  EXPECT_EQ(kPageAllocationGranularity, RoundDownToPageAllocationGranularity(
+                                            kPageAllocationGranularity + 1));
+  EXPECT_EQ(
+      kPageAllocationGranularity,
+      RoundDownToPageAllocationGranularity(2 * kPageAllocationGranularity - 1));
+}
+
 // Test that failed page allocations invoke base::ReleaseReservation().
 // We detect this by making a reservation and ensuring that after failure, we
 // can make a new reservation.

@@ -11,31 +11,31 @@
 
 namespace base {
 #if defined(OS_WIN)
-static const size_t kPageAllocationGranularityShift = 16;  // 64KB
+static constexpr size_t kPageAllocationGranularityShift = 16;  // 64KB
 #elif defined(_MIPS_ARCH_LOONGSON)
-static const size_t kPageAllocationGranularityShift = 14;  // 16KB
+static constexpr size_t kPageAllocationGranularityShift = 14;  // 16KB
 #else
-static const size_t kPageAllocationGranularityShift = 12;  // 4KB
+static constexpr size_t kPageAllocationGranularityShift = 12;  // 4KB
 #endif
-static const size_t kPageAllocationGranularity =
+static constexpr size_t kPageAllocationGranularity =
     1 << kPageAllocationGranularityShift;
-static const size_t kPageAllocationGranularityOffsetMask =
+static constexpr size_t kPageAllocationGranularityOffsetMask =
     kPageAllocationGranularity - 1;
-static const size_t kPageAllocationGranularityBaseMask =
+static constexpr size_t kPageAllocationGranularityBaseMask =
     ~kPageAllocationGranularityOffsetMask;
 
 #if defined(_MIPS_ARCH_LOONGSON)
-static const size_t kSystemPageSize = 16384;
+static constexpr size_t kSystemPageSize = 16384;
 #else
-static const size_t kSystemPageSize = 4096;
+static constexpr size_t kSystemPageSize = 4096;
 #endif
-static const size_t kSystemPageOffsetMask = kSystemPageSize - 1;
+static constexpr size_t kSystemPageOffsetMask = kSystemPageSize - 1;
 static_assert((kSystemPageSize & (kSystemPageSize - 1)) == 0,
               "kSystemPageSize must be power of 2");
-static const size_t kSystemPageBaseMask = ~kSystemPageOffsetMask;
+static constexpr size_t kSystemPageBaseMask = ~kSystemPageOffsetMask;
 
-static const size_t kPageMetadataShift = 5;  // 32 bytes per partition page.
-static const size_t kPageMetadataSize = 1 << kPageMetadataShift;
+static constexpr size_t kPageMetadataShift = 5;  // 32 bytes per partition page.
+static constexpr size_t kPageMetadataSize = 1 << kPageMetadataShift;
 
 }  // namespace base
 
