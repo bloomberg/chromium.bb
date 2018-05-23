@@ -4,6 +4,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "services/video_capture/test/fake_device_descriptor_test.h"
 #include "services/video_capture/test/mock_receiver.h"
 
@@ -87,8 +88,15 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest, AccessIsRevokedOnSecondAccess) {
   ASSERT_FALSE(device_access_2_revoked);
 }
 
+// Flaky. crbug.com/845661
+#if defined(OS_LINUX)
+#define MAYBE_CanUseSecondRequestedProxy DISABLED_CanUseSecondRequestedProxy
+#else
+#define MAYBE_CanUseSecondRequestedProxy CanUseSecondRequestedProxy
+#endif
+
 // Tests that a second proxy requested for a device can be used successfully.
-TEST_F(FakeVideoCaptureDeviceDescriptorTest, CanUseSecondRequestedProxy) {
+TEST_F(FakeVideoCaptureDeviceDescriptorTest, MAYBE_CanUseSecondRequestedProxy) {
   mojom::DevicePtr device_proxy_1;
   factory_->CreateDevice(fake_device_info_.descriptor.device_id,
                          mojo::MakeRequest(&device_proxy_1), base::DoNothing());
