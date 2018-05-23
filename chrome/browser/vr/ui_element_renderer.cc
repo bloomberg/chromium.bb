@@ -101,16 +101,13 @@ void UiElementRenderer::DrawRadialGradientQuad(
 
 void UiElementRenderer::DrawGradientGridQuad(
     const gfx::Transform& model_view_proj_matrix,
-    const SkColor edge_color,
-    const SkColor center_color,
     const SkColor grid_color,
     int gridline_count,
     float opacity) {
   TRACE_EVENT0("gpu", "UiElementRenderer::DrawGradientGridQuad");
   FlushIfNecessary(gradient_grid_renderer_.get());
-  gradient_grid_renderer_->Draw(model_view_proj_matrix, edge_color,
-                                center_color, grid_color, gridline_count,
-                                opacity);
+  gradient_grid_renderer_->Draw(model_view_proj_matrix, grid_color,
+                                gridline_count, opacity);
 }
 
 void UiElementRenderer::DrawController(

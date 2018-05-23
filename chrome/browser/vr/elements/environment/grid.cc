@@ -68,8 +68,8 @@ void Grid::NotifyClientColorAnimated(SkColor color,
 
 void Grid::Render(UiElementRenderer* renderer, const CameraModel& model) const {
   renderer->DrawGradientGridQuad(
-      model.view_proj_matrix * world_space_transform(), edge_color(),
-      center_color(), grid_color_, gridline_count_, computed_opacity());
+      model.view_proj_matrix * world_space_transform(), grid_color_,
+      gridline_count_, computed_opacity());
 }
 
 Grid::Renderer::~Renderer() = default;
@@ -83,8 +83,6 @@ Grid::Renderer::Renderer() : BaseQuadRenderer(kVertexShader, kFragmentShader) {
 }
 
 void Grid::Renderer::Draw(const gfx::Transform& model_view_proj_matrix,
-                          SkColor edge_color,
-                          SkColor center_color,
                           SkColor grid_color,
                           int gridline_count,
                           float opacity) {
