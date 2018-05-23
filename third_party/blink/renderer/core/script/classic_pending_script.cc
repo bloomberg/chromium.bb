@@ -225,15 +225,6 @@ void ClassicPendingScript::Trace(blink::Visitor* visitor) {
   PendingScript::Trace(visitor);
 }
 
-bool ClassicPendingScript::CheckMIMETypeBeforeRunScript(
-    Document* context_document) const {
-  if (!is_external_)
-    return true;
-
-  return AllowedByNosniff::MimeTypeAsScript(context_document,
-                                            GetResource()->GetResponse());
-}
-
 static SingleCachedMetadataHandler* GetInlineCacheHandler(const String& source,
                                                           Document& document) {
   if (!RuntimeEnabledFeatures::CacheInlineScriptCodeEnabled())
@@ -282,6 +273,14 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
 
   DCHECK(GetResource()->IsLoaded());
   ScriptResource* resource = ToScriptResource(GetResource());
+
+  // If the MIME check fails, which is considered as load failure.
+  if (!AllowedByNosniff::MimeTypeAsScript(
+          GetElement()->GetDocument().ContextDocument(),
+          resource->GetResponse())) {
+    error_occurred = true;
+  }
+
   bool streamer_ready = (ready_state_ == kReady) && streamer_ &&
                         !streamer_->StreamingSuppressed();
   ScriptSourceCode source_code(streamer_ready ? streamer_ : nullptr, resource);
