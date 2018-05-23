@@ -112,9 +112,8 @@ class CORE_EXPORT FormData final
 // Entry objects are immutable.
 class FormData::Entry : public GarbageCollectedFinalized<FormData::Entry> {
  public:
-  Entry(const String& name, const String& value) : name_(name), value_(value) {}
-  Entry(const String& name, Blob* blob, const String& filename)
-      : name_(name), blob_(blob), filename_(filename) {}
+  Entry(const String& name, const String& value);
+  Entry(const String& name, Blob* blob, const String& filename);
   void Trace(blink::Visitor*);
 
   bool IsString() const { return !blob_; }
