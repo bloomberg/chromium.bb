@@ -323,7 +323,7 @@ class DownloadSuggestionsProviderTest : public testing::Test {
     DCHECK(provider_);
     offline_pages::OfflinePageModel::DeletedPageInfo info(
         item.offline_id, item.system_download_id, item.client_id,
-        item.request_origin);
+        item.request_origin, item.url);
     provider_->OfflinePageDeleted(info);
   }
 

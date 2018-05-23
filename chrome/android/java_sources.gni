@@ -2081,6 +2081,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/ntp/cards/SuggestionsSectionTest.java",
   "junit/src/org/chromium/chrome/browser/ntp/cards/SectionListTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/BackgroundSchedulerTest.java",
+  "junit/src/org/chromium/chrome/browser/offlinepages/CctOfflinePageModelObserverTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/ClientIdTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/OfflineBackgroundTaskTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageBridgeUnitTest.java",
