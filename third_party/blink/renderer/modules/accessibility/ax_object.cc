@@ -1657,7 +1657,7 @@ bool AXObject::SupportsARIAActiveDescendant() const {
   // According to the ARIA Spec, all ARIA composite widgets, ARIA text boxes,
   // ARIA groups and ARIA application should be able to expose an active descendant.
   // Implicitly, <input> and <textarea> elements should also have this ability.
-  switch (AriaRoleAttribute()) {
+  switch (RoleValue()) {
     case kComboBoxGroupingRole:
     case kComboBoxMenuButtonRole:
     case kGridRole:
