@@ -49,6 +49,7 @@ constexpr char kAdOfflineAuthId[] = "offline-ad-auth";
 
 constexpr char kAdMachineName[] = "machine_name";
 constexpr char kTestActiveDirectoryUser[] = "test-user";
+constexpr char kTestUserRealm[] = "user.realm";
 constexpr char kAdMachineInput[] = "machineNameInput";
 constexpr char kAdMoreOptionsButton[] = "moreOptionsBtn";
 constexpr char kAdUserInput[] = "userInput";
@@ -99,7 +100,8 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
       : LoginManagerTest(true),
         // Using the same realm as supervised user domain. Should be treated as
         // normal realm.
-        test_realm_(user_manager::kSupervisedUserDomain) {}
+        test_realm_(user_manager::kSupervisedUserDomain),
+        autocomplete_realm_(test_realm_) {}
 
   ~ActiveDirectoryLoginTest() override = default;
 
@@ -214,7 +216,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
 
     // Checks if realm is set to autocomplete username.
     EXPECT_EQ(
-        "@" + test_realm_,
+        "@" + autocomplete_realm_,
         js_checker().GetString(
             JSElement(kAdOfflineAuthId, kAdAutocompleteRealm) + innerText));
 
@@ -338,11 +340,29 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   }
 
   const std::string test_realm_;
+  std::string autocomplete_realm_;
 
  private:
   TestAuthPolicyClient* fake_auth_policy_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryLoginTest);
+};
+
+class ActiveDirectoryLoginAutocompleteTest : public ActiveDirectoryLoginTest {
+ public:
+  ActiveDirectoryLoginAutocompleteTest() = default;
+  void SetUpInProcessBrowserTestFixture() override {
+    enterprise_management::ChromeDeviceSettingsProto device_settings;
+    device_settings.mutable_login_screen_domain_auto_complete()
+        ->set_login_screen_domain_auto_complete(kTestUserRealm);
+    fake_auth_policy_client()->set_device_policy(device_settings);
+    autocomplete_realm_ = kTestUserRealm;
+
+    ActiveDirectoryLoginTest::SetUpInProcessBrowserTestFixture();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryLoginAutocompleteTest);
 };
 
 }  // namespace
@@ -491,6 +511,19 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest,
   ClosePasswordChangeScreen();
   TestLoginVisible();
   TriggerPasswordChangeScreen();
+}
+
+// Marks as Active Directory enterprise device and OOBE as completed.
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginAutocompleteTest,
+                       PRE_TestAutocomplete) {
+  MarkAsActiveDirectoryEnterprise();
+}
+
+// Tests that DeviceLoginScreenDomainAutoComplete policy overrides device realm
+// for user autocomplete.
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginAutocompleteTest, TestAutocomplete) {
+  TestLoginVisible();
+  TestDomainVisible();
 }
 
 }  // namespace chromeos

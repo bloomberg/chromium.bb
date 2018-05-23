@@ -1235,10 +1235,14 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.loading = true;
       this.startLoadingTimer_();
       var ADAuthUI = this.getSigninFrame_();
-      if ('realm' in params) {
+      if ('realm' in params)
         ADAuthUI.realm = params['realm'];
+
+      if ('emailDomain' in params)
+        ADAuthUI.userRealm = '@' + params['emailDomain'];
+      else if ('realm' in params)
         ADAuthUI.userRealm = '@' + params['realm'];
-      }
+
       ADAuthUI.setUser(params['email']);
       this.onAuthReady_();
     },
