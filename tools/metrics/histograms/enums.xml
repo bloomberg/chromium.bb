@@ -19727,6 +19727,7 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="MTP (Media Transfer Protocol) Device"/>
   <int value="6" label="Media View"/>
   <int value="7" label="Crostini Linux Files"/>
+  <int value="8" label="Android Files"/>
 </enum>
 
 <enum name="FileManagerZipHandlerType">
@@ -27849,6 +27850,7 @@ from previous Chrome versions.
   <int value="772348426" label="AffiliationBasedMatching:enabled"/>
   <int value="772360813"
       label="enable-fullscreen-handwriting-virtual-keyboard:enabled"/>
+  <int value="773743944" label="show-android-files-in-files-app"/>
   <int value="773919225" label="disable-office-editing-component-extension"/>
   <int value="777667507" label="DesktopPWAsLinkCapturing:enabled"/>
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>

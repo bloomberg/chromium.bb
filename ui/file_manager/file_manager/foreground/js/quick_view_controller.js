@@ -133,6 +133,7 @@ QuickViewController.LOCAL_VOLUME_TYPES_ = [
   VolumeManagerCommon.VolumeType.ARCHIVE,
   VolumeManagerCommon.VolumeType.DOWNLOADS,
   VolumeManagerCommon.VolumeType.REMOVABLE,
+  VolumeManagerCommon.VolumeType.ANDROID_FILES,
 ];
 
 /**

@@ -55,6 +55,7 @@ enum VolumeType {
   VOLUME_TYPE_MTP,
   VOLUME_TYPE_MEDIA_VIEW,
   VOLUME_TYPE_CROSTINI,
+  VOLUME_TYPE_ANDROID_FILES,
   // The enum values must be kept in sync with FileManagerVolumeType in
   // tools/metrics/histograms/histograms.xml. Since enums for histograms are
   // append-only (for keeping the number consistent across versions), new values
@@ -100,6 +101,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
       const std::string& root_document_id);
   static std::unique_ptr<Volume> CreateForSshfsCrostini(
       const base::FilePath& crostini_path);
+  static std::unique_ptr<Volume> CreateForAndroidFiles();
   static std::unique_ptr<Volume> CreateForTesting(
       const base::FilePath& path,
       VolumeType volume_type,
