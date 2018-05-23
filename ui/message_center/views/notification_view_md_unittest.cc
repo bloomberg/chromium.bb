@@ -499,8 +499,7 @@ TEST_F(NotificationViewMDTest, TestInlineReply) {
   notification_view()->ToggleExpanded();
   EXPECT_FALSE(notification_view()->inline_reply_->visible());
 
-  // Click the button again and focus on the inline textfield.
-  generator.ClickLeftButton();
+  // Click the button again and the inline textfield should be focused.
   generator.ClickLeftButton();
   EXPECT_TRUE(notification_view()->inline_reply_->visible());
   EXPECT_TRUE(notification_view()->inline_reply_->textfield()->visible());
