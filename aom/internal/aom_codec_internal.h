@@ -104,10 +104,7 @@ typedef aom_codec_err_t (*aom_codec_destroy_fn_t)(aom_codec_alg_priv_t *ctx);
  *
  * \param[in]      data    Pointer to a block of data to parse
  * \param[in]      data_sz Size of the data buffer
- * \param[in,out]  si      Pointer to stream info to update. The size member
- *                         \ref MUST be properly initialized, but \ref MAY be
- *                         clobbered by the algorithm. This parameter \ref MAY
- *                         be NULL.
+ * \param[in,out]  si      Pointer to stream info to update
  *
  * \retval #AOM_CODEC_OK
  *     Bitstream is parsable and stream information updated
@@ -121,10 +118,7 @@ typedef aom_codec_err_t (*aom_codec_peek_si_fn_t)(const uint8_t *data,
  * Returns information about the stream that has been parsed during decoding.
  *
  * \param[in]      ctx     Pointer to this instance's context
- * \param[in,out]  si      Pointer to stream info to update. The size member
- *                         \ref MUST be properly initialized, but \ref MAY be
- *                         clobbered by the algorithm. This parameter \ref MAY
- *                         be NULL.
+ * \param[in,out]  si      Pointer to stream info to update
  *
  * \retval #AOM_CODEC_OK
  *     Bitstream is parsable and stream information updated
