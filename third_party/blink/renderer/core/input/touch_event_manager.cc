@@ -616,8 +616,7 @@ WebInputEventResult TouchEventManager::FlushEvents() {
   // sending the event.
   if (touch_sequence_document_ && touch_sequence_document_->GetPage() &&
       HasTouchHandlers(
-          touch_sequence_document_->GetPage()->GetEventHandlerRegistry()) &&
-      touch_sequence_document_->GetFrame() &&
+          touch_sequence_document_->GetFrame()->GetEventHandlerRegistry()) &&
       touch_sequence_document_->GetFrame()->View()) {
     result = DispatchTouchEventFromAccumulatdTouchPoints();
   }

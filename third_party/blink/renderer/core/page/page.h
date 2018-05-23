@@ -58,7 +58,6 @@ class Document;
 class DOMRectList;
 class DragCaret;
 class DragController;
-class EventHandlerRegistry;
 class FocusController;
 class Frame;
 class OverscrollController;
@@ -216,9 +215,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   ConsoleMessageStorage& GetConsoleMessageStorage();
   const ConsoleMessageStorage& GetConsoleMessageStorage() const;
 
-  EventHandlerRegistry& GetEventHandlerRegistry();
-  const EventHandlerRegistry& GetEventHandlerRegistry() const;
-
   TopDocumentRootScrollerController& GlobalRootScrollerController() const;
 
   VisualViewport& GetVisualViewport();
@@ -354,7 +350,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   Member<SmoothScrollSequencer> smooth_scroll_sequencer_;
   const Member<BrowserControls> browser_controls_;
   const Member<ConsoleMessageStorage> console_message_storage_;
-  const Member<EventHandlerRegistry> event_handler_registry_;
   const Member<TopDocumentRootScrollerController>
       global_root_scroller_controller_;
   const Member<VisualViewport> visual_viewport_;

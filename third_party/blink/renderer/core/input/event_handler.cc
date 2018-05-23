@@ -152,6 +152,10 @@ EventHandler::EventHandler(LocalFrame& frame)
           &EventHandler::CursorUpdateTimerFired),
       event_handler_will_reset_capturing_mouse_events_node_(0),
       should_only_fire_drag_over_event_(false),
+      event_handler_registry_(
+          frame_->IsLocalRoot()
+              ? new EventHandlerRegistry(*frame_)
+              : &frame_->LocalFrameRoot().GetEventHandlerRegistry()),
       scroll_manager_(new ScrollManager(frame)),
       mouse_event_manager_(new MouseEventManager(frame, *scroll_manager_)),
       mouse_wheel_event_manager_(new MouseWheelEventManager(frame)),
@@ -176,6 +180,7 @@ void EventHandler::Trace(blink::Visitor* visitor) {
   visitor->Trace(last_scrollbar_under_mouse_);
   visitor->Trace(drag_target_);
   visitor->Trace(frame_set_being_resized_);
+  visitor->Trace(event_handler_registry_);
   visitor->Trace(scroll_manager_);
   visitor->Trace(mouse_event_manager_);
   visitor->Trace(mouse_wheel_event_manager_);

@@ -1100,7 +1100,7 @@ static void AccumulateDocumentTouchEventTargetRects(
     TouchAction supported_fast_actions) {
   DCHECK(document);
   const EventTargetSet* targets =
-      document->GetPage()->GetEventHandlerRegistry().EventHandlerTargets(
+      document->GetFrame()->GetEventHandlerRegistry().EventHandlerTargets(
           event_class);
   if (!targets)
     return;
@@ -1147,13 +1147,10 @@ static void AccumulateDocumentTouchEventTargetRects(
     if (document_node.View() && document_node.View()->ShouldThrottleRendering())
       continue;
 
-    // Ignore events which apply to a different LocalFrameRoot, as they have
-    // their own lifecycle. Any events that apply to them will get processed
-    // accordingly.
-    if (document_node.GetFrame()->LocalFrameRoot() !=
-        document->GetFrame()->LocalFrameRoot()) {
-      continue;
-    }
+    // Only event targets belonging to the same local root as |document| should
+    // be processed here.
+    DCHECK_EQ(&document->GetFrame()->LocalFrameRoot(),
+              &document_node.GetFrame()->LocalFrameRoot());
 
     if ((window || node->IsDocumentNode()) && &document_node != document) {
       AccumulateDocumentTouchEventTargetRects(

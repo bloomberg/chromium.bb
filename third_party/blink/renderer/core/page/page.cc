@@ -146,7 +146,6 @@ Page::Page(PageClients& page_clients)
       pointer_lock_controller_(PointerLockController::Create(this)),
       browser_controls_(BrowserControls::Create(*this)),
       console_message_storage_(new ConsoleMessageStorage()),
-      event_handler_registry_(new EventHandlerRegistry(*this)),
       global_root_scroller_controller_(
           TopDocumentRootScrollerController::Create(*this)),
       visual_viewport_(VisualViewport::Create(*this)),
@@ -234,14 +233,6 @@ ConsoleMessageStorage& Page::GetConsoleMessageStorage() {
 
 const ConsoleMessageStorage& Page::GetConsoleMessageStorage() const {
   return *console_message_storage_;
-}
-
-EventHandlerRegistry& Page::GetEventHandlerRegistry() {
-  return *event_handler_registry_;
-}
-
-const EventHandlerRegistry& Page::GetEventHandlerRegistry() const {
-  return *event_handler_registry_;
 }
 
 TopDocumentRootScrollerController& Page::GlobalRootScrollerController() const {
@@ -713,7 +704,6 @@ void Page::Trace(blink::Visitor* visitor) {
   visitor->Trace(smooth_scroll_sequencer_);
   visitor->Trace(browser_controls_);
   visitor->Trace(console_message_storage_);
-  visitor->Trace(event_handler_registry_);
   visitor->Trace(global_root_scroller_controller_);
   visitor->Trace(visual_viewport_);
   visitor->Trace(overscroll_controller_);

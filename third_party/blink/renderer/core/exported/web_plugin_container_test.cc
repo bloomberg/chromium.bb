@@ -1440,8 +1440,10 @@ TEST_F(WebPluginContainerTest, NeedsWheelEvents) {
   plugin_container_one_element.PluginContainer()->SetWantsWheelEvents(true);
 
   RunPendingTasks();
-  EXPECT_TRUE(web_view->GetPage()->GetEventHandlerRegistry().HasEventHandlers(
-      EventHandlerRegistry::kWheelEventBlocking));
+  EXPECT_TRUE(web_view->MainFrameImpl()
+                  ->GetFrame()
+                  ->GetEventHandlerRegistry()
+                  .HasEventHandlers(EventHandlerRegistry::kWheelEventBlocking));
 }
 
 TEST_F(WebPluginContainerTest, IFramePluginDocumentDisplayNone) {

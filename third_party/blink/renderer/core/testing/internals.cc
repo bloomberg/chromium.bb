@@ -1687,7 +1687,7 @@ static unsigned EventHandlerCount(
   if (!document.GetPage())
     return 0;
   EventHandlerRegistry* registry =
-      &document.GetPage()->GetEventHandlerRegistry();
+      &document.GetFrame()->GetEventHandlerRegistry();
   unsigned count = 0;
   const EventTargetSet* targets = registry->EventHandlerTargets(handler_class);
   if (targets) {

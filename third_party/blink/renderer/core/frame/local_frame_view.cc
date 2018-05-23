@@ -5534,13 +5534,12 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
     SetSubtreeNeedsPaintPropertyUpdate();
   }
 
+  EventHandlerRegistry& registry = frame_->GetEventHandlerRegistry();
   bool has_handlers =
-      frame_->GetPage() &&
-      (frame_->GetPage()->GetEventHandlerRegistry().HasEventHandlers(
-           EventHandlerRegistry::kTouchAction) ||
-       frame_->GetPage()->GetEventHandlerRegistry().HasEventHandlers(
+      (registry.HasEventHandlers(EventHandlerRegistry::kTouchAction) ||
+       registry.HasEventHandlers(
            EventHandlerRegistry::kTouchStartOrMoveEventBlocking) ||
-       frame_->GetPage()->GetEventHandlerRegistry().HasEventHandlers(
+       registry.HasEventHandlers(
            EventHandlerRegistry::kTouchStartOrMoveEventBlockingLowLatency));
   if (was_throttled != CanThrottleRendering() && scrolling_coordinator &&
       has_handlers) {

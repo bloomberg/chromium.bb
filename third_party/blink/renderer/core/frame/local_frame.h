@@ -64,6 +64,7 @@ class Document;
 class Editor;
 class Element;
 class EventHandler;
+class EventHandlerRegistry;
 class FetchParameters;
 class FloatSize;
 class FrameConsole;
@@ -155,6 +156,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   Editor& GetEditor() const;
   EventHandler& GetEventHandler() const;
+  EventHandlerRegistry& GetEventHandlerRegistry() const;
   FrameLoader& Loader() const;
   NavigationScheduler& GetNavigationScheduler() const;
   FrameSelection& Selection() const;

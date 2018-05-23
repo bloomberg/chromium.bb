@@ -2144,7 +2144,7 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
       (old_touch_action == TouchAction::kTouchActionAuto) !=
           (new_style.GetTouchAction() == TouchAction::kTouchActionAuto)) {
     EventHandlerRegistry& registry =
-        GetDocument().GetPage()->GetEventHandlerRegistry();
+        GetDocument().GetFrame()->GetEventHandlerRegistry();
     if (new_style.GetTouchAction() != TouchAction::kTouchActionAuto) {
       registry.DidAddEventHandler(*GetNode(),
                                   EventHandlerRegistry::kTouchAction);
@@ -2992,7 +2992,7 @@ void LayoutObject::WillBeDestroyed() {
   if (GetNode() && !GetNode()->IsTextNode() && style_ &&
       style_->GetTouchAction() != TouchAction::kTouchActionAuto) {
     EventHandlerRegistry& registry =
-        GetDocument().GetPage()->GetEventHandlerRegistry();
+        GetDocument().GetFrame()->GetEventHandlerRegistry();
     if (registry.EventHandlerTargets(EventHandlerRegistry::kTouchAction)
             ->Contains(GetNode())) {
       registry.DidRemoveEventHandler(*GetNode(),
