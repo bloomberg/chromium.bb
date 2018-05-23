@@ -65,6 +65,18 @@ class AccountTracker : public OAuth2TokenService::Observer,
   // in the vector. Additional accounts will be in order of their gaia IDs.
   std::vector<AccountIds> GetAccounts() const;
 
+  // Indicates if all user information has been fetched. If the result is false,
+  // there are still unfinished fetchers.
+  virtual bool IsAllUserInfoFetched() const;
+
+ private:
+  friend class AccountIdFetcher;
+
+  struct AccountState {
+    AccountIds ids;
+    bool is_signed_in;
+  };
+
   // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_key) override;
   void OnRefreshTokenRevoked(const std::string& account_key) override;
@@ -78,19 +90,6 @@ class AccountTracker : public OAuth2TokenService::Observer,
                              const std::string& username) override;
   void GoogleSignedOut(const std::string& account_id,
                        const std::string& username) override;
-
-  // Sets the state of an account. Does not fire notifications.
-  void SetAccountStateForTest(AccountIds ids, bool is_signed_in);
-
-  // Indicates if all user information has been fetched. If the result is false,
-  // there are still unfinished fetchers.
-  virtual bool IsAllUserInfoFetched() const;
-
- private:
-  struct AccountState {
-    AccountIds ids;
-    bool is_signed_in;
-  };
 
   void NotifySignInChanged(const AccountState& account);
 
