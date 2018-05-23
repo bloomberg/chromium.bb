@@ -542,7 +542,7 @@
       'android-marshmallow-arm64-rel': 'android_release_trybot_arm64_no_symbols',
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',
-      'android_binary_size': 'official_goma_minimal_symbols_android',
+      'android-binary-size': 'official_goma_minimal_symbols_android',
       'android_blink_rel': 'android_release_trybot',
       'android_cfi_rel_ng': 'android_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
       'android_clang_dbg_recipe': 'android_clang_asan_debug_trybot_compile_only',
