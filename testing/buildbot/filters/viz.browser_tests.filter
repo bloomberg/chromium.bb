@@ -17,11 +17,7 @@
 -WebViewTest.ReloadAfterCrash
 -WebViewGuestTouchFocusBrowserPluginSpecificTest.TouchFocusesBrowserPluginInEmbedder
 
-# Mac
-# Shutdown error. https://crbug.com/823276
--PluginPowerSaverBrowserTest.SmallerThanPlayIcon
-
-# Flaking with missing browser. https://crbug.com/842664
+# Mac Flaking with missing browser. https://crbug.com/842664
 -IndependentOTRProfileManagerTest.DeleteImmediatelyWhenBrowsersAlreadyClosed
 
 # https://crbug.com/843921
