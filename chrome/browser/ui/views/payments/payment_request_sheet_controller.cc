@@ -164,7 +164,7 @@ class BorderedScrollView : public views::ScrollView {
 
   BorderedScrollView() : views::ScrollView() {
     SetBackground(views::CreateThemedSolidBackground(
-        this, ui::NativeTheme::kColorId_WindowBackground));
+        this, ui::NativeTheme::kColorId_DialogBackground));
     SetBorder(views::CreateBorderPainter(
         std::make_unique<BorderedScrollViewBorderPainter>(
             GetNativeTheme()->GetSystemColor(
@@ -217,7 +217,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
     view->set_id(static_cast<int>(sheet_id));
 
   view->SetBackground(views::CreateThemedSolidBackground(
-      view.get(), ui::NativeTheme::kColorId_WindowBackground));
+      view.get(), ui::NativeTheme::kColorId_DialogBackground));
 
   // Paint the sheets to layers, otherwise the MD buttons (which do paint to a
   // layer) won't do proper clipping.
@@ -263,7 +263,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   content_view_->SetPaintToLayer();
   content_view_->layer()->SetFillsBoundsOpaquely(true);
   content_view_->SetBackground(views::CreateThemedSolidBackground(
-      content_view_, ui::NativeTheme::kColorId_WindowBackground));
+      content_view_, ui::NativeTheme::kColorId_DialogBackground));
   content_view_->set_id(static_cast<int>(DialogViewID::CONTENT_VIEW));
   pane_layout->AddView(content_view_);
   pane_->SizeToPreferredSize();
@@ -387,7 +387,7 @@ views::View* PaymentRequestSheetController::CreateHeaderContentSeparatorView() {
 std::unique_ptr<views::Background>
 PaymentRequestSheetController::GetHeaderBackground() {
   return views::CreateThemedSolidBackground(
-      header_view_.get(), ui::NativeTheme::kColorId_WindowBackground);
+      header_view_.get(), ui::NativeTheme::kColorId_DialogBackground);
 }
 
 void PaymentRequestSheetController::ButtonPressed(views::Button* sender,
