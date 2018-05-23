@@ -202,7 +202,6 @@
 
 # Support URLLoaderFactories from embedder in shared workers.
 # https://crbug.com/839982
--ExtensionApiTest.Debugger
 -ExtensionApiTestWithSwitch.ExtensionDebugger
 
 # https://crbug.com/832749

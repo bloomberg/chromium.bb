@@ -27,6 +27,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
 #include "url/origin.h"
 
@@ -40,6 +41,7 @@ bool IsShuttingDown(RenderProcessHost* host) {
 
 void CreateScriptLoaderOnIO(
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
+    std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_info,
     scoped_refptr<ServiceWorkerContextWrapper> context,
     int process_id,
     base::OnceCallback<void(mojom::ServiceWorkerProviderInfoForSharedWorkerPtr,
@@ -52,14 +54,35 @@ void CreateScriptLoaderOnIO(
   base::WeakPtr<ServiceWorkerProviderHost> host =
       context->PreCreateHostForSharedWorker(process_id, &provider_info);
 
+  // Create the factory bundle for loading the script.
+  scoped_refptr<URLLoaderFactoryBundle> factory_bundle =
+      base::MakeRefCounted<URLLoaderFactoryBundle>(
+          std::move(factory_bundle_info));
+
+  // Add the network factory to the bundle. The factory from
+  // CloneNetworkFactory() doesn't support reconnection to the network service
+  // after a crash, but it's OK since it's used for a single shared worker
+  // startup.
+  network::mojom::URLLoaderFactoryPtr network_factory_ptr;
+  loader_factory_getter->CloneNetworkFactory(
+      mojo::MakeRequest(&network_factory_ptr));
+  factory_bundle->SetDefaultFactory(std::move(network_factory_ptr));
+
   // Create the SharedWorkerScriptLoaderFactory.
   network::mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory;
   mojo::MakeStrongAssociatedBinding(
       std::make_unique<SharedWorkerScriptLoaderFactory>(
           context.get(), host->AsWeakPtr(), context->resource_context(),
-          loader_factory_getter->GetNetworkFactory()),
+          std::move(factory_bundle)),
       mojo::MakeRequest(&script_loader_factory));
 
+  // TODO(falken): Also send the factory bundle to the renderer like
+  // CommitNavigation does, to be used for subresource requests from the shared
+  // worker (SharedWorkerScriptLoaderFactory is only used for the main resource
+  // request). However, the restartable network factory should be used in this
+  // case.
+
+  // We continue in StartWorker.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(std::move(callback), std::move(provider_info),
@@ -202,13 +225,37 @@ void SharedWorkerServiceImpl::CreateWorker(
   // Bounce to the IO thread to setup service worker support in case the request
   // for the worker script will need to be intercepted by service workers.
   if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    // Set up the factory bundle for non-NetworkService URLs, e.g.,
+    // chrome-extension:// URLs.
+    ContentBrowserClient::NonNetworkURLLoaderFactoryMap factories;
+    GetContentClient()
+        ->browser()
+        ->RegisterNonNetworkSubresourceURLLoaderFactories(
+            process_id, MSG_ROUTING_NONE, &factories);
+
+    // TODO(falken): Add FileURLLoaderFactory if the requesting frame is a file
+    // resource.
+
+    auto factory_bundle = std::make_unique<URLLoaderFactoryBundleInfo>();
+    for (auto& pair : factories) {
+      const std::string& scheme = pair.first;
+      std::unique_ptr<network::mojom::URLLoaderFactory> factory =
+          std::move(pair.second);
+
+      network::mojom::URLLoaderFactoryPtr factory_ptr;
+      mojo::MakeStrongBinding(std::move(factory),
+                              mojo::MakeRequest(&factory_ptr));
+      factory_bundle->factories_info().emplace(scheme,
+                                               factory_ptr.PassInterface());
+    }
+
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
             &CreateScriptLoaderOnIO,
             service_worker_context_->storage_partition()
                 ->url_loader_factory_getter(),
-            service_worker_context_, process_id,
+            std::move(factory_bundle), service_worker_context_, process_id,
             base::BindOnce(&SharedWorkerServiceImpl::StartWorker,
                            weak_factory_.GetWeakPtr(), std::move(instance),
                            weak_host, std::move(client), process_id, frame_id,
