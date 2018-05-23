@@ -1980,8 +1980,7 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
   if (LoadPdfInterface()) {
     PP_PdfPrintSettings_Dev pdf_print_settings;
     pdf_print_settings.num_pages_per_sheet = print_params.num_pages_per_sheet;
-    // TODO(https://crbug.com/835654): Fill in the value from |print_params|.
-    pdf_print_settings.scale_factor = 100;
+    pdf_print_settings.scale_factor = print_params.scale_factor;
 
     num_pages = plugin_pdf_interface_->PrintBegin(
         pp_instance(), &print_settings, &pdf_print_settings);

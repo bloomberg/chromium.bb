@@ -80,6 +80,7 @@ void SetPageSizeAndContentRect(bool rotated,
 
 // Transform |page| contents to fit in the selected printer paper size.
 void TransformPDFPageForPrinting(FPDF_PAGE page,
+                                 double scale_factor,
                                  const PP_PrintSettings_Dev& print_settings) {
   // Get the source page width and height in points.
   const double src_page_width = FPDF_GetPageWidth(page);
@@ -103,10 +104,10 @@ void TransformPDFPageForPrinting(FPDF_PAGE page,
 
   const gfx::Rect gfx_content_rect(content_rect.x(), content_rect.y(),
                                    content_rect.width(), content_rect.height());
-  const double scale_factor =
-      fit_to_page ? CalculateScaleFactor(gfx_content_rect, src_page_width,
-                                         src_page_height, rotated)
-                  : 1.0;
+  if (fit_to_page) {
+    scale_factor = CalculateScaleFactor(gfx_content_rect, src_page_width,
+                                        src_page_height, rotated);
+  }
 
   // Calculate positions for the clip box.
   PdfRectangle media_box;
@@ -166,6 +167,7 @@ void TransformPDFPageForPrinting(FPDF_PAGE page,
 
 void FitContentsToPrintableAreaIfRequired(
     FPDF_DOCUMENT doc,
+    double scale_factor,
     const PP_PrintSettings_Dev& print_settings) {
   // Check to see if we need to fit pdf contents to printer paper size.
   if (print_settings.print_scaling_option == PP_PRINTSCALINGOPTION_SOURCE_SIZE)
@@ -177,7 +179,7 @@ void FitContentsToPrintableAreaIfRequired(
   // every page to fit the contents in the selected printer paper.
   for (int i = 0; i < num_pages; ++i) {
     ScopedFPDFPage page(FPDF_LoadPage(doc, i));
-    TransformPDFPageForPrinting(page.get(), print_settings);
+    TransformPDFPageForPrinting(page.get(), scale_factor, print_settings);
   }
 }
 
@@ -293,11 +295,13 @@ pp::Buffer_Dev PDFiumPrint::PrintPagesAsRasterPDF(
   if (i == pages_to_print.size()) {
     FPDF_CopyViewerPreferences(output_doc.get(), engine_->doc());
     uint32_t num_pages_per_sheet = pdf_print_settings.num_pages_per_sheet;
+    uint32_t scale_factor = pdf_print_settings.scale_factor;
     if (ShouldDoNup(num_pages_per_sheet)) {
       buffer =
           NupPdfToPdf(output_doc.get(), num_pages_per_sheet, print_settings);
     } else {
-      FitContentsToPrintableAreaIfRequired(output_doc.get(), print_settings);
+      FitContentsToPrintableAreaIfRequired(
+          output_doc.get(), scale_factor / 100.0f, print_settings);
       buffer = GetPrintData(output_doc.get());
     }
   }
@@ -327,10 +331,12 @@ pp::Buffer_Dev PDFiumPrint::PrintPagesAsPDF(
 
   pp::Buffer_Dev buffer;
   uint32_t num_pages_per_sheet = pdf_print_settings.num_pages_per_sheet;
+  uint32_t scale_factor = pdf_print_settings.scale_factor;
   if (ShouldDoNup(num_pages_per_sheet)) {
     buffer = NupPdfToPdf(output_doc.get(), num_pages_per_sheet, print_settings);
   } else {
-    FitContentsToPrintableAreaIfRequired(output_doc.get(), print_settings);
+    FitContentsToPrintableAreaIfRequired(output_doc.get(),
+                                         scale_factor / 100.0f, print_settings);
     buffer = GetPrintData(output_doc.get());
   }
 
@@ -445,7 +451,8 @@ pp::Buffer_Dev PDFiumPrint::NupPdfToPdf(
   if (!output_doc_nup)
     return pp::Buffer_Dev();
 
-  FitContentsToPrintableAreaIfRequired(output_doc_nup.get(), print_settings);
+  FitContentsToPrintableAreaIfRequired(output_doc_nup.get(), 1.0f,
+                                       print_settings);
   return GetPrintData(output_doc_nup.get());
 }
 
