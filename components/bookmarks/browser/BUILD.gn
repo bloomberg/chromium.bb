@@ -47,6 +47,8 @@ static_library("browser") {
     "titled_url_match.cc",
     "typed_count_sorter.cc",
     "typed_count_sorter.h",
+    "url_index.cc",
+    "url_index.h",
   ]
 
   public_deps = [

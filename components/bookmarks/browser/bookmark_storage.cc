@@ -22,6 +22,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/titled_url_index.h"
+#include "components/bookmarks/browser/url_index.h"
 #include "components/bookmarks/common/bookmark_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -111,6 +112,8 @@ void LoadBookmarks(const base::FilePath& path, BookmarkLoadDetails* details) {
     UMA_HISTOGRAM_TIMES("Bookmarks.CreateBookmarkIndexTime",
                         TimeTicks::Now() - start_time);
   }
+
+  details->CreateUrlIndex();
 }
 
 // BookmarkLoadDetails ---------------------------------------------------------
@@ -149,6 +152,10 @@ bool BookmarkLoadDetails::LoadExtraNodes() {
     root_node_->Add(std::move(node), root_node_->child_count());
   }
   return has_non_empty_node;
+}
+
+void BookmarkLoadDetails::CreateUrlIndex() {
+  url_index_ = std::make_unique<UrlIndex>(std::move(root_node_));
 }
 
 BookmarkPermanentNode* BookmarkLoadDetails::CreatePermanentNode(
