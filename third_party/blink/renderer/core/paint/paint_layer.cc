@@ -911,7 +911,7 @@ void PaintLayer::UpdateLayerPosition() {
 
 bool PaintLayer::UpdateSize() {
   LayoutSize old_size = size_;
-  if (IsRootLayer() && RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+  if (IsRootLayer()) {
     size_ = LayoutSize(GetLayoutObject().GetDocument().View()->Size());
   } else if (GetLayoutObject().IsInline() &&
              GetLayoutObject().IsLayoutInline()) {
@@ -1620,8 +1620,6 @@ void PaintLayer::UpdateStackingNode() {
 }
 
 bool PaintLayer::RequiresScrollableArea() const {
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() && IsRootLayer())
-    return true;
   if (!GetLayoutBox())
     return false;
   if (GetLayoutObject().HasOverflowClip())
@@ -2583,8 +2581,6 @@ LayoutRect PaintLayer::BoundingBoxForCompositingInternal(
     IntRect result = IntRect();
     if (LocalFrameView* frame_view = GetLayoutObject().GetFrameView())
       result = IntRect(IntPoint(), frame_view->VisibleContentSize());
-    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() && IsRootLayer())
-      result.Unite(GetLayoutObject().View()->DocumentRect());
     return LayoutRect(result);
   }
 
@@ -2678,11 +2674,10 @@ GraphicsLayer* PaintLayer::GraphicsLayerBacking(const LayoutObject* obj) const {
 BackgroundPaintLocation PaintLayer::GetBackgroundPaintLocation(
     uint32_t* reasons) const {
   BackgroundPaintLocation location;
-  bool may_have_scrolling_layers_without_scrolling =
-      IsRootLayer() && RuntimeEnabledFeatures::RootLayerScrollingEnabled();
+  bool may_have_scrolling_layers_without_scrolling = IsRootLayer();
   if (!ScrollsOverflow() && !may_have_scrolling_layers_without_scrolling) {
     location = kBackgroundPaintInGraphicsLayer;
-  } else if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+  } else {
     // If we care about LCD text, paint root backgrounds into scrolling contents
     // layer even if style suggests otherwise. (For non-root scrollers, we just
     // avoid compositing - see PLSA::ComputeNeedsCompositedScrolling.)
@@ -2691,10 +2686,6 @@ BackgroundPaintLocation PaintLayer::GetBackgroundPaintLocation(
       location = kBackgroundPaintInScrollingContents;
     else
       location = GetLayoutObject().GetBackgroundPaintLocation(reasons);
-  } else {
-    location = IsRootLayer()
-                   ? kBackgroundPaintInGraphicsLayer
-                   : GetLayoutObject().GetBackgroundPaintLocation(reasons);
   }
   if (!IsRootLayer()) {
     stacking_node_->UpdateLayerListsIfNeeded();
@@ -3377,10 +3368,6 @@ void PaintLayer::ClearNeedsRepaintRecursively() {
   for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
     child->ClearNeedsRepaintRecursively();
   needs_repaint_ = false;
-}
-
-bool PaintLayer::IsScrolledByFrameView() const {
-  return IsRootLayer() && !RuntimeEnabledFeatures::RootLayerScrollingEnabled();
 }
 
 DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
