@@ -5,6 +5,8 @@
 #include "components/mirroring/service/receiver_response.h"
 
 #include "base/base64.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "components/mirroring/service/value_util.h"
@@ -119,11 +121,7 @@ bool ReceiverError::Parse(const base::Value& raw_value) {
       !GetString(raw_value, "description", &description))
     return false;
   auto* found = raw_value.FindKey("details");
-  if (found && !found->is_dict())
-    return false;
-  if (found)
-    details = found->Clone();
-  return true;
+  return found && base::JSONWriter::Write(*found, &details);
 }
 
 // ----------------------------------------------------------------------------
@@ -139,14 +137,16 @@ ReceiverResponse::ReceiverResponse(ReceiverResponse&& receiver_response) =
 ReceiverResponse& ReceiverResponse::operator=(
     ReceiverResponse&& receiver_response) = default;
 
-bool ReceiverResponse::Parse(const base::Value& raw_value) {
-  if (!raw_value.is_dict() || !GetInt(raw_value, "sessionId", &session_id) ||
-      !GetInt(raw_value, "seqNum", &sequence_number) ||
-      !GetString(raw_value, "result", &result))
+bool ReceiverResponse::Parse(const std::string& message_data) {
+  std::unique_ptr<base::Value> raw_value = base::JSONReader::Read(message_data);
+  if (!raw_value || !raw_value->is_dict() ||
+      !GetInt(*raw_value, "sessionId", &session_id) ||
+      !GetInt(*raw_value, "seqNum", &sequence_number) ||
+      !GetString(*raw_value, "result", &result))
     return false;
 
   if (result == "error") {
-    auto* found = raw_value.FindKey("error");
+    auto* found = raw_value->FindKey("error");
     if (found) {
       error = std::make_unique<ReceiverError>();
       if (!error->Parse(*found))
@@ -155,7 +155,7 @@ bool ReceiverResponse::Parse(const base::Value& raw_value) {
   }
 
   std::string message_type;
-  if (!GetString(raw_value, "type", &message_type))
+  if (!GetString(*raw_value, "type", &message_type))
     return false;
   // Convert |message_type| to uppercase.
   message_type = base::ToUpperASCII(message_type);
@@ -165,28 +165,28 @@ bool ReceiverResponse::Parse(const base::Value& raw_value) {
     return false;
   }
 
-  auto* found = raw_value.FindKey("answer");
+  auto* found = raw_value->FindKey("answer");
   if (found && !found->is_none()) {
     answer = std::make_unique<Answer>();
     if (!answer->Parse(*found))
       return false;
   }
 
-  found = raw_value.FindKey("status");
+  found = raw_value->FindKey("status");
   if (found && !found->is_none()) {
     status = std::make_unique<ReceiverStatus>();
     if (!status->Parse(*found))
       return false;
   }
 
-  found = raw_value.FindKey("capabilities");
+  found = raw_value->FindKey("capabilities");
   if (found && !found->is_none()) {
     capabilities = std::make_unique<ReceiverCapability>();
     if (!capabilities->Parse(*found))
       return false;
   }
 
-  found = raw_value.FindKey("rpc");
+  found = raw_value->FindKey("rpc");
   if (found && !found->is_none()) {
     // Decode the base64-encoded string.
     if (!found->is_string() || !base::Base64Decode(found->GetString(), &rpc))

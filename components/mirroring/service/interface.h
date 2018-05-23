@@ -7,11 +7,8 @@
 
 #include <string>
 
-#include "base/callback.h"
-#include "base/values.h"
 #include "media/capture/mojom/video_capture.mojom.h"
-#include "media/cast/cast_config.h"
-#include "net/base/ip_endpoint.h"
+#include "net/base/ip_address.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace mirroring {
@@ -47,7 +44,7 @@ constexpr char kWebRtcNamespace[] = "urn:x-cast:com.google.cast.webrtc";
 
 struct CastMessage {
   std::string message_namespace;
-  base::Value data;
+  std::string json_format_data;  // The content of the message.
 };
 
 class CastMessageChannel {

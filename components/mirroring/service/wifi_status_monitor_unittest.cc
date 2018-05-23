@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/values.h"
 #include "components/mirroring/service/message_dispatcher.h"
 #include "components/mirroring/service/value_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,14 +23,15 @@ namespace mirroring {
 namespace {
 
 bool IsNullMessage(const CastMessage& message) {
-  return message.message_namespace.empty() && message.data.is_none();
+  return message.message_namespace.empty() && message.json_format_data.empty();
 }
 
 std::string GetMessageType(const CastMessage& message) {
   std::string type;
-  if (message.data.is_none())
-    return type;
-  EXPECT_TRUE(GetString(message.data, "type", &type));
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::Read(message.json_format_data);
+  EXPECT_TRUE(value);
+  EXPECT_TRUE(GetString(*value, "type", &type));
   return type;
 }
 
@@ -56,7 +58,7 @@ class WifiStatusMonitorTest : public CastMessageChannel,
   // CastMessageChannel implementation. For outbound messages.
   void Send(const CastMessage& message) override {
     last_outbound_message_.message_namespace = message.message_namespace;
-    last_outbound_message_.data = message.data.Clone();
+    last_outbound_message_.json_format_data = message.json_format_data;
   }
 
  protected:
@@ -86,11 +88,9 @@ class WifiStatusMonitorTest : public CastMessageChannel,
 
   // Sends an inbound message to |message_dispatcher|.
   void SendInboundMessage(const std::string& response) {
-    std::unique_ptr<base::Value> value = base::JSONReader::Read(response);
-    ASSERT_TRUE(value);
     CastMessage message;
     message.message_namespace = kWebRtcNamespace;
-    message.data = base::Value::FromUniquePtrValue(std::move(value));
+    message.json_format_data = response;
     static_cast<CastMessageChannel*>(&message_dispatcher_)->Send(message);
     scoped_task_environment_.RunUntilIdle();
   }
@@ -108,7 +108,7 @@ class WifiStatusMonitorTest : public CastMessageChannel,
     EXPECT_EQ("GET_STATUS", GetMessageType(last_outbound_message_));
     // Clear the old outbound message.
     last_outbound_message_.message_namespace.clear();
-    last_outbound_message_.data = base::Value();
+    last_outbound_message_.json_format_data.clear();
     EXPECT_TRUE(IsNullMessage(last_outbound_message_));
     return status_monitor;
   }

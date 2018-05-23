@@ -7,12 +7,10 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,21 +21,9 @@ namespace mirroring {
 
 namespace {
 
-// Generates a CastMessage from the JSON format |message_string|.
-CastMessage GenerateCastMessage(const std::string& message_string,
-                                const std::string& message_namespace) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(message_string);
-  EXPECT_TRUE(value);
-
-  CastMessage message;
-  message.message_namespace = message_namespace;
-  message.data = base::Value::FromUniquePtrValue(std::move(value));
-  return message;
-}
-
 bool IsEqual(const CastMessage& message1, const CastMessage& message2) {
   return message1.message_namespace == message2.message_namespace &&
-         message1.data == message2.data;
+         message1.json_format_data == message2.json_format_data;
 }
 
 void CloneResponse(const ReceiverResponse& response,
@@ -60,7 +46,7 @@ void CloneResponse(const ReceiverResponse& response,
     cloned_response->error = std::make_unique<ReceiverError>();
     cloned_response->error->code = response.error->code;
     cloned_response->error->description = response.error->description;
-    cloned_response->error->details = response.error->details.Clone();
+    cloned_response->error->details = response.error->details;
   }
 }
 
@@ -104,7 +90,7 @@ class MessageDispatcherTest : public CastMessageChannel,
   // CastMessageChannel implementation. Handles outbound message.
   void Send(const CastMessage& message) override {
     last_outbound_message_.message_namespace = message.message_namespace;
-    last_outbound_message_.data = message.data.Clone();
+    last_outbound_message_.json_format_data = message.json_format_data;
   }
 
   // Simulates receiving an inbound message from receiver.
@@ -126,14 +112,14 @@ class MessageDispatcherTest : public CastMessageChannel,
 
 TEST_F(MessageDispatcherTest, SendsOutboundMessage) {
   const std::string test1 = "{\"a\": 1, \"b\": 2}";
-  const CastMessage message1 = GenerateCastMessage(test1, kWebRtcNamespace);
+  const CastMessage message1 = CastMessage{kWebRtcNamespace, test1};
   message_dispatcher_->SendOutboundMessage(message1);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(IsEqual(message1, last_outbound_message_));
   EXPECT_TRUE(last_error_message_.empty());
 
   const std::string test2 = "{\"m\": 99, \"i\": 98, \"u\": 97}";
-  const CastMessage message2 = GenerateCastMessage(test2, kWebRtcNamespace);
+  const CastMessage message2 = CastMessage{kWebRtcNamespace, test2};
   message_dispatcher_->SendOutboundMessage(message2);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(IsEqual(message2, last_outbound_message_));
@@ -147,10 +133,10 @@ TEST_F(MessageDispatcherTest, DispatchMessageToSubscriber) {
       "{\"type\":\"ANSWER\",\"seqNum\":12345,\"result\":\"ok\","
       "\"answer\":{\"udpPort\":50691}}";
   const CastMessage answer_message =
-      GenerateCastMessage(answer_response, kWebRtcNamespace);
+      CastMessage{kWebRtcNamespace, answer_response};
   SendInboundMessage(answer_message);
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_TRUE(last_answer_response_);
+  ASSERT_TRUE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
   EXPECT_EQ(12345, last_answer_response_->sequence_number);
   EXPECT_EQ(ResponseType::ANSWER, last_answer_response_->type);
@@ -166,11 +152,11 @@ TEST_F(MessageDispatcherTest, DispatchMessageToSubscriber) {
       "{\"type\":\"STATUS_RESPONSE\",\"seqNum\":12345,\"result\":\"ok\","
       "\"status\":{\"wifiSnr\":42}}";
   const CastMessage status_message =
-      GenerateCastMessage(status_response, kWebRtcNamespace);
+      CastMessage{kWebRtcNamespace, status_response};
   SendInboundMessage(status_message);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(last_answer_response_);
-  EXPECT_TRUE(last_status_response_);
+  ASSERT_TRUE(last_status_response_);
   EXPECT_EQ(12345, last_status_response_->sequence_number);
   EXPECT_EQ(ResponseType::STATUS_RESPONSE, last_status_response_->type);
   EXPECT_EQ("ok", last_status_response_->result);
@@ -214,9 +200,8 @@ TEST_F(MessageDispatcherTest, DispatchMessageToSubscriber) {
 }
 
 TEST_F(MessageDispatcherTest, IgnoreMalformedMessage) {
-  CastMessage message;
-  message.message_namespace = kWebRtcNamespace;
-  message.data = base::Value("MUAHAHAHAHAHAHAHA!");
+  const CastMessage message =
+      CastMessage{kWebRtcNamespace, "MUAHAHAHAHAHAHAHA!"};
   SendInboundMessage(message);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(last_answer_response_);
@@ -229,7 +214,7 @@ TEST_F(MessageDispatcherTest, IgnoreMessageWithWrongNamespace) {
       "{\"type\":\"ANSWER\",\"seqNum\":12345,\"result\":\"ok\","
       "\"answer\":{\"udpPort\":50691}}";
   const CastMessage answer_message =
-      GenerateCastMessage(answer_response, "Wrong_namespace");
+      CastMessage{"Wrong_namespace", answer_response};
   SendInboundMessage(answer_message);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(last_answer_response_);
@@ -244,8 +229,7 @@ TEST_F(MessageDispatcherTest, RequestReply) {
   message_dispatcher_->Unsubscribe(ResponseType::ANSWER);
   scoped_task_environment_.RunUntilIdle();
   const std::string fake_offer = "{\"type\":\"OFFER\",\"seqNum\":45623}";
-  const CastMessage offer_message =
-      GenerateCastMessage(fake_offer, kWebRtcNamespace);
+  const CastMessage offer_message = CastMessage{kWebRtcNamespace, fake_offer};
   message_dispatcher_->RequestReply(
       offer_message, ResponseType::ANSWER, 45623,
       base::TimeDelta::FromMilliseconds(100),
@@ -258,8 +242,7 @@ TEST_F(MessageDispatcherTest, RequestReply) {
   std::string answer_response =
       "{\"type\":\"ANSWER\",\"seqNum\":12345,\"result\":\"ok\","
       "\"answer\":{\"udpPort\":50691}}";
-  CastMessage answer_message =
-      GenerateCastMessage(answer_response, kWebRtcNamespace);
+  CastMessage answer_message = CastMessage{kWebRtcNamespace, answer_response};
   SendInboundMessage(answer_message);
   scoped_task_environment_.RunUntilIdle();
   // The answer message with mismatched sequence number is ignored.
@@ -270,10 +253,10 @@ TEST_F(MessageDispatcherTest, RequestReply) {
   answer_response =
       "{\"type\":\"ANSWER\",\"seqNum\":45623,\"result\":\"ok\","
       "\"answer\":{\"udpPort\":50691}}";
-  answer_message = GenerateCastMessage(answer_response, kWebRtcNamespace);
+  answer_message = CastMessage{kWebRtcNamespace, answer_response};
   SendInboundMessage(answer_message);
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_TRUE(last_answer_response_);
+  ASSERT_TRUE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
   EXPECT_TRUE(last_error_message_.empty());
   EXPECT_EQ(45623, last_answer_response_->sequence_number);
@@ -290,8 +273,8 @@ TEST_F(MessageDispatcherTest, RequestReply) {
   EXPECT_FALSE(last_error_message_.empty());
   last_error_message_.clear();
 
-  const CastMessage fake_message = GenerateCastMessage(
-      "{\"type\":\"OFFER\",\"seqNum\":12345}", kWebRtcNamespace);
+  const CastMessage fake_message =
+      CastMessage{kWebRtcNamespace, "{\"type\":\"OFFER\",\"seqNum\":12345}"};
   message_dispatcher_->RequestReply(
       fake_message, ResponseType::ANSWER, 12345,
       base::TimeDelta::FromMilliseconds(100),
@@ -306,7 +289,7 @@ TEST_F(MessageDispatcherTest, RequestReply) {
   // Destroy the dispatcher. Expect to receive an unknown type response.
   message_dispatcher_.reset();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_TRUE(last_answer_response_);
+  ASSERT_TRUE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
   EXPECT_TRUE(last_error_message_.empty());
   EXPECT_EQ(ResponseType::UNKNOWN, last_answer_response_->type);

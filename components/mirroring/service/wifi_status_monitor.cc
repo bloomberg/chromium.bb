@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "components/mirroring/service/message_dispatcher.h"
 
@@ -57,7 +58,9 @@ void WifiStatusMonitor::QueryStatus() {
   query.SetKey("get_status", base::Value(status));
   CastMessage get_status_message;
   get_status_message.message_namespace = kWebRtcNamespace;
-  get_status_message.data = std::move(query);
+  const bool did_serialize_query =
+      base::JSONWriter::Write(query, &get_status_message.json_format_data);
+  DCHECK(did_serialize_query);
   message_dispatcher_->SendOutboundMessage(get_status_message);
 }
 

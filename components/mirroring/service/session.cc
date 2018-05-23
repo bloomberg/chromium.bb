@@ -4,6 +4,7 @@
 
 #include "components/mirroring/service/session.h"
 
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -25,6 +26,7 @@
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "net/base/ip_endpoint.h"
 
 using media::cast::FrameSenderConfig;
 using media::cast::RtpPayloadType;
@@ -601,7 +603,9 @@ void Session::CreateAndSendOffer() {
 
   CastMessage message_to_receiver;
   message_to_receiver.message_namespace = kWebRtcNamespace;
-  message_to_receiver.data = std::move(offer_message);
+  const bool did_serialize_offer = base::JSONWriter::Write(
+      offer_message, &message_to_receiver.json_format_data);
+  DCHECK(did_serialize_offer);
 
   message_dispatcher_.RequestReply(
       message_to_receiver, ResponseType::ANSWER, sequence_number,
