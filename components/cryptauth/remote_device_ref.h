@@ -16,7 +16,6 @@
 
 namespace chromeos {
 class EasyUnlockServiceRegular;
-class EasyUnlockServiceSignin;
 namespace tether {
 class TetherHostFetcherImpl;
 class TetherHostFetcherImplTest;
@@ -29,6 +28,8 @@ class ProximityAuthWebUIHandler;
 }  // namespace proximity_auth
 
 namespace cryptauth {
+
+class RemoteDeviceCache;
 
 // Contains metadata specific to a device associated with a user's account.
 // Because this metadata contains large and expensive data types, and that data
@@ -88,6 +89,7 @@ class RemoteDeviceRef {
   bool operator<(const RemoteDeviceRef& other) const;
 
  private:
+  friend class RemoteDeviceCache;
   friend class RemoteDeviceRefBuilder;
   friend class RemoteDeviceRefTest;
   FRIEND_TEST_ALL_PREFIXES(RemoteDeviceRefTest, TestFields);
@@ -96,7 +98,6 @@ class RemoteDeviceRef {
   // TODO(crbug.com/752273): Remove these once clients have migrated to Device
   // Sync service.
   friend class chromeos::EasyUnlockServiceRegular;
-  friend class chromeos::EasyUnlockServiceSignin;
   friend class chromeos::tether::TetherHostFetcherImpl;
   friend class chromeos::tether::TetherHostFetcherImplTest;
   friend class proximity_auth::ProximityAuthWebUIHandler;
