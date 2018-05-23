@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VR_ELEMENTS_TRANSIENT_ELEMENT_H_
 
 #include "base/callback.h"
-#include "chrome/browser/vr/elements/textured_element.h"
+#include "chrome/browser/vr/elements/ui_element.h"
 
 namespace vr {
 
