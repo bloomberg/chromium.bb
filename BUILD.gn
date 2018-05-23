@@ -1156,6 +1156,7 @@ if (closure_compile) {
   group("webui_closure_compile") {
     data_deps = [
       "chrome/browser/resources:closure_compile",
+      "content/browser/resources:closure_compile",
       "ui/webui/resources:closure_compile",
     ]
     if (is_chromeos) {
