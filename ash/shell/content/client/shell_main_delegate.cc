@@ -6,6 +6,8 @@
 
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/quick_launch/quick_launch_application.h"
+#include "ash/components/shortcut_viewer/public/mojom/constants.mojom.h"
+#include "ash/components/shortcut_viewer/shortcut_viewer_application.h"
 #include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
 #include "ash/components/tap_visualizer/tap_visualizer_app.h"
 #include "ash/shell/content/client/shell_content_browser_client.h"
@@ -24,16 +26,21 @@ namespace ash {
 namespace shell {
 namespace {
 
+std::unique_ptr<service_manager::Service> CreateFontService() {
+  return std::make_unique<font_service::FontServiceApp>();
+}
+
 std::unique_ptr<service_manager::Service> CreateQuickLaunch() {
   return std::make_unique<quick_launch::QuickLaunchApplication>();
 }
 
-std::unique_ptr<service_manager::Service> CreateTapVisualizer() {
-  return std::make_unique<tap_visualizer::TapVisualizerApp>();
+std::unique_ptr<service_manager::Service> CreateShortcutViewer() {
+  return std::make_unique<
+      keyboard_shortcut_viewer::ShortcutViewerApplication>();
 }
 
-std::unique_ptr<service_manager::Service> CreateFontService() {
-  return std::make_unique<font_service::FontServiceApp>();
+std::unique_ptr<service_manager::Service> CreateTapVisualizer() {
+  return std::make_unique<tap_visualizer::TapVisualizerApp>();
 }
 
 class ShellContentUtilityClient : public content::ContentUtilityClient {
@@ -45,18 +52,23 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
   void RegisterServices(StaticServiceMap* services) override {
     {
       service_manager::EmbeddedServiceInfo info;
+      info.factory = base::BindRepeating(&CreateFontService);
+      (*services)[font_service::mojom::kServiceName] = info;
+    }
+    {
+      service_manager::EmbeddedServiceInfo info;
       info.factory = base::BindRepeating(&CreateQuickLaunch);
       (*services)[quick_launch::mojom::kServiceName] = info;
     }
     {
       service_manager::EmbeddedServiceInfo info;
-      info.factory = base::BindRepeating(&CreateTapVisualizer);
-      (*services)[tap_visualizer::mojom::kServiceName] = info;
+      info.factory = base::BindRepeating(&CreateShortcutViewer);
+      (*services)[shortcut_viewer::mojom::kServiceName] = info;
     }
     {
       service_manager::EmbeddedServiceInfo info;
-      info.factory = base::BindRepeating(&CreateFontService);
-      (*services)[font_service::mojom::kServiceName] = info;
+      info.factory = base::BindRepeating(&CreateTapVisualizer);
+      (*services)[tap_visualizer::mojom::kServiceName] = info;
     }
   }
 

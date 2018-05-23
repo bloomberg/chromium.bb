@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
+#include "ash/components/shortcut_viewer/public/mojom/constants.mojom.h"
 #include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
 #include "ash/content/content_gpu_support.h"
 #include "ash/content/shell_content_state.h"
@@ -121,6 +122,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
         ->GetConnector()
         ->StartService(tap_visualizer::mojom::kServiceName);
   }
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->StartService(shortcut_viewer::mojom::kServiceName);
   ash::Shell::Get()->InitWaylandServer(nullptr);
 }
 
