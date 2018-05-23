@@ -1024,10 +1024,16 @@ void BaseAudioContext::NotifyWorkletIsReady() {
   DCHECK(IsMainThread());
   DCHECK(audioWorklet()->IsReady());
 
-  // At this point, the WorkletGlobalScope must be ready so it is safe to keep
-  // the reference to the AudioWorkletThread for the future worklet operation.
-  audio_worklet_thread_ =
-      audioWorklet()->GetMessagingProxy()->GetBackingWorkerThread();
+  {
+    // |audio_worklet_thread_| is constantly peeked by the rendering thread,
+    // So we protect it with the graph lock.
+    GraphAutoLocker locker(this);
+
+    // At this point, the WorkletGlobalScope must be ready so it is safe to keep
+    // the reference to the AudioWorkletThread for the future worklet operation.
+    audio_worklet_thread_ =
+        audioWorklet()->GetMessagingProxy()->GetBackingWorkerThread();
+  }
 
   // If the context is running or suspended, restart the destination to switch
   // the render thread with the worklet thread. Note that restarting can happen
@@ -1040,11 +1046,15 @@ void BaseAudioContext::NotifyWorkletIsReady() {
 void BaseAudioContext::UpdateWorkletGlobalScopeOnRenderingThread() {
   DCHECK(!IsMainThread());
 
-  if (audio_worklet_thread_) {
-    AudioWorkletGlobalScope* global_scope =
-        ToAudioWorkletGlobalScope(audio_worklet_thread_->GlobalScope());
-    DCHECK(global_scope);
-    global_scope->SetCurrentFrame(CurrentSampleFrame());
+  if (TryLock()) {
+    if (audio_worklet_thread_) {
+      AudioWorkletGlobalScope* global_scope =
+          ToAudioWorkletGlobalScope(audio_worklet_thread_->GlobalScope());
+      DCHECK(global_scope);
+      global_scope->SetCurrentFrame(CurrentSampleFrame());
+    }
+
+    unlock();
   }
 }
 
