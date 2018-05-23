@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_GC_INFO_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_GC_INFO_H_
 
+#include "third_party/blink/renderer/platform/heap/finalizer_traits.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -16,124 +17,10 @@
 #include "third_party/blink/renderer/platform/wtf/hash_table.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-
-// The FinalizerTraitImpl specifies how to finalize objects. Objects that
-// inherit from GarbageCollectedFinalized are finalized by calling their
-// |Finalize| method which by default will call the destructor on the object.
-template <typename T, bool isGarbageCollectedFinalized>
-struct FinalizerTraitImpl;
-
-template <typename T>
-struct FinalizerTraitImpl<T, true> {
-  STATIC_ONLY(FinalizerTraitImpl);
-  static void Finalize(void* obj) {
-    static_assert(sizeof(T), "T must be fully defined");
-    static_cast<T*>(obj)->FinalizeGarbageCollectedObject();
-  };
-};
-
-template <typename T>
-struct FinalizerTraitImpl<T, false> {
-  STATIC_ONLY(FinalizerTraitImpl);
-  static void Finalize(void* obj) {
-    static_assert(sizeof(T), "T must be fully defined");
-  };
-};
-
-// The FinalizerTrait is used to determine if a type requires finalization and
-// what finalization means.
-//
-// By default classes that inherit from GarbageCollectedFinalized need
-// finalization and finalization means calling the |Finalize| method of the
-// object. The FinalizerTrait can be specialized if the default behavior is not
-// desired.
-template <typename T>
-struct FinalizerTrait {
-  STATIC_ONLY(FinalizerTrait);
-  static const bool kNonTrivialFinalizer =
-      WTF::IsSubclassOfTemplate<typename std::remove_const<T>::type,
-                                GarbageCollectedFinalized>::value;
-  static void Finalize(void* obj) {
-    FinalizerTraitImpl<T, kNonTrivialFinalizer>::Finalize(obj);
-  }
-};
-
-class HeapAllocator;
-template <typename ValueArg, size_t inlineCapacity>
-class HeapListHashSetAllocator;
-template <typename T, typename Traits>
-class HeapVectorBacking;
-template <typename Table>
-class HeapHashTableBacking;
-
-template <typename T, typename U, typename V>
-struct FinalizerTrait<LinkedHashSet<T, U, V, HeapAllocator>> {
-  STATIC_ONLY(FinalizerTrait);
-  static const bool kNonTrivialFinalizer = true;
-  static void Finalize(void* obj) {
-    FinalizerTraitImpl<LinkedHashSet<T, U, V, HeapAllocator>,
-                       kNonTrivialFinalizer>::Finalize(obj);
-  }
-};
-
-template <typename T, typename Allocator>
-struct FinalizerTrait<WTF::ListHashSetNode<T, Allocator>> {
-  STATIC_ONLY(FinalizerTrait);
-  static const bool kNonTrivialFinalizer =
-      !WTF::IsTriviallyDestructible<T>::value;
-  static void Finalize(void* obj) {
-    FinalizerTraitImpl<WTF::ListHashSetNode<T, Allocator>,
-                       kNonTrivialFinalizer>::Finalize(obj);
-  }
-};
-
-template <typename T, size_t inlineCapacity>
-struct FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator>> {
-  STATIC_ONLY(FinalizerTrait);
-  static const bool kNonTrivialFinalizer =
-      inlineCapacity && VectorTraits<T>::kNeedsDestruction;
-  static void Finalize(void* obj) {
-    FinalizerTraitImpl<Vector<T, inlineCapacity, HeapAllocator>,
-                       kNonTrivialFinalizer>::Finalize(obj);
-  }
-};
-
-template <typename T, size_t inlineCapacity>
-struct FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator>> {
-  STATIC_ONLY(FinalizerTrait);
-  static const bool kNonTrivialFinalizer =
-      inlineCapacity && VectorTraits<T>::kNeedsDestruction;
-  static void Finalize(void* obj) {
-    FinalizerTraitImpl<Deque<T, inlineCapacity, HeapAllocator>,
-                       kNonTrivialFinalizer>::Finalize(obj);
-  }
-};
-
-template <typename Table>
-struct FinalizerTrait<HeapHashTableBacking<Table>> {
-  STATIC_ONLY(FinalizerTrait);
-  static const bool kNonTrivialFinalizer =
-      !WTF::IsTriviallyDestructible<typename Table::ValueType>::value;
-  static void Finalize(void* obj) {
-    FinalizerTraitImpl<HeapHashTableBacking<Table>,
-                       kNonTrivialFinalizer>::Finalize(obj);
-  }
-};
-
-template <typename T, typename Traits>
-struct FinalizerTrait<HeapVectorBacking<T, Traits>> {
-  STATIC_ONLY(FinalizerTrait);
-  static const bool kNonTrivialFinalizer = Traits::kNeedsDestruction;
-  static void Finalize(void* obj) {
-    FinalizerTraitImpl<HeapVectorBacking<T, Traits>,
-                       kNonTrivialFinalizer>::Finalize(obj);
-  }
-};
 
 // GCInfo contains meta-data associated with object classes allocated in the
 // Blink heap. This meta-data consists of a function pointer used to trace the
@@ -268,6 +155,8 @@ template <typename T, typename U, typename V>
 class HeapLinkedHashSet;
 template <typename T, size_t inlineCapacity, typename U>
 class HeapListHashSet;
+template <typename ValueArg, size_t inlineCapacity>
+class HeapListHashSetAllocator;
 template <typename T, size_t inlineCapacity>
 class HeapVector;
 template <typename T, size_t inlineCapacity>
