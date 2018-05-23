@@ -64,6 +64,7 @@ class MockDelegate : public AudioInputDelegate {
   MOCK_METHOD0(GetStreamId, int());
   MOCK_METHOD0(OnRecordStream, void());
   MOCK_METHOD1(OnSetVolume, void(double));
+  MOCK_METHOD1(OnSetOutputDeviceForAec, void(const std::string&));
 };
 
 class MockDelegateFactory {

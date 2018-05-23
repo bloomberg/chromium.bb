@@ -49,6 +49,15 @@ interface StreamFactory {
       => (media.mojom.AudioDataPipe? data_pipe, bool initially_muted,
           mojo_base.mojom.UnguessableToken? stream_id);
 
+  // Associates an output device with an input stream, so that the input knows
+  // which output device to cancel echo from. |input_stream_id| is the id
+  // returned when the stream was created. |output_device_id| is a raw device
+  // id. In case either of the parameters are invalid, the operation will
+  // silently fail.
+  AssociateInputAndOutputForAec(
+      mojo_base.mojom.UnguessableToken input_stream_id,
+      string output_device_id);
+
   // Creates an AudioOutputStream and returns the AudioDataPipe it reads data
   // from. |data_pipe| is null in case stream creation failed. |device_id| is
   // either the |unique_id| field from an AudioDeviceDescription obtained from

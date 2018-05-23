@@ -54,6 +54,14 @@ class CONTENT_EXPORT RenderFrameAudioInputStreamFactory
       uint32_t shared_memory_count,
       const MediaStreamDevice& device);
 
+  void AssociateInputAndOutputForAec(
+      const base::UnguessableToken& input_stream_id,
+      const std::string& output_device_id) override;
+
+  void AssociateTranslatedOutputDeviceForAec(
+      const base::UnguessableToken& input_stream_id,
+      const std::string& raw_output_device_id);
+
   const mojo::Binding<RendererAudioInputStreamFactory> binding_;
   const scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;
   RenderFrameHost* const render_frame_host_;

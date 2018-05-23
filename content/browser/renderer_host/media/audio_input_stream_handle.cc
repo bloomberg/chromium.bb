@@ -50,6 +50,12 @@ AudioInputStreamHandle::~AudioInputStreamHandle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+void AudioInputStreamHandle::SetOutputDeviceForAec(
+    const std::string& raw_output_device_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  stream_.SetOutputDeviceForAec(raw_output_device_id);
+}
+
 void AudioInputStreamHandle::OnCreated(media::mojom::AudioDataPipePtr data_pipe,
                                        bool initially_muted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

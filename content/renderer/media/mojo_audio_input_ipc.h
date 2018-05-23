@@ -37,7 +37,12 @@ class CONTENT_EXPORT MojoAudioInputIPC
       bool automatic_gain_control,
       uint32_t total_segments)>;
 
-  explicit MojoAudioInputIPC(StreamCreatorCB stream_creator);
+  using StreamAssociatorCB =
+      base::RepeatingCallback<void(const base::UnguessableToken& stream_id,
+                                   const std::string& output_device_id)>;
+
+  explicit MojoAudioInputIPC(StreamCreatorCB stream_creator,
+                             StreamAssociatorCB stream_associator);
   ~MojoAudioInputIPC() override;
 
   // AudioInputIPC implementation
@@ -47,6 +52,7 @@ class CONTENT_EXPORT MojoAudioInputIPC
                     uint32_t total_segments) override;
   void RecordStream() override;
   void SetVolume(double volume) override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
   void CloseStream() override;
 
  private:
@@ -60,6 +66,7 @@ class CONTENT_EXPORT MojoAudioInputIPC
   void OnMutedStateChanged(bool is_muted) override;
 
   StreamCreatorCB stream_creator_;
+  StreamAssociatorCB stream_associator_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

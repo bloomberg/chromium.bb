@@ -38,6 +38,7 @@ class InputIPC : public media::AudioInputIPC,
                     uint32_t total_segments) override;
   void RecordStream() override;
   void SetVolume(double volume) override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
   void CloseStream() override;
 
  private:

@@ -315,6 +315,20 @@ void AudioInputController::SetVolume(double volume) {
       base::BindOnce(&AudioInputController::DoSetVolume, this, volume));
 }
 
+void AudioInputController::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+
+  if (task_runner_->BelongsToCurrentThread()) {
+    DoSetOutputDeviceForAec(output_device_id);
+    return;
+  }
+
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&AudioInputController::DoSetOutputDeviceForAec,
+                                this, output_device_id));
+}
+
 void AudioInputController::DoCreate(AudioManager* audio_manager,
                                     const AudioParameters& params,
                                     const std::string& device_id,
@@ -501,6 +515,13 @@ void AudioInputController::DoSetVolume(double volume) {
 
   // Set the stream volume and scale to a range matched to the platform.
   stream_->SetVolume(max_volume_ * volume);
+}
+
+void AudioInputController::DoSetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (stream_)
+    stream_->SetOutputDeviceForAec(output_device_id);
 }
 
 void AudioInputController::DoLogAudioLevels(float level_dbfs,

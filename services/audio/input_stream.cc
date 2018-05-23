@@ -118,6 +118,14 @@ InputStream::~InputStream() {
   TRACE_EVENT_NESTABLE_ASYNC_END0("audio", "audio::InputStream", this);
 }
 
+void InputStream::SetOutputDeviceForAec(const std::string& output_device_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  DCHECK(controller_);
+  controller_->SetOutputDeviceForAec(output_device_id);
+  if (log_)
+    log_->get()->OnLogMessage("SetOutputDeviceForAec");
+}
+
 void InputStream::Record() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   DCHECK(controller_);

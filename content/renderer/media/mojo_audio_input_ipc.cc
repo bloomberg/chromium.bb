@@ -13,13 +13,16 @@
 
 namespace content {
 
-MojoAudioInputIPC::MojoAudioInputIPC(StreamCreatorCB stream_creator)
+MojoAudioInputIPC::MojoAudioInputIPC(StreamCreatorCB stream_creator,
+                                     StreamAssociatorCB stream_associator)
     : stream_creator_(std::move(stream_creator)),
+      stream_associator_(std::move(stream_associator)),
       stream_client_binding_(this),
       factory_client_binding_(this),
       weak_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(stream_creator_);
+  DCHECK(stream_associator_);
 }
 
 MojoAudioInputIPC::~MojoAudioInputIPC() = default;
@@ -54,6 +57,15 @@ void MojoAudioInputIPC::SetVolume(double volume) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(stream_.is_bound());
   stream_->SetVolume(volume);
+}
+
+void MojoAudioInputIPC::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(stream_) << "Can only be called after the stream has been created";
+  // Loopback streams have no stream ids and cannot be use echo cancellation
+  if (stream_id_.has_value())
+    stream_associator_.Run(*stream_id_, output_device_id);
 }
 
 void MojoAudioInputIPC::CloseStream() {

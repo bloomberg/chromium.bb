@@ -106,6 +106,15 @@ void InputIPC::SetVolume(double volume) {
   stream_->SetVolume(volume);
 }
 
+void InputIPC::SetOutputDeviceForAec(const std::string& output_device_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(stream_factory_.is_bound());
+  // Loopback streams have no stream ids and cannot be use echo cancellation
+  if (stream_id_.has_value())
+    stream_factory_->AssociateInputAndOutputForAec(*stream_id_,
+                                                   output_device_id);
+}
+
 void InputIPC::CloseStream() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_ = nullptr;

@@ -8,12 +8,48 @@
 
 #include "base/feature_list.h"
 #include "base/task_runner_util.h"
+#include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/public/browser/media_device_id.h"
 #include "content/public/common/content_features.h"
 #include "media/base/audio_parameters.h"
 
 namespace content {
+namespace {
+void CheckPermissionAndGetSaltAndOrigin(
+    const std::string& output_device_id,
+    int render_process_id,
+    int render_frame_id,
+    base::OnceCallback<void(const MediaDeviceSaltAndOrigin&)> cb) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto salt_and_origin =
+      GetMediaDeviceSaltAndOrigin(render_process_id, render_frame_id);
+
+  // Check permissions for everything but the default device
+  if (!media::AudioDeviceDescription::IsDefaultDevice(output_device_id) &&
+      !MediaDevicesPermissionChecker().CheckPermissionOnUIThread(
+          MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, render_process_id, render_frame_id)) {
+    // If we're not allowed to use the device, don't call |cb|.
+    return;
+  }
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(std::move(cb), salt_and_origin));
+}
+
+void EnumerateOutputDevices(MediaDevicesManager* media_devices_manager,
+                            base::RepeatingCallback<void(
+                                const MediaDeviceSaltAndOrigin& salt_and_origin,
+                                const MediaDeviceEnumeration& devices)> cb,
+                            const MediaDeviceSaltAndOrigin& salt_and_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  MediaDevicesManager::BoolDeviceTypes device_types;
+  device_types[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  media_devices_manager->EnumerateDevices(
+      device_types, base::BindRepeating(cb, salt_and_origin));
+}
+
+}  // namespace
 
 // static
 std::unique_ptr<RenderFrameAudioInputStreamFactoryHandle,
@@ -134,6 +170,60 @@ void OldRenderFrameAudioInputStreamFactory::DoCreateStream(
           audio_params),
       base::BindOnce(&OldRenderFrameAudioInputStreamFactory::RemoveStream,
                      weak_ptr_factory_.GetWeakPtr())));
+}
+
+void OldRenderFrameAudioInputStreamFactory::AssociateInputAndOutputForAec(
+    const base::UnguessableToken& input_stream_id,
+    const std::string& output_device_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!IsValidDeviceId(output_device_id))
+    return;
+
+  if (media::AudioDeviceDescription::IsDefaultDevice(output_device_id)) {
+    for (const auto& stream : streams_) {
+      if (stream->id() == input_stream_id) {
+        stream->SetOutputDeviceForAec(output_device_id);
+        return;
+      }
+    }
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
+            CheckPermissionAndGetSaltAndOrigin, output_device_id,
+            render_process_id_, render_frame_id_,
+            base::BindOnce(
+                &EnumerateOutputDevices,
+                media_stream_manager_->media_devices_manager(),
+                base::BindRepeating(&OldRenderFrameAudioInputStreamFactory::
+                                        TranslateAndSetOutputDeviceForAec,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    input_stream_id, output_device_id))));
+  }
+}
+
+void OldRenderFrameAudioInputStreamFactory::TranslateAndSetOutputDeviceForAec(
+    const base::UnguessableToken& input_stream_id,
+    const std::string& output_device_id,
+    const MediaDeviceSaltAndOrigin& salt_and_origin,
+    const MediaDeviceEnumeration& device_array) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  std::string raw_output_device_id;
+  for (const auto& device_info : device_array[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT]) {
+    if (MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
+            salt_and_origin.device_id_salt, salt_and_origin.origin,
+            output_device_id, device_info.device_id)) {
+      raw_output_device_id = device_info.device_id;
+    }
+  }
+  if (!raw_output_device_id.empty()) {
+    for (const auto& stream : streams_) {
+      if (stream->id() == input_stream_id) {
+        stream->SetOutputDeviceForAec(raw_output_device_id);
+        return;
+      }
+    }
+  }
 }
 
 void OldRenderFrameAudioInputStreamFactory::RemoveStream(

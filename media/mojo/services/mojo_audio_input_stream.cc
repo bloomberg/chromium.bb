@@ -49,6 +49,12 @@ MojoAudioInputStream::~MojoAudioInputStream() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+void MojoAudioInputStream::SetOutputDeviceForAec(
+    const std::string& raw_output_device_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  delegate_->OnSetOutputDeviceForAec(raw_output_device_id);
+}
+
 void MojoAudioInputStream::Record() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_->OnRecordStream();

@@ -42,6 +42,8 @@ class MEDIA_MOJO_EXPORT MojoAudioInputStream
 
   ~MojoAudioInputStream() override;
 
+  void SetOutputDeviceForAec(const std::string& raw_output_device_id);
+
  private:
   // mojom::AudioInputStream implementation.
   void Record() override;

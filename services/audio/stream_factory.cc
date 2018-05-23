@@ -57,6 +57,18 @@ void StreamFactory::CreateInputStream(
       params, shared_memory_count, enable_agc));
 }
 
+void StreamFactory::AssociateInputAndOutputForAec(
+    const base::UnguessableToken& input_stream_id,
+    const std::string& output_device_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  for (const auto& stream : input_streams_) {
+    if (stream->id() == input_stream_id) {
+      stream->SetOutputDeviceForAec(output_device_id);
+      return;
+    }
+  }
+}
+
 void StreamFactory::CreateOutputStream(
     media::mojom::AudioOutputStreamRequest stream_request,
     media::mojom::AudioOutputStreamObserverAssociatedPtrInfo observer_info,

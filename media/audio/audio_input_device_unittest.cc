@@ -40,6 +40,7 @@ class MockAudioInputIPC : public AudioInputIPC {
                     uint32_t total_segments));
   MOCK_METHOD0(RecordStream, void());
   MOCK_METHOD1(SetVolume, void(double volume));
+  MOCK_METHOD1(SetOutputDeviceForAec, void(const std::string&));
   MOCK_METHOD0(CloseStream, void());
 };
 

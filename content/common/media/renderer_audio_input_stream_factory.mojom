@@ -21,6 +21,15 @@ interface RendererAudioInputStreamFactory {
       media.mojom.AudioParameters params,
       bool automatic_gain_control,
       uint32 shared_memory_count);
+
+  // Associates an output device with an input stream, so that the input knows
+  // which output device to cancel echo from. |input_stream_id| is the id
+  // returned when the stream was created. |output_device_id| is a device
+  // id HMAC. In case either of the parameters are invalid, the operation will
+  // silently fail.
+  AssociateInputAndOutputForAec(
+      mojo_base.mojom.UnguessableToken input_stream_id,
+      string output_device_id);
 };
 
 interface RendererAudioInputStreamFactoryClient {

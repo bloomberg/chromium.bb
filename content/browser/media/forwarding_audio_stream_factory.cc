@@ -70,6 +70,18 @@ void ForwardingAudioStreamFactory::CreateInputStream(
       ->CreateStream(GetFactory());
 }
 
+void ForwardingAudioStreamFactory::AssociateInputAndOutputForAec(
+    const base::UnguessableToken& input_stream_id,
+    const std::string& raw_output_device_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Avoid spawning a factory if this for some reason gets called with an
+  // invalid input_stream_id before any streams are created.
+  if (!inputs_.empty()) {
+    GetFactory()->AssociateInputAndOutputForAec(input_stream_id,
+                                                raw_output_device_id);
+  }
+}
+
 void ForwardingAudioStreamFactory::CreateOutputStream(
     RenderFrameHost* frame,
     const std::string& device_id,

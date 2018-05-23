@@ -7,9 +7,15 @@
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/browser/media/forwarding_audio_stream_factory.h"
+#include "content/browser/media/media_devices_permission_checker.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/media_device_id.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_device_description.h"
@@ -32,6 +38,33 @@ void LookUpDeviceAndRespondIfFound(
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::BindOnce(std::move(response), *device));
   }
+}
+
+void EnumerateOutputDevices(MediaStreamManager* media_stream_manager,
+                            MediaDevicesManager::EnumerationCallback cb) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  MediaDevicesManager::BoolDeviceTypes device_types;
+  device_types[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  media_stream_manager->media_devices_manager()->EnumerateDevices(device_types,
+                                                                  cb);
+}
+
+void TranslateDeviceId(const std::string& device_id,
+                       const MediaDeviceSaltAndOrigin& salt_and_origin,
+                       base::RepeatingCallback<void(const std::string&)> cb,
+                       const MediaDeviceEnumeration& device_array) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (const auto& device_info : device_array[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT]) {
+    if (MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
+            salt_and_origin.device_id_salt, salt_and_origin.origin, device_id,
+            device_info.device_id)) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(std::move(cb), device_info.device_id));
+      break;
+    }
+  }
+  // If we're unable to translate the device id, |cb| will not be run.
 }
 
 }  // namespace
@@ -124,6 +157,59 @@ void RenderFrameAudioInputStreamFactory::CreateStreamAfterLookingUpDevice(
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
     }
   }
+}
+
+void RenderFrameAudioInputStreamFactory::AssociateInputAndOutputForAec(
+    const base::UnguessableToken& input_stream_id,
+    const std::string& output_device_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!IsValidDeviceId(output_device_id))
+    return;
+
+  ForwardingAudioStreamFactory* factory =
+      ForwardingAudioStreamFactory::ForFrame(render_frame_host_);
+  if (!factory)
+    return;
+
+  const int process_id = render_frame_host_->GetProcess()->GetID();
+  const int frame_id = render_frame_host_->GetRoutingID();
+  auto salt_and_origin = GetMediaDeviceSaltAndOrigin(process_id, frame_id);
+
+  // Check permissions for everything but the default device
+  if (!media::AudioDeviceDescription::IsDefaultDevice(output_device_id) &&
+      !MediaDevicesPermissionChecker().CheckPermissionOnUIThread(
+          MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, process_id, frame_id)) {
+    return;
+  }
+
+  if (media::AudioDeviceDescription::IsDefaultDevice(output_device_id) ||
+      media::AudioDeviceDescription::IsCommunicationsDevice(output_device_id)) {
+    factory->AssociateInputAndOutputForAec(input_stream_id, output_device_id);
+  } else {
+    auto* media_stream_manager =
+        BrowserMainLoop::GetInstance()->media_stream_manager();
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            EnumerateOutputDevices, media_stream_manager,
+            base::BindRepeating(
+                &TranslateDeviceId, output_device_id, salt_and_origin,
+                base::BindRepeating(&RenderFrameAudioInputStreamFactory::
+                                        AssociateTranslatedOutputDeviceForAec,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    input_stream_id))));
+  }
+}
+
+void RenderFrameAudioInputStreamFactory::AssociateTranslatedOutputDeviceForAec(
+    const base::UnguessableToken& input_stream_id,
+    const std::string& raw_output_device_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ForwardingAudioStreamFactory* factory =
+      ForwardingAudioStreamFactory::ForFrame(render_frame_host_);
+  if (factory)
+    factory->AssociateInputAndOutputForAec(input_stream_id,
+                                           raw_output_device_id);
 }
 
 }  // namespace content

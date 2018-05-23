@@ -15,8 +15,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "content/browser/media/media_devices_util.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_stream_handle.h"
+#include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/public/browser/browser_thread.h"
@@ -80,6 +82,16 @@ class CONTENT_EXPORT OldRenderFrameAudioInputStreamFactory
                       uint32_t shared_memory_count,
                       AudioInputDeviceManager::KeyboardMicRegistration
                           keyboard_mic_registration);
+
+  void AssociateInputAndOutputForAec(
+      const base::UnguessableToken& input_stream_id,
+      const std::string& output_device_id) override;
+
+  void TranslateAndSetOutputDeviceForAec(
+      const base::UnguessableToken& input_stream_id,
+      const std::string& output_device_id,
+      const MediaDeviceSaltAndOrigin& salt_and_origin,
+      const MediaDeviceEnumeration& devices);
 
   void RemoveStream(AudioInputStreamHandle* input_stream);
 
