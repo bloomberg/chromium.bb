@@ -11,7 +11,6 @@
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/display/display.h"
-#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touchscreen_device.h"

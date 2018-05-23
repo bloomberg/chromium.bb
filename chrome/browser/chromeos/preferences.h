@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -151,6 +152,8 @@ class Preferences : public sync_preferences::PrefServiceSyncableObserver,
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;
 
   std::unique_ptr<input_method::InputMethodSyncer> input_method_syncer_;
+
+  ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };
