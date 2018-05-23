@@ -2837,8 +2837,8 @@ void UiSceneCreator::CreatePrompts() {
             const gfx::VectorIcon* icon = nullptr;
             int primary_button_text_id = 0;
             int secondary_button_text_id = 0;
-            ExitVrPromptChoice primary_choice = CHOICE_NONE;
-            ExitVrPromptChoice secondary_choice = CHOICE_NONE;
+            ExitVrPromptChoice primary_choice = CHOICE_EXIT;
+            ExitVrPromptChoice secondary_choice = CHOICE_STAY;
             UiUnsupportedMode reason = GetReasonForPrompt(type);
 
             switch (type) {
@@ -2849,8 +2849,6 @@ void UiSceneCreator::CreatePrompts() {
                     IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON;
                 secondary_button_text_id =
                     IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON;
-                primary_choice = CHOICE_EXIT;
-                secondary_choice = CHOICE_STAY;
                 break;
               case kModalPromptTypeUpdateKeyboard:
                 message_id = IDS_VR_UPDATE_KEYBOARD_PROMPT;
@@ -2859,27 +2857,21 @@ void UiSceneCreator::CreatePrompts() {
                     IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON;
                 secondary_button_text_id =
                     IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON;
-                primary_choice = CHOICE_EXIT;
-                secondary_choice = CHOICE_STAY;
                 break;
               case kModalPromptTypeExitVRForSiteInfo:
                 message_id = IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION_SITE_INFO;
                 icon = &vector_icons::kInfoOutlineIcon;
-                primary_button_text_id = IDS_OK;
-                secondary_button_text_id =
+                primary_button_text_id =
                     IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON;
-                primary_choice = CHOICE_STAY;
-                secondary_choice = CHOICE_EXIT;
+                secondary_button_text_id = IDS_VR_BUTTON_BACK;
                 break;
               case kModalPromptTypeExitVRForConnectionInfo:
               case kModalPromptTypeGenericUnsupportedFeature:
                 message_id = IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION;
                 icon = &vector_icons::kInfoOutlineIcon;
-                primary_button_text_id = IDS_OK;
-                secondary_button_text_id =
+                primary_button_text_id =
                     IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON;
-                primary_choice = CHOICE_STAY;
-                secondary_choice = CHOICE_EXIT;
+                secondary_button_text_id = IDS_VR_BUTTON_BACK;
                 break;
               case kNumModalPromptTypes:
               case kModalPromptTypeNone:

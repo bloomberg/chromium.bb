@@ -596,12 +596,31 @@ TEST_F(UiTest, PrimaryButtonClickTriggersOnExitPrompt) {
   ui_->ShowExitVrPrompt(UiUnsupportedMode::kUnhandledPageInfo);
   OnBeginFrame();
 
-  // Click on 'OK' should trigger UI browser interface and close prompt.
+  // Click on 'EXIT VR' should trigger UI browser interface and close prompt.
   EXPECT_CALL(*browser_,
-              OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_STAY,
+              OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_EXIT,
                                    UiUnsupportedMode::kUnhandledPageInfo));
   auto* prompt = scene_->GetUiElementByName(kExitPrompt);
   auto* button = prompt->GetDescendantByType(kTypePromptPrimaryButton);
+  ClickElement(button);
+  VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
+}
+
+TEST_F(UiTest, SecondaryButtonClickTriggersOnExitPrompt) {
+  CreateScene(kNotInCct, kNotInWebVr);
+
+  // Initial state.
+  VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
+  model_->active_modal_prompt_type = kModalPromptTypeExitVRForSiteInfo;
+  OnBeginFrame();
+
+  // Click on 'BACK' should trigger UI browser interface and close prompt.
+  EXPECT_CALL(*browser_,
+              OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_STAY,
+                                   UiUnsupportedMode::kUnhandledPageInfo));
+
+  auto* prompt = scene_->GetUiElementByName(kExitPrompt);
+  auto* button = prompt->GetDescendantByType(kTypePromptSecondaryButton);
   ClickElement(button);
   VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
 }
@@ -622,25 +641,6 @@ TEST_F(UiTest, ClickOnPromptBackgroundDoesNothing) {
   ClickElement(target);
 
   EXPECT_EQ(model_->get_mode(), kModeModalPrompt);
-}
-
-TEST_F(UiTest, SecondaryButtonClickTriggersOnExitPrompt) {
-  CreateScene(kNotInCct, kNotInWebVr);
-
-  // Initial state.
-  VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
-  model_->active_modal_prompt_type = kModalPromptTypeExitVRForSiteInfo;
-  OnBeginFrame();
-
-  // Click on 'Exit VR' should trigger UI browser interface and close prompt.
-  EXPECT_CALL(*browser_,
-              OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_EXIT,
-                                   UiUnsupportedMode::kUnhandledPageInfo));
-
-  auto* prompt = scene_->GetUiElementByName(kExitPrompt);
-  auto* button = prompt->GetDescendantByType(kTypePromptSecondaryButton);
-  ClickElement(button);
-  VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
 }
 
 TEST_F(UiTest, UiUpdatesForWebVR) {
