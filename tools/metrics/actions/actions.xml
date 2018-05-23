@@ -1502,6 +1502,49 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.Download.InfoBar.Accelerated">
+  <owner>shaktisahu@chromium.org</owner>
+  <description>
+    Records whether accelerating message was shown on the infobar.
+  </description>
+</action>
+
+<action name="Android.Download.InfoBar.CloseButtonClicked">
+  <owner>shaktisahu@chromium.org</owner>
+  <description>
+    User tapped on the close button to close the infobar.
+  </description>
+</action>
+
+<action name="Android.Download.InfoBar.LinkClicked.OpenDownload">
+  <owner>shaktisahu@chromium.org</owner>
+  <description>
+    User tapped on the infobar link to open the downloaded file.
+  </description>
+</action>
+
+<action name="Android.Download.InfoBar.LinkClicked.OpenDownloadHome">
+  <owner>shaktisahu@chromium.org</owner>
+  <description>
+    User tapped on the infobar link to open download home.
+  </description>
+</action>
+
+<action name="Android.Download.InfoBar.ReparentedToCurrentTab">
+  <owner>shaktisahu@chromium.org</owner>
+  <description>
+    The download infobar was re-attached to the new active tab due to a download
+    event such as a new download or download completion that happened after the
+    user had switched tabs. The infobar which was previously being shown on the
+    old tab was closed and was shown on the new active tab.
+  </description>
+</action>
+
+<action name="Android.Download.InfoBar.Shown">
+  <owner>shaktisahu@chromium.org</owner>
+  <description>The infobar was created and shown.</description>
+</action>
+
 <action name="Android.DownloadManager.CheckForExternallyRemovedItems">
   <owner>dtrainor@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
