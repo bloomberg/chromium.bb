@@ -42,6 +42,16 @@
     <li id="list4-option3" role="option">Option 3</li>
 </ul>
 
+<input id="pure-native-input-textbox" type="text" aria-expanded="true"
+    aria-haspopup="true" aria-autocomplete="list"
+    aria-activedescendant="list5-option1" aria-owns="list5">
+
+<ul id="list5" role="listbox">
+    <li id="list5-option1" role="option">Option 1</li>
+    <li id="list5-option2" role="option">Option 2</li>
+    <li id="list5-option3" role="option">Option 3</li>
+</ul>
+
 <script>
     function testEventExpectations(t, widgetId, listboxId)
     {
@@ -96,4 +106,11 @@
     {
         testEventExpectations(t, "textarea-searchbox", "list4");
     }, "Changing active descendant on a textarea with role=searchbox.");
+</script>
+
+<script>
+    async_test(function(t)
+    {
+        testEventExpectations(t, "pure-native-input-textbox", "list5");
+    }, "Changing active descendant on an input with no role attribute.");
 </script>
