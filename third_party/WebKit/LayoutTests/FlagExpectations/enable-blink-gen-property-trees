@@ -186,9 +186,6 @@ crbug.com/836912 compositing/squashing/vertical-writing-mode-squashed.html [ Fai
 crbug.com/836912 compositing/squashing/no-squashing-into-another-clip-layer.html [ Pass Failure ]
 crbug.com/840017 scrollbars/scrollbar-removed-by-viewport-crash.html [ Crash ]
 crbug.com/840017 virtual/prefer_compositing_to_lcd_text/scrollbars/scrollbar-removed-by-viewport-crash.html [ Crash ]
-crbug.com/841342 scrollbars/border-box-rect-clips-scrollbars.html [ Failure ]
-crbug.com/841342 virtual/prefer_compositing_to_lcd_text/scrollbars/border-box-rect-clips-scrollbars.html [ Failure ]
-crbug.com/841342 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbars-paint-outside-iframe.html [ Failure ]
 
 # These scrolling tests should pass.
 Bug(none) virtual/threaded/fast/scrolling [ Pass ]
