@@ -106,6 +106,55 @@ namespace CSSLonghand {
         StyleBuilderConverter::{{property.converter}}(state, value, true));
   }
 }
+{% elif property.style_builder_template == 'counter' %}
+{% set action = property.style_builder_template_args['action'] %}
+{{declare_initial(property.upper_camel_name)}} {
+  state.Style()->Clear{{action}}Directives();
+}
+
+{{declare_inherit(property.upper_camel_name)}} {
+  const CounterDirectiveMap* parentMap = state.ParentStyle()->GetCounterDirectives();
+  if (!parentMap)
+    return;
+
+  CounterDirectiveMap& map = state.Style()->AccessCounterDirectives();
+  DCHECK(!parentMap->IsEmpty());
+
+  typedef CounterDirectiveMap::const_iterator Iterator;
+  Iterator end = parentMap->end();
+  for (Iterator it = parentMap->begin(); it != end; ++it) {
+    CounterDirectives& directives = map.insert(it->key, CounterDirectives()).stored_value->value;
+    directives.Inherit{{action}}(it->value);
+  }
+}
+
+{{declare_value(property.upper_camel_name)}} {
+  state.Style()->Clear{{action}}Directives();
+
+  if (!value.IsValueList()) {
+    DCHECK(value.IsIdentifierValue());
+    DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNone);
+    return;
+  }
+
+  CounterDirectiveMap& map = state.Style()->AccessCounterDirectives();
+
+  const CSSValueList& list = ToCSSValueList(value);
+
+  for (size_t i = 0; i < list.length(); ++i) {
+    const CSSValuePair& pair = ToCSSValuePair(list.Item(i));
+    AtomicString identifier(ToCSSCustomIdentValue(pair.First()).Value());
+    int counter_value = ToCSSPrimitiveValue(pair.Second()).GetIntValue();
+    CounterDirectives& directives =
+        map.insert(identifier, CounterDirectives()).stored_value->value;
+    {% if action == 'Reset' %}
+    directives.SetResetValue(counter_value);
+    {% else %}
+    directives.AddIncrementValue(counter_value);
+    {% endif %}
+  }
+  DCHECK(!map.IsEmpty());
+}
 {% endif %}
 
 }  // namespace CSSLonghand

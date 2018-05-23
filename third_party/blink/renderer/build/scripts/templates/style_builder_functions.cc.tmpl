@@ -86,59 +86,6 @@ namespace blink {
 {% endif %}
 {% endfor %}
 
-{% macro apply_counter(property_id, action) %}
-{% set property = properties_by_id[property_id] %}
-{{declare_initial_function(property_id)}} {
-  state.Style()->Clear{{action}}Directives();
-}
-
-{{declare_inherit_function(property_id)}} {
-  const CounterDirectiveMap* parentMap = state.ParentStyle()->GetCounterDirectives();
-  if (!parentMap)
-    return;
-
-  CounterDirectiveMap& map = state.Style()->AccessCounterDirectives();
-  DCHECK(!parentMap->IsEmpty());
-
-  typedef CounterDirectiveMap::const_iterator Iterator;
-  Iterator end = parentMap->end();
-  for (Iterator it = parentMap->begin(); it != end; ++it) {
-    CounterDirectives& directives = map.insert(it->key, CounterDirectives()).stored_value->value;
-    directives.Inherit{{action}}(it->value);
-  }
-}
-
-{{declare_value_function(property_id)}} {
-  state.Style()->Clear{{action}}Directives();
-
-  if (!value.IsValueList()) {
-    DCHECK(value.IsIdentifierValue());
-    DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNone);
-    return;
-  }
-
-  CounterDirectiveMap& map = state.Style()->AccessCounterDirectives();
-
-  const CSSValueList& list = ToCSSValueList(value);
-
-  for (size_t i = 0; i < list.length(); ++i) {
-    const CSSValuePair& pair = ToCSSValuePair(list.Item(i));
-    AtomicString identifier(ToCSSCustomIdentValue(pair.First()).Value());
-    int counter_value = ToCSSPrimitiveValue(pair.Second()).GetIntValue();
-    CounterDirectives& directives =
-        map.insert(identifier, CounterDirectives()).stored_value->value;
-    {% if action == 'Reset' %}
-    directives.SetResetValue(counter_value);
-    {% else %}
-    directives.AddIncrementValue(counter_value);
-    {% endif %}
-  }
-  DCHECK(!map.IsEmpty());
-}
-{% endmacro %}
-{{apply_counter('CSSPropertyCounterIncrement', 'Increment')}}
-{{apply_counter('CSSPropertyCounterReset', 'Reset')}}
-
 {% macro apply_grid_template(property_id, type) %}
 {{declare_initial_function(property_id)}} {
   state.Style()->SetGridTemplate{{type}}s(ComputedStyleInitialValues::InitialGridTemplate{{type}}s());

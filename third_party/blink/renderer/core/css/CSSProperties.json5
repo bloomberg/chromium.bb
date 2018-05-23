@@ -61,6 +61,7 @@
         "background_layer",
         "border_image",
         "color",
+        "counter",
         // The legacy template means that regular code generation should not be
         // be performed, and that the property is hard-coded in
         // style_builder_functions.cc.tmpl.
@@ -1500,16 +1501,20 @@
     {
       name: "counter-increment",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "counter",
+      style_builder_template_args: {
+        action: "Increment",
+      },
       keywords: ["none"],
       typedom_types: ["Keyword"],
     },
     {
       name: "counter-reset",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "counter",
+      style_builder_template_args: {
+        action: "Reset",
+      },
       keywords: ["none"],
       typedom_types: ["Keyword"],
     },
