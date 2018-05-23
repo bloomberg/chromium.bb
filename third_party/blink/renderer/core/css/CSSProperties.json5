@@ -54,16 +54,25 @@
     // style builder application, yet there are enough of these properties that
     // we want to generate code for them rather than having manually written
     // style builder functions.
-    //
-    // NOTE: Currently only used by the legacy style builder. More values will
-    //       appear here, such as "color" and "fill_layer".
     style_builder_template: {
       valid_values: [
+        "auto",
+        "background_layer",
+        "border_image",
+        "color",
         // The legacy template means that regular code generation should not be
         // be performed, and that the property is hard-coded in
         // style_builder_functions.cc.tmpl.
         "legacy",
+        "mask_box",
+        "mask_layer",
       ],
+    },
+
+    // Additional arguments to 'style_builder_template' may be provided here.
+    style_builder_template_args: {
+      default: {},
+      valid_type: "dict"
     },
 
     // Set this to true if we do not support generation of style builder
@@ -847,7 +856,11 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       keywords: ["scroll", "fixed", "local"],
       typedom_types: ["Keyword"],
-      separator: " "
+      separator: " ",
+      style_builder_template: "background_layer",
+      style_builder_template_args: {
+        fill_type: "Attachment",
+      },
     },
     {
       name: "background-blend-mode",
@@ -858,14 +871,23 @@
         "exclusion", "hue", "saturation", "color", "luminosity"
       ],
       typedom_types: ["Keyword"],
-      separator: " "
+      separator: " ",
+      style_builder_template: "background_layer",
+      style_builder_template_args: {
+        fill_type: "BlendMode",
+        fill_type_getter: "GetBlendMode",
+      },
     },
     {
       name: "background-clip",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       keywords: ["border-box", "padding-box", "content-box"],
       typedom_types: ["Keyword"],
-      separator: " "
+      separator: " ",
+      style_builder_template: "background_layer",
+      style_builder_template_args: {
+        fill_type: "Clip",
+      },
     },
     {
       name: "background-color",
@@ -880,6 +902,10 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
+      style_builder_template: "color",
+      style_builder_template_args: {
+        initial_color: "ComputedStyleInitialValues::InitialBackgroundColor",
+      },
     },
     {
       name: "background-image",
@@ -888,29 +914,54 @@
       keywords: ["auto", "none"],
       typedom_types: ["Keyword", "Image"],
       separator: " ",
+      style_builder_template: "background_layer",
+      style_builder_template_args: {
+        fill_type: "Image",
+        fill_type_getter: "GetImage",
+      },
     },
     {
       name: "background-origin",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       keywords: ["border-box", "padding-box", "content-box"],
       typedom_types: ["Keyword"],
-      separator: " "
+      separator: " ",
+      style_builder_template: "background_layer",
+      style_builder_template_args: {
+        fill_type: "Origin",
+      },
     },
     {
       name: "background-position-x",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
+      style_builder_template: "background_layer",
+      style_builder_template_args: {
+        fill_type: "PositionX",
+      },
     },
     {
       name: "background-position-y",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
+      style_builder_template: "background_layer",
+      style_builder_template_args: {
+        fill_type: "PositionY",
+      },
     },
     {
       name: "background-repeat-x",
+      style_builder_template: "background_layer",
+      style_builder_template_args: {
+        fill_type: "RepeatX",
+      },
     },
     {
       name: "background-repeat-y",
+      style_builder_template: "background_layer",
+      style_builder_template_args: {
+        fill_type: "RepeatY",
+      },
     },
     {
       name: "background-size",
@@ -918,7 +969,11 @@
       interpolable: true,
       keywords: ["auto", "cover", "contain"],
       typedom_types: ["Keyword", "Length", "Percentage"],
-      separator: " "
+      separator: " ",
+      style_builder_template: "background_layer",
+      style_builder_template_args: {
+        fill_type: "Size",
+      },
     },
     {
       name: "baseline-shift",
@@ -943,6 +998,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
+      style_builder_template: "color",
     },
     {
       name: "border-bottom-left-radius",
@@ -1009,19 +1065,31 @@
       name: "border-image-outset",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       interpolable: true,
-      typedom_types: ["Length", "Number"]
+      typedom_types: ["Length", "Number"],
+      style_builder_template: "border_image",
+      style_builder_template_args: {
+        modifier_type: "Outset",
+      },
     },
     {
       name: "border-image-repeat",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       keywords: ["stretch", "repeat", "round", "space"],
-      typedom_types: ["Keyword"]
+      typedom_types: ["Keyword"],
+      style_builder_template: "border_image",
+      style_builder_template_args: {
+        modifier_type: "Repeat",
+      },
     },
     {
       name: "border-image-slice",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       interpolable: true,
       typedom_types: ["Number", "Percentage"],
+      style_builder_template: "border_image",
+      style_builder_template_args: {
+        modifier_type: "Slice",
+      },
     },
     {
       name: "border-image-source",
@@ -1038,6 +1106,10 @@
       interpolable: true,
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage", "Number"],
+      style_builder_template: "border_image",
+      style_builder_template_args: {
+        modifier_type: "Width",
+      },
     },
     {
       name: "border-left-color",
@@ -1052,6 +1124,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
+      style_builder_template: "color",
     },
     {
       name: "border-left-style",
@@ -1093,6 +1166,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
+      style_builder_template: "color",
     },
     {
       name: "border-right-style",
@@ -1134,6 +1208,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
+      style_builder_template: "color",
     },
     {
       name: "border-top-left-radius",
@@ -1308,6 +1383,7 @@
       default_value: "LengthBox()",
       type_name: "LengthBox",
       computed_style_custom_functions: ["setter"],
+      style_builder_template: "auto",
       converter: "ConvertClip",
       keywords: ["auto"],
       typedom_types: ["Keyword"],
@@ -2016,6 +2092,10 @@
       name: "mask-source-type",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSMaskSourceType",
+      style_builder_template: "mask_layer",
+      style_builder_template_args: {
+        fill_type: "MaskSourceType",
+      },
     },
     {
       name: "mask-type",
@@ -2221,6 +2301,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
+      style_builder_template: "color",
     },
     {
       name: "outline-offset",
@@ -2972,6 +3053,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
+      style_builder_template: "color",
     },
     {
       name: "text-decoration-line",
@@ -3394,6 +3476,7 @@
       default_value: "1",
       type_name: "unsigned short",
       computed_style_custom_functions: ["setter"],
+      style_builder_template: "auto",
       keywords: ["auto"],
       typedom_types: ["Keyword", "Number"]
     },
@@ -3436,6 +3519,7 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
+      style_builder_template: "color",
     },
     {
       name: "column-rule-style",
@@ -3483,6 +3567,7 @@
       default_value: "0.0f",
       type_name: "float",
       computed_style_custom_functions: ["setter"],
+      style_builder_template: "auto",
       converter: "ConvertComputedLength<float>",
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length"],
@@ -3571,15 +3656,27 @@
       name: "-webkit-mask-box-image-outset",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
+      style_builder_template: "mask_box",
+      style_builder_template_args: {
+        modifier_type: "Outset",
+      },
     },
     {
       name: "-webkit-mask-box-image-repeat",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      style_builder_template: "mask_box",
+      style_builder_template_args: {
+        modifier_type: "Repeat",
+      },
     },
     {
       name: "-webkit-mask-box-image-slice",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
+      style_builder_template: "mask_box",
+      style_builder_template_args: {
+        modifier_type: "Slice",
+      },
     },
     {
       name: "-webkit-mask-box-image-source",
@@ -3592,44 +3689,85 @@
       name: "-webkit-mask-box-image-width",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
+      style_builder_template: "mask_box",
+      style_builder_template_args: {
+        modifier_type: "Width",
+      },
     },
     {
       name: "-webkit-mask-clip",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      style_builder_template: "mask_layer",
+      style_builder_template_args: {
+        fill_type: "Clip",
+      },
     },
     {
       name: "-webkit-mask-composite",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      style_builder_template: "mask_layer",
+      style_builder_template_args: {
+        fill_type: "Composite",
+      },
     },
     {
       name: "-webkit-mask-image",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
+      style_builder_template: "mask_layer",
+      style_builder_template_args: {
+        fill_type: "Image",
+        fill_type_getter: "GetImage"
+      },
     },
     {
       name: "-webkit-mask-origin",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      style_builder_template: "mask_layer",
+      style_builder_template_args: {
+        fill_type: "Origin",
+      },
     },
     {
       name: "-webkit-mask-position-x",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
+      style_builder_template: "mask_layer",
+      style_builder_template_args: {
+        fill_type: "PositionX",
+      },
     },
     {
       name: "-webkit-mask-position-y",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
+      style_builder_template: "mask_layer",
+      style_builder_template_args: {
+        fill_type: "PositionY",
+      },
     },
     {
       name: "-webkit-mask-repeat-x",
+      style_builder_template: "mask_layer",
+      style_builder_template_args: {
+        fill_type: "RepeatX",
+      },
     },
     {
       name: "-webkit-mask-repeat-y",
+      style_builder_template: "mask_layer",
+      style_builder_template_args: {
+        fill_type: "RepeatY",
+      },
     },
     {
       name: "-webkit-mask-size",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
+      style_builder_template: "mask_layer",
+      style_builder_template_args: {
+        fill_type: "Size",
+      },
     },
     {
       name: "-webkit-perspective-origin-x",
@@ -3700,6 +3838,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
+      style_builder_template: "color",
     },
     {
       name: "-webkit-text-emphasis-position",
@@ -3730,6 +3869,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
+      style_builder_template: "color",
     },
     {
       name: "-webkit-text-security",
@@ -3752,6 +3892,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
+      style_builder_template: "color",
     },
     {
       name: "-webkit-text-stroke-width",
@@ -3893,6 +4034,7 @@
       default_value: "0",
       type_name: "int",
       computed_style_custom_functions: ["setter"],
+      style_builder_template: "auto",
       keywords: ["auto"],
       typedom_types: ["Keyword", "Number"]
     },
