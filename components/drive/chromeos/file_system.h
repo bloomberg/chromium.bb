@@ -40,12 +40,10 @@ class JobScheduler;
 
 namespace internal {
 class AboutResourceLoader;
-class ChangeListLoader;
-class DirectoryLoader;
+class DriveChangeListLoader;
 class FileCache;
 class LoaderController;
 class ResourceMetadata;
-class StartPageTokenLoader;
 class SyncClient;
 }  // namespace internal
 
@@ -188,8 +186,8 @@ class FileSystem : public FileSystemInterface,
   void OnInitialLoadComplete() override;
 
   // Used by tests.
-  internal::ChangeListLoader* change_list_loader_for_testing() {
-    return change_list_loader_.get();
+  internal::DriveChangeListLoader* change_list_loader_for_testing() {
+    return default_corpus_change_list_loader_.get();
   }
   internal::SyncClient* sync_client_for_testing() { return sync_client_.get(); }
 
@@ -271,16 +269,12 @@ class FileSystem : public FileSystemInterface,
   // Used to load about resource.
   std::unique_ptr<internal::AboutResourceLoader> about_resource_loader_;
 
-  // Used to load the start page token for the users default corpus
-  std::unique_ptr<internal::StartPageTokenLoader> start_page_token_loader_;
-
   // Used to control ChangeListLoader.
   std::unique_ptr<internal::LoaderController> loader_controller_;
 
-  // The loader is used to load the change lists.
-  std::unique_ptr<internal::ChangeListLoader> change_list_loader_;
-
-  std::unique_ptr<internal::DirectoryLoader> directory_loader_;
+  // Used to retrieve changelists from the default corpus.
+  std::unique_ptr<internal::DriveChangeListLoader>
+      default_corpus_change_list_loader_;
 
   std::unique_ptr<internal::SyncClient> sync_client_;
 
