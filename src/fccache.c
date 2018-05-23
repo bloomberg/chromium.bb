@@ -443,6 +443,7 @@ struct _FcCacheSkip {
     FcCache	    *cache;
     FcRef	    ref;
     intptr_t	    size;
+    void	   *allocated;
     dev_t	    cache_dev;
     ino_t	    cache_ino;
     time_t	    cache_mtime;
@@ -568,6 +569,7 @@ FcCacheInsert (FcCache *cache, struct stat *cache_stat)
 
     s->cache = cache;
     s->size = cache->size;
+    s->allocated = NULL;
     FcRefInit (&s->ref, 1);
     if (cache_stat)
     {
@@ -642,6 +644,7 @@ FcCacheRemoveUnlocked (FcCache *cache)
     FcCacheSkip	    **update[FC_CACHE_MAX_LEVEL];
     FcCacheSkip	    *s, **next;
     int		    i;
+    void            *allocated;
 
     /*
      * Find links along each chain
@@ -659,6 +662,15 @@ FcCacheRemoveUnlocked (FcCache *cache)
 	*update[i] = s->next[i];
     while (fcCacheMaxLevel > 0 && fcCacheChains[fcCacheMaxLevel - 1] == NULL)
 	fcCacheMaxLevel--;
+
+    allocated = s->allocated;
+    while (allocated)
+    {
+	/* First element in allocated chunk is the free list */
+	next = *(void **)allocated;
+	free (allocated);
+	allocated = next;
+    }
     free (s);
 }
 
@@ -726,6 +738,30 @@ FcCacheObjectDereference (void *object)
 	    FcDirCacheDisposeUnlocked (skip->cache);
     }
     unlock_cache ();
+}
+
+void *
+FcCacheAllocate (FcCache *cache, size_t len)
+{
+    FcCacheSkip	*skip;
+    void *allocated = NULL;
+
+    lock_cache ();
+    skip = FcCacheFindByAddrUnlocked (cache);
+    if (skip)
+    {
+      void *chunk = malloc (sizeof (void *) + len);
+      if (chunk)
+      {
+	  /* First element in allocated chunk is the free list */
+	  *(void **)chunk = skip->allocated;
+	  skip->allocated = chunk;
+	  /* Return the rest */
+	  allocated = ((FcChar8 *)chunk) + sizeof (void *);
+      }
+    }
+    unlock_cache ();
+    return allocated;
 }
 
 void

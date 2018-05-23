@@ -617,8 +617,12 @@ FcCacheObjectReference (void *object);
 FcPrivate void
 FcCacheObjectDereference (void *object);
 
+FcPrivate void *
+FcCacheAllocate (FcCache *cache, size_t len);
+
 FcPrivate void
 FcCacheFini (void);
+
 
 FcPrivate void
 FcDirCacheReference (FcCache *cache, int nref);
