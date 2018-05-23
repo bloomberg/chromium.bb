@@ -143,10 +143,7 @@ class HttpCacheDataRemoverTest : public testing::Test {
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
 
-  // Stores the NetworkContextPtr of the most recently created NetworkContext,
-  // since destroying this before the NetworkContext itself triggers deletion of
-  // the NetworkContext. These tests are probably fine anyways, since the
-  // message loop must be spun for that to happen.
+  // Stores the NetworkContextPtr of the most recently created NetworkContext.
   mojom::NetworkContextPtr network_context_ptr_;
   disk_cache::Backend* backend_ = nullptr;
 };

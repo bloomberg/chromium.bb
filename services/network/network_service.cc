@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -163,11 +164,12 @@ NetworkService::NetworkService(
 }
 
 NetworkService::~NetworkService() {
-  // Call each Network and ask it to release its net::URLRequestContext, as they
-  // may have references to shared objects owned by the NetworkService. The
-  // NetworkContexts deregister themselves in Cleanup(), so have to be careful.
-  while (!network_contexts_.empty())
-    (*network_contexts_.begin())->Cleanup();
+  // Destroy owned network contexts.
+  owned_network_contexts_.clear();
+
+  // All NetworkContexts (Owned and unowned) must have been deleted by this
+  // point.
+  DCHECK(network_contexts_.empty());
 }
 
 std::unique_ptr<NetworkService> NetworkService::Create(
@@ -221,9 +223,10 @@ void NetworkService::SetClient(mojom::NetworkServiceClientPtr client) {
 void NetworkService::CreateNetworkContext(
     mojom::NetworkContextRequest request,
     mojom::NetworkContextParamsPtr params) {
-  // The NetworkContext will destroy itself on connection error, or when the
-  // service is destroyed.
-  new NetworkContext(this, std::move(request), std::move(params));
+  owned_network_contexts_.emplace(std::make_unique<NetworkContext>(
+      this, std::move(request), std::move(params),
+      base::BindOnce(&NetworkService::OnNetworkContextConnectionClosed,
+                     base::Unretained(this))));
 }
 
 void NetworkService::DisableQuic() {
@@ -277,6 +280,13 @@ void NetworkService::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_->BindInterface(interface_name, std::move(interface_pipe));
+}
+
+void NetworkService::OnNetworkContextConnectionClosed(
+    NetworkContext* network_context) {
+  auto it = owned_network_contexts_.find(network_context);
+  DCHECK(it != owned_network_contexts_.end());
+  owned_network_contexts_.erase(it);
 }
 
 void NetworkService::Bind(mojom::NetworkServiceRequest request) {
