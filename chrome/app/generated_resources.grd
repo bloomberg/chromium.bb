@@ -5695,8 +5695,20 @@ I don't think this site should be blocked!
       </message>
 
       <!-- Picture-in-Picture -->
-      <message name="IDS_PICTURE_IN_PICTURE_TITLE_TEXT" desc="Title of the picture-in-picture window. This appears in the system tray and window header.">
+      <message name="IDS_PICTURE_IN_PICTURE_TITLE_TEXT" desc="Title of the Picture-in-Picture window. This appears in the system tray and window header.">
         Picture-in-Picture
+      </message>
+      <message name="IDS_PICTURE_IN_PICTURE_PAUSE_CONTROL_TEXT" desc="Text label of the pause control button. The button appears when the user hovers over the Picture-in-Picture window and the video is currently playing.">
+        Pause
+      </message>
+      <message name="IDS_PICTURE_IN_PICTURE_PLAY_CONTROL_TEXT" desc="Text label of the play control button. The button appears when the user hovers over the Picture-in-Picture window and the video is currently paused.">
+        Play
+      </message>
+      <message name="IDS_PICTURE_IN_PICTURE_CLOSE_CONTROL_TEXT" desc="Text label of the close control button. The button appears when the user hovers over the Picture-in-Picture window.">
+        Close
+      </message>
+      <message name="IDS_PICTURE_IN_PICTURE_PLAY_PAUSE_CONTROL_ACCESSIBLE_TEXT" desc="Accessible text label used for the controls button in the Picture-in-Picture window. The button toggles between play and pause controls.">
+        Toggle video to play or pause
       </message>
 
       <!-- Load State -->
