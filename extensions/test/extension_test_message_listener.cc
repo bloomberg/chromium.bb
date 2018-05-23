@@ -18,7 +18,6 @@ ExtensionTestMessageListener::ExtensionTestMessageListener(
     bool will_reply)
     : expected_message_(expected_message),
       satisfied_(false),
-      waiting_(false),
       wait_for_any_message_(false),
       will_reply_(will_reply),
       replied_(false),
@@ -30,7 +29,6 @@ ExtensionTestMessageListener::ExtensionTestMessageListener(
 
 ExtensionTestMessageListener::ExtensionTestMessageListener(bool will_reply)
     : satisfied_(false),
-      waiting_(false),
       wait_for_any_message_(true),
       will_reply_(will_reply),
       replied_(false),
@@ -45,8 +43,9 @@ ExtensionTestMessageListener::~ExtensionTestMessageListener() {}
 bool ExtensionTestMessageListener::WaitUntilSatisfied()  {
   if (satisfied_)
     return !failed_;
-  waiting_ = true;
-  content::RunMessageLoop();
+  base::RunLoop run_loop;
+  quit_wait_closure_ = run_loop.QuitWhenIdleClosure();
+  run_loop.Run();
   return !failed_;
 }
 
@@ -122,9 +121,7 @@ void ExtensionTestMessageListener::Observe(
     if (!will_reply_)
       Reply(std::string());
 
-    if (waiting_) {
-      waiting_ = false;
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
-    }
+    if (quit_wait_closure_)
+      std::move(quit_wait_closure_).Run();
   }
 }
