@@ -6,47 +6,47 @@
 
 #include "base/debug/stack_trace.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/clock.h"
+#include "base/time/tick_clock.h"
 
 namespace audio {
 
-ServiceMetrics::ServiceMetrics(base::Clock* clock)
-    : clock_(clock), service_start_(clock_->Now()) {}
+ServiceMetrics::ServiceMetrics(const base::TickClock* clock)
+    : clock_(clock), service_start_(clock_->NowTicks()) {}
 
 ServiceMetrics::~ServiceMetrics() {
   LogHasNoConnectionsDuration();
-  UMA_HISTOGRAM_CUSTOM_TIMES("Media.AudioService.Uptime",
-                             clock_->Now() - service_start_, base::TimeDelta(),
-                             base::TimeDelta::FromDays(7), 50);
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "Media.AudioService.Uptime", clock_->NowTicks() - service_start_,
+      base::TimeDelta(), base::TimeDelta::FromDays(7), 50);
 }
 
 void ServiceMetrics::HasConnections() {
-  has_connections_start_ = clock_->Now();
+  has_connections_start_ = clock_->NowTicks();
   LogHasNoConnectionsDuration();
 }
 
 void ServiceMetrics::HasNoConnections() {
-  has_no_connections_start_ = clock_->Now();
-  DCHECK_NE(base::Time(), has_connections_start_);
+  has_no_connections_start_ = clock_->NowTicks();
+  DCHECK_NE(base::TimeTicks(), has_connections_start_);
   UMA_HISTOGRAM_CUSTOM_TIMES("Media.AudioService.HasConnectionsDuration",
-                             clock_->Now() - has_connections_start_,
+                             clock_->NowTicks() - has_connections_start_,
                              base::TimeDelta(), base::TimeDelta::FromDays(7),
                              50);
-  has_connections_start_ = base::Time();
+  has_connections_start_ = base::TimeTicks();
 }
 
 void ServiceMetrics::LogHasNoConnectionsDuration() {
   // Service shuts down without having accepted any connections in its lifetime
   // or with active connections, meaning there is no "no connection" interval in
   // progress.
-  if (has_no_connections_start_ == base::Time())
+  if (has_no_connections_start_.is_null())
     return;
 
   UMA_HISTOGRAM_CUSTOM_TIMES("Media.AudioService.HasNoConnectionsDuration",
-                             clock_->Now() - has_no_connections_start_,
+                             clock_->NowTicks() - has_no_connections_start_,
                              base::TimeDelta(),
                              base::TimeDelta::FromMinutes(10), 50);
-  has_no_connections_start_ = base::Time();
+  has_no_connections_start_ = base::TimeTicks();
 }
 
 }  // namespace audio

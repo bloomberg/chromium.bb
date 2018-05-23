@@ -8,14 +8,14 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/simple_test_clock.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace audio {
 
 TEST(AudioServiceMetricsTest, CreateDestroy_LogsUptime) {
-  base::SimpleTestClock test_clock;
-  test_clock.SetNow(base::Time::Now());
+  base::SimpleTestTickClock test_clock;
+  test_clock.SetNowTicks(base::TimeTicks::Now());
 
   base::HistogramTester histogram_tester;
   std::unique_ptr<ServiceMetrics> metrics =
@@ -28,8 +28,8 @@ TEST(AudioServiceMetricsTest, CreateDestroy_LogsUptime) {
 }
 
 TEST(AudioServiceMetricsTest, AddRemoveConnection_LogsHasConnectionDuration) {
-  base::SimpleTestClock test_clock;
-  test_clock.SetNow(base::Time::Now());
+  base::SimpleTestTickClock test_clock;
+  test_clock.SetNowTicks(base::TimeTicks::Now());
 
   base::HistogramTester histogram_tester;
   ServiceMetrics metrics(&test_clock);
@@ -44,8 +44,8 @@ TEST(AudioServiceMetricsTest, AddRemoveConnection_LogsHasConnectionDuration) {
 }
 
 TEST(AudioServiceMetricsTest, RemoveAddConnection_LogsHasNoConnectionDuration) {
-  base::SimpleTestClock test_clock;
-  test_clock.SetNow(base::Time::Now());
+  base::SimpleTestTickClock test_clock;
+  test_clock.SetNowTicks(base::TimeTicks::Now());
 
   base::HistogramTester histogram_tester;
   ServiceMetrics metrics(&test_clock);
