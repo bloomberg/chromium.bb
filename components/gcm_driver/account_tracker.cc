@@ -113,22 +113,6 @@ void AccountTracker::GoogleSignedOut(const std::string& account_id,
   StopTrackingAllAccounts();
 }
 
-void AccountTracker::SetAccountStateForTest(AccountIds ids, bool is_signed_in) {
-  accounts_[ids.account_key].ids = ids;
-  accounts_[ids.account_key].is_signed_in = is_signed_in;
-
-  DVLOG(1) << "SetAccountStateForTest " << ids.account_key << ":"
-           << is_signed_in;
-
-  if (VLOG_IS_ON(1)) {
-    for (std::map<std::string, AccountState>::const_iterator it =
-             accounts_.begin();
-         it != accounts_.end(); ++it) {
-      DVLOG(1) << it->first << ":" << it->second.is_signed_in;
-    }
-  }
-}
-
 void AccountTracker::NotifySignInChanged(const AccountState& account) {
   DCHECK(!account.ids.gaia.empty());
   for (auto& observer : observer_list_)

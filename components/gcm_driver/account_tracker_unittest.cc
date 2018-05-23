@@ -518,13 +518,6 @@ TEST_F(AccountTrackerTest, Available) {
       observer()->CheckEvents(TrackingEvent(SIGN_IN, "user@example.com")));
 }
 
-TEST_F(AccountTrackerTest, Revoke) {
-  SetupPrimaryLogin();
-
-  account_tracker()->OnRefreshTokenRevoked("user@example.com");
-  EXPECT_TRUE(observer()->CheckEvents());
-}
-
 TEST_F(AccountTrackerTest, AvailableRevokeAvailable) {
   SetupPrimaryLogin();
 
