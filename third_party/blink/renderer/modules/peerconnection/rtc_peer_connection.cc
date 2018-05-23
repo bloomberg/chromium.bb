@@ -543,19 +543,18 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
       sdp_semantics_(configuration.sdp_semantics) {
   Document* document = ToDocument(GetExecutionContext());
 
+  InstanceCounters::IncrementCounter(
+      InstanceCounters::kRTCPeerConnectionCounter);
   // If we fail, set |m_closed| and |m_stopped| to true, to avoid hitting the
   // assert in the destructor.
-
   if (InstanceCounters::CounterValue(
-          InstanceCounters::kRTCPeerConnectionCounter) >= kMaxPeerConnections) {
+          InstanceCounters::kRTCPeerConnectionCounter) > kMaxPeerConnections) {
     closed_ = true;
     stopped_ = true;
     exception_state.ThrowDOMException(kUnknownError,
                                       "Cannot create so many PeerConnections");
     return;
   }
-  InstanceCounters::IncrementCounter(
-      InstanceCounters::kRTCPeerConnectionCounter);
   if (!document->GetFrame()) {
     closed_ = true;
     stopped_ = true;
@@ -598,6 +597,8 @@ RTCPeerConnection::~RTCPeerConnection() {
   DCHECK(closed_ || stopped_);
   InstanceCounters::DecrementCounter(
       InstanceCounters::kRTCPeerConnectionCounter);
+  DCHECK(InstanceCounters::CounterValue(
+             InstanceCounters::kRTCPeerConnectionCounter) >= 0);
 }
 
 void RTCPeerConnection::Dispose() {
