@@ -19,7 +19,7 @@ class VIZ_SERVICE_EXPORT VulkanRenderer : public DirectRenderer {
  public:
   VulkanRenderer(const RendererSettings* settings,
                  OutputSurface* output_surface,
-                 cc::DisplayResourceProvider* resource_provider);
+                 DisplayResourceProvider* resource_provider);
   ~VulkanRenderer() override;
 
   // Implementation of public DirectRenderer functions.

@@ -24,7 +24,7 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 
 #if defined(USE_OZONE)
-#include "cc/output/overlay_candidate.h"
+#include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #endif  // defined(USE_OZONE)
@@ -222,8 +222,8 @@ TEST_F(ReflectorImplTest, CheckInvertedOutputSurface) {
 
 #if defined(USE_OZONE)
 TEST_F(ReflectorImplTest, CheckOverlayNoReflector) {
-  cc::OverlayCandidateList list;
-  cc::OverlayCandidate plane_1, plane_2;
+  viz::OverlayCandidateList list;
+  viz::OverlayCandidate plane_1, plane_2;
   plane_1.plane_z_order = 0;
   plane_2.plane_z_order = 1;
   list.push_back(plane_1);
@@ -234,8 +234,8 @@ TEST_F(ReflectorImplTest, CheckOverlayNoReflector) {
 
 TEST_F(ReflectorImplTest, CheckOverlaySWMirroring) {
   SetUpReflector();
-  cc::OverlayCandidateList list;
-  cc::OverlayCandidate plane_1, plane_2;
+  viz::OverlayCandidateList list;
+  viz::OverlayCandidate plane_1, plane_2;
   plane_1.plane_z_order = 0;
   plane_2.plane_z_order = 1;
   list.push_back(plane_1);

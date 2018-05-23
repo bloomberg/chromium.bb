@@ -14,11 +14,8 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gl/ca_renderer_layer_params.h"
 
-namespace cc {
-class DisplayResourceProvider;
-}
-
 namespace viz {
+class DisplayResourceProvider;
 class DrawQuad;
 class RenderPassDrawQuad;
 
@@ -77,7 +74,7 @@ typedef std::vector<CALayerOverlay> CALayerOverlayList;
 // Returns true if all quads in the root render pass have been replaced by
 // CALayerOverlays.
 bool ProcessForCALayerOverlays(
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
     const QuadList& quad_list,
     const base::flat_map<RenderPassId, cc::FilterOperations*>&

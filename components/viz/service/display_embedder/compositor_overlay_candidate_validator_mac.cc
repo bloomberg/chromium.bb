@@ -27,7 +27,7 @@ bool CompositorOverlayCandidateValidatorMac::AllowDCLayerOverlays() {
 }
 
 void CompositorOverlayCandidateValidatorMac::CheckOverlaySupport(
-    cc::OverlayCandidateList* surfaces) {}
+    OverlayCandidateList* surfaces) {}
 
 void CompositorOverlayCandidateValidatorMac::SetSoftwareMirrorMode(
     bool enabled) {

@@ -5,8 +5,8 @@
 #ifndef CC_TEST_RESOURCE_PROVIDER_TEST_UTILS_H_
 #define CC_TEST_RESOURCE_PROVIDER_TEST_UTILS_H_
 
-#include "cc/resources/display_resource_provider.h"
 #include "cc/resources/layer_tree_resource_provider.h"
+#include "components/viz/service/display/display_resource_provider.h"
 
 namespace cc {
 
@@ -14,7 +14,7 @@ namespace cc {
 const std::unordered_map<viz::ResourceId, viz::ResourceId>&
 SendResourceAndGetChildToParentMap(
     const std::vector<viz::ResourceId>& resource_ids,
-    DisplayResourceProvider* resource_provider,
+    viz::DisplayResourceProvider* resource_provider,
     LayerTreeResourceProvider* child_resource_provider,
     viz::ContextProvider* child_context_provider);
 

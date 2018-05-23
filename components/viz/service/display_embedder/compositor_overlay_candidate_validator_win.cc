@@ -18,7 +18,7 @@ void CompositorOverlayCandidateValidatorWin::GetStrategies(
     OverlayProcessor::StrategyList* strategies) {}
 
 void CompositorOverlayCandidateValidatorWin::CheckOverlaySupport(
-    cc::OverlayCandidateList* candidates) {
+    OverlayCandidateList* candidates) {
   NOTIMPLEMENTED();
 }
 

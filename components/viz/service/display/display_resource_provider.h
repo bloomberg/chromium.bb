@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_DISPLAY_RESOURCE_PROVIDER_H_
-#define CC_RESOURCES_DISPLAY_RESOURCE_PROVIDER_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_DISPLAY_RESOURCE_PROVIDER_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_DISPLAY_RESOURCE_PROVIDER_H_
 
 #include <stddef.h>
 #include <map>
@@ -16,14 +16,14 @@
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
-#include "cc/cc_export.h"
-#include "cc/output/overlay_candidate.h"
 #include "components/viz/common/resources/resource.h"
 #include "components/viz/common/resources/resource_fence.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/resource_metadata.h"
 #include "components/viz/common/resources/return_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/service/display/overlay_candidate.h"
+#include "components/viz/service/viz_service_export.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -42,9 +42,6 @@ class GLES2Interface;
 namespace viz {
 class ContextProvider;
 class SharedBitmapManager;
-}  // namespace viz
-
-namespace cc {
 
 // This class provides abstractions for receiving and using resources from other
 // modules/threads/processes. It abstracts away GL textures vs GpuMemoryBuffers
@@ -58,11 +55,11 @@ namespace cc {
 //
 // This class is not thread-safe and can only be called from the thread it was
 // created on.
-class CC_EXPORT DisplayResourceProvider
+class VIZ_SERVICE_EXPORT DisplayResourceProvider
     : public base::trace_event::MemoryDumpProvider {
  public:
-  DisplayResourceProvider(viz::ContextProvider* compositor_context_provider,
-                          viz::SharedBitmapManager* shared_bitmap_manager);
+  DisplayResourceProvider(ContextProvider* compositor_context_provider,
+                          SharedBitmapManager* shared_bitmap_manager);
   ~DisplayResourceProvider() override;
 
   bool IsSoftware() const { return !compositor_context_provider_; }
@@ -83,34 +80,34 @@ class CC_EXPORT DisplayResourceProvider
 
   // Indicates if this resource is backed by an Android SurfaceTexture, and thus
   // can't really be promoted to an overlay.
-  bool IsBackedBySurfaceTexture(viz::ResourceId id);
+  bool IsBackedBySurfaceTexture(ResourceId id);
 
   // Indicates if this resource wants to receive promotion hints.
-  bool WantsPromotionHintForTesting(viz::ResourceId id);
+  bool WantsPromotionHintForTesting(ResourceId id);
 
   // Return the number of resources that request promotion hints.
   size_t CountPromotionHintRequestsForTesting();
 #endif
 
-  viz::ResourceType GetResourceType(viz::ResourceId id);
-  GLenum GetResourceTextureTarget(viz::ResourceId id);
+  ResourceType GetResourceType(ResourceId id);
+  GLenum GetResourceTextureTarget(ResourceId id);
   // Return the format of the underlying buffer that can be used for scanout.
-  gfx::BufferFormat GetBufferFormat(viz::ResourceId id);
+  gfx::BufferFormat GetBufferFormat(ResourceId id);
   // Indicates if this resource may be used for a hardware overlay plane.
-  bool IsOverlayCandidate(viz::ResourceId id);
+  bool IsOverlayCandidate(ResourceId id);
 
-  void WaitSyncToken(viz::ResourceId id);
+  void WaitSyncToken(ResourceId id);
 
   // Checks whether a resource is in use.
-  bool InUse(viz::ResourceId id);
+  bool InUse(ResourceId id);
 
   // The following lock classes are part of the DisplayResourceProvider API and
   // are needed to read the resource contents. The user must ensure that they
   // only use GL locks on GL resources, etc, and this is enforced by assertions.
-  class CC_EXPORT ScopedReadLockGL {
+  class VIZ_SERVICE_EXPORT ScopedReadLockGL {
    public:
     ScopedReadLockGL(DisplayResourceProvider* resource_provider,
-                     viz::ResourceId resource_id);
+                     ResourceId resource_id);
     ~ScopedReadLockGL();
 
     GLuint texture_id() const { return texture_id_; }
@@ -120,7 +117,7 @@ class CC_EXPORT DisplayResourceProvider
 
    private:
     DisplayResourceProvider* const resource_provider_;
-    const viz::ResourceId resource_id_;
+    const ResourceId resource_id_;
 
     GLuint texture_id_ = 0;
     GLenum target_ = GL_TEXTURE_2D;
@@ -130,13 +127,13 @@ class CC_EXPORT DisplayResourceProvider
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockGL);
   };
 
-  class CC_EXPORT ScopedSamplerGL {
+  class VIZ_SERVICE_EXPORT ScopedSamplerGL {
    public:
     ScopedSamplerGL(DisplayResourceProvider* resource_provider,
-                    viz::ResourceId resource_id,
+                    ResourceId resource_id,
                     GLenum filter);
     ScopedSamplerGL(DisplayResourceProvider* resource_provider,
-                    viz::ResourceId resource_id,
+                    ResourceId resource_id,
                     GLenum unit,
                     GLenum filter);
     ~ScopedSamplerGL();
@@ -155,10 +152,10 @@ class CC_EXPORT DisplayResourceProvider
     DISALLOW_COPY_AND_ASSIGN(ScopedSamplerGL);
   };
 
-  class CC_EXPORT ScopedReadLockSkImage {
+  class VIZ_SERVICE_EXPORT ScopedReadLockSkImage {
    public:
     ScopedReadLockSkImage(DisplayResourceProvider* resource_provider,
-                          viz::ResourceId resource_id);
+                          ResourceId resource_id);
     ~ScopedReadLockSkImage();
 
     const SkImage* sk_image() const { return sk_image_.get(); }
@@ -167,16 +164,16 @@ class CC_EXPORT DisplayResourceProvider
 
    private:
     DisplayResourceProvider* const resource_provider_;
-    const viz::ResourceId resource_id_;
+    const ResourceId resource_id_;
     sk_sp<SkImage> sk_image_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSkImage);
   };
 
-  class CC_EXPORT ScopedReadLockSoftware {
+  class VIZ_SERVICE_EXPORT ScopedReadLockSoftware {
    public:
     ScopedReadLockSoftware(DisplayResourceProvider* resource_provider,
-                           viz::ResourceId resource_id);
+                           ResourceId resource_id);
     ~ScopedReadLockSoftware();
 
     const SkBitmap* sk_bitmap() const {
@@ -188,20 +185,20 @@ class CC_EXPORT DisplayResourceProvider
 
    private:
     DisplayResourceProvider* const resource_provider_;
-    const viz::ResourceId resource_id_;
+    const ResourceId resource_id_;
     SkBitmap sk_bitmap_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSoftware);
   };
 
   // Maintains set of lock for external use.
-  class CC_EXPORT LockSetForExternalUse {
+  class VIZ_SERVICE_EXPORT LockSetForExternalUse {
    public:
     explicit LockSetForExternalUse(DisplayResourceProvider* resource_provider);
     ~LockSetForExternalUse();
 
     // Lock a resource for external use.
-    viz::ResourceMetadata LockResource(viz::ResourceId resource_id);
+    ResourceMetadata LockResource(ResourceId resource_id);
 
     // Unlock all locked resources with a |sync_token|.
     // See UnlockForExternalUse for the detail. All resources must be unlocked
@@ -210,14 +207,14 @@ class CC_EXPORT DisplayResourceProvider
 
    private:
     DisplayResourceProvider* const resource_provider_;
-    std::vector<viz::ResourceId> resources_;
+    std::vector<ResourceId> resources_;
 
     DISALLOW_COPY_AND_ASSIGN(LockSetForExternalUse);
   };
 
   // All resources that are returned to children while an instance of this
   // class exists will be stored and returned when the instance is destroyed.
-  class CC_EXPORT ScopedBatchReturnResources {
+  class VIZ_SERVICE_EXPORT ScopedBatchReturnResources {
    public:
     explicit ScopedBatchReturnResources(
         DisplayResourceProvider* resource_provider);
@@ -229,11 +226,11 @@ class CC_EXPORT DisplayResourceProvider
     DISALLOW_COPY_AND_ASSIGN(ScopedBatchReturnResources);
   };
 
-  class CC_EXPORT SynchronousFence : public viz::ResourceFence {
+  class VIZ_SERVICE_EXPORT SynchronousFence : public ResourceFence {
    public:
     explicit SynchronousFence(gpu::gles2::GLES2Interface* gl);
 
-    // viz::ResourceFence implementation.
+    // ResourceFence implementation.
     void Set() override;
     bool HasPassed() override;
     void Wait() override;
@@ -255,12 +252,12 @@ class CC_EXPORT DisplayResourceProvider
   // Sets the current read fence. If a resource is locked for read
   // and has read fences enabled, the resource will not allow writes
   // until this fence has passed.
-  void SetReadLockFence(viz::ResourceFence* fence) {
+  void SetReadLockFence(ResourceFence* fence) {
     current_read_lock_fence_ = fence;
   }
 
   // Creates accounting for a child. Returns a child ID.
-  int CreateChild(const viz::ReturnCallback& return_callback);
+  int CreateChild(const ReturnCallback& return_callback);
 
   // Destroys accounting for the child, deleting all accounted resources.
   void DestroyChild(int child);
@@ -270,8 +267,8 @@ class CC_EXPORT DisplayResourceProvider
   void SetChildNeedsSyncTokens(int child, bool needs_sync_tokens);
 
   // Gets the child->parent resource ID map.
-  const std::unordered_map<viz::ResourceId, viz::ResourceId>&
-  GetChildToParentMap(int child) const;
+  const std::unordered_map<ResourceId, ResourceId>& GetChildToParentMap(
+      int child) const;
 
   // Receives resources from a child, moving them from mailboxes. ResourceIds
   // passed are in the child namespace, and will be translated to the parent
@@ -280,18 +277,17 @@ class CC_EXPORT DisplayResourceProvider
   // declaring which resources are in use. Use DeclareUsedResourcesFromChild
   // after calling this method to do that. All calls to ReceiveFromChild should
   // be followed by a DeclareUsedResourcesFromChild.
-  // NOTE: if the sync_token is set on any viz::TransferableResource, this will
+  // NOTE: if the sync_token is set on any TransferableResource, this will
   // wait on it.
   void ReceiveFromChild(
       int child,
-      const std::vector<viz::TransferableResource>& transferable_resources);
+      const std::vector<TransferableResource>& transferable_resources);
 
   // Once a set of resources have been received, they may or may not be used.
   // This declares what set of resources are currently in use from the child,
   // releasing any other resources back to the child.
-  void DeclareUsedResourcesFromChild(
-      int child,
-      const viz::ResourceIdSet& resources_from_child);
+  void DeclareUsedResourcesFromChild(int child,
+                                     const ResourceIdSet& resources_from_child);
 
  private:
   struct Child {
@@ -299,8 +295,8 @@ class CC_EXPORT DisplayResourceProvider
     Child(const Child& other);
     ~Child();
 
-    std::unordered_map<viz::ResourceId, viz::ResourceId> child_to_parent_map;
-    viz::ReturnCallback return_callback;
+    std::unordered_map<ResourceId, ResourceId> child_to_parent_map;
+    ReturnCallback return_callback;
     bool marked_for_deletion = false;
     bool needs_sync_tokens = true;
   };
@@ -311,49 +307,45 @@ class CC_EXPORT DisplayResourceProvider
   };
 
   using ChildMap = std::unordered_map<int, Child>;
-  using ResourceMap =
-      std::unordered_map<viz::ResourceId, viz::internal::Resource>;
+  using ResourceMap = std::unordered_map<ResourceId, internal::Resource>;
 
-  viz::internal::Resource* InsertResource(viz::ResourceId id,
-                                          viz::internal::Resource resource);
-  viz::internal::Resource* GetResource(viz::ResourceId id);
+  internal::Resource* InsertResource(ResourceId id,
+                                     internal::Resource resource);
+  internal::Resource* GetResource(ResourceId id);
 
   // TODO(ericrk): TryGetResource is part of a temporary workaround for cases
   // where resources which should be available are missing. This version may
   // return nullptr if a resource is not found. https://crbug.com/811858
-  viz::internal::Resource* TryGetResource(viz::ResourceId id);
+  internal::Resource* TryGetResource(ResourceId id);
 
   void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
-                                    const viz::internal::Resource* resource);
+                                    const internal::Resource* resource);
 
   void DeleteResourceInternal(ResourceMap::iterator it, DeleteStyle style);
 
-  void WaitSyncTokenInternal(viz::internal::Resource* resource);
+  void WaitSyncTokenInternal(internal::Resource* resource);
 
-  // Returns null if we do not have a viz::ContextProvider.
+  // Returns null if we do not have a ContextProvider.
   gpu::gles2::GLES2Interface* ContextGL() const;
 
-  const viz::internal::Resource* LockForRead(viz::ResourceId id);
-  void UnlockForRead(viz::ResourceId id);
+  const internal::Resource* LockForRead(ResourceId id);
+  void UnlockForRead(ResourceId id);
 
   // Lock a resource for external use.
-  viz::ResourceMetadata LockForExternalUse(viz::ResourceId id);
+  ResourceMetadata LockForExternalUse(ResourceId id);
 
   // Unlock a resource which locked by LockForExternalUse.
   // The |sync_token| should be waited on before reusing the resouce's backing
   // to ensure that any external use of it is completed. This |sync_token|
   // should have been verified.
-  void UnlockForExternalUse(viz::ResourceId id,
-                            const gpu::SyncToken& sync_token);
+  void UnlockForExternalUse(ResourceId id, const gpu::SyncToken& sync_token);
 
   void TryReleaseResource(ResourceMap::iterator it);
   // Binds the given GL resource to a texture target for sampling using the
   // specified filter for both minification and magnification. Returns the
   // texture target used. The resource must be locked for reading.
-  GLenum BindForSampling(viz::ResourceId resource_id,
-                         GLenum unit,
-                         GLenum filter);
-  bool ReadLockFenceHasPassed(const viz::internal::Resource* resource);
+  GLenum BindForSampling(ResourceId resource_id, GLenum unit, GLenum filter);
+  bool ReadLockFenceHasPassed(const internal::Resource* resource);
 #if defined(OS_ANDROID)
   void DeletePromotionHint(ResourceMap::iterator it, DeleteStyle style);
 #endif
@@ -361,22 +353,22 @@ class CC_EXPORT DisplayResourceProvider
   void DeleteAndReturnUnusedResourcesToChild(
       ChildMap::iterator child_it,
       DeleteStyle style,
-      const std::vector<viz::ResourceId>& unused);
+      const std::vector<ResourceId>& unused);
   void DestroyChildInternal(ChildMap::iterator it, DeleteStyle style);
 
   void SetBatchReturnResources(bool aggregate);
 
   THREAD_CHECKER(thread_checker_);
-  viz::ContextProvider* const compositor_context_provider_;
-  viz::SharedBitmapManager* const shared_bitmap_manager_;
+  ContextProvider* const compositor_context_provider_;
+  SharedBitmapManager* const shared_bitmap_manager_;
 
   ResourceMap resources_;
   ChildMap children_;
-  base::flat_map<viz::ResourceId, sk_sp<SkImage>> resource_sk_image_;
+  base::flat_map<ResourceId, sk_sp<SkImage>> resource_sk_image_;
   // Maps from a child id to the set of resources to be returned to it.
-  base::small_map<std::map<int, std::vector<viz::ResourceId>>>
+  base::small_map<std::map<int, std::vector<ResourceId>>>
       batched_returning_resources_;
-  scoped_refptr<viz::ResourceFence> current_read_lock_fence_;
+  scoped_refptr<ResourceFence> current_read_lock_fence_;
   // Keep track of whether deleted resources should be batched up or returned
   // immediately.
   bool batch_return_resources_ = false;
@@ -385,7 +377,7 @@ class CC_EXPORT DisplayResourceProvider
   bool lost_context_provider_ = false;
   // The ResourceIds in DisplayResourceProvider start from 2 to avoid
   // conflicts with id from LayerTreeResourceProvider.
-  viz::ResourceId next_id_ = 2;
+  ResourceId next_id_ = 2;
   // Used as child id when creating a child.
   int next_child_ = 1;
   // A process-unique ID used for disambiguating memory dumps from different
@@ -394,12 +386,12 @@ class CC_EXPORT DisplayResourceProvider
 
 #if defined(OS_ANDROID)
   // Set of ResourceIds that would like to be notified about promotion hints.
-  viz::ResourceIdSet wants_promotion_hints_set_;
+  ResourceIdSet wants_promotion_hints_set_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DisplayResourceProvider);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_RESOURCES_DISPLAY_RESOURCE_PROVIDER_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_DISPLAY_RESOURCE_PROVIDER_H_

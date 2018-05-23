@@ -20,19 +20,19 @@ OverlayStrategySingleOnTop::~OverlayStrategySingleOnTop() {}
 
 bool OverlayStrategySingleOnTop::Attempt(
     const SkMatrix44& output_color_matrix,
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     RenderPass* render_pass,
-    cc::OverlayCandidateList* candidate_list,
+    OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
   QuadList* quad_list = &render_pass->quad_list;
   // Build a list of candidates with the associated quad.
-  cc::OverlayCandidate best_candidate;
+  OverlayCandidate best_candidate;
   auto best_quad_it = quad_list->end();
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
-    cc::OverlayCandidate candidate;
-    if (cc::OverlayCandidate::FromDrawQuad(
-            resource_provider, output_color_matrix, *it, &candidate) &&
-        !cc::OverlayCandidate::IsOccluded(candidate, quad_list->cbegin(), it)) {
+    OverlayCandidate candidate;
+    if (OverlayCandidate::FromDrawQuad(resource_provider, output_color_matrix,
+                                       *it, &candidate) &&
+        !OverlayCandidate::IsOccluded(candidate, quad_list->cbegin(), it)) {
       if (candidate.display_rect.size().GetArea() >
           best_candidate.display_rect.size().GetArea()) {
         best_candidate = candidate;
@@ -51,18 +51,18 @@ bool OverlayStrategySingleOnTop::Attempt(
 
 bool OverlayStrategySingleOnTop::TryOverlay(
     QuadList* quad_list,
-    cc::OverlayCandidateList* candidate_list,
-    const cc::OverlayCandidate& candidate,
+    OverlayCandidateList* candidate_list,
+    const OverlayCandidate& candidate,
     QuadList::Iterator candidate_iterator) {
   // Add the overlay.
-  cc::OverlayCandidateList new_candidate_list = *candidate_list;
+  OverlayCandidateList new_candidate_list = *candidate_list;
   new_candidate_list.push_back(candidate);
   new_candidate_list.back().plane_z_order = 1;
 
   // Check for support.
   capability_checker_->CheckOverlaySupport(&new_candidate_list);
 
-  const cc::OverlayCandidate& overlay_candidate = new_candidate_list.back();
+  const OverlayCandidate& overlay_candidate = new_candidate_list.back();
   // If the candidate can be handled by an overlay, create a pass for it.
   if (overlay_candidate.overlay_handled) {
     quad_list->EraseAndInvalidateAllPointers(candidate_iterator);

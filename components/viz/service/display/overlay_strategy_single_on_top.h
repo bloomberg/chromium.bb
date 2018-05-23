@@ -21,17 +21,17 @@ class VIZ_SERVICE_EXPORT OverlayStrategySingleOnTop
   ~OverlayStrategySingleOnTop() override;
 
   bool Attempt(const SkMatrix44& output_color_matrix,
-               cc::DisplayResourceProvider* resource_provider,
+               DisplayResourceProvider* resource_provider,
                RenderPass* render_pass,
-               cc::OverlayCandidateList* candidate_list,
+               OverlayCandidateList* candidate_list,
                std::vector<gfx::Rect>* content_bounds) override;
 
   OverlayProcessor::StrategyType GetUMAEnum() const override;
 
  private:
   bool TryOverlay(QuadList* quad_list,
-                  cc::OverlayCandidateList* candidate_list,
-                  const cc::OverlayCandidate& candidate,
+                  OverlayCandidateList* candidate_list,
+                  const OverlayCandidate& candidate,
                   QuadList::Iterator candidate_iterator);
 
   OverlayCandidateValidator* capability_checker_;  // Weak.

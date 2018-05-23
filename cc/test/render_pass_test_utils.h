@@ -22,12 +22,12 @@ struct SyncToken;
 
 namespace viz {
 class ContextProvider;
+class DisplayResourceProvider;
 class RenderPass;
 class SolidColorDrawQuad;
 }  // namespace viz
 
 namespace cc {
-class DisplayResourceProvider;
 class LayerTreeResourceProvider;
 
 // Adds a new render pass with the provided properties to the given
@@ -80,10 +80,10 @@ void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
 
 // Adds a render pass quad with the given mask resource, filter, and transform.
 // The resource used in render pass is created by LayerTreeResourceProvider,
-// then transferred to DisplayResourceProvider.
+// then transferred to viz::DisplayResourceProvider.
 void AddOneOfEveryQuadTypeInDisplayResourceProvider(
     viz::RenderPass* to_pass,
-    DisplayResourceProvider* resource_provider,
+    viz::DisplayResourceProvider* resource_provider,
     LayerTreeResourceProvider* child_resource_provider,
     viz::ContextProvider* child_context_provider,
     viz::RenderPassId child_pass_id,

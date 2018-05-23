@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "cc/resources/display_resource_provider.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -20,6 +19,7 @@
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/service/display/display_resource_provider.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
@@ -254,7 +254,7 @@ static void CollectResources(
 
 void AddOneOfEveryQuadTypeInDisplayResourceProvider(
     viz::RenderPass* to_pass,
-    DisplayResourceProvider* resource_provider,
+    viz::DisplayResourceProvider* resource_provider,
     LayerTreeResourceProvider* child_resource_provider,
     viz::ContextProvider* child_context_provider,
     viz::RenderPassId child_pass_id,
@@ -318,7 +318,7 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
                                                child_context_provider);
   resource_provider->ReceiveFromChild(child_id, list);
 
-  // Before create DrawQuad in DisplayResourceProvider's namespace, get the
+  // Before create DrawQuad in viz::DisplayResourceProvider's namespace, get the
   // mapped resource id first.
   std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider->GetChildToParentMap(child_id);

@@ -80,7 +80,7 @@ DirectRenderer::DrawingFrame::~DrawingFrame() = default;
 
 DirectRenderer::DirectRenderer(const RendererSettings* settings,
                                OutputSurface* output_surface,
-                               cc::DisplayResourceProvider* resource_provider)
+                               DisplayResourceProvider* resource_provider)
     : settings_(settings),
       output_surface_(output_surface),
       resource_provider_(resource_provider),
@@ -273,7 +273,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   // Create the overlay candidate for the output surface, and mark it as
   // always handled.
   if (output_surface_->IsDisplayedAsOverlayPlane()) {
-    cc::OverlayCandidate output_surface_plane;
+    OverlayCandidate output_surface_plane;
     output_surface_plane.display_rect =
         gfx::RectF(device_viewport_size.width(), device_viewport_size.height());
     output_surface_plane.resource_size_in_pixels = device_viewport_size;

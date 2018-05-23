@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/display_resource_provider.h"
 #include "cc/resources/layer_tree_resource_provider.h"
+#include "components/viz/service/display/display_resource_provider.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -365,7 +365,7 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
       shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
     }
 
-    resource_provider_ = std::make_unique<DisplayResourceProvider>(
+    resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
         context_provider_.get(), shared_bitmap_manager_.get());
 
     MakeChildResourceProvider();
@@ -391,11 +391,11 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
     return base::Bind(&ResourceProviderTest::CollectResources, array);
   }
 
-  static void SetResourceFilter(DisplayResourceProvider* resource_provider,
+  static void SetResourceFilter(viz::DisplayResourceProvider* resource_provider,
                                 viz::ResourceId id,
                                 GLenum filter) {
-    DisplayResourceProvider::ScopedSamplerGL sampler(resource_provider, id,
-                                                     GL_TEXTURE_2D, filter);
+    viz::DisplayResourceProvider::ScopedSamplerGL sampler(
+        resource_provider, id, GL_TEXTURE_2D, filter);
   }
 
   ResourceProviderContext* context() { return context3d_; }
@@ -467,7 +467,7 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
       GLuint filter,
       GLuint target,
       const gpu::SyncToken& sync_token,
-      DisplayResourceProvider* resource_provider) {
+      viz::DisplayResourceProvider* resource_provider) {
     viz::ReturnCallback return_callback = base::DoNothing();
 
     int child = resource_provider->CreateChild(return_callback);
@@ -491,7 +491,7 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
   ResourceProviderContext* child_context_ = nullptr;
   scoped_refptr<viz::TestContextProvider> context_provider_;
   scoped_refptr<viz::TestContextProvider> child_context_provider_;
-  std::unique_ptr<DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<viz::DisplayResourceProvider> resource_provider_;
   std::unique_ptr<LayerTreeResourceProvider> child_resource_provider_;
   std::unique_ptr<viz::TestSharedBitmapManager> shared_bitmap_manager_;
 };
@@ -556,8 +556,8 @@ TEST_P(ResourceProviderTest, OverlayPromotionHint) {
   EXPECT_EQ(0u, resource_provider_->CountPromotionHintRequestsForTesting());
   {
     resource_provider_->WaitSyncToken(mapped_id1);
-    DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
-                                                   mapped_id1);
+    viz::DisplayResourceProvider::ScopedReadLockGL lock(
+        resource_provider_.get(), mapped_id1);
   }
   EXPECT_EQ(1u, resource_provider_->CountPromotionHintRequestsForTesting());
 
@@ -695,26 +695,26 @@ TEST_P(ResourceProviderTest, SetBatchPreventsReturn) {
 
   resource_provider_->ReceiveFromChild(child_id, list);
 
-  // In DisplayResourceProvider's namespace, use the mapped resource id.
+  // In viz::DisplayResourceProvider's namespace, use the mapped resource id.
   std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider_->GetChildToParentMap(child_id);
 
-  std::vector<std::unique_ptr<DisplayResourceProvider::ScopedReadLockGL>>
+  std::vector<std::unique_ptr<viz::DisplayResourceProvider::ScopedReadLockGL>>
       read_locks;
   for (auto& resource_id : list) {
     unsigned int mapped_resource_id = resource_map[resource_id.id];
     resource_provider_->WaitSyncToken(mapped_resource_id);
     read_locks.push_back(
-        std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
+        std::make_unique<viz::DisplayResourceProvider::ScopedReadLockGL>(
             resource_provider_.get(), mapped_resource_id));
   }
 
   resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                     viz::ResourceIdSet());
-  std::unique_ptr<DisplayResourceProvider::ScopedBatchReturnResources>
-      returner =
-          std::make_unique<DisplayResourceProvider::ScopedBatchReturnResources>(
-              resource_provider_.get());
+  std::unique_ptr<viz::DisplayResourceProvider::ScopedBatchReturnResources>
+      returner = std::make_unique<
+          viz::DisplayResourceProvider::ScopedBatchReturnResources>(
+          resource_provider_.get());
   EXPECT_EQ(0u, returned_to_child.size());
 
   read_locks.clear();
@@ -755,13 +755,13 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
 
     resource_provider_->ReceiveFromChild(child_id, list);
 
-    // In DisplayResourceProvider's namespace, use the mapped resource id.
+    // In viz::DisplayResourceProvider's namespace, use the mapped resource id.
     std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
         resource_provider_->GetChildToParentMap(child_id);
     viz::ResourceId mapped_resource_id = resource_map[list[0].id];
     resource_provider_->WaitSyncToken(mapped_resource_id);
-    DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
-                                                   mapped_resource_id);
+    viz::DisplayResourceProvider::ScopedReadLockGL lock(
+        resource_provider_.get(), mapped_resource_id);
 
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       viz::ResourceIdSet());
@@ -820,7 +820,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
 
   resource_provider_->ReceiveFromChild(child_id, list);
 
-  // In DisplayResourceProvider's namespace, use the mapped resource id.
+  // In viz::DisplayResourceProvider's namespace, use the mapped resource id.
   std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider_->GetChildToParentMap(child_id);
 
@@ -829,8 +829,8 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
   {
     unsigned parent_id = resource_map[list.front().id];
     resource_provider_->WaitSyncToken(parent_id);
-    DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
-                                                   parent_id);
+    viz::DisplayResourceProvider::ScopedReadLockGL lock(
+        resource_provider_.get(), parent_id);
   }
   resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                     viz::ResourceIdSet());
@@ -880,7 +880,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
 
   resource_provider_->ReceiveFromChild(child_id, list);
 
-  // In DisplayResourceProvider's namespace, use the mapped resource id.
+  // In viz::DisplayResourceProvider's namespace, use the mapped resource id.
   std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider_->GetChildToParentMap(child_id);
 
@@ -890,8 +890,8 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
     for (size_t i = 0; i < list.size(); i++) {
       unsigned parent_id = resource_map[list[i].id];
       resource_provider_->WaitSyncToken(parent_id);
-      DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
-                                                     parent_id);
+      viz::DisplayResourceProvider::ScopedReadLockGL lock(
+          resource_provider_.get(), parent_id);
     }
   }
   EXPECT_EQ(0u, returned_to_child.size());
@@ -939,7 +939,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
 
   resource_provider_->ReceiveFromChild(child_id, list);
 
-  // In DisplayResourceProvider's namespace, use the mapped resource id.
+  // In viz::DisplayResourceProvider's namespace, use the mapped resource id.
   std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider_->GetChildToParentMap(child_id);
 
@@ -949,8 +949,8 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
     for (size_t i = 0; i < list.size(); i++) {
       unsigned parent_id = resource_map[list[i].id];
       resource_provider_->WaitSyncToken(parent_id);
-      DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
-                                                     parent_id);
+      viz::DisplayResourceProvider::ScopedReadLockGL lock(
+          resource_provider_.get(), parent_id);
     }
   }
   EXPECT_EQ(0u, returned_to_child.size());
@@ -1236,7 +1236,7 @@ TEST_P(ResourceProviderTest, ImportedResource_SharedMemory) {
   viz::SharedBitmapId shared_bitmap_id = CreateAndFillSharedBitmap(
       shared_bitmap_manager_.get(), size, format, kBadBeef);
 
-  auto resource_provider = std::make_unique<DisplayResourceProvider>(
+  auto resource_provider = std::make_unique<viz::DisplayResourceProvider>(
       nullptr, shared_bitmap_manager_.get());
 
   auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
@@ -1266,13 +1266,13 @@ TEST_P(ResourceProviderTest, ImportedResource_SharedMemory) {
       resource_ids_to_transfer, &send_to_parent, child_context_provider_.get());
   resource_provider->ReceiveFromChild(child_id, send_to_parent);
 
-  // In DisplayResourceProvider's namespace, use the mapped resource id.
+  // In viz::DisplayResourceProvider's namespace, use the mapped resource id.
   std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider->GetChildToParentMap(child_id);
   viz::ResourceId mapped_resource_id = resource_map[resource_id];
 
   {
-    DisplayResourceProvider::ScopedReadLockSoftware lock(
+    viz::DisplayResourceProvider::ScopedReadLockSoftware lock(
         resource_provider.get(), mapped_resource_id);
     const SkBitmap* sk_bitmap = lock.sk_bitmap();
     EXPECT_EQ(sk_bitmap->width(), size.width());
@@ -1306,7 +1306,7 @@ class ResourceProviderTestImportedResourceGLFilters
         viz::TestContextProvider::Create(std::move(context_owned));
     context_provider->BindToCurrentThread();
 
-    auto resource_provider(std::make_unique<DisplayResourceProvider>(
+    auto resource_provider(std::make_unique<viz::DisplayResourceProvider>(
         context_provider.get(), shared_bitmap_manager));
 
     auto child_context_owned(std::make_unique<TextureStateTrackingContext>());
@@ -1361,7 +1361,7 @@ class ResourceProviderTestImportedResourceGLFilters
                                                  child_context_provider.get());
     resource_provider->ReceiveFromChild(child_id, send_to_parent);
 
-    // In DisplayResourceProvider's namespace, use the mapped resource id.
+    // In viz::DisplayResourceProvider's namespace, use the mapped resource id.
     std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
         resource_provider->GetChildToParentMap(child_id);
     viz::ResourceId mapped_resource_id = resource_map[resource_id];
@@ -1391,7 +1391,7 @@ class ResourceProviderTestImportedResourceGLFilters
             GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, sampler_filter));
       }
 
-      DisplayResourceProvider::ScopedSamplerGL lock(
+      viz::DisplayResourceProvider::ScopedSamplerGL lock(
           resource_provider.get(), mapped_resource_id, sampler_filter);
       Mock::VerifyAndClearExpectations(context);
       EXPECT_EQ(current_fence_sync, context->GetNextFenceSync());
@@ -1466,7 +1466,7 @@ TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
       viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
-  auto resource_provider(std::make_unique<DisplayResourceProvider>(
+  auto resource_provider(std::make_unique<viz::DisplayResourceProvider>(
       context_provider.get(), shared_bitmap_manager_.get()));
 
   auto child_context_owned(std::make_unique<TextureStateTrackingContext>());
@@ -1514,7 +1514,7 @@ TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
       resource_ids_to_transfer, &send_to_parent, child_context_provider_.get());
   resource_provider->ReceiveFromChild(child_id, send_to_parent);
 
-  // Before create DrawQuad in DisplayResourceProvider's namespace, get the
+  // Before create DrawQuad in viz::DisplayResourceProvider's namespace, get the
   // mapped resource id first.
   std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider->GetChildToParentMap(child_id);
@@ -1537,8 +1537,8 @@ TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
 
     EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _)).Times(0);
 
-    DisplayResourceProvider::ScopedReadLockGL lock(resource_provider.get(),
-                                                   mapped_resource_id);
+    viz::DisplayResourceProvider::ScopedReadLockGL lock(resource_provider.get(),
+                                                        mapped_resource_id);
     Mock::VerifyAndClearExpectations(context);
 
     // When done with it, a sync point should be inserted, but no produce is
@@ -1572,7 +1572,7 @@ TEST_P(ResourceProviderTest, WaitSyncTokenIfNeeded_ResourceFromChild) {
       viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
-  auto resource_provider = std::make_unique<DisplayResourceProvider>(
+  auto resource_provider = std::make_unique<viz::DisplayResourceProvider>(
       context_provider.get(), shared_bitmap_manager_.get());
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
@@ -1629,7 +1629,7 @@ TEST_P(ResourceProviderTest, WaitSyncTokenIfNeeded_WithSyncToken) {
       viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
-  auto resource_provider = std::make_unique<DisplayResourceProvider>(
+  auto resource_provider = std::make_unique<viz::DisplayResourceProvider>(
       context_provider.get(), shared_bitmap_manager_.get());
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
@@ -1673,7 +1673,7 @@ TEST_P(ResourceProviderTest,
       viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
-  auto resource_provider = std::make_unique<DisplayResourceProvider>(
+  auto resource_provider = std::make_unique<viz::DisplayResourceProvider>(
       context_provider.get(), shared_bitmap_manager_.get());
 
   gpu::SyncToken sync_token;

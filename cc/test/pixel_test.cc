@@ -13,7 +13,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
 #include "cc/raster/raster_buffer_provider.h"
-#include "cc/resources/display_resource_provider.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/pixel_test_output_surface.h"
@@ -25,6 +24,7 @@
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
+#include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/software_output_device.h"
@@ -200,7 +200,7 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
   output_surface_->BindToClient(output_surface_client_.get());
 
   shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
-  resource_provider_ = std::make_unique<DisplayResourceProvider>(
+  resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
       output_surface_->context_provider(), shared_bitmap_manager_.get());
 
   child_context_provider_ = base::MakeRefCounted<TestInProcessContextProvider>(
@@ -237,7 +237,7 @@ void PixelTest::SetUpSoftwareRenderer() {
       std::make_unique<viz::SoftwareOutputDevice>()));
   output_surface_->BindToClient(output_surface_client_.get());
   shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
-  resource_provider_ = std::make_unique<DisplayResourceProvider>(
+  resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
       nullptr, shared_bitmap_manager_.get());
   child_resource_provider_ =
       std::make_unique<LayerTreeResourceProvider>(nullptr, true);

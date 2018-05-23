@@ -17,7 +17,6 @@
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
-#include "cc/resources/display_resource_provider.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -25,6 +24,7 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -82,7 +82,7 @@ bool CalculateQuadSpaceDamageRect(
 }  // namespace
 
 SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
-                                     cc::DisplayResourceProvider* provider,
+                                     DisplayResourceProvider* provider,
                                      bool aggregate_only_damaged)
     : manager_(manager),
       provider_(provider),

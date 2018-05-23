@@ -2,21 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/overlay_candidate.h"
+#include "components/viz/service/display/overlay_candidate.h"
 
 #include <algorithm>
 #include <limits>
+
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "cc/base/math_util.h"
-#include "cc/resources/display_resource_provider.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/service/display/display_resource_provider.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
-namespace cc {
+namespace viz {
 
 namespace {
 // Tolerance for considering axis vector elements to be zero.
@@ -48,8 +50,8 @@ gfx::OverlayTransform GetOverlayTransform(const gfx::Transform& quad_transform,
     return gfx::OVERLAY_TRANSFORM_INVALID;
   }
 
-  gfx::Vector3dF x_axis = MathUtil::GetXAxis(quad_transform);
-  gfx::Vector3dF y_axis = MathUtil::GetYAxis(quad_transform);
+  gfx::Vector3dF x_axis = cc::MathUtil::GetXAxis(quad_transform);
+  gfx::Vector3dF y_axis = cc::MathUtil::GetYAxis(quad_transform);
   if (y_flipped) {
     y_axis.Scale(-1);
   }
@@ -196,11 +198,11 @@ OverlayCandidate::~OverlayCandidate() = default;
 // static
 bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
                                     const SkMatrix44& output_color_matrix,
-                                    const viz::DrawQuad* quad,
+                                    const DrawQuad* quad,
                                     OverlayCandidate* candidate) {
   // It is currently not possible to set a color conversion matrix on an HW
   // overlay plane.
-  // TODO(dcastagna): Remove this check once crbug.com/792757 is resolved.
+  // TODO(https://crbug.com/792757): Remove this check once the bug is resolved.
   if (!output_color_matrix.isIdentity())
     return false;
 
@@ -213,16 +215,15 @@ bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
     return false;
 
   switch (quad->material) {
-    case viz::DrawQuad::TEXTURE_CONTENT:
+    case DrawQuad::TEXTURE_CONTENT:
       return FromTextureQuad(resource_provider,
-                             viz::TextureDrawQuad::MaterialCast(quad),
-                             candidate);
-    case viz::DrawQuad::TILED_CONTENT:
-      return FromTileQuad(resource_provider,
-                          viz::TileDrawQuad::MaterialCast(quad), candidate);
-    case viz::DrawQuad::STREAM_VIDEO_CONTENT:
+                             TextureDrawQuad::MaterialCast(quad), candidate);
+    case DrawQuad::TILED_CONTENT:
+      return FromTileQuad(resource_provider, TileDrawQuad::MaterialCast(quad),
+                          candidate);
+    case DrawQuad::STREAM_VIDEO_CONTENT:
       return FromStreamVideoQuad(resource_provider,
-                                 viz::StreamVideoDrawQuad::MaterialCast(quad),
+                                 StreamVideoDrawQuad::MaterialCast(quad),
                                  candidate);
     default:
       break;
@@ -232,12 +233,12 @@ bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
 }
 
 // static
-bool OverlayCandidate::IsInvisibleQuad(const viz::DrawQuad* quad) {
+bool OverlayCandidate::IsInvisibleQuad(const DrawQuad* quad) {
   float opacity = quad->shared_quad_state->opacity;
   if (opacity < std::numeric_limits<float>::epsilon())
     return true;
-  if (quad->material == viz::DrawQuad::SOLID_COLOR) {
-    SkColor color = viz::SolidColorDrawQuad::MaterialCast(quad)->color;
+  if (quad->material == DrawQuad::SOLID_COLOR) {
+    SkColor color = SolidColorDrawQuad::MaterialCast(quad)->color;
     float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
     return quad->ShouldDrawWithBlending() &&
            alpha < std::numeric_limits<float>::epsilon();
@@ -247,12 +248,12 @@ bool OverlayCandidate::IsInvisibleQuad(const viz::DrawQuad* quad) {
 
 // static
 bool OverlayCandidate::IsOccluded(const OverlayCandidate& candidate,
-                                  viz::QuadList::ConstIterator quad_list_begin,
-                                  viz::QuadList::ConstIterator quad_list_end) {
+                                  QuadList::ConstIterator quad_list_begin,
+                                  QuadList::ConstIterator quad_list_end) {
   // Check that no visible quad overlaps the candidate.
   for (auto overlap_iter = quad_list_begin; overlap_iter != quad_list_end;
        ++overlap_iter) {
-    gfx::RectF overlap_rect = MathUtil::MapClippedRect(
+    gfx::RectF overlap_rect = cc::MathUtil::MapClippedRect(
         overlap_iter->shared_quad_state->quad_to_target_transform,
         gfx::RectF(overlap_iter->rect));
     if (candidate.display_rect.Intersects(overlap_rect) &&
@@ -265,8 +266,8 @@ bool OverlayCandidate::IsOccluded(const OverlayCandidate& candidate,
 // static
 bool OverlayCandidate::FromDrawQuadResource(
     DisplayResourceProvider* resource_provider,
-    const viz::DrawQuad* quad,
-    viz::ResourceId resource_id,
+    const DrawQuad* quad,
+    ResourceId resource_id,
     bool y_flipped,
     OverlayCandidate* candidate) {
   if (!resource_provider->IsOverlayCandidate(resource_id))
@@ -299,7 +300,7 @@ bool OverlayCandidate::FromDrawQuadResource(
 // static
 bool OverlayCandidate::FromTextureQuad(
     DisplayResourceProvider* resource_provider,
-    const viz::TextureDrawQuad* quad,
+    const TextureDrawQuad* quad,
     OverlayCandidate* candidate) {
   if (quad->background_color != SK_ColorTRANSPARENT)
     return false;
@@ -314,7 +315,7 @@ bool OverlayCandidate::FromTextureQuad(
 
 // static
 bool OverlayCandidate::FromTileQuad(DisplayResourceProvider* resource_provider,
-                                    const viz::TileDrawQuad* quad,
+                                    const TileDrawQuad* quad,
                                     OverlayCandidate* candidate) {
   if (!FromDrawQuadResource(resource_provider, quad, quad->resource_id(), false,
                             candidate)) {
@@ -328,7 +329,7 @@ bool OverlayCandidate::FromTileQuad(DisplayResourceProvider* resource_provider,
 // static
 bool OverlayCandidate::FromStreamVideoQuad(
     DisplayResourceProvider* resource_provider,
-    const viz::StreamVideoDrawQuad* quad,
+    const StreamVideoDrawQuad* quad,
     OverlayCandidate* candidate) {
   if (!FromDrawQuadResource(resource_provider, quad, quad->resource_id(), false,
                             candidate)) {
@@ -393,4 +394,4 @@ void OverlayCandidateList::AddPromotionHint(const OverlayCandidate& candidate) {
   promotion_hint_info_map_[candidate.resource_id] = candidate.display_rect;
 }
 
-}  // namespace cc
+}  // namespace viz

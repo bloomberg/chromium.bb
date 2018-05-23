@@ -6,10 +6,10 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "cc/base/math_util.h"
-#include "cc/resources/display_resource_provider.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
+#include "components/viz/service/display/display_resource_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_switches.h"
@@ -19,7 +19,7 @@ namespace viz {
 namespace {
 
 DCLayerOverlayProcessor::DCLayerResult FromYUVQuad(
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     const YUVVideoDrawQuad* quad,
     DCLayerOverlay* dc_layer_overlay) {
   for (const auto& resource : quad->resources) {
@@ -91,7 +91,7 @@ DCLayerOverlayProcessor::DCLayerOverlayProcessor() = default;
 DCLayerOverlayProcessor::~DCLayerOverlayProcessor() = default;
 
 DCLayerOverlayProcessor::DCLayerResult DCLayerOverlayProcessor::FromDrawQuad(
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
     QuadList::ConstIterator quad_list_begin,
     QuadList::ConstIterator quad,
@@ -131,7 +131,7 @@ DCLayerOverlayProcessor::DCLayerResult DCLayerOverlayProcessor::FromDrawQuad(
 }
 
 void DCLayerOverlayProcessor::Process(
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
     RenderPassList* render_passes,
     gfx::Rect* overlay_damage_rect,
@@ -219,7 +219,7 @@ QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
 }
 
 void DCLayerOverlayProcessor::ProcessRenderPass(
-    cc::DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
     RenderPass* render_pass,
     bool is_root,

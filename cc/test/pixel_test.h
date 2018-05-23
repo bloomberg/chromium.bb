@@ -23,11 +23,11 @@
 namespace viz {
 class CopyOutputResult;
 class DirectRenderer;
+class DisplayResourceProvider;
 class TestSharedBitmapManager;
 }
 
 namespace cc {
-class DisplayResourceProvider;
 class FakeOutputSurfaceClient;
 class OutputSurface;
 class TestInProcessContextProvider;
@@ -77,7 +77,7 @@ class PixelTest : public testing::Test {
   std::unique_ptr<FakeOutputSurfaceClient> output_surface_client_;
   std::unique_ptr<viz::OutputSurface> output_surface_;
   std::unique_ptr<viz::TestSharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<viz::DisplayResourceProvider> resource_provider_;
   scoped_refptr<TestInProcessContextProvider> child_context_provider_;
   std::unique_ptr<LayerTreeResourceProvider> child_resource_provider_;
   std::unique_ptr<viz::DirectRenderer> renderer_;
@@ -121,7 +121,7 @@ class GLRendererWithExpandedViewport : public viz::GLRenderer {
   GLRendererWithExpandedViewport(
       const viz::RendererSettings* settings,
       viz::OutputSurface* output_surface,
-      DisplayResourceProvider* resource_provider,
+      viz::DisplayResourceProvider* resource_provider,
       scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
       : viz::GLRenderer(settings,
                         output_surface,
@@ -134,7 +134,7 @@ class SoftwareRendererWithExpandedViewport : public viz::SoftwareRenderer {
   SoftwareRendererWithExpandedViewport(
       const viz::RendererSettings* settings,
       viz::OutputSurface* output_surface,
-      DisplayResourceProvider* resource_provider)
+      viz::DisplayResourceProvider* resource_provider)
       : SoftwareRenderer(settings, output_surface, resource_provider) {}
 };
 
@@ -143,7 +143,7 @@ class GLRendererWithFlippedSurface : public viz::GLRenderer {
   GLRendererWithFlippedSurface(
       const viz::RendererSettings* settings,
       viz::OutputSurface* output_surface,
-      DisplayResourceProvider* resource_provider,
+      viz::DisplayResourceProvider* resource_provider,
       scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
       : viz::GLRenderer(settings,
                         output_surface,
