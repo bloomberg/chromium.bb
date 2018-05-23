@@ -42,12 +42,15 @@ class ResourceCoordinatorRenderProcessProbe {
   void StartSingleGather();
 
  protected:
+  static constexpr base::TimeDelta kUninitializedCPUTime =
+      base::TimeDelta::FromMicroseconds(-1);
+
   // Internal state protected for testing.
   struct RenderProcessInfo {
     RenderProcessInfo();
     ~RenderProcessInfo();
     base::Process process;
-    base::TimeDelta cpu_usage;
+    base::TimeDelta cpu_usage = kUninitializedCPUTime;
     size_t last_gather_cycle_active = -1;
     std::unique_ptr<base::ProcessMetrics> metrics;
   };

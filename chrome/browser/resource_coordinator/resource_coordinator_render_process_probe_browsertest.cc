@@ -55,7 +55,7 @@ class TestingResourceCoordinatorRenderProcessProbe
       auto& render_process_info = render_process_info_map_entry.second;
       if (render_process_info.last_gather_cycle_active !=
               current_gather_cycle_ ||
-          render_process_info.cpu_usage.is_zero()) {
+          render_process_info.cpu_usage == kUninitializedCPUTime) {
         return false;
       }
     }
