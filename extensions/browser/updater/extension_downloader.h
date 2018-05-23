@@ -25,8 +25,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-class IdentityProvider;
-
 namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
@@ -60,9 +58,13 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
  public:
   // A closure which constructs a new ExtensionDownloader to be owned by the
   // caller.
-  typedef base::Callback<std::unique_ptr<ExtensionDownloader>(
-      ExtensionDownloaderDelegate* delegate)>
-      Factory;
+  using Factory = base::RepeatingCallback<std::unique_ptr<ExtensionDownloader>(
+      ExtensionDownloaderDelegate* delegate)>;
+
+  // A closure that returns the account to use for authentication to the
+  // webstore.
+  using GetWebstoreAccountCallback =
+      base::RepeatingCallback<const std::string&()>;
 
   // |delegate| is stored as a raw pointer and must outlive the
   // ExtensionDownloader.
@@ -109,10 +111,12 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
                             const ManifestFetchData::PingData& ping_data,
                             int request_id);
 
-  // Sets an IdentityProvider to be used for OAuth2 authentication on protected
-  // Webstore downloads.
-  void SetWebstoreIdentityProvider(
-      std::unique_ptr<IdentityProvider> identity_provider);
+  // Sets GetWebstoreAccountCallback and TokenService instances to be used for
+  // OAuth2 authentication on protected Webstore downloads. Both objects must be
+  // valid to use for the lifetime of this object.
+  void SetWebstoreAuthenticationCapabilities(
+      const GetWebstoreAccountCallback& webstore_account_callback,
+      OAuth2TokenService* token_service);
 
   void set_brand_code(const std::string& brand_code) {
     brand_code_ = brand_code;
@@ -348,9 +352,13 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
   // Cache for .crx files.
   ExtensionCache* extension_cache_;
 
-  // An IdentityProvider which may be used for authentication on protected
-  // download requests. May be NULL.
-  std::unique_ptr<IdentityProvider> identity_provider_;
+  // Gets the account to use for protected download requests. May be null. If
+  // non-null, valid to call for the lifetime of this object.
+  GetWebstoreAccountCallback webstore_account_callback_;
+
+  // May be used to fetch access tokens for protected download requests. May be
+  // null. If non-null, guaranteed to outlive this object.
+  OAuth2TokenService* token_service_;
 
   // A Webstore download-scoped access token for the |identity_provider_|'s
   // active account, if any.
