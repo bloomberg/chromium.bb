@@ -79,10 +79,6 @@ class ChromeBrowserState;
                              UrlLoader>)dispatcher
            safeAreaInset:(UIEdgeInsets)safeAreaInset;
 
-// Returns |YES| if the current visible controller should show the keyboard
-// shield.
-- (BOOL)wantsKeyboardShield;
-
 // Returns |YES| if the current visible controller allows showing the location
 // bar hint text.
 - (BOOL)wantsLocationBarHintText;

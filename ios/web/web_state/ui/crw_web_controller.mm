@@ -2736,14 +2736,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 #pragma mark -
 
-- (BOOL)wantsKeyboardShield {
-  if ([self.nativeController
-          respondsToSelector:@selector(wantsKeyboardShield)]) {
-    return [self.nativeController wantsKeyboardShield];
-  }
-  return YES;
-}
-
 - (BOOL)wantsLocationBarHintText {
   if ([self.nativeController
           respondsToSelector:@selector(wantsLocationBarHintText)]) {

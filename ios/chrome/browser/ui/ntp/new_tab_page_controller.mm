@@ -247,10 +247,6 @@ using base::UserMetricsAction;
   [_currentController wasHidden];
 }
 
-- (BOOL)wantsKeyboardShield {
-  return NO;
-}
-
 - (BOOL)wantsLocationBarHintText {
   // Always show hint text on iPhone.
   if (!IsIPadIdiom())
