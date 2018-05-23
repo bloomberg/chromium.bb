@@ -54,6 +54,9 @@ class CONTENT_EXPORT AudioOutputStreamBroker final : public AudioStreamBroker {
   const media::AudioParameters params_;
   const base::UnguessableToken group_id_;
 
+  // Indicates that CreateStream has been called, but not StreamCreated.
+  bool awaiting_created_ = false;
+
   DeleterCallback deleter_;
 
   media::mojom::AudioOutputStreamProviderClientPtr client_;

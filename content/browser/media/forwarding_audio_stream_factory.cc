@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/trace_event/trace_event.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -100,10 +101,17 @@ void ForwardingAudioStreamFactory::CreateLoopbackStream(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(frame);
   DCHECK(frame_of_source_web_contents);
+
+  TRACE_EVENT_BEGIN1("audio", "CreateLoopbackStream", "group",
+                     group_id_.GetLowForSerialization());
+
   WebContents* source_contents =
       WebContents::FromRenderFrameHost(frame_of_source_web_contents);
-  if (!source_contents)
+  if (!source_contents) {
+    TRACE_EVENT_END1("audio", "CreateLoopbackStream", "source",
+                     "failed to find source");
     return;
+  }
 
   const int process_id = frame->GetProcess()->GetID();
   const int frame_id = frame->GetRoutingID();
@@ -118,11 +126,18 @@ void ForwardingAudioStreamFactory::CreateLoopbackStream(
           std::move(renderer_factory_client)))
       .first->get()
       ->CreateStream(GetFactory());
+  TRACE_EVENT_END1("audio", "CreateLoopbackStream", "source",
+                   static_cast<WebContentsImpl*>(source_contents)
+                       ->GetAudioStreamFactory()
+                       ->group_id()
+                       .GetLowForSerialization());
 }
 
 void ForwardingAudioStreamFactory::SetMuted(bool muted) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(muted, IsMuted());
+  TRACE_EVENT_INSTANT2("audio", "SetMuted", TRACE_EVENT_SCOPE_THREAD, "group",
+                       group_id_.GetLowForSerialization(), "muted", muted);
 
   if (!muted) {
     muter_.reset();
@@ -148,8 +163,14 @@ void ForwardingAudioStreamFactory::FrameDeleted(
 void ForwardingAudioStreamFactory::CleanupStreamsBelongingTo(
     RenderFrameHost* render_frame_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   const int process_id = render_frame_host->GetProcess()->GetID();
   const int frame_id = render_frame_host->GetRoutingID();
+
+  TRACE_EVENT_BEGIN2("audio", "CleanupStreamsBelongingTo", "group",
+                     group_id_.GetLowForSerialization(), "process id",
+                     process_id);
+
   auto match_rfh =
       [process_id,
        frame_id](const std::unique_ptr<AudioStreamBroker>& broker) -> bool {
@@ -161,6 +182,8 @@ void ForwardingAudioStreamFactory::CleanupStreamsBelongingTo(
   base::EraseIf(inputs_, match_rfh);
 
   ResetRemoteFactoryPtrIfIdle();
+
+  TRACE_EVENT_END1("audio", "CleanupStreamsBelongingTo", "frame_id", frame_id);
 }
 
 void ForwardingAudioStreamFactory::RemoveInput(AudioStreamBroker* broker) {
@@ -182,6 +205,9 @@ void ForwardingAudioStreamFactory::RemoveOutput(AudioStreamBroker* broker) {
 audio::mojom::StreamFactory* ForwardingAudioStreamFactory::GetFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!remote_factory_) {
+    TRACE_EVENT_INSTANT1(
+        "audio", "ForwardingAudioStreamFactory: Binding new factory",
+        TRACE_EVENT_SCOPE_THREAD, "group", group_id_.GetLowForSerialization());
     connector_->BindInterface(audio::mojom::kServiceName,
                               mojo::MakeRequest(&remote_factory_));
     // Unretained is safe because |this| owns |remote_factory_|.
@@ -200,11 +226,16 @@ audio::mojom::StreamFactory* ForwardingAudioStreamFactory::GetFactory() {
 void ForwardingAudioStreamFactory::ResetRemoteFactoryPtrIfIdle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (inputs_.empty() && outputs_.empty())
-    remote_factory_.reset();
+    ResetRemoteFactoryPtr();
 }
 
 void ForwardingAudioStreamFactory::ResetRemoteFactoryPtr() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (remote_factory_) {
+    TRACE_EVENT_INSTANT1(
+        "audio", "ForwardingAudioStreamFactory: Resetting factory",
+        TRACE_EVENT_SCOPE_THREAD, "group", group_id_.GetLowForSerialization());
+  }
   remote_factory_.reset();
   // The stream brokers will call a callback to be deleted soon, give them a
   // chance to signal an error to the client first.
