@@ -49,10 +49,8 @@ class FlingControllerTest : public testing::Test,
   void SetUp() override {
     queue_ = std::make_unique<GestureEventQueue>(this, this, this,
                                                  GestureEventQueue::Config());
-    FlingController::Config config;
-    config.touchscreen_tap_suppression_config.enabled = true;
-    fling_controller_ =
-        std::make_unique<FakeFlingController>(queue_.get(), this, this, config);
+    fling_controller_ = std::make_unique<FakeFlingController>(
+        queue_.get(), this, this, FlingController::Config());
     feature_list_.InitFromCommandLine(
         features::kTouchpadAndWheelScrollLatching.name, "");
   }
@@ -503,36 +501,6 @@ TEST_F(FlingControllerTest, MiddleClickAutoScrollFling) {
   SimulateFlingCancel(blink::kWebGestureDeviceSyntheticAutoscroll);
   EXPECT_FALSE(last_fling_cancel_filtered_);
   EXPECT_FALSE(FlingInProgress());
-}
-
-TEST_F(FlingControllerTest, NoLongPressSuppressionAfterTapDownSuppression) {
-  base::TimeTicks progress_time = base::TimeTicks::Now();
-  SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
-                     gfx::Vector2dF(1000, 0));
-  EXPECT_TRUE(FlingInProgress());
-
-  // The fling progress will generate and send GSU events with inertial state.
-  progress_time += base::TimeDelta::FromMilliseconds(17);
-  ProgressFling(progress_time);
-  ASSERT_EQ(WebInputEvent::kGestureScrollUpdate, last_sent_gesture_.GetType());
-  EXPECT_EQ(WebGestureEvent::kMomentumPhase,
-            last_sent_gesture_.data.scroll_update.inertial_phase);
-  EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
-
-  // Now cancel the fling, the next GestureTapDown event must get suppressed.
-  SimulateFlingCancel(blink::kWebGestureDeviceTouchscreen);
-  WebGestureEvent tap_down(WebInputEvent::kGestureTapDown, 0,
-                           base::TimeTicks::Now(),
-                           blink::kWebGestureDeviceTouchscreen);
-  EXPECT_TRUE(fling_controller_->FilterGestureEvent(
-      GestureEventWithLatencyInfo(tap_down)));
-
-  // The GestureLongPress shouldn't get filtered.
-  WebGestureEvent long_press(WebInputEvent::kGestureLongPress, 0,
-                             base::TimeTicks::Now(),
-                             blink::kWebGestureDeviceTouchscreen);
-  EXPECT_FALSE(fling_controller_->FilterGestureEvent(
-      GestureEventWithLatencyInfo(long_press)));
 }
 
 }  // namespace content
