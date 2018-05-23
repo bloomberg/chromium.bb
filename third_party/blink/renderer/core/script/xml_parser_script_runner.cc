@@ -46,12 +46,10 @@ void XMLParserScriptRunner::PendingScriptFinished(
 
   pending_script->StopWatchingForLoad();
 
-  ScriptLoader* script_loader = pending_script->GetElement()->Loader();
-  DCHECK(script_loader);
-  CHECK_EQ(script_loader->GetScriptType(), ScriptType::kClassic);
+  CHECK_EQ(pending_script->GetScriptType(), ScriptType::kClassic);
 
   // [Parsing] 4. Execute the pending parsing-blocking script. [spec text]
-  script_loader->ExecuteScriptBlock(pending_script, NullURL());
+  pending_script->ExecuteScriptBlock(NullURL());
 
   // [Parsing] 5. There is no longer a pending parsing-blocking script. [spec
   // text]
@@ -104,10 +102,9 @@ void XMLParserScriptRunner::ProcessScriptElement(
     // TODO(hiroshige): XMLParserScriptRunner doesn't check style sheet that
     // is blocking scripts and thus the script is executed immediately here,
     // and thus Steps 1-3 are skipped.
-    script_loader->ExecuteScriptBlock(
-        script_loader->TakePendingScript(
-            ScriptSchedulingType::kParserBlockingInline),
-        document.Url());
+    script_loader
+        ->TakePendingScript(ScriptSchedulingType::kParserBlockingInline)
+        ->ExecuteScriptBlock(document.Url());
   } else if (script_loader->WillBeParserExecuted()) {
     // <spec label="Prepare" step="25.B">... The element is the pending
     // parsing-blocking script of the Document of the parser that created the

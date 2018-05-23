@@ -84,11 +84,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
                          TextPosition::MinimumPosition(),
                      LegacyTypeSupport = kDisallowLegacyTypeInTypeAttribute);
 
-  // https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block
-  // The single entry point of script execution.
-  // PendingScript::Dispose() is called in ExecuteScriptBlock().
-  void ExecuteScriptBlock(PendingScript*, const KURL&);
-
   // Gets a PendingScript for external script whose fetch is started in
   // FetchClassicScript()/FetchModuleScriptTree().
   // This should be called only once.

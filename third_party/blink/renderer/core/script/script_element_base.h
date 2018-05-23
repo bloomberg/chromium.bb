@@ -73,6 +73,7 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
                                        bool already_started);
 
   friend class ScriptLoader;
+  friend class PendingScript;
   virtual void DispatchLoadEvent() = 0;
   virtual void DispatchErrorEvent() = 0;
 };
