@@ -9,7 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
-#include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
+#include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -20,13 +21,13 @@
 #error "This file requires ARC support."
 #endif
 
-using password_manager::PasswordFormManager;
+using password_manager::PasswordFormManagerForUI;
 
 // static
 void IOSChromeSavePasswordInfoBarDelegate::Create(
     bool is_smart_lock_branding_enabled,
     infobars::InfoBarManager* infobar_manager,
-    std::unique_ptr<PasswordFormManager> form_to_save,
+    std::unique_ptr<PasswordFormManagerForUI> form_to_save,
     id<ApplicationCommands> dispatcher) {
   DCHECK(infobar_manager);
   auto delegate = base::WrapUnique(new IOSChromeSavePasswordInfoBarDelegate(
@@ -38,16 +39,16 @@ void IOSChromeSavePasswordInfoBarDelegate::Create(
 
 IOSChromeSavePasswordInfoBarDelegate::~IOSChromeSavePasswordInfoBarDelegate() {
   password_manager::metrics_util::LogSaveUIDismissalReason(infobar_response());
-  form_to_save()->metrics_recorder()->RecordUIDismissalReason(
+  form_to_save()->GetMetricsRecorder()->RecordUIDismissalReason(
       infobar_response());
 }
 
 IOSChromeSavePasswordInfoBarDelegate::IOSChromeSavePasswordInfoBarDelegate(
     bool is_smart_lock_branding_enabled,
-    std::unique_ptr<PasswordFormManager> form_manager)
+    std::unique_ptr<PasswordFormManagerForUI> form_manager)
     : IOSChromePasswordManagerInfoBarDelegate(is_smart_lock_branding_enabled,
                                               std::move(form_manager)) {
-  form_to_save()->metrics_recorder()->RecordPasswordBubbleShown(
+  form_to_save()->GetMetricsRecorder()->RecordPasswordBubbleShown(
       form_to_save()->GetCredentialSource(),
       password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING);
 }

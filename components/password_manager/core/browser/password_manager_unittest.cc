@@ -86,19 +86,22 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
   // Workaround for std::unique_ptr<> lacking a copy constructor.
   bool PromptUserToSaveOrUpdatePassword(
-      std::unique_ptr<PasswordFormManager> manager,
+      std::unique_ptr<PasswordFormManagerForUI> manager,
       bool update_password) override {
-    PromptUserToSaveOrUpdatePasswordPtr(manager.release());
+    PromptUserToSaveOrUpdatePasswordPtr(
+        static_cast<PasswordFormManager*>(manager.release()));
     return false;
   }
-  void ShowManualFallbackForSaving(std::unique_ptr<PasswordFormManager> manager,
-                                   bool has_generated_password,
-                                   bool is_update) override {
-    ShowManualFallbackForSavingPtr(manager.release(), has_generated_password,
-                                   is_update);
+  void ShowManualFallbackForSaving(
+      std::unique_ptr<PasswordFormManagerForUI> manager,
+      bool has_generated_password,
+      bool is_update) override {
+    ShowManualFallbackForSavingPtr(
+        static_cast<PasswordFormManager*>(manager.release()),
+        has_generated_password, is_update);
   }
   void AutomaticPasswordSave(
-      std::unique_ptr<PasswordFormManager> manager) override {
+      std::unique_ptr<PasswordFormManagerForUI> manager) override {
     AutomaticPasswordSaveIndicator();
   }
 
@@ -445,9 +448,9 @@ TEST_F(PasswordManagerTest, BestMatchFormToManager) {
 
   // Verify that PasswordFormManager to be save owns the correct pair of
   // observed and submitted forms.
-  EXPECT_EQ(form.action, form_manager_to_save->observed_form().action);
+  EXPECT_EQ(form.action, form_manager_to_save->GetObservedForm().action);
   EXPECT_EQ(form.form_data.name,
-            form_manager_to_save->observed_form().form_data.name);
+            form_manager_to_save->GetObservedForm().form_data.name);
   EXPECT_EQ(changed_form.action,
             form_manager_to_save->submitted_form()->action);
   EXPECT_EQ(changed_form.form_data.name,
@@ -495,9 +498,9 @@ TEST_F(PasswordManagerTest, AnyMatchFormToManager) {
 
   // Verify that we matched the form to a PasswordFormManager, although with the
   // worst possible match.
-  EXPECT_EQ(form.action, form_manager_to_save->observed_form().action);
+  EXPECT_EQ(form.action, form_manager_to_save->GetObservedForm().action);
   EXPECT_EQ(form.form_data.name,
-            form_manager_to_save->observed_form().form_data.name);
+            form_manager_to_save->GetObservedForm().form_data.name);
   EXPECT_EQ(changed_form.action,
             form_manager_to_save->submitted_form()->action);
   EXPECT_EQ(changed_form.form_data.name,
@@ -528,7 +531,7 @@ TEST_F(PasswordManagerTest, DontSaveAlreadySavedCredential) {
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
   manager()->ShowManualFallbackForSaving(&driver_, incomplete_match);
   ASSERT_TRUE(form_manager_to_save);
-  EXPECT_THAT(form_manager_to_save->pending_credentials(),
+  EXPECT_THAT(form_manager_to_save->GetPendingCredentials(),
               FormMatches(incomplete_match));
 
   base::UserActionTester user_action_tester;
@@ -1076,7 +1079,7 @@ TEST_F(PasswordManagerTest, AttemptedSavePasswordSameOriginInsecureScheme) {
 
   // Make sure that the form saved by the user is indeed the secure form.
   ASSERT_TRUE(form_manager_to_save);
-  EXPECT_THAT(form_manager_to_save->pending_credentials(),
+  EXPECT_THAT(form_manager_to_save->GetPendingCredentials(),
               FormMatches(secure_form));
 }
 
@@ -1113,7 +1116,7 @@ TEST_F(PasswordManagerTest, DoNotSaveWithEmptyNewPasswordAndNonemptyPassword) {
   ASSERT_TRUE(form_manager_to_save);
   EXPECT_EQ(form.password_value,
             PasswordFormManager::PasswordToSave(
-                form_manager_to_save->pending_credentials())
+                form_manager_to_save->GetPendingCredentials())
                 .first);
 }
 
@@ -1786,7 +1789,7 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
       // Credentials should be updated only when the user explicitly chooses.
       ASSERT_TRUE(form_manager);
       EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, form));
-      form_manager->Update(form_manager->pending_credentials());
+      form_manager->Update(form_manager->GetPendingCredentials());
     }
   }
 }
@@ -1837,7 +1840,7 @@ TEST_F(PasswordManagerTest, ForceSavingPasswords) {
   ASSERT_TRUE(form_manager_to_save);
   EXPECT_EQ(form.password_value,
             PasswordFormManager::PasswordToSave(
-                form_manager_to_save->pending_credentials())
+                form_manager_to_save->GetPendingCredentials())
                 .first);
 }
 
@@ -1878,7 +1881,7 @@ TEST_F(PasswordManagerTest, UpdateFormManagers) {
 
   // The first GetLogins should have fired, but to unblock the second, we need
   // to first send a response from the store (to be ignored).
-  static_cast<FormFetcherImpl*>(form_manager->form_fetcher())
+  static_cast<FormFetcherImpl*>(form_manager->GetFormFetcher())
       ->OnGetPasswordStoreResults(std::vector<std::unique_ptr<PasswordForm>>());
   EXPECT_CALL(*store_, GetLogins(_, _));
   manager()->UpdateFormManagers();
@@ -2014,7 +2017,7 @@ TEST_F(PasswordManagerTest, ClearedFieldsSuccessCriteria) {
   PasswordFormManager* form_manager =
       manager()->pending_login_managers().front().get();
   ASSERT_TRUE(form_manager);
-  static_cast<FormFetcherImpl*>(form_manager->form_fetcher())
+  static_cast<FormFetcherImpl*>(form_manager->GetFormFetcher())
       ->OnGetPasswordStoreResults(std::vector<std::unique_ptr<PasswordForm>>());
 
   OnPasswordFormSubmitted(form);
@@ -2110,7 +2113,7 @@ TEST_F(PasswordManagerTest, ManualFallbackForSaving) {
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
   manager()->ShowManualFallbackForSaving(&driver_, form);
   ASSERT_TRUE(form_manager_to_save);
-  EXPECT_THAT(form_manager_to_save->pending_credentials(), FormMatches(form));
+  EXPECT_THAT(form_manager_to_save->GetPendingCredentials(), FormMatches(form));
 
   // The username of the stored form is different, there should be save bubble.
   PasswordForm new_form = form;
@@ -2119,7 +2122,7 @@ TEST_F(PasswordManagerTest, ManualFallbackForSaving) {
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
   manager()->ShowManualFallbackForSaving(&driver_, new_form);
   ASSERT_TRUE(form_manager_to_save);
-  EXPECT_THAT(form_manager_to_save->pending_credentials(),
+  EXPECT_THAT(form_manager_to_save->GetPendingCredentials(),
               FormMatches(new_form));
 
   // Hide the manual fallback.
@@ -2176,7 +2179,7 @@ TEST_F(PasswordManagerTest, ManualFallbackForSaving_GeneratedPassword) {
   manager()->OnPresaveGeneratedPassword(form);
   manager()->ShowManualFallbackForSaving(&driver_, form);
   ASSERT_TRUE(form_manager_to_save);
-  EXPECT_THAT(form_manager_to_save->pending_credentials(), FormMatches(form));
+  EXPECT_THAT(form_manager_to_save->GetPendingCredentials(), FormMatches(form));
 
   // A user edits the generated password. And again it causes password presaving
   // and showing manual fallback.

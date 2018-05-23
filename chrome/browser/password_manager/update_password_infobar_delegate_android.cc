@@ -25,7 +25,7 @@
 // static
 void UpdatePasswordInfoBarDelegate::Create(
     content::WebContents* web_contents,
-    std::unique_ptr<password_manager::PasswordFormManager> form_to_save) {
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save) {
   const bool is_smartlock_branding_enabled =
       password_bubble_experiment::IsSmartLockUser(
           ProfileSyncServiceFactory::GetForProfile(
@@ -39,8 +39,9 @@ void UpdatePasswordInfoBarDelegate::Create(
 
 UpdatePasswordInfoBarDelegate::~UpdatePasswordInfoBarDelegate() {
   password_manager::metrics_util::LogUpdateUIDismissalReason(infobar_response_);
-  passwords_state_.form_manager()->metrics_recorder()->RecordUIDismissalReason(
-      infobar_response_);
+  passwords_state_.form_manager()
+      ->GetMetricsRecorder()
+      ->RecordUIDismissalReason(infobar_response_);
 }
 
 base::string16 UpdatePasswordInfoBarDelegate::GetBranding() const {
@@ -50,10 +51,10 @@ base::string16 UpdatePasswordInfoBarDelegate::GetBranding() const {
 }
 
 bool UpdatePasswordInfoBarDelegate::ShowMultipleAccounts() const {
-  const password_manager::PasswordFormManager* form_manager =
+  const password_manager::PasswordFormManagerForUI* form_manager =
       passwords_state_.form_manager();
   bool is_password_overriden =
-      form_manager && form_manager->password_overridden();
+      form_manager && form_manager->IsPasswordOverridden();
   return GetCurrentForms().size() > 1 && !is_password_overriden;
 }
 
@@ -64,21 +65,21 @@ UpdatePasswordInfoBarDelegate::GetCurrentForms() const {
 
 UpdatePasswordInfoBarDelegate::UpdatePasswordInfoBarDelegate(
     content::WebContents* web_contents,
-    std::unique_ptr<password_manager::PasswordFormManager> form_to_update,
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_update,
     bool is_smartlock_branding_enabled)
     : infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION),
       is_smartlock_branding_enabled_(is_smartlock_branding_enabled) {
   base::string16 message;
   gfx::Range message_link_range = gfx::Range();
   GetSavePasswordDialogTitleTextAndLinkRange(
-      web_contents->GetVisibleURL(), form_to_update->observed_form().origin,
+      web_contents->GetVisibleURL(), form_to_update->GetObservedForm().origin,
       is_smartlock_branding_enabled, PasswordTitleType::UPDATE_PASSWORD,
       &message, &message_link_range);
   SetMessage(message);
   SetMessageLinkRange(message_link_range);
 
   // TODO(melandory): Add histograms, crbug.com/577129
-  form_to_update->metrics_recorder()->RecordPasswordBubbleShown(
+  form_to_update->GetMetricsRecorder()->RecordPasswordBubbleShown(
       form_to_update->GetCredentialSource(),
       password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE);
 
@@ -109,7 +110,7 @@ bool UpdatePasswordInfoBarDelegate::Accept() {
   infobar_response_ = password_manager::metrics_util::CLICKED_SAVE;
   UpdatePasswordInfoBar* update_password_infobar =
       static_cast<UpdatePasswordInfoBar*>(infobar());
-  password_manager::PasswordFormManager* form_manager =
+  password_manager::PasswordFormManagerForUI* form_manager =
       passwords_state_.form_manager();
   if (ShowMultipleAccounts()) {
     int form_index = update_password_infobar->GetIdOfSelectedUsername();
@@ -117,7 +118,7 @@ bool UpdatePasswordInfoBarDelegate::Accept() {
     DCHECK_LT(static_cast<size_t>(form_index), GetCurrentForms().size());
     form_manager->Update(*GetCurrentForms()[form_index]);
   } else {
-    form_manager->Update(form_manager->pending_credentials());
+    form_manager->Update(form_manager->GetPendingCredentials());
   }
   return true;
 }

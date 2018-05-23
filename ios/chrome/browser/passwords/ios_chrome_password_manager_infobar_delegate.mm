@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/strings/string16.h"
-#include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -28,7 +28,8 @@ IOSChromePasswordManagerInfoBarDelegate::
 IOSChromePasswordManagerInfoBarDelegate::
     IOSChromePasswordManagerInfoBarDelegate(
         bool is_smart_lock_branding_enabled,
-        std::unique_ptr<password_manager::PasswordFormManager> form_to_save)
+        std::unique_ptr<password_manager::PasswordFormManagerForUI>
+            form_to_save)
     : form_to_save_(std::move(form_to_save)),
       infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION),
       is_smart_lock_branding_enabled_(is_smart_lock_branding_enabled) {}

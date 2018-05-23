@@ -11,7 +11,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/log_manager.h"
-#include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -32,7 +32,7 @@
 #error "This file requires ARC support."
 #endif
 
-using password_manager::PasswordFormManager;
+using password_manager::PasswordFormManagerForUI;
 using password_manager::PasswordManagerMetricsRecorder;
 using password_manager::PasswordStore;
 using password_manager::PasswordSyncState;
@@ -87,7 +87,7 @@ bool IOSChromePasswordManagerClient::PromptUserToChooseCredentials(
 }
 
 bool IOSChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
-    std::unique_ptr<PasswordFormManager> form_to_save,
+    std::unique_ptr<PasswordFormManagerForUI> form_to_save,
     bool update_password) {
   if (form_to_save->IsBlacklisted())
     return false;
@@ -102,7 +102,7 @@ bool IOSChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
 }
 
 void IOSChromePasswordManagerClient::ShowManualFallbackForSaving(
-    std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
     bool has_generated_password,
     bool is_update) {
   NOTIMPLEMENTED();
@@ -113,7 +113,7 @@ void IOSChromePasswordManagerClient::HideManualFallbackForSaving() {
 }
 
 void IOSChromePasswordManagerClient::AutomaticPasswordSave(
-    std::unique_ptr<PasswordFormManager> saved_form_manager) {
+    std::unique_ptr<PasswordFormManagerForUI> saved_form_manager) {
   NOTIMPLEMENTED();
 }
 

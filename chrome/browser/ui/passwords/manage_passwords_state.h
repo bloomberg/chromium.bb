@@ -19,7 +19,7 @@
 #include "url/gurl.h"
 
 namespace password_manager {
-class PasswordFormManager;
+class PasswordFormManagerForUI;
 class PasswordManagerClient;
 }
 
@@ -44,11 +44,11 @@ class ManagePasswordsState {
 
   // Move to PENDING_PASSWORD_STATE.
   void OnPendingPassword(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager);
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager);
 
   // Move to PENDING_PASSWORD_UPDATE_STATE.
   void OnUpdatePassword(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager);
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager);
 
   // Move to CREDENTIAL_REQUEST_STATE.
   void OnRequestCredentials(
@@ -62,7 +62,7 @@ class ManagePasswordsState {
 
   // Move to CONFIRMATION_STATE.
   void OnAutomaticPasswordSave(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager);
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager);
 
   // Move to MANAGE_STATE or INACTIVE_STATE for PSL matched passwords.
   // |password_form_map| contains best matches from the password store for the
@@ -93,7 +93,7 @@ class ManagePasswordsState {
 
   password_manager::ui::State state() const { return state_; }
   const GURL& origin() const { return origin_; }
-  password_manager::PasswordFormManager* form_manager() const {
+  password_manager::PasswordFormManagerForUI* form_manager() const {
     return form_manager_.get();
   }
   const CredentialsCallback& credentials_callback() {
@@ -123,7 +123,7 @@ class ManagePasswordsState {
   GURL origin_;
 
   // Contains the password that was submitted.
-  std::unique_ptr<password_manager::PasswordFormManager> form_manager_;
+  std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager_;
 
   // Contains all the current forms.
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials_forms_;

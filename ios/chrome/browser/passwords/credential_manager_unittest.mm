@@ -34,7 +34,7 @@
 
 using password_manager::PasswordStore;
 using password_manager::PasswordManager;
-using password_manager::PasswordFormManager;
+using password_manager::PasswordFormManagerForUI;
 using password_manager::TestPasswordStore;
 using testing::_;
 using url::Origin;
@@ -77,7 +77,7 @@ class MockPasswordManagerClient
 
   // PromptUserTo*Ptr functions allow to both override PromptUserTo* methods
   // and expect calls.
-  MOCK_METHOD1(PromptUserToSavePasswordPtr, void(PasswordFormManager*));
+  MOCK_METHOD1(PromptUserToSavePasswordPtr, void(PasswordFormManagerForUI*));
   MOCK_METHOD3(PromptUserToChooseCredentialsPtr,
                bool(const std::vector<autofill::PasswordForm*>& local_forms,
                     const GURL& origin,
@@ -88,7 +88,7 @@ class MockPasswordManagerClient
     store_ = store;
   }
 
-  PasswordFormManager* pending_manager() const { return manager_.get(); }
+  PasswordFormManagerForUI* pending_manager() const { return manager_.get(); }
 
   void set_current_url(const GURL& current_url) {
     last_committed_url_ = current_url;
@@ -108,7 +108,7 @@ class MockPasswordManagerClient
   // called manually in test. To put expectation on this function being called,
   // use PromptUserToSavePasswordPtr.
   bool PromptUserToSaveOrUpdatePassword(
-      std::unique_ptr<PasswordFormManager> manager,
+      std::unique_ptr<PasswordFormManagerForUI> manager,
       bool update_password) override;
   // Mocks choosing a credential by the user. To put expectation on this
   // function being called, use PromptUserToChooseCredentialsPtr.
@@ -120,14 +120,14 @@ class MockPasswordManagerClient
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
   GURL last_committed_url_;
   PasswordManager password_manager_;
-  std::unique_ptr<PasswordFormManager> manager_;
+  std::unique_ptr<PasswordFormManagerForUI> manager_;
   scoped_refptr<TestPasswordStore> store_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPasswordManagerClient);
 };
 
 bool MockPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
-    std::unique_ptr<PasswordFormManager> manager,
+    std::unique_ptr<PasswordFormManagerForUI> manager,
     bool update_password) {
   EXPECT_FALSE(update_password);
   manager_.swap(manager);

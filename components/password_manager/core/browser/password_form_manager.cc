@@ -334,11 +334,6 @@ PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
   return result;
 }
 
-bool PasswordFormManager::IsBlacklisted() const {
-  DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
-  return !blacklisted_matches_.empty();
-}
-
 void PasswordFormManager::PermanentlyBlacklist() {
   DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   DCHECK(!client_->IsIncognito());
@@ -635,7 +630,7 @@ void PasswordFormManager::ProcessFrameInternal(
   SendFillInformationToRenderer(*client_, driver.get(), IsBlacklisted(),
                                 observed_form_, best_matches_,
                                 form_fetcher_->GetFederatedMatches(),
-                                preferred_match_, metrics_recorder());
+                                preferred_match_, GetMetricsRecorder());
 }
 
 void PasswordFormManager::ProcessLoginPrompt() {
@@ -1199,6 +1194,50 @@ void PasswordFormManager::MarkGenerationAvailable() {
   metrics_recorder_->MarkGenerationAvailable();
 }
 
+FormFetcher* PasswordFormManager::GetFormFetcher() {
+  return form_fetcher_;
+}
+
+const std::map<base::string16, const autofill::PasswordForm*>&
+PasswordFormManager::GetBestMatches() const {
+  return best_matches_;
+}
+
+const autofill::PasswordForm& PasswordFormManager::GetObservedForm() const {
+  return observed_form_;
+}
+
+const autofill::PasswordForm& PasswordFormManager::GetPendingCredentials()
+    const {
+  return pending_credentials_;
+}
+
+metrics_util::CredentialSourceType PasswordFormManager::GetCredentialSource() {
+  return metrics_util::CredentialSourceType::kPasswordManager;
+}
+
+PasswordFormMetricsRecorder* PasswordFormManager::GetMetricsRecorder() {
+  return metrics_recorder_.get();
+}
+
+const std::vector<const autofill::PasswordForm*>&
+PasswordFormManager::GetBlacklistedMatches() const {
+  return blacklisted_matches_;
+}
+
+bool PasswordFormManager::IsBlacklisted() const {
+  DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
+  return !blacklisted_matches_.empty();
+}
+
+bool PasswordFormManager::IsPasswordOverridden() const {
+  return password_overridden_;
+}
+
+const autofill::PasswordForm* PasswordFormManager::GetPreferredMatch() const {
+  return preferred_match_;
+}
+
 void PasswordFormManager::WipeStoreCopyIfOutdated() {
   UMA_HISTOGRAM_BOOLEAN(
       "PasswordManager.StoreReadyWhenWiping",
@@ -1288,10 +1327,6 @@ std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {
   return result;
 }
 
-metrics_util::CredentialSourceType PasswordFormManager::GetCredentialSource() {
-  return metrics_util::CredentialSourceType::kPasswordManager;
-}
-
 void PasswordFormManager::SendVotesOnSave() {
   if (observed_form_.IsPossibleChangePasswordFormWithoutUsername())
     return;
@@ -1361,8 +1396,8 @@ base::Optional<PasswordForm> PasswordFormManager::UpdatePendingAndGetOldKey(
     old_primary_key = pending_credentials_;
     // TODO(crbug.com/833171) It is possible for best_matches to not contain the
     // username being updated. Add comments and a test, when we realise why.
-    auto best_match = best_matches().find(pending_credentials_.username_value);
-    if (best_match != best_matches().end()) {
+    auto best_match = best_matches_.find(pending_credentials_.username_value);
+    if (best_match != best_matches_.end()) {
       old_primary_key->username_element = best_match->second->username_element;
       old_primary_key->password_element = best_match->second->password_element;
     }

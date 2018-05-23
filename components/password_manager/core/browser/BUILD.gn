@@ -90,6 +90,7 @@ static_library("browser") {
     "password_form_filling.h",
     "password_form_manager.cc",
     "password_form_manager.h",
+    "password_form_manager_for_ui.h",
     "password_form_metrics_recorder.cc",
     "password_form_metrics_recorder.h",
     "password_form_user_action.h",

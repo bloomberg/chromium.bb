@@ -58,10 +58,10 @@ class ChromePasswordManagerClient
                             const HSTSCallback& callback) const override;
   bool OnCredentialManagerUsed() override;
   bool PromptUserToSaveOrUpdatePassword(
-      std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool is_update) override;
   void ShowManualFallbackForSaving(
-      std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool has_generated_password,
       bool is_update) override;
   void HideManualFallbackForSaving() override;
@@ -80,8 +80,8 @@ class ChromePasswordManagerClient
       const autofill::PasswordForm& form) override;
   void NotifyStorePasswordCalled() override;
   void AutomaticPasswordSave(
-      std::unique_ptr<password_manager::PasswordFormManager> saved_form_manager)
-      override;
+      std::unique_ptr<password_manager::PasswordFormManagerForUI>
+          saved_form_manager) override;
   void PasswordWasAutofilled(
       const std::map<base::string16, const autofill::PasswordForm*>&
           best_matches,

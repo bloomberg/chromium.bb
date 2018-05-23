@@ -24,7 +24,7 @@
 // static
 void SavePasswordInfoBarDelegate::Create(
     content::WebContents* web_contents,
-    std::unique_ptr<password_manager::PasswordFormManager> form_to_save) {
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   syncer::SyncService* sync_service =
@@ -41,12 +41,13 @@ void SavePasswordInfoBarDelegate::Create(
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
   password_manager::metrics_util::LogSaveUIDismissalReason(infobar_response_);
-  form_to_save_->metrics_recorder()->RecordUIDismissalReason(infobar_response_);
+  form_to_save_->GetMetricsRecorder()->RecordUIDismissalReason(
+      infobar_response_);
 }
 
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     content::WebContents* web_contents,
-    std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
     bool is_smartlock_branding_enabled)
     : PasswordManagerInfoBarDelegate(),
       form_to_save_(std::move(form_to_save)),
@@ -54,17 +55,16 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
   base::string16 message;
   gfx::Range message_link_range = gfx::Range();
   PasswordTitleType type =
-      form_to_save_->pending_credentials().federation_origin.unique()
+      form_to_save_->GetPendingCredentials().federation_origin.unique()
           ? PasswordTitleType::SAVE_PASSWORD
           : PasswordTitleType::SAVE_ACCOUNT;
   GetSavePasswordDialogTitleTextAndLinkRange(
-      web_contents->GetVisibleURL(), form_to_save_->observed_form().origin,
-      is_smartlock_branding_enabled, type,
-      &message, &message_link_range);
+      web_contents->GetVisibleURL(), form_to_save_->GetObservedForm().origin,
+      is_smartlock_branding_enabled, type, &message, &message_link_range);
   SetMessage(message);
   SetMessageLinkRange(message_link_range);
 
-  form_to_save_->metrics_recorder()->RecordPasswordBubbleShown(
+  form_to_save_->GetMetricsRecorder()->RecordPasswordBubbleShown(
       form_to_save_->GetCredentialSource(),
       password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING);
 }

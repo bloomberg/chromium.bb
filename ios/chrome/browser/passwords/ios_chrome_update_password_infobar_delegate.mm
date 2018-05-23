@@ -11,7 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
-#include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
+#include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/infobars/infobar.h"
@@ -24,13 +25,13 @@
 #error "This file requires ARC support."
 #endif
 
-using password_manager::PasswordFormManager;
+using password_manager::PasswordFormManagerForUI;
 
 // static
 void IOSChromeUpdatePasswordInfoBarDelegate::Create(
     bool is_smart_lock_branding_enabled,
     infobars::InfoBarManager* infobar_manager,
-    std::unique_ptr<PasswordFormManager> form_manager,
+    std::unique_ptr<PasswordFormManagerForUI> form_manager,
     UIViewController* baseViewController,
     id<ApplicationCommands> dispatcher) {
   DCHECK(infobar_manager);
@@ -49,17 +50,17 @@ IOSChromeUpdatePasswordInfoBarDelegate::
     ~IOSChromeUpdatePasswordInfoBarDelegate() {
   password_manager::metrics_util::LogUpdateUIDismissalReason(
       infobar_response());
-  form_to_save()->metrics_recorder()->RecordUIDismissalReason(
+  form_to_save()->GetMetricsRecorder()->RecordUIDismissalReason(
       infobar_response());
 }
 
 IOSChromeUpdatePasswordInfoBarDelegate::IOSChromeUpdatePasswordInfoBarDelegate(
     bool is_smart_lock_branding_enabled,
-    std::unique_ptr<PasswordFormManager> form_manager)
+    std::unique_ptr<PasswordFormManagerForUI> form_manager)
     : IOSChromePasswordManagerInfoBarDelegate(is_smart_lock_branding_enabled,
                                               std::move(form_manager)) {
-  selected_account_ = form_to_save()->preferred_match()->username_value;
-  form_to_save()->metrics_recorder()->RecordPasswordBubbleShown(
+  selected_account_ = form_to_save()->GetPreferredMatch()->username_value;
+  form_to_save()->GetMetricsRecorder()->RecordPasswordBubbleShown(
       form_to_save()->GetCredentialSource(),
       password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE);
 }
@@ -67,13 +68,13 @@ IOSChromeUpdatePasswordInfoBarDelegate::IOSChromeUpdatePasswordInfoBarDelegate(
 bool IOSChromeUpdatePasswordInfoBarDelegate::ShowMultipleAccounts() const {
   // If a password is overriden, we know that the preferred match account is
   // correct, so should not provide the option to choose a different account.
-  return form_to_save()->best_matches().size() > 1 &&
-         !form_to_save()->password_overridden();
+  return form_to_save()->GetBestMatches().size() > 1 &&
+         !form_to_save()->IsPasswordOverridden();
 }
 
 NSArray* IOSChromeUpdatePasswordInfoBarDelegate::GetAccounts() const {
   NSMutableArray* usernames = [NSMutableArray array];
-  for (const auto& match : form_to_save()->best_matches()) {
+  for (const auto& match : form_to_save()->GetBestMatches()) {
     [usernames addObject:base::SysUTF16ToNSString(match.first)];
   }
   return usernames;
@@ -114,9 +115,9 @@ bool IOSChromeUpdatePasswordInfoBarDelegate::Accept() {
   DCHECK(form_to_save());
   if (ShowMultipleAccounts()) {
     form_to_save()->Update(
-        *form_to_save()->best_matches().at(selected_account_));
+        *form_to_save()->GetBestMatches().at(selected_account_));
   } else {
-    form_to_save()->Update(form_to_save()->pending_credentials());
+    form_to_save()->Update(form_to_save()->GetPendingCredentials());
   }
   set_infobar_response(password_manager::metrics_util::CLICKED_SAVE);
   return true;

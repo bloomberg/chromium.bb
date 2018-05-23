@@ -169,10 +169,10 @@ bool AreAllFieldsEmpty(const PasswordForm& form) {
 // Helper function that determines whether update or save prompt should be
 // shown for credentials in |provisional_save_manager|.
 bool IsPasswordUpdate(const PasswordFormManager& provisional_save_manager) {
-  return (!provisional_save_manager.best_matches().empty() &&
+  return (!provisional_save_manager.GetBestMatches().empty() &&
           provisional_save_manager
               .is_possible_change_password_form_without_username()) ||
-         provisional_save_manager.password_overridden() ||
+         provisional_save_manager.IsPasswordOverridden() ||
          provisional_save_manager.retry_password_form_password_update();
 }
 
@@ -427,7 +427,7 @@ void PasswordManager::ProvisionallySavePassword(
 
 void PasswordManager::UpdateFormManagers() {
   for (const auto& form_manager : pending_login_managers_) {
-    form_manager->form_fetcher()->Fetch();
+    form_manager->GetFormFetcher()->Fetch();
   }
 }
 
@@ -518,7 +518,7 @@ void PasswordManager::ShowManualFallbackForSaving(
     return;
   // TODO(crbug.com/741537): Process manual saving request even if there is
   // still no response from the store.
-  if (matched_manager->form_fetcher()->GetState() ==
+  if (matched_manager->GetFormFetcher()->GetState() ==
       FormFetcher::State::WAITING) {
     return;
   }
@@ -740,13 +740,13 @@ bool PasswordManager::CanProvisionalManagerSave() {
     return false;
   }
 
-  if (provisional_save_manager_->form_fetcher()->GetState() ==
+  if (provisional_save_manager_->GetFormFetcher()->GetState() ==
       FormFetcher::State::WAITING) {
     // We have a provisional save manager, but it didn't finish matching yet.
     // We just give up.
     client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::MATCHING_NOT_COMPLETE, main_frame_url_,
-        provisional_save_manager_->observed_form().origin, logger.get());
+        provisional_save_manager_->GetObservedForm().origin, logger.get());
     provisional_save_manager_.reset();
     return false;
   }
@@ -767,7 +767,7 @@ bool PasswordManager::ShouldPromptUserToSavePassword() const {
           provisional_save_manager_
               ->is_possible_change_password_form_without_username() ||
           provisional_save_manager_->retry_password_form_password_update() ||
-          provisional_save_manager_->password_overridden()) &&
+          provisional_save_manager_->IsPasswordOverridden()) &&
          !(provisional_save_manager_->has_generated_password() &&
            provisional_save_manager_->IsNewLogin()) &&
          !provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch();
@@ -810,7 +810,7 @@ void PasswordManager::OnPasswordFormsRendered(
 
   // If we see the login form again, then the login failed.
   if (did_stop_loading) {
-    if (provisional_save_manager_->pending_credentials().scheme ==
+    if (provisional_save_manager_->GetPendingCredentials().scheme ==
         PasswordForm::SCHEME_HTML) {
       for (size_t i = 0; i < all_visible_forms_.size(); ++i) {
         // TODO(vabr): The similarity check is just action equality up to
@@ -819,7 +819,7 @@ void PasswordManager::OnPasswordFormsRendered(
         // PasswordFormManager::DoesManage for it.
         if (IsPasswordFormReappeared(
                 all_visible_forms_[i],
-                provisional_save_manager_->pending_credentials())) {
+                provisional_save_manager_->GetPendingCredentials())) {
           if (provisional_save_manager_
                   ->is_possible_change_password_form_without_username() &&
               AreAllFieldsEmpty(all_visible_forms_[i]))
@@ -886,7 +886,7 @@ void PasswordManager::OnLoginSuccessful() {
     provisional_save_manager_->WipeStoreCopyIfOutdated();
     client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::SYNC_CREDENTIAL, main_frame_url_,
-        provisional_save_manager_->observed_form().origin, logger.get());
+        provisional_save_manager_->GetObservedForm().origin, logger.get());
     provisional_save_manager_.reset();
     return;
   }
@@ -896,11 +896,11 @@ void PasswordManager::OnLoginSuccessful() {
   RecordWhetherTargetDomainDiffers(main_frame_url_, client_->GetMainFrameURL());
 
   // If the form is eligible only for saving fallback, it shouldn't go here.
-  DCHECK(!provisional_save_manager_->pending_credentials()
+  DCHECK(!provisional_save_manager_->GetPendingCredentials()
               .only_for_fallback_saving);
   if (ShouldPromptUserToSavePassword()) {
-    bool empty_password =
-        provisional_save_manager_->pending_credentials().username_value.empty();
+    bool empty_password = provisional_save_manager_->GetPendingCredentials()
+                              .username_value.empty();
     UMA_HISTOGRAM_BOOLEAN("PasswordManager.EmptyUsernames.OfferedToSave",
                           empty_password);
     if (logger)
@@ -918,7 +918,7 @@ void PasswordManager::OnLoginSuccessful() {
 
     if (!provisional_save_manager_->IsNewLogin()) {
       client_->NotifySuccessfulLoginWithExistingPassword(
-          provisional_save_manager_->pending_credentials());
+          provisional_save_manager_->GetPendingCredentials());
     }
 
     if (provisional_save_manager_->has_generated_password()) {
