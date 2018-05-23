@@ -45,7 +45,7 @@
 
 namespace blink {
 
-// TODO(lunalu): Move CSSPropertyID to
+// TODO(loonybear): Move CSSPropertyID to
 // public/mojom/use_counter/css_property_id.mojom to plumb CSS metrics end to
 // end to PageLoadMetrics.
 int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
@@ -1174,6 +1174,10 @@ void UseCounter::RecordMeasurement(WebFeature feature,
   if (mute_count_)
     return;
 
+  if (context_ == kDefaultContext &&
+      !Page::OrdinaryPages().Contains(source_frame.GetPage()))
+    return;
+
   // PageDestruction is reserved as a scaling factor.
   DCHECK_NE(WebFeature::kOBSOLETE_PageDestruction, feature);
   DCHECK_NE(WebFeature::kPageVisits, feature);
@@ -1242,13 +1246,6 @@ void UseCounter::Trace(blink::Visitor* visitor) {
 }
 
 void UseCounter::DidCommitLoad(const LocalFrame* frame) {
-  // When frame is detatched (i.e. GetDocument() is null), no feature usage
-  // should be measured.
-  if (!frame->GetDocument()) {
-    context_ = kDisabledContext;
-    return;
-  }
-  const KURL url = frame->GetDocument()->Url();
   // Reset state from previous load.
   // Use the protocol of the document being loaded into the main frame to
   // decide whether this page is interesting from a metrics perspective.
@@ -1256,6 +1253,12 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
   // policy of page_load_metrics.
   // Note that SVGImage cases always have an about:blank URL
   if (context_ != kSVGImageContext) {
+    if (!frame->GetDocument() ||
+        !Page::OrdinaryPages().Contains(frame->GetPage())) {
+      context_ = kDisabledContext;
+      return;
+    }
+    const KURL url = frame->GetDocument()->Url();
     if (url.ProtocolIs("chrome-extension"))
       context_ = kExtensionContext;
     else if (frame->GetDocument()->IsViewSource())
@@ -1264,8 +1267,8 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
       context_ = kDisabledContext;
     else if (frame->GetDocument()->IsPrefetchOnly())
       context_ = kDisabledContext;
-    // TODO(lunalu): Service worker and shared worker count feature usage on the
-    // blink side use counter. Once the blink side use counter is removed
+    // TODO(loonybear): Service worker and shared worker count feature usage on
+    // the blink side use counter. Once the blink side use counter is removed
     // (crbug.com/811948), the checker for shadow pages should be removed.
     else if (frame->GetSettings()->IsShadowPage())
       context_ = kDisabledContext;
@@ -1278,6 +1281,7 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
   features_recorded_.ClearAll();
   css_recorded_.ClearAll();
   animated_css_recorded_.ClearAll();
+
   if (context_ != kDisabledContext && !mute_count_) {
     FeaturesHistogram().Count(static_cast<int>(WebFeature::kPageVisits));
     if (context_ != kExtensionContext) {
@@ -1356,6 +1360,13 @@ void UseCounter::Count(CSSParserMode css_parser_mode,
   if (!IsUseCounterEnabledForMode(css_parser_mode) || mute_count_)
     return;
 
+  // TODO(loonybear): Remove this check once UseCounter is moved from Page to
+  // DocumentLoader. No features would be counted before
+  // UseCounter::DidCommitLoad (crbug.com/828416).
+  if (context_ == kDefaultContext &&
+      !Page::OrdinaryPages().Contains(source_frame->GetPage()))
+    return;
+
   if (!css_recorded_.QuickGet(property)) {
     // Note that HTTPArchive tooling looks specifically for this event - see
     // https://github.com/HTTPArchive/httparchive/issues/59
@@ -1405,6 +1416,13 @@ void UseCounter::CountAnimatedCSS(CSSPropertyID property,
   DCHECK(isCSSPropertyIDWithName(property) || property == CSSPropertyVariable);
 
   if (mute_count_)
+    return;
+
+  // TODO(loonybear): Remove this check once UseCounter is moved from Page to
+  // DocumentLoader. No features would be counted before
+  // UseCounter::DidCommitLoad (crbug.com/828416).
+  if (context_ == kDefaultContext &&
+      !Page::OrdinaryPages().Contains(source_frame->GetPage()))
     return;
 
   if (!animated_css_recorded_.QuickGet(property)) {

@@ -63,6 +63,9 @@ DummyPageHolder::DummyPageHolder(
   else
     page_clients.chrome_client = page_clients_argument->chrome_client;
   page_ = Page::Create(page_clients);
+  // TODO(loonybear): Don't insert dummy pages to OrdinaryPages once UseCounter
+  // is moved to the browser side PageLoadMetricsObserver (crbug.com/845986).
+  Page::OrdinaryPages().insert(page_);
   Settings& settings = page_->GetSettings();
   // FIXME: http://crbug.com/363843. This needs to find a better way to
   // not create graphics layers.
