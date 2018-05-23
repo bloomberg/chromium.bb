@@ -48551,6 +48551,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="WindowsNotificationUserManagerShowupStatus">
+  <obsolete>
+    Deprecated 05/2018 as this is no longer needed.
+  </obsolete>
   <int value="0" label="Last opened profile is non-empty"/>
   <int value="1" label="Cannot open last used profile"/>
 </enum>

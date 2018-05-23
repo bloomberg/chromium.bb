@@ -105,24 +105,6 @@ using content::ChildProcessSecurityPolicy;
 
 namespace {
 
-#if defined(OS_WIN)
-// TODO(chengx): remove all UserManagerShowupStatus related code after bug
-// 833663 is fixed.
-//
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class UserManagerShowupStatus {
-  kLastOpenedProfileNonEmpty = 0,
-  kLastUsedProfileCannotOpen = 1,
-  kMaxValue = kLastUsedProfileCannotOpen,
-};
-
-void LogUserManagerShowupStatus(UserManagerShowupStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.UserManagerShowupStatus",
-                            status);
-}
-#endif  // defined(OS_WIN)
-
 // Keeps track on which profiles have been launched.
 class ProfileLaunchObserver : public content::NotificationObserver {
  public:
@@ -784,13 +766,6 @@ bool StartupBrowserCreator::LaunchBrowserForLastProfiles(
                            is_process_startup, is_first_run);
     }
 
-#if defined(OS_WIN)
-    if (was_windows_notification_launch) {
-      LogUserManagerShowupStatus(
-          UserManagerShowupStatus::kLastUsedProfileCannotOpen);
-    }
-#endif  // defined(OS_WIN)
-
     // Show UserManager if |last_used_profile| can't be auto opened.
     ShowUserManagerOnStartup(command_line);
     return true;
@@ -874,14 +849,6 @@ bool StartupBrowserCreator::ProcessLastOpenedProfiles(
     // We've launched at least one browser.
     is_process_startup = chrome::startup::IS_NOT_PROCESS_STARTUP;
   }
-
-#if defined(OS_WIN)
-  if (command_line.HasSwitch(switches::kNotificationLaunchId) &&
-      is_process_startup == chrome::startup::IS_PROCESS_STARTUP) {
-    LogUserManagerShowupStatus(
-        UserManagerShowupStatus::kLastOpenedProfileNonEmpty);
-  }
-#endif  // defined(OS_WIN)
 
 // Set the |last_used_profile| to activate if a browser is launched for at
 // least one profile. Otherwise, show UserManager.
