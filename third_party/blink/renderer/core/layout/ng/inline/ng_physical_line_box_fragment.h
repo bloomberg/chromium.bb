@@ -56,8 +56,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // Whether the content soft-wraps to the next line.
   bool HasSoftWrapToNextLine() const;
 
-  PositionWithAffinity PositionForPoint(const NGPhysicalOffset&) const final;
-
   scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const {
     Vector<scoped_refptr<NGPhysicalFragment>> children_copy(children_);
     return base::AdoptRef(new NGPhysicalLineBoxFragment(

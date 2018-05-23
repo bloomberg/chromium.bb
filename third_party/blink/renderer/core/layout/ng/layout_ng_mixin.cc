@@ -286,11 +286,11 @@ PositionWithAffinity LayoutNGMixin<Base>::PositionForPoint(
   if (!Base::ChildrenInline())
     return LayoutBlock::PositionForPoint(point);
 
-  if (!CurrentFragment())
+  if (!PaintFragment())
     return Base::CreatePositionWithAffinity(0);
 
   const PositionWithAffinity ng_position =
-      CurrentFragment()->PositionForPoint(NGPhysicalOffset(point));
+      PaintFragment()->PositionForPoint(NGPhysicalOffset(point));
   if (ng_position.IsNotNull())
     return ng_position;
   return Base::CreatePositionWithAffinity(0);

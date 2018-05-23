@@ -142,8 +142,6 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // Returns the text offset in the fragment placed closest to the given point.
   unsigned TextOffsetForPoint(const NGPhysicalOffset&) const;
 
-  PositionWithAffinity PositionForPoint(const NGPhysicalOffset&) const override;
-
   UBiDiLevel BidiLevel() const override;
   TextDirection ResolvedDirection() const override;
 

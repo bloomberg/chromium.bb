@@ -184,9 +184,6 @@ class CORE_EXPORT NGPhysicalFragment
 
   bool IsPlaced() const { return is_placed_; }
 
-  virtual PositionWithAffinity PositionForPoint(
-      const NGPhysicalOffset&) const = 0;
-
   // Returns the bidi level of a text or atomic inline fragment.
   virtual UBiDiLevel BidiLevel() const;
 
