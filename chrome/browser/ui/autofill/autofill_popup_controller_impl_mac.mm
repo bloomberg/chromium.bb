@@ -59,7 +59,7 @@ void AutofillPopupControllerImplMac::Show(
     const std::vector<autofill::Suggestion>& suggestions) {
   AutofillPopupControllerImpl::Show(suggestions);
 
-  if (!GetLineCount() || !is_credit_card_popup_)
+  if (suggestions.empty() || !is_credit_card_popup_)
     return;
 
   if (@available(macOS 10.12.2, *)) {
