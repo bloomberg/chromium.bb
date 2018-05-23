@@ -357,8 +357,17 @@ void MultibufferDataSource::OnBufferingHaveEnough(bool always_cancel) {
   if (reader_ && (always_cancel || (preload_ == METADATA &&
                                     !media_has_played_ && !IsStreaming()))) {
     cancel_on_defer_ = true;
-    if (!loading_)
-      SetReader(nullptr);
+    if (!loading_) {
+      base::AutoLock auto_lock(lock_);
+      if (read_op_) {
+        // We can't destroy the reader if a read operation is pending.
+        // UpdateLoadingState_Locked will take care of it after the
+        // operation is done.
+        return;
+      }
+      // Already locked, no need to use SetReader().
+      reader_.reset(nullptr);
+    }
   }
 }
 
