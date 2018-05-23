@@ -6,8 +6,10 @@
 
 #include <memory>
 
+#import "base/mac/bind_objc_block.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "ios/web/public/web_thread.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_profile_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
 #import "ios/web_view/public/cwv_autofill_data_manager_delegate.h"
@@ -20,7 +22,12 @@
 // Called when WebViewPersonalDataManagerObserverBridge's
 // |OnPersonalDataChanged| is invoked.
 - (void)personalDataDidChange;
-
+// Collects and converts autofill::AutofillProfiles stored internally in
+// |_personalDataManager| to CWVAutofillProfiles.
+- (NSArray<CWVAutofillProfile*>*)profiles;
+// Collects and converts autofill::CreditCards stored internally in
+// |_personalDataManager| to CWVCreditCards.
+- (NSArray<CWVCreditCard*>*)creditCards;
 @end
 
 namespace ios_web_view {
@@ -51,6 +58,12 @@ class WebViewPersonalDataManagerObserverBridge
   autofill::PersonalDataManager* _personalDataManager;
   std::unique_ptr<ios_web_view::WebViewPersonalDataManagerObserverBridge>
       _personalDataManagerObserverBridge;
+  // These completion handlers are stored so they can be called later on when
+  // |_personalDataManager| completes its initial loading.
+  NSMutableArray<FetchProfilesCompletionHandler>*
+      _fetchProfilesCompletionHandlers;
+  NSMutableArray<FetchCreditCardsCompletionHandler>*
+      _fetchCreditCardsCompletionHandlers;
 }
 
 @synthesize delegate = _delegate;
@@ -63,6 +76,8 @@ class WebViewPersonalDataManagerObserverBridge
     _personalDataManagerObserverBridge = std::make_unique<
         ios_web_view::WebViewPersonalDataManagerObserverBridge>(self);
     _personalDataManager->AddObserver(_personalDataManagerObserverBridge.get());
+    _fetchProfilesCompletionHandlers = [NSMutableArray array];
+    _fetchCreditCardsCompletionHandlers = [NSMutableArray array];
   }
   return self;
 }
@@ -73,6 +88,79 @@ class WebViewPersonalDataManagerObserverBridge
 }
 
 #pragma mark - Public Methods
+
+- (void)fetchProfilesWithCompletionHandler:
+    (FetchProfilesCompletionHandler)completionHandler {
+  // If data is already loaded, return the existing data asynchronously to match
+  // client expectation. Otherwise, save the |completionHandler| and wait for
+  // |personalDataDidChange| to be invoked.
+  if (_personalDataManager->IsDataLoaded()) {
+    NSArray<CWVAutofillProfile*>* profiles = [self profiles];
+    web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
+                             base::BindBlockArc(^{
+                               completionHandler(profiles);
+                             }));
+  } else {
+    [_fetchProfilesCompletionHandlers addObject:completionHandler];
+  }
+}
+
+- (void)updateProfile:(CWVAutofillProfile*)profile {
+  _personalDataManager->UpdateProfile(*profile.internalProfile);
+}
+
+- (void)deleteProfile:(CWVAutofillProfile*)profile {
+  _personalDataManager->RemoveByGUID(profile.internalProfile->guid());
+}
+
+- (void)fetchCreditCardsWithCompletionHandler:
+    (FetchCreditCardsCompletionHandler)completionHandler {
+  // If data is already loaded, return the existing data asynchronously to match
+  // client expectation. Otherwise, save the |completionHandler| and wait for
+  // |personalDataDidChange| to be invoked.
+  if (_personalDataManager->IsDataLoaded()) {
+    NSArray<CWVCreditCard*>* creditCards = [self creditCards];
+    web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
+                             base::BindBlockArc(^{
+                               completionHandler(creditCards);
+                             }));
+  } else {
+    [_fetchCreditCardsCompletionHandlers addObject:completionHandler];
+  }
+}
+
+- (void)updateCreditCard:(CWVCreditCard*)creditCard {
+  _personalDataManager->UpdateCreditCard(*creditCard.internalCard);
+}
+
+- (void)deleteCreditCard:(CWVCreditCard*)creditCard {
+  _personalDataManager->RemoveByGUID(creditCard.internalCard->guid());
+}
+
+#pragma mark - Private Methods
+
+- (void)personalDataDidChange {
+  // Invoke completionHandlers if they are still outstanding.
+  if (_personalDataManager->IsDataLoaded()) {
+    if (_fetchProfilesCompletionHandlers.count > 0) {
+      NSArray<CWVAutofillProfile*>* profiles = [self profiles];
+      for (FetchProfilesCompletionHandler completionHandler in
+               _fetchProfilesCompletionHandlers) {
+        completionHandler(profiles);
+      }
+      [_fetchProfilesCompletionHandlers removeAllObjects];
+    }
+    if (_fetchCreditCardsCompletionHandlers.count > 0) {
+      NSArray<CWVCreditCard*>* creditCards = [self creditCards];
+      for (FetchCreditCardsCompletionHandler completionHandler in
+               _fetchCreditCardsCompletionHandlers) {
+        completionHandler(creditCards);
+      }
+      [_fetchCreditCardsCompletionHandlers removeAllObjects];
+    }
+  }
+  [_delegate autofillDataManagerDataDidChange:self];
+}
 
 - (NSArray<CWVAutofillProfile*>*)profiles {
   NSMutableArray* profiles = [NSMutableArray array];
@@ -94,28 +182,6 @@ class WebViewPersonalDataManagerObserverBridge
     [creditCards addObject:creditCard];
   }
   return [creditCards copy];
-}
-
-- (void)updateProfile:(CWVAutofillProfile*)profile {
-  _personalDataManager->UpdateProfile(*profile.internalProfile);
-}
-
-- (void)deleteProfile:(CWVAutofillProfile*)profile {
-  _personalDataManager->RemoveByGUID(profile.internalProfile->guid());
-}
-
-- (void)updateCreditCard:(CWVCreditCard*)creditCard {
-  _personalDataManager->UpdateCreditCard(*creditCard.internalCard);
-}
-
-- (void)deleteCreditCard:(CWVCreditCard*)creditCard {
-  _personalDataManager->RemoveByGUID(creditCard.internalCard->guid());
-}
-
-#pragma mark - Private Methods
-
-- (void)personalDataDidChange {
-  [_delegate autofillDataManagerDataDidChange:self];
 }
 
 @end
