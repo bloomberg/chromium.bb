@@ -18,23 +18,45 @@
 
 namespace chromeos {
 
+// Returns true if the scheme is both valid and non-empty.
+bool IsSchemeValid(const url::Parsed& parsed) {
+  return parsed.scheme.is_valid() && parsed.scheme.is_nonempty();
+}
+
+// Returns true if |parsed| contains a valid port. A valid port is one that
+// either contains a valid value or is completely missing.
+bool IsPortValid(const url::Parsed& parsed) {
+  // A length of -1 indicates that the port is missing.
+  return parsed.port.len == -1 ||
+         (parsed.port.is_valid() && parsed.port.is_nonempty());
+}
+
+// Returns |printer_uri| broken into components if it represents a valid uri. A
+// valid uri contains a scheme, host, and a valid or missing port number.
+// Optionally, the uri contains a path.
 base::Optional<UriComponents> ParseUri(const std::string& printer_uri) {
   const char* uri_ptr = printer_uri.c_str();
   url::Parsed parsed;
   url::ParseStandardURL(uri_ptr, printer_uri.length(), &parsed);
-  if (!parsed.scheme.is_valid() || !parsed.host.is_valid() ||
-      !parsed.path.is_valid()) {
+  if (!IsSchemeValid(parsed) || !parsed.host.is_valid() ||
+      !IsPortValid(parsed)) {
+    LOG(WARNING) << "Could not parse printer uri";
     return {};
   }
   base::StringPiece scheme(&uri_ptr[parsed.scheme.begin], parsed.scheme.len);
   base::StringPiece host(&uri_ptr[parsed.host.begin], parsed.host.len);
-  base::StringPiece path(&uri_ptr[parsed.path.begin], parsed.path.len);
+  base::StringPiece path =
+      parsed.path.is_valid()
+          ? base::StringPiece(&uri_ptr[parsed.path.begin], parsed.path.len)
+          : "";
 
-  bool encrypted = scheme != kIppScheme;
   int port = ParsePort(uri_ptr, parsed.port);
+  if (port == url::SpecialPort::PORT_INVALID) {
+    LOG(WARNING) << "Port is invalid";
+    return {};
+  }
   // Port not specified.
-  if (port == url::SpecialPort::PORT_UNSPECIFIED ||
-      port == url::SpecialPort::PORT_INVALID) {
+  if (port == url::SpecialPort::PORT_UNSPECIFIED) {
     if (scheme == kIppScheme) {
       port = kIppPort;
     } else if (scheme == kIppsScheme) {
@@ -42,6 +64,7 @@ base::Optional<UriComponents> ParseUri(const std::string& printer_uri) {
     }
   }
 
+  bool encrypted = scheme != kIppScheme;
   return base::Optional<UriComponents>(base::in_place, encrypted,
                                        scheme.as_string(), host.as_string(),
                                        port, path.as_string());

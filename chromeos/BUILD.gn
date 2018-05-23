@@ -763,6 +763,7 @@ test("chromeos_unittests") {
     "printing/ppd_cache_unittest.cc",
     "printing/ppd_line_reader_unittest.cc",
     "printing/ppd_provider_unittest.cc",
+    "printing/printer_configuration_unittest.cc",
     "printing/printer_translator_unittest.cc",
     "process_proxy/process_output_watcher_unittest.cc",
     "process_proxy/process_proxy_unittest.cc",
