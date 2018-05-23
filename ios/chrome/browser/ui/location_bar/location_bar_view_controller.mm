@@ -203,17 +203,9 @@ typedef NS_ENUM(int, TrailingButtonState) {
 
   // Cancel previous possible state.
   [self.locationBarSteadyView.trailingButton
-          removeTarget:self.dispatcher
-                action:@selector(preloadVoiceSearch)
-      forControlEvents:UIControlEventTouchDown];
-  [self.locationBarSteadyView.trailingButton
-          removeTarget:self.dispatcher
-                action:@selector(startVoiceSearch)
-      forControlEvents:UIControlEventTouchUpInside];
-  [self.locationBarSteadyView.trailingButton
-          removeTarget:self.dispatcher
-                action:@selector(sharePage)
-      forControlEvents:UIControlEventTouchUpInside];
+          removeTarget:nil
+                action:nil
+      forControlEvents:UIControlEventAllEvents];
   self.locationBarSteadyView.trailingButton.hidden = NO;
 
   switch (state) {
