@@ -33,6 +33,10 @@ const char kRunAllCompositorStagesBeforeDraw[] =
 // hit-test data coming from surface layer.
 const char kUseVizHitTestSurfaceLayer[] = "use-viz-hit-test-surface-layer";
 
+// Disables begin frame limiting in both cc scheduler and display scheduler.
+// Also implies --disable-gpu-vsync (see //ui/gl/gl_switches.h).
+const char kDisableFrameRateLimit[] = "disable-frame-rate-limit";
+
 base::Optional<uint32_t> GetDeadlineToSynchronizeSurfaces() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kRunAllCompositorStagesBeforeDraw)) {

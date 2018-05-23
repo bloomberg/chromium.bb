@@ -190,16 +190,8 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
   cc::SetClientNameForMetrics("Browser");
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableGpuVsync)) {
-    std::string display_vsync_string =
-        command_line->GetSwitchValueASCII(switches::kDisableGpuVsync);
-    // See comments in gl_switches about this flag.  The browser compositor
-    // is only unthrottled when "gpu" or no switch value is passed, as it
-    // is driven directly by the display compositor.
-    if (display_vsync_string != "beginframe") {
-      disable_display_vsync_ = true;
-    }
-  }
+  if (command_line->HasSwitch(switches::kDisableFrameRateLimit))
+    disable_frame_rate_limit_ = true;
 
   if (command_line->HasSwitch(switches::kRunAllCompositorStagesBeforeDraw))
     wait_for_all_pipeline_stages_before_draw_ = true;
@@ -595,7 +587,13 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
             std::move(request),
             external_begin_frame_controller_client->GetBoundPtr());
     begin_frame_source = external_begin_frame_controller->begin_frame_source();
-  } else if (!disable_display_vsync_) {
+  } else if (disable_frame_rate_limit_) {
+    synthetic_begin_frame_source =
+        std::make_unique<viz::BackToBackBeginFrameSource>(
+            std::make_unique<viz::DelayBasedTimeSource>(
+                compositor->task_runner().get()));
+    begin_frame_source = synthetic_begin_frame_source.get();
+  } else {
     if (gpu_vsync_control && IsGpuVSyncSignalSupported()) {
       gpu_vsync_begin_frame_source =
           std::make_unique<GpuVSyncBeginFrameSource>(gpu_vsync_control);
@@ -608,12 +606,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
               viz::BeginFrameSource::kNotRestartableId);
       begin_frame_source = synthetic_begin_frame_source.get();
     }
-  } else {
-    synthetic_begin_frame_source =
-        std::make_unique<viz::BackToBackBeginFrameSource>(
-            std::make_unique<viz::DelayBasedTimeSource>(
-                compositor->task_runner().get()));
-    begin_frame_source = synthetic_begin_frame_source.get();
   }
 
 #if defined(OS_WIN)

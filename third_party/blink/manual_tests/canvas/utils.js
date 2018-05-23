@@ -189,7 +189,7 @@ perf.setupTests = function(tests) {
 };
 
 if (performance.memory.usedJSHeapSize == 10000000) {
-  console.error("Start Chrome with --disable-gpu-vsync --enable-precise-memory-info for this test");
+  console.error("Start Chrome with --disable-frame-rate-limit --enable-precise-memory-info for this test");
 }
 
 })(window);

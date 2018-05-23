@@ -56,6 +56,7 @@
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/common/switches.h"
 #include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/child/runtime_features.h"
 #include "content/child/thread_safe_sender.h"
@@ -171,7 +172,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
-#include "ui/gl/gl_switches.h"
 
 
 #if defined(OS_ANDROID)
@@ -2013,15 +2013,13 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   // The renderer runs animations and layout for animate_only BeginFrames.
   params.wants_animate_only_begin_frames = true;
 
-  // In disable gpu vsync mode, also let the renderer tick as fast as it
-  // can. The top level begin frame source will also be running as a back
-  // to back begin frame source, but using a synthetic begin frame source
-  // here reduces latency when in this mode (at least for frames
-  // starting--it potentially increases it for input on the other hand.)
-  if (command_line.HasSwitch(switches::kDisableGpuVsync) &&
-      command_line.GetSwitchValueASCII(switches::kDisableGpuVsync) != "gpu") {
+  // In disable frame rate limit mode, also let the renderer tick as fast as it
+  // can. The top level begin frame source will also be running as a back to
+  // back begin frame source, but using a synthetic begin frame source here
+  // reduces latency when in this mode (at least for frames starting--it
+  // potentially increases it for input on the other hand.)
+  if (command_line.HasSwitch(switches::kDisableFrameRateLimit))
     params.synthetic_begin_frame_source = CreateSyntheticBeginFrameSource();
-  }
 
 #if defined(USE_AURA)
   if (base::FeatureList::IsEnabled(features::kMash)) {

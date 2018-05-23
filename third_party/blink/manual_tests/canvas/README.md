@@ -4,9 +4,9 @@ Canvas Manual Performance Tests
 How to run the tests
 --------------------
 
-Start Chromium with `--disable-gpu-vsync --enable-precise-memory-info`. Open
-`RunAllTests.html`. The tests should run automatically until the final green
-result page.
+Start Chromium with `--disable-frame-rate-limit --enable-precise-memory-info`.
+Open `RunAllTests.html`. The tests should run automatically until the final
+green result page.
 
 How to add tests to this set
 ----------------------------
