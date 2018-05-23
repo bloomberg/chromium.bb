@@ -42,12 +42,14 @@ DirectCompositionChildSurfaceWin::DirectCompositionChildSurfaceWin(
     const gfx::Size& size,
     bool is_hdr,
     bool has_alpha,
-    bool enable_dc_layers)
+    bool use_dcomp_surface,
+    bool allow_tearing)
     : gl::GLSurfaceEGL(),
       size_(size),
       is_hdr_(is_hdr),
       has_alpha_(has_alpha),
-      enable_dc_layers_(enable_dc_layers) {}
+      use_dcomp_surface_(use_dcomp_surface),
+      allow_tearing_(allow_tearing) {}
 
 DirectCompositionChildSurfaceWin::~DirectCompositionChildSurfaceWin() {
   Destroy();
@@ -91,7 +93,7 @@ bool DirectCompositionChildSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
 
 bool DirectCompositionChildSurfaceWin::InitializeSurface() {
   TRACE_EVENT1("gpu", "DirectCompositionChildSurfaceWin::InitializeSurface()",
-               "enable_dc_layers_", enable_dc_layers_);
+               "use_dcomp_surface_", use_dcomp_surface_);
   if (!ReleaseDrawTexture(true /* will_discard */))
     return false;
   dcomp_surface_.Reset();
@@ -99,7 +101,7 @@ bool DirectCompositionChildSurfaceWin::InitializeSurface() {
 
   DXGI_FORMAT output_format =
       is_hdr_ ? DXGI_FORMAT_R16G16B16A16_FLOAT : DXGI_FORMAT_B8G8R8A8_UNORM;
-  if (enable_dc_layers_) {
+  if (use_dcomp_surface_) {
     // Always treat as premultiplied, because an underlay could cause it to
     // become transparent.
     HRESULT hr = dcomp_device_->CreateSurface(
@@ -134,7 +136,7 @@ bool DirectCompositionChildSurfaceWin::InitializeSurface() {
     desc.Scaling = DXGI_SCALING_STRETCH;
     desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
     desc.AlphaMode = alpha_mode;
-    desc.Flags = 0;
+    desc.Flags = allow_tearing_ ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
     HRESULT hr = dxgi_factory->CreateSwapChainForComposition(
         d3d11_device_.Get(), &desc, nullptr, swap_chain_.GetAddressOf());
     has_been_rendered_to_ = false;
@@ -168,12 +170,13 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
       }
       dcomp_surface_serial_++;
     } else if (!will_discard) {
+      UINT interval = first_swap_ || !vsync_enabled_ || allow_tearing_ ? 0 : 1;
+      UINT flags = allow_tearing_ ? DXGI_PRESENT_ALLOW_TEARING : 0;
       DXGI_PRESENT_PARAMETERS params = {};
       RECT dirty_rect = swap_rect_.ToRECT();
       params.DirtyRectsCount = 1;
       params.pDirtyRects = &dirty_rect;
-      HRESULT hr = swap_chain_->Present1(vsync_enabled_ && !first_swap_ ? 1 : 0,
-                                         0, &params);
+      HRESULT hr = swap_chain_->Present1(interval, flags, &params);
       if (FAILED(hr)) {
         DLOG(ERROR) << "Present1 failed with error " << std::hex << hr;
         return false;
@@ -295,8 +298,8 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
 
   ui::ScopedReleaseCurrent release_current;
 
-  if ((enable_dc_layers_ && !dcomp_surface_) ||
-      (!enable_dc_layers_ && !swap_chain_)) {
+  if ((use_dcomp_surface_ && !dcomp_surface_) ||
+      (!use_dcomp_surface_ && !swap_chain_)) {
     if (!InitializeSurface()) {
       DLOG(ERROR) << "InitializeSurface failed";
       // It is likely that restoring the context will fail, so call Restore here

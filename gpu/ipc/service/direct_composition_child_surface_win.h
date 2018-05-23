@@ -21,7 +21,8 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
   DirectCompositionChildSurfaceWin(const gfx::Size& size,
                                    bool is_hdr,
                                    bool has_alpha,
-                                   bool enable_dc_layers);
+                                   bool use_dcomp_surface,
+                                   bool allow_tearing);
 
   // GLSurfaceEGL implementation.
   using GLSurfaceEGL::Initialize;
@@ -75,7 +76,8 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
   const gfx::Size size_;
   const bool is_hdr_;
   const bool has_alpha_;
-  const bool enable_dc_layers_;
+  const bool use_dcomp_surface_;
+  const bool allow_tearing_;
   gfx::Rect swap_rect_;
   gfx::Vector2d draw_offset_;
   bool vsync_enabled_ = true;
