@@ -12,7 +12,7 @@ from blinkpy.web_tests.layout_package.bot_test_expectations import BotTestExpect
 
 
 if __name__ == "__main__":
-    host = host.Host()
-    return_code = update_flaky_expectations.main(
-        host, BotTestExpectationsFactory(host.builders), sys.argv[1:])
-    sys.exit(return_code)
+    HOST = host.Host()
+    RETURN_CODE = update_flaky_expectations.main(
+        HOST, BotTestExpectationsFactory(HOST.builders), sys.argv[1:])
+    sys.exit(RETURN_CODE)
