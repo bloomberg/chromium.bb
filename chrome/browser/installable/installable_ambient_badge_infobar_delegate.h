@@ -26,6 +26,9 @@ class InstallableAmbientBadgeInfoBarDelegate
     // Called to trigger the add to home screen flow.
     virtual void AddToHomescreenFromBadge() = 0;
 
+    // Called to inform the client that the badge was dismissed.
+    virtual void BadgeDismissed() = 0;
+
     virtual ~Client() {}
   };
 
@@ -51,6 +54,7 @@ class InstallableAmbientBadgeInfoBarDelegate
 
   // InfoBarDelegate overrides:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
+  void InfoBarDismissed() override;
 
   base::WeakPtr<Client> weak_client_;
   const base::string16 app_name_;

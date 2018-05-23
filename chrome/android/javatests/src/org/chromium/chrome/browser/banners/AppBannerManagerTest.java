@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
+import org.chromium.chrome.browser.infobar.InstallableAmbientBadgeInfoBar;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
@@ -272,6 +273,18 @@ public class AppBannerManagerTest {
         });
     }
 
+    private void waitUntilAmbientBadgeInfoBarAppears(
+            ChromeActivityTestRule<? extends ChromeActivity> rule) {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                List<InfoBar> infobars = rule.getInfoBars();
+                if (infobars.size() != 1) return false;
+                return infobars.get(0) instanceof InstallableAmbientBadgeInfoBar;
+            }
+        });
+    }
+
     private void runFullNativeInstallPathway(
             String url, String expectedReferrer, String expectedTitle) throws Exception {
         // Visit a site that requests a banner.
@@ -435,6 +448,7 @@ public class AppBannerManagerTest {
         resetEngagementForUrl(url, 10);
         rule.loadUrlInNewTab(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         navigateToUrlAndWaitForBannerManager(rule, url);
+        waitUntilAmbientBadgeInfoBarAppears(rule);
 
         Tab tab = rule.getActivity().getActivityTab();
         tapAndWaitForModalBanner(tab);
@@ -451,6 +465,7 @@ public class AppBannerManagerTest {
         rule.loadUrlInNewTab(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         navigateToUrlAndWaitForBannerManager(rule, url);
         waitUntilAppDetailsRetrieved(rule, 1);
+        waitUntilAmbientBadgeInfoBarAppears(rule);
         Assert.assertEquals(mDetailsDelegate.mReferrer, expectedReferrer);
 
         final Tab tab = rule.getActivity().getActivityTab();
@@ -489,6 +504,7 @@ public class AppBannerManagerTest {
             waitUntilAppDetailsRetrieved(rule, 1);
         }
 
+        waitUntilAmbientBadgeInfoBarAppears(rule);
         Tab tab = rule.getActivity().getActivityTab();
         tapAndWaitForModalBanner(tab);
 
@@ -665,6 +681,49 @@ public class AppBannerManagerTest {
                 WebappTestPage.getServiceWorkerUrlWithAction(
                         mTestServer, "call_stashed_prompt_on_click"),
                 false);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AppBanners"})
+    public void testBlockedAmbientBadgeDoesNotAppearAgainForMonths() throws Exception {
+        // Visit a site that is a PWA. The ambient badge should show.
+        String webBannerUrl = WebappTestPage.getServiceWorkerUrl(mTestServer);
+
+        Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
+        new TabLoadObserver(tab).fullyLoadUrl(webBannerUrl);
+        waitUntilAmbientBadgeInfoBarAppears(mTabbedActivityTestRule);
+
+        InfoBarContainer container = tab.getInfoBarContainer();
+        final InfobarListener listener = new InfobarListener();
+        container.addAnimationListener(listener);
+
+        // Explicitly dismiss the ambient badge.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return listener.mDoneAnimating;
+            }
+        });
+
+        ArrayList<InfoBar> infobars = container.getInfoBarsForTesting();
+        View close = infobars.get(0).getView().findViewById(R.id.infobar_close_button);
+        TouchCommon.singleClickView(close);
+        InfoBarUtil.waitUntilNoInfoBarsExist(mTabbedActivityTestRule.getInfoBars());
+
+        // Waiting two months shouldn't be long enough.
+        AppBannerManager.setTimeDeltaForTesting(61);
+        new TabLoadObserver(tab).fullyLoadUrl(webBannerUrl);
+        InfoBarUtil.waitUntilNoInfoBarsExist(mTabbedActivityTestRule.getInfoBars());
+
+        AppBannerManager.setTimeDeltaForTesting(62);
+        new TabLoadObserver(tab).fullyLoadUrl(webBannerUrl);
+        InfoBarUtil.waitUntilNoInfoBarsExist(mTabbedActivityTestRule.getInfoBars());
+
+        // Waiting three months should allow the ambient badge to reappear.
+        AppBannerManager.setTimeDeltaForTesting(91);
+        new TabLoadObserver(tab).fullyLoadUrl(webBannerUrl);
+        waitUntilAmbientBadgeInfoBarAppears(mTabbedActivityTestRule);
     }
 
     @Test

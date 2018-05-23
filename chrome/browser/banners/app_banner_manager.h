@@ -157,6 +157,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // InstallableAmbientBadgeInfoBarDelegate::Client overrides. Further
   // overridden on Android.
   void AddToHomescreenFromBadge() override {}
+  void BadgeDismissed() override {}
 
  protected:
   explicit AppBannerManager(content::WebContents* web_contents);
