@@ -4,11 +4,6 @@
 
 #include "crypto/signature_verifier.h"
 
-#include <stdint.h>
-
-#include <memory>
-#include <vector>
-
 #include "base/logging.h"
 #include "crypto/openssl_util.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
