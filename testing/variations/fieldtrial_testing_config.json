@@ -1033,26 +1033,12 @@
                 {
                     "name": "Enabled",
                     "params": {
+                        "bypass_missing_via_disabled": "true",
                         "warmup_fetch_callback_enabled": "true"
                     },
                     "enable_features": [
                         "DataReductionProxyRobustConnection"
                     ]
-                }
-            ]
-        }
-    ],
-    "DataReductionProxyServerExperiments": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "NoTransform",
-                    "params": {
-                        "exp": "holdback"
-                    }
                 }
             ]
         }
