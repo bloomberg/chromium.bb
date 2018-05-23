@@ -48,14 +48,14 @@ const uint16_t kMaxAllowedPort = UINT16_MAX;
 
 class SecurityOriginTest : public testing::Test {};
 
-TEST_F(SecurityOriginTest, ValidPortsCreateNonUniqueOrigins) {
+TEST_F(SecurityOriginTest, ValidPortsCreateTupleOrigins) {
   uint16_t ports[] = {0, 80, 443, 5000, kMaxAllowedPort};
 
   for (size_t i = 0; i < arraysize(ports); ++i) {
     scoped_refptr<const SecurityOrigin> origin =
         SecurityOrigin::Create("http", "example.com", ports[i]);
-    EXPECT_FALSE(origin->IsUnique())
-        << "Port " << ports[i] << " should not have generated a unique origin.";
+    EXPECT_FALSE(origin->IsOpaque())
+        << "Port " << ports[i] << " should have generated a tuple origin.";
   }
 }
 
@@ -156,14 +156,15 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy) {
     EXPECT_EQ(inputs[i].access_granted, origin->IsPotentiallyTrustworthy());
   }
 
-  // Unique origins are not considered secure.
-  scoped_refptr<SecurityOrigin> unique_origin = SecurityOrigin::CreateUnique();
-  EXPECT_FALSE(unique_origin->IsPotentiallyTrustworthy());
+  // Opaque origins are not considered secure.
+  scoped_refptr<SecurityOrigin> opaque_origin =
+      SecurityOrigin::CreateUniqueOpaque();
+  EXPECT_FALSE(opaque_origin->IsPotentiallyTrustworthy());
   // ... unless they are specially marked as such.
-  unique_origin->SetUniqueOriginIsPotentiallyTrustworthy(true);
-  EXPECT_TRUE(unique_origin->IsPotentiallyTrustworthy());
-  unique_origin->SetUniqueOriginIsPotentiallyTrustworthy(false);
-  EXPECT_FALSE(unique_origin->IsPotentiallyTrustworthy());
+  opaque_origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
+  EXPECT_TRUE(opaque_origin->IsPotentiallyTrustworthy());
+  opaque_origin->SetOpaqueOriginIsPotentiallyTrustworthy(false);
+  EXPECT_FALSE(opaque_origin->IsPotentiallyTrustworthy());
 }
 
 TEST_F(SecurityOriginTest, IsSecure) {
@@ -303,10 +304,10 @@ TEST_F(SecurityOriginTest, CreateFromTuple) {
   }
 }
 
-TEST_F(SecurityOriginTest, UniquenessPropagatesToBlobUrls) {
+TEST_F(SecurityOriginTest, OpaquenessPropagatesToBlobUrls) {
   struct TestCase {
     const char* url;
-    bool expected_uniqueness;
+    bool expected_opaqueness;
     const char* expected_origin_string;
   } cases[]{
       {"", true, "null"},
@@ -324,29 +325,29 @@ TEST_F(SecurityOriginTest, UniquenessPropagatesToBlobUrls) {
   for (const TestCase& test : cases) {
     scoped_refptr<const SecurityOrigin> origin =
         SecurityOrigin::CreateFromString(test.url);
-    EXPECT_EQ(test.expected_uniqueness, origin->IsUnique());
+    EXPECT_EQ(test.expected_opaqueness, origin->IsOpaque());
     EXPECT_EQ(test.expected_origin_string, origin->ToString());
 
     KURL blob_url = BlobURL::CreatePublicURL(origin.get());
     scoped_refptr<const SecurityOrigin> blob_url_origin =
         SecurityOrigin::Create(blob_url);
-    EXPECT_EQ(blob_url_origin->IsUnique(), origin->IsUnique());
+    EXPECT_EQ(blob_url_origin->IsOpaque(), origin->IsOpaque());
     EXPECT_EQ(blob_url_origin->ToString(), origin->ToString());
     EXPECT_EQ(blob_url_origin->ToRawString(), origin->ToRawString());
   }
 }
 
-TEST_F(SecurityOriginTest, UniqueOriginIsSameSchemeHostPort) {
-  scoped_refptr<const SecurityOrigin> unique_origin =
-      SecurityOrigin::CreateUnique();
+TEST_F(SecurityOriginTest, OpaqueOriginIsSameSchemeHostPort) {
+  scoped_refptr<const SecurityOrigin> opaque_origin =
+      SecurityOrigin::CreateUniqueOpaque();
   scoped_refptr<const SecurityOrigin> tuple_origin =
       SecurityOrigin::CreateFromString("http://example.com");
 
-  EXPECT_TRUE(unique_origin->IsSameSchemeHostPort(unique_origin.get()));
-  EXPECT_FALSE(SecurityOrigin::CreateUnique()->IsSameSchemeHostPort(
-      unique_origin.get()));
-  EXPECT_FALSE(tuple_origin->IsSameSchemeHostPort(unique_origin.get()));
-  EXPECT_FALSE(unique_origin->IsSameSchemeHostPort(tuple_origin.get()));
+  EXPECT_TRUE(opaque_origin->IsSameSchemeHostPort(opaque_origin.get()));
+  EXPECT_FALSE(SecurityOrigin::CreateUniqueOpaque()->IsSameSchemeHostPort(
+      opaque_origin.get()));
+  EXPECT_FALSE(tuple_origin->IsSameSchemeHostPort(opaque_origin.get()));
+  EXPECT_FALSE(opaque_origin->IsSameSchemeHostPort(tuple_origin.get()));
 }
 
 TEST_F(SecurityOriginTest, CanonicalizeHost) {

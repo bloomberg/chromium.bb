@@ -85,7 +85,7 @@ void SecurityOrigin::SetMap(URLSecurityOriginMap* map) {
   g_url_origin_map = map;
 }
 
-static bool ShouldTreatAsUniqueOrigin(const KURL& url) {
+static bool ShouldTreatAsOpaqueOrigin(const KURL& url) {
   if (!url.IsValid())
     return true;
 
@@ -118,11 +118,11 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
       host_(url.Host()),
       port_(url.Port()),
       effective_port_(url.Port()),
-      is_unique_(false),
+      is_opaque_(false),
       universal_access_(false),
       domain_was_set_in_dom_(false),
       block_local_access_from_local_origin_(false),
-      is_unique_origin_potentially_trustworthy_(false) {
+      is_opaque_origin_potentially_trustworthy_(false) {
   if (protocol_.IsNull())
     protocol_ = g_empty_string;
   if (host_.IsNull())
@@ -147,12 +147,12 @@ SecurityOrigin::SecurityOrigin()
       domain_(g_empty_string),
       port_(kInvalidPort),
       effective_port_(kInvalidPort),
-      is_unique_(true),
+      is_opaque_(true),
       universal_access_(false),
       domain_was_set_in_dom_(false),
       can_load_local_resources_(false),
       block_local_access_from_local_origin_(false),
-      is_unique_origin_potentially_trustworthy_(false) {}
+      is_opaque_origin_potentially_trustworthy_(false) {}
 
 SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
     : protocol_(other->protocol_.IsolatedCopy()),
@@ -160,20 +160,20 @@ SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
       domain_(other->domain_.IsolatedCopy()),
       port_(other->port_),
       effective_port_(other->effective_port_),
-      is_unique_(other->is_unique_),
+      is_opaque_(other->is_opaque_),
       universal_access_(other->universal_access_),
       domain_was_set_in_dom_(other->domain_was_set_in_dom_),
       can_load_local_resources_(other->can_load_local_resources_),
       block_local_access_from_local_origin_(
           other->block_local_access_from_local_origin_),
-      is_unique_origin_potentially_trustworthy_(
-          other->is_unique_origin_potentially_trustworthy_) {}
+      is_opaque_origin_potentially_trustworthy_(
+          other->is_opaque_origin_potentially_trustworthy_) {}
 
 scoped_refptr<SecurityOrigin> SecurityOrigin::Create(const KURL& url) {
   if (scoped_refptr<SecurityOrigin> origin = GetOriginFromMap(url))
     return origin;
 
-  if (ShouldTreatAsUniqueOrigin(url))
+  if (ShouldTreatAsOpaqueOrigin(url))
     return base::AdoptRef(new SecurityOrigin());
 
   if (ShouldUseInnerURL(url))
@@ -182,16 +182,16 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::Create(const KURL& url) {
   return base::AdoptRef(new SecurityOrigin(url));
 }
 
-scoped_refptr<SecurityOrigin> SecurityOrigin::CreateUnique() {
+scoped_refptr<SecurityOrigin> SecurityOrigin::CreateUniqueOpaque() {
   scoped_refptr<SecurityOrigin> origin = base::AdoptRef(new SecurityOrigin());
-  DCHECK(origin->IsUnique());
+  DCHECK(origin->IsOpaque());
   return origin;
 }
 
 scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromUrlOrigin(
     const url::Origin& origin) {
   if (origin.unique())
-    return CreateUnique();
+    return CreateUniqueOpaque();
 
   DCHECK(String::FromUTF8(origin.scheme().c_str()).ContainsOnlyASCII());
   DCHECK(String::FromUTF8(origin.host().c_str()).ContainsOnlyASCII());
@@ -201,7 +201,7 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromUrlOrigin(
 }
 
 url::Origin SecurityOrigin::ToUrlOrigin() const {
-  return IsUnique()
+  return IsOpaque()
              ? url::Origin()
              : url::Origin::CreateFromNormalizedTuple(
                    StringUTF8Adaptor(protocol_).AsStringPiece().as_string(),
@@ -234,7 +234,7 @@ bool SecurityOrigin::IsSecure(const KURL& url) {
 }
 
 bool SecurityOrigin::SerializesAsNull() const {
-  if (IsUnique())
+  if (IsOpaque())
     return true;
 
   if (IsLocal() && block_local_access_from_local_origin_)
@@ -250,7 +250,7 @@ bool SecurityOrigin::CanAccess(const SecurityOrigin* other) const {
   if (this == other)
     return true;
 
-  if (IsUnique() || other->IsUnique())
+  if (IsOpaque() || other->IsOpaque())
     return false;
 
   // document.domain handling, as per
@@ -298,13 +298,13 @@ bool SecurityOrigin::CanRequest(const KURL& url) const {
   if (GetOriginFromMap(url) == this)
     return true;
 
-  if (IsUnique())
+  if (IsOpaque())
     return false;
 
   scoped_refptr<const SecurityOrigin> target_origin =
       SecurityOrigin::Create(url);
 
-  if (target_origin->IsUnique())
+  if (target_origin->IsOpaque())
     return false;
 
   // We call isSameSchemeHostPort here instead of canAccess because we want
@@ -324,6 +324,8 @@ bool SecurityOrigin::CanReadContent(const KURL& url) const {
 
   // This function exists because we treat data URLs as having a unique opaque
   // origin, see https://fetch.spec.whatwg.org/#main-fetch.
+  // TODO(dcheng): If we plumb around the 'precursor' origin, then maybe we
+  // don't need this?
   if (url.ProtocolIsData())
     return true;
 
@@ -351,8 +353,8 @@ bool SecurityOrigin::CanDisplay(const KURL& url) const {
 
 bool SecurityOrigin::IsPotentiallyTrustworthy() const {
   DCHECK_NE(protocol_, "data");
-  if (IsUnique())
-    return is_unique_origin_potentially_trustworthy_;
+  if (IsOpaque())
+    return is_opaque_origin_potentially_trustworthy_;
 
   if (SchemeRegistry::ShouldTreatURLSchemeAsSecure(protocol_) || IsLocal() ||
       IsLocalhost())
@@ -453,7 +455,7 @@ bool SecurityOrigin::IsSameSchemeHostPort(const SecurityOrigin* other) const {
   if (this == other)
     return true;
 
-  if (IsUnique() || other->IsUnique())
+  if (IsOpaque() || other->IsOpaque())
     return false;
 
   if (host_ != other->host_)
@@ -477,10 +479,10 @@ bool SecurityOrigin::AreSameSchemeHostPort(const KURL& a, const KURL& b) {
   return origin_b->IsSameSchemeHostPort(origin_a.get());
 }
 
-const KURL& SecurityOrigin::UrlWithUniqueSecurityOrigin() {
+const KURL& SecurityOrigin::UrlWithUniqueOpaqueOrigin() {
   DCHECK(IsMainThread());
-  DEFINE_STATIC_LOCAL(const KURL, unique_security_origin_url, ("data:,"));
-  return unique_security_origin_url;
+  DEFINE_STATIC_LOCAL(const KURL, url, ("data:,"));
+  return url;
 }
 
 std::unique_ptr<SecurityOrigin::PrivilegeData>
@@ -502,11 +504,11 @@ void SecurityOrigin::TransferPrivilegesFrom(
       privilege_data->block_local_access_from_local_origin_;
 }
 
-void SecurityOrigin::SetUniqueOriginIsPotentiallyTrustworthy(
-    bool is_unique_origin_potentially_trustworthy) {
-  DCHECK(!is_unique_origin_potentially_trustworthy || IsUnique());
-  is_unique_origin_potentially_trustworthy_ =
-      is_unique_origin_potentially_trustworthy;
+void SecurityOrigin::SetOpaqueOriginIsPotentiallyTrustworthy(
+    bool is_opaque_origin_potentially_trustworthy) {
+  DCHECK(!is_opaque_origin_potentially_trustworthy || IsOpaque());
+  is_opaque_origin_potentially_trustworthy_ =
+      is_opaque_origin_potentially_trustworthy;
 }
 
 String SecurityOrigin::CanonicalizeHost(const String& host, bool* success) {
