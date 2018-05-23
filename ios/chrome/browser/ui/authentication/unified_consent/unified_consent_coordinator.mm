@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_mediator.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller.h"
 
@@ -12,13 +13,15 @@
 #error "This file requires ARC support."
 #endif
 
-@interface UnifiedConsentCoordinator ()<UnifiedConsentViewControllerDelegate>
+@interface UnifiedConsentCoordinator ()<UnifiedConsentViewControllerDelegate,
+                                        IdentityChooserCoordinatorDelegate>
 
 @property(nonatomic, strong) UnifiedConsentMediator* unifiedConsentMediator;
 @property(nonatomic, strong, readwrite)
     UnifiedConsentViewController* unifiedConsentViewController;
 @property(nonatomic, readwrite) BOOL settingsLinkWasTapped;
-
+@property(nonatomic, strong)
+    IdentityChooserCoordinator* identityChooserCoordinator;
 @end
 
 @implementation UnifiedConsentCoordinator
@@ -27,6 +30,7 @@
 @synthesize unifiedConsentMediator = _unifiedConsentMediator;
 @synthesize unifiedConsentViewController = _unifiedConsentViewController;
 @synthesize settingsLinkWasTapped = _settingsLinkWasTapped;
+@synthesize identityChooserCoordinator = _identityChooserCoordinator;
 
 - (instancetype)init {
   self = [super init];
@@ -84,13 +88,27 @@
 - (void)unifiedConsentViewControllerDidTapIdentityPickerView:
     (UnifiedConsentViewController*)controller {
   DCHECK_EQ(self.unifiedConsentViewController, controller);
-  // TODO(crbug.com/827072): Needs implementation.
+  self.identityChooserCoordinator = [[IdentityChooserCoordinator alloc]
+      initWithBaseViewController:self.unifiedConsentViewController];
+  self.identityChooserCoordinator.delegate = self;
+  [self.identityChooserCoordinator start];
+  self.identityChooserCoordinator.selectedIdentity = self.selectedIdentity;
 }
 
 - (void)unifiedConsentViewControllerDidReachBottom:
     (UnifiedConsentViewController*)controller {
   DCHECK_EQ(self.unifiedConsentViewController, controller);
   [self.delegate unifiedConsentCoordinatorDidReachBottom:self];
+}
+
+#pragma mark - IdentityChooserCoordinatorDelegate
+
+- (void)identityChooserCoordinatorDidClose:
+    (IdentityChooserCoordinator*)coordinator {
+  CHECK_EQ(self.identityChooserCoordinator, coordinator);
+  self.selectedIdentity = self.identityChooserCoordinator.selectedIdentity;
+  self.identityChooserCoordinator.delegate = nil;
+  self.identityChooserCoordinator = nil;
 }
 
 @end

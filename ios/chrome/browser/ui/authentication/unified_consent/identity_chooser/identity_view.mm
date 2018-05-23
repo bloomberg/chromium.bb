@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_view.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_view.h"
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -40,6 +40,8 @@ const CGFloat kSubtitleTextColorAlpha = .54;
 @property(nonatomic, strong) NSLayoutConstraint* titleConstraintForNameAndEmail;
 // Constraints if the name doesn't exist.
 @property(nonatomic, strong) NSLayoutConstraint* titleConstraintForEmailOnly;
+// Constraints to update when |self.minimumVerticalMargin| is changed.
+@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* verticalConstraints;
 
 @end
 
@@ -48,14 +50,14 @@ const CGFloat kSubtitleTextColorAlpha = .54;
 @synthesize avatarView = _avatarView;
 @synthesize title = _title;
 @synthesize subtitle = _subtitle;
-// Constraints when email and name are available.
 @synthesize titleConstraintForNameAndEmail = _titleConstraintForNameAndEmail;
-// Constraints when only the email is available.
 @synthesize titleConstraintForEmailOnly = _titleConstraintForEmailOnly;
+@synthesize verticalConstraints = _verticalConstraints;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
+    self.userInteractionEnabled = NO;
     // Avatar view.
     _avatarView = [[UIImageView alloc] init];
     _avatarView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -91,9 +93,6 @@ const CGFloat kSubtitleTextColorAlpha = .54;
       // Horizontal constraints.
       @"H:|-(HAvatarMargin)-[avatar]-(HAvatarMargin)-[title]|",
       // Vertical constraints.
-      @"V:|-(>=VMargin)-[avatar]-(>=VMargin)-|",
-      @"V:|-(>=VMargin)-[title]",
-      @"V:[subtitle]-(>=VMargin)-|",
       // Size constraints.
       @"H:[avatar(AvatarSize)]",
       @"V:[avatar(AvatarSize)]",
@@ -110,6 +109,18 @@ const CGFloat kSubtitleTextColorAlpha = .54;
     [self.centerYAnchor constraintEqualToAnchor:_subtitle.topAnchor
                                        constant:-kTitleOffset]
         .active = YES;
+    _verticalConstraints = @[
+      [_avatarView.topAnchor constraintEqualToAnchor:self.topAnchor
+                                            constant:kVerticalMargin],
+      [self.bottomAnchor constraintEqualToAnchor:_avatarView.bottomAnchor
+                                        constant:kVerticalMargin],
+      [_title.topAnchor constraintGreaterThanOrEqualToAnchor:self.topAnchor
+                                                    constant:kVerticalMargin],
+      [self.bottomAnchor
+          constraintGreaterThanOrEqualToAnchor:_subtitle.bottomAnchor
+                                      constant:kVerticalMargin],
+    ];
+    [NSLayoutConstraint activateConstraints:_verticalConstraints];
   }
   return self;
 }
@@ -138,6 +149,17 @@ const CGFloat kSubtitleTextColorAlpha = .54;
     self.title.text = name;
     self.subtitle.text = email;
   }
+}
+
+- (void)setMinimumVerticalMargin:(CGFloat)minimumVerticalMargin {
+  for (NSLayoutConstraint* constraint in self.verticalConstraints) {
+    constraint.constant = minimumVerticalMargin;
+  }
+}
+
+- (CGFloat)minimumVerticalMargin {
+  DCHECK(self.verticalConstraints.count);
+  return self.verticalConstraints[0].constant;
 }
 
 @end

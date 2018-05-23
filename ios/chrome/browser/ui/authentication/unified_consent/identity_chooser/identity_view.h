@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_AUTHENTICATION_UNIFIED_CONSENT_IDENTITY_VIEW_H_
-#define IOS_CHROME_BROWSER_UI_AUTHENTICATION_UNIFIED_CONSENT_IDENTITY_VIEW_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTHENTICATION_UNIFIED_CONSENT_IDENTITY_CHOOSER_IDENTITY_VIEW_H_
+#define IOS_CHROME_BROWSER_UI_AUTHENTICATION_UNIFIED_CONSENT_IDENTITY_CHOOSER_IDENTITY_VIEW_H_
 
 #import <UIKit/UIKit.h>
 
@@ -19,6 +19,10 @@
 // |  +------+                      |
 // +--------------------------------+
 @interface IdentityView : UIView
+
+// Minimum vertical margin above and below the avatar image and title/subtitle.
+// The default value is 12.
+@property(nonatomic) CGFloat minimumVerticalMargin;
 
 // Initialises IdentityView.
 - (instancetype)initWithFrame:(CGRect)frame NS_DESIGNATED_INITIALIZER;
@@ -36,4 +40,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_UNIFIED_CONSENT_IDENTITY_VIEW_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_UNIFIED_CONSENT_IDENTITY_CHOOSER_IDENTITY_VIEW_H_
