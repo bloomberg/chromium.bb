@@ -45,14 +45,6 @@ class CustomElementRegistryTest : public PageTestBase {
                          HeapVector<Member<Element>>* elements) {
     Registry().CollectCandidates(desc, elements);
   }
-
-  ShadowRoot* AttachShadowTo(Element* element) {
-    NonThrowableExceptionState no_exceptions;
-    ShadowRootInit shadow_root_init;
-    shadow_root_init.setMode("open");
-    return element->attachShadow(GetScriptState(), shadow_root_init,
-                                 no_exceptions);
-  }
 };
 
 TEST_F(CustomElementRegistryTest,
