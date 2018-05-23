@@ -92,6 +92,42 @@ IN_PROC_BROWSER_TEST_P(FindBarPlatformHelperMacInteractiveUITest,
                                  [[FindPasteboard sharedInstance] findText]));
 }
 
+// Tests that the pasteboard is not updated from an incognito find bar.
+IN_PROC_BROWSER_TEST_P(FindBarPlatformHelperMacInteractiveUITest,
+                       IncognitoPasteboardNotUpdatedFromFindBar) {
+  Browser* browser_incognito = CreateIncognitoBrowser();
+  FindBarController* find_bar_controller =
+      browser_incognito->GetFindBarController();
+  ASSERT_NE(nullptr, find_bar_controller);
+
+  base::string16 empty_string(base::ASCIIToUTF16(""));
+  find_bar_controller->SetText(empty_string);
+
+  chrome::Find(browser_incognito);
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser_incognito,
+                                           VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_S, false,
+                                              false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_E, false,
+                                              false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_C, false,
+                                              false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_R, false,
+                                              false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_E, false,
+                                              false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_T, false,
+                                              false, false, false));
+
+  base::string16 find_bar_string =
+      find_bar_controller->find_bar()->GetFindText();
+
+  ASSERT_EQ(base::ASCIIToUTF16("secret"), find_bar_string);
+  EXPECT_NE(find_bar_string, base::SysNSStringToUTF16(
+                                 [[FindPasteboard sharedInstance] findText]));
+}
+
 // Equivalent to browser_tests
 // FindInPageControllerTest.GlobalPasteBoardClearMatches.
 // TODO(http://crbug.com/843878): Remove when referenced bug is fixed.

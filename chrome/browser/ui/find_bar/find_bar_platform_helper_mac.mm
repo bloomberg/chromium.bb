@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #import "chrome/browser/ui/find_bar/find_bar_platform_helper.h"
@@ -38,6 +39,17 @@ class FindBarPlatformHelperMac : public FindBarPlatformHelper {
   }
 
   void OnUserChangedFindText(base::string16 text) override {
+    Browser* browser = find_bar_controller_->browser();
+    if (!browser)
+      return;
+
+    Profile* profile = browser->profile();
+    if (!profile)
+      return;
+
+    if (profile->IsOffTheRecord())
+      return;
+
     [[FindPasteboard sharedInstance]
         setFindText:base::SysUTF16ToNSString(text)];
   }
