@@ -66,10 +66,6 @@ ConditionalCacheCountingHelper::CountAndDestroySelfWhenFinished(
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-bool ConditionalCacheCountingHelper::IsFinished() {
-  return is_finished_;
-}
-
 void ConditionalCacheCountingHelper::Finished() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_finished_);

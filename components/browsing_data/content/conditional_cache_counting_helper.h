@@ -42,8 +42,6 @@ class ConditionalCacheCountingHelper {
   base::WeakPtr<ConditionalCacheCountingHelper> CountAndDestroySelfWhenFinished(
       const CacheCountCallback& result_callback);
 
-  bool IsFinished();
-
  private:
   enum class CacheState {
     NONE,
