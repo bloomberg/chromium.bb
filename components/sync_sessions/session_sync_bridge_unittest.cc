@@ -669,6 +669,107 @@ TEST_F(SessionSyncBridgeTest, ShouldRestoreTabbedDataIfNoWindowsDuringStartup) {
   tab->Navigate("http://bar.com/");
 }
 
+// Ensure that tabbed windows from a previous session are preserved if only
+// a custom tab is present at startup.
+TEST_F(SessionSyncBridgeTest, ShouldPreserveTabbedDataIfCustomTabOnlyFound) {
+  const int kWindowId1 = 1000001;
+  const int kWindowId2 = 1000002;
+
+  AddWindow(kWindowId1);
+  AddTab(kWindowId1, "http://foo.com/");
+
+  InitializeBridge();
+  StartSyncing();
+
+  ASSERT_THAT(GetAllData(),
+              UnorderedElementsAre(
+                  Pair(_, EntityDataHasSpecifics(
+                              MatchesHeader(kLocalSessionTag, _, _))),
+                  Pair(_, EntityDataHasSpecifics(MatchesTab(
+                              kLocalSessionTag, _, _,
+                              /*tab_node_id=*/0, {"http://foo.com/"})))));
+
+  ShutdownBridge();
+
+  // Start the bridge with only a custom tab open.
+  ResetWindows();
+  AddWindow(kWindowId2, sync_pb::SessionWindow_BrowserType_TYPE_CUSTOM_TAB);
+  AddTab(kWindowId2, "http://bar.com/");
+  InitializeBridge();
+  StartSyncing();
+
+  // The previous session should be preserved. The transient window cannot be
+  // synced because we do not have enough local data to ensure that we wouldn't
+  // vend the same sync ID if our persistent storage didn't match upon the last
+  // shutdown.
+  EXPECT_THAT(GetAllData(),
+              UnorderedElementsAre(
+                  Pair(_, EntityDataHasSpecifics(
+                              MatchesHeader(kLocalSessionTag, _, _))),
+                  Pair(_, EntityDataHasSpecifics(MatchesTab(
+                              kLocalSessionTag, _, _,
+                              /*tab_node_id=*/0, {"http://foo.com/"})))));
+}
+
+// Ensure that tabbed windows from a previous session are preserved and combined
+// with a custom tab that was newly found during startup.
+TEST_F(SessionSyncBridgeTest, ShouldPreserveTabbedDataIfNewCustomTabAlsoFound) {
+  const int kWindowId1 = 1000001;
+  const int kWindowId2 = 1000002;
+  const int kTabId1 = 1000003;
+  const int kTabId2 = 1000004;
+
+  AddWindow(kWindowId1);
+  AddTab(kWindowId1, "http://foo.com/", kTabId1);
+
+  InitializeBridge();
+  StartSyncing();
+
+  ASSERT_THAT(GetAllData(),
+              UnorderedElementsAre(
+                  Pair(_, EntityDataHasSpecifics(MatchesHeader(
+                              kLocalSessionTag, {kWindowId1}, {kTabId1}))),
+                  Pair(_, EntityDataHasSpecifics(MatchesTab(
+                              kLocalSessionTag, kWindowId1, kTabId1,
+                              /*tab_node_id=*/0, {"http://foo.com/"})))));
+
+  ShutdownBridge();
+
+  // Start the bridge with an additional local custom tab.
+  AddWindow(kWindowId2, sync_pb::SessionWindow_BrowserType_TYPE_CUSTOM_TAB);
+  AddTab(kWindowId2, "http://bar.com/", kTabId2);
+  InitializeBridge();
+  StartSyncing();
+
+  EXPECT_THAT(GetAllData(),
+              UnorderedElementsAre(
+                  Pair(_, EntityDataHasSpecifics(MatchesHeader(
+                              kLocalSessionTag, {kWindowId1, kWindowId2},
+                              {kTabId1, kTabId2}))),
+                  Pair(_, EntityDataHasSpecifics(MatchesTab(
+                              kLocalSessionTag, kWindowId1, kTabId1,
+                              /*tab_node_id=*/0, {"http://foo.com/"}))),
+                  Pair(_, EntityDataHasSpecifics(MatchesTab(
+                              kLocalSessionTag, kWindowId2, kTabId2,
+                              /*tab_node_id=*/1, {"http://bar.com/"})))));
+}
+
+// Ensure that, in a scenario without prior sync data, encountering a custom
+// tab only ( no tabbed window) does not vend new sync IDs.
+TEST_F(SessionSyncBridgeTest, ShouldIgnoreIfCustomTabOnlyOnStartup) {
+  const int kWindowId = 1000001;
+
+  AddWindow(kWindowId, sync_pb::SessionWindow_BrowserType_TYPE_CUSTOM_TAB);
+  AddTab(kWindowId, "http://foo.com/");
+
+  InitializeBridge();
+  StartSyncing();
+
+  EXPECT_THAT(GetAllData(),
+              UnorderedElementsAre(Pair(_, EntityDataHasSpecifics(MatchesHeader(
+                                               kLocalSessionTag, _, _)))));
+}
+
 TEST_F(SessionSyncBridgeTest, ShouldDisableSyncAndReenable) {
   const int kWindowId = 1000001;
   const int kTabId = 1000002;
