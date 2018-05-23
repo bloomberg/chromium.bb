@@ -20,6 +20,10 @@ class URLRequestContextGetter;
 // CreateAccessTokenFetcher properly.
 class OAuth2TokenServiceDelegate {
  public:
+  // Refresh token guaranteed to be invalid. Can be passed to
+  // UpdateCredentials() to force an authentication error.
+  static const char kInvalidRefreshToken[];
+
   enum LoadCredentialsState {
     LOAD_CREDENTIALS_UNKNOWN,
     LOAD_CREDENTIALS_NOT_STARTED,

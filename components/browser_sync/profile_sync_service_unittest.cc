@@ -30,6 +30,7 @@
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/version_info/version_info_values.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -630,17 +631,14 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(service()->GetAccessTokenForTest().empty());
 
+  // Simulate the credentials getting locally rejected by the client by setting
+  // the refresh token to a special invalid value.
+  auth_service()->UpdateCredentials(
+      primary_account_id, OAuth2TokenServiceDelegate::kInvalidRefreshToken);
   GoogleServiceAuthError rejected_by_client =
       GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
           GoogleServiceAuthError::InvalidGaiaCredentialsReason::
               CREDENTIALS_REJECTED_BY_CLIENT);
-  auth_service()->UpdateAuthErrorForTesting(primary_account_id,
-                                            rejected_by_client);
-  // The access token is not yet invalidated, it will be invalidated when
-  // OnRefreshTokenAvailable() is called.
-  EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
-  EXPECT_FALSE(invalidate_credentials_called);
-  auth_service()->LoadCredentials(primary_account_id);
   ASSERT_EQ(rejected_by_client,
             auth_service()->GetAuthError(primary_account_id));
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());

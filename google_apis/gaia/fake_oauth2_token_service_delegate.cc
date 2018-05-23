@@ -86,8 +86,17 @@ void FakeOAuth2TokenServiceDelegate::IssueRefreshTokenForUser(
     FireRefreshTokenRevoked(account_id);
   } else {
     refresh_tokens_[account_id].reset(new AccountInfo(token));
+    // If the token is a special "invalid" value, then that means the token was
+    // rejected by the client and is thus not valid. So set the appropriate
+    // error in that case. This logic is essentially duplicated from
+    // MutableProfileOAuth2TokenServiceDelegate.
+    if (token == kInvalidRefreshToken) {
+      refresh_tokens_[account_id]->error =
+          GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+              GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                  CREDENTIALS_REJECTED_BY_CLIENT);
+    }
     FireRefreshTokenAvailable(account_id);
-    // TODO(atwilson): Maybe we should also call FireRefreshTokensLoaded() here?
   }
 }
 
