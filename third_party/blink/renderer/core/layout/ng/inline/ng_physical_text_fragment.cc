@@ -194,17 +194,6 @@ unsigned NGPhysicalTextFragment::TextOffsetForPoint(
          StartOffset();
 }
 
-PositionWithAffinity NGPhysicalTextFragment::PositionForPoint(
-    const NGPhysicalOffset& point) const {
-  if (IsAnonymousText())
-    return PositionWithAffinity();
-  const unsigned text_offset = TextOffsetForPoint(point);
-  const Position position =
-      NGOffsetMapping::GetFor(GetLayoutObject())->GetFirstPosition(text_offset);
-  // TODO(xiaochengh): Adjust TextAffinity.
-  return PositionWithAffinity(position, TextAffinity::kDownstream);
-}
-
 UBiDiLevel NGPhysicalTextFragment::BidiLevel() const {
   // TODO(xiaochengh): Make the implementation more efficient with, e.g.,
   // binary search and/or LayoutNGText::InlineItems().

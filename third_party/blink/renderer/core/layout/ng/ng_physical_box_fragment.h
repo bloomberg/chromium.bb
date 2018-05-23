@@ -60,8 +60,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   void AddSelfOutlineRects(Vector<LayoutRect>*,
                            const LayoutPoint& additional_offset) const;
 
-  PositionWithAffinity PositionForPoint(const NGPhysicalOffset&) const override;
-
   UBiDiLevel BidiLevel() const override;
 
   scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const;

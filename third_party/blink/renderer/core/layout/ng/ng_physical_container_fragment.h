@@ -35,11 +35,6 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
       const NGPhysicalOffsetRect& contents_visual_rect,
       scoped_refptr<NGBreakToken> = nullptr);
 
-  PositionWithAffinity PositionForPointInInlineLevelBox(
-      const NGPhysicalOffset&) const;
-  PositionWithAffinity PositionForPointInInlineFormattingContext(
-      const NGPhysicalOffset&) const;
-
   Vector<scoped_refptr<NGPhysicalFragment>> children_;
   NGPhysicalOffsetRect contents_visual_rect_;
 };

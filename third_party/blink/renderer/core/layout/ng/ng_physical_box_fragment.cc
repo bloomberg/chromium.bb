@@ -199,14 +199,6 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::VisualRectWithContents() const {
   return visual_rect;
 }
 
-PositionWithAffinity NGPhysicalBoxFragment::PositionForPoint(
-    const NGPhysicalOffset& point) const {
-  if (!IsBlockFlow())
-    return PositionForPointInInlineLevelBox(point);
-
-  return PositionForPointInInlineFormattingContext(point);
-}
-
 UBiDiLevel NGPhysicalBoxFragment::BidiLevel() const {
   // TODO(xiaochengh): Make the implementation more efficient.
   DCHECK(IsInline());

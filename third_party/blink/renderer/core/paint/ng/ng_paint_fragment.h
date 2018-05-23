@@ -110,6 +110,10 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   NGPhysicalOffset Offset() const { return PhysicalFragment().Offset(); }
   NGPhysicalSize Size() const { return PhysicalFragment().Size(); }
 
+  // Converts the given point, relative to the fragment itself, into a position
+  // in DOM tree.
+  PositionWithAffinity PositionForPoint(const NGPhysicalOffset&) const;
+
   // A range of fragments for |FragmentsFor()|.
   class FragmentRange {
    public:
@@ -181,6 +185,13 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
       const NGPhysicalOffset inline_offset_to_container_box,
       HashMap<const LayoutObject*, NGPaintFragment*>* first_fragment_map,
       HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map);
+
+  // Helps for PositionForPoint() when |this| falls in different categories.
+  PositionWithAffinity PositionForPointInText(const NGPhysicalOffset&) const;
+  PositionWithAffinity PositionForPointInInlineFormattingContext(
+      const NGPhysicalOffset&) const;
+  PositionWithAffinity PositionForPointInInlineLevelBox(
+      const NGPhysicalOffset&) const;
 
   //
   // Following fields are computed in the layout phase.
