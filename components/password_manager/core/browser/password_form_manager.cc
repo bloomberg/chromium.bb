@@ -191,6 +191,17 @@ void LabelFields(const FieldTypeMap& field_types,
   }
 }
 
+// Returns true iff |credentials| has the same password as an entry in |matches|
+// which doesn't have a username.
+bool IsAddingUsernameToExistingMatch(
+    const PasswordForm& credentials,
+    const std::map<base::string16, const autofill::PasswordForm*>& matches) {
+  const auto match = matches.find(base::string16());
+  return !credentials.username_value.empty() && match != matches.end() &&
+         !match->second->is_public_suffix_match &&
+         match->second->password_value == credentials.password_value;
+}
+
 }  // namespace
 
 PasswordFormManager::PasswordFormManager(
@@ -1396,6 +1407,10 @@ void PasswordFormManager::SendVotesOnSave() {
     SendSignInVote(form_data);
   }
 
+  if (pending_credentials_.times_used == 1 ||
+      IsAddingUsernameToExistingMatch(pending_credentials_, best_matches_))
+    UploadFirstLoginVotes(*submitted_form_);
+
   // Upload credentials the first time they are saved. This data is used
   // by password generation to help determine account creation sites.
   // Credentials that have been previously used (e.g., PSL matches) are checked
@@ -1408,8 +1423,6 @@ void PasswordFormManager::SendVotesOnSave() {
           FormStructure(observed_form_.form_data).FormSignatureAsStr());
     }
   } else {
-    if (pending_credentials_.times_used == 1)
-      UploadFirstLoginVotes(*submitted_form_);
     SendVoteOnCredentialsReuse(observed_form_, &pending_credentials_);
   }
 }

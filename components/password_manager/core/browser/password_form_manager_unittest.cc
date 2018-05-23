@@ -58,6 +58,7 @@ using autofill::ValueElementPair;
 using base::ASCIIToUTF16;
 using ::testing::_;
 using ::testing::AllOf;
+using ::testing::AtMost;
 using ::testing::Contains;
 using ::testing::ElementsAre;
 using ::testing::InSequence;
@@ -4364,6 +4365,10 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote) {
   PasswordForm different_password(*saved_match());
   different_password.password_value = ASCIIToUTF16("DifferentPassword");
 
+  PasswordForm old_without_username = *saved_match();
+  old_without_username.username_value.clear();
+  old_without_username.username_element.clear();
+  old_without_username.times_used = 2;
   struct {
     std::vector<const autofill::PasswordForm*> stored_creds;
     std::string description;
@@ -4371,6 +4376,9 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote) {
       {{saved_match()}, "Credential reused"},
       {{psl_saved_match()}, "PSL credential reused"},
       {{&different_password}, "Different password"},  // I.e. update password.
+      {{&old_without_username},
+       "Submitted credential adds a username to a stored credential without "
+       "one"},
   };
 
   for (auto test_case : test_cases) {
@@ -4406,12 +4414,13 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote) {
             {submitted_form.password_element,
              autofill::AutofillUploadContents::Field::FIRST_USE}};
 
-    // Unrelated vote.
+    // Unrelated vote
     EXPECT_CALL(
         *client()->mock_driver()->mock_autofill_download_manager(),
-        StartUploadRequest(SignatureIsSameAs(*saved_match()), _, _, _, _))
-        .Times(1);
-    // First login vote.
+        StartUploadRequest(SignatureIsSameAs(*test_case.stored_creds.front()),
+                           _, _, _, _))
+        .Times(AtMost(1));
+    // First login vote
     EXPECT_CALL(
         *client()->mock_driver()->mock_autofill_download_manager(),
         StartUploadRequest(
@@ -4567,8 +4576,8 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote_NoUsernameSaved) {
 
   form_manager()->ProvisionallySave(submitted_form);
 
-  // The username and password fields contain stored values. This should be
-  // signaled in the vote.
+  // The password field contains stored values. This should be signaled in the
+  // vote.
   std::map<base::string16, autofill::FieldPropertiesMask>
       expected_field_properties = {
           {submitted_form.username_element, 0},  // Don't match empty values.
