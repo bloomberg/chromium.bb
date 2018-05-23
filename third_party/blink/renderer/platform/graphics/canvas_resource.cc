@@ -19,8 +19,11 @@
 namespace blink {
 
 CanvasResource::CanvasResource(base::WeakPtr<CanvasResourceProvider> provider,
-                               SkFilterQuality filter_quality)
-    : provider_(std::move(provider)), filter_quality_(filter_quality) {}
+                               SkFilterQuality filter_quality,
+                               const CanvasColorParams& color_params)
+    : provider_(std::move(provider)),
+      filter_quality_(filter_quality),
+      color_params_(color_params) {}
 
 CanvasResource::~CanvasResource() {
   // Sync token should have been waited on in sub-class implementation of
@@ -90,6 +93,8 @@ bool CanvasResource::PrepareTransferableResource(
       mailbox, GLFilter(), TextureTarget(), GetSyncToken(), gfx::Size(Size()),
       IsOverlayCandidate());
 
+  out_resource->color_space = color_params_.GetSamplerGfxColorSpace();
+
   scoped_refptr<CanvasResource> this_ref(this);
   auto func = WTF::Bind(&ReleaseFrameResources, provider_,
                         WTF::Passed(std::move(this_ref)));
@@ -113,17 +118,19 @@ GLenum CanvasResource::GLFilter() const {
 CanvasResourceBitmap::CanvasResourceBitmap(
     scoped_refptr<StaticBitmapImage> image,
     base::WeakPtr<CanvasResourceProvider> provider,
-    SkFilterQuality filter_quality)
-    : CanvasResource(std::move(provider), filter_quality),
+    SkFilterQuality filter_quality,
+    const CanvasColorParams& color_params)
+    : CanvasResource(std::move(provider), filter_quality, color_params),
       image_(std::move(image)) {}
 
 scoped_refptr<CanvasResourceBitmap> CanvasResourceBitmap::Create(
     scoped_refptr<StaticBitmapImage> image,
     base::WeakPtr<CanvasResourceProvider> provider,
-    SkFilterQuality filter_quality) {
+    SkFilterQuality filter_quality,
+    const CanvasColorParams& color_params) {
   scoped_refptr<CanvasResourceBitmap> resource =
       AdoptRef(new CanvasResourceBitmap(std::move(image), std::move(provider),
-                                        filter_quality));
+                                        filter_quality, color_params));
   if (resource->IsValid())
     return resource;
   return nullptr;
@@ -152,7 +159,7 @@ scoped_refptr<CanvasResource> CanvasResourceBitmap::MakeAccelerated(
   // CanvasResource, which implies that it internal resources will not be
   // recycled.
   scoped_refptr<CanvasResource> accelerated_resource =
-      Create(accelerated_image, nullptr, filterQuality());
+      Create(accelerated_image, nullptr, FilterQuality(), ColorParams());
   if (!accelerated_resource)
     return nullptr;
   return accelerated_resource;
@@ -167,7 +174,7 @@ scoped_refptr<CanvasResource> CanvasResourceBitmap::MakeUnaccelerated() {
   // CanvasResource, which implies that it internal resources will not be
   // recycled.
   scoped_refptr<CanvasResource> unaccelerated_resource =
-      Create(unaccelerated_image, nullptr, filterQuality());
+      Create(unaccelerated_image, nullptr, FilterQuality(), ColorParams());
   return unaccelerated_resource;
 }
 
@@ -228,7 +235,7 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     base::WeakPtr<CanvasResourceProvider> provider,
     SkFilterQuality filter_quality)
-    : CanvasResource(provider, filter_quality),
+    : CanvasResource(provider, filter_quality, color_params),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
       color_params_(color_params) {
   if (!context_provider_wrapper_)

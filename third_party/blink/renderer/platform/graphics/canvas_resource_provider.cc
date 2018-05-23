@@ -92,8 +92,8 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
     scoped_refptr<StaticBitmapImage> image =
         StaticBitmapImage::Create(skia_image, ContextProviderWrapper());
 
-    scoped_refptr<CanvasResource> resource =
-        CanvasResourceBitmap::Create(image, CreateWeakPtr(), FilterQuality());
+    scoped_refptr<CanvasResource> resource = CanvasResourceBitmap::Create(
+        image, CreateWeakPtr(), FilterQuality(), ColorParams());
     if (!resource)
       return nullptr;
 
