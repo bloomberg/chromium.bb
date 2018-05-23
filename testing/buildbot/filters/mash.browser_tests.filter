@@ -302,6 +302,7 @@
 -DeclarativeNetRequestResourceTypeBrowserTest.Test2/1
 -MediaEngagementSessionRestoreBrowserTest.RestoredSession_Playback_MEI
 -AutoplayExtensionBrowserTest.*
+-AutoplayMetricsBrowserTest.RecordAutoplayAttemptUkm
 -ChromeTracingDelegateBrowserTestOnStartup.StartupTracingThrottle
 
 # Viz not supported (cont) https://crbug.com/827327. The FileManageBrowserTest

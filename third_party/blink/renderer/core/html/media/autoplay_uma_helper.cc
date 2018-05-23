@@ -193,28 +193,28 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
     }
   }
 
-  // Record UKM autoplay event.
-  if (element_->GetDocument().IsInMainFrame()) {
-    LocalFrame* frame = element_->GetDocument().GetFrame();
-    DCHECK(frame);
-    DCHECK(element_->GetDocument().GetPage());
-
-    ukm::UkmRecorder* ukm_recorder = element_->GetDocument().UkmRecorder();
-    DCHECK(ukm_recorder);
-    ukm::builders::Media_Autoplay_Attempt(element_->GetDocument().UkmSourceID())
-        .SetSource(source == AutoplaySource::kMethod)
-        .SetAudioTrack(element_->HasAudio())
-        .SetVideoTrack(element_->HasVideo())
-        .SetUserGestureRequired(
-            element_->GetAutoplayPolicy().IsGestureNeededForPlayback())
-        .SetMuted(element_->muted())
-        .SetHighMediaEngagement(AutoplayPolicy::DocumentHasHighMediaEngagement(
-            element_->GetDocument()))
-        .SetUserGestureStatus(GetUserGestureStatusForUkmMetric(frame))
-        .Record(ukm_recorder);
-  }
-
   element_->addEventListener(EventTypeNames::playing, this, false);
+
+  // Record UKM autoplay event.
+  if (!element_->GetDocument().IsActive())
+    return;
+  LocalFrame* frame = element_->GetDocument().GetFrame();
+  DCHECK(frame);
+  DCHECK(element_->GetDocument().GetPage());
+
+  ukm::UkmRecorder* ukm_recorder = element_->GetDocument().UkmRecorder();
+  DCHECK(ukm_recorder);
+  ukm::builders::Media_Autoplay_Attempt(element_->GetDocument().UkmSourceID())
+      .SetSource(source == AutoplaySource::kMethod)
+      .SetAudioTrack(element_->HasAudio())
+      .SetVideoTrack(element_->HasVideo())
+      .SetUserGestureRequired(
+          element_->GetAutoplayPolicy().IsGestureNeededForPlayback())
+      .SetMuted(element_->muted())
+      .SetHighMediaEngagement(AutoplayPolicy::DocumentHasHighMediaEngagement(
+          element_->GetDocument()))
+      .SetUserGestureStatus(GetUserGestureStatusForUkmMetric(frame))
+      .Record(ukm_recorder);
 }
 
 void AutoplayUmaHelper::RecordCrossOriginAutoplayResult(
