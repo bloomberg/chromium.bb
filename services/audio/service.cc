@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/system_monitor/system_monitor.h"
-#include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/audio_manager.h"
 #include "services/audio/debug_recording.h"
@@ -60,7 +60,7 @@ void Service::OnStart() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(4) << "audio::Service::OnStart";
   metrics_ =
-      std::make_unique<ServiceMetrics>(base::DefaultClock::GetInstance());
+      std::make_unique<ServiceMetrics>(base::DefaultTickClock::GetInstance());
   ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
       base::BindRepeating(&Service::MaybeRequestQuitDelayed,
                           base::Unretained(this)));

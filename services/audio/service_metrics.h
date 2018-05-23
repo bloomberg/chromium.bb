@@ -8,14 +8,14 @@
 #include "base/time/time.h"
 
 namespace base {
-class Clock;
+class TickClock;
 }
 
 namespace audio {
 
 class ServiceMetrics {
  public:
-  explicit ServiceMetrics(base::Clock* clock);
+  explicit ServiceMetrics(const base::TickClock* clock);
   ~ServiceMetrics();
 
   void HasConnections();
@@ -24,10 +24,10 @@ class ServiceMetrics {
  private:
   void LogHasNoConnectionsDuration();
 
-  const base::Clock* clock_;
-  const base::Time service_start_;
-  base::Time has_connections_start_;
-  base::Time has_no_connections_start_;
+  const base::TickClock* clock_;
+  const base::TimeTicks service_start_;
+  base::TimeTicks has_connections_start_;
+  base::TimeTicks has_no_connections_start_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceMetrics);
 };
