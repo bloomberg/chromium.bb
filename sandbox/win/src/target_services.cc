@@ -62,6 +62,18 @@ bool CsrssDisconnectCleanup() {
   return true;
 }
 
+// Used by EnumSystemLocales for warming up.
+static BOOL CALLBACK EnumLocalesProcEx(LPWSTR lpLocaleString,
+                                       DWORD dwFlags,
+                                       LPARAM lParam) {
+  return TRUE;
+}
+
+// Additional warmup done just when CSRSS is being disconnected.
+bool CsrssDisconnectWarmup() {
+  return ::EnumSystemLocalesEx(EnumLocalesProcEx, LOCALE_WINDOWS, 0, 0);
+}
+
 // Checks if we have handle entries pending and runs the closer.
 // Updates is_csrss_connected based on which handle types are closed.
 bool CloseOpenHandles(bool* is_csrss_connected) {
@@ -69,7 +81,7 @@ bool CloseOpenHandles(bool* is_csrss_connected) {
     HandleCloserAgent handle_closer;
     handle_closer.InitializeHandlesToClose(is_csrss_connected);
     if (!*is_csrss_connected) {
-      if (!CsrssDisconnectCleanup()) {
+      if (!CsrssDisconnectWarmup() || !CsrssDisconnectCleanup()) {
         return false;
       }
     }
