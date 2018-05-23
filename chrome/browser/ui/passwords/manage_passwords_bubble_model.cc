@@ -486,9 +486,12 @@ const base::string16& ManagePasswordsBubbleModel::GetCurrentUsername() const {
 }
 
 bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
-  PrefService* prefs = GetProfile()->GetPrefs();
+  Profile* profile = GetProfile();
+  if (!profile)
+    return false;
+  PrefService* prefs = profile->GetPrefs();
   const browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(GetProfile());
+      ProfileSyncServiceFactory::GetForProfile(profile);
   // Signin promotion.
   if (password_bubble_experiment::ShouldShowChromeSignInPasswordPromo(
           prefs, sync_service)) {
@@ -508,7 +511,7 @@ bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
 #if defined(OS_WIN)
   // Desktop to mobile promotion only enabled on windows.
   if (desktop_ios_promotion::IsEligibleForIOSPromotion(
-          GetProfile(),
+          profile,
           desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE)) {
     interaction_keeper_->ReportInteractions(this);
     title_brand_link_range_ = gfx::Range();
