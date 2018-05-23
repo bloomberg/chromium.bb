@@ -1361,4 +1361,21 @@ TEST_F(UiTest, LongPressAppButtonInWebVrMode) {
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 }
 
+TEST_F(UiTest, MenuItems) {
+  CreateScene(kNotInCct, kNotInWebVr);
+  model_->overflow_menu_enabled = true;
+
+  EXPECT_EQ(IsVisible(kOverflowMenuNewIncognitoTabItem), true);
+  EXPECT_EQ(IsVisible(kOverflowMenuCloseAllIncognitoTabsItem), false);
+  EXPECT_EQ(IsVisible(kOverflowMenuPreferencesItem), false);
+
+  model_->incognito_tabs.emplace_back(TabModel(0, base::string16()));
+  OnBeginFrame();
+  EXPECT_EQ(IsVisible(kOverflowMenuCloseAllIncognitoTabsItem), true);
+
+  model_->standalone_vr_device = true;
+  OnBeginFrame();
+  EXPECT_EQ(IsVisible(kOverflowMenuPreferencesItem), true);
+}
+
 }  // namespace vr
