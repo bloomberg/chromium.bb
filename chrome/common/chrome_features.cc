@@ -24,9 +24,9 @@ const base::Feature kAllowAutoplayUnmutedInWebappManifestScope{
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)
-// Enables Javascript execution via AppleScript.
+// Enables the menu item for Javascript execution via AppleScript.
 const base::Feature kAppleScriptExecuteJavaScriptMenuItem{
-    "AppleScriptExecuteJavaScriptMenuItem", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AppleScriptExecuteJavaScriptMenuItem", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the "this OS is obsolete" infobar on Mac 10.9.
 // TODO(ellyjones): Remove this after the last 10.9 release.
