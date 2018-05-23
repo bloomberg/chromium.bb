@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "device/media_transfer_protocol/public/mojom/mtp_file_entry.mojom.h"
+#include "services/device/public/mojom/mtp_file_entry.mojom.h"
 
 // Used to enumerate top-level files of an media file system.
 class MTPDeviceObjectEnumerator {

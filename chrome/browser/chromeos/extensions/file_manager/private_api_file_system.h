@@ -22,8 +22,8 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "components/drive/file_errors.h"
-#include "device/media_transfer_protocol/public/mojom/mtp_storage_info.mojom.h"
 #include "extensions/browser/extension_function.h"
+#include "services/device/public/mojom/mtp_storage_info.mojom.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
 namespace storage {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
-#define DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
+#ifndef SERVICES_DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
+#define SERVICES_DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -15,8 +15,8 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "device/media_transfer_protocol/public/mojom/mtp_file_entry.mojom.h"
-#include "device/media_transfer_protocol/public/mojom/mtp_storage_info.mojom.h"
+#include "services/device/public/mojom/mtp_file_entry.mojom.h"
+#include "services/device/public/mojom/mtp_storage_info.mojom.h"
 
 #if !defined(OS_CHROMEOS)
 #error "Only used on ChromeOS"
@@ -194,4 +194,4 @@ class MediaTransferProtocolManager {
 
 }  // namespace device
 
-#endif  // DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
+#endif  // SERVICES_DEVICE_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_

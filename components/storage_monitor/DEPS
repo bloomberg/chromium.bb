@@ -2,7 +2,6 @@ include_rules = [
   "+chromeos/disks",
   "+content/public/browser",
   "+content/public/test",
-  "+device/media_transfer_protocol",
   "+device/udev_linux",
   "+mojo/public/cpp/bindings",
   "+services/device/public",

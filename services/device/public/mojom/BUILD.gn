@@ -39,8 +39,11 @@ mojom("mojom") {
   ]
 
   if (is_chromeos && use_dbus) {
-    sources += [ "mtp_manager.mojom" ]
-    public_deps += [ "//device/media_transfer_protocol/public/mojom" ]
+    sources += [
+      "mtp_file_entry.mojom",
+      "mtp_manager.mojom",
+      "mtp_storage_info.mojom",
+    ]
   }
 
   # The blink variant of the Device Service mojom are depended on by the
