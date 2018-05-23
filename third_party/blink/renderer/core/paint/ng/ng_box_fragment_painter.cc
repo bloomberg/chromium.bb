@@ -930,8 +930,9 @@ bool NGBoxFragmentPainter::HitTestChildren(
     HitTestAction action) {
   for (auto iter = children.rbegin(); iter != children.rend(); iter++) {
     const std::unique_ptr<NGPaintFragment>& child = *iter;
+    if (child->HasSelfPaintingLayer())
+      continue;
 
-    // TODO(layout-dev): Handle self painting layers.
     const NGPhysicalFragment& fragment = child->PhysicalFragment();
     bool stop_hit_testing = false;
     if (fragment.Type() == NGPhysicalFragment::kFragmentBox) {

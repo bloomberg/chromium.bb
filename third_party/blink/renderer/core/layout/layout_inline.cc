@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/inline_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -905,6 +906,26 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
                                const HitTestLocation& location_in_container,
                                const LayoutPoint& accumulated_offset,
                                HitTestAction hit_test_action) {
+  if (EnclosingNGBlockFlow()) {
+    // In LayoutNG, we reach here only when called from
+    // PaintLayer::HitTestContents() without going through any ancestor, in
+    // which case the element must have self painting layer.
+    DCHECK(HasSelfPaintingLayer());
+    for (const NGPaintFragment* fragment :
+         NGPaintFragment::InlineFragmentsFor(this)) {
+      // NGBoxFragmentPainter::NodeAtPoint() takes an offset that is accumulated
+      // up to its parent fragment. Compute this offset.
+      LayoutPoint adjusted_location =
+          accumulated_offset +
+          fragment->Parent()->InlineOffsetToContainerBox().ToLayoutPoint();
+      if (NGBoxFragmentPainter(*fragment).NodeAtPoint(
+              result, location_in_container, adjusted_location,
+              accumulated_offset, hit_test_action))
+        return true;
+    }
+    return false;
+  }
+
   return line_boxes_.HitTest(LineLayoutBoxModel(this), result,
                              location_in_container, accumulated_offset,
                              hit_test_action);
