@@ -60,6 +60,9 @@ class MockDrmDevice : public DrmDevice {
   void RunCallbacks();
 
   // DrmDevice:
+  ScopedDrmResourcesPtr GetResources() override;
+  ScopedDrmObjectPropertyPtr GetObjectProperties(uint32_t object_id,
+                                                 uint32_t object_type) override;
   ScopedDrmCrtcPtr GetCrtc(uint32_t crtc_id) override;
   bool SetCrtc(uint32_t crtc_id,
                uint32_t framebuffer,
@@ -89,6 +92,7 @@ class MockDrmDevice : public DrmDevice {
                        int overlay_plane) override;
   ScopedDrmPropertyPtr GetProperty(drmModeConnector* connector,
                                    const char* name) override;
+  ScopedDrmPropertyPtr GetProperty(uint32_t id) override;
   bool SetProperty(uint32_t connector_id,
                    uint32_t property_id,
                    uint64_t value) override;
@@ -110,11 +114,9 @@ class MockDrmDevice : public DrmDevice {
                         uint32_t flags,
                         uint32_t crtc_count,
                         PageFlipCallback callback) override;
-  bool SetColorCorrection(
+  bool SetGammaRamp(
       uint32_t crtc_id,
-      const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-      const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-      const std::vector<float>& correction_matrix) override;
+      const std::vector<display::GammaRampRGBEntry>& lut) override;
   bool SetCapability(uint64_t capability, uint64_t value) override;
 
  private:

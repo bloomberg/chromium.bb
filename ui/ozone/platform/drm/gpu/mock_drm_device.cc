@@ -67,6 +67,16 @@ MockDrmDevice::MockDrmDevice(bool use_sync_flips,
 
 MockDrmDevice::~MockDrmDevice() {}
 
+ScopedDrmResourcesPtr MockDrmDevice::GetResources() {
+  return ScopedDrmResourcesPtr(DrmAllocator<drmModeRes>());
+}
+
+ScopedDrmObjectPropertyPtr MockDrmDevice::GetObjectProperties(
+    uint32_t object_id,
+    uint32_t object_type) {
+  return ScopedDrmObjectPropertyPtr(DrmAllocator<drmModeObjectProperties>());
+}
+
 ScopedDrmCrtcPtr MockDrmDevice::GetCrtc(uint32_t crtc_id) {
   get_crtc_call_count_++;
   return ScopedDrmCrtcPtr(DrmAllocator<drmModeCrtc>());
@@ -150,6 +160,10 @@ ScopedDrmPropertyPtr MockDrmDevice::GetProperty(drmModeConnector* connector,
   return ScopedDrmPropertyPtr(DrmAllocator<drmModePropertyRes>());
 }
 
+ScopedDrmPropertyPtr MockDrmDevice::GetProperty(uint32_t id) {
+  return ScopedDrmPropertyPtr(DrmAllocator<drmModePropertyRes>());
+}
+
 bool MockDrmDevice::SetProperty(uint32_t connector_id,
                                 uint32_t property_id,
                                 uint64_t value) {
@@ -225,11 +239,9 @@ bool MockDrmDevice::CommitProperties(drmModeAtomicReq* properties,
   return false;
 }
 
-bool MockDrmDevice::SetColorCorrection(
+bool MockDrmDevice::SetGammaRamp(
     uint32_t crtc_id,
-    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-    const std::vector<float>& correction_matrix) {
+    const std::vector<display::GammaRampRGBEntry>& lut) {
   return true;
 }
 

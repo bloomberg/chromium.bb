@@ -176,8 +176,8 @@ void DrmDisplay::SetColorCorrection(
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
     const std::vector<display::GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
-  if (!drm_->SetColorCorrection(crtc_, degamma_lut, gamma_lut,
-                                correction_matrix)) {
+  if (!drm_->plane_manager()->SetColorCorrection(crtc_, degamma_lut, gamma_lut,
+                                                 correction_matrix)) {
     LOG(ERROR) << "Failed to set color correction for display: crtc_id = "
                << crtc_;
   }
