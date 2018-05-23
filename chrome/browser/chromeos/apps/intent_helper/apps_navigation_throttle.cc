@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_throttle.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -442,7 +443,22 @@ void AppsNavigationThrottle::OnDeferredNavigationProcessed(
   if (apps_for_picker.empty())
     ui_displayed_ = false;
 
-  ShowIntentPickerBubbleForApps(web_contents, url, std::move(apps_for_picker));
+  // If we only have PWAs in the app list, do not show the intent picker.
+  // Instead just show the omnibox icon. This is to reduce annoyance to users
+  // until "Remember my choice" is available for desktop PWAs.
+  // TODO(crbug.com/826982): show the intent picker when the app registry is
+  // available to persist "Remember my choice" for PWAs.
+  if (std::all_of(apps_for_picker.begin(), apps_for_picker.end(),
+                  [](const IntentPickerAppInfo& app_info) {
+                    return app_info.type == AppType::PWA;
+                  })) {
+    ui_displayed_ = false;
+    chrome::SetIntentPickerViewVisibility(
+        chrome::FindBrowserWithWebContents(web_contents), /*visible=*/true);
+  } else {
+    ShowIntentPickerBubbleForApps(web_contents, url,
+                                  std::move(apps_for_picker));
+  }
 
   // We are about to resume the navigation, which may destroy this object.
   Resume();
