@@ -44,20 +44,17 @@ ScriptRunner::ScriptRunner(Document* document)
   DCHECK(document);
 }
 
-void ScriptRunner::QueueScriptForExecution(ScriptLoader* script_loader) {
-  DCHECK(script_loader);
-  PendingScript* pending_script =
-      script_loader->GetPendingScriptIfControlledByScriptRunner();
+void ScriptRunner::QueueScriptForExecution(PendingScript* pending_script) {
   DCHECK(pending_script);
   document_->IncrementLoadEventDelayCount();
   switch (pending_script->GetSchedulingType()) {
     case ScriptSchedulingType::kAsync:
-      pending_async_scripts_.insert(script_loader);
-      TryStream(script_loader);
+      pending_async_scripts_.insert(pending_script);
+      TryStream(pending_script);
       break;
 
     case ScriptSchedulingType::kInOrder:
-      pending_in_order_scripts_.push_back(script_loader);
+      pending_in_order_scripts_.push_back(pending_script);
       number_of_in_order_scripts_with_pending_notification_++;
       break;
 
@@ -99,7 +96,6 @@ void ScriptRunner::Resume() {
 void ScriptRunner::ScheduleReadyInOrderScripts() {
   while (!pending_in_order_scripts_.IsEmpty() &&
          pending_in_order_scripts_.front()
-             ->GetPendingScriptIfControlledByScriptRunner()
              ->IsReady()) {
     in_order_scripts_to_execute_soon_.push_back(
         pending_in_order_scripts_.TakeFirst());
@@ -107,21 +103,18 @@ void ScriptRunner::ScheduleReadyInOrderScripts() {
   }
 }
 
-void ScriptRunner::NotifyScriptReady(ScriptLoader* script_loader) {
-  SECURITY_CHECK(script_loader);
-  PendingScript* pending_script =
-      script_loader->GetPendingScriptIfControlledByScriptRunner();
-  DCHECK(pending_script);
+void ScriptRunner::NotifyScriptReady(PendingScript* pending_script) {
+  SECURITY_CHECK(pending_script);
   switch (pending_script->GetSchedulingType()) {
     case ScriptSchedulingType::kAsync:
       // SECURITY_CHECK() makes us crash in a controlled way in error cases
-      // where the ScriptLoader is associated with the wrong ScriptRunner
+      // where the PendingScript is associated with the wrong ScriptRunner
       // (otherwise we'd cause a use-after-free in ~ScriptRunner when it tries
       // to detach).
-      SECURITY_CHECK(pending_async_scripts_.Contains(script_loader));
+      SECURITY_CHECK(pending_async_scripts_.Contains(pending_script));
 
-      pending_async_scripts_.erase(script_loader);
-      async_scripts_to_execute_soon_.push_back(script_loader);
+      pending_async_scripts_.erase(pending_script);
+      async_scripts_to_execute_soon_.push_back(pending_script);
 
       PostTask(FROM_HERE);
       TryStreamAny();
@@ -141,9 +134,9 @@ void ScriptRunner::NotifyScriptReady(ScriptLoader* script_loader) {
   }
 }
 
-bool ScriptRunner::RemovePendingInOrderScript(ScriptLoader* script_loader) {
+bool ScriptRunner::RemovePendingInOrderScript(PendingScript* pending_script) {
   auto it = std::find(pending_in_order_scripts_.begin(),
-                      pending_in_order_scripts_.end(), script_loader);
+                      pending_in_order_scripts_.end(), pending_script);
   if (it == pending_in_order_scripts_.end())
     return false;
   pending_in_order_scripts_.erase(it);
@@ -180,23 +173,35 @@ void ScriptRunner::MovePendingScript(Document& old_document,
     DCHECK(!old_document.GetFrame());
     old_context_document = &old_document;
   }
-  if (old_context_document != new_context_document) {
-    old_context_document->GetScriptRunner()->MovePendingScript(
-        new_context_document->GetScriptRunner(), script_loader);
+
+  if (old_context_document == new_context_document)
+    return;
+
+  PendingScript* pending_script =
+      script_loader
+          ->GetPendingScriptIfControlledByScriptRunnerForCrossDocMove();
+  if (!pending_script) {
+    // The ScriptLoader is not controlled by ScriptRunner. This can happen
+    // because MovePendingScript() is called for all <script> elements
+    // moved between Documents, not only for those controlled by ScriptRunner.
+    return;
   }
+
+  old_context_document->GetScriptRunner()->MovePendingScript(
+      new_context_document->GetScriptRunner(), pending_script);
 }
 
 void ScriptRunner::MovePendingScript(ScriptRunner* new_runner,
-                                     ScriptLoader* script_loader) {
-  auto it = pending_async_scripts_.find(script_loader);
+                                     PendingScript* pending_script) {
+  auto it = pending_async_scripts_.find(pending_script);
   if (it != pending_async_scripts_.end()) {
-    new_runner->QueueScriptForExecution(script_loader);
+    new_runner->QueueScriptForExecution(pending_script);
     pending_async_scripts_.erase(it);
     document_->DecrementLoadEventDelayCount();
     return;
   }
-  if (RemovePendingInOrderScript(script_loader)) {
-    new_runner->QueueScriptForExecution(script_loader);
+  if (RemovePendingInOrderScript(pending_script)) {
+    new_runner->QueueScriptForExecution(pending_script);
     document_->DecrementLoadEventDelayCount();
   }
 }
@@ -205,13 +210,18 @@ bool ScriptRunner::ExecuteInOrderTask() {
   if (in_order_scripts_to_execute_soon_.IsEmpty())
     return false;
 
-  DCHECK_EQ(in_order_scripts_to_execute_soon_.front()
-                ->GetPendingScriptIfControlledByScriptRunner()
-                ->GetSchedulingType(),
-            ScriptSchedulingType::kInOrder)
+  PendingScript* pending_script = in_order_scripts_to_execute_soon_.TakeFirst();
+  DCHECK(pending_script);
+  DCHECK_EQ(pending_script->GetSchedulingType(), ScriptSchedulingType::kInOrder)
       << "In-order scripts queue should not contain any async script.";
 
-  in_order_scripts_to_execute_soon_.TakeFirst()->Execute();
+  // TODO(hiroshige): Move ExecuteScriptBlock() to PendingScript and remove
+  // the use of ScriptLoader here.
+  ScriptLoader* script_loader = pending_script->GetElement()->Loader();
+  DCHECK(script_loader);
+  DCHECK_EQ(script_loader->GetPendingScriptIfControlledByScriptRunner(),
+            pending_script);
+  script_loader->Execute();
 
   document_->DecrementLoadEventDelayCount();
   return true;
@@ -219,22 +229,31 @@ bool ScriptRunner::ExecuteInOrderTask() {
 
 bool ScriptRunner::ExecuteAsyncTask() {
   // Find an async script loader which is not currently streaming.
-  auto it = std::find_if(
-      async_scripts_to_execute_soon_.begin(),
-      async_scripts_to_execute_soon_.end(), [](ScriptLoader* loader) {
-        PendingScript* pending_script =
-            loader->GetPendingScriptIfControlledByScriptRunner();
-        DCHECK(pending_script);
-        return !pending_script->IsCurrentlyStreaming();
-      });
+  auto it = std::find_if(async_scripts_to_execute_soon_.begin(),
+                         async_scripts_to_execute_soon_.end(),
+                         [](PendingScript* pending_script) {
+                           DCHECK(pending_script);
+                           return !pending_script->IsCurrentlyStreaming();
+                         });
   if (it == async_scripts_to_execute_soon_.end()) {
     return false;
   }
 
   // Remove the async script loader from the ready-to-exec set and execute.
-  ScriptLoader* async_script_to_execute = *it;
+  PendingScript* pending_script = *it;
   async_scripts_to_execute_soon_.erase(it);
-  async_script_to_execute->Execute();
+
+  DCHECK_EQ(pending_script->GetSchedulingType(), ScriptSchedulingType::kAsync)
+      << "Async scripts queue should not contain any in-order script.";
+
+  // TODO(hiroshige): Move ExecuteScriptBlock() to PendingScript and remove
+  // the use of ScriptLoader here.
+  ScriptLoader* script_loader = pending_script->GetElement()->Loader();
+  DCHECK(script_loader);
+  DCHECK_EQ(script_loader->GetPendingScriptIfControlledByScriptRunner(),
+            pending_script);
+  script_loader->Execute();
+
   document_->DecrementLoadEventDelayCount();
   return true;
 }
@@ -265,33 +284,31 @@ void ScriptRunner::TryStreamAny() {
     return;
 
   // Look through async_scripts_to_execute_soon_, and stream any one of them.
-  for (auto script_loader : async_scripts_to_execute_soon_) {
-    if (DoTryStream(script_loader))
+  for (auto pending_script : async_scripts_to_execute_soon_) {
+    if (DoTryStream(pending_script))
       return;
   }
 }
 
-void ScriptRunner::TryStream(ScriptLoader* script_loader) {
+void ScriptRunner::TryStream(PendingScript* pending_script) {
   if (!is_suspended_)
-    DoTryStream(script_loader);
+    DoTryStream(pending_script);
 }
 
-bool ScriptRunner::DoTryStream(ScriptLoader* script_loader) {
+bool ScriptRunner::DoTryStream(PendingScript* pending_script) {
   // Checks that all callers should have already done.
   DCHECK(!is_suspended_);
-  DCHECK(script_loader);
+  DCHECK(pending_script);
 
   // Currently, we stream only async scripts in this function.
   // Note: HTMLParserScriptRunner kicks streaming for deferred or blocking
   // scripts.
-  DCHECK(pending_async_scripts_.find(script_loader) !=
+  DCHECK(pending_async_scripts_.find(pending_script) !=
              pending_async_scripts_.end() ||
          std::find(async_scripts_to_execute_soon_.begin(),
                    async_scripts_to_execute_soon_.end(),
-                   script_loader) != async_scripts_to_execute_soon_.end());
+                   pending_script) != async_scripts_to_execute_soon_.end());
 
-  PendingScript* pending_script =
-      script_loader->GetPendingScriptIfControlledByScriptRunner();
   if (!pending_script)
     return false;
 

@@ -612,7 +612,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     pending_script_ = TakePendingScript(ScriptSchedulingType::kInOrder);
     // TODO(hiroshige): Here |contextDocument| is used as "node document"
     // while Step 14 uses |elementDocument| as "node document". Fix this.
-    context_document->GetScriptRunner()->QueueScriptForExecution(this);
+    context_document->GetScriptRunner()->QueueScriptForExecution(
+        pending_script_);
     // Note that watchForLoad can immediately call pendingScriptFinished.
     pending_script_->WatchForLoad(this);
     // The part "When the script is ready..." is implemented in
@@ -637,7 +638,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     pending_script_ = TakePendingScript(ScriptSchedulingType::kAsync);
     // TODO(hiroshige): Here |contextDocument| is used as "node document"
     // while Step 14 uses |elementDocument| as "node document". Fix this.
-    context_document->GetScriptRunner()->QueueScriptForExecution(this);
+    context_document->GetScriptRunner()->QueueScriptForExecution(
+        pending_script_);
     // Note that watchForLoad can immediately call pendingScriptFinished.
     pending_script_->WatchForLoad(this);
     // The part "When the script is ready..." is implemented in
@@ -936,7 +938,8 @@ void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
     return;
   }
 
-  context_document->GetScriptRunner()->NotifyScriptReady(this);
+  DCHECK_EQ(pending_script->GetElement()->Loader(), this);
+  context_document->GetScriptRunner()->NotifyScriptReady(pending_script);
   pending_script_->StopWatchingForLoad();
 }
 
@@ -976,6 +979,12 @@ bool ScriptLoader::IsScriptForEventSupported() const {
 PendingScript* ScriptLoader::GetPendingScriptIfControlledByScriptRunner() {
   DCHECK(pending_script_);
   DCHECK(pending_script_->IsControlledByScriptRunner());
+  return pending_script_;
+}
+
+PendingScript*
+ScriptLoader::GetPendingScriptIfControlledByScriptRunnerForCrossDocMove() {
+  DCHECK(!pending_script_ || pending_script_->IsControlledByScriptRunner());
   return pending_script_;
 }
 
