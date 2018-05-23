@@ -18,7 +18,6 @@ namespace content {
 namespace {
 
 const char* const kLocalFonts[] = {
-  "AHEM____.TTF",
   "GardinerModBug.ttf",
   "GardinerModCat.ttf",
 };
