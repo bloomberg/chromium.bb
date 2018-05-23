@@ -193,15 +193,15 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateBounds() {
 }
 
 void OverlayWindowViews::SetUpViews() {
-  // Set up views::View that slightly darkens the video so the media controls
-  // appear more prominently. This is especially important in cases with a
-  // very light background.
+  // views::View that slightly darkens the video so the media controls appear
+  // more prominently. This is especially important in cases with a very light
+  // background. --------------------------------------------------------------
   controls_background_view_->SetSize(GetBounds().size());
   controls_background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   GetControlsBackgroundLayer()->SetColor(SK_ColorBLACK);
   GetControlsBackgroundLayer()->SetOpacity(0.4f);
 
-  // Set up views::View that closes the window.
+  // views::View that closes the window. --------------------------------------
   close_controls_view_->SetSize(kCloseIconSize);
   close_controls_view_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                           views::ImageButton::ALIGN_MIDDLE);
@@ -209,7 +209,14 @@ void OverlayWindowViews::SetUpViews() {
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(views::kPictureInPictureCloseIcon, SK_ColorWHITE));
 
-  // Set up views::View that toggles play/pause.
+  // Accessibility.
+  close_controls_view_->SetFocusForPlatform();  // Make button focusable.
+  const base::string16 close_button_label(
+      l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_CLOSE_CONTROL_TEXT));
+  close_controls_view_->SetAccessibleName(close_button_label);
+  close_controls_view_->SetTooltipText(close_button_label);
+
+  // views::View that toggles play/pause. -------------------------------------
   play_pause_controls_view_->SetSize(kPlayPauseIconSize);
   play_pause_controls_view_->SetImageAlignment(
       views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
@@ -224,6 +231,21 @@ void OverlayWindowViews::SetUpViews() {
                                              &pause_icon);
   play_pause_controls_view_->SetToggled(!controller_->IsPlayerActive());
 
+  // Accessibility.
+  play_pause_controls_view_->SetFocusForPlatform();  // Make button focusable.
+  const base::string16 play_pause_accessible_button_label(
+      l10n_util::GetStringUTF16(
+          IDS_PICTURE_IN_PICTURE_PLAY_PAUSE_CONTROL_ACCESSIBLE_TEXT));
+  play_pause_controls_view_->SetAccessibleName(
+      play_pause_accessible_button_label);
+  const base::string16 play_button_label(
+      l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_PLAY_CONTROL_TEXT));
+  play_pause_controls_view_->SetTooltipText(play_button_label);
+  const base::string16 pause_button_label(
+      l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_PAUSE_CONTROL_TEXT));
+  play_pause_controls_view_->SetToggledTooltipText(pause_button_label);
+
+  // --------------------------------------------------------------------------
   // Paint to ui::Layers to use in the OverlaySurfaceEmbedder.
   video_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   close_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
