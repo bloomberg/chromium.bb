@@ -43584,8 +43584,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="By context menu"/>
   <int value="6" label="DOM mutation after XHR"/>
   <int value="7" label="Provisionally saved form on start provisional load"/>
-  <int value="8" label="Filled form on start provisional load"/>
-  <int value="9" label="Filled input elements on start provisional load"/>
+  <int value="8" label="(obsolete) Filled form on start provisional load"/>
+  <int value="9"
+      label="(obsolete) Filled input elements on start provisional load"/>
 </enum>
 
 <enum name="SubmittedPasswordFormFrame">

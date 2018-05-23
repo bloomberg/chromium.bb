@@ -285,13 +285,10 @@ EnumTraits<autofill::mojom::PasswordFormSubmissionIndicatorEvent,
       return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
           PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD;
     case autofill::PasswordForm::SubmissionIndicatorEvent::
-        FILLED_FORM_ON_START_PROVISIONAL_LOAD:
-      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
-          FILLED_FORM_ON_START_PROVISIONAL_LOAD;
+        DEPRECATED_FILLED_FORM_ON_START_PROVISIONAL_LOAD:
     case autofill::PasswordForm::SubmissionIndicatorEvent::
-        FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD:
-      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
-          FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD;
+        DEPRECATED_FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD:
+      break;
     case autofill::PasswordForm::SubmissionIndicatorEvent::
         SUBMISSION_INDICATOR_EVENT_COUNT:
       return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
@@ -340,16 +337,6 @@ bool EnumTraits<autofill::mojom::PasswordFormSubmissionIndicatorEvent,
         PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD:
       *output = autofill::PasswordForm::SubmissionIndicatorEvent::
           PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD;
-      return true;
-    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
-        FILLED_FORM_ON_START_PROVISIONAL_LOAD:
-      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
-          FILLED_FORM_ON_START_PROVISIONAL_LOAD;
-      return true;
-    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
-        FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD:
-      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
-          FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD;
       return true;
     case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
         SUBMISSION_INDICATOR_EVENT_COUNT:

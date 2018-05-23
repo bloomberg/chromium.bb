@@ -357,15 +357,6 @@ bool IsUsernameAmendable(const blink::WebInputElement& username_element,
           username_element.Value().IsEmpty());
 }
 
-// Return true if either password_value or new_password_value is not empty and
-// not default.
-bool FormContainsNonDefaultPasswordValue(const PasswordForm& password_form) {
-  return (!password_form.password_value.empty() &&
-          !password_form.password_value_is_default) ||
-      (!password_form.new_password_value.empty() &&
-       !password_form.new_password_value_is_default);
-}
-
 // Log a message including the name, method and action of |form|.
 void LogHTMLForm(SavePasswordProgressLogger* logger,
                  SavePasswordProgressLogger::StringID message_id,
@@ -1364,51 +1355,6 @@ void PasswordAutofillAgent::OnProbablyFormSubmitted() {
     GetPasswordManagerDriver()->PasswordFormSubmitted(
         provisionally_saved_form_.password_form());
     provisionally_saved_form_.Reset();
-  } else {
-    std::vector<std::unique_ptr<PasswordForm>> possible_submitted_forms;
-    // Loop through the forms on the page looking for one that has been
-    // filled out. If one exists, try and save the credentials.
-    blink::WebVector<blink::WebFormElement> forms;
-    render_frame()->GetWebFrame()->GetDocument().Forms(forms);
-
-    bool password_forms_found = false;
-    for (const auto& form_element : forms) {
-      if (logger) {
-        LogHTMLForm(logger.get(), Logger::STRING_FORM_FOUND_ON_PAGE,
-                    form_element);
-      }
-      std::unique_ptr<PasswordForm> form =
-          GetPasswordFormFromWebForm(form_element);
-      if (form) {
-        form->submission_event = PasswordForm::SubmissionIndicatorEvent::
-            FILLED_FORM_ON_START_PROVISIONAL_LOAD;
-        possible_submitted_forms.push_back(std::move(form));
-      }
-    }
-
-    std::unique_ptr<PasswordForm> form =
-        GetPasswordFormFromUnownedInputElements();
-    if (form) {
-      form->submission_event = PasswordForm::SubmissionIndicatorEvent::
-          FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD;
-      possible_submitted_forms.push_back(std::move(form));
-    }
-
-    for (const auto& password_form : possible_submitted_forms) {
-      if (password_form && !password_form->username_value.empty() &&
-          FormContainsNonDefaultPasswordValue(*password_form)) {
-        password_forms_found = true;
-        if (logger) {
-          logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_FOUND_ON_PAGE,
-                                  *password_form);
-        }
-        GetPasswordManagerDriver()->PasswordFormSubmitted(*password_form);
-        break;
-      }
-    }
-
-    if (!password_forms_found && logger)
-      logger->LogMessage(Logger::STRING_PASSWORD_FORM_NOT_FOUND_ON_PAGE);
   }
 }
 
