@@ -35,6 +35,7 @@ public class SectionInformation {
     @PaymentRequestUI.DataType private final int mDataType;
     protected ArrayList<EditableOption> mItems;
     private int mSelectedItem;
+    private boolean mDisplayInSingleLineInNormalMode = true;
     public String mErrorMessage;
     @Nullable
     public String mAddditionalText;
@@ -300,5 +301,24 @@ public class SectionInformation {
             mSelectedItem = selection;
             mItems = new ArrayList<>(itemCollection);
         }
+    }
+
+    /**
+     * Set whether display the selected item summary in single line in
+     * PaymentRequestSection.DISPLAY_MODE_NORMAL.
+     *
+     * @param singleLine whether display in single line, note that the default value is true.
+     */
+    public void setDisplaySelectedItemSummaryInSingleLineInNormalMode(boolean singleLine) {
+        mDisplayInSingleLineInNormalMode = singleLine;
+    }
+
+    /**
+     * Get whether display the selected item summary in single line in
+     * PaymentRequestSection.DISPLAY_MODE_NORMAL.
+     *
+     */
+    public boolean getDisplaySelectedItemSummaryInSingleLineInNormalMode() {
+        return mDisplayInSingleLineInNormalMode;
     }
 }

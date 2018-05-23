@@ -1103,6 +1103,10 @@ public class PaymentRequestImpl
     }
 
     private void providePaymentInformation() {
+        // Do not display service worker payment instrument summary in single line so as to display
+        // its origin completely.
+        mPaymentMethodsSection.setDisplaySelectedItemSummaryInSingleLineInNormalMode(
+                !(mPaymentMethodsSection.getSelectedItem() instanceof ServiceWorkerPaymentApp));
         mPaymentInformationCallback.onResult(
                 new PaymentInformation(mUiShoppingCart, mShippingAddressesSection,
                         mUiShippingOptions, mContactSection, mPaymentMethodsSection));

@@ -467,6 +467,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     updateSection(TYPE_CONTACT_DETAILS, result.getContactDetails());
                 }
 
+                mPaymentMethodSection.setDisplaySummaryInSingleLineInNormalMode(
+                        result.getPaymentMethods()
+                                .getDisplaySelectedItemSummaryInSingleLineInNormalMode());
                 updateSection(TYPE_PAYMENT_METHODS, result.getPaymentMethods());
                 updatePayButtonEnabled();
 
