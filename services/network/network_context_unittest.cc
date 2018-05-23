@@ -169,10 +169,8 @@ class NetworkContextTest : public testing::Test,
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<NetworkService> network_service_;
-  // Stores the NetworkContextPtr of the most recently created NetworkContext,
-  // since destroying this before the NetworkContext itself triggers deletion of
-  // the NetworkContext. These tests are probably fine anyways, since the
-  // message loop must be spun for that to happen.
+  // Stores the NetworkContextPtr of the most recently created NetworkContext.
+  // Not strictly needed, but seems best to mimic real-world usage.
   mojom::NetworkContextPtr network_context_ptr_;
   int ssl_config_changed_count_ = 0;
 };

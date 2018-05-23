@@ -70,9 +70,14 @@ class WebSocketFactory;
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     : public mojom::NetworkContext {
  public:
+  using OnConnectionCloseCallback =
+      base::OnceCallback<void(NetworkContext* network_context)>;
+
   NetworkContext(NetworkService* network_service,
                  mojom::NetworkContextRequest request,
-                 mojom::NetworkContextParamsPtr params);
+                 mojom::NetworkContextParamsPtr params,
+                 OnConnectionCloseCallback on_connection_close_callback =
+                     OnConnectionCloseCallback());
 
   // DEPRECATED: Creates an in-process NetworkContext with a partially
   // pre-populated URLRequestContextBuilderMojo. This API should not be used
@@ -101,7 +106,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   ResourceScheduler* resource_scheduler() { return resource_scheduler_.get(); }
 
-  bool block_third_party_cookies() { return block_third_party_cookies_; }
+  bool block_third_party_cookies() const { return block_third_party_cookies_; }
 
   // Creates a URLLoaderFactory with a ResourceSchedulerClient specified. This
   // is used to reuse the existing ResourceSchedulerClient for cloned
@@ -178,10 +183,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       int32_t rv,
       SetFailingHttpTransactionForTestingCallback callback) override;
 
-  // Called when the associated NetworkService is going away. Guaranteed to
-  // destroy NetworkContext's URLRequestContext.
-  void Cleanup();
-
   // Disables use of QUIC by the NetworkContext.
   void DisableQuic();
 
@@ -234,6 +235,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   net::URLRequestContext* url_request_context_;
 
   mojom::NetworkContextParamsPtr params_;
+
+  // If non-null, called when the mojo pipe for the NetworkContext is closed.
+  OnConnectionCloseCallback on_connection_close_callback_;
 
   mojo::Binding<mojom::NetworkContext> binding_;
 

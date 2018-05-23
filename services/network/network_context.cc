@@ -190,11 +190,14 @@ void OnClearedChannelIds(net::SSLConfigService* ssl_config_service,
 
 constexpr bool NetworkContext::enable_resource_scheduler_;
 
-NetworkContext::NetworkContext(NetworkService* network_service,
-                               mojom::NetworkContextRequest request,
-                               mojom::NetworkContextParamsPtr params)
+NetworkContext::NetworkContext(
+    NetworkService* network_service,
+    mojom::NetworkContextRequest request,
+    mojom::NetworkContextParamsPtr params,
+    OnConnectionCloseCallback on_connection_close_callback)
     : network_service_(network_service),
       params_(std::move(params)),
+      on_connection_close_callback_(std::move(on_connection_close_callback)),
       binding_(this, std::move(request)) {
   url_request_context_owner_ = MakeURLRequestContext(params_.get());
   url_request_context_ = url_request_context_owner_.url_request_context.get();
@@ -344,12 +347,6 @@ void NetworkContext::GetRestrictedCookieManager(
 
 void NetworkContext::DisableQuic() {
   url_request_context_->http_transaction_factory()->GetSession()->DisableQuic();
-}
-
-void NetworkContext::Cleanup() {
-  // The NetworkService is going away, so have to destroy the
-  // net::URLRequestContext held by this NetworkContext.
-  delete this;
 }
 
 void NetworkContext::DestroyURLLoaderFactory(
@@ -873,10 +870,9 @@ void NetworkContext::OnHttpCacheCleared(ClearHttpCacheCallback callback,
 }
 
 void NetworkContext::OnConnectionError() {
-  // Only delete |this| when this object has a valid connection to a
-  // NetworkService that is managing its lifetime.
-  if (network_service_)
-    delete this;
+  // If owned by the network service, this call will delete |this|.
+  if (on_connection_close_callback_)
+    std::move(on_connection_close_callback_).Run(this);
 }
 
 URLRequestContextOwner NetworkContext::MakeURLRequestContext(
