@@ -245,4 +245,21 @@ TEST_F(LoginUserViewUnittest, ForcedOpaque) {
   EXPECT_TRUE(two_test.is_opaque());
 }
 
+// Verifies that a long user name does not push the label or dropdown button
+// outside of the LoginUserView bounds.
+TEST_F(LoginUserViewUnittest, ElideUserLabel) {
+  LoginUserView* view = AddUserView(LoginDisplayStyle::kLarge, true);
+  LoginUserView::TestApi view_test(view);
+
+  mojom::LoginUserInfoPtr user =
+      CreateUser("verylongusernamethatfillsthebox@domain.com");
+  view->UpdateForUser(user, false /*animate*/);
+  container_->Layout();
+
+  EXPECT_TRUE(view->GetVisibleBounds().Contains(
+      view_test.user_label()->GetVisibleBounds()));
+  EXPECT_TRUE(view->GetVisibleBounds().Contains(
+      view_test.dropdown()->GetVisibleBounds()));
+}
+
 }  // namespace ash
