@@ -39,11 +39,15 @@ class BoxModelObjectPainter : public BoxPainterBase {
 
   void PaintTextClipMask(GraphicsContext&,
                          const IntRect& mask_rect,
-                         const LayoutPoint& paint_offset,
-                         bool flow_box_has_multiple_fragments) override;
+                         const LayoutPoint& paint_offset) override;
   LayoutRect AdjustForScrolledContent(const PaintInfo&,
                                       const BoxPainterBase::FillLayerInfo&,
                                       const LayoutRect&) override;
+  FloatRoundedRect GetBackgroundRoundedRect(
+      const LayoutRect& border_rect,
+      const LayoutSize& flow_box_size,
+      bool include_logical_left_edge,
+      bool include_logical_right_edge) const override;
 
  private:
   const LayoutBoxModelObject& box_model_;
