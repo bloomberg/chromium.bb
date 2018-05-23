@@ -142,13 +142,8 @@ size_t CountVisibleWindows() {
 }
 
 // Returns how many visible NSWindows are expected for a given count of browser
-// windows. On non-official builds in Views mode, there's an extra window
-// because of the "construction stripes" decoration.
+// windows.
 size_t ExpectedWindowCountForBrowserCount(size_t browsers) {
-#if !defined(GOOGLE_CHROME_BUILD)
-  if (!views_mode_controller::IsViewsBrowserCocoa())
-    return browsers * 2;
-#endif
   return browsers;
 }
 

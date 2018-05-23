@@ -2493,16 +2493,6 @@ split_static_library("ui") {
         "views/tabs/window_finder_mac.mm",
       ]
 
-      # MacViews browser windows are loudly marked in Chromium builds so that
-      # developers notice when they're being used. See comment in
-      # macviews_under_construction_window_mac.h for details.
-      if (!is_chrome_branded) {
-        sources += [
-          "views/frame/macviews_under_construction_window_mac.h",
-          "views/frame/macviews_under_construction_window_mac.mm",
-        ]
-      }
-
       deps += [ "//extensions/components/native_app_window" ]
 
       # Truly cocoa-browser-specific sources. These are secondary UI pieces that
