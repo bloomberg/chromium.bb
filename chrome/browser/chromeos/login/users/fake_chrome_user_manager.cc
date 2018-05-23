@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/login_state.h"
 #include "components/user_manager/known_user.h"
@@ -71,23 +72,25 @@ const user_manager::User* FakeChromeUserManager::AddUser(
   return AddUserWithAffiliation(account_id, false);
 }
 
+const user_manager::User* FakeChromeUserManager::AddChildUser(
+    const AccountId& account_id) {
+  return AddUserWithAffiliationAndTypeAndProfile(
+      account_id, false, user_manager::USER_TYPE_CHILD, nullptr);
+}
+
 const user_manager::User* FakeChromeUserManager::AddUserWithAffiliation(
     const AccountId& account_id,
     bool is_affiliated) {
-  return AddUserWithAffiliationAndType(account_id, is_affiliated,
-                                       user_manager::USER_TYPE_REGULAR);
+  return AddUserWithAffiliationAndTypeAndProfile(
+      account_id, is_affiliated, user_manager::USER_TYPE_REGULAR, nullptr);
 }
 
-const user_manager::User* FakeChromeUserManager::AddChildUser(
-    const AccountId& account_id) {
-  return AddUserWithAffiliationAndType(account_id, false,
-                                       user_manager::USER_TYPE_CHILD);
-}
-
-const user_manager::User* FakeChromeUserManager::AddUserWithAffiliationAndType(
+const user_manager::User*
+FakeChromeUserManager::AddUserWithAffiliationAndTypeAndProfile(
     const AccountId& account_id,
     bool is_affiliated,
-    user_manager::UserType user_type) {
+    user_manager::UserType user_type,
+    TestingProfile* profile) {
   user_manager::User* user =
       user_manager::User::CreateRegularUser(account_id, user_type);
   user->SetAffiliation(is_affiliated);
@@ -100,6 +103,10 @@ const user_manager::User* FakeChromeUserManager::AddUserWithAffiliationAndType(
       user_manager::User::USER_IMAGE_PROFILE, false);
   users_.push_back(user);
   chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
+
+  if (profile) {
+    ProfileHelper::Get()->SetUserToProfileMappingForTesting(user, profile);
+  }
   return user;
 }
 

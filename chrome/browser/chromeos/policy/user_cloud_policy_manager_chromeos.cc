@@ -140,6 +140,7 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
       task_runner_(task_runner),
       account_id_(account_id),
       fatal_error_callback_(std::move(fatal_error_callback)) {
+  DCHECK(profile_);
   time_init_started_ = base::Time::Now();
 
   // Some tests don't want to complete policy initialization until they have

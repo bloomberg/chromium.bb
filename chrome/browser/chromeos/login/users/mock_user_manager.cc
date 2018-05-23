@@ -119,13 +119,16 @@ user_manager::User* MockUserManager::CreateKioskAppUser(
 }
 
 void MockUserManager::AddUser(const AccountId& account_id) {
-  AddUserWithAffiliation(account_id, false);
+  AddUserWithAffiliationAndType(account_id, false,
+                                user_manager::USER_TYPE_REGULAR);
 }
 
-void MockUserManager::AddUserWithAffiliation(const AccountId& account_id,
-                                             bool is_affiliated) {
-  user_manager::User* user = user_manager::User::CreateRegularUser(
-      account_id, user_manager::USER_TYPE_REGULAR);
+void MockUserManager::AddUserWithAffiliationAndType(
+    const AccountId& account_id,
+    bool is_affiliated,
+    user_manager::UserType user_type) {
+  user_manager::User* user =
+      user_manager::User::CreateRegularUser(account_id, user_type);
   user->SetAffiliation(is_affiliated);
   user_list_.push_back(user);
   ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
