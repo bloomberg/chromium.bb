@@ -26,6 +26,7 @@ class AwBrowserMainParts : public content::BrowserMainParts {
   ~AwBrowserMainParts() override;
 
   // Overriding methods from content::BrowserMainParts.
+  bool ShouldContentCreateFeatureList() override;
   int PreEarlyInitialization() override;
   int PreCreateThreads() override;
   void PreMainMessageLoopRun() override;
