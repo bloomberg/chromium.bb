@@ -739,7 +739,7 @@ void AutofillManager::FillOrPreviewCreditCardForm(
       return;
     }
     credit_card_form_event_logger_->OnDidFillSuggestion(
-        credit_card, form_structure->form_parsed_timestamp());
+        credit_card, *form_structure, *autofill_field);
   }
 
   FillOrPreviewDataModelForm(
@@ -758,8 +758,8 @@ void AutofillManager::FillOrPreviewProfileForm(
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
   if (action == AutofillDriver::FORM_DATA_ACTION_FILL) {
-    address_form_event_logger_->OnDidFillSuggestion(
-        profile, form_structure->form_parsed_timestamp());
+    address_form_event_logger_->OnDidFillSuggestion(profile, *form_structure,
+                                                    *autofill_field);
 
     // Set up the information needed for an eventual refill of this form.
     if (base::FeatureList::IsEnabled(features::kAutofillDynamicForms) &&
@@ -1094,8 +1094,13 @@ void AutofillManager::OnFullCardRequestSucceeded(
     const payments::FullCardRequest& full_card_request,
     const CreditCard& card,
     const base::string16& cvc) {
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
+  if (!GetCachedFormAndField(unmasking_form_, unmasking_field_, &form_structure,
+                             &autofill_field))
+    return;
   credit_card_form_event_logger_->OnDidFillSuggestion(
-      masked_card_, full_card_request.form_parsed_timestamp());
+      masked_card_, *form_structure, *autofill_field);
   FillCreditCardForm(unmasking_query_id_, unmasking_form_, unmasking_field_,
                      card, cvc);
   masked_card_ = CreditCard();
