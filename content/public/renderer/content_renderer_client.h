@@ -39,8 +39,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace blink {
-class WebAudioDevice;
-class WebAudioLatencyHint;
 class WebFrame;
 class WebLocalFrame;
 class WebMIDIAccessor;
@@ -165,11 +163,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // returns NULL the content layer will create the MIDI accessor.
   virtual std::unique_ptr<blink::WebMIDIAccessor> OverrideCreateMIDIAccessor(
       blink::WebMIDIAccessorClient* client);
-
-  // Allows the embedder to override creating a WebAudioDevice.  If it
-  // returns NULL the content layer will create the audio device.
-  virtual std::unique_ptr<blink::WebAudioDevice> OverrideCreateAudioDevice(
-      const blink::WebAudioLatencyHint& latency_hint);
 
   // Allows the embedder to override the WebThemeEngine used. If it returns NULL
   // the content layer will provide an engine.

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "content/shell/test_runner/mock_web_audio_device.h"
 #include "content/shell/test_runner/mock_web_midi_accessor.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
@@ -67,12 +66,6 @@ TestInterfaces* WebTestInterfaces::GetTestInterfaces() {
 std::unique_ptr<WebMIDIAccessor> WebTestInterfaces::CreateMIDIAccessor(
     WebMIDIAccessorClient* client) {
   return std::make_unique<MockWebMIDIAccessor>(client, interfaces_.get());
-}
-
-std::unique_ptr<WebAudioDevice> WebTestInterfaces::CreateAudioDevice(
-    double sample_rate,
-    int frames_per_buffer) {
-  return std::make_unique<MockWebAudioDevice>(sample_rate, frames_per_buffer);
 }
 
 std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(

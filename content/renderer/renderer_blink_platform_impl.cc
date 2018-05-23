@@ -727,12 +727,6 @@ std::unique_ptr<WebAudioDevice> RendererBlinkPlatformImpl::CreateAudioDevice(
     const blink::WebAudioLatencyHint& latency_hint,
     WebAudioDevice::RenderCallback* callback,
     const blink::WebString& input_device_id) {
-  // Use a mock for testing.
-  std::unique_ptr<blink::WebAudioDevice> mock_device =
-      GetContentClient()->renderer()->OverrideCreateAudioDevice(latency_hint);
-  if (mock_device)
-    return mock_device;
-
   // The |channels| does not exactly identify the channel layout of the
   // device. The switch statement below assigns a best guess to the channel
   // layout based on number of channels.

@@ -170,39 +170,6 @@ LayoutTestContentRendererClient::OverrideCreateMIDIAccessor(
   return interfaces->CreateMIDIAccessor(client);
 }
 
-std::unique_ptr<WebAudioDevice>
-LayoutTestContentRendererClient::OverrideCreateAudioDevice(
-    const blink::WebAudioLatencyHint& latency_hint) {
-  const double hw_buffer_size = 128;
-  const double hw_sample_rate = 44100;
-  double buffer_size = 0;
-  switch (latency_hint.Category()) {
-    case blink::WebAudioLatencyHint::kCategoryInteractive:
-      buffer_size =
-          media::AudioLatency::GetInteractiveBufferSize(hw_buffer_size);
-      break;
-    case blink::WebAudioLatencyHint::kCategoryBalanced:
-      buffer_size =
-          media::AudioLatency::GetRtcBufferSize(hw_sample_rate, hw_buffer_size);
-      break;
-    case blink::WebAudioLatencyHint::kCategoryPlayback:
-      buffer_size = media::AudioLatency::GetHighLatencyBufferSize(
-          hw_sample_rate, hw_buffer_size);
-      break;
-    case blink::WebAudioLatencyHint::kCategoryExact:
-      buffer_size = media::AudioLatency::GetExactBufferSize(
-          base::TimeDelta::FromSecondsD(latency_hint.Seconds()), hw_sample_rate,
-          hw_buffer_size);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-  test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
-  return interfaces->CreateAudioDevice(hw_sample_rate, buffer_size);
-}
-
 WebThemeEngine* LayoutTestContentRendererClient::OverrideThemeEngine() {
   return LayoutTestRenderThreadObserver::GetInstance()
       ->test_interfaces()
