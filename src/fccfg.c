@@ -144,12 +144,6 @@ FcConfigCreate (void)
 					    FcHashUuidCopy,
 					    (FcDestroyFunc) FcStrFree,
 					    FcHashUuidFree);
-    config->alias_table = FcHashTableCreate ((FcHashFunc) FcStrHashIgnoreCase,
-					     (FcCompareFunc) FcStrCmp,
-					     FcHashStrCopy,
-					     FcHashStrCopy,
-					     (FcDestroyFunc) FcStrFree,
-					     (FcDestroyFunc) FcStrFree);
 
     FcRefInit (&config->ref, 1);
 
@@ -313,7 +307,6 @@ FcConfigDestroy (FcConfig *config)
 	FcStrFree (config->sysRoot);
 
     FcHashTableDestroy (config->uuid_table);
-    FcHashTableDestroy (config->alias_table);
 
     free (config);
 }
@@ -398,18 +391,14 @@ FcConfigAddCache (FcConfig *config, FcCache *cache,
 	for (i = 0; i < cache->dirs_count; i++)
 	{
 	    const FcChar8 *dir = FcCacheSubdir (cache, i);
-	    FcChar8 *alias;
-	    FcChar8 *d = FcStrDirname (dir);
 	    FcChar8 *s = NULL;
 
-	    if (FcHashTableFind (config->alias_table, d, (void **)&alias))
+	    if (relocated)
 	    {
 		FcChar8 *base = FcStrBasename (dir);
-		dir = s = FcStrBuildFilename (alias, base, NULL);
-		FcStrFree (alias);
+		dir = s = FcStrBuildFilename (forDir, base, NULL);
 		FcStrFree (base);
 	    }
-	    FcStrFree (d);
 	    if (FcConfigAcceptFilename (config, dir))
 		FcStrSetAddFilename (dirSet, dir);
 	    if (s)

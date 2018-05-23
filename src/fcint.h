@@ -566,7 +566,6 @@ struct _FcConfig {
     FcStrSet	*availConfigFiles;  /* config files available */
     FcPtrList	*rulesetList;	    /* List of rulesets being installed */
     FcHashTable *uuid_table;	    /* UUID table for cachedirs */
-    FcHashTable *alias_table;	    /* alias table for cachedirs */
 };
 
 typedef struct _FcFileTime {

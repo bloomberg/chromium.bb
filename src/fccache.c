@@ -278,26 +278,22 @@ static FcChar8 *
 FcDirCacheBasenameUUID (const FcChar8 *dir, FcChar8 cache_base[CACHEBASE_LEN], FcConfig *config)
 {
     void *u;
-    FcChar8 *alias, *target;
+    FcChar8 *target;
     const FcChar8 *sysroot = FcConfigGetSysRoot (config);
 
-    if (!FcHashTableFind (config->alias_table, dir, (void **)&alias))
-	alias = FcStrdup (dir);
     if (sysroot)
-	target = FcStrBuildFilename (sysroot, alias, NULL);
+	target = FcStrBuildFilename (sysroot, dir, NULL);
     else
-	target = FcStrdup (alias);
+	target = FcStrdup (dir);
     if (FcHashTableFind (config->uuid_table, target, &u))
     {
 	uuid_unparse (u, (char *) cache_base);
 	strcat ((char *) cache_base, "-" FC_ARCHITECTURE FC_CACHE_SUFFIX);
 	FcHashUuidFree (u);
 	FcStrFree (target);
-	FcStrFree (alias);
 	return cache_base;
     }
     FcStrFree (target);
-    FcStrFree (alias);
     return NULL;
 }
 #endif
@@ -1017,7 +1013,6 @@ FcCache *
 FcDirCacheLoad (const FcChar8 *dir, FcConfig *config, FcChar8 **cache_file)
 {
     FcCache *cache = NULL;
-    const FcChar8 *d;
 
 #ifndef _WIN32
     FcDirCacheReadUUID ((FcChar8 *) dir, config);
@@ -1026,10 +1021,6 @@ FcDirCacheLoad (const FcChar8 *dir, FcConfig *config, FcChar8 **cache_file)
 			    FcDirCacheMapHelper,
 			    &cache, cache_file))
 	return NULL;
-
-    d = FcCacheDir (cache);
-    if (FcStrCmp (dir, d))
-	FcHashTableAdd (config->alias_table, (FcChar8 *) d, (FcChar8 *) dir);
 
     return cache;
 }
