@@ -163,12 +163,13 @@ by a child template that "extends" this file.
 
         {% if enable_arcore %}
         <!-- ARCore APK integration -->
-        <meta-data tools:replace="android:value"
-            android:name="com.google.ar.core.min_apk_version"
+        <!-- This tag indicates that this application optionally uses ARCore. -->
+        <meta-data android:name="com.google.ar.core" android:value="optional" />
+        <!-- This value referes to ARCore 1.1.
+             This value should be updated when ARCore features require
+             a newer version of the ARCore SDK. -->
+        <meta-data android:name="com.google.ar.core.min_apk_version"
             android:value="180226000"/>
-            <!-- This value referes to ARCore 1.1.
-                 This value should be updated when ARCore features require
-                 a newer version of the ARCore SDK. -->
         {% endif %}
 
         <!-- Note: All activities directly or indirectly derived from ChromeActivity
