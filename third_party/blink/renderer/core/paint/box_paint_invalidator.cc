@@ -81,20 +81,6 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
   if (reason != PaintInvalidationReason::kIncremental)
     return reason;
 
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-      box_.IsLayoutView()) {
-    const LayoutView& layout_view = ToLayoutView(box_);
-    // In normal compositing mode, root background doesn't need to be
-    // invalidated for box changes, because the background always covers the
-    // whole document rect and clipping is done by
-    // compositor()->m_containerLayer. Also the scrollbars are always
-    // composited. There are no other box decoration on the LayoutView thus we
-    // can safely exit here.
-    if (layout_view.UsesCompositing() ||
-        RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-      return reason;
-  }
-
   const ComputedStyle& style = box_.StyleRef();
 
   if ((style.BackgroundLayers().ThisOrNextLayersUseContentBox() ||
@@ -327,24 +313,12 @@ PaintInvalidationReason BoxPaintInvalidator::InvalidatePaint() {
   PaintInvalidationReason reason = ComputePaintInvalidationReason();
   if (reason == PaintInvalidationReason::kIncremental) {
     bool should_invalidate;
-    if (box_.IsLayoutView() &&
-        !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      should_invalidate =
-          context_.old_visual_rect != context_.fragment_data->VisualRect();
-      if (should_invalidate &&
-          !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-        IncrementallyInvalidatePaint(reason, context_.old_visual_rect,
-                                     context_.fragment_data->VisualRect());
-      }
-    } else {
-      should_invalidate = box_.PreviousSize() != box_.Size();
-      if (should_invalidate &&
-          !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-        IncrementallyInvalidatePaint(
-            reason, LayoutRect(context_.old_location, box_.PreviousSize()),
-            LayoutRect(context_.fragment_data->LocationInBacking(),
-                       box_.Size()));
-      }
+    should_invalidate = box_.PreviousSize() != box_.Size();
+    if (should_invalidate &&
+        !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      IncrementallyInvalidatePaint(
+          reason, LayoutRect(context_.old_location, box_.PreviousSize()),
+          LayoutRect(context_.fragment_data->LocationInBacking(), box_.Size()));
     }
     if (should_invalidate) {
       context_.painting_layer->SetNeedsRepaint();

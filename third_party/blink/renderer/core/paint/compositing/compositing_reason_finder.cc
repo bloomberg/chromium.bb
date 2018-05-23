@@ -243,10 +243,8 @@ bool CompositingReasonFinder::RequiresCompositingForRootScroller(
     const PaintLayer& layer) {
   // The root scroller needs composited scrolling layers even if it doesn't
   // actually have scrolling since CC has these assumptions baked in for the
-  // viewport. If we're in non-RootLayerScrolling mode, the root layer will be
-  // the global root scroller (by default) but it doesn't actually handle
-  // scrolls itself so we don't need composited scrolling for it.
-  return RootScrollerUtil::IsGlobal(layer) && !layer.IsScrolledByFrameView();
+  // viewport.
+  return RootScrollerUtil::IsGlobal(layer);
 }
 
 bool CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
