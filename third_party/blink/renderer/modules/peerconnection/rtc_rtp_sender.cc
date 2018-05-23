@@ -84,54 +84,7 @@ bool HasInvalidModification(const RTCRtpParameters& parameters,
   if (parameters.hasEncodings()) {
     if (parameters.encodings().size() != new_parameters.encodings().size())
       return true;
-
-    for (std::size_t i = 0; i < parameters.encodings().size(); ++i) {
-      const auto& encoding = parameters.encodings()[i];
-      const auto& new_encoding = new_parameters.encodings()[i];
-      if (encoding.hasRid() != new_encoding.hasRid() ||
-          (encoding.hasRid() && encoding.rid() != new_encoding.rid())) {
-        return true;
-      }
-    }
   }
-
-  if (parameters.hasHeaderExtensions() != new_parameters.hasHeaderExtensions())
-    return true;
-
-  if (parameters.hasHeaderExtensions()) {
-    if (parameters.headerExtensions().size() !=
-        new_parameters.headerExtensions().size())
-      return true;
-
-    for (size_t i = 0; i < parameters.headerExtensions().size(); ++i) {
-      const auto& header_extension = parameters.headerExtensions()[i];
-      const auto& new_header_extension = new_parameters.headerExtensions()[i];
-      if (header_extension.hasUri() != new_header_extension.hasUri() ||
-          (header_extension.hasUri() &&
-           header_extension.uri() != new_header_extension.uri()) ||
-          header_extension.hasId() != new_header_extension.hasId() ||
-          (header_extension.hasId() &&
-           header_extension.id() != new_header_extension.id()) ||
-          header_extension.hasEncrypted() !=
-              new_header_extension.hasEncrypted() ||
-          (header_extension.hasEncrypted() &&
-           header_extension.encrypted() != new_header_extension.encrypted())) {
-        return true;
-      }
-    }
-  }
-
-  if (parameters.hasRtcp() != new_parameters.hasRtcp() ||
-      (parameters.hasRtcp() &&
-       ((parameters.rtcp().hasCname() != new_parameters.rtcp().hasCname() ||
-         (parameters.rtcp().hasCname() &&
-          parameters.rtcp().cname() != new_parameters.rtcp().cname())) ||
-        (parameters.rtcp().hasReducedSize() !=
-             new_parameters.rtcp().hasReducedSize() ||
-         (parameters.rtcp().hasReducedSize() &&
-          parameters.rtcp().reducedSize() !=
-              new_parameters.rtcp().reducedSize())))))
-    return true;
 
   if (parameters.hasCodecs() != new_parameters.hasCodecs())
     return true;
