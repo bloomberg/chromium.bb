@@ -5,16 +5,19 @@
 #ifndef NGPositionedFloat_h
 #define NGPositionedFloat_h
 
+#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 
 namespace blink {
+
+class NGLayoutResult;
 
 // Contains the information necessary for copying back data to a FloatingObject.
 struct CORE_EXPORT NGPositionedFloat {
   NGPositionedFloat(scoped_refptr<NGLayoutResult> layout_result,
                     const NGBfcOffset& bfc_offset);
+  ~NGPositionedFloat();
 
   scoped_refptr<NGLayoutResult> layout_result;
   NGBfcOffset bfc_offset;

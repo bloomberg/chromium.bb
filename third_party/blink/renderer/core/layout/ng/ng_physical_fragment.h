@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 #include <unicode/ubidi.h>
 
@@ -22,8 +22,8 @@ namespace blink {
 class ComputedStyle;
 class LayoutObject;
 class Node;
+class NGBreakToken;
 class NGInlineItem;
-struct NGPhysicalOffsetRect;
 struct NGPixelSnappedPhysicalBoxStrut;
 class PaintLayer;
 

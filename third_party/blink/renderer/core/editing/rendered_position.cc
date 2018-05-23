@@ -42,6 +42,8 @@
 #include "third_party/blink/renderer/core/paint/compositing/composited_selection.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
+#include <unicode/ubidi.h>
+
 namespace blink {
 
 // Note: If the layout object has a scrolling contents layer, the selection

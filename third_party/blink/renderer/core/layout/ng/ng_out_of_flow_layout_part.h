@@ -8,16 +8,19 @@
 #include "third_party/blink/renderer/core/core_export.h"
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
 class ComputedStyle;
+class LayoutObject;
 class NGBlockNode;
 class NGFragmentBuilder;
 class NGConstraintSpace;
 class NGLayoutResult;
+struct NGOutOfFlowPositionedDescendant;
 
 // Helper class for positioning of out-of-flow blocks.
 // It should be used together with NGFragmentBuilder.

@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 
-#include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 
 namespace blink {

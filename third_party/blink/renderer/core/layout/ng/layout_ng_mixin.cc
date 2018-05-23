@@ -9,15 +9,27 @@
 
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_table_caption.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_block_flow_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 namespace blink {
+
+template <typename Base>
+LayoutNGMixin<Base>::LayoutNGMixin(Element* element) : Base(element) {
+  static_assert(
+      std::is_base_of<LayoutBlockFlow, Base>::value,
+      "Base class of LayoutNGMixin must be LayoutBlockFlow or derived class.");
+}
 
 template <typename Base>
 LayoutNGMixin<Base>::~LayoutNGMixin() = default;
@@ -213,6 +225,11 @@ void LayoutNGMixin<Base>::SetPaintFragment(
   // When paint fragment is replaced, the subtree needs paint invalidation to
   // re-compute paint properties in NGPaintFragment.
   Base::SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kSubtree);
+}
+
+template <typename Base>
+void LayoutNGMixin<Base>::ClearPaintFragment() {
+  paint_fragment_ = nullptr;
 }
 
 template <typename Base>

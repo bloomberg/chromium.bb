@@ -7,29 +7,27 @@
 
 #include <type_traits>
 
-#include "third_party/blink/renderer/core/layout/layout_table_caption.h"
-#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 
 namespace blink {
 
+enum class NGBaselineAlgorithmType;
 class NGBreakToken;
+class NGConstraintSpace;
 class NGLayoutResult;
+class NGPaintFragment;
+class NGPhysicalFragment;
+struct NGBaseline;
+struct NGInlineNodeData;
 
 // This mixin holds code shared between LayoutNG subclasses of
 // LayoutBlockFlow.
 
 template <typename Base>
 class CORE_TEMPLATE_CLASS_EXPORT LayoutNGMixin : public Base {
-  static_assert(
-      std::is_base_of<LayoutBlockFlow, Base>::value,
-      "Base class of LayoutNGMixin must be LayoutBlockFlow or derived class.");
-
  public:
-  explicit LayoutNGMixin(Element* element) : Base(element) {}
+  explicit LayoutNGMixin(Element* element);
   ~LayoutNGMixin() override;
 
   NGInlineNodeData* TakeNGInlineNodeData() override;
@@ -71,7 +69,7 @@ class CORE_TEMPLATE_CLASS_EXPORT LayoutNGMixin : public Base {
     return paint_fragment_.get();
   }
   void SetPaintFragment(scoped_refptr<const NGPhysicalFragment>) override;
-  void ClearPaintFragment() override { paint_fragment_ = nullptr; }
+  void ClearPaintFragment() override;
 
  protected:
   bool IsOfType(LayoutObject::LayoutObjectType) const override;
@@ -95,13 +93,6 @@ class CORE_TEMPLATE_CLASS_EXPORT LayoutNGMixin : public Base {
 
   friend class NGBaseLayoutAlgorithmTest;
 };
-
-extern template class CORE_EXTERN_TEMPLATE_EXPORT
-    LayoutNGMixin<LayoutTableCaption>;
-extern template class CORE_EXTERN_TEMPLATE_EXPORT
-    LayoutNGMixin<LayoutTableCell>;
-extern template class CORE_EXTERN_TEMPLATE_EXPORT
-    LayoutNGMixin<LayoutBlockFlow>;
 
 }  // namespace blink
 

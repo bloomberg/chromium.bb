@@ -7,27 +7,19 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-template <typename OffsetMappingBuilder>
-class NGInlineItemsBuilderTemplate;
-
-class EmptyOffsetMappingBuilder;
-class LayoutBlockFlow;
-struct MinMaxSize;
 class NGConstraintSpace;
 class NGInlineItem;
-using NGInlineItemsBuilder =
-    NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
-struct NGInlineNodeData;
 class NGLayoutResult;
 class NGOffsetMapping;
 class NGInlineNodeLegacy;
+struct MinMaxSize;
+struct NGInlineItemsData;
 
 // Represents an anonymous block box to be laid out, that contains consecutive
 // inline nodes and their descendants.
