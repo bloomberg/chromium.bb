@@ -13,7 +13,6 @@
 
 #include <ostream>
 
-#include "base/macros.h"
 #include "net/third_party/http2/hpack/huffman/hpack_huffman_decoder.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
@@ -28,6 +27,9 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderStringBuffer {
 
   HpackDecoderStringBuffer();
   ~HpackDecoderStringBuffer();
+
+  HpackDecoderStringBuffer(const HpackDecoderStringBuffer&) = delete;
+  HpackDecoderStringBuffer& operator=(const HpackDecoderStringBuffer&) = delete;
 
   void Reset();
   void Set(Http2StringPiece value, bool is_static);
@@ -89,8 +91,6 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderStringBuffer {
 
   // Where is the string stored?
   Backing backing_;
-
-  DISALLOW_COPY_AND_ASSIGN(HpackDecoderStringBuffer);
 };
 
 HTTP2_EXPORT_PRIVATE std::ostream& operator<<(

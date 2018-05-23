@@ -20,7 +20,6 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/decoder/decode_status.h"
 #include "net/third_party/http2/decoder/frame_decoder_state.h"
@@ -49,6 +48,9 @@ class HTTP2_EXPORT_PRIVATE Http2FrameDecoder {
  public:
   explicit Http2FrameDecoder(Http2FrameDecoderListener* listener);
   Http2FrameDecoder() : Http2FrameDecoder(nullptr) {}
+
+  Http2FrameDecoder(const Http2FrameDecoder&) = delete;
+  Http2FrameDecoder& operator=(const Http2FrameDecoder&) = delete;
 
   // The decoder will call the listener's methods as it decodes a frame.
   void set_listener(Http2FrameDecoderListener* listener);
@@ -194,8 +196,6 @@ class HTTP2_EXPORT_PRIVATE Http2FrameDecoder {
 
   // Listener used whenever caller passes nullptr to set_listener.
   Http2FrameDecoderNoOpListener no_op_listener_;
-
-  DISALLOW_COPY_AND_ASSIGN(Http2FrameDecoder);
 };
 
 }  // namespace http2

@@ -22,7 +22,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/hpack/decoder/hpack_block_decoder.h"
 #include "net/third_party/http2/hpack/decoder/hpack_decoder_listener.h"
@@ -41,6 +40,9 @@ class HTTP2_EXPORT_PRIVATE HpackDecoder {
  public:
   HpackDecoder(HpackDecoderListener* listener, size_t max_string_size);
   virtual ~HpackDecoder();
+
+  HpackDecoder(const HpackDecoder&) = delete;
+  HpackDecoder& operator=(const HpackDecoder&) = delete;
 
   // Set listener to be notified of insertions into the HPACK dynamic table,
   // and uses of those entries.
@@ -113,8 +115,6 @@ class HTTP2_EXPORT_PRIVATE HpackDecoder {
 
   // Has an error been detected?
   bool error_detected_;
-
-  DISALLOW_COPY_AND_ASSIGN(HpackDecoder);
 };
 
 }  // namespace http2
