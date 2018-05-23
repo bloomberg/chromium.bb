@@ -2,7 +2,9 @@ Tests stability of performance metrics list.
 
 
 Metrics reported:
+AdSubframes
 AudioHandlers
+DetachedScriptStates
 Documents
 DomContentLoaded
 FirstMeaningfulPaint

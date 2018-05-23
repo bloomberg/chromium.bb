@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/instance_counters.h"
 
 namespace blink {
 
@@ -44,6 +45,8 @@ ScriptState::ScriptState(v8::Local<v8::Context> context,
 ScriptState::~ScriptState() {
   DCHECK(!per_context_data_);
   DCHECK(context_.IsEmpty());
+  InstanceCounters::DecrementCounter(
+      InstanceCounters::kDetachedScriptStateCounter);
 }
 
 void ScriptState::DetachGlobalObject() {
@@ -53,6 +56,8 @@ void ScriptState::DetachGlobalObject() {
 
 void ScriptState::DisposePerContextData() {
   per_context_data_ = nullptr;
+  InstanceCounters::IncrementCounter(
+      InstanceCounters::kDetachedScriptStateCounter);
 }
 
 }  // namespace blink

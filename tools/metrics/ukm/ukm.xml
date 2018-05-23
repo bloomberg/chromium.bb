@@ -1770,6 +1770,16 @@ be describing additional metrics about the same event.
       Measure of memory allocated by all network requests.
     </summary>
   </metric>
+  <metric name="NumberOfAdSubframes">
+    <summary>
+      The number of ad subframes that the associated renderer owns.
+    </summary>
+  </metric>
+  <metric name="NumberOfDetachedScriptStates">
+    <summary>
+      The number of detached ScriptState that the associated renderer owns.
+    </summary>
+  </metric>
   <metric name="NumberOfDocuments">
     <summary>
       The number of documents that the associated renderer owns.

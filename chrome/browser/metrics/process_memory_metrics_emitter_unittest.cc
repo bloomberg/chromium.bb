@@ -171,6 +171,11 @@ void PopulateRendererMetrics(
   SetAllocatorDumpMetric(pmd, "v8", "effective_size",
                          metrics_mb_or_count["V8"] * 1024 * 1024);
 
+  SetAllocatorDumpMetric(pmd, "blink_objects/AdSubframe", "object_count",
+                         metrics_mb_or_count["NumberOfAdSubframes"]);
+  SetAllocatorDumpMetric(pmd, "blink_objects/DetachedScriptState",
+                         "object_count",
+                         metrics_mb_or_count["NumberOfDetachedScriptStates"]);
   SetAllocatorDumpMetric(pmd, "blink_objects/Document", "object_count",
                          metrics_mb_or_count["NumberOfDocuments"]);
   SetAllocatorDumpMetric(pmd, "blink_objects/Frame", "object_count",
@@ -213,6 +218,7 @@ base::flat_map<const char*, int64_t> GetExpectedRendererMetrics() {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
             {"PrivateSwapFootprint", 50},
 #endif
+            {"NumberOfAdSubframes", 28}, {"NumberOfDetachedScriptStates", 11},
             {"NumberOfDocuments", 1}, {"NumberOfFrames", 2},
             {"NumberOfLayoutObjects", 5}, {"NumberOfNodes", 3},
             {"PartitionAlloc.Partitions.ArrayBuffer", 10},

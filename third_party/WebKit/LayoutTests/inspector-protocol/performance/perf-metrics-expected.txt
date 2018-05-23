@@ -18,6 +18,8 @@ Received metrics:
 	UACSSResources
 	RTCPeerConnections
 	ResourceFetchers
+	AdSubframes
+	DetachedScriptStates
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
@@ -47,6 +49,8 @@ Received metrics:
 	UACSSResources
 	RTCPeerConnections
 	ResourceFetchers
+	AdSubframes
+	DetachedScriptStates
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
