@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "media/audio/audio_manager.h"
@@ -88,12 +89,15 @@ media::AudioManager* OwningAudioManagerAccessor::GetAudioManager() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!audio_manager_) {
     DCHECK(audio_manager_factory_cb_);
+    base::TimeTicks creation_start_time = base::TimeTicks::Now();
 
     // TODO(http://crbug/812557): pass AudioLogFactory (needed for output
     // streams).
     audio_manager_ = std::move(audio_manager_factory_cb_)
                          .Run(std::make_unique<MainThread>(), &log_factory_);
     DCHECK(audio_manager_);
+    UMA_HISTOGRAM_TIMES("Media.AudioService.AudioManagerStartupTime",
+                        base::TimeTicks::Now() - creation_start_time);
   }
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   return audio_manager_.get();
