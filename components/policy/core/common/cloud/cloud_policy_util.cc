@@ -32,8 +32,8 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/sys_info.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #endif
@@ -95,10 +95,8 @@ std::string GetMachineName() {
 }
 
 std::string GetOSVersion() {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) || defined(OS_MACOSX)
   return base::SysInfo::OperatingSystemVersion();
-#elif defined(OS_MACOSX)
-  return base::mac::GetModelIdentifier();
 #elif defined(OS_WIN)
   base::win::OSInfo::VersionNumber version_number =
       base::win::OSInfo::GetInstance()->version_number();
