@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
 #include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -265,6 +266,20 @@ Element* TreeScope::HitTestPointInternal(Node* node,
   return element;
 }
 
+static bool ShouldAcceptNonElementNode(const Node& node) {
+  Node* parent = node.parentNode();
+  if (!parent)
+    return false;
+  // In some cases the hit test doesn't return slot elements, so we can only
+  // get it through its child and can't skip it.
+  if (IsHTMLSlotElement(*parent))
+    return true;
+  // SVG text content elements has no background, and are thus not
+  // hit during the background phase of hit-testing. Because of that
+  // we need to allow any child (Text) node of these elements.
+  return IsSVGTextContentElement(*parent);
+}
+
 HeapVector<Member<Element>> TreeScope::ElementsFromHitTestResult(
     HitTestResult& result) const {
   HeapVector<Member<Element>> elements;
@@ -272,9 +287,7 @@ HeapVector<Member<Element>> TreeScope::ElementsFromHitTestResult(
   Node* last_node = nullptr;
   for (const auto rect_based_node : result.ListBasedTestResult()) {
     Node* node = rect_based_node.Get();
-    // In some cases the hit test doesn't return slot elements, so we can only
-    // get it through its child and can't skip it.
-    if (!node->IsElementNode() && !IsHTMLSlotElement(node->parentNode()))
+    if (!node->IsElementNode() && !ShouldAcceptNonElementNode(*node))
       continue;
     node = HitTestPointInternal(node, HitTestPointType::kWebExposed);
     // Prune duplicate entries. A pseduo ::before content above its parent
