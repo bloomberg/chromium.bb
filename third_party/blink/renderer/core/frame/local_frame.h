@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
@@ -329,7 +330,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool IsAdSubframe() const { return is_ad_subframe_; }
   void SetIsAdSubframe() {
     DCHECK(!IsMainFrame());
+    if (is_ad_subframe_)
+      return;
     is_ad_subframe_ = true;
+    InstanceCounters::IncrementCounter(InstanceCounters::kAdSubframeCounter);
   }
 
  private:

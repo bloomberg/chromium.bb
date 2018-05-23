@@ -65,7 +65,9 @@ const char* const kDumpProviderWhitelist[] = {
 const char* const kAllocatorDumpNameWhitelist[] = {
     "blink_gc",
     "blink_gc/allocated_objects",
+    "blink_objects/AdSubframe",
     "blink_objects/AudioHandler",
+    "blink_objects/DetachedScriptState",
     "blink_objects/Document",
     "blink_objects/Frame",
     "blink_objects/JSEventListener",

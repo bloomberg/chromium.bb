@@ -17,6 +17,8 @@ title: test1
 	UACSSResources
 	RTCPeerConnections
 	ResourceFetchers
+	AdSubframes
+	DetachedScriptStates
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
@@ -46,6 +48,8 @@ title: test1
 	UACSSResources
 	RTCPeerConnections
 	ResourceFetchers
+	AdSubframes
+	DetachedScriptStates
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
@@ -75,6 +79,8 @@ title:
 	UACSSResources
 	RTCPeerConnections
 	ResourceFetchers
+	AdSubframes
+	DetachedScriptStates
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration

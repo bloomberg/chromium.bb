@@ -266,6 +266,8 @@ LocalFrame::~LocalFrame() {
   // Verify that the LocalFrameView has been cleared as part of detaching
   // the frame owner.
   DCHECK(!view_);
+  if (is_ad_subframe_)
+    InstanceCounters::DecrementCounter(InstanceCounters::kAdSubframeCounter);
 }
 
 void LocalFrame::Trace(blink::Visitor* visitor) {

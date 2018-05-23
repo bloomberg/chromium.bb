@@ -53,7 +53,9 @@ namespace blink {
   V(WorkerGlobalScope)            \
   V(UACSSResource)                \
   V(RTCPeerConnection)            \
-  V(ResourceFetcher)
+  V(ResourceFetcher)              \
+  V(AdSubframe)                   \
+  V(DetachedScriptState)
 
 class InstanceCounters {
   STATIC_ONLY(InstanceCounters);
