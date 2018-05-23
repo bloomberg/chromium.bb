@@ -37,11 +37,12 @@ void CheckPermissionAndGetSaltAndOrigin(
                           base::BindOnce(std::move(cb), salt_and_origin));
 }
 
-void EnumerateOutputDevices(MediaDevicesManager* media_devices_manager,
-                            base::RepeatingCallback<void(
-                                const MediaDeviceSaltAndOrigin& salt_and_origin,
-                                const MediaDeviceEnumeration& devices)> cb,
-                            const MediaDeviceSaltAndOrigin& salt_and_origin) {
+void OldEnumerateOutputDevices(
+    MediaDevicesManager* media_devices_manager,
+    base::RepeatingCallback<
+        void(const MediaDeviceSaltAndOrigin& salt_and_origin,
+             const MediaDeviceEnumeration& devices)> cb,
+    const MediaDeviceSaltAndOrigin& salt_and_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MediaDevicesManager::BoolDeviceTypes device_types;
   device_types[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
@@ -193,7 +194,7 @@ void OldRenderFrameAudioInputStreamFactory::AssociateInputAndOutputForAec(
             CheckPermissionAndGetSaltAndOrigin, output_device_id,
             render_process_id_, render_frame_id_,
             base::BindOnce(
-                &EnumerateOutputDevices,
+                &OldEnumerateOutputDevices,
                 media_stream_manager_->media_devices_manager(),
                 base::BindRepeating(&OldRenderFrameAudioInputStreamFactory::
                                         TranslateAndSetOutputDeviceForAec,
