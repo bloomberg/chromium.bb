@@ -34,6 +34,7 @@ class CONTENT_EXPORT AudioInputStreamHandle {
   ~AudioInputStreamHandle();
 
   const base::UnguessableToken& id() const { return stream_id_; }
+  void SetOutputDeviceForAec(const std::string& raw_output_device_id);
 
  private:
   void OnCreated(media::mojom::AudioDataPipePtr, bool initially_muted);

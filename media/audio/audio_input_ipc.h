@@ -66,6 +66,11 @@ class MEDIA_EXPORT AudioInputIPC {
   // Sets the volume of the audio stream.
   virtual void SetVolume(double volume) = 0;
 
+  // Sets the output device from which to cancel echo, if supported. The
+  // |output_device_id| can be gotten from a device enumeration. Must not be
+  // called before the stream has been successfully created.
+  virtual void SetOutputDeviceForAec(const std::string& output_device_id) = 0;
+
   // Closes the audio stream, which should shut down the corresponding
   // AudioInputController in the peer process.
   virtual void CloseStream() = 0;

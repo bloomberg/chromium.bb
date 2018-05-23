@@ -36,6 +36,11 @@ class FakeStreamFactory : public mojom::StreamFactory {
                          bool enable_agc,
                          mojo::ScopedSharedBufferHandle key_press_count_buffer,
                          CreateInputStreamCallback created_callback) override {}
+
+  void AssociateInputAndOutputForAec(
+      const base::UnguessableToken& input_stream_id,
+      const std::string& output_device_id) override {}
+
   void CreateOutputStream(
       media::mojom::AudioOutputStreamRequest stream_request,
       media::mojom::AudioOutputStreamObserverAssociatedPtrInfo observer_info,

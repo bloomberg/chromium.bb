@@ -59,6 +59,11 @@ class StreamFactory final : public mojom::StreamFactory {
                          bool enable_agc,
                          mojo::ScopedSharedBufferHandle key_press_count_buffer,
                          CreateInputStreamCallback created_callback) final;
+
+  void AssociateInputAndOutputForAec(
+      const base::UnguessableToken& input_stream_id,
+      const std::string& output_device_id) final;
+
   void CreateOutputStream(
       media::mojom::AudioOutputStreamRequest stream_request,
       media::mojom::AudioOutputStreamObserverAssociatedPtrInfo observer_info,

@@ -63,6 +63,10 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
       bool enable_agc,
       mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client);
 
+  void AssociateInputAndOutputForAec(
+      const base::UnguessableToken& input_stream_id,
+      const std::string& raw_output_device_id);
+
   void CreateOutputStream(
       RenderFrameHost* frame,
       const std::string& device_id,

@@ -53,6 +53,7 @@ class InputStream final : public media::mojom::AudioInputStream,
   ~InputStream() override;
 
   const base::UnguessableToken& id() const { return id_; }
+  void SetOutputDeviceForAec(const std::string& output_device_id);
 
   // media::mojom::AudioInputStream implementation.
   void Record() override;

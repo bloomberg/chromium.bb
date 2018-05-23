@@ -67,6 +67,10 @@ class FakeStreamFactory : public audio::mojom::StreamFactory {
              initially_muted_, base::UnguessableToken::Create());
   }
 
+  MOCK_METHOD2(AssociateInputAndOutputForAec,
+               void(const base::UnguessableToken& input_stream_id,
+                    const std::string& output_device_id));
+
   MOCK_METHOD7(CreateOutputStream,
                void(media::mojom::AudioOutputStreamRequest stream_request,
                     media::mojom::AudioOutputStreamObserverAssociatedPtrInfo
@@ -234,6 +238,18 @@ TEST_F(InputIPCTest, SetVolume_SetsVolume) {
 
   EXPECT_CALL(factory_->stream_, SetVolume(kNewVolume));
   ipc->SetVolume(kNewVolume);
+  scoped_task_environment.RunUntilIdle();
+}
+
+TEST_F(InputIPCTest, SetOutputDeviceForAec_AssociatesInputAndOutputForAec) {
+  const std::string kOutputDeviceId = "2345";
+  StrictMock<MockDelegate> delegate;
+  EXPECT_CALL(delegate, GotOnStreamCreated(_));
+  ipc->CreateStream(&delegate, audioParameters, false, 0);
+  scoped_task_environment.RunUntilIdle();
+
+  EXPECT_CALL(*factory_, AssociateInputAndOutputForAec(_, kOutputDeviceId));
+  ipc->SetOutputDeviceForAec(kOutputDeviceId);
   scoped_task_environment.RunUntilIdle();
 }
 

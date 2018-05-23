@@ -213,6 +213,10 @@ class MEDIA_EXPORT AudioInputController
   // to muted and 1.0 to maximum volume.
   virtual void SetVolume(double volume);
 
+  // Sets the output device which will be used to cancel audio from, if this
+  // input device supports echo cancellation.
+  virtual void SetOutputDeviceForAec(const std::string& output_device_id);
+
  protected:
   friend class base::RefCountedThreadSafe<AudioInputController>;
 
@@ -283,6 +287,7 @@ class MEDIA_EXPORT AudioInputController
   void DoReportError();
   void DoSetVolume(double volume);
   void DoLogAudioLevels(float level_dbfs, int microphone_volume_percent);
+  void DoSetOutputDeviceForAec(const std::string& output_device_id);
 
 #if defined(AUDIO_POWER_MONITORING)
   // Updates the silence state, see enum SilenceState above for state

@@ -47,6 +47,25 @@ void CreateMojoAudioInputStream(
                                 automatic_gain_control, total_segments));
 }
 
+void AssociateInputAndOutputForAec(
+    scoped_refptr<base::SequencedTaskRunner> main_task_runner,
+    int frame_id,
+    const base::UnguessableToken& input_stream_id,
+    const std::string& output_device_id) {
+  main_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](int frame_id, const base::UnguessableToken& input_stream_id,
+             const std::string& output_device_id) {
+            RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(frame_id);
+            if (frame) {
+              frame->GetAudioInputStreamFactory()
+                  ->AssociateInputAndOutputForAec(input_stream_id,
+                                                  output_device_id);
+            }
+          },
+          frame_id, input_stream_id, output_device_id));
+}
 }  // namespace
 
 AudioInputIPCFactory* AudioInputIPCFactory::instance_ = nullptr;
@@ -69,8 +88,11 @@ std::unique_ptr<media::AudioInputIPC> AudioInputIPCFactory::CreateAudioInputIPC(
     int frame_id,
     int session_id) const {
   DCHECK_NE(0, session_id);
-  return std::make_unique<MojoAudioInputIPC>(base::BindRepeating(
-      &CreateMojoAudioInputStream, main_task_runner_, frame_id, session_id));
+  return std::make_unique<MojoAudioInputIPC>(
+      base::BindRepeating(&CreateMojoAudioInputStream, main_task_runner_,
+                          frame_id, session_id),
+      base::BindRepeating(&AssociateInputAndOutputForAec, main_task_runner_,
+                          frame_id));
 }
 
 }  // namespace content

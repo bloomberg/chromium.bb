@@ -57,6 +57,8 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
   int GetStreamId() override;
   void OnRecordStream() override;
   void OnSetVolume(double volume) override;
+  void OnSetOutputDeviceForAec(
+      const std::string& raw_output_device_id) override;
 
  private:
   AudioInputDelegateImpl(
