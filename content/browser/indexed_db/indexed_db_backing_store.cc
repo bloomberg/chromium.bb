@@ -42,6 +42,7 @@
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
@@ -773,9 +774,6 @@ WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
       //
       // In order to prevent corrupt databases, when upgrading from 2 to 3 this
       // will consider any v2 databases with BlobEntryKey entries as corrupt.
-      // Unfortunately this will blow away a lot of data for third party
-      // customers, so first we will only upgrade the non-corrupt v2 databases
-      // (and leave the corrupt v2 ones for one release).
       // https://crbug.com/756447, https://crbug.com/829125,
       // https://crbug.com/829141
       db_schema_version = 3;
@@ -787,10 +785,13 @@ WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
       }
       indexed_db::ReportV2Schema(has_blobs, origin_);
       if (has_blobs) {
-        // TODO(dmurph): Treat this as corruption.
-        // https://crbug.com/829141
         INTERNAL_CONSISTENCY_ERROR(UPGRADING_SCHEMA_CORRUPTED_BLOBS);
-        // return InternalInconsistencyStatus();
+        // Put database wiping behind a flag so we can use finch to stop this
+        // behavior if first-party customers have problems.
+        if (base::FeatureList::IsEnabled(
+                features::kWipeCorruptV2IDBDatabases)) {
+          return InternalInconsistencyStatus();
+        }
       } else {
         PutInt(transaction.get(), schema_version_key, db_schema_version);
       }
