@@ -8,6 +8,7 @@
 
 #include "ash/ash_service.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
+#include "ash/components/shortcut_viewer/public/mojom/constants.mojom.h"
 #include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -70,20 +71,25 @@ ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
 std::vector<content::ContentBrowserClient::ServiceManifestInfo>
 ShellContentBrowserClient::GetExtraServiceManifests() {
   return {
+      {font_service::mojom::kServiceName, IDR_ASH_SHELL_FONT_SERVICE_MANIFEST},
       {quick_launch::mojom::kServiceName, IDR_ASH_SHELL_QUICK_LAUNCH_MANIFEST},
+      {shortcut_viewer::mojom::kServiceName,
+       IDR_ASH_SHELL_SHORTCUT_VIEWER_MANIFEST},
       {tap_visualizer::mojom::kServiceName,
        IDR_ASH_SHELL_TAP_VISUALIZER_MANIFEST},
-      {font_service::mojom::kServiceName, IDR_ASH_SHELL_FONT_SERVICE_MANIFEST}};
+  };
 }
 
 void ShellContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
-  (*services)[quick_launch::mojom::kServiceName] = OutOfProcessServiceInfo(
-      base::ASCIIToUTF16(quick_launch::mojom::kServiceName));
-  (*services)[tap_visualizer::mojom::kServiceName] = OutOfProcessServiceInfo(
-      base::ASCIIToUTF16(tap_visualizer::mojom::kServiceName));
   (*services)[font_service::mojom::kServiceName] = OutOfProcessServiceInfo(
       base::ASCIIToUTF16(font_service::mojom::kServiceName));
+  (*services)[quick_launch::mojom::kServiceName] = OutOfProcessServiceInfo(
+      base::ASCIIToUTF16(quick_launch::mojom::kServiceName));
+  (*services)[shortcut_viewer::mojom::kServiceName] = OutOfProcessServiceInfo(
+      base::ASCIIToUTF16(shortcut_viewer::mojom::kServiceName));
+  (*services)[tap_visualizer::mojom::kServiceName] = OutOfProcessServiceInfo(
+      base::ASCIIToUTF16(tap_visualizer::mojom::kServiceName));
 }
 
 void ShellContentBrowserClient::RegisterInProcessServices(
