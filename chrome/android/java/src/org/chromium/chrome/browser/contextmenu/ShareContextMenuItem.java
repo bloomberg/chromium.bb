@@ -60,7 +60,7 @@ public class ShareContextMenuItem implements ContextMenuItem {
     @Override
     public void getDrawableAsync(Context context, Callback<Drawable> callback) {
         Drawable drawable = TintedDrawable.constructTintedDrawable(
-                context.getResources(), mIconId, R.color.light_normal_color);
+                context.getResources(), mIconId, R.color.dark_mode_tint);
         callback.onResult(drawable);
     }
 

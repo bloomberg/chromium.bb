@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.download.ui;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.IntDef;
@@ -22,7 +20,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.DiscardableReferencePool;
@@ -285,11 +282,6 @@ public class DownloadManagerUi
         addObserver(mToolbar);
 
         if (isLocationEnabled) {
-            // TODO(xingliu): Use the new settings icon with better alpha value.
-            Drawable settingIcon = mToolbar.getMenu().findItem(R.id.settings_menu_id).getIcon();
-            settingIcon.setColorFilter(ApiCompatibilityUtils.getColor(getActivity().getResources(),
-                                               R.color.black_alpha_65),
-                    PorterDuff.Mode.SRC_IN);
             final Tracker tracker =
                     TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
             tracker.addOnInitializedCallback(

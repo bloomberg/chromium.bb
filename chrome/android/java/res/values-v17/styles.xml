@@ -27,6 +27,7 @@
         <item name="android:statusBarColor" tools:targetApi="21">@android:color/black</item>
 
         <!--  Overriding AppCompat values -->
+        <!-- TODO(huayinz): Change this when the color for checkboxes are updated to modern. -->
         <item name="colorControlNormal">@color/light_normal_color</item>
         <item name="colorControlActivated">@color/light_active_color</item>
 

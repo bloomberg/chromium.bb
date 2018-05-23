@@ -20,7 +20,7 @@
             style="@style/ListItemEndIconSmall"
             android:contentDescription="@string/remove"
             android:src="@drawable/btn_delete_24dp"
-            chrome:chrometint="@color/black_alpha_38" />
+            chrome:chrometint="@color/light_icon_color" />
     </LinearLayout>
 
 </org.chromium.chrome.browser.history.HistoryItemView>
