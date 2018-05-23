@@ -10549,6 +10549,26 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="SVG"/>
 </enum>
 
+<enum name="DownloadInfoBar.ShownState">
+  <int value="0" label="Any"/>
+  <int value="1" label="Accelerated"/>
+  <int value="2" label="Downloading"/>
+  <int value="3" label="Complete"/>
+  <int value="4" label="Failed"/>
+  <int value="5" label="Pending"/>
+  <int value="6" label="Multiple downloads in progress"/>
+  <int value="7" label="Multiple downloads complete"/>
+  <int value="8" label="Multiple downloads failed"/>
+  <int value="9" label="Multiple downloads pending"/>
+</enum>
+
+<enum name="DownloadInfoBarState">
+  <int value="0" label="Initial"/>
+  <int value="1" label="Downloading"/>
+  <int value="2" label="Showing result"/>
+  <int value="3" label="Cancelled"/>
+</enum>
+
 <enum name="DownloadInterruptedUnknownSizeType">
   <int value="0" label="Size Known"/>
   <int value="1" label="Size Unknown"/>
