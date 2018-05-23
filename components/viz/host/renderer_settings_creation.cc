@@ -49,6 +49,7 @@ RendererSettings CreateRendererSettings() {
   renderer_settings.finish_rendering_on_resize = true;
 #elif defined(OS_MACOSX)
   renderer_settings.release_overlay_resources_after_gpu_query = true;
+  renderer_settings.auto_resize_output_surface = false;
 #endif
   renderer_settings.tint_gl_composited_content =
       command_line->HasSwitch(switches::kTintGlCompositedContent);
