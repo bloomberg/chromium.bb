@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/cdm_context.h"
@@ -28,6 +29,13 @@
 namespace media {
 
 namespace {
+
+// Number of active (Decode() was called at least once)
+// MojoVideoDecoderService instances that are alive.
+//
+// Since MojoVideoDecoderService is constructed only by the MediaFactory,
+// this will only ever be accessed from a single thread.
+static int32_t g_num_active_mvd_instances = 0;
 
 class StaticSyncTokenClient : public VideoFrame::SyncTokenClient {
  public:
@@ -106,6 +114,9 @@ MojoVideoDecoderService::MojoVideoDecoderService(
 
 MojoVideoDecoderService::~MojoVideoDecoderService() {
   DVLOG(1) << __func__;
+
+  if (is_active_instance_)
+    g_num_active_mvd_instances--;
 }
 
 void MojoVideoDecoderService::Construct(
@@ -186,6 +197,13 @@ void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
   if (!decoder_) {
     std::move(callback).Run(DecodeStatus::DECODE_ERROR);
     return;
+  }
+
+  if (!is_active_instance_) {
+    is_active_instance_ = true;
+    g_num_active_mvd_instances++;
+    UMA_HISTOGRAM_EXACT_LINEAR("Media.MojoVideoDecoder.ActiveInstances",
+                               g_num_active_mvd_instances, 64);
   }
 
   mojo_decoder_buffer_reader_->ReadDecoderBuffer(
