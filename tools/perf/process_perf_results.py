@@ -269,6 +269,8 @@ def _handle_perf_results(
     logdog_stream = logdog_helper.text(logdog_file_name,
         json.dumps(logdog_dict, sort_keys=True,
             indent=4, separators=(',', ': ')))
+    if upload_fail:
+      logdog_label += ' Upload Failure'
     extra_links[logdog_label] = logdog_stream
     if upload_fail:
       return 1
