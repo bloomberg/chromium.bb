@@ -223,13 +223,6 @@ public class DownloadNotificationService2 {
                                                 .build();
         Notification notification = DownloadNotificationFactory.buildNotification(
                 context, DownloadStatus.IN_PROGRESS, downloadUpdate);
-
-        // If called from DownloadBroadcastManager, only update notification, not tracking.
-        if (hasUserGesture) {
-            updateNotification(notificationId, notification);
-            return;
-        }
-
         updateNotification(notificationId, notification, id,
                 new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
                         canDownloadWhileMetered, fileName, true, isTransient));
@@ -270,12 +263,6 @@ public class DownloadNotificationService2 {
         DownloadSharedPreferenceEntry entry =
                 mDownloadSharedPreferenceHelper.getDownloadSharedPreferenceEntry(id);
         if (entry == null) return;
-
-        // If called from DownloadBroadcastManager, only update notification, not tracking.
-        if (hasUserGesture) {
-            cancelNotification(entry.notificationId);
-            return;
-        }
 
         cancelNotification(entry.notificationId, id);
         mDownloadForegroundServiceManager.updateDownloadStatus(ContextUtils.getApplicationContext(),
@@ -329,13 +316,6 @@ public class DownloadNotificationService2 {
 
         Notification notification = DownloadNotificationFactory.buildNotification(
                 context, DownloadStatus.PAUSED, downloadUpdate);
-
-        // If called from DownloadBroadcastManager, only update notification, not tracking.
-        if (hasUserGesture) {
-            updateNotification(notificationId, notification);
-            return;
-        }
-
         updateNotification(notificationId, notification, id,
                 new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
                         canDownloadWhileMetered, fileName, isAutoResumable, isTransient));
