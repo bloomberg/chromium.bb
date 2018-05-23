@@ -848,10 +848,7 @@ void KeyboardController::SetContainerType(
 }
 
 bool KeyboardController::SetDraggableArea(const gfx::Rect& rect) {
-  if (container_behavior_) {
-    return container_behavior_->SetDraggableArea(rect);
-  }
-  return false;
+  return container_behavior_->SetDraggableArea(rect);
 }
 
 bool KeyboardController::DisplayVirtualKeyboard() {
