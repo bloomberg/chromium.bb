@@ -34,6 +34,9 @@ class ASH_EXPORT FrameHeaderOriginText : public views::View {
   // How long the slide in+out animation takes.
   static base::TimeDelta AnimationDuration();
 
+  // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
  private:
   // Owned by the views hierarchy.
   views::Label* label_ = nullptr;
