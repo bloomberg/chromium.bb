@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "net/third_party/http2/hpack/hpack_string.h"
 //#include "net/third_party/http2/http2_constants.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
@@ -39,6 +38,11 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderTablesDebugListener {
   HpackDecoderTablesDebugListener();
   virtual ~HpackDecoderTablesDebugListener();
 
+  HpackDecoderTablesDebugListener(const HpackDecoderTablesDebugListener&) =
+      delete;
+  HpackDecoderTablesDebugListener& operator=(
+      const HpackDecoderTablesDebugListener&) = delete;
+
   // The entry has been inserted into the dynamic table. insert_count starts at
   // 62 because 61 is the last index in the static table; insert_count increases
   // by 1 with each insert into the dynamic table; it is not incremented when
@@ -55,9 +59,6 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderTablesDebugListener {
   virtual void OnUseEntry(const HpackStringPair& entry,
                           size_t insert_count,
                           int64_t time_added) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HpackDecoderTablesDebugListener);
 };
 
 // See http://httpwg.org/specs/rfc7541.html#static.table.definition for the
@@ -87,6 +88,9 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderDynamicTable {
  public:
   HpackDecoderDynamicTable();
   ~HpackDecoderDynamicTable();
+
+  HpackDecoderDynamicTable(const HpackDecoderDynamicTable&) = delete;
+  HpackDecoderDynamicTable& operator=(const HpackDecoderDynamicTable&) = delete;
 
   // Set the listener to be notified of insertions into this table, and later
   // uses of those entries. Added for evaluation of changes to QUIC's use
@@ -137,14 +141,15 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderDynamicTable {
   // when the experiment is done.
   size_t insert_count_;
   HpackDecoderTablesDebugListener* debug_listener_;
-
-  DISALLOW_COPY_AND_ASSIGN(HpackDecoderDynamicTable);
 };
 
 class HTTP2_EXPORT_PRIVATE HpackDecoderTables {
  public:
   HpackDecoderTables();
   ~HpackDecoderTables();
+
+  HpackDecoderTables(const HpackDecoderTables&) = delete;
+  HpackDecoderTables& operator=(const HpackDecoderTables&) = delete;
 
   // Set the listener to be notified of insertions into the dynamic table, and
   // later uses of those entries. Added for evaluation of changes to QUIC's use
@@ -184,8 +189,6 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderTables {
   friend class test::HpackDecoderTablesPeer;
   HpackDecoderStaticTable static_table_;
   HpackDecoderDynamicTable dynamic_table_;
-
-  DISALLOW_COPY_AND_ASSIGN(HpackDecoderTables);
 };
 
 }  // namespace http2

@@ -12,7 +12,6 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "net/third_party/http2/hpack/decoder/hpack_decoder_string_buffer.h"
 #include "net/third_party/http2/hpack/decoder/hpack_entry_decoder_listener.h"
 #include "net/third_party/http2/hpack/decoder/hpack_whole_entry_listener.h"
@@ -38,6 +37,9 @@ class HTTP2_EXPORT_PRIVATE HpackWholeEntryBuffer
   HpackWholeEntryBuffer(HpackWholeEntryListener* listener,
                         size_t max_string_size);
   ~HpackWholeEntryBuffer() override;
+
+  HpackWholeEntryBuffer(const HpackWholeEntryBuffer&) = delete;
+  HpackWholeEntryBuffer& operator=(const HpackWholeEntryBuffer&) = delete;
 
   // Set the listener to be notified when a whole entry has been decoded.
   // The listener may be changed at any time.
@@ -95,8 +97,6 @@ class HTTP2_EXPORT_PRIVATE HpackWholeEntryBuffer
   HpackEntryType entry_type_;
 
   bool error_detected_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(HpackWholeEntryBuffer);
 };
 
 }  // namespace http2

@@ -15,7 +15,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "net/third_party/http2/hpack/decoder/hpack_decoder_listener.h"
 #include "net/third_party/http2/hpack/decoder/hpack_decoder_string_buffer.h"
 #include "net/third_party/http2/hpack/decoder/hpack_decoder_tables.h"
@@ -33,6 +32,9 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderState : public HpackWholeEntryListener {
  public:
   explicit HpackDecoderState(HpackDecoderListener* listener);
   ~HpackDecoderState() override;
+
+  HpackDecoderState(const HpackDecoderState&) = delete;
+  HpackDecoderState& operator=(const HpackDecoderState&) = delete;
 
   // Set the listener to be notified when a whole entry has been decoded,
   // including resolving name or name and value references.
@@ -119,8 +121,6 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderState : public HpackWholeEntryListener {
 
   // Has an error already been detected and reported to the listener?
   bool error_detected_;
-
-  DISALLOW_COPY_AND_ASSIGN(HpackDecoderState);
 };
 
 }  // namespace http2

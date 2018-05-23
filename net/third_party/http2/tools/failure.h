@@ -15,7 +15,6 @@
 #include <iosfwd>
 #include <sstream>
 
-#include "base/macros.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,6 +36,9 @@ class VerifyThatHelper {
     }
   }
 
+  VerifyThatHelper(const VerifyThatHelper&) = delete;
+  VerifyThatHelper& operator=(const VerifyThatHelper&) = delete;
+
   operator bool() const { return matches_; }
 
   const Http2String& printed_value() const { return printed_value_; }
@@ -48,8 +50,6 @@ class VerifyThatHelper {
   bool matches_;
   Http2String printed_value_;
   Http2String matcher_description_;
-
-  DISALLOW_COPY_AND_ASSIGN(VerifyThatHelper);
 };
 
 // Constructs a failure message for Boolean assertions such as VERIFY_TRUE.

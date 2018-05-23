@@ -18,7 +18,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 
@@ -43,6 +42,9 @@ class HTTP2_EXPORT_PRIVATE DecodeBuffer {
   //    DecodeBuffer b(input);
   template <size_t N>
   explicit DecodeBuffer(const char (&buf)[N]) : DecodeBuffer(buf, N) {}
+
+  DecodeBuffer(const DecodeBuffer&) = delete;
+  DecodeBuffer operator=(const DecodeBuffer&) = delete;
 
   bool Empty() const { return cursor_ >= beyond_; }
   bool HasData() const { return cursor_ < beyond_; }
@@ -113,8 +115,6 @@ class HTTP2_EXPORT_PRIVATE DecodeBuffer {
   const char* cursor_;
   const char* const beyond_;
   const DecodeBufferSubset* subset_ = nullptr;  // Used for DCHECKs.
-
-  DISALLOW_COPY_AND_ASSIGN(DecodeBuffer);
 };
 
 // DecodeBufferSubset is used when decoding a known sized chunk of data, which
@@ -139,6 +139,9 @@ class HTTP2_EXPORT_PRIVATE DecodeBufferSubset : public DecodeBuffer {
 #endif
   }
 
+  DecodeBufferSubset(const DecodeBufferSubset&) = delete;
+  DecodeBufferSubset operator=(const DecodeBufferSubset&) = delete;
+
   ~DecodeBufferSubset() {
     size_t offset = Offset();
 #ifndef NDEBUG
@@ -156,8 +159,6 @@ class HTTP2_EXPORT_PRIVATE DecodeBufferSubset : public DecodeBuffer {
   void DebugSetup();
   void DebugTearDown();
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(DecodeBufferSubset);
 };
 
 }  // namespace http2

@@ -11,7 +11,6 @@
 // Reports the entries to an HpackEntryDecoderListener.
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/decoder/decode_status.h"
 #include "net/third_party/http2/hpack/decoder/hpack_entry_decoder.h"
@@ -28,6 +27,9 @@ class HTTP2_EXPORT_PRIVATE HpackBlockDecoder {
     DCHECK_NE(listener_, nullptr);
   }
   ~HpackBlockDecoder() {}
+
+  HpackBlockDecoder(const HpackBlockDecoder&) = delete;
+  HpackBlockDecoder& operator=(const HpackBlockDecoder&) = delete;
 
   // Prepares the decoder to start decoding a new HPACK block. Expected
   // to be called from an implementation of Http2FrameDecoderListener's
@@ -52,8 +54,6 @@ class HTTP2_EXPORT_PRIVATE HpackBlockDecoder {
   HpackEntryDecoder entry_decoder_;
   HpackEntryDecoderListener* const listener_;
   bool before_entry_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(HpackBlockDecoder);
 };
 
 HTTP2_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
