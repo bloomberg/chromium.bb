@@ -111,7 +111,6 @@ class WebMediaStream;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebMediaStreamTrack;
-class WebNotificationManager;
 class WebPluginListBuilder;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
@@ -677,12 +676,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // WebDatabase --------------------------------------------------------
 
   virtual WebDatabaseObserver* DatabaseObserver() { return nullptr; }
-
-  // Web Notifications --------------------------------------------------
-
-  virtual WebNotificationManager* GetWebNotificationManager() {
-    return nullptr;
-  }
 
   // Push API------------------------------------------------------------
 
