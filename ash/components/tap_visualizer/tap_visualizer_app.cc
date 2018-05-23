@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/components/touch_hud/touch_hud_application.h"
+#include "ash/components/tap_visualizer/tap_visualizer_app.h"
 
 #include <utility>
 
-#include "ash/components/touch_hud/touch_hud_renderer.h"
+#include "ash/components/tap_visualizer/tap_renderer.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,17 +23,17 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace touch_hud {
+namespace tap_visualizer {
 
-TouchHudApplication::TouchHudApplication() = default;
+TapVisualizerApp::TapVisualizerApp() = default;
 
-TouchHudApplication::~TouchHudApplication() {
+TapVisualizerApp::~TapVisualizerApp() {
   display::Screen::GetScreen()->RemoveObserver(this);
   views::MusClient::Get()->pointer_watcher_event_router()->RemovePointerWatcher(
       this);
 }
 
-void TouchHudApplication::Start() {
+void TapVisualizerApp::Start() {
   // Watches moves so the user can drag around a touch point.
   views::MusClient::Get()->pointer_watcher_event_router()->AddPointerWatcher(
       this, true /* want_moves */);
@@ -44,7 +44,7 @@ void TouchHudApplication::Start() {
   }
 }
 
-void TouchHudApplication::OnStart() {
+void TapVisualizerApp::OnStart() {
   const bool register_path_provider = false;
   aura_init_ = views::AuraInit::Create(
       context()->connector(), context()->identity(), "views_mus_resources.pak",
@@ -57,7 +57,7 @@ void TouchHudApplication::OnStart() {
   Start();
 }
 
-void TouchHudApplication::OnPointerEventObserved(
+void TapVisualizerApp::OnPointerEventObserved(
     const ui::PointerEvent& event,
     const gfx::Point& location_in_screen,
     gfx::NativeView target) {
@@ -69,22 +69,21 @@ void TouchHudApplication::OnPointerEventObserved(
                            .id();
   auto it = display_id_to_renderer_.find(display_id);
   if (it != display_id_to_renderer_.end()) {
-    TouchHudRenderer* renderer = it->second.get();
+    TapRenderer* renderer = it->second.get();
     renderer->HandleTouchEvent(event);
   }
 }
 
-void TouchHudApplication::OnDisplayAdded(const display::Display& new_display) {
+void TapVisualizerApp::OnDisplayAdded(const display::Display& new_display) {
   CreateWidgetForDisplay(new_display.id());
 }
 
-void TouchHudApplication::OnDisplayRemoved(
-    const display::Display& old_display) {
+void TapVisualizerApp::OnDisplayRemoved(const display::Display& old_display) {
   // Deletes the renderer.
   display_id_to_renderer_.erase(old_display.id());
 }
 
-void TouchHudApplication::CreateWidgetForDisplay(int64_t display_id) {
+void TapVisualizerApp::CreateWidgetForDisplay(int64_t display_id) {
   std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -99,12 +98,12 @@ void TouchHudApplication::CreateWidgetForDisplay(int64_t display_id) {
   params.mus_properties[ui::mojom::WindowManager::kDisplayId_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(display_id);
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  params.name = "TouchHud";
+  params.name = "TapVisualizer";
   widget->Init(params);
   widget->Show();
 
   display_id_to_renderer_[display_id] =
-      std::make_unique<TouchHudRenderer>(std::move(widget));
+      std::make_unique<TapRenderer>(std::move(widget));
 }
 
-}  // namespace touch_hud
+}  // namespace tap_visualizer

@@ -1848,11 +1848,11 @@ extern const char kQuickUnlockFingerprintDescription[];
 extern const char kShowTapsName[];
 extern const char kShowTapsDescription[];
 
-extern const char kShowTapsAppName[];
-extern const char kShowTapsAppDescription[];
-
 extern const char kShowTouchHudName[];
 extern const char kShowTouchHudDescription[];
+
+extern const char kTapVisualizerAppName[];
+extern const char kTapVisualizerAppDescription[];
 
 extern const char kUiShowCompositedLayerBordersName[];
 extern const char kUiShowCompositedLayerBordersDescription[];

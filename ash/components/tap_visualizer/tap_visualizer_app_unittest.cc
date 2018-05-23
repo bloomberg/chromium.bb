@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/components/touch_hud/touch_hud_application.h"
+#include "ash/components/tap_visualizer/tap_visualizer_app.h"
 
-#include "ash/components/touch_hud/touch_hud_renderer.h"
+#include "ash/components/tap_visualizer/tap_renderer.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -15,16 +15,16 @@
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/view.h"
 
-namespace touch_hud {
+namespace tap_visualizer {
 namespace {
 constexpr int64_t kFirstDisplayId = 111;
 constexpr int64_t kSecondDisplayId = 222;
 }  // namespace
 
-class TouchHudApplicationTestApi {
+class TapVisualizerAppTestApi {
  public:
-  explicit TouchHudApplicationTestApi(TouchHudApplication* app) : app_(app) {}
-  ~TouchHudApplicationTestApi() = default;
+  explicit TapVisualizerAppTestApi(TapVisualizerApp* app) : app_(app) {}
+  ~TapVisualizerAppTestApi() = default;
 
   void Start() { app_->Start(); }
 
@@ -37,15 +37,15 @@ class TouchHudApplicationTestApi {
   }
 
  private:
-  TouchHudApplication* app_;
+  TapVisualizerApp* app_;
 
-  DISALLOW_COPY_AND_ASSIGN(TouchHudApplicationTestApi);
+  DISALLOW_COPY_AND_ASSIGN(TapVisualizerAppTestApi);
 };
 
-class TouchHudApplicationTest : public aura::test::AuraTestBase {
+class TapVisualizerAppTest : public aura::test::AuraTestBase {
  public:
-  TouchHudApplicationTest() = default;
-  ~TouchHudApplicationTest() override = default;
+  TapVisualizerAppTest() = default;
+  ~TapVisualizerAppTest() override = default;
 
   // aura::test::AuraTestBase:
   void SetUp() override {
@@ -77,13 +77,13 @@ class TouchHudApplicationTest : public aura::test::AuraTestBase {
   std::unique_ptr<views::MusClient> mus_client_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TouchHudApplicationTest);
+  DISALLOW_COPY_AND_ASSIGN(TapVisualizerAppTest);
 };
 
-TEST_F(TouchHudApplicationTest, Basics) {
+TEST_F(TapVisualizerAppTest, Basics) {
   // Simulate the service starting.
-  TouchHudApplication app;
-  TouchHudApplicationTestApi test_api(&app);
+  TapVisualizerApp app;
+  TapVisualizerAppTestApi test_api(&app);
   test_api.Start();
 
   // A fullscreen widget is created.
@@ -107,15 +107,15 @@ TEST_F(TouchHudApplicationTest, Basics) {
   EXPECT_EQ(1, contents->child_count());
 }
 
-TEST_F(TouchHudApplicationTest, MultiDisplay) {
+TEST_F(TapVisualizerAppTest, MultiDisplay) {
   // Add a second display on the right.
   screen_->display_list().AddDisplay(
       display::Display(kSecondDisplayId, gfx::Rect(801, 0, 800, 600)),
       display::DisplayList::Type::NOT_PRIMARY);
 
   // Simulate the service starting.
-  TouchHudApplication app;
-  TouchHudApplicationTestApi test_api(&app);
+  TapVisualizerApp app;
+  TapVisualizerAppTestApi test_api(&app);
   test_api.Start();
 
   // Two renderers are created.
@@ -144,4 +144,4 @@ TEST_F(TouchHudApplicationTest, MultiDisplay) {
   EXPECT_FALSE(test_api.HasRendererForDisplay(kSecondDisplayId));
 }
 
-}  // namespace touch_hud
+}  // namespace tap_visualizer

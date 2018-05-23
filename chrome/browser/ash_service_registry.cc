@@ -7,7 +7,7 @@
 #include "ash/ash_service.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/shortcut_viewer/public/mojom/constants.mojom.h"
-#include "ash/components/touch_hud/public/mojom/constants.mojom.h"
+#include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
@@ -39,7 +39,7 @@ constexpr Service kCommonServices[] = {
     {quick_launch::mojom::kServiceName, "Quick Launch", nullptr},
     {"autoclick_app", "Accessibility Autoclick", nullptr},
     {shortcut_viewer::mojom::kServiceName, "Keyboard Shortcut Viewer", nullptr},
-    {touch_hud::mojom::kServiceName, "Touch HUD", nullptr},
+    {tap_visualizer::mojom::kServiceName, "Show Taps", nullptr},
     {font_service::mojom::kServiceName, "Font Service", nullptr},
 };
 

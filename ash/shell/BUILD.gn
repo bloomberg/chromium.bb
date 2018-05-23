@@ -27,7 +27,7 @@ service_manifest("ash_content_packaged_services_manifest_overlay") {
   source = "//ash/shell/ash_content_packaged_services_manifest_overlay.json"
   packaged_services = [
     "//ash/components/quick_launch:manifest",
-    "//ash/components/touch_hud:manifest",
+    "//ash/components/tap_visualizer:manifest",
     "//components/services/font:manifest",
     "//services/ui:manifest",
   ]

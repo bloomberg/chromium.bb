@@ -545,7 +545,7 @@ void RootWindowController::InitTouchHuds() {
 
   // TouchHudProjection manages its own lifetime.
   if (command_line->HasSwitch(switches::kShowTaps) &&
-      !features::IsShowTapsAppEnabled()) {
+      !base::FeatureList::IsEnabled(features::kTapVisualizerApp)) {
     touch_hud_projection_ = new TouchHudProjection(GetRootWindow());
   }
 }

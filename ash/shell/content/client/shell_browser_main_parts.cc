@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
-#include "ash/components/touch_hud/public/mojom/constants.mojom.h"
+#include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
 #include "ash/content/content_gpu_support.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/login_status.h"
@@ -116,10 +116,10 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->StartService(quick_launch::mojom::kServiceName);
-  if (features::IsShowTapsAppEnabled()) {
+  if (base::FeatureList::IsEnabled(features::kTapVisualizerApp)) {
     content::ServiceManagerConnection::GetForProcess()
         ->GetConnector()
-        ->StartService(touch_hud::mojom::kServiceName);
+        ->StartService(tap_visualizer::mojom::kServiceName);
   }
   ash::Shell::Get()->InitWaylandServer(nullptr);
 }

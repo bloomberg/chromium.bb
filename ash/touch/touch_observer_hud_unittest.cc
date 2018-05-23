@@ -271,7 +271,7 @@ class TouchHudProjectionTest : public TouchHudTestBase {
   // testing::Test:
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kShowTaps);
-    scoped_feature_list_.InitAndDisableFeature(features::kShowTapsApp);
+    scoped_feature_list_.InitAndDisableFeature(features::kTapVisualizerApp);
     TouchHudTestBase::SetUp();
   }
 

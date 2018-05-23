@@ -92,7 +92,7 @@ include_rules = [
   "+ash/public",
   "+ash/components/quick_launch/public/mojom",
   "+ash/components/shortcut_viewer/public/mojom",
-  "+ash/components/touch_hud/public/mojom",
+  "+ash/components/tap_visualizer/public/mojom",
 
   # The message center may not exist, or may run out of process (in mash).
   "-ui/message_center",

@@ -6,8 +6,8 @@
 
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/quick_launch/quick_launch_application.h"
-#include "ash/components/touch_hud/public/mojom/constants.mojom.h"
-#include "ash/components/touch_hud/touch_hud_application.h"
+#include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
+#include "ash/components/tap_visualizer/tap_visualizer_app.h"
 #include "ash/shell/content/client/shell_content_browser_client.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -28,8 +28,8 @@ std::unique_ptr<service_manager::Service> CreateQuickLaunch() {
   return std::make_unique<quick_launch::QuickLaunchApplication>();
 }
 
-std::unique_ptr<service_manager::Service> CreateTouchHud() {
-  return std::make_unique<touch_hud::TouchHudApplication>();
+std::unique_ptr<service_manager::Service> CreateTapVisualizer() {
+  return std::make_unique<tap_visualizer::TapVisualizerApp>();
 }
 
 std::unique_ptr<service_manager::Service> CreateFontService() {
@@ -50,8 +50,8 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
     }
     {
       service_manager::EmbeddedServiceInfo info;
-      info.factory = base::BindRepeating(&CreateTouchHud);
-      (*services)[touch_hud::mojom::kServiceName] = info;
+      info.factory = base::BindRepeating(&CreateTapVisualizer);
+      (*services)[tap_visualizer::mojom::kServiceName] = info;
     }
     {
       service_manager::EmbeddedServiceInfo info;

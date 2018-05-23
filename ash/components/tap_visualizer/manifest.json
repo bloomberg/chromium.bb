@@ -1,6 +1,6 @@
 {
-  "name": "touch_hud_app",
-  "display_name": "Touch Hud",
+  "name": "tap_visualizer_app",
+  "display_name": "Show Taps",
   "sandbox_type": "none",
   "interface_provider_specs": {
     "service_manager:connector": {

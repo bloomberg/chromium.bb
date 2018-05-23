@@ -49,7 +49,7 @@ include_rules = [
   # Ash can talk to public interfaces for mini-apps.
   "+ash/components/autoclick/public",
   "+ash/components/quick_launch/public",
-  "+ash/components/touch_hud/public",
+  "+ash/components/tap_visualizer/public",
 
   # Ash sits above content. Exceptions live in //ash/content.
   "-content",
