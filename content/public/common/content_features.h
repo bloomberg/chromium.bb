@@ -113,6 +113,7 @@ CONTENT_EXPORT extern const base::Feature kWebAuth;
 CONTENT_EXPORT extern const base::Feature kWebAuthBle;
 CONTENT_EXPORT extern const base::Feature kWebContentsOcclusion;
 CONTENT_EXPORT extern const base::Feature kWebAuthCtap2;
+CONTENT_EXPORT extern const base::Feature kWebAuthCable;
 CONTENT_EXPORT extern const base::Feature kWebGLImageChromium;
 CONTENT_EXPORT extern const base::Feature kWebPayments;
 CONTENT_EXPORT extern const base::Feature kWebRtcAecBoundedErlSetup;

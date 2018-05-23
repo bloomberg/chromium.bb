@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_parsing_utils.h"
 
 namespace mojo {
 
@@ -19,6 +20,7 @@ using ::webauth::mojom::PublicKeyCredentialDescriptorPtr;
 using ::webauth::mojom::AuthenticatorSelectionCriteriaPtr;
 using ::webauth::mojom::AuthenticatorAttachment;
 using ::webauth::mojom::UserVerificationRequirement;
+using ::webauth::mojom::CableAuthenticationPtr;
 
 // static
 ::device::FidoTransportProtocol
@@ -157,6 +159,39 @@ TypeConverter<::device::PublicKeyCredentialUserEntity,
     user_entity.SetIconUrl(*input->icon);
 
   return user_entity;
+}
+
+// TODO(hongjunchoi): Handle version number for Cable discovery data.
+// See: https://crbug.com/837088
+// static
+std::vector<::device::FidoCableDiscovery::CableDiscoveryData>
+TypeConverter<std::vector<::device::FidoCableDiscovery::CableDiscoveryData>,
+              std::vector<CableAuthenticationPtr>>::
+    Convert(const std::vector<CableAuthenticationPtr>& input) {
+  std::vector<::device::FidoCableDiscovery::CableDiscoveryData> discovery_data;
+  discovery_data.reserve(input.size());
+
+  for (const auto& data : input) {
+    ::device::FidoCableDiscovery::EidArray client_eid;
+    DCHECK_EQ(client_eid.size(), data->client_eid.size());
+    std::copy(data->client_eid.begin(), data->client_eid.end(),
+              client_eid.begin());
+
+    ::device::FidoCableDiscovery::EidArray authenticator_eid;
+    DCHECK_EQ(authenticator_eid.size(), data->authenticator_eid.size());
+    std::copy(data->authenticator_eid.begin(), data->authenticator_eid.end(),
+              authenticator_eid.begin());
+
+    ::device::FidoCableDiscovery::SessionKeyArray session_key;
+    DCHECK_EQ(session_key.size(), data->session_pre_key.size());
+    std::copy(data->session_pre_key.begin(), data->session_pre_key.end(),
+              session_key.begin());
+
+    discovery_data.push_back(::device::FidoCableDiscovery::CableDiscoveryData{
+        client_eid, authenticator_eid, session_key});
+  }
+
+  return discovery_data;
 }
 
 }  // namespace mojo

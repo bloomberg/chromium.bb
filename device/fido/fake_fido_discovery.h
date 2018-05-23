@@ -103,7 +103,7 @@ class ScopedFakeFidoDiscoveryFactory
   ScopedFakeFidoDiscoveryFactory();
   ~ScopedFakeFidoDiscoveryFactory() override;
 
-  // Constructs a fake BLE/HID discovery to be returned from the next call to
+  // Constructs a fake discovery to be returned from the next call to
   // FidoDiscovery::Create. Returns a raw pointer to the fake so that tests can
   // set it up according to taste.
   //
@@ -112,6 +112,8 @@ class ScopedFakeFidoDiscoveryFactory
   FakeFidoDiscovery* ForgeNextHidDiscovery(StartMode mode = StartMode::kManual);
   FakeFidoDiscovery* ForgeNextNfcDiscovery(StartMode mode = StartMode::kManual);
   FakeFidoDiscovery* ForgeNextBleDiscovery(StartMode mode = StartMode::kManual);
+  FakeFidoDiscovery* ForgeNextCableDiscovery(
+      StartMode mode = StartMode::kManual);
 
  protected:
   std::unique_ptr<FidoDiscovery> CreateFidoDiscovery(
@@ -122,6 +124,7 @@ class ScopedFakeFidoDiscoveryFactory
   std::unique_ptr<FakeFidoDiscovery> next_hid_discovery_;
   std::unique_ptr<FakeFidoDiscovery> next_nfc_discovery_;
   std::unique_ptr<FakeFidoDiscovery> next_ble_discovery_;
+  std::unique_ptr<FakeFidoDiscovery> next_cable_discovery_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeFidoDiscoveryFactory);
 };

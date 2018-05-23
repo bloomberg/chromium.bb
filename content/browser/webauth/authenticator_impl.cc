@@ -240,6 +240,13 @@ device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
   request_parameter.SetUserVerification(
       mojo::ConvertTo<device::UserVerificationRequirement>(
           options->user_verification));
+
+  if (!options->cable_authentication_data.empty()) {
+    request_parameter.SetCableExtension(
+        mojo::ConvertTo<
+            std::vector<device::FidoCableDiscovery::CableDiscoveryData>>(
+            options->cable_authentication_data));
+  }
   return request_parameter;
 }
 
@@ -340,6 +347,11 @@ AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host)
   if (base::FeatureList::IsEnabled(features::kWebAuthBle)) {
     protocols_.insert(device::FidoTransportProtocol::kBluetoothLowEnergy);
   }
+
+  if (base::FeatureList::IsEnabled(features::kWebAuthCable)) {
+    protocols_.insert(
+        device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+  }
 }
 
 AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host,
@@ -357,6 +369,11 @@ AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host,
   protocols_.insert(device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
   if (base::FeatureList::IsEnabled(features::kWebAuthBle)) {
     protocols_.insert(device::FidoTransportProtocol::kBluetoothLowEnergy);
+  }
+
+  if (base::FeatureList::IsEnabled(features::kWebAuthCable)) {
+    protocols_.insert(
+        device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
   }
 }
 
@@ -515,6 +532,11 @@ void AuthenticatorImpl::MakeCredential(
 
   attestation_preference_ = options->attestation;
 
+  // Communication using Cable protocol is only supported for GetAssertion
+  // request on CTAP2 devices.
+  protocols_.erase(
+      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+
   if (base::FeatureList::IsEnabled(features::kWebAuthCtap2)) {
     auto authenticator_selection_criteria =
         options->authenticator_selection
@@ -652,6 +674,10 @@ void AuthenticatorImpl::GetAssertion(
         base::BindOnce(&AuthenticatorImpl::OnSignResponse,
                        weak_factory_.GetWeakPtr()));
   } else {
+    // Communication using Cable protocol is only supported for CTAP2 devices.
+    protocols_.erase(
+        device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+
     u2f_request_ = device::U2fSign::TrySign(
         connector_, protocols_, handles,
         ConstructClientDataHash(client_data_json_), application_parameter,

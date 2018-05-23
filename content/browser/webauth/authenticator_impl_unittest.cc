@@ -345,6 +345,10 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
     return callback_receiver.status();
   }
 
+  bool SupportsTransportProtocol(::device::FidoTransportProtocol protocol) {
+    return base::ContainsKey(authenticator_impl_->protocols_, protocol);
+  }
+
  private:
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
 };
@@ -722,6 +726,134 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
                 callback_receiver.status());
     }
   }
+}
+
+TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledWithSwitch) {
+  TestServiceManagerContext service_manager_context;
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      std::vector<base::Feature>{features::kWebAuthCtap2,
+                                 features::kWebAuthCable},
+      std::vector<base::Feature>{});
+
+  SimulateNavigation(GURL(kTestOrigin1));
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  TestGetAssertionCallback callback_receiver;
+
+  // Set up service_manager::Connector for tests.
+  auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
+  service_manager::mojom::ConnectorRequest request;
+  auto connector = service_manager::Connector::Create(&request);
+  service_manager::Connector::TestApi test_api(connector.get());
+  test_api.OverrideBinderForTesting(
+      service_manager::Identity(device::mojom::kServiceName),
+      device::mojom::HidManager::Name_,
+      base::Bind(&device::FakeHidManager::AddBinding,
+                 base::Unretained(fake_hid_manager.get())));
+
+  // Set up a timer for testing.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto timer =
+      std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
+  timer->SetTaskRunner(task_runner);
+  AuthenticatorPtr authenticator =
+      ConnectToAuthenticator(connector.get(), std::move(timer));
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+
+  // Trigger timer.
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  EXPECT_TRUE(SupportsTransportProtocol(
+      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
+}
+
+TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledForMakeCredential) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      std::vector<base::Feature>{features::kWebAuthCtap2,
+                                 features::kWebAuthCable},
+      std::vector<base::Feature>{});
+
+  SimulateNavigation(GURL(kTestOrigin1));
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  TestMakeCredentialCallback callback_receiver;
+
+  // Set up service_manager::Connector for tests.
+  auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
+  service_manager::mojom::ConnectorRequest request;
+  auto connector = service_manager::Connector::Create(&request);
+  service_manager::Connector::TestApi test_api(connector.get());
+  test_api.OverrideBinderForTesting(
+      service_manager::Identity(device::mojom::kServiceName),
+      device::mojom::HidManager::Name_,
+      base::Bind(&device::FakeHidManager::AddBinding,
+                 base::Unretained(fake_hid_manager.get())));
+
+  // Set up a timer for testing.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto timer =
+      std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
+  timer->SetTaskRunner(task_runner);
+  AuthenticatorPtr authenticator =
+      ConnectToAuthenticator(connector.get(), std::move(timer));
+  authenticator->MakeCredential(std::move(options),
+                                callback_receiver.callback());
+
+  // Trigger timer.
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  EXPECT_FALSE(SupportsTransportProtocol(
+      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
+}
+
+TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithoutSwitch) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kWebAuthCtap2);
+
+  SimulateNavigation(GURL(kTestOrigin1));
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  TestGetAssertionCallback callback_receiver;
+
+  // Set up service_manager::Connector for tests.
+  auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
+  service_manager::mojom::ConnectorRequest request;
+  auto connector = service_manager::Connector::Create(&request);
+  service_manager::Connector::TestApi test_api(connector.get());
+  test_api.OverrideBinderForTesting(
+      service_manager::Identity(device::mojom::kServiceName),
+      device::mojom::HidManager::Name_,
+      base::Bind(&device::FakeHidManager::AddBinding,
+                 base::Unretained(fake_hid_manager.get())));
+
+  // Set up a timer for testing.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto timer =
+      std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
+  timer->SetTaskRunner(task_runner);
+  AuthenticatorPtr authenticator =
+      ConnectToAuthenticator(connector.get(), std::move(timer));
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+
+  // Trigger timer.
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  EXPECT_FALSE(SupportsTransportProtocol(
+      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
 }
 
 TEST_F(AuthenticatorImplTest, TestU2fDeviceDoesNotSupportMakeCredential) {

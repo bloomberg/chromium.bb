@@ -37,6 +37,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   // (i.e. more than one phone has been enrolled to an user account as a
   // security key), then FidoCableDiscovery must advertise for all of the client
   // EID received from the relying party.
+  // TODO(hongjunchoi): Add discovery data required for MakeCredential request.
+  // See: https://crbug.com/837088
   struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
     CableDiscoveryData(const EidArray& client_eid,
                        const EidArray& authenticator_eid,

@@ -112,4 +112,10 @@ CtapGetAssertionRequest& CtapGetAssertionRequest::SetPinProtocol(
   return *this;
 }
 
+CtapGetAssertionRequest& CtapGetAssertionRequest::SetCableExtension(
+    std::vector<FidoCableDiscovery::CableDiscoveryData> cable_extension) {
+  cable_extension_ = std::move(cable_extension);
+  return *this;
+}
+
 }  // namespace device
