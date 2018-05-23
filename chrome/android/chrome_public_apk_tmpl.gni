@@ -199,10 +199,10 @@ template("monochrome_public_apk_tmpl") {
       png_to_webp = true
     }
 
-    if (enable_arcore_java) {
+    if (enable_arcore) {
       deps += [ "//third_party/arcore-android-sdk:libdynamite_client_java" ]
     }
-    if (enable_arcore) {
+    if (package_arcore) {
       deps += [ "//third_party/arcore-android-sdk:libarcore_library" ]
 
       # We store this as a separate .so in the APK and only load as needed.
