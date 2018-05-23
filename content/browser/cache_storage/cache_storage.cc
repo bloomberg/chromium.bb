@@ -907,13 +907,14 @@ void CacheStorage::CreateCacheDidCreateCache(
       cache_name, cache_ptr->cache_size(), cache_ptr->cache_padding(),
       cache_ptr->cache_padding_key()->key()));
 
+  CacheStorageCacheHandle handle = CreateCacheHandle(cache_ptr);
   cache_loader_->WriteIndex(
       *cache_index_,
       base::BindOnce(&CacheStorage::CreateCacheDidWriteIndex,
                      weak_factory_.GetWeakPtr(), std::move(callback),
                      CreateCacheHandle(cache_ptr)));
 
-  cache_loader_->NotifyCacheCreated(cache_name, CreateCacheHandle(cache_ptr));
+  cache_loader_->NotifyCacheCreated(cache_name, std::move(handle));
   if (cache_storage_manager_)
     cache_storage_manager_->NotifyCacheListChanged(origin_);
 }
