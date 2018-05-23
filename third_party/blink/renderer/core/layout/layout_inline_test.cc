@@ -119,4 +119,126 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
   EXPECT_TRUE(hit_outcome);
 }
 
+// crbug.com/844746
+TEST_P(ParameterizedLayoutInlineTest, RelativePositionedHitTest) {
+  LoadAhem();
+  SetBodyInnerHTML(
+      "<div style='font: 10px/10px Ahem'>"
+      "  <span style='position: relative'>XXX</span>"
+      "</div>");
+
+  HitTestRequest hit_request(HitTestRequest::kReadOnly |
+                             HitTestRequest::kActive);
+  const LayoutPoint container_offset(8, 8);
+  const LayoutPoint hit_location(18, 15);
+
+  Element* div = GetDocument().QuerySelector("div");
+  Element* span = GetDocument().QuerySelector("span");
+  Node* text = span->firstChild();
+
+  // Shouldn't hit anything in SPAN as it's in another paint layer
+  {
+    LayoutObject* layout_div = div->GetLayoutObject();
+    HitTestResult hit_result(hit_request, hit_location);
+    bool hit_outcome = layout_div->HitTestAllPhases(hit_result, hit_location,
+                                                    container_offset);
+    EXPECT_TRUE(hit_outcome);
+    EXPECT_EQ(div, hit_result.InnerNode());
+  }
+
+  // SPAN and its descendants can be hit only with a hit test that starts from
+  // the SPAN itself.
+  {
+    LayoutObject* layout_span = span->GetLayoutObject();
+    HitTestResult hit_result(hit_request, hit_location);
+    bool hit_outcome = layout_span->HitTestAllPhases(hit_result, hit_location,
+                                                     container_offset);
+    EXPECT_TRUE(hit_outcome);
+    EXPECT_EQ(text, hit_result.InnerNode());
+  }
+
+  // Hit test from LayoutView to verify that everything works together.
+  {
+    HitTestResult hit_result(hit_request, hit_location);
+    bool hit_outcome = GetLayoutView().HitTest(hit_result);
+    EXPECT_TRUE(hit_outcome);
+    EXPECT_EQ(text, hit_result.InnerNode());
+  }
+}
+
+TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
+  LoadAhem();
+  SetBodyInnerHTML(
+      "<div style='font: 10px/10px Ahem; width: 30px'>"
+      "  <span id=span style='position: relative'>"
+      "    XXX"
+      "    <span id=line2 style='background-color: red'>YYY</span>"
+      "    <img style='width: 10px; height: 10px; vertical-align: bottom'>"
+      "  </span>"
+      "</div>");
+
+  LayoutObject* layout_span = GetLayoutObjectByElementId("span");
+  HitTestRequest hit_request(HitTestRequest::kReadOnly |
+                             HitTestRequest::kActive |
+                             HitTestRequest::kIgnorePointerEventsNone);
+  const LayoutPoint container_offset(8, 8);
+
+  // Hit test first line
+  {
+    LayoutPoint hit_location(13, 13);
+    Node* target = GetElementById("span")->firstChild();
+
+    HitTestResult hit_result(hit_request, hit_location);
+    bool hit_outcome = layout_span->HitTestAllPhases(hit_result, hit_location,
+                                                     container_offset);
+    EXPECT_TRUE(hit_outcome);
+    EXPECT_EQ(target, hit_result.InnerNode());
+
+    // Initiate a hit test from LayoutView to verify the "natural" process.
+    HitTestResult layout_view_hit_result(hit_request, hit_location);
+    bool layout_view_hit_outcome =
+        GetLayoutView().HitTest(layout_view_hit_result);
+    EXPECT_TRUE(layout_view_hit_outcome);
+    EXPECT_EQ(target, layout_view_hit_result.InnerNode());
+  }
+
+  // Hit test second line
+  {
+    LayoutPoint hit_location(13, 23);
+    Node* target = GetElementById("line2")->firstChild();
+
+    HitTestResult hit_result(hit_request, hit_location);
+    bool hit_outcome = layout_span->HitTestAllPhases(hit_result, hit_location,
+                                                     container_offset);
+    EXPECT_TRUE(hit_outcome);
+    EXPECT_EQ(target, hit_result.InnerNode());
+
+    // Initiate a hit test from LayoutView to verify the "natural" process.
+    HitTestResult layout_view_hit_result(hit_request, hit_location);
+    bool layout_view_hit_outcome =
+        GetLayoutView().HitTest(layout_view_hit_result);
+    EXPECT_TRUE(layout_view_hit_outcome);
+    EXPECT_EQ(target, layout_view_hit_result.InnerNode());
+  }
+
+  // Hit test image in third line
+  {
+    LayoutPoint hit_location(13, 33);
+    Node* target = GetDocument().QuerySelector("img");
+
+    HitTestResult hit_result(hit_request, hit_location);
+    bool hit_outcome = layout_span->HitTestAllPhases(hit_result, hit_location,
+                                                     container_offset);
+    EXPECT_TRUE(hit_outcome);
+    EXPECT_EQ(target, hit_result.InnerNode());
+
+    // Initiate a hit test from LayoutView to verify the "natural" process.
+    HitTestResult layout_view_hit_result(hit_request, hit_location);
+    bool layout_view_hit_outcome =
+        GetLayoutView().HitTest(layout_view_hit_result);
+    EXPECT_TRUE(layout_view_hit_outcome);
+    EXPECT_EQ(target, layout_view_hit_result.InnerNode());
+  }
+}
+
 }  // namespace blink
