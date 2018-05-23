@@ -41,6 +41,8 @@ cast_source_set("browser") {
     "cast_net_log.h",
     "cast_network_delegate.cc",
     "cast_network_delegate.h",
+    "cast_network_request_interceptor.cc",
+    "cast_network_request_interceptor.h",
     "cast_permission_manager.cc",
     "cast_permission_manager.h",
     "cast_quota_permission_context.cc",
@@ -95,7 +97,7 @@ cast_source_set("browser") {
     sources += [
       "cast_browser_main_parts_simple.cc",
       "cast_content_browser_client_simple.cc",
-      "cast_network_delegate_simple.cc",
+      "cast_network_request_interceptor_simple.cc",
       "pref_service_helper_simple.cc",
     ]
   }
@@ -458,6 +460,7 @@ cast_source_set("unittests") {
   sources = [
     "bluetooth/cast_bluetooth_chooser_unittest.cc",
     "cast_media_blocker_unittest.cc",
+    "cast_network_delegate_unittest.cc",
     "cast_touch_device_manager_unittest.cc",
     "devtools/cast_devtools_manager_delegate_unittest.cc",
     "lru_renderer_cache_test.cc",
