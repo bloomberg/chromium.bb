@@ -1513,9 +1513,8 @@ void LocalDOMWindow::RemoveAllEventListeners() {
     it->DidRemoveAllEventListeners(this);
   }
 
-  if (GetFrame() && GetFrame()->GetPage()) {
+  if (GetFrame())
     GetFrame()->GetEventHandlerRegistry().DidRemoveAllEventHandlers(*this);
-  }
 
   UntrackAllUnloadEventListeners(this);
   UntrackAllBeforeUnloadEventListeners(this);
