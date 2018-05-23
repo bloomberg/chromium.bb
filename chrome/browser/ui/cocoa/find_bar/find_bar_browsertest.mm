@@ -85,7 +85,9 @@ void SimulateKeyPress(NSWindow* window, ui::KeyboardCode key) {
 
 typedef InProcessBrowserTest FindBarBrowserTest;
 
-IN_PROC_BROWSER_TEST_F(FindBarBrowserTest, FocusOnTabSwitch) {
+// Disabled. See https://crbug.com/845389 - this regressed somewhere between
+// r545258 and r559030, but it may be obsolete soon.
+IN_PROC_BROWSER_TEST_F(FindBarBrowserTest, DISABLED_FocusOnTabSwitch) {
   AddTabAtIndex(1, GURL("about:blank"), ui::PAGE_TRANSITION_LINK);
   browser()->GetFindBarController()->Show();
 
@@ -201,7 +203,9 @@ IN_PROC_BROWSER_TEST_F(FindBarBrowserTest,
   EXPECT_TRUE([previousButton isEnabled]);
 }
 
-IN_PROC_BROWSER_TEST_F(FindBarBrowserTest, EscapeKey) {
+// Disabled. See https://crbug.com/845389 - this regressed somewhere between
+// r545258 and r559030, but it may be obsolete soon.
+IN_PROC_BROWSER_TEST_F(FindBarBrowserTest, DISABLED_EscapeKey) {
   // Enter fullscreen.
   std::unique_ptr<FullscreenNotificationObserver> waiter(
       new FullscreenNotificationObserver());

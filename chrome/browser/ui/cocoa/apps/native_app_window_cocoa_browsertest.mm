@@ -30,7 +30,6 @@
 #import "testing/gtest_mac.h"
 #import "ui/base/test/nswindow_fullscreen_notification_waiter.h"
 #import "ui/base/test/scoped_fake_nswindow_focus.h"
-#import "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
 
@@ -224,8 +223,6 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest,
 // Test that NativeAppWindow and AppWindow fullscreen state is updated when
 // the window is fullscreened natively.
 IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Fullscreen) {
-  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
-
   extensions::AppWindow* app_window =
       CreateTestAppWindow("{\"alwaysOnTop\": true }");
   extensions::NativeAppWindow* window = app_window->GetBaseWindow();
@@ -455,8 +452,6 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, MinimizeMaximize) {
 
 // Test Maximize, Fullscreen, Restore combinations.
 IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, MaximizeFullscreen) {
-  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
-
   SetUpAppWithWindows(1);
   AppWindow* app_window = GetFirstAppWindow();
   extensions::NativeAppWindow* window = app_window->GetBaseWindow();
@@ -532,9 +527,8 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Frameless) {
   // Since the window has no constraints, it should have all of the following
   // style mask bits.
   NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
-                          NSMiniaturizableWindowMask | NSResizableWindowMask |
-                          NSTexturedBackgroundWindowMask;
-  EXPECT_EQ(style_mask, [ns_window styleMask]);
+                          NSMiniaturizableWindowMask | NSResizableWindowMask;
+  EXPECT_EQ(style_mask, [ns_window styleMask] & style_mask);
 
   CloseAppWindow(app_window);
 }
@@ -584,7 +578,6 @@ void TestControls(AppWindow* app_window) {
 
   // If a window is made fullscreen by the API, fullscreen should be enabled so
   // the user can exit fullscreen.
-  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
   base::scoped_nsobject<NSWindowFullscreenNotificationWaiter> waiter(
       [[NSWindowFullscreenNotificationWaiter alloc] initWithWindow:ns_window]);
   app_window->SetFullscreen(AppWindow::FULLSCREEN_TYPE_WINDOW_API, true);
