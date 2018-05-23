@@ -143,7 +143,6 @@ std::unique_ptr<GvrDevice> GvrDevice::Create() {
 }
 
 GvrDevice::GvrDevice() : weak_ptr_factory_(this) {
-  GvrDelegateProviderFactory::SetDevice(this);
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider || delegate_provider->ShouldDisableGvrDevice())
     return;
@@ -156,6 +155,7 @@ GvrDevice::GvrDevice() : weak_ptr_factory_(this) {
       env, non_presenting_context_);
   gvr_api_ = gvr::GvrApi::WrapNonOwned(reinterpret_cast<gvr_context*>(context));
   SetVRDisplayInfo(CreateVRDisplayInfo(gvr_api_.get(), GetId()));
+  GvrDelegateProviderFactory::SetDevice(this);
 }
 
 GvrDevice::~GvrDevice() {
