@@ -2941,8 +2941,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
             tab_android->GetWebappManifestScope();
       }
 
-      if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo) &&
-          base::FeatureList::IsEnabled(media::kPictureInPicture)) {
+      if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
         web_prefs->picture_in_picture_enabled =
             tab_android->IsPictureInPictureEnabled();
       }
