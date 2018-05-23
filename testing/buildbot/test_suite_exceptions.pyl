@@ -2554,13 +2554,6 @@
   },
   'viz_unittests': {
     'remove_from': [
-      # On chromium.android, unclear why these aren't run on all bots.
-      'Nougat Phone Tester',
-       # chromium.android.fyi
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-      'x64 Device Tester',
-      'x86 Cloud Tester',
       # chromium.fyi
       'Chromium Win 10 GCE Tests',
       'Out of Process Profiling Android',
