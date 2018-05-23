@@ -109,9 +109,10 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
             fromNamedGuide:kTabSwitcherGuide];
 }
 
-- (void)searchButtonPopup {
+- (void)showSearchButtonPopup {
   base::RecordAction(base::UserMetricsAction("MobileToolbarShowSearchMenu"));
-  [self presentPopupOfType:PopupMenuTypeSearch fromNamedGuide:nil];
+  [self presentPopupOfType:PopupMenuTypeSearch
+            fromNamedGuide:kSearchButtonGuide];
 }
 
 - (void)dismissPopupMenuAnimated:(BOOL)animated {

@@ -11743,6 +11743,11 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileMenuPasteAndGo">
+  <owner>gambard@chromium.org</owner>
+  <description>User pressed 'Paste and Go' in the app menu.</description>
+</action>
+
 <action name="MobileMenuPrint">
   <owner>aurimas@chromium.org</owner>
   <description>User pressed 'Print' in the app menu.</description>
@@ -11795,6 +11800,11 @@ should be able to be added at any place in this file.
   <description>User pressed 'Request Mobile Site' in the app menu.</description>
 </action>
 
+<action name="MobileMenuScanQRCode">
+  <owner>gambard@chromium.org</owner>
+  <description>User pressed 'Scan QR Code' in the app menu.</description>
+</action>
+
 <action name="MobileMenuSettings">
   <owner>aurimas@chromium.org</owner>
   <description>User pressed 'Settings' in the app menu.</description>
@@ -11818,6 +11828,11 @@ should be able to be added at any place in this file.
 <action name="MobileMenuStop">
   <owner>tedchoc@chromium.org</owner>
   <description>User pressed the stop option in the app menu.</description>
+</action>
+
+<action name="MobileMenuVoiceSearch">
+  <owner>gambard@chromium.org</owner>
+  <description>User pressed 'Voice Search' in the app menu.</description>
 </action>
 
 <action name="MobileMWSession">

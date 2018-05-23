@@ -60,6 +60,12 @@ extern NSString* const kToolsMenuAddToBookmarks;
 extern NSString* const kToolsMenuEditBookmark;
 // SiteInformation item accessibility Identifier.
 extern NSString* const kToolsMenuSiteInformation;
+// Paste and Go item accessibility Identifier.
+extern NSString* const kToolsMenuPasteAndGo;
+// Voice Search item accessibility Identifier.
+extern NSString* const kToolsMenuVoiceSearch;
+// QR Code Search item accessibility Identifier.
+extern NSString* const kToolsMenuQRCodeSearch;
 
 // Identifiers for tools menu items (for metrics purposes).
 typedef NS_ENUM(int, ToolsMenuItemID) {

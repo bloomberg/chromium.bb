@@ -367,6 +367,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
         [self createTabGridMenuItems];
         break;
       case PopupMenuTypeSearch:
+        [self createSearchMenuItems];
         break;
     }
     NSMutableArray* specificItems = [NSMutableArray array];
@@ -577,6 +578,29 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   [closeItems addObject:closeTab];
 
   self.items = @[ [self itemsForNewTab], closeItems ];
+}
+
+// Creates the menu items for the search menu.
+- (void)createSearchMenuItems {
+  NSMutableArray* items = [NSMutableArray array];
+  NSString* pasteboardString = [UIPasteboard generalPasteboard].string;
+  if (pasteboardString) {
+    PopupMenuToolsItem* pasteAndGo = CreateTableViewItem(
+        IDS_IOS_TOOLS_MENU_PASTE_AND_GO, PopupMenuActionPasteAndGo, nil,
+        kToolsMenuPasteAndGo);
+    [items addObject:pasteAndGo];
+  }
+
+  PopupMenuToolsItem* QRCodeSearch = CreateTableViewItem(
+      IDS_IOS_TOOLS_MENU_QR_SCANNER, PopupMenuActionQRCodeSearch, nil,
+      kToolsMenuQRCodeSearch);
+  [items addObject:QRCodeSearch];
+  PopupMenuToolsItem* voiceSearch = CreateTableViewItem(
+      IDS_IOS_TOOLS_MENU_VOICE_SEARCH, PopupMenuActionVoiceSearch, nil,
+      kToolsMenuVoiceSearch);
+  [items addObject:voiceSearch];
+
+  self.items = @[ items ];
 }
 
 // Creates the menu items for the tools menu.
