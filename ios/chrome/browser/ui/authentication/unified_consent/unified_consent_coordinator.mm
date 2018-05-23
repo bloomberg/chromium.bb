@@ -29,6 +29,7 @@
 @synthesize settingsLinkWasTapped = _settingsLinkWasTapped;
 
 - (instancetype)init {
+  self = [super init];
   if (self) {
     _unifiedConsentViewController = [[UnifiedConsentViewController alloc] init];
     _unifiedConsentViewController.delegate = self;
