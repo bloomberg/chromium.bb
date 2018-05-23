@@ -125,6 +125,7 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
     return;
   }
 
+  DVLOG(2) << __func__ << ": initializing " << decoder_->GetDisplayName();
   traits_->InitializeDecoder(
       decoder_.get(), config_,
       input_stream_->liveness() == DemuxerStream::LIVENESS_LIVE, cdm_context_,
@@ -135,7 +136,8 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::DecoderInitDone(bool success) {
-  DVLOG(2) << __func__ << ": success=" << success;
+  DVLOG(2) << __func__ << ": " << decoder_->GetDisplayName()
+           << " success=" << success;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!success) {
