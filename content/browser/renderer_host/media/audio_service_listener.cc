@@ -6,14 +6,85 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
+#include "base/time/default_tick_clock.h"
+#include "content/public/browser/child_process_data.h"
+#include "content/public/browser/child_process_termination_info.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 
 namespace content {
 
+AudioServiceListener::Metrics::Metrics(const base::TickClock* clock)
+    : clock_(clock), stopped_(clock_->NowTicks()) {}
+
+AudioServiceListener::Metrics::~Metrics() = default;
+
+void AudioServiceListener::Metrics::ServiceAlreadyRunning() {
+  LogServiceStartStatus(ServiceStartStatus::kAlreadyStarted);
+  started_ = clock_->NowTicks();
+  stopped_ = base::TimeTicks();
+}
+
+void AudioServiceListener::Metrics::ServiceCreated() {
+  DCHECK(created_.is_null());
+  created_ = clock_->NowTicks();
+}
+
+void AudioServiceListener::Metrics::ServiceStarted() {
+  started_ = clock_->NowTicks();
+
+  // |created_| is uninitialized if OnServiceCreated() was called before the
+  // listener is initialized with OnInit() call.
+  if (!created_.is_null()) {
+    LogServiceStartStatus(ServiceStartStatus::kSuccess);
+    UMA_HISTOGRAM_TIMES("Media.AudioService.ObservedStartupTime",
+                        started_ - created_);
+    created_ = base::TimeTicks();
+  }
+
+  // |stopped_| is unitialized if the service was present when the listener
+  // received OnInit() event.
+  if (!stopped_.is_null()) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Media.AudioService.ObservedDowntime",
+                               started_ - stopped_, base::TimeDelta(),
+                               base::TimeDelta::FromDays(7), 50);
+    stopped_ = base::TimeTicks();
+  }
+}
+
+void AudioServiceListener::Metrics::ServiceFailedToStart() {
+  LogServiceStartStatus(ServiceStartStatus::kFailure);
+  created_ = base::TimeTicks();
+}
+
+void AudioServiceListener::Metrics::ServiceStopped() {
+  stopped_ = clock_->NowTicks();
+
+  DCHECK(!started_.is_null());
+  UMA_HISTOGRAM_CUSTOM_TIMES("Media.AudioService.ObservedUptime",
+                             stopped_ - started_, base::TimeDelta(),
+                             base::TimeDelta::FromDays(7), 50);
+  started_ = base::TimeTicks();
+}
+
+void AudioServiceListener::Metrics::ServiceProcessTerminated(
+    Metrics::ServiceProcessTerminationStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.AudioService.ObservedProcessTerminationStatus", status);
+}
+
+void AudioServiceListener::Metrics::LogServiceStartStatus(
+    Metrics::ServiceStartStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Media.AudioService.ObservedStartStatus", status);
+}
+
 AudioServiceListener::AudioServiceListener(
     std::unique_ptr<service_manager::Connector> connector)
-    : binding_(this), connector_(std::move(connector)) {
+    : binding_(this),
+      connector_(std::move(connector)),
+      metrics_(base::DefaultTickClock::GetInstance()) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   if (!connector_)
     return;  // Happens in unittests.
 
@@ -27,7 +98,9 @@ AudioServiceListener::AudioServiceListener(
   binding_.Bind(std::move(request));
 }
 
-AudioServiceListener::~AudioServiceListener() = default;
+AudioServiceListener::~AudioServiceListener() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+}
 
 base::ProcessId AudioServiceListener::GetProcessId() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
@@ -40,17 +113,21 @@ void AudioServiceListener::OnInit(
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   for (const service_manager::mojom::RunningServiceInfoPtr& instance :
        running_services) {
-    if (instance->pid == base::kNullProcessId)
-      continue;
     if (instance->identity.name() == audio::mojom::kServiceName) {
       process_id_ = instance->pid;
+      metrics_.ServiceAlreadyRunning();
       break;
     }
   }
 }
 
 void AudioServiceListener::OnServiceCreated(
-    service_manager::mojom::RunningServiceInfoPtr service) {}
+    service_manager::mojom::RunningServiceInfoPtr service) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  if (service->identity.name() != audio::mojom::kServiceName)
+    return;
+  metrics_.ServiceCreated();
+}
 
 void AudioServiceListener::OnServiceStarted(
     const ::service_manager::Identity& identity,
@@ -59,6 +136,7 @@ void AudioServiceListener::OnServiceStarted(
   if (identity.name() != audio::mojom::kServiceName)
     return;
   process_id_ = pid;
+  metrics_.ServiceStarted();
 }
 
 void AudioServiceListener::OnServicePIDReceived(
@@ -71,7 +149,12 @@ void AudioServiceListener::OnServicePIDReceived(
 }
 
 void AudioServiceListener::OnServiceFailedToStart(
-    const ::service_manager::Identity& identity) {}
+    const ::service_manager::Identity& identity) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  if (identity.name() != audio::mojom::kServiceName)
+    return;
+  metrics_.ServiceFailedToStart();
+}
 
 void AudioServiceListener::OnServiceStopped(
     const ::service_manager::Identity& identity) {
@@ -79,6 +162,36 @@ void AudioServiceListener::OnServiceStopped(
   if (identity.name() != audio::mojom::kServiceName)
     return;
   process_id_ = base::kNullProcessId;
+  metrics_.ServiceStopped();
+}
+
+void AudioServiceListener::BrowserChildProcessHostDisconnected(
+    const ChildProcessData& data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  if (base::GetProcId(data.handle) != process_id_)
+    return;
+  metrics_.ServiceProcessTerminated(
+      Metrics::ServiceProcessTerminationStatus::kDisconnect);
+}
+
+void AudioServiceListener::BrowserChildProcessCrashed(
+    const ChildProcessData& data,
+    const ChildProcessTerminationInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  if (base::GetProcId(data.handle) != process_id_)
+    return;
+  metrics_.ServiceProcessTerminated(
+      Metrics::ServiceProcessTerminationStatus::kCrash);
+}
+
+void AudioServiceListener::BrowserChildProcessKilled(
+    const ChildProcessData& data,
+    const ChildProcessTerminationInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  if (base::GetProcId(data.handle) != process_id_)
+    return;
+  metrics_.ServiceProcessTerminated(
+      Metrics::ServiceProcessTerminationStatus::kKill);
 }
 
 }  // namespace content
