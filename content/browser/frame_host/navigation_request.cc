@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -47,6 +48,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/request_context_type.h"
@@ -119,6 +121,12 @@ bool IsSecureFrame(FrameTreeNode* frame) {
   return true;
 }
 
+bool IsSecMetadataEnabled() {
+  return base::FeatureList::IsEnabled(features::kSecMetadata) ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableExperimentalWebPlatformFeatures);
+}
+
 // This should match blink::ResourceRequest::needsHTTPOrigin.
 bool NeedsHTTPOrigin(net::HttpRequestHeaders* headers,
                      const std::string& method) {
@@ -150,6 +158,8 @@ void AddAdditionalRequestHeaders(
     BrowserContext* browser_context,
     const std::string& method,
     const std::string user_agent_override,
+    bool has_user_gesture,
+    base::Optional<url::Origin> initiator_origin,
     FrameTreeNode* frame_tree_node) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
@@ -180,6 +190,29 @@ void AddAdditionalRequestHeaders(
                               user_agent_override.empty()
                                   ? GetContentClient()->GetUserAgent()
                                   : user_agent_override);
+
+  // TODO(mkwst): Extract this logic out somewhere that can be shared between
+  // Blink and //content.
+  if (IsSecMetadataEnabled()) {
+    std::string site_value = "cross-site";
+    if (initiator_origin) {
+      url::Origin target_origin = url::Origin::Create(url);
+      if (initiator_origin->IsSameOriginWith(target_origin)) {
+        site_value = "same-origin";
+      } else if (net::registry_controlled_domains::SameDomainOrHost(
+                     *initiator_origin, target_origin,
+                     net::registry_controlled_domains::
+                         INCLUDE_PRIVATE_REGISTRIES)) {
+        site_value = "same-site";
+      }
+    }
+    std::string value = base::StringPrintf(
+        "cause=%s, destination=document, target=%s, site=%s",
+        has_user_gesture ? "user-activated" : "forced",
+        frame_tree_node->IsMainFrame() ? "top-level" : "nested",
+        site_value.c_str());
+    headers->SetHeaderIfMissing("Sec-Metadata", value);
+  }
 
   // Next, set the HTTP Origin if needed.
   if (!NeedsHTTPOrigin(headers, method))
@@ -440,7 +473,9 @@ NavigationRequest::NavigationRequest(
       &headers, std::move(embedder_additional_headers), common_params_.url,
       common_params_.navigation_type,
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
-      common_params.method, user_agent_override, frame_tree_node);
+      common_params.method, user_agent_override,
+      common_params_.has_user_gesture, begin_params_->initiator_origin,
+      frame_tree_node);
 
   if (begin_params_->is_form_submission) {
     if (browser_initiated && !request_params.post_content_type.empty()) {

@@ -330,6 +330,9 @@ const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
     "SendBeaconThrowForBlobWithNonSimpleType",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSecMetadata{"SecMetadata",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Service worker based payment apps as defined by w3c here:
 // https://w3c.github.io/webpayments-payment-apps-api/
 const base::Feature kServiceWorkerPaymentApps{

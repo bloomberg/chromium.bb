@@ -18,10 +18,76 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
+
+namespace {
+
+// This function maps from Blink's internal "request context" concept to Fetch's
+// notion of a request's "destination":
+// https://fetch.spec.whatwg.org/#concept-request-destination.
+const char* GetDestinationFromContext(WebURLRequest::RequestContext context) {
+  switch (context) {
+    case WebURLRequest::kRequestContextUnspecified:
+    case WebURLRequest::kRequestContextBeacon:
+    case WebURLRequest::kRequestContextDownload:
+    case WebURLRequest::kRequestContextEventSource:
+    case WebURLRequest::kRequestContextFetch:
+    case WebURLRequest::kRequestContextPing:
+    case WebURLRequest::kRequestContextXMLHttpRequest:
+    case WebURLRequest::kRequestContextSubresource:
+    case WebURLRequest::kRequestContextPrefetch:
+      return "\"\"";
+    case WebURLRequest::kRequestContextCSPReport:
+      return "report";
+    case WebURLRequest::kRequestContextAudio:
+      return "audio";
+    case WebURLRequest::kRequestContextEmbed:
+      return "embed";
+    case WebURLRequest::kRequestContextFont:
+      return "font";
+    case WebURLRequest::kRequestContextFrame:
+    case WebURLRequest::kRequestContextHyperlink:
+    case WebURLRequest::kRequestContextIframe:
+    case WebURLRequest::kRequestContextLocation:
+    case WebURLRequest::kRequestContextForm:
+      return "document";
+    case WebURLRequest::kRequestContextImage:
+    case WebURLRequest::kRequestContextFavicon:
+    case WebURLRequest::kRequestContextImageSet:
+      return "image";
+    case WebURLRequest::kRequestContextManifest:
+      return "manifest";
+    case WebURLRequest::kRequestContextObject:
+      return "object";
+    case WebURLRequest::kRequestContextScript:
+      return "script";
+    case WebURLRequest::kRequestContextSharedWorker:
+      return "sharedworker";
+    case WebURLRequest::kRequestContextStyle:
+      return "style";
+    case WebURLRequest::kRequestContextTrack:
+      return "track";
+    case WebURLRequest::kRequestContextVideo:
+      return "video";
+    case WebURLRequest::kRequestContextWorker:
+      return "worker";
+    case WebURLRequest::kRequestContextXSLT:
+      return "xslt";
+    case WebURLRequest::kRequestContextImport:
+    case WebURLRequest::kRequestContextInternal:
+    case WebURLRequest::kRequestContextPlugin:
+    case WebURLRequest::kRequestContextServiceWorker:
+      return "unknown";
+  }
+  NOTREACHED();
+  return "";
+}
+
+}  // namespace
 
 void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
                                                    FetchResourceType type) {
@@ -44,6 +110,34 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
   auto address_space = GetAddressSpace();
   if (address_space)
     request.SetExternalRequestStateFromRequestorAddressSpace(*address_space);
+
+  if (blink::RuntimeEnabledFeatures::SecMetadataEnabled()) {
+    const char* destination_value =
+        GetDestinationFromContext(request.GetRequestContext());
+    // We'll handle adding the header to navigations outside of Blink.
+    if (strncmp(destination_value, "document", 8) != 0 &&
+        request.GetRequestContext() != WebURLRequest::kRequestContextInternal) {
+      const char* site_value = "cross-site";
+      if (SecurityOrigin::Create(request.Url())
+              ->IsSameSchemeHostPort(GetSecurityOrigin())) {
+        site_value = "same-origin";
+      } else {
+        OriginAccessEntry access_entry(
+            request.Url().Protocol(), request.Url().Host(),
+            OriginAccessEntry::kAllowRegisterableDomains);
+        if (access_entry.MatchesOrigin(*GetSecurityOrigin()) ==
+            OriginAccessEntry::kMatchesOrigin) {
+          site_value = "same-site";
+        }
+      }
+
+      String value = String::Format(
+          "cause=%s, destination=%s, target=subresource, site=%s",
+          request.HasUserGesture() ? "user-activation" : "forced",
+          destination_value, site_value);
+      request.AddHTTPHeaderField("Sec-Metadata", AtomicString(value));
+    }
+  }
 }
 
 base::Optional<ResourceRequestBlockedReason> BaseFetchContext::CanRequest(
