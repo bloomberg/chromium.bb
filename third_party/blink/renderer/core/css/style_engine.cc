@@ -777,8 +777,8 @@ void StyleEngine::ClassChangedForElement(
     features.CollectInvalidationSetsForClass(invalidation_lists, element,
                                              changed_classes[i]);
   }
-  style_invalidator_.ScheduleInvalidationSetsForNode(invalidation_lists,
-                                                     element);
+  pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
+                                                         element);
 }
 
 void StyleEngine::ClassChangedForElement(const SpaceSplitString& old_classes,
@@ -826,8 +826,8 @@ void StyleEngine::ClassChangedForElement(const SpaceSplitString& old_classes,
                                              old_classes[i]);
   }
 
-  style_invalidator_.ScheduleInvalidationSetsForNode(invalidation_lists,
-                                                     element);
+  pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
+                                                         element);
 }
 
 void StyleEngine::AttributeChangedForElement(
@@ -839,8 +839,8 @@ void StyleEngine::AttributeChangedForElement(
   InvalidationLists invalidation_lists;
   GetRuleFeatureSet().CollectInvalidationSetsForAttribute(
       invalidation_lists, element, attribute_name);
-  style_invalidator_.ScheduleInvalidationSetsForNode(invalidation_lists,
-                                                     element);
+  pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
+                                                         element);
 }
 
 void StyleEngine::IdChangedForElement(const AtomicString& old_id,
@@ -855,8 +855,8 @@ void StyleEngine::IdChangedForElement(const AtomicString& old_id,
     features.CollectInvalidationSetsForId(invalidation_lists, element, old_id);
   if (!new_id.IsEmpty())
     features.CollectInvalidationSetsForId(invalidation_lists, element, new_id);
-  style_invalidator_.ScheduleInvalidationSetsForNode(invalidation_lists,
-                                                     element);
+  pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
+                                                         element);
 }
 
 void StyleEngine::PseudoStateChangedForElement(
@@ -868,8 +868,8 @@ void StyleEngine::PseudoStateChangedForElement(
   InvalidationLists invalidation_lists;
   GetRuleFeatureSet().CollectInvalidationSetsForPseudoClass(
       invalidation_lists, element, pseudo_type);
-  style_invalidator_.ScheduleInvalidationSetsForNode(invalidation_lists,
-                                                     element);
+  pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
+                                                         element);
 }
 
 void StyleEngine::ScheduleSiblingInvalidationsForElement(
@@ -904,7 +904,7 @@ void StyleEngine::ScheduleSiblingInvalidationsForElement(
   features.CollectUniversalSiblingInvalidationSet(invalidation_lists,
                                                   min_direct_adjacent);
 
-  style_invalidator_.ScheduleSiblingInvalidationsAsDescendants(
+  pending_invalidations_.ScheduleSiblingInvalidationsAsDescendants(
       invalidation_lists, scheduling_parent);
 }
 
@@ -959,8 +959,8 @@ void StyleEngine::ScheduleInvalidationsForRemovedSibling(
 void StyleEngine::ScheduleNthPseudoInvalidations(ContainerNode& nth_parent) {
   InvalidationLists invalidation_lists;
   GetRuleFeatureSet().CollectNthInvalidationSet(invalidation_lists);
-  style_invalidator_.ScheduleInvalidationSetsForNode(invalidation_lists,
-                                                     nth_parent);
+  pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
+                                                         nth_parent);
 }
 
 void StyleEngine::ScheduleRuleSetInvalidationsForElement(
@@ -992,8 +992,8 @@ void StyleEngine::ScheduleRuleSetInvalidationsForElement(
           invalidation_lists, element, attribute.GetName());
     }
   }
-  style_invalidator_.ScheduleInvalidationSetsForNode(invalidation_lists,
-                                                     element);
+  pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
+                                                         element);
 }
 
 void StyleEngine::ScheduleTypeRuleSetInvalidations(
@@ -1005,7 +1005,8 @@ void StyleEngine::ScheduleTypeRuleSetInvalidations(
                                                         node);
   }
   DCHECK(invalidation_lists.siblings.IsEmpty());
-  style_invalidator_.ScheduleInvalidationSetsForNode(invalidation_lists, node);
+  pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
+                                                         node);
 
   if (!node.IsShadowRoot())
     return;
@@ -1022,6 +1023,12 @@ void StyleEngine::ScheduleTypeRuleSetInvalidations(
       return;
     }
   }
+}
+
+void StyleEngine::InvalidateStyle() {
+  StyleInvalidator style_invalidator(
+      pending_invalidations_.GetPendingInvalidationMap());
+  style_invalidator.Invalidate(*document_);
 }
 
 void StyleEngine::InvalidateSlottedElements(HTMLSlotElement& slot) {
@@ -1408,7 +1415,7 @@ void StyleEngine::MarkForWhitespaceReattachment() {
 
 void StyleEngine::NodeWillBeRemoved(Node& node) {
   if (node.IsElementNode()) {
-    style_invalidator_.RescheduleSiblingInvalidationsAsDescendants(
+    pending_invalidations_.RescheduleSiblingInvalidationsAsDescendants(
         ToElement(node));
   }
 
@@ -1507,7 +1514,7 @@ void StyleEngine::Trace(blink::Visitor* visitor) {
   visitor->Trace(viewport_resolver_);
   visitor->Trace(media_query_evaluator_);
   visitor->Trace(global_rule_set_);
-  visitor->Trace(style_invalidator_);
+  visitor->Trace(pending_invalidations_);
   visitor->Trace(whitespace_reattach_set_);
   visitor->Trace(font_selector_);
   visitor->Trace(text_to_sheet_cache_);
@@ -1525,5 +1532,4 @@ void StyleEngine::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   }
   visitor->TraceWrappers(document_style_sheet_collection_);
 }
-
 }  // namespace blink
