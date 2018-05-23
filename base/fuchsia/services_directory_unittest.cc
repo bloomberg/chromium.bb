@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/fuchsia/component_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
+#include "base/fuchsia/test_fidl/cpp/fidl.h"
 #include "base/message_loop/message_loop.h"
-#include "fuchsia/cpp/test_fidl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

@@ -42,7 +42,7 @@ class BASE_EXPORT ServicesDirectory {
 
   // Returns default ServiceDirectory instance for the current process. It
   // publishes services to the directory provided by the process creator.
-  ServicesDirectory* GetDefault();
+  static ServicesDirectory* GetDefault();
 
   void AddService(StringPiece name, ConnectServiceCallback connect_callback);
   void RemoveService(StringPiece name);
