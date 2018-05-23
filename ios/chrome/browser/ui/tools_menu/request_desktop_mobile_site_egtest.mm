@@ -9,6 +9,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -35,14 +36,30 @@ const char kMobileSiteLabel[] = "Mobile";
 
 const char kDesktopSiteLabel[] = "Desktop";
 
-// Matcher for the button to request desktop site.
-id<GREYMatcher> RequestDesktopButton() {
-  return grey_accessibilityID(kToolsMenuRequestDesktopId);
+// Select the button to request desktop site by scrolling the collection.
+// 200 is a reasonable scroll displacement that works for all UI elements, while
+// not being too slow.
+GREYElementInteraction* RequestDesktopButton() {
+  return [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                              kToolsMenuRequestDesktopId),
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+      onElementWithMatcher:grey_accessibilityID(
+                               kPopupMenuToolsMenuTableViewId)];
 }
 
-// Matcher for the button to request mobile site.
-id<GREYMatcher> RequestMobileButton() {
-  return grey_accessibilityID(kToolsMenuRequestMobileId);
+// Select the button to request mobile site by scrolling the collection.
+// 200 is a reasonable scroll displacement that works for all UI elements, while
+// not being too slow.
+GREYElementInteraction* RequestMobileButton() {
+  return [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                              kToolsMenuRequestMobileId),
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+      onElementWithMatcher:grey_accessibilityID(
+                               kPopupMenuToolsMenuTableViewId)];
 }
 
 // A ResponseProvider that provides user agent for httpServer request.
@@ -96,8 +113,7 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
-      performAction:grey_tap()];
+  [RequestDesktopButton() performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 
   // Verify that desktop user agent propagates.
@@ -118,8 +134,7 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
-      performAction:grey_tap()];
+  [RequestDesktopButton() performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 
   // Verify that desktop user agent does not propagate to new tab.
@@ -141,8 +156,7 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
-      performAction:grey_tap()];
+  [RequestDesktopButton() performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 
   // Verify that going back returns to the mobile site.
@@ -164,14 +178,12 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
-      performAction:grey_tap()];
+  [RequestDesktopButton() performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 
   // Request and verify reception of the mobile site.
   [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:RequestMobileButton()]
-      performAction:grey_tap()];
+  [RequestMobileButton() performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 
   // Verify that mobile user agent propagates.
@@ -192,14 +204,12 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
-      performAction:grey_tap()];
+  [RequestDesktopButton() performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 
   // Request and verify reception of the mobile site.
   [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:RequestMobileButton()]
-      performAction:grey_tap()];
+  [RequestMobileButton() performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 
   // Verify that going back returns to the desktop site.
@@ -212,10 +222,9 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 - (void)testRequestDesktopSiteNotEnabledOnNewTabPage {
   // Verify tapping on request desktop button is no-op.
   [ChromeEarlGreyUI openToolsMenu];
-  [[[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
-      assertWithMatcher:grey_notNil()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
-      assertWithMatcher:grey_notNil()];
+  [[RequestDesktopButton() assertWithMatcher:grey_notNil()]
+      performAction:grey_tap()];
+  [RequestDesktopButton() assertWithMatcher:grey_notNil()];
 }
 
 // Tests that requesting desktop site button is not enabled on WebUI pages.
@@ -224,10 +233,9 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   // Verify tapping on request desktop button is no-op.
   [ChromeEarlGreyUI openToolsMenu];
-  [[[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
-      assertWithMatcher:grey_notNil()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
-      assertWithMatcher:grey_notNil()];
+  [[RequestDesktopButton() assertWithMatcher:grey_notNil()]
+      performAction:grey_tap()];
+  [RequestDesktopButton() assertWithMatcher:grey_notNil()];
 }
 
 // Tests that navigator.appVersion JavaScript API returns correct string for
@@ -240,8 +248,7 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
-      performAction:grey_tap()];
+  [RequestDesktopButton() performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 }
 
@@ -255,14 +262,12 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
-      performAction:grey_tap()];
+  [RequestDesktopButton() performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 
   // Request and verify reception of the mobile site.
   [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey selectElementWithMatcher:RequestMobileButton()]
-      performAction:grey_tap()];
+  [RequestMobileButton() performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 }
 
