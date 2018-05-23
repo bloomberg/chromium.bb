@@ -457,9 +457,10 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::UnpausableTaskQueue() {
   return unpausable_task_queue_;
 }
 
-scoped_refptr<TaskQueue> FrameSchedulerImpl::ControlTaskQueue() {
+scoped_refptr<base::SingleThreadTaskRunner>
+FrameSchedulerImpl::ControlTaskRunner() {
   DCHECK(parent_page_scheduler_);
-  return main_thread_scheduler_->ControlTaskQueue();
+  return main_thread_scheduler_->ControlTaskRunner();
 }
 
 blink::PageScheduler* FrameSchedulerImpl::GetPageScheduler() const {

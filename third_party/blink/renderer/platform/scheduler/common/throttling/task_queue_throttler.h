@@ -32,7 +32,7 @@ namespace blink {
 namespace scheduler {
 
 class BudgetPool;
-class MainThreadSchedulerImpl;
+class ThreadSchedulerImpl;
 class ThrottledTimeDomain;
 class CPUTimeBudgetPool;
 class WakeUpBudgetPool;
@@ -83,7 +83,7 @@ class PLATFORM_EXPORT BudgetPoolController {
 // posted from a throttled task run next time the queue is pumped.
 //
 // Of course the TaskQueueThrottler isn't the only sub-system that wants to
-// enable or disable queues. E.g. MainThreadSchedulerImpl also does this for
+// enable or disable queues. E.g. ThreadSchedulerImpl also does this for
 // policy reasons. To prevent the systems from fighting, clients of
 // TaskQueueThrottler must use SetQueueEnabled rather than calling the function
 // directly on the queue.
@@ -98,9 +98,9 @@ class PLATFORM_EXPORT TaskQueueThrottler
     : public base::sequence_manager::TaskQueue::Observer,
       public BudgetPoolController {
  public:
-  // We use tracing controller from MainThreadSchedulerImpl because an instance
+  // We use tracing controller from ThreadSchedulerImpl because an instance
   // of this class is always its member, so has the same lifetime.
-  TaskQueueThrottler(MainThreadSchedulerImpl* main_thread_scheduler,
+  TaskQueueThrottler(ThreadSchedulerImpl* thread_scheduler,
                      TraceableVariableController* tracing_controller);
 
   ~TaskQueueThrottler() override;
@@ -145,10 +145,6 @@ class PLATFORM_EXPORT TaskQueueThrottler
   // TODO(altimin): Remove it.
   static base::TimeTicks AlignedThrottledRunTime(
       base::TimeTicks unthrottled_runtime);
-
-  const scoped_refptr<base::sequence_manager::TaskQueue>& task_queue() const {
-    return control_task_queue_;
-  }
 
   // Returned object is owned by |TaskQueueThrottler|.
   CPUTimeBudgetPool* CreateCPUTimeBudgetPool(const char* name);
@@ -212,8 +208,8 @@ class PLATFORM_EXPORT TaskQueueThrottler
   base::RepeatingCallback<void(base::sequence_manager::TaskQueue*,
                                base::TimeTicks)>
       forward_immediate_work_callback_;
-  scoped_refptr<base::sequence_manager::TaskQueue> control_task_queue_;
-  MainThreadSchedulerImpl* main_thread_scheduler_;   // NOT OWNED
+  scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
+  ThreadSchedulerImpl* thread_scheduler_;            // NOT OWNED
   TraceableVariableController* tracing_controller_;  // NOT OWNED
   const base::TickClock* tick_clock_;                // NOT OWNED
   std::unique_ptr<ThrottledTimeDomain> time_domain_;

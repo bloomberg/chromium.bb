@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/platform/scheduler/child/idle_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/child/pollable_thread_safe_flag.h"
 #include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
+#include "third_party/blink/renderer/platform/scheduler/common/thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/deadline_task_runner.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/idle_time_estimator.h"
@@ -64,7 +65,7 @@ class WebRenderWidgetSchedulingState;
 
 class PLATFORM_EXPORT MainThreadSchedulerImpl
     : public WebMainThreadScheduler,
-      public ThreadScheduler,
+      public ThreadSchedulerImpl,
       public IdleHelper::Delegate,
       public MainThreadSchedulerHelper::Observer,
       public RenderWidgetSignals::Observer,
@@ -159,6 +160,13 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       override;
   base::TimeTicks MonotonicallyIncreasingVirtualTime() override;
   WebMainThreadScheduler* GetWebMainThreadSchedulerForTest() override;
+  NonMainThreadScheduler* AsNonMainThreadScheduler() override {
+    return nullptr;
+  }
+
+  // WebMainThreadScheduler implementation:
+  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner() override;
 
   // The following functions are defined in both WebThreadScheduler and
   // ThreadScheduler, and have the same function signatures -- see above.
@@ -187,10 +195,16 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       const char* split_description,
       base::TimeDelta queueing_time) override;
 
-  scoped_refptr<MainThreadTaskQueue> DefaultTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> CompositorTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> InputTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> V8TaskQueue();
+  // ThreadSchedulerImpl implementation:
+  scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner() override;
+  void RegisterTimeDomain(
+      base::sequence_manager::TimeDomain* time_domain) override;
+  void UnregisterTimeDomain(
+      base::sequence_manager::TimeDomain* time_domain) override;
+  base::sequence_manager::TimeDomain* GetActiveTimeDomain() override;
+  const base::TickClock* GetTickClock() override;
+
+  scoped_refptr<base::SingleThreadTaskRunner> VirtualTimeControlTaskRunner();
 
   // Returns a new task queue created with given params.
   scoped_refptr<MainThreadTaskQueue> NewTaskQueue(
@@ -207,16 +221,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   scoped_refptr<MainThreadTaskQueue> NewTimerTaskQueue(
       MainThreadTaskQueue::QueueType queue_type,
       FrameSchedulerImpl* frame_scheduler);
-
-  // Returns a task queue where tasks run at the highest possible priority.
-  scoped_refptr<MainThreadTaskQueue> ControlTaskQueue();
-
-  // A control task queue which also respects virtual time. Only available if
-  // virtual time has been enabled.
-  scoped_refptr<MainThreadTaskQueue> VirtualTimeControlTaskQueue();
-
-  void RegisterTimeDomain(base::sequence_manager::TimeDomain* time_domain);
-  void UnregisterTimeDomain(base::sequence_manager::TimeDomain* time_domain);
 
   using VirtualTimePolicy = PageScheduler::VirtualTimePolicy;
   using VirtualTimeObserver = PageScheduler::VirtualTimeObserver;
@@ -291,8 +295,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   AutoAdvancingVirtualTimeDomain* GetVirtualTimeDomain();
 
-  base::sequence_manager::TimeDomain* GetActiveTimeDomain();
-
   TaskQueueThrottler* task_queue_throttler() const {
     return task_queue_throttler_.get();
   }
@@ -319,14 +321,15 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   base::WeakPtr<MainThreadSchedulerImpl> GetWeakPtr();
 
-  // WebMainThreadScheduler implementation.
-  // Use *TaskQueue internally.
-  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner() override;
-
  protected:
-  // This is implemented in WebMainThreadScheduler implementation above.
-  // scoped_refptr<SingleThreadTaskRunner> CompositorTaskRunner() override;
+  scoped_refptr<MainThreadTaskQueue> ControlTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> DefaultTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> CompositorTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> InputTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> V8TaskQueue();
+  // A control task queue which also respects virtual time. Only available if
+  // virtual time has been enabled.
+  scoped_refptr<MainThreadTaskQueue> VirtualTimeControlTaskQueue();
 
   // `current_use_case` will be overwritten by the next call to UpdatePolicy.
   // Thus, this function should be only used for testing purposes.

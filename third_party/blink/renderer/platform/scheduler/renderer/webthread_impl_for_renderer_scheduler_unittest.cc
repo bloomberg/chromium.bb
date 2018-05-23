@@ -46,7 +46,7 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
         base::sequence_manager::TaskQueueManagerForTest::Create(
             &message_loop_, message_loop_.task_runner(), &clock_),
         base::nullopt));
-    default_task_runner_ = scheduler_->DefaultTaskQueue();
+    default_task_runner_ = scheduler_->DefaultTaskRunner();
     thread_ = scheduler_->CreateMainThread();
   }
 

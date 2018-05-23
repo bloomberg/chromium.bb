@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/common/thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 
@@ -23,11 +24,9 @@ class TaskQueueWithTaskType;
 class WorkerSchedulerProxy;
 class WorkerScheduler;
 
-// TODO(yutak): Remove the dependency to WebThreadScheduler. We want to
-// separate interfaces to Chromium (in blink/public/platform/scheduler) from
-// interfaces to Blink (in blink/renderer/platform/scheduler/public).
-class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler,
-                                               public ThreadScheduler {
+// TODO(yutak): Rename this class to NonMainThreadSchedulerImpl and consider
+// changing all non-impl scheduler classes to have only static methods.
+class PLATFORM_EXPORT NonMainThreadScheduler : public ThreadSchedulerImpl {
  public:
   ~NonMainThreadScheduler() override;
 
@@ -54,6 +53,15 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler,
       base::TimeTicks end,
       base::Optional<base::TimeDelta> thread_time) = 0;
 
+  // ThreadSchedulerImpl:
+  scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner() override;
+  void RegisterTimeDomain(
+      base::sequence_manager::TimeDomain* time_domain) override;
+  void UnregisterTimeDomain(
+      base::sequence_manager::TimeDomain* time_domain) override;
+  base::sequence_manager::TimeDomain* GetActiveTimeDomain() override;
+  const base::TickClock* GetTickClock() override;
+
   // ThreadScheduler implementation.
   // TODO(yutak): Some functions are only meaningful in main thread. Move them
   // to MainThreadScheduler.
@@ -70,6 +78,8 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler,
 
   // Returns TimeTicks::Now() by default.
   base::TimeTicks MonotonicallyIncreasingVirtualTime() override;
+
+  NonMainThreadScheduler* AsNonMainThreadScheduler() override { return this; }
 
   // The following virtual methods are defined in *both* WebThreadScheduler
   // and ThreadScheduler, with identical interfaces and semantics. They are

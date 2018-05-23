@@ -33,6 +33,16 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace task_queue_throttler_unittest {
 
+class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
+ public:
+  using MainThreadSchedulerImpl::ControlTaskQueue;
+
+  MainThreadSchedulerImplForTest(
+      std::unique_ptr<base::sequence_manager::TaskQueueManager> manager,
+      base::Optional<base::Time> initial_virtual_time)
+      : MainThreadSchedulerImpl(std::move(manager), initial_virtual_time) {}
+};
+
 bool MessageLoopTaskCounter(size_t* count) {
   *count = *count + 1;
   return true;
@@ -82,7 +92,7 @@ class TaskQueueThrottlerTest : public testing::Test {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), true);
-    scheduler_.reset(new MainThreadSchedulerImpl(
+    scheduler_.reset(new MainThreadSchedulerImplForTest(
         base::sequence_manager::TaskQueueManagerForTest::Create(
             nullptr, mock_task_runner_, clock_.get()),
         base::nullopt));
@@ -137,7 +147,7 @@ class TaskQueueThrottlerTest : public testing::Test {
 
   std::unique_ptr<AutoAdvancingTestClock> clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
+  std::unique_ptr<MainThreadSchedulerImplForTest> scheduler_;
   scoped_refptr<TaskQueue> timer_queue_;
   TaskQueueThrottler* task_queue_throttler_;  // NOT OWNED
 
@@ -355,7 +365,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
        ThrotlingAnEmptyQueueDoesNotPostPumpThrottledTasksLocked) {
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
 
-  EXPECT_TRUE(task_queue_throttler_->task_queue()->IsEmpty());
+  EXPECT_TRUE(scheduler_->ControlTaskQueue()->IsEmpty());
 }
 
 TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
@@ -363,7 +373,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
   task_queue_throttler_->OnQueueNextWakeUpChanged(timer_queue_.get(),
                                                   base::TimeTicks());
   // Check PostPumpThrottledTasksLocked was called.
-  EXPECT_FALSE(task_queue_throttler_->task_queue()->IsEmpty());
+  EXPECT_FALSE(scheduler_->ControlTaskQueue()->IsEmpty());
 }
 
 TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
@@ -375,7 +385,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
   task_queue_throttler_->OnQueueNextWakeUpChanged(timer_queue_.get(),
                                                   base::TimeTicks());
   // Check PostPumpThrottledTasksLocked was not called.
-  EXPECT_TRUE(task_queue_throttler_->task_queue()->IsEmpty());
+  EXPECT_TRUE(scheduler_->ControlTaskQueue()->IsEmpty());
 }
 
 TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
@@ -387,11 +397,11 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
   voter->SetQueueEnabled(false);
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
-  EXPECT_TRUE(task_queue_throttler_->task_queue()->IsEmpty());
+  EXPECT_TRUE(scheduler_->ControlTaskQueue()->IsEmpty());
 
   // Enabling it should trigger a call to PostPumpThrottledTasksLocked.
   voter->SetQueueEnabled(true);
-  EXPECT_FALSE(task_queue_throttler_->task_queue()->IsEmpty());
+  EXPECT_FALSE(scheduler_->ControlTaskQueue()->IsEmpty());
 }
 
 TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
@@ -404,11 +414,11 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
   voter->SetQueueEnabled(false);
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
-  EXPECT_TRUE(task_queue_throttler_->task_queue()->IsEmpty());
+  EXPECT_TRUE(scheduler_->ControlTaskQueue()->IsEmpty());
 
   // Enabling it should trigger a call to PostPumpThrottledTasksLocked.
   voter->SetQueueEnabled(true);
-  EXPECT_FALSE(task_queue_throttler_->task_queue()->IsEmpty());
+  EXPECT_FALSE(scheduler_->ControlTaskQueue()->IsEmpty());
 }
 
 TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest, WakeUpForNonDelayedTask) {

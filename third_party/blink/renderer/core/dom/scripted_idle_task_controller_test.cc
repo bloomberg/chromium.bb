@@ -57,6 +57,10 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override {}
 
+  scheduler::NonMainThreadScheduler* AsNonMainThreadScheduler() override {
+    return nullptr;
+  }
+
   void RunIdleTask() { std::move(idle_task_).Run(0); }
   bool HasIdleTask() const { return !!idle_task_; }
 
