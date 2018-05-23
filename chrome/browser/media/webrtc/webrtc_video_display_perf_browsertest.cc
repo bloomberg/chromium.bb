@@ -43,14 +43,12 @@ static const char kTestResultString[] = "TestVideoDisplayPerf";
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_video_display_perf_test.html";
 
-static const struct VideoDisplayPerfTestConfig {
+struct VideoDisplayPerfTestConfig {
   int width;
   int height;
   int fps;
-} kVideoConfigurations[] = {{1280, 720, 30},
-                            {1280, 720, 60},
-                            {1920, 1080, 30},
-                            {1920, 1080, 60}};
+  bool disable_render_smoothness_algorithm;
+};
 
 void CalculateMeanAndMax(const std::vector<double>& inputs,
                          double* mean,
@@ -118,9 +116,17 @@ void AssociateEvents(trace_analyzer::TraceAnalyzer* analyzer,
 // attached to trace events. Then, it calculates the duration and related stats.
 class WebRtcVideoDisplayPerfBrowserTest
     : public WebRtcTestBase,
-      public testing::WithParamInterface<VideoDisplayPerfTestConfig> {
+      public testing::WithParamInterface<
+          std::tuple<gfx::Size /* resolution */,
+                     int /* fps */,
+                     bool /* disable_render_smoothness_algorithm */>> {
  public:
-  WebRtcVideoDisplayPerfBrowserTest() { test_config_ = GetParam(); }
+  WebRtcVideoDisplayPerfBrowserTest() {
+    const auto& params = GetParam();
+    const gfx::Size& resolution = std::get<0>(params);
+    test_config_ = {resolution.width(), resolution.height(),
+                    std::get<1>(params), std::get<2>(params)};
+  }
 
   void SetUpInProcessBrowserTestFixture() override {
     DetectErrorsInJavaScript();
@@ -131,6 +137,8 @@ class WebRtcVideoDisplayPerfBrowserTest
     command_line->AppendSwitchASCII(
         switches::kUseFakeDeviceForMediaStream,
         base::StringPrintf("fps=%d", test_config_.fps));
+    if (test_config_.disable_render_smoothness_algorithm)
+      command_line->AppendSwitch(switches::kDisableRTCSmoothnessAlgorithm);
     command_line->AppendSwitch(switches::kUseGpuInTests);
   }
 
@@ -289,9 +297,12 @@ class WebRtcVideoDisplayPerfBrowserTest
   }
 
   void PrintResults(const std::string& video_codec) {
-    std::string name_modifier =
-        base::StringPrintf("%s_%dp%df", video_codec.c_str(),
-                           test_config_.height, test_config_.fps);
+    std::string smoothness_indicator =
+        test_config_.disable_render_smoothness_algorithm ? "_DisableSmoothness"
+                                                         : "";
+    std::string name_modifier = base::StringPrintf(
+        "%s_%dp%df%s", video_codec.c_str(), test_config_.height,
+        test_config_.fps, smoothness_indicator.c_str());
     perf_test::PrintResult(
         kTestResultString, name_modifier, "Skipped frames",
         base::StringPrintf("%.2lf", skipped_frame_percentage_), "percent",
@@ -329,7 +340,10 @@ class WebRtcVideoDisplayPerfBrowserTest
 
 INSTANTIATE_TEST_CASE_P(WebRtcVideoDisplayPerfBrowserTests,
                         WebRtcVideoDisplayPerfBrowserTest,
-                        testing::ValuesIn(kVideoConfigurations));
+                        testing::Combine(testing::Values(gfx::Size(1280, 720),
+                                                         gfx::Size(1920, 1080)),
+                                         testing::Values(30, 60),
+                                         testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(WebRtcVideoDisplayPerfBrowserTest,
                        MANUAL_TestVideoDisplayPerfVP9) {
