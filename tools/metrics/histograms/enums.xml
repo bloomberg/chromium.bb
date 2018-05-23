@@ -1081,6 +1081,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="45" label="User hit the X button"/>
   <int value="46" label="User began app install, but it didn't finish in time"/>
   <int value="47" label="Banner was dismissed for any reason"/>
+  <int value="48" label="Ambient badge infobar was dismissed"/>
 </enum>
 
 <enum name="AppBannersDisplayEvent">

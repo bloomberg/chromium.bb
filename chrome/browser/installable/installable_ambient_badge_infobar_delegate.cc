@@ -59,3 +59,10 @@ infobars::InfoBarDelegate::InfoBarIdentifier
 InstallableAmbientBadgeInfoBarDelegate::GetIdentifier() const {
   return INSTALLABLE_AMBIENT_BADGE_INFOBAR_DELEGATE;
 }
+
+void InstallableAmbientBadgeInfoBarDelegate::InfoBarDismissed() {
+  if (!weak_client_.get())
+    return;
+
+  weak_client_->BadgeDismissed();
+}

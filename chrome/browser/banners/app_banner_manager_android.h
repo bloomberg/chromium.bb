@@ -88,6 +88,7 @@ class AppBannerManagerAndroid
 
   // InstallableAmbientBadgeInfoBarAndroid::Client overrides.
   void AddToHomescreenFromBadge() override;
+  void BadgeDismissed() override;
 
  protected:
   // AppBannerManager overrides.
@@ -130,7 +131,7 @@ class AppBannerManagerAndroid
 
   // Shows the ambient badge if the current page advertises a native app or is
   // a PWA.
-  void ShowAmbientBadge();
+  void MaybeShowAmbientBadge();
 
   // Hides the ambient badge if it is showing.
   void HideAmbientBadge();
