@@ -35,7 +35,6 @@ class SwitchProControllerBase : public AbstractHapticGamepad {
 
  private:
   uint32_t counter_ = 0;
-  uint32_t report_id_ = 0;
   bool force_usb_hid_ = false;
   bool sent_handshake_ = false;
 };
