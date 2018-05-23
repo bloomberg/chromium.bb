@@ -49,7 +49,6 @@ class RuntimeFeatureWriter(json5_generator.Writer):
         self._features = self.json5_file.name_dictionaries
         # Make sure the resulting dictionaries have all the keys we expect.
         for feature in self._features:
-            feature['tokenized_name'] = NameStyleConverter(feature['name'])
             feature['class_member_name'] = class_member_name(feature['name'])
             # Most features just check their isFooEnabled bool
             # but some depend on or are implied by other bools.

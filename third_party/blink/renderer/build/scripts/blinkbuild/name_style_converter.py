@@ -4,6 +4,7 @@
 
 # pylint: disable=import-error,print-statement,relative-import
 
+import copy
 import re
 
 SPECIAL_TOKENS = [
@@ -44,12 +45,15 @@ SPECIAL_TOKENS = [
     'sRGB',
     'API',
     'CSS',
+    'DNS',
     'DOM',
     'EXT',
     'RTC',
     'SVG',
+    'XSS',
     '2D',
     'AX',
+    'FE',
     'V0',
     'V8',
 ]
@@ -113,7 +117,17 @@ class NameStyleConverter(object):
            Also known as the PascalCase.
            https://en.wikipedia.org/wiki/Camel_case.
         """
-        return ''.join([token[0].upper() + token[1:] for token in self.tokens])
+        tokens = self.tokens
+        # If the first token is one of SPECIAL_TOKENS, we should replace the
+        # token with the matched special token.
+        # e.g. ['css', 'External', 'Scanner', 'Preload'] => 'CSSExternalScannerPreload'
+        if tokens and tokens[0].lower() == tokens[0]:
+            for special in SPECIAL_TOKENS:
+                if special.lower() == tokens[0]:
+                    tokens = copy.deepcopy(tokens)
+                    tokens[0] = special
+                    break
+        return ''.join([token[0].upper() + token[1:] for token in tokens])
 
     def to_lower_camel_case(self):
         """Lower camel case is the name style for attribute names and operation

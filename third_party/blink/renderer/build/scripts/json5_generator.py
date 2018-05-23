@@ -160,6 +160,7 @@ class Json5File(object):
         entry = copy.deepcopy(self._defaults)
         if type(item) is not dict:
             entry["name"] = item
+            entry["tokenized_name"] = NameStyleConverter(entry["name"])
             return entry
         if "name" not in item:
             raise Exception("Missing name in item: %s" % item)
@@ -168,6 +169,7 @@ class Json5File(object):
             return entry
         assert "name" not in self.parameters, "The parameter 'name' is reserved, use a different name."
         entry["name"] = item.pop("name")
+        entry["tokenized_name"] = NameStyleConverter(entry["name"])
         # Validate parameters if it's specified.
         for key, value in item.items():
             if key not in self.parameters:
