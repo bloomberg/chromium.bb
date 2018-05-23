@@ -212,7 +212,9 @@ void TestWindowTreeClient::OnWindowSharedPropertyChanged(
   tracker_.OnWindowSharedPropertyChanged(window, name, new_data);
 }
 
-void TestWindowTreeClient::OnWindowFocused(Id focused_window_id) {}
+void TestWindowTreeClient::OnWindowFocused(Id focused_window_id) {
+  tracker_.OnWindowFocused(focused_window_id);
+}
 
 void TestWindowTreeClient::OnWindowCursorChanged(Id window_id,
                                                  ui::CursorData cursor) {

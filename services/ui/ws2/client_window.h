@@ -44,6 +44,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
 
   aura::Window* window() { return window_; }
 
+  void set_can_focus(bool value) { can_focus_ = value; }
+  bool can_focus() const { return can_focus_; }
+
   // Returns the ClientWindow associated with a window, null if not created yet.
   static ClientWindow* GetMayBeNull(aura::Window* window) {
     return const_cast<ClientWindow*>(
@@ -82,6 +85,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
 
   void set_capture_owner(WindowServiceClient* owner) { capture_owner_ = owner; }
   WindowServiceClient* capture_owner() const { return capture_owner_; }
+
+  void set_focus_owner(WindowServiceClient* owner) { focus_owner_ = owner; }
+  WindowServiceClient* focus_owner() const { return focus_owner_; }
 
   // Returns true if the window is a top-level window and there is at least some
   // non-client area.
@@ -143,6 +149,15 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
   // For example, a mouse press in the non-client area of a top-level results
   // in views setting capture.
   WindowServiceClient* capture_owner_ = nullptr;
+
+  // This serves the same purpose as |capture_owner_|, but is used for focus.
+  // See |capture_owner_| for details.
+  WindowServiceClient* focus_owner_ = nullptr;
+
+  // True if the window is allowed to receive focus.
+  // TODO(sky): provide way for client code to make use of this. It's needed
+  // when client code creates the top-level. http://crbug.com/837703.
+  bool can_focus_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ClientWindow);
 };

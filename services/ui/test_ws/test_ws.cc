@@ -154,7 +154,8 @@ class TestWindowService : public service_manager::Service,
                                          &context_factory_private);
     aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>();
     aura_test_helper_->SetUp(context_factory, context_factory_private);
-    window_service_ = std::make_unique<ws2::WindowService>(this, nullptr);
+    window_service_ = std::make_unique<ws2::WindowService>(
+        this, nullptr, aura_test_helper_->focus_client());
     window_tree_host_factory_ = std::make_unique<WindowTreeHostFactory>(
         window_service_.get(), aura_test_helper_->root_window());
 

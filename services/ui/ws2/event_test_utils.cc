@@ -15,6 +15,9 @@ std::string EventToEventType(const Event* event) {
   if (!event)
     return "<null>";
   switch (event->type()) {
+    case ET_KEY_PRESSED:
+      return "KEY_PRESSED";
+
     case ET_MOUSE_DRAGGED:
       return "MOUSE_DRAGGED";
     case ET_MOUSE_ENTERED:

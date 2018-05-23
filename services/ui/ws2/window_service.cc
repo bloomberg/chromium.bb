@@ -18,11 +18,14 @@ namespace ui {
 namespace ws2 {
 
 WindowService::WindowService(WindowServiceDelegate* delegate,
-                             std::unique_ptr<GpuSupport> gpu_support)
+                             std::unique_ptr<GpuSupport> gpu_support,
+                             aura::client::FocusClient* focus_client)
     : delegate_(delegate),
       gpu_support_(std::move(gpu_support)),
       screen_provider_(std::make_unique<ScreenProvider>()),
+      focus_client_(focus_client),
       ime_registrar_(&ime_driver_) {
+  DCHECK(focus_client);  // A |focus_client| must be provided.
   // MouseLocationManager is necessary for providing the shared memory with the
   // location of the mouse to clients.
   aura::Env::GetInstance()->CreateMouseLocationManager();

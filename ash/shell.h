@@ -407,6 +407,7 @@ class ASH_EXPORT Shell : public SessionObserver,
     return event_transformation_handler_.get();
   }
   FirstRunHelper* first_run_helper() { return first_run_helper_.get(); }
+  ::wm::FocusController* focus_controller() { return focus_controller_.get(); }
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
   HighlighterController* highlighter_controller() {
     return highlighter_controller_.get();

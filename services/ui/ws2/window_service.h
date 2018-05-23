@@ -23,6 +23,9 @@
 
 namespace aura {
 class Window;
+namespace client {
+class FocusClient;
+}
 }
 
 namespace gfx {
@@ -53,7 +56,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
     : public service_manager::Service {
  public:
   WindowService(WindowServiceDelegate* delegate,
-                std::unique_ptr<GpuSupport> gpu_support);
+                std::unique_ptr<GpuSupport> gpu_support,
+                aura::client::FocusClient* focus_client);
   ~WindowService() override;
 
   // Gets the ClientWindow for |window|, creating if necessary.
@@ -72,6 +76,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   WindowServiceDelegate* delegate() { return delegate_; }
 
   aura::PropertyConverter* property_converter() { return &property_converter_; }
+
+  aura::client::FocusClient* focus_client() { return focus_client_; }
 
   // service_manager::Service:
   void OnStart() override;
@@ -94,6 +100,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   std::unique_ptr<GpuSupport> gpu_support_;
 
   std::unique_ptr<ScreenProvider> screen_provider_;
+
+  aura::client::FocusClient* focus_client_;
 
   service_manager::BinderRegistry registry_;
 

@@ -110,6 +110,18 @@ Id WindowServiceClientTestHelper::TransportIdForWindow(aura::Window* window) {
   return window_service_client_->TransportIdForWindow(window);
 }
 
+bool WindowServiceClientTestHelper::SetFocus(aura::Window* window) {
+  return window_service_client_->SetFocusImpl(
+      window_service_client_->MakeClientWindowId(
+          window_service_client_->TransportIdForWindow(window)));
+}
+
+void WindowServiceClientTestHelper::SetCanFocus(aura::Window* window,
+                                                bool can_focus) {
+  window_service_client_->SetCanFocus(
+      window_service_client_->TransportIdForWindow(window), can_focus);
+}
+
 ClientWindowId WindowServiceClientTestHelper::ClientWindowIdForWindow(
     aura::Window* window) {
   return window_service_client_->MakeClientWindowId(

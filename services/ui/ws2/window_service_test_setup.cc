@@ -8,12 +8,32 @@
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_client.h"
 #include "ui/gl/test/gl_surface_test_support.h"
+#include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
 
 namespace ui {
 namespace ws2 {
+namespace {
 
-WindowServiceTestSetup::WindowServiceTestSetup() {
+class TestFocusRules : public wm::BaseFocusRules {
+ public:
+  TestFocusRules() = default;
+  ~TestFocusRules() override = default;
+
+  // wm::BaseFocusRules:
+  bool SupportsChildActivation(aura::Window* window) const override {
+    return window == window->GetRootWindow();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestFocusRules);
+};
+
+}  // namespace
+
+WindowServiceTestSetup::WindowServiceTestSetup()
+    // FocusController takes ownership of TestFocusRules.
+    : focus_controller_(new TestFocusRules()) {
   if (gl::GetGLImplementation() == gl::kGLImplementationNone)
     gl::GLSurfaceTestSupport::InitializeOneOff();
 
@@ -25,7 +45,9 @@ WindowServiceTestSetup::WindowServiceTestSetup() {
   aura_test_helper_.SetUp(context_factory, context_factory_private);
   scoped_capture_client_ = std::make_unique<wm::ScopedCaptureClient>(
       aura_test_helper_.root_window());
-  service_ = std::make_unique<WindowService>(&delegate_, nullptr);
+  service_ =
+      std::make_unique<WindowService>(&delegate_, nullptr, focus_controller());
+  aura::client::SetFocusClient(root(), focus_controller());
   delegate_.set_top_level_parent(aura_test_helper_.root_window());
 
   const bool intercepts_events = false;
@@ -41,6 +63,7 @@ WindowServiceTestSetup::~WindowServiceTestSetup() {
   window_service_client_.reset();
   service_.reset();
   scoped_capture_client_.reset();
+  aura::client::SetFocusClient(root(), nullptr);
   aura_test_helper_.TearDown();
   ui::TerminateContextFactoryForTests();
 }

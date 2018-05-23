@@ -11,6 +11,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/ws2/gpu_support.h"
 #include "services/ui/ws2/window_service.h"
+#include "ui/wm/core/focus_controller.h"
 
 namespace ash {
 namespace {
@@ -37,8 +38,9 @@ void WindowServiceOwner::BindWindowService(
 
   window_service_delegate_ = std::make_unique<WindowServiceDelegateImpl>();
   std::unique_ptr<ui::ws2::WindowService> window_service =
-      std::make_unique<ui::ws2::WindowService>(window_service_delegate_.get(),
-                                               std::move(gpu_support_));
+      std::make_unique<ui::ws2::WindowService>(
+          window_service_delegate_.get(), std::move(gpu_support_),
+          Shell::Get()->focus_controller());
   window_service_ = window_service.get();
   window_service_->SetFrameDecorationValues(
       NonClientFrameController::GetPreferredClientAreaInsets(),
