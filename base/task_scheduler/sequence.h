@@ -16,7 +16,6 @@
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task.h"
-#include "base/task_scheduler/task_traits.h"
 #include "base/threading/sequence_local_storage_map.h"
 
 namespace base {
@@ -58,10 +57,6 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
   // merge between TaskScheduler and TaskQueueManager (in Blink).
   // https://crbug.com/783309
   Optional<Task> TakeTask();
-
-  // Returns the TaskTraits of the Task in front of the Sequence. Cannot be
-  // called on an empty Sequence or on a Sequence whose front slot is empty.
-  TaskTraits PeekTaskTraits() const;
 
   // Removes the front slot of the Sequence. The front slot must have been
   // emptied by TakeTask() before this is called. Cannot be called on an empty
