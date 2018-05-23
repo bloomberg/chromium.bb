@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_cable_discovery.h"
 #include "device/fido/get_assertion_task.h"
 
 namespace device {
@@ -21,6 +22,15 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     : FidoRequestHandler(connector, protocols, std::move(completion_callback)),
       request_(std::move(request)),
       weak_factory_(this) {
+  if (base::ContainsKey(
+          protocols, FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) &&
+      request_.cable_extension()) {
+    auto discovery =
+        std::make_unique<FidoCableDiscovery>(*request_.cable_extension());
+    discovery->set_observer(this);
+    discoveries().push_back(std::move(discovery));
+  }
+
   Start();
 }
 

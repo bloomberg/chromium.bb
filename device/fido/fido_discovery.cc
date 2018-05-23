@@ -33,6 +33,13 @@ std::unique_ptr<FidoDiscovery> CreateFidoDiscoveryImpl(
 #endif  // !defined(OS_ANDROID)
     case FidoTransportProtocol::kBluetoothLowEnergy:
       return std::make_unique<FidoBleDiscovery>();
+    // FidoCaBleDiscovery is not constructed using FidoDiscovery factory
+    // function and instead constructed in FidoGetAssertionRequestHandler as it
+    // requires extensions passed on from the relying party.
+    case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
+      NOTREACHED()
+          << "Cable discovery is not constructed using factory method.";
+      return nullptr;
     case FidoTransportProtocol::kNearFieldCommunication:
       // TODO(https://crbug.com/825949): Add NFC support.
       return nullptr;

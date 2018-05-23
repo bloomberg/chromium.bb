@@ -73,6 +73,13 @@ FakeFidoDiscovery* ScopedFakeFidoDiscoveryFactory::ForgeNextBleDiscovery(
   return next_ble_discovery_.get();
 }
 
+FakeFidoDiscovery* ScopedFakeFidoDiscoveryFactory::ForgeNextCableDiscovery(
+    FakeFidoDiscovery::StartMode mode) {
+  next_cable_discovery_ = std::make_unique<FakeFidoDiscovery>(
+      FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy, mode);
+  return next_cable_discovery_.get();
+}
+
 std::unique_ptr<FidoDiscovery>
 ScopedFakeFidoDiscoveryFactory::CreateFidoDiscovery(
     FidoTransportProtocol transport,
@@ -84,6 +91,8 @@ ScopedFakeFidoDiscoveryFactory::CreateFidoDiscovery(
       return std::move(next_nfc_discovery_);
     case FidoTransportProtocol::kBluetoothLowEnergy:
       return std::move(next_ble_discovery_);
+    case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
+      return std::move(next_cable_discovery_);
   }
   NOTREACHED();
   return nullptr;

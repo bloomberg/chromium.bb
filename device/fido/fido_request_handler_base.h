@@ -70,6 +70,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   CreateAuthenticatorFromDevice(FidoDevice* device);
 
   AuthenticatorMap& active_authenticators() { return active_authenticators_; }
+  std::vector<std::unique_ptr<FidoDiscovery>>& discoveries() {
+    return discoveries_;
+  }
 
  private:
   // FidoDiscovery::Observer

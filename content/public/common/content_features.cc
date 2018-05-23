@@ -487,6 +487,12 @@ const base::Feature kWebAuthBle{"WebAuthenticationBle",
 const base::Feature kWebAuthCtap2{"WebAuthenticationCtap2",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether CTAP2 devices can communicate via the WebAuthentication API
+// using pairingless BLE protocol.
+// https://w3c.github.io/webauthn
+const base::Feature kWebAuthCable{"WebAuthenticationCable",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If WebGL Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kWebGLImageChromium{"WebGLImageChromium",

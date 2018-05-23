@@ -13,6 +13,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "device/fido/fido_cable_discovery.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/public_key_credential_descriptor.h"
 
@@ -43,6 +44,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
       std::vector<PublicKeyCredentialDescriptor> allow_list);
   CtapGetAssertionRequest& SetPinAuth(std::vector<uint8_t> pin_auth);
   CtapGetAssertionRequest& SetPinProtocol(uint8_t pin_protocol);
+  CtapGetAssertionRequest& SetCableExtension(
+      std::vector<FidoCableDiscovery::CableDiscoveryData> cable_extension);
 
   const std::string& rp_id() const { return rp_id_; }
   const std::vector<uint8_t>& client_data_hash() const {
@@ -64,6 +67,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   }
 
   const base::Optional<uint8_t>& pin_protocol() const { return pin_protocol_; }
+  const base::Optional<std::vector<FidoCableDiscovery::CableDiscoveryData>>&
+  cable_extension() const {
+    return cable_extension_;
+  }
 
  private:
   std::string rp_id_;
@@ -75,6 +82,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   base::Optional<std::vector<PublicKeyCredentialDescriptor>> allow_list_;
   base::Optional<std::vector<uint8_t>> pin_auth_;
   base::Optional<uint8_t> pin_protocol_;
+  base::Optional<std::vector<FidoCableDiscovery::CableDiscoveryData>>
+      cable_extension_;
 };
 
 }  // namespace device

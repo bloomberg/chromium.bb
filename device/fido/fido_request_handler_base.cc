@@ -17,6 +17,11 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
     service_manager::Connector* connector,
     const base::flat_set<FidoTransportProtocol>& transports) {
   for (const auto transport : transports) {
+    // Construction of CaBleDiscovery is handled by the implementing class as it
+    // requires an extension passed on from the relying party.
+    if (transport == FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)
+      continue;
+
     auto discovery = FidoDiscovery::Create(transport, connector);
     if (discovery == nullptr) {
       // This can occur in tests when a ScopedVirtualU2fDevice is in effect and
