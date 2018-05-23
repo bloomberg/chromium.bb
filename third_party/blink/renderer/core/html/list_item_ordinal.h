@@ -29,6 +29,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LIST_ITEM_ORDINAL_H_
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
@@ -44,7 +45,7 @@ class Node;
 // elements with 'display: list-item' can be list items, the layout tree
 // provides the storage for the instances of this class, and is responsible for
 // firing events for insertions and removals.
-class ListItemOrdinal {
+class CORE_EXPORT ListItemOrdinal {
  public:
   ListItemOrdinal();
 

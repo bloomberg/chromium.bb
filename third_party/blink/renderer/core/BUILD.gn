@@ -1857,6 +1857,7 @@ jumbo_source_set("unit_tests") {
     "html/imports/html_import_sheets_test.cc",
     "html/link_element_loading_test.cc",
     "html/link_rel_attribute_test.cc",
+    "html/list_item_ordinal_test.cc",
     "html/media/autoplay_uma_helper_test.cc",
     "html/media/html_media_element_event_listeners_test.cc",
     "html/media/html_media_element_test.cc",
