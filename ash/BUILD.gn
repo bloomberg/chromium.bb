@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//chromeos/assistant/assistant.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
@@ -1360,6 +1361,19 @@ component("ash") {
     "//components/exo",
     "//components/exo/wayland",
   ]
+
+  if (enable_cros_libassistant) {
+    sources += [
+      "assistant/ui/logo_view/logo_view.cc",
+      "assistant/ui/logo_view/logo_view.h",
+      "assistant/ui/logo_view/shape/mic_part_shape.cc",
+      "assistant/ui/logo_view/shape/mic_part_shape.h",
+      "assistant/ui/logo_view/shape/shape.cc",
+      "assistant/ui/logo_view/shape/shape.h",
+    ]
+
+    deps += [ "//chromeos/assistant/internal/logo_view" ]
+  }
 }
 
 component("ash_with_content") {
