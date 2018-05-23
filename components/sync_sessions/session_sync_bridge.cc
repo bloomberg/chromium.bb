@@ -72,11 +72,7 @@ class LocalSessionWriteBatch : public LocalSessionEventHandlerImpl::WriteBatch {
     processor_->Delete(storage_key, batch_->GetMetadataChangeList());
   }
 
-  void Add(std::unique_ptr<sync_pb::SessionSpecifics> specifics) override {
-    Update(std::move(specifics));
-  }
-
-  void Update(std::unique_ptr<sync_pb::SessionSpecifics> specifics) override {
+  void Put(std::unique_ptr<sync_pb::SessionSpecifics> specifics) override {
     DCHECK(SessionStore::AreValidSpecifics(*specifics));
     const std::string storage_key =
         batch_->PutWithoutUpdatingTracker(*specifics);

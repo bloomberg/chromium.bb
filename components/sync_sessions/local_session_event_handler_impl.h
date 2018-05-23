@@ -37,9 +37,7 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
     WriteBatch();
     virtual ~WriteBatch();
     virtual void Delete(int tab_node_id) = 0;
-    virtual void Add(std::unique_ptr<sync_pb::SessionSpecifics> specifics) = 0;
-    virtual void Update(
-        std::unique_ptr<sync_pb::SessionSpecifics> specifics) = 0;
+    virtual void Put(std::unique_ptr<sync_pb::SessionSpecifics> specifics) = 0;
     virtual void Commit() = 0;
 
    private:
