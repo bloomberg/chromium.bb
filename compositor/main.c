@@ -1594,6 +1594,22 @@ drm_head_prepare_enable(struct wet_compositor *wet,
 	}
 }
 
+static bool
+drm_head_should_force_enable(struct wet_compositor *wet,
+			     struct weston_head *head)
+{
+	const char *name = weston_head_get_name(head);
+	struct weston_config_section *section;
+	int force = 0;
+
+	section = drm_config_find_controlling_output_section(wet->config, name);
+	if (!section)
+		return false;
+
+	weston_config_section_get_bool(section, "force-on", &force, 0);
+	return !!force;
+}
+
 static void
 drm_try_attach(struct weston_output *output,
 	       struct wet_head_array *add,
@@ -1783,6 +1799,7 @@ drm_heads_changed(struct wl_listener *listener, void *arg)
 	bool connected;
 	bool enabled;
 	bool changed;
+	bool forced;
 
 	/* We need to collect all cloned heads into outputs before enabling the
 	 * output.
@@ -1791,10 +1808,11 @@ drm_heads_changed(struct wl_listener *listener, void *arg)
 		connected = weston_head_is_connected(head);
 		enabled = weston_head_is_enabled(head);
 		changed = weston_head_is_device_changed(head);
+		forced = drm_head_should_force_enable(wet, head);
 
-		if (connected && !enabled) {
+		if ((connected || forced) && !enabled) {
 			drm_head_prepare_enable(wet, head);
-		} else if (!connected && enabled) {
+		} else if (!(connected || forced) && enabled) {
 			drm_head_disable(head);
 		} else if (enabled && changed) {
 			weston_log("Detected a monitor change on head '%s', "

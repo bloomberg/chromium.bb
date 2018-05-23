@@ -95,6 +95,14 @@ NOTE: cms-colord plugin does not work correctly with this option. The plugin
 chooses an arbitrary monitor to load the color profile for, but the
 profile is applied equally to all cloned monitors regardless of their
 properties.
+.TP
+\fBforce-on\fR=\fItrue\fR
+Force the output to be enabled even if the connector is disconnected.
+Defaults to false. Note that
+.BR mode=off " will override " force-on=true .
+When a connector is disconnected, there is no EDID information to provide
+a list of video modes. Therefore a forced output should also have a
+detailed mode line specified.
 .
 .\" ***************************************************************
 .SH OPTIONS
