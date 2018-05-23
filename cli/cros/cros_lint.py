@@ -12,12 +12,14 @@ import multiprocessing
 import os
 import re
 import sys
+import urllib
 
 from chromite.lib import constants
 from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import osutils
 from chromite.lib import parallel
 
 
@@ -111,6 +113,17 @@ CPPLINT_OUTPUT_FORMAT_MAP = {
 }
 
 
+# The mapping between the "cros lint" --output-format flag and shellcheck
+# flags.
+# Note that the msvs mapping here isn't quite VS format, but it's closer than
+# the default output.
+SHLINT_OUTPUT_FORMAT_MAP = {
+    'colorized': ['--color=always'],
+    'msvs': ['--format=gcc'],
+    'parseable': ['--format=gcc'],
+}
+
+
 def _LinterRunCommand(cmd, debug, **kwargs):
   """Run the linter with common RunCommand args set as higher levels expect."""
   return cros_build_lib.RunCommand(cmd, error_code_ok=True, print_cmd=debug,
@@ -138,10 +151,53 @@ def _PylintFile(path, output_format, debug):
   return _LinterRunCommand(cmd, debug, extra_env=extra_env)
 
 
-def _ShellFile(path, _output_format, debug):
+def _ShellFile(path, output_format, debug):
   """Returns result of running lint checks on |path|."""
   # TODO: Try using `checkbashisms`.
-  return _LinterRunCommand(['bash', '-n', path], debug)
+  syntax_check = _LinterRunCommand(['bash', '-n', path], debug)
+  if syntax_check.returncode != 0:
+    return syntax_check
+
+  # Try using shellcheck if it exists.
+  shellcheck = osutils.Which('shellcheck')
+  if not shellcheck:
+    logging.notice('Install shellcheck for additional shell linting.')
+    return syntax_check
+
+  cmd = [shellcheck]
+  if output_format != 'default':
+    cmd.extend(SHLINT_OUTPUT_FORMAT_MAP[output_format])
+  extension = os.path.splitext(path)[1]
+  if extension in GENTOO_SHELL_EXTENSIONS:
+    # ebuilds don't explicitly export variables or contain a shebang.
+    cmd.append('--exclude=SC2034,SC2148')
+    # ebuilds always use bash.
+    cmd.append('--shell=bash')
+  cmd.append(path)
+  lint_result = _LinterRunCommand(cmd, debug)
+  # During testing, we don't want to fail the linter for shellcheck errors,
+  # so override the return code.
+  if lint_result.returncode != 0:
+    bug_url = (
+        'https://bugs.chromium.org/p/chromium/issues/entry?' +
+        urllib.urlencode({
+            'template':
+                'Defect report from Developer',
+            'summary':
+                'Bad shellcheck warnings for %s' % os.path.basename(path),
+            'components':
+                'Infra>Client>ChromeOS>Build,',
+            'cc':
+                'bmgordon@chromium.org,vapier@chromium.org',
+            'comment':
+                'Shellcheck output from file:\n%s\n\n<paste output here>\n\n'
+                "What is wrong with shellcheck's findings?\n" % path,
+        }))
+    logging.warn('Shellcheck found problems. These will eventually become '
+                 'errors.  If the shellcheck findings are not useful, '
+                 'please file a bug at:\n%s', bug_url)
+    lint_result.returncode = 0
+  return lint_result
 
 
 def _BreakoutDataByLinter(map_to_return, path):
