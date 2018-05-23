@@ -15,9 +15,10 @@
 namespace blink {
 namespace CSSLonghand {
 
-{% if property.custom_apply == "fill_layer" %}
-{% set layer_type = property.custom_apply_args['layer_type'] %}
-{% set fill_type = property.custom_apply_args['fill_type'] %}
+{% if property.style_builder_template in ['background_layer', 'mask_layer'] %}
+{% set layer_type = 'Background' if property.style_builder_template == 'background_layer' else 'Mask' %}
+{% set fill_type = property.style_builder_template_args['fill_type'] %}
+{% set fill_type_getter = property.style_builder_template_args['fill_type_getter'] or fill_type %}
 {{declare_initial(property.upper_camel_name)}} {
   FillLayer* currChild = &state.Style()->Access{{layer_type}}Layers();
   currChild->Set{{fill_type}}(FillLayer::InitialFill{{fill_type}}(EFillLayerType::k{{layer_type}}));
@@ -32,7 +33,7 @@ namespace CSSLonghand {
   while (currParent && currParent->Is{{fill_type}}Set()) {
     if (!currChild)
       currChild = prevChild->EnsureNext();
-    currChild->Set{{fill_type}}(currParent->{{property.custom_apply_args['fill_type_getter']}}());
+    currChild->Set{{fill_type}}(currParent->{{fill_type_getter}}());
     {% if fill_type == "PositionX" %}
     if (currParent->IsBackgroundXOriginSet())
       currChild->SetBackgroundXOrigin(currParent->BackgroundXOrigin());
@@ -76,8 +77,8 @@ namespace CSSLonghand {
     currChild = currChild->Next();
   }
 }
-{% elif property.custom_apply == 'color' %}
-{% set initial_color = property.custom_apply_args['initial_color'] %}
+{% elif property.style_builder_template == 'color' %}
+{% set initial_color = property.style_builder_template_args['initial_color'] or 'StyleColor::CurrentColor' %}
 {% set visited_link_setter = 'SetVisitedLink' + property.name_for_methods %}
 {{declare_initial(property.upper_camel_name)}} {
   StyleColor color = {{initial_color}}();

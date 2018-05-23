@@ -40,7 +40,7 @@ state.Style()->{{property.setter}}
   {{declare_value()}};
   {% else %}
     {# full implementation #}
-    {% if not property.custom_apply %}
+    {% if not property.style_builder_template %}
       {% if property.style_builder_generate_initial %}
   {{declare_initial()}} {
         {% if property.svg %}
@@ -77,13 +77,11 @@ state.Style()->{{property.setter}}
           {% endif %}
   }
       {% endif %}
-    {% elif property.custom_apply == "auto" %}
-      {% set auto_getter = property.custom_apply_args['auto_getter'] or
+    {% elif property.style_builder_template == "auto" %}
+      {% set auto_getter = property.style_builder_template_args['auto_getter'] or
                          'HasAuto' + property.name_for_methods %}
-      {% set auto_setter = property.custom_apply_args['auto_setter'] or
+      {% set auto_setter = property.style_builder_template_args['auto_setter'] or
                          'SetHasAuto' + property.name_for_methods %}
-      {% set auto_identity = property.custom_apply_args['auto_identity'] or
-                           'CSSValueAuto' %}
   {{declare_initial()}} {
     state.Style()->{{auto_setter}}();
   }
@@ -95,16 +93,16 @@ state.Style()->{{property.setter}}
   }
   {{declare_value()}} {
     if (value.IsIdentifierValue() &&
-        ToCSSIdentifierValue(value).GetValueID() == {{auto_identity}})
+        ToCSSIdentifierValue(value).GetValueID() == CSSValueAuto)
       state.Style()->{{auto_setter}}();
     else
       {{convert_and_set_value(property)}}
   }
-    {% elif property.custom_apply == "border_image" %}
-    {% set is_mask_box = property.custom_apply_args['is_mask_box'] %}
-    {% set modifier_type = property.custom_apply_args['modifier_type'] %}
-    {% set getter = property.custom_apply_args['getter'] %}
-    {% set setter = property.custom_apply_args['setter'] %}
+    {% elif property.style_builder_template in ['border_image', 'mask_box'] %}
+    {% set is_mask_box = property.style_builder_template == 'mask_box' %}
+    {% set modifier_type = property.style_builder_template_args['modifier_type'] %}
+    {% set getter = 'MaskBoxImage' if is_mask_box else 'BorderImage' %}
+    {% set setter = 'Set' + getter %}
   {{declare_initial()}} {
     const NinePieceImage& currentImage = state.Style()->{{getter}}();
     {# Check for equality in case we can bail out before creating a new NinePieceImage. #}
