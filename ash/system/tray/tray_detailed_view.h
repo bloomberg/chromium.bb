@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TRAY_TRAY_DETAILS_VIEW_H_
-#define ASH_SYSTEM_TRAY_TRAY_DETAILS_VIEW_H_
+#ifndef ASH_SYSTEM_TRAY_TRAY_DETAILED_VIEW_H_
+#define ASH_SYSTEM_TRAY_TRAY_DETAILED_VIEW_H_
 
 #include <memory>
 
@@ -33,12 +33,12 @@ class ScrollBorder;
 class SystemTrayItem;
 class TriView;
 
-class ASH_EXPORT TrayDetailsView : public views::View,
-                                   public ViewClickListener,
-                                   public views::ButtonListener {
+class ASH_EXPORT TrayDetailedView : public views::View,
+                                    public ViewClickListener,
+                                    public views::ButtonListener {
  public:
-  explicit TrayDetailsView(SystemTrayItem* owner);
-  ~TrayDetailsView() override;
+  explicit TrayDetailedView(SystemTrayItem* owner);
+  ~TrayDetailedView() override;
 
   // ViewClickListener:
   // Don't override this --- override HandleViewClicked.
@@ -115,7 +115,7 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   views::View* scroll_content() const { return scroll_content_; }
 
  private:
-  friend class TrayDetailsViewTest;
+  friend class TrayDetailedViewTest;
 
   // Overridden to handle clicks on subclass-specific views.
   virtual void HandleViewClicked(views::View* view);
@@ -160,9 +160,9 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   // Used to delay the transition to the default view.
   base::OneShotTimer transition_delay_timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(TrayDetailsView);
+  DISALLOW_COPY_AND_ASSIGN(TrayDetailedView);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TRAY_TRAY_DETAILS_VIEW_H_
+#endif  // ASH_SYSTEM_TRAY_TRAY_DETAILED_VIEW_H_

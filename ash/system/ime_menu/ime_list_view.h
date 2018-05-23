@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/system/tray/tray_details_view.h"
+#include "ash/system/tray/tray_detailed_view.h"
 #include "ui/views/controls/button/button.h"
 
 namespace ash {
@@ -23,7 +23,7 @@ class KeyboardStatusRow;
 // Base class used to represent a selecatable list of available IMEs.
 // Optionally shows a toggle which is used to enable or disable the invocation
 // of the virtual keyboard.
-class ImeListView : public TrayDetailsView {
+class ImeListView : public TrayDetailedView {
  public:
   enum SingleImeBehavior {
     // Shows the IME menu if there's only one IME in system.
@@ -69,7 +69,7 @@ class ImeListView : public TrayDetailsView {
     return should_focus_ime_after_selection_with_keyboard_;
   }
 
-  // TrayDetailsView:
+  // TrayDetailedView:
   void HandleViewClicked(views::View* view) override;
   void HandleButtonPressed(views::Button* sender,
                            const ui::Event& event) override;

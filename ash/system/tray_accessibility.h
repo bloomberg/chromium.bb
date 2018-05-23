@@ -9,7 +9,7 @@
 
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility/accessibility_observer.h"
-#include "ash/system/tray/tray_details_view.h"
+#include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/tray/tray_image_item.h"
 #include "base/macros.h"
 #include "ui/gfx/font.h"
@@ -35,7 +35,7 @@ class TrayAccessibilityTest;
 namespace tray {
 
 // Create the detailed view of accessibility tray.
-class AccessibilityDetailedView : public TrayDetailsView {
+class AccessibilityDetailedView : public TrayDetailedView {
  public:
   explicit AccessibilityDetailedView(SystemTrayItem* owner);
   ~AccessibilityDetailedView() override {}
@@ -47,7 +47,7 @@ class AccessibilityDetailedView : public TrayDetailsView {
   friend class ::ash::TrayAccessibilityTest;
   friend class chromeos::TrayAccessibilityTest;
 
-  // TrayDetailsView:
+  // TrayDetailedView:
   void HandleViewClicked(views::View* view) override;
   void HandleButtonPressed(views::Button* sender,
                            const ui::Event& event) override;

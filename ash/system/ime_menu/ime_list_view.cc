@@ -14,7 +14,7 @@
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_details_view.h"
+#include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
@@ -182,7 +182,7 @@ class KeyboardStatusRow : public views::View {
 };
 
 ImeListView::ImeListView(SystemTrayItem* owner)
-    : TrayDetailsView(owner),
+    : TrayDetailedView(owner),
       last_item_selected_with_keyboard_(false),
       should_focus_ime_after_selection_with_keyboard_(false),
       current_ime_view_(nullptr) {}

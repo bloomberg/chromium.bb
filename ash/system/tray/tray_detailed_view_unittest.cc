@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray/tray_details_view.h"
+#include "ash/system/tray/tray_detailed_view.h"
 
 #include "ash/ash_view_ids.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -25,9 +25,9 @@ namespace ash {
 
 namespace {
 
-class TestDetailsView : public TrayDetailsView {
+class TestDetailsView : public TrayDetailedView {
  public:
-  explicit TestDetailsView(SystemTrayItem* owner) : TrayDetailsView(owner) {
+  explicit TestDetailsView(SystemTrayItem* owner) : TrayDetailedView(owner) {
     // Uses bluetooth label for testing purpose. It can be changed to any
     // string_id.
     CreateTitleRow(IDS_ASH_STATUS_TRAY_BLUETOOTH);
@@ -38,7 +38,7 @@ class TestDetailsView : public TrayDetailsView {
   void CreateScrollerViews() { CreateScrollableList(); }
 
   views::View* scroll_content() const {
-    return TrayDetailsView::scroll_content();
+    return TrayDetailedView::scroll_content();
   }
 
  private:
@@ -86,10 +86,10 @@ class TestItem : public SystemTrayItem {
 
 }  // namespace
 
-class TrayDetailsViewTest : public AshTestBase {
+class TrayDetailedViewTest : public AshTestBase {
  public:
-  TrayDetailsViewTest() = default;
-  ~TrayDetailsViewTest() override = default;
+  TrayDetailedViewTest() = default;
+  ~TrayDetailedViewTest() override = default;
 
   void TransitionFromDetailedToDefaultView(TestDetailsView* detailed) {
     detailed->TransitionToDefaultView();
@@ -118,10 +118,10 @@ class TrayDetailsViewTest : public AshTestBase {
   std::unique_ptr<base::ScopedMockTimeMessageLoopTaskRunner>
       scoped_task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(TrayDetailsViewTest);
+  DISALLOW_COPY_AND_ASSIGN(TrayDetailedViewTest);
 };
 
-TEST_F(TrayDetailsViewTest, TransitionToDefaultViewTest) {
+TEST_F(TrayDetailedViewTest, TransitionToDefaultViewTest) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -171,7 +171,7 @@ TEST_F(TrayDetailsViewTest, TransitionToDefaultViewTest) {
   EXPECT_FALSE(test_item_2->default_view()->HasFocus());
 }
 
-TEST_F(TrayDetailsViewTest, ScrollContentsTest) {
+TEST_F(TrayDetailedViewTest, ScrollContentsTest) {
   SystemTray* tray = GetPrimarySystemTray();
   TestItem* test_item = new TestItem;
   tray->AddTrayItem(base::WrapUnique(test_item));

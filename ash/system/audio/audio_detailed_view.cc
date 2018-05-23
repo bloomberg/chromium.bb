@@ -58,7 +58,7 @@ namespace ash {
 namespace tray {
 
 AudioDetailedView::AudioDetailedView(SystemTrayItem* owner)
-    : TrayDetailsView(owner) {
+    : TrayDetailedView(owner) {
   CreateItems();
   Update();
 }

@@ -19,7 +19,7 @@
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/system/tray/tray_details_view.h"
+#include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
@@ -131,7 +131,7 @@ class DefaultAccessibilityView : public TrayItemMore {
 // ash::tray::AccessibilityDetailedView
 
 AccessibilityDetailedView::AccessibilityDetailedView(SystemTrayItem* owner)
-    : TrayDetailsView(owner) {
+    : TrayDetailedView(owner) {
   Reset();
   AppendAccessibilityList();
   CreateTitleRow(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TITLE);

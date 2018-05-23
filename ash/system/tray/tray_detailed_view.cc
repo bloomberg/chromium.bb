@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray/tray_details_view.h"
+#include "ash/system/tray/tray_detailed_view.h"
 
 #include "ash/ash_view_ids.h"
 #include "ash/public/cpp/ash_features.h"
@@ -166,9 +166,8 @@ class ScrollContentsView : public views::View {
         previous_header = &header;
         header_view->SetY(header.natural_offset);
       } else {
-        if (previous_header &&
-            previous_header->view->y() <=
-                scroll_offset + header_view->height()) {
+        if (previous_header && previous_header->view->y() <=
+                                   scroll_offset + header_view->height()) {
           // Lower header displacing the header above.
           draw_separator_below = true;
           header_view->SetY(previous_header->view->y() - header_view->height());
@@ -239,11 +238,10 @@ const int kTitleRowPaddingBottom =
 
 }  // namespace
 
-
 ////////////////////////////////////////////////////////////////////////////////
-// TrayDetailsView:
+// TrayDetailedView:
 
-TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
+TrayDetailedView::TrayDetailedView(SystemTrayItem* owner)
     : owner_(owner),
       box_layout_(nullptr),
       scroller_(nullptr),
@@ -259,14 +257,14 @@ TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
                           this, ui::NativeTheme::kColorId_BubbleBackground));
 }
 
-TrayDetailsView::~TrayDetailsView() = default;
+TrayDetailedView::~TrayDetailedView() = default;
 
-void TrayDetailsView::OnViewClicked(views::View* sender) {
+void TrayDetailedView::OnViewClicked(views::View* sender) {
   HandleViewClicked(sender);
 }
 
-void TrayDetailsView::ButtonPressed(views::Button* sender,
-                                    const ui::Event& event) {
+void TrayDetailedView::ButtonPressed(views::Button* sender,
+                                     const ui::Event& event) {
   if (sender == back_button_) {
     TransitionToDefaultView();
     return;
@@ -275,7 +273,7 @@ void TrayDetailsView::ButtonPressed(views::Button* sender,
   HandleButtonPressed(sender, event);
 }
 
-void TrayDetailsView::CreateTitleRow(int string_id) {
+void TrayDetailedView::CreateTitleRow(int string_id) {
   DCHECK(!tri_view_);
 
   tri_view_ = TrayPopupUtils::CreateDefaultRowView();
@@ -307,7 +305,7 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
   Layout();
 }
 
-void TrayDetailsView::CreateScrollableList() {
+void TrayDetailedView::CreateScrollableList() {
   DCHECK(!scroller_);
   scroll_content_ = new ScrollContentsView();
   scroller_ = new views::ScrollView;
@@ -324,7 +322,7 @@ void TrayDetailsView::CreateScrollableList() {
   box_layout_->SetFlexForView(scroller_, 1);
 }
 
-HoverHighlightView* TrayDetailsView::AddScrollListItem(
+HoverHighlightView* TrayDetailedView::AddScrollListItem(
     const gfx::VectorIcon& icon,
     const base::string16& text) {
   HoverHighlightView* item = new HoverHighlightView(this);
@@ -336,7 +334,7 @@ HoverHighlightView* TrayDetailsView::AddScrollListItem(
   return item;
 }
 
-HoverHighlightView* TrayDetailsView::AddScrollListCheckableItem(
+HoverHighlightView* TrayDetailedView::AddScrollListCheckableItem(
     const gfx::VectorIcon& icon,
     const base::string16& text,
     bool checked) {
@@ -345,13 +343,13 @@ HoverHighlightView* TrayDetailsView::AddScrollListCheckableItem(
   return item;
 }
 
-HoverHighlightView* TrayDetailsView::AddScrollListCheckableItem(
+HoverHighlightView* TrayDetailedView::AddScrollListCheckableItem(
     const base::string16& text,
     bool checked) {
   return AddScrollListCheckableItem(gfx::kNoneIcon, text, checked);
 }
 
-void TrayDetailsView::SetupConnectedScrollListItem(HoverHighlightView* view) {
+void TrayDetailedView::SetupConnectedScrollListItem(HoverHighlightView* view) {
   DCHECK(view->is_populated());
 
   view->SetSubText(
@@ -361,15 +359,15 @@ void TrayDetailsView::SetupConnectedScrollListItem(HoverHighlightView* view) {
   style.SetupLabel(view->sub_text_label());
 }
 
-void TrayDetailsView::SetupConnectingScrollListItem(HoverHighlightView* view) {
+void TrayDetailedView::SetupConnectingScrollListItem(HoverHighlightView* view) {
   DCHECK(view->is_populated());
 
   view->SetSubText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING));
 }
 
-TriView* TrayDetailsView::AddScrollListSubHeader(const gfx::VectorIcon& icon,
-                                                 int text_id) {
+TriView* TrayDetailedView::AddScrollListSubHeader(const gfx::VectorIcon& icon,
+                                                  int text_id) {
   TriView* header = TrayPopupUtils::CreateSubHeaderRowView(!icon.is_empty());
   TrayPopupUtils::ConfigureAsStickyHeader(header);
 
@@ -391,11 +389,11 @@ TriView* TrayDetailsView::AddScrollListSubHeader(const gfx::VectorIcon& icon,
   return header;
 }
 
-TriView* TrayDetailsView::AddScrollListSubHeader(int text_id) {
+TriView* TrayDetailedView::AddScrollListSubHeader(int text_id) {
   return AddScrollListSubHeader(gfx::kNoneIcon, text_id);
 }
 
-void TrayDetailsView::Reset() {
+void TrayDetailedView::Reset() {
   RemoveAllChildViews(true);
   scroller_ = nullptr;
   scroll_content_ = nullptr;
@@ -404,7 +402,7 @@ void TrayDetailsView::Reset() {
   tri_view_ = nullptr;
 }
 
-void TrayDetailsView::ShowProgress(double value, bool visible) {
+void TrayDetailedView::ShowProgress(double value, bool visible) {
   DCHECK(tri_view_);
   if (!progress_bar_) {
     progress_bar_ = new views::ProgressBar(kTitleRowProgressBarHeight);
@@ -417,7 +415,7 @@ void TrayDetailsView::ShowProgress(double value, bool visible) {
   child_at(kTitleRowSeparatorIndex)->SetVisible(!visible);
 }
 
-views::Button* TrayDetailsView::CreateSettingsButton(
+views::Button* TrayDetailedView::CreateSettingsButton(
     int setting_accessible_name_id) {
   SystemMenuButton* button = new SystemMenuButton(this, kSystemMenuSettingsIcon,
                                                   setting_accessible_name_id);
@@ -426,7 +424,7 @@ views::Button* TrayDetailsView::CreateSettingsButton(
   return button;
 }
 
-views::Button* TrayDetailsView::CreateHelpButton() {
+views::Button* TrayDetailedView::CreateHelpButton() {
   SystemMenuButton* button =
       new SystemMenuButton(this, kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
   // Help opens a web page, so treat it like Web UI settings.
@@ -435,29 +433,29 @@ views::Button* TrayDetailsView::CreateHelpButton() {
   return button;
 }
 
-void TrayDetailsView::HandleViewClicked(views::View* view) {
+void TrayDetailedView::HandleViewClicked(views::View* view) {
   NOTREACHED();
 }
 
-void TrayDetailsView::HandleButtonPressed(views::Button* sender,
-                                          const ui::Event& event) {
+void TrayDetailedView::HandleButtonPressed(views::Button* sender,
+                                           const ui::Event& event) {
   NOTREACHED();
 }
 
-void TrayDetailsView::CreateExtraTitleRowButtons() {}
+void TrayDetailedView::CreateExtraTitleRowButtons() {}
 
-void TrayDetailsView::TransitionToDefaultView() {
+void TrayDetailedView::TransitionToDefaultView() {
   if (back_button_ && back_button_->HasFocus())
     owner_->set_restore_focus(true);
 
   transition_delay_timer_.Start(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(kTrayDetailedViewTransitionDelayMs),
-      this, &TrayDetailsView::DoTransitionToDefaultView);
+      this, &TrayDetailedView::DoTransitionToDefaultView);
 }
 
-void TrayDetailsView::DoTransitionToDefaultView() {
-  // Cache pointer to owner in this function scope. TrayDetailsView will be
+void TrayDetailedView::DoTransitionToDefaultView() {
+  // Cache pointer to owner in this function scope. TrayDetailedView will be
   // deleted after called ShowDefaultView.
   SystemTrayItem* owner = owner_;
   owner->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING,
@@ -465,19 +463,19 @@ void TrayDetailsView::DoTransitionToDefaultView() {
   owner->set_restore_focus(false);
 }
 
-views::Button* TrayDetailsView::CreateBackButton() {
+views::Button* TrayDetailedView::CreateBackButton() {
   SystemMenuButton* button = new SystemMenuButton(
       this, kSystemMenuArrowBackIcon, IDS_ASH_STATUS_TRAY_PREVIOUS_MENU);
   return button;
 }
 
-void TrayDetailsView::Layout() {
+void TrayDetailedView::Layout() {
   views::View::Layout();
   if (scroller_ && !scroller_->is_bounded())
     scroller_->ClipHeightTo(0, scroller_->height());
 }
 
-int TrayDetailsView::GetHeightForWidth(int width) const {
+int TrayDetailedView::GetHeightForWidth(int width) const {
   if (bounds().IsEmpty())
     return views::View::GetHeightForWidth(width);
 
