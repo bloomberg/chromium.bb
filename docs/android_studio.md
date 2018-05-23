@@ -22,8 +22,9 @@ build/android/gradle/generate_gradle.py --output-directory out/Debug --sdk Andro
 The above commands create a project dir `gradle` under your output directory.
 Use `--project-dir <project-dir>` to change this.
 
-See [android_test_instructions.md](android_test_instructions.md#Using-Emulators)
-for more information about building and running emulators.
+To import the project:
+* Use "Import Project", and select the directory containing the generated
+  project, e.g. `out/Debug/gradle`.
 
 For first-time Android Studio users:
 * Only run the setup wizard if you are planning to use emulators.
@@ -31,9 +32,8 @@ For first-time Android Studio users:
       for emulation.
     * To skip it, select "Cancel" when it comes up.
 
-To import the project:
-* Use "Import Project", and select the directory containing the generated
-  project, e.g. `out/Debug/gradle`.
+See [android_test_instructions.md](android_test_instructions.md#Using-Emulators)
+for more information about building and running emulators.
 
 If you're asked to use Studio's Android SDK:
 * No. (Always use your project's SDK configured by generate_gradle.py)
