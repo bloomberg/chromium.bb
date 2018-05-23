@@ -2574,7 +2574,6 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
         ],
       },
     ],
-    'compile_target': 'command_buffer_perftests',
     'isolate_name': 'command_buffer_perftests',
     'args': [
       '--use-cmd-decoder=validating',
@@ -2597,7 +2596,6 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
         ],
       },
     ],
-    'compile_target': 'command_buffer_perftests',
     'isolate_name': 'command_buffer_perftests',
     'args': [
       '--use-cmd-decoder=passthrough',
@@ -2824,11 +2822,6 @@ def generate_gtest(waterfall, tester_name, tester_config, test, test_config):
   # from the result.
   remove_tester_configs_from_result(result)
 
-  # This flag only has an effect on the Linux bots that run tests
-  # locally (as opposed to via Swarming), which are only those couple
-  # on the chromium.gpu.fyi waterfall. Still, there is no harm in
-  # specifying it everywhere.
-  result['use_xvfb'] = False
   add_common_test_properties(result, tester_config)
   return result
 
@@ -2849,7 +2842,7 @@ def generate_gtests(waterfall, tester_name, tester_config, test_dictionary):
 
 def generate_isolated_test(waterfall, tester_name, tester_config, test,
                            test_config, extra_browser_args, isolate_name,
-                           override_compile_targets, prefix_args):
+                           prefix_args):
   if not should_run_on_tester(waterfall, tester_name, tester_config,
                               test_config):
     return None
@@ -2897,8 +2890,6 @@ def generate_isolated_test(waterfall, tester_name, tester_config, test,
     'name': step_name,
     'swarming': swarming,
   }
-  if override_compile_targets != None:
-    result['override_compile_targets'] = override_compile_targets
   if 'non_precommit_args' in test_config:
     result['non_precommit_args'] = test_config['non_precommit_args']
   if 'precommit_args' in test_config:
@@ -2922,7 +2913,6 @@ def generate_telemetry_test(waterfall, tester_name, tester_config,
   return generate_isolated_test(waterfall, tester_name, tester_config, test,
                                 test_config, extra_browser_args,
                                 'telemetry_gpu_integration_test',
-                                ['telemetry_gpu_integration_test'],
                                 prefix_args)
 
 def generate_telemetry_tests(waterfall, tester_name, tester_config,
@@ -2937,15 +2927,11 @@ def generate_telemetry_tests(waterfall, tester_name, tester_config,
 
 def generate_non_telemetry_isolated_test(waterfall, tester_name, tester_config,
                                          test, test_config):
-  override_compile_targets = None
-  if 'compile_target' in test_config:
-    override_compile_targets = [test_config['compile_target']]
   isolate_name = test
   if 'isolate_name' in test_config:
     isolate_name = test_config['isolate_name']
   return generate_isolated_test(waterfall, tester_name, tester_config, test,
-                                test_config, None, isolate_name,
-                                override_compile_targets, [])
+                                test_config, None, isolate_name, [])
 
 def generate_non_telemetry_isolated_tests(waterfall, tester_name, tester_config,
                                           test_dictionary):

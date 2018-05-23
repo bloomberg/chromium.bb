@@ -32,8 +32,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "swarming": {
@@ -64,8 +63,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       }
     ],
     "isolated_scripts": [
@@ -128,8 +126,7 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles2_tests"
       }
     ],
     "isolated_scripts": []
@@ -165,8 +162,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "swarming": {
@@ -197,8 +193,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       }
     ],
     "isolated_scripts": [
@@ -261,8 +256,7 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles2_tests"
       }
     ],
     "isolated_scripts": []
@@ -298,8 +292,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "swarming": {
@@ -330,8 +323,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "swarming": {
@@ -362,8 +354,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "swarming": {
@@ -394,8 +385,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "swarming": {
@@ -426,8 +416,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -461,9 +450,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -487,9 +473,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -513,9 +496,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -539,9 +519,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -569,9 +546,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -602,9 +576,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -640,9 +611,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -670,9 +638,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -696,9 +661,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -723,9 +685,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -772,8 +731,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "swarming": {
@@ -804,8 +762,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "swarming": {
@@ -836,8 +793,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "swarming": {
@@ -868,8 +824,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -903,9 +858,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -929,9 +881,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -955,9 +904,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -981,9 +927,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1011,9 +954,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1044,9 +984,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1082,9 +1019,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -1112,9 +1046,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1138,9 +1069,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1165,9 +1093,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1213,8 +1138,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "swarming": {
@@ -1244,8 +1168,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -1278,9 +1201,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1303,9 +1223,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1328,9 +1245,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1353,9 +1267,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1382,9 +1293,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1414,9 +1322,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1451,9 +1356,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -1480,9 +1382,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1505,9 +1404,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1531,9 +1427,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1579,8 +1472,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "swarming": {
@@ -1611,8 +1503,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "swarming": {
@@ -1643,8 +1534,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "swarming": {
@@ -1675,8 +1565,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -1691,9 +1580,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1717,9 +1603,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1743,9 +1626,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1769,9 +1649,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1799,9 +1676,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1832,9 +1706,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1870,9 +1741,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -1900,9 +1768,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1926,9 +1791,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1953,9 +1815,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2002,8 +1861,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "swarming": {
@@ -2034,8 +1892,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "swarming": {
@@ -2066,8 +1923,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "swarming": {
@@ -2098,8 +1954,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "swarming": {
@@ -2130,8 +1985,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -2165,9 +2019,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2191,9 +2042,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2217,9 +2065,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2243,9 +2088,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2273,9 +2115,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2306,9 +2145,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2344,9 +2180,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -2374,9 +2207,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2400,9 +2230,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2427,9 +2254,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2476,8 +2300,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "swarming": {
@@ -2508,8 +2331,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "swarming": {
@@ -2540,8 +2362,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "swarming": {
@@ -2572,8 +2393,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -2607,9 +2427,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2633,9 +2450,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2659,9 +2473,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2685,9 +2496,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2715,9 +2523,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2748,9 +2553,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2786,9 +2588,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -2816,9 +2615,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2842,9 +2638,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2869,9 +2662,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2924,8 +2714,7 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -2961,8 +2750,7 @@
           ],
           "shards": 12
         },
-        "test": "angle_deqp_gles3_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles3_tests"
       }
     ],
     "isolated_scripts": []
@@ -2997,8 +2785,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -3016,8 +2803,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -3033,8 +2819,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       },
       {
         "args": [
@@ -3051,8 +2836,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -3069,8 +2853,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -3086,8 +2869,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -3100,8 +2882,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -3116,9 +2897,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3141,9 +2919,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3166,9 +2941,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3191,9 +2963,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3220,9 +2989,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3252,9 +3018,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3289,9 +3052,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -3318,9 +3078,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3343,9 +3100,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3369,9 +3123,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "viz_screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3394,9 +3145,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3420,9 +3168,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3454,8 +3199,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -3473,8 +3217,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -3490,8 +3233,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       },
       {
         "args": [
@@ -3508,8 +3250,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -3526,8 +3267,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -3543,8 +3283,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -3557,8 +3296,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -3599,8 +3337,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -3618,8 +3355,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       }
     ],
     "isolated_scripts": []
@@ -3642,8 +3378,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -3659,8 +3394,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       },
       {
         "args": [
@@ -3681,8 +3415,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -3699,8 +3432,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -3716,8 +3448,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -3730,8 +3461,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -3746,9 +3476,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3772,9 +3499,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3798,9 +3522,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3824,9 +3545,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3854,9 +3572,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3887,9 +3602,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3925,9 +3637,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -3955,9 +3664,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3981,9 +3687,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4008,9 +3711,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "viz_screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4036,9 +3736,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4063,9 +3760,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4090,9 +3784,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4125,8 +3816,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -4144,8 +3834,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -4161,8 +3850,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       },
       {
         "args": [
@@ -4183,8 +3871,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -4201,8 +3888,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -4219,8 +3905,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -4236,8 +3921,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -4250,8 +3934,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -4266,9 +3949,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4291,9 +3971,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4316,9 +3993,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4341,9 +4015,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4370,9 +4041,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4402,9 +4070,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4439,9 +4104,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -4468,9 +4130,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4493,9 +4152,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4519,9 +4175,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "viz_screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4546,9 +4199,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4572,9 +4222,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4598,9 +4245,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4632,8 +4276,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -4651,8 +4294,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -4668,8 +4310,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       },
       {
         "args": [
@@ -4690,8 +4331,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -4708,8 +4348,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -4726,8 +4365,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -4743,8 +4381,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -4757,8 +4394,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -4791,9 +4427,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4816,9 +4449,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4841,9 +4471,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4866,9 +4493,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4895,9 +4519,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4927,9 +4548,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4964,9 +4582,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -4993,9 +4608,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5018,9 +4630,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5044,9 +4653,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "viz_screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5071,9 +4677,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5099,9 +4702,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5125,9 +4725,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5151,9 +4748,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5187,8 +4781,7 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles2_tests"
       }
     ],
     "isolated_scripts": []
@@ -5212,8 +4805,7 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -5232,8 +4824,7 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -5252,8 +4843,7 @@
           ],
           "shards": 6
         },
-        "test": "angle_deqp_gles31_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles31_tests"
       },
       {
         "args": [
@@ -5272,8 +4862,7 @@
           ],
           "shards": 12
         },
-        "test": "angle_deqp_gles3_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles3_tests"
       }
     ],
     "isolated_scripts": []
@@ -5294,8 +4883,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -5311,8 +4899,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -5328,8 +4915,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -5344,8 +4930,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -5360,8 +4945,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -5373,8 +4957,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "args": [
@@ -5390,8 +4973,7 @@
             }
           ]
         },
-        "test": "services_unittests",
-        "use_xvfb": false
+        "test": "services_unittests"
       },
       {
         "swarming": {
@@ -5403,8 +4985,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -5419,9 +5000,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5443,9 +5021,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5467,9 +5042,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5491,9 +5063,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5519,9 +5088,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5550,9 +5116,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5586,9 +5149,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -5614,9 +5174,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5638,9 +5195,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5662,9 +5216,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5695,8 +5246,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -5713,8 +5263,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -5734,8 +5283,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -5752,8 +5300,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -5769,8 +5316,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -5786,8 +5332,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -5800,8 +5345,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "args": [
@@ -5818,8 +5362,7 @@
             }
           ]
         },
-        "test": "services_unittests",
-        "use_xvfb": false
+        "test": "services_unittests"
       }
     ],
     "isolated_scripts": [
@@ -5834,9 +5377,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5859,9 +5399,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5884,9 +5421,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5909,9 +5443,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5938,9 +5469,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5970,9 +5498,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6007,9 +5532,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -6036,9 +5558,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6061,9 +5580,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6088,9 +5604,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6114,9 +5627,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6149,8 +5659,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -6168,8 +5677,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -6190,8 +5698,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -6209,8 +5716,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -6227,8 +5733,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -6245,8 +5750,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -6260,8 +5764,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "args": [
@@ -6279,8 +5782,7 @@
             }
           ]
         },
-        "test": "services_unittests",
-        "use_xvfb": false
+        "test": "services_unittests"
       }
     ],
     "isolated_scripts": [
@@ -6295,9 +5797,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6321,9 +5820,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6347,9 +5843,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6373,9 +5866,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6403,9 +5893,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6436,9 +5923,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6474,9 +5958,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -6504,9 +5985,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6530,9 +6008,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6558,9 +6033,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6585,9 +6057,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6621,8 +6090,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -6640,8 +6108,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -6662,8 +6129,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -6681,8 +6147,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -6699,8 +6164,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -6717,8 +6181,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -6732,8 +6195,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "args": [
@@ -6751,8 +6213,7 @@
             }
           ]
         },
-        "test": "services_unittests",
-        "use_xvfb": false
+        "test": "services_unittests"
       }
     ],
     "isolated_scripts": [
@@ -6767,9 +6228,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6794,9 +6252,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6821,9 +6276,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6848,9 +6300,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6879,9 +6328,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6913,9 +6359,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6952,9 +6395,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -6983,9 +6423,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7010,9 +6447,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7039,9 +6473,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7067,9 +6498,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7108,8 +6536,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -7131,8 +6558,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -7157,8 +6583,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -7180,8 +6605,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -7202,8 +6626,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -7224,8 +6647,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -7243,8 +6665,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "args": [
@@ -7266,8 +6687,7 @@
             }
           ]
         },
-        "test": "services_unittests",
-        "use_xvfb": false
+        "test": "services_unittests"
       },
       {
         "swarming": {
@@ -7285,8 +6705,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -7301,9 +6720,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7331,9 +6747,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7361,9 +6774,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7391,9 +6801,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7428,9 +6835,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7470,9 +6874,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -7504,9 +6905,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7534,9 +6932,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7567,9 +6962,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7599,9 +6991,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7637,8 +7026,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -7654,8 +7042,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -7674,8 +7061,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -7691,8 +7077,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -7707,8 +7092,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -7723,8 +7107,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -7736,8 +7119,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "args": [
@@ -7753,8 +7135,7 @@
             }
           ]
         },
-        "test": "services_unittests",
-        "use_xvfb": false
+        "test": "services_unittests"
       },
       {
         "swarming": {
@@ -7766,8 +7147,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -7782,9 +7162,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7806,9 +7183,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7830,9 +7204,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7854,9 +7225,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7882,9 +7250,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7913,9 +7278,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7949,9 +7311,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -7977,9 +7336,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8001,9 +7357,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8027,9 +7380,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8052,9 +7402,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8086,8 +7433,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -8105,8 +7451,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -8124,8 +7469,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -8142,8 +7486,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -8160,8 +7503,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -8175,8 +7517,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "args": [
@@ -8194,8 +7535,7 @@
             }
           ]
         },
-        "test": "services_unittests",
-        "use_xvfb": false
+        "test": "services_unittests"
       },
       {
         "swarming": {
@@ -8209,8 +7549,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -8225,9 +7564,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8251,9 +7587,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8277,9 +7610,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8303,9 +7633,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8333,9 +7660,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8366,9 +7690,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8404,9 +7725,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -8434,9 +7752,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8460,9 +7775,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8486,9 +7798,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8522,8 +7831,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -8541,8 +7849,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -8560,8 +7867,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -8578,8 +7884,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -8596,8 +7901,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -8611,8 +7915,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "args": [
@@ -8630,8 +7933,7 @@
             }
           ]
         },
-        "test": "services_unittests",
-        "use_xvfb": false
+        "test": "services_unittests"
       },
       {
         "swarming": {
@@ -8645,8 +7947,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -8661,9 +7962,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8687,9 +7985,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8713,9 +8008,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8739,9 +8031,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8769,9 +8058,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8802,9 +8088,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8840,9 +8123,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -8870,9 +8150,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8896,9 +8173,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8922,9 +8196,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -8958,8 +8229,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -8977,8 +8247,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -8999,8 +8268,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -9018,8 +8286,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -9036,8 +8303,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -9054,8 +8320,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -9069,8 +8334,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "args": [
@@ -9088,8 +8352,7 @@
             }
           ]
         },
-        "test": "services_unittests",
-        "use_xvfb": false
+        "test": "services_unittests"
       },
       {
         "swarming": {
@@ -9103,8 +8366,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -9119,9 +8381,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9145,9 +8404,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9171,9 +8427,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9197,9 +8450,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9227,9 +8477,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9260,9 +8507,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9298,9 +8542,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -9328,9 +8569,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9354,9 +8592,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9382,9 +8617,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9409,9 +8641,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9445,8 +8674,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -9464,8 +8692,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -9486,8 +8713,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -9505,8 +8731,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -9523,8 +8748,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -9541,8 +8765,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -9556,8 +8779,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "args": [
@@ -9575,8 +8797,7 @@
             }
           ]
         },
-        "test": "services_unittests",
-        "use_xvfb": false
+        "test": "services_unittests"
       },
       {
         "swarming": {
@@ -9590,8 +8811,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -9606,9 +8826,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9632,9 +8849,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9658,9 +8872,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9684,9 +8895,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9714,9 +8922,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9747,9 +8952,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9785,9 +8987,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -9815,9 +9014,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9841,9 +9037,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9869,9 +9062,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9896,9 +9086,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9934,8 +9121,7 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -9955,8 +9141,7 @@
           ],
           "shards": 12
         },
-        "test": "angle_deqp_gles3_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles3_tests"
       }
     ],
     "isolated_scripts": []
@@ -9979,8 +9164,7 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -9998,8 +9182,7 @@
           ],
           "shards": 12
         },
-        "test": "angle_deqp_gles3_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles3_tests"
       }
     ],
     "isolated_scripts": []
@@ -10021,8 +9204,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -10039,8 +9221,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -10060,8 +9241,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -10078,8 +9258,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -10095,8 +9274,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -10112,8 +9290,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -10126,8 +9303,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       }
     ],
     "isolated_scripts": [
@@ -10142,9 +9318,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10168,9 +9341,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10194,9 +9364,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10220,9 +9387,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10250,9 +9414,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10283,9 +9444,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10321,9 +9479,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -10351,9 +9506,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10377,9 +9529,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10405,9 +9554,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10432,9 +9578,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10471,8 +9614,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -10488,8 +9630,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       },
       {
         "args": [
@@ -10505,8 +9646,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -10519,8 +9659,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -10539,9 +9678,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10566,9 +9702,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10592,9 +9725,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10626,8 +9756,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -10643,8 +9772,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       },
       {
         "args": [
@@ -10660,8 +9788,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -10674,8 +9801,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -10712,9 +9838,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10739,9 +9862,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10765,9 +9885,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10798,8 +9915,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -10814,8 +9930,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -10827,8 +9942,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "args": [
@@ -10844,8 +9958,7 @@
             }
           ]
         },
-        "test": "services_unittests",
-        "use_xvfb": false
+        "test": "services_unittests"
       },
       {
         "swarming": {
@@ -10857,8 +9970,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -10877,9 +9989,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10903,9 +10012,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10937,8 +10043,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -10955,8 +10060,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -10970,8 +10074,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "args": [
@@ -10989,8 +10092,7 @@
             }
           ]
         },
-        "test": "services_unittests",
-        "use_xvfb": false
+        "test": "services_unittests"
       },
       {
         "swarming": {
@@ -11004,8 +10106,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -11024,9 +10125,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11052,9 +10150,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11088,8 +10183,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -11106,8 +10200,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -11121,8 +10214,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "args": [
@@ -11140,8 +10232,7 @@
             }
           ]
         },
-        "test": "services_unittests",
-        "use_xvfb": false
+        "test": "services_unittests"
       },
       {
         "swarming": {
@@ -11155,8 +10246,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -11175,9 +10265,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11209,8 +10296,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -11226,8 +10312,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       },
       {
         "args": [
@@ -11249,8 +10334,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -11268,8 +10352,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "args": [
@@ -11288,8 +10371,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "args": [
@@ -11305,8 +10387,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -11319,8 +10400,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "swarming": {
@@ -11333,8 +10413,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       }
     ],
     "isolated_scripts": [
@@ -11353,9 +10432,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11380,9 +10456,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11406,9 +10479,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11432,9 +10502,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11458,9 +10525,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11484,9 +10548,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11527,8 +10588,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -11553,8 +10613,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -11585,8 +10644,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -11613,8 +10671,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -11642,8 +10699,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -11668,8 +10724,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "swarming": {
@@ -11691,8 +10746,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "swarming": {
@@ -11714,8 +10768,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       }
     ],
     "isolated_scripts": [
@@ -11761,9 +10814,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11792,9 +10842,6 @@
         ],
         "isolate_name": "command_buffer_perftests",
         "name": "passthrough_command_buffer_perftests",
-        "override_compile_targets": [
-          "command_buffer_perftests"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11823,9 +10870,6 @@
         ],
         "isolate_name": "command_buffer_perftests",
         "name": "validating_command_buffer_perftests",
-        "override_compile_targets": [
-          "command_buffer_perftests"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11859,9 +10903,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11894,9 +10935,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11929,9 +10967,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11964,9 +10999,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11999,9 +11031,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12042,8 +11071,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -12059,8 +11087,7 @@
             }
           ]
         },
-        "test": "angle_gles1_conformance_tests",
-        "use_xvfb": false
+        "test": "angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -12077,8 +11104,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -12094,8 +11120,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       },
       {
         "args": [
@@ -12117,8 +11142,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -12135,8 +11159,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -12154,8 +11177,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -12171,8 +11193,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -12190,8 +11211,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "args": [
@@ -12210,8 +11230,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "args": [
@@ -12227,8 +11246,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -12241,8 +11259,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "swarming": {
@@ -12255,8 +11272,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       },
       {
         "args": [
@@ -12275,8 +11291,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       },
       {
         "args": [
@@ -12295,8 +11310,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       },
       {
         "args": [
@@ -12315,8 +11329,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       }
     ],
     "isolated_scripts": [
@@ -12331,9 +11344,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12356,9 +11366,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12381,9 +11388,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12406,9 +11410,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12435,9 +11436,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12467,9 +11465,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12504,9 +11499,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -12533,9 +11525,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12558,9 +11547,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12584,9 +11570,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "viz_screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12609,9 +11592,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12635,9 +11615,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12661,9 +11638,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12687,9 +11661,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12713,9 +11684,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12747,8 +11715,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -12764,8 +11731,7 @@
             }
           ]
         },
-        "test": "angle_gles1_conformance_tests",
-        "use_xvfb": false
+        "test": "angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -12782,8 +11748,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -12799,8 +11764,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       },
       {
         "args": [
@@ -12820,8 +11784,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -12838,8 +11801,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -12857,8 +11819,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -12874,8 +11835,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -12893,8 +11853,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "args": [
@@ -12913,8 +11872,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "args": [
@@ -12930,8 +11888,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -12944,8 +11901,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "swarming": {
@@ -12958,8 +11914,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       },
       {
         "args": [
@@ -12978,8 +11933,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       },
       {
         "args": [
@@ -12998,8 +11952,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       }
     ],
     "isolated_scripts": [
@@ -13014,9 +11967,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13039,9 +11989,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13064,9 +12011,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13089,9 +12033,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13118,9 +12059,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13150,9 +12088,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13187,9 +12122,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -13216,9 +12148,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13241,9 +12170,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13267,9 +12193,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "viz_screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13294,9 +12217,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13320,9 +12240,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13346,9 +12263,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13372,9 +12286,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13403,9 +12314,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "noop_sleep_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13436,8 +12344,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -13453,8 +12360,7 @@
             }
           ]
         },
-        "test": "angle_gles1_conformance_tests",
-        "use_xvfb": false
+        "test": "angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -13471,8 +12377,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -13488,8 +12393,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       },
       {
         "args": [
@@ -13509,8 +12413,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -13532,8 +12435,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -13550,8 +12452,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -13569,8 +12470,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -13586,8 +12486,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -13605,8 +12504,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "args": [
@@ -13625,8 +12523,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "args": [
@@ -13642,8 +12539,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -13656,8 +12552,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "swarming": {
@@ -13670,8 +12565,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       },
       {
         "args": [
@@ -13690,8 +12584,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       },
       {
         "args": [
@@ -13710,8 +12603,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       }
     ],
     "isolated_scripts": [
@@ -13726,9 +12618,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13751,9 +12640,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13776,9 +12662,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13801,9 +12684,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13830,9 +12710,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13862,9 +12739,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13899,9 +12773,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -13928,9 +12799,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13953,9 +12821,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13979,9 +12844,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "viz_screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14006,9 +12868,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14032,9 +12891,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14058,9 +12914,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14084,9 +12937,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14110,9 +12960,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14136,9 +12983,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14179,8 +13023,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -14205,8 +13048,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -14232,8 +13074,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -14258,8 +13099,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -14288,8 +13128,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -14320,8 +13159,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -14347,8 +13185,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -14375,8 +13212,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -14401,8 +13237,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -14429,8 +13264,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -14458,8 +13292,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -14484,8 +13317,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "swarming": {
@@ -14507,8 +13339,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "swarming": {
@@ -14530,8 +13361,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -14559,8 +13389,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -14588,8 +13417,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -14617,8 +13445,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       }
     ],
     "isolated_scripts": [
@@ -14660,9 +13487,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14694,9 +13518,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14728,9 +13549,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14762,9 +13580,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14800,9 +13615,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14841,9 +13653,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14872,9 +13681,6 @@
         ],
         "isolate_name": "command_buffer_perftests",
         "name": "passthrough_command_buffer_perftests",
-        "override_compile_targets": [
-          "command_buffer_perftests"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14918,9 +13724,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -14956,9 +13759,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14990,9 +13790,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15021,9 +13818,6 @@
         ],
         "isolate_name": "command_buffer_perftests",
         "name": "validating_command_buffer_perftests",
-        "override_compile_targets": [
-          "command_buffer_perftests"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15056,9 +13850,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "viz_screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15092,9 +13883,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_d3d11_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15129,9 +13917,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15166,9 +13951,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15201,9 +13983,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15236,9 +14015,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15271,9 +14047,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15306,9 +14079,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15341,9 +14111,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15386,8 +14153,7 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles2_tests"
       }
     ],
     "isolated_scripts": []
@@ -15409,8 +14175,7 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_egl_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_egl_tests"
       },
       {
         "args": [
@@ -15429,8 +14194,7 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -15449,8 +14213,7 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -15469,8 +14232,7 @@
           ],
           "shards": 6
         },
-        "test": "angle_deqp_gles31_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles31_tests"
       },
       {
         "args": [
@@ -15489,8 +14251,7 @@
           ],
           "shards": 6
         },
-        "test": "angle_deqp_gles31_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles31_tests"
       },
       {
         "args": [
@@ -15509,8 +14270,7 @@
           ],
           "shards": 12
         },
-        "test": "angle_deqp_gles3_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles3_tests"
       }
     ],
     "isolated_scripts": []
@@ -15532,8 +14292,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -15549,8 +14308,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       }
     ],
     "isolated_scripts": [
@@ -15567,9 +14325,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15593,9 +14348,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15619,9 +14371,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15653,8 +14402,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -15670,8 +14418,7 @@
             }
           ]
         },
-        "test": "angle_gles1_conformance_tests",
-        "use_xvfb": false
+        "test": "angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -15688,8 +14435,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -15705,8 +14451,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       },
       {
         "args": [
@@ -15723,8 +14468,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -15742,8 +14486,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -15759,8 +14502,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -15778,8 +14520,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "args": [
@@ -15798,8 +14539,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "args": [
@@ -15815,8 +14555,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -15829,8 +14568,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "swarming": {
@@ -15843,8 +14581,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       },
       {
         "args": [
@@ -15863,8 +14600,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       },
       {
         "args": [
@@ -15883,8 +14619,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       },
       {
         "args": [
@@ -15903,8 +14638,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       }
     ],
     "isolated_scripts": [
@@ -15919,9 +14653,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15944,9 +14675,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15969,9 +14697,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15994,9 +14719,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16023,9 +14745,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16055,9 +14774,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16092,9 +14808,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -16121,9 +14834,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16146,9 +14856,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16171,9 +14878,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16197,9 +14901,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16223,9 +14924,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16249,9 +14947,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16283,8 +14978,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -16300,8 +14994,7 @@
             }
           ]
         },
-        "test": "angle_gles1_conformance_tests",
-        "use_xvfb": false
+        "test": "angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -16318,8 +15011,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -16335,8 +15027,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       },
       {
         "args": [
@@ -16356,8 +15047,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -16374,8 +15064,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -16393,8 +15082,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -16410,8 +15098,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -16429,8 +15116,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "args": [
@@ -16449,8 +15135,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "args": [
@@ -16466,8 +15151,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -16480,8 +15164,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "swarming": {
@@ -16494,8 +15177,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       },
       {
         "args": [
@@ -16514,8 +15196,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       },
       {
         "args": [
@@ -16534,8 +15215,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       },
       {
         "args": [
@@ -16554,8 +15234,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       }
     ],
     "isolated_scripts": [
@@ -16570,9 +15249,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16595,9 +15271,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16620,9 +15293,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16645,9 +15315,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16674,9 +15341,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16706,9 +15370,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16743,9 +15404,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -16772,9 +15430,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16797,9 +15452,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16824,9 +15476,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16850,9 +15499,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16876,9 +15522,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16902,9 +15545,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16928,9 +15568,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16971,8 +15608,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -16997,8 +15633,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -17024,8 +15659,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -17050,8 +15684,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -17080,8 +15713,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -17107,8 +15739,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -17135,8 +15766,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -17161,8 +15791,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -17189,8 +15818,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -17218,8 +15846,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -17244,8 +15871,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "swarming": {
@@ -17267,8 +15893,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "swarming": {
@@ -17290,8 +15915,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -17319,8 +15943,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -17348,8 +15971,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       },
       {
         "args": [
@@ -17377,8 +15999,7 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        },
-        "use_xvfb": false
+        }
       }
     ],
     "isolated_scripts": [
@@ -17393,9 +16014,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17427,9 +16045,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17461,9 +16076,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17495,9 +16107,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17533,9 +16142,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17574,9 +16180,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17620,9 +16223,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -17658,9 +16258,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17692,9 +16289,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17728,9 +16322,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17763,9 +16354,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17798,9 +16386,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17833,9 +16418,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17868,9 +16450,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17903,9 +16482,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17948,8 +16524,7 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles2_tests"
       },
       {
         "args": [
@@ -17968,8 +16543,7 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests",
-        "use_xvfb": false
+        "test": "angle_deqp_gles2_tests"
       }
     ],
     "isolated_scripts": []
@@ -17991,8 +16565,7 @@
             }
           ]
         },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
+        "test": "angle_end2end_tests"
       },
       {
         "args": [
@@ -18008,8 +16581,7 @@
             }
           ]
         },
-        "test": "angle_gles1_conformance_tests",
-        "use_xvfb": false
+        "test": "angle_gles1_conformance_tests"
       },
       {
         "args": [
@@ -18026,8 +16598,7 @@
             }
           ]
         },
-        "test": "angle_unittests",
-        "use_xvfb": false
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -18043,8 +16614,7 @@
             }
           ]
         },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
+        "test": "angle_white_box_tests"
       },
       {
         "args": [
@@ -18064,8 +16634,7 @@
             }
           ]
         },
-        "test": "browser_tests",
-        "use_xvfb": false
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -18082,8 +16651,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -18101,8 +16669,7 @@
             }
           ]
         },
-        "test": "gl_tests",
-        "use_xvfb": false
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -18118,8 +16685,7 @@
             }
           ]
         },
-        "test": "gl_unittests",
-        "use_xvfb": false
+        "test": "gl_unittests"
       },
       {
         "args": [
@@ -18137,8 +16703,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "args": [
@@ -18157,8 +16722,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "args": [
@@ -18174,8 +16738,7 @@
             }
           ]
         },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
+        "test": "gles2_conform_test"
       },
       {
         "swarming": {
@@ -18188,8 +16751,7 @@
             }
           ]
         },
-        "test": "gpu_unittests",
-        "use_xvfb": false
+        "test": "gpu_unittests"
       },
       {
         "swarming": {
@@ -18202,8 +16764,7 @@
             }
           ]
         },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
+        "test": "swiftshader_unittests"
       },
       {
         "args": [
@@ -18222,8 +16783,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       },
       {
         "args": [
@@ -18242,8 +16802,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       },
       {
         "args": [
@@ -18262,8 +16821,7 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
+        "test": "video_decode_accelerator_unittest"
       }
     ],
     "isolated_scripts": [
@@ -18278,9 +16836,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18303,9 +16858,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18328,9 +16880,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18353,9 +16902,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18382,9 +16928,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18414,9 +16957,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18451,9 +16991,6 @@
         "non_precommit_args": [
           "--upload-refimg-to-cloud-storage"
         ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
         ],
@@ -18480,9 +17017,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18505,9 +17039,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18532,9 +17063,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18558,9 +17086,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18584,9 +17109,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18610,9 +17132,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d9_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18636,9 +17155,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18662,9 +17178,6 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
