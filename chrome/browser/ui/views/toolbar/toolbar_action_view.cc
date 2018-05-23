@@ -118,13 +118,7 @@ SkColor ToolbarActionView::GetInkDropBaseColor() const {
         ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
   }
 
-  const ui::ThemeProvider* provider = GetThemeProvider();
-
-  // There may not be a Widget available in the unit tests, thus there will be
-  // no ThemeProvider.
-  return provider
-             ? provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)
-             : gfx::kChromeIconGrey;
+  return GetToolbarInkDropBaseColor(this);
 }
 
 bool ToolbarActionView::ShouldUseFloodFillInkDrop() const {

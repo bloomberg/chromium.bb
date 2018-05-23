@@ -28,6 +28,9 @@ class AppMenuButton : public views::MenuButton {
   explicit AppMenuButton(views::MenuButtonListener* menu_button_listener);
   ~AppMenuButton() override;
 
+  // views::MenuButton:
+  SkColor GetInkDropBaseColor() const override;
+
   // Closes the app menu, if it's open.
   void CloseMenu();
 

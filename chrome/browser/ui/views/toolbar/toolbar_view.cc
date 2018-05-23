@@ -792,15 +792,6 @@ void ToolbarView::LoadImages() {
 
   app_menu_button_->UpdateIcon(false);
 
-  const SkColor ink_drop_color = color_utils::BlendTowardOppositeLuma(
-      tp->GetColor(ThemeProperties::COLOR_TOOLBAR), SK_AlphaOPAQUE);
-  back_->set_ink_drop_base_color(ink_drop_color);
-  forward_->set_ink_drop_base_color(ink_drop_color);
-  home_->set_ink_drop_base_color(ink_drop_color);
-  if (avatar_)
-    avatar_->set_ink_drop_base_color(ink_drop_color);
-  app_menu_button_->set_ink_drop_base_color(ink_drop_color);
-
   reload_->LoadImages();
 }
 

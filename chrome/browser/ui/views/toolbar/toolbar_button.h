@@ -68,6 +68,7 @@ class ToolbarButton : public views::ImageButton,
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  SkColor GetInkDropBaseColor() const override;
 
   // views::ContextMenuController:
   void ShowContextMenuForView(View* source,

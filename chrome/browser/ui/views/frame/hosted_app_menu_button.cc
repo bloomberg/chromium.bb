@@ -47,7 +47,6 @@ HostedAppMenuButton::~HostedAppMenuButton() {}
 void HostedAppMenuButton::SetIconColor(SkColor color) {
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(kBrowserToolsIcon, color));
-  set_ink_drop_base_color(color);
 }
 
 void HostedAppMenuButton::StartHighlightAnimation(base::TimeDelta duration) {
