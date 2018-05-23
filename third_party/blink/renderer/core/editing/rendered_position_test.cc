@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -60,7 +61,7 @@ TEST_F(RenderedPositionTest, ComputeCompositedSelection) {
   FocusAndSelectAll(ToHTMLInputElement(GetDocument().getElementById("target")));
 
   const CompositedSelection& composited_selection =
-      RenderedPosition::ComputeCompositedSelection(Selection());
+      ComputeCompositedSelection(Selection());
   EXPECT_FALSE(composited_selection.start.hidden);
   EXPECT_TRUE(composited_selection.end.hidden);
 }
@@ -97,7 +98,7 @@ TEST_F(RenderedPositionTest, PositionInScrollableRoot) {
   UpdateAllLifecyclePhases();
 
   const CompositedSelection& composited_selection =
-      RenderedPosition::ComputeCompositedSelection(Selection());
+      ComputeCompositedSelection(Selection());
 
   // Top-left corner should be around (1000, 905) - 10px centered in 20px
   // height.
@@ -163,7 +164,7 @@ TEST_F(RenderedPositionTest, PositionInScroller) {
   UpdateAllLifecyclePhases();
 
   const CompositedSelection& composited_selection =
-      RenderedPosition::ComputeCompositedSelection(Selection());
+      ComputeCompositedSelection(Selection());
 
   // Top-left corner should be around (1000, 905) - 10px centered in 20px
   // height.
@@ -184,7 +185,7 @@ TEST_F(RenderedPositionTest, ContentEditableLinebreak) {
   Element* target = GetDocument().QuerySelector("div");
   FocusAndSelectAll(target, *target);
   const CompositedSelection& composited_selection =
-      RenderedPosition::ComputeCompositedSelection(Selection());
+      ComputeCompositedSelection(Selection());
   EXPECT_EQ(composited_selection.start.edge_top_in_layer,
             FloatPoint(8.0f, 8.0f));
   EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,
@@ -202,7 +203,7 @@ TEST_F(RenderedPositionTest, TextAreaLinebreak) {
       "test\n</textarea>");
   FocusAndSelectAll(ToTextControl(GetDocument().QuerySelector("textarea")));
   const CompositedSelection& composited_selection =
-      RenderedPosition::ComputeCompositedSelection(Selection());
+      ComputeCompositedSelection(Selection());
   EXPECT_EQ(composited_selection.start.edge_top_in_layer,
             FloatPoint(11.0f, 11.0f));
   EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,
@@ -229,7 +230,7 @@ TEST_F(RenderedPositionTest, CaretBeforeSoftWrap) {
       SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
   UpdateAllLifecyclePhases();
   const CompositedSelection& composited_selection =
-      RenderedPosition::ComputeCompositedSelection(Selection());
+      ComputeCompositedSelection(Selection());
   EXPECT_EQ(composited_selection.start.edge_top_in_layer,
             FloatPoint(27.0f, 8.0f));
   EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,
@@ -255,7 +256,7 @@ TEST_F(RenderedPositionTest, CaretAfterSoftWrap) {
       SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
   UpdateAllLifecyclePhases();
   const CompositedSelection& composited_selection =
-      RenderedPosition::ComputeCompositedSelection(Selection());
+      ComputeCompositedSelection(Selection());
   EXPECT_EQ(composited_selection.start.edge_top_in_layer,
             FloatPoint(8.0f, 18.0f));
   EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,
@@ -278,7 +279,7 @@ TEST_F(RenderedPositionTest, RangeBeginAtBlockEnd) {
   target->focus();
   UpdateAllLifecyclePhases();
   const CompositedSelection& composited_selection =
-      RenderedPosition::ComputeCompositedSelection(Selection());
+      ComputeCompositedSelection(Selection());
   EXPECT_EQ(composited_selection.start.edge_top_in_layer,
             FloatPoint(38.0f, 8.0f));
   EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,

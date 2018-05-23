@@ -2112,7 +2112,7 @@ static CompositedSelection ComputeCompositedSelection(LocalFrame& frame) {
   if (!frame.View() || frame.View()->ShouldThrottleRendering())
     return {};
 
-  return RenderedPosition::ComputeCompositedSelection(frame.Selection());
+  return ComputeCompositedSelection(frame.Selection());
 }
 
 void LocalFrameView::UpdateCompositedSelectionIfNeeded() {

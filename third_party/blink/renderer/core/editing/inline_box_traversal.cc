@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
 
 #include "third_party/blink/renderer/core/editing/inline_box_position.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/line/inline_box.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
@@ -583,6 +585,178 @@ class HitTestAdjuster {
   }
 };
 
+// Adjustment algorithm at the end of creating range selection
+// TODO(xiaochengh): Generalize the implementation for LayoutNG
+class RangeSelectionAdjuster {
+  STATIC_ONLY(RangeSelectionAdjuster);
+
+ public:
+  static SelectionInFlatTree AdjustFor(
+      const VisiblePositionInFlatTree& visible_base,
+      const VisiblePositionInFlatTree& visible_extent) {
+    DCHECK(visible_base.IsValid());
+    DCHECK(visible_extent.IsValid());
+
+    RenderedPosition base = RenderedPosition::Create(visible_base);
+    RenderedPosition extent = RenderedPosition::Create(visible_extent);
+
+    const SelectionInFlatTree& unchanged_selection =
+        SelectionInFlatTree::Builder()
+            .SetBaseAndExtent(visible_base.DeepEquivalent(),
+                              visible_extent.DeepEquivalent())
+            .Build();
+
+    if (base.IsNull() || extent.IsNull() || base == extent)
+      return unchanged_selection;
+
+    if (base.AtBidiBoundary()) {
+      if (ShouldAdjustBaseAtBidiBoundary(base, extent)) {
+        const PositionInFlatTree adjusted_base =
+            CreateVisiblePosition(base.GetPosition()).DeepEquivalent();
+        return SelectionInFlatTree::Builder()
+            .SetBaseAndExtent(adjusted_base, visible_extent.DeepEquivalent())
+            .Build();
+      }
+      return unchanged_selection;
+    }
+
+    if (ShouldAdjustExtentAtBidiBoundary(base, extent)) {
+      const PositionInFlatTree adjusted_extent =
+          CreateVisiblePosition(extent.GetPosition()).DeepEquivalent();
+      return SelectionInFlatTree::Builder()
+          .SetBaseAndExtent(visible_base.DeepEquivalent(), adjusted_extent)
+          .Build();
+    }
+
+    return unchanged_selection;
+  }
+
+ private:
+  class RenderedPosition {
+    STACK_ALLOCATED();
+
+   public:
+    RenderedPosition() = default;
+    static RenderedPosition Create(const VisiblePositionInFlatTree&);
+
+    bool IsNull() const { return !inline_box_; }
+    bool operator==(const RenderedPosition& other) const {
+      return inline_box_ == other.inline_box_ && offset_ == other.offset_ &&
+             bidi_boundary_type_ == other.bidi_boundary_type_;
+    }
+
+    bool AtBidiBoundary() const {
+      return bidi_boundary_type_ != BidiBoundaryType::kNotBoundary;
+    }
+
+    // Given |other|, which is a boundary of a bidi run, returns true if |this|
+    // can be the other boundary of that run by checking some conditions.
+    bool IsPossiblyOtherBoundaryOf(const RenderedPosition& other) const {
+      DCHECK(other.AtBidiBoundary());
+      if (!AtBidiBoundary())
+        return false;
+      if (bidi_boundary_type_ == other.bidi_boundary_type_)
+        return false;
+      return inline_box_->BidiLevel() >= other.inline_box_->BidiLevel();
+    }
+
+    // Callable only when |this| is at boundary of a bidi run. Returns true if
+    // |other| is in that bidi run.
+    bool BidiRunContains(const RenderedPosition& other) const {
+      DCHECK(AtBidiBoundary());
+      DCHECK(!other.IsNull());
+      UBiDiLevel level = inline_box_->BidiLevel();
+      if (level > other.inline_box_->BidiLevel())
+        return false;
+      const InlineBox& boundary_of_other =
+          bidi_boundary_type_ == BidiBoundaryType::kLeftBoundary
+              ? InlineBoxTraversal::
+                    FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
+                        *other.inline_box_, level)
+              : InlineBoxTraversal::
+                    FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
+                        *other.inline_box_, level);
+      return inline_box_ == &boundary_of_other;
+    }
+
+    PositionInFlatTree GetPosition() const {
+      DCHECK(AtBidiBoundary());
+      return PositionInFlatTree::EditingPositionOf(
+          inline_box_->GetLineLayoutItem().GetNode(), offset_);
+    }
+
+   private:
+    enum class BidiBoundaryType { kNotBoundary, kLeftBoundary, kRightBoundary };
+    RenderedPosition(const InlineBox* box, int offset, BidiBoundaryType type)
+        : inline_box_(box), offset_(offset), bidi_boundary_type_(type) {}
+
+    const InlineBox* inline_box_ = nullptr;
+    int offset_ = 0;
+    BidiBoundaryType bidi_boundary_type_ = BidiBoundaryType::kNotBoundary;
+  };
+
+  static bool ShouldAdjustBaseAtBidiBoundary(const RenderedPosition& base,
+                                             const RenderedPosition& extent) {
+    DCHECK(base.AtBidiBoundary());
+    if (extent.IsPossiblyOtherBoundaryOf(base))
+      return false;
+    return base.BidiRunContains(extent);
+  }
+
+  static bool ShouldAdjustExtentAtBidiBoundary(const RenderedPosition& base,
+                                               const RenderedPosition& extent) {
+    if (!extent.AtBidiBoundary())
+      return false;
+    return extent.BidiRunContains(base);
+  }
+};
+
+RangeSelectionAdjuster::RenderedPosition
+RangeSelectionAdjuster::RenderedPosition::Create(
+    const VisiblePositionInFlatTree& position) {
+  if (position.IsNull())
+    return RenderedPosition();
+  InlineBoxPosition box_position =
+      ComputeInlineBoxPosition(position.ToPositionWithAffinity());
+  if (!box_position.inline_box)
+    return RenderedPosition();
+
+  const InlineBox* box = box_position.inline_box;
+  const int offset = box_position.offset_in_box;
+
+  // When at bidi boundary, ensure that |inline_box_| belongs to the higher-
+  // level bidi run.
+
+  // For example, abc FED |ghi should be changed into abc FED| ghi
+  if (offset == box->CaretLeftmostOffset()) {
+    const InlineBox* prev_box = box->PrevLeafChildIgnoringLineBreak();
+    if (prev_box && prev_box->BidiLevel() > box->BidiLevel()) {
+      return RenderedPosition(prev_box, prev_box->CaretRightmostOffset(),
+                              BidiBoundaryType::kRightBoundary);
+    }
+    BidiBoundaryType type =
+        prev_box && prev_box->BidiLevel() == box->BidiLevel()
+            ? BidiBoundaryType::kNotBoundary
+            : BidiBoundaryType::kLeftBoundary;
+    return RenderedPosition(box, offset, type);
+  }
+
+  // For example, abc| FED ghi should be changed into abc |FED ghi
+  if (offset == box->CaretRightmostOffset()) {
+    const InlineBox* next_box = box->NextLeafChildIgnoringLineBreak();
+    if (next_box && next_box->BidiLevel() > box->BidiLevel()) {
+      return RenderedPosition(next_box, next_box->CaretLeftmostOffset(),
+                              BidiBoundaryType::kLeftBoundary);
+    }
+    BidiBoundaryType type =
+        next_box && next_box->BidiLevel() == box->BidiLevel()
+            ? BidiBoundaryType::kNotBoundary
+            : BidiBoundaryType::kRightBoundary;
+    return RenderedPosition(box, offset, type);
+  }
+
+  return RenderedPosition(box, offset, BidiBoundaryType::kNotBoundary);
+}
 }  // namespace
 
 const InlineBox* InlineBoxTraversal::FindLeftBidiRun(const InlineBox& box,
@@ -683,6 +857,12 @@ NGCaretPosition BidiAdjustment::AdjustForHitTest(
           ? HitTestAdjuster<TraverseRight>::AdjustFor(unadjusted.GetBox())
           : HitTestAdjuster<TraverseLeft>::AdjustFor(unadjusted.GetBox());
   return adjusted.ToNGCaretPosition();
+}
+
+SelectionInFlatTree BidiAdjustment::AdjustForRangeSelection(
+    const VisiblePositionInFlatTree& base,
+    const VisiblePositionInFlatTree& extent) {
+  return RangeSelectionAdjuster::AdjustFor(base, extent);
 }
 
 }  // namespace blink

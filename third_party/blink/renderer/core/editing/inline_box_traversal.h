@@ -7,6 +7,7 @@
 
 // TODO(xiaochengh): Rename this file to |bidi_adjustment.h|
 
+#include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -34,8 +35,13 @@ class BidiAdjustment final {
   static InlineBoxPosition AdjustForHitTest(const InlineBoxPosition&);
   static NGCaretPosition AdjustForHitTest(const NGCaretPosition&);
 
-  // TODO(xiaochengh): Clients of InlineBoxTraversal should be wrapped into
-  // new member functions here.
+  // Function to be called at the end of creating a range selection by mouse
+  // dragging, ensuring that the created range selection matches the dragging
+  // even with bidi adjustment.
+  // TODO(editing-dev): Eliminate |VisiblePosition| from this function.
+  static SelectionInFlatTree AdjustForRangeSelection(
+      const VisiblePositionInFlatTree&,
+      const VisiblePositionInFlatTree&);
 };
 
 // This class provides common traveral functions on list of |InlineBox|.
