@@ -4,17 +4,41 @@
 
 #include "chrome/browser/notifications/notification_launch_id.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 
 #include <windows.h>
 
+namespace {
+
 enum LaunchIdComponents {
   NORMAL = 0,
   BUTTON_INDEX = 1,
   CONTEXT_MENU = 2,
 };
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class LaunchIdDecodeStatus {
+  kSuccess = 0,
+  kEmptyInput = 1,
+  kComponentIdInvalid = 2,
+  kComponentIdOutOfRange = 3,
+  kTokensInsufficient = 4,
+  kButtonIndexInvalid = 5,
+  kTypeInvalid = 6,
+  kTypeOutOfRange = 7,
+  kMaxValue = kTypeOutOfRange,
+};
+
+void LogLaunchIdDecodeStatus(LaunchIdDecodeStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.LaunchIdDecodeStatus",
+                            status);
+}
+
+}  // namespace
 
 NotificationLaunchId::NotificationLaunchId() = default;
 
@@ -35,8 +59,10 @@ NotificationLaunchId::NotificationLaunchId(
       is_valid_(true) {}
 
 NotificationLaunchId::NotificationLaunchId(const std::string& input) {
-  if (input.empty())
+  if (input.empty()) {
+    LogLaunchIdDecodeStatus(LaunchIdDecodeStatus::kEmptyInput);
     return;
+  }
 
   const char kDelimiter[] = "|";
   std::vector<std::string> tokens = base::SplitString(
@@ -44,8 +70,10 @@ NotificationLaunchId::NotificationLaunchId(const std::string& input) {
 
   // Figure out what kind of input string it is.
   int number;
-  if (!base::StringToInt(tokens[0], &number))
+  if (!base::StringToInt(tokens[0], &number)) {
+    LogLaunchIdDecodeStatus(LaunchIdDecodeStatus::kComponentIdInvalid);
     return;
+  }
   LaunchIdComponents components = static_cast<LaunchIdComponents>(number);
 
   // The final token may contain the separation character.
@@ -66,23 +94,32 @@ NotificationLaunchId::NotificationLaunchId(const std::string& input) {
       break;
     default:
       // |components| has an invalid value.
+      LogLaunchIdDecodeStatus(LaunchIdDecodeStatus::kComponentIdOutOfRange);
       return;
   }
 
-  if (tokens.size() < min_num_tokens)
+  if (tokens.size() < min_num_tokens) {
+    LogLaunchIdDecodeStatus(LaunchIdDecodeStatus::kTokensInsufficient);
     return;
+  }
 
   if (components == BUTTON_INDEX) {
-    if (!base::StringToInt(tokens[1], &button_index_))
+    if (!base::StringToInt(tokens[1], &button_index_)) {
+      LogLaunchIdDecodeStatus(LaunchIdDecodeStatus::kButtonIndexInvalid);
       return;
+    }
     tokens.erase(tokens.begin());
   }
 
   int type = -1;
-  if (!base::StringToInt(tokens[1], &type))
+  if (!base::StringToInt(tokens[1], &type)) {
+    LogLaunchIdDecodeStatus(LaunchIdDecodeStatus::kTypeInvalid);
     return;
-  if (type < 0 || type > static_cast<int>(NotificationHandler::Type::MAX))
+  }
+  if (type < 0 || type > static_cast<int>(NotificationHandler::Type::MAX)) {
+    LogLaunchIdDecodeStatus(LaunchIdDecodeStatus::kTypeOutOfRange);
     return;
+  }
   notification_type_ = static_cast<NotificationHandler::Type>(type);
 
   profile_id_ = tokens[2];
@@ -99,6 +136,7 @@ NotificationLaunchId::NotificationLaunchId(const std::string& input) {
   }
 
   is_valid_ = true;
+  LogLaunchIdDecodeStatus(LaunchIdDecodeStatus::kSuccess);
 }
 
 std::string NotificationLaunchId::Serialize() const {

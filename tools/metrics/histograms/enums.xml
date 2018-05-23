@@ -48533,6 +48533,17 @@ Full version information for the fingerprint enum values:
   <int value="3" label="GET_TOAST_HISTORY_FAILED"/>
 </enum>
 
+<enum name="WindowsNotificationLaunchIdDecodeStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Empty input"/>
+  <int value="2" label="Component id invalid"/>
+  <int value="3" label="Component id out of range"/>
+  <int value="4" label="Insufficient tokens"/>
+  <int value="5" label="Button index invalild"/>
+  <int value="6" label="Type invalid"/>
+  <int value="7" label="Type out of range"/>
+</enum>
+
 <enum name="WindowsNotificationOnDismissedStatus">
   <int value="0" label="SUCCESS"/>
   <int value="1" label="GET_DISMISSAL_REASON_FAILED"/>
