@@ -21,7 +21,8 @@ WindowService::WindowService(WindowServiceDelegate* delegate,
                              std::unique_ptr<GpuSupport> gpu_support)
     : delegate_(delegate),
       gpu_support_(std::move(gpu_support)),
-      screen_provider_(std::make_unique<ScreenProvider>()) {
+      screen_provider_(std::make_unique<ScreenProvider>()),
+      ime_registrar_(&ime_driver_) {
   // MouseLocationManager is necessary for providing the shared memory with the
   // location of the mouse to clients.
   aura::Env::GetInstance()->CreateMouseLocationManager();
@@ -29,7 +30,7 @@ WindowService::WindowService(WindowServiceDelegate* delegate,
   input_device_server_.RegisterAsObserver();
 }
 
-WindowService::~WindowService() {}
+WindowService::~WindowService() = default;
 
 ClientWindow* WindowService::GetClientWindowForWindowCreateIfNecessary(
     aura::Window* window) {
@@ -68,6 +69,8 @@ void WindowService::OnStart() {
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindScreenProviderRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
+      &WindowService::BindImeRegistrarRequest, base::Unretained(this)));
+  registry_.AddInterface(base::BindRepeating(
       &WindowService::BindImeDriverRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindInputDeviceServerRequest, base::Unretained(this)));
@@ -105,9 +108,13 @@ void WindowService::BindScreenProviderRequest(
   screen_provider_->AddBinding(std::move(request));
 }
 
+void WindowService::BindImeRegistrarRequest(
+    mojom::IMERegistrarRequest request) {
+  ime_registrar_.AddBinding(std::move(request));
+}
+
 void WindowService::BindImeDriverRequest(mojom::IMEDriverRequest request) {
-  // TODO: https://crbug.com/837710.
-  NOTIMPLEMENTED();
+  ime_driver_.AddBinding(std::move(request));
 }
 
 void WindowService::BindInputDeviceServerRequest(
