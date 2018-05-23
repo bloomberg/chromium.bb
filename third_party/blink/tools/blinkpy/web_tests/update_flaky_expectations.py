@@ -108,8 +108,9 @@ class RemoveFlakesOMatic(object):
         if self._port.test_isdir(test_expectation_line.name):
             return False
 
-        # The line can be deleted if the only expectation on the line that appears in the actual
-        # results is the PASS expectation.
+        # The line can be deleted if none of the expectations appear in the
+        # actual results or only a PASS expectation appears in the actual
+        # results.
         builders_checked = []
         for config in test_expectation_line.matching_configurations:
             builder_name = self._host.builders.builder_name_for_specifiers(config.version, config.build_type)
@@ -136,7 +137,8 @@ class RemoveFlakesOMatic(object):
 
             results_for_single_test = results_by_path[test_expectation_line.path]
 
-            if self._expectations_that_were_met(test_expectation_line, results_for_single_test) != set(['PASS']):
+            expectations_met = self._expectations_that_were_met(test_expectation_line, results_for_single_test)
+            if expectations_met != set(['PASS']) and expectations_met != set([]):
                 return False
 
         if builders_checked:

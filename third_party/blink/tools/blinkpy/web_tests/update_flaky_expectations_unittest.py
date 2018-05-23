@@ -394,6 +394,38 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             """# Keep since it's all failures.
             Bug(test) test/a.html [ Failure Pass ]"""))
 
+    def test_remove_none_met(self):
+        """Tests that expectations with no matching result are removed.
+
+        Expectations that are failing in a different way than specified should
+        be removed, even if there is no passing result.
+        """
+        test_expectations_before = (
+            """# Remove these two since CRASH and TIMEOUT aren't considered
+            # Failure.
+            Bug(test) test/a.html [ Failure Pass ]
+            Bug(test) test/b.html [ Failure Pass ]""")
+
+        self._define_builders({
+            'WebKit Linux Trusty': {
+                'port_name': 'linux-trusty',
+                'specifiers': ['Trusty', 'Release']
+            },
+        })
+        self._port.all_build_types = ('release',)
+        self._port.all_systems = (('trusty', 'x86_64'),)
+
+        self._parse_expectations(test_expectations_before)
+        self._expectation_factory.all_results_by_builder = {
+            'WebKit Linux Trusty': {
+                'test/a.html': ['CRASH'],
+                'test/b.html': ['TIMEOUT'],
+            }
+        }
+        updated_expectations = (
+            self._flake_remover.get_updated_test_expectations())
+        self._assert_expectations_match(updated_expectations, (''))
+
     def test_empty_test_expectations(self):
         """Running on an empty TestExpectations file outputs an empty file."""
         test_expectations_before = ''
