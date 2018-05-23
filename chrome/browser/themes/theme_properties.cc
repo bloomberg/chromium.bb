@@ -159,8 +159,10 @@ base::Optional<SkColor> MaybeGetDefaultColorForNewerMaterialUi(int id,
       return incognito ? SkColorSetRGB(0x32, 0x36, 0x39) : SK_ColorWHITE;
 
     case ThemeProperties::COLOR_TAB_TEXT:
-    case ThemeProperties::COLOR_BOOKMARK_TEXT:
       return incognito ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
+
+    case ThemeProperties::COLOR_BOOKMARK_TEXT:
+      return incognito ? gfx::kGoogleGrey100 : gfx::kGoogleGrey700;
 
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_ACTIVE:
     case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
