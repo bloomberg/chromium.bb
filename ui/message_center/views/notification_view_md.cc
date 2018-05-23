@@ -788,10 +788,11 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
       inline_reply_->textfield()->set_index(i);
       inline_reply_->textfield()->set_placeholder(
           *action_buttons_[i]->placeholder());
-      inline_reply_->textfield()->RequestFocus();
       inline_reply_->AnimateBackground(*event.AsLocatedEvent());
       inline_reply_->SetVisible(true);
       action_buttons_row_->SetVisible(false);
+      // RequestFocus() should be called after SetVisible().
+      inline_reply_->textfield()->RequestFocus();
       Layout();
       SchedulePaint();
     } else {
