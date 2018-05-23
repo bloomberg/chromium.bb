@@ -9,6 +9,7 @@ import "ash/public/interfaces/login_user_info.mojom";
 import "chromeos/components/proximity_auth/public/interfaces/auth_type.mojom";
 import "components/account_id/interfaces/account_id.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 // Allows clients (e.g. Chrome browser) to control the ash login/lock/user-add
 // screens.
@@ -70,6 +71,20 @@ interface LoginScreen {
   // Change the user's avatar. Some avatars may take a long time to load and the
   // login screen may already be visible.
   SetAvatarForUser(signin.mojom.AccountId account_id, UserAvatar avatar);
+
+  // Called when auth should be enabled or disabled for the given user. When
+  // auth is disabled, the user cannot unlock the device. Auth is enabled by
+  // default.
+  // |account_id|:            The account id of the user in the user pod.
+  // |is_enabled|:            True if auth is enabled.
+  // |auth_reenabled_time|:   A future time when auth will be enabled. Must be
+  //                          non-null if |is_enabled| is false. This value is
+  //                          for display purpose only and the client should be
+  //                          responsible for calling this method again with
+  //                          is_enabled == true when the time reaches.
+  SetAuthEnabledForUser(signin.mojom.AccountId account_id,
+                        bool is_enabled,
+                        mojo_base.mojom.Time? auth_reenabled_time);
 
   // Called when focus is reported to be leaving a lock screen app window.
   // Requests focus to be handed off to the next suitable widget.

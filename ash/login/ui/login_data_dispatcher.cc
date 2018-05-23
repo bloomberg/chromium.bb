@@ -15,6 +15,11 @@ void LoginDataDispatcher::Observer::OnPinEnabledForUserChanged(
     const AccountId& user,
     bool enabled) {}
 
+void LoginDataDispatcher::Observer::OnAuthEnabledForUserChanged(
+    const AccountId& user,
+    bool enabled,
+    const base::Optional<base::Time>& auth_reenabled_time) {}
+
 void LoginDataDispatcher::Observer::OnClickToUnlockEnabledForUserChanged(
     const AccountId& user,
     bool enabled) {}
@@ -78,6 +83,16 @@ void LoginDataDispatcher::SetPinEnabledForUser(const AccountId& user,
                                                bool enabled) {
   for (auto& observer : observers_)
     observer.OnPinEnabledForUserChanged(user, enabled);
+}
+
+void LoginDataDispatcher::SetAuthEnabledForUser(
+    const AccountId& account_id,
+    bool is_enabled,
+    base::Optional<base::Time> auth_reenabled_time) {
+  for (auto& observer : observers_) {
+    observer.OnAuthEnabledForUserChanged(account_id, is_enabled,
+                                         auth_reenabled_time);
+  }
 }
 
 void LoginDataDispatcher::SetClickToUnlockEnabledForUser(const AccountId& user,

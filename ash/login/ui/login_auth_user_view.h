@@ -45,6 +45,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
     LoginPasswordView* password_view() const;
     LoginPinView* pin_view() const;
     views::Button* online_sign_in_message() const;
+    views::View* disabled_auth_message() const;
 
    private:
     LoginAuthUserView* const view_;
@@ -83,6 +84,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
     AUTH_TAP = 1 << 2,             // Tap to unlock.
     AUTH_ONLINE_SIGN_IN = 1 << 3,  // Force online sign-in.
     AUTH_FINGERPRINT = 1 << 4,     // Use fingerprint to unlock.
+    AUTH_DISABLED = 1 << 5,        // Disable all the auth methods and show a
+                                   // message to user.
   };
 
   LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
@@ -110,6 +113,10 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
 
   void SetFingerprintState(mojom::FingerprintUnlockState state);
 
+  // Set the time when auth will be reenabled. It will be included in the
+  // message shown to user when auth method is |AUTH_DISABLED|.
+  void SetAuthReenabledTime(const base::Time& auth_reenabled_time);
+
   const mojom::LoginUserInfoPtr& current_user() const;
 
   LoginPasswordView* password_view() { return password_view_; }
@@ -125,6 +132,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
  private:
   struct AnimationState;
   class FingerprintView;
+  class DisabledAuthMessageView;
 
   // Called when the user submits an auth method. Runs mojo call.
   void OnAuthSubmit(const base::string16& password);
@@ -151,6 +159,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   LoginPasswordView* password_view_ = nullptr;
   LoginPinView* pin_view_ = nullptr;
   views::LabelButton* online_sign_in_message_ = nullptr;
+  DisabledAuthMessageView* disabled_auth_message_ = nullptr;
   FingerprintView* fingerprint_view_ = nullptr;
   const OnAuthCallback on_auth_;
   const LoginUserView::OnTap on_tap_;

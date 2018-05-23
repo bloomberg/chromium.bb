@@ -318,6 +318,16 @@ void LoginScreenController::SetAvatarForUser(const AccountId& account_id,
     observer.SetAvatarForUser(account_id, avatar);
 }
 
+void LoginScreenController::SetAuthEnabledForUser(
+    const AccountId& account_id,
+    bool is_enabled,
+    base::Optional<base::Time> auth_reenabled_time) {
+  if (DataDispatcher()) {
+    DataDispatcher()->SetAuthEnabledForUser(account_id, is_enabled,
+                                            auth_reenabled_time);
+  }
+}
+
 void LoginScreenController::HandleFocusLeavingLockScreenApps(bool reverse) {
   for (auto& observer : observers_)
     observer.OnFocusLeavingLockScreenApps(reverse);
