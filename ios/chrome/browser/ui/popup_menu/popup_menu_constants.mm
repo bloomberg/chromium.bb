@@ -14,3 +14,4 @@ NSString* const kPopupMenuNavigationTableViewId =
     @"kPopupMenuNavigationTableViewId";
 
 const CGFloat kSelectedItemBackgroundAlpha = 0.05;
+const CGFloat kHighlightAnimationDuration = 0.5;
