@@ -472,6 +472,7 @@ typedef struct AV1_COMP {
   AV1EncoderConfig oxcf;
   struct lookahead_ctx *lookahead;
   struct lookahead_entry *alt_ref_source;
+  int invisible_kf;
 
   int optimize_speed_feature;
   int optimize_seg_arr[MAX_SEGMENTS];

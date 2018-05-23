@@ -2239,7 +2239,8 @@ static int get_refresh_mask_gf16(AV1_COMP *cpi) {
 #endif  // USE_GF16_MULTI_LAYER
 
 static int get_refresh_mask(AV1_COMP *cpi) {
-  if (cpi->common.frame_type == KEY_FRAME || frame_is_sframe(&cpi->common))
+  if ((cpi->common.frame_type == KEY_FRAME && cpi->common.show_frame) ||
+      frame_is_sframe(&cpi->common))
     return 0xFF;
 
   int refresh_mask = 0;
@@ -3959,7 +3960,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   // The TD is now written outside the frame encode loop
 
   // write sequence header obu if KEY_FRAME, preceded by 4-byte size
-  if (cm->frame_type == KEY_FRAME) {
+  if (cm->frame_type == KEY_FRAME && cm->show_frame) {
     obu_header_size = write_obu_header(OBU_SEQUENCE_HEADER, 0, data);
 
     obu_payload_size = write_sequence_header_obu(cpi, data + obu_header_size);
