@@ -5,6 +5,8 @@
 #include "components/mirroring/service/fake_network_service.h"
 
 #include "media/cast/test/utility/net_utility.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 namespace mirroring {
 
@@ -61,6 +63,14 @@ void MockNetworkContext::CreateUDPSocket(
   udp_socket_ =
       std::make_unique<MockUdpSocket>(std::move(request), std::move(receiver));
   OnUDPSocketCreated();
+}
+
+void MockNetworkContext::CreateURLLoaderFactory(
+    network::mojom::URLLoaderFactoryRequest request,
+    network::mojom::URLLoaderFactoryParamsPtr params) {
+  ASSERT_TRUE(params);
+  mojo::MakeStrongBinding(std::make_unique<network::TestURLLoaderFactory>(),
+                          std::move(request));
 }
 
 }  // namespace mirroring

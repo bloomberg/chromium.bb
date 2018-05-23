@@ -71,6 +71,9 @@ class MockNetworkContext final : public network::TestNetworkContext {
   // network::mojom::NetworkContext implementation:
   void CreateUDPSocket(network::mojom::UDPSocketRequest request,
                        network::mojom::UDPSocketReceiverPtr receiver) override;
+  void CreateURLLoaderFactory(
+      network::mojom::URLLoaderFactoryRequest request,
+      network::mojom::URLLoaderFactoryParamsPtr params) override;
 
   MockUdpSocket* udp_socket() const { return udp_socket_.get(); }
 

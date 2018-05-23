@@ -238,7 +238,9 @@ Session::Session(int32_t session_id,
       std::make_unique<WifiStatusMonitor>(session_id_, &message_dispatcher_);
   network::mojom::URLLoaderFactoryPtr url_loader_factory;
   network_context_->CreateURLLoaderFactory(
-      mojo::MakeRequest(&url_loader_factory), 0 /* process_id */);
+      mojo::MakeRequest(&url_loader_factory),
+      network::mojom::URLLoaderFactoryParams::New(
+          network::mojom::kBrowserProcessId, false, std::string()));
 
   // Generate session level tags.
   base::Value session_tags(base::Value::Type::DICTIONARY);
