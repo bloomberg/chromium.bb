@@ -94,16 +94,8 @@ bool SyncAuthManager::RefreshTokenIsAvailable() const {
          token_service_->RefreshTokenIsAvailable(account_id);
 }
 
-syncer::SyncTokenStatus SyncAuthManager::GetSyncTokenStatus() const {
-  // Need to make a copy because this method is const, and we might want to
-  // clear |next_token_request_time|.
-  // TODO(treib): See if we can keep |token_status_.next_token_request_time| in
-  // the correct state instead.
-  syncer::SyncTokenStatus status = token_status_;
-  if (!request_access_token_retry_timer_.IsRunning()) {
-    status.next_token_request_time = base::Time();
-  }
-  return status;
+const syncer::SyncTokenStatus& SyncAuthManager::GetSyncTokenStatus() const {
+  return token_status_;
 }
 
 syncer::SyncCredentials SyncAuthManager::GetCredentials() const {
@@ -154,9 +146,11 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
         RequestAccessToken();
       } else {
         request_access_token_backoff_.InformOfRequest(false);
-        // TODO(treib): Also set token_status_.next_token_request_time here?
+        base::TimeDelta delay =
+            request_access_token_backoff_.GetTimeUntilRelease();
+        token_status_.next_token_request_time = base::Time::Now() + delay;
         request_access_token_retry_timer_.Start(
-            FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
+            FROM_HERE, delay,
             base::BindRepeating(&SyncAuthManager::RequestAccessToken,
                                 weak_ptr_factory_.GetWeakPtr()));
       }
@@ -196,6 +190,7 @@ void SyncAuthManager::ClearAuthError() {
 void SyncAuthManager::ClearAccessTokenAndRequest() {
   access_token_.clear();
   request_access_token_retry_timer_.Stop();
+  token_status_.next_token_request_time = base::Time();
   ongoing_access_token_fetch_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
@@ -291,6 +286,7 @@ void SyncAuthManager::RequestAccessToken() {
     return;
   }
   request_access_token_retry_timer_.Stop();
+  token_status_.next_token_request_time = base::Time();
 
   OAuth2TokenService::ScopeSet oauth2_scopes;
   oauth2_scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);

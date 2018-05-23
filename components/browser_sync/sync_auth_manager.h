@@ -73,7 +73,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer,
 
   // Returns the state of the access token and token request, for display in
   // internals UI.
-  syncer::SyncTokenStatus GetSyncTokenStatus() const;
+  const syncer::SyncTokenStatus& GetSyncTokenStatus() const;
 
   // Called by ProfileSyncService when the status of the connection to the Sync
   // server changed. Updates auth error state accordingly.
