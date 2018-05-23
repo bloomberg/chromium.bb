@@ -4,19 +4,52 @@
 
 assert(is_fuchsia)
 
-template("fidl_library") {
-  pkg_name = target_name
+# Template for FIDL libraries. Following parameters can be passed when
+# instantiating this template:
+#   sources        - List of .fidl files.
+#   library_name   - (optional) Name of the library. target_name is used if name
+#                    is not specified explicitly.
+#   namespace      - (optional) Namespace for the library.
+#   namespace_path - (optional) namespace with '.' are replaced with '/', e.g.
+#                    if namespace is "fuchsia.foo", then namespace_path must be
+#                    set to "fuchsia/foo". This parameter must be specified when
+#                    namespace is specified.
+#                    TODO(sergeyu): In theory namespace_path can be generated
+#                    from name, but GN doesn't provide any tools to perform this
+#                    conversion without invoking a python script.
+#   deps           - (optional) List of other fidl_library() targets that this
+#                    FIDL library depends on.
+#
+# $namespace.$library_name must match the the library name specified in the FIDL
+# files.
 
-  pkg_name = target_name
-  if (defined(invoker.name)) {
-    pkg_name = invoker.name
+template("fidl_library") {
+  forward_variables_from(invoker,
+                         [
+                           "namespace",
+                           "namespace_path",
+                         ])
+
+  _library_basename = target_name
+  if (defined(invoker.library_name)) {
+    _library_basename = invoker.library_name
   }
 
-  response_file = "$target_gen_dir/$target_name.rsp"
-  json_representation = "$target_gen_dir/$pkg_name.fidl.json"
-  output_gen_base = "$target_gen_dir/fidl"
-  output_gen_dir = "$output_gen_base/fuchsia/cpp"
-  tables_file = "$output_gen_base/$pkg_name.fidl-tables.cc"
+  if (defined(namespace)) {
+    assert(defined(namespace_path),
+           "FIDL libraries with namespace must specify namespace_path")
+    _library_name = "${namespace}.${_library_basename}"
+    _library_path = "${namespace_path}/${_library_basename}"
+  } else {
+    _library_name = _library_basename
+    _library_path = _library_basename
+  }
+
+  _response_file = "$target_gen_dir/$target_name.rsp"
+  _json_representation = "$target_gen_dir/${_library_name}.fidl.json"
+  _output_gen_dir = "$target_gen_dir/fidl"
+  _output_base = "$_output_gen_dir/${_library_path}/cpp/fidl"
+  _tables_file = "$_output_gen_dir/${_library_name}.fidl-tables.cc"
 
   action("${target_name}_response_file") {
     visibility = [ ":*" ]
@@ -31,24 +64,24 @@ template("fidl_library") {
                              "testonly",
                            ])
 
-    libraries_file = "$target_gen_dir/${invoker.target_name}.fidl_libraries"
+    _libraries_file = "$target_gen_dir/${invoker.target_name}.fidl_libraries"
 
     outputs = [
-      response_file,
-      libraries_file,
+      _response_file,
+      _libraries_file,
     ]
 
     args = [
              "--out-response-file",
-             rebase_path(response_file, root_build_dir),
+             rebase_path(_response_file, root_build_dir),
              "--out-libraries",
-             rebase_path(libraries_file, root_build_dir),
+             rebase_path(_libraries_file, root_build_dir),
              "--tables",
-             rebase_path(tables_file, root_build_dir),
+             rebase_path(_tables_file, root_build_dir),
              "--json",
-             rebase_path(json_representation, root_build_dir),
+             rebase_path(_json_representation, root_build_dir),
              "--name",
-             pkg_name,
+             _library_name,
              "--sources",
            ] + rebase_path(sources, root_build_dir)
 
@@ -91,15 +124,15 @@ template("fidl_library") {
     script = "//build/gn_run_binary.py"
 
     inputs = [
-      response_file,
+      _response_file,
     ]
 
     outputs = [
-      json_representation,
-      tables_file,
+      _json_representation,
+      _tables_file,
     ]
 
-    rebased_response_file = rebase_path(response_file, root_build_dir)
+    rebased_response_file = rebase_path(_response_file, root_build_dir)
     args = [
       rebase_path("//third_party/fuchsia-sdk/sdk/tools/fidlc", root_build_dir),
       "@$rebased_response_file",
@@ -114,12 +147,12 @@ template("fidl_library") {
     ]
 
     inputs = [
-      json_representation,
+      _json_representation,
     ]
 
     outputs = [
-      "$output_gen_dir/$pkg_name.h",
-      "$output_gen_dir/$pkg_name.cc",
+      "${_output_base}.h",
+      "${_output_base}.cc",
     ]
 
     script = "//build/gn_run_binary.py"
@@ -129,17 +162,17 @@ template("fidl_library") {
       "-generators",
       "cpp",
       "-json",
-      rebase_path("$json_representation"),
+      rebase_path(_json_representation),
       "-include-base",
-      rebase_path("$output_gen_base"),
+      rebase_path(_output_gen_dir),
       "-output-base",
-      rebase_path("$output_gen_dir/$pkg_name"),
+      rebase_path("${_output_base}"),
     ]
   }
 
   config("${target_name}_config") {
     visibility = [ ":${invoker.target_name}" ]
-    include_dirs = [ output_gen_base ]
+    include_dirs = [ _output_gen_dir ]
   }
 
   source_set("${target_name}") {
@@ -152,9 +185,9 @@ template("fidl_library") {
                            ])
 
     sources = [
-      "$output_gen_dir/$pkg_name.cc",
-      "$output_gen_dir/$pkg_name.h",
-      tables_file,
+      "${_output_base}.cc",
+      "${_output_base}.h",
+      _tables_file,
     ]
 
     if (!defined(deps)) {

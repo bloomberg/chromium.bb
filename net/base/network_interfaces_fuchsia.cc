@@ -4,7 +4,7 @@
 
 #include "net/base/network_interfaces.h"
 
-#include <fuchsia/cpp/netstack.h>
+#include <netstack/cpp/fidl.h>
 
 #include "base/fuchsia/component_context.h"
 #include "net/base/ip_endpoint.h"

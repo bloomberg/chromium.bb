@@ -25,60 +25,40 @@ fuchsia_sdk_pkg("async") {
 
 # async-default keep a per-thread dispatcher for async.
 fuchsia_sdk_lib_pkg("async_default") {
-  name = "async-default"
+  package_name = "async-default"
   sources = [
     "include/lib/async/default.h",
   ]
 }
 
-fuchsia_sdk_pkg("zx") {
-  sources = [
-    "channel.cpp",
-    "event.cpp",
-    "eventpair.cpp",
-    "fifo.cpp",
-    "guest.cpp",
-    "include/lib/zx/bti.h",
-    "include/lib/zx/channel.h",
-    "include/lib/zx/event.h",
-    "include/lib/zx/eventpair.h",
-    "include/lib/zx/fifo.h",
-    "include/lib/zx/guest.h",
-    "include/lib/zx/handle.h",
-    "include/lib/zx/interrupt.h",
-    "include/lib/zx/job.h",
-    "include/lib/zx/log.h",
-    "include/lib/zx/object.h",
-    "include/lib/zx/object_traits.h",
-    "include/lib/zx/pmt.h",
-    "include/lib/zx/port.h",
-    "include/lib/zx/process.h",
-    "include/lib/zx/resource.h",
-    "include/lib/zx/socket.h",
-    "include/lib/zx/task.h",
-    "include/lib/zx/thread.h",
-    "include/lib/zx/time.h",
-    "include/lib/zx/timer.h",
-    "include/lib/zx/vmar.h",
-    "include/lib/zx/vmo.h",
-    "interrupt.cpp",
-    "job.cpp",
-    "log.cpp",
-    "port.cpp",
-    "process.cpp",
-    "resource.cpp",
-    "socket.cpp",
-    "thread.cpp",
-    "timer.cpp",
-    "vmar.cpp",
-    "vmo.cpp",
+fuchsia_sdk_pkg("component") {
+  fidl_files = [
+    "application_controller.fidl",
+    "application_environment.fidl",
+    "application_environment_controller.fidl",
+    "application_launcher.fidl",
+    "application_runner.fidl",
+    "flat_namespace.fidl",
+    "loader.fidl",
+    "service_provider.fidl",
   ]
+  fidl_deps = [ ":mem" ]
 }
 
-fuchsia_sdk_lib_pkg("launchpad") {
+fuchsia_sdk_lib_pkg("fdio") {
   sources = [
-    "include/launchpad/launchpad.h",
-    "include/launchpad/vmo.h",
+    "include/fdio/debug.h",
+    "include/fdio/io.fidl.h",
+    "include/fdio/io.h",
+    "include/fdio/limits.h",
+    "include/fdio/module.modulemap",
+    "include/fdio/namespace.h",
+    "include/fdio/private.h",
+    "include/fdio/remoteio.h",
+    "include/fdio/socket.h",
+    "include/fdio/util.h",
+    "include/fdio/vfs.h",
+    "include/fdio/watcher.h",
   ]
 }
 
@@ -167,21 +147,77 @@ fuchsia_sdk_pkg("fidl_cpp") {
   ]
 }
 
-fuchsia_sdk_lib_pkg("fdio") {
-  sources = [
-    "include/fdio/debug.h",
-    "include/fdio/io.fidl.h",
-    "include/fdio/io.h",
-    "include/fdio/limits.h",
-    "include/fdio/module.modulemap",
-    "include/fdio/namespace.h",
-    "include/fdio/private.h",
-    "include/fdio/remoteio.h",
-    "include/fdio/socket.h",
-    "include/fdio/util.h",
-    "include/fdio/vfs.h",
-    "include/fdio/watcher.h",
+fuchsia_sdk_pkg("geometry") {
+  fidl_files = [ "geometry.fidl" ]
+}
+
+fuchsia_sdk_pkg("gfx") {
+  fidl_files = [
+    "commands.fidl",
+    "display_info.fidl",
+    "events.fidl",
+    "hit.fidl",
+    "nodes.fidl",
+    "renderer.fidl",
+    "resources.fidl",
+    "shapes.fidl",
+    "types.fidl",
   ]
+  fidl_deps = [ ":images" ]
+}
+
+fuchsia_sdk_pkg("images") {
+  fidl_files = [
+    "encoded_image.fidl",
+    "image_info.fidl",
+    "image_pipe.fidl",
+    "memory_type.fidl",
+    "presentation_info.fidl",
+  ]
+}
+
+fuchsia_sdk_pkg("input") {
+  fidl_files = [
+    "ime_service.fidl",
+    "input_connection.fidl",
+    "input_device_registry.fidl",
+    "input_dispatcher.fidl",
+    "input_event_constants.fidl",
+    "input_events.fidl",
+    "input_reports.fidl",
+    "text_editing.fidl",
+    "text_input.fidl",
+    "usages.fidl",
+  ]
+}
+
+fuchsia_sdk_lib_pkg("launchpad") {
+  sources = [
+    "include/launchpad/launchpad.h",
+    "include/launchpad/vmo.h",
+  ]
+}
+
+fuchsia_sdk_pkg("media") {
+  fidl_files = [
+    "audio_capturer.fidl",
+    "audio_renderer.fidl",
+    "audio_server.fidl",
+    "media_capturer.fidl",
+    "media_renderer.fidl",
+    "media_result.fidl",
+    "media_transport.fidl",
+    "media_types.fidl",
+    "timeline_controller.fidl",
+    "timelines.fidl",
+  ]
+}
+
+fuchsia_sdk_pkg("mem") {
+  fidl_namespace = "fuchsia"
+  fidl_namespace_path = "fuchsia"
+
+  fidl_files = [ "buffer.fidl" ]
 }
 
 fuchsia_sdk_pkg("netstack") {
@@ -191,8 +227,110 @@ fuchsia_sdk_pkg("netstack") {
   ]
 }
 
+fuchsia_sdk_pkg("presentation") {
+  fidl_files = [
+    "display_usage.fidl",
+    "presentation.fidl",
+    "presenter.fidl",
+  ]
+  fidl_deps = [ ":views_v1" ]
+}
+
 fuchsia_sdk_lib_pkg("svc") {
   sources = [
     "include/lib/svc/dir.h",
+  ]
+}
+
+fuchsia_sdk_pkg("ui") {
+  fidl_files = [
+    "commands.fidl",
+    "events.fidl",
+    "scenic.fidl",
+    "session.fidl",
+  ]
+  fidl_deps = [
+    ":component",
+    ":gfx",
+    ":input",
+    ":views",
+  ]
+}
+
+fuchsia_sdk_pkg("views") {
+  fidl_files = [
+    "commands.fidl",
+    "events.fidl",
+  ]
+  fidl_deps = [
+    ":gfx",
+    ":images",
+  ]
+}
+
+fuchsia_sdk_pkg("views_v1") {
+  fidl_files = [
+    "view_containers.fidl",
+    "view_properties.fidl",
+    "views.fidl",
+    "view_tree_token.fidl",
+    "view_manager.fidl",
+    "view_provider.fidl",
+    "view_trees.fidl",
+  ]
+  fidl_deps = [
+    ":geometry",
+    ":gfx",
+    ":ui",
+    ":images",
+    ":views_v1_token",
+  ]
+}
+
+fuchsia_sdk_pkg("views_v1_token") {
+  fidl_files = [ "view_token.fidl" ]
+}
+
+fuchsia_sdk_pkg("zx") {
+  sources = [
+    "channel.cpp",
+    "event.cpp",
+    "eventpair.cpp",
+    "fifo.cpp",
+    "guest.cpp",
+    "include/lib/zx/bti.h",
+    "include/lib/zx/channel.h",
+    "include/lib/zx/event.h",
+    "include/lib/zx/eventpair.h",
+    "include/lib/zx/fifo.h",
+    "include/lib/zx/guest.h",
+    "include/lib/zx/handle.h",
+    "include/lib/zx/interrupt.h",
+    "include/lib/zx/job.h",
+    "include/lib/zx/log.h",
+    "include/lib/zx/object.h",
+    "include/lib/zx/object_traits.h",
+    "include/lib/zx/pmt.h",
+    "include/lib/zx/port.h",
+    "include/lib/zx/process.h",
+    "include/lib/zx/resource.h",
+    "include/lib/zx/socket.h",
+    "include/lib/zx/task.h",
+    "include/lib/zx/thread.h",
+    "include/lib/zx/time.h",
+    "include/lib/zx/timer.h",
+    "include/lib/zx/vmar.h",
+    "include/lib/zx/vmo.h",
+    "interrupt.cpp",
+    "job.cpp",
+    "log.cpp",
+    "port.cpp",
+    "process.cpp",
+    "resource.cpp",
+    "socket.cpp",
+    "thread.cpp",
+    "timer.cpp",
+    "vmar.cpp",
+    "vmo.cpp",
   ]
 }

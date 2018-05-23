@@ -2125,6 +2125,9 @@ if (is_ios || is_mac) {
 
 if (is_fuchsia) {
   fidl_library("test_fidl") {
+    namespace = "base.fuchsia"
+    namespace_path = "base/fuchsia"
+
     sources = [
       "fuchsia/test.fidl",
     ]
