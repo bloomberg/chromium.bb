@@ -45,7 +45,8 @@ class EmergeInfraGoBinariesStage(generic_stages.BuilderStage):
     cmd = ['emerge', '--deep']
     cmd.extend(_GO_PACKAGES)
     commands.RunBuildScript(self._build_root, cmd,
-                            sudo=True, enter_chroot=True)
+                            sudo=True, enter_chroot=True,
+                            extra_env={'FEATURES=test'})
 
 
 class PackageInfraGoBinariesStage(generic_stages.BuilderStage,
