@@ -41,13 +41,6 @@ Optional<Task> Sequence::TakeTask() {
   return std::move(queue_.front());
 }
 
-TaskTraits Sequence::PeekTaskTraits() const {
-  AutoSchedulerLock auto_lock(lock_);
-  DCHECK(!queue_.empty());
-  DCHECK(queue_.front().task);
-  return queue_.front().traits;
-}
-
 bool Sequence::Pop() {
   AutoSchedulerLock auto_lock(lock_);
   DCHECK(!queue_.empty());
