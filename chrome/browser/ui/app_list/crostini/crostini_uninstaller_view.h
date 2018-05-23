@@ -34,21 +34,25 @@ class CrostiniUninstallerView : public views::DialogDelegateView {
   gfx::Size CalculatePreferredSize() const override;
 
  private:
-  explicit CrostiniUninstallerView(Profile* profile);
-  ~CrostiniUninstallerView() override;
-
-  void HandleError(const base::string16& error_message);
-  void UninstallCrostiniFinished(crostini::ConciergeClientResult result);
-
+  enum class UninstallResult;
   enum class State {
     PROMPT,  // Prompting the user to allow uninstallation.
     ERROR,   // Something unexpected happened.
     UNINSTALLING,
   };
+
+  explicit CrostiniUninstallerView(Profile* profile);
+  ~CrostiniUninstallerView() override;
+
+  void HandleError(const base::string16& error_message);
+  void UninstallCrostiniFinished(crostini::ConciergeClientResult result);
+  void RecordUninstallResultHistogram(UninstallResult result);
+
   State state_ = State::PROMPT;
   views::Label* message_label_ = nullptr;
   views::ProgressBar* progress_bar_ = nullptr;
 
+  bool has_logged_result_ = false;
   base::string16 app_name_;
   Profile* profile_;
 

@@ -39,7 +39,7 @@ class CrostiniInstallerView
     kErrorCreatingDiskImage = 5,
     kErrorStartingTermina = 6,
     kErrorStartingContainer = 7,
-    kCount = 8
+    kCount
   };
 
   static void Show(Profile* profile);
