@@ -1766,18 +1766,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Releases the view if it doesn't have a superview.
   [super didReceiveMemoryWarning];
 
-  // Release any cached data, images, etc that aren't in use.
-  // TODO(pinkerton): This feels like it should go in the MemoryPurger class,
-  // but since the FaviconCache uses obj-c in the header, it can't be included
-  // there.
-  if (_browserState) {
-    FaviconLoader* loader =
-        IOSChromeFaviconLoaderFactory::GetForBrowserStateIfExists(
-            _browserState);
-    if (loader)
-      loader->PurgeCache();
-  }
-
   if (![self isViewLoaded]) {
     // Do not release |_infoBarContainer|, as this must have the same lifecycle
     // as the BrowserViewController.

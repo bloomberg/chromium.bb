@@ -5,17 +5,17 @@
 #ifndef IOS_CHROME_BROWSER_FAVICON_FAVICON_LOADER_H_
 #define IOS_CHROME_BROWSER_FAVICON_FAVICON_LOADER_H_
 
+#import <Foundation/Foundation.h>
+
 #include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/threading/thread_checker.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class GURL;
-@class NSMutableDictionary;
 @class UIImage;
 
 namespace favicon {
@@ -45,8 +45,8 @@ class FaviconLoader : public KeyedService {
                        const favicon_base::IconTypeSet& types,
                        ImageCompletionBlock block);
 
-  // Purges the cache, in response to low-memory.
-  void PurgeCache();
+  // Cancel all incomplete requests.
+  void CancellAllRequests();
 
  private:
   struct RequestData;
@@ -58,8 +58,6 @@ class FaviconLoader : public KeyedService {
       const std::vector<favicon_base::FaviconRawBitmapResult>&
           favicon_bitmap_results);
 
-  base::ThreadChecker thread_checker_;
-
   // The FaviconService used to retrieve favicon; may be null during testing.
   // Must outlive the FaviconLoader.
   favicon::FaviconService* favicon_service_;
@@ -67,10 +65,11 @@ class FaviconLoader : public KeyedService {
   // Tracks tasks sent to FaviconService.
   base::CancelableTaskTracker cancelable_task_tracker_;
 
-  // Holds cached favicons. This dictionary is populated as favicons are
-  // retrieved from the FaviconService. This will be emptied during low-memory
-  // conditions. Keyed by NSString of URL spec.
-  NSMutableDictionary* favicon_cache_;
+  // Holds cached favicons. This NSCache is populated as favicons are
+  // retrieved from the FaviconService. Contents will be removed during
+  // low-memory conditions based on its inherent LRU removal algorithm. Keyed
+  // by NSString of URL spec.
+  NSCache* favicon_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconLoader);
 };
