@@ -2452,8 +2452,8 @@ static void write_bitdepth(AV1_COMMON *const cm,
   }
 }
 
-static void write_bitdepth_colorspace_sampling(
-    AV1_COMMON *const cm, struct aom_write_bit_buffer *wb) {
+static void write_color_config(AV1_COMMON *const cm,
+                               struct aom_write_bit_buffer *wb) {
   write_bitdepth(cm, wb);
   const int is_monochrome = cm->seq_params.monochrome;
   // monochrome bit
@@ -3599,8 +3599,7 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
   }
   write_sequence_header(cpi, &wb);
 
-  // color_config
-  write_bitdepth_colorspace_sampling(cm, &wb);
+  write_color_config(cm, &wb);
 
 #if !CONFIG_BUFFER_MODEL
   // timing_info
