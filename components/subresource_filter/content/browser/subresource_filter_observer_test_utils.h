@@ -48,7 +48,8 @@ class TestSubresourceFilterObserver : public SubresourceFilterObserver,
       const ActivationState& activation_state) override;
   void OnSubframeNavigationEvaluated(
       content::NavigationHandle* navigation_handle,
-      LoadPolicy load_policy) override;
+      LoadPolicy load_policy,
+      bool is_ad_subframe) override;
 
   // content::WebContentsObserver
   void DidFinishNavigation(
@@ -56,6 +57,7 @@ class TestSubresourceFilterObserver : public SubresourceFilterObserver,
 
   base::Optional<ActivationDecision> GetPageActivation(const GURL& url) const;
   base::Optional<LoadPolicy> GetSubframeLoadPolicy(const GURL& url) const;
+  base::Optional<bool> GetIsAdSubframe(const GURL& url) const;
   base::Optional<ActivationDecision> GetPageActivationForLastCommittedLoad()
       const;
 
@@ -66,6 +68,7 @@ class TestSubresourceFilterObserver : public SubresourceFilterObserver,
 
  private:
   std::map<GURL, LoadPolicy> subframe_load_evaluations_;
+  std::map<GURL, bool> ad_subframe_evaluations_;
   std::map<GURL, ActivationDecision> page_activations_;
   std::map<GURL, SafeBrowsingCheck> safe_browsing_checks_;
 

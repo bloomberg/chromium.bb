@@ -45,8 +45,10 @@ void TestSubresourceFilterObserver::OnPageActivationComputed(
 
 void TestSubresourceFilterObserver::OnSubframeNavigationEvaluated(
     content::NavigationHandle* navigation_handle,
-    LoadPolicy load_policy) {
+    LoadPolicy load_policy,
+    bool is_ad_subframe) {
   subframe_load_evaluations_[navigation_handle->GetURL()] = load_policy;
+  ad_subframe_evaluations_[navigation_handle->GetURL()] = is_ad_subframe;
 }
 
 void TestSubresourceFilterObserver::DidFinishNavigation(
@@ -74,6 +76,14 @@ TestSubresourceFilterObserver::GetPageActivation(const GURL& url) const {
   if (it != page_activations_.end())
     return it->second;
   return base::Optional<ActivationDecision>();
+}
+
+base::Optional<bool> TestSubresourceFilterObserver::GetIsAdSubframe(
+    const GURL& url) const {
+  auto it = ad_subframe_evaluations_.find(url);
+  if (it != ad_subframe_evaluations_.end())
+    return it->second;
+  return base::Optional<bool>();
 }
 
 base::Optional<LoadPolicy> TestSubresourceFilterObserver::GetSubframeLoadPolicy(

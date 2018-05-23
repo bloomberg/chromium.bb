@@ -14,6 +14,7 @@
 
 namespace content {
 class NavigationHandle;
+class RenderFrameHost;
 }  // namespace content
 
 namespace subresource_filter {
@@ -30,9 +31,25 @@ class AsyncDocumentSubresourceFilter;
 // therefore an associated (Async)DocumentSubresourceFilter.
 class SubframeNavigationFilteringThrottle : public content::NavigationThrottle {
  public:
+  class Delegate {
+   public:
+    // Given what is known about the frame's load policy, its parent frame, and
+    // what it's learned from ad tagging, determine if it's an ad subframe.
+    virtual bool CalculateIsAdSubframe(content::RenderFrameHost* frame_host,
+                                       LoadPolicy load_policy) = 0;
+
+   protected:
+    Delegate() = default;
+    virtual ~Delegate() = default;
+
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
+  };
+
+  // |delegate| must outlive this object.
   SubframeNavigationFilteringThrottle(
       content::NavigationHandle* handle,
-      AsyncDocumentSubresourceFilter* parent_frame_filter);
+      AsyncDocumentSubresourceFilter* parent_frame_filter,
+      Delegate* delegate);
   ~SubframeNavigationFilteringThrottle() override;
 
   // content::NavigationThrottle:
@@ -55,6 +72,10 @@ class SubframeNavigationFilteringThrottle : public content::NavigationThrottle {
   base::TimeTicks last_defer_timestamp_;
   base::TimeDelta total_defer_time_;
   LoadPolicy load_policy_ = LoadPolicy::ALLOW;
+
+  // As specified in the constructor comment, |delegate_| must outlive this
+  // object.
+  Delegate* delegate_;
 
   base::WeakPtrFactory<SubframeNavigationFilteringThrottle> weak_ptr_factory_;
 
