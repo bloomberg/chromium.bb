@@ -117,6 +117,10 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   void OnUsersChanged(
       const std::vector<mojom::LoginUserInfoPtr>& users) override;
   void OnPinEnabledForUserChanged(const AccountId& user, bool enabled) override;
+  void OnAuthEnabledForUserChanged(
+      const AccountId& user,
+      bool enabled,
+      const base::Optional<base::Time>& auth_reenabled_time) override;
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
   void OnClickToUnlockEnabledForUserChanged(const AccountId& user,
                                             bool enabled) override;
@@ -177,6 +181,7 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
     bool show_pin = false;
     bool enable_tap_auth = false;
     bool force_online_sign_in = false;
+    bool disable_auth = false;
     mojom::EasyUnlockIconOptionsPtr easy_unlock_state;
     mojom::FingerprintUnlockState fingerprint_state;
 
@@ -312,6 +317,10 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   // Change the visibility of child views based on the |style|.
   void SetDisplayStyle(DisplayStyle style);
 
+  // Set the lock screen note state to |mojom::TrayActionState::kNotAvailable|.
+  // All the subsequent calls of |OnLockScreenNoteStateChanged| will be ignored.
+  void DisableLockScreenNote();
+
   std::vector<UserState> users_;
 
   LoginDataDispatcher* const data_dispatcher_;  // Unowned.
@@ -361,6 +370,10 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   // Whether a lock screen app is currently active (i.e. lock screen note action
   // state is reported as kActive by the data dispatcher).
   bool lock_screen_apps_active_ = false;
+
+  // Whether the lock screen note is disabled. Used to override the actual lock
+  // screen note state.
+  bool disable_lock_screen_note_ = false;
 
   // Expanded view for public account user to select language and keyboard.
   LoginExpandedPublicAccountView* expanded_view_ = nullptr;

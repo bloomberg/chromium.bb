@@ -108,6 +108,10 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
                             bool is_enabled) override;
   void SetAvatarForUser(const AccountId& account_id,
                         mojom::UserAvatarPtr avatar) override;
+  void SetAuthEnabledForUser(
+      const AccountId& account_id,
+      bool is_enabled,
+      base::Optional<base::Time> auth_reenabled_time) override;
   void HandleFocusLeavingLockScreenApps(bool reverse) override;
   void SetDevChannelInfo(const std::string& os_version_label_text,
                          const std::string& enterprise_info_text,

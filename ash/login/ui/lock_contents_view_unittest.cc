@@ -1244,4 +1244,67 @@ TEST_F(LockContentsViewUnitTest, ExpandedPublicSessionView) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(LockContentsViewUnitTest, OnUnlockAllowedForUserChanged) {
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kAvailable, data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  SetUserCount(1);
+  SetWidget(CreateWidgetWithContent(contents));
+
+  const AccountId& kFirstUserAccountId =
+      users()[0]->basic_user_info->account_id;
+  LockContentsView::TestApi contents_test_api(contents);
+  LoginAuthUserView::TestApi auth_test_api(
+      contents_test_api.primary_big_view()->auth_user());
+  views::View* note_action_button = contents_test_api.note_action();
+  LoginPasswordView* password_view = auth_test_api.password_view();
+  LoginPinView* pin_view = auth_test_api.pin_view();
+  views::View* disabled_auth_message = auth_test_api.disabled_auth_message();
+
+  // The password field is shown by default, and the note action button is
+  // shown because the lock screen note state is |kAvailable|.
+  EXPECT_TRUE(note_action_button->visible());
+  EXPECT_TRUE(password_view->visible());
+  EXPECT_FALSE(pin_view->visible());
+  EXPECT_FALSE(disabled_auth_message->visible());
+  // Setting auth disabled will hide the password field and the note action
+  // button, and show the message.
+  data_dispatcher()->SetAuthEnabledForUser(
+      kFirstUserAccountId, false,
+      base::Time::Now() + base::TimeDelta::FromHours(8));
+  EXPECT_FALSE(note_action_button->visible());
+  EXPECT_FALSE(password_view->visible());
+  EXPECT_FALSE(pin_view->visible());
+  EXPECT_TRUE(disabled_auth_message->visible());
+  // Setting auth enabled will hide the message and show the password field.
+  data_dispatcher()->SetAuthEnabledForUser(kFirstUserAccountId, true,
+                                           base::nullopt);
+  EXPECT_FALSE(note_action_button->visible());
+  EXPECT_TRUE(password_view->visible());
+  EXPECT_FALSE(pin_view->visible());
+  EXPECT_FALSE(disabled_auth_message->visible());
+
+  // Set auth disabled again.
+  data_dispatcher()->SetAuthEnabledForUser(
+      kFirstUserAccountId, false,
+      base::Time::Now() + base::TimeDelta::FromHours(8));
+  EXPECT_FALSE(note_action_button->visible());
+  EXPECT_FALSE(password_view->visible());
+  EXPECT_FALSE(pin_view->visible());
+  EXPECT_TRUE(disabled_auth_message->visible());
+  // Enable PIN. There's no UI change because auth is currently disabled.
+  data_dispatcher()->SetPinEnabledForUser(kFirstUserAccountId, true);
+  EXPECT_FALSE(note_action_button->visible());
+  EXPECT_FALSE(password_view->visible());
+  EXPECT_FALSE(pin_view->visible());
+  EXPECT_TRUE(disabled_auth_message->visible());
+  // Set auth enabled again. Both password field and PIN keyboard are shown.
+  data_dispatcher()->SetAuthEnabledForUser(kFirstUserAccountId, true,
+                                           base::nullopt);
+  EXPECT_FALSE(note_action_button->visible());
+  EXPECT_TRUE(password_view->visible());
+  EXPECT_TRUE(pin_view->visible());
+  EXPECT_FALSE(disabled_auth_message->visible());
+}
+
 }  // namespace ash

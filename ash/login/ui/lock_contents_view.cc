@@ -448,6 +448,32 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
     LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
 }
 
+void LockContentsView::OnAuthEnabledForUserChanged(
+    const AccountId& user,
+    bool enabled,
+    const base::Optional<base::Time>& auth_reenabled_time) {
+  LockContentsView::UserState* state = FindStateForUser(user);
+  if (!state) {
+    LOG(ERROR) << "Unable to find user when changing auth enabled state to "
+               << enabled;
+    return;
+  }
+
+  DCHECK(enabled || auth_reenabled_time);
+  state->disable_auth = !enabled;
+  // TODO(crbug.com/845287): Reenable lock screen note when auth is reenabled.
+  if (state->disable_auth)
+    DisableLockScreenNote();
+
+  LoginBigUserView* big_user =
+      TryToFindBigUser(user, true /*require_auth_active*/);
+  if (big_user && big_user->auth_user()) {
+    LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
+    if (auth_reenabled_time)
+      big_user->auth_user()->SetAuthReenabledTime(auth_reenabled_time.value());
+  }
+}
+
 void LockContentsView::OnClickToUnlockEnabledForUserChanged(
     const AccountId& user,
     bool enabled) {
@@ -503,6 +529,9 @@ void LockContentsView::OnShowEasyUnlockIcon(
 
 void LockContentsView::OnLockScreenNoteStateChanged(
     mojom::TrayActionState state) {
+  if (disable_lock_screen_note_)
+    state = mojom::TrayActionState::kNotAvailable;
+
   bool old_lock_screen_apps_active = lock_screen_apps_active_;
   lock_screen_apps_active_ = state == mojom::TrayActionState::kActive;
   note_action_->UpdateVisibility(state);
@@ -511,8 +540,9 @@ void LockContentsView::OnLockScreenNoteStateChanged(
   // If lock screen apps just got deactivated - request focus for primary auth,
   // which should focus the password field.
   if (old_lock_screen_apps_active && !lock_screen_apps_active_ &&
-      primary_big_view_)
+      primary_big_view_) {
     primary_big_view_->RequestFocus();
+  }
 }
 
 void LockContentsView::OnDevChannelInfoChanged(
@@ -1224,6 +1254,8 @@ void LockContentsView::UpdateAuthForAuthUser(LoginAuthUserView* opt_to_update,
     uint32_t to_update_auth;
     if (state->force_online_sign_in) {
       to_update_auth = LoginAuthUserView::AUTH_ONLINE_SIGN_IN;
+    } else if (state->disable_auth) {
+      to_update_auth = LoginAuthUserView::AUTH_DISABLED;
     } else {
       to_update_auth = LoginAuthUserView::AUTH_PASSWORD;
       keyboard::KeyboardController* keyboard_controller =
@@ -1265,6 +1297,11 @@ void LockContentsView::SetDisplayStyle(DisplayStyle style) {
   main_view_->SetVisible(!show_expanded_view);
   top_header_->SetVisible(!show_expanded_view);
   Layout();
+}
+
+void LockContentsView::DisableLockScreenNote() {
+  disable_lock_screen_note_ = true;
+  OnLockScreenNoteStateChanged(mojom::TrayActionState::kNotAvailable);
 }
 
 }  // namespace ash
