@@ -113,19 +113,17 @@ const LayoutMetrics* InfoBarLayoutMetrics() {
 
 // Color in RGB to be used as background of secondary actions button.
 const int kButton2TitleColor = 0x4285f4;
-// Color in RGB to be used as background of Image Icon.
-const int kImageBackgroundColor = 0xdce7f6;
-// Corner radius for background of Image Icon.
-const CGFloat kImageBackgroundCornerRadius = 12.0;
 // Corner radius for action buttons.
-const CGFloat kButtonCornerRadius = 11.0;
+const CGFloat kButtonCornerRadius = 8.0;
+// Color in RGB to be used as tint color on the InfoBar's icon on the left.
+const CGFloat kLeftIconTintColor = 0x1A73E8;
 
 enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
 
 // Returns the font for the Infobar's main body text.
 UIFont* InfoBarLabelFont() {
   return IsRefreshInfobarEnabled()
-             ? [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
+             ? [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
              : [MDCTypography subheadFont];
 }
 
@@ -785,9 +783,8 @@ UIImage* InfoBarCloseImage() {
   [closeButton_ setTag:tag];
   [closeButton_ setAccessibilityLabel:l10n_util::GetNSString(IDS_CLOSE)];
   if (IsUIRefreshPhase1Enabled()) {
-    // TODO(crbug.com/804652): Remove setting of button alpha channel when
-    // InfoBarCloseImage() returns an image using the proper shade of gray.
-    closeButton_.alpha = 0.33;
+    closeButton_.tintColor = [UIColor blackColor];
+    closeButton_.alpha = 0.20;
   }
   [self addSubview:closeButton_];
 }
@@ -808,8 +805,7 @@ UIImage* InfoBarCloseImage() {
   }
   imageView_ = [[UIImageView alloc] initWithImage:image];
   if (IsRefreshInfobarEnabled()) {
-    imageView_.backgroundColor = UIColorFromRGB(kImageBackgroundColor);
-    imageView_.layer.cornerRadius = kImageBackgroundCornerRadius;
+    imageView_.tintColor = UIColorFromRGB(kLeftIconTintColor);
   }
   [self addSubview:imageView_];
 }
