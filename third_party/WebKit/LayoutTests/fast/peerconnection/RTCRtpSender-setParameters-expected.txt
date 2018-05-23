@@ -4,7 +4,7 @@ FAIL setParameters() with large maxBitrate changes getParameters() returned valu
 PASS setParameters() with multiple calls after single getParameters()
 PASS setParameters() fails without getParameters()
 PASS video setParameters() check for transactionId modification
-FAIL video setParameters() check for transactionId removed assert_unreached: Should have rejected: undefined Reached unreachable code
+PASS video setParameters() check for transactionId removed
 PASS video setParameters() check for codecs remove one
 PASS video setParameters() check for codecs add one
 PASS video setParameters() check for codecs reorder
@@ -37,7 +37,7 @@ PASS video setParameters() check for rtcp removed
 PASS video setParameters() check for rtcp.cname modification
 PASS video setParameters() check for rtcp.reducedSize modification
 PASS audio setParameters() check for transactionId modification
-FAIL audio setParameters() check for transactionId removed assert_unreached: Should have rejected: undefined Reached unreachable code
+PASS audio setParameters() check for transactionId removed
 PASS audio setParameters() check for codecs remove one
 PASS audio setParameters() check for codecs add one
 PASS audio setParameters() check for codecs reorder
