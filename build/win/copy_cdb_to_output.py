@@ -62,7 +62,8 @@ def _CopyCDBToOutput(output_dir, target_arch):
   # when DEPOT_TOOLS_WIN_TOOLCHAIN=0 and vcvarsall.bat has not been run.
   win_sdk_dir = os.path.normpath(
       os.environ.get('WINDOWSSDKDIR',
-                     'C:\\Program Files (x86)\\Windows Kits\\10'))
+                     os.path.expandvars('%ProgramFiles(x86)%'
+                                        '\\Windows Kits\\10')))
   if target_arch == 'ia32' or target_arch == 'x86':
     src_arch = 'x86'
   elif target_arch == 'x64':
