@@ -107,7 +107,6 @@ external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3 [ Skip 
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/masking [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/multicol3 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/ruby [ Skip ]
-external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sync-tests-filter [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sync-tests.sh [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/text-decor-3 [ Skip ]
