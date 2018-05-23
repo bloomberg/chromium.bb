@@ -2384,6 +2384,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       kForwardButtonGuide,
       kToolsMenuGuide,
       kTabSwitcherGuide,
+      kSearchButtonGuide,
       kSecondaryToolbar,
       kVoiceSearchButtonGuide,
     ];

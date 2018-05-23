@@ -14,6 +14,7 @@ GuideName* const kSecondaryToolbarNoFullscreen =
 GuideName* const kOmniboxGuide = @"kOmniboxGuide";
 GuideName* const kBackButtonGuide = @"kBackButtonGuide";
 GuideName* const kForwardButtonGuide = @"kForwardButtonGuide";
+GuideName* const kSearchButtonGuide = @"kSearchButtonGuide";
 GuideName* const kTabSwitcherGuide = @"kTabSwitcherGuide";
 GuideName* const kToolsMenuGuide = @"kToolsMenuGuide";
 GuideName* const kVoiceSearchButtonGuide = @"kVoiceSearchButtonGuide";

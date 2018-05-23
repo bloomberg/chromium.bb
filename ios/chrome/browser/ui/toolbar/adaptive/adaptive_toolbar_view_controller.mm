@@ -72,13 +72,16 @@
   // Adds the layout guide to the buttons.
   self.view.toolsMenuButton.guideName = kToolsMenuGuide;
   self.view.tabGridButton.guideName = kTabSwitcherGuide;
+  self.view.omniboxButton.guideName = kSearchButtonGuide;
   self.view.forwardButton.guideName = kForwardButtonGuide;
   self.view.backButton.guideName = kBackButtonGuide;
 
   // Add navigation popup menu triggers.
   [self addLongPressGestureToView:self.view.backButton];
   [self addLongPressGestureToView:self.view.forwardButton];
+  [self addLongPressGestureToView:self.view.omniboxButton];
   [self addLongPressGestureToView:self.view.tabGridButton];
+  [self addLongPressGestureToView:self.view.toolsMenuButton];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
@@ -283,8 +286,13 @@
     [self.dispatcher showNavigationHistoryBackPopupMenu];
   } else if (gesture.view == self.view.forwardButton) {
     [self.dispatcher showNavigationHistoryForwardPopupMenu];
+  } else if (gesture.view == self.view.omniboxButton) {
+    [self.dispatcher showSearchButtonPopup];
   } else if (gesture.view == self.view.tabGridButton) {
     [self.dispatcher showTabGridButtonPopup];
+  } else if (gesture.view == self.view.toolsMenuButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarShowMenu"));
+    [self.dispatcher showToolsMenuPopup];
   }
 }
 

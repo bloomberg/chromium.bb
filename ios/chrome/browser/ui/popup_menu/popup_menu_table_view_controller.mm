@@ -186,7 +186,7 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
 // of origin of the action if one is needed.
 - (void)executeActionForItem:(TableViewItem<PopupMenuItem>*)item
                       origin:(CGPoint)origin {
-  NSInteger identifier = item.actionIdentifier;
+  PopupMenuAction identifier = item.actionIdentifier;
   switch (identifier) {
     case PopupMenuActionReload:
       base::RecordAction(UserMetricsAction("MobileMenuReload"));
@@ -282,6 +282,18 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
     case PopupMenuActionNavigate:
       // No metrics for this item.
       [self.commandHandler navigateToPageForItem:item];
+      break;
+    case PopupMenuActionPasteAndGo:
+      base::RecordAction(UserMetricsAction("MobileMenuPasteAndGo"));
+      // TODO(crbug.com/821560):Implement this.
+      break;
+    case PopupMenuActionVoiceSearch:
+      base::RecordAction(UserMetricsAction("MobileMenuVoiceSearch"));
+      [self.dispatcher startVoiceSearch];
+      break;
+    case PopupMenuActionQRCodeSearch:
+      base::RecordAction(UserMetricsAction("MobileMenuScanQRCode"));
+      [self.dispatcher showQRScanner];
       break;
   }
 
