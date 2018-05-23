@@ -9,13 +9,11 @@
 -RenderWidgetHostViewAuraTest.ForwardsBeginFrameAcks
 -RenderWidgetHostViewAuraTest.HitTestRegionListSubmitted
 -RenderWidgetHostViewAuraTest.OutputSurfaceIdChange
--RenderWidgetHostViewChildFrameTest.SwapCompositorFrame
 -RenderWidgetHostViewGuestSurfaceTest.TestGuestSurface
 
 # Legacy using TestImageTransportFactory::GetFrameSinkManager
 -RenderWidgetHostViewAuraTest.ForwardsBeginFrameAcks
 -RenderWidgetHostViewAuraTest.TwoOutputSurfaces
--RenderWidgetHostViewChildFrameTest.FrameEviction
 
 # Not finding the correct target crbug.com/796605
 -RenderWidgetHostInputEventRouterTest.DoNotChangeTargetViewDuringTouchScrollGesture
