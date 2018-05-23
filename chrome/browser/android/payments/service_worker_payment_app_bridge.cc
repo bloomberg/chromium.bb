@@ -84,15 +84,14 @@ void OnGotAllPaymentApps(
               env, app_info.second->capabilities[i].supported_card_types));
     }
 
+    // TODO(crbug.com/846077): Find a proper way to make use of user hint.
     Java_ServiceWorkerPaymentAppBridge_onPaymentAppCreated(
         env, app_info.second->registration_id,
         ConvertUTF8ToJavaString(env, app_info.second->scope.spec()),
         app_info.second->name.empty()
             ? nullptr
             : ConvertUTF8ToJavaString(env, app_info.second->name),
-        app_info.second->user_hint.empty()
-            ? nullptr
-            : ConvertUTF8ToJavaString(env, app_info.second->user_hint),
+        nullptr,
         ConvertUTF8ToJavaString(
             env, url::Origin::Create(app_info.second->scope).host()),
         app_info.second->icon == nullptr
