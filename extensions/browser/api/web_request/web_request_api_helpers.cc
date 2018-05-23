@@ -32,6 +32,7 @@
 #include "extensions/common/extension_messages.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log_event_type.h"
 #include "url/url_constants.h"
@@ -710,6 +711,101 @@ static std::string FindRemoveRequestHeader(
   return std::string();
 }
 
+// TODO(yhirano): Remove this once https://crbug.com/827582 is solved.
+class WebSocketRequestHeaderModificationStatusReporter final {
+ public:
+  WebSocketRequestHeaderModificationStatusReporter() = default;
+
+  void Report(const std::set<std::string>& removed_headers,
+              const std::set<std::string>& set_headers) {
+    auto modification =
+        WebRequestWSRequestHeadersModification::kRiskyModification;
+    if (removed_headers.empty() && set_headers.empty())
+      modification = WebRequestWSRequestHeadersModification::kNone;
+    if (removed_headers.empty() && set_headers.size() == 1 &&
+        base::ToLowerASCII(*set_headers.begin()) == "user-agent") {
+      modification = WebRequestWSRequestHeadersModification::kSetUserAgentOnly;
+    }
+    UMA_HISTOGRAM_ENUMERATION(
+        "Extensions.WebRequest.WS_RequestHeadersModification", modification);
+
+    for (const std::string& header : removed_headers)
+      Update(header);
+    for (const std::string& header : set_headers)
+      Update(header);
+
+    UMA_HISTOGRAM_BOOLEAN("Extensions.WebRequest.WS_RequestHeaders_SecOrProxy",
+                          modified_sec_or_proxy_headers_);
+    UMA_HISTOGRAM_BOOLEAN(
+        "Extensions.WebRequest.WS_RequestHeaders_SecOrProxyExceptProtocol",
+        modified_sec_or_proxy_headers_except_sec_websocket_protocol_);
+    UMA_HISTOGRAM_BOOLEAN("Extensions.WebRequest.WS_RequestHeaders_Unsafe",
+                          modified_unsafe_headers_);
+    UMA_HISTOGRAM_BOOLEAN("Extensions.WebRequest.WS_RequestHeaders_WebSocket",
+                          modified_websocket_headers_);
+    UMA_HISTOGRAM_BOOLEAN(
+        "Extensions.WebRequest.WS_RequestHeaders_WebSocketExceptProtocol",
+        modified_websocket_headers_except_sec_websocket_protocol_);
+    UMA_HISTOGRAM_BOOLEAN("Extensions.WebRequest.WS_RequestHeaders_Origin",
+                          modified_origin_);
+    UMA_HISTOGRAM_BOOLEAN(
+        "Extensions.WebRequest.WS_RequestHeaders_OriginOrCookie",
+        modified_origin_or_cookie_);
+  }
+
+ private:
+  void Update(const std::string& header) {
+    std::string lower_header = base::ToLowerASCII(header);
+
+    if (base::StartsWith(lower_header, "sec-", base::CompareCase::SENSITIVE)) {
+      if (lower_header != "sec-websocket-protocol")
+        modified_sec_or_proxy_headers_except_sec_websocket_protocol_ = true;
+      modified_sec_or_proxy_headers_ = true;
+
+      if (base::StartsWith(lower_header, "sec-websocket-",
+                           base::CompareCase::SENSITIVE)) {
+        if (lower_header != "sec-websocket-protocol")
+          modified_websocket_headers_except_sec_websocket_protocol_ = true;
+        modified_websocket_headers_ = true;
+      }
+    } else if (base::StartsWith(lower_header, "proxy-",
+                                base::CompareCase::SENSITIVE)) {
+      modified_sec_or_proxy_headers_ = true;
+      modified_sec_or_proxy_headers_except_sec_websocket_protocol_ = true;
+    } else if (lower_header == "cookie" || lower_header == "cookie2") {
+      modified_origin_or_cookie_ = true;
+    } else if (lower_header == "cache-control" || lower_header == "pragma" ||
+               lower_header == "upgrade" || lower_header == "connection" ||
+               lower_header == "host") {
+      modified_websocket_headers_ = true;
+      modified_websocket_headers_except_sec_websocket_protocol_ = true;
+    } else if (lower_header == "origin") {
+      // As we don't have an option to allow "origin" modification, all
+      // booleans should be set here.
+      modified_sec_or_proxy_headers_ = true;
+      modified_sec_or_proxy_headers_except_sec_websocket_protocol_ = true;
+      modified_unsafe_headers_ = true;
+      modified_websocket_headers_ = true;
+      modified_websocket_headers_except_sec_websocket_protocol_ = true;
+      modified_origin_ = true;
+      modified_origin_or_cookie_ = true;
+    } else if (!net::HttpUtil::IsSafeHeader(lower_header) &&
+               lower_header != "user-agent") {
+      modified_unsafe_headers_ = true;
+    }
+  }
+
+  bool modified_sec_or_proxy_headers_ = false;
+  bool modified_sec_or_proxy_headers_except_sec_websocket_protocol_ = false;
+  bool modified_unsafe_headers_ = false;
+  bool modified_websocket_headers_ = false;
+  bool modified_websocket_headers_except_sec_websocket_protocol_ = false;
+  bool modified_origin_ = false;
+  bool modified_origin_or_cookie_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(WebSocketRequestHeaderModificationStatusReporter);
+};
+
 void MergeOnBeforeSendHeadersResponses(
     const GURL& url,
     const EventResponseDeltas& deltas,
@@ -842,18 +938,9 @@ void MergeOnBeforeSendHeadersResponses(
                             removal);
 
   if (url.SchemeIsWSOrWSS()) {
-    auto modification =
-        WebRequestWSRequestHeadersModification::kRiskyModification;
-    if (removed_headers.empty() && set_headers.empty())
-      modification = WebRequestWSRequestHeadersModification::kNone;
-    if (removed_headers.empty() && set_headers.size() == 1 &&
-        base::ToLowerASCII(*set_headers.begin()) == "user-agent") {
-      modification = WebRequestWSRequestHeadersModification::kSetUserAgentOnly;
-    }
-    UMA_HISTOGRAM_ENUMERATION(
-        "Extensions.WebRequest.WS_RequestHeadersModification", modification);
+    WebSocketRequestHeaderModificationStatusReporter().Report(removed_headers,
+                                                              set_headers);
   }
-
   MergeCookiesInOnBeforeSendHeadersResponses(url, deltas, request_headers,
                                              conflicting_extensions, logger);
 }
