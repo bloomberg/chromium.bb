@@ -33,6 +33,7 @@ component("edk") {
 
   public_deps = [
     ":impl_for_edk",
+    "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
   ]
 }
@@ -139,6 +140,7 @@ template("core_impl_source_set") {
       "//base",
       "//mojo/edk/system/ports",
       "//mojo/public/c/system:headers",
+      "//mojo/public/cpp/platform",
     ]
 
     if (is_fuchsia) {

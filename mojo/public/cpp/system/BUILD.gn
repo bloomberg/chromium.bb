@@ -61,6 +61,7 @@ component("system") {
   public_deps = [
     "//base",
     "//mojo/public/c/system",
+    "//mojo/public/cpp/platform",
   ]
   deps = [
     ":clean_up_old_dylib",
