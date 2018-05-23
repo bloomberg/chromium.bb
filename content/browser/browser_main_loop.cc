@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/debug/stack_trace.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -259,6 +260,12 @@ static void GLibLogHandler(const gchar* log_domain,
     LOG(DFATAL) << log_domain << ": " << message;
   } else if (log_level & (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL)) {
     LOG(ERROR) << log_domain << ": " << message;
+#if defined(THREAD_SANITIZER)
+    // TODO(thomasanderson): This is temporary debugging for
+    // https://crbug.com/821704.  Revert this CL once we have the stack trace:
+    // https://chromium-review.googlesource.com/#/c/chromium/src/+/1069247
+    base::debug::StackTrace().Print();
+#endif
   } else if (log_level & (G_LOG_LEVEL_WARNING)) {
     LOG(WARNING) << log_domain << ": " << message;
   } else if (log_level &
