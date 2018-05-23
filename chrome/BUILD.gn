@@ -215,6 +215,7 @@ if (!is_android && !is_mac) {
         ]
         data_deps = [
           "//chrome/app/version_assembly:version_assembly_manifest",
+          "//chrome/elevation_service",
           "//chrome/notification_helper",
         ]
 

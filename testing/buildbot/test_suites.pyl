@@ -1706,6 +1706,7 @@
     'chrome_elf_import_unittests': {},
     'chrome_elf_unittests': {},
     'courgette_unittests': {},
+    'elevation_service_unittests': {},
     'install_static_unittests': {},
     'installer_util_unittests': {
       'swarming': {

@@ -43,7 +43,11 @@ const InstallConstants kInstallModes[] = {
          0x425C,
          {0xAC, 0xB7, 0x6D, 0x19, 0xD6, 0x44, 0x28,
           0xCD}},  // Toast Activator CLSID.
-        L"",       // The empty string means "stable".
+        {0x708860E0,
+         0xF641,
+         0x4611,
+         {0x88, 0x95, 0x7D, 0x86, 0x7D, 0xD3, 0x67, 0x5B}},  // Elevator CLSID.
+        L"",  // The empty string means "stable".
         ChannelStrategy::ADDITIONAL_PARAMETERS,
         true,  // Supports system-level installs.
         true,  // Supports in-product set as default browser UX.
@@ -71,7 +75,11 @@ const InstallConstants kInstallModes[] = {
          0x4AE2,
          {0x98, 0xC4, 0x63, 0x73, 0xEA, 0xA1, 0xEA,
           0x4D}},  // Toast Activator CLSID.
-        L"beta",   // Forced channel name.
+        {0xDD2646BA,
+         0x3707,
+         0x4BF8,
+         {0xB9, 0xA7, 0x3, 0x86, 0x91, 0xA6, 0x8F, 0xC2}},  // Elevator CLSID.
+        L"beta",  // Forced channel name.
         ChannelStrategy::FIXED,
         true,   // Supports system-level installs.
         true,   // Supports in-product set as default browser UX.
@@ -99,7 +107,11 @@ const InstallConstants kInstallModes[] = {
          0x4C83,
          {0x8D, 0x7A, 0x90, 0x27, 0x71, 0xE7, 0x32,
           0xFA}},  // Toast Activator CLSID.
-        L"dev",    // Forced channel name.
+        {0xDA7FDCA5,
+         0x2CAA,
+         0x4637,
+         {0xAA, 0x17, 0x7, 0x40, 0x58, 0x4D, 0xE7, 0xDA}},  // Elevator CLSID.
+        L"dev",  // Forced channel name.
         ChannelStrategy::FIXED,
         true,   // Supports system-level installs.
         true,   // Supports in-product set as default browser UX.
@@ -126,7 +138,11 @@ const InstallConstants kInstallModes[] = {
          0x149F,
          0x4E95,
          {0x83, 0x2D, 0x8F, 0x69, 0x8D, 0x40, 0xAD,
-          0x7F}},   // Toast Activator CLSID.
+          0x7F}},  // Toast Activator CLSID.
+        {0x704C2872,
+         0x2049,
+         0x435E,
+         {0xA4, 0x69, 0xA, 0x53, 0x43, 0x13, 0xC4, 0x2B}},  // Elevator CLSID.
         L"canary",  // Forced channel name.
         ChannelStrategy::FIXED,
         false,  // Does not support system-level installs.

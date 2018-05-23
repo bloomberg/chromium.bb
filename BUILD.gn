@@ -577,6 +577,7 @@ group("gn_all") {
     deps += [
       "//base:pe_image_test",
       "//chrome/chrome_cleaner:chrome_cleaner_unittests",
+      "//chrome/elevation_service:elevation_service_unittests",
       "//chrome/install_static:install_static_unittests",
       "//chrome/installer/gcapi",
       "//chrome/installer/setup:setup_unittests",

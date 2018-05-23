@@ -9,6 +9,7 @@
 #include <tuple>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
@@ -512,6 +513,63 @@ TEST_P(InstallStaticUtilTest, GetToastActivatorClsid) {
             kCLSIDSize);
   EXPECT_THAT(clsid_str,
               StrCaseEq(kToastActivatorClsidsString[std::get<0>(GetParam())]));
+}
+
+TEST_P(InstallStaticUtilTest, GetElevatorClsid) {
+#if defined(GOOGLE_CHROME_BUILD)
+  // The Elevator CLSIDs, one for each of the kInstallModes.
+  static constexpr CLSID kElevatorClsids[] = {
+      {0x708860E0,
+       0xF641,
+       0x4611,
+       {0x88, 0x95, 0x7D, 0x86, 0x7D, 0xD3, 0x67, 0x5B}},  // Google Chrome.
+      {0xDD2646BA,
+       0x3707,
+       0x4BF8,
+       {0xB9, 0xA7, 0x3, 0x86, 0x91, 0xA6, 0x8F, 0xC2}},  // Google Chrome Beta.
+      {0xDA7FDCA5,
+       0x2CAA,
+       0x4637,
+       {0xAA, 0x17, 0x7, 0x40, 0x58, 0x4D, 0xE7, 0xDA}},  // Google Chrome Dev.
+      {0x704C2872,
+       0x2049,
+       0x435E,
+       {0xA4, 0x69, 0xA, 0x53, 0x43, 0x13, 0xC4,
+        0x2B}},  // Google Chrome SxS (Canary).
+  };
+
+  // The string representation of the CLSIDs above.
+  static constexpr const wchar_t* kElevatorClsidsString[] = {
+      L"{708860E0-F641-4611-8895-7D867DD3675B}",  // Google Chrome.
+      L"{DD2646BA-3707-4BF8-B9A7-038691A68FC2}",  // Google Chrome Beta.
+      L"{DA7FDCA5-2CAA-4637-AA17-0740584DE7DA}",  // Google Chrome Dev.
+      L"{704C2872-2049-435E-A469-0A534313C42B}",  // Google Chrome SxS (Canary).
+  };
+#else
+  // The Elevator CLSIDs, one for each of the kInstallModes.
+  static constexpr CLSID kElevatorClsids[] = {
+      {0xD133B120,
+       0x6DB4,
+       0x4D6B,
+       {0x8B, 0xFE, 0x83, 0xBF, 0x8C, 0xA1, 0xB1, 0xB0}},  // Chromium.
+  };
+
+  // The string representation of the CLSIDs above.
+  static constexpr const wchar_t* kElevatorClsidsString[] = {
+      L"{D133B120-6DB4-4D6B-8BFE-83BF8CA1B1B0}",  // Chromium.
+  };
+#endif
+  static_assert(base::size(kElevatorClsids) == NUM_INSTALL_MODES,
+                "kElevatorClsids needs to be updated for any new modes.");
+
+  EXPECT_EQ(GetElevatorClsid(), kElevatorClsids[std::get<0>(GetParam())]);
+
+  constexpr int kCLSIDSize = 39;
+  wchar_t clsid_str[kCLSIDSize] = {};
+  ASSERT_EQ(::StringFromGUID2(GetElevatorClsid(), clsid_str, kCLSIDSize),
+            kCLSIDSize);
+  EXPECT_THAT(clsid_str,
+              StrCaseEq(kElevatorClsidsString[std::get<0>(GetParam())]));
 }
 
 TEST_P(InstallStaticUtilTest, UsageStatsAbsent) {

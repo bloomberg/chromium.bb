@@ -381,6 +381,10 @@ const CLSID& GetToastActivatorClsid() {
   return InstallDetails::Get().toast_activator_clsid();
 }
 
+const CLSID& GetElevatorClsid() {
+  return InstallDetails::Get().elevator_clsid();
+}
+
 std::wstring GetBaseAppName() {
   return InstallDetails::Get().mode().base_app_name;
 }
