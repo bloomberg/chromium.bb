@@ -35,4 +35,10 @@ bool CanvasRenderingContextHost::IsPaintable() const {
          IsValidImageSize(Size());
 }
 
+void CanvasRenderingContextHost::RestoreCanvasMatrixClipStack(
+    PaintCanvas* canvas) const {
+  if (RenderingContext())
+    RenderingContext()->RestoreCanvasMatrixClipStack(canvas);
+}
+
 }  // namespace blink

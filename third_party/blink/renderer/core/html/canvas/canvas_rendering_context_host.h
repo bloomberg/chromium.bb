@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_host.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
@@ -22,7 +23,8 @@ class FontSelector;
 class StaticBitmapImage;
 class KURL;
 
-class CORE_EXPORT CanvasRenderingContextHost : public GarbageCollectedMixin {
+class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
+                                               public GarbageCollectedMixin {
  public:
   CanvasRenderingContextHost();
 
@@ -65,8 +67,11 @@ class CORE_EXPORT CanvasRenderingContextHost : public GarbageCollectedMixin {
 
   virtual void RegisterContextToDispatch(CanvasRenderingContext*) {}
 
+  // Partial CanvasResourceHost implementation
+  void RestoreCanvasMatrixClipStack(PaintCanvas*) const final;
+
  protected:
-  virtual ~CanvasRenderingContextHost() {}
+  ~CanvasRenderingContextHost() override {}
 
   scoped_refptr<StaticBitmapImage> CreateTransparentImage(const IntSize&) const;
 };

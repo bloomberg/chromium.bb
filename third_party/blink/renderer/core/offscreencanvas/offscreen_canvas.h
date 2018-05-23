@@ -110,6 +110,11 @@ class CORE_EXPORT OffscreenCanvas final
   void DidDraw(const FloatRect&) override;
   void DidDraw() override;
 
+  // Partial CanvasResourceHost implementation
+  void NotifyGpuContextLost() override{};
+  void SetNeedsCompositingUpdate() override{};
+  void UpdateMemoryUsage() override{/*TODO(crbug.com/842693): implement*/};
+
   // EventTarget implementation
   const AtomicString& InterfaceName() const final {
     return EventTargetNames::OffscreenCanvas;
