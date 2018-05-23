@@ -483,11 +483,8 @@ std::unique_ptr<JSONObject> ObjectForSkPaint(const SkPaint& paint) {
   paint_item->SetString("hinting", HintingName(paint.getHinting()));
   if (paint.getBlendMode() != SkBlendMode::kSrcOver)
     paint_item->SetString("blendMode", SkBlendMode_Name(paint.getBlendMode()));
-  if (const auto* filter = paint.getImageFilter()) {
-    SkString str;
-    filter->toString(&str);
-    paint_item->SetString("imageFilter", str.c_str());
-  }
+  if (paint.getImageFilter())
+    paint_item->SetString("imageFilter", "SkImageFilter");
   return paint_item;
 }
 
