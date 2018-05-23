@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "components/history/core/test/fake_web_history_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/fake_sync_service.h"
@@ -25,8 +26,6 @@ class TestSyncService : public syncer::FakeSyncService {
  public:
   // Getters (FakeSyncService implementation). ---------------------------------
   bool IsSyncActive() const override { return sync_active_; }
-
-  bool IsLocalSyncEnabled() const override { return false; }
 
   syncer::ModelTypeSet GetActiveDataTypes() const override {
     return active_data_types_;
@@ -79,44 +78,27 @@ class HistoryNoticeUtilsTest : public ::testing::Test {
 
   void ExpectShouldPopupDialogAboutOtherFormsOfBrowsingHistoryWithResult(
       bool expected_test_case_result) {
-    bool got_result = false;
-
+    bool result;
+    base::RunLoop run_loop;
     ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
-        sync_service_.get(),
-        history_service_.get(),
-        version_info::Channel::STABLE,
-        base::Bind(
-            &HistoryNoticeUtilsTest::Callback,
-            base::Unretained(this),
-            base::Unretained(&got_result)));
-
-    if (!got_result) {
-      run_loop_.reset(new base::RunLoop());
-      run_loop_->Run();
-    }
+        sync_service_.get(), history_service_.get(),
+        version_info::Channel::STABLE, base::BindLambdaForTesting([&](bool r) {
+          result = r;
+          run_loop.Quit();
+        }));
+    run_loop.Run();
 
     // Process the DeleteSoon() called on MergeBooleanCallbacks, otherwise
     // this it will be considered to be leaked.
     base::RunLoop().RunUntilIdle();
 
-    EXPECT_EQ(expected_test_case_result, result_);
+    EXPECT_EQ(expected_test_case_result, result);
   }
 
  private:
-  void Callback(bool* got_result, bool result) {
-    *got_result = true;
-    result_ = result;
-
-    if (run_loop_)
-      run_loop_->Quit();
-  }
-
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   std::unique_ptr<TestSyncService> sync_service_;
   std::unique_ptr<history::FakeWebHistoryService> history_service_;
-
-  std::unique_ptr<base::RunLoop> run_loop_;
-  bool result_;
 
   base::MessageLoop message_loop_;
 };

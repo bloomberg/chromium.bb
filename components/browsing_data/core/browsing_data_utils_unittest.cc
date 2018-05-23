@@ -12,12 +12,15 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browsing_data/core/counters/autofill_counter.h"
+#include "components/browsing_data/core/counters/history_counter.h"
 #include "components/browsing_data/core/counters/passwords_counter.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace browsing_data {
 
 namespace {
 
@@ -51,7 +54,7 @@ class BrowsingDataUtilsTest : public testing::Test {
 
 // Tests the complex output of the Autofill counter.
 TEST_F(BrowsingDataUtilsTest, AutofillCounterResult) {
-  browsing_data::AutofillCounter counter(
+  AutofillCounter counter(
       scoped_refptr<FakeWebDataService>(new FakeWebDataService()), nullptr);
 
   // Test all configurations of zero and nonzero partial results for datatypes.
@@ -80,7 +83,7 @@ TEST_F(BrowsingDataUtilsTest, AutofillCounterResult) {
   };
 
   for (const TestCase& test_case : kTestCases) {
-    browsing_data::AutofillCounter::AutofillResult result(
+    AutofillCounter::AutofillResult result(
         &counter, test_case.num_suggestions, test_case.num_credit_cards,
         test_case.num_addresses, test_case.sync_enabled);
 
@@ -99,7 +102,7 @@ TEST_F(BrowsingDataUtilsTest, AutofillCounterResult) {
 TEST_F(BrowsingDataUtilsTest, PasswordsCounterResult) {
   scoped_refptr<password_manager::TestPasswordStore> store(
       new password_manager::TestPasswordStore());
-  browsing_data::PasswordsCounter counter(
+  PasswordsCounter counter(
       scoped_refptr<password_manager::PasswordStore>(store), nullptr);
 
   const struct TestCase {
@@ -113,8 +116,8 @@ TEST_F(BrowsingDataUtilsTest, PasswordsCounterResult) {
   };
 
   for (const TestCase& test_case : kTestCases) {
-    browsing_data::BrowsingDataCounter::SyncResult result(
-        &counter, test_case.num_passwords, test_case.is_synced);
+    BrowsingDataCounter::SyncResult result(&counter, test_case.num_passwords,
+                                           test_case.is_synced);
     SCOPED_TRACE(base::StringPrintf("Test params: %d password(s), %d is_synced",
                                     test_case.num_passwords,
                                     test_case.is_synced));
@@ -123,3 +126,45 @@ TEST_F(BrowsingDataUtilsTest, PasswordsCounterResult) {
   }
   store->ShutdownOnUIThread();
 }
+
+// Tests the output of the History counter.
+TEST_F(BrowsingDataUtilsTest, HistoryCounterResult) {
+  history::HistoryService history_service;
+  HistoryCounter counter(&history_service,
+                         HistoryCounter::GetUpdatedWebHistoryServiceCallback(),
+                         nullptr);
+  counter.Init(prefs(), ClearBrowsingDataTab::ADVANCED, base::DoNothing());
+
+  const struct TestCase {
+    int num_history;
+    int is_sync_enabled;
+    int has_sync_visits;
+    std::string expected_output;
+  } kTestCases[] = {
+      // No sync, no synced visits:
+      {0, false, false, "None"},
+      {1, false, false, "1 item"},
+      {5, false, false, "5 items"},
+      // Sync but not synced visits:
+      {0, true, false, "None"},
+      {1, true, false, "1 item"},
+      {5, true, false, "5 items"},
+      // Sync and synced visits:
+      {0, true, true, "At least 1 item on synced devices"},
+      {1, true, true, "1 item (and more on synced devices)"},
+      {5, true, true, "5 items (and more on synced devices)"},
+  };
+
+  for (const TestCase& test_case : kTestCases) {
+    HistoryCounter::HistoryResult result(&counter, test_case.num_history,
+                                         test_case.is_sync_enabled,
+                                         test_case.has_sync_visits);
+    SCOPED_TRACE(
+        base::StringPrintf("Test params: %d history, %d has_synced_visits",
+                           test_case.num_history, test_case.has_sync_visits));
+    base::string16 output = browsing_data::GetCounterTextFromResult(&result);
+    EXPECT_EQ(output, base::ASCIIToUTF16(test_case.expected_output));
+  }
+}
+
+}  // namespace browsing_data
