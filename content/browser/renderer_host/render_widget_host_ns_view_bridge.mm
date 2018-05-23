@@ -44,6 +44,7 @@ class RenderWidgetHostViewNSViewBridgeLocal
   void SetBackgroundColor(SkColor color) override;
   void SetVisible(bool visible) override;
   void SetTooltipText(const base::string16& display_text) override;
+  void SetTextInputType(ui::TextInputType text_input_type) override;
   void SetTextSelection(const base::string16& text,
                         size_t offset,
                         const gfx::Range& range) override;
@@ -223,6 +224,11 @@ void RenderWidgetHostViewNSViewBridgeLocal::SetCompositionRangeInfo(
 
 void RenderWidgetHostViewNSViewBridgeLocal::CancelComposition() {
   [cocoa_view_ cancelComposition];
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::SetTextInputType(
+    ui::TextInputType text_input_type) {
+  [cocoa_view_ setTextInputType:text_input_type];
 }
 
 void RenderWidgetHostViewNSViewBridgeLocal::SetTextSelection(

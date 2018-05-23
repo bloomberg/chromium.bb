@@ -102,8 +102,6 @@ class NoopClient : public RenderWidgetHostNSViewClient {
       const gfx::PointF& root_point) override {}
   void OnNSViewLookUpDictionaryOverlayFromRange(
       const gfx::Range& range) override {}
-  void OnNSViewSyncGetTextInputType(
-      ui::TextInputType* text_input_type) override {}
   void OnNSViewSyncGetCharacterIndexAtPoint(const gfx::PointF& root_point,
                                             uint32_t* index) override {}
   void OnNSViewSyncGetFirstRectForRange(const gfx::Range& requested_range,
@@ -210,6 +208,7 @@ void ExtractUnderlines(NSAttributedString* string,
 
 @implementation RenderWidgetHostViewCocoa
 @synthesize markedRange = markedRange_;
+@synthesize textInputType = textInputType_;
 
 - (id)initWithClient:(RenderWidgetHostNSViewClient*)client {
   self = [super initWithFrame:NSZeroRect];
@@ -223,6 +222,7 @@ void ExtractUnderlines(NSAttributedString* string,
     canBeKeyView_ = YES;
     isStylusEnteringProximity_ = false;
     keyboardLockActive_ = false;
+    textInputType_ = ui::TEXT_INPUT_TYPE_NONE;
   }
   return self;
 }
@@ -695,9 +695,7 @@ void ExtractUnderlines(NSAttributedString* string,
   // function call.
   client_->OnNSViewBeginKeyboardEvent();
 
-  ui::TextInputType textInputType = ui::TEXT_INPUT_TYPE_NONE;
-  client_->OnNSViewSyncGetTextInputType(&textInputType);
-  bool shouldAutohideCursor = textInputType != ui::TEXT_INPUT_TYPE_NONE &&
+  bool shouldAutohideCursor = textInputType_ != ui::TEXT_INPUT_TYPE_NONE &&
                               eventType == NSKeyDown &&
                               !(modifierFlags & NSCommandKeyMask);
 
@@ -1598,9 +1596,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 // nil when the caret is in non-editable content or password box to avoid
 // making input methods do their work.
 - (NSTextInputContext*)inputContext {
-  ui::TextInputType textInputType = ui::TEXT_INPUT_TYPE_NONE;
-  client_->OnNSViewSyncGetTextInputType(&textInputType);
-  switch (textInputType) {
+  switch (textInputType_) {
     case ui::TEXT_INPUT_TYPE_NONE:
     case ui::TEXT_INPUT_TYPE_PASSWORD:
       return nil;
@@ -1833,14 +1829,11 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 
 - (id)validRequestorForSendType:(NSString*)sendType
                      returnType:(NSString*)returnType {
-  ui::TextInputType textInputType = ui::TEXT_INPUT_TYPE_NONE;
-  client_->OnNSViewSyncGetTextInputType(&textInputType);
-
   id requestor = nil;
   BOOL sendTypeIsString = [sendType isEqual:NSStringPboardType];
   BOOL returnTypeIsString = [returnType isEqual:NSStringPboardType];
   BOOL hasText = !textSelectionRange_.is_empty();
-  BOOL takesText = textInputType != ui::TEXT_INPUT_TYPE_NONE;
+  BOOL takesText = textInputType_ != ui::TEXT_INPUT_TYPE_NONE;
 
   if (sendTypeIsString && hasText && !returnType) {
     requestor = self;

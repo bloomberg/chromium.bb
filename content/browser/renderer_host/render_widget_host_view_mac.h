@@ -342,8 +342,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const gfx::PointF& root_point) override;
   void OnNSViewLookUpDictionaryOverlayFromRange(
       const gfx::Range& range) override;
-  void OnNSViewSyncGetTextInputType(
-      ui::TextInputType* text_input_type) override;
   void OnNSViewSyncGetCharacterIndexAtPoint(const gfx::PointF& root_point,
                                             uint32_t* index) override;
   void OnNSViewSyncGetFirstRectForRange(const gfx::Range& requested_range,
