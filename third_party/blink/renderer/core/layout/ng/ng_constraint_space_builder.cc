@@ -19,23 +19,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
 NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(WritingMode writing_mode,
                                                    NGPhysicalSize icb_size)
     : initial_containing_block_size_(icb_size),
-      fragmentainer_block_size_(NGSizeIndefinite),
-      fragmentainer_space_at_bfc_start_(NGSizeIndefinite),
-      parent_writing_mode_(static_cast<unsigned>(writing_mode)),
-      is_fixed_size_inline_(false),
-      is_fixed_size_block_(false),
-      fixed_size_block_is_definite_(true),
-      is_shrink_to_fit_(false),
-      is_intermediate_layout_(false),
-      fragmentation_type_(kFragmentNone),
-      separate_leading_fragmentainer_margins_(false),
-      is_new_fc_(false),
-      is_anonymous_(false),
-      use_first_line_style_(false),
-      should_force_clearance_(false),
-      adjoining_floats_(kFloatTypeNone),
-      text_direction_(static_cast<unsigned>(TextDirection::kLtr)),
-      exclusion_space_(nullptr) {}
+      parent_writing_mode_(writing_mode) {}
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetAvailableSize(
     NGLogicalSize available_size) {
@@ -51,7 +35,7 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetPercentageResolutionSize(
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetTextDirection(
     TextDirection text_direction) {
-  text_direction_ = static_cast<unsigned>(text_direction);
+  text_direction_ = text_direction;
   return *this;
 }
 
@@ -159,8 +143,8 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
     WritingMode out_writing_mode) {
   // Whether the child and the containing block are parallel to each other.
   // Example: vertical-rl and vertical-lr
-  bool is_in_parallel_flow = IsParallelWritingMode(
-      static_cast<WritingMode>(parent_writing_mode_), out_writing_mode);
+  bool is_in_parallel_flow =
+      IsParallelWritingMode(parent_writing_mode_, out_writing_mode);
 
   NGLogicalSize available_size = available_size_;
   NGLogicalSize percentage_resolution_size = percentage_resolution_size_;
@@ -219,14 +203,12 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   }
 
   return base::AdoptRef(new NGConstraintSpace(
-      out_writing_mode, !is_in_parallel_flow,
-      static_cast<TextDirection>(text_direction_), available_size,
+      out_writing_mode, !is_in_parallel_flow, text_direction_, available_size,
       percentage_resolution_size, parent_percentage_resolution_size.inline_size,
       initial_containing_block_size_, fragmentainer_block_size_,
       fragmentainer_space_at_bfc_start_, is_fixed_size_inline,
       is_fixed_size_block, fixed_size_block_is_definite, is_shrink_to_fit_,
-      is_intermediate_layout_,
-      static_cast<NGFragmentationType>(fragmentation_type_),
+      is_intermediate_layout_, fragmentation_type_,
       separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
       use_first_line_style_, should_force_clearance_, adjoining_floats_,
       margin_strut, bfc_offset, floats_bfc_offset, exclusion_space,
