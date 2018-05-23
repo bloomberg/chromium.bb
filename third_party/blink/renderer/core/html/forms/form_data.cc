@@ -79,9 +79,8 @@ class FormDataIterationSource final
 };
 
 String Normalize(const String& input) {
-  // TODO(tkent): Should we convert the input to USVString?
   // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#append-an-entry
-  return NormalizeLineEndingsToCRLF(input);
+  return ReplaceUnmatchedSurrogates(NormalizeLineEndingsToCRLF(input));
 }
 
 }  // namespace
@@ -304,6 +303,20 @@ FormData::StartIteration(ScriptState*, ExceptionState&) {
 }
 
 // ----------------------------------------------------------------
+
+FormData::Entry::Entry(const String& name, const String& value)
+    : name_(name), value_(value) {
+  DCHECK_EQ(name, ReplaceUnmatchedSurrogates(name))
+      << "'name' should be a USVString.";
+  DCHECK_EQ(value, ReplaceUnmatchedSurrogates(value))
+      << "'value' should be a USVString.";
+}
+
+FormData::Entry::Entry(const String& name, Blob* blob, const String& filename)
+    : name_(name), blob_(blob), filename_(filename) {
+  DCHECK_EQ(name, ReplaceUnmatchedSurrogates(name))
+      << "'name' should be a USVString.";
+}
 
 void FormData::Entry::Trace(blink::Visitor* visitor) {
   visitor->Trace(blob_);
