@@ -38,7 +38,7 @@ namespace {
 const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
   // Number of initial errors (in sequence) to ignore before applying
   // exponential back-off rules.
-  0,
+  5,
 
   // Initial delay for exponential back-off in ms.
   2000,

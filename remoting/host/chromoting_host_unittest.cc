@@ -55,6 +55,8 @@ using testing::Sequence;
 
 namespace remoting {
 
+const size_t kNumFailuresIgnored = 5;
+
 class ChromotingHostTest : public testing::Test {
  public:
   ChromotingHostTest() = default;
@@ -234,10 +236,6 @@ class ChromotingHostTest : public testing::Test {
   protocol::Session::EventHandler* session_unowned1_event_handler_;
   protocol::Session::EventHandler* session_unowned2_event_handler_;
 
-  protocol::FakeConnectionToClient*& get_connection(int connection_index) {
-    return (connection_index == 0) ? connection1_ : connection2_;
-  }
-
   // Returns the cached client pointers client1_ or client2_.
   ClientSession*& get_client(int connection_index) {
     return (connection_index == 0) ? client1_ : client2_;
@@ -321,51 +319,104 @@ TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
   ShutdownHost();
 }
 
-TEST_F(ChromotingHostTest, LoginBackOffUponConnection) {
+TEST_F(ChromotingHostTest, LoginBackOffTriggersIfClientsDoNotAuthenticate) {
   StartHost();
 
   protocol::SessionManager::IncomingSessionResponse response =
       protocol::SessionManager::DECLINE;
+  protocol::Session::EventHandler*
+      session_event_handlers[kNumFailuresIgnored + 1];
+  for (size_t i = 0; i < kNumFailuresIgnored + 1; ++i) {
+    // Set expectations and responses for the new session.
+    auto session = std::make_unique<MockSession>();
+    EXPECT_CALL(*session, jid())
+        .WillRepeatedly(ReturnRef(session_jid1_));
+    EXPECT_CALL(*session, config())
+        .WillRepeatedly(ReturnRef(*session_config1_));
+    EXPECT_CALL(*session, SetEventHandler(_))
+        .Times(AnyNumber())
+        .WillRepeatedly(SaveArg<0>(&session_event_handlers[i]));
+    EXPECT_CALL(*session, Close(_)).WillOnce(
+        InvokeWithoutArgs(
+            [&session_event_handlers, i]() {
+              session_event_handlers[i]->OnSessionStateChange(Session::CLOSED);
+            }));
+    // Simulate the incoming connection.
+    host_->OnIncomingSession(session.release(), &response);
+    EXPECT_EQ(protocol::SessionManager::ACCEPT, response);
+    // Begin authentication; this will increase the backoff count, and since
+    // OnSessionAuthenticated is never called, the host should only allow
+    // kNumFailuresIgnored + 1 connections before beginning the backoff.
+    host_->OnSessionAuthenticating(
+        host_->client_sessions_for_tests().front().get());
+  }
 
-  EXPECT_CALL(*session_unowned1_, Close(_)).WillOnce(
-    InvokeWithoutArgs(this, &ChromotingHostTest::NotifyConnectionClosed1));
-  host_->OnIncomingSession(session_unowned1_.release(), &response);
-  EXPECT_EQ(protocol::SessionManager::ACCEPT, response);
-
-  host_->OnSessionAuthenticating(
-      host_->client_sessions_for_tests().front().get());
+  // As this is connection kNumFailuresIgnored + 2, it should be rejected.
   host_->OnIncomingSession(session_unowned2_.get(), &response);
   EXPECT_EQ(protocol::SessionManager::OVERLOAD, response);
+  EXPECT_EQ(host_->client_sessions_for_tests().size(), kNumFailuresIgnored + 1);
+
+  // Shut down host while objects owned by this test are still in scope.
+  ShutdownHost();
 }
 
-TEST_F(ChromotingHostTest, LoginBackOffUponAuthenticating) {
+TEST_F(ChromotingHostTest, LoginBackOffResetsIfClientsAuthenticate) {
   StartHost();
-
-  EXPECT_CALL(*session_unowned1_, Close(_)).WillOnce(
-    InvokeWithoutArgs(this, &ChromotingHostTest::NotifyConnectionClosed1));
-
-  EXPECT_CALL(*session_unowned2_, Close(_)).WillOnce(
-    InvokeWithoutArgs(this, &ChromotingHostTest::NotifyConnectionClosed2));
 
   protocol::SessionManager::IncomingSessionResponse response =
       protocol::SessionManager::DECLINE;
+  protocol::Session::EventHandler*
+      session_event_handlers[kNumFailuresIgnored + 1];
+  for (size_t i = 0; i < kNumFailuresIgnored + 1; ++i) {
+    // Set expectations and responses for the new session.
+    auto session = std::make_unique<MockSession>();
+    EXPECT_CALL(*session, jid())
+        .WillRepeatedly(ReturnRef(session_jid1_));
+    EXPECT_CALL(*session, config())
+        .WillRepeatedly(ReturnRef(*session_config1_));
+    EXPECT_CALL(*session, SetEventHandler(_))
+        .Times(AnyNumber())
+        .WillRepeatedly(SaveArg<0>(&session_event_handlers[i]));
+    EXPECT_CALL(*session, Close(_)).WillOnce(
+        InvokeWithoutArgs(
+            [&session_event_handlers, i]() {
+              session_event_handlers[i]->OnSessionStateChange(Session::CLOSED);
+            }));
+    // Simulate the incoming connection.
+    host_->OnIncomingSession(session.release(), &response);
+    EXPECT_EQ(protocol::SessionManager::ACCEPT, response);
+    // Begin authentication; this will increase the backoff count
+    host_->OnSessionAuthenticating(
+        host_->client_sessions_for_tests().front().get());
+  }
 
-  host_->OnIncomingSession(session_unowned1_.release(), &response);
-  EXPECT_EQ(protocol::SessionManager::ACCEPT, response);
-
-  host_->OnIncomingSession(session_unowned2_.release(), &response);
-  EXPECT_EQ(protocol::SessionManager::ACCEPT, response);
-
-  // This will set the backoff.
-  host_->OnSessionAuthenticating(
+  // Simulate successful authentication for one of the previous connections.
+  // This should reset the backoff and disconnect all the other connections.
+  host_->OnSessionAuthenticated(
       host_->client_sessions_for_tests().front().get());
-
-  // This should disconnect client2.
-  host_->OnSessionAuthenticating(
-      host_->client_sessions_for_tests().back().get());
-
-  // Verify that the host only has 1 client at this point.
   EXPECT_EQ(host_->client_sessions_for_tests().size(), 1U);
+
+  // This is connection kNumFailuresIgnored + 2, but since we now have a
+  // successful authentication it should not be rejected.
+  auto session = std::make_unique<MockSession>();
+  protocol::Session::EventHandler* session_event_handler;
+  EXPECT_CALL(*session, jid())
+      .WillRepeatedly(ReturnRef(session_jid1_));
+  EXPECT_CALL(*session, config())
+      .WillRepeatedly(ReturnRef(*session_config1_));
+  EXPECT_CALL(*session, SetEventHandler(_))
+      .Times(AnyNumber())
+      .WillRepeatedly(SaveArg<0>(&session_event_handler));
+  EXPECT_CALL(*session, Close(_)).WillOnce(
+      InvokeWithoutArgs(
+          [&session_event_handler]() {
+            session_event_handler->OnSessionStateChange(Session::CLOSED);
+          }));
+  host_->OnIncomingSession(session.release(), &response);
+  EXPECT_EQ(protocol::SessionManager::ACCEPT, response);
+
+  // Shut down host while objects owned by this test are still in scope.
+  ShutdownHost();
 }
 
 TEST_F(ChromotingHostTest, OnSessionRouteChange) {
