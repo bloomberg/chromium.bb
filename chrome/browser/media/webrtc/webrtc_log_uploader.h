@@ -120,21 +120,19 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
                       const base::FilePath& outgoing_rtp_dump,
                       const std::map<std::string, std::string>& meta_data);
 
-  void CompressLog(std::string* compressed_log,
-                   WebRtcLogBuffer* buffer);
+  void CompressLog(std::string* compressed_log, WebRtcLogBuffer* buffer);
 
-  void ResizeForNextOutput(std::string* compressed_log,
-                           z_stream* stream);
+  void ResizeForNextOutput(std::string* compressed_log, z_stream* stream);
 
   void UploadCompressedLog(const WebRtcLogUploadDoneData& upload_done_data,
                            std::unique_ptr<std::string> post_data);
 
   // A couple of helper functions due to having to hop to the UI thread
   // to fetch the system_request_context and back again to the IO thread.
-  void SetRequestContextOnUIThread(
-      net::URLFetcher* url_fetcher, const WebRtcLogUploadDoneData& data);
-  void StartAndTrackRequestContext(
-      net::URLFetcher* url_fetcher, const WebRtcLogUploadDoneData& data);
+  void SetRequestContextOnUIThread(std::unique_ptr<net::URLFetcher>,
+                                   const WebRtcLogUploadDoneData& data);
+  void StartAndTrackRequestContext(std::unique_ptr<net::URLFetcher>,
+                                   const WebRtcLogUploadDoneData& data);
 
   void DecreaseLogCount();
 
