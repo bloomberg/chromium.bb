@@ -282,7 +282,8 @@ External library support:
   --enable-libxcb-shape    enable X11 grabbing shape rendering [autodetect]
   --enable-libxvid         enable Xvid encoding via xvidcore,
                            native MPEG-4/Xvid encoder exists [no]
-  --enable-libxml2         enable XML parsing using the C library libxml2 [no]
+  --enable-libxml2         enable XML parsing using the C library libxml2, needed
+                           for dash demuxing support [no]
   --enable-libzimg         enable z.lib, needed for zscale filter [no]
   --enable-libzmq          enable message passing via libzmq [no]
   --enable-libzvbi         enable teletext support via libzvbi [no]
@@ -303,6 +304,7 @@ External library support:
   --disable-sdl2           disable sdl2 [autodetect]
   --disable-securetransport disable Secure Transport, needed for TLS support
                            on OSX if openssl and gnutls are not used [autodetect]
+  --enable-vapoursynth     enable VapourSynth demuxer [no]
   --disable-xlib           disable xlib [autodetect]
   --disable-zlib           disable zlib [autodetect]
 
@@ -1724,6 +1726,7 @@ EXTERNAL_LIBRARY_LIST="
     mediacodec
     openal
     opengl
+    vapoursynth
 "
 
 HWACCEL_AUTODETECT_LIBRARY_LIST="
@@ -2236,6 +2239,7 @@ CONFIG_EXTRA="
     cbs_h264
     cbs_h265
     cbs_mpeg2
+    cbs_vp9
     dirac_parse
     dvprofile
     exif
@@ -2497,6 +2501,7 @@ threads_if_any="$THREADS_LIST"
 cbs_h264_select="cbs golomb"
 cbs_h265_select="cbs golomb"
 cbs_mpeg2_select="cbs"
+cbs_vp9_select="cbs"
 dct_select="rdft"
 dirac_parse_select="golomb"
 error_resilience_select="me_cmp"
@@ -2876,7 +2881,7 @@ qsvdec_select="qsv"
 qsvenc_select="qsv"
 qsvvpp_select="qsv"
 vaapi_encode_deps="vaapi"
-v4l2_m2m_deps_any="linux_videodev2_h"
+v4l2_m2m_deps="linux_videodev2_h sem_timedwait"
 
 hwupload_cuda_filter_deps="ffnvcodec"
 scale_npp_filter_deps="ffnvcodec libnpp"
@@ -2987,6 +2992,7 @@ hevc_metadata_bsf_select="cbs_h265"
 mjpeg2jpeg_bsf_select="jpegtables"
 mpeg2_metadata_bsf_select="cbs_mpeg2"
 trace_headers_bsf_select="cbs"
+vp9_metadata_bsf_select="cbs_vp9"
 
 # external libraries
 aac_at_decoder_deps="audiotoolbox"
@@ -3088,6 +3094,7 @@ libx265_encoder_deps="libx265"
 libxavs_encoder_deps="libxavs"
 libxvid_encoder_deps="libxvid"
 libzvbi_teletext_decoder_deps="libzvbi"
+vapoursynth_demuxer_deps="vapoursynth"
 videotoolbox_suggest="coreservices"
 videotoolbox_deps="corefoundation coremedia corevideo"
 videotoolbox_encoder_deps="videotoolbox VTCompressionSessionPrepareToEncodeFrames"
@@ -3222,8 +3229,7 @@ v4l2_outdev_suggest="libv4l2"
 vfwcap_indev_deps="vfw32 vfwcap_defines"
 xcbgrab_indev_deps="libxcb"
 xcbgrab_indev_suggest="libxcb_shm libxcb_shape libxcb_xfixes"
-xv_outdev_deps="X11_extensions_Xvlib_h XvGetPortAttribute"
-xv_outdev_extralibs="-lXv -lX11 -lXext"
+xv_outdev_deps="xlib"
 
 # protocols
 async_protocol_deps="threads"
@@ -3320,6 +3326,8 @@ elbg_filter_deps="avcodec"
 eq_filter_deps="gpl"
 fftfilt_filter_deps="avcodec"
 fftfilt_filter_select="rdft"
+fftdnoiz_filter_deps="avcodec"
+fftdnoiz_filter_select="fft"
 find_rect_filter_deps="avcodec avformat gpl"
 firequalizer_filter_deps="avcodec"
 firequalizer_filter_select="rdft"
@@ -3384,6 +3392,7 @@ spectrumsynth_filter_deps="avcodec"
 spectrumsynth_filter_select="fft"
 spp_filter_deps="gpl avcodec"
 spp_filter_select="fft idctdsp fdctdsp me_cmp pixblockdsp"
+srcnn_filter_deps="avformat"
 stereo3d_filter_deps="gpl"
 subtitles_filter_deps="avformat avcodec libass"
 super2xsai_filter_deps="gpl"
@@ -3979,8 +3988,7 @@ case "$toolchain" in
             cc_default="cl"
             cxx_default="cl"
         else
-            cc_default="c99wrap cl"
-            cxx_default="c99wrap cl"
+            die "Unsupported MSVC version (2013 or newer required)"
         fi
         ld_default="$source_path/compat/windows/mslink"
         nm_default="dumpbin -symbols"
@@ -5802,7 +5810,7 @@ check_func_headers windows.h Sleep
 check_func_headers windows.h VirtualAlloc
 check_func_headers glob.h glob
 enabled xlib &&
-    check_func_headers "X11/Xlib.h X11/extensions/Xvlib.h" XvGetPortAttribute -lXv -lX11 -lXext
+    check_lib xlib "X11/Xlib.h X11/extensions/Xvlib.h" XvGetPortAttribute -lXv -lX11 -lXext
 
 check_header direct.h
 check_header dirent.h
@@ -5886,8 +5894,10 @@ check_type "va/va.h va/va_enc_vp9.h"  "VAEncPictureParameterBufferVP9"
 check_type "vdpau/vdpau.h" "VdpPictureInfoHEVC"
 
 if ! disabled ffnvcodec; then
-    check_pkg_config ffnvcodec "ffnvcodec >= 8.0.14.1" \
-        "ffnvcodec/nvEncodeAPI.h ffnvcodec/dynlink_cuda.h ffnvcodec/dynlink_cuviddec.h ffnvcodec/dynlink_nvcuvid.h" ""
+    check_pkg_config ffnvcodec "ffnvcodec >= 8.1.24.2" \
+          "ffnvcodec/nvEncodeAPI.h ffnvcodec/dynlink_cuda.h ffnvcodec/dynlink_cuviddec.h ffnvcodec/dynlink_nvcuvid.h" "" || \
+        { test_pkg_config ffnvcodec_tmp "ffnvcodec < 8.1" "" "" && check_pkg_config ffnvcodec "ffnvcodec >= 8.0.14.2" \
+          "ffnvcodec/nvEncodeAPI.h ffnvcodec/dynlink_cuda.h ffnvcodec/dynlink_cuviddec.h ffnvcodec/dynlink_nvcuvid.h" ""; }
 fi
 
 check_cpp_condition winrt windows.h "!WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)"
@@ -5932,7 +5942,8 @@ if ! disabled pthreads && ! enabled w32threads && ! enabled os2threads; then
     fi
 fi
 
-enabled  zlib && check_lib zlib   zlib.h      zlibVersion    -lz
+enabled  zlib && { check_pkg_config zlib zlib "zlib.h" zlibVersion ||
+                   check_lib zlib   zlib.h      zlibVersion    -lz; }
 enabled bzlib && check_lib bzlib bzlib.h BZ2_bzlibVersion    -lbz2
 enabled  lzma && check_lib lzma   lzma.h lzma_version_number -llzma
 
@@ -5967,7 +5978,7 @@ enabled gnutls            && require_pkg_config gnutls gnutls gnutls/gnutls.h gn
 enabled jni               && { [ $target_os = "android" ] && check_header jni.h && enabled pthreads || die "ERROR: jni not found"; }
 enabled ladspa            && require_header ladspa.h
 enabled libaom            && require_pkg_config libaom "aom >= 0.1.0" aom/aom_codec.h aom_codec_version
-enabled lv2               && require_pkg_config lv2 lilv-0 "lilv-0/lilv/lilv.h" lilv_world_new
+enabled lv2               && require_pkg_config lv2 lilv-0 "lilv/lilv.h" lilv_world_new
 enabled libiec61883       && require libiec61883 libiec61883/iec61883.h iec61883_cmp_connect -lraw1394 -lavc1394 -lrom1394 -liec61883
 enabled libass            && require_pkg_config libass libass ass/ass.h ass_library_init
 enabled libbluray         && require_pkg_config libbluray libbluray libbluray/bluray.h bd_open
@@ -6005,7 +6016,8 @@ enabled libmfx            && { check_pkg_config libmfx libmfx "mfx/mfxvideo.h" M
                                { require libmfx "mfx/mfxvideo.h" MFXInit "-llibmfx $advapi32_extralibs" && warn "using libmfx without pkg-config"; } }
 enabled libmodplug        && require_pkg_config libmodplug libmodplug libmodplug/modplug.h ModPlug_Load
 enabled libmp3lame        && require "libmp3lame >= 3.98.3" lame/lame.h lame_set_VBR_quality -lmp3lame $libm_extralibs
-enabled libmysofa         && require libmysofa "mysofa.h" mysofa_load -lmysofa $zlib_extralibs
+enabled libmysofa         && { check_pkg_config libmysofa libmysofa mysofa.h mysofa_load ||
+                               require libmysofa mysofa.h mysofa_load -lmysofa $zlib_extralibs; }
 enabled libnpp            && { check_lib libnpp npp.h nppGetLibVersion -lnppig -lnppicc -lnppc ||
                                check_lib libnpp npp.h nppGetLibVersion -lnppi -lnppc ||
                                die "ERROR: libnpp not found"; }
@@ -6136,6 +6148,8 @@ enabled rkmpp             && { require_pkg_config rkmpp rockchip_mpp  rockchip/r
                                { enabled libdrm ||
                                  die "ERROR: rkmpp requires --enable-libdrm"; }
                              }
+enabled vapoursynth       && require_pkg_config vapoursynth "vapoursynth-script >= 42" VSScript.h vsscript_init
+
 
 if enabled gcrypt; then
     GCRYPT_CONFIG="${cross_prefix}libgcrypt-config"
@@ -6797,6 +6811,7 @@ enabled signature_filter    && prepend avfilter_deps "avcodec avformat"
 enabled smartblur_filter    && prepend avfilter_deps "swscale"
 enabled spectrumsynth_filter && prepend avfilter_deps "avcodec"
 enabled spp_filter          && prepend avfilter_deps "avcodec"
+enabled srcnn_filter        && prepend avfilter_deps "avformat"
 enabled subtitles_filter    && prepend avfilter_deps "avformat avcodec"
 enabled uspp_filter         && prepend avfilter_deps "avcodec"
 enabled zoompan_filter      && prepend avfilter_deps "swscale"

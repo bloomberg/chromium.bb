@@ -2958,7 +2958,7 @@ static int mov_read_stts(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     st->nb_frames= total_sample_count;
     if (duration)
-        st->duration= duration;
+        st->duration= FFMIN(st->duration, duration);
     sc->track_end = duration;
     return 0;
 }
@@ -3697,8 +3697,8 @@ static void mov_fix_index(MOVContext *mov, AVStream *st)
         }
     }
 
-    // Update av stream length
-    st->duration = edit_list_dts_entry_end - start_dts;
+    // Update av stream length, if it ends up shorter than the track's media duration
+    st->duration = FFMIN(st->duration, edit_list_dts_entry_end - start_dts);
     msc->start_pad = st->skip_samples;
 
     // Free the old index and the old CTTS structures
@@ -3925,6 +3925,9 @@ static void mov_build_index(MOVContext *mov, AVStream *st)
             st->codecpar->bit_rate = stream_size*8*sc->time_scale/st->duration;
     } else {
         unsigned chunk_samples, total = 0;
+
+        if (!sc->chunk_count)
+            return;
 
         // compute total chunk count
         for (i = 0; i < sc->stsc_count; i++) {
@@ -4171,7 +4174,7 @@ static int mov_read_trak(MOVContext *c, AVIOContext *pb, MOVAtom atom)
                st->index);
         return 0;
     }
-    if (sc->stsc_count && sc->stsc_data[ sc->stsc_count - 1 ].first > sc->chunk_count) {
+    if (sc->chunk_count && sc->stsc_count && sc->stsc_data[ sc->stsc_count - 1 ].first > sc->chunk_count) {
         av_log(c->fc, AV_LOG_ERROR, "stream %d, contradictionary STSC and STCO\n",
                st->index);
         return AVERROR_INVALIDDATA;

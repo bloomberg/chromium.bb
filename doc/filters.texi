@@ -585,6 +585,12 @@ adelay=0|500S|700S
 @end example
 @end itemize
 
+@section aderivative, aintegral
+
+Compute derivative/integral of audio stream.
+
+Applying both filters one after another produces original audio.
+
 @section aecho
 
 Apply echoing to the input audio.
@@ -5187,6 +5193,38 @@ input reaches end of stream. This will cause problems if your encoding
 pipeline drops frames. If you're trying to apply an image as an
 overlay to a video stream, consider the @var{overlay} filter instead.
 
+@section amplify
+
+Amplify differences between current pixel and pixels of adjacent frames in
+same pixel location.
+
+This filter accepts the following options:
+
+@table @option
+@item radius
+Set frame radius. Default is 2. Allowed range is from 1 to 63.
+For example radius of 3 will instruct filter to calculate average of 7 frames.
+
+@item factor
+Set factor to amplify difference. Default is 2. Allowed range is from 0 to 65535.
+
+@item threshold
+Set threshold for difference amplification. Any differrence greater or equal to
+this value will not alter source pixel. Default is 10.
+Allowed range is from 0 to 65535.
+
+@item low
+Set lower limit for changing source pixel. Default is 65535. Allowed range is from 0 to 65535.
+This option controls maximum possible value that will decrease source pixel value.
+
+@item high
+Set high limit for changing source pixel. Default is 65535. Allowed range is from 0 to 65535.
+This option controls maximum possible value that will increase source pixel value.
+
+@item planes
+Set which planes to filter. Default is all. Allowed range is from 0 to 15.
+@end table
+
 @section ass
 
 Same as the @ref{subtitles} filter, except that it doesn't require libavcodec
@@ -5247,7 +5285,7 @@ Threshold A is designed to react on abrupt changes in the input signal and
 threshold B is designed to react on continuous changes in the input signal.
 
 @item s
-Set number of frames filter will use for averaging. Default is 33. Must be odd
+Set number of frames filter will use for averaging. Default is 9. Must be odd
 number in range [5, 129].
 
 @item p
@@ -6384,7 +6422,7 @@ colorspace=smpte240m
 
 @section convolution
 
-Apply convolution 3x3, 5x5 or 7x7 filter.
+Apply convolution of 3x3, 5x5, 7x7 or horizontal/vertical up to 49 elements.
 
 The filter accepts the following options:
 
@@ -6394,13 +6432,15 @@ The filter accepts the following options:
 @item 2m
 @item 3m
 Set matrix for each plane.
-Matrix is sequence of 9, 25 or 49 signed integers.
+Matrix is sequence of 9, 25 or 49 signed integers in @var{square} mode,
+and from 1 to 49 odd number of signed integers in @var{row} mode.
 
 @item 0rdiv
 @item 1rdiv
 @item 2rdiv
 @item 3rdiv
 Set multiplier for calculated value for each plane.
+If unset or 0, it will be sum of all matrix elements.
 
 @item 0bias
 @item 1bias
@@ -6408,6 +6448,13 @@ Set multiplier for calculated value for each plane.
 @item 3bias
 Set bias for each plane. This value is added to the result of the multiplication.
 Useful for making the overall image brighter or darker. Default is 0.0.
+
+@item 0mode
+@item 1mode
+@item 2mode
+@item 3mode
+Set matrix mode for each plane. Can be @var{square}, @var{row} or @var{column}.
+Default is @var{square}.
 @end table
 
 @subsection Examples
@@ -8235,9 +8282,14 @@ Draw white/gray wires on black background.
 
 @item colormix
 Mix the colors to create a paint/cartoon effect.
-@end table
 
+@item canny
+Apply Canny edge detector on all selected planes.
+@end table
 Default value is @var{wires}.
+
+@item planes
+Select planes for filtering. By default all available planes are filtered.
 @end table
 
 @subsection Examples
@@ -8649,6 +8701,40 @@ fftfilt=dc_Y=0:weight_Y='exp(-4 * ((Y+X)/(W+H)))'
 @end example
 
 @end itemize
+
+@section fftdnoiz
+Denoise frames using 3D FFT (frequency domain filtering).
+
+The filter accepts the following options:
+
+@table @option
+@item sigma
+Set the noise sigma constant. This sets denoising strength.
+Default value is 1. Allowed range is from 0 to 30.
+Using very high sigma with low overlap may give blocking artifacts.
+
+@item amount
+Set amount of denoising. By default all detected noise is reduced.
+Default value is 1. Allowed range is from 0 to 1.
+
+@item block
+Set size of block, Default is 4, can be 3, 4, 5 or 6.
+Actual size of block in pixels is 2 to power of @var{block}, so by default
+block size in pixels is 2^4 which is 16.
+
+@item overlap
+Set block overlap. Default is 0.5. Allowed range is from 0.2 to 0.8.
+
+@item prev
+Set number of previous frames to use for denoising. By default is set to 0.
+
+@item next
+Set number of next frames to to use for denoising. By default is set to 0.
+
+@item planes
+Set planes which will be filtered, by default are all available filtered
+except alpha.
+@end table
 
 @section field
 
@@ -11152,7 +11238,14 @@ The number of inputs. If unspecified, it defaults to 2.
 
 @item weights
 Specify weight of each input video stream as sequence.
-Each weight is separated by space.
+Each weight is separated by space. If number of weights
+is smaller than number of @var{frames} last specified
+weight will be used for all remaining unset weights.
+
+@item scale
+Specify scale, if it is set it will be multiplied with sum
+of each weight multiplied with pixel values to give final destination
+pixel value. By default @var{scale} is auto scaled to sum of weights.
 
 @item duration
 Specify how end of stream is determined.
@@ -15561,6 +15654,50 @@ Vertical low-pass filtering can only be enabled for @option{mode}
 
 @end table
 
+@section tmix
+
+Mix successive video frames.
+
+A description of the accepted options follows.
+
+@table @option
+@item frames
+The number of successive frames to mix. If unspecified, it defaults to 3.
+
+@item weights
+Specify weight of each input video frame.
+Each weight is separated by space. If number of weights is smaller than
+number of @var{frames} last specified weight will be used for all remaining
+unset weights.
+
+@item scale
+Specify scale, if it is set it will be multiplied with sum
+of each weight multiplied with pixel values to give final destination
+pixel value. By default @var{scale} is auto scaled to sum of weights.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Average 7 successive frames:
+@example
+tmix=frames=7:weights="1 1 1 1 1 1 1"
+@end example
+
+@item
+Apply simple temporal convolution:
+@example
+tmix=frames=3:weights="-1 3 -1"
+@end example
+
+@item
+Similar as above but only showing temporal differences:
+@example
+tmix=frames=3:weights="-1 2 -1":scale=1
+@end example
+@end itemize
+
 @section tonemap
 Tone map colors from different dynamic ranges.
 
@@ -17688,13 +17825,15 @@ ffplay -f lavfi life=s=300x200:mold=10:r=60:ratio=0.1:death_color=#C83232:life_c
 @anchor{color}
 @anchor{haldclutsrc}
 @anchor{nullsrc}
+@anchor{pal75bars}
+@anchor{pal100bars}
 @anchor{rgbtestsrc}
 @anchor{smptebars}
 @anchor{smptehdbars}
 @anchor{testsrc}
 @anchor{testsrc2}
 @anchor{yuvtestsrc}
-@section allrgb, allyuv, color, haldclutsrc, nullsrc, rgbtestsrc, smptebars, smptehdbars, testsrc, testsrc2, yuvtestsrc
+@section allrgb, allyuv, color, haldclutsrc, nullsrc, pal75bars, pal100bars, rgbtestsrc, smptebars, smptehdbars, testsrc, testsrc2, yuvtestsrc
 
 The @code{allrgb} source returns frames of size 4096x4096 of all rgb colors.
 
@@ -17708,6 +17847,12 @@ The @code{haldclutsrc} source provides an identity Hald CLUT. See also
 The @code{nullsrc} source returns unprocessed video frames. It is
 mainly useful to be employed in analysis / debugging tools, or as the
 source for filters which ignore the input data.
+
+The @code{pal75bars} source generates a color bars pattern, based on
+EBU PAL recommendations with 75% color levels.
+
+The @code{pal100bars} source generates a color bars pattern, based on
+EBU PAL recommendations with 100% color levels.
 
 The @code{rgbtestsrc} source generates an RGB test pattern useful for
 detecting RGB vs BGR issues. You should see a red, green and blue

@@ -98,6 +98,14 @@ static VANCLineNumber vanc_line_numbers[] = {
     {bmdModeUnknown, 0, -1, -1, -1}
 };
 
+extern "C" {
+static void decklink_object_free(void *opaque, uint8_t *data)
+{
+    IUnknown *obj = (class IUnknown *)opaque;
+    obj->Release();
+}
+}
+
 static int get_vanc_line_idx(BMDDisplayMode mode)
 {
     unsigned int i;
@@ -467,16 +475,19 @@ static int avpacket_queue_put(AVPacketQueue *q, AVPacket *pkt)
 
     // Drop Packet if queue size is > maximum queue size
     if (avpacket_queue_size(q) > (uint64_t)q->max_q_size) {
+        av_packet_unref(pkt);
         av_log(q->avctx, AV_LOG_WARNING,  "Decklink input buffer overrun!\n");
         return -1;
     }
     /* ensure the packet is reference counted */
     if (av_packet_make_refcounted(pkt) < 0) {
+        av_packet_unref(pkt);
         return -1;
     }
 
     pkt1 = (AVPacketList *)av_malloc(sizeof(AVPacketList));
     if (!pkt1) {
+        av_packet_unref(pkt);
         return -1;
     }
     av_packet_move_ref(&pkt1->pkt, pkt);
@@ -796,6 +807,10 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
                 }
             }
         }
+
+        pkt.buf = av_buffer_create(pkt.data, pkt.size, decklink_object_free, videoFrame, 0);
+        if (pkt.buf)
+            videoFrame->AddRef();
 
         if (avpacket_queue_put(&ctx->queue, &pkt) < 0) {
             ++ctx->dropped;
