@@ -142,6 +142,8 @@ build/android/gradle/generate_gradle.py --native-target //chrome/android:monochr
     * Commit changes and reformat
         * Help -&gt; Find Action -&gt; "Commit Changes"
         * Check "Reformat code" & "Optimize imports" and commit
+* Change theme from GTK+ to another one to avoid invisible menus.
+    * Help -&gt; Find Action -&gt; "Theme: Settings > Appearance"
 
 ### Useful Shortcuts
 
