@@ -38,10 +38,6 @@ specific_include_rules = {
   ".*test.*": [
    "!ash",
   ],
-  # TODO(mash): http://crbug.com/839265.
-  "preferences\.cc": [
-    "+ash/shell.h",
-  ],
   "chrome_browser_main_chromeos\.cc": [
     # TODO(mash): Support EventRewriters, http://crbug.com/647781.
     "+ash/events/event_rewriter_controller.h",

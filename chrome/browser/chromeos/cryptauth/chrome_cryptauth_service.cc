@@ -37,8 +37,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/version_info/version_info.h"
-#include "ui/display/manager/display_manager.h"
-#include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace chromeos {

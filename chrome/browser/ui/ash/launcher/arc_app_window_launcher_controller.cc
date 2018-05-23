@@ -26,8 +26,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/base/base_window.h"
-#include "ui/display/display.h"
-#include "ui/display/manager/display_manager.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
