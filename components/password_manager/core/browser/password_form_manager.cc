@@ -159,14 +159,13 @@ void SetFieldLabelsOnSave(const autofill::ServerFieldType password_type,
 }
 
 // Label username and password fields with autofill types in |form_structure|
-// based on |field_types|. The function also adds the types to
-// |available_field_types|. For field of |USERNAME| type, the username vote
-// type will be set to |username_vote_type|.
+// based on |field_types|, and vote types based on |vote_types|. The function
+// also adds the types to |available_field_types|. For fields of |USERNAME|
+// type, a vote type must exist.
 void LabelFields(const FieldTypeMap& field_types,
+                 const VoteTypeMap& vote_types,
                  FormStructure* form_structure,
-                 autofill::ServerFieldTypeSet* available_field_types,
-                 autofill::AutofillUploadContents::Field::UsernameVoteType
-                     username_vote_type) {
+                 autofill::ServerFieldTypeSet* available_field_types) {
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     autofill::AutofillField* field = form_structure->field(i);
 
@@ -176,12 +175,14 @@ void LabelFields(const FieldTypeMap& field_types,
       if (iter != field_types.end()) {
         type = iter->second;
         available_field_types->insert(type);
-        if (type == autofill::USERNAME) {
-          field->set_username_vote_type(username_vote_type);
-          DCHECK_NE(autofill::AutofillUploadContents::Field::NO_INFORMATION,
-                    username_vote_type);
-        }
       }
+
+      auto vote_type_iter = vote_types.find(field->name);
+      if (vote_type_iter != vote_types.end())
+        field->set_vote_type(vote_type_iter->second);
+      DCHECK(type != autofill::USERNAME ||
+             field->vote_type() !=
+                 autofill::AutofillUploadContents::Field::NO_INFORMATION);
     }
 
     autofill::ServerFieldTypeSet types;
@@ -669,6 +670,11 @@ void PasswordFormManager::ProcessUpdate() {
   // Update() method.
   if (!observed_form_.IsPossibleChangePasswordForm())
     SendVoteOnCredentialsReuse(observed_form_, &pending_credentials_);
+
+  // TODO(crbug.com/840384): If there is no username, we should vote again when
+  // the credential is updated with a username.
+  if (pending_credentials_.times_used == 1)
+    UploadFirstLoginVotes(*submitted_form_);
 }
 
 bool PasswordFormManager::FindUsernameInOtherPossibleUsernames(
@@ -778,7 +784,7 @@ bool PasswordFormManager::UploadPasswordVote(
   autofill::ServerFieldTypeSet available_field_types;
   // A map from field names to field types.
   FieldTypeMap field_types;
-  autofill::AutofillUploadContents::Field::UsernameVoteType username_vote_type =
+  auto username_vote_type =
       autofill::AutofillUploadContents::Field::NO_INFORMATION;
   if (autofill_type != autofill::USERNAME) {
     if (has_autofill_vote) {
@@ -824,7 +830,6 @@ bool PasswordFormManager::UploadPasswordVote(
             autofill::AutofillUploadContents::Field::CREDENTIALS_REUSED;
       }
     }
-
   } else {  // User overwrites username.
     field_types[form_to_upload.username_element] = autofill::USERNAME;
     field_types[form_to_upload.password_element] =
@@ -832,8 +837,9 @@ bool PasswordFormManager::UploadPasswordVote(
     username_vote_type =
         autofill::AutofillUploadContents::Field::USERNAME_OVERWRITTEN;
   }
-  LabelFields(field_types, &form_structure, &available_field_types,
-              username_vote_type);
+  LabelFields(field_types,
+              {{form_to_upload.username_element, username_vote_type}},
+              &form_structure, &available_field_types);
 
   // Force uploading as these events are relatively rare and we want to make
   // sure to receive them.
@@ -904,6 +910,53 @@ void PasswordFormManager::AddFormClassifierVote(
     } else {
       field->set_form_classifier_outcome(
           autofill::AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
+    }
+  }
+}
+
+// TODO(crbug.com/840384): Share common code with UploadPasswordVote.
+void PasswordFormManager::UploadFirstLoginVotes(
+    const PasswordForm& form_to_upload) {
+  autofill::AutofillManager* autofill_manager =
+      client_->GetAutofillManagerForMainFrame();
+  if (!autofill_manager || !autofill_manager->download_manager())
+    return;
+
+  FormStructure form_structure(form_to_upload.form_data);
+  if (!autofill_manager->ShouldUploadForm(form_structure))
+    return;
+
+  autofill::ServerFieldTypeSet available_field_types;
+  LabelFields({{form_to_upload.username_element, autofill::USERNAME},
+               {form_to_upload.password_element, autofill::PASSWORD}},
+              {{form_to_upload.username_element,
+                autofill::AutofillUploadContents::Field::FIRST_USE},
+               {form_to_upload.password_element,
+                autofill::AutofillUploadContents::Field::FIRST_USE}},
+              &form_structure, &available_field_types);
+  SetKnownValueFlag(&form_structure);
+
+  // Force uploading as these events are relatively rare and we want to make
+  // sure to receive them.
+  form_structure.set_upload_required(UPLOAD_REQUIRED);
+
+  if (password_manager_util::IsLoggingActive(client_)) {
+    BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
+    logger.LogFormStructure(Logger::STRING_FORM_VOTES, form_structure);
+  }
+
+  autofill_manager->download_manager()->StartUploadRequest(
+      form_structure, false /* was_autofilled */, available_field_types,
+      std::string(), true /* observed_submission */);
+}
+
+void PasswordFormManager::SetKnownValueFlag(autofill::FormStructure* form) {
+  for (auto& field : *form) {
+    if (field->value.empty())
+      continue;
+    if (pending_credentials_.username_value == field->value ||
+        pending_credentials_.password_value == field->value) {
+      field->properties_mask |= autofill::FieldPropertiesFlags::KNOWN_VALUE;
     }
   }
 }
@@ -1348,14 +1401,15 @@ void PasswordFormManager::SendVotesOnSave() {
   // Credentials that have been previously used (e.g., PSL matches) are checked
   // to see if they are valid account creation forms.
   if (pending_credentials_.times_used == 0) {
-    autofill::ServerFieldType password_type = autofill::PASSWORD;
-    UploadPasswordVote(pending_credentials_, password_type, std::string());
+    UploadPasswordVote(pending_credentials_, autofill::PASSWORD, std::string());
     if (username_correction_vote_) {
       UploadPasswordVote(
           *username_correction_vote_, autofill::USERNAME,
           FormStructure(observed_form_.form_data).FormSignatureAsStr());
     }
   } else {
+    if (pending_credentials_.times_used == 1)
+      UploadFirstLoginVotes(*submitted_form_);
     SendVoteOnCredentialsReuse(observed_form_, &pending_credentials_);
   }
 }

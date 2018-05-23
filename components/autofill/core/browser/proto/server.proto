@@ -109,17 +109,34 @@ message AutofillUploadContents {
     // the field is absent.
     optional bool generated_password_changed = 22;
 
-    enum UsernameVoteType {
+    enum VoteType {
       NO_INFORMATION = 0;
+      // A credential saved on one form (typically a signup form) was used on a
+      // login form. The vote applies to the first (signup) form.
       CREDENTIALS_REUSED = 1;
+      // When reusing a credential, the username value is not the saved
+      // username, but another value, which appeared on the form where we saved.
+      // The correct field is voted for.
       USERNAME_OVERWRITTEN = 2;
+      // In the save prompt, the user corrected the username value to another
+      // value from the form. The new field is voted for.
       USERNAME_EDITED = 3;
+      // The username field was detected by the base heuristic (take the last
+      // non-password field before the first password field). The value is not
+      // used at this point.
       BASE_HEURISTIC = 4;
+      // The username field was detected by HTML-based detector. The value is
+      // not used at this point.
       HTML_CLASSIFIER = 5;
+      // A saved credential was used for the first time on a submitted form. The
+      // vote applies to the form being submitted.
+      FIRST_USE = 6;
     }
-    // The type of username vote. If |autofill_type| != USERNAME, then the field
-    // is missed.
-    optional UsernameVoteType username_vote_type = 23;
+
+    // The type of password-related vote. If |autofill_type| is not a USERNAME
+    // or any PASSWORD vote, then the field is absent. This field describes the
+    // context of the vote.
+    optional VoteType vote_type = 23;
   }
   // Signature of the form action host (e.g. Hash64Bit("example.com")).
   optional fixed64 action_signature = 13;

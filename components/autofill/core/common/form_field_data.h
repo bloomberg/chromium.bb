@@ -31,7 +31,10 @@ enum FieldPropertiesFlags {
   AUTOFILLED = 1u << 1,
   HAD_FOCUS = 1u << 2,
   // Use this flag, if some error occurred in flags processing.
-  ERROR_OCCURRED = 1u << 3
+  ERROR_OCCURRED = 1u << 3,
+  // On submission, the value of the field was recognised as a value which is
+  // already stored.
+  KNOWN_VALUE = 1u << 4
 };
 
 // FieldPropertiesMask is used to contain combinations of FieldPropertiesFlags

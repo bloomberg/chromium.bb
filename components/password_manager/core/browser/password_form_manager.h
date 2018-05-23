@@ -40,6 +40,9 @@ class PasswordManagerClient;
 
 // A map from field names to field types.
 using FieldTypeMap = std::map<base::string16, autofill::ServerFieldType>;
+// A map from field names to field vote types.
+using VoteTypeMap =
+    std::map<base::string16, autofill::AutofillUploadContents::Field::VoteType>;
 
 // This class helps with filling the observed form (both HTML and from HTTP
 // auth) and with saving/updating the stored information about it.
@@ -336,6 +339,14 @@ class PasswordFormManager : public PasswordFormManagerForUI,
 
   // Adds a vote from HTML parsing based form classifier to |form_structure|.
   void AddFormClassifierVote(autofill::FormStructure* form_structure);
+
+  // Sets the known-value flag for each field, indicating that the field
+  // contained a previously stored credential on submission.
+  void SetKnownValueFlag(autofill::FormStructure* form_to_upload);
+
+  // Sends USERNAME and PASSWORD votes, when a credential is used to login for
+  // the first time. |form_to_upload| is the submitted login form.
+  void UploadFirstLoginVotes(const autofill::PasswordForm& form_to_upload);
 
   // Create pending credentials from provisionally saved form and forms received
   // from password store.

@@ -140,12 +140,11 @@ class AutofillField : public FormFieldData {
     return form_classifier_outcome_;
   }
 
-  void set_username_vote_type(
-      AutofillUploadContents::Field::UsernameVoteType type) {
-    username_vote_type_ = type;
+  void set_vote_type(AutofillUploadContents::Field::VoteType type) {
+    vote_type_ = type;
   }
-  AutofillUploadContents::Field::UsernameVoteType username_vote_type() const {
-    return username_vote_type_;
+  AutofillUploadContents::Field::VoteType vote_type() const {
+    return vote_type_;
   }
 
  private:
@@ -212,9 +211,10 @@ class AutofillField : public FormFieldData {
   // The outcome of HTML parsing based form classifier.
   AutofillUploadContents::Field::FormClassifierOutcome form_classifier_outcome_;
 
-  // The username vote type, if the autofill type is USERNAME. Otherwise, the
-  // field is ignored.
-  AutofillUploadContents::Field::UsernameVoteType username_vote_type_;
+  // The vote type, if the autofill type is USERNAME or any password vote.
+  // Otherwise, the field is ignored. |vote_type_| provides context as to what
+  // triggered the vote.
+  AutofillUploadContents::Field::VoteType vote_type_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillField);
 };
