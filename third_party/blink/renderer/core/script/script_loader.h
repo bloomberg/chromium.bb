@@ -121,6 +121,11 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // please use with care. (Method is virtual to support testing.)
   virtual PendingScript* GetPendingScriptIfControlledByScriptRunner();
 
+  // Return non-null if controlled by ScriptRunner, or null otherwise.
+  // Only for ScriptRunner::MovePendingScript() and should be removed once
+  // crbug.com/721914 is fixed.
+  PendingScript* GetPendingScriptIfControlledByScriptRunnerForCrossDocMove();
+
  protected:
   ScriptLoader(ScriptElementBase*, bool created_by_parser, bool is_evaluated);
 

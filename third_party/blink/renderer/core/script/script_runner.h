@@ -39,6 +39,7 @@
 namespace blink {
 
 class Document;
+class PendingScript;
 class ScriptLoader;
 
 class CORE_EXPORT ScriptRunner final
@@ -49,14 +50,14 @@ class CORE_EXPORT ScriptRunner final
     return new ScriptRunner(document);
   }
 
-  void QueueScriptForExecution(ScriptLoader*);
+  void QueueScriptForExecution(PendingScript*);
   bool HasPendingScripts() const {
     return !pending_in_order_scripts_.IsEmpty() ||
            !pending_async_scripts_.IsEmpty();
   }
   void Suspend();
   void Resume();
-  void NotifyScriptReady(ScriptLoader*);
+  void NotifyScriptReady(PendingScript*);
   void NotifyScriptStreamerFinished();
 
   static void MovePendingScript(Document&, Document&, ScriptLoader*);
@@ -70,8 +71,8 @@ class CORE_EXPORT ScriptRunner final
 
   explicit ScriptRunner(Document*);
 
-  void MovePendingScript(ScriptRunner*, ScriptLoader*);
-  bool RemovePendingInOrderScript(ScriptLoader*);
+  void MovePendingScript(ScriptRunner*, PendingScript*);
+  bool RemovePendingInOrderScript(PendingScript*);
   void ScheduleReadyInOrderScripts();
 
   void PostTask(const base::Location&);
@@ -87,18 +88,19 @@ class CORE_EXPORT ScriptRunner final
   void ExecuteTask();
 
   // Try to start streaming a specific script or any available script.
-  void TryStream(ScriptLoader*);
+  void TryStream(PendingScript*);
   void TryStreamAny();
-  bool DoTryStream(ScriptLoader*);  // Implementation for both Try* methods.
+  bool DoTryStream(PendingScript*);  // Implementation for both Try* methods.
 
   Member<Document> document_;
 
-  HeapDeque<TraceWrapperMember<ScriptLoader>> pending_in_order_scripts_;
-  HeapHashSet<TraceWrapperMember<ScriptLoader>> pending_async_scripts_;
+  HeapDeque<TraceWrapperMember<PendingScript>> pending_in_order_scripts_;
+  HeapHashSet<TraceWrapperMember<PendingScript>> pending_async_scripts_;
 
   // http://www.whatwg.org/specs/web-apps/current-work/#set-of-scripts-that-will-execute-as-soon-as-possible
-  HeapDeque<TraceWrapperMember<ScriptLoader>> async_scripts_to_execute_soon_;
-  HeapDeque<TraceWrapperMember<ScriptLoader>> in_order_scripts_to_execute_soon_;
+  HeapDeque<TraceWrapperMember<PendingScript>> async_scripts_to_execute_soon_;
+  HeapDeque<TraceWrapperMember<PendingScript>>
+      in_order_scripts_to_execute_soon_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
