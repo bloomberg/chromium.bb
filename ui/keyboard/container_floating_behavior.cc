@@ -301,11 +301,12 @@ bool ContainerFloatingBehavior::TextBlurHidesKeyboard() const {
   return true;
 }
 
-bool ContainerFloatingBehavior::BoundsObscureUsableRegion() const {
-  return false;
+gfx::Rect ContainerFloatingBehavior::GetOccludedBounds(
+    const gfx::Rect& visual_bounds_in_screen) const {
+  return {};
 }
 
-bool ContainerFloatingBehavior::BoundsAffectWorkspaceLayout() const {
+bool ContainerFloatingBehavior::OccludedBoundsAffectWorkspaceLayout() const {
   return false;
 }
 

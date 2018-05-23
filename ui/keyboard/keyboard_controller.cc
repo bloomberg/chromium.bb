@@ -270,19 +270,19 @@ aura::Window* KeyboardController::GetContainerWindowWithoutCreationForTest() {
 
 void KeyboardController::NotifyContentsBoundsChanging(
     const gfx::Rect& new_bounds) {
-  current_keyboard_bounds_ = new_bounds;
+  visual_bounds_in_screen_ = new_bounds;
   if (ui_->HasContentsWindow() && ui_->GetContentsWindow()->IsVisible()) {
     notification_manager_.SendNotifications(
-        container_behavior_->BoundsObscureUsableRegion(),
-        container_behavior_->BoundsAffectWorkspaceLayout(), keyboard_locked(),
-        new_bounds, observer_list_);
+        container_behavior_->GetOccludedBounds(new_bounds),
+        container_behavior_->OccludedBoundsAffectWorkspaceLayout(),
+        keyboard_locked(), new_bounds, observer_list_);
 
     if (keyboard::IsKeyboardOverscrollEnabled())
       ui_->InitInsets(new_bounds);
     else
       ui_->ResetInsets();
   } else {
-    current_keyboard_bounds_ = gfx::Rect();
+    visual_bounds_in_screen_ = gfx::Rect();
   }
 }
 
@@ -708,9 +708,8 @@ void KeyboardController::
   // Notify observers after animation finished to prevent reveal desktop
   // background during animation.
   NotifyContentsBoundsChanging(container_->bounds());
-  ui_->EnsureCaretInWorkArea(container_behavior_->BoundsObscureUsableRegion()
-                                 ? current_keyboard_bounds_
-                                 : gfx::Rect());
+  ui_->EnsureCaretInWorkArea(
+      container_behavior_->GetOccludedBounds(container_->bounds()));
 }
 
 void KeyboardController::NotifyKeyboardConfigChanged() {
@@ -786,10 +785,8 @@ void KeyboardController::ReportLingeringState() {
                             state_, KeyboardControllerState::COUNT);
 }
 
-gfx::Rect KeyboardController::GetWorkspaceObscuringBounds() const {
-  if (keyboard_visible() && container_behavior_->BoundsObscureUsableRegion())
-    return current_keyboard_bounds_;
-  return gfx::Rect();
+gfx::Rect KeyboardController::GetWorkspaceOccludedBounds() const {
+  return container_behavior_->GetOccludedBounds(visual_bounds_in_screen_);
 }
 
 gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
@@ -797,8 +794,9 @@ gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
   // temporarily overridden by a static field in certain lock screen contexts.
   // Furthermore, floating keyboard should never affect layout.
   if (keyboard_visible() && !keyboard::IsKeyboardOverscrollEnabled() &&
-      container_behavior_->GetType() != ContainerType::FLOATING) {
-    return current_keyboard_bounds_;
+      container_behavior_->GetType() != ContainerType::FLOATING &&
+      container_behavior_->GetType() != ContainerType::FULLSCREEN) {
+    return visual_bounds_in_screen_;
   }
   return gfx::Rect();
 }

@@ -55,8 +55,9 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
                           const gfx::Rect& display_bounds) override;
   ContainerType GetType() const override;
   bool TextBlurHidesKeyboard() const override;
-  bool BoundsObscureUsableRegion() const override;
-  bool BoundsAffectWorkspaceLayout() const override;
+  gfx::Rect GetOccludedBounds(
+      const gfx::Rect& visual_bounds_in_screen) const override;
+  bool OccludedBoundsAffectWorkspaceLayout() const override;
   bool SetDraggableArea(const gfx::Rect& rect) override;
 
   // Calculate the position of the keyboard for when it is being shown.

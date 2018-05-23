@@ -27,7 +27,7 @@ bool ValueNotificationConsolidator<T>::ShouldSendNotification(
 NotificationManager::NotificationManager() {}
 
 void NotificationManager::SendNotifications(
-    bool bounds_obscure_usable_region,
+    const gfx::Rect& occluded_bounds,
     bool bounds_affect_layout,
     bool is_locked,
     const gfx::Rect& bounds,
@@ -39,10 +39,8 @@ void NotificationManager::SendNotifications(
   bool send_visual_bounds_notification =
       ShouldSendVisualBoundsNotification(bounds);
 
-  const gfx::Rect occluded_region =
-      bounds_obscure_usable_region ? bounds : gfx::Rect();
   bool send_occluded_bounds_notification =
-      ShouldSendOccludedBoundsNotification(occluded_region);
+      ShouldSendOccludedBoundsNotification(occluded_bounds);
 
   const gfx::Rect workspace_layout_offset_region =
       bounds_affect_layout ? bounds : gfx::Rect();
@@ -54,7 +52,7 @@ void NotificationManager::SendNotifications(
   state.is_available = is_available;
   state.is_locked = is_locked;
   state.visual_bounds = bounds;
-  state.occluded_bounds = occluded_region;
+  state.occluded_bounds = occluded_bounds;
   state.displaced_bounds = workspace_layout_offset_region;
 
   for (KeyboardControllerObserver& observer : observers) {
@@ -65,7 +63,7 @@ void NotificationManager::SendNotifications(
       observer.OnKeyboardVisibleBoundsChanged(bounds);
 
     if (send_occluded_bounds_notification)
-      observer.OnKeyboardWorkspaceOccludedBoundsChanged(occluded_region);
+      observer.OnKeyboardWorkspaceOccludedBoundsChanged(occluded_bounds);
 
     if (send_displaced_bounds_notification) {
       observer.OnKeyboardWorkspaceDisplacingBoundsChanged(

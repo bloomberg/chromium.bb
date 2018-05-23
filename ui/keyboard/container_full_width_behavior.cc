@@ -112,11 +112,12 @@ bool ContainerFullWidthBehavior::TextBlurHidesKeyboard() const {
   return !controller_->keyboard_locked();
 }
 
-bool ContainerFullWidthBehavior::BoundsObscureUsableRegion() const {
-  return true;
+gfx::Rect ContainerFullWidthBehavior::GetOccludedBounds(
+    const gfx::Rect& visual_bounds_in_screen) const {
+  return visual_bounds_in_screen;
 }
 
-bool ContainerFullWidthBehavior::BoundsAffectWorkspaceLayout() const {
+bool ContainerFullWidthBehavior::OccludedBoundsAffectWorkspaceLayout() const {
   return controller_->keyboard_locked();
 }
 
