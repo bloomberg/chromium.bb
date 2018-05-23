@@ -199,7 +199,8 @@ bool SVGRootInlineBox::NodeAtPoint(HitTestResult& result,
                                    const LayoutPoint& accumulated_offset,
                                    LayoutUnit line_top,
                                    LayoutUnit line_bottom) {
-  for (InlineBox* leaf = FirstLeafChild(); leaf; leaf = leaf->NextLeafChild()) {
+  // Iterate the text boxes in reverse so that the top-most node will be considered first.
+  for (InlineBox* leaf = LastLeafChild(); leaf; leaf = leaf->PrevLeafChild()) {
     if (!leaf->IsSVGInlineTextBox())
       continue;
     if (leaf->NodeAtPoint(result, location_in_container, accumulated_offset,
