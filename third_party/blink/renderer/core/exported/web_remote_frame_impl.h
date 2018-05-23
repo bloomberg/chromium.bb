@@ -63,7 +63,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void SetCcLayer(cc::Layer*, bool prevent_contents_opaque_changes) override;
   void SetReplicatedOrigin(
       const WebSecurityOrigin&,
-      bool is_potentially_trustworthy_unique_origin) override;
+      bool is_potentially_trustworthy_opaque_origin) override;
   void SetReplicatedSandboxFlags(WebSandboxFlags) override;
   void SetReplicatedName(const WebString&) override;
   void SetReplicatedFeaturePolicyHeader(

@@ -205,11 +205,11 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::FromFrame(RemoteFrame& frame) {
 
 void WebRemoteFrameImpl::SetReplicatedOrigin(
     const WebSecurityOrigin& origin,
-    bool is_potentially_trustworthy_unique_origin) {
+    bool is_potentially_trustworthy_opaque_origin) {
   DCHECK(GetFrame());
   scoped_refptr<SecurityOrigin> security_origin = origin.Get()->IsolatedCopy();
-  security_origin->SetUniqueOriginIsPotentiallyTrustworthy(
-      is_potentially_trustworthy_unique_origin);
+  security_origin->SetOpaqueOriginIsPotentiallyTrustworthy(
+      is_potentially_trustworthy_opaque_origin);
   GetFrame()->GetSecurityContext()->SetReplicatedOrigin(security_origin);
 
   // If the origin of a remote frame changed, the accessibility object for the

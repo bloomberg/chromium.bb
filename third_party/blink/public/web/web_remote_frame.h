@@ -69,7 +69,7 @@ class WebRemoteFrame : public WebFrame {
   // Set security origin replicated from another process.
   virtual void SetReplicatedOrigin(
       const WebSecurityOrigin&,
-      bool is_potentially_trustworthy_unique_origin) = 0;
+      bool is_potentially_trustworthy_opaque_origin) = 0;
 
   // Set sandbox flags replicated from another process.
   virtual void SetReplicatedSandboxFlags(WebSandboxFlags) = 0;

@@ -5284,7 +5284,7 @@ const KURL Document::SiteForCookies() const {
     return ImportsController()->Master()->SiteForCookies();
 
   if (!GetFrame())
-    return SecurityOrigin::UrlWithUniqueSecurityOrigin();
+    return SecurityOrigin::UrlWithUniqueOpaqueOrigin();
 
   // TODO(mkwst): This doesn't correctly handle sandboxed documents; we want to
   // look at their URL, but we can't because we don't know what it is.
@@ -5299,7 +5299,7 @@ const KURL Document::SiteForCookies() const {
     if (origin)
       top_document_url = KURL(NullURL(), origin->ToString());
     else
-      top_document_url = SecurityOrigin::UrlWithUniqueSecurityOrigin();
+      top_document_url = SecurityOrigin::UrlWithUniqueOpaqueOrigin();
   }
 
   if (SchemeRegistry::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
@@ -5307,8 +5307,9 @@ const KURL Document::SiteForCookies() const {
     return top_document_url;
 
   // We're intentionally using the URL of each document rather than the
-  // document's SecurityOrigin.  Sandboxing a document into a unique origin
-  // shouldn't effect first-/third-party status for cookies and site data.
+  // document's SecurityOrigin. A sandboxed document has a unique opaque
+  // origin, but that shouldn't affect first-/third-party status for cookies
+  // and site data.
   const OriginAccessEntry& access_entry =
       top.IsLocalFrame()
           ? ToLocalFrame(top).GetDocument()->AccessEntryFromURL()
@@ -5330,7 +5331,7 @@ const KURL Document::SiteForCookies() const {
     if (access_entry.MatchesDomain(
             *current_frame->GetSecurityContext()->GetSecurityOrigin()) ==
         OriginAccessEntry::kDoesNotMatchOrigin)
-      return SecurityOrigin::UrlWithUniqueSecurityOrigin();
+      return SecurityOrigin::UrlWithUniqueOpaqueOrigin();
 
     current_frame = current_frame->Tree().Parent();
   }
@@ -6125,7 +6126,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     Document* owner = initializer.OwnerDocument();
     if (owner) {
       if (owner->GetSecurityOrigin()->IsPotentiallyTrustworthy())
-        security_origin->SetUniqueOriginIsPotentiallyTrustworthy(true);
+        security_origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
       if (owner->GetSecurityOrigin()->CanLoadLocalResources())
         security_origin->GrantLoadLocalResources();
       policy_to_inherit = owner->GetContentSecurityPolicy();
@@ -6190,9 +6191,9 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     }
   }
 
-  if (GetSecurityOrigin()->IsUnique() &&
+  if (GetSecurityOrigin()->IsOpaque() &&
       SecurityOrigin::Create(url_)->IsPotentiallyTrustworthy())
-    GetMutableSecurityOrigin()->SetUniqueOriginIsPotentiallyTrustworthy(true);
+    GetMutableSecurityOrigin()->SetOpaqueOriginIsPotentiallyTrustworthy(true);
 
   ApplyFeaturePolicy({});
 

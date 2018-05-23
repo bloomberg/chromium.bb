@@ -10334,7 +10334,7 @@ TEST_F(WebFrameTest, SiteForCookiesFromChildWithRemoteMainFrame) {
 
   RegisterMockedHttpURLLoad("foo.html");
   FrameTestHelpers::LoadFrame(local_frame, base_url_ + "foo.html");
-  EXPECT_EQ(WebURL(SecurityOrigin::UrlWithUniqueSecurityOrigin()),
+  EXPECT_EQ(WebURL(SecurityOrigin::UrlWithUniqueOpaqueOrigin()),
             local_frame->GetDocument().SiteForCookies());
 
   SchemeRegistry::RegisterURLSchemeAsFirstPartyWhenTopLevel("http");

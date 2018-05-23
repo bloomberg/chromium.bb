@@ -56,7 +56,13 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
 
  public:
   static scoped_refptr<SecurityOrigin> Create(const KURL&);
-  static scoped_refptr<SecurityOrigin> CreateUnique();
+  // Creates a new opaque SecurityOrigin that is guaranteed to be cross-origin
+  // to all currently existing SecurityOrigins.
+  static scoped_refptr<SecurityOrigin> CreateUniqueOpaque();
+  // Deprecated alias for CreateOpaque().
+  static scoped_refptr<SecurityOrigin> CreateUnique() {
+    return CreateUniqueOpaque();
+  }
 
   static scoped_refptr<SecurityOrigin> CreateFromString(const String&);
   static scoped_refptr<SecurityOrigin> Create(const String& protocol,
@@ -161,20 +167,20 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   void GrantUniversalAccess();
   bool IsGrantedUniversalAccess() const { return universal_access_; }
 
-  bool CanAccessDatabase() const { return !IsUnique(); }
-  bool CanAccessLocalStorage() const { return !IsUnique(); }
-  bool CanAccessSharedWorkers() const { return !IsUnique(); }
-  bool CanAccessServiceWorkers() const { return !IsUnique(); }
-  bool CanAccessCookies() const { return !IsUnique(); }
-  bool CanAccessPasswordManager() const { return !IsUnique(); }
-  bool CanAccessFileSystem() const { return !IsUnique(); }
-  bool CanAccessCacheStorage() const { return !IsUnique(); }
-  bool CanAccessLocks() const { return !IsUnique(); }
+  bool CanAccessDatabase() const { return !IsOpaque(); }
+  bool CanAccessLocalStorage() const { return !IsOpaque(); }
+  bool CanAccessSharedWorkers() const { return !IsOpaque(); }
+  bool CanAccessServiceWorkers() const { return !IsOpaque(); }
+  bool CanAccessCookies() const { return !IsOpaque(); }
+  bool CanAccessPasswordManager() const { return !IsOpaque(); }
+  bool CanAccessFileSystem() const { return !IsOpaque(); }
+  bool CanAccessCacheStorage() const { return !IsOpaque(); }
+  bool CanAccessLocks() const { return !IsOpaque(); }
 
   // Technically, we should always allow access to sessionStorage, but we
-  // currently don't handle creating a sessionStorage area for unique
+  // currently don't handle creating a sessionStorage area for opaque
   // origins.
-  bool CanAccessSessionStorage() const { return !IsUnique(); }
+  bool CanAccessSessionStorage() const { return !IsOpaque(); }
 
   // The local SecurityOrigin is the most privileged SecurityOrigin.
   // The local SecurityOrigin can script any document, navigate to local
@@ -184,29 +190,28 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // Returns true if the host is one of 127.0.0.1/8, ::1/128, or "localhost".
   bool IsLocalhost() const;
 
-  // The origin is a globally unique identifier assigned when the Document is
-  // created. http://www.whatwg.org/specs/web-apps/current-work/#sandboxOrigin
-  //
-  // There's a subtle difference between a unique origin and an origin that
-  // has the SandboxOrigin flag set. The latter implies the former, and, in
-  // addition, the SandboxOrigin flag is inherited by iframes.
-  bool IsUnique() const { return is_unique_; }
+  // Returns true if the origin is not a tuple origin (i.e. an origin consisting
+  // of a scheme, host, port, and domain). Opaque origins are created for a
+  // variety of situations (see https://whatwg.org/C/origin.html#origin for more
+  // details), such as for documents generated from data: URLs or documents
+  // with the sandboxed origin browsing context flag set.
+  bool IsOpaque() const { return is_opaque_; }
+  // Deprecated alias for IsOpaque().
+  bool IsUnique() const { return IsOpaque(); }
 
   // By default 'file:' URLs may access other 'file:' URLs. This method
   // denies access. If either SecurityOrigin sets this flag, the access
   // check will fail.
   void BlockLocalAccessFromLocalOrigin();
 
-  // Convert this SecurityOrigin into a string. The string
-  // representation of a SecurityOrigin is similar to a URL, except it
-  // lacks a path component. The string representation does not encode
-  // the value of the SecurityOrigin's domain property.
+  // Convert this SecurityOrigin into a string. The string representation of a
+  // SecurityOrigin is similar to a URL, except it lacks a path component. The
+  // string representation does not encode the value of the SecurityOrigin's
+  // domain property.
   //
   // When using the string value, it's important to remember that it might be
-  // "null". This happens when this SecurityOrigin is unique. For example,
-  // this SecurityOrigin might have come from a sandboxed iframe, the
-  // SecurityOrigin might be empty, or we might have explicitly decided that
-  // we shouldTreatURLSchemeAsNoAccess.
+  // "null". This typically happens when this SecurityOrigin is opaque (e.g. the
+  // origin of a sandboxed iframe).
   String ToString() const;
   AtomicString ToAtomicString() const;
 
@@ -221,7 +226,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
 
   static bool AreSameSchemeHostPort(const KURL& a, const KURL& b);
 
-  static const KURL& UrlWithUniqueSecurityOrigin();
+  static const KURL& UrlWithUniqueOpaqueOrigin();
 
   // Transfer origin privileges from another security origin.
   // The following privileges are currently copied over:
@@ -237,8 +242,8 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   std::unique_ptr<PrivilegeData> CreatePrivilegeData() const;
   void TransferPrivilegesFrom(std::unique_ptr<PrivilegeData>);
 
-  void SetUniqueOriginIsPotentiallyTrustworthy(
-      bool is_unique_origin_potentially_trustworthy);
+  void SetOpaqueOriginIsPotentiallyTrustworthy(
+      bool is_opaque_origin_potentially_trustworthy);
 
   // Only used for document.domain setting. The method should probably be moved
   // if we need it for something more general.
@@ -262,12 +267,12 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   String domain_;
   uint16_t port_;
   uint16_t effective_port_;
-  const bool is_unique_;
+  const bool is_opaque_;
   bool universal_access_;
   bool domain_was_set_in_dom_;
   bool can_load_local_resources_;
   bool block_local_access_from_local_origin_;
-  bool is_unique_origin_potentially_trustworthy_;
+  bool is_opaque_origin_potentially_trustworthy_;
 };
 
 }  // namespace blink

@@ -574,7 +574,7 @@ void DocumentLoader::CancelLoadAfterCSPDenied(
   // https://crbug.com/555418.
   ClearResource();
   content_security_policy_.Clear();
-  KURL blocked_url = SecurityOrigin::UrlWithUniqueSecurityOrigin();
+  KURL blocked_url = SecurityOrigin::UrlWithUniqueOpaqueOrigin();
   original_request_.SetURL(blocked_url);
   request_.SetURL(blocked_url);
   redirect_chain_.pop_back();
