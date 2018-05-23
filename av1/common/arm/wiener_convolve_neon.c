@@ -50,8 +50,8 @@ void av1_wiener_convolve_add_src_neon(const uint8_t *src, ptrdiff_t src_stride,
                   temp[(MAX_SB_SIZE + HORIZ_EXTRA_ROWS) * MAX_SB_SIZE]);
 
   assert(x_step_q4 == 16 && y_step_q4 == 16);
-  assert(w % 8);
-  assert(h % 4);
+  assert(!(w % 8));
+  assert(!(h % 4));
   assert(w <= MAX_SB_SIZE);
   assert(h <= MAX_SB_SIZE);
 
