@@ -24,13 +24,12 @@ void PrintRenderFrameHelper::PrintPageInternal(
     const PrintMsg_Print_Params& params,
     int page_number,
     int page_count,
+    double scale_factor,
     blink::WebLocalFrame* frame,
     PdfMetafileSkia* metafile,
     gfx::Size* page_size_in_dpi,
     gfx::Rect* content_rect_in_dpi) {
-  double css_scale_factor =
-      params.scale_factor >= kEpsilon ? params.scale_factor : 1.0f;
-
+  double css_scale_factor = scale_factor;
   PageSizeMargins page_layout_in_points;
   ComputePageLayoutInPointsForCss(frame, page_number, params,
                                   ignore_css_margins_, &css_scale_factor,
@@ -51,20 +50,20 @@ void PrintRenderFrameHelper::PrintPageInternal(
       params.display_header_footer ? gfx::Rect(page_size) : content_area;
 
   double webkit_page_shrink_factor = frame->GetPrintPageShrink(page_number);
-  float scale_factor = css_scale_factor * webkit_page_shrink_factor;
+  float final_scale_factor = css_scale_factor * webkit_page_shrink_factor;
 
-  cc::PaintCanvas* canvas =
-      metafile->GetVectorCanvasForNewPage(page_size, canvas_area, scale_factor);
+  cc::PaintCanvas* canvas = metafile->GetVectorCanvasForNewPage(
+      page_size, canvas_area, final_scale_factor);
   if (!canvas)
     return;
 
   MetafileSkiaWrapper::SetMetafileOnCanvas(canvas, metafile);
   if (params.display_header_footer) {
     PrintHeaderAndFooter(canvas, page_number + 1, page_count, *frame,
-                         scale_factor, page_layout_in_points, params);
+                         final_scale_factor, page_layout_in_points, params);
   }
-  RenderPageContent(frame, page_number, canvas_area, content_area, scale_factor,
-                    canvas);
+  RenderPageContent(frame, page_number, canvas_area, content_area,
+                    final_scale_factor, canvas);
 
   // Done printing. Close the canvas to retrieve the compiled metafile.
   bool ret = metafile->FinishPage();

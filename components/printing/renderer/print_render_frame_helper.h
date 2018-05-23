@@ -127,6 +127,10 @@ class PrintRenderFrameHelper
 
   void PrintNode(const blink::WebNode& node);
 
+  // Get the scale factor. Returns |input_scale_factor| if it is valid and
+  // |is_pdf| is false, and 1.0f otherwise.
+  static double GetScaleFactor(double input_scale_factor, bool is_pdf);
+
  private:
   friend class PrintRenderFrameHelperTestBase;
   FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintRenderFrameHelperPreviewTest,
@@ -272,7 +276,9 @@ class PrintRenderFrameHelper
 
   void OnFramePreparedForPrintPages();
   void PrintPages();
-  bool PrintPagesNative(blink::WebLocalFrame* frame, int page_count);
+  bool PrintPagesNative(blink::WebLocalFrame* frame,
+                        int page_count,
+                        bool is_pdf);
   void FinishFramePrinting();
   // Render the frame for printing.
   bool RenderPagesForPrint(blink::WebLocalFrame* frame,
@@ -282,6 +288,7 @@ class PrintRenderFrameHelper
   void PrintPageInternal(const PrintMsg_Print_Params& params,
                          int page_number,
                          int page_count,
+                         double scale_factor,
                          blink::WebLocalFrame* frame,
                          PdfMetafileSkia* metafile,
                          gfx::Size* page_size_in_dpi,
