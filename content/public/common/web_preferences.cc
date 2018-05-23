@@ -158,7 +158,9 @@ WebPreferences::WebPreferences()
       shrinks_viewport_contents_to_fit(true),
       viewport_style(ViewportStyle::MOBILE),
       always_show_context_menu_on_touch(false),
-      smooth_scroll_for_find_enabled(true),
+      // TODO(sunyunjia): Re-enable smooth scroll for find on Android.
+      // https://crbug.com/845500
+      smooth_scroll_for_find_enabled(false),
 #else
       viewport_meta_enabled(false),
       shrinks_viewport_contents_to_fit(false),
