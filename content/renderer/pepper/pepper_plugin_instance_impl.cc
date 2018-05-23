@@ -1543,7 +1543,7 @@ void PepperPluginInstanceImpl::SelectAll() {
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
 
   // TODO(https://crbug.com/836074) |kPlatformModifier| should be
-  // |ui::EF_COMMAND_DOWN| on Mac.
+  // |ui::EF_PLATFORM_ACCELERATOR| (|ui::EF_COMMAND_DOWN| on Mac).
   static const ui::EventFlags kPlatformModifier = ui::EF_CONTROL_DOWN;
   // Synthesize a ctrl + a key event to send to the plugin and let it sort out
   // the event. See also https://crbug.com/739529.

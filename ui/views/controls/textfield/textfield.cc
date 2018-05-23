@@ -82,12 +82,6 @@ namespace views {
 namespace {
 
 #if defined(OS_MACOSX)
-const ui::EventFlags kPlatformModifier = ui::EF_COMMAND_DOWN;
-#else
-const ui::EventFlags kPlatformModifier = ui::EF_CONTROL_DOWN;
-#endif  // OS_MACOSX
-
-#if defined(OS_MACOSX)
 const gfx::SelectionBehavior kLineSelectionBehavior = gfx::SELECTION_EXTEND;
 const gfx::SelectionBehavior kWordSelectionBehavior = gfx::SELECTION_CARET;
 const gfx::SelectionBehavior kMoveParagraphSelectionBehavior =
@@ -1372,23 +1366,23 @@ bool Textfield::GetAcceleratorForCommandId(int command_id,
                                            ui::Accelerator* accelerator) const {
   switch (command_id) {
     case IDS_APP_UNDO:
-      *accelerator = ui::Accelerator(ui::VKEY_Z, kPlatformModifier);
+      *accelerator = ui::Accelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
       return true;
 
     case IDS_APP_CUT:
-      *accelerator = ui::Accelerator(ui::VKEY_X, kPlatformModifier);
+      *accelerator = ui::Accelerator(ui::VKEY_X, ui::EF_PLATFORM_ACCELERATOR);
       return true;
 
     case IDS_APP_COPY:
-      *accelerator = ui::Accelerator(ui::VKEY_C, kPlatformModifier);
+      *accelerator = ui::Accelerator(ui::VKEY_C, ui::EF_PLATFORM_ACCELERATOR);
       return true;
 
     case IDS_APP_PASTE:
-      *accelerator = ui::Accelerator(ui::VKEY_V, kPlatformModifier);
+      *accelerator = ui::Accelerator(ui::VKEY_V, ui::EF_PLATFORM_ACCELERATOR);
       return true;
 
     case IDS_APP_SELECT_ALL:
-      *accelerator = ui::Accelerator(ui::VKEY_A, kPlatformModifier);
+      *accelerator = ui::Accelerator(ui::VKEY_A, ui::EF_PLATFORM_ACCELERATOR);
       return true;
 
     case IDS_CONTENT_CONTEXT_EMOJI:

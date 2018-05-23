@@ -5,6 +5,8 @@
 #ifndef UI_EVENTS_EVENT_CONSTANTS_H_
 #define UI_EVENTS_EVENT_CONSTANTS_H_
 
+#include "build/build_config.h"
+
 namespace ui {
 
 // Event types. (prefixed because of a conflict with windows headers)
@@ -87,33 +89,42 @@ enum EventType {
 // this list and/or reorder it, but make sure you also touch the various other
 // enums/constants that want to stay in sync with this.
 enum EventFlags {
-  EF_NONE                 = 0,       // Used to denote no flags explicitly
+  EF_NONE = 0,  // Used to denote no flags explicitly
 
   // Universally applicable status bits.
-  EF_IS_SYNTHESIZED       = 1 << 0,
+  EF_IS_SYNTHESIZED = 1 << 0,
 
   // Modifier key state.
-  EF_SHIFT_DOWN           = 1 << 1,
-  EF_CONTROL_DOWN         = 1 << 2,
-  EF_ALT_DOWN             = 1 << 3,
-  EF_COMMAND_DOWN         = 1 << 4,  // GUI Key (e.g. Command on OS X
-                                     // keyboards, Search on Chromebook
-                                     // keyboards, Windows on MS-oriented
-                                     // keyboards)
-  EF_ALTGR_DOWN           = 1 << 5,
-  EF_MOD3_DOWN            = 1 << 6,
+  EF_SHIFT_DOWN = 1 << 1,
+  EF_CONTROL_DOWN = 1 << 2,
+  EF_ALT_DOWN = 1 << 3,
+  EF_COMMAND_DOWN = 1 << 4,  // GUI Key (e.g. Command on OS X
+                             // keyboards, Search on Chromebook
+                             // keyboards, Windows on MS-oriented
+                             // keyboards)
+  EF_ALTGR_DOWN = 1 << 5,
+  EF_MOD3_DOWN = 1 << 6,
 
   // Other keyboard states.
-  EF_NUM_LOCK_ON          = 1 << 7,
-  EF_CAPS_LOCK_ON         = 1 << 8,
-  EF_SCROLL_LOCK_ON       = 1 << 9,
+  EF_NUM_LOCK_ON = 1 << 7,
+  EF_CAPS_LOCK_ON = 1 << 8,
+  EF_SCROLL_LOCK_ON = 1 << 9,
 
   // Mouse buttons.
-  EF_LEFT_MOUSE_BUTTON    = 1 << 10,
-  EF_MIDDLE_MOUSE_BUTTON  = 1 << 11,
-  EF_RIGHT_MOUSE_BUTTON   = 1 << 12,
-  EF_BACK_MOUSE_BUTTON    = 1 << 13,
+  EF_LEFT_MOUSE_BUTTON = 1 << 10,
+  EF_MIDDLE_MOUSE_BUTTON = 1 << 11,
+  EF_RIGHT_MOUSE_BUTTON = 1 << 12,
+  EF_BACK_MOUSE_BUTTON = 1 << 13,
   EF_FORWARD_MOUSE_BUTTON = 1 << 14,
+
+// An artificial value used to bridge platform differences.
+// Many commands on Mac as Cmd+Key are the counterparts of
+// Ctrl+Key on other platforms.
+#if defined(OS_MACOSX)
+  EF_PLATFORM_ACCELERATOR = EF_COMMAND_DOWN,
+#else
+  EF_PLATFORM_ACCELERATOR = EF_CONTROL_DOWN,
+#endif
 };
 
 // Flags specific to key events.
