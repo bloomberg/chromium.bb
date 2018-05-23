@@ -179,13 +179,16 @@
       <settings-toggle-button
           pref="{{prefs.settings.a11y.switch_access}}"
           label="$i18n{switchAccessLabel}">
-        <paper-icon-button-light slot="more-actions" class="icon-settings"
-            hidden="[[!prefs.settings.a11y.switch_access.value]]">
-          <button on-click="onSwitchAccessSettingsTap_"
-              aria-label="$i18n{selectToSpeakOptionsLabel}">
-          </button>
-        </paper-icon-button-light>
       </settings-toggle-button>
+      <iron-collapse opened="[[prefs.settings.a11y.switch_access.value]]">
+        <div class="settings-box" actionable
+            on-click="onSwitchAccessSettingsTap_">
+          <div class="start">$i18n{switchAccessOptionsLabel}</div>
+          <paper-icon-button-light class="icon-external">
+            <button aria-label="$i18n{switchAccessOptionsLabel}"></button>
+          </paper-icon-button-light>
+        </div>
+      </iron-collapse>
     </template>
     <div class="settings-box two-line" on-click="onKeyboardTap_" actionable>
       <div class="start">
