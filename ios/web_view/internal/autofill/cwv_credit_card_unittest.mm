@@ -11,9 +11,11 @@
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/credit_card.h"
+#import "ios/web_view/internal/autofill/autofill_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -22,22 +24,12 @@
 
 namespace ios_web_view {
 
-namespace {
-NSString* const kGuid = @"12345";
-NSString* const kOrigin = @"www.chromium.org";
-NSString* const kLocale = @"en";
-NSString* const kCardHolderFullName = @"Homer Simpson";
-NSString* const kCardNumber = @"4408041234567893";
-NSString* const kNetworkName = @"Visa";
-NSString* const kExpirationMonth = @"08";
-NSString* const kExpirationYear = @"2038";
-}
-
 class CWVCreditCardTest : public PlatformTest {
  protected:
   CWVCreditCardTest() {
+    l10n_util::OverrideLocaleWithCocoaLocale();
     ui::ResourceBundle::InitSharedInstanceWithLocale(
-        base::SysNSStringToUTF8(kLocale), /*delegate=*/nullptr,
+        base::SysNSStringToUTF8(testing::kLocale), /*delegate=*/nullptr,
         ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
     ui::ResourceBundle& resource_bundle =
         ui::ResourceBundle::GetSharedInstance();
@@ -64,28 +56,14 @@ class CWVCreditCardTest : public PlatformTest {
 
 // Tests CWVCreditCard initialization.
 TEST_F(CWVCreditCardTest, Initialization) {
-  autofill::CreditCard credit_card(base::SysNSStringToUTF8(kGuid),
-                                   base::SysNSStringToUTF8(kOrigin));
-  credit_card.SetInfo(autofill::CREDIT_CARD_NAME_FULL,
-                      base::SysNSStringToUTF16(kCardHolderFullName),
-                      base::SysNSStringToUTF8(kLocale));
-  credit_card.SetInfo(autofill::CREDIT_CARD_NUMBER,
-                      base::SysNSStringToUTF16(kCardNumber),
-                      base::SysNSStringToUTF8(kLocale));
-  credit_card.SetInfo(autofill::CREDIT_CARD_EXP_MONTH,
-                      base::SysNSStringToUTF16(kExpirationMonth),
-                      base::SysNSStringToUTF8(kLocale));
-  credit_card.SetInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                      base::SysNSStringToUTF16(kExpirationYear),
-                      base::SysNSStringToUTF8(kLocale));
-  CWVCreditCard* cwv_credit_card =
-      [[CWVCreditCard alloc] initWithCreditCard:credit_card];
+  CWVCreditCard* cwv_credit_card = [[CWVCreditCard alloc]
+      initWithCreditCard:testing::CreateTestCreditCard()];
 
-  EXPECT_NSEQ(kCardHolderFullName, cwv_credit_card.cardHolderFullName);
-  EXPECT_NSEQ(kCardNumber, cwv_credit_card.cardNumber);
-  EXPECT_NSEQ(kNetworkName, cwv_credit_card.networkName);
-  EXPECT_NSEQ(kExpirationMonth, cwv_credit_card.expirationMonth);
-  EXPECT_NSEQ(kExpirationYear, cwv_credit_card.expirationYear);
+  EXPECT_NSEQ(testing::kCardHolderFullName, cwv_credit_card.cardHolderFullName);
+  EXPECT_NSEQ(testing::kCardNumber, cwv_credit_card.cardNumber);
+  EXPECT_NSEQ(testing::kNetworkName, cwv_credit_card.networkName);
+  EXPECT_NSEQ(testing::kExpirationMonth, cwv_credit_card.expirationMonth);
+  EXPECT_NSEQ(testing::kExpirationYear, cwv_credit_card.expirationYear);
   EXPECT_TRUE(cwv_credit_card.savedLocally);
 
   // It is not sufficient to simply test for networkIcon != nil because
@@ -97,20 +75,20 @@ TEST_F(CWVCreditCardTest, Initialization) {
 
 // Tests CWVCreditCard updates properties.
 TEST_F(CWVCreditCardTest, ModifyProperties) {
-  autofill::CreditCard credit_card(base::SysNSStringToUTF8(kGuid),
-                                   base::SysNSStringToUTF8(kOrigin));
+  autofill::CreditCard credit_card(base::SysNSStringToUTF8(testing::kGuid),
+                                   base::SysNSStringToUTF8(testing::kOrigin));
   CWVCreditCard* cwv_credit_card =
       [[CWVCreditCard alloc] initWithCreditCard:credit_card];
-  cwv_credit_card.cardHolderFullName = kCardHolderFullName;
-  cwv_credit_card.cardNumber = kCardNumber;
-  cwv_credit_card.expirationMonth = kExpirationMonth;
-  cwv_credit_card.expirationYear = kExpirationYear;
+  cwv_credit_card.cardHolderFullName = testing::kCardHolderFullName;
+  cwv_credit_card.cardNumber = testing::kCardNumber;
+  cwv_credit_card.expirationMonth = testing::kExpirationMonth;
+  cwv_credit_card.expirationYear = testing::kExpirationYear;
 
-  EXPECT_NSEQ(kCardHolderFullName, cwv_credit_card.cardHolderFullName);
-  EXPECT_NSEQ(kCardNumber, cwv_credit_card.cardNumber);
-  EXPECT_NSEQ(kNetworkName, cwv_credit_card.networkName);
-  EXPECT_NSEQ(kExpirationMonth, cwv_credit_card.expirationMonth);
-  EXPECT_NSEQ(kExpirationYear, cwv_credit_card.expirationYear);
+  EXPECT_NSEQ(testing::kCardHolderFullName, cwv_credit_card.cardHolderFullName);
+  EXPECT_NSEQ(testing::kCardNumber, cwv_credit_card.cardNumber);
+  EXPECT_NSEQ(testing::kNetworkName, cwv_credit_card.networkName);
+  EXPECT_NSEQ(testing::kExpirationMonth, cwv_credit_card.expirationMonth);
+  EXPECT_NSEQ(testing::kExpirationYear, cwv_credit_card.expirationYear);
   EXPECT_TRUE(cwv_credit_card.savedLocally);
 
   // It is not sufficient to simply test for networkIcon != nil because
