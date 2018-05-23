@@ -28,6 +28,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -149,8 +150,8 @@ class LoginUserView::UserImage : public NonAccessibleView {
 // Shows the user's name.
 class LoginUserView::UserLabel : public NonAccessibleView {
  public:
-  UserLabel(LoginDisplayStyle style)
-      : NonAccessibleView(kLoginUserLabelClassName) {
+  UserLabel(LoginDisplayStyle style, int label_width)
+      : NonAccessibleView(kLoginUserLabelClassName), label_width_(label_width) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
 
     user_name_ = new views::Label();
@@ -186,13 +187,17 @@ class LoginUserView::UserLabel : public NonAccessibleView {
     // display_name can be empty in debug builds with stub users.
     if (display_name.empty())
       display_name = user->basic_user_info->display_email;
-    user_name_->SetText(base::UTF8ToUTF16(display_name));
+
+    user_name_->SetText(gfx::ElideText(base::UTF8ToUTF16(display_name),
+                                       user_name_->font_list(), label_width_,
+                                       gfx::ElideBehavior::ELIDE_TAIL));
   }
 
   const base::string16& displayed_name() const { return user_name_->text(); }
 
  private:
   views::Label* user_name_ = nullptr;
+  const int label_width_;
 
   DISALLOW_COPY_AND_ASSIGN(UserLabel);
 };
@@ -340,7 +345,10 @@ LoginUserView::LoginUserView(
   DCHECK(show_dropdown == !!on_remove);
 
   user_image_ = new UserImage(GetImageSize(style));
-  user_label_ = new UserLabel(style);
+  int label_width =
+      WidthForLayoutStyle(style) -
+      2 * (kDistanceBetweenUsernameAndDropdownDp + kDropdownIconSizeDp);
+  user_label_ = new UserLabel(style, label_width);
   if (show_dropdown) {
     user_dropdown_ = new LoginButton(this);
     user_dropdown_->set_has_ink_drop_action_on_click(false);
