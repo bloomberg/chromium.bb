@@ -43,6 +43,7 @@ static const NGPhysicalFragment* LastLogicalLeafExceptLinebreakInternal(
 
 NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
     const ComputedStyle& style,
+    NGStyleVariant style_variant,
     NGPhysicalSize size,
     Vector<scoped_refptr<NGPhysicalFragment>>& children,
     const NGPhysicalOffsetRect& contents_visual_rect,
@@ -52,6 +53,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
     scoped_refptr<NGBreakToken> break_token)
     : NGPhysicalContainerFragment(nullptr,
                                   style,
+                                  style_variant,
                                   size,
                                   kFragmentLineBox,
                                   0,

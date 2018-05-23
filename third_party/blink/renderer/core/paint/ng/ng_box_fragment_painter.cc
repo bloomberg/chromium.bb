@@ -86,7 +86,8 @@ void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info,
                             adjustment.AdjustedPaintOffset());
     return;
   }
-  DCHECK_EQ(layout_object->Style(), &PhysicalFragment().Style());
+  DCHECK_EQ(layout_object->Style(PhysicalFragment().UsesFirstLineStyle()),
+            &PhysicalFragment().Style());
   AdjustPaintOffsetScope adjustment(box_fragment_, paint_info, paint_offset);
   PaintWithAdjustedOffset(adjustment.MutablePaintInfo(),
                           adjustment.AdjustedPaintOffset());

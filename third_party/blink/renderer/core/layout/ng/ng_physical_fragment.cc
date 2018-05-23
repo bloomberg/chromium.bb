@@ -248,7 +248,7 @@ const ComputedStyle& NGPhysicalFragment::Style() const {
   // ellipsis styles have this problem.
   if (!GetLayoutObject())
     return *style_;
-  switch ((NGStyleVariant)style_variant_) {
+  switch (StyleVariant()) {
     case NGStyleVariant::kStandard:
       return *GetLayoutObject()->Style();
     case NGStyleVariant::kFirstLine:

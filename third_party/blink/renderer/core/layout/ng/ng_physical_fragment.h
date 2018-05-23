@@ -150,6 +150,12 @@ class CORE_EXPORT NGPhysicalFragment
   }
 
   NGBreakToken* BreakToken() const { return break_token_.get(); }
+  NGStyleVariant StyleVariant() const {
+    return static_cast<NGStyleVariant>(style_variant_);
+  }
+  bool UsesFirstLineStyle() const {
+    return StyleVariant() == NGStyleVariant::kFirstLine;
+  }
   const ComputedStyle& Style() const;
   Node* GetNode() const;
 

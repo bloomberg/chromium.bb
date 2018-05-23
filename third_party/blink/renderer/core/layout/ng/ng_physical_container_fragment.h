@@ -28,6 +28,7 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
   NGPhysicalContainerFragment(
       LayoutObject*,
       const ComputedStyle&,
+      NGStyleVariant,
       NGPhysicalSize,
       NGFragmentType,
       unsigned sub_type,

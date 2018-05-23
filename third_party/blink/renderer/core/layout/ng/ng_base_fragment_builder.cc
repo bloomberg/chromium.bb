@@ -22,6 +22,12 @@ NGBaseFragmentBuilder::NGBaseFragmentBuilder(WritingMode writing_mode,
 
 NGBaseFragmentBuilder::~NGBaseFragmentBuilder() = default;
 
+NGBaseFragmentBuilder& NGBaseFragmentBuilder::SetStyleVariant(
+    NGStyleVariant style_variant) {
+  style_variant_ = style_variant;
+  return *this;
+}
+
 NGBaseFragmentBuilder& NGBaseFragmentBuilder::SetStyle(
     scoped_refptr<const ComputedStyle> style,
     NGStyleVariant style_variant) {

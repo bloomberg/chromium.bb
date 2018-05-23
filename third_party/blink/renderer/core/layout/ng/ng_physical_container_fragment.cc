@@ -9,6 +9,7 @@ namespace blink {
 NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     LayoutObject* layout_object,
     const ComputedStyle& style,
+    NGStyleVariant style_variant,
     NGPhysicalSize size,
     NGFragmentType type,
     unsigned sub_type,
@@ -17,7 +18,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     scoped_refptr<NGBreakToken> break_token)
     : NGPhysicalFragment(layout_object,
                          style,
-                         NGStyleVariant::kStandard,
+                         style_variant,
                          size,
                          type,
                          sub_type,

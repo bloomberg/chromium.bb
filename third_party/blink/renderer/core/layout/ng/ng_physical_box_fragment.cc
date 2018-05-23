@@ -19,6 +19,7 @@ namespace blink {
 NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     LayoutObject* layout_object,
     const ComputedStyle& style,
+    NGStyleVariant style_variant,
     NGPhysicalSize size,
     Vector<scoped_refptr<NGPhysicalFragment>>& children,
     const NGPixelSnappedPhysicalBoxStrut& padding,
@@ -30,6 +31,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     scoped_refptr<NGBreakToken> break_token)
     : NGPhysicalContainerFragment(layout_object,
                                   style,
+                                  style_variant,
                                   size,
                                   kFragmentBox,
                                   box_type,
@@ -220,9 +222,9 @@ scoped_refptr<NGPhysicalFragment> NGPhysicalBoxFragment::CloneWithoutOffset()
   Vector<NGBaseline> baselines_copy(baselines_);
   scoped_refptr<NGPhysicalFragment> physical_fragment =
       base::AdoptRef(new NGPhysicalBoxFragment(
-          layout_object_, Style(), size_, children_copy, padding_,
-          contents_visual_rect_, baselines_copy, BoxType(), is_old_layout_root_,
-          border_edge_, break_token_));
+          layout_object_, Style(), StyleVariant(), size_, children_copy,
+          padding_, contents_visual_rect_, baselines_copy, BoxType(),
+          is_old_layout_root_, border_edge_, break_token_));
   return physical_fragment;
 }
 

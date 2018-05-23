@@ -19,6 +19,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   // This modifies the passed-in children vector.
   NGPhysicalBoxFragment(LayoutObject* layout_object,
                         const ComputedStyle& style,
+                        NGStyleVariant style_variant,
                         NGPhysicalSize size,
                         Vector<scoped_refptr<NGPhysicalFragment>>& children,
                         const NGPixelSnappedPhysicalBoxStrut& padding,

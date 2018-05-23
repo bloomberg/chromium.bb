@@ -298,6 +298,8 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   if (IsLtr(line_info->BaseDirection()))
     line_bfc_offset.line_offset += line_info->TextIndent();
 
+  if (line_info->UseFirstLineStyle())
+    container_builder_.SetStyleVariant(NGStyleVariant::kFirstLine);
   container_builder_.AddChildren(line_box_);
   container_builder_.SetInlineSize(inline_size);
   container_builder_.SetBaseDirection(line_info->BaseDirection());
