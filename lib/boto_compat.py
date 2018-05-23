@@ -13,6 +13,7 @@ NOTE: This should eventually be removed as part of crbug.com/845304.
 
 from __future__ import print_function
 
+import ConfigParser
 import contextlib
 import os
 import tempfile
@@ -29,10 +30,6 @@ BOTO_CACERTS_ABS_PATH = os.path.join(
     constants.CHROMITE_DIR,
     os.path.normpath(BOTO_CACERTS_PATH))
 
-BOTO_CFG_CONTENTS = '''
-[Boto]
-ca_certificates_file = %s
-''' % BOTO_CACERTS_ABS_PATH
 
 @contextlib.contextmanager
 def FixBotoCerts(activate=True, strict=False):
@@ -49,22 +46,30 @@ def FixBotoCerts(activate=True, strict=False):
 
   boto_cfg_path = None
   try:
-    # Write a boto config file pointing to the cacerts.txt file.
-    _, boto_cfg_path = tempfile.mkstemp(prefix='fix_cacerts', suffix='boto.cfg')
-    osutils.WriteFile(boto_cfg_path, BOTO_CFG_CONTENTS)
+    config = ConfigParser.SafeConfigParser()
+
+    # Read existing boto config file(s); this mimics what boto itself does.
+    if 'BOTO_CONFIG' in os.environ:
+      config.read(os.environ['BOTO_CONFIG'])
+    else:
+      boto_path = os.environ.get('BOTO_PATH', '/etc/boto.cfg:~/.boto')
+      config.read(boto_path.split(':'))
+
+    # Set [Boto] ca_certificates_file = <path to cacerts.txt>.
+    if not config.has_section('Boto'):
+      config.add_section('Boto')
+    config.set('Boto', 'ca_certificates_file', BOTO_CACERTS_ABS_PATH)
+
+    # Write updated boto config to a tempfile.
+    fd, boto_cfg_path = tempfile.mkstemp(prefix='fix_certs', suffix='boto.cfg')
+    os.close(fd)
+    with open(boto_cfg_path, 'w') as f:
+      config.write(f)
     os.chmod(boto_cfg_path, 0o644)
 
-    # Get a BOTO_PATH for the current environment, using one of:
-    boto_path_env = (
-        # 1. BOTO_CONFIG, which would otherwise override BOTO_PATH.
-        os.environ.pop('BOTO_CONFIG', None) or
-        # 2. BOTO_PATH itself.
-        os.environ.get('BOTO_PATH') or
-        # 3. A default value.
-        '/etc/boto.cfg:~/.boto')
-
-    # Append the new boto config file to BOTO_PATH.
-    os.environ['BOTO_PATH'] = '%s:%s' % (boto_path_env, boto_cfg_path)
+    # Update env to use only our generated boto config.
+    os.environ['BOTO_CONFIG'] = boto_cfg_path
+    os.environ.pop('BOTO_PATH', None)
 
   except Exception, e:
     if strict:
