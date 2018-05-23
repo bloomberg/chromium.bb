@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 
+#import "ios/chrome/browser/ui/location_bar/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -50,7 +51,7 @@ const CGFloat kButtonTrailingSpacing = 10;
                                             UILayoutConstraintAxisHorizontal];
 
     // Setup trailing button.
-    _trailingButton = [[UIButton alloc] init];
+    _trailingButton = [[ExtendedTouchTargetButton alloc] init];
     _trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
 
     // Setup label.
