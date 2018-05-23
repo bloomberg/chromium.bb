@@ -24,7 +24,13 @@ class URLLoaderRelay : public network::mojom::URLLoaderClient,
         client_sink_(std::move(client_sink)) {}
 
   // network::mojom::URLLoader implementation:
-  void FollowRedirect() override { loader_sink_->FollowRedirect(); }
+  void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&
+                          modified_request_headers) override {
+    DCHECK(!modified_request_headers.has_value())
+        << "Redirect with modified headers was not supported yet. "
+           "crbug.com/845683";
+    loader_sink_->FollowRedirect(base::nullopt);
+  }
 
   void ProceedWithResponse() override { loader_sink_->ProceedWithResponse(); }
 

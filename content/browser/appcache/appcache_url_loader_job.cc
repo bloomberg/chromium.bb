@@ -105,7 +105,8 @@ base::WeakPtr<AppCacheURLLoaderJob> AppCacheURLLoaderJob::GetDerivedWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void AppCacheURLLoaderJob::FollowRedirect() {
+void AppCacheURLLoaderJob::FollowRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   NOTREACHED() << "appcache never produces redirects";
 }
 

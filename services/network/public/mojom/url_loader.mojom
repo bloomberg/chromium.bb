@@ -4,6 +4,7 @@
 
 module network.mojom;
 
+import "services/network/public/mojom/http_request_headers.mojom";
 import "services/network/public/mojom/network_param.mojom";
 
 [Native]
@@ -41,7 +42,9 @@ interface URLLoader {
   // If the associated request has |auto_follow_redirects| set to false,
   // then upon receiving an URLResponse with a non-NULL |redirect_url| field,
   // |FollowRedirect| may be called to load the URL indicated by the redirect.
-  FollowRedirect();
+  // |modified_request_headers| can be used to add or override existing headers
+  // for the redirect.
+  FollowRedirect(network.mojom.HttpRequestHeaders? modified_request_headers);
 
   // Resumes loading the response body if the URLLoader paused the request upon
   // receiving the final response headers.

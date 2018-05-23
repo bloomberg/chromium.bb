@@ -51,7 +51,11 @@ PrefetchURLLoader::PrefetchURLLoader(
 
 PrefetchURLLoader::~PrefetchURLLoader() = default;
 
-void PrefetchURLLoader::FollowRedirect() {
+void PrefetchURLLoader::FollowRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
+                                                   "headers was not supported "
+                                                   "yet. crbug.com/845683";
   if (web_package_prefetch_handler_) {
     // Rebind |client_binding_| and |loader_|.
     client_binding_.Bind(web_package_prefetch_handler_->FollowRedirect(
@@ -59,7 +63,7 @@ void PrefetchURLLoader::FollowRedirect() {
     return;
   }
 
-  loader_->FollowRedirect();
+  loader_->FollowRedirect(base::nullopt);
 }
 
 void PrefetchURLLoader::ProceedWithResponse() {

@@ -359,7 +359,8 @@ void ServiceWorkerNavigationLoader::StartErrorResponse(
 
 // URLLoader implementation----------------------------------------
 
-void ServiceWorkerNavigationLoader::FollowRedirect() {
+void ServiceWorkerNavigationLoader::FollowRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   NOTIMPLEMENTED();
 }
 

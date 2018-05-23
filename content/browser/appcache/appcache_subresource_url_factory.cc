@@ -127,9 +127,13 @@ class SubresourceLoader : public network::mojom::URLLoader,
 
   // network::mojom::URLLoader implementation
   // Called by the remote client in the renderer.
-  void FollowRedirect() override {
+  void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&
+                          modified_request_headers) override {
+    DCHECK(!modified_request_headers.has_value())
+        << "Redirect with modified headers was not supported yet. "
+           "crbug.com/845683";
     if (!handler_) {
-      network_loader_->FollowRedirect();
+      network_loader_->FollowRedirect(base::nullopt);
       return;
     }
     DCHECK(network_loader_);
@@ -148,7 +152,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
     if (handler)
       CreateAndStartAppCacheLoader(std::move(handler));
     else
-      network_loader_->FollowRedirect();
+      network_loader_->FollowRedirect(base::nullopt);
   }
 
   void SetPriority(net::RequestPriority priority,

@@ -95,7 +95,11 @@ void SharedWorkerScriptLoader::LoadFromNetwork() {
 // When this class gets a FollowRedirect IPC from the renderer, it restarts with
 // the new URL.
 
-void SharedWorkerScriptLoader::FollowRedirect() {
+void SharedWorkerScriptLoader::FollowRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
+                                                   "headers was not supported "
+                                                   "yet. crbug.com/845683";
   DCHECK(redirect_info_);
 
   // |should_clear_upload| is unused because there is no body anyway.

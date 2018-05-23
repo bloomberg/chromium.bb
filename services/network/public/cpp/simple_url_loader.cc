@@ -1365,7 +1365,7 @@ void SimpleURLLoaderImpl::OnReceiveRedirect(
   }
 
   final_url_ = redirect_info.new_url;
-  url_loader_->FollowRedirect();
+  url_loader_->FollowRedirect(base::nullopt);
 }
 
 void SimpleURLLoaderImpl::OnDataDownloaded(int64_t data_length,

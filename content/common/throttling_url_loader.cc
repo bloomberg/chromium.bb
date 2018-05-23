@@ -181,7 +181,7 @@ ThrottlingURLLoader::~ThrottlingURLLoader() {
 
 void ThrottlingURLLoader::FollowRedirect() {
   if (url_loader_)
-    url_loader_->FollowRedirect();
+    url_loader_->FollowRedirect(base::nullopt);
 }
 
 void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,

@@ -389,7 +389,11 @@ void MojoAsyncResourceHandler::OnDataDownloaded(int bytes_downloaded) {
                                        CalculateRecentlyReceivedBytes());
 }
 
-void MojoAsyncResourceHandler::FollowRedirect() {
+void MojoAsyncResourceHandler::FollowRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
+                                                   "headers was not supported "
+                                                   "yet. crbug.com/845683";
   if (!request()->status().is_success()) {
     DVLOG(1) << "FollowRedirect for invalid request";
     return;

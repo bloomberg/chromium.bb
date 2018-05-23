@@ -389,7 +389,11 @@ URLLoader::~URLLoader() {
     keepalive_statistics_recorder_->OnLoadFinished(factory_params_->process_id);
 }
 
-void URLLoader::FollowRedirect() {
+void URLLoader::FollowRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
+                                                   "headers was not supported "
+                                                   "yet. crbug.com/845683";
   if (!url_request_) {
     NotifyCompleted(net::ERR_UNEXPECTED);
     // |this| may have been deleted.

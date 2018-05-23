@@ -141,11 +141,15 @@ CORSURLLoader::CORSURLLoader(
 
 CORSURLLoader::~CORSURLLoader() {}
 
-void CORSURLLoader::FollowRedirect() {
+void CORSURLLoader::FollowRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
+                                                   "headers was not supported "
+                                                   "yet. crbug.com/845683";
   DCHECK(network_loader_);
   DCHECK(is_waiting_follow_redirect_call_);
   is_waiting_follow_redirect_call_ = false;
-  network_loader_->FollowRedirect();
+  network_loader_->FollowRedirect(base::nullopt);
 }
 
 void CORSURLLoader::ProceedWithResponse() {

@@ -1638,7 +1638,8 @@ class MockURLLoader : public network::mojom::URLLoader {
   ~MockURLLoader() override {}
 
   // network::mojom::URLLoader implementation:
-  void FollowRedirect() override {}
+  void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&
+                          modified_request_headers) override {}
   void ProceedWithResponse() override {}
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {

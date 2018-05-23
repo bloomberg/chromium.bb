@@ -64,7 +64,8 @@ class WebRequestProxyingURLLoaderFactory
     void Restart();
 
     // network::mojom::URLLoader:
-    void FollowRedirect() override;
+    void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&
+                            modified_request_headers) override;
     void ProceedWithResponse() override;
     void SetPriority(net::RequestPriority priority,
                      int32_t intra_priority_value) override;

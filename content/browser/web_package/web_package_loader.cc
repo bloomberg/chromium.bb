@@ -195,7 +195,8 @@ void WebPackageLoader::OnStartLoadingResponseBody(
 void WebPackageLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {}
 
-void WebPackageLoader::FollowRedirect() {
+void WebPackageLoader::FollowRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   NOTREACHED();
 }
 
