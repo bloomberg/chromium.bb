@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.widget.selection;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.CallSuper;
@@ -102,6 +103,7 @@ public class SelectableListToolbar<E>
     private ActionBarDrawerToggle mActionBarDrawerToggle;
     private TintedDrawable mNormalMenuButton;
     private TintedDrawable mSelectionMenuButton;
+    private TintedDrawable mNavigationIconDrawable;
 
     private int mNavigationButton;
     private int mTitleResId;
@@ -113,6 +115,8 @@ public class SelectableListToolbar<E>
     private int mNormalBackgroundColor;
     private int mSelectionBackgroundColor;
     private int mSearchBackgroundColor;
+    private ColorStateList mDarkIconColorList;
+    private ColorStateList mLightIconColorList;
 
     private UiConfig mUiConfig;
     private int mWideDisplayStartOffsetPx;
@@ -195,6 +199,11 @@ public class SelectableListToolbar<E>
         mSelectionBackgroundColor = ApiCompatibilityUtils.getColor(
                 getResources(), R.color.light_active_color);
 
+        mDarkIconColorList =
+                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
+        mLightIconColorList =
+                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.white_mode_tint);
+
         if (mTitleResId != 0) setTitle(mTitleResId);
 
         // TODO(twellington): add the concept of normal & selected tint to apply to all toolbar
@@ -202,7 +211,9 @@ public class SelectableListToolbar<E>
         mNormalMenuButton = TintedDrawable.constructTintedDrawable(
                 getResources(), R.drawable.ic_more_vert_black_24dp);
         mSelectionMenuButton = TintedDrawable.constructTintedDrawable(
-                getResources(), R.drawable.ic_more_vert_black_24dp, android.R.color.white);
+                getResources(), R.drawable.ic_more_vert_black_24dp, R.color.white_mode_tint);
+        mNavigationIconDrawable = TintedDrawable.constructTintedDrawable(
+                getResources(), R.drawable.ic_arrow_back_white_24dp);
 
         if (!FeatureUtilities.isChromeModernDesignEnabled()) {
             setTitleTextAppearance(getContext(), R.style.BlackHeadline2);
@@ -220,7 +231,7 @@ public class SelectableListToolbar<E>
         MenuItem extraMenuItem = getMenu().findItem(mExtraMenuItemId);
         if (extraMenuItem != null) {
             Drawable iconDrawable = TintedDrawable.constructTintedDrawable(
-                    getResources(), R.drawable.ic_more_vert_black_24dp, R.color.light_normal_color);
+                    getResources(), R.drawable.ic_more_vert_black_24dp, R.color.dark_mode_tint);
             extraMenuItem.setIcon(iconDrawable);
         }
     }
@@ -370,7 +381,6 @@ public class SelectableListToolbar<E>
      * @param navigationButton one of NAVIGATION_BUTTON_* constants.
      */
     protected void setNavigationButton(int navigationButton) {
-        int iconResId = 0;
         int contentDescriptionId = 0;
 
         if (navigationButton == NAVIGATION_BUTTON_MENU && mDrawerLayout == null) {
@@ -397,23 +407,18 @@ public class SelectableListToolbar<E>
             case NAVIGATION_BUTTON_NONE:
                 break;
             case NAVIGATION_BUTTON_BACK:
-                // TODO(twellington): use ic_arrow_back_white_24dp and tint it.
-                iconResId = R.drawable.back_normal;
+                mNavigationIconDrawable.setTint(mDarkIconColorList);
                 contentDescriptionId = R.string.accessibility_toolbar_btn_back;
                 break;
             case NAVIGATION_BUTTON_SELECTION_BACK:
-                iconResId = R.drawable.ic_arrow_back_white_24dp;
+                mNavigationIconDrawable.setTint(mLightIconColorList);
                 contentDescriptionId = R.string.accessibility_cancel_selection;
                 break;
             default:
                 assert false : "Incorrect navigationButton argument";
         }
 
-        if (iconResId == 0) {
-            setNavigationIcon(null);
-        } else {
-            setNavigationIcon(iconResId);
-        }
+        setNavigationIcon(contentDescriptionId == 0 ? null : mNavigationIconDrawable);
         setNavigationContentDescription(contentDescriptionId);
 
         updateDisplayStyleIfNecessary();
@@ -701,9 +706,9 @@ public class SelectableListToolbar<E>
         MenuItem infoMenuItem = getMenu().findItem(mInfoMenuItemId);
         if (infoMenuItem != null) {
             if (mShowInfoIcon) {
-                Drawable iconDrawable = TintedDrawable.constructTintedDrawable(getResources(),
-                        R.drawable.btn_info,
-                        infoShowing ? R.color.light_active_color : R.color.light_normal_color);
+                Drawable iconDrawable =
+                        TintedDrawable.constructTintedDrawable(getResources(), R.drawable.btn_info,
+                                infoShowing ? R.color.blue_mode_tint : R.color.dark_mode_tint);
 
                 infoMenuItem.setIcon(iconDrawable);
             }

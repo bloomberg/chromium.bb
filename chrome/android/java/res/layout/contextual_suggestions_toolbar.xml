@@ -59,7 +59,7 @@
             chrome:chrometint="@color/dark_mode_tint"
             tools:ignore="ContentDescription" />
 
-        <ImageView
+        <org.chromium.chrome.browser.widget.TintedImageButton
             android:id="@+id/close_button"
             android:layout_height="match_parent"
             android:layout_width="@dimen/contextual_suggestions_toolbar_icon_size"

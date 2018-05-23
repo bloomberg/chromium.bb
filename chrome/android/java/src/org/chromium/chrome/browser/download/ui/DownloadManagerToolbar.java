@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.content.Context;
-import android.support.v7.widget.AppCompatSpinner;
 import android.util.AttributeSet;
 import android.view.MenuItem;
 import android.view.View;
@@ -46,10 +45,9 @@ public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistor
      * @param adapter The adapter associated with the spinner.
      */
     public void initializeFilterSpinner(FilterAdapter adapter) {
-        mSpinner = new AppCompatSpinner(this.getContext());
+        mSpinner = findViewById(R.id.spinner);
         mSpinner.setAdapter(adapter);
         mSpinner.setOnItemSelectedListener(adapter);
-        addView(mSpinner);
     }
 
     /**

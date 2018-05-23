@@ -40,7 +40,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:src="@drawable/btn_mic"
-            android:tint="@color/light_normal_color"
+            android:tint="@color/default_icon_color"
             android:scaleType="centerInside"
             android:contentDescription="@string/accessibility_toolbar_btn_mic" />
 

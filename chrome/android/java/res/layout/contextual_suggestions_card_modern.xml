@@ -103,6 +103,6 @@
                 android:contentDescription="@string/accessibility_ntp_offline_badge"
                 android:visibility="gone"
                 android:src="@drawable/offline_pin_round"
-                app:chrometint="@color/black_alpha_54" />
+                app:chrometint="@color/default_icon_color" />
         </LinearLayout>
 </RelativeLayout>

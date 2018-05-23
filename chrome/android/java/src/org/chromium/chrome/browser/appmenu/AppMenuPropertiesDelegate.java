@@ -142,7 +142,7 @@ public class AppMenuPropertiesDelegate {
                     Drawable drawable = offlineMenuItem.getIcon();
                     if (drawable != null) {
                         int iconTint = ApiCompatibilityUtils.getColor(
-                                mActivity.getResources(), R.color.light_normal_color);
+                                mActivity.getResources(), R.color.default_icon_color);
                         drawable.mutate();
                         drawable.setColorFilter(iconTint, PorterDuff.Mode.SRC_ATOP);
                     }

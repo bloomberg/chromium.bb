@@ -14,8 +14,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -78,6 +76,7 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -1136,11 +1135,9 @@ public class LocationBarLayout
         if (!mIsTablet) return;
         switch (buttonType) {
             case PAGE:
-                Drawable page = ApiCompatibilityUtils.getDrawable(
-                        getResources(), R.drawable.ic_omnibox_page);
-                page.setColorFilter(mUseDarkColors
-                        ? ApiCompatibilityUtils.getColor(getResources(), R.color.light_normal_color)
-                        : Color.WHITE, PorterDuff.Mode.SRC_IN);
+                Drawable page = TintedDrawable.constructTintedDrawable(getResources(),
+                        R.drawable.ic_omnibox_page,
+                        mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
                 mNavigationButton.setImageDrawable(page);
                 break;
             case MAGNIFIER:

@@ -7,8 +7,11 @@
     <!-- Common colors -->
     <color name="default_text_color">@color/black_alpha_87</color>
     <color name="default_primary_color">#F2F2F2</color>
+    <!-- Deprecated. Use dark_mode_tint or default_icon_color for icons instead. -->
     <color name="light_normal_color">#5A5A5A</color>
     <color name="light_active_color">@color/google_blue_500</color>
+    <color name="default_icon_color">@color/modern_grey_800</color>
+    <color name="light_icon_color">@color/modern_grey_500</color>
     <color name="input_underline_error_color">#D32F2F</color>
     <color name="explanation_text_color">#909090</color>
     <color name="text_highlight_color">#C6DAFC</color>
@@ -26,7 +29,6 @@
     <color name="google_grey_400">#BDBDBD</color>
     <color name="google_grey_500">#9E9E9E</color>
     <color name="google_grey_600">#757575</color>
-    <color name="google_grey_800">#3C4043</color>
     <color name="black_alpha_11">#1D000000</color>
     <color name="black_alpha_12">#1F000000</color>
     <color name="white_alpha_50">#80FFFFFF</color>
@@ -36,6 +38,8 @@
     <color name="modal_dialog_scrim_color">#7F000000</color>
 
     <color name="modern_light_grey">#F1F3F4</color>
+    <color name="modern_grey_800">#3C4043</color>
+    <color name="modern_grey_500">#9AA0A6</color>
 
     <!-- New list of common text colors -->
     <color name="black_alpha_20">#33000000</color>
@@ -140,7 +144,7 @@
 
     <!-- Theme colors. Also used for toolbar background -->
     <color name="incognito_primary_color">#505050</color>
-    <color name="incognito_modern_primary_color">@color/google_grey_800</color>
+    <color name="incognito_modern_primary_color">@color/modern_grey_800</color>
     <color name="modern_primary_color">@android:color/white</color>
 
     <!-- LocationBar colors -->
