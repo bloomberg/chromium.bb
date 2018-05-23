@@ -79,8 +79,6 @@ class UiElementRenderer {
       const CornerRadii& radii);
   VIRTUAL_FOR_MOCKS void DrawGradientGridQuad(
       const gfx::Transform& model_view_proj_matrix,
-      const SkColor edge_color,
-      const SkColor center_color,
       const SkColor grid_color,
       int gridline_count,
       float opacity);
