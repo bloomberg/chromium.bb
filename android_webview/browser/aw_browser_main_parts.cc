@@ -57,6 +57,13 @@ AwBrowserMainParts::AwBrowserMainParts(AwContentBrowserClient* browser_client)
 AwBrowserMainParts::~AwBrowserMainParts() {
 }
 
+bool AwBrowserMainParts::ShouldContentCreateFeatureList() {
+  // If variations is enabled, the FeatureList will be created in
+  // AwFieldTrialCreator.
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  return !cmd->HasSwitch(switches::kEnableWebViewVariations);
+}
+
 int AwBrowserMainParts::PreEarlyInitialization() {
   // Network change notifier factory must be singleton, only set factory
   // instance while it is not been created.

@@ -61,22 +61,6 @@ AwFieldTrialCreator::~AwFieldTrialCreator() {}
 std::unique_ptr<PrefService> AwFieldTrialCreator::CreateLocalState() {
   scoped_refptr<PrefRegistrySimple> pref_registry =
       base::MakeRefCounted<PrefRegistrySimple>();
-
-  // Register the variations prefs with default values that must be overridden.
-  pref_registry->RegisterTimePref(variations::prefs::kVariationsSeedDate,
-                                  base::Time());
-  pref_registry->RegisterTimePref(variations::prefs::kVariationsLastFetchTime,
-                                  base::Time());
-  pref_registry->RegisterStringPref(variations::prefs::kVariationsCountry,
-                                    std::string());
-  pref_registry->RegisterStringPref(
-      variations::prefs::kVariationsCompressedSeed, std::string());
-  pref_registry->RegisterStringPref(variations::prefs::kVariationsSeedSignature,
-                                    std::string());
-  pref_registry->RegisterListPref(
-      variations::prefs::kVariationsPermanentConsistencyCountry,
-      std::make_unique<base::ListValue>());
-
   variations::VariationsService::RegisterPrefs(pref_registry.get());
 
   pref_service_factory_.set_user_prefs(
