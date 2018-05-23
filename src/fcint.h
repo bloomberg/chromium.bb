@@ -712,7 +712,7 @@ FcConfigModifiedTime (FcConfig *config);
 
 FcPrivate FcBool
 FcConfigAddCache (FcConfig *config, FcCache *cache,
-		  FcSetName set, FcStrSet *dirSet);
+		  FcSetName set, FcStrSet *dirSet, FcChar8 *forDir);
 
 FcPrivate FcRuleSet *
 FcRuleSetCreate (const FcChar8 *name);
@@ -1162,6 +1162,9 @@ FcPatternIterGetObjectId (const FcPattern *pat, FcPatternIter *iter);
 
 FcPrivate FcValueListPtr
 FcPatternIterGetValues (const FcPattern *pat, FcPatternIter *iter);
+
+FcPrivate FcPattern *
+FcPatternCacheRewriteFile (const FcPattern *pat, FcCache *cache, const FcChar8 *relocated_font_file);
 
 FcPrivate FcChar32
 FcStringHash (const FcChar8 *s);

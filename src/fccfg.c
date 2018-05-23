@@ -324,11 +324,15 @@ FcConfigDestroy (FcConfig *config)
 
 FcBool
 FcConfigAddCache (FcConfig *config, FcCache *cache,
-		  FcSetName set, FcStrSet *dirSet)
+		  FcSetName set, FcStrSet *dirSet, FcChar8 *forDir)
 {
     FcFontSet	*fs;
     intptr_t	*dirs;
     int		i;
+    FcBool      relocated = FcFalse;
+
+    if (strcmp ((char *)FcCacheDir(cache), (char *)forDir) != 0)
+      relocated = FcTrue;
 
     /*
      * Add fonts
@@ -342,23 +346,43 @@ FcConfigAddCache (FcConfig *config, FcCache *cache,
 	{
 	    FcPattern	*font = FcFontSetFont (fs, i);
 	    FcChar8	*font_file;
+	    FcChar8	*relocated_font_file = NULL;
 
-	    /*
-	     * Check to see if font is banned by filename
-	     */
 	    if (FcPatternObjectGetString (font, FC_FILE_OBJECT,
-					  0, &font_file) == FcResultMatch &&
-		!FcConfigAcceptFilename (config, font_file))
+					  0, &font_file) == FcResultMatch)
 	    {
-		continue;
+		if (relocated)
+		  {
+		    FcChar8 *slash = FcStrLastSlash (font_file);
+		    relocated_font_file = FcStrBuildFilename (forDir, slash + 1, NULL);
+		    font_file = relocated_font_file;
+		  }
+
+		/*
+		 * Check to see if font is banned by filename
+		 */
+		if (!FcConfigAcceptFilename (config, font_file))
+		{
+		    free (relocated_font_file);
+		    continue;
+		}
 	    }
-		
+
 	    /*
 	     * Check to see if font is banned by pattern
 	     */
 	    if (!FcConfigAcceptFont (config, font))
+	    {
+		free (relocated_font_file);
 		continue;
-		
+	    }
+
+	    if (relocated_font_file)
+	    {
+	      font = FcPatternCacheRewriteFile (font, cache, relocated_font_file);
+	      free (relocated_font_file);
+	    }
+
 	    if (FcFontSetAdd (config->fonts[set], font))
 		nref++;
 	}
@@ -413,7 +437,7 @@ FcConfigAddDirList (FcConfig *config, FcSetName set, FcStrSet *dirSet)
 	cache = FcDirCacheRead (dir, FcFalse, config);
 	if (!cache)
 	    continue;
-	FcConfigAddCache (config, cache, set, dirSet);
+	FcConfigAddCache (config, cache, set, dirSet, dir);
 	FcDirCacheUnload (cache);
     }
     FcStrListDone (dirlist);
