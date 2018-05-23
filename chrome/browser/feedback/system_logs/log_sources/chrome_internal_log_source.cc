@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/string_util.h"
@@ -29,15 +30,14 @@
 #include "extensions/common/extension_set.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/shell.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/system/version_loader.h"
-#include "ui/display/manager/display_manager.h"
-#include "ui/display/manager/managed_display_info.h"
-#include "ui/display/types/display_constants.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #endif
 
 #if defined(OS_WIN)
@@ -88,7 +88,52 @@ std::string GetEnrollmentStatusString() {
   return std::string();
 }
 
-void GetEntriesAsync(SystemLogsResponse* response) {
+std::string GetDisplayInfoString(
+    const ash::mojom::DisplayUnitInfo& display_info) {
+  std::string entry;
+  if (!display_info.name.empty())
+    base::StringAppendF(&entry, "%s : ", display_info.name.c_str());
+  if (!display_info.edid)
+    return entry;
+  const ash::mojom::Edid& edid = *display_info.edid;
+  if (!edid.manufacturer_id.empty()) {
+    base::StringAppendF(&entry, "Manufacturer: %s - ",
+                        edid.manufacturer_id.c_str());
+  }
+  if (!edid.product_id.empty()) {
+    base::StringAppendF(&entry, "Product ID: %s - ", edid.product_id.c_str());
+  }
+  if (edid.year_of_manufacture != display::kInvalidYearOfManufacture) {
+    base::StringAppendF(&entry, "Year of Manufacture: %d",
+                        edid.year_of_manufacture);
+  }
+  return entry;
+}
+
+// Called from the main (UI) thread, invokes |callback| when complete.
+void PopulateMonitorInfoAsync(
+    ash::mojom::CrosDisplayConfigController* cros_display_config_ptr,
+    SystemLogsResponse* response,
+    base::OnceCallback<void()> callback) {
+  cros_display_config_ptr->GetDisplayUnitInfoList(
+      false /* single_unified */,
+      base::BindOnce(
+          [](SystemLogsResponse* response, base::OnceCallback<void()> callback,
+             std::vector<ash::mojom::DisplayUnitInfoPtr> info_list) {
+            std::string entry;
+            for (const ash::mojom::DisplayUnitInfoPtr& info : info_list) {
+              if (!entry.empty())
+                base::StringAppendF(&entry, "\n");
+              entry += GetDisplayInfoString(*info);
+            }
+            response->emplace(kMonitorInfoKey, entry);
+            std::move(callback).Run();
+          },
+          response, std::move(callback)));
+}
+
+// Called from a worker thread via PostTaskAndReply.
+void PopulateEntriesAsync(SystemLogsResponse* response) {
   DCHECK(response);
 
   chromeos::system::StatisticsProvider* stats =
@@ -106,12 +151,17 @@ void GetEntriesAsync(SystemLogsResponse* response) {
   response->emplace(kChromeOsFirmwareVersion,
                     chromeos::version_loader::GetFirmware());
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
 ChromeInternalLogSource::ChromeInternalLogSource()
     : SystemLogsSource("ChromeInternal") {
+#if defined(OS_CHROMEOS)
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &cros_display_config_ptr_);
+#endif
 }
 
 ChromeInternalLogSource::~ChromeInternalLogSource() {
@@ -148,22 +198,26 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
     response->emplace("account_type", "child");
 
 #if defined(OS_CHROMEOS)
-  PopulateLocalStateSettings(response.get());
-  PopulateMonitorInfo(response.get());
-
   // Store ARC enabled status.
   response->emplace(kArcStatusKey, arc::IsArcPlayStoreEnabledForProfile(
                                        ProfileManager::GetLastUsedProfile())
                                        ? "enabled"
                                        : "disabled");
+  PopulateLocalStateSettings(response.get());
 
-  // Get the entries that should be retrieved on the blocking pool and invoke
-  // the callback later when done.
-  SystemLogsResponse* response_ptr = response.get();
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::BindOnce(&GetEntriesAsync, response_ptr),
-      base::BindOnce(std::move(callback), std::move(response)));
+  // Chain asynchronous fetchers: PopulateMonitorInfoAsync, PopulateEntriesAsync
+  PopulateMonitorInfoAsync(
+      cros_display_config_ptr_.get(), response.get(),
+      base::BindOnce(
+          [](std::unique_ptr<SystemLogsResponse> response,
+             SysLogsSourceCallback callback) {
+            SystemLogsResponse* response_ptr = response.get();
+            base::PostTaskWithTraitsAndReply(
+                FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+                base::BindOnce(&PopulateEntriesAsync, response_ptr),
+                base::BindOnce(std::move(callback), std::move(response)));
+          },
+          std::move(response), std::move(callback)));
 #else
   // On other platforms, we're done. Invoke the callback.
   std::move(callback).Run(std::move(response));
@@ -283,41 +337,6 @@ void ChromeInternalLogSource::PopulateLocalStateSettings(
     return;
 
   response->emplace(kLocalStateSettingsResponseKey, serialized_settings);
-}
-
-void ChromeInternalLogSource::PopulateMonitorInfo(
-    SystemLogsResponse* response) {
-  // TODO(https://crbug.com/682402): Mash support.
-  if (ash_util::IsRunningInMash())
-    return;
-
-  const display::DisplayManager* display_manager =
-      ash::Shell::Get()->display_manager();
-
-  std::string entry;
-  for (const int64_t display_id : display_manager->GetCurrentDisplayIdList()) {
-    const display::ManagedDisplayInfo& display_info =
-        display_manager->GetDisplayInfo(display_id);
-
-    if (!entry.empty())
-      base::StringAppendF(&entry, "\n");
-    if (!display_info.name().empty())
-      base::StringAppendF(&entry, "%s : ", display_info.name().c_str());
-    if (!display_info.manufacturer_id().empty()) {
-      base::StringAppendF(&entry, "Manufacturer: %s - ",
-                          display_info.manufacturer_id().c_str());
-    }
-    if (!display_info.product_id().empty()) {
-      base::StringAppendF(&entry, "Product ID: %s - ",
-                          display_info.product_id().c_str());
-    }
-    if (display_info.year_of_manufacture() !=
-        display::kInvalidYearOfManufacture) {
-      base::StringAppendF(&entry, "Year of Manufacture: %d",
-                          display_info.year_of_manufacture());
-    }
-  }
-  response->emplace(kMonitorInfoKey, entry);
 }
 
 #endif  // defined(OS_CHROMEOS)
