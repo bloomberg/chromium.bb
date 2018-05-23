@@ -9,9 +9,19 @@
 #include "base/logging.h"
 #include "components/zucchini/buildflags.h"
 #include "components/zucchini/disassembler.h"
-#include "components/zucchini/disassembler_dex.h"
 #include "components/zucchini/disassembler_no_op.h"
+
+#if BUILDFLAG(ENABLE_DEX)
+#include "components/zucchini/disassembler_dex.h"
+#endif  // BUILDFLAG(ENABLE_DEX)
+
+#if BUILDFLAG(ENABLE_WIN)
 #include "components/zucchini/disassembler_win32.h"
+#endif  // BUILDFLAG(ENABLE_WIN)
+
+#if BUILDFLAG(ENABLE_ZTF)
+#include "components/zucchini/disassembler_ztf.h"
+#endif  // BUILDFLAG(ENABLE_ZTF)
 
 namespace zucchini {
 
@@ -48,6 +58,15 @@ std::unique_ptr<Disassembler> MakeDisassemblerWithoutFallback(
   }
 #endif  // BUILDFLAG(ENABLE_DEX)
 
+#if BUILDFLAG(ENABLE_ZTF)
+  if (DisassemblerZtf::QuickDetect(image)) {
+    // This disallows very short examples like "ZTxtxtZ\n" in ensemble patching.
+    auto disasm = Disassembler::Make<DisassemblerZtf>(image);
+    if (disasm && disasm->size() >= kMinProgramSize)
+      return disasm;
+  }
+#endif  // BUILDFLAG(ENABLE_ZTF)
+
   return nullptr;
 }
 
@@ -64,6 +83,10 @@ std::unique_ptr<Disassembler> MakeDisassemblerOfType(ConstBufferView image,
     case kExeTypeDex:
       return Disassembler::Make<DisassemblerDex>(image);
 #endif  // BUILDFLAG(ENABLE_DEX)
+#if BUILDFLAG(ENABLE_ZTF)
+    case kExeTypeZtf:
+      return Disassembler::Make<DisassemblerZtf>(image);
+#endif  // BUILDFLAG(ENABLE_ZTF)
     case kExeTypeNoOp:
       return Disassembler::Make<DisassemblerNoOp>(image);
     default:
