@@ -35,6 +35,7 @@
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/extension.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace {
@@ -137,12 +138,11 @@ void ToolbarActionsBar::RegisterProfilePrefs(
 // static
 gfx::Size ToolbarActionsBar::GetIconAreaSize() {
 #if defined(OS_MACOSX)
-  // On the Mac, the spec is a 24x24 button in a 28x28 space.
-  constexpr gfx::Size kIconAreaSize(24, 24);
-#else
-  constexpr gfx::Size kIconAreaSize(28, 28);
+  // On Cocoa, the spec is a 24x24 button in a 28x28 space.
+  if (!base::FeatureList::IsEnabled(features::kViewsBrowserWindows))
+    return gfx::Size(24, 24);
 #endif
-  return kIconAreaSize;
+  return gfx::Size(28, 28);
 }
 
 gfx::Size ToolbarActionsBar::GetViewSize() const {
