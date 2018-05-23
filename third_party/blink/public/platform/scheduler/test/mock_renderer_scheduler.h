@@ -54,8 +54,6 @@ class MockRendererScheduler : public WebMainThreadScheduler {
 #endif
   MOCK_METHOD0(OnNavigate, void());
   MOCK_METHOD0(IsHighPriorityWorkAnticipated, bool());
-  MOCK_CONST_METHOD0(CanExceedIdleDeadlineIfRequired, bool());
-  MOCK_METHOD0(ShouldYieldForHighPriorityWork, bool());
   MOCK_METHOD1(AddTaskObserver, void(base::MessageLoop::TaskObserver*));
   MOCK_METHOD1(RemoveTaskObserver, void(base::MessageLoop::TaskObserver*));
   MOCK_METHOD0(Shutdown, void());

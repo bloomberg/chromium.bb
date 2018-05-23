@@ -2293,7 +2293,7 @@ TEST_F(MainThreadSchedulerImplTest, TestLongIdlePeriodInTouchStartPolicy) {
   EXPECT_EQ(1, run_count);
 }
 
-void TestCanExceedIdleDeadlineIfRequiredTask(WebMainThreadScheduler* scheduler,
+void TestCanExceedIdleDeadlineIfRequiredTask(ThreadScheduler* scheduler,
                                              bool* can_exceed_idle_deadline_out,
                                              int* run_count,
                                              base::TimeTicks deadline) {
