@@ -15,7 +15,7 @@ TEST(GCInfoTest, InitialEmpty) {
 
 TEST(GCInfoTest, ResizeToMaxIndex) {
   GCInfoTable table;
-  GCInfo info = {nullptr, nullptr, false, false};
+  GCInfo info = {nullptr, nullptr, nullptr, false, false};
   size_t slot = 0;
   for (size_t i = 0; i < (GCInfoTable::kMaxIndex - 1); i++) {
     slot = 0;

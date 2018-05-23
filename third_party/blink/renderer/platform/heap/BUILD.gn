@@ -59,6 +59,7 @@ blink_platform_sources("heap") {
     "marking_visitor.cc",
     "marking_visitor.h",
     "member.h",
+    "name_traits.h",
     "page_memory.cc",
     "page_memory.h",
     "page_pool.cc",

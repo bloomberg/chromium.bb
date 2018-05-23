@@ -140,9 +140,13 @@ void V8EmbedderGraphBuilder::Visit(
   // Add an edge from the current parent to this object.
   // Also push the object to the worklist in order to process its members.
   const void* traceable = wrapper_descriptor.base_object_payload;
+  const char* name =
+      GCInfoTable::Get()
+          .GCInfoFromIndex(
+              HeapObjectHeader::FromPayload(traceable)->GcInfoIndex())
+          ->name_(traceable);
   EmbedderNode* graph_node =
-      GraphNode(traceable, wrapper_descriptor.name_callback(traceable), nullptr,
-                current_parent_->GetDomTreeState());
+      GraphNode(traceable, name, nullptr, current_parent_->GetDomTreeState());
   graph_->AddEdge(current_parent_, graph_node);
   PushToWorklist(ToWorklistItem(graph_node, wrapper_descriptor));
 }

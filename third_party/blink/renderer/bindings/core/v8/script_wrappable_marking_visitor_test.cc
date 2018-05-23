@@ -242,7 +242,7 @@ namespace {
 
 class HandleContainer
     : public blink::GarbageCollectedFinalized<HandleContainer>,
-      blink::TraceWrapperBase {
+      public blink::TraceWrapperBase {
  public:
   static HandleContainer* Create() { return new HandleContainer(); }
   virtual ~HandleContainer() = default;
