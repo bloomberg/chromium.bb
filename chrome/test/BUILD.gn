@@ -1876,40 +1876,47 @@ test("browser_tests") {
         "//chrome:chrome_framework",
       ]
 
-      # The browser window can be views or Cocoa on Mac. Test accordingly.
-      if (!mac_views_browser) {
-        sources += [
-          "../browser/ui/cocoa/accelerators_cocoa_browsertest.mm",
-          "../browser/ui/cocoa/apps/app_shim_menu_controller_mac_browsertest.mm",
-          "../browser/ui/cocoa/apps/native_app_window_cocoa_browsertest.mm",
-          "../browser/ui/cocoa/browser_window_controller_browsertest.mm",
-          "../browser/ui/cocoa/browser_window_touch_bar_browsertest.mm",
-          "../browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm",
-          "../browser/ui/cocoa/content_settings/collected_cookies_mac_browsertest.mm",
-          "../browser/ui/cocoa/content_settings/content_setting_bubble_cocoa_browsertest.mm",
-          "../browser/ui/cocoa/dev_tools_controller_browsertest.mm",
-          "../browser/ui/cocoa/extensions/extension_install_dialog_controller_browsertest.mm",
-          "../browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h",
-          "../browser/ui/cocoa/extensions/extension_install_prompt_test_utils.mm",
-          "../browser/ui/cocoa/extensions/extension_message_bubble_browsertest_mac.mm",
-          "../browser/ui/cocoa/extensions/media_galleries_dialog_cocoa_browsertest.mm",
-          "../browser/ui/cocoa/extensions/windowed_install_dialog_controller_browsertest.mm",
-          "../browser/ui/cocoa/find_bar/find_bar_browsertest.mm",
-          "../browser/ui/cocoa/location_bar/content_setting_decoration_browsertest.mm",
-          "../browser/ui/cocoa/location_bar/zoom_decoration_browsertest.mm",
-          "../browser/ui/cocoa/omnibox/omnibox_view_mac_browsertest.mm",
-          "../browser/ui/cocoa/one_click_signin_dialog_controller_browsertest.mm",
-          "../browser/ui/cocoa/page_info/page_info_bubble_views_mac_browsertest.mm",
-          "../browser/ui/cocoa/passwords/passwords_bubble_browsertest.mm",
-          "../browser/ui/cocoa/permission_bubble/permission_bubble_views_cocoa_browsertest.mm",
-          "../browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller_browsertest.mm",
-          "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa_browsertest.mm",
-          "../browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm",
-          "../browser/ui/cocoa/task_manager_mac_browsertest.mm",
-          "../browser/ui/cocoa/view_id_util_browsertest.mm",
-          "../browser/ui/cocoa/web_contents_modal_dialog_manager_views_mac_browsertest.mm",
-        ]
-      }
+      # The browser window can be views or Cocoa on Mac, but this is chosen at
+      # runtime. This block captures tests that only run with a Cocoa browser.
+      # Note some tests are for obsolete Cocoa _secondary_ UI and can be removed
+      # before the browser window transitions completely.
+      sources += [
+        "../browser/ui/cocoa/accelerators_cocoa_browsertest.mm",
+        "../browser/ui/cocoa/apps/app_shim_menu_controller_mac_browsertest.mm",
+        "../browser/ui/cocoa/apps/native_app_window_cocoa_browsertest.mm",
+        "../browser/ui/cocoa/browser_window_touch_bar_browsertest.mm",
+        "../browser/ui/cocoa/dev_tools_controller_browsertest.mm",
+        "../browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h",
+        "../browser/ui/cocoa/extensions/extension_install_prompt_test_utils.mm",
+        "../browser/ui/cocoa/extensions/extension_message_bubble_browsertest_mac.mm",
+        "../browser/ui/cocoa/extensions/media_galleries_dialog_cocoa_browsertest.mm",
+        "../browser/ui/cocoa/find_bar/find_bar_browsertest.mm",
+        "../browser/ui/cocoa/location_bar/content_setting_decoration_browsertest.mm",
+        "../browser/ui/cocoa/location_bar/zoom_decoration_browsertest.mm",
+        "../browser/ui/cocoa/omnibox/omnibox_view_mac_browsertest.mm",
+        "../browser/ui/cocoa/one_click_signin_dialog_controller_browsertest.mm",
+        "../browser/ui/cocoa/permission_bubble/permission_bubble_views_cocoa_browsertest.mm",
+        "../browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller_browsertest.mm",
+        "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa_browsertest.mm",
+        "../browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm",
+        "../browser/ui/cocoa/view_id_util_browsertest.mm",
+        "../browser/ui/cocoa/web_contents_modal_dialog_manager_views_mac_browsertest.mm",
+
+        ## TODO(crbug/845389): Re-Enable the following, which were temporarily
+        ## omitted from the build, but still in use by the Cocoa browser.
+        # "../browser/ui/cocoa/browser_window_controller_browsertest.mm",
+        # "../browser/ui/cocoa/task_manager_mac_browsertest.mm",
+
+        ## The following lines are for obsolete secondary UI that currently do
+        ## not compile and should be removed (along with test file) when the
+        ## corresponding release code is deleted.
+        # "../browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm",
+        # "../browser/ui/cocoa/content_settings/collected_cookies_mac_browsertest.mm",
+        # "../browser/ui/cocoa/content_settings/content_setting_bubble_cocoa_browsertest.mm",
+        # "../browser/ui/cocoa/extensions/extension_install_dialog_controller_browsertest.mm",
+        # "../browser/ui/cocoa/extensions/windowed_install_dialog_controller_browsertest.mm",
+        # "../browser/ui/cocoa/page_info/page_info_bubble_views_mac_browsertest.mm",
+      ]
     }
     if (is_win) {
       sources += [

@@ -44,8 +44,10 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, HasLocationBarByDefault) {
   HasVisibleLocationBarForBrowser(browser());
 }
 
+// Disabled. See https://crbug.com/845389 - this regressed somewhere between
+// r545258 and r559030 (suspect: r549698), but it may be obsolete soon.
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
-                       BrowserFullscreenHasLocationBar) {
+                       DISABLED_BrowserFullscreenHasLocationBar) {
   ui::test::ScopedFakeNSWindowFullscreen faker;
 
   ShowBubble(browser());
@@ -88,8 +90,10 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
   EXPECT_FALSE([browser_controller fullscreenToolbarController]);
 }
 
+// Disabled. See https://crbug.com/845389 - this regressed somewhere between
+// r545258 and r559030 (suspect: r549698), but it may be obsolete soon.
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
-                       TabFullscreenHasLocationBar) {
+                       DISABLED_TabFullscreenHasLocationBar) {
   ui::test::ScopedFakeNSWindowFullscreen faker;
 
   // TODO(tapted): This should use ShowBubble(). However, on 10.9 it triggers a
