@@ -8,7 +8,7 @@ namespace browsing_data {
 namespace features {
 
 const base::Feature kRemoveNavigationHistory{"RemoveNavigationHistory",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace browsing_data
