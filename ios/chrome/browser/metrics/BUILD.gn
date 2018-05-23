@@ -238,3 +238,16 @@ source_set("test_support") {
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
+
+import("//components/metrics/generate_expired_histograms_array.gni")
+
+generate_expired_histograms_array("expired_histograms_array") {
+  inputs = [
+    "//tools/metrics/histograms/histograms.xml",
+    "//tools/metrics/histograms/enums.xml",
+  ]
+  namespace = ""
+  header_filename = "ios_expired_histograms_array.h"
+  major_branch_date_filepath = "//chrome/MAJOR_BRANCH_DATE"
+  milestone_filepath = "//chrome/VERSION"
+}
