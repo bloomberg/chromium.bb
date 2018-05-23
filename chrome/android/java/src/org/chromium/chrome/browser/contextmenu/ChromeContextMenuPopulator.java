@@ -273,22 +273,20 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      * @return A string with either the link or with the alternate text.
      */
     public static String createHeaderText(ContextMenuParams params) {
-        String titleText = "";
-        if (!TextUtils.isEmpty(params.getLinkUrl())
-                && !params.getLinkUrl().equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
+        if (!isEmptyUrl(params.getLinkUrl())) {
             // The context menu can be created without native library
             // being loaded. Only use native URL formatting methods
             // if the native libraries have been loaded.
             if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                             .isStartupSuccessfullyCompleted()) {
-                titleText = UrlFormatter.formatUrlForDisplayOmitHTTPScheme(params.getLinkUrl());
+                return UrlFormatter.formatUrlForDisplayOmitHTTPScheme(params.getLinkUrl());
             } else {
-                titleText = params.getLinkUrl();
+                return params.getLinkUrl();
             }
         } else if (!TextUtils.isEmpty(params.getTitleText())) {
-            titleText = params.getTitleText();
+            return params.getTitleText();
         }
-        return titleText;
+        return "";
     }
 
     @Override
@@ -469,7 +467,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             disabledOptions.add(ChromeContextMenuItem.COPY_LINK_TEXT);
         }
 
-        if (isEmptyUrl(params.getUrl()) || !isAcceptedScheme(params.getUrl())) {
+        if (isEmptyUrl(params.getUrl()) || !UrlUtilities.isAcceptedScheme(params.getUrl())) {
             disabledOptions.add(ChromeContextMenuItem.OPEN_IN_OTHER_WINDOW);
             disabledOptions.add(ChromeContextMenuItem.OPEN_IN_NEW_TAB);
             disabledOptions.add(ChromeContextMenuItem.OPEN_IN_INCOGNITO_TAB);
@@ -500,11 +498,11 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             }
         }
 
-        if (!isDownloadableScheme(params.getLinkUrl())) {
+        if (!UrlUtilities.isDownloadableScheme(params.getLinkUrl())) {
             disabledOptions.add(ChromeContextMenuItem.SAVE_LINK_AS);
         }
 
-        boolean isSrcDownloadableScheme = isDownloadableScheme(params.getSrcUrl());
+        boolean isSrcDownloadableScheme = UrlUtilities.isDownloadableScheme(params.getSrcUrl());
         if (params.isVideo()) {
             boolean saveableAndDownloadable = params.canSaveMedia() && isSrcDownloadableScheme;
             if (!saveableAndDownloadable) {
@@ -681,20 +679,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     }
 
     /**
-     * @return Whether the scheme of the URL is valid .
-     */
-    protected boolean isAcceptedScheme(String url) {
-        return UrlUtilities.isAcceptedScheme(url);
-    }
-
-    /**
-     * @return Whether the scheme of the URL is valid for downloading.
-     */
-    protected boolean isDownloadableScheme(String url) {
-        return UrlUtilities.isDownloadableScheme(url);
-    }
-
-    /**
      * @return The service that handles TemplateUrls.
      */
     protected TemplateUrlService getTemplateUrlService() {
@@ -706,11 +690,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      * @param url The url need to be checked.
      * @return True if the url is empty or "about:blank".
      */
-    private boolean isEmptyUrl(String url) {
-        if (TextUtils.isEmpty(url) || url.equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
-            return true;
-        }
-        return false;
+    private static boolean isEmptyUrl(String url) {
+        return TextUtils.isEmpty(url) || url.equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
     }
 
     /**

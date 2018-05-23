@@ -20,13 +20,17 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.blink_public.web.WebContextMenuMediaType;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.ContextMenuMode;
+import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulatorTest.ShadowUrlUtilities;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.ui.base.MenuSourceType;
@@ -38,7 +42,7 @@ import java.util.List;
  * Unit tests for the context menu logic of Chrome.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
 @DisableFeatures(ChromeFeatureList.CUSTOM_CONTEXT_MENU)
 public class ChromeContextMenuPopulatorTest {
     private static final String PAGE_URL = "http://www.blah.com";
@@ -68,8 +72,6 @@ public class ChromeContextMenuPopulatorTest {
 
     private void initializePopulator(@ContextMenuMode int mode) {
         mPopulator = Mockito.spy(new ChromeContextMenuPopulator(mItemDelegate, mode));
-        doReturn(true).when(mPopulator).isAcceptedScheme(Mockito.anyString());
-        doReturn(true).when(mPopulator).isDownloadableScheme(Mockito.anyString());
         doReturn(mTemplateUrlService).when(mPopulator).getTemplateUrlService();
     }
 
@@ -162,5 +164,21 @@ public class ChromeContextMenuPopulatorTest {
         return new ContextMenuParams(WebContextMenuMediaType.IMAGE, PAGE_URL, PAGE_URL,
                 LINK_URL, IMAGE_SRC_URL, IMAGE_TITLE_TEXT, "", false, null, true, 0, 0,
                 MenuSourceType.MENU_SOURCE_TOUCH);
+    }
+
+    /**
+     * Shadow for UrlUtilities
+     */
+    @Implements(UrlUtilities.class)
+    public static class ShadowUrlUtilities {
+        @Implementation
+        public static boolean isDownloadableScheme(String uri) {
+            return true;
+        }
+
+        @Implementation
+        public static boolean isAcceptedScheme(String uri) {
+            return true;
+        }
     }
 }
