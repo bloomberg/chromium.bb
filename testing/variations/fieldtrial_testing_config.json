@@ -4319,6 +4319,21 @@
             ]
         }
     ],
+    "WebRTC-ApmGainController2Limiter": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
+                }
+            ]
+        }
+    ],
     "WebRTC-EnableWebRtcEcdsa": [
         {
             "platforms": [
