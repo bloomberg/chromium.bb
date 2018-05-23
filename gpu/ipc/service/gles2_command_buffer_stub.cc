@@ -404,7 +404,7 @@ void GLES2CommandBufferStub::SetSnapshotRequestedCallback(
 
 void GLES2CommandBufferStub::BufferPresented(
     const gfx::PresentationFeedback& feedback) {
-  const SwapBufferParams& params = pending_presented_params_.front();
+  SwapBufferParams params = pending_presented_params_.front();
   pending_presented_params_.pop_front();
 
   if (params.flags & gpu::SwapBuffersFlags::kPresentationFeedback ||
