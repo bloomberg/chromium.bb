@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_DISPLAY_SCALE_SCALE_DETAILED_VIEW_H_
 #define ASH_SYSTEM_DISPLAY_SCALE_SCALE_DETAILED_VIEW_H_
 
-#include "ash/system/tray/tray_details_view.h"
+#include "ash/system/tray/tray_detailed_view.h"
 #include "base/macros.h"
 
 namespace views {
@@ -17,7 +17,7 @@ class HoverHighlightView;
 
 namespace tray {
 
-class ScaleDetailedView : public TrayDetailsView {
+class ScaleDetailedView : public TrayDetailedView {
  public:
   explicit ScaleDetailedView(SystemTrayItem* owner);
 
@@ -30,7 +30,7 @@ class ScaleDetailedView : public TrayDetailsView {
 
   void UpdateScrollableList();
 
-  // TrayDetailsView:
+  // TrayDetailedView:
   void HandleViewClicked(views::View* view) override;
 
   std::map<views::View*, double> view_to_scale_;

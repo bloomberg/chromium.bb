@@ -18,7 +18,7 @@
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_details_view.h"
+#include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/strings/utf_string_conversions.h"
@@ -334,7 +334,7 @@ CastTrayView::~CastTrayView() = default;
 // This view displays a list of cast receivers that can be clicked on and casted
 // to. It is activated by clicking on the chevron inside of
 // |CastSelectDefaultView|.
-class CastDetailedView : public TrayDetailsView {
+class CastDetailedView : public TrayDetailedView {
  public:
   CastDetailedView(SystemTrayItem* owner,
                    const std::vector<mojom::SinkAndRoutePtr>& sinks_and_routes);
@@ -353,7 +353,7 @@ class CastDetailedView : public TrayDetailsView {
 
   void UpdateReceiverListFromCachedData();
 
-  // TrayDetailsView:
+  // TrayDetailedView:
   void HandleViewClicked(views::View* view) override;
 
   // A mapping from the receiver id to the receiver/activity data.
@@ -367,7 +367,7 @@ class CastDetailedView : public TrayDetailsView {
 CastDetailedView::CastDetailedView(
     SystemTrayItem* owner,
     const std::vector<mojom::SinkAndRoutePtr>& sinks_routes)
-    : TrayDetailsView(owner) {
+    : TrayDetailedView(owner) {
   CreateItems();
   UpdateReceiverList(sinks_routes);
 }

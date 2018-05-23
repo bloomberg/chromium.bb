@@ -173,7 +173,7 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
     SystemTrayItem* owner,
     ListType list_type,
     LoginStatus login)
-    : TrayDetailsView(owner),
+    : TrayDetailedView(owner),
       list_type_(list_type),
       login_(login),
       info_button_(nullptr),

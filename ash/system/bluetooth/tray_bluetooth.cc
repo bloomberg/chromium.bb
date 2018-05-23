@@ -21,7 +21,7 @@
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_details_view.h"
+#include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/tray/tray_info_label.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_popup_item_style.h"
@@ -183,10 +183,10 @@ class BluetoothDefaultView : public TrayItemMore {
   DISALLOW_COPY_AND_ASSIGN(BluetoothDefaultView);
 };
 
-class BluetoothDetailedView : public TrayDetailsView {
+class BluetoothDetailedView : public TrayDetailedView {
  public:
   BluetoothDetailedView(SystemTrayItem* owner, LoginStatus login)
-      : TrayDetailsView(owner),
+      : TrayDetailedView(owner),
         login_(login),
         toggle_(nullptr),
         settings_(nullptr),
@@ -379,7 +379,7 @@ class BluetoothDetailedView : public TrayDetailsView {
     }
   }
 
-  // TrayDetailsView:
+  // TrayDetailedView:
   void HandleViewClicked(views::View* view) override {
     TrayBluetoothHelper* helper = Shell::Get()->tray_bluetooth_helper();
     if (!helper->GetBluetoothEnabled())

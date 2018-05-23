@@ -63,8 +63,8 @@ class TrayPopupUtils {
   // can grow into the CENTER container if space is required and available. The
   // CENTER container has a flexible width.
   //
-  // TODO(mohsen): Merge this into TrayDetailsView::AddScrollListSubHeader()
-  // once network and VPN also use TrayDetailsView::AddScrollListSubHeader().
+  // TODO(mohsen): Merge this into TrayDetailedView::AddScrollListSubHeader()
+  // once network and VPN also use TrayDetailedView::AddScrollListSubHeader().
   static TriView* CreateSubHeaderRowView(bool start_visible);
 
   // Creates a container view to be used by system menu rows that want to embed
