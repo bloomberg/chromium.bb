@@ -160,7 +160,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
-  // |controller_connector_| is used to get a connection to the controller
+  // |controller_connector| is used to get a connection to the controller
   // ServiceWorker.
   // |network_loader_factory| is used to get the associated loading context's
   // default URLLoaderFactory for network fallback. This should be the

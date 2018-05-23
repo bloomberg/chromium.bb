@@ -18,6 +18,18 @@ ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
   SetControllerServiceWorkerPtr(std::move(controller_ptr));
 }
 
+ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
+    mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
+    const std::string& client_id)
+    : client_id_(client_id) {
+  container_host_ptr_.Bind(std::move(container_host_info));
+  container_host_ptr_.set_connection_error_handler(base::BindOnce(
+      &ControllerServiceWorkerConnector::OnContainerHostConnectionClosed,
+      base::Unretained(this)));
+  container_host_ = container_host_ptr_.get();
+  SetControllerServiceWorkerPtr(nullptr /* controller_ptr */);
+}
+
 mojom::ControllerServiceWorker*
 ControllerServiceWorkerConnector::GetControllerServiceWorker(
     mojom::ControllerServiceWorkerPurpose purpose) {
@@ -57,6 +69,7 @@ void ControllerServiceWorkerConnector::RemoveObserver(Observer* observer) {
 void ControllerServiceWorkerConnector::OnContainerHostConnectionClosed() {
   state_ = State::kNoContainerHost;
   container_host_ = nullptr;
+  container_host_ptr_.reset();
   controller_service_worker_.reset();
 }
 

@@ -9,6 +9,7 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/frame_messages.h"
+#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
@@ -29,6 +30,23 @@
 namespace content {
 
 WorkerFetchContextImpl::RewriteURLFunction g_rewrite_url = nullptr;
+
+namespace {
+
+// Runs on IO thread.
+void CreateSubresourceLoaderFactory(
+    mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
+    const std::string& client_id,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory,
+    network::mojom::URLLoaderFactoryRequest request) {
+  ServiceWorkerSubresourceLoaderFactory::Create(
+      base::MakeRefCounted<ControllerServiceWorkerConnector>(
+          std::move(container_host_info), client_id),
+      network::SharedURLLoaderFactory::Create(std::move(fallback_factory)),
+      std::move(request));
+}
+
+}  // namespace
 
 // static
 void WorkerFetchContextImpl::InstallRewriteURLFunction(
@@ -114,7 +132,8 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
         websocket_handshake_throttle_provider,
-    ThreadSafeSender* thread_safe_sender)
+    ThreadSafeSender* thread_safe_sender,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : binding_(this),
       service_worker_client_request_(std::move(service_worker_client_request)),
       service_worker_container_host_info_(
@@ -124,7 +143,8 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
       thread_safe_sender_(thread_safe_sender),
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
-          std::move(websocket_handshake_throttle_provider)) {
+          std::move(websocket_handshake_throttle_provider)),
+      io_task_runner_(std::move(io_task_runner)) {
   if (ServiceWorkerUtils::IsServicificationEnabled()) {
     ChildThreadImpl::current()->GetConnector()->BindInterface(
         mojom::kBrowserServiceName,
@@ -154,7 +174,7 @@ WorkerFetchContextImpl::CloneForNestedWorker() {
       websocket_handshake_throttle_provider_
           ? websocket_handshake_throttle_provider_->Clone()
           : nullptr,
-      thread_safe_sender_.get());
+      thread_safe_sender_.get(), io_task_runner_);
   new_context->is_on_sub_frame_ = is_on_sub_frame_;
   new_context->appcache_host_id_ = appcache_host_id_;
   return new_context;
@@ -346,11 +366,16 @@ void WorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
   }
 
   network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
-  ServiceWorkerSubresourceLoaderFactory::Create(
-      base::MakeRefCounted<ControllerServiceWorkerConnector>(
-          service_worker_container_host_.get(), nullptr /*controller_ptr*/,
-          client_id_),
-      fallback_factory_, mojo::MakeRequest(&service_worker_url_loader_factory));
+  mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
+  service_worker_container_host_->CloneForWorker(
+      mojo::MakeRequest(&host_ptr_info));
+  // To avoid potential dead-lock while synchronous loading, create the
+  // SubresourceLoaderFactory on the IO thread.
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CreateSubresourceLoaderFactory, std::move(host_ptr_info),
+                     client_id_, fallback_factory_->Clone(),
+                     mojo::MakeRequest(&service_worker_url_loader_factory)));
   web_loader_factory_->SetServiceWorkerURLLoaderFactory(
       std::move(service_worker_url_loader_factory));
 }

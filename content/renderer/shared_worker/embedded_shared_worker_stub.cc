@@ -338,7 +338,8 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
       GetContentClient()
           ->renderer()
           ->CreateWebSocketHandshakeThrottleProvider(),
-      ChildThreadImpl::current()->thread_safe_sender());
+      ChildThreadImpl::current()->thread_safe_sender(),
+      RenderThreadImpl::current()->GetIOTaskRunner());
 
   // TODO(horo): To get the correct first_party_to_cookies for the shared
   // worker, we need to check the all documents bounded by the shared worker.
