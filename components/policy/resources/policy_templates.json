@@ -12045,7 +12045,7 @@
             },
             'ends_at': {
               'hour': 7,
-              'Minute': 30
+              'minute': 30
             },
             'last_updated_millis': '1000000'
           }]
@@ -12060,10 +12060,10 @@
             'minute': 0
           }
         },
-        'overrides': [{
+        'overrides': {
           'action': 'LOCK',
-          'created_at': '1250000'
-        }]
+          'created_at_millis': '1250000'
+        }
       }],
       'id': 448,
       'caption': '''Time Limit''',
