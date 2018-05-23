@@ -66,8 +66,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   bool IsFrameVisible() const override;
   bool IsPageVisible() const override;
   void SetPaused(bool frame_paused) override;
-  void SetPageFrozen(bool) override;
-  void SetKeepActive(bool) override;
 
   void SetCrossOrigin(bool cross_origin) override;
   bool IsCrossOrigin() const override;
@@ -88,13 +86,16 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   bool IsExemptFromBudgetBasedThrottling() const override;
 
   scoped_refptr<base::sequence_manager::TaskQueue> ControlTaskQueue();
-  void SetPageVisibility(PageVisibilityState page_visibility);
 
   void UpdatePolicy();
 
   bool has_active_connection() const { return has_active_connection_; }
 
   void OnTraceLogEnabled() { tracing_controller_.OnTraceLogEnabled(); }
+
+  void SetPageVisibilityForTracing(PageVisibilityState page_visibility);
+  void SetPageKeepActiveForTracing(bool keep_active);
+  void SetPageFrozenForTracing(bool frozen);
 
  private:
   friend class PageSchedulerImpl;
@@ -177,10 +178,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   std::unordered_map<Observer*, ObserverType> throttling_observers_;
   FrameScheduler::ThrottlingState throttling_state_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_visible_;
-  TraceableState<PageVisibilityState, kTracingCategoryNameInfo>
-      page_visibility_;
-  TraceableState<bool, kTracingCategoryNameInfo> page_frozen_;
-  TraceableState<bool, kTracingCategoryNameInfo> keep_active_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_paused_;
   TraceableState<FrameOriginType, kTracingCategoryNameInfo> frame_origin_type_;
   StateTracer<kTracingCategoryNameInfo> url_tracer_;
@@ -190,6 +187,14 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   // Trace active connection count.
   int active_connection_count_;
   TraceableState<bool, kTracingCategoryNameInfo> has_active_connection_;
+
+  // These are the states of the Page.
+  // They should be accessed via GetPageScheduler()->SetPageState().
+  // they are here because we don't support page-level tracing yet.
+  TraceableState<bool, kTracingCategoryNameInfo> page_frozen_for_tracing_;
+  TraceableState<PageVisibilityState, kTracingCategoryNameInfo>
+      page_visibility_for_tracing_;
+  TraceableState<bool, kTracingCategoryNameInfo> page_keep_active_for_tracing_;
 
   base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_;
 

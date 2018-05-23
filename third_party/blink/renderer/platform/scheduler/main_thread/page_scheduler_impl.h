@@ -82,6 +82,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // Note that the frame can throttle queues even when the page is not throttled
   // (e.g. for offscreen frames or recently backgrounded pages).
   bool IsThrottled() const;
+  bool KeepActive() const;
 
   std::unique_ptr<FrameSchedulerImpl> CreateFrameSchedulerImpl(
       base::trace_event::BlameContext*,
@@ -115,6 +116,12 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
     kRecentlyAudible,
   };
 
+  enum class NotificationPolicy { kNotifyFrames, kDoNotNotifyFrames };
+
+  // Support not issuing a notification to frames when we disable freezing as
+  // a part of foregrounding the page.
+  void SetPageFrozenImpl(bool frozen, NotificationPolicy notification_policy);
+
   CPUTimeBudgetPool* BackgroundCPUTimeBudgetPool();
   void MaybeInitializeBackgroundCPUTimeBudgetPool();
 
@@ -122,7 +129,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   // Depending on page visibility, either turns throttling off, or schedules a
   // call to enable it after a grace period.
-  void UpdateBackgroundThrottlingState();
+  void UpdateBackgroundThrottlingState(NotificationPolicy notification_policy);
 
   // As a part of UpdateBackgroundThrottlingState set correct
   // background_time_budget_pool_ state depending on page visibility and
@@ -136,9 +143,10 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // Callback for enabling throttling in background after specified delay.
   // TODO(altimin): Trigger throttling depending on the loading state
   // of the page.
-  void OnPageThrottled();
+  void DoThrottlePage();
 
-  void UpdateFramePolicies();
+  // Notify frames that the page scheduler state has been updated.
+  void NotifyFrames();
 
   void EnableThrottling();
 
@@ -155,9 +163,10 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool nested_runloop_;
   bool is_main_frame_local_;
   bool is_throttled_;
+  bool keep_active_;
   CPUTimeBudgetPool* background_time_budget_pool_;  // Not owned.
   PageScheduler::Delegate* delegate_;               // Not owned.
-  CancelableClosureHolder on_page_throttled_closure_;
+  CancelableClosureHolder do_throttle_page_callback_;
   CancelableClosureHolder on_audio_silent_closure_;
   base::WeakPtrFactory<PageSchedulerImpl> weak_factory_;
 

@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 
 using base::sequence_manager::TaskQueue;
+using testing::UnorderedElementsAre;
 
 namespace blink {
 namespace scheduler {
@@ -150,6 +152,11 @@ class MockThrottlingObserver final : public FrameScheduler::Observer {
 
 void IncrementCounter(int* counter) {
   ++*counter;
+}
+
+void RecordQueueName(const scoped_refptr<TaskQueue> task_queue,
+                     std::vector<std::string>* tasks) {
+  tasks->push_back(task_queue->GetName());
 }
 
 }  // namespace
@@ -312,15 +319,15 @@ TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagEnabled) {
   UnpausableTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
 
-  frame_scheduler_->SetPageVisibility(PageVisibilityState::kHidden);
-  frame_scheduler_->SetPageFrozen(true);
+  page_scheduler_->SetPageVisible(false);
+  page_scheduler_->SetPageFrozen(true);
 
   EXPECT_EQ(0, counter);
   mock_task_runner_->RunUntilIdle();
   // unpausable tasks continue to run.
   EXPECT_EQ(1, counter);
 
-  frame_scheduler_->SetPageFrozen(false);
+  page_scheduler_->SetPageFrozen(false);
 
   EXPECT_EQ(1, counter);
   mock_task_runner_->RunUntilIdle();
@@ -342,15 +349,15 @@ TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
   UnpausableTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
 
-  frame_scheduler_->SetPageVisibility(PageVisibilityState::kHidden);
-  frame_scheduler_->SetPageFrozen(true);
+  page_scheduler_->SetPageVisible(false);
+  page_scheduler_->SetPageFrozen(true);
 
   EXPECT_EQ(0, counter);
   mock_task_runner_->RunUntilIdle();
   // throttleable tasks are frozen, other tasks continue to run.
   EXPECT_EQ(4, counter);
 
-  frame_scheduler_->SetPageFrozen(false);
+  page_scheduler_->SetPageFrozen(false);
 
   EXPECT_EQ(4, counter);
   mock_task_runner_->RunUntilIdle();
@@ -360,46 +367,60 @@ TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
 TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
   ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
   ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(false);
-  int counter = 0;
+  std::vector<std::string> tasks;
   LoadingTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+      FROM_HERE, base::BindOnce(&RecordQueueName, LoadingTaskQueue(), &tasks));
   ThrottleableTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+      FROM_HERE,
+      base::BindOnce(&RecordQueueName, ThrottleableTaskQueue(), &tasks));
   DeferrableTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+      FROM_HERE,
+      base::BindOnce(&RecordQueueName, DeferrableTaskQueue(), &tasks));
   PausableTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+      FROM_HERE, base::BindOnce(&RecordQueueName, PausableTaskQueue(), &tasks));
   UnpausableTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+      FROM_HERE,
+      base::BindOnce(&RecordQueueName, UnpausableTaskQueue(), &tasks));
 
-  frame_scheduler_->SetKeepActive(true);  // say we have a Service Worker
-  frame_scheduler_->SetPageVisibility(PageVisibilityState::kHidden);
-  frame_scheduler_->SetPageFrozen(true);
+  page_scheduler_->SetKeepActive(true);  // say we have a Service Worker
+  page_scheduler_->SetPageVisible(false);
+  page_scheduler_->SetPageFrozen(true);
 
-  EXPECT_EQ(0, counter);
+  EXPECT_THAT(tasks, UnorderedElementsAre());
   mock_task_runner_->RunUntilIdle();
   // Everything runs except throttleable tasks (timers)
-  EXPECT_EQ(4, counter);
+  EXPECT_THAT(tasks, UnorderedElementsAre(
+                         std::string(LoadingTaskQueue()->GetName()),
+                         std::string(DeferrableTaskQueue()->GetName()),
+                         std::string(PausableTaskQueue()->GetName()),
+                         std::string(UnpausableTaskQueue()->GetName())));
 
+  tasks.clear();
   LoadingTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+      FROM_HERE, base::BindOnce(&RecordQueueName, LoadingTaskQueue(), &tasks));
 
-  EXPECT_EQ(4, counter);
+  EXPECT_THAT(tasks, UnorderedElementsAre());
   mock_task_runner_->RunUntilIdle();
-  EXPECT_EQ(5, counter);  // loading task runs
+  // loading task runs
+  EXPECT_THAT(tasks,
+              UnorderedElementsAre(std::string(LoadingTaskQueue()->GetName())));
 
+  tasks.clear();
   LoadingTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+      FROM_HERE, base::BindOnce(&RecordQueueName, LoadingTaskQueue(), &tasks));
   // KeepActive is false when Service Worker stops.
-  frame_scheduler_->SetKeepActive(false);
-  EXPECT_EQ(5, counter);
+  page_scheduler_->SetKeepActive(false);
+  EXPECT_THAT(tasks, UnorderedElementsAre());
   mock_task_runner_->RunUntilIdle();
-  EXPECT_EQ(5, counter);  // loading task does not run
+  EXPECT_THAT(tasks, UnorderedElementsAre());  // loading task does not run
 
-  frame_scheduler_->SetKeepActive(true);
-  EXPECT_EQ(5, counter);
+  tasks.clear();
+  page_scheduler_->SetKeepActive(true);
+  EXPECT_THAT(tasks, UnorderedElementsAre());
   mock_task_runner_->RunUntilIdle();
-  EXPECT_EQ(6, counter);  // loading task runs
+  // loading task runs
+  EXPECT_THAT(tasks,
+              UnorderedElementsAre(std::string(LoadingTaskQueue()->GetName())));
 }
 
 TEST_F(FrameSchedulerImplTest, PageFreezeAndPageVisible) {
@@ -417,15 +438,15 @@ TEST_F(FrameSchedulerImplTest, PageFreezeAndPageVisible) {
   UnpausableTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
 
-  frame_scheduler_->SetPageVisibility(PageVisibilityState::kHidden);
-  frame_scheduler_->SetPageFrozen(true);
+  page_scheduler_->SetPageVisible(false);
+  page_scheduler_->SetPageFrozen(true);
 
   EXPECT_EQ(0, counter);
   mock_task_runner_->RunUntilIdle();
   EXPECT_EQ(1, counter);
 
   // Making the page visible should cause frozen queues to resume.
-  frame_scheduler_->SetPageVisibility(PageVisibilityState::kVisible);
+  page_scheduler_->SetPageVisible(true);
 
   EXPECT_EQ(1, counter);
   mock_task_runner_->RunUntilIdle();

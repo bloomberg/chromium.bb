@@ -114,12 +114,13 @@ PageSchedulerImpl::PageSchedulerImpl(
       nested_runloop_(false),
       is_main_frame_local_(false),
       is_throttled_(false),
+      keep_active_(false),
       background_time_budget_pool_(nullptr),
       delegate_(delegate),
       weak_factory_(this) {
   main_thread_scheduler->AddPageScheduler(this);
-  on_page_throttled_closure_.Reset(base::BindRepeating(
-      &PageSchedulerImpl::OnPageThrottled, base::Unretained(this)));
+  do_throttle_page_callback_.Reset(base::BindRepeating(
+      &PageSchedulerImpl::DoThrottlePage, base::Unretained(this)));
   on_audio_silent_closure_.Reset(base::BindRepeating(
       &PageSchedulerImpl::OnAudioSilent, base::Unretained(this)));
 }
@@ -144,35 +145,52 @@ void PageSchedulerImpl::SetPageVisible(bool page_visible) {
   if (disable_background_timer_throttling_ ||
       page_visibility_ == page_visibility)
     return;
-
   page_visibility_ = page_visibility;
 
   // Visible pages should not be frozen.
-  if (page_visibility_ == PageVisibilityState::kVisible) {
-    is_throttled_ = false;
-    if (is_frozen_)
-      SetPageFrozen(false);
-  }
+  if (page_visibility_ == PageVisibilityState::kVisible)
+    SetPageFrozenImpl(false, NotificationPolicy::kDoNotNotifyFrames);
 
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
-    frame_scheduler->SetPageVisibility(page_visibility_);
+    frame_scheduler->SetPageVisibilityForTracing(page_visibility_);
 
-  UpdateBackgroundThrottlingState();
+  UpdateBackgroundThrottlingState(NotificationPolicy::kDoNotNotifyFrames);
+
+  NotifyFrames();
 }
 
 void PageSchedulerImpl::SetPageFrozen(bool frozen) {
+  SetPageFrozenImpl(frozen, NotificationPolicy::kNotifyFrames);
+}
+
+void PageSchedulerImpl::SetPageFrozenImpl(
+    bool frozen,
+    PageSchedulerImpl::NotificationPolicy notification_policy) {
   if (is_frozen_ == frozen)
     return;
   is_frozen_ = frozen;
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
-    frame_scheduler->SetPageFrozen(frozen);
+    frame_scheduler->SetPageFrozenForTracing(frozen);
   if (delegate_)
     delegate_->SetPageFrozen(frozen);
+  if (notification_policy ==
+      PageSchedulerImpl::NotificationPolicy::kNotifyFrames)
+    NotifyFrames();
 }
 
 void PageSchedulerImpl::SetKeepActive(bool keep_active) {
+  if (keep_active_ == keep_active)
+    return;
+  keep_active_ = keep_active;
+
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
-    frame_scheduler->SetKeepActive(keep_active);
+    frame_scheduler->SetPageKeepActiveForTracing(keep_active);
+
+  NotifyFrames();
+}
+
+bool PageSchedulerImpl::KeepActive() const {
+  return keep_active_;
 }
 
 bool PageSchedulerImpl::IsMainFrameLocal() const {
@@ -189,7 +207,7 @@ std::unique_ptr<FrameSchedulerImpl> PageSchedulerImpl::CreateFrameSchedulerImpl(
   MaybeInitializeBackgroundCPUTimeBudgetPool();
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler(new FrameSchedulerImpl(
       main_thread_scheduler_, this, blame_context, frame_type));
-  frame_scheduler->SetPageVisibility(page_visibility_);
+  frame_scheduler->UpdatePolicy();
   frame_schedulers_.insert(frame_scheduler.get());
   return frame_scheduler;
 }
@@ -261,7 +279,8 @@ void PageSchedulerImpl::AudioStateChanged(bool is_audio_playing) {
   if (is_audio_playing) {
     audio_state_ = AudioState::kAudible;
     on_audio_silent_closure_.Cancel();
-    UpdateFramePolicies();
+    NotifyFrames();
+    main_thread_scheduler_->OnAudioStateChanged();
   } else {
     if (audio_state_ != AudioState::kAudible)
       return;
@@ -270,16 +289,16 @@ void PageSchedulerImpl::AudioStateChanged(bool is_audio_playing) {
     audio_state_ = AudioState::kRecentlyAudible;
     main_thread_scheduler_->ControlTaskQueue()->PostDelayedTask(
         FROM_HERE, on_audio_silent_closure_.GetCallback(), kRecentAudioDelay);
-    // No need to call UpdateFramePolicies here, as for outside world
+    // No need to call NotifyFrames or
+    // MainThreadScheduler::OnAudioStateChanged here, as for outside world
     // kAudible and kRecentlyAudible are the same thing.
   }
-  main_thread_scheduler_->OnAudioStateChanged();
 }
 
 void PageSchedulerImpl::OnAudioSilent() {
   DCHECK_EQ(audio_state_, AudioState::kRecentlyAudible);
   audio_state_ = AudioState::kSilent;
-  UpdateFramePolicies();
+  NotifyFrames();
   main_thread_scheduler_->OnAudioStateChanged();
 }
 
@@ -380,8 +399,6 @@ void PageSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool() {
   background_time_budget_pool_->SetMaxThrottlingDelay(
       lazy_now.Now(), settings.max_throttling_delay);
 
-  UpdateBackgroundThrottlingState();
-
   background_time_budget_pool_->SetTimeBudgetRecoveryRate(
       lazy_now.Now(), settings.budget_recovery_rate);
 
@@ -389,6 +406,8 @@ void PageSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool() {
     background_time_budget_pool_->GrantAdditionalBudget(
         lazy_now.Now(), settings.initial_budget.value());
   }
+
+  UpdateBackgroundBudgetPoolThrottlingState();
 }
 
 void PageSchedulerImpl::OnThrottlingReported(
@@ -411,27 +430,27 @@ void PageSchedulerImpl::OnThrottlingReported(
   delegate_->ReportIntervention(String::FromUTF8(message.c_str()));
 }
 
-void PageSchedulerImpl::UpdateBackgroundThrottlingState() {
+void PageSchedulerImpl::UpdateBackgroundThrottlingState(
+    NotificationPolicy notification_policy) {
   if (page_visibility_ == PageVisibilityState::kVisible) {
     is_throttled_ = false;
-    on_page_throttled_closure_.Cancel();
+    do_throttle_page_callback_.Cancel();
     UpdateBackgroundBudgetPoolThrottlingState();
   } else {
     main_thread_scheduler_->ControlTaskQueue()->PostDelayedTask(
-        FROM_HERE, on_page_throttled_closure_.GetCallback(),
+        FROM_HERE, do_throttle_page_callback_.GetCallback(),
         kThrottlingDelayAfterBackgrounding);
   }
-  // Do not call UpdateFramePolicies here because it's already been triggered
-  // by FrameScheduler::SetPageVisible.
-  // TODO(altimin): Remove FrameScheduler::SetPageVisible and call
-  // UpdateFramePolicies here.
+  if (notification_policy == NotificationPolicy::kNotifyFrames)
+    NotifyFrames();
 }
 
-void PageSchedulerImpl::OnPageThrottled() {
-  on_page_throttled_closure_.Cancel();
+void PageSchedulerImpl::DoThrottlePage() {
+  do_throttle_page_callback_.Cancel();
   is_throttled_ = true;
-  UpdateFramePolicies();
+
   UpdateBackgroundBudgetPoolThrottlingState();
+  NotifyFrames();
 }
 
 void PageSchedulerImpl::UpdateBackgroundBudgetPoolThrottlingState() {
@@ -447,7 +466,7 @@ void PageSchedulerImpl::UpdateBackgroundBudgetPoolThrottlingState() {
   }
 }
 
-void PageSchedulerImpl::UpdateFramePolicies() {
+void PageSchedulerImpl::NotifyFrames() {
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
     frame_scheduler->UpdatePolicy();
 }
