@@ -28,6 +28,9 @@ constexpr base::TimeDelta kDefaultMeasurementInterval =
 
 }  // namespace
 
+constexpr base::TimeDelta
+    ResourceCoordinatorRenderProcessProbe::kUninitializedCPUTime;
+
 ResourceCoordinatorRenderProcessProbe::RenderProcessInfo::RenderProcessInfo() =
     default;
 
@@ -171,6 +174,8 @@ void ResourceCoordinatorRenderProcessProbe::
         base::TimeTicks collection_start_time,
         bool global_success,
         std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(is_gathering_);
   // Create the measurement batch.
   mojom::ProcessResourceMeasurementBatchPtr batch =
       mojom::ProcessResourceMeasurementBatch::New();
