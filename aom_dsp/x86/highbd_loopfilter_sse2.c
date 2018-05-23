@@ -641,6 +641,7 @@ void aom_highbd_lpf_horizontal_14_dual_sse2(
 
   highbd_lpf_internal_14_dual_sse2(p, q, _blimit0, _limit0, _thresh0, _blimit1,
                                    _limit1, _thresh1, bd);
+
   for (i = 0; i < 6; i++) {
     _mm_store_si128((__m128i *)(s - (i + 1) * pitch), p[i]);
     _mm_store_si128((__m128i *)(s + i * pitch), q[i]);
@@ -1234,6 +1235,7 @@ void aom_highbd_lpf_horizontal_4_dual_sse2(
   __m128i q0 = _mm_loadu_si128((__m128i *)(s - 0 * p));
   __m128i q1 = _mm_loadu_si128((__m128i *)(s + 1 * p));
   __m128i ps[2], qs[2];
+
   highbd_lpf_internal_4_dual_sse2(&p1, &p0, &q0, &q1, ps, qs, _blimit0, _limit0,
                                   _thresh0, _blimit1, _limit1, _thresh1, bd);
 
@@ -1246,31 +1248,30 @@ void aom_highbd_lpf_horizontal_4_dual_sse2(
 void aom_highbd_lpf_vertical_4_sse2(uint16_t *s, int p, const uint8_t *blimit,
                                     const uint8_t *limit, const uint8_t *thresh,
                                     int bd) {
-  __m128i x0, x1, x2, x3, d0, d1, d2, d3, d4, d5, d6, d7;
+  __m128i x0, x1, x2, x3, d0, d1, d2, d3;
   __m128i p1p0, q1q0;
   __m128i p1, q1;
 
-  x0 = _mm_loadu_si128((__m128i *)(s - 4 + 0 * p));
-  x1 = _mm_loadu_si128((__m128i *)(s - 4 + 1 * p));
-  x2 = _mm_loadu_si128((__m128i *)(s - 4 + 2 * p));
-  x3 = _mm_loadu_si128((__m128i *)(s - 4 + 3 * p));
+  x0 = _mm_loadl_epi64((__m128i *)(s - 2 + 0 * p));
+  x1 = _mm_loadl_epi64((__m128i *)(s - 2 + 1 * p));
+  x2 = _mm_loadl_epi64((__m128i *)(s - 2 + 2 * p));
+  x3 = _mm_loadl_epi64((__m128i *)(s - 2 + 3 * p));
 
-  highbd_transpose4x8_8x4_sse2(&x0, &x1, &x2, &x3, &d0, &d1, &d2, &d3, &d4, &d5,
-                               &d6, &d7);
+  highbd_transpose4x8_8x4_low_sse2(&x0, &x1, &x2, &x3, &d0, &d1, &d2, &d3);
 
-  highbd_lpf_internal_4_sse2(&d2, &d3, &d4, &d5, &q1q0, &p1p0, blimit, limit,
+  highbd_lpf_internal_4_sse2(&d0, &d1, &d2, &d3, &q1q0, &p1p0, blimit, limit,
                              thresh, bd);
 
-  // transpose from 8x4 to 4x8
   p1 = _mm_srli_si128(p1p0, 8);
   q1 = _mm_srli_si128(q1q0, 8);
-  highbd_transpose8x8_low_sse2(&d0, &d1, &p1, &p1p0, &q1q0, &q1, &d6, &d7, &d0,
-                               &d1, &d2, &d3);
 
-  _mm_storeu_si128((__m128i *)(s - 4 + 0 * p), d0);
-  _mm_storeu_si128((__m128i *)(s - 4 + 1 * p), d1);
-  _mm_storeu_si128((__m128i *)(s - 4 + 2 * p), d2);
-  _mm_storeu_si128((__m128i *)(s - 4 + 3 * p), d3);
+  // transpose from 8x4 to 4x8
+  highbd_transpose4x8_8x4_low_sse2(&p1, &p1p0, &q1q0, &q1, &d0, &d1, &d2, &d3);
+
+  _mm_storel_epi64((__m128i *)(s - 2 + 0 * p), d0);
+  _mm_storel_epi64((__m128i *)(s - 2 + 1 * p), d1);
+  _mm_storel_epi64((__m128i *)(s - 2 + 2 * p), d2);
+  _mm_storel_epi64((__m128i *)(s - 2 + 3 * p), d3);
 }
 
 void aom_highbd_lpf_vertical_4_dual_sse2(
@@ -1281,32 +1282,32 @@ void aom_highbd_lpf_vertical_4_dual_sse2(
   __m128i d0, d1, d2, d3, d4, d5, d6, d7;
   __m128i ps[2], qs[2];
 
-  x0 = _mm_loadu_si128((__m128i *)(s - 4 + 0 * p));
-  x1 = _mm_loadu_si128((__m128i *)(s - 4 + 1 * p));
-  x2 = _mm_loadu_si128((__m128i *)(s - 4 + 2 * p));
-  x3 = _mm_loadu_si128((__m128i *)(s - 4 + 3 * p));
-  x4 = _mm_loadu_si128((__m128i *)(s - 4 + 4 * p));
-  x5 = _mm_loadu_si128((__m128i *)(s - 4 + 5 * p));
-  x6 = _mm_loadu_si128((__m128i *)(s - 4 + 6 * p));
-  x7 = _mm_loadu_si128((__m128i *)(s - 4 + 7 * p));
+  x0 = _mm_loadl_epi64((__m128i *)(s - 2 + 0 * p));
+  x1 = _mm_loadl_epi64((__m128i *)(s - 2 + 1 * p));
+  x2 = _mm_loadl_epi64((__m128i *)(s - 2 + 2 * p));
+  x3 = _mm_loadl_epi64((__m128i *)(s - 2 + 3 * p));
+  x4 = _mm_loadl_epi64((__m128i *)(s - 2 + 4 * p));
+  x5 = _mm_loadl_epi64((__m128i *)(s - 2 + 5 * p));
+  x6 = _mm_loadl_epi64((__m128i *)(s - 2 + 6 * p));
+  x7 = _mm_loadl_epi64((__m128i *)(s - 2 + 7 * p));
 
-  highbd_transpose8x8_sse2(&x0, &x1, &x2, &x3, &x4, &x5, &x6, &x7, &d0, &d1,
-                           &d2, &d3, &d4, &d5, &d6, &d7);
+  highbd_transpose8x8_low_sse2(&x0, &x1, &x2, &x3, &x4, &x5, &x6, &x7, &d0, &d1,
+                               &d2, &d3);
 
-  highbd_lpf_internal_4_dual_sse2(&d2, &d3, &d4, &d5, ps, qs, blimit0, limit0,
+  highbd_lpf_internal_4_dual_sse2(&d0, &d1, &d2, &d3, ps, qs, blimit0, limit0,
                                   thresh0, blimit1, limit1, thresh1, bd);
 
-  highbd_transpose8x8_sse2(&d0, &d1, &ps[1], &ps[0], &qs[0], &qs[1], &d6, &d7,
-                           &x0, &x1, &x2, &x3, &x4, &x5, &x6, &x7);
+  highbd_transpose4x8_8x4_sse2(&ps[1], &ps[0], &qs[0], &qs[1], &d0, &d1, &d2,
+                               &d3, &d4, &d5, &d6, &d7);
 
-  _mm_storeu_si128((__m128i *)(s - 4 + 0 * p), x0);
-  _mm_storeu_si128((__m128i *)(s - 4 + 1 * p), x1);
-  _mm_storeu_si128((__m128i *)(s - 4 + 2 * p), x2);
-  _mm_storeu_si128((__m128i *)(s - 4 + 3 * p), x3);
-  _mm_storeu_si128((__m128i *)(s - 4 + 4 * p), x4);
-  _mm_storeu_si128((__m128i *)(s - 4 + 5 * p), x5);
-  _mm_storeu_si128((__m128i *)(s - 4 + 6 * p), x6);
-  _mm_storeu_si128((__m128i *)(s - 4 + 7 * p), x7);
+  _mm_storel_epi64((__m128i *)(s - 2 + 0 * p), d0);
+  _mm_storel_epi64((__m128i *)(s - 2 + 1 * p), d1);
+  _mm_storel_epi64((__m128i *)(s - 2 + 2 * p), d2);
+  _mm_storel_epi64((__m128i *)(s - 2 + 3 * p), d3);
+  _mm_storel_epi64((__m128i *)(s - 2 + 4 * p), d4);
+  _mm_storel_epi64((__m128i *)(s - 2 + 5 * p), d5);
+  _mm_storel_epi64((__m128i *)(s - 2 + 6 * p), d6);
+  _mm_storel_epi64((__m128i *)(s - 2 + 7 * p), d7);
 }
 
 void aom_highbd_lpf_vertical_6_sse2(uint16_t *s, int p, const uint8_t *blimit,
