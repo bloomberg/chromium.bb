@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/media_internals.h"
 #include "content/public/browser/browser_thread.h"
@@ -47,6 +48,7 @@ AudioInputStreamBroker::AudioInputStreamBroker(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(renderer_factory_client_);
   DCHECK(deleter_);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("audio", "AudioInputStreamBroker", this);
 
   // Unretained is safe because |this| owns |renderer_factory_client_|.
   renderer_factory_client_.set_connection_error_handler(
@@ -101,6 +103,12 @@ AudioInputStreamBroker::~AudioInputStreamBroker() {
     process_host->OnMediaStreamRemoved();
 
   // TODO(https://crbug.com/829317) update tab recording indicator.
+
+  if (awaiting_created_) {
+    TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "CreateStream", this, "success",
+                                    "failed or cancelled");
+  }
+  TRACE_EVENT_NESTABLE_ASYNC_END0("audio", "AudioInputStreamBroker", this);
 }
 
 void AudioInputStreamBroker::CreateStream(
@@ -108,6 +116,9 @@ void AudioInputStreamBroker::CreateStream(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!observer_binding_.is_bound());
   DCHECK(!client_request_);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("audio", "CreateStream", this, "device id",
+                                    device_id_);
+  awaiting_created_ = true;
 
   base::ReadOnlySharedMemoryRegion key_press_count_buffer;
   if (user_input_monitor_) {
@@ -157,6 +168,9 @@ void AudioInputStreamBroker::StreamCreated(
     bool initially_muted,
     const base::Optional<base::UnguessableToken>& stream_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  awaiting_created_ = false;
+  TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "CreateStream", this, "success",
+                                  !!data_pipe);
 
   if (!data_pipe) {
     Cleanup();

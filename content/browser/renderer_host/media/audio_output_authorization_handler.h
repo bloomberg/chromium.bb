@@ -65,26 +65,34 @@ class CONTENT_EXPORT AudioOutputAuthorizationHandler {
   static void UMALogDeviceAuthorizationTime(base::TimeTicks auth_start_time);
 
  private:
-  void HashDeviceId(AuthorizationCompletedCallback cb,
+  // Helper class for recording traces.
+  class TraceScope;
+
+  void HashDeviceId(std::unique_ptr<TraceScope> trace_scope,
+                    AuthorizationCompletedCallback cb,
                     const std::string& raw_device_id,
                     const MediaDeviceSaltAndOrigin& salt_and_origin) const;
 
-  void AccessChecked(AuthorizationCompletedCallback cb,
+  void AccessChecked(std::unique_ptr<TraceScope> trace_scope,
+                     AuthorizationCompletedCallback cb,
                      const std::string& device_id,
                      std::string salt,
                      url::Origin security_origin,
                      bool has_access) const;
 
-  void TranslateDeviceID(AuthorizationCompletedCallback cb,
+  void TranslateDeviceID(std::unique_ptr<TraceScope> trace_scope,
+                         AuthorizationCompletedCallback cb,
                          const std::string& device_id,
                          const std::string& salt,
                          const url::Origin& security_origin,
                          const MediaDeviceEnumeration& enumeration) const;
 
-  void GetDeviceParameters(AuthorizationCompletedCallback cb,
+  void GetDeviceParameters(std::unique_ptr<TraceScope> trace_scope,
+                           AuthorizationCompletedCallback cb,
                            const std::string& raw_device_id) const;
 
   void DeviceParametersReceived(
+      std::unique_ptr<TraceScope> trace_scope,
       AuthorizationCompletedCallback cb,
       const std::string& device_id_for_renderer,
       const std::string& raw_device_id,

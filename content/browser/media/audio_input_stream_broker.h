@@ -60,6 +60,9 @@ class CONTENT_EXPORT AudioInputStreamBroker final
   const bool enable_agc_;
   media::UserInputMonitorBase* user_input_monitor_ = nullptr;
 
+  // Indicates that CreateStream has been called, but not StreamCreated.
+  bool awaiting_created_ = false;
+
   DeleterCallback deleter_;
 
   mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client_;

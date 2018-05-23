@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/trace_event/trace_event.h"
 #include "media/audio/audio_input_sync_writer.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/audio_parameters.h"
@@ -58,6 +59,10 @@ InputStream::InputStream(CreatedCallback created_callback,
   DCHECK(client_.is_bound());
   DCHECK(created_callback_);
   DCHECK(delete_callback_);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("audio", "audio::InputStream", this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN2("audio", "InputStream", this, "device id",
+                                    device_id, "params",
+                                    params.AsHumanReadableString());
 
   // |this| owns these objects, so unretained is safe.
   base::RepeatingClosure error_handler =
@@ -108,11 +113,16 @@ InputStream::~InputStream() {
   // TODO(https://crbug.com/803102): remove AudioInputController::Close() after
   // content/ streams are removed, destructor should suffice.
   controller_->Close(base::OnceClosure());
+
+  TRACE_EVENT_NESTABLE_ASYNC_END0("audio", "InputStream", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("audio", "audio::InputStream", this);
 }
 
 void InputStream::Record() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   DCHECK(controller_);
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "Record", this);
+
   controller_->Record();
   if (observer_)
     observer_->DidStartRecording();
@@ -123,6 +133,8 @@ void InputStream::Record() {
 void InputStream::SetVolume(double volume) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   DCHECK(controller_);
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("audio", "SetVolume", this, "volume",
+                                      volume);
 
   if (volume < 0 || volume > 1) {
     mojo::ReportBadMessage("Invalid volume");
@@ -136,6 +148,7 @@ void InputStream::SetVolume(double volume) {
 }
 
 void InputStream::OnCreated(bool initially_muted) {
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "Created", this);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
 
   const base::SharedMemory* memory = writer_->shared_memory();
@@ -163,6 +176,8 @@ void InputStream::OnCreated(bool initially_muted) {
 
 void InputStream::OnError(media::AudioInputController::ErrorCode error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "Error", this);
+
   client_->OnError();
   if (log_)
     log_->get()->OnError();
@@ -182,6 +197,7 @@ void InputStream::OnMuted(bool is_muted) {
 
 void InputStream::OnStreamError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "OnStreamError", this);
 
   // Defer callback so we're not destructed while in the constructor.
   base::SequencedTaskRunnerHandle::Get()->PostTask(

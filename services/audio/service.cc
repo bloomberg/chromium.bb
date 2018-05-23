@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/time/default_clock.h"
+#include "base/trace_event/trace_event.h"
 #include "media/audio/audio_manager.h"
 #include "services/audio/debug_recording.h"
 #include "services/audio/device_notifier.h"
@@ -82,6 +83,8 @@ void Service::OnBindInterface(
   DCHECK(ref_factory_);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(4) << "audio::Service::OnBindInterface";
+  TRACE_EVENT1("audio", "audio::Service::OnBindInterface", "interface",
+               interface_name);
 
   if (ref_factory_->HasNoRefs())
     metrics_->HasConnections();

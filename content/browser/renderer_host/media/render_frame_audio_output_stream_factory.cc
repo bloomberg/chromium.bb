@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/trace_event/trace_event.h"
 #include "content/browser/media/forwarding_audio_stream_factory.h"
 #include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
 #include "content/public/browser/render_frame_host.h"
@@ -38,6 +39,10 @@ class RenderFrameAudioOutputStreamFactory::ProviderImpl final
       const media::AudioParameters& params,
       media::mojom::AudioOutputStreamProviderClientPtr provider_client) final {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    TRACE_EVENT1("audio",
+                 "RenderFrameAudioOutputStreamFactory::ProviderImpl::Acquire",
+                 "raw device id", device_id_);
+
     RenderFrameHost* frame = owner_->frame_;
     ForwardingAudioStreamFactory* factory =
         ForwardingAudioStreamFactory::ForFrame(frame);
@@ -90,6 +95,11 @@ void RenderFrameAudioOutputStreamFactory::RequestDeviceAuthorization(
     const std::string& device_id,
     RequestDeviceAuthorizationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  TRACE_EVENT2(
+      "audio",
+      "RenderFrameAudioOutputStreamFactory::RequestDeviceAuthorization",
+      "device id", device_id, "session_id", session_id);
+
   const base::TimeTicks auth_start_time = base::TimeTicks::Now();
   // TODO(https://crbug.com/837625): This thread hopping is suboptimal since
   // AudioOutputAuthorizationHandler was made to be used on the IO thread.
@@ -120,6 +130,10 @@ void RenderFrameAudioOutputStreamFactory::AuthorizationCompleted(
     const std::string& raw_device_id,
     const std::string& device_id_for_renderer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  TRACE_EVENT2("audio",
+               "RenderFrameAudioOutputStreamFactory::AuthorizationCompleted",
+               "raw device id", raw_device_id, "status", status);
+
   AudioOutputAuthorizationHandler::UMALogDeviceAuthorizationTime(
       auth_start_time);
 

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/trace_event/trace_event.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/browser/media/forwarding_audio_stream_factory.h"
 #include "content/public/browser/browser_thread.h"
@@ -57,6 +58,10 @@ void RenderFrameAudioInputStreamFactory::CreateStream(
     bool automatic_gain_control,
     uint32_t shared_memory_count) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  TRACE_EVENT_INSTANT1("audio",
+                       "RenderFrameAudioInputStreamFactory::CreateStream",
+                       TRACE_EVENT_SCOPE_THREAD, "session id", session_id);
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
@@ -75,6 +80,10 @@ void RenderFrameAudioInputStreamFactory::CreateStreamAfterLookingUpDevice(
     bool automatic_gain_control,
     uint32_t shared_memory_count,
     const MediaStreamDevice& device) {
+  TRACE_EVENT1(
+      "audio",
+      "RenderFrameAudioInputStreamFactory::CreateStreamAfterLookingUpDevice",
+      "device id", device.id);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ForwardingAudioStreamFactory* factory =
       ForwardingAudioStreamFactory::ForFrame(render_frame_host_);

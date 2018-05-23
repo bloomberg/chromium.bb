@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/trace_event/trace_event.h"
 #include "content/browser/media/media_internals.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/media_observer.h"
@@ -35,6 +36,7 @@ AudioOutputStreamBroker::AudioOutputStreamBroker(
   DCHECK(client_);
   DCHECK(deleter_);
   DCHECK(group_id_);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("audio", "AudioOutputStreamBroker", this);
 
   MediaObserver* media_observer =
       GetContentClient()->browser()->GetMediaObserver();
@@ -50,12 +52,21 @@ AudioOutputStreamBroker::AudioOutputStreamBroker(
 
 AudioOutputStreamBroker::~AudioOutputStreamBroker() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+
+  if (awaiting_created_) {
+    TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "CreateStream", this, "success",
+                                    "failed or cancelled");
+  }
+  TRACE_EVENT_NESTABLE_ASYNC_END0("audio", "AudioOutputStreamBroker", this);
 }
 
 void AudioOutputStreamBroker::CreateStream(
     audio::mojom::StreamFactory* factory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   DCHECK(!observer_binding_.is_bound());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("audio", "CreateStream", this, "device id",
+                                    output_device_id_);
+  awaiting_created_ = true;
 
   // Set up observer ptr. Unretained is safe because |this| owns
   // |observer_binding_|.
@@ -86,6 +97,9 @@ void AudioOutputStreamBroker::StreamCreated(
     media::mojom::AudioOutputStreamPtr stream,
     media::mojom::AudioDataPipePtr data_pipe) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "CreateStream", this, "success",
+                                  !!data_pipe);
+  awaiting_created_ = false;
   if (!data_pipe) {
     // Stream creation failed. Signal error.
     client_.ResetWithReason(media::mojom::AudioOutputStreamProviderClient::
@@ -102,6 +116,10 @@ void AudioOutputStreamBroker::ObserverBindingLost(
     uint32_t reason,
     const std::string& description) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("audio", "ObserverBindingLost", this,
+                                      "reset reason", reason);
+
   // TODO(https://crbug.com/787806): Don't propagate errors if we can retry
   // instead.
   client_.ResetWithReason(media::mojom::AudioOutputStreamProviderClient::

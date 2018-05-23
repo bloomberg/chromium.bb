@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "services/audio/input_stream.h"
 #include "services/audio/local_muter.h"
@@ -42,6 +43,8 @@ void StreamFactory::CreateInputStream(
     mojo::ScopedSharedBufferHandle key_press_count_buffer,
     CreateInputStreamCallback created_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  TRACE_EVENT1("audio", "StreamFactory::CreateInputStream", "device id",
+               device_id);
 
   // Unretained is safe since |this| indirectly owns the InputStream.
   auto deleter_callback = base::BindOnce(&StreamFactory::DestroyInputStream,
@@ -64,6 +67,8 @@ void StreamFactory::CreateOutputStream(
     const base::UnguessableToken& group_id,
     CreateOutputStreamCallback created_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  TRACE_EVENT1("audio", "StreamFactory::CreateOutputStream", "device id",
+               output_device_id);
 
   media::mojom::AudioOutputStreamObserverAssociatedPtr observer;
   observer.Bind(std::move(observer_info));
@@ -81,6 +86,8 @@ void StreamFactory::CreateOutputStream(
 void StreamFactory::BindMuter(mojom::LocalMuterAssociatedRequest request,
                               const base::UnguessableToken& group_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  TRACE_EVENT1("audio", "StreamFactory::BindMuter", "group id",
+               group_id.GetLowForSerialization());
 
   // Find the existing LocalMuter for this group, or create one on-demand.
   auto it = std::find_if(muters_.begin(), muters_.end(),
@@ -112,6 +119,8 @@ void StreamFactory::CreateLoopbackStream(
     CreateLoopbackStreamCallback created_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
 
+  TRACE_EVENT1("audio", "StreamFactory::CreateLoopbackStream", "group id",
+               group_id.GetLowForSerialization());
   auto stream = std::make_unique<LoopbackStream>(
       std::move(created_callback),
       base::BindOnce(&StreamFactory::DestroyLoopbackStream,

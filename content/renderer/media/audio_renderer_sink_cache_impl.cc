@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/audio_device_factory.h"
@@ -128,6 +129,10 @@ media::OutputDeviceInfo AudioRendererSinkCacheImpl::GetSinkInfo(
     int source_render_frame_id,
     int session_id,
     const std::string& device_id) {
+  TRACE_EVENT_BEGIN2("audio", "AudioRendererSinkCacheImpl::GetSinkInfo",
+                     "frame_id", source_render_frame_id, "device id",
+                     device_id);
+
   if (media::AudioDeviceDescription::UseSessionIdToSelectDevice(session_id,
                                                                 device_id)) {
     // We are provided with session id instead of device id. Session id is
@@ -141,6 +146,8 @@ media::OutputDeviceInfo AudioRendererSinkCacheImpl::GetSinkInfo(
     UMA_HISTOGRAM_ENUMERATION(
         "Media.Audio.Render.SinkCache.GetOutputDeviceInfoCacheUtilization",
         SINK_CACHE_MISS_CANNOT_LOOKUP_BY_SESSION_ID, SINK_CACHE_LAST_ENTRY);
+    TRACE_EVENT_END1("audio", "AudioRendererSinkCacheImpl::GetSinkInfo",
+                     "result", "Cache not used due to using |session_id|");
 
     return sink->GetOutputDeviceInfo();
   }
@@ -154,6 +161,8 @@ media::OutputDeviceInfo AudioRendererSinkCacheImpl::GetSinkInfo(
       UMA_HISTOGRAM_ENUMERATION(
           "Media.Audio.Render.SinkCache.GetOutputDeviceInfoCacheUtilization",
           SINK_CACHE_HIT, SINK_CACHE_LAST_ENTRY);
+      TRACE_EVENT_END1("audio", "AudioRendererSinkCacheImpl::GetSinkInfo",
+                       "result", "Cache hit");
       return cache_iter->sink->GetOutputDeviceInfo();
     }
   }
@@ -168,6 +177,8 @@ media::OutputDeviceInfo AudioRendererSinkCacheImpl::GetSinkInfo(
       "Media.Audio.Render.SinkCache.GetOutputDeviceInfoCacheUtilization",
       SINK_CACHE_MISS_NO_SINK, SINK_CACHE_LAST_ENTRY);
 
+  TRACE_EVENT_END1("audio", "AudioRendererSinkCacheImpl::GetSinkInfo", "result",
+                   "Cache miss");
   // |sink| is ref-counted, so it's ok if it is removed from cache before we get
   // here.
   return sink->GetOutputDeviceInfo();
@@ -178,6 +189,8 @@ scoped_refptr<media::AudioRendererSink> AudioRendererSinkCacheImpl::GetSink(
     const std::string& device_id) {
   UMA_HISTOGRAM_BOOLEAN("Media.Audio.Render.SinkCache.UsedForSinkCreation",
                         true);
+  TRACE_EVENT_BEGIN2("audio", "AudioRendererSinkCacheImpl::GetSink", "frame_id",
+                     source_render_frame_id, "device id", device_id);
 
   base::AutoLock auto_lock(cache_lock_);
 
@@ -189,6 +202,8 @@ scoped_refptr<media::AudioRendererSink> AudioRendererSinkCacheImpl::GetSink(
     cache_iter->used = true;
     UMA_HISTOGRAM_BOOLEAN(
         "Media.Audio.Render.SinkCache.InfoSinkReusedForOutput", true);
+    TRACE_EVENT_END1("audio", "AudioRendererSinkCacheImpl::GetSink", "result",
+                     "Cache hit");
     return cache_iter->sink;
   }
 
@@ -198,9 +213,15 @@ scoped_refptr<media::AudioRendererSink> AudioRendererSinkCacheImpl::GetSink(
                                                 0 /* session_id */, device_id),
                             true /* used */};
 
-  if (SinkIsHealthy(cache_entry.sink.get()))
+  if (SinkIsHealthy(cache_entry.sink.get())) {
+    TRACE_EVENT_INSTANT0(
+        "audio", "AudioRendererSinkCacheImpl::GetSink: caching new sink",
+        TRACE_EVENT_SCOPE_THREAD);
     cache_.push_back(cache_entry);
+  }
 
+  TRACE_EVENT_END1("audio", "AudioRendererSinkCacheImpl::GetSink", "result",
+                   "Cache miss");
   return cache_entry.sink;
 }
 
@@ -292,6 +313,8 @@ void AudioRendererSinkCacheImpl::CacheOrStopUnusedSink(
     const std::string& device_id,
     scoped_refptr<media::AudioRendererSink> sink) {
   if (!SinkIsHealthy(sink.get())) {
+    TRACE_EVENT_INSTANT0("audio", "CacheOrStopUnusedSink: Unhealthy sink",
+                         TRACE_EVENT_SCOPE_THREAD);
     // Since |sink| is not cached, we must make sure to Stop it now.
     sink->Stop();
     return;
