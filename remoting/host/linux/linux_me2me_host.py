@@ -1010,8 +1010,15 @@ class ParentProcessLogger(object):
       self._logging_handler = None
     if not self._write_file.closed:
       if success:
-        self._write_file.write("READY\n")
-        self._write_file.flush()
+        try:
+          self._write_file.write("READY\n")
+          self._write_file.flush()
+        except IOError:
+          # A "broken pipe" IOError can happen if the receiving process
+          # (remoting_user_session) has exited (probably due to timeout waiting
+          # for the host to start).
+          # Trapping the error here means the host can continue running.
+          logging.info("Caught IOError writing READY message.")
       self._write_file.close()
 
   @staticmethod
