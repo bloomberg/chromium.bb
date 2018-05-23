@@ -30,7 +30,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/run_loop.h"
@@ -137,7 +136,7 @@
 #include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/call_stack_profile_params.h"
-#include "components/metrics/expired_histograms_checker.h"
+#include "components/metrics/expired_histogram_util.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
@@ -880,11 +879,6 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
   // a ChromeNetworkDelegate attached that selectively allows cookies again.
   net::URLRequest::SetDefaultCookiePolicyToBlock();
 
-  base::StatisticsRecorder::SetRecordChecker(
-      std::make_unique<metrics::ExpiredHistogramsChecker>(
-          chrome_metrics::kExpiredHistogramsHashes,
-          chrome_metrics::kNumExpiredHistograms));
-
 #if !defined(OS_ANDROID)
   startup_watcher_ = std::make_unique<StartupTimeBomb>();
   shutdown_watcher_ = std::make_unique<ShutdownWatcherHelper>();
@@ -1208,6 +1202,9 @@ int ChromeBrowserMainParts::LoadLocalState(
   // initialization is handled in PreMainMessageLoopRunImpl since it posts
   // tasks.
   SetupFieldTrials();
+
+  metrics::EnableExpiryChecker(chrome_metrics::kExpiredHistogramsHashes,
+                               chrome_metrics::kNumExpiredHistograms);
 
   return service_manager::RESULT_CODE_NORMAL_EXIT;
 }

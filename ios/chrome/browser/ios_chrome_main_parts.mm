@@ -18,6 +18,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
+#include "components/metrics/expired_histogram_util.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
@@ -38,6 +39,7 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #include "ios/chrome/browser/install_time_util.h"
+#include "ios/chrome/browser/metrics/ios_expired_histograms_array.h"
 #include "ios/chrome/browser/open_from_clipboard/create_clipboard_recent_content.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
@@ -128,6 +130,9 @@ void IOSChromeMainParts::PreCreateThreads() {
   SetupFieldTrials();
 
   variations::InitCrashKeys();
+
+  metrics::EnableExpiryChecker(::kExpiredHistogramsHashes,
+                               ::kNumExpiredHistograms);
 
   application_context_->PreCreateThreads();
 }

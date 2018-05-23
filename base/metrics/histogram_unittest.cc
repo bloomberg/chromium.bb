@@ -77,8 +77,6 @@ class HistogramTest : public testing::TestWithParam<bool> {
   void InitializeStatisticsRecorder() {
     DCHECK(!statistics_recorder_);
     statistics_recorder_ = StatisticsRecorder::CreateTemporaryForTesting();
-    auto record_checker = std::make_unique<TestRecordHistogramChecker>();
-    StatisticsRecorder::SetRecordChecker(std::move(record_checker));
   }
 
   void UninitializeStatisticsRecorder() {
@@ -786,6 +784,9 @@ TEST(HistogramDeathTest, BadRangesTest) {
 }
 
 TEST_P(HistogramTest, ExpiredHistogramTest) {
+  auto record_checker = std::make_unique<TestRecordHistogramChecker>();
+  StatisticsRecorder::SetRecordChecker(std::move(record_checker));
+
   HistogramBase* expired = Histogram::FactoryGet(kExpiredHistogramName, 1, 1000,
                                                  10, HistogramBase::kNoFlags);
   ASSERT_TRUE(expired);
