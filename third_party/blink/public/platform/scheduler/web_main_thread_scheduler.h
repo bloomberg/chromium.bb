@@ -42,7 +42,8 @@ namespace scheduler {
 enum class RendererProcessType;
 class WebRenderWidgetSchedulingState;
 
-class BLINK_PLATFORM_EXPORT WebMainThreadScheduler : public WebThreadScheduler {
+class BLINK_PLATFORM_EXPORT WebMainThreadScheduler
+    : virtual public WebThreadScheduler {
  public:
   class BLINK_PLATFORM_EXPORT RAILModeObserver {
    public:

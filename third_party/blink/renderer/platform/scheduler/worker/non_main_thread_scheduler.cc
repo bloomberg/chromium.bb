@@ -34,7 +34,7 @@ std::unique_ptr<NonMainThreadScheduler> NonMainThreadScheduler::Create(
 NonMainThreadScheduler* NonMainThreadScheduler::Current() {
   DCHECK_NE(Platform::Current()->CurrentThread(),
             Platform::Current()->MainThread());
-  return static_cast<NonMainThreadScheduler*>(ThreadScheduler::Current());
+  return ThreadScheduler::Current()->AsNonMainThreadScheduler();
 }
 
 void NonMainThreadScheduler::Init() {
@@ -109,6 +109,30 @@ void NonMainThreadScheduler::UnregisterWorkerScheduler(
     WorkerScheduler* worker_scheduler) {
   DCHECK(worker_schedulers_.find(worker_scheduler) != worker_schedulers_.end());
   worker_schedulers_.erase(worker_scheduler);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+NonMainThreadScheduler::ControlTaskRunner() {
+  return helper_->ControlWorkerTaskQueue();
+}
+
+void NonMainThreadScheduler::RegisterTimeDomain(
+    base::sequence_manager::TimeDomain* time_domain) {
+  return helper_->RegisterTimeDomain(time_domain);
+}
+
+void NonMainThreadScheduler::UnregisterTimeDomain(
+    base::sequence_manager::TimeDomain* time_domain) {
+  return helper_->UnregisterTimeDomain(time_domain);
+}
+
+base::sequence_manager::TimeDomain*
+NonMainThreadScheduler::GetActiveTimeDomain() {
+  return helper_->real_time_domain();
+}
+
+const base::TickClock* NonMainThreadScheduler::GetTickClock() {
+  return helper_->GetClock();
 }
 
 }  // namespace scheduler

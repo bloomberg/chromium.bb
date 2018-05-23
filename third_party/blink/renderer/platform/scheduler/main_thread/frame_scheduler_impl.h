@@ -85,7 +85,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   void AsValueInto(base::trace_event::TracedValue* state) const;
   bool IsExemptFromBudgetBasedThrottling() const override;
 
-  scoped_refptr<base::sequence_manager::TaskQueue> ControlTaskQueue();
+  scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner();
 
   void UpdatePolicy();
 

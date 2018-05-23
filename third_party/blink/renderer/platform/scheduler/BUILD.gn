@@ -85,6 +85,7 @@ blink_platform_sources("scheduler") {
     "common/throttling/throttled_time_domain.h",
     "common/throttling/wake_up_budget_pool.cc",
     "common/throttling/wake_up_budget_pool.h",
+    "common/web_thread_scheduler.cc",
     "main_thread/auto_advancing_virtual_time_domain.cc",
     "main_thread/auto_advancing_virtual_time_domain.h",
     "main_thread/deadline_task_runner.cc",

@@ -258,7 +258,7 @@ bool PageSchedulerImpl::VirtualTimeAllowedToAdvance() const {
 void PageSchedulerImpl::GrantVirtualTimeBudget(
     base::TimeDelta budget,
     base::OnceClosure budget_exhausted_callback) {
-  main_thread_scheduler_->VirtualTimeControlTaskQueue()->PostDelayedTask(
+  main_thread_scheduler_->VirtualTimeControlTaskRunner()->PostDelayedTask(
       FROM_HERE, std::move(budget_exhausted_callback), budget);
   // This can shift time forwards if there's a pending MaybeAdvanceVirtualTime,
   // so it's important this is called second.
@@ -287,7 +287,7 @@ void PageSchedulerImpl::AudioStateChanged(bool is_audio_playing) {
     on_audio_silent_closure_.Cancel();
 
     audio_state_ = AudioState::kRecentlyAudible;
-    main_thread_scheduler_->ControlTaskQueue()->PostDelayedTask(
+    main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
         FROM_HERE, on_audio_silent_closure_.GetCallback(), kRecentAudioDelay);
     // No need to call NotifyFrames or
     // MainThreadScheduler::OnAudioStateChanged here, as for outside world
@@ -437,7 +437,7 @@ void PageSchedulerImpl::UpdateBackgroundThrottlingState(
     do_throttle_page_callback_.Cancel();
     UpdateBackgroundBudgetPoolThrottlingState();
   } else {
-    main_thread_scheduler_->ControlTaskQueue()->PostDelayedTask(
+    main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
         FROM_HERE, do_throttle_page_callback_.GetCallback(),
         kThrottlingDelayAfterBackgrounding);
   }

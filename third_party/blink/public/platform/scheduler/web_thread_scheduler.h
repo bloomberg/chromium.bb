@@ -15,7 +15,7 @@ namespace scheduler {
 
 class BLINK_PLATFORM_EXPORT WebThreadScheduler {
  public:
-  virtual ~WebThreadScheduler() = default;
+  virtual ~WebThreadScheduler();
 
   // Returns the default task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() = 0;

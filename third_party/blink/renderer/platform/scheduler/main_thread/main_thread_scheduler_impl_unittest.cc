@@ -216,6 +216,12 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
   using MainThreadSchedulerImpl::OnIdlePeriodEnded;
   using MainThreadSchedulerImpl::OnIdlePeriodStarted;
   using MainThreadSchedulerImpl::OnPendingTasksChanged;
+  using MainThreadSchedulerImpl::CompositorTaskQueue;
+  using MainThreadSchedulerImpl::ControlTaskQueue;
+  using MainThreadSchedulerImpl::DefaultTaskQueue;
+  using MainThreadSchedulerImpl::InputTaskQueue;
+  using MainThreadSchedulerImpl::V8TaskQueue;
+  using MainThreadSchedulerImpl::VirtualTimeControlTaskQueue;
 
   MainThreadSchedulerImplForTest(
       std::unique_ptr<base::sequence_manager::TaskQueueManager> manager,

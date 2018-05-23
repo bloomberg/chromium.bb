@@ -661,6 +661,12 @@ std::unique_ptr<blink::WebThread> MainThreadSchedulerImpl::CreateMainThread() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
+MainThreadSchedulerImpl::ControlTaskRunner() {
+  return TaskQueueWithTaskType::Create(ControlTaskQueue(),
+                                       TaskType::kMainThreadTaskQueueControl);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::DefaultTaskRunner() {
   return TaskQueueWithTaskType::Create(helper_.DefaultMainThreadTaskQueue(),
                                        TaskType::kMainThreadTaskQueueDefault);
@@ -684,8 +690,9 @@ MainThreadSchedulerImpl::IPCTaskRunner() {
                                        TaskType::kMainThreadTaskQueueIPC);
 }
 
-scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::DefaultTaskQueue() {
-  return helper_.DefaultMainThreadTaskQueue();
+scoped_refptr<base::SingleThreadTaskRunner>
+MainThreadSchedulerImpl::VirtualTimeControlTaskRunner() {
+  return virtual_time_control_task_queue_;
 }
 
 scoped_refptr<MainThreadTaskQueue>
@@ -705,8 +712,11 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::V8TaskQueue() {
 }
 
 scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::ControlTaskQueue() {
-  helper_.CheckOnValidThread();
   return helper_.ControlMainThreadTaskQueue();
+}
+
+scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::DefaultTaskQueue() {
+  return helper_.DefaultMainThreadTaskQueue();
 }
 
 scoped_refptr<MainThreadTaskQueue>
@@ -2476,6 +2486,10 @@ void MainThreadSchedulerImpl::RegisterTimeDomain(TimeDomain* time_domain) {
 
 void MainThreadSchedulerImpl::UnregisterTimeDomain(TimeDomain* time_domain) {
   helper_.UnregisterTimeDomain(time_domain);
+}
+
+const base::TickClock* MainThreadSchedulerImpl::GetTickClock() {
+  return tick_clock();
 }
 
 const base::TickClock* MainThreadSchedulerImpl::tick_clock() const {

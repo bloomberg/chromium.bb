@@ -15,6 +15,9 @@
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 
 namespace blink {
+namespace scheduler {
+class NonMainThreadScheduler;
+}
 
 // This class is used to submit tasks and pass other information from Blink to
 // the platform's scheduler.
@@ -105,6 +108,8 @@ class PLATFORM_EXPORT ThreadScheduler {
   GetWebMainThreadSchedulerForTest() {
     return nullptr;
   }
+
+  virtual scheduler::NonMainThreadScheduler* AsNonMainThreadScheduler() = 0;
 };
 
 }  // namespace blink
