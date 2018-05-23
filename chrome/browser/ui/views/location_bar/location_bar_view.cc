@@ -814,7 +814,7 @@ void LocationBarView::RefreshBackground() {
 
   if (is_popup_mode_) {
     SetBackground(views::CreateSolidBackground(background_color));
-  } else if (GetBorderThicknessDip() == 0) {
+  } else if (IsRounded()) {
     SetBackground(
         CreateRoundRectBackground(background_color, GetBorderRadius()));
   } else {
