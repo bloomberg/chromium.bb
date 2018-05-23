@@ -13,5 +13,7 @@ extern NSString* const kPopupMenuNavigationTableViewId;
 
 // Alpha for the background color of the highlighted items.
 extern const CGFloat kSelectedItemBackgroundAlpha;
+// Duration of the highlight animation of the popup menu.
+extern const CGFloat kHighlightAnimationDuration;
 
 #endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_CONSTANTS_H_
