@@ -827,15 +827,12 @@ def main():
                          choices=['AndroidStudioCurrent',
                                   'AndroidStudioDefault',
                                   'ChromiumSdkRoot'],
-                         default='ChromiumSdkRoot',
+                         default='AndroidStudioDefault',
                          help="Set the project's SDK root. This can be set to "
                               "Android Studio's current SDK root, the default "
                               "Android Studio SDK root, or Chromium's SDK "
-                              "root. The default is Chromium's SDK root, but "
-                              "using this means that updates and additions to "
-                              "the SDK (e.g. installing emulators), will "
-                              "modify this root, hence possibly causing "
-                              "conflicts on the next repository sync.")
+                              "root in //third_party. The default is Android "
+                              "Studio's SDK root in ~/Android/Sdk.")
   sdk_group.add_argument('--sdk-path',
                          help='An explict path for the SDK root, setting this '
                               'is an alternative to setting the --sdk option')
