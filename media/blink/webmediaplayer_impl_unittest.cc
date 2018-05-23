@@ -720,6 +720,7 @@ TEST_F(WebMediaPlayerImplTest, ConstructAndDestroy) {
 TEST_F(WebMediaPlayerImplTest, LoadAndDestroy) {
   InitializeWebMediaPlayerImpl();
   EXPECT_FALSE(IsSuspended());
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
   LoadAndWaitForMetadata(kAudioOnlyTestFile);
   EXPECT_FALSE(IsSuspended());
   CycleThreads();
@@ -733,8 +734,6 @@ TEST_F(WebMediaPlayerImplTest, LoadAndDestroy) {
 
 // Verify that preload=metadata suspend works properly.
 TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(media::kPreloadMetadataSuspend);
   InitializeWebMediaPlayerImpl();
   EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(false));
   wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);
@@ -753,8 +752,6 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
 
 // Verify that preload=metadata suspend video w/ poster uses zero video memory.
 TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(media::kPreloadMetadataSuspend);
   InitializeWebMediaPlayerImpl();
   EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(false));
   wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);
@@ -775,8 +772,6 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
 // Verify that preload=metadata suspend is aborted if we know the element will
 // play as soon as we reach kReadyStateHaveFutureData.
 TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendCouldPlay) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(media::kPreloadMetadataSuspend);
   InitializeWebMediaPlayerImpl();
   EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(true));
   wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);

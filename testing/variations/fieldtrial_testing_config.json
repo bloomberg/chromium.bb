@@ -2697,25 +2697,6 @@
             ]
         }
     ],
-    "PreloadMetadataSuspend": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PreloadMetadataSuspend"
-                    ]
-                }
-            ]
-        }
-    ],
     "PreviewsClientLoFi": [
         {
             "platforms": [
