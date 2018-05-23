@@ -14,7 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
@@ -113,8 +113,8 @@ class AudioInputSyncWriterTest : public testing::Test {
     const uint32_t data_size =
         ComputeAudioInputBufferSize(audio_params, kSegments);
 
-    auto shared_memory = std::make_unique<base::SharedMemory>();
-    EXPECT_TRUE(shared_memory->CreateAndMapAnonymous(data_size));
+    auto shared_memory = base::ReadOnlySharedMemoryRegion::Create(data_size);
+    EXPECT_TRUE(shared_memory.IsValid());
 
     auto socket = std::make_unique<MockCancelableSyncSocket>(kSegments);
     socket_ = socket.get();

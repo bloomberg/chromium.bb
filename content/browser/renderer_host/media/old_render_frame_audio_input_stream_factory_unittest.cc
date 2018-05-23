@@ -8,8 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/shared_memory.h"
-#include "base/memory/shared_memory_handle.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
@@ -161,17 +160,13 @@ TEST_F(OldOldRenderFrameAudioInputStreamFactoryTest, CreateStream) {
   // Wait for delegate to be created and |event_handler| set.
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(event_handler_);
-  base::SharedMemoryCreateOptions shmem_options;
-  shmem_options.size = kShmemSize;
-  shmem_options.share_read_only = true;
-  base::SharedMemory shared_memory;
-  shared_memory.Create(shmem_options);
-  shared_memory.Map(kShmemSize);
+  auto shared_memory = base::ReadOnlySharedMemoryRegion::Create(kShmemSize);
   auto local = std::make_unique<base::CancelableSyncSocket>();
   auto remote = std::make_unique<base::CancelableSyncSocket>();
   ASSERT_TRUE(
       base::CancelableSyncSocket::CreatePair(local.get(), remote.get()));
-  event_handler_->OnStreamCreated(/*stream_id, irrelevant*/ 0, &shared_memory,
+  event_handler_->OnStreamCreated(/*stream_id, irrelevant*/ 0,
+                                  std::move(shared_memory.region),
                                   std::move(remote), kInitiallyMuted);
 
   EXPECT_CALL(client_, Created());

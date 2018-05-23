@@ -15,6 +15,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -26,10 +27,6 @@
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
 #endif
-
-namespace base {
-class SharedMemory;
-}
 
 namespace media {
 
@@ -48,7 +45,7 @@ class MEDIA_EXPORT AudioInputSyncWriter
   // and should be strongly preferred over calling the constructor directly!
   AudioInputSyncWriter(
       base::RepeatingCallback<void(const std::string&)> log_callback,
-      std::unique_ptr<base::SharedMemory> shared_memory,
+      base::MappedReadOnlyRegion shared_memory,
       std::unique_ptr<base::CancelableSyncSocket> socket,
       uint32_t shared_memory_segment_count,
       const AudioParameters& params);
@@ -61,9 +58,9 @@ class MEDIA_EXPORT AudioInputSyncWriter
       const AudioParameters& params,
       base::CancelableSyncSocket* foreign_socket);
 
-  const base::SharedMemory* shared_memory() const {
-    return shared_memory_.get();
-  }
+  // Transfers shared memory region ownership to a caller. It shouldn't be
+  // called more than once.
+  base::ReadOnlySharedMemoryRegion TakeSharedMemoryRegion();
 
   size_t shared_memory_segment_count() const { return audio_buses_.size(); }
 
@@ -111,7 +108,8 @@ class MEDIA_EXPORT AudioInputSyncWriter
   const std::unique_ptr<base::CancelableSyncSocket> socket_;
 
   // Shared memory for audio data and associated metadata.
-  const std::unique_ptr<base::SharedMemory> shared_memory_;
+  base::ReadOnlySharedMemoryRegion shared_memory_region_;
+  const base::WritableSharedMemoryMapping shared_memory_mapping_;
 
   // The size in bytes of a single audio segment in the shared memory.
   const uint32_t shared_memory_segment_size_;

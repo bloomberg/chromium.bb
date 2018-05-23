@@ -275,7 +275,7 @@ void AudioInputDelegateImpl::OnSetOutputDeviceForAec(
 void AudioInputDelegateImpl::SendCreatedNotification(bool initially_muted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(foreign_socket_);
-  subscriber_->OnStreamCreated(stream_id_, writer_->shared_memory(),
+  subscriber_->OnStreamCreated(stream_id_, writer_->TakeSharedMemoryRegion(),
                                std::move(foreign_socket_), initially_muted);
 }
 

@@ -159,17 +159,15 @@ void InputStream::OnCreated(bool initially_muted) {
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "Created", this);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
 
-  const base::SharedMemory* memory = writer_->shared_memory();
-
-  base::SharedMemoryHandle foreign_memory_handle = memory->GetReadOnlyHandle();
-  if (!base::SharedMemory::IsHandleValid(foreign_memory_handle)) {
+  base::ReadOnlySharedMemoryRegion shared_memory_region =
+      writer_->TakeSharedMemoryRegion();
+  if (!shared_memory_region.IsValid()) {
     OnStreamError();
     return;
   }
 
-  mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      foreign_memory_handle, memory->requested_size(),
-      mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly);
+  mojo::ScopedSharedBufferHandle buffer_handle =
+      mojo::WrapReadOnlySharedMemoryRegion(std::move(shared_memory_region));
 
   mojo::ScopedHandle socket_handle =
       mojo::WrapPlatformFile(foreign_socket_.Release());

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/format_macros.h"
-#include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -45,34 +44,36 @@ operator=(AudioInputSyncWriter::OverflowData&& other) = default;
 
 AudioInputSyncWriter::AudioInputSyncWriter(
     base::RepeatingCallback<void(const std::string&)> log_callback,
-    std::unique_ptr<base::SharedMemory> shared_memory,
+    base::MappedReadOnlyRegion shared_memory,
     std::unique_ptr<base::CancelableSyncSocket> socket,
     uint32_t shared_memory_segment_count,
     const AudioParameters& params)
     : log_callback_(std::move(log_callback)),
       socket_(std::move(socket)),
-      shared_memory_(std::move(shared_memory)),
+      shared_memory_region_(std::move(shared_memory.region)),
+      shared_memory_mapping_(std::move(shared_memory.mapping)),
       shared_memory_segment_size_(
           (CHECK(shared_memory_segment_count > 0),
-           shared_memory_->requested_size() / shared_memory_segment_count)),
+           shared_memory_mapping_.size() / shared_memory_segment_count)),
       creation_time_(base::TimeTicks::Now()),
       audio_bus_memory_size_(AudioBus::CalculateMemorySize(params)) {
   // We use CHECKs since this class is used for IPC.
   DCHECK(log_callback_);
   CHECK(socket_);
-  CHECK(shared_memory_);
+  CHECK(shared_memory_region_.IsValid());
+  CHECK(shared_memory_mapping_.IsValid());
   CHECK_EQ(shared_memory_segment_size_ * shared_memory_segment_count,
-           shared_memory_->requested_size());
+           shared_memory_mapping_.size());
   CHECK_EQ(shared_memory_segment_size_,
            audio_bus_memory_size_ + sizeof(AudioInputBufferParameters));
-  DVLOG(1) << "shared memory size: " << shared_memory_->requested_size();
+  DVLOG(1) << "shared memory size: " << shared_memory_mapping_.size();
   DVLOG(1) << "shared memory segment count: " << shared_memory_segment_count;
   DVLOG(1) << "audio bus memory size: " << audio_bus_memory_size_;
 
   audio_buses_.resize(shared_memory_segment_count);
 
   // Create vector of audio buses by wrapping existing blocks of memory.
-  uint8_t* ptr = static_cast<uint8_t*>(shared_memory_->memory());
+  uint8_t* ptr = static_cast<uint8_t*>(shared_memory_mapping_.memory());
   CHECK(ptr);
   for (auto& bus : audio_buses_) {
     CHECK_EQ(0U, reinterpret_cast<uintptr_t>(ptr) &
@@ -143,14 +144,10 @@ std::unique_ptr<AudioInputSyncWriter> AudioInputSyncWriter::Create(
     return nullptr;
 
   // Make sure we can share the memory read-only with the client.
-  base::SharedMemoryCreateOptions shmem_options;
-  shmem_options.size = requested_memory_size.ValueOrDie();
-  shmem_options.share_read_only = true;
-  auto shared_memory = std::make_unique<base::SharedMemory>();
-  if (!shared_memory->Create(shmem_options) ||
-      !shared_memory->Map(shmem_options.size)) {
+  auto shared_memory = base::ReadOnlySharedMemoryRegion::Create(
+      requested_memory_size.ValueOrDie());
+  if (!shared_memory.IsValid())
     return nullptr;
-  }
 
   auto socket = std::make_unique<base::CancelableSyncSocket>();
   if (!base::CancelableSyncSocket::CreatePair(socket.get(), foreign_socket)) {
@@ -160,6 +157,12 @@ std::unique_ptr<AudioInputSyncWriter> AudioInputSyncWriter::Create(
   return std::make_unique<AudioInputSyncWriter>(
       std::move(log_callback), std::move(shared_memory), std::move(socket),
       shared_memory_segment_count, params);
+}
+
+base::ReadOnlySharedMemoryRegion
+AudioInputSyncWriter::TakeSharedMemoryRegion() {
+  DCHECK(shared_memory_region_.IsValid());
+  return std::move(shared_memory_region_);
 }
 
 void AudioInputSyncWriter::Write(const AudioBus* data,
@@ -343,7 +346,7 @@ void AudioInputSyncWriter::WriteParametersToCurrentSegment(
     base::TimeTicks capture_time) {
   TRACE_EVENT1("audio", "WriteParametersToCurrentSegment", "capture time (ms)",
                (capture_time - base::TimeTicks()).InMillisecondsF());
-  uint8_t* ptr = static_cast<uint8_t*>(shared_memory_->memory());
+  uint8_t* ptr = static_cast<uint8_t*>(shared_memory_mapping_.memory());
   CHECK_LT(current_segment_id_, audio_buses_.size());
   ptr += current_segment_id_ * shared_memory_segment_size_;
   AudioInputBuffer* buffer = reinterpret_cast<AudioInputBuffer*>(ptr);

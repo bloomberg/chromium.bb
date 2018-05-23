@@ -93,7 +93,7 @@ media::AudioInputStream* MakeInputStreamCallback(
 class MockEventHandler : public media::AudioInputDelegate::EventHandler {
  public:
   void OnStreamCreated(int stream_id,
-                       const base::SharedMemory*,
+                       base::ReadOnlySharedMemoryRegion,
                        std::unique_ptr<base::CancelableSyncSocket>,
                        bool initially_muted) override {
     MockOnStreamCreated(stream_id, initially_muted);
