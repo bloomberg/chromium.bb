@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/audio/audio_sync_reader.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -83,6 +84,25 @@ class MockAudioOutputIPC : public AudioOutputIPC {
   MOCK_METHOD0(CloseStream, void());
   MOCK_METHOD1(SetVolume, void(double volume));
 };
+
+// Converts a new-style shared memory region to a old-style shared memory
+// handle using a mojo::ScopedSharedBufferHandle that supports both types.
+// TODO(https://crbug.com/844508): get rid of this when AudioOutputDevice shared
+// memory refactor is done.
+base::SharedMemoryHandle ToSharedMemoryHandle(
+    base::UnsafeSharedMemoryRegion region) {
+  mojo::ScopedSharedBufferHandle buffer_handle =
+      mojo::WrapUnsafeSharedMemoryRegion(std::move(region));
+  base::SharedMemoryHandle memory_handle;
+  mojo::UnwrappedSharedMemoryHandleProtection protection;
+  size_t memory_length = 0;
+  auto result = mojo::UnwrapSharedMemoryHandle(
+      std::move(buffer_handle), &memory_handle, &memory_length, &protection);
+  DCHECK_EQ(result, MOJO_RESULT_OK);
+  DCHECK_EQ(protection,
+            mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
+  return memory_handle;
+}
 
 }  // namespace.
 
@@ -334,13 +354,17 @@ namespace {
 struct TestEnvironment {
   explicit TestEnvironment(const AudioParameters& params) {
     const uint32_t memory_size = ComputeAudioOutputBufferSize(params);
-    auto shared_memory = std::make_unique<base::SharedMemory>();
+    auto shared_memory_region =
+        base::UnsafeSharedMemoryRegion::Create(memory_size);
+    auto shared_memory_mapping = shared_memory_region.Map();
+    CHECK(shared_memory_region.IsValid());
+    CHECK(shared_memory_mapping.IsValid());
     auto browser_socket = std::make_unique<base::CancelableSyncSocket>();
-    CHECK(shared_memory->CreateAndMapAnonymous(memory_size));
     CHECK(CancelableSyncSocket::CreatePair(browser_socket.get(),
                                            &renderer_socket));
     reader = std::make_unique<AudioSyncReader>(
-        /*log callback*/ base::DoNothing(), params, std::move(shared_memory),
+        /*log callback*/ base::DoNothing(), params,
+        std::move(shared_memory_region), std::move(shared_memory_mapping),
         std::move(browser_socket));
     time_stamp = base::TimeTicks::Now();
 
@@ -389,7 +413,7 @@ TEST_F(AudioOutputDeviceTest, VerifyDataFlow) {
   audio_device->OnDeviceAuthorized(OUTPUT_DEVICE_STATUS_OK, params,
                                    kDefaultDeviceId);
   audio_device->OnStreamCreated(
-      env.reader->shared_memory()->handle().Duplicate(),
+      ToSharedMemoryHandle(env.reader->shared_memory_region()->Duplicate()),
       env.renderer_socket.Release(), /*playing_automatically*/ false);
 
   task_env_.RunUntilIdle();
@@ -450,7 +474,7 @@ TEST_F(AudioOutputDeviceTest, CreateNondefaultDevice) {
   audio_device->OnDeviceAuthorized(OUTPUT_DEVICE_STATUS_OK, params,
                                    kNonDefaultDeviceId);
   audio_device->OnStreamCreated(
-      env.reader->shared_memory()->handle().Duplicate(),
+      ToSharedMemoryHandle(env.reader->shared_memory_region()->Duplicate()),
       env.renderer_socket.Release(), /*playing_automatically*/ false);
 
   audio_device->Stop();
@@ -486,7 +510,7 @@ TEST_F(AudioOutputDeviceTest, CreateBitStreamStream) {
   audio_device->OnDeviceAuthorized(OUTPUT_DEVICE_STATUS_OK, params,
                                    kNonDefaultDeviceId);
   audio_device->OnStreamCreated(
-      env.reader->shared_memory()->handle().Duplicate(),
+      ToSharedMemoryHandle(env.reader->shared_memory_region()->Duplicate()),
       env.renderer_socket.Release(), /*playing_automatically*/ false);
 
   task_env_.RunUntilIdle();

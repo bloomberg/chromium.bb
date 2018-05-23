@@ -405,6 +405,12 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//media:test_support",
+
+    # TODO(https://crbug.com/844508): Mojo is used in the
+    # audio_output_device_unittest.cc for conversion between shared memory
+    # types. Remove this dependency once the AudioOutputDevice shared memory
+    # refactor is done.
+    "//mojo/public/cpp/system:system",
     "//testing/gmock",
     "//testing/gtest",
     "//url",

@@ -13,6 +13,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/process/process.h"
 #include "base/sync_socket.h"
 #include "base/time/time.h"
@@ -24,10 +26,6 @@
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
 #endif
-
-namespace base {
-class SharedMemory;
-}
 
 namespace media {
 
@@ -42,7 +40,8 @@ class MEDIA_EXPORT AudioSyncReader : public AudioOutputController::SyncReader {
   AudioSyncReader(
       base::RepeatingCallback<void(const std::string&)> log_callback,
       const AudioParameters& params,
-      std::unique_ptr<base::SharedMemory> shared_memory,
+      base::UnsafeSharedMemoryRegion shared_memory_region,
+      base::WritableSharedMemoryMapping shared_memory_mapping,
       std::unique_ptr<base::CancelableSyncSocket> socket);
 
   ~AudioSyncReader() override;
@@ -53,8 +52,8 @@ class MEDIA_EXPORT AudioSyncReader : public AudioOutputController::SyncReader {
       const AudioParameters& params,
       base::CancelableSyncSocket* foreign_socket);
 
-  const base::SharedMemory* shared_memory() const {
-    return shared_memory_.get();
+  const base::UnsafeSharedMemoryRegion* shared_memory_region() const {
+    return &shared_memory_region_;
   }
 
   void set_max_wait_timeout_for_test(base::TimeDelta time) {
@@ -75,7 +74,8 @@ class MEDIA_EXPORT AudioSyncReader : public AudioOutputController::SyncReader {
 
   const base::RepeatingCallback<void(const std::string&)> log_callback_;
 
-  std::unique_ptr<base::SharedMemory> shared_memory_;
+  base::UnsafeSharedMemoryRegion shared_memory_region_;
+  base::WritableSharedMemoryMapping shared_memory_mapping_;
 
   // Mutes all incoming samples. This is used to prevent audible sound
   // during automated testing.

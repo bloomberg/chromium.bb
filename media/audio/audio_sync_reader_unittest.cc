@@ -61,9 +61,10 @@ TEST_P(AudioSyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
   std::unique_ptr<AudioBus> output_bus = AudioBus::Create(params);
   std::unique_ptr<AudioSyncReader> reader = AudioSyncReader::Create(
       base::BindRepeating(&NoLog), params, socket.get());
-  const base::SharedMemory* shmem = reader->shared_memory();
+  const base::WritableSharedMemoryMapping shmem =
+      reader->shared_memory_region()->Map();
   AudioOutputBuffer* buffer =
-      reinterpret_cast<AudioOutputBuffer*>(shmem->memory());
+      reinterpret_cast<AudioOutputBuffer*>(shmem.memory());
   reader->RequestMoreData(base::TimeDelta(), base::TimeTicks(), 0);
 
   uint32_t signal;
@@ -78,15 +79,15 @@ TEST_P(AudioSyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
       break;
     case kNoOverflow:
       buffer->params.bitstream_data_size =
-          shmem->mapped_size() - sizeof(AudioOutputBufferParameters);
+          shmem.mapped_size() - sizeof(AudioOutputBufferParameters);
       break;
     case kOverflowByOne:
       buffer->params.bitstream_data_size =
-          shmem->mapped_size() - sizeof(AudioOutputBufferParameters) + 1;
+          shmem.mapped_size() - sizeof(AudioOutputBufferParameters) + 1;
       break;
     case kOverflowByOneThousand:
       buffer->params.bitstream_data_size =
-          shmem->mapped_size() - sizeof(AudioOutputBufferParameters) + 1000;
+          shmem.mapped_size() - sizeof(AudioOutputBufferParameters) + 1000;
       break;
     case kOverflowByMax:
       buffer->params.bitstream_data_size = std::numeric_limits<decltype(

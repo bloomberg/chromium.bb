@@ -28,5 +28,10 @@ include_rules = [
 specific_include_rules = {
   "audio_manager_unittest.cc": [
     "+chromeos/dbus"
+  ],
+  # TODO(https://crbug.com/844508): Remove this dependency once the
+  # AudioOutputDevice shared memory refactor is done.
+  "audio_output_device_unittest.cc": [
+    "+mojo/public/cpp/system/platform_handle.h"
   ]
 }

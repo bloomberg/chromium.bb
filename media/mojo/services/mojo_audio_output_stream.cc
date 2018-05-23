@@ -63,23 +63,22 @@ void MojoAudioOutputStream::SetVolume(double volume) {
 
 void MojoAudioOutputStream::OnStreamCreated(
     int stream_id,
-    const base::SharedMemory* shared_memory,
+    const base::UnsafeSharedMemoryRegion* shared_memory_region,
     std::unique_ptr<base::CancelableSyncSocket> foreign_socket) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(stream_created_callback_);
-  DCHECK(shared_memory);
+  DCHECK(shared_memory_region);
   DCHECK(foreign_socket);
 
-  base::SharedMemoryHandle foreign_memory_handle =
-      base::SharedMemory::DuplicateHandle(shared_memory->handle());
-  if (!base::SharedMemory::IsHandleValid(foreign_memory_handle)) {
+  base::UnsafeSharedMemoryRegion foreign_memory_region =
+      shared_memory_region->Duplicate();
+  if (!foreign_memory_region.IsValid()) {
     OnStreamError(/*not used*/ 0);
     return;
   }
 
-  mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      foreign_memory_handle, shared_memory->requested_size(),
-      mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
+  mojo::ScopedSharedBufferHandle buffer_handle =
+      mojo::WrapUnsafeSharedMemoryRegion(std::move(foreign_memory_region));
   mojo::ScopedHandle socket_handle =
       mojo::WrapPlatformFile(foreign_socket->Release());
 

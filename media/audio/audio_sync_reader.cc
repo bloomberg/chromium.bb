@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -44,10 +43,12 @@ namespace media {
 AudioSyncReader::AudioSyncReader(
     base::RepeatingCallback<void(const std::string&)> log_callback,
     const AudioParameters& params,
-    std::unique_ptr<base::SharedMemory> shared_memory,
+    base::UnsafeSharedMemoryRegion shared_memory_region,
+    base::WritableSharedMemoryMapping shared_memory_mapping,
     std::unique_ptr<base::CancelableSyncSocket> socket)
     : log_callback_(std::move(log_callback)),
-      shared_memory_(std::move(shared_memory)),
+      shared_memory_region_(std::move(shared_memory_region)),
+      shared_memory_mapping_(std::move(shared_memory_mapping)),
       mute_audio_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMuteAudio)),
       had_socket_error_(false),
@@ -66,10 +67,10 @@ AudioSyncReader::AudioSyncReader(
       maximum_wait_time_(base::TimeDelta::FromMilliseconds(20)),
 #endif
       buffer_index_(0) {
-  DCHECK_EQ(base::checked_cast<uint32_t>(shared_memory_->requested_size()),
+  DCHECK_EQ(base::checked_cast<uint32_t>(shared_memory_mapping_.size()),
             ComputeAudioOutputBufferSize(params));
   AudioOutputBuffer* buffer =
-      reinterpret_cast<AudioOutputBuffer*>(shared_memory_->memory());
+      reinterpret_cast<AudioOutputBuffer*>(shared_memory_mapping_.memory());
   output_bus_ = AudioBus::WrapMemory(params, buffer->audio);
   output_bus_->Zero();
   output_bus_->set_is_bitstream_format(params.IsBitstreamFormat());
@@ -122,19 +123,25 @@ std::unique_ptr<AudioSyncReader> AudioSyncReader::Create(
     base::CancelableSyncSocket* foreign_socket) {
   base::CheckedNumeric<size_t> memory_size =
       ComputeAudioOutputBufferSizeChecked(params);
-
-  auto shared_memory = std::make_unique<base::SharedMemory>();
-  auto socket = std::make_unique<base::CancelableSyncSocket>();
-
-  if (!memory_size.IsValid() ||
-      !shared_memory->CreateAndMapAnonymous(memory_size.ValueOrDie()) ||
-      !base::CancelableSyncSocket::CreatePair(socket.get(), foreign_socket)) {
+  if (!memory_size.IsValid())
     return nullptr;
-  }
 
-  return std::make_unique<AudioSyncReader>(std::move(log_callback), params,
-                                           std::move(shared_memory),
-                                           std::move(socket));
+  auto shared_memory_region =
+      base::UnsafeSharedMemoryRegion::Create(memory_size.ValueOrDie());
+  if (!shared_memory_region.IsValid())
+    return nullptr;
+
+  auto shared_memory_mapping = shared_memory_region.Map();
+  if (!shared_memory_mapping.IsValid())
+    return nullptr;
+
+  auto socket = std::make_unique<base::CancelableSyncSocket>();
+  if (!base::CancelableSyncSocket::CreatePair(socket.get(), foreign_socket))
+    return nullptr;
+
+  return std::make_unique<AudioSyncReader>(
+      std::move(log_callback), params, std::move(shared_memory_region),
+      std::move(shared_memory_mapping), std::move(socket));
 }
 
 // AudioOutputController::SyncReader implementations.
@@ -145,7 +152,7 @@ void AudioSyncReader::RequestMoreData(base::TimeDelta delay,
   // bytes might lead to being descheduled. The reading side will zero
   // them when consumed.
   AudioOutputBuffer* buffer =
-      reinterpret_cast<AudioOutputBuffer*>(shared_memory_->memory());
+      reinterpret_cast<AudioOutputBuffer*>(shared_memory_mapping_.memory());
   // Increase the number of skipped frames stored in shared memory.
   buffer->params.frames_skipped += prior_frames_skipped;
   buffer->params.delay_us = delay.InMicroseconds();
@@ -211,7 +218,7 @@ void AudioSyncReader::Read(AudioBus* dest) {
   if (output_bus_->is_bitstream_format()) {
     // For bitstream formats, we need the real data size and PCM frame count.
     AudioOutputBuffer* buffer =
-        reinterpret_cast<AudioOutputBuffer*>(shared_memory_->memory());
+        reinterpret_cast<AudioOutputBuffer*>(shared_memory_mapping_.memory());
     uint32_t data_size = buffer->params.bitstream_data_size;
     uint32_t bitstream_frames = buffer->params.bitstream_frames;
     // |bitstream_frames| is cast to int below, so it must fit.

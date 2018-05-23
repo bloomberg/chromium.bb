@@ -172,7 +172,8 @@ class MojoAudioOutputStreamTest : public Test {
         base::WrapUnique(delegate_));
     EXPECT_TRUE(
         base::CancelableSyncSocket::CreatePair(&local_, foreign_socket_.get()));
-    EXPECT_TRUE(mem_.CreateAnonymous(kShmemSize));
+    mem_ = base::UnsafeSharedMemoryRegion::Create(kShmemSize);
+    EXPECT_TRUE(mem_.IsValid());
     EXPECT_CALL(mock_delegate_factory_, MockCreateDelegate(NotNull()))
         .WillOnce(SaveArg<0>(&delegate_event_handler_));
   }
@@ -180,7 +181,7 @@ class MojoAudioOutputStreamTest : public Test {
   base::MessageLoop loop_;
   base::CancelableSyncSocket local_;
   std::unique_ptr<TestCancelableSyncSocket> foreign_socket_;
-  base::SharedMemory mem_;
+  base::UnsafeSharedMemoryRegion mem_;
   StrictMock<MockDelegate>* delegate_ = nullptr;
   AudioOutputDelegate::EventHandler* delegate_event_handler_ = nullptr;
   StrictMock<MockDelegateFactory> mock_delegate_factory_;
