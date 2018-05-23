@@ -137,7 +137,8 @@ void BackgroundHTMLParser::UpdateDocument(const String& decoded_data) {
     last_seen_encoding_data_ = encoding_data;
 
     xss_auditor_->SetEncoding(encoding_data.Encoding());
-    parser_->DidReceiveEncodingDataFromBackgroundParser(encoding_data);
+    if (parser_)
+      parser_->DidReceiveEncodingDataFromBackgroundParser(encoding_data);
   }
 
   if (decoded_data.IsEmpty())
