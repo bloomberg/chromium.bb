@@ -305,6 +305,10 @@ const base::Feature kUnifiedAutoplay{"UnifiedAutoplay",
 const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable VA-API hardware encode acceleration for VP8.
+const base::Feature kVaapiVP8Encoder{"VaapiVP8Encoder",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Inform video blitter of video color space.
 const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
