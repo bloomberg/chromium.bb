@@ -191,9 +191,10 @@
               <div class="item-container">
                 <div class$="error-item
                     [[computeErrorClass_(item, selectedEntry_)]]">
-                  <div actionable class=" start" on-click="onErrorItemAction_"
+                  <div actionable class="start" on-click="onErrorItemAction_"
                       on-keydown="onErrorItemAction_" tabindex="0"
-                      role="button">
+                      role="button" aria-expanded$="[[isAriaExpanded_(
+                          index, selectedEntry_)]]">
                     <iron-icon icon$="[[computeErrorIcon_(item)]]"
                         title$="[[computeErrorTypeLabel_(item)]]">
                     </iron-icon>
