@@ -39,9 +39,9 @@
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
-#include "third_party/blink/renderer/core/editing/rendered_position.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/set_selection_options.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
@@ -764,61 +764,6 @@ void SelectionController::SelectClosestWordOrLinkFromMouseEvent(
           .Build());
 }
 
-static bool ShouldAdjustBaseAtBidiBoundary(const RenderedPosition& base,
-                                           const RenderedPosition& extent) {
-  DCHECK(base.AtBidiBoundary());
-  if (extent.IsPossiblyOtherBoundaryOf(base))
-    return false;
-  return base.BidiRunContains(extent);
-}
-
-static bool ShouldAdjustExtentAtBidiBoundary(const RenderedPosition& base,
-                                             const RenderedPosition& extent) {
-  if (!extent.AtBidiBoundary())
-    return false;
-  return extent.BidiRunContains(base);
-}
-
-static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
-    const VisiblePositionInFlatTree& visible_base,
-    const VisiblePositionInFlatTree& visible_extent) {
-  DCHECK(visible_base.IsValid());
-  DCHECK(visible_extent.IsValid());
-
-  RenderedPosition base = RenderedPosition::Create(visible_base);
-  RenderedPosition extent = RenderedPosition::Create(visible_extent);
-
-  const SelectionInFlatTree& unchanged_selection =
-      SelectionInFlatTree::Builder()
-          .SetBaseAndExtent(visible_base.DeepEquivalent(),
-                            visible_extent.DeepEquivalent())
-          .Build();
-
-  if (base.IsNull() || extent.IsNull() || base == extent)
-    return unchanged_selection;
-
-  if (base.AtBidiBoundary()) {
-    if (ShouldAdjustBaseAtBidiBoundary(base, extent)) {
-      const PositionInFlatTree adjusted_base =
-          CreateVisiblePosition(base.GetPosition()).DeepEquivalent();
-      return SelectionInFlatTree::Builder()
-          .SetBaseAndExtent(adjusted_base, visible_extent.DeepEquivalent())
-          .Build();
-    }
-    return unchanged_selection;
-  }
-
-  if (ShouldAdjustExtentAtBidiBoundary(base, extent)) {
-    const PositionInFlatTree adjusted_extent =
-        CreateVisiblePosition(extent.GetPosition()).DeepEquivalent();
-    return SelectionInFlatTree::Builder()
-        .SetBaseAndExtent(visible_base.DeepEquivalent(), adjusted_extent)
-        .Build();
-  }
-
-  return unchanged_selection;
-}
-
 // TODO(yosin): We should take |granularity| and |handleVisibility| from
 // |newSelection|.
 // We should rename this function to appropriate name because
@@ -847,7 +792,7 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
       CreateVisiblePosition(new_selection.Extent());
   const SelectionInFlatTree& adjusted_selection =
       endpoints_adjustment_mode == kAdjustEndpointsAtBidiBoundary
-          ? AdjustEndpointsAtBidiBoundary(base, extent)
+          ? BidiAdjustment::AdjustForRangeSelection(base, extent)
           : SelectionInFlatTree::Builder()
                 .SetBaseAndExtent(base.DeepEquivalent(),
                                   extent.DeepEquivalent())

@@ -32,8 +32,6 @@
 
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
-#include "third_party/blink/renderer/core/editing/inline_box_position.h"
-#include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
 #include "third_party/blink/renderer/core/editing/local_caret_rect.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
@@ -45,86 +43,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
-
-// static
-RenderedPosition RenderedPosition::Create(
-    const VisiblePositionInFlatTree& position) {
-  if (position.IsNull())
-    return RenderedPosition();
-  InlineBoxPosition box_position =
-      ComputeInlineBoxPosition(position.ToPositionWithAffinity());
-  if (!box_position.inline_box)
-    return RenderedPosition();
-
-  const InlineBox* box = box_position.inline_box;
-  const int offset = box_position.offset_in_box;
-
-  // When at bidi boundary, ensure that |inline_box_| belongs to the higher-
-  // level bidi run.
-
-  // For example, abc FED |ghi should be changed into abc FED| ghi
-  if (offset == box->CaretLeftmostOffset()) {
-    const InlineBox* prev_box = box->PrevLeafChildIgnoringLineBreak();
-    if (prev_box && prev_box->BidiLevel() > box->BidiLevel()) {
-      return RenderedPosition(prev_box, prev_box->CaretRightmostOffset(),
-                              BidiBoundaryType::kRightBoundary);
-    }
-    BidiBoundaryType type =
-        prev_box && prev_box->BidiLevel() == box->BidiLevel()
-            ? BidiBoundaryType::kNotBoundary
-            : BidiBoundaryType::kLeftBoundary;
-    return RenderedPosition(box, offset, type);
-  }
-
-  // For example, abc| FED ghi should be changed into abc |FED ghi
-  if (offset == box->CaretRightmostOffset()) {
-    const InlineBox* next_box = box->NextLeafChildIgnoringLineBreak();
-    if (next_box && next_box->BidiLevel() > box->BidiLevel()) {
-      return RenderedPosition(next_box, next_box->CaretLeftmostOffset(),
-                              BidiBoundaryType::kLeftBoundary);
-    }
-    BidiBoundaryType type =
-        next_box && next_box->BidiLevel() == box->BidiLevel()
-            ? BidiBoundaryType::kNotBoundary
-            : BidiBoundaryType::kRightBoundary;
-    return RenderedPosition(box, offset, type);
-  }
-
-  return RenderedPosition(box, offset, BidiBoundaryType::kNotBoundary);
-}
-
-bool RenderedPosition::IsPossiblyOtherBoundaryOf(
-    const RenderedPosition& other) const {
-  DCHECK(other.AtBidiBoundary());
-  if (!AtBidiBoundary())
-    return false;
-  if (bidi_boundary_type_ == other.bidi_boundary_type_)
-    return false;
-  return inline_box_->BidiLevel() >= other.inline_box_->BidiLevel();
-}
-
-bool RenderedPosition::BidiRunContains(const RenderedPosition& other) const {
-  DCHECK(AtBidiBoundary());
-  DCHECK(!other.IsNull());
-  UBiDiLevel level = inline_box_->BidiLevel();
-  if (level > other.inline_box_->BidiLevel())
-    return false;
-  const InlineBox& boundary_of_other =
-      bidi_boundary_type_ == BidiBoundaryType::kLeftBoundary
-          ? InlineBoxTraversal::
-                FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
-                    *other.inline_box_, level)
-          : InlineBoxTraversal::
-                FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
-                    *other.inline_box_, level);
-  return inline_box_ == &boundary_of_other;
-}
-
-PositionInFlatTree RenderedPosition::GetPosition() const {
-  DCHECK(AtBidiBoundary());
-  return PositionInFlatTree::EditingPositionOf(
-      inline_box_->GetLineLayoutItem().GetNode(), offset_);
-}
 
 // Note: If the layout object has a scrolling contents layer, the selection
 // will be relative to that.
@@ -283,7 +201,7 @@ static CompositedSelectionBound EndPositionInGraphicsLayerBacking(
                                edge_bottom_in_layer);
 }
 
-CompositedSelection RenderedPosition::ComputeCompositedSelection(
+CompositedSelection ComputeCompositedSelection(
     const FrameSelection& frame_selection) {
   if (!frame_selection.IsHandleVisible() || frame_selection.IsHidden())
     return {};

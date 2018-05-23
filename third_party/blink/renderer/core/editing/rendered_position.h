@@ -31,10 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_RENDERED_POSITION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_RENDERED_POSITION_H_
 
-#include "base/optional.h"
+// TODO(editing-dev): Consider rename/move this file.
+
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/core/layout/line/inline_box.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -42,54 +41,8 @@ namespace blink {
 class FrameSelection;
 struct CompositedSelection;
 
-// TODO(xiaochengh): RenderedPosition is deprecated. It's currently only used in
-// |SelectionController| for bidi adjustment. We should break this class and
-// move relevant code to |inline_box_traversal.cc|, and generalize it so that it
-// can be reused in LayoutNG.
-class CORE_EXPORT RenderedPosition {
-  STACK_ALLOCATED();
-
- public:
-  RenderedPosition() = default;
-  static RenderedPosition Create(const VisiblePositionInFlatTree&);
-
-  bool IsNull() const { return !inline_box_; }
-  bool operator==(const RenderedPosition& other) const {
-    return inline_box_ == other.inline_box_ && offset_ == other.offset_ &&
-           bidi_boundary_type_ == other.bidi_boundary_type_;
-  }
-
-  bool AtBidiBoundary() const {
-    return bidi_boundary_type_ != BidiBoundaryType::kNotBoundary;
-  }
-
-  // Given |other|, which is a boundary of a bidi run, returns true if |this|
-  // can be the other boundary of that run by checking some conditions.
-  bool IsPossiblyOtherBoundaryOf(const RenderedPosition& other) const;
-
-  // Callable only when |this| is at boundary of a bidi run. Returns true if
-  // |other| is in that bidi run.
-  bool BidiRunContains(const RenderedPosition& other) const;
-
-  PositionInFlatTree GetPosition() const;
-
-  // TODO(editing-dev): This function doesn't use RenderedPosition
-  // instance anymore. Consider moving.
-  static CompositedSelection ComputeCompositedSelection(const FrameSelection&);
-
- private:
-  enum class BidiBoundaryType { kNotBoundary, kLeftBoundary, kRightBoundary };
-  explicit RenderedPosition(const InlineBox*, int offset, BidiBoundaryType);
-
-  const InlineBox* inline_box_ = nullptr;
-  int offset_ = 0;
-  BidiBoundaryType bidi_boundary_type_ = BidiBoundaryType::kNotBoundary;
-};
-
-inline RenderedPosition::RenderedPosition(const InlineBox* box,
-                                          int offset,
-                                          BidiBoundaryType type)
-    : inline_box_(box), offset_(offset), bidi_boundary_type_(type) {}
+CORE_EXPORT CompositedSelection
+ComputeCompositedSelection(const FrameSelection&);
 
 }  // namespace blink
 
