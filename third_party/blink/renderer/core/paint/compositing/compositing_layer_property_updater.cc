@@ -60,11 +60,41 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
         }
       };
   SetContainerLayerState(mapping->MainGraphicsLayer());
-  SetContainerLayerState(mapping->LayerForHorizontalScrollbar());
-  SetContainerLayerState(mapping->LayerForVerticalScrollbar());
-  SetContainerLayerState(mapping->LayerForScrollCorner());
   SetContainerLayerState(mapping->DecorationOutlineLayer());
   SetContainerLayerState(mapping->ChildClippingMaskLayer());
+
+  base::Optional<PropertyTreeState> scrollbar_layer_state;
+
+  auto SetContainerLayerStateForScrollbars =
+      [&fragment_data, &snapped_paint_offset, &container_layer_state,
+       &scrollbar_layer_state](GraphicsLayer* graphics_layer) {
+        if (graphics_layer) {
+          if (!scrollbar_layer_state) {
+            // OverflowControlsClip should be applied within the scrollbar
+            // layers.
+            if (container_layer_state) {
+              scrollbar_layer_state = container_layer_state;
+            } else {
+              scrollbar_layer_state = fragment_data.LocalBorderBoxProperties();
+            }
+
+            if (const auto* properties = fragment_data.PaintProperties()) {
+              if (const auto* clip = properties->OverflowControlsClip()) {
+                scrollbar_layer_state->SetClip(clip);
+              } else if (const auto* css_clip = properties->CssClip()) {
+                scrollbar_layer_state->SetClip(css_clip->Parent());
+              }
+            }
+          }
+          graphics_layer->SetLayerState(
+              *scrollbar_layer_state,
+              snapped_paint_offset + graphics_layer->OffsetFromLayoutObject());
+        }
+      };
+
+  SetContainerLayerStateForScrollbars(mapping->LayerForHorizontalScrollbar());
+  SetContainerLayerStateForScrollbars(mapping->LayerForVerticalScrollbar());
+  SetContainerLayerStateForScrollbars(mapping->LayerForScrollCorner());
 
   if (mapping->ScrollingContentsLayer()) {
     auto paint_offset = snapped_paint_offset;
