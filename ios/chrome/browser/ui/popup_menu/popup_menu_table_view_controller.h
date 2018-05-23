@@ -26,9 +26,6 @@
 // Presenting ViewController for the ViewController needing to be presented as
 // result of an interaction with the popup.
 @property(nonatomic, weak) UIViewController* baseViewController;
-// Item to be highlighted. Nil if no item should be highlighted. Must be set
-// after the popup menu items.
-@property(nonatomic, weak) TableViewItem<PopupMenuItem>* itemToHighlight;
 
 // Initializers.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
