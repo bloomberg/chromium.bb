@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/css/invalidation/invalidation_flags.h"
 #include "third_party/blink/renderer/core/css/invalidation/pending_invalidations.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
@@ -38,7 +39,9 @@ class CORE_EXPORT StyleInvalidator {
 
   void PushInvalidationSetsForContainerNode(ContainerNode&, SiblingData&);
   void PushInvalidationSet(const InvalidationSet&);
-  bool WholeSubtreeInvalid() const { return whole_subtree_invalid_; }
+  bool WholeSubtreeInvalid() const {
+    return invalidation_flags_.WholeSubtreeInvalid();
+  }
 
   void Invalidate(Element&, SiblingData&);
   void InvalidateShadowRootChildren(Element&);
@@ -55,20 +58,24 @@ class CORE_EXPORT StyleInvalidator {
     return !WholeSubtreeInvalid() && invalidation_sets_.size();
   }
 
-  void SetWholeSubtreeInvalid() { whole_subtree_invalid_ = true; }
+  void SetWholeSubtreeInvalid() {
+    invalidation_flags_.SetWholeSubtreeInvalid(true);
+  }
 
-  bool TreeBoundaryCrossing() const { return tree_boundary_crossing_; }
-  bool InsertionPointCrossing() const { return insertion_point_crossing_; }
-  bool InvalidatesSlotted() const { return invalidates_slotted_; }
+  bool TreeBoundaryCrossing() const {
+    return invalidation_flags_.TreeBoundaryCrossing();
+  }
+  bool InsertionPointCrossing() const {
+    return invalidation_flags_.InsertionPointCrossing();
+  }
+  bool InvalidatesSlotted() const {
+    return invalidation_flags_.InvalidatesSlotted();
+  }
 
   PendingInvalidationMap& pending_invalidation_map_;
   using DescendantInvalidationSets = Vector<const InvalidationSet*, 16>;
   DescendantInvalidationSets invalidation_sets_;
-  bool invalidate_custom_pseudo_ = false;
-  bool whole_subtree_invalid_ = false;
-  bool tree_boundary_crossing_ = false;
-  bool insertion_point_crossing_ = false;
-  bool invalidates_slotted_ = false;
+  InvalidationFlags invalidation_flags_;
 
   class SiblingData {
     STACK_ALLOCATED();
@@ -106,29 +113,16 @@ class CORE_EXPORT StyleInvalidator {
    public:
     RecursionCheckpoint(StyleInvalidator* invalidator)
         : prev_invalidation_sets_size_(invalidator->invalidation_sets_.size()),
-          prev_invalidate_custom_pseudo_(
-              invalidator->invalidate_custom_pseudo_),
-          prev_whole_subtree_invalid_(invalidator->whole_subtree_invalid_),
-          tree_boundary_crossing_(invalidator->tree_boundary_crossing_),
-          insertion_point_crossing_(invalidator->insertion_point_crossing_),
-          invalidates_slotted_(invalidator->invalidates_slotted_),
+          prev_invalidation_flags_(invalidator->invalidation_flags_),
           invalidator_(invalidator) {}
     ~RecursionCheckpoint() {
       invalidator_->invalidation_sets_.Shrink(prev_invalidation_sets_size_);
-      invalidator_->invalidate_custom_pseudo_ = prev_invalidate_custom_pseudo_;
-      invalidator_->whole_subtree_invalid_ = prev_whole_subtree_invalid_;
-      invalidator_->tree_boundary_crossing_ = tree_boundary_crossing_;
-      invalidator_->insertion_point_crossing_ = insertion_point_crossing_;
-      invalidator_->invalidates_slotted_ = invalidates_slotted_;
+      invalidator_->invalidation_flags_ = prev_invalidation_flags_;
     }
 
    private:
     int prev_invalidation_sets_size_;
-    bool prev_invalidate_custom_pseudo_;
-    bool prev_whole_subtree_invalid_;
-    bool tree_boundary_crossing_;
-    bool insertion_point_crossing_;
-    bool invalidates_slotted_;
+    InvalidationFlags prev_invalidation_flags_;
     StyleInvalidator* invalidator_;
   };
 };

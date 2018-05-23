@@ -289,6 +289,8 @@ blink_core_sources("css") {
     "hash_tools.h",
     "inline_css_style_declaration.cc",
     "inline_css_style_declaration.h",
+    "invalidation/invalidation_flags.cc",
+    "invalidation/invalidation_flags.h",
     "invalidation/invalidation_set.cc",
     "invalidation/invalidation_set.h",
     "invalidation/node_invalidation_sets.h",
