@@ -32,6 +32,7 @@ class BidiAdjustment final {
   // Function to be called at the end of hit tests, adjusting the result in bidi
   // text runs.
   static InlineBoxPosition AdjustForHitTest(const InlineBoxPosition&);
+  static NGCaretPosition AdjustForHitTest(const NGCaretPosition&);
 
   // TODO(xiaochengh): Clients of InlineBoxTraversal should be wrapped into
   // new member functions here.

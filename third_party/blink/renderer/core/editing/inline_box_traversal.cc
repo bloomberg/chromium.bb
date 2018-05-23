@@ -675,4 +675,14 @@ InlineBoxPosition BidiAdjustment::AdjustForHitTest(
   return adjusted.ToInlineBoxPosition();
 }
 
+NGCaretPosition BidiAdjustment::AdjustForHitTest(
+    const NGCaretPosition& caret_position) {
+  const AbstractInlineBoxAndSideAffinity unadjusted(caret_position);
+  const AbstractInlineBoxAndSideAffinity adjusted =
+      unadjusted.AtLeftSide()
+          ? HitTestAdjuster<TraverseRight>::AdjustFor(unadjusted.GetBox())
+          : HitTestAdjuster<TraverseLeft>::AdjustFor(unadjusted.GetBox());
+  return adjusted.ToNGCaretPosition();
+}
+
 }  // namespace blink

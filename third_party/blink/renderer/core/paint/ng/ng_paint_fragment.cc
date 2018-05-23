@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
@@ -12,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
@@ -344,10 +346,20 @@ PositionWithAffinity NGPaintFragment::PositionForPointInText(
   if (text_fragment.IsAnonymousText())
     return PositionWithAffinity();
   const unsigned text_offset = text_fragment.TextOffsetForPoint(point);
-  const Position position =
-      NGOffsetMapping::GetFor(GetLayoutObject())->GetFirstPosition(text_offset);
+  if (text_offset > text_fragment.StartOffset() &&
+      text_offset < text_fragment.EndOffset()) {
+    const Position position = NGOffsetMapping::GetFor(GetLayoutObject())
+                                  ->GetFirstPosition(text_offset);
+    // TODO(xiaochengh): Adjust TextAffinity.
+    return PositionWithAffinity(position, TextAffinity::kDownstream);
+  }
+  const NGCaretPosition unadjusted_position{
+      this, NGCaretPositionType::kAtTextOffset, text_offset};
+  const Position adjusted_position =
+      BidiAdjustment::AdjustForHitTest(unadjusted_position)
+          .ToPositionInDOMTree();
   // TODO(xiaochengh): Adjust TextAffinity.
-  return PositionWithAffinity(position, TextAffinity::kDownstream);
+  return PositionWithAffinity(adjusted_position, TextAffinity::kDownstream);
 }
 
 PositionWithAffinity NGPaintFragment::PositionForPointInInlineLevelBox(

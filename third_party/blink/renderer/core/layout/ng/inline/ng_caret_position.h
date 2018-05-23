@@ -31,6 +31,8 @@ struct NGCaretPosition {
 
   bool IsNull() const { return !fragment; }
 
+  Position ToPositionInDOMTree() const;
+
   const NGPaintFragment* fragment = nullptr;  // owned by root LayoutNGMixin
   NGCaretPositionType position_type;
   base::Optional<unsigned> text_offset;
