@@ -276,7 +276,7 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
   auto specifics = std::make_unique<sync_pb::SessionSpecifics>();
   specifics->set_session_tag(current_session_tag_);
   current_session->ToSessionHeaderProto().Swap(specifics->mutable_header());
-  batch->Update(std::move(specifics));
+  batch->Put(std::move(specifics));
 }
 
 void LocalSessionEventHandlerImpl::AssociateTab(
@@ -304,13 +304,11 @@ void LocalSessionEventHandlerImpl::AssociateTab(
            << tab_delegate->GetWindowId().id();
 
   int tab_node_id = TabNodePool::kInvalidTabNodeID;
-  bool existing_tab_node = true;
   if (session_tracker_->IsLocalTabNodeAssociated(tab_delegate->GetSyncId())) {
     tab_node_id = tab_delegate->GetSyncId();
     session_tracker_->ReassociateLocalTab(tab_node_id, tab_id);
   } else if (has_tabbed_window) {
-    existing_tab_node =
-        session_tracker_->GetTabNodeFromLocalTabId(tab_id, &tab_node_id);
+    session_tracker_->GetTabNodeFromLocalTabId(tab_id, &tab_node_id);
     CHECK_NE(TabNodePool::kInvalidTabNodeID, tab_node_id)
         << "https://crbug.com/639009";
     tab_delegate->SetSyncId(tab_node_id);
@@ -347,11 +345,7 @@ void LocalSessionEventHandlerImpl::AssociateTab(
   DCHECK(!session_tab->timestamp.is_null());
 
   // Write to the sync model itself.
-  if (existing_tab_node) {
-    batch->Update(std::move(specifics));
-  } else {
-    batch->Add(std::move(specifics));
-  }
+  batch->Put(std::move(specifics));
 
   int current_index = tab_delegate->GetCurrentEntryIndex();
   const GURL new_url = tab_delegate->GetVirtualURLAtIndex(current_index);
@@ -477,7 +471,7 @@ void LocalSessionEventHandlerImpl::AppendChangeForExistingTab(
   tab.ToSyncData().Swap(specifics->mutable_tab());
   specifics->set_session_tag(current_session_tag_);
   specifics->set_tab_node_id(sync_id);
-  batch->Update(std::move(specifics));
+  batch->Put(std::move(specifics));
 }
 
 sync_pb::SessionTab LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegate(

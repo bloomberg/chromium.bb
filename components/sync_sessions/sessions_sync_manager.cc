@@ -86,12 +86,29 @@ class SyncChangeListWriteBatch
   SyncChangeListWriteBatch(
       const std::string& machine_tag,
       const std::string& session_name,
+      const std::set<int>& known_tab_node_ids,
       base::OnceCallback<void(const syncer::SyncChangeList&)> commit_cb)
       : machine_tag_(machine_tag),
         session_name_(session_name),
+        known_tab_node_ids_(known_tab_node_ids),
         commit_cb_(std::move(commit_cb)) {}
 
   syncer::SyncChangeList* sync_change_list() { return &changes_; }
+
+  void AddKnownTabNodeIds(const std::set<int>& known_tab_node_ids) {
+    known_tab_node_ids_.insert(known_tab_node_ids.begin(),
+                               known_tab_node_ids.end());
+  }
+
+  void PutWithType(std::unique_ptr<sync_pb::SessionSpecifics> specifics,
+                   SyncChange::SyncChangeType change_type) {
+    sync_pb::EntitySpecifics entity_specifics;
+    specifics->Swap(entity_specifics.mutable_session());
+    changes_.push_back(SyncChange(
+        FROM_HERE, change_type,
+        SyncData::CreateLocalData(TagFromSpecifics(entity_specifics.session()),
+                                  session_name_, entity_specifics)));
+  }
 
   // WriteBatch implementation.
   void Delete(int tab_node_id) override {
@@ -101,24 +118,13 @@ class SyncChangeListWriteBatch
                                     syncer::SESSIONS)));
   }
 
-  void Add(std::unique_ptr<sync_pb::SessionSpecifics> specifics) override {
-    sync_pb::EntitySpecifics entity_specifics;
-    specifics->Swap(entity_specifics.mutable_session());
-    changes_.push_back(
-        syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_ADD,
-                           syncer::SyncData::CreateLocalData(
-                               TagFromSpecifics(entity_specifics.session()),
-                               session_name_, entity_specifics)));
-  }
+  void Put(std::unique_ptr<sync_pb::SessionSpecifics> specifics) override {
+    bool new_entity =
+        specifics->tab_node_id() != TabNodePool::kInvalidTabNodeID &&
+        known_tab_node_ids_.insert(specifics->tab_node_id()).second;
 
-  void Update(std::unique_ptr<sync_pb::SessionSpecifics> specifics) override {
-    sync_pb::EntitySpecifics entity_specifics;
-    specifics->Swap(entity_specifics.mutable_session());
-    changes_.push_back(
-        syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
-                           syncer::SyncData::CreateLocalData(
-                               TagFromSpecifics(entity_specifics.session()),
-                               session_name_, entity_specifics)));
+    PutWithType(std::move(specifics), new_entity ? SyncChange::ACTION_ADD
+                                                 : SyncChange::ACTION_UPDATE);
   }
 
   void Commit() override { std::move(commit_cb_).Run(changes_); }
@@ -126,6 +132,7 @@ class SyncChangeListWriteBatch
  private:
   const std::string machine_tag_;
   const std::string session_name_;
+  std::set<int> known_tab_node_ids_;
   base::OnceCallback<void(const syncer::SyncChangeList&)> commit_cb_;
   syncer::SyncChangeList changes_;
 };
@@ -232,6 +239,7 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
   // SyncChangeListWriteBatch. Ideally InitFromSyncModel() could use the
   // WriteBatch API as well.
   SyncChangeListWriteBatch batch(current_machine_tag(), current_session_name_,
+                                 /*known_tab_node_ids=*/{},
                                  /*commit_cb=*/base::DoNothing());
 
   // First, we iterate over sync data to update our session_tracker_.
@@ -242,8 +250,11 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
     sync_pb::SessionHeader* header_s = specifics->mutable_header();
     header_s->set_client_name(current_session_name_);
     header_s->set_device_type(local_device_info->device_type());
-    batch.Add(std::move(specifics));
+    batch.PutWithType(std::move(specifics), SyncChange::ACTION_ADD);
   }
+
+  batch.AddKnownTabNodeIds(
+      session_tracker_.LookupTabNodeIds(current_machine_tag()));
 
 #if defined(OS_ANDROID)
   std::string sync_machine_tag(
@@ -607,6 +618,8 @@ std::unique_ptr<LocalSessionEventHandlerImpl::WriteBatch>
 SessionsSyncManager::CreateLocalSessionWriteBatch() {
   return std::make_unique<SyncChangeListWriteBatch>(
       current_machine_tag(), current_session_name_,
+      /*known_tab_node_ids=*/
+      session_tracker_.LookupTabNodeIds(current_machine_tag()),
       /*commit_cb=*/
       base::BindOnce(&SessionsSyncManager::ProcessLocalSessionSyncChanges,
                      base::AsWeakPtr(this)));

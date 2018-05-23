@@ -60,19 +60,8 @@ class MockWriteBatch : public LocalSessionEventHandlerImpl::WriteBatch {
   MockWriteBatch() {}
   ~MockWriteBatch() override {}
 
-  void Add(std::unique_ptr<sync_pb::SessionSpecifics> specifics) override {
-    DoAdd(specifics.get());
-  }
-
-  void Update(std::unique_ptr<sync_pb::SessionSpecifics> specifics) override {
-    DoUpdate(specifics.get());
-  }
-
   MOCK_METHOD1(Delete, void(int tab_node_id));
-  // TODO(crbug.com/729950): Use unique_ptr here direclty once move-only
-  // arguments are supported in gMock.
-  MOCK_METHOD1(DoAdd, void(sync_pb::SessionSpecifics* specifics));
-  MOCK_METHOD1(DoUpdate, void(sync_pb::SessionSpecifics* specifics));
+  MOCK_METHOD1(Put, void(std::unique_ptr<sync_pb::SessionSpecifics> specifics));
   MOCK_METHOD0(Commit, void());
 };
 
@@ -291,10 +280,9 @@ TEST_F(LocalSessionEventHandlerImplTest, AssociateWindowsAndTabsIfEmpty) {
   EXPECT_CALL(mock_delegate_, OnFaviconVisited(_, _)).Times(0);
 
   StrictMock<MockWriteBatch> mock_batch;
-  EXPECT_CALL(
-      mock_batch,
-      DoUpdate(Pointee(MatchesHeader(kSessionTag, /*window_ids=*/IsEmpty(),
-                                     /*tabs_ids=*/IsEmpty()))));
+  EXPECT_CALL(mock_batch,
+              Put(Pointee(MatchesHeader(kSessionTag, /*window_ids=*/IsEmpty(),
+                                        /*tabs_ids=*/IsEmpty()))));
 
   InitHandler(&mock_batch);
 }
@@ -317,21 +305,20 @@ TEST_F(LocalSessionEventHandlerImplTest, AssociateWindowsAndTabs) {
   EXPECT_CALL(mock_delegate_, OnFaviconVisited(GURL(kBaz1), _));
 
   StrictMock<MockWriteBatch> mock_batch;
+  EXPECT_CALL(mock_batch,
+              Put(Pointee(MatchesHeader(kSessionTag, {kWindowId1, kWindowId2},
+                                        {kTabId1, kTabId2, kTabId3}))));
+  EXPECT_CALL(mock_batch,
+              Put(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1,
+                                     /*tab_node_id=*/_,
+                                     /*urls=*/{kFoo1}))));
+  EXPECT_CALL(mock_batch,
+              Put(Pointee(MatchesTab(kSessionTag, kWindowId2, kTabId2,
+                                     /*tab_node_id=*/_, /*urls=*/{kBar1}))));
   EXPECT_CALL(
       mock_batch,
-      DoUpdate(Pointee(MatchesHeader(kSessionTag, {kWindowId1, kWindowId2},
-                                     {kTabId1, kTabId2, kTabId3}))));
-  EXPECT_CALL(mock_batch,
-              DoAdd(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1,
-                                       /*tab_node_id=*/_,
-                                       /*urls=*/{kFoo1}))));
-  EXPECT_CALL(mock_batch,
-              DoAdd(Pointee(MatchesTab(kSessionTag, kWindowId2, kTabId2,
-                                       /*tab_node_id=*/_, /*urls=*/{kBar1}))));
-  EXPECT_CALL(
-      mock_batch,
-      DoAdd(Pointee(MatchesTab(kSessionTag, kWindowId2, kTabId3,
-                               /*tab_node_id=*/_, /*urls=*/{kBar2, kBaz1}))));
+      Put(Pointee(MatchesTab(kSessionTag, kWindowId2, kTabId3,
+                             /*tab_node_id=*/_, /*urls=*/{kBar2, kBaz1}))));
 
   InitHandler(&mock_batch);
 }
@@ -386,15 +373,15 @@ TEST_F(LocalSessionEventHandlerImplTest, AssociateCustomTab) {
   StrictMock<MockWriteBatch> mock_batch;
   testing::InSequence seq;
   EXPECT_CALL(mock_batch,
-              DoUpdate(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1,
-                                          kRegularTabNodeId, /*urls=*/{}))));
+              Put(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1,
+                                     kRegularTabNodeId, /*urls=*/{}))));
   EXPECT_CALL(mock_batch,
-              DoUpdate(Pointee(MatchesTab(kSessionTag, kWindowId2, kTabId2,
-                                          kCustomTabNodeId, /*urls=*/{}))));
-  EXPECT_CALL(mock_batch, DoUpdate(Pointee(MatchesTab(kSessionTag, kWindowId3,
-                                                      kTabId3, kCustomTabNodeId,
-                                                      /*urls=*/{kFoo1}))));
-  EXPECT_CALL(mock_batch, DoUpdate(Pointee(MatchesHeader(
+              Put(Pointee(MatchesTab(kSessionTag, kWindowId2, kTabId2,
+                                     kCustomTabNodeId, /*urls=*/{}))));
+  EXPECT_CALL(mock_batch, Put(Pointee(MatchesTab(kSessionTag, kWindowId3,
+                                                 kTabId3, kCustomTabNodeId,
+                                                 /*urls=*/{kFoo1}))));
+  EXPECT_CALL(mock_batch, Put(Pointee(MatchesHeader(
                               kSessionTag, {kWindowId1, kWindowId2, kWindowId3},
                               {kTabId1, kTabId3}))));
   InitHandler(&mock_batch);
@@ -417,11 +404,11 @@ TEST_F(LocalSessionEventHandlerImplTest, PropagateNewNavigation) {
   // OK because sync will avoid updating an entity with identical content.
   EXPECT_CALL(
       *update_mock_batch,
-      DoUpdate(Pointee(MatchesHeader(kSessionTag, {kWindowId1}, {kTabId1}))));
+      Put(Pointee(MatchesHeader(kSessionTag, {kWindowId1}, {kTabId1}))));
   EXPECT_CALL(*update_mock_batch,
-              DoUpdate(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1,
-                                          /*tab_node_id=*/_,
-                                          /*urls=*/{kFoo1, kBar1}))));
+              Put(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1,
+                                     /*tab_node_id=*/_,
+                                     /*urls=*/{kFoo1, kBar1}))));
   EXPECT_CALL(*update_mock_batch, Commit());
 
   EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())
@@ -443,16 +430,16 @@ TEST_F(LocalSessionEventHandlerImplTest, PropagateNewTab) {
   auto tab_create_mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
   EXPECT_CALL(
       *tab_create_mock_batch,
-      DoUpdate(Pointee(MatchesHeader(kSessionTag, {kWindowId1}, {kTabId1}))));
+      Put(Pointee(MatchesHeader(kSessionTag, {kWindowId1}, {kTabId1}))));
   EXPECT_CALL(*tab_create_mock_batch, Commit());
 
   auto navigation_mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
   EXPECT_CALL(*navigation_mock_batch,
-              DoUpdate(Pointee(MatchesHeader(kSessionTag, {kWindowId1},
-                                             {kTabId1, kTabId2}))));
+              Put(Pointee(MatchesHeader(kSessionTag, {kWindowId1},
+                                        {kTabId1, kTabId2}))));
   EXPECT_CALL(*navigation_mock_batch,
-              DoAdd(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId2,
-                                       /*tab_node_id=*/_, /*urls=*/{kBar1}))));
+              Put(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId2,
+                                     /*tab_node_id=*/_, /*urls=*/{kBar1}))));
   EXPECT_CALL(*navigation_mock_batch, Commit());
 
   EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())
@@ -475,18 +462,17 @@ TEST_F(LocalSessionEventHandlerImplTest, PropagateNewWindow) {
   // the window is not syncable and is hence skipped.
   auto tab_create_mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
   EXPECT_CALL(*tab_create_mock_batch,
-              DoUpdate(Pointee(MatchesHeader(kSessionTag, {kWindowId1},
-                                             {kTabId1, kTabId2}))));
+              Put(Pointee(MatchesHeader(kSessionTag, {kWindowId1},
+                                        {kTabId1, kTabId2}))));
   EXPECT_CALL(*tab_create_mock_batch, Commit());
 
   auto navigation_mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
-  EXPECT_CALL(
-      *navigation_mock_batch,
-      DoUpdate(Pointee(MatchesHeader(kSessionTag, {kWindowId1, kWindowId2},
-                                     {kTabId1, kTabId2, kTabId3}))));
   EXPECT_CALL(*navigation_mock_batch,
-              DoAdd(Pointee(MatchesTab(kSessionTag, kWindowId2, kTabId3,
-                                       /*tab_node_id=*/_, /*urls=*/{kBaz1}))));
+              Put(Pointee(MatchesHeader(kSessionTag, {kWindowId1, kWindowId2},
+                                        {kTabId1, kTabId2, kTabId3}))));
+  EXPECT_CALL(*navigation_mock_batch,
+              Put(Pointee(MatchesTab(kSessionTag, kWindowId2, kTabId3,
+                                     /*tab_node_id=*/_, /*urls=*/{kBaz1}))));
   EXPECT_CALL(*navigation_mock_batch, Commit());
 
   EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())
@@ -548,12 +534,12 @@ TEST_F(LocalSessionEventHandlerImplTest,
   // Note that the header is reported again, although it hasn't changed. This is
   // OK because sync will avoid updating an entity with identical content.
   EXPECT_CALL(*update_mock_batch,
-              DoUpdate(Pointee(MatchesHeader(
-                  kSessionTag, {kWindowId1, kWindowId2}, {kTabId1, kTabId2}))));
+              Put(Pointee(MatchesHeader(kSessionTag, {kWindowId1, kWindowId2},
+                                        {kTabId1, kTabId2}))));
   EXPECT_CALL(
       *update_mock_batch,
-      DoUpdate(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1, kTabNodeId1,
-                                  /*urls=*/{kFoo1, kBaz1}))));
+      Put(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1, kTabNodeId1,
+                             /*urls=*/{kFoo1, kBaz1}))));
   EXPECT_CALL(*update_mock_batch, Commit());
 
   EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())
