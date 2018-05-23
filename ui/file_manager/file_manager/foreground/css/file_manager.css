@@ -256,6 +256,12 @@ body.check-select .dialog-header {
   color: rgb(90, 90, 90);
 }
 
+/* Display a grey border during check-select mode if we're in a dialog. (This
+   can only happen in an open-multi-file dialog). */
+body[type='open-multi-file'].check-select .dialog-header {
+  border-top: 1px solid rgb(219, 219, 219);
+}
+
 .dialog-header > .spacer {
   flex: auto;
 }
