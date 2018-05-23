@@ -50,6 +50,15 @@ loadable_module("clear_key_cdm") {
     defines += [ "CLEAR_KEY_CDM_USE_FFMPEG_DECODER" ]
     deps += [ "//third_party/ffmpeg" ]
   }
+
+  if (media_use_libvpx) {
+    sources += [
+      "libvpx_cdm_video_decoder.cc",
+      "libvpx_cdm_video_decoder.h",
+    ]
+    defines += [ "CLEAR_KEY_CDM_USE_LIBVPX_DECODER" ]
+    deps += [ "//third_party/libvpx" ]
+  }
 }
 
 source_set("clear_key_cdm_proxy") {
