@@ -2591,18 +2591,6 @@
   },
   'vr_common_unittests': {
     'remove_from': [
-      # On chromium.android, unclear why these aren't run on all bots.
-      'android-kitkat-arm-rel',
-      'KitKat Phone Tester (dbg)',
-      'KitKat Phone Tester (rel)',
-      'Nougat Phone Tester chromium.android',
-       # chromium.android.fyi
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-      'x64 Device Tester',
-      'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroid x64',
       # chromium.fyi
       'Chromium Win 10 GCE Tests',
       'Out of Process Profiling Android',

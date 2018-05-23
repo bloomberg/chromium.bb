@@ -3364,6 +3364,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "vr_common_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "vr_pixeltests"
       },
       {
@@ -3679,6 +3685,12 @@
           "can_use_on_swarming_builders": false
         },
         "test": "viz_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "vr_common_unittests"
       },
       {
         "swarming": {
@@ -4923,6 +4935,30 @@
           ]
         },
         "test": "viz_unittests"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "vr_common_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "coho"
+            }
+          ]
+        },
+        "test": "vr_common_unittests"
       },
       {
         "args": [
@@ -6205,6 +6241,30 @@
           ]
         },
         "test": "viz_unittests"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "vr_common_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "gce_x86"
+            }
+          ]
+        },
+        "test": "vr_common_unittests"
       },
       {
         "args": [
