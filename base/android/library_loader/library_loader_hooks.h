@@ -28,7 +28,7 @@ enum LibraryProcessType {
   PROCESS_WEBVIEW_CHILD = 4,
 };
 
-typedef bool NativeInitializationHook();
+typedef bool NativeInitializationHook(LibraryProcessType library_process_type);
 
 BASE_EXPORT void SetNativeInitializationHook(
     NativeInitializationHook native_initialization_hook);
@@ -62,9 +62,6 @@ BASE_EXPORT void SetVersionNumber(const char* version_number);
 // Call on exit to delete the AtExitManager which OnLibraryLoadedOnUIThread
 // created.
 BASE_EXPORT void LibraryLoaderExitHook();
-
-// Return the process type the shared library is loaded in.
-BASE_EXPORT LibraryProcessType GetLibraryProcessType(JNIEnv* env);
 
 // Initialize AtExitManager, this must be done at the begining of loading
 // shared library.
