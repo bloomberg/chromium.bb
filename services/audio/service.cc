@@ -39,6 +39,7 @@ Service::Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
 
 Service::~Service() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  TRACE_EVENT0("audio", "audio::Service::~Service");
 
   metrics_.reset();
 
@@ -58,7 +59,8 @@ Service::~Service() {
 
 void Service::OnStart() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DVLOG(4) << "audio::Service::OnStart";
+  TRACE_EVENT0("audio", "audio::Service::OnStart")
+
   metrics_ =
       std::make_unique<ServiceMetrics>(base::DefaultTickClock::GetInstance());
   ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
@@ -82,7 +84,6 @@ void Service::OnBindInterface(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   DCHECK(ref_factory_);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DVLOG(4) << "audio::Service::OnBindInterface";
   TRACE_EVENT1("audio", "audio::Service::OnBindInterface", "interface",
                interface_name);
 
@@ -107,13 +108,14 @@ void Service::SetQuitClosureForTesting(base::RepeatingClosure quit_closure) {
 void Service::BindSystemInfoRequest(mojom::SystemInfoRequest request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ref_factory_);
+
   if (!system_info_) {
-    DVLOG(4)
-        << "audio::Service::BindSystemInfoRequest: lazy SystemInfo creation";
     system_info_ = std::make_unique<SystemInfo>(
         audio_manager_accessor_->GetAudioManager());
   }
-  system_info_->Bind(std::move(request), ref_factory_->CreateRef());
+  system_info_->Bind(
+      std::move(request),
+      TracedServiceRef(ref_factory_->CreateRef(), "audio::SystemInfo Binding"));
 }
 
 void Service::BindDebugRecordingRequest(mojom::DebugRecordingRequest request) {
@@ -122,11 +124,13 @@ void Service::BindDebugRecordingRequest(mojom::DebugRecordingRequest request) {
 
   // Reuse ref if there is an ongoing debug session that will be overriden, to
   // avoid MaybeRequestQuitDelayed() call.
-  std::unique_ptr<service_manager::ServiceContextRef> service_ref;
-  if (debug_recording_)
+  TracedServiceRef service_ref;
+  if (debug_recording_) {
     service_ref = debug_recording_->ReleaseServiceRef();
-  else
-    service_ref = ref_factory_->CreateRef();
+  } else {
+    service_ref = TracedServiceRef(ref_factory_->CreateRef(),
+                                   "audio::DebugRecording Binding");
+  }
 
   // Accept only one bind request at a time. Old request is overwritten.
   // |debug_recording_| must be reset first to disable debug recording, and then
@@ -140,15 +144,19 @@ void Service::BindDebugRecordingRequest(mojom::DebugRecordingRequest request) {
 void Service::BindStreamFactoryRequest(mojom::StreamFactoryRequest request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ref_factory_);
+
   if (!stream_factory_)
     stream_factory_.emplace(audio_manager_accessor_->GetAudioManager());
-  stream_factory_->Bind(std::move(request), ref_factory_->CreateRef());
+  stream_factory_->Bind(std::move(request),
+                        TracedServiceRef(ref_factory_->CreateRef(),
+                                         "audio::StreamFactory Binding"));
 }
 
 void Service::BindDeviceNotifierRequest(mojom::DeviceNotifierRequest request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ref_factory_);
   DCHECK(device_notifier_enabled_);
+
   if (!system_monitor_) {
     CHECK(!base::SystemMonitor::Get());
     system_monitor_ = std::make_unique<base::SystemMonitor>();
@@ -156,7 +164,9 @@ void Service::BindDeviceNotifierRequest(mojom::DeviceNotifierRequest request) {
   InitializeDeviceMonitor();
   if (!device_notifier_)
     device_notifier_ = std::make_unique<DeviceNotifier>();
-  device_notifier_->Bind(std::move(request), ref_factory_->CreateRef());
+  device_notifier_->Bind(std::move(request),
+                         TracedServiceRef(ref_factory_->CreateRef(),
+                                          "audio::DeviceNotifier Binding"));
 }
 
 void Service::MaybeRequestQuitDelayed() {
@@ -171,6 +181,8 @@ void Service::MaybeRequestQuit() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ref_factory_ && ref_factory_->HasNoRefs() &&
          quit_timeout_ > base::TimeDelta());
+  TRACE_EVENT0("audio", "audio::Service::MaybeRequestQuit");
+
   context()->CreateQuitClosure().Run();
   if (!quit_closure_.is_null())
     quit_closure_.Run();
@@ -180,6 +192,8 @@ void Service::InitializeDeviceMonitor() {
 #if defined(OS_MACOSX)
   if (audio_device_listener_mac_)
     return;
+
+  TRACE_EVENT0("audio", "audio::Service::InitializeDeviceMonitor");
 
   audio_device_listener_mac_ = std::make_unique<media::AudioDeviceListenerMac>(
       base::BindRepeating([] {

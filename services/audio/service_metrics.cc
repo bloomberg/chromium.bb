@@ -4,9 +4,9 @@
 
 #include "services/audio/service_metrics.h"
 
-#include "base/debug/stack_trace.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/tick_clock.h"
+#include "base/trace_event/trace_event.h"
 
 namespace audio {
 
@@ -21,11 +21,13 @@ ServiceMetrics::~ServiceMetrics() {
 }
 
 void ServiceMetrics::HasConnections() {
+  TRACE_EVENT_ASYNC_BEGIN0("audio", "Audio service has connections", this);
   has_connections_start_ = clock_->NowTicks();
   LogHasNoConnectionsDuration();
 }
 
 void ServiceMetrics::HasNoConnections() {
+  TRACE_EVENT_ASYNC_END0("audio", "Audio service has connections", this);
   has_no_connections_start_ = clock_->NowTicks();
   DCHECK_NE(base::TimeTicks(), has_connections_start_);
   UMA_HISTOGRAM_CUSTOM_TIMES("Media.AudioService.HasConnectionsDuration",

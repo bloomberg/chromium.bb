@@ -77,9 +77,6 @@ SyncReader::~SyncReader() {
   if (!renderer_callback_count_)
     return;
 
-  DVLOG(1) << "Trailing glitch count on destruction: "
-           << trailing_renderer_missed_callback_count_;
-
   // Subtract 'trailing' count of callbacks missed just before the destructor
   // call. This happens if the renderer process was killed or e.g. the page
   // refreshed while the output device was open etc.
@@ -101,6 +98,9 @@ SyncReader::~SyncReader() {
       100.0 * renderer_missed_callback_count_ / renderer_callback_count_;
   UMA_HISTOGRAM_PERCENTAGE("Media.AudioRendererMissedDeadline",
                            percentage_missed);
+
+  TRACE_EVENT_INSTANT1("audio", "~SyncReader", TRACE_EVENT_SCOPE_THREAD,
+                       "Missed callback percentage", percentage_missed);
 
   // Add more detailed information regarding detected audio glitches where
   // a non-zero value of |renderer_missed_callback_count_| is added to the

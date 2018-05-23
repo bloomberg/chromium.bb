@@ -11,13 +11,10 @@
 #include "base/system_monitor/system_monitor.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/audio/public/mojom/device_notifications.mojom.h"
+#include "services/audio/traced_service_ref.h"
 
 namespace base {
 class SequencedTaskRunner;
-}
-
-namespace service_manager {
-class ServiceContextRef;
 }
 
 namespace audio {
@@ -30,8 +27,7 @@ class DeviceNotifier final : public base::SystemMonitor::DevicesChangedObserver,
   DeviceNotifier();
   ~DeviceNotifier() final;
 
-  void Bind(mojom::DeviceNotifierRequest request,
-            std::unique_ptr<service_manager::ServiceContextRef> context_ref);
+  void Bind(mojom::DeviceNotifierRequest request, TracedServiceRef context_ref);
 
   // mojom::DeviceNotifier implementation.
   void RegisterListener(mojom::DeviceListenerPtr listener) final;
@@ -45,9 +41,7 @@ class DeviceNotifier final : public base::SystemMonitor::DevicesChangedObserver,
 
   int next_listener_id_ = 0;
   base::flat_map<int, mojom::DeviceListenerPtr> listeners_;
-  mojo::BindingSet<mojom::DeviceNotifier,
-                   std::unique_ptr<service_manager::ServiceContextRef>>
-      bindings_;
+  mojo::BindingSet<mojom::DeviceNotifier, TracedServiceRef> bindings_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<DeviceNotifier> weak_factory_;
 

@@ -14,6 +14,7 @@
 #include "media/audio/mock_audio_manager.h"
 #include "services/audio/public/cpp/debug_recording_session.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
+#include "services/audio/traced_service_ref.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -76,7 +77,8 @@ class DebugRecordingTest : public media::AudioDebugRecordingTest {
     debug_recording_ = std::make_unique<DebugRecording>(
         mojo::MakeRequest(&debug_recording_ptr_),
         static_cast<media::AudioManager*>(mock_audio_manager_.get()),
-        service_ref_factory_.CreateRef());
+        TracedServiceRef(service_ref_factory_.CreateRef(),
+                         "audio::DebugRecording Binding"));
     EXPECT_FALSE(service_ref_factory_.HasNoRefs());
   }
 
