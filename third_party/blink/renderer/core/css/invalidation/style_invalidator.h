@@ -44,6 +44,8 @@ class CORE_EXPORT StyleInvalidator {
   void InvalidateShadowRootChildren(Element&);
   void InvalidateChildren(Element&);
   void InvalidateSlotDistributedElements(HTMLSlotElement&) const;
+  // Returns true if the element should be invalidated according to the
+  // current state. This can also update the current state.
   bool CheckInvalidationSetsAgainstElement(Element&, SiblingData&);
 
   bool MatchesCurrentInvalidationSets(Element&) const;

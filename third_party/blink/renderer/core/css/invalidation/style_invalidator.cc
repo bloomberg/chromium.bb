@@ -185,24 +185,13 @@ void StyleInvalidator::PushInvalidationSetsForContainerNode(
 ALWAYS_INLINE bool StyleInvalidator::CheckInvalidationSetsAgainstElement(
     Element& element,
     SiblingData& sibling_data) {
-  if (WholeSubtreeInvalid())
-    return false;
-
-  bool this_element_needs_style_recalc = false;
-  if (element.GetStyleChangeType() >= kSubtreeStyleChange) {
-    SetWholeSubtreeInvalid();
-  } else {
-    this_element_needs_style_recalc = MatchesCurrentInvalidationSets(element);
-    if (UNLIKELY(!sibling_data.IsEmpty())) {
-      this_element_needs_style_recalc |=
-          sibling_data.MatchCurrentInvalidationSets(element, *this);
-    }
-  }
-
-  if (UNLIKELY(element.NeedsStyleInvalidation()))
-    PushInvalidationSetsForContainerNode(element, sibling_data);
-
-  return this_element_needs_style_recalc;
+  // We need to call both because the sibling data may invalidate the whole
+  // subtree at which point we can stop recursing.
+  bool matches_current = MatchesCurrentInvalidationSets(element);
+  bool matches_sibling =
+      UNLIKELY(!sibling_data.IsEmpty()) &&
+      sibling_data.MatchCurrentInvalidationSets(element, *this);
+  return matches_current || matches_sibling;
 }
 
 void StyleInvalidator::InvalidateShadowRootChildren(Element& element) {
@@ -242,18 +231,20 @@ void StyleInvalidator::Invalidate(Element& element, SiblingData& sibling_data) {
   sibling_data.Advance();
   RecursionCheckpoint checkpoint(this);
 
-  bool this_element_needs_style_recalc =
-      CheckInvalidationSetsAgainstElement(element, sibling_data);
+  if (!WholeSubtreeInvalid()) {
+    if (element.GetStyleChangeType() >= kSubtreeStyleChange) {
+      SetWholeSubtreeInvalid();
+    } else if (CheckInvalidationSetsAgainstElement(element, sibling_data)) {
+      element.SetNeedsStyleRecalc(kLocalStyleChange,
+                                  StyleChangeReasonForTracing::Create(
+                                      StyleChangeReason::kStyleInvalidator));
+    }
+    if (UNLIKELY(element.NeedsStyleInvalidation()))
+      PushInvalidationSetsForContainerNode(element, sibling_data);
+  }
 
   if (HasInvalidationSets() || element.ChildNeedsStyleInvalidation())
     InvalidateChildren(element);
-
-  if (this_element_needs_style_recalc) {
-    DCHECK(!WholeSubtreeInvalid());
-    element.SetNeedsStyleRecalc(kLocalStyleChange,
-                                StyleChangeReasonForTracing::Create(
-                                    StyleChangeReason::kStyleInvalidator));
-  }
 
   if (InsertionPointCrossing() && element.IsV0InsertionPoint())
     element.SetNeedsStyleRecalc(kSubtreeStyleChange,
