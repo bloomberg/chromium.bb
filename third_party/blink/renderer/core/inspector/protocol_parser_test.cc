@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/inspector/protocol/Protocol.h"
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -16,7 +17,13 @@ static std::unique_ptr<protocol::Value> ParseJSON(const String& string) {
   return protocol::StringUtil::parseJSON(string);
 }
 
-TEST(ProtocolParserTest, Reading) {
+// The test fails on Android. https://crbug.com/845816
+#if defined(OS_ANDROID)
+#define MAYBE_Reading DISABLED_Reading
+#else
+#define MAYBE_Reading Reading
+#endif
+TEST(ProtocolParserTest, MAYBE_Reading) {
   Value* tmp_value;
   std::unique_ptr<Value> root;
   std::unique_ptr<Value> root2;
