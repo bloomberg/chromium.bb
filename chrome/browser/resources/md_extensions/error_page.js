@@ -254,11 +254,6 @@ cr.define('extensions', function() {
       return description;
     },
 
-    /** @private */
-    getExpandedClass_: function() {
-      return this.stackTraceExpanded_ ? 'expanded' : '';
-    },
-
     /**
      * @param {chrome.developerPrivate.StackFrame} frame
      * @return {string}
@@ -388,6 +383,16 @@ cr.define('extensions', function() {
      */
     isOpened_: function(index) {
       return index == this.selectedEntry_;
+    },
+
+
+    /**
+     * @param {number} index
+     * @return {string} The aria-expanded value as a string.
+     * @private
+     */
+    isAriaExpanded_: function(index) {
+      return this.isOpened_(index).toString();
     },
 
     /**
