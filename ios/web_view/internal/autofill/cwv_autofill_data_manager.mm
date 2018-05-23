@@ -60,9 +60,9 @@ class WebViewPersonalDataManagerObserverBridge
       _personalDataManagerObserverBridge;
   // These completion handlers are stored so they can be called later on when
   // |_personalDataManager| completes its initial loading.
-  NSMutableArray<FetchProfilesCompletionHandler>*
+  NSMutableArray<CWVFetchProfilesCompletionHandler>*
       _fetchProfilesCompletionHandlers;
-  NSMutableArray<FetchCreditCardsCompletionHandler>*
+  NSMutableArray<CWVFetchCreditCardsCompletionHandler>*
       _fetchCreditCardsCompletionHandlers;
 }
 
@@ -90,7 +90,7 @@ class WebViewPersonalDataManagerObserverBridge
 #pragma mark - Public Methods
 
 - (void)fetchProfilesWithCompletionHandler:
-    (FetchProfilesCompletionHandler)completionHandler {
+    (CWVFetchProfilesCompletionHandler)completionHandler {
   // If data is already loaded, return the existing data asynchronously to match
   // client expectation. Otherwise, save the |completionHandler| and wait for
   // |personalDataDidChange| to be invoked.
@@ -114,7 +114,7 @@ class WebViewPersonalDataManagerObserverBridge
 }
 
 - (void)fetchCreditCardsWithCompletionHandler:
-    (FetchCreditCardsCompletionHandler)completionHandler {
+    (CWVFetchCreditCardsCompletionHandler)completionHandler {
   // If data is already loaded, return the existing data asynchronously to match
   // client expectation. Otherwise, save the |completionHandler| and wait for
   // |personalDataDidChange| to be invoked.
@@ -144,7 +144,7 @@ class WebViewPersonalDataManagerObserverBridge
   if (_personalDataManager->IsDataLoaded()) {
     if (_fetchProfilesCompletionHandlers.count > 0) {
       NSArray<CWVAutofillProfile*>* profiles = [self profiles];
-      for (FetchProfilesCompletionHandler completionHandler in
+      for (CWVFetchProfilesCompletionHandler completionHandler in
                _fetchProfilesCompletionHandlers) {
         completionHandler(profiles);
       }
@@ -152,7 +152,7 @@ class WebViewPersonalDataManagerObserverBridge
     }
     if (_fetchCreditCardsCompletionHandlers.count > 0) {
       NSArray<CWVCreditCard*>* creditCards = [self creditCards];
-      for (FetchCreditCardsCompletionHandler completionHandler in
+      for (CWVFetchCreditCardsCompletionHandler completionHandler in
                _fetchCreditCardsCompletionHandlers) {
         completionHandler(creditCards);
       }
