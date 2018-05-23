@@ -24,6 +24,8 @@
 #include "base/sys_info.h"
 #include "build/build_config.h"
 
+#include "media/base/media_switches.h"
+
 // Auto-generated for dlopen libva libraries
 #include "media/gpu/vaapi/va_stubs.h"
 
@@ -176,6 +178,14 @@ bool IsBlackListedDriver(const std::string& va_vendor_string,
       return true;
     }
   }
+
+  // TODO(posciak): Remove once VP8 encoding is to be enabled by default.
+  if (mode == VaapiWrapper::CodecMode::kEncode &&
+      va_profile == VAProfileVP8Version0_3 &&
+      !base::FeatureList::IsEnabled(kVaapiVP8Encoder)) {
+    return true;
+  }
+
   return false;
 }
 
