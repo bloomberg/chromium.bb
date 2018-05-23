@@ -2945,7 +2945,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_2_1024",
+                    "name": "Enabled",
                     "params": {
                         "limit": "1024",
                         "tight_limit": "2"
