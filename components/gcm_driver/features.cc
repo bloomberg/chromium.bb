@@ -15,7 +15,7 @@ namespace gcm {
 namespace features {
 
 const base::Feature kInvalidateTokenFeature{"GCMTokenInvalidAfterDays",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 const char kParamNameTokenInvalidationPeriodDays[] =
     "token_invalidation_period";
 // A token invalidation period of 0 means the feature is disabled, and the
