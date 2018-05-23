@@ -2864,7 +2864,8 @@
       'Unswarmed N5X Tests Dummy Builder',
     ],
     'remove_from': [
-      # On chromium.android, unclear why these aren't run on all bots.
+      # This test frequently fails on Android, https://crbug.com/824959
+      # chromium.android
       'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
