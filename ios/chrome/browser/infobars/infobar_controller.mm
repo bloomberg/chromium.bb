@@ -34,7 +34,7 @@
 - (void)layoutForFrame:(CGRect)bounds {
   if (!_infoBarView) {
     _infoBarView = [self viewForFrame:bounds];
-    [_infoBarView setDelegate:self];
+    [_infoBarView setSizingDelegate:self];
   } else {
     [_infoBarView setFrame:bounds];
   }
@@ -58,7 +58,7 @@
 }
 
 - (void)detachView {
-  [_infoBarView setDelegate:nil];
+  [_infoBarView setSizingDelegate:nil];
   _delegate = nullptr;
 }
 

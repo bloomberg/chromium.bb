@@ -19,7 +19,7 @@
 @property(nonatomic, assign) CGFloat visibleHeight;
 
 // The delegate that gets notified of infobar's height changes.
-@property(nonatomic, weak) id<InfoBarViewSizingDelegate> delegate;
+@property(nonatomic, weak) id<InfoBarViewSizingDelegate> sizingDelegate;
 
 @end
 

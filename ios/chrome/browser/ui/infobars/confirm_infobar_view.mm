@@ -345,7 +345,7 @@ UIImage* InfoBarCloseImage() {
 }
 
 @synthesize visibleHeight = visibleHeight_;
-@synthesize delegate = delegate_;
+@synthesize sizingDelegate = sizingDelegate_;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -357,8 +357,6 @@ UIImage* InfoBarCloseImage() {
       shadow_ = [[UIImageView alloc] initWithImage:shadowImage];
       [self addSubview:shadow_];
     }
-    [self setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
-                              UIViewAutoresizingFlexibleHeight];
     [self setAccessibilityViewIsModal:YES];
   }
   return self;
@@ -749,8 +747,8 @@ UIImage* InfoBarCloseImage() {
   [imageView_ setFrame:[self frameOfIcon]];
   targetHeight_ = [self computeRequiredHeightAndLayoutSubviews:YES];
 
-  if (delegate_)
-    [delegate_ didSetInfoBarTargetHeight:targetHeight_];
+  if (sizingDelegate_)
+    [sizingDelegate_ didSetInfoBarTargetHeight:targetHeight_];
   [self resetBackground];
 
   // Asks the BidiContainerView to reposition of all the subviews.
