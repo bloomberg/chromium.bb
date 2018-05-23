@@ -166,7 +166,7 @@ base::ReadOnlySharedMemoryRegion PdfToEmfConverter::RenderPdfPageToMetafile(
   const uint32_t size = metafile.GetDataSize();
   base::MappedReadOnlyRegion region_mapping =
       CreateReadOnlySharedMemoryRegion(size);
-  if (!region_mapping.region.IsValid() || !region_mapping.mapping.IsValid())
+  if (!region_mapping.IsValid())
     return invalid_emf_region;
 
   if (!metafile.GetData(region_mapping.mapping.memory(), size))

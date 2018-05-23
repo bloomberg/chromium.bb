@@ -230,7 +230,7 @@ mojom::PdfCompositor::Status PdfCompositorImpl::CompositeToPdf(
 
   base::MappedReadOnlyRegion region_mapping =
       CreateReadOnlySharedMemoryRegion(wstream.bytesWritten());
-  if (!region_mapping.region.IsValid() || !region_mapping.mapping.IsValid()) {
+  if (!region_mapping.IsValid()) {
     DLOG(ERROR) << "CompositeToPdf: Cannot create new shared memory region.";
     return mojom::PdfCompositor::Status::HANDLE_MAP_ERROR;
   }
