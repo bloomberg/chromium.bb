@@ -333,10 +333,17 @@ static bool IsLinkable(const AXObject& object) {
 // Requires layoutObject to be present because it relies on style
 // user-modify. Don't move this logic to AXNodeObject.
 bool AXLayoutObject::IsEditable() const {
-  if (GetLayoutObject() && GetLayoutObject()->IsTextControl())
+  if (IsDetached())
+    return false;
+
+  if (GetLayoutObject()->IsTextControl())
     return true;
 
-  if (GetNode() && HasEditableStyle(*GetNode()))
+  const Node* node = GetNodeOrContainingBlockNode();
+  if (!node)
+    return false;
+
+  if (HasEditableStyle(*node))
     return true;
 
   if (IsWebArea()) {
@@ -356,7 +363,14 @@ bool AXLayoutObject::IsEditable() const {
 // Requires layoutObject to be present because it relies on style
 // user-modify. Don't move this logic to AXNodeObject.
 bool AXLayoutObject::IsRichlyEditable() const {
-  if (GetNode() && HasRichlyEditableStyle(*GetNode()))
+  if (IsDetached())
+    return false;
+
+  const Node* node = GetNodeOrContainingBlockNode();
+  if (!node)
+    return false;
+
+  if (HasRichlyEditableStyle(*node))
     return true;
 
   if (IsWebArea()) {
@@ -1747,6 +1761,16 @@ double AXLayoutObject::EstimatedLoadingProgress() const {
 
 Node* AXLayoutObject::GetNode() const {
   return GetLayoutObject() ? GetLayoutObject()->GetNode() : nullptr;
+}
+
+Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
+  if (IsDetached())
+    return nullptr;
+  if (GetLayoutObject()->IsAnonymousBlock() &&
+      GetLayoutObject()->ContainingBlock()) {
+    return GetLayoutObject()->ContainingBlock()->GetNode();
+  }
+  return GetNode();
 }
 
 Document* AXLayoutObject::GetDocument() const {

@@ -169,6 +169,9 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
   // DOM and layout tree access.
   Node* GetNode() const override;
+  // If this is an anonymous block, returns the node of its containing layout
+  // block, otherwise returns the node of this layout object.
+  Node* GetNodeOrContainingBlockNode() const;
   Document* GetDocument() const override;
   LocalFrameView* DocumentFrameView() const override;
   Element* AnchorElement() const override;
