@@ -4446,6 +4446,17 @@
             }
           ]
         },
+        "test": "chrome_public_test_vr_apk"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "coho"
+            }
+          ]
+        },
         "test": "chrome_sync_shell_test_apk"
       },
       {

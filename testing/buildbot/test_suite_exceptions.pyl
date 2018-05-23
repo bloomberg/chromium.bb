@@ -510,25 +510,6 @@
     },
   },
   'chrome_public_test_vr_apk': {
-    'remove_from': [
-      # chromium.android
-      'KitKat Phone Tester (dbg)',
-      'KitKat Tablet Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow Tablet Tester',
-      # chromium.android.fyi
-      'Nougat Phone Tester chromium.android.fyi',
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-      'x64 Device Tester',
-      'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroid x64',
-      # chromium.fyi
-      'Out of Process Profiling Android',
-      # chromium.memory
-      'Android CFI',
-    ],
     'modifications': {
       'android-kitkat-arm-rel': {
         'args': [
