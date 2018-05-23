@@ -67,6 +67,8 @@ class LayerTreeResourceProviderTest : public testing::TestWithParam<bool> {
     return context_provider_.get();
   }
 
+  void DestroyProvider() { provider_.reset(); }
+
  private:
   bool use_gpu_;
   scoped_refptr<viz::TestContextProvider> context_provider_;
@@ -88,7 +90,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceReleased) {
   MockReleaseCallback release;
   viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
   viz::ResourceId id = provider().ImportResource(
-      tran, viz::SingleReleaseCallback::Create(base::Bind(
+      tran, viz::SingleReleaseCallback::Create(base::BindOnce(
                 &MockReleaseCallback::Released, base::Unretained(&release))));
   // The local id is different.
   EXPECT_NE(id, tran.id);
@@ -105,7 +107,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceSendToParent) {
   viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
   tran.buffer_format = gfx::BufferFormat::RGBX_8888;
   viz::ResourceId id = provider().ImportResource(
-      tran, viz::SingleReleaseCallback::Create(base::Bind(
+      tran, viz::SingleReleaseCallback::Create(base::BindOnce(
                 &MockReleaseCallback::Released, base::Unretained(&release))));
 
   // Export the resource.
@@ -218,7 +220,7 @@ TEST_P(LayerTreeResourceProviderTest,
   MockReleaseCallback release;
   viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
   viz::ResourceId id = provider().ImportResource(
-      tran, viz::SingleReleaseCallback::Create(base::Bind(
+      tran, viz::SingleReleaseCallback::Create(base::BindOnce(
                 &MockReleaseCallback::Released, base::Unretained(&release))));
 
   // Export the resource.
@@ -234,7 +236,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceRemovedAfterReturn) {
   MockReleaseCallback release;
   viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
   viz::ResourceId id = provider().ImportResource(
-      tran, viz::SingleReleaseCallback::Create(base::Bind(
+      tran, viz::SingleReleaseCallback::Create(base::BindOnce(
                 &MockReleaseCallback::Released, base::Unretained(&release))));
 
   // Export the resource.
@@ -264,7 +266,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceExportedTwice) {
   MockReleaseCallback release;
   viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
   viz::ResourceId id = provider().ImportResource(
-      tran, viz::SingleReleaseCallback::Create(base::Bind(
+      tran, viz::SingleReleaseCallback::Create(base::BindOnce(
                 &MockReleaseCallback::Released, base::Unretained(&release))));
 
   // Export the resource once.
@@ -303,7 +305,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceReturnedTwiceAtOnce) {
   MockReleaseCallback release;
   viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
   viz::ResourceId id = provider().ImportResource(
-      tran, viz::SingleReleaseCallback::Create(base::Bind(
+      tran, viz::SingleReleaseCallback::Create(base::BindOnce(
                 &MockReleaseCallback::Released, base::Unretained(&release))));
 
   // Export the resource once.
@@ -338,7 +340,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceLostOnReturn) {
   MockReleaseCallback release;
   viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
   viz::ResourceId id = provider().ImportResource(
-      tran, viz::SingleReleaseCallback::Create(base::Bind(
+      tran, viz::SingleReleaseCallback::Create(base::BindOnce(
                 &MockReleaseCallback::Released, base::Unretained(&release))));
 
   // Export the resource once.
@@ -374,7 +376,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceLostOnFirstReturn) {
   MockReleaseCallback release;
   viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
   viz::ResourceId id = provider().ImportResource(
-      tran, viz::SingleReleaseCallback::Create(base::Bind(
+      tran, viz::SingleReleaseCallback::Create(base::BindOnce(
                 &MockReleaseCallback::Released, base::Unretained(&release))));
 
   // Export the resource once.
@@ -403,6 +405,151 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceLostOnFirstReturn) {
   returned.back().lost = false;
   EXPECT_CALL(release, Released(_, true));
   provider().ReceiveReturnsFromParent(returned);
+}
+
+TEST_P(LayerTreeResourceProviderTest, ReturnedSyncTokensArePassedToClient) {
+  // SyncTokens are gpu-only.
+  if (!use_gpu())
+    return;
+
+  MockReleaseCallback release;
+
+  GLuint texture;
+  context_provider()->ContextGL()->GenTextures(1, &texture);
+  context_provider()->ContextGL()->BindTexture(GL_TEXTURE_2D, texture);
+  gpu::Mailbox mailbox;
+  context_provider()->ContextGL()->GenMailboxCHROMIUM(mailbox.name);
+  context_provider()->ContextGL()->ProduceTextureDirectCHROMIUM(texture,
+                                                                mailbox.name);
+  gpu::SyncToken sync_token;
+  context_provider()->ContextGL()->GenSyncTokenCHROMIUM(sync_token.GetData());
+
+  auto tran = viz::TransferableResource::MakeGL(mailbox, GL_LINEAR,
+                                                GL_TEXTURE_2D, sync_token);
+  viz::ResourceId resource = provider().ImportResource(
+      tran, viz::SingleReleaseCallback::Create(base::BindOnce(
+                &MockReleaseCallback::Released, base::Unretained(&release))));
+
+  EXPECT_TRUE(tran.mailbox_holder.sync_token.HasData());
+  // All the logic below assumes that the sync token releases are all positive.
+  EXPECT_LT(0u, tran.mailbox_holder.sync_token.release_count());
+
+  // Transfer the resource, expect the sync points to be consistent.
+  std::vector<viz::TransferableResource> list;
+  provider().PrepareSendToParent({resource}, &list, context_provider());
+  ASSERT_EQ(1u, list.size());
+  EXPECT_LE(sync_token.release_count(),
+            list[0].mailbox_holder.sync_token.release_count());
+  EXPECT_EQ(0, memcmp(mailbox.name, list[0].mailbox_holder.mailbox.name,
+                      sizeof(mailbox.name)));
+
+  // Make a new texture id from the mailbox.
+  context_provider()->ContextGL()->WaitSyncTokenCHROMIUM(
+      list[0].mailbox_holder.sync_token.GetConstData());
+  unsigned other_texture =
+      context_provider()->ContextGL()->CreateAndConsumeTextureCHROMIUM(
+          mailbox.name);
+  // Then delete it and make a new SyncToken.
+  context_provider()->ContextGL()->DeleteTextures(1, &other_texture);
+  context_provider()->ContextGL()->GenSyncTokenCHROMIUM(
+      list[0].mailbox_holder.sync_token.GetData());
+  EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
+
+  // Receive the resource, then delete it, expect the SyncTokens to be
+  // consistent.
+  provider().ReceiveReturnsFromParent(
+      viz::TransferableResource::ReturnResources(list));
+
+  gpu::SyncToken returned_sync_token;
+  EXPECT_CALL(release, Released(_, false))
+      .WillOnce(testing::SaveArg<0>(&returned_sync_token));
+  provider().RemoveImportedResource(resource);
+  EXPECT_GE(returned_sync_token.release_count(),
+            list[0].mailbox_holder.sync_token.release_count());
+}
+
+TEST_P(LayerTreeResourceProviderTest, LostResourcesAreReturnedLost) {
+  MockReleaseCallback release;
+  viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
+  viz::ResourceId resource = provider().ImportResource(
+      tran, viz::SingleReleaseCallback::Create(base::BindOnce(
+                &MockReleaseCallback::Released, base::Unretained(&release))));
+
+  // Transfer the resource to the parent.
+  std::vector<viz::TransferableResource> list;
+  provider().PrepareSendToParent({resource}, &list, context_provider());
+  EXPECT_EQ(1u, list.size());
+
+  // Receive it back marked lost.
+  std::vector<viz::ReturnedResource> returned_to_child;
+  returned_to_child.push_back(list[0].ToReturnedResource());
+  returned_to_child.back().lost = true;
+  provider().ReceiveReturnsFromParent(returned_to_child);
+
+  // Delete the resource in the child. Expect the resource to be lost.
+  EXPECT_CALL(release, Released(_, true));
+  provider().RemoveImportedResource(resource);
+}
+
+TEST_P(LayerTreeResourceProviderTest, ShutdownPreservesLostState) {
+  MockReleaseCallback release;
+  viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
+  viz::ResourceId resource = provider().ImportResource(
+      tran, viz::SingleReleaseCallback::Create(base::BindOnce(
+                &MockReleaseCallback::Released, base::Unretained(&release))));
+
+  // Transfer the resource to the parent.
+  std::vector<viz::TransferableResource> list;
+  provider().PrepareSendToParent({resource}, &list, context_provider());
+  EXPECT_EQ(1u, list.size());
+
+  // Receive it back marked lost.
+  std::vector<viz::ReturnedResource> returned_to_child;
+  returned_to_child.push_back(list[0].ToReturnedResource());
+  returned_to_child.back().lost = true;
+  provider().ReceiveReturnsFromParent(returned_to_child);
+
+  // Shutdown, and expect the resource to be lost..
+  EXPECT_CALL(release, Released(_, true));
+  DestroyProvider();
+}
+
+TEST_P(LayerTreeResourceProviderTest, ShutdownLosesExportedResources) {
+  MockReleaseCallback release;
+  viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
+  viz::ResourceId resource = provider().ImportResource(
+      tran, viz::SingleReleaseCallback::Create(base::BindOnce(
+                &MockReleaseCallback::Released, base::Unretained(&release))));
+
+  // Transfer the resource to the parent.
+  std::vector<viz::TransferableResource> list;
+  provider().PrepareSendToParent({resource}, &list, context_provider());
+  EXPECT_EQ(1u, list.size());
+
+  // Destroy the LayerTreeResourceProvider, the resource is returned lost.
+  EXPECT_CALL(release, Released(_, true));
+  DestroyProvider();
+}
+
+TEST_P(LayerTreeResourceProviderTest, ShutdownDoesNotLoseUnexportedResources) {
+  MockReleaseCallback release;
+  viz::TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
+  viz::ResourceId resource = provider().ImportResource(
+      tran, viz::SingleReleaseCallback::Create(base::BindOnce(
+                &MockReleaseCallback::Released, base::Unretained(&release))));
+
+  // Transfer the resource to the parent.
+  std::vector<viz::TransferableResource> list;
+  provider().PrepareSendToParent({resource}, &list, context_provider());
+  EXPECT_EQ(1u, list.size());
+
+  // Receive it back.
+  provider().ReceiveReturnsFromParent(
+      viz::TransferableResource::ReturnResources(list));
+
+  // Destroy the LayerTreeResourceProvider, the resource is not lost.
+  EXPECT_CALL(release, Released(_, false));
+  DestroyProvider();
 }
 
 }  // namespace
