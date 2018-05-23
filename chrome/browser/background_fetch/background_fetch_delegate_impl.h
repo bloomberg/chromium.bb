@@ -58,6 +58,10 @@ class BackgroundFetchDelegateImpl
                    const net::HttpRequestHeaders& headers) override;
   void Abort(const std::string& job_unique_id) override;
 
+  // Abort all ongoing downloads and fail the fetch. Currently only used when
+  // the bytes downloaded exceed the total download size, if specified.
+  void FailFetch(const std::string& job_unique_id);
+
   void OnDownloadStarted(const std::string& guid,
                          std::unique_ptr<content::BackgroundFetchResponse>);
 

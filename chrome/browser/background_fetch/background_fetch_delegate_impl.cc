@@ -197,7 +197,7 @@ void BackgroundFetchDelegateImpl::Abort(const std::string& job_unique_id) {
     download_service_->CancelDownload(download_guid);
     download_job_unique_id_map_.erase(download_guid);
   }
-
+  UpdateOfflineItemAndUpdateObservers(&job_details);
   job_details_map_.erase(job_details_iter);
 }
 
@@ -225,7 +225,6 @@ void BackgroundFetchDelegateImpl::OnDownloadUpdated(
     const std::string& download_guid,
     uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   auto download_job_unique_id_iter =
       download_job_unique_id_map_.find(download_guid);
   // TODO(crbug.com/779012): When DownloadService fixes cancelled jobs calling
@@ -239,6 +238,16 @@ void BackgroundFetchDelegateImpl::OnDownloadUpdated(
   DCHECK(job_details_map_.count(job_unique_id));
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
   job_details.fetch_description->completed_parts_size = bytes_downloaded;
+  if (job_details.fetch_description->total_parts_size &&
+      job_details.fetch_description->total_parts_size <
+          job_details.fetch_description->completed_parts_size) {
+    // Fail the fetch if total download size was set too low.
+    // We only do this if total download size is specified. If not specified,
+    // this check is skipped. This is to allow for situations when the
+    // total download size cannot be known when invoking fetch.
+    FailFetch(job_unique_id);
+    return;
+  }
   UpdateOfflineItemAndUpdateObservers(&job_details);
 
   if (client())
@@ -392,12 +401,25 @@ void BackgroundFetchDelegateImpl::RemoveItem(
   NOTIMPLEMENTED();
 }
 
+void BackgroundFetchDelegateImpl::FailFetch(const std::string& job_unique_id) {
+  // Save a copy before Abort() deletes the reference.
+  const std::string unique_id = job_unique_id;
+  Abort(job_unique_id);
+  if (client()) {
+    client()->OnJobCancelled(
+        unique_id,
+        content::BackgroundFetchReasonToAbort::TOTAL_DOWNLOAD_SIZE_EXCEEDED);
+  }
+}
+
 void BackgroundFetchDelegateImpl::CancelDownload(
     const offline_items_collection::ContentId& id) {
   Abort(id.id);
 
-  if (client())
-    client()->OnJobCancelled(id.id);
+  if (client()) {
+    client()->OnJobCancelled(
+        id.id, content::BackgroundFetchReasonToAbort::CANCELLED_FROM_UI);
+  }
 }
 
 void BackgroundFetchDelegateImpl::PauseDownload(

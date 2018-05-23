@@ -21,6 +21,7 @@ namespace content {
 
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRequestInfo;
+enum class BackgroundFetchReasonToAbort;
 
 // Maintains a list of Controllers and chooses which ones should launch new
 // downloads.
@@ -29,7 +30,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler
  public:
   using FinishedCallback =
       base::OnceCallback<void(const BackgroundFetchRegistrationId&,
-                              bool /* aborted */)>;
+                              BackgroundFetchReasonToAbort)>;
   using MarkedCompleteCallback = base::OnceCallback<void()>;
 
   // Interface for download job controllers.
@@ -44,7 +45,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler
     virtual void StartRequest(
         scoped_refptr<BackgroundFetchRequestInfo> request) = 0;
 
-    void Finish(bool abort);
+    void Finish(BackgroundFetchReasonToAbort reason_to_abort);
 
     const BackgroundFetchRegistrationId& registration_id() const {
       return registration_id_;

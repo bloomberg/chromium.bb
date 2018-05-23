@@ -154,12 +154,12 @@ class CONTENT_EXPORT BackgroundFetchContext
   void DidFinishJob(
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback,
       const BackgroundFetchRegistrationId& registration_id,
-      bool aborted);
+      BackgroundFetchReasonToAbort reason_to_abort);
 
   // Called when the data manager finishes marking a registration as deleted.
   void DidMarkForDeletion(
       const BackgroundFetchRegistrationId& registration_id,
-      bool aborted,
+      BackgroundFetchReasonToAbort reason_to_abort,
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback,
       blink::mojom::BackgroundFetchError error);
 

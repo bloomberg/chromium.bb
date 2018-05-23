@@ -114,12 +114,6 @@ void BackgroundFetchJobController::DidCompleteRequest(
   request_manager_->MarkRequestAsComplete(registration_id(), request.get());
 }
 
-void BackgroundFetchJobController::AbortFromUser() {
-  // Aborts from user come via the BackgroundFetchDelegate, which will have
-  // already cancelled the download.
-  Abort(false /* cancel_download */);
-}
-
 void BackgroundFetchJobController::UpdateUI(const std::string& title) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -133,28 +127,22 @@ uint64_t BackgroundFetchJobController::GetInProgressDownloadedBytes() {
   return sum;
 }
 
-void BackgroundFetchJobController::Abort() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  Abort(true /* cancel_download */);
-}
-
-void BackgroundFetchJobController::Abort(bool cancel_download) {
-  if (cancel_download)
-    delegate_proxy_->Abort(registration_id().unique_id());
+void BackgroundFetchJobController::Abort(
+    BackgroundFetchReasonToAbort reason_to_abort) {
+  delegate_proxy_->Abort(registration_id().unique_id());
 
   std::vector<std::string> aborted_guids;
   for (const auto& pair : active_request_download_bytes_)
     aborted_guids.push_back(pair.first);
   request_manager_->OnJobAborted(registration_id(), std::move(aborted_guids));
-  if (!cancel_download) {
+  if (reason_to_abort != BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER) {
     // Don't call Finish() here, so that we don't mark data for deletion while
     // there are active fetches.
     // Once the controller finishes processing, this function will be called
     // again. (BackgroundFetchScheduler's finished_callback_ will call
     // BackgroundFetchJobController::Abort() with |cancel_download| set to
     // true.)
-    Finish(true /* aborted */);
+    Finish(reason_to_abort);
   }
 }
 

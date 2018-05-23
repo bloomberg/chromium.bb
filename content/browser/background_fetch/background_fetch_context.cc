@@ -227,13 +227,14 @@ void BackgroundFetchContext::Abort(
     blink::mojom::BackgroundFetchService::AbortCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  DidFinishJob(std::move(callback), registration_id, true /* aborted */);
+  DidFinishJob(std::move(callback), registration_id,
+               BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER);
 }
 
 void BackgroundFetchContext::DidFinishJob(
     base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback,
     const BackgroundFetchRegistrationId& registration_id,
-    bool aborted) {
+    BackgroundFetchReasonToAbort reason_to_abort) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // If |aborted| is true, this will also propagate the event to any active
@@ -241,13 +242,13 @@ void BackgroundFetchContext::DidFinishJob(
   data_manager_.MarkRegistrationForDeletion(
       registration_id,
       base::BindOnce(&BackgroundFetchContext::DidMarkForDeletion,
-                     weak_factory_.GetWeakPtr(), registration_id, aborted,
-                     std::move(callback)));
+                     weak_factory_.GetWeakPtr(), registration_id,
+                     reason_to_abort, std::move(callback)));
 }
 
 void BackgroundFetchContext::DidMarkForDeletion(
     const BackgroundFetchRegistrationId& registration_id,
-    bool aborted,
+    BackgroundFetchReasonToAbort reason_to_abort,
     base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback,
     blink::mojom::BackgroundFetchError error) {
   std::move(callback).Run(error);
@@ -259,20 +260,27 @@ void BackgroundFetchContext::DidMarkForDeletion(
   if (error != blink::mojom::BackgroundFetchError::NONE)
     return;
 
-  if (aborted) {
+  if (reason_to_abort == BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER) {
     DCHECK(job_controllers_.count(registration_id.unique_id()));
-    job_controllers_[registration_id.unique_id()]->Abort();
+    job_controllers_[registration_id.unique_id()]->Abort(reason_to_abort);
+  }
 
-    CleanupRegistration(registration_id, {});
-
-    // TODO(rayankans): Send fetches to the event dispatcher.
-    event_dispatcher_.DispatchBackgroundFetchAbortEvent(registration_id, {},
-                                                        base::DoNothing());
-  } else {
-    data_manager_.GetSettledFetchesForRegistration(
-        registration_id,
-        base::BindOnce(&BackgroundFetchContext::DidGetSettledFetches,
-                       weak_factory_.GetWeakPtr(), registration_id));
+  switch (reason_to_abort) {
+    case BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER:
+    case BackgroundFetchReasonToAbort::CANCELLED_FROM_UI:
+      CleanupRegistration(registration_id, {});
+      // TODO(rayankans): Send fetches to the event dispatcher.
+      event_dispatcher_.DispatchBackgroundFetchAbortEvent(
+          registration_id, {} /* settled_fetches */, base::DoNothing());
+      return;
+    case BackgroundFetchReasonToAbort::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
+    case BackgroundFetchReasonToAbort::NONE:
+      // This will send a BackgroundFetchFetched or BackgroundFetchFail event.
+      data_manager_.GetSettledFetchesForRegistration(
+          registration_id,
+          base::BindOnce(&BackgroundFetchContext::DidGetSettledFetches,
+                         weak_factory_.GetWeakPtr(), registration_id));
+      return;
   }
 }
 

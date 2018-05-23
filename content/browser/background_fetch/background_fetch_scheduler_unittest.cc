@@ -61,7 +61,7 @@ class FakeController : public BackgroundFetchScheduler::Controller {
   }
 
   static void OnJobFinished(const BackgroundFetchRegistrationId&,
-                            bool aborted) {}
+                            BackgroundFetchReasonToAbort reason_to_abort) {}
 
   int jobs_started_ = 0;
   BackgroundFetchScheduler* scheduler_;
