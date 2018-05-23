@@ -521,6 +521,20 @@ html[dir=rtl] #mv-notice-x {
   background-color: rgb(66,133,244);
 }
 
+.md-icons #mv-notice-x {
+  display: none;
+}
+
+#mv-notice-container {
+  width: 100%;
+}
+
+.md-icons #mv-notice-container {
+  bottom: 0;
+  margin-bottom: 16px;
+  position: fixed;
+}
+
 /* The notification shown when a tile is blacklisted. */
 #mv-notice {
   font-size: 12px;
@@ -529,12 +543,32 @@ html[dir=rtl] #mv-notice-x {
   padding: 10px 0;
 }
 
+.md-icons #mv-notice {
+  background-color: white;
+  border: 1px solid rgb(218, 220, 224);
+  /* Necessary for a "pill" shape. Using 50% creates an oval. */
+  border-radius: 500px;
+  font-family: 'Roboto';
+  font-weight: normal;
+  height: 32px;
+  margin: 0 auto;
+  padding: 0;
+  width: fit-content;
+}
+
 #mv-notice span {
   cursor: default;
   display: inline-block;
   height: 16px;
   line-height: 16px;
   vertical-align: top;
+}
+
+.md-icons #mv-notice span {
+  color: rgb(95,99,104);
+  height: auto;
+  line-height: 32px;
+  vertical-align: unset;
 }
 
 /* Links in the notification. */
@@ -546,13 +580,32 @@ html[dir=rtl] #mv-notice-x {
   padding: 0 4px;
 }
 
+.md-icons #mv-notice-links span {
+  -webkit-margin-start: 0;
+  /* Necessary for a "pill" shape. Using 50% creates an oval. */
+  border-radius: 500px;
+  color: rgb(26,115,232);
+  padding: 0 16px;
+}
+
 #mv-notice-links span:hover,
 #mv-notice-links span:focus {
   text-decoration: underline;
 }
 
+.md-icons #mv-notice-links span:hover,
+.md-icons #mv-notice-links span:focus {
+  background-color: rgba(26,115,232, 0.1);
+  text-decoration: none;
+  transition: background-color 200ms;
+}
+
 #mv-msg {
   color: var(--text-color);
+}
+
+.md-icons #mv-msg {
+  padding: 0 16px;
 }
 
 .default-theme.dark #mv-msg {

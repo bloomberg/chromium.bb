@@ -25,6 +25,7 @@ const CLASSES = {
   MD_TILE: 'md-tile',
   MD_TILE_INNER: 'md-tile-inner',
   MD_TITLE: 'md-title',
+  MD_TITLE_CONTAINER: 'md-title-container',
 };
 
 
@@ -633,11 +634,14 @@ function renderMaterialDesignTile(data) {
   mdIcon.appendChild(mdIconBackground);
   mdTileInner.appendChild(mdIcon);
 
+  let mdTitleContainer = document.createElement('div');
+  mdTitleContainer.className = CLASSES.MD_TITLE_CONTAINER;
   let mdTitle = document.createElement('div');
   mdTitle.className = CLASSES.MD_TITLE;
   mdTitle.innerText = data.title;
   mdTitle.style.direction = data.direction || 'ltr';
-  mdTileInner.appendChild(mdTitle);
+  mdTitleContainer.appendChild(mdTitle);
+  mdTileInner.appendChild(mdTitleContainer);
 
   let mdMenu = document.createElement('button');
   mdMenu.className = CLASSES.MD_MENU;
