@@ -27,7 +27,9 @@
       "comments": [
         "This still relies on system iOS 9.3 legacy simulators,",
         "since Xcode 8.0 doesn't provide it. But our test runner",
-        "doesn't support Xcode 7.3 anymore..."
+        "doesn't support Xcode 7.3 anymore...",
+        "",
+        "TODO(crbug.com/731358): Remove explicit priority after flipping to LUCI."
       ],
       "os": "9.3",
       "xcode build version": "8A218a",
@@ -38,18 +40,23 @@
         { "os": "Mac-10.11.6", "pool": "Chrome" },
         { "os": "Mac-10.12", "pool": "Chrome" },
         { "os": "Mac-10.13", "pool": "Chrome" }
-      ]
+      ],
+      "priority": 29
     },
     {
       "app": "cronet_test",
       "device type": "iPhone 5s",
       "os": "9.3",
       "xcode build version": "8A218a",
+      "comments": [
+        "TODO(crbug.com/731358): Remove explicit priority after flipping to LUCI."
+      ],
       "dimensions": [
         { "os": "Mac-10.11.6", "pool": "Chrome" },
         { "os": "Mac-10.12", "pool": "Chrome" },
         { "os": "Mac-10.13", "pool": "Chrome" }
-      ]
+      ],
+      "priority": 29
     },
     {
       "app": "cronet_test",
@@ -57,12 +64,15 @@
       "os": "11.2",
       "comments": [
         "Xcode 9.2 requires Mac OS 10.12+, but we still have 10.11 on some",
-        "bots. Once all swarming bots are upgraded, dimensions can be removed."
+        "bots. Once all swarming bots are upgraded, dimensions can be removed.",
+        "",
+        "TODO(crbug.com/731358): Remove explicit priority after flipping to LUCI."
       ],
       "dimensions": [
         { "os": "Mac-10.12", "pool": "Chrome" },
         { "os": "Mac-10.13", "pool": "Chrome" }
-      ]
+      ],
+      "priority": 29
     }
   ]
 }
