@@ -6869,4 +6869,13 @@ TEST(HeapTest, HeapDoublyLinkedList) {
   EXPECT_EQ(DoublyLinkedListNodeImpl::destructor_calls_, 2);
 }
 
+TEST(HeapTest, PersistentHeapVectorCopyAssignment) {
+  PersistentHeapVector<Member<IntWrapper>> vector1;
+  {
+    PersistentHeapVector<Member<IntWrapper>> vector2;
+    vector1 = vector2;
+  }
+  PreciselyCollectGarbage();
+}
+
 }  // namespace blink

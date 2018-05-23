@@ -581,6 +581,13 @@ class PersistentHeapCollectionBase : public Collection {
 
   ~PersistentHeapCollectionBase() { Uninitialize(); }
 
+  // Override so we don't copy persistent_node_.
+  PersistentHeapCollectionBase& operator=(
+      const PersistentHeapCollectionBase& other) {
+    Collection::operator=(other);
+    return *this;
+  }
+
   // See PersistentBase::registerAsStaticReference() comment.
   PersistentHeapCollectionBase* RegisterAsStaticReference() {
     if (persistent_node_) {
