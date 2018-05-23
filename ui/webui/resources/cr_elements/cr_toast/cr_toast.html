@@ -1,5 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+
 <dom-module id="cr-toast">
   <template>
     <style>
@@ -29,6 +31,14 @@
         opacity: 1;
         transform: translateY(0);
         visibility: visible;
+      }
+
+      :host ::slotted(paper-button) {
+        -webkit-margin-start: 32px;
+        border: none;
+        color: var(--google-blue-300);
+        min-width: 52px;
+        padding: 8px;
       }
     </style>
     <slot></slot>
