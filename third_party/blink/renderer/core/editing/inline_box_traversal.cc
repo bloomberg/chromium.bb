@@ -606,7 +606,8 @@ class RangeSelectionAdjuster {
                               visible_extent.DeepEquivalent())
             .Build();
 
-    if (base.IsNull() || extent.IsNull() || base == extent)
+    if (base.IsNull() || extent.IsNull() || base == extent ||
+        (!base.AtBidiBoundary() && !extent.AtBidiBoundary()))
       return unchanged_selection;
 
     if (base.AtBidiBoundary()) {
@@ -641,7 +642,7 @@ class RangeSelectionAdjuster {
 
     bool IsNull() const { return !inline_box_; }
     bool operator==(const RenderedPosition& other) const {
-      return inline_box_ == other.inline_box_ && offset_ == other.offset_ &&
+      return inline_box_ == other.inline_box_ &&
              bidi_boundary_type_ == other.bidi_boundary_type_;
     }
 
@@ -681,17 +682,19 @@ class RangeSelectionAdjuster {
 
     PositionInFlatTree GetPosition() const {
       DCHECK(AtBidiBoundary());
+      const int offset = bidi_boundary_type_ == BidiBoundaryType::kLeftBoundary
+                             ? inline_box_->CaretLeftmostOffset()
+                             : inline_box_->CaretRightmostOffset();
       return PositionInFlatTree::EditingPositionOf(
-          inline_box_->GetLineLayoutItem().GetNode(), offset_);
+          inline_box_->GetLineLayoutItem().GetNode(), offset);
     }
 
    private:
     enum class BidiBoundaryType { kNotBoundary, kLeftBoundary, kRightBoundary };
-    RenderedPosition(const InlineBox* box, int offset, BidiBoundaryType type)
-        : inline_box_(box), offset_(offset), bidi_boundary_type_(type) {}
+    RenderedPosition(const InlineBox* box, BidiBoundaryType type)
+        : inline_box_(box), bidi_boundary_type_(type) {}
 
     const InlineBox* inline_box_ = nullptr;
-    int offset_ = 0;
     BidiBoundaryType bidi_boundary_type_ = BidiBoundaryType::kNotBoundary;
   };
 
@@ -731,31 +734,29 @@ RangeSelectionAdjuster::RenderedPosition::Create(
   if (offset == box->CaretLeftmostOffset()) {
     const InlineBox* prev_box = box->PrevLeafChildIgnoringLineBreak();
     if (prev_box && prev_box->BidiLevel() > box->BidiLevel()) {
-      return RenderedPosition(prev_box, prev_box->CaretRightmostOffset(),
-                              BidiBoundaryType::kRightBoundary);
+      return RenderedPosition(prev_box, BidiBoundaryType::kRightBoundary);
     }
     BidiBoundaryType type =
         prev_box && prev_box->BidiLevel() == box->BidiLevel()
             ? BidiBoundaryType::kNotBoundary
             : BidiBoundaryType::kLeftBoundary;
-    return RenderedPosition(box, offset, type);
+    return RenderedPosition(box, type);
   }
 
   // For example, abc| FED ghi should be changed into abc |FED ghi
   if (offset == box->CaretRightmostOffset()) {
     const InlineBox* next_box = box->NextLeafChildIgnoringLineBreak();
     if (next_box && next_box->BidiLevel() > box->BidiLevel()) {
-      return RenderedPosition(next_box, next_box->CaretLeftmostOffset(),
-                              BidiBoundaryType::kLeftBoundary);
+      return RenderedPosition(next_box, BidiBoundaryType::kLeftBoundary);
     }
     BidiBoundaryType type =
         next_box && next_box->BidiLevel() == box->BidiLevel()
             ? BidiBoundaryType::kNotBoundary
             : BidiBoundaryType::kRightBoundary;
-    return RenderedPosition(box, offset, type);
+    return RenderedPosition(box, type);
   }
 
-  return RenderedPosition(box, offset, BidiBoundaryType::kNotBoundary);
+  return RenderedPosition(box, BidiBoundaryType::kNotBoundary);
 }
 }  // namespace
 
