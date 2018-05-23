@@ -14,7 +14,6 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/udev_linux/udev_linux.h"
 
 namespace device {
@@ -165,7 +164,6 @@ void GamepadDeviceLinux::ReadPadState(Gamepad* pad) const {
   DCHECK_GE(joydev_fd_, 0);
 
   js_event event;
-  bool pad_updated = false;
   while (HANDLE_EINTR(read(joydev_fd_, &event, sizeof(struct js_event))) > 0) {
     size_t item = event.number;
     if (event.type & JS_EVENT_AXIS) {
@@ -176,7 +174,6 @@ void GamepadDeviceLinux::ReadPadState(Gamepad* pad) const {
 
       if (item >= pad->axes_length)
         pad->axes_length = item + 1;
-      pad_updated = true;
     } else if (event.type & JS_EVENT_BUTTON) {
       if (item >= Gamepad::kButtonsLengthCap)
         continue;
@@ -186,11 +183,9 @@ void GamepadDeviceLinux::ReadPadState(Gamepad* pad) const {
 
       if (item >= pad->buttons_length)
         pad->buttons_length = item + 1;
-      pad_updated = true;
     }
+    pad->timestamp = event.time;
   }
-  if (pad_updated)
-    pad->timestamp = GamepadDataFetcher::CurrentTimeInMicroseconds();
 }
 
 GamepadStandardMappingFunction GamepadDeviceLinux::GetMappingFunction() const {

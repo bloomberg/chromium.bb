@@ -4,8 +4,6 @@
 
 #include "raw_input_gamepad_device_win.h"
 
-#include "device/gamepad/gamepad_data_fetcher.h"
-
 namespace device {
 
 namespace {
@@ -133,7 +131,7 @@ void RawInputGamepadDeviceWin::UpdateGamepad(RAWINPUT* input) {
 void RawInputGamepadDeviceWin::ReadPadState(Gamepad* pad) const {
   DCHECK(pad);
 
-  pad->timestamp = GamepadDataFetcher::CurrentTimeInMicroseconds();
+  pad->timestamp = report_id_;
   pad->buttons_length = buttons_length_;
   pad->axes_length = axes_length_;
 

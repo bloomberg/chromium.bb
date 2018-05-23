@@ -27,7 +27,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_NAVIGATOR_GAMEPAD_H_
 
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
-#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
@@ -91,7 +90,6 @@ class MODULES_EXPORT NavigatorGamepad final
   Member<GamepadList> gamepads_back_;
   HeapDeque<Member<Gamepad>> pending_events_;
   Member<AsyncMethodRunner<NavigatorGamepad>> dispatch_one_event_runner_;
-  TimeTicks navigation_start_;
 };
 
 }  // namespace blink

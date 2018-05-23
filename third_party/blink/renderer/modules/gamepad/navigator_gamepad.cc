@@ -31,10 +31,8 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
-#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_dispatcher.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_event.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_list.h"
@@ -88,19 +86,13 @@ bool HasUserActivation(GamepadList& gamepads) {
 template <typename T>
 static void SampleGamepad(unsigned index,
                           T& gamepad,
-                          const device::Gamepad& device_gamepad,
-                          const TimeTicks& navigation_start) {
+                          const device::Gamepad& device_gamepad) {
   String old_id = gamepad.id();
   bool old_was_connected = gamepad.connected();
 
-  TimeTicks last_updated =
-      TimeTicks() + TimeDelta::FromMicroseconds(device_gamepad.timestamp);
-  DOMHighResTimeStamp timestamp =
-      Performance::MonotonicTimeToDOMHighResTimeStamp(navigation_start,
-                                                      last_updated, false);
   gamepad.SetId(device_gamepad.id);
   gamepad.SetConnected(device_gamepad.connected);
-  gamepad.SetTimestamp(timestamp);
+  gamepad.SetTimestamp(device_gamepad.timestamp);
   gamepad.SetAxes(device_gamepad.axes_length, device_gamepad.axes);
   gamepad.SetButtons(device_gamepad.buttons_length, device_gamepad.buttons);
   gamepad.SetPose(device_gamepad.pose);
@@ -128,9 +120,7 @@ static void SampleGamepad(unsigned index,
 }
 
 template <typename GamepadType, typename ListType>
-static void SampleGamepads(ListType* into,
-                           const ExecutionContext* context,
-                           const TimeTicks& navigation_start) {
+static void SampleGamepads(ListType* into, const ExecutionContext* context) {
   device::Gamepads gamepads;
 
   GamepadDispatcher::Instance().SampleGamepads(gamepads);
@@ -158,7 +148,7 @@ static void SampleGamepads(ListType* into,
       GamepadType* gamepad = into->item(i);
       if (!gamepad)
         gamepad = GamepadType::Create();
-      SampleGamepad(i, *gamepad, web_gamepad, navigation_start);
+      SampleGamepad(i, *gamepad, web_gamepad);
       into->Set(i, gamepad);
     } else {
       into->Set(i, nullptr);
@@ -275,14 +265,6 @@ NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
                                : nullptr) {
   if (navigator.DomWindow())
     navigator.DomWindow()->RegisterEventListenerObserver(this);
-
-  // Fetch |window.performance.timing.navigationStart|. Gamepad timestamps are
-  // reported relative to this value.
-  if (GetFrame()) {
-    DocumentLoader* loader = GetFrame()->Loader().GetDocumentLoader();
-    if (loader)
-      navigation_start_ = loader->GetTiming().NavigationStart();
-  }
 }
 
 NavigatorGamepad::~NavigatorGamepad() = default;
@@ -358,8 +340,7 @@ void NavigatorGamepad::SampleAndCheckConnectedGamepads() {
 
       // Compare the current sample with the old data and enqueue connection
       // events for any differences.
-      SampleGamepads<Gamepad>(gamepads_back_.Get(), execution_context,
-                              navigation_start_);
+      SampleGamepads<Gamepad>(gamepads_back_.Get(), execution_context);
       if (CheckConnectedGamepads(gamepads_.Get(), gamepads_back_.Get())) {
         // If we had any disconnected gamepads, we can't overwrite gamepads_
         // because the Gamepad object from the old buffer is reused as the
@@ -372,8 +353,7 @@ void NavigatorGamepad::SampleAndCheckConnectedGamepads() {
         dispatch_one_event_runner_->RunAsync();
       }
     }
-    SampleGamepads<Gamepad>(gamepads_.Get(), execution_context,
-                            navigation_start_);
+    SampleGamepads<Gamepad>(gamepads_.Get(), execution_context);
   }
 }
 

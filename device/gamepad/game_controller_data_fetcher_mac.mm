@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
 
 #import <GameController/GameController.h>
@@ -112,7 +113,7 @@ void GameControllerDataFetcherMac::GetGamepadData(bool) {
 #endif
     }
 
-    pad.timestamp = CurrentTimeInMicroseconds();
+    pad.timestamp = base::TimeTicks::Now().ToInternalValue();
 
     pad.axes[AXIS_INDEX_LEFT_STICK_X] =
         [[[extended_gamepad leftThumbstick] xAxis] value];

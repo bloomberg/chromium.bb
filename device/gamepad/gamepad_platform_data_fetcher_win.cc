@@ -188,7 +188,7 @@ void GamepadPlatformDataFetcherWin::GetXInputPadData(int i) {
   TRACE_EVENT_END1("GAMEPAD", "XInputGetState", "id", i);
 
   if (dwResult == ERROR_SUCCESS) {
-    pad.timestamp = CurrentTimeInMicroseconds();
+    pad.timestamp = state.dwPacketNumber;
     pad.buttons_length = 0;
     WORD val = state.Gamepad.wButtons;
 #define ADD(b)                                                \

@@ -317,7 +317,7 @@ void XboxDataFetcher::AddController(XboxControllerMac* controller) {
   state->data.connected = true;
   state->data.axes_length = 4;
   state->data.buttons_length = 17;
-  state->data.timestamp = CurrentTimeInMicroseconds();
+  state->data.timestamp = 0;
   state->mapper = 0;
   state->axis_mask = 0;
   state->button_mask = 0;
@@ -375,7 +375,7 @@ void XboxDataFetcher::XboxControllerGotData(
     pad.axes[i] = data.axes[i];
   }
 
-  pad.timestamp = CurrentTimeInMicroseconds();
+  pad.timestamp = (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds();
 }
 
 void XboxDataFetcher::XboxControllerGotGuideData(XboxControllerMac* controller,
@@ -389,7 +389,7 @@ void XboxDataFetcher::XboxControllerGotGuideData(XboxControllerMac* controller,
   pad.buttons[16].pressed = guide;
   pad.buttons[16].value = guide ? 1.0f : 0.0f;
 
-  pad.timestamp = CurrentTimeInMicroseconds();
+  pad.timestamp = (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds();
 }
 
 void XboxDataFetcher::XboxControllerError(XboxControllerMac* controller) {

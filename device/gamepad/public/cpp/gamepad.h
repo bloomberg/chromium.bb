@@ -6,7 +6,6 @@
 #define DEVICE_GAMEPAD_PUBLIC_CPP_GAMEPAD_H_
 
 #include <stddef.h>
-#include <cstdint>
 
 namespace device {
 
@@ -113,9 +112,9 @@ class Gamepad {
   // Device identifier (based on manufacturer, model, etc.).
   UChar id[kIdLengthCap];
 
-  // Time value representing the last time the data for this gamepad was
-  // updated. Measured as TimeTicks::Now().since_origin().InMicroseconds().
-  int64_t timestamp;
+  // Monotonically increasing value referring to when the data were last
+  // updated.
+  unsigned long long timestamp;
 
   // Number of valid entries in the axes array.
   unsigned axes_length;

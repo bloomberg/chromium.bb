@@ -4,8 +4,6 @@
 
 #include "device/gamepad/gamepad_data_fetcher.h"
 
-#include "base/time/time.h"
-
 namespace device {
 
 GamepadDataFetcher::GamepadDataFetcher() : provider_(nullptr) {}
@@ -31,11 +29,6 @@ void GamepadDataFetcher::ResetVibration(
     mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
   std::move(callback).Run(
       mojom::GamepadHapticsResult::GamepadHapticsResultError);
-}
-
-// static
-int64_t GamepadDataFetcher::CurrentTimeInMicroseconds() {
-  return base::TimeTicks::Now().since_origin().InMicroseconds();
 }
 
 GamepadDataFetcherFactory::GamepadDataFetcherFactory() = default;

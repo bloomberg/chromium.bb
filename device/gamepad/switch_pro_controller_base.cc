@@ -6,7 +6,6 @@
 
 #include <limits>
 
-#include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
 
 namespace {
@@ -235,7 +234,7 @@ void SwitchProControllerBase::HandleInputReport(void* report,
       ControllerDataReport* controller_data =
           reinterpret_cast<ControllerDataReport*>(report);
       UpdatePadStateFromControllerData(*controller_data, pad);
-      pad->timestamp = GamepadDataFetcher::CurrentTimeInMicroseconds();
+      pad->timestamp = ++report_id_;
       break;
     }
     default:
