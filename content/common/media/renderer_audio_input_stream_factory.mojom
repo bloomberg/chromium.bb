@@ -8,6 +8,7 @@ import "media/mojo/interfaces/audio_data_pipe.mojom";
 import "media/mojo/interfaces/audio_input_stream.mojom";
 import "media/mojo/interfaces/audio_parameters.mojom";
 import "media/mojo/interfaces/media_types.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 // This interface is used by the renderer to ask the browser to create input
 // streams. The renderer supplies the desired audio parameters, and a client
@@ -24,7 +25,9 @@ interface RendererAudioInputStreamFactory {
 
 interface RendererAudioInputStreamFactoryClient {
   // Called when a stream has been created. Will only be called once for every
-  // CreateStream call.
+  // CreateStream call. |stream_id| is a handle used to refer to the stream,
+  // specifically to be able to associate it with an output device for echo
+  // cancellation. Loopback streams don't have ids.
   // TODO(crbug.com/787806): There are plans to allow this function to be called
   // serveral times in the future. If the stream is terminated e.g. due to the
   // process hosting it crashing, this function should be called again with a
@@ -33,5 +36,6 @@ interface RendererAudioInputStreamFactoryClient {
       media.mojom.AudioInputStream stream,
       media.mojom.AudioInputStreamClient& client_request,
       media.mojom.AudioDataPipe data_pipe,
-      bool initially_muted);
+      bool initially_muted,
+      mojo_base.mojom.UnguessableToken? stream_id);
 };

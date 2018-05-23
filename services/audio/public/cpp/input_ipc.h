@@ -45,7 +45,9 @@ class InputIPC : public media::AudioInputIPC,
   void OnError() override;
   void OnMutedStateChanged(bool is_muted) override;
 
-  void StreamCreated(media::mojom::AudioDataPipePtr data_pipe, bool is_muted);
+  void StreamCreated(media::mojom::AudioDataPipePtr data_pipe,
+                     bool is_muted,
+                     const base::Optional<base::UnguessableToken>& stream_id);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -54,6 +56,7 @@ class InputIPC : public media::AudioInputIPC,
   media::AudioInputIPCDelegate* delegate_ = nullptr;
 
   const std::string& device_id_;
+  base::Optional<base::UnguessableToken> stream_id_;
 
   // stream_factory_info_ is bound in the constructor, and later used to
   // bind stream_factory_. This is done because the constructor may be called

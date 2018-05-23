@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/sync_socket.h"
+#include "base/unguessable_token.h"
 #include "media/audio/audio_input_controller.h"
 #include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
@@ -32,7 +33,9 @@ class InputStream final : public media::mojom::AudioInputStream,
                           public media::AudioInputController::EventHandler {
  public:
   using CreatedCallback =
-      base::OnceCallback<void(media::mojom::AudioDataPipePtr, bool)>;
+      base::OnceCallback<void(media::mojom::AudioDataPipePtr,
+                              bool,
+                              const base::Optional<base::UnguessableToken>&)>;
   using DeleteCallback = base::OnceCallback<void(InputStream*)>;
 
   InputStream(CreatedCallback created_callback,
@@ -49,6 +52,8 @@ class InputStream final : public media::mojom::AudioInputStream,
               bool enable_agc);
   ~InputStream() override;
 
+  const base::UnguessableToken& id() const { return id_; }
+
   // media::mojom::AudioInputStream implementation.
   void Record() override;
   void SetVolume(double volume) override;
@@ -62,6 +67,8 @@ class InputStream final : public media::mojom::AudioInputStream,
  private:
   void OnStreamError();
   void CallDeleter();
+
+  const base::UnguessableToken id_;
 
   mojo::Binding<media::mojom::AudioInputStream> binding_;
   media::mojom::AudioInputStreamClientPtr client_;

@@ -154,7 +154,8 @@ void AudioInputStreamBroker::DidStartRecording() {
 void AudioInputStreamBroker::StreamCreated(
     media::mojom::AudioInputStreamPtr stream,
     media::mojom::AudioDataPipePtr data_pipe,
-    bool initially_muted) {
+    bool initially_muted,
+    const base::Optional<base::UnguessableToken>& stream_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!data_pipe) {
@@ -162,10 +163,11 @@ void AudioInputStreamBroker::StreamCreated(
     return;
   }
 
+  DCHECK(stream_id.has_value());
   DCHECK(renderer_factory_client_);
   renderer_factory_client_->StreamCreated(
       std::move(stream), std::move(client_request_), std::move(data_pipe),
-      initially_muted);
+      initially_muted, stream_id);
 }
 
 void AudioInputStreamBroker::Cleanup() {

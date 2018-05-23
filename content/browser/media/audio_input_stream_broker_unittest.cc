@@ -53,10 +53,13 @@ class MockRendererAudioInputStreamFactoryClient
 
   MOCK_METHOD0(OnStreamCreated, void());
 
-  void StreamCreated(media::mojom::AudioInputStreamPtr input_stream,
-                     media::mojom::AudioInputStreamClientRequest client_request,
-                     media::mojom::AudioDataPipePtr data_pipe,
-                     bool initially_muted) override {
+  void StreamCreated(
+      media::mojom::AudioInputStreamPtr input_stream,
+      media::mojom::AudioInputStreamClientRequest client_request,
+      media::mojom::AudioDataPipePtr data_pipe,
+      bool initially_muted,
+      const base::Optional<base::UnguessableToken>& stream_id) override {
+    EXPECT_TRUE(stream_id.has_value());
     input_stream_ = std::move(input_stream);
     client_request_ = std::move(client_request);
     OnStreamCreated();
@@ -187,7 +190,7 @@ TEST(AudioInputStreamBrokerTest, StreamCreationSuccess_Propagates) {
   std::move(stream_request_data.created_callback)
       .Run({base::in_place, mojo::SharedBufferHandle::Create(shmem_size),
             mojo::WrapPlatformFile(socket1.Release())},
-           kInitiallyMuted);
+           kInitiallyMuted, base::UnguessableToken::Create());
 
   EXPECT_CALL(env.renderer_factory_client, OnStreamCreated());
 
@@ -211,7 +214,8 @@ TEST(AudioInputStreamBrokerTest, StreamCreationFailure_CallsDeleter) {
   EXPECT_CALL(env.deleter, Run(env.broker.release()))
       .WillOnce(testing::DeleteArg<0>());
 
-  std::move(stream_request_data.created_callback).Run(nullptr, kInitiallyMuted);
+  std::move(stream_request_data.created_callback)
+      .Run(nullptr, kInitiallyMuted, base::nullopt);
 
   env.RunUntilIdle();
 }

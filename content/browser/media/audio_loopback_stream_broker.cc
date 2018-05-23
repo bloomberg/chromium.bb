@@ -152,7 +152,8 @@ void AudioLoopbackStreamBroker::StreamCreated(
   DCHECK(renderer_factory_client_);
   renderer_factory_client_->StreamCreated(
       std::move(stream), std::move(client_request_), std::move(data_pipe),
-      false /* |initially_muted|: Loopback streams are never muted. */);
+      false /* |initially_muted|: Loopback streams are never muted. */,
+      base::nullopt /* |stream_id|: Loopback streams don't have ids */);
 }
 
 void AudioLoopbackStreamBroker::Cleanup() {

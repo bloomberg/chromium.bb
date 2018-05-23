@@ -50,7 +50,8 @@ class CONTENT_EXPORT AudioInputStreamBroker final
  private:
   void StreamCreated(media::mojom::AudioInputStreamPtr stream,
                      media::mojom::AudioDataPipePtr data_pipe,
-                     bool initially_muted);
+                     bool initially_muted,
+                     const base::Optional<base::UnguessableToken>& stream_id);
   void Cleanup();
 
   const std::string device_id_;

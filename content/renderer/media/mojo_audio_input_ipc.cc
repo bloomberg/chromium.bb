@@ -70,7 +70,8 @@ void MojoAudioInputIPC::StreamCreated(
     media::mojom::AudioInputStreamPtr stream,
     media::mojom::AudioInputStreamClientRequest stream_client_request,
     media::mojom::AudioDataPipePtr data_pipe,
-    bool initially_muted) {
+    bool initially_muted,
+    const base::Optional<base::UnguessableToken>& stream_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate_);
   DCHECK(!stream_);
@@ -81,6 +82,10 @@ void MojoAudioInputIPC::StreamCreated(
 
   stream_ = std::move(stream);
   stream_client_binding_.Bind(std::move(stream_client_request));
+
+  // Keep the stream_id, if we get one. Regular input stream have stream ids,
+  // but Loopback streams do not.
+  stream_id_ = stream_id;
 
   base::PlatformFile socket_handle;
   auto result =
