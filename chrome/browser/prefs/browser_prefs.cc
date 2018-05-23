@@ -227,7 +227,7 @@
 #include "chrome/browser/chromeos/platform_keys/key_permissions.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/policy/app_install_event_logger.h"
-#include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
+#include "chrome/browser/chromeos/policy/auto_enrollment_client_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
@@ -445,7 +445,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
       registry);
   invalidation::InvalidatorStorage::RegisterPrefs(registry);
   ::onc::RegisterPrefs(registry);
-  policy::AutoEnrollmentClient::RegisterPrefs(registry);
+  policy::AutoEnrollmentClientImpl::RegisterPrefs(registry);
   policy::BrowserPolicyConnectorChromeOS::RegisterPrefs(registry);
   policy::DeviceCloudPolicyManagerChromeOS::RegisterPrefs(registry);
   policy::DeviceStatusCollector::RegisterPrefs(registry);

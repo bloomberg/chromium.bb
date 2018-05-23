@@ -207,10 +207,9 @@ bool AutoEnrollmentCheckScreen::UpdateAutoEnrollmentState(
     case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
       return false;
     case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
-      if (auto_enrollment_controller_->GetFRERequirement() !=
-          AutoEnrollmentController::FRERequirement::kExplicitlyRequired) {
+      if (!ShouldBlockOnServerError())
         return false;
-      }
+
       // Fall to the same behavior like any connection error if the device is
       // enrolled.
       FALLTHROUGH;
@@ -264,8 +263,7 @@ bool AutoEnrollmentCheckScreen::IsCompleted() const {
       return false;
     case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
       // Server errors should block OOBE for enrolled devices.
-      return auto_enrollment_controller_->GetFRERequirement() !=
-             AutoEnrollmentController::FRERequirement::kExplicitlyRequired;
+      return !ShouldBlockOnServerError();
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
     case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
@@ -278,6 +276,21 @@ bool AutoEnrollmentCheckScreen::IsCompleted() const {
 
 void AutoEnrollmentCheckScreen::OnConnectRequested() {
   auto_enrollment_controller_->Retry();
+}
+
+bool AutoEnrollmentCheckScreen::ShouldBlockOnServerError() const {
+  switch (auto_enrollment_controller_->auto_enrollment_check_type()) {
+    case AutoEnrollmentController::AutoEnrollmentCheckType::kFRE:
+      // Only block on errors in FRE if FRE is expliclty required (i.e. the
+      // device was enrolled before).
+      return auto_enrollment_controller_->GetFRERequirement() ==
+             AutoEnrollmentController::FRERequirement::kExplicitlyRequired;
+    case AutoEnrollmentController::AutoEnrollmentCheckType::kInitialEnrollment:
+      return true;
+    case AutoEnrollmentController::AutoEnrollmentCheckType::kNone:
+      NOTREACHED();
+      return false;
+  }
 }
 
 }  // namespace chromeos

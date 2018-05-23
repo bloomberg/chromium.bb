@@ -90,6 +90,12 @@ class AutoEnrollmentCheckScreen
   // The user requested a connection attempt to be performed.
   void OnConnectRequested();
 
+  // Returns true if an error response from the server should cause a network
+  // error screen to be displayed and block the wizard from continuing. If false
+  // is returned, an error response from the server is treated as "no enrollment
+  // necessary".
+  bool ShouldBlockOnServerError() const;
+
   AutoEnrollmentCheckScreenView* view_;
   AutoEnrollmentController* auto_enrollment_controller_;
 
