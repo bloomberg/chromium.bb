@@ -27,6 +27,7 @@
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/bookmarks/browser/typed_count_sorter.h"
 #include "components/bookmarks/browser/url_and_title.h"
+#include "components/bookmarks/browser/url_index.h"
 #include "components/bookmarks/common/bookmark_constants.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/strings/grit/components_strings.h"
@@ -135,10 +136,9 @@ void DoLoadOnBackgroundThread(
 
 BookmarkModel::BookmarkModel(std::unique_ptr<BookmarkClient> client)
     : client_(std::move(client)),
-      root_(std::make_unique<BookmarkNode>(GURL())),
+      owned_root_(std::make_unique<BookmarkNode>(GURL())),
+      root_(owned_root_.get()),
       observers_(base::ObserverListPolicy::EXISTING_ONLY),
-      loaded_signal_(base::WaitableEvent::ResetPolicy::MANUAL,
-                     base::WaitableEvent::InitialState::NOT_SIGNALED),
       empty_undo_delegate_(std::make_unique<EmptyUndoDelegate>()) {
   DCHECK(client_);
   client_->Init(this);
@@ -226,7 +226,27 @@ void BookmarkModel::Remove(const BookmarkNode* node) {
   DCHECK(loaded_);
   DCHECK(node);
   DCHECK(!is_root_node(node));
-  RemoveAndDeleteNode(AsMutable(node));
+  const BookmarkNode* parent = node->parent();
+  DCHECK(parent);
+  int index = parent->GetIndexOf(node);
+  DCHECK_NE(-1, index);
+
+  for (BookmarkModelObserver& observer : observers_)
+    observer.OnWillRemoveBookmarks(this, parent, index, node);
+
+  std::set<GURL> removed_urls;
+  std::unique_ptr<BookmarkNode> owned_node =
+      url_index_->Remove(AsMutable(node), &removed_urls);
+  RemoveNode(owned_node.get());
+
+  if (store_)
+    store_->ScheduleSave();
+
+  for (BookmarkModelObserver& observer : observers_)
+    observer.BookmarkNodeRemoved(this, parent, index, node, removed_urls);
+
+  undo_delegate()->OnBookmarkNodeRemoved(this, parent, index,
+                                         std::move(owned_node));
 }
 
 void BookmarkModel::RemoveAllUserBookmarks() {
@@ -246,7 +266,6 @@ void BookmarkModel::RemoveAllUserBookmarks() {
   // its immediate children. For removing all non permanent nodes just remove
   // all children of non-root permanent nodes.
   {
-    base::AutoLock url_lock(url_lock_);
     for (int i = 0; i < root_->child_count(); ++i) {
       const BookmarkNode* permanent_node = root_->GetChild(i);
 
@@ -254,8 +273,9 @@ void BookmarkModel::RemoveAllUserBookmarks() {
         continue;
 
       for (int j = permanent_node->child_count() - 1; j >= 0; --j) {
-        std::unique_ptr<BookmarkNode> node = RemoveNodeAndGetRemovedUrls(
+        std::unique_ptr<BookmarkNode> node = url_index_->Remove(
             AsMutable(permanent_node->GetChild(j)), &removed_urls);
+        RemoveNode(node.get());
         removed_node_data_list.push_back({permanent_node, j, std::move(node)});
       }
     }
@@ -403,12 +423,9 @@ void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
   for (BookmarkModelObserver& observer : observers_)
     observer.OnWillChangeBookmarkNode(this, node);
 
-  {
-    base::AutoLock url_lock(url_lock_);
-    RemoveNodeFromInternalMaps(mutable_node);
-    mutable_node->set_url(url);
-    AddNodeToInternalMaps(mutable_node);
-  }
+  index_->Remove(mutable_node);
+  url_index_->SetUrl(mutable_node, url);
+  AddNodeToIndexRecursive(mutable_node);
 
   if (store_)
     store_->ScheduleSave();
@@ -488,6 +505,9 @@ void BookmarkModel::SetNodeSyncTransactionVersion(
 
 void BookmarkModel::OnFaviconsChanged(const std::set<GURL>& page_urls,
                                       const GURL& icon_url) {
+  if (!loaded_)
+    return;
+
   std::set<const BookmarkNode*> to_update;
   for (const GURL& page_url : page_urls) {
     std::vector<const BookmarkNode*> nodes;
@@ -502,11 +522,7 @@ void BookmarkModel::OnFaviconsChanged(const std::set<GURL>& page_urls,
     // many times a day for each user.
     UMA_HISTOGRAM_BOOLEAN("Bookmarks.OnFaviconsChangedIconURL", true);
 
-    base::AutoLock url_lock(url_lock_);
-    for (const BookmarkNode* node : nodes_ordered_by_url_set_) {
-      if (node->icon_url() && icon_url == *node->icon_url())
-        to_update.insert(node);
-    }
+    url_index_->GetNodesWithIconUrl(icon_url, &to_update);
   }
 
   for (const BookmarkNode* node : to_update) {
@@ -538,13 +554,8 @@ void BookmarkModel::SetDateAdded(const BookmarkNode* node, Time date_added) {
 
 void BookmarkModel::GetNodesByURL(const GURL& url,
                                   std::vector<const BookmarkNode*>* nodes) {
-  base::AutoLock url_lock(url_lock_);
-  BookmarkNode tmp_node(url);
-  NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.find(&tmp_node);
-  while (i != nodes_ordered_by_url_set_.end() && (*i)->url() == url) {
-    nodes->push_back(*i);
-    ++i;
-  }
+  if (url_index_)
+    url_index_->GetNodesByUrl(url, nodes);
 }
 
 const BookmarkNode* BookmarkModel::GetMostRecentlyAddedUserNodeForURL(
@@ -563,8 +574,7 @@ const BookmarkNode* BookmarkModel::GetMostRecentlyAddedUserNodeForURL(
 }
 
 bool BookmarkModel::HasBookmarks() {
-  base::AutoLock url_lock(url_lock_);
-  return !nodes_ordered_by_url_set_.empty();
+  return url_index_ && url_index_->HasBookmarks();
 }
 
 bool BookmarkModel::HasNoUserCreatedBookmarksOrFolders() {
@@ -573,25 +583,12 @@ bool BookmarkModel::HasNoUserCreatedBookmarksOrFolders() {
 }
 
 bool BookmarkModel::IsBookmarked(const GURL& url) {
-  base::AutoLock url_lock(url_lock_);
-  return IsBookmarkedNoLock(url);
+  return url_index_ && url_index_->IsBookmarked(url);
 }
 
 void BookmarkModel::GetBookmarks(std::vector<UrlAndTitle>* bookmarks) {
-  base::AutoLock url_lock(url_lock_);
-  const GURL* last_url = nullptr;
-  for (NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.begin();
-       i != nodes_ordered_by_url_set_.end(); ++i) {
-    const GURL* url = &((*i)->url());
-    // Only add unique URLs.
-    if (!last_url || *url != *last_url) {
-      UrlAndTitle bookmark;
-      bookmark.url = *url;
-      bookmark.title = (*i)->GetTitle();
-      bookmarks->push_back(bookmark);
-    }
-    last_url = url;
-  }
+  if (url_index_)
+    url_index_->GetBookmarks(bookmarks);
 }
 
 void BookmarkModel::BlockTillLoaded() {
@@ -800,29 +797,18 @@ void BookmarkModel::NotifyNodeAddedForAllDescendents(const BookmarkNode* node) {
   }
 }
 
-bool BookmarkModel::IsBookmarkedNoLock(const GURL& url) {
-  BookmarkNode tmp_node(url);
-  return (nodes_ordered_by_url_set_.find(&tmp_node) !=
-          nodes_ordered_by_url_set_.end());
-}
-
-void BookmarkModel::RemoveNode(BookmarkNode* node,
-                               std::set<GURL>* removed_urls) {
-  DCHECK(node);
+void BookmarkModel::RemoveNode(BookmarkNode* node) {
   DCHECK(loaded_);
   DCHECK(!is_permanent_node(node));
 
-  url_lock_.AssertAcquired();
-  if (node->is_url()) {
-    RemoveNodeFromInternalMaps(node);
-    removed_urls->insert(node->url());
-  }
+  if (node->is_url())
+    index_->Remove(node);
 
   CancelPendingFaviconLoadRequests(node);
 
   // Recurse through children.
   for (int i = node->child_count() - 1; i >= 0; --i)
-    RemoveNode(node->GetChild(i), removed_urls);
+    RemoveNode(node->GetChild(i));
 }
 
 void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
@@ -840,12 +826,15 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
       store_->ScheduleSave();
   }
 
-  root_ = details->owned_root_node();
+  index_ = details->owned_index();
+  url_index_ = details->owned_url_index();
+  root_ = details->root_node();
+  // See declaration for details on why |owned_root_| is reset.
+  owned_root_.reset();
   bookmark_bar_node_ = details->bb_node();
   other_node_ = details->other_folder_node();
   mobile_node_ = details->mobile_folder_node();
 
-  index_ = details->owned_index();
   index_->SetNodeSorter(std::make_unique<TypedCountSorter>(client_.get()));
   // Sorting the permanent nodes has to happen on the main thread, so we do it
   // here, after loading completes.
@@ -856,12 +845,6 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
   root_->set_sync_transaction_version(
       details->model_sync_transaction_version());
 
-  {
-    base::AutoLock url_lock(url_lock_);
-    // Update nodes_ordered_by_url_set_ from the nodes.
-    PopulateNodesByURL(root_.get());
-  }
-
   loaded_ = true;
 
   loaded_signal_.Signal();
@@ -871,88 +854,16 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
     observer.BookmarkModelLoaded(this, details->ids_reassigned());
 }
 
-void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* node_ptr) {
-  std::unique_ptr<BookmarkNode> node;
-
-  const BookmarkNode* parent = node_ptr->parent();
-  DCHECK(parent);
-  int index = parent->GetIndexOf(node_ptr);
-  DCHECK_NE(-1, index);
-
-  for (BookmarkModelObserver& observer : observers_)
-    observer.OnWillRemoveBookmarks(this, parent, index, node_ptr);
-
-  std::set<GURL> removed_urls;
-  {
-    base::AutoLock url_lock(url_lock_);
-    node = RemoveNodeAndGetRemovedUrls(node_ptr, &removed_urls);
-  }
-
-  if (store_)
-    store_->ScheduleSave();
-
-  for (BookmarkModelObserver& observer : observers_)
-    observer.BookmarkNodeRemoved(this, parent, index, node.get(), removed_urls);
-
-  undo_delegate()->OnBookmarkNodeRemoved(this, parent, index, std::move(node));
-}
-
-void BookmarkModel::RemoveNodeFromInternalMaps(BookmarkNode* node) {
-  index_->Remove(node);
-  // NOTE: this is called in such a way that url_lock_ is already held. As
-  // such, this doesn't explicitly grab the lock.
-  url_lock_.AssertAcquired();
-  NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.find(node);
-  DCHECK(i != nodes_ordered_by_url_set_.end());
-  // i points to the first node with the URL, advance until we find the
-  // node we're removing.
-  while (*i != node)
-    ++i;
-  nodes_ordered_by_url_set_.erase(i);
-}
-
-std::unique_ptr<BookmarkNode> BookmarkModel::RemoveNodeAndGetRemovedUrls(
-    BookmarkNode* node_ptr,
-    std::set<GURL>* removed_urls) {
-  // NOTE: this method should be always called with |url_lock_| held.
-  // This method does not explicitly acquires a lock.
-  url_lock_.AssertAcquired();
-  DCHECK(removed_urls);
-  BookmarkNode* parent = node_ptr->parent();
-  DCHECK(parent);
-  std::unique_ptr<BookmarkNode> node = parent->Remove(node_ptr);
-  RemoveNode(node_ptr, removed_urls);
-  // RemoveNode adds an entry to removed_urls for each node of type URL. As we
-  // allow duplicates we need to remove any entries that are still bookmarked.
-  for (std::set<GURL>::iterator i = removed_urls->begin();
-       i != removed_urls->end();) {
-    if (IsBookmarkedNoLock(*i)) {
-      // When we erase the iterator pointing at the erasee is
-      // invalidated, so using i++ here within the "erase" call is
-      // important as it advances the iterator before passing the
-      // old value through to erase.
-      removed_urls->erase(i++);
-    } else {
-      ++i;
-    }
-  }
-
-  return node;
-}
-
 BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
                                      int index,
                                      std::unique_ptr<BookmarkNode> node) {
   BookmarkNode* node_ptr = node.get();
-  parent->Add(std::move(node), index);
+  url_index_->Add(parent, index, std::move(node));
 
   if (store_)
     store_->ScheduleSave();
 
-  {
-    base::AutoLock url_lock(url_lock_);
-    AddNodeToInternalMaps(node_ptr);
-  }
+  AddNodeToIndexRecursive(node_ptr);
 
   for (BookmarkModelObserver& observer : observers_)
     observer.BookmarkNodeAdded(this, parent, index);
@@ -960,14 +871,11 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
   return node_ptr;
 }
 
-void BookmarkModel::AddNodeToInternalMaps(BookmarkNode* node) {
-  url_lock_.AssertAcquired();
-  if (node->is_url()) {
+void BookmarkModel::AddNodeToIndexRecursive(BookmarkNode* node) {
+  if (node->is_url())
     index_->Add(node);
-    nodes_ordered_by_url_set_.insert(node);
-  }
   for (int i = 0; i < node->child_count(); ++i)
-    AddNodeToInternalMaps(node->GetChild(i));
+    AddNodeToIndexRecursive(node->GetChild(i));
 }
 
 bool BookmarkModel::IsValidIndex(const BookmarkNode* parent,
@@ -1031,15 +939,6 @@ void BookmarkModel::CancelPendingFaviconLoadRequests(BookmarkNode* node) {
     cancelable_task_tracker_.TryCancel(node->favicon_load_task_id());
     node->set_favicon_load_task_id(base::CancelableTaskTracker::kBadTaskId);
   }
-}
-
-void BookmarkModel::PopulateNodesByURL(BookmarkNode* node) {
-  // NOTE: this is called with url_lock_ already held. As such, this doesn't
-  // explicitly grab the lock.
-  if (node->is_url())
-    nodes_ordered_by_url_set_.insert(node);
-  for (int i = 0; i < node->child_count(); ++i)
-    PopulateNodesByURL(node->GetChild(i));
 }
 
 int64_t BookmarkModel::generate_next_node_id() {

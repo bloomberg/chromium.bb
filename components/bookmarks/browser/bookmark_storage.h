@@ -29,6 +29,7 @@ namespace bookmarks {
 class BookmarkClient;
 class BookmarkModel;
 class BookmarkNode;
+class UrlIndex;
 
 // A list of BookmarkPermanentNodes that owns them.
 using BookmarkPermanentNodeList =
@@ -57,9 +58,6 @@ class BookmarkLoadDetails {
   // one node was added that has children.
   bool LoadExtraNodes();
 
-  std::unique_ptr<BookmarkNode> owned_root_node() {
-    return std::move(root_node_);
-  }
   BookmarkNode* root_node() { return root_node_ptr_; }
   BookmarkPermanentNode* bb_node() { return bb_node_; }
   BookmarkPermanentNode* mobile_folder_node() { return mobile_folder_node_; }
@@ -105,6 +103,9 @@ class BookmarkLoadDetails {
   void set_ids_reassigned(bool value) { ids_reassigned_ = value; }
   bool ids_reassigned() const { return ids_reassigned_; }
 
+  void CreateUrlIndex();
+  std::unique_ptr<UrlIndex> owned_url_index() { return std::move(url_index_); }
+
  private:
   // Creates one of the possible permanent nodes (bookmark bar node, other node
   // and mobile node) from |type|. The node is added to (and owned by) |root_|.
@@ -124,6 +125,7 @@ class BookmarkLoadDetails {
   std::string computed_checksum_;
   std::string stored_checksum_;
   bool ids_reassigned_ = false;
+  std::unique_ptr<UrlIndex> url_index_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkLoadDetails);
 };

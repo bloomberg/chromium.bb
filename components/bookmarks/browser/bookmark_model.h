@@ -19,7 +19,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
-#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -54,6 +53,7 @@ class BookmarkUndoDelegate;
 class ScopedGroupBookmarkActions;
 class TestBookmarkClient;
 class TitledUrlIndex;
+class UrlIndex;
 
 struct UrlAndTitle;
 struct TitledUrlMatch;
@@ -90,7 +90,7 @@ class BookmarkModel : public BookmarkUndoProvider,
 
   // Returns the root node. The 'bookmark bar' node and 'other' node are
   // children of the root node.
-  const BookmarkNode* root_node() const { return root_.get(); }
+  const BookmarkNode* root_node() const { return root_; }
 
   // Returns the 'bookmark bar' node. This is NULL until loaded.
   const BookmarkNode* bookmark_bar_node() const { return bookmark_bar_node_; }
@@ -101,15 +101,13 @@ class BookmarkModel : public BookmarkUndoProvider,
   // Returns the 'mobile' node. This is NULL until loaded.
   const BookmarkNode* mobile_node() const { return mobile_node_; }
 
-  bool is_root_node(const BookmarkNode* node) const {
-    return node == root_.get();
-  }
+  bool is_root_node(const BookmarkNode* node) const { return node == root_; }
 
   // Returns whether the given |node| is one of the permanent nodes - root node,
   // 'bookmark bar' node, 'other' node or 'mobile' node, or one of the root
   // nodes supplied by the |client_|.
   bool is_permanent_node(const BookmarkNode* node) const {
-    return node && (node == root_.get() || node->parent() == root_.get());
+    return node && (node == root_ || node->parent() == root_);
   }
 
   void AddObserver(BookmarkModelObserver* observer);
@@ -322,14 +320,6 @@ class BookmarkModel : public BookmarkUndoProvider,
   friend class ScopedGroupBookmarkActions;
   friend class TestBookmarkClient;
 
-  // Used to order BookmarkNodes by URL.
-  class NodeURLComparator {
-   public:
-    bool operator()(const BookmarkNode* n1, const BookmarkNode* n2) const {
-      return n1->url() < n2->url();
-    }
-  };
-
   // BookmarkUndoProvider:
   void RestoreRemovedNode(const BookmarkNode* parent,
                           int index,
@@ -338,36 +328,14 @@ class BookmarkModel : public BookmarkUndoProvider,
   // Notifies the observers for adding every descedent of |node|.
   void NotifyNodeAddedForAllDescendents(const BookmarkNode* node);
 
-  // Implementation of IsBookmarked. Before calling this the caller must obtain
-  // a lock on |url_lock_|.
-  bool IsBookmarkedNoLock(const GURL& url);
-
   // Removes the node from internal maps and recurses through all children. If
   // the node is a url, its url is added to removed_urls.
   //
   // This does NOT delete the node.
-  void RemoveNode(BookmarkNode* node, std::set<GURL>* removed_urls);
+  void RemoveNode(BookmarkNode* node);
 
   // Called when done loading. Updates internal state and notifies observers.
   void DoneLoading(std::unique_ptr<BookmarkLoadDetails> details);
-
-  // Populates |nodes_ordered_by_url_set_| from root.
-  void PopulateNodesByURL(BookmarkNode* node);
-
-  // Removes the node from its parent and returns it. No notifications
-  // are sent. |removed_urls| is populated with the urls which no longer have
-  // any bookmarks associated with them.
-  // This method should be called after acquiring |url_lock_|.
-  std::unique_ptr<BookmarkNode> RemoveNodeAndGetRemovedUrls(
-      BookmarkNode* node,
-      std::set<GURL>* removed_urls);
-
-  // Removes the node from its parent, sends notification, and deletes it.
-  // type specifies how the node should be removed.
-  void RemoveAndDeleteNode(BookmarkNode* delete_me);
-
-  // Remove |node| from |nodes_ordered_by_url_set_| and |index_|.
-  void RemoveNodeFromInternalMaps(BookmarkNode* node);
 
   // Adds the |node| at |parent| in the specified |index| and notifies its
   // observers.
@@ -375,8 +343,8 @@ class BookmarkModel : public BookmarkUndoProvider,
                         int index,
                         std::unique_ptr<BookmarkNode> node);
 
-  // Adds the |node| to |nodes_ordered_by_url_set_| and |index_|.
-  void AddNodeToInternalMaps(BookmarkNode* node);
+  // Adds |node| to |index_| and recursisvely invokes this for all children.
+  void AddNodeToIndexRecursive(BookmarkNode* node);
 
   // Returns true if the parent and index are valid.
   bool IsValidIndex(const BookmarkNode* parent, int index, bool allow_end);
@@ -418,9 +386,15 @@ class BookmarkModel : public BookmarkUndoProvider,
   // Whether the initial set of data has been loaded.
   bool loaded_ = false;
 
+  // See |root_| for details.
+  std::unique_ptr<BookmarkNode> owned_root_;
+
   // The root node. This contains the bookmark bar node, the 'other' node and
-  // the mobile node as children.
-  std::unique_ptr<BookmarkNode> root_;
+  // the mobile node as children. The value of |root_| is initially that of
+  // |owned_root_|. Once loading has completed, |owned_root_| is destroyed and
+  // this is set to url_index_->root(). |owned_root_| is done as lots of
+  // existing code assumes the root is non-null while loading.
+  BookmarkNode* root_ = nullptr;
 
   BookmarkPermanentNode* bookmark_bar_node_ = nullptr;
   BookmarkPermanentNode* other_node_ = nullptr;
@@ -432,14 +406,6 @@ class BookmarkModel : public BookmarkUndoProvider,
   // The observers.
   base::ObserverList<BookmarkModelObserver> observers_;
 
-  // Set of nodes ordered by URL. This is not a map to avoid copying the
-  // urls.
-  // WARNING: |nodes_ordered_by_url_set_| is accessed on multiple threads. As
-  // such, be sure and wrap all usage of it around |url_lock_|.
-  typedef std::multiset<BookmarkNode*, NodeURLComparator> NodesOrderedByURLSet;
-  NodesOrderedByURLSet nodes_ordered_by_url_set_;
-  base::Lock url_lock_;
-
   // Used for loading favicons.
   base::CancelableTaskTracker cancelable_task_tracker_;
 
@@ -447,6 +413,7 @@ class BookmarkModel : public BookmarkUndoProvider,
   std::unique_ptr<BookmarkStorage> store_;
 
   std::unique_ptr<TitledUrlIndex> index_;
+  std::unique_ptr<UrlIndex> url_index_;
 
   base::WaitableEvent loaded_signal_;
 
