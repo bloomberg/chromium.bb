@@ -318,6 +318,8 @@ ios_web_view_test_sources = [
 test("ios_web_view_unittests") {
   testonly = true
   sources = [
+    "internal/autofill/autofill_test_util.h",
+    "internal/autofill/autofill_test_util.mm",
     "internal/autofill/cwv_autofill_controller_unittest.mm",
     "internal/autofill/cwv_autofill_profile_unittest.mm",
     "internal/autofill/cwv_autofill_suggestion_unittest.mm",
