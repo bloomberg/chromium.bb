@@ -5,8 +5,8 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "content/shell/app/blink_test_platform_support.h"
 
 #include <AppKit/AppKit.h>
@@ -59,9 +59,8 @@ bool BlinkTestPlatformInitialize() {
   SetDefaultsToLayoutTestValues();
 
   // Load font files in the resource folder.
-  static const char* const fontFileNames[] = {
-      "AHEM____.TTF", "ChromiumAATTest.ttf"
-  };
+  static const char* const kFontFileNames[] = {"Ahem.TTF",
+                                               "ChromiumAATTest.ttf"};
 
   // mainBundle is Content Shell Helper.app.  Go two levels up to find
   // Content Shell.app. Due to DumpRenderTree injecting the font files into
@@ -73,10 +72,10 @@ bool BlinkTestPlatformInitialize() {
   NSURL* resources_directory = [[NSBundle bundleWithPath:bundle] resourceURL];
 
   NSMutableArray* font_urls = [NSMutableArray array];
-  for (unsigned i = 0; i < arraysize(fontFileNames); ++i) {
+  for (unsigned i = 0; i < base::size(kFontFileNames); ++i) {
     NSURL* font_url = [resources_directory
-        URLByAppendingPathComponent:[NSString
-            stringWithUTF8String:fontFileNames[i]]];
+        URLByAppendingPathComponent:
+            [NSString stringWithUTF8String:kFontFileNames[i]]];
     [font_urls addObject:[font_url absoluteURL]];
   }
 

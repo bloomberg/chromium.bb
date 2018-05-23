@@ -132,17 +132,6 @@ component("test_runner") {
 }
 
 # Font copies.
-if (!is_mac) {
-  copy("copy_ahem") {
-    visibility = [ ":*" ]
-    sources = [
-      "resources/fonts/AHEM____.TTF",
-    ]
-    outputs = [
-      "$root_out_dir/AHEM____.TTF",
-    ]
-  }
-}
 if (use_x11) {
   copy("copy_x11_fonts") {
     # TODO(sergeyu): Move these fonts to third_party/test_fonts .
@@ -170,8 +159,12 @@ if (is_android || is_fuchsia) {
 }
 if (is_mac) {
   bundle_data("test_runner_bundle_data") {
+    public_deps = [
+      "//third_party/test_fonts",
+    ]
+
     sources = [
-      "resources/fonts/AHEM____.TTF",
+      "$root_out_dir/test_fonts/Ahem.ttf",
       "resources/fonts/ChromiumAATTest.ttf",
     ]
 
@@ -189,8 +182,8 @@ group("resources") {
     deps += [ ":test_runner_bundle_data" ]
     data_deps += [ ":test_runner_bundle_data" ]
   } else {
-    deps += [ ":copy_ahem" ]
-    data_deps += [ ":copy_ahem" ]
+    deps += [ "//third_party/test_fonts" ]
+    data_deps += [ "//third_party/test_fonts" ]
   }
 
   if (use_x11) {
@@ -200,9 +193,5 @@ group("resources") {
   if (is_android || is_fuchsia) {
     deps += [ ":copy_android_fonts_config" ]
     data_deps += [ ":copy_android_fonts_config" ]
-  }
-  if (is_android || is_linux || is_fuchsia) {
-    deps += [ "//third_party/test_fonts" ]
-    data_deps += [ "//third_party/test_fonts" ]
   }
 }

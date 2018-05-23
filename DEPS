@@ -1618,7 +1618,6 @@ hooks = [
  {
     'name': 'test_fonts',
     'pattern': '.',
-    'condition': 'checkout_linux or (checkout_android or checkout_fuchsia)',
     'action': [ 'download_from_google_storage',
                 '--no_resume',
                 '--extract',
