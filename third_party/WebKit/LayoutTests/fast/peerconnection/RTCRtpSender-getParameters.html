@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>RTCPeerConnection.getParameters</title>
+<title>RTCRtpSender.getParameters</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 </head>
@@ -54,7 +54,7 @@ function connect_pcs(localPc, remotePc) {
 }
 
 function verifySenderParameters(parameters, kind) {
-  assert_not_exists(parameters, "transactionId", "unimplemented transactionId");
+  assert_exists(parameters, "transactionId", "transactionId");
   assert_not_exists(parameters, "rtcp", "unimplemented rtcp");
 
   assert_greater_than(parameters.codecs.length, 0);
@@ -71,7 +71,6 @@ function verifySenderParameters(parameters, kind) {
     assert_true(codec.mimeType.startsWith(kind + "/"));
 
     assert_exists(codec, "payloadType", "payload type");
-    assert_not_exists(codec, "sdpFmtpLine", "unimplemented sdp_fmtp_line");
   }
 
   assert_not_exists(parameters, "headerExtensions", "unimplemented headerExtension");

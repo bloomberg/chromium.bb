@@ -274,9 +274,11 @@ ScriptPromise RTCRtpSender::replaceTrack(ScriptState* script_state,
 
 void RTCRtpSender::getParameters(RTCRtpParameters& parameters) {
   // TODO(orphis): Forward missing fields from the WebRTC library:
-  // transactionId, rtcp, headerExtensions, degradationPreference
+  // rtcp, headerExtensions, degradationPreference
   std::unique_ptr<webrtc::RtpParameters> webrtc_parameters =
       sender_->GetParameters();
+
+  parameters.setTransactionId(webrtc_parameters->transaction_id.c_str());
 
   HeapVector<RTCRtpEncodingParameters> encodings;
   encodings.ReserveCapacity(webrtc_parameters->encodings.size());
@@ -288,16 +290,14 @@ void RTCRtpSender::getParameters(RTCRtpParameters& parameters) {
     encoding.setActive(web_encoding.active);
     if (web_encoding.max_bitrate_bps)
       encoding.setMaxBitrate(web_encoding.max_bitrate_bps.value());
-    encoding.setPriority(WTF::String::FromUTF8(
-        PriorityFromDouble(web_encoding.bitrate_priority).c_str()));
+    encoding.setPriority(
+        PriorityFromDouble(web_encoding.bitrate_priority).c_str());
   }
   parameters.setEncodings(encodings);
 
   HeapVector<RTCRtpCodecParameters> codecs;
   codecs.ReserveCapacity(webrtc_parameters->codecs.size());
   for (const auto& web_codec : webrtc_parameters->codecs) {
-    // TODO(orphis): Forward missing field from the WebRTC library:
-    // sdpFmtpLine
     codecs.emplace_back();
     RTCRtpCodecParameters& codec = codecs.back();
     codec.setPayloadType(web_codec.payload_type);
@@ -306,6 +306,15 @@ void RTCRtpSender::getParameters(RTCRtpParameters& parameters) {
       codec.setClockRate(web_codec.clock_rate.value());
     if (web_codec.num_channels)
       codec.setChannels(web_codec.num_channels.value());
+    if (web_codec.parameters.size()) {
+      std::string sdp_fmtp_line;
+      for (const auto& parameter : web_codec.parameters) {
+        if (sdp_fmtp_line.size())
+          sdp_fmtp_line += ";";
+        sdp_fmtp_line += parameter.first + "=" + parameter.second;
+      }
+      codec.setSdpFmtpLine(sdp_fmtp_line.c_str());
+    }
   }
   parameters.setCodecs(codecs);
 
