@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -305,6 +306,8 @@ LocalDOMWindow* HTMLFrameSetElement::AnonymousNamedGetter(
     UseCounter::Count(
         *document, WebFeature::kHTMLFrameSetElementNonNullAnonymousNamedGetter);
   }
+  Deprecation::CountDeprecation(
+      *document, WebFeature::kHTMLFrameSetElementAnonymousNamedGetter);
   return window;
 }
 
