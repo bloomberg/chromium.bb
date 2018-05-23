@@ -96,7 +96,7 @@ void TraceCrashServiceUploader::OnURLFetchComplete(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(done_callback_, success, feedback));
+      base::BindOnce(std::move(done_callback_), success, feedback));
   url_fetcher_.reset();
 }
 
@@ -121,11 +121,11 @@ void TraceCrashServiceUploader::DoUpload(
     UploadMode upload_mode,
     std::unique_ptr<const base::DictionaryValue> metadata,
     const UploadProgressCallback& progress_callback,
-    const UploadDoneCallback& done_callback) {
+    UploadDoneCallback done_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   progress_callback_ = progress_callback;
-  done_callback_ = done_callback;
+  done_callback_ = std::move(done_callback);
 
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::BACKGROUND},
@@ -214,7 +214,7 @@ void TraceCrashServiceUploader::OnUploadError(
   LOG(ERROR) << error_message;
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(done_callback_, false, error_message));
+      base::BindOnce(std::move(done_callback_), false, error_message));
 }
 
 void TraceCrashServiceUploader::SetupMultipart(

@@ -44,8 +44,10 @@ enum BackgroundTracingMetrics {
   FINALIZATION_ALLOWED = 5,
   FINALIZATION_DISALLOWED = 6,
   FINALIZATION_STARTED = 7,
-  FINALIZATION_COMPLETE = 8,
+  OBSOLETE_FINALIZATION_COMPLETE = 8,
   SCENARIO_ACTION_FAILED_LOWRES_CLOCK = 9,
+  UPLOAD_FAILED = 10,
+  UPLOAD_SUCCEEDED = 11,
   NUMBER_OF_BACKGROUND_TRACING_METRICS,
 };
 
@@ -120,7 +122,7 @@ void BackgroundTracingManagerImpl::WhenIdle(
 
 bool BackgroundTracingManagerImpl::SetActiveScenario(
     std::unique_ptr<BackgroundTracingConfig> config,
-    const BackgroundTracingManager::ReceiveCallback& receive_callback,
+    BackgroundTracingManager::ReceiveCallback receive_callback,
     DataFiltering data_filtering) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   RecordBackgroundTracingMetric(SCENARIO_ACTIVATION_REQUESTED);
@@ -180,7 +182,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
   }
 
   config_ = std::move(config_impl);
-  receive_callback_ = receive_callback;
+  receive_callback_ = std::move(receive_callback);
   requires_anonymized_data_ = requires_anonymized_data;
 
   if (config_) {
@@ -505,21 +507,21 @@ void BackgroundTracingManagerImpl::OnFinalizeStarted(
                           file_contents->size() / 1024);
 
   if (!receive_callback_.is_null()) {
-    receive_callback_.Run(
-        file_contents, std::move(metadata),
-        base::Bind(&BackgroundTracingManagerImpl::OnFinalizeComplete,
-                   base::Unretained(this)));
+    std::move(receive_callback_)
+        .Run(file_contents, std::move(metadata),
+             base::BindOnce(&BackgroundTracingManagerImpl::OnFinalizeComplete,
+                            base::Unretained(this)));
   }
   if (!started_finalizing_closure.is_null())
     std::move(started_finalizing_closure).Run();
 }
 
-void BackgroundTracingManagerImpl::OnFinalizeComplete() {
+void BackgroundTracingManagerImpl::OnFinalizeComplete(bool success) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&BackgroundTracingManagerImpl::OnFinalizeComplete,
-                       base::Unretained(this)));
+                       base::Unretained(this), success));
     return;
   }
 
@@ -543,7 +545,11 @@ void BackgroundTracingManagerImpl::OnFinalizeComplete() {
     AbortScenario();
   }
 
-  RecordBackgroundTracingMetric(FINALIZATION_COMPLETE);
+  if (success) {
+    RecordBackgroundTracingMetric(UPLOAD_SUCCEEDED);
+  } else {
+    RecordBackgroundTracingMetric(UPLOAD_FAILED);
+  }
 }
 
 bool BackgroundTracingManagerImpl::IsAllowedFinalization() const {

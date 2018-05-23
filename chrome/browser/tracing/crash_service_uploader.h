@@ -46,7 +46,7 @@ class TraceCrashServiceUploader : public content::TraceUploader,
                 UploadMode upload_mode,
                 std::unique_ptr<const base::DictionaryValue> metadata,
                 const UploadProgressCallback& progress_callback,
-                const UploadDoneCallback& done_callback) override;
+                UploadDoneCallback done_callback) override;
 
  private:
   void DoCompressOnBackgroundThread(

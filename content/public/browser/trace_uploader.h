@@ -21,10 +21,11 @@ class TraceUploader {
   // This should be called when the tracing is complete.
   // The bool denotes success or failure, the string is feedback
   // to show in the Tracing UI.
-  typedef base::Callback<void(bool, const std::string&)> UploadDoneCallback;
+  typedef base::OnceCallback<void(bool, const std::string&)> UploadDoneCallback;
   // Call this to update the progress UI with the current bytes uploaded,
   // as well as the total.
-  typedef base::Callback<void(int64_t, int64_t)> UploadProgressCallback;
+  typedef base::RepeatingCallback<void(int64_t, int64_t)>
+      UploadProgressCallback;
 
   virtual ~TraceUploader() {}
 
@@ -35,7 +36,7 @@ class TraceUploader {
                         UploadMode upload_mode,
                         std::unique_ptr<const base::DictionaryValue> metadata,
                         const UploadProgressCallback& progress_callback,
-                        const UploadDoneCallback& done_callback) = 0;
+                        UploadDoneCallback done_callback) = 0;
 };
 
 }  // namespace content
