@@ -398,7 +398,7 @@ void FormStructure::DetermineHeuristicTypes(ukm::UkmRecorder* ukm_recorder) {
   if (developer_engagement_metrics) {
     AutofillMetrics::LogDeveloperEngagementUkm(
         ukm_recorder, main_frame_origin().GetURL(), IsCompleteCreditCardForm(),
-        GetFormTypes(), developer_engagement_metrics);
+        GetFormTypes(), developer_engagement_metrics, form_signature());
   }
 
   if (base::FeatureList::IsEnabled(kAutofillRationalizeFieldTypePredictions))

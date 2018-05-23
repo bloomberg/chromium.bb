@@ -94,7 +94,7 @@ void VerifyDeveloperEngagementUkm(
   for (const auto* const entry : entries) {
     ukm_recorder.ExpectEntrySourceHasUrl(entry,
                                          GURL(form.main_frame_origin.GetURL()));
-    EXPECT_EQ(3u, entry->metrics.size());
+    EXPECT_EQ(4u, entry->metrics.size());
     ukm_recorder.ExpectEntryMetric(
         entry, UkmDeveloperEngagementType::kDeveloperEngagementName,
         expected_metric_value);
@@ -104,6 +104,9 @@ void VerifyDeveloperEngagementUkm(
     ukm_recorder.ExpectEntryMetric(
         entry, UkmDeveloperEngagementType::kFormTypesName,
         AutofillMetrics::FormTypesToBitVector(form_types));
+    ukm_recorder.ExpectEntryMetric(
+        entry, UkmDeveloperEngagementType::kFormSignatureName,
+        Collapse(CalculateFormSignature(form)));
   }
 }
 
@@ -2155,7 +2158,7 @@ TEST_F(AutofillMetricsTest,
     autofill_manager_->Reset();
 
     VerifyDeveloperEngagementUkm(
-        test_ukm_recorder_, form, /*is_for_credit_card=*/false,
+        test_ukm_recorder_, forms.back(), /*is_for_credit_card=*/false,
         {FormType::ADDRESS_FORM},
         {AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS});
   }
@@ -2206,7 +2209,7 @@ TEST_F(AutofillMetricsTest,
     autofill_manager_->Reset();
 
     VerifyDeveloperEngagementUkm(
-        test_ukm_recorder_, form, /*is_for_credit_card=*/false,
+        test_ukm_recorder_, forms.back(), /*is_for_credit_card=*/false,
         {FormType::ADDRESS_FORM},
         {AutofillMetrics::FILLABLE_FORM_PARSED_WITH_TYPE_HINTS});
   }
@@ -2249,7 +2252,7 @@ TEST_F(AutofillMetricsTest, UkmDeveloperEngagement_LogUpiVpaTypeHint) {
     autofill_manager_->Reset();
 
     VerifyDeveloperEngagementUkm(
-        test_ukm_recorder_, form, /*is_for_credit_card=*/false,
+        test_ukm_recorder_, forms.back(), /*is_for_credit_card=*/false,
         /* UPI VPA has Unknown form type.*/
         {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE},
         {AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT});
@@ -2267,7 +2270,7 @@ TEST_F(AutofillMetricsTest, UkmDeveloperEngagement_LogUpiVpaTypeHint) {
     autofill_manager_->Reset();
 
     VerifyDeveloperEngagementUkm(
-        test_ukm_recorder_, form, /*is_for_credit_card=*/false,
+        test_ukm_recorder_, forms.back(), /*is_for_credit_card=*/false,
         /* UPI VPA has Unknown form type.*/
         {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE},
         {AutofillMetrics::FILLABLE_FORM_PARSED_WITH_TYPE_HINTS,
@@ -2631,6 +2634,7 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
   {
     base::UserActionTester user_action_tester;
     std::string guid("10000000-0000-0000-0000-000000000001");  // local card
+    external_delegate_->OnQuery(0, form, form.fields.front(), gfx::RectF());
     external_delegate_->DidAcceptSuggestion(
         ASCIIToUTF16("Test"),
         autofill_manager_->MakeFrontendID(guid, std::string()), 0);
@@ -2685,9 +2689,17 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
   VerifyFormInteractionUkm(
       test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
       {{{UkmSuggestionFilledType::kRecordTypeName, CreditCard::LOCAL_CARD},
-        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmSuggestionFilledType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields.front()))},
+        {UkmSuggestionFilledType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}},
        {{UkmSuggestionFilledType::kRecordTypeName, CreditCard::LOCAL_CARD},
-        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmSuggestionFilledType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields.front()))},
+        {UkmSuggestionFilledType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}}});
   // Expect |NON_FILLABLE_FORM_OR_NEW_DATA| in |AutofillFormSubmittedState|
   // because |field.value| is empty in |DeterminePossibleFieldTypesForUpload|.
   VerifySubmitFormUkm(
@@ -2754,6 +2766,7 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
   {
     base::UserActionTester user_action_tester;
     std::string guid("00000000-0000-0000-0000-000000000001");  // local profile.
+    external_delegate_->OnQuery(0, form, form.fields.front(), gfx::RectF());
     external_delegate_->DidAcceptSuggestion(
         ASCIIToUTF16("Test"),
         autofill_manager_->MakeFrontendID(std::string(), guid), 0);
@@ -2809,10 +2822,18 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
       test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
       {{{UkmSuggestionFilledType::kRecordTypeName,
          AutofillProfile::LOCAL_PROFILE},
-        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmSuggestionFilledType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields.front()))},
+        {UkmSuggestionFilledType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}},
        {{UkmSuggestionFilledType::kRecordTypeName,
          AutofillProfile::LOCAL_PROFILE},
-        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmSuggestionsShownType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields.front()))},
+        {UkmSuggestionsShownType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}}});
   // Expect |NON_FILLABLE_FORM_OR_NEW_DATA| in |AutofillFormSubmittedState|
   // because |field.value| is empty in |DeterminePossibleFieldTypesForUpload|.
   VerifySubmitFormUkm(test_ukm_recorder_, form,
@@ -4063,7 +4084,11 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
     VerifyFormInteractionUkm(
         test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
         {{{UkmSuggestionFilledType::kRecordTypeName, CreditCard::LOCAL_CARD},
-          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
+          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+          {UkmSuggestionFilledType::kFieldSignatureName,
+           Collapse(CalculateFieldSignatureForField(form.fields.front()))},
+          {UkmSuggestionFilledType::kFormSignatureName,
+           Collapse(CalculateFormSignature(form))}}});
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
@@ -4098,7 +4123,11 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
         test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
         {{{UkmSuggestionFilledType::kRecordTypeName,
            CreditCard::FULL_SERVER_CARD},
-          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
+          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+          {UkmSuggestionFilledType::kFieldSignatureName,
+           Collapse(CalculateFieldSignatureForField(form.fields.front()))},
+          {UkmSuggestionFilledType::kFormSignatureName,
+           Collapse(CalculateFormSignature(form))}}});
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
@@ -4135,7 +4164,11 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
         test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
         {{{UkmSuggestionFilledType::kRecordTypeName,
            CreditCard::MASKED_SERVER_CARD},
-          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
+          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+          {UkmSuggestionFilledType::kFieldSignatureName,
+           Collapse(CalculateFieldSignatureForField(form.fields.back()))},
+          {UkmSuggestionFilledType::kFormSignatureName,
+           Collapse(CalculateFormSignature(form))}}});
     VerifyFormInteractionUkm(
         test_ukm_recorder_, form, UkmSelectedMaskedServerCardType::kEntryName,
         {{{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
@@ -6140,10 +6173,18 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
       test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
       {{{UkmSuggestionFilledType::kRecordTypeName,
          AutofillProfile::LOCAL_PROFILE},
-        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmSuggestionFilledType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[0]))},
+        {UkmSuggestionFilledType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}},
        {{UkmSuggestionFilledType::kRecordTypeName,
          AutofillProfile::LOCAL_PROFILE},
-        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmSuggestionFilledType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[2]))},
+        {UkmSuggestionFilledType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}}});
   VerifyFormInteractionUkm(
       test_ukm_recorder_, form, UkmTextFieldDidChangeType::kEntryName,
       {{{UkmTextFieldDidChangeType::kFieldTypeGroupName, NAME},
@@ -6955,16 +6996,17 @@ TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric) {
 TEST_F(AutofillMetricsTest, RecordDeveloperEngagementMetric) {
   GURL url("https://www.google.com");
   int form_structure_metric = 1;
+  FormSignature form_signature = 100;
 
-  AutofillMetrics::LogDeveloperEngagementUkm(&test_ukm_recorder_, url, true,
-                                             {FormType::CREDIT_CARD_FORM},
-                                             form_structure_metric);
+  AutofillMetrics::LogDeveloperEngagementUkm(
+      &test_ukm_recorder_, url, true, {FormType::CREDIT_CARD_FORM},
+      form_structure_metric, form_signature);
   auto entries = test_ukm_recorder_.GetEntriesByName(
       UkmDeveloperEngagementType::kEntryName);
   EXPECT_EQ(1u, entries.size());
   for (const auto* const entry : entries) {
     test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, url);
-    EXPECT_EQ(3u, entry->metrics.size());
+    EXPECT_EQ(4u, entry->metrics.size());
     test_ukm_recorder_.ExpectEntryMetric(
         entry, UkmDeveloperEngagementType::kDeveloperEngagementName,
         form_structure_metric);
@@ -6973,6 +7015,8 @@ TEST_F(AutofillMetricsTest, RecordDeveloperEngagementMetric) {
     test_ukm_recorder_.ExpectEntryMetric(
         entry, UkmDeveloperEngagementType::kFormTypesName,
         AutofillMetrics::FormTypesToBitVector({FormType::CREDIT_CARD_FORM}));
+    test_ukm_recorder_.ExpectEntryMetric(
+        entry, UkmDeveloperEngagementType::kFormSignatureName, form_signature);
   }
 }
 

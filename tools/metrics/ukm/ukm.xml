@@ -48,6 +48,13 @@ be describing additional metrics about the same event.
     |DeveloperEngagementMetric|.
   </summary>
   <metric name="DeveloperEngagement"/>
+  <metric name="FormSignature">
+    <summary>
+      The signature of the form. This is the hash identifier used to denote this
+      form for query and voting purposes. See
+      components/autofill/core/common/signatures_util.cc for more details.
+    </summary>
+  </metric>
   <metric name="FormTypes">
     <summary>
       Type of form. Stored as bitvector. A set ith bit implies enum FormType's
@@ -238,6 +245,16 @@ be describing additional metrics about the same event.
     Recorded when user selects a suggestion and we fill the form with that
     suggestion.
   </summary>
+  <metric name="FieldSignature">
+    <summary>
+      The signature of the field
+    </summary>
+  </metric>
+  <metric name="FormSignature">
+    <summary>
+      The signature of the form.
+    </summary>
+  </metric>
   <metric name="MillisecondsSinceFormParsed">
     <summary>
       Time since form parse.

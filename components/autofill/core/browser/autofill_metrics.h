@@ -673,7 +673,8 @@ class AutofillMetrics {
     void LogSelectedMaskedServerCard(
         const base::TimeTicks& form_parsed_timestamp);
     void LogDidFillSuggestion(int record_type,
-                              const base::TimeTicks& form_parsed_timestamp);
+                              const FormStructure& form,
+                              const AutofillField& field);
     void LogTextFieldDidChange(const AutofillField& field,
                                const base::TimeTicks& form_parsed_timestamp);
     void LogFieldFillStatus(const FormStructure& form,
@@ -973,7 +974,8 @@ class AutofillMetrics {
                                         const GURL& url,
                                         bool is_for_credit_card,
                                         std::set<FormType> form_types,
-                                        int developer_engagement_metrics);
+                                        int developer_engagement_metrics,
+                                        FormSignature form_signature);
 
   // Log the number of hidden or presentational 'select' fields that were
   // autofilled to support synthetic fields.
@@ -1022,10 +1024,12 @@ class AutofillMetrics {
     // In case of masked cards, caller must make sure this gets called before
     // the card is upgraded to a full card.
     void OnDidFillSuggestion(const CreditCard& credit_card,
-                             const base::TimeTicks& form_parsed_timestamp);
+                             const FormStructure& form,
+                             const AutofillField& field);
 
     void OnDidFillSuggestion(const AutofillProfile& profile,
-                             const base::TimeTicks& form_parsed_timestamp);
+                             const FormStructure& form,
+                             const AutofillField& field);
 
     void OnWillSubmitForm();
 
