@@ -8,13 +8,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer g",
-          "rect": [0, 100, 200, 100],
-          "reason": "incremental"
+          "rect": [0, 0, 200, 200],
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGContainer g",
-          "rect": [100, 0, 100, 100],
-          "reason": "incremental"
+          "rect": [0, 0, 100, 100],
+          "reason": "paint property change"
         }
       ]
     }
