@@ -129,6 +129,19 @@ TEST(PrinterTranslatorTest, MissingEffectiveMakeModelFails) {
   EXPECT_FALSE(printer);
 }
 
+TEST(PrinterTranslatorTest, InvalidUriFails) {
+  base::DictionaryValue preference;
+  preference.SetString("id", kHash);
+  preference.SetString("display_name", kName);
+  preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
+
+  // uri with dangling colon
+  preference.SetString("uri", "ipp://hostname.tld:");
+
+  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
+  EXPECT_FALSE(printer);
+}
+
 TEST(PrinterTranslatorTest, RecommendedPrinterMinimalSetup) {
   base::DictionaryValue preference;
   preference.SetString("id", kHash);
