@@ -16,6 +16,8 @@ copy("test_fonts") {
     "test_fonts/Cousine-Regular.ttf",
     "test_fonts/DejaVuSans-Bold.ttf",
     "test_fonts/DejaVuSans.ttf",
+    "test_fonts/GardinerModBug.ttf",
+    "test_fonts/GardinerModCat.ttf",
     "test_fonts/Garuda.ttf",
     "test_fonts/Gelasio-Bold.ttf",
     "test_fonts/Gelasio-BoldItalic.ttf",

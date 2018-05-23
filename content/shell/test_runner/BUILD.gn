@@ -132,19 +132,6 @@ component("test_runner") {
 }
 
 # Font copies.
-if (use_x11) {
-  copy("copy_x11_fonts") {
-    # TODO(sergeyu): Move these fonts to third_party/test_fonts .
-    visibility = [ ":*" ]
-    sources = [
-      "//third_party/gardiner_mod/GardinerModBug.ttf",
-      "//third_party/gardiner_mod/GardinerModCat.ttf",
-    ]
-    outputs = [
-      "$root_out_dir/{{source_file_part}}",
-    ]
-  }
-}
 if (is_android || is_fuchsia) {
   copy("copy_android_fonts_config") {
     visibility = [ ":*" ]
@@ -186,10 +173,6 @@ group("resources") {
     data_deps += [ "//third_party/test_fonts" ]
   }
 
-  if (use_x11) {
-    deps += [ ":copy_x11_fonts" ]
-    data_deps += [ ":copy_x11_fonts" ]
-  }
   if (is_android || is_fuchsia) {
     deps += [ ":copy_android_fonts_config" ]
     data_deps += [ ":copy_android_fonts_config" ]
