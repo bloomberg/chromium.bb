@@ -219,6 +219,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableRemotePlaybackAPI))
     WebRuntimeFeatures::EnableRemotePlaybackAPI(false);
 
+  WebRuntimeFeatures::EnableSecMetadata(
+      base::FeatureList::IsEnabled(features::kSecMetadata) ||
+      enableExperimentalWebPlatformFeatures);
+
   WebRuntimeFeatures::EnableUserActivationV2(
       base::FeatureList::IsEnabled(features::kUserActivationV2));
 

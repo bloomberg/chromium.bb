@@ -1115,6 +1115,10 @@
       status: "stable",
     },
     {
+      name: "SecMetadata",
+      status: "experimental"
+    },
+    {
       name: "SendBeaconThrowForBlobWithNonSimpleType",
       status: "stable",
     },
