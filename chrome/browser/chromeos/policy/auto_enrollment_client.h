@@ -151,7 +151,8 @@ class AutoEnrollmentClient
       std::unique_ptr<StateDownloadMessageProcessor>
           state_download_message_processor,
       int power_initial,
-      int power_limit);
+      int power_limit,
+      std::string uma_suffix);
 
   // Tries to load the result of a previous execution of the protocol from
   // local state. Returns true if that decision has been made and is valid.
@@ -255,6 +256,14 @@ class AutoEnrollmentClient
   // owner has relinquished ownership.
   base::Time time_start_;
   base::Time time_extra_start_;
+
+  // The time when the bucket download part of the protocol started.
+  base::Time time_start_bucket_download_;
+
+  // The UMA histogram suffix. Will be ".ForcedReenrollment" for an
+  // |AutoEnrollmentClient| used for FRE and ".InitialEnrollment" for an
+  // |AutoEnrollmentclient| used for initial enrollment.
+  const std::string uma_suffix_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentClient);
 };

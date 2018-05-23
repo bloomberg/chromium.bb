@@ -39,11 +39,18 @@ using EnrollmentCheckType =
     em::DeviceAutoEnrollmentRequest::EnrollmentCheckType;
 
 // UMA histogram names.
-const char kUMAProtocolTime[] = "Enterprise.AutoEnrollmentProtocolTime";
-const char kUMAExtraTime[] = "Enterprise.AutoEnrollmentExtraTime";
-const char kUMARequestStatus[] = "Enterprise.AutoEnrollmentRequestStatus";
-const char kUMANetworkErrorCode[] =
+constexpr char kUMAProtocolTime[] = "Enterprise.AutoEnrollmentProtocolTime";
+constexpr char kUMABucketDownloadTime[] =
+    "Enterprise.AutoEnrollmentBucketDownloadTime";
+constexpr char kUMAExtraTime[] = "Enterprise.AutoEnrollmentExtraTime";
+constexpr char kUMARequestStatus[] = "Enterprise.AutoEnrollmentRequestStatus";
+constexpr char kUMANetworkErrorCode[] =
     "Enterprise.AutoEnrollmentRequestNetworkErrorCode";
+
+// Suffix for initial enrollment.
+constexpr char kUMASuffixInitialEnrollment[] = ".InitialEnrollment";
+// Suffix for Forced Re-Enrollment.
+constexpr char kUMASuffixFRE[] = ".ForcedReenrollment";
 
 // Returns the power of the next power-of-2 starting at |value|.
 int NextPowerOf2(int64_t value) {
@@ -338,7 +345,7 @@ std::unique_ptr<AutoEnrollmentClient> AutoEnrollmentClient::CreateForFRE(
       std::make_unique<DeviceIdentifierProviderFRE>(server_backed_state_key),
       std::make_unique<StateDownloadMessageProcessorFRE>(
           server_backed_state_key),
-      power_initial, power_limit));
+      power_initial, power_limit, kUMASuffixFRE));
 }
 
 // static
@@ -359,7 +366,7 @@ AutoEnrollmentClient::CreateForInitialEnrollment(
           device_serial_number, device_brand_code),
       std::make_unique<StateDownloadMessageProcessorInitialEnrollment>(
           device_serial_number, device_brand_code),
-      power_initial, power_limit));
+      power_initial, power_limit, kUMASuffixInitialEnrollment));
 }
 
 AutoEnrollmentClient::~AutoEnrollmentClient() {
@@ -422,7 +429,8 @@ AutoEnrollmentClient::AutoEnrollmentClient(
     std::unique_ptr<StateDownloadMessageProcessor>
         state_download_message_processor,
     int power_initial,
-    int power_limit)
+    int power_limit,
+    std::string uma_suffix)
     : progress_callback_(callback),
       state_(AUTO_ENROLLMENT_STATE_IDLE),
       has_server_state_(false),
@@ -436,7 +444,8 @@ AutoEnrollmentClient::AutoEnrollmentClient(
       request_context_(system_request_context),
       device_identifier_provider_(std::move(device_identifier_provider)),
       state_download_message_processor_(
-          std::move(state_download_message_processor)) {
+          std::move(state_download_message_processor)),
+      uma_suffix_(uma_suffix) {
   DCHECK_LE(current_power_, power_limit_);
   DCHECK(!progress_callback_.is_null());
 }
@@ -534,6 +543,11 @@ void AutoEnrollmentClient::SendBucketDownloadRequest() {
 
   ReportProgress(AUTO_ENROLLMENT_STATE_PENDING);
 
+  // Record the time when the bucket download request is started. Note that the
+  // time may be set multiple times. This is fine, only the last request is the
+  // one where the hash bucket is actually downloaded.
+  time_start_bucket_download_ = base::Time::Now();
+
   VLOG(1) << "Request bucket #" << remainder;
   request_job_.reset(
       device_management_service_->CreateJob(
@@ -570,11 +584,11 @@ void AutoEnrollmentClient::HandleRequestCompletion(
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
-  base::UmaHistogramSparse(kUMARequestStatus, status);
+  base::UmaHistogramSparse(kUMARequestStatus + uma_suffix_, status);
   if (status != DM_STATUS_SUCCESS) {
     LOG(ERROR) << "Auto enrollment error: " << status;
     if (status == DM_STATUS_REQUEST_FAILED)
-      base::UmaHistogramSparse(kUMANetworkErrorCode, -net_error);
+      base::UmaHistogramSparse(kUMANetworkErrorCode + uma_suffix_, -net_error);
     request_job_.reset();
 
     // Abort if CancelAndDeleteSoon has been called meanwhile.
@@ -707,7 +721,13 @@ void AutoEnrollmentClient::UpdateBucketDownloadTimingHistograms() {
   base::Time now = base::Time::Now();
   if (!time_start_.is_null()) {
     base::TimeDelta delta = now - time_start_;
-    UMA_HISTOGRAM_CUSTOM_TIMES(kUMAProtocolTime, delta, kMin, kMax, kBuckets);
+    base::UmaHistogramCustomTimes(kUMAProtocolTime + uma_suffix_, delta, kMin,
+                                  kMax, kBuckets);
+  }
+  if (!time_start_bucket_download_.is_null()) {
+    base::TimeDelta delta = now - time_start_bucket_download_;
+    base::UmaHistogramCustomTimes(kUMABucketDownloadTime + uma_suffix_, delta,
+                                  kMin, kMax, kBuckets);
   }
   base::TimeDelta delta = kZero;
   if (!time_extra_start_.is_null())
@@ -715,7 +735,8 @@ void AutoEnrollmentClient::UpdateBucketDownloadTimingHistograms() {
   // This samples |kZero| when there was no need for extra time, so that we can
   // measure the ratio of users that succeeded without needing a delay to the
   // total users going through OOBE.
-  UMA_HISTOGRAM_CUSTOM_TIMES(kUMAExtraTime, delta, kMin, kMax, kBuckets);
+  base::UmaHistogramCustomTimes(kUMAExtraTime + uma_suffix_, delta, kMin, kMax,
+                                kBuckets);
 }
 
 }  // namespace policy
