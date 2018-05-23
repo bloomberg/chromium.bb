@@ -75,6 +75,9 @@ class HistoryTabHelper : public history::Context,
   // is set to false.
   bool delay_notification_ = false;
 
+  // Number of title changes since the loading of the navigation started.
+  int num_title_changes_;
+
   // The time that the current page finished loading. Only title changes within
   // a certain time period after the page load is complete will be saved to the
   // history system. Only applies to the main frame of the page.

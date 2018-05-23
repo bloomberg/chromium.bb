@@ -53,6 +53,9 @@ class HistoryTabHelper : public content::WebContentsObserver,
   // loading. Only applies to the main frame of the page.
   bool is_loading_ = false;
 
+  // Number of title changes since the loading of the navigation started.
+  int num_title_changes_ = 0;
+
   // The time that the current page finished loading. Only title changes within
   // a certain time period after the page load is complete will be saved to the
   // history system. Only applies to the main frame of the page.

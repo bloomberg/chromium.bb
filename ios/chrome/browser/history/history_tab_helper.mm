@@ -125,6 +125,8 @@ void HistoryTabHelper::DidFinishNavigation(
   }
 #endif
 
+  num_title_changes_ = 0;
+
   history::RedirectList redirects;
   const GURL& original_url = visible_item->GetOriginalRequestURL();
   const GURL& referrer_url = visible_item->GetReferrer().url;
@@ -189,6 +191,10 @@ void HistoryTabHelper::TitleWasSet(web::WebState* web_state) {
     return;
   }
 
+  // Protect against pages changing their title too often during page load.
+  if (num_title_changes_ >= history::kMaxTitleChanges)
+    return;
+
   // Only store page titles into history if they were set while the page was
   // loading or during a brief span after load is complete. This fixes the case
   // where a page uses a title change to alert a user of a situation but that
@@ -198,8 +204,10 @@ void HistoryTabHelper::TitleWasSet(web::WebState* web_state) {
        history::GetTitleSettingWindow())) {
     web::NavigationItem* last_committed_item =
         web_state_->GetNavigationManager()->GetLastCommittedItem();
-    if (last_committed_item)
+    if (last_committed_item) {
       UpdateHistoryPageTitle(*last_committed_item);
+      ++num_title_changes_;
+    }
   }
 }
 
