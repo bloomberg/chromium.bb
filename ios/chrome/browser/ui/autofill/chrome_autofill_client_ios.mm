@@ -10,8 +10,8 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "components/autofill/core/browser/autofill_credit_card_filling_infobar_delegate_mobile.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
-#include "components/autofill/core/browser/autofill_save_card_infobar_mobile.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -23,17 +23,35 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
+#include "ios/chrome/browser/ui/autofill/save_card_infobar_controller.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// Creates and returns an infobar for saving credit cards.
+std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
+    std::unique_ptr<autofill::AutofillSaveCardInfoBarDelegateMobile> delegate) {
+  if (!base::FeatureList::IsEnabled(autofill::kAutofillUpstream))
+    return ::CreateConfirmInfoBar(std::move(delegate));
+
+  SaveCardInfoBarController* controller = [[SaveCardInfoBarController alloc]
+      initWithInfoBarDelegate:delegate.get()];
+  auto infobar = std::make_unique<InfoBarIOS>(controller, std::move(delegate));
+  return infobar;
+}
+
+}  // namespace
 
 namespace autofill {
 
@@ -120,11 +138,6 @@ void ChromeAutofillClientIOS::OnUnmaskVerificationResult(
 void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
     const base::Closure& callback) {
-  // This method is invoked synchronously from
-  // AutofillManager::OnFormSubmitted(); at the time of detecting that a form
-  // was submitted, the WebContents is guaranteed to be live. Since the
-  // InfoBarService is a WebContentsUserData, it must also be alive at this
-  // time.
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
           false, card, std::unique_ptr<base::DictionaryValue>(nullptr),
@@ -135,9 +148,15 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     const base::Closure& callback) {
-  infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
+  auto save_card_info_bar_delegate_mobile =
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-          true, card, std::move(legal_message), callback, GetPrefs())));
+          true, card, std::move(legal_message), callback, GetPrefs());
+  // Allow user to save card only if legal messages are successfully parsed.
+  // Legal messages are provided only for the upload case, not for local save.
+  if (save_card_info_bar_delegate_mobile->LegalMessagesParsedSuccessfully()) {
+    infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
+        std::move(save_card_info_bar_delegate_mobile)));
+  }
 }
 
 void ChromeAutofillClientIOS::ConfirmCreditCardFillAssist(

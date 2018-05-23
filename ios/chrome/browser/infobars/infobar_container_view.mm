@@ -19,6 +19,8 @@
   CGRect containerBounds = [self bounds];
   infoBarIOS->Layout(containerBounds);
   UIView<InfoBarViewSizing>* view = infoBarIOS->view();
+  [view setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                            UIViewAutoresizingFlexibleHeight];
   [self insertSubview:view atIndex:position];
 }
 
