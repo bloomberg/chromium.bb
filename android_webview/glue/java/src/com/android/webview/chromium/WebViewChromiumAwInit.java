@@ -170,13 +170,16 @@ public class WebViewChromiumAwInit {
             RecordHistogram.recordSparseSlowlyHistogram("Android.WebView.TargetSdkVersion",
                     context.getApplicationInfo().targetSdkVersion);
 
-            // Initialize thread-unsafe singletons.
-            AwBrowserContext awBrowserContext = getBrowserContextOnUiThread();
-            mGeolocationPermissions = new GeolocationPermissionsAdapter(
-                    mFactory, awBrowserContext.getGeolocationPermissions());
-            mWebStorage = new WebStorageAdapter(mFactory, AwQuotaManagerBridge.getInstance());
-            mAwTracingController = awBrowserContext.getTracingController();
-            mServiceWorkerController = awBrowserContext.getServiceWorkerController();
+            try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
+                         "WebViewChromiumAwInit.initThreadUnsafeSingletons")) {
+                // Initialize thread-unsafe singletons.
+                AwBrowserContext awBrowserContext = getBrowserContextOnUiThread();
+                mGeolocationPermissions = new GeolocationPermissionsAdapter(
+                        mFactory, awBrowserContext.getGeolocationPermissions());
+                mWebStorage = new WebStorageAdapter(mFactory, AwQuotaManagerBridge.getInstance());
+                mAwTracingController = awBrowserContext.getTracingController();
+                mServiceWorkerController = awBrowserContext.getServiceWorkerController();
+            }
 
             mFactory.getRunQueue().drainQueue();
         }
