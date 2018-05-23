@@ -24,6 +24,7 @@
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "mojo/public/c/system/platform_handle.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/system_export.h"
@@ -74,6 +75,19 @@ enum class UnwrappedSharedMemoryHandleProtection {
   // read-only memory regions.
   kReadOnly,
 };
+
+// Converts a PlatformHandle to the MojoPlatformHandle C struct for use with
+// Mojo APIs. Note that although MojoPlatformHandle has weak ownership, this
+// relinquishes ownership from |handle|.
+void MOJO_CPP_SYSTEM_EXPORT
+PlatformHandleToMojoPlatformHandle(PlatformHandle handle,
+                                   MojoPlatformHandle* out_handle);
+
+// Converts a MojoPlatformHandle C struct to a PlatformHandle for use with
+// various C++ APIs. Note that although MojoPlatformHandle has weak ownership,
+// the new handle assumes ownership of the represented platform handle.
+PlatformHandle MOJO_CPP_SYSTEM_EXPORT
+MojoPlatformHandleToPlatformHandle(const MojoPlatformHandle* handle);
 
 // Wraps a PlatformFile as a Mojo handle. Takes ownership of the file object.
 // If |platform_file| is valid, this will return a valid handle.
