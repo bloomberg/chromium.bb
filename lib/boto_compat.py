@@ -54,8 +54,16 @@ def FixBotoCerts(activate=True, strict=False):
     osutils.WriteFile(boto_cfg_path, BOTO_CFG_CONTENTS)
     os.chmod(boto_cfg_path, 0o644)
 
-    # Inject the new boto config file into BOTO_PATH.
-    boto_path_env = os.environ.get('BOTO_PATH', '/etc/boto.cfg:~/.boto')
+    # Get a BOTO_PATH for the current environment, using one of:
+    boto_path_env = (
+        # 1. BOTO_CONFIG, which would otherwise override BOTO_PATH.
+        os.environ.pop('BOTO_CONFIG', None) or
+        # 2. BOTO_PATH itself.
+        os.environ.get('BOTO_PATH') or
+        # 3. A default value.
+        '/etc/boto.cfg:~/.boto')
+
+    # Append the new boto config file to BOTO_PATH.
     os.environ['BOTO_PATH'] = '%s:%s' % (boto_path_env, boto_cfg_path)
 
   except Exception, e:

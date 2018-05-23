@@ -29,8 +29,15 @@ class FixBotoCertsTest(cros_test_lib.TestCase):
       config.read(fixcfg)
       cafile = config.get('Boto', 'ca_certificates_file')
       self.assertExists(cafile)
-
     self.assertNotExists(fixcfg)
+
+  def testBotoConfigOverride(self):
+    os.environ['BOTO_CONFIG'] = '/some/boto.cfg'
+    with boto_compat.FixBotoCerts(strict=True):
+      boto_paths = os.environ['BOTO_PATH'].split(':')
+      self.assertIn('/some/boto.cfg', boto_paths)
+      self.assertNotIn('BOTO_CONFIG', os.environ)
+    self.assertEqual(os.environ['BOTO_CONFIG'], '/some/boto.cfg')
 
   def testActivateFalse(self):
     os.environ.pop('BOTO_PATH', None)
