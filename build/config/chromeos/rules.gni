@@ -5,8 +5,8 @@
 assert(is_chromeos)
 
 declare_args() {
-  cros_board = getenv("SDK_BOARD")
-  cros_sdk_version = getenv("SDK_VERSION")
+  cros_board = ""
+  cros_sdk_version = ""
 }
 
 template("generate_vm_runner_script") {
