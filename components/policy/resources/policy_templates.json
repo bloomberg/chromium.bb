@@ -12023,7 +12023,7 @@
               'action_specific_data': {
                 'type': 'object',
                 'properties': {
-                  'duration_millis': { 'type': 'integer' }
+                  'duration_mins': { 'type': 'integer' }
                 }
               }
             }
