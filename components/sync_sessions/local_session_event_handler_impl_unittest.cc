@@ -375,9 +375,10 @@ TEST_F(LocalSessionEventHandlerImplTest, AssociateCustomTab) {
   EXPECT_CALL(mock_batch,
               Put(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1,
                                      kRegularTabNodeId, /*urls=*/{}))));
+  // Overriden by the Put() below, so we don't care about the args.
   EXPECT_CALL(mock_batch,
-              Put(Pointee(MatchesTab(kSessionTag, kWindowId2, kTabId2,
-                                     kCustomTabNodeId, /*urls=*/{}))));
+              Put(Pointee(MatchesTab(kSessionTag, _, _, kCustomTabNodeId,
+                                     /*urls=*/_))));
   EXPECT_CALL(mock_batch, Put(Pointee(MatchesTab(kSessionTag, kWindowId3,
                                                  kTabId3, kCustomTabNodeId,
                                                  /*urls=*/{kFoo1}))));
@@ -391,6 +392,27 @@ TEST_F(LocalSessionEventHandlerImplTest, AssociateCustomTab) {
                                    {{kWindowId1, std::vector<int>{kTabId1}},
                                     {kWindowId2, std::vector<int>()},
                                     {kWindowId3, std::vector<int>{kTabId3}}}));
+}
+
+// Tests that calling initial association during construction handles the case
+// where only a subset of tabs (and not the first) have a sync ID.
+TEST_F(LocalSessionEventHandlerImplTest, AssociateTabsWhenOnlySomeHaveNodeIds) {
+  const int kTabNodeId = 0;
+
+  AddWindow(kWindowId1);
+  AddTab(kWindowId1, kFoo1, kTabId1);
+  AddTab(kWindowId1, kBar1, kTabId2)->SetSyncId(kTabNodeId);
+
+  StrictMock<MockWriteBatch> mock_batch;
+  EXPECT_CALL(mock_batch, Put(Pointee(MatchesHeader(_, _, _))));
+  EXPECT_CALL(mock_batch,
+              Put(Pointee(MatchesTab(_, _, kTabId1, /*tab_node_id=*/1,
+                                     /*urls=*/_))));
+  EXPECT_CALL(mock_batch,
+              Put(Pointee(MatchesTab(_, _, kTabId2,
+                                     /*tab_node_id=*/kTabNodeId, /*urls=*/_))));
+
+  InitHandler(&mock_batch);
 }
 
 TEST_F(LocalSessionEventHandlerImplTest, PropagateNewNavigation) {

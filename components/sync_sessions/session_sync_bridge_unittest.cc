@@ -770,6 +770,39 @@ TEST_F(SessionSyncBridgeTest, ShouldIgnoreIfCustomTabOnlyOnStartup) {
                                                kLocalSessionTag, _, _)))));
 }
 
+// Ensure that newly assigned tab node IDs do not conflict with IDs provided
+// by the delegate, for IDs the tracker might not know about. This is possible
+// for example if an Android client gets killed after Android's tab restore
+// has flushed the sync ID to disk, but before the sync database has been
+// written.
+TEST_F(SessionSyncBridgeTest, ShouldHonorUnknownSyncIdsFromDelegate) {
+  const int kWindowId = 1000001;
+  const int kTabNodeId = 0;
+
+  // In a previous run of a browser, we associated sync ID 0 to the second tab
+  // below, which the Android tab restore database succeeded to flush to disk.
+  // The sync_sessions counterpart (SessionStore) however didn't, because writes
+  // are not atomic.
+  AddWindow(kWindowId);
+  AddTab(kWindowId, "http://foo.com/");
+  AddTab(kWindowId, "http://bar.com/")->SetSyncId(kTabNodeId);
+
+  InitializeBridge();
+  StartSyncing();
+
+  EXPECT_THAT(
+      GetAllData(),
+      UnorderedElementsAre(
+          Pair(_,
+               EntityDataHasSpecifics(MatchesHeader(kLocalSessionTag, _, _))),
+          Pair(_,
+               EntityDataHasSpecifics(MatchesTab(
+                   kLocalSessionTag, _, _, kTabNodeId, {"http://bar.com/"}))),
+          Pair(_, EntityDataHasSpecifics(MatchesTab(kLocalSessionTag, _, _,
+                                                    /*tab_node_id=*/1,
+                                                    {"http://foo.com/"})))));
+}
+
 TEST_F(SessionSyncBridgeTest, ShouldDisableSyncAndReenable) {
   const int kWindowId = 1000001;
   const int kTabId = 1000002;

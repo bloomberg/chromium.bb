@@ -194,10 +194,6 @@ class SyncedSessionTracker {
   // created.
   bool GetTabNodeFromLocalTabId(SessionID tab_id, int* tab_node_id);
 
-  // Returns whether |tab_node_id| refers to a valid tab node that is associated
-  // with a tab.
-  bool IsLocalTabNodeAssociated(int tab_node_id) const;
-
   // Reassociates the tab denoted by |tab_node_id| with a new tab id, preserving
   // any previous SessionTab object the node was associated with. This is useful
   // on restart when sync needs to reassociate tabs from a previous session with
