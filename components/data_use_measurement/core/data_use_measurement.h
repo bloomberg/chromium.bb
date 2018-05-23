@@ -193,10 +193,6 @@ class DataUseMeasurement {
   bool no_reads_since_background_;
 #endif
 
-  // User traffic data use by content type is logged in 1KB increments. The
-  // remaining bytes are saved in this array until logged next time.
-  int16_t user_traffic_content_type_bytes_[DataUseUserData::TYPE_MAX];
-
   DISALLOW_COPY_AND_ASSIGN(DataUseMeasurement);
 };
 

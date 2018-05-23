@@ -454,9 +454,9 @@ TEST_F(DataUseMeasurementTest, ContentType) {
     std::unique_ptr<net::URLRequest> request =
         CreateTestRequest(kServiceRequest);
     data_use_measurement_.OnBeforeURLRequest(request.get());
-    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
-    histogram_tester.ExpectUniqueSample("DataUse.ContentType.Services",
-                                        DataUseUserData::OTHER, 1000);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 1024);
+    histogram_tester.ExpectUniqueSample("DataUse.ContentType.ServicesKB",
+                                        DataUseUserData::OTHER, 1);
   }
 
   // Video request in foreground.
@@ -516,16 +516,16 @@ TEST_F(DataUseMeasurementTest, ContentTypeInKB) {
   ascriber_.SetTabVisibility(false);
   data_use_measurement_.OnBeforeURLRequest(request.get());
   data_use_measurement_.OnHeadersReceived(request.get(), nullptr);
-  data_use_measurement_.OnNetworkBytesReceived(*request, 600);
+  data_use_measurement_.OnNetworkBytesReceived(*request, 1024);
 
-  // UserTrafficKB metric is not recorded for the first 600 bytes of data use.
-  histogram_tester.ExpectTotalCount("DataUse.ContentType.UserTrafficKB", 0);
+  // UserTrafficKB metric is recorded for the first 1KB of data use.
+  histogram_tester.ExpectTotalCount("DataUse.ContentType.UserTrafficKB", 1);
 
-  data_use_measurement_.OnNetworkBytesReceived(*request, 600);
+  data_use_measurement_.OnNetworkBytesReceived(*request, 3 * 1024);
 
-  // UserTrafficKB recorded for 1KB.
+  // UserTrafficKB recorded for the total 4KB.
   histogram_tester.ExpectUniqueSample("DataUse.ContentType.UserTrafficKB",
-                                      DataUseUserData::VIDEO_APPBACKGROUND, 1);
+                                      DataUseUserData::VIDEO_APPBACKGROUND, 4);
 }
 
 #endif

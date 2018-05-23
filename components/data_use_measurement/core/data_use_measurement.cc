@@ -101,8 +101,6 @@ DataUseMeasurement::DataUseMeasurement(
 {
   DCHECK(ascriber_);
   DCHECK(url_request_classifier_);
-  memset(user_traffic_content_type_bytes_, 0,
-         sizeof(user_traffic_content_type_bytes_));
 
 #if defined(OS_ANDROID)
   int64_t bytes = 0;
@@ -444,24 +442,19 @@ void DataUseMeasurement::RecordContentTypeHistogram(
                                           : DataUseUserData::VIDEO);
   }
   // Use the more primitive STATIC_HISTOGRAM_POINTER_BLOCK macro because the
-  // simple UMA_HISTOGRAM_ENUMERATION macros don't expose 'AddCount'.
+  // simple UMA_HISTOGRAM_ENUMERATION macros don't expose 'AddKiB'.
   if (is_user_traffic) {
-    bytes += user_traffic_content_type_bytes_[content_type];
-    if (bytes >= 1024) {
-      STATIC_HISTOGRAM_POINTER_BLOCK(
-          "DataUse.ContentType.UserTrafficKB",
-          AddCount(content_type, bytes / 1024),
-          base::LinearHistogram::FactoryGet(
-              "DataUse.ContentType.UserTrafficKB", 1, DataUseUserData::TYPE_MAX,
-              DataUseUserData::TYPE_MAX + 1,
-              base::HistogramBase::kUmaTargetedHistogramFlag));
-    }
-    user_traffic_content_type_bytes_[content_type] = bytes % 1024;
+    STATIC_HISTOGRAM_POINTER_BLOCK(
+        "DataUse.ContentType.UserTrafficKB", AddKiB(content_type, bytes),
+        base::LinearHistogram::FactoryGet(
+            "DataUse.ContentType.UserTrafficKB", 1, DataUseUserData::TYPE_MAX,
+            DataUseUserData::TYPE_MAX + 1,
+            base::HistogramBase::kUmaTargetedHistogramFlag));
   } else {
     STATIC_HISTOGRAM_POINTER_BLOCK(
-        "DataUse.ContentType.Services", AddCount(content_type, bytes),
+        "DataUse.ContentType.ServicesKB", AddKiB(content_type, bytes),
         base::LinearHistogram::FactoryGet(
-            "DataUse.ContentType.Services", 1, DataUseUserData::TYPE_MAX,
+            "DataUse.ContentType.ServicesKB", 1, DataUseUserData::TYPE_MAX,
             DataUseUserData::TYPE_MAX + 1,
             base::HistogramBase::kUmaTargetedHistogramFlag));
   }
