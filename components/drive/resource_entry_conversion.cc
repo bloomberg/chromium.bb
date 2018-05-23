@@ -104,6 +104,8 @@ bool ConvertFileResourceToResourceEntry(
       capabilities.can_rename());
   converted.mutable_capabilities_info()->set_can_add_children(
       capabilities.can_add_children());
+  converted.mutable_capabilities_info()->set_can_share(
+      capabilities.can_share());
 
   if (input.IsDirectory()) {
     file_info->set_is_directory(true);
@@ -170,6 +172,8 @@ void ConvertTeamDriveResourceToResourceEntry(
       capabilities.can_rename_team_drive());
   out_entry->mutable_capabilities_info()->set_can_add_children(
       capabilities.can_add_children());
+  out_entry->mutable_capabilities_info()->set_can_share(
+      capabilities.can_share());
 }
 
 void ConvertResourceEntryToFileInfo(const ResourceEntry& entry,
