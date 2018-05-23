@@ -694,6 +694,7 @@ test("browser_tests") {
       "../browser/renderer_context_menu/spelling_menu_observer_browsertest.cc",
       "../browser/renderer_host/render_process_host_chrome_browsertest.cc",
       "../browser/repost_form_warning_browsertest.cc",
+      "../browser/resource_coordinator/local_site_characteristics_data_store_factory_browsertest.cc",
       "../browser/resource_coordinator/resource_coordinator_render_process_probe_browsertest.cc",
       "../browser/resource_coordinator/tab_activity_watcher_browsertest.cc",
       "../browser/resource_coordinator/tab_manager_browsertest.cc",
