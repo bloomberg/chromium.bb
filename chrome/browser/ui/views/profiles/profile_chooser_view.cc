@@ -669,10 +669,12 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     if (dice_enabled_ &&
         SigninManagerFactory::GetForProfile(browser_->profile())
             ->IsAuthenticated()) {
-      if (HasAuthError(browser_->profile()))
+      if (!browser_->profile()->IsSyncAllowed() ||
+          HasAuthError(browser_->profile())) {
         chrome::ShowSettings(browser_);
-      else
+      } else {
         chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
+      }
     } else {
       // Open settings to edit profile name and image. The profile doesn't need
       // to be authenticated to open this.
@@ -923,45 +925,56 @@ views::View* ProfileChooserView::CreateDiceSyncErrorView(
     sync_ui_util::AvatarSyncErrorType error,
     int button_string_id) {
   // Creates a view containing an error hover button displaying the current
-  // profile (only selectable when sync is paused) and a blue button to resolve
-  // the error.
+  // profile (only selectable when sync is paused or disabled) and when sync is
+  // not disabled there is a blue button to resolve the error.
   views::View* view = new views::View();
   const int current_profile_vertical_margin =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_CONTROL_VERTICAL_TEXT_PADDING);
   view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
-      gfx::Insets(current_profile_vertical_margin, 0, kMenuEdgeMargin, 0),
+      gfx::Insets(current_profile_vertical_margin, 0),
       current_profile_vertical_margin));
 
   const bool show_sync_paused_ui = error == sync_ui_util::AUTH_ERROR;
+  const bool sync_disabled = !browser_->profile()->IsSyncAllowed();
   // Add profile hover button.
   auto current_profile_photo = std::make_unique<BadgedProfilePhoto>(
-      show_sync_paused_ui ? BadgedProfilePhoto::BADGE_TYPE_SYNC_PAUSED
+      show_sync_paused_ui
+          ? BadgedProfilePhoto::BADGE_TYPE_SYNC_PAUSED
+          : sync_disabled ? BadgedProfilePhoto::BADGE_TYPE_SYNC_DISABLED
                           : BadgedProfilePhoto::BADGE_TYPE_SYNC_ERROR,
       avatar_item.icon);
   HoverButton* current_profile = new HoverButton(
       this, std::move(current_profile_photo),
-      l10n_util::GetStringUTF16(show_sync_paused_ui
-                                    ? IDS_PROFILES_DICE_SYNC_PAUSED_TITLE
-                                    : IDS_SYNC_ERROR_USER_MENU_TITLE),
+      l10n_util::GetStringUTF16(
+          show_sync_paused_ui
+              ? IDS_PROFILES_DICE_SYNC_PAUSED_TITLE
+              : sync_disabled ? IDS_PROFILES_DICE_SYNC_DISABLED_TITLE
+                              : IDS_SYNC_ERROR_USER_MENU_TITLE),
       avatar_item.username);
 
-  if (!show_sync_paused_ui) {
+  if (!show_sync_paused_ui && !sync_disabled) {
     current_profile->SetStyle(HoverButton::STYLE_ERROR);
     current_profile->SetEnabled(false);
   }
+
   view->AddChildView(current_profile);
   current_profile_card_ = current_profile;
+
+  if (sync_disabled)
+    return view;
+
   // Add blue button.
   sync_error_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
       this, l10n_util::GetStringUTF16(button_string_id));
   sync_error_button_->set_id(error);
-  // Add horizontal margin to blue button.
+  // Add horizontal and bottom margin to blue button.
   views::View* padded_view = new views::View();
   padded_view->SetLayoutManager(std::make_unique<views::FillLayout>());
-  padded_view->SetBorder(
-      views::CreateEmptyBorder(0, kMenuEdgeMargin, 0, kMenuEdgeMargin));
+  padded_view->SetBorder(views::CreateEmptyBorder(
+      0, kMenuEdgeMargin, kMenuEdgeMargin - current_profile_vertical_margin,
+      kMenuEdgeMargin));
   padded_view->AddChildView(sync_error_button_);
   view->AddChildView(padded_view);
   return view;
@@ -970,6 +983,10 @@ views::View* ProfileChooserView::CreateDiceSyncErrorView(
 views::View* ProfileChooserView::CreateCurrentProfileView(
     const AvatarMenu::Item& avatar_item,
     bool is_guest) {
+  const bool sync_disabled = !browser_->profile()->IsSyncAllowed();
+  if (!is_guest && sync_disabled)
+    return CreateDiceSyncErrorView(avatar_item, sync_ui_util::NO_SYNC_ERROR, 0);
+
   if (!avatar_item.signed_in && dice_enabled_ &&
       SyncPromoUI::ShouldShowSyncPromo(browser_->profile())) {
     return CreateDiceSigninView();

@@ -503,7 +503,7 @@ void AvatarButton::Update() {
 
   if (use_generic_button) {
     SetImage(views::Button::STATE_NORMAL, generic_avatar_);
-  } else if (error_controller_.HasAvatarError()) {
+  } else if (profile_->IsSyncAllowed() && error_controller_.HasAvatarError()) {
     // When DICE is enabled and the error is an auth error, the sync-paused icon
     // is shown.
     int dummy;
