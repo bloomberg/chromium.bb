@@ -65,11 +65,11 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
 
     DCHECK(config);
     content::BackgroundTracingManager::ReceiveCallback receive_callback =
-        base::Bind(&ChromeTracingDelegateBrowserTest::OnUpload,
-                   base::Unretained(this));
+        base::BindOnce(&ChromeTracingDelegateBrowserTest::OnUpload,
+                       base::Unretained(this));
 
     return content::BackgroundTracingManager::GetInstance()->SetActiveScenario(
-        std::move(config), receive_callback, data_filtering);
+        std::move(config), std::move(receive_callback), data_filtering);
   }
 
   void TriggerPreemptiveScenario(
@@ -98,11 +98,13 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
  private:
   void OnUpload(const scoped_refptr<base::RefCountedString>& file_contents,
                 std::unique_ptr<const base::DictionaryValue> metadata,
-                base::Callback<void()> done_callback) {
+                content::BackgroundTracingManager::FinishedProcessingCallback
+                    done_callback) {
     receive_count_ += 1;
 
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     done_callback);
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(std::move(done_callback), true));
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      on_upload_callback_);
   }

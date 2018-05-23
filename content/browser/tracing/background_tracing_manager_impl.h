@@ -58,7 +58,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   CONTENT_EXPORT static BackgroundTracingManagerImpl* GetInstance();
 
   bool SetActiveScenario(std::unique_ptr<BackgroundTracingConfig>,
-                         const ReceiveCallback&,
+                         ReceiveCallback,
                          DataFiltering data_filtering) override;
   void WhenIdle(IdleCallback idle_callback) override;
 
@@ -104,7 +104,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   void OnFinalizeStarted(base::Closure started_finalizing_closure,
                          std::unique_ptr<const base::DictionaryValue> metadata,
                          base::RefCountedString*);
-  void OnFinalizeComplete();
+  void OnFinalizeComplete(bool success);
   void BeginFinalizing(StartedFinalizingCallback);
   void ValidateStartupScenario();
 

@@ -107,16 +107,13 @@ class BackgroundTracingManagerBrowserTest : public ContentBrowserTest {
 
 class BackgroundTracingManagerUploadConfigWrapper {
  public:
-  BackgroundTracingManagerUploadConfigWrapper(const base::Closure& callback)
-      : callback_(callback), receive_count_(0) {
-    receive_callback_ =
-        base::Bind(&BackgroundTracingManagerUploadConfigWrapper::Upload,
-                   base::Unretained(this));
-  }
+  BackgroundTracingManagerUploadConfigWrapper(base::OnceClosure callback)
+      : callback_(std::move(callback)), receive_count_(0) {}
 
-  void Upload(const scoped_refptr<base::RefCountedString>& file_contents,
-              std::unique_ptr<const base::DictionaryValue> metadata,
-              base::Callback<void()> done_callback) {
+  void Upload(
+      const scoped_refptr<base::RefCountedString>& file_contents,
+      std::unique_ptr<const base::DictionaryValue> metadata,
+      BackgroundTracingManager::FinishedProcessingCallback done_callback) {
     receive_count_ += 1;
     EXPECT_TRUE(file_contents);
 
@@ -142,8 +139,9 @@ class BackgroundTracingManagerUploadConfigWrapper {
 
     last_file_contents_.assign(output_str.data(), bytes_written);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            std::move(done_callback));
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_);
+                            base::BindOnce(std::move(done_callback), true));
+    CHECK(callback_);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(callback_));
   }
 
   bool TraceHasMatchingString(const char* str) {
@@ -152,14 +150,13 @@ class BackgroundTracingManagerUploadConfigWrapper {
 
   int get_receive_count() const { return receive_count_; }
 
-  const BackgroundTracingManager::ReceiveCallback& get_receive_callback()
-      const {
-    return receive_callback_;
+  BackgroundTracingManager::ReceiveCallback get_receive_callback() {
+    return base::BindOnce(&BackgroundTracingManagerUploadConfigWrapper::Upload,
+                          base::Unretained(this));
   }
 
  private:
-  BackgroundTracingManager::ReceiveCallback receive_callback_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
   int receive_count_;
   std::string last_file_contents_;
 };
