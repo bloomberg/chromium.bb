@@ -16,10 +16,12 @@
 #include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/pref_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/prefs/pref_service.h"
 #include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
 
@@ -108,7 +110,7 @@ void AppendAdditionalBrowserInformation(em::ChromeDesktopReportRequest* request,
   // Set the profile name
   request->mutable_browser_report()
       ->mutable_chrome_user_profile_reports(0)
-      ->set_name(profile->GetProfileUserName());
+      ->set_name(profile->GetPrefs()->GetString(prefs::kProfileName));
 }
 
 bool UpdateJSONEncodedStringEntry(const base::Value& dict_value,
