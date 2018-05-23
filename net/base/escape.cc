@@ -83,8 +83,9 @@ std::string Escape(base::StringPiece text,
 // allowed in query strings according to http://www.ietf.org/rfc/rfc3261.txt are
 // not unescaped, to avoid turning a valid url according to spec into an
 // invalid one.
+// clang-format off
 const char kUrlUnescape[128] = {
-//   NULL, control chars...
+//   Null, control chars...
      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 //  ' ' !  "  #  $  %  &  '  (  )  *  +  ,  -  .  /
@@ -98,8 +99,9 @@ const char kUrlUnescape[128] = {
 //   `  a  b  c  d  e  f  g  h  i  j  k  l  m  n  o
      0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 //   p  q  r  s  t  u  v  w  x  y  z  {  |  }  ~  <NBSP>
-     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0
+     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0,
 };
+// clang-format on
 
 // Attempts to unescape the sequence at |index| within |escaped_text|.  If
 // successful, sets |value| to the unescaped value.  Returns whether
@@ -183,16 +185,16 @@ bool ShouldUnescapeCodePoint(UnescapeRule::Type rules, uint32_t code_point) {
             (rules & UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
   }
 
-  // Compare the codepoint against a list of characters that can be used
+  // Compare the code point against a list of characters that can be used
   // to spoof other URLs.
   //
   // Can't use icu to make this cleaner, because Cronet cannot depend on
   // icu, and currently uses this file.
   // TODO(https://crbug.com/829873): Try to make this use icu, both to
-  // protect against regressions as the Unicode stndard is updated and to
+  // protect against regressions as the Unicode standard is updated and to
   // reduce the number of long lists of characters.
-  // TODO(https://crbug.com/824715): Add default ignoreable and formatting
-  // codepoints.
+  // TODO(https://crbug.com/824715): Add default ignorable and formatting
+  // code points.
   return !(
       // Per http://tools.ietf.org/html/rfc3987#section-4.1, certain BiDi
       // control characters are not allowed to appear unescaped in URLs.
@@ -243,7 +245,7 @@ bool ShouldUnescapeCodePoint(UnescapeRule::Type rules, uint32_t code_point) {
 }
 
 // Unescapes |escaped_text| according to |rules|, returning the resulting
-// string.  Fills in an |adjustments| parameter, if non-NULL, so it reflects
+// string.  Fills in an |adjustments| parameter, if non-nullptr, so it reflects
 // the alterations done to the string that are not one-character-to-one-
 // character.  The resulting |adjustments| will always be sorted by increasing
 // offset.
@@ -322,17 +324,25 @@ std::string UnescapeURLWithAdjustmentsImpl(
   return result;
 }
 
+// Convert a character |c| to a form that will not be mistaken as HTML or
+// evaluated as script within HTML (i.e. Polymer bindings).
 template <class str>
 void AppendEscapedCharForHTMLImpl(typename str::value_type c, str* output) {
   static constexpr struct {
     char key;
     base::StringPiece replacement;
   } kCharsToEscape[] = {
-    { '<', "&lt;" },
-    { '>', "&gt;" },
-    { '&', "&amp;" },
-    { '"', "&quot;" },
-    { '\'', "&#39;" },
+      {'<', "&lt;"},
+      {'>', "&gt;"},
+      {'&', "&amp;"},
+      {'"', "&quot;"},
+      {'\'', "&#39;"},
+      // The Polymer HTML library (used in WebUI) may run for JavaScript
+      // starting with [[ and {{.
+      {'[', "&#91;"},
+      {']', "&#93;"},
+      {'{', "&#123;"},
+      {'}', "&#125;"},
   };
   for (const auto& char_to_escape : kCharsToEscape) {
     if (c == char_to_escape.key) {
@@ -344,6 +354,8 @@ void AppendEscapedCharForHTMLImpl(typename str::value_type c, str* output) {
   output->push_back(c);
 }
 
+// Convert |input| string to a form that will not be interpreted as HTML or
+// evaluated as script (within HTML).
 template <class str>
 str EscapeForHTMLImpl(base::BasicStringPiece<str> input) {
   str result;
@@ -438,12 +450,12 @@ base::string16 EscapeForHTML(base::StringPiece16 input) {
 
 std::string UnescapeURLComponent(base::StringPiece escaped_text,
                                  UnescapeRule::Type rules) {
-  return UnescapeURLWithAdjustmentsImpl(escaped_text, rules, NULL);
+  return UnescapeURLWithAdjustmentsImpl(escaped_text, rules, nullptr);
 }
 
 base::string16 UnescapeAndDecodeUTF8URLComponent(base::StringPiece text,
                                                  UnescapeRule::Type rules) {
-  return UnescapeAndDecodeUTF8URLComponentWithAdjustments(text, rules, NULL);
+  return UnescapeAndDecodeUTF8URLComponentWithAdjustments(text, rules, nullptr);
 }
 
 base::string16 UnescapeAndDecodeUTF8URLComponentWithAdjustments(
@@ -510,17 +522,23 @@ base::string16 UnescapeForHTML(base::StringPiece16 input) {
     const char* ampersand_code;
     const char replacement;
   } kEscapeToChars[] = {
-    { "&lt;", '<' },
-    { "&gt;", '>' },
-    { "&amp;", '&' },
-    { "&quot;", '"' },
-    { "&#39;", '\''},
+      {"&lt;", '<'},
+      {"&gt;", '>'},
+      {"&amp;", '&'},
+      {"&quot;", '"'},
+      {"&#39;", '\''},
+      // Polymer HTML specific.
+      {"&#91;", '['},
+      {"&#93;", ']'},
+      {"&#123;", '{'},
+      {"&#125;", '}'},
   };
+  constexpr size_t kEscapeToCharsCount = base::size(kEscapeToChars);
 
   if (input.find(base::ASCIIToUTF16("&")) == std::string::npos)
     return input.as_string();
 
-  base::string16 ampersand_chars[base::size(kEscapeToChars)];
+  base::string16 ampersand_chars[kEscapeToCharsCount];
   base::string16 text = input.as_string();
   for (base::string16::iterator iter = text.begin();
        iter != text.end(); ++iter) {
