@@ -1369,6 +1369,31 @@ This file contains the strings for ash.
       <message name="IDS_ASH_DETACHABLE_BASE_NOTIFICATION_CRITICAL_UPDATE_NEEDED_MESSAGE" desc="Body for the notification shown to the user when the detachable base (keyboard) connected to the device has to be updated. This notification is shown if the keyboard is not usable without the update.">
         To get the update, use the touchscreen to restart your Chromebook with the keyboard attached.
       </message>
+
+      <!-- Mojo service names (displayed in task manager) -->
+      <message name="IDS_ASH_ASH_SERVICE_NAME" desc="Name of the internal software service that manages windows. Appears in the task manager.">
+        Window manager
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_APP_NAME" desc="Name of the accessibility app that automatically clicks the mouse when it stops moving. Appears in the task manager.">
+        Autoclick
+      </message>
+      <!-- TODO(jamescook): Move next to font service code. -->
+      <message name="IDS_ASH_FONT_SERVICE_NAME" desc="Name of the internal software service that provides fonts. Appears in the task manager.">
+        Font service
+      </message>
+      <message name="IDS_ASH_QUICK_LAUNCH_APP_NAME" desc="Name of the app used to launch other apps by typing an app name. Appears in the task manager.">
+        Quick launch
+      </message>
+      <message name="IDS_ASH_SHORTCUT_VIEWER_APP_NAME" desc="Name of the app that shows the list of keyboard shortcuts. Appears in the task manager.">
+        Shortcut viewer
+      </message>
+      <message name="IDS_ASH_TAP_VISUALIZER_APP_NAME" desc="Name of the app that displays touch tap points on the screen. Appears in the task manager.">
+        Show taps
+      </message>
+      <!-- TODO(jamescook): Remove when mash switches to ws2. -->
+      <message name="IDS_ASH_UI_SERVICE_NAME" desc="Name of the internal software service that manages the user interface (UI). Appears in the task manager.">
+        UI service
+      </message>
     </messages>
   </release>
 </grit>

@@ -12,6 +12,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,6 +22,7 @@
 #include "components/services/font/public/interfaces/constants.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 
 using content::ContentBrowserClient;
@@ -30,25 +32,24 @@ namespace {
 
 struct Service {
   const char* name;
-  const char* display_name;
-  const char* process_group;  // If null, uses a separate process.
+  int display_name_id;                  // Resource ID for the display name.
+  const char* process_group = nullptr;  // If null, uses a separate process.
 };
 
 // Services shared between mash and non-mash configs.
 constexpr Service kCommonServices[] = {
-    {quick_launch::mojom::kServiceName, "Quick Launch", nullptr},
-    {"autoclick_app", "Accessibility Autoclick", nullptr},
-    {shortcut_viewer::mojom::kServiceName, "Keyboard Shortcut Viewer", nullptr},
-    {tap_visualizer::mojom::kServiceName, "Show Taps", nullptr},
-    {font_service::mojom::kServiceName, "Font Service", nullptr},
+    {"autoclick_app", IDS_ASH_AUTOCLICK_APP_NAME},
+    {font_service::mojom::kServiceName, IDS_ASH_FONT_SERVICE_NAME},
+    {quick_launch::mojom::kServiceName, IDS_ASH_QUICK_LAUNCH_APP_NAME},
+    {shortcut_viewer::mojom::kServiceName, IDS_ASH_SHORTCUT_VIEWER_APP_NAME},
+    {tap_visualizer::mojom::kServiceName, IDS_ASH_TAP_VISUALIZER_APP_NAME},
 };
 
 // Services unique to mash. Note that the non-mash case also has an Ash service,
 // it's just registered differently (see RegisterInProcessServices()).
 constexpr Service kMashServices[] = {
-    {ui::mojom::kServiceName, "UI Service", kAshAndUiProcessGroup},
-    {ash::mojom::kServiceName, "Ash Window Manager and Shell",
-     kAshAndUiProcessGroup},
+    {ash::mojom::kServiceName, IDS_ASH_ASH_SERVICE_NAME, kAshAndUiProcessGroup},
+    {ui::mojom::kServiceName, IDS_ASH_UI_SERVICE_NAME, kAshAndUiProcessGroup},
 };
 
 void RegisterOutOfProcessServicesImpl(
@@ -57,7 +58,8 @@ void RegisterOutOfProcessServicesImpl(
     ContentBrowserClient::OutOfProcessServiceMap* services_map) {
   for (size_t i = 0; i < num_services; ++i) {
     const Service& service = services[i];
-    base::string16 display_name = base::ASCIIToUTF16(service.display_name);
+    base::string16 display_name =
+        l10n_util::GetStringUTF16(service.display_name_id);
     if (service.process_group) {
       (*services_map)[service.name] =
           ContentBrowserClient::OutOfProcessServiceInfo(display_name,
