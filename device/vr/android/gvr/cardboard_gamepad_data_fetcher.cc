@@ -98,7 +98,7 @@ void CardboardGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     pad.hand = GamepadHand::kNone;
   }
 
-  pad.timestamp = CurrentTimeInMicroseconds();
+  pad.timestamp = provided_data.timestamp;
 
   bool pressed = provided_data.is_screen_touching;
   pad.buttons[0].touched = pressed;

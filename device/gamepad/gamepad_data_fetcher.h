@@ -40,10 +40,6 @@ class DEVICE_GAMEPAD_EXPORT GamepadDataFetcher {
     return provider_->GetPadState(source(), source_id);
   }
 
-  // Returns the current time value in microseconds. Data fetchers should use
-  // the value returned by this method to update the |timestamp| gamepad member.
-  static int64_t CurrentTimeInMicroseconds();
-
  protected:
   friend GamepadPadStateProvider;
 

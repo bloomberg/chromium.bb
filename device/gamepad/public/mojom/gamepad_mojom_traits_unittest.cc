@@ -6,7 +6,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/time/time.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 #include "device/gamepad/public/mojom/gamepad_mojom_traits_test.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -69,7 +68,7 @@ Gamepad GetWebGamepadInstance(GamepadTestDataType type) {
   for (size_t i = 0; i < Gamepad::kMappingLengthCap; i++) {
     send.id[i] = send.mapping[i] = wch[i];
   }
-  send.timestamp = base::TimeTicks::Now().since_origin().InMicroseconds();
+  send.timestamp = 1234567890123456789ULL;
   send.axes_length = 0U;
   for (size_t i = 0; i < Gamepad::kAxesLengthCap; i++) {
     send.axes_length++;

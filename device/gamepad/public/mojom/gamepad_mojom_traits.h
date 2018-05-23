@@ -115,7 +115,7 @@ struct EnumTraits<device::mojom::GamepadHand, device::GamepadHand> {
 template <>
 struct StructTraits<device::mojom::GamepadDataView, device::Gamepad> {
   static bool connected(const device::Gamepad& r) { return r.connected; }
-  static int64_t timestamp(const device::Gamepad& r) { return r.timestamp; }
+  static uint64_t timestamp(const device::Gamepad& r) { return r.timestamp; }
   static base::span<const double> axes(const device::Gamepad& r) {
     return base::make_span(r.axes, r.axes_length);
   }
