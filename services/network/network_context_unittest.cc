@@ -35,9 +35,12 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/cache_type.h"
+#include "net/base/hash_value.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/cert/cert_verify_result.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
@@ -55,7 +58,10 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/channel_id_store.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
@@ -86,6 +92,28 @@
 namespace network {
 
 namespace {
+
+// Sends an HttpResponse for requests for "/" that result in sending an HPKP
+// report.  Ignores other paths to avoid catching the subsequent favicon
+// request.
+std::unique_ptr<net::test_server::HttpResponse> SendReportHttpResponse(
+    const GURL& report_url,
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url == "/") {
+    std::unique_ptr<net::test_server::BasicHttpResponse> response(
+        new net::test_server::BasicHttpResponse());
+    std::string header_value = base::StringPrintf(
+        "max-age=50000;"
+        "pin-sha256=\"9999999999999999999999999999999999999999999=\";"
+        "pin-sha256=\"9999999999999999999999999999999999999999998=\";"
+        "report-uri=\"%s\"",
+        report_url.spec().c_str());
+    response->AddCustomHeader("Public-Key-Pins-Report-Only", header_value);
+    return std::move(response);
+  }
+
+  return nullptr;
+}
 
 mojom::NetworkContextParamsPtr CreateContextParams() {
   mojom::NetworkContextParamsPtr params = mojom::NetworkContextParams::New();
@@ -702,6 +730,91 @@ TEST_F(NetworkContextTest, TransportSecurityStatePersisted) {
     ASSERT_EQ(on_disk, state->GetDynamicSTSState(kDomain, &sts_state));
     if (on_disk)
       EXPECT_EQ(kDomain, sts_state.domain);
+  }
+}
+
+// Test that HPKP failures are reported if and only if certificate reporting is
+// enabled.
+TEST_F(NetworkContextTest, CertReporting) {
+  const char kReportPath[] = "/report";
+
+  for (bool reporting_enabled : {false, true}) {
+    // Server that HPKP reports are sent to.
+    net::test_server::EmbeddedTestServer report_test_server;
+    net::test_server::ControllableHttpResponse controllable_response(
+        &report_test_server, kReportPath);
+    ASSERT_TRUE(report_test_server.Start());
+
+    // Server that sends an HPKP report when its root document is fetched.
+    net::test_server::EmbeddedTestServer hpkp_test_server(
+        net::test_server::EmbeddedTestServer::TYPE_HTTPS);
+    hpkp_test_server.SetSSLConfig(
+        net::test_server::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+    hpkp_test_server.RegisterRequestHandler(base::BindRepeating(
+        &SendReportHttpResponse, report_test_server.GetURL(kReportPath)));
+    ASSERT_TRUE(hpkp_test_server.Start());
+
+    // Configure mock cert verifier to cause the HPKP check to fail.
+    net::CertVerifyResult result;
+    result.verified_cert = net::CreateCertificateChainFromFile(
+        net::GetTestCertsDirectory(), "ok_cert.pem",
+        net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+    ASSERT_TRUE(result.verified_cert);
+    net::SHA256HashValue hash = {{0x00, 0x01}};
+    result.public_key_hashes.push_back(net::HashValue(hash));
+    result.is_issued_by_known_root = true;
+    net::MockCertVerifier mock_verifier;
+    mock_verifier.AddResultForCert(hpkp_test_server.GetCertificate(), result,
+                                   net::OK);
+    NetworkContext::SetCertVerifierForTesting(&mock_verifier);
+
+    mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+    EXPECT_FALSE(context_params->enable_certificate_reporting);
+    context_params->enable_certificate_reporting = reporting_enabled;
+    std::unique_ptr<NetworkContext> network_context =
+        CreateContextWithParams(std::move(context_params));
+
+    ResourceRequest request;
+    request.url = hpkp_test_server.base_url();
+
+    mojom::URLLoaderFactoryPtr loader_factory;
+    network::mojom::URLLoaderFactoryParamsPtr params =
+        network::mojom::URLLoaderFactoryParams::New();
+    params->process_id = mojom::kBrowserProcessId;
+    params->is_corb_enabled = false;
+    network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                                            std::move(params));
+
+    mojom::URLLoaderPtr loader;
+    TestURLLoaderClient client;
+    loader_factory->CreateLoaderAndStart(
+        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
+        0 /* options */, request, client.CreateInterfacePtr(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    client.RunUntilComplete();
+    EXPECT_TRUE(client.has_received_completion());
+    EXPECT_EQ(net::OK, client.completion_status().error_code);
+
+    if (reporting_enabled) {
+      // If reporting is enabled, wait to see the request from the ReportSender.
+      // Don't respond to the request, effectively making it a hung request.
+      controllable_response.WaitForRequest();
+    } else {
+      // Otherwise, there should be no pending URLRequest.
+      // |controllable_response| will cause requests to hang, so if there's no
+      // URLRequest, then either a reporting request was never started. This
+      // relies on reported being sent immediately for correctness.
+      network_context->url_request_context()->AssertNoURLRequests();
+    }
+
+    // Destroy the network context. This serves to check the case that reporting
+    // requests are alive when a NetworkContext is torn down.
+    network_context.reset();
+
+    // Remove global reference to the MockCertVerifier before it falls out of
+    // scope.
+    NetworkContext::SetCertVerifierForTesting(nullptr);
   }
 }
 

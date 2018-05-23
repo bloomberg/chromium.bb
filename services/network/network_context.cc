@@ -52,6 +52,7 @@
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/report_sender.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -230,7 +231,8 @@ NetworkContext::NetworkContext(
       builder.get(), params_.get(), network_service->quic_disabled(),
       network_service->net_log(), network_service->network_quality_estimator(),
       network_service_->sth_reporter(), &ct_tree_tracker_,
-      &require_ct_delegate_, &user_agent_settings_);
+      &require_ct_delegate_, &certificate_report_sender_,
+      &user_agent_settings_);
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
   network_service_->RegisterNetworkContext(this);
@@ -266,10 +268,19 @@ NetworkContext::~NetworkContext() {
     network_service_->DeregisterNetworkContext(this);
 
   if (url_request_context_ &&
-      url_request_context_->transport_security_state() &&
-      require_ct_delegate_) {
-    url_request_context_->transport_security_state()->SetRequireCTDelegate(
-        nullptr);
+      url_request_context_->transport_security_state()) {
+    if (certificate_report_sender_) {
+      // Destroy |certificate_report_sender_| before |url_request_context_|,
+      // since the former has a reference to the latter.
+      url_request_context_->transport_security_state()->SetReportSender(
+          nullptr);
+      certificate_report_sender_.reset();
+    }
+
+    if (require_ct_delegate_) {
+      url_request_context_->transport_security_state()->SetRequireCTDelegate(
+          nullptr);
+    }
   }
 
   if (url_request_context_ &&
@@ -630,6 +641,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         out_ct_tree_tracker,
     std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>*
         out_require_ct_delegate,
+    std::unique_ptr<net::ReportSender>* out_certificate_report_sender,
     net::StaticHttpUserAgentSettings** out_http_user_agent_settings) {
   if (net_log)
     builder->set_net_log(net_log);
@@ -786,6 +798,41 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   auto result =
       URLRequestContextOwner(std::move(pref_service), builder->Build());
 
+  if (network_context_params->enable_certificate_reporting) {
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("domain_security_policy", R"(
+        semantics {
+          sender: "Domain Security Policy"
+          description:
+            "Websites can opt in to have Chrome send reports to them when "
+            "Chrome observes connections to that website that do not meet "
+            "stricter security policies, such as with HTTP Public Key Pinning. "
+            "Websites can use this feature to discover misconfigurations that "
+            "prevent them from complying with stricter security policies that "
+            "they\'ve opted in to."
+          trigger:
+            "Chrome observes that a user is loading a resource from a website "
+            "that has opted in for security policy reports, and the connection "
+            "does not meet the required security policies."
+          data:
+            "The time of the request, the hostname and port being requested, "
+            "the certificate chain, and sometimes certificate revocation "
+            "information included on the connection."
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: NO
+          setting: "This feature cannot be disabled by settings."
+          policy_exception_justification:
+            "Not implemented, this is a feature that websites can opt into and "
+            "thus there is no Chrome-wide policy to disable it."
+        })");
+    *out_certificate_report_sender = std::make_unique<net::ReportSender>(
+        result.url_request_context.get(), traffic_annotation);
+    result.url_request_context->transport_security_state()->SetReportSender(
+        (*out_certificate_report_sender).get());
+  }
+
 #if !defined(OS_IOS)
   if (base::FeatureList::IsEnabled(certificate_transparency::kCTLogAuditing) &&
       out_ct_tree_tracker && sth_reporter && !ct_logs.empty()) {
@@ -929,7 +976,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
       network_service_ ? network_service_->network_quality_estimator()
                        : nullptr,
       network_service_ ? network_service_->sth_reporter() : nullptr,
-      &ct_tree_tracker_, &require_ct_delegate_, &user_agent_settings_);
+      &ct_tree_tracker_, &require_ct_delegate_, &certificate_report_sender_,
+      &user_agent_settings_);
 
   return result;
 }

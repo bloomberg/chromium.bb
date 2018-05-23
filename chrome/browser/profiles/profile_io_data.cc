@@ -98,7 +98,6 @@
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
-#include "net/url_request/report_sender.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -712,11 +711,6 @@ ProfileIOData::~ProfileIOData() {
     domain_reliability_monitor_unowned_->Shutdown();
 
   if (main_request_context_) {
-    // Destroy certificate_report_sender_ before main_request_context_,
-    // since the former has a reference to the latter.
-    main_request_context_->transport_security_state()->SetReportSender(nullptr);
-    certificate_report_sender_.reset();
-
     main_request_context_->transport_security_state()->SetExpectCTReporter(
         nullptr);
     expect_ct_reporter_.reset();
@@ -1211,39 +1205,6 @@ void ProfileIOData::Init(
   // Attach some things to the URLRequestContextBuilder's
   // TransportSecurityState.  Since no requests have been made yet, safe to do
   // this even after the call to Build().
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("domain_security_policy", R"(
-        semantics {
-          sender: "Domain Security Policy"
-          description:
-            "Websites can opt in to have Chrome send reports to them when "
-            "Chrome observes connections to that website that do not meet "
-            "stricter security policies, such as with HTTP Public Key Pinning. "
-            "Websites can use this feature to discover misconfigurations that "
-            "prevent them from complying with stricter security policies that "
-            "they\'ve opted in to."
-          trigger:
-            "Chrome observes that a user is loading a resource from a website "
-            "that has opted in for security policy reports, and the connection "
-            "does not meet the required security policies."
-          data:
-            "The time of the request, the hostname and port being requested, "
-            "the certificate chain, and sometimes certificate revocation "
-            "information included on the connection."
-          destination: OTHER
-        }
-        policy {
-          cookies_allowed: NO
-          setting: "This feature cannot be disabled by settings."
-          policy_exception_justification:
-            "Not implemented, this is a feature that websites can opt into and "
-            "thus there is no Chrome-wide policy to disable it."
-        })");
-  certificate_report_sender_.reset(
-      new net::ReportSender(main_request_context_, traffic_annotation));
-  main_request_context_->transport_security_state()->SetReportSender(
-      certificate_report_sender_.get());
 
   expect_ct_reporter_.reset(new ChromeExpectCTReporter(
       main_request_context_, base::Closure(), base::Closure()));

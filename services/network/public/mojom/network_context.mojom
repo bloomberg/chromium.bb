@@ -150,6 +150,10 @@ struct NetworkContextParams {
   // Only used on (OS_POSIX && !OS_ANDROID) platform.
   string gssapi_library_name;
 
+  // Enables reporting certain SSL errors, such as HTTP Public Key Pinning, to
+  // servers, so they can discover misconfigurations.
+  bool enable_certificate_reporting = false;
+
   // The Certificate Transparency logs that are known to the client. SCTs from
   // these logs will be extracted and verified; other SCTs will be treated as
   // unrecognized.

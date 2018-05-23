@@ -35,6 +35,7 @@ namespace net {
 class CertVerifier;
 class HttpAuthPreferences;
 class NetworkQualityEstimator;
+class ReportSender;
 class StaticHttpUserAgentSettings;
 class URLRequestContext;
 }  // namespace net
@@ -206,6 +207,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
           out_tree_state_tracker,
       std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>*
           out_require_ct_delegate,
+      std::unique_ptr<net::ReportSender>* out_certificate_report_sender,
       net::StaticHttpUserAgentSettings** out_http_user_agent_settings);
 
   // Invoked when the HTTP cache was cleared. Invokes |callback|.
@@ -261,6 +263,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   constexpr static bool enable_resource_scheduler_ = true;
 
   bool block_third_party_cookies_ = false;
+
+  // Pointed to by the TransportSecurityState (owned by the
+  // URLRequestContext), and must be disconnected from it before it's destroyed.
+  std::unique_ptr<net::ReportSender> certificate_report_sender_;
 
   std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>
       require_ct_delegate_;
