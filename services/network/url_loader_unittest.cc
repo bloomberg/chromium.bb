@@ -353,7 +353,7 @@ class URLLoaderTest : public testing::Test {
 
     if (expect_redirect_) {
       client_.RunUntilRedirectReceived();
-      loader->FollowRedirect();
+      loader->FollowRedirect(base::nullopt);
     }
 
     if (body) {

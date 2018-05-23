@@ -92,7 +92,8 @@ void BlobURLLoader::Start(const network::ResourceRequest& request) {
                          base::WrapUnique(this));
 }
 
-void BlobURLLoader::FollowRedirect() {
+void BlobURLLoader::FollowRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   NOTREACHED();
 }
 void BlobURLLoader::ProceedWithResponse() {

@@ -219,7 +219,7 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersAbsent) {
   client()->RunUntilRedirectReceived();
   EXPECT_TRUE(client()->has_received_redirect());
   EXPECT_TRUE(!client()->response_head().raw_request_response_info);
-  loader()->FollowRedirect();
+  loader()->FollowRedirect(base::nullopt);
   client()->RunUntilComplete();
   EXPECT_TRUE(!client()->response_head().raw_request_response_info);
 }
@@ -248,7 +248,7 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
                                  "HTTP/1.1 301 Moved Permanently\r",
                                  base::CompareCase::SENSITIVE));
   }
-  loader()->FollowRedirect();
+  loader()->FollowRedirect(base::nullopt);
   client()->RunUntilComplete();
   {
     scoped_refptr<HttpRawRequestResponseInfo> request_response_info =

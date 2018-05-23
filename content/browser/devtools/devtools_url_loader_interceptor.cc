@@ -229,7 +229,8 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   }
 
   // network::mojom::URLLoader methods
-  void FollowRedirect() override;
+  void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&
+                          modified_request_headers) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
@@ -1084,7 +1085,11 @@ void InterceptionJob::Shutdown() {
 }
 
 // URLLoader methods
-void InterceptionJob::FollowRedirect() {
+void InterceptionJob::FollowRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
+                                                   "headers was not supported "
+                                                   "yet. crbug.com/845683";
   DCHECK(!waiting_for_resolution_);
 
   network::ResourceRequest* request = &create_loader_params_->request;
@@ -1101,7 +1106,7 @@ void InterceptionJob::FollowRedirect() {
   }
   if (state_ == State::kRedirectReceived) {
     state_ = State::kRequestSent;
-    loader_->FollowRedirect();
+    loader_->FollowRedirect(base::nullopt);
     return;
   }
 

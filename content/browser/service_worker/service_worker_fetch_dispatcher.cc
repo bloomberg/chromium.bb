@@ -53,7 +53,13 @@ class DelegatingURLLoader final : public network::mojom::URLLoader {
       : binding_(this), loader_(std::move(loader)) {}
   ~DelegatingURLLoader() override {}
 
-  void FollowRedirect() override { loader_->FollowRedirect(); }
+  void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&
+                          modified_request_headers) override {
+    DCHECK(!modified_request_headers.has_value())
+        << "Redirect with modified headers was not supported yet. "
+           "crbug.com/845683";
+    loader_->FollowRedirect(base::nullopt);
+  }
   void ProceedWithResponse() override { NOTREACHED(); }
 
   void SetPriority(net::RequestPriority priority,

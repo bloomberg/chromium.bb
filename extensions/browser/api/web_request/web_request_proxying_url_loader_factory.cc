@@ -83,14 +83,18 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
   ContinueToBeforeSendHeaders(net::OK);
 }
 
-void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect() {
+void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
+                                                   "headers was not supported "
+                                                   "yet. crbug.com/845683";
   if (ignore_next_follow_redirect_) {
     ignore_next_follow_redirect_ = false;
     return;
   }
 
   if (target_loader_.is_bound())
-    target_loader_->FollowRedirect();
+    target_loader_->FollowRedirect(base::nullopt);
   Restart();
 }
 

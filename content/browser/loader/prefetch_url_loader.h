@@ -60,7 +60,8 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
 
  private:
   // network::mojom::URLLoader overrides:
-  void FollowRedirect() override;
+  void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&
+                          modified_request_headers) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
