@@ -218,7 +218,7 @@ public class SafeBrowsingTest {
         }
     }
 
-    private static class MockAwContents extends AwContents {
+    private static class MockAwContents extends TestAwContents {
         private boolean mCanShowInterstitial;
         private boolean mCanShowBigInterstitial;
 
@@ -1121,5 +1121,34 @@ public class SafeBrowsingTest {
                 () -> { mPrivacyPolicyUrl = AwContentsStatics.getSafeBrowsingPrivacyPolicyUrl(); });
         Assert.assertEquals(privacyPolicyUrl, this.mPrivacyPolicyUrl);
         Assert.assertNotNull(this.mPrivacyPolicyUrl);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testDestroyWebViewWithInterstitialShowing() throws Throwable {
+        loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
+        destroyOnMainSync();
+        // As long as we've reached this line without crashing, there should be no bug.
+    }
+
+    private void destroyOnMainSync() throws Exception {
+        // The AwActivityTestRule method invokes AwContents#destroy() on the main thread, but
+        // Awcontents#destroy() posts an asynchronous task itself to destroy natives. Therefore, we
+        // still need to wait for the real work to actually finish.
+        mActivityTestRule.destroyAwContentsOnMainSync(mAwContents);
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return ThreadUtils.runOnUiThreadBlocking(() -> {
+                        int count_aw_contents = AwContents.getNativeInstanceCount();
+                        return count_aw_contents == 0;
+                    });
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+        });
     }
 }

@@ -407,6 +407,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // Returns true if this view's size have been initialized.
   virtual bool HasSize() const;
 
+  // Tells the view that the assocaited InterstitialPage will going away (but is
+  // not yet destroyed, as InterstitialPage destruction is asynchronous). The
+  // view may use this notification to clean up associated resources. This
+  // should be called before the WebContents is fully destroyed.
+  virtual void OnInterstitialPageGoingAway() {}
+
   //----------------------------------------------------------------------------
   // The following methods are related to IME.
   // TODO(ekaramad): Most of the IME methods should not stay virtual after IME
