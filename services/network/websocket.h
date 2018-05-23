@@ -24,6 +24,7 @@
 class GURL;
 
 namespace net {
+class HttpRequestHeaders;
 class URLRequestContext;
 class WebSocketChannel;
 class SSLInfo;
@@ -38,7 +39,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
   class Delegate {
    public:
     enum class BadMessageReason {
-      kInvalidHeaderValue,
       kUnexpectedAddChannelRequest,
       kUnexpectedSendFrame,
     };
@@ -97,7 +97,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
   void AddChannel(const GURL& socket_url,
                   const std::vector<std::string>& requested_protocols,
                   const GURL& site_for_cookies,
-                  const std::string& user_agent_override);
+                  const net::HttpRequestHeaders& additional_headers);
 
   std::unique_ptr<Delegate> delegate_;
   mojo::Binding<mojom::WebSocket> binding_;

@@ -48,6 +48,14 @@ std::string WebSocketExtraHeadersToString(
   return answer;
 }
 
+HttpRequestHeaders WebSocketExtraHeadersToHttpRequestHeaders(
+    const WebSocketExtraHeaders& headers) {
+  HttpRequestHeaders headers_to_return;
+  for (const auto& header : headers)
+    headers_to_return.SetHeader(header.first, header.second);
+  return headers_to_return;
+}
+
 std::string WebSocketStandardRequest(
     const std::string& path,
     const std::string& host,
@@ -77,11 +85,12 @@ std::string WebSocketStandardRequestWithCookies(
   headers.SetHeader("Connection", "Upgrade");
   headers.SetHeader("Pragma", "no-cache");
   headers.SetHeader("Cache-Control", "no-cache");
+  headers.AddHeadersFromString(send_additional_request_headers);
   headers.SetHeader("Upgrade", "websocket");
   headers.SetHeader("Origin", origin.Serialize());
   headers.SetHeader("Sec-WebSocket-Version", "13");
-  headers.SetHeader("User-Agent", "");
-  headers.AddHeadersFromString(send_additional_request_headers);
+  if (!headers.HasHeader("User-Agent"))
+    headers.SetHeader("User-Agent", "");
   headers.SetHeader("Accept-Encoding", "gzip, deflate");
   headers.SetHeader("Accept-Language", "en-us,fr");
   headers.AddHeadersFromString(cookies);

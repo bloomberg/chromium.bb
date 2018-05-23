@@ -27,6 +27,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log_with_source.h"
 #include "net/test/test_with_scoped_task_environment.h"
@@ -696,7 +697,7 @@ struct WebSocketStreamCreationCallbackArgumentSaver {
       std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
       const url::Origin& origin,
       const GURL& site_for_cookies,
-      const std::string& additional_headers,
+      const HttpRequestHeaders& additional_headers,
       URLRequestContext* url_request_context,
       const NetLogWithSource& net_log,
       std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate) {
@@ -751,7 +752,8 @@ class WebSocketChannelTest : public TestWithScopedTaskEnvironment {
         CreateEventInterface(), &connect_data_.url_request_context);
     channel_->SendAddChannelRequestForTesting(
         connect_data_.socket_url, connect_data_.requested_subprotocols,
-        connect_data_.origin, connect_data_.site_for_cookies, "",
+        connect_data_.origin, connect_data_.site_for_cookies,
+        HttpRequestHeaders(),
         base::Bind(&WebSocketStreamCreationCallbackArgumentSaver::Create,
                    base::Unretained(&connect_data_.argument_saver)));
   }

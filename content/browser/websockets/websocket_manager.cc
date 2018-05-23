@@ -66,11 +66,8 @@ class WebSocketManager::Delegate final : public network::WebSocket::Delegate {
   void ReportBadMessage(BadMessageReason reason,
                         network::WebSocket* impl) override {
     bad_message::BadMessageReason reason_to_pass =
-        bad_message::WSI_INVALID_HEADER_VALUE;
+        bad_message::WSI_UNEXPECTED_ADD_CHANNEL_REQUEST;
     switch (reason) {
-      case BadMessageReason::kInvalidHeaderValue:
-        reason_to_pass = bad_message::WSI_INVALID_HEADER_VALUE;
-        break;
       case BadMessageReason::kUnexpectedAddChannelRequest:
         reason_to_pass = bad_message::WSI_UNEXPECTED_ADD_CHANNEL_REQUEST;
         break;

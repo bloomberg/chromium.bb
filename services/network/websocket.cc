@@ -304,8 +304,7 @@ void WebSocket::AddChannelRequest(
   DVLOG(3) << "WebSocket::AddChannelRequest @" << reinterpret_cast<void*>(this)
            << " socket_url=\"" << socket_url << "\" requested_protocols=\""
            << base::JoinString(requested_protocols, ", ") << "\" origin=\""
-           << origin_ << "\" site_for_cookies=\"" << site_for_cookies
-           << "\" user_agent_override=\"" << user_agent_override << "\"";
+           << origin_ << "\" site_for_cookies=\"" << site_for_cookies << "\"";
 
   if (client_ || !client) {
     delegate_->ReportBadMessage(
@@ -313,6 +312,12 @@ void WebSocket::AddChannelRequest(
     return;
   }
 
+  net::HttpRequestHeaders additional_headers;
+  if (!user_agent_override.empty() &&
+      net::HttpUtil::IsValidHeaderValue(user_agent_override)) {
+    additional_headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
+                                 user_agent_override);
+  }
   client_ = std::move(client);
 
   DCHECK(!channel_);
@@ -321,11 +326,11 @@ void WebSocket::AddChannelRequest(
         FROM_HERE,
         base::BindOnce(&WebSocket::AddChannel, weak_ptr_factory_.GetWeakPtr(),
                        socket_url, requested_protocols, site_for_cookies,
-                       user_agent_override),
+                       additional_headers),
         delay_);
   } else {
     AddChannel(socket_url, requested_protocols, site_for_cookies,
-               user_agent_override);
+               additional_headers);
   }
 }
 
@@ -397,12 +402,11 @@ void WebSocket::OnConnectionError() {
 void WebSocket::AddChannel(const GURL& socket_url,
                            const std::vector<std::string>& requested_protocols,
                            const GURL& site_for_cookies,
-                           const std::string& user_agent_override) {
+                           const net::HttpRequestHeaders& additional_headers) {
   DVLOG(3) << "WebSocket::AddChannel @" << reinterpret_cast<void*>(this)
            << " socket_url=\"" << socket_url << "\" requested_protocols=\""
            << base::JoinString(requested_protocols, ", ") << "\" origin=\""
-           << origin_ << "\" site_for_cookies=\"" << site_for_cookies
-           << "\" user_agent_override=\"" << user_agent_override << "\"";
+           << origin_ << "\" site_for_cookies=\"" << site_for_cookies << "\"";
 
   DCHECK(!channel_);
 
@@ -414,17 +418,6 @@ void WebSocket::AddChannel(const GURL& socket_url,
   int64_t quota = pending_flow_control_quota_;
   pending_flow_control_quota_ = 0;
 
-  std::string additional_headers;
-  if (!user_agent_override.empty()) {
-    if (!net::HttpUtil::IsValidHeaderValue(user_agent_override)) {
-      delegate_->ReportBadMessage(
-          Delegate::BadMessageReason::kInvalidHeaderValue, this);
-      return;
-    }
-    additional_headers =
-        base::StringPrintf("%s:%s", net::HttpRequestHeaders::kUserAgent,
-                           user_agent_override.c_str());
-  }
   channel_->SendAddChannelRequest(socket_url, requested_protocols, origin_,
                                   site_for_cookies, additional_headers);
   if (quota > 0)

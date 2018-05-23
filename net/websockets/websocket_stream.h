@@ -31,6 +31,7 @@ class Origin;
 
 namespace net {
 
+class HttpRequestHeaders;
 class NetLogWithSource;
 class URLRequest;
 class URLRequestContext;
@@ -123,7 +124,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
       std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
       const url::Origin& origin,
       const GURL& site_for_cookies,
-      const std::string& additional_headers,
+      const HttpRequestHeaders& additional_headers,
       URLRequestContext* url_request_context,
       const NetLogWithSource& net_log,
       std::unique_ptr<ConnectDelegate> connect_delegate);
@@ -136,7 +137,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
       std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
       const url::Origin& origin,
       const GURL& site_for_cookies,
-      const std::string& additional_headers,
+      const HttpRequestHeaders& additional_headers,
       URLRequestContext* url_request_context,
       const NetLogWithSource& net_log,
       std::unique_ptr<ConnectDelegate> connect_delegate,
