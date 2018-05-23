@@ -289,10 +289,12 @@ class TestGenerator(unittest.TestCase):
                                               natives, [], [], jni_params,
                                               TestOptions())
     self.assertGoldenTextEquals(h1.GetContent())
-    content = {}
     h2 = jni_registration_generator.HeaderGenerator(
-        '', 'org/chromium/TestJni', natives, jni_params, content, True)
-    h2.AddContent()
+        '', 'org/chromium/TestJni', natives, jni_params, True)
+    content = h2.Generate()
+    for k in jni_registration_generator.MERGEABLE_KEYS:
+      content[k] = content.get(k, '')
+
     self.assertGoldenTextEquals(
         jni_registration_generator.CreateFromDict(content),
         suffix='Registrations')
@@ -376,10 +378,12 @@ class TestGenerator(unittest.TestCase):
                                              TestOptions())
     self.assertGoldenTextEquals(h.GetContent())
 
-    content = {}
     h2 = jni_registration_generator.HeaderGenerator(
-        '', 'org/chromium/TestJni', natives, jni_params, content, True)
-    h2.AddContent()
+        '', 'org/chromium/TestJni', natives, jni_params, True)
+    content = h2.Generate()
+    for k in jni_registration_generator.MERGEABLE_KEYS:
+      content[k] = content.get(k, '')
+
     self.assertGoldenTextEquals(
         jni_registration_generator.CreateFromDict(content),
         suffix='Registrations')
