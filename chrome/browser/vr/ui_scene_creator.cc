@@ -2411,22 +2411,30 @@ void UiSceneCreator::CreateOverflowMenu() {
     button_region->AddChild(std::move(button));
   }
 
-  std::vector<std::tuple<UiElementName, bool, int,
-                         base::RepeatingCallback<void(UiBrowserInterface*)>>>
-      menu_items = {
-          {kOverflowMenuNewIncognitoTabItem, false,
-           IDS_VR_MENU_NEW_INCOGNITO_TAB,
-           base::BindRepeating(
-               [](UiBrowserInterface* browser) { browser->OpenNewTab(true); })},
-          {kOverflowMenuCloseAllIncognitoTabsItem, false,
-           IDS_VR_MENU_CLOSE_INCOGNITO_TABS,
-           base::BindRepeating([](UiBrowserInterface* browser) {
-             browser->CloseAllIncognitoTabs();
-           })},
-          {kOverflowMenuPreferencesItem, true, IDS_VR_MENU_PREFERENCES,
-           base::BindRepeating(
-               [](UiBrowserInterface* browser) { browser->OpenSettings(); })},
-      };
+  struct MenuItem {
+    UiElementName name;
+    int string_id;
+    base::RepeatingCallback<void(UiBrowserInterface*)> action;
+    base::RepeatingCallback<bool(Model*)> visibility;
+  };
+  std::vector<MenuItem> menu_items = {
+      {
+          kOverflowMenuNewIncognitoTabItem, IDS_VR_MENU_NEW_INCOGNITO_TAB,
+          base::BindRepeating(
+              [](UiBrowserInterface* browser) { browser->OpenNewTab(true); }),
+          base::BindRepeating([](Model* m) { return true; }),
+      },
+      {kOverflowMenuCloseAllIncognitoTabsItem, IDS_VR_MENU_CLOSE_INCOGNITO_TABS,
+       base::BindRepeating([](UiBrowserInterface* browser) {
+         browser->CloseAllIncognitoTabs();
+       }),
+       base::BindRepeating(
+           [](Model* m) { return !m->incognito_tabs.empty(); })},
+      {kOverflowMenuPreferencesItem, IDS_VR_MENU_PREFERENCES,
+       base::BindRepeating(
+           [](UiBrowserInterface* browser) { browser->OpenSettings(); }),
+       base::BindRepeating([](Model* m) { return m->standalone_vr_device; })},
+  };
 
   auto overflow_menu_scroll = Create<ScrollableElement>(
       kNone, kPhaseNone, ScrollableElement::kVertical);
@@ -2443,7 +2451,7 @@ void UiSceneCreator::CreateOverflowMenu() {
     auto text =
         Create<Text>(kNone, kPhaseForeground, kSuggestionContentTextHeightDMM);
     text->SetDrawPhase(kPhaseForeground);
-    text->SetText(l10n_util::GetStringUTF16(std::get<2>(item)));
+    text->SetText(l10n_util::GetStringUTF16(item.string_id));
     text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
     text->SetFieldWidth(kOverflowMenuMinimumWidth -
                         2 * kOverflowMenuItemXPadding);
@@ -2458,7 +2466,7 @@ void UiSceneCreator::CreateOverflowMenu() {
     spacer->SetSize(0, kOverflowMenuItemHeight);
     layout->AddChild(std::move(spacer));
 
-    auto background = Create<Button>(std::get<0>(item), kPhaseForeground,
+    auto background = Create<Button>(item.name, kPhaseForeground,
                                      base::DoNothing(), audio_delegate_);
     background->set_hit_testable(true);
     background->set_bounds_contain_children(true);
@@ -2469,15 +2477,19 @@ void UiSceneCreator::CreateOverflowMenu() {
                           &Button::SetButtonColors);
     background->AddChild(std::move(layout));
     base::RepeatingClosure callback =
-        base::BindRepeating(std::get<3>(item), base::Unretained(browser_));
+        base::BindRepeating(item.action, base::Unretained(browser_));
     background->set_click_handler(base::BindRepeating(
         [](Model* model, const base::RepeatingClosure& callback) {
           model->overflow_menu_enabled = false;
           callback.Run();
         },
         base::Unretained(model_), callback));
-    if (std::get<1>(item))
-      VR_BIND_VISIBILITY(background, model->standalone_vr_device)
+    background->AddBinding(std::make_unique<Binding<bool>>(
+        VR_BIND_LAMBDA(item.visibility, base::Unretained(model_)),
+        VR_BIND_LAMBDA(
+            [](UiElement* e, const bool& value) { e->SetVisible(value); },
+            base::Unretained(background.get()))));
+
     overflow_menu_layout->AddChild(std::move(background));
   }
 
