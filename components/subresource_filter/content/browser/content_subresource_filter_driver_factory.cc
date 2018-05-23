@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
-#include "base/rand_util.h"
 #include "base/time/time.h"
 #include "components/subresource_filter/content/browser/navigation_console_logger.h"
 #include "components/subresource_filter/content/browser/page_load_statistics.h"
@@ -33,14 +32,6 @@ namespace {
 
 // Returns true with a probability given by |performance_measurement_rate| if
 // ThreadTicks is supported, otherwise returns false.
-bool ShouldMeasurePerformanceForPageLoad(double performance_measurement_rate) {
-  if (!base::ThreadTicks::IsSupported())
-    return false;
-  return performance_measurement_rate == 1 ||
-         (performance_measurement_rate > 0 &&
-          base::RandDouble() < performance_measurement_rate);
-}
-
 }  // namespace
 
 // static
@@ -83,9 +74,12 @@ void ContentSubresourceFilterDriverFactory::NotifyPageActivationComputed(
   matched_configuration_ = matched_configuration;
   DCHECK_NE(activation_decision_, ActivationDecision::UNKNOWN);
 
+  ActivationLevel effective_activation_level =
+      matched_configuration_.activation_options.activation_level;
+
   // ACTIVATION_DISABLED implies DISABLED activation level.
   DCHECK(activation_decision_ != ActivationDecision::ACTIVATION_DISABLED ||
-         activation_options().activation_level == ActivationLevel::DISABLED);
+         effective_activation_level == ActivationLevel::DISABLED);
 
   // Ensure the matched config is in our config list. If it wasn't then this
   // must be a forced activation via devtools.
@@ -96,20 +90,7 @@ void ContentSubresourceFilterDriverFactory::NotifyPageActivationComputed(
          forced_activation_via_devtools)
       << matched_configuration;
 
-  ActivationState state =
-      ActivationState(activation_options().activation_level);
-  state.measure_performance = ShouldMeasurePerformanceForPageLoad(
-      activation_options().performance_measurement_rate);
-
-  // This bit keeps track of BAS enforcement-style logging, not warning logging.
-  state.enable_logging =
-      activation_options().activation_level == ActivationLevel::ENABLED &&
-      matched_configuration != Configuration::MakeForForcedActivation() &&
-      base::FeatureList::IsEnabled(
-          kSafeBrowsingSubresourceFilterExperimentalUI);
-
-  if (warning &&
-      activation_options().activation_level == ActivationLevel::ENABLED) {
+  if (warning && effective_activation_level == ActivationLevel::ENABLED) {
     NavigationConsoleLogger::LogMessageOnCommit(
         navigation_handle, content::CONSOLE_MESSAGE_LEVEL_WARNING,
         kActivationWarningConsoleMessage);
@@ -117,15 +98,16 @@ void ContentSubresourceFilterDriverFactory::NotifyPageActivationComputed(
     // Do not disallow enforcement if activated via devtools.
     if (!forced_activation_via_devtools) {
       activation_decision_ = ActivationDecision::ACTIVATION_DISABLED;
-      state.activation_level = ActivationLevel::DISABLED;
-      matched_configuration_.activation_options.activation_level =
-          ActivationLevel::DISABLED;
+      effective_activation_level = ActivationLevel::DISABLED;
     }
   }
 
+  matched_configuration_.activation_options.activation_level =
+      effective_activation_level;
   SubresourceFilterObserverManager::FromWebContents(web_contents())
       ->NotifyPageActivationComputed(navigation_handle, activation_decision_,
-                                     state);
+                                     matched_configuration_.GetActivationState(
+                                         effective_activation_level));
 }
 
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
@@ -136,7 +118,8 @@ void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
   }
   // This shouldn't happen normally, but in the rare case that an IPC from a
   // previous page arrives late we should guard against it.
-  if (activation_options().activation_level != ActivationLevel::ENABLED) {
+  if (matched_configuration_.activation_options.activation_level !=
+      ActivationLevel::ENABLED) {
     return;
   }
   client_->ShowNotification();

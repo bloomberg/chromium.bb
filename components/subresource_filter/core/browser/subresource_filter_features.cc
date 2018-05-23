@@ -13,10 +13,12 @@
 
 #include "base/lazy_instance.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/subresource_filter/core/common/common_features.h"
 
@@ -96,6 +98,7 @@ ActivationList ParseActivationList(std::string activation_lists_string) {
   return ActivationList::NONE;
 }
 
+// Will return a value between 0 and 1 inclusive.
 double ParsePerformanceMeasurementRate(const std::string& rate) {
   double value = 0.0;
   if (!base::StringToDouble(rate, &value) || value < 0)
@@ -354,6 +357,24 @@ std::unique_ptr<base::trace_event::TracedValue> Configuration::ToTracedValue()
   value->SetString("ruleset_flavor",
                    StreamToString(general_settings.ruleset_flavor));
   return value;
+}
+
+ActivationState Configuration::GetActivationState(
+    ActivationLevel effective_activation_level) const {
+  ActivationState state = ActivationState(effective_activation_level);
+
+  double measurement_rate = activation_options.performance_measurement_rate;
+  state.measure_performance =
+      base::ThreadTicks::IsSupported() &&
+      (measurement_rate == 1 || base::RandDouble() < measurement_rate);
+
+  // This bit keeps track of BAS enforcement-style logging, not warning logging.
+  state.enable_logging =
+      effective_activation_level == ActivationLevel::ENABLED &&
+      *this != Configuration::MakeForForcedActivation() &&
+      base::FeatureList::IsEnabled(
+          kSafeBrowsingSubresourceFilterExperimentalUI);
+  return state;
 }
 
 std::ostream& operator<<(std::ostream& os, const Configuration& config) {

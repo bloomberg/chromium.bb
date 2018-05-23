@@ -166,11 +166,6 @@ ChromeSubresourceFilterClient::GetRulesetDealer() {
 
 void ChromeSubresourceFilterClient::ShowUI(const GURL& url) {
   DCHECK(!activated_via_devtools_);
-  DCHECK_NE(subresource_filter::ContentSubresourceFilterDriverFactory::
-                FromWebContents(web_contents_)
-                    ->GetMatchedConfigurationForLastCommittedPageLoad(),
-            subresource_filter::Configuration::MakeForForcedActivation());
-
 #if defined(OS_ANDROID)
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents_);

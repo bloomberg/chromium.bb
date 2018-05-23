@@ -53,11 +53,6 @@ class ContentSubresourceFilterDriverFactory
       const Configuration& matched_configuration,
       bool warning);
 
-  // Returns the Configuration for the current main frame document.
-  const Configuration& GetMatchedConfigurationForLastCommittedPageLoad() const {
-    return matched_configuration_;
-  }
-
   // ContentSubresourceFilterThrottleManager::Delegate:
   void OnFirstSubresourceLoadDisallowed() override;
 
@@ -70,10 +65,6 @@ class ContentSubresourceFilterDriverFactory
  private:
   friend class ContentSubresourceFilterDriverFactoryTest;
   friend class safe_browsing::SafeBrowsingServiceTest;
-
-  const Configuration::ActivationOptions& activation_options() const {
-    return matched_configuration_.activation_options;
-  }
 
   // content::WebContentsObserver:
   void DidStartNavigation(
