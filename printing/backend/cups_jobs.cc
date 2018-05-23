@@ -443,7 +443,7 @@ bool GetPrinterInfo(const std::string& address,
 
   ScopedHttpPtr http = ScopedHttpPtr(httpConnect2(
       address.c_str(), port, nullptr, AF_INET,
-      encrypted ? HTTP_ENCRYPTION_REQUIRED : HTTP_ENCRYPTION_IF_REQUESTED, 0,
+      encrypted ? HTTP_ENCRYPTION_ALWAYS : HTTP_ENCRYPTION_IF_REQUESTED, 0,
       kHttpConnectTimeoutMs, nullptr));
   if (!http) {
     LOG(WARNING) << "Could not connect to host";
