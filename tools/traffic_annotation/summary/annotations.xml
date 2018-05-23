@@ -82,7 +82,7 @@ Refer to README.md for content description and update process.
  <item id="dns_transaction" hash_code="79227717" type="0" content_hash_code="132206495" os_list="linux,windows" file_path="net/dns/dns_transaction.cc"/>
  <item id="dom_distiller" hash_code="3989826" type="0" content_hash_code="106153970" os_list="linux,windows" file_path="components/dom_distiller/core/distiller_url_fetcher.cc"/>
  <item id="domain_reliability_report_upload" hash_code="108804096" type="0" content_hash_code="35902036" os_list="linux,windows" file_path="components/domain_reliability/uploader.cc"/>
- <item id="domain_security_policy" hash_code="77597059" type="0" content_hash_code="30916983" os_list="linux,windows" file_path="chrome/browser/profiles/profile_io_data.cc"/>
+ <item id="domain_security_policy" hash_code="77597059" type="0" content_hash_code="30916983" os_list="linux,windows" file_path="services/network/network_context.cc"/>
  <item id="doodle_fetcher" hash_code="97199008" type="0" deprecated="2017-08-28" content_hash_code="87981692" file_path=""/>
  <item id="doodle_service" hash_code="41154842" type="0" deprecated="2017-08-28" content_hash_code="28273962" file_path=""/>
  <item id="download_internals_webui_source" hash_code="38670228" type="0" content_hash_code="129391056" os_list="linux,windows" file_path="chrome/browser/ui/webui/download_internals/download_internals_ui_message_handler.cc"/>

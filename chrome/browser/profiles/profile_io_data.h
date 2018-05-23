@@ -76,7 +76,6 @@ class ChannelIDService;
 class ClientCertStore;
 class CookieStore;
 class HttpTransactionFactory;
-class ReportSender;
 class URLRequestContextBuilder;
 class URLRequestJobFactoryImpl;
 
@@ -614,11 +613,6 @@ class ProfileIOData {
   // When the network service is disabled, this owns |system_request_context|.
   mutable network::URLRequestContextOwner main_request_context_owner_;
   mutable net::URLRequestContext* main_request_context_;
-
-  // Pointed to by the TransportSecurityState (owned by
-  // URLRequestContextStorage), and must be disconnected from it before it's
-  // destroyed.
-  mutable std::unique_ptr<net::ReportSender> certificate_report_sender_;
 
   mutable std::unique_ptr<net::URLRequestContext> extensions_request_context_;
   // One URLRequestContext per isolated app for main and media requests.

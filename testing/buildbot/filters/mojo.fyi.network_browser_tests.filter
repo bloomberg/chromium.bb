@@ -34,6 +34,11 @@
 -PKPModelClientTest.PKPEnforced/0
 -PKPModelClientTest.PKPEnforced/1
 
+# Need a way to call SetEnablePublicKeyPinningBypassForLocalTrustAnchors on
+# TransportSecurityState to trigger sending a report.
+-ProfileBrowserTest.SendHPKPReport
+-ProfileBrowserTest.SendHPKPReportServerHangs
+
 # https://crbug.com/721398
 -WebViewTest.ClearDataCache
 
@@ -89,8 +94,6 @@
 -PolicyTest.CertificateTransparencyEnforcementDisabledForUrls/1
 -PolicyTest.ExtensionInstallSources
 -PolicyTest.ForceGoogleSafeSearch
--ProfileBrowserTest.SendHPKPReport
--ProfileBrowserTest.SendHPKPReportServerHangs
 
 # https://bugs.chromium.org/p/chromium/issues/detail?id=789670
 -DiceBrowserTest.Reauth

@@ -218,6 +218,8 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
   proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
 
+  network_context_params->enable_certificate_reporting = true;
+
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   if (prefs->FindPreference(prefs::kGSSAPILibraryName)) {
     network_context_params->gssapi_library_name =
