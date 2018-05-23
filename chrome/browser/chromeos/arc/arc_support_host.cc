@@ -83,7 +83,7 @@ constexpr char kEventOnAuthSucceeded[] = "onAuthSucceeded";
 constexpr char kEventOnAuthFailed[] = "onAuthFailed";
 constexpr char kAuthErrorMessage[] = "errorMessage";
 
-// "onAgree" is fired when a user clicks "Agree" button.
+// "onAgreed" is fired when a user clicks "Agree" button.
 // The message should have the following fields:
 // - tosContent
 // - tosShown
@@ -100,6 +100,10 @@ constexpr char kIsBackupRestoreEnabled[] = "isBackupRestoreEnabled";
 constexpr char kIsBackupRestoreManaged[] = "isBackupRestoreManaged";
 constexpr char kIsLocationServiceEnabled[] = "isLocationServiceEnabled";
 constexpr char kIsLocationServiceManaged[] = "isLocationServiceManaged";
+
+// "onCanceled" is fired when user clicks "Cancel" button.
+// The message should have the same fields as "onAgreed" above.
+constexpr char kEventOnCanceled[] = "onCanceled";
 
 // "onRetryClicked" is fired when a user clicks "RETRY" button on the error
 // page.
@@ -627,7 +631,7 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
     LOG_IF(ERROR, !auth_delegate_)
         << "auth_delegate_ is NULL, error: " << error_message;
     auth_delegate_->OnAuthFailed(error_message);
-  } else if (event == kEventOnAgreed) {
+  } else if (event == kEventOnAgreed || event == kEventOnCanceled) {
     DCHECK(tos_delegate_);
     bool tos_shown;
     std::string tos_content;
@@ -651,6 +655,14 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
       return;
     }
 
+    bool accepted = event == kEventOnAgreed;
+    if (!accepted) {
+      // Cancel is equivalent to not granting consent to the individual
+      // features, so ensure we don't record consent.
+      is_backup_restore_enabled = false;
+      is_location_service_enabled = false;
+    }
+
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfile(profile_);
     DCHECK(signin_manager->IsAuthenticated());
@@ -662,7 +674,8 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
           account_id, consent_auditor::Feature::PLAY_STORE,
           ComputePlayToSConsentIds(tos_content),
           IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE,
-          consent_auditor::ConsentStatus::GIVEN);
+          accepted ? consent_auditor::ConsentStatus::GIVEN
+                   : consent_auditor::ConsentStatus::NOT_GIVEN);
     }
 
     // If the user - not policy - controls Backup and Restore setting, record
@@ -688,8 +701,11 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
               : consent_auditor::ConsentStatus::NOT_GIVEN);
     }
 
-    tos_delegate_->OnTermsAgreed(is_metrics_enabled, is_backup_restore_enabled,
-                                 is_location_service_enabled);
+    if (accepted) {
+      tos_delegate_->OnTermsAgreed(is_metrics_enabled,
+                                   is_backup_restore_enabled,
+                                   is_location_service_enabled);
+    }
   } else if (event == kEventOnRetryClicked) {
     // If ToS negotiation or manual authentication is ongoing, call the
     // corresponding delegate.  Otherwise, call the general retry function.

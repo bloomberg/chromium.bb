@@ -330,6 +330,11 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Cancel) {
   EXPECT_EQ(status, Status::PENDING);
   EXPECT_EQ(fake_arc_support()->ui_page(), ArcSupportHost::UIPage::TERMS);
 
+  // Emulate showing of a ToS page with a hard-coded ToS.
+  std::string tos_content = "fake ToS";
+  fake_arc_support()->set_tos_content(tos_content);
+  fake_arc_support()->set_tos_shown(true);
+
   // Check the preference related checkbox.
   fake_arc_support()->set_metrics_mode(true);
   fake_arc_support()->set_backup_and_restore_mode(true);
@@ -342,7 +347,7 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Cancel) {
       profile()->GetPrefs()->GetBoolean(prefs::kArcLocationServiceEnabled));
 
   // Clicking "CANCEL" button closes the window.
-  fake_arc_support()->Close();
+  fake_arc_support()->ClickCancelButton();
   EXPECT_EQ(status, Status::CANCELLED);
 
   // Make sure preference checkbox values are discarded.
@@ -350,6 +355,30 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Cancel) {
       profile()->GetPrefs()->GetBoolean(prefs::kArcBackupRestoreEnabled));
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcLocationServiceEnabled));
+
+  // Make sure consent auditing is recording all consents as NOT_GIVEN.
+  std::vector<int> tos_consent =
+      ArcSupportHost::ComputePlayToSConsentIds(tos_content);
+  tos_consent.push_back(IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE);
+  const std::vector<int> backup_consent = {IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE,
+                                           IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE};
+  const std::vector<int> location_consent = {
+      IDS_ARC_OPT_IN_LOCATION_SETTING, IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE};
+  const std::vector<std::vector<int>> consent_ids = {
+      tos_consent, backup_consent, location_consent};
+  const std::vector<consent_auditor::Feature> features = {
+      consent_auditor::Feature::PLAY_STORE,
+      consent_auditor::Feature::BACKUP_AND_RESTORE,
+      consent_auditor::Feature::GOOGLE_LOCATION_SERVICE};
+  const std::vector<consent_auditor::ConsentStatus> statuses = {
+      consent_auditor::ConsentStatus::NOT_GIVEN,
+      consent_auditor::ConsentStatus::NOT_GIVEN,
+      consent_auditor::ConsentStatus::NOT_GIVEN};
+
+  EXPECT_EQ(consent_auditor()->account_id(), GetAuthenticatedAccountId());
+  EXPECT_EQ(consent_auditor()->recorded_id_vectors(), consent_ids);
+  EXPECT_EQ(consent_auditor()->recorded_features(), features);
+  EXPECT_EQ(consent_auditor()->recorded_statuses(), statuses);
 }
 
 TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Retry) {
