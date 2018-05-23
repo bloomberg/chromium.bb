@@ -164,6 +164,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void DidStopFlinging() override;
   void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                const SkBitmap& zoomed_bitmap) override;
+  void OnInterstitialPageGoingAway() override;
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
   void OnDidNavigateMainFrameToNewPage() override;

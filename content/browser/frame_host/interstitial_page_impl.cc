@@ -842,6 +842,12 @@ void InterstitialPageImpl::Shutdown() {
 }
 
 void InterstitialPageImpl::OnNavigatingAwayOrTabClosing() {
+  // Notify the RenderWidgetHostView so it can clean up interstitial resources
+  // before the WebContents is fully destroyed.
+  if (render_view_host_ && render_view_host_->GetWidget() &&
+      render_view_host_->GetWidget()->GetView()) {
+    render_view_host_->GetWidget()->GetView()->OnInterstitialPageGoingAway();
+  }
   if (action_taken_ == NO_ACTION) {
     // We are navigating away from the interstitial or closing a tab with an
     // interstitial.  Default to DontProceed(). We don't just call Hide as

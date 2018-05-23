@@ -831,6 +831,10 @@ void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(
   tap_disambiguator_->ShowPopup(rect_pixels, zoomed_bitmap);
 }
 
+void RenderWidgetHostViewAndroid::OnInterstitialPageGoingAway() {
+  sync_compositor_.reset();
+}
+
 std::unique_ptr<SyntheticGestureTarget>
 RenderWidgetHostViewAndroid::CreateSyntheticGestureTarget() {
   return std::unique_ptr<SyntheticGestureTarget>(
