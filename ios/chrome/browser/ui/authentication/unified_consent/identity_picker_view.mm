@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_view.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Ink/src/MaterialInk.h"

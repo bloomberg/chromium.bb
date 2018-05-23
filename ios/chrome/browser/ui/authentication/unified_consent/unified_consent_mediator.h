@@ -10,7 +10,7 @@
 @class ChromeIdentity;
 @class UnifiedConsentViewController;
 
-// A mediator object that monitor updates of the selecte chrome identity, and
+// A mediator object that monitors updates of the selecte chrome identity, and
 // updates the UnifiedConsentViewController.
 @interface UnifiedConsentMediator : NSObject
 
