@@ -44,9 +44,10 @@ class PriorityQueue::SequenceAndSortKey {
   bool operator<(const SequenceAndSortKey& other) const {
     return sort_key_ < other.sort_key_;
   }
-  bool operator>(const SequenceAndSortKey& other) const {
-    return other < *this;
-  }
+  // Style-guide dictates to define operator> when defining operator< but it's
+  // unused in this case and this isn't a public API. Explicitly delete it so
+  // any errors point here if that ever changes.
+  bool operator>(const SequenceAndSortKey& other) const = delete;
 
   const SequenceSortKey& sort_key() const { return sort_key_; }
 
