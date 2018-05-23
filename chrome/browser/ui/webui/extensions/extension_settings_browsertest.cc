@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_system.h"
 
@@ -167,4 +169,49 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest, ViewSource) {
   EXPECT_TRUE(
       base::RemoveChars(expected_source_text, "\n", &expected_source_text));
   EXPECT_EQ(expected_source_text, actual_source_text);
+}
+
+// Verify that listeners for the developer private API are only registered
+// when there is a chrome://extensions page open. This is important, since some
+// of the event construction can be expensive.
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest, ListenerRegistration) {
+  Profile* profile = browser()->profile();
+  extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
+  extensions::DeveloperPrivateAPI* dev_private_api =
+      extensions::DeveloperPrivateAPI::Get(profile);
+  auto expect_has_listeners = [event_router,
+                               dev_private_api](bool has_listeners) {
+    EXPECT_EQ(has_listeners, event_router->HasEventListener(
+                                 "developerPrivate.onItemStateChanged"));
+    EXPECT_EQ(has_listeners, event_router->HasEventListener(
+                                 "developerPrivate.onProfileStateChanged"));
+    EXPECT_EQ(has_listeners,
+              dev_private_api->developer_private_event_router() != nullptr);
+  };
+
+  {
+    SCOPED_TRACE("Before page load");
+    expect_has_listeners(false);
+  }
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("chrome://extensions"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  {
+    SCOPED_TRACE("With page loaded");
+    expect_has_listeners(true);
+  }
+
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  tab_strip->CloseWebContentsAt(tab_strip->active_index(),
+                                TabStripModel::CLOSE_NONE);
+  base::RunLoop().RunUntilIdle();
+  content::RunAllTasksUntilIdle();
+
+  {
+    SCOPED_TRACE("After page unload");
+    expect_has_listeners(false);
+  }
 }
