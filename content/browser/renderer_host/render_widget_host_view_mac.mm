@@ -204,6 +204,8 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 }
 
 void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
+  // TODO(ccameron): This path appears to be buggy.
+  return;
   if (parent_ui_layer)
     display_only_using_parent_ui_layer_ = true;
   if (browser_compositor_)
