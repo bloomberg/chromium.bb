@@ -53,13 +53,10 @@ int GetLayoutConstant(LayoutConstant constant) {
       if (ui::MaterialDesignController::IsSecondaryUiMaterial())
         return 1;
       return hybrid ? 8 : 6;
-    case LOCATION_BAR_ELEMENT_PADDING:
-      // Under touch, the padding gets moved from between the location bar
-      // elements to inside the location bar elements for larger touch targets
-      // (i.e. currently, LOCATION_BAR_ICON_INTERIOR_PADDING).
-      if (touch_optimized_material)
-        return 0;
-      return hybrid ? 3 : 1;
+    case LOCATION_BAR_ELEMENT_PADDING: {
+      const int kPadding[] = {1, 3, 3, 2, 3};
+      return kPadding[mode];
+    }
     case LOCATION_BAR_HEIGHT: {
       constexpr int kHeights[] = {28, 32, 36, 28, 36};
       return kHeights[mode];
@@ -67,7 +64,7 @@ int GetLayoutConstant(LayoutConstant constant) {
     case LOCATION_BAR_ICON_SIZE:
       return touch_optimized_material ? 20 : 16;
     case LOCATION_BAR_ICON_INTERIOR_PADDING:
-      return touch_optimized_material ? 8 : 4;
+      return touch_optimized_material ? 5 : 4;
     case TAB_AFTER_TITLE_PADDING:
       return touch_optimized_material ? 8 : 4;
     case TAB_ALERT_INDICATOR_CAPTURE_ICON_WIDTH:
