@@ -16,7 +16,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/widget/widget.h"
 
 namespace autofill {
 
@@ -65,13 +64,10 @@ void AutofillPopupBaseView::DoShow() {
     params.delegate = this;
     params.parent = parent_widget_ ? parent_widget_->GetNativeView()
                                    : delegate_->container_view();
+    AddExtraInitParams(&params);
     widget->Init(params);
 
-    scroll_view_ = new views::ScrollView;
-    scroll_view_->set_hide_horizontal_scrollbar(true);
-    scroll_view_->SetContents(this);
-
-    widget->SetContentsView(scroll_view_);
+    widget->SetContentsView(CreateWrapperView().release());
 
     // No animation for popup appearance (too distracting).
     widget->SetVisibilityAnimationTransition(views::Widget::ANIMATE_HIDE);
@@ -79,11 +75,7 @@ void AutofillPopupBaseView::DoShow() {
     show_time_ = base::Time::Now();
   }
 
-  GetWidget()->GetRootView()->SetBorder(views::CreateSolidBorder(
-      kPopupBorderThicknessDp,
-      GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_UnfocusedBorderColor)));
-
+  GetWidget()->GetRootView()->SetBorder(CreateBorder());
   DoUpdateBoundsAndRedrawPopup();
   GetWidget()->Show();
 
@@ -136,6 +128,21 @@ void AutofillPopupBaseView::AdjustBoundsForBorder(gfx::Rect* bounds) const {
   bounds->set_width(bounds->width() + 2 * kPopupBorderThicknessDp);
 }
 
+std::unique_ptr<views::View> AutofillPopupBaseView::CreateWrapperView() {
+  auto wrapper_view = std::make_unique<views::ScrollView>();
+  scroll_view_ = wrapper_view.get();
+  scroll_view_->set_hide_horizontal_scrollbar(true);
+  scroll_view_->SetContents(this);
+  return wrapper_view;
+}
+
+std::unique_ptr<views::Border> AutofillPopupBaseView::CreateBorder() {
+  return views::CreateSolidBorder(
+      kPopupBorderThicknessDp,
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_UnfocusedBorderColor));
+}
+
 void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
   gfx::Rect bounds = delegate()->popup_bounds();
 
@@ -151,7 +158,9 @@ void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
     // The available space is not enough for the full popup so clamp the widget
     // to what's available. Since the scroll view will show a scroll bar,
     // increase the width so that the content isn't partially hidden.
-    bounds.set_width(bounds.width() + scroll_view_->GetScrollBarLayoutWidth());
+    const int extra_width =
+        scroll_view_ ? scroll_view_->GetScrollBarLayoutWidth() : 0;
+    bounds.set_width(bounds.width() + extra_width);
     bounds.set_height(available_vertical_space);
   }
 
