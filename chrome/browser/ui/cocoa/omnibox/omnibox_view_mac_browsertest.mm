@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 
@@ -20,6 +21,9 @@ class OmniboxViewMacBrowserTest : public InProcessBrowserTest {
     return static_cast<OmniboxViewMac*>(
         browser()->window()->GetLocationBar()->GetOmniboxView());
   }
+
+ private:
+  test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
 };
 
 // Verify that the OmniboxViewMac::SetFocus API works.

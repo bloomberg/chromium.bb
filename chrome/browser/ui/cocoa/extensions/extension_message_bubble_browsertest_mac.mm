@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_browsertest.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
@@ -111,6 +112,8 @@ class ExtensionMessageBubbleBrowserTestMac
   void ClickDismissButton(Browser* browser) override;
 
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleBrowserTestMac);
 };

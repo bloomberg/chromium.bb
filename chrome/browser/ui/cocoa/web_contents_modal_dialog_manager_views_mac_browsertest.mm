@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -79,6 +80,9 @@ class WebContentsModalDialogManagerViewsMacTest : public InProcessBrowserTest,
   int destroy_count_ = 0;
   Widget* last_destroyed_ = nullptr;
   base::RunLoop* run_loop_ = nullptr;
+
+ private:
+  test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogManagerViewsMacTest);
 };

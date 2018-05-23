@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -95,6 +96,8 @@ class ViewIDTest : public InProcessBrowserTest {
 
  private:
   NSWindow* root_window_;
+
+  test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
 };
 
 IN_PROC_BROWSER_TEST_F(ViewIDTest, Basic) {
