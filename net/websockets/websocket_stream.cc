@@ -114,7 +114,9 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
                                             delegate_.get(),
                                             kTrafficAnnotation)),
         connect_delegate_(std::move(connect_delegate)),
-        handshake_stream_(nullptr) {
+        handshake_stream_(nullptr),
+        on_handshake_stream_created_has_been_called_(false),
+        perform_upgrade_has_been_called_(false) {
     create_helper->set_stream_request(this);
     HttpRequestHeaders headers = additional_headers;
     headers.SetHeader(websockets::kUpgrade, websockets::kWebSocketLowercase);
@@ -156,6 +158,11 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
 
   void OnHandshakeStreamCreated(
       WebSocketHandshakeStreamBase* handshake_stream) override {
+    // TODO(bnc): Change to DCHECK after https://crbug.com/842575 is fixed.
+    CHECK(handshake_stream);
+
+    on_handshake_stream_created_has_been_called_ = true;
+
     handshake_stream_ = handshake_stream;
   }
 
@@ -176,9 +183,13 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
 
   void PerformUpgrade() {
     DCHECK(timer_);
+    CHECK(!perform_upgrade_has_been_called_);
+    CHECK(on_handshake_stream_created_has_been_called_);
     // TODO(bnc): Change to DCHECK after https://crbug.com/842575 is fixed.
     CHECK(handshake_stream_);
     CHECK(connect_delegate_);
+
+    perform_upgrade_has_been_called_ = true;
 
     timer_->Stop();
 
@@ -265,6 +276,10 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
   // handshake. This is only guaranteed to be a valid pointer if the handshake
   // succeeded.
   WebSocketHandshakeStreamBase* handshake_stream_;
+
+  // TODO(bnc): Remove after https://crbug.com/842575 is fixed.
+  bool on_handshake_stream_created_has_been_called_;
+  bool perform_upgrade_has_been_called_;
 
   // The failure message supplied by WebSocketBasicHandshakeStream, if any.
   std::string failure_message_;
