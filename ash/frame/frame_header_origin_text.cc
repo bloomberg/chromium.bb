@@ -5,6 +5,7 @@
 #include "ash/frame/frame_header_origin_text.h"
 
 #include "base/i18n/rtl.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -99,11 +100,18 @@ void FrameHeaderOriginText::StartSlideAnimation() {
 
   label_layer->GetAnimator()->StartTogether(
       {opacity_sequence.release(), transform_sequence.release()});
+
+  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
 }
 
 base::TimeDelta FrameHeaderOriginText::AnimationDuration() {
   return kOriginSlideInDuration + kOriginPauseDuration +
          kOriginSlideOutDuration;
+}
+
+void FrameHeaderOriginText::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kApplication;
+  node_data->SetName(label_->text());
 }
 
 }  // namespace ash
