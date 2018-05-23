@@ -26,8 +26,4 @@ OAuth2TokenService* DeviceIdentityProvider::GetTokenService() {
   return token_service_;
 }
 
-bool DeviceIdentityProvider::RequestLogin() {
-  return false;
-}
-
 }  // namespace chromeos

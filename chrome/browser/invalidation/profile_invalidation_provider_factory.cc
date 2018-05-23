@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_content_client.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
@@ -82,7 +81,6 @@ ProfileInvalidationProviderFactory::ProfileInvalidationProviderFactory()
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
-  DependsOn(LoginUIServiceFactory::GetInstance());
 #endif
 }
 
@@ -121,8 +119,7 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   if (!identity_provider) {
     identity_provider.reset(new ProfileIdentityProvider(
         SigninManagerFactory::GetForProfile(profile),
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-        LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile)));
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile)));
   }
 
   std::unique_ptr<TiclInvalidationService> service(new TiclInvalidationService(

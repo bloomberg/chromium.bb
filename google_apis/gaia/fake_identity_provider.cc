@@ -38,7 +38,3 @@ std::string FakeIdentityProvider::GetActiveAccountId() {
 OAuth2TokenService* FakeIdentityProvider::GetTokenService() {
   return token_service_;
 }
-
-bool FakeIdentityProvider::RequestLogin() {
-  return false;
-}

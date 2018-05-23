@@ -59,12 +59,6 @@ class IdentityProvider : public OAuth2TokenService::Observer {
   // Gets the token service vending OAuth tokens for all logged-in accounts.
   virtual OAuth2TokenService* GetTokenService() = 0;
 
-  // Requests login to a GAIA account. Implementations can show a login UI, log
-  // in automatically if sufficient credentials are available or may ignore the
-  // request. Returns true if the login request was processed and false if it
-  // was ignored.
-  virtual bool RequestLogin() = 0;
-
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
