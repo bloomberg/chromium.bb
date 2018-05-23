@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "services/device/public/mojom/mtp_file_entry.mojom.h"
+#include "services/device/public/mojom/mtp_manager.mojom.h"
 #include "services/device/public/mojom/mtp_storage_info.mojom.h"
 
 #if !defined(OS_CHROMEOS)
@@ -80,12 +81,6 @@ class MediaTransferProtocolManager {
   // The second argument is true if there was an error.
   using ReadFileCallback =
       base::Callback<void(const std::string& data, bool error)>;
-
-  // A callback to handle the result of GetFileInfo.
-  // The first argument is a file entry.
-  // The second argument is true if there was an error.
-  using GetFileInfoCallback =
-      base::Callback<void(const mojom::MtpFileEntry& file_entry, bool error)>;
 
   // A callback to handle the result of RenameObject.
   // The first argument is true if there was an error.
@@ -165,9 +160,11 @@ class MediaTransferProtocolManager {
 
   // Gets the file metadata for |file_id| on |storage_handle| and runs
   // |callback|.
+  // Use mojom::MtpManager::GetFileInfoCallback directly to get prepared for
+  // future merge.
   virtual void GetFileInfo(const std::string& storage_handle,
                            uint32_t file_id,
-                           const GetFileInfoCallback& callback) = 0;
+                           mojom::MtpManager::GetFileInfoCallback callback) = 0;
 
   // Renames |object_id| to |new_name|.
   virtual void RenameObject(const std::string& storage_handle,

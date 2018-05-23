@@ -65,12 +65,6 @@ void ReadDirectoryCallbackWrapper(
   std::move(callback).Run(std::move(files), has_more, error);
 }
 
-void GetFileInfoCallbackWrapper(mojom::MtpManager::GetFileInfoCallback callback,
-                                const mojom::MtpFileEntry& file_entry,
-                                bool error) {
-  std::move(callback).Run(file_entry.Clone(), error);
-}
-
 }  // namespace
 
 MtpDeviceManager::MtpDeviceManager()
@@ -160,10 +154,8 @@ void MtpDeviceManager::ReadFileChunk(const std::string& storage_handle,
 void MtpDeviceManager::GetFileInfo(const std::string& storage_handle,
                                    uint32_t file_id,
                                    GetFileInfoCallback callback) {
-  media_transfer_protocol_manager_->GetFileInfo(
-      storage_handle, file_id,
-      base::Bind(GetFileInfoCallbackWrapper,
-                 base::AdaptCallbackForRepeating(std::move(callback))));
+  media_transfer_protocol_manager_->GetFileInfo(storage_handle, file_id,
+                                                std::move(callback));
 }
 
 void MtpDeviceManager::RenameObject(const std::string& storage_handle,
