@@ -136,6 +136,11 @@ class CORE_EXPORT PendingScript
     return created_during_document_write_;
   }
 
+  // https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block
+  // The single entry point of script execution.
+  // PendingScript::Dispose() is called in ExecuteScriptBlock().
+  void ExecuteScriptBlock(const KURL&);
+
  protected:
   PendingScript(ScriptElementBase*, const TextPosition& starting_position);
 
@@ -147,6 +152,15 @@ class CORE_EXPORT PendingScript
   virtual void CheckState() const = 0;
 
  private:
+  static void ExecuteScriptBlockInternal(Script*,
+                                         bool error_occurred,
+                                         ScriptElementBase*,
+                                         bool was_canceled,
+                                         bool is_external,
+                                         bool created_during_document_write,
+                                         double parser_blocking_load_start_time,
+                                         bool is_controlled_by_script_runner);
+
   // |m_element| must points to the corresponding ScriptLoader's
   // ScriptElementBase and thus must be non-null before dispose() is called
   // (except for unit tests).

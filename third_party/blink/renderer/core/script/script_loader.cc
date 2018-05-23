@@ -24,11 +24,8 @@
 
 #include "third_party/blink/renderer/core/script/script_loader.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/document_parser_timing.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/dom/text.h"
@@ -43,7 +40,6 @@
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
 #include "third_party/blink/renderer/core/script/classic_script.h"
-#include "third_party/blink/renderer/core/script/ignore_destructive_write_count_incrementer.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_pending_script.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -691,8 +687,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   KURL script_url = (!is_in_document_write && parser_inserted_)
                         ? element_document.Url()
                         : KURL();
-  ExecuteScriptBlock(TakePendingScript(ScriptSchedulingType::kImmediate),
-                     script_url);
+  TakePendingScript(ScriptSchedulingType::kImmediate)
+      ->ExecuteScriptBlock(script_url);
   return true;
 }
 
@@ -760,170 +756,7 @@ void ScriptLoader::Execute() {
   DCHECK(pending_script_->IsExternalOrModule());
   PendingScript* pending_script = pending_script_;
   pending_script_ = nullptr;
-  ExecuteScriptBlock(pending_script, NullURL());
-}
-
-// https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block
-void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
-                                      const KURL& document_url) {
-  DCHECK(pending_script);
-  DCHECK_EQ(pending_script->IsExternal(), is_external_script_);
-  DCHECK(already_started_);
-
-  Document* element_document = &(element_->GetDocument());
-  Document* context_document = element_document->ContextDocument();
-  if (!context_document) {
-    pending_script->Dispose();
-    return;
-  }
-
-  LocalFrame* frame = context_document->GetFrame();
-  if (!frame) {
-    pending_script->Dispose();
-    return;
-  }
-
-  // Do not execute module scripts if they are moved between documents.
-  // TODO(hiroshige): Also do not execute classic scripts. crbug.com/721914
-  if (pending_script->OriginalContextDocument() != context_document &&
-      GetScriptType() == ScriptType::kModule) {
-    pending_script->Dispose();
-    return;
-  }
-
-  bool error_occurred = false;
-  Script* script = pending_script->GetSource(document_url, error_occurred);
-
-  // Consider as if "the script's script is null" retrospectively,
-  // if the MIME check fails, which is considered as load failure.
-  if (!pending_script->CheckMIMETypeBeforeRunScript(context_document))
-    error_occurred = true;
-
-  if (!error_occurred && !is_external_script_) {
-    bool should_bypass_main_world_csp =
-        frame->GetScriptController().ShouldBypassMainWorldCSP();
-
-    AtomicString nonce = element_->GetNonceForElement();
-    if (!should_bypass_main_world_csp &&
-        !element_->AllowInlineScriptForCSP(
-            nonce, pending_script->StartingPosition().line_,
-            script->InlineSourceTextForCSP(),
-            ContentSecurityPolicy::InlineType::kBlock)) {
-      // Consider as if "the script's script is null" retrospectively,
-      // if the CSP check fails, which is considered as load failure.
-      error_occurred = true;
-    }
-  }
-
-  const bool was_canceled = pending_script->WasCanceled();
-  const bool is_external = pending_script->IsExternal();
-  const bool created_during_document_write =
-      pending_script->WasCreatedDuringDocumentWrite();
-  const double parser_blocking_load_start_time =
-      pending_script->ParserBlockingLoadStartTime();
-  pending_script->Dispose();
-
-  // <spec step="2">If the script's script is null, fire an event named error at
-  // the element, and return.</spec>
-  if (error_occurred) {
-    DispatchErrorEvent();
-    return;
-  }
-
-  if (parser_blocking_load_start_time > 0.0) {
-    DocumentParserTiming::From(element_->GetDocument())
-        .RecordParserBlockedOnScriptLoadDuration(
-            CurrentTimeTicksInSeconds() - parser_blocking_load_start_time,
-            created_during_document_write);
-  }
-
-  if (was_canceled)
-    return;
-
-  double script_exec_start_time = CurrentTimeTicksInSeconds();
-
-  {
-    CHECK_EQ(script->GetScriptType(), GetScriptType());
-
-    if (element_->ElementHasDuplicateAttributes()) {
-      UseCounter::Count(element_->GetDocument(),
-                        WebFeature::kDuplicatedAttributeForExecutedScript);
-    }
-
-    const bool is_imported_script = context_document != element_document;
-
-    // <spec step="3">If the script is from an external file, or the script's
-    // type is "module", ...</spec>
-    const bool needs_increment =
-        is_external_script_ || script->GetScriptType() == ScriptType::kModule ||
-        is_imported_script;
-    // <spec step="3">... then increment the ignore-destructive-writes counter
-    // of the script element's node document. Let neutralized doc be that
-    // Document.</spec>
-    IgnoreDestructiveWriteCountIncrementer incrementer(
-        needs_increment ? context_document : nullptr);
-
-    // <spec step="4">Let old script element be the value to which the script
-    // element's node document's currentScript object was most recently
-    // set.</spec>
-    //
-    // This is implemented as push/popCurrentScript().
-
-    // <spec step="5">Switch on the script's type:</spec>
-    //
-    // Step 5.A. "classic" [spec text]
-    //
-    // <spec step="5.A.1">If the script element's root is not a shadow root,
-    // then set the script element's node document's currentScript attribute to
-    // the script element. Otherwise, set it to null.</spec>
-    //
-    // Step 5.B. "module" [spec text]
-    //
-    // <spec step="5.B.1">Set the script element's node document's currentScript
-    // attribute to null.</spec>
-    ScriptElementBase* current_script = nullptr;
-    if (script->GetScriptType() == ScriptType::kClassic)
-      current_script = element_;
-    context_document->PushCurrentScript(current_script);
-
-    // Step 5.A. "classic" [spec text]
-    //
-    // <spec step="5.A.2">Run the classic script given by the script's
-    // script.</spec>
-    //
-    // Note: This is where the script is compiled and actually executed.
-    //
-    // Step 5.B. "module" [spec text]
-    //
-    // <spec step="5.B.2">Run the module script given by the script's
-    // script.</spec>
-    script->RunScript(frame, element_->GetDocument().GetSecurityOrigin());
-
-    // <spec step="6">Set the script element's node document's currentScript
-    // attribute to old script element.</spec>
-    context_document->PopCurrentScript(current_script);
-
-    // <spec step="7">Decrement the ignore-destructive-writes counter of
-    // neutralized doc, if it was incremented in the earlier step.</spec>
-    //
-    // Implemented as the scope out of IgnoreDestructiveWriteCountIncrementer.
-  }
-
-  // NOTE: we do not check m_willBeParserExecuted here, since
-  // m_willBeParserExecuted is false for inline scripts, and we want to
-  // include inline script execution time as part of parser blocked script
-  // execution time.
-  if (!pending_script->IsControlledByScriptRunner()) {
-    DocumentParserTiming::From(element_->GetDocument())
-        .RecordParserBlockedOnScriptExecutionDuration(
-            CurrentTimeTicksInSeconds() - script_exec_start_time,
-            created_during_document_write);
-  }
-
-  // <spec step="8">If the script is from an external file, then fire an event
-  // named load at the script element.</spec>
-  if (is_external)
-    DispatchLoadEvent();
+  pending_script->ExecuteScriptBlock(NullURL());
 }
 
 void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
