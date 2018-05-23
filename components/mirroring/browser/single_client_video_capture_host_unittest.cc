@@ -295,4 +295,11 @@ TEST_F(SingleClientVideoCaptureHostTest, ReuseBufferId) {
   RetireBuffer(0, 1);
 }
 
+TEST_F(SingleClientVideoCaptureHostTest, StopCapturingWhileBuffersInUse) {
+  for (int i = 0; i < 10; ++i) {
+    CreateBuffer(i, i);
+    FrameReadyInBuffer(i, i, i);
+  }
+}
+
 }  // namespace mirroring
