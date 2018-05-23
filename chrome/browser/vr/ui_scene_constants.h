@@ -25,6 +25,7 @@ static constexpr float kContentVerticalOffsetDMM = -0.1f;
 static constexpr float kContentVerticalOffset =
     kContentVerticalOffsetDMM * kContentDistance;
 static constexpr float kContentCornerRadius = 0.005f * kContentWidth;
+static constexpr float kLoadingIndicatorYOffset = -0.002f;
 static constexpr float kBackplaneSize = 1000.0f;
 static constexpr float kBackgroundDistanceMultiplier = 1.414f;
 

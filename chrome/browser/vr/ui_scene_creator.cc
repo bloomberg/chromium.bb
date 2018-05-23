@@ -1417,6 +1417,7 @@ void UiSceneCreator::CreateContentQuad() {
   indicator_bg->set_bounds_contain_children(true);
   indicator_bg->set_y_anchoring(BOTTOM);
   indicator_bg->set_y_centering(BOTTOM);
+  indicator_bg->SetTranslate(0, kLoadingIndicatorYOffset, 0);
   indicator_bg->SetCornerRadii(
       {0, 0, kContentCornerRadius, kContentCornerRadius});
   VR_BIND_VISIBILITY(indicator_bg, model->loading);
