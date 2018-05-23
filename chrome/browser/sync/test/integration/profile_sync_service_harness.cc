@@ -176,7 +176,6 @@ bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
         IdentityManagerFactory::GetForProfile(profile_);
     identity_manager->SetPrimaryAccountSynchronouslyForTests(
         gaia_id_, username_, GenerateFakeOAuth2RefreshTokenString());
-    service()->OnPrimaryAccountSet();
   } else {
     LOG(ERROR) << "Unsupported profile signin type.";
   }
