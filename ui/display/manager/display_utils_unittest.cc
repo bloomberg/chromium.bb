@@ -19,12 +19,6 @@ constexpr std::size_t kNumOfZoomFactors = 9;
 constexpr int kDefaultMaxZoomWidth = 4096;
 constexpr int kDefaultMinZoomWidth = 640;
 
-// Returns the index of element |val| in list |list|. Returns the size of list
-// if element is not found.
-std::size_t GetIndexOfElement(const std::vector<float>& list, float val) {
-  return std::find(list.begin(), list.end(), val) - list.begin();
-}
-
 // Returns true if |a| and |b| are equal within the error limits.
 bool WithinEpsilon(float a, float b) {
   return std::abs(a - b) < std::numeric_limits<float>::epsilon();
@@ -146,51 +140,116 @@ TEST_F(DisplayUtilTest, DisplayZoomsWithInternalDsf) {
   }
 }
 
-TEST_F(DisplayUtilTest, InsertInverseDsfIntoList) {
-  std::vector<float> list;
-  float inverse_dsf;
+TEST_F(DisplayUtilTest, InsertDsfIntoListLessThanUnity) {
+  // list[0] -> actual
+  // list[1] -> expected
+  std::vector<float> list[2];
+  float dsf;
 
-  list = {0.6f, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f};
-  inverse_dsf = 0.6f;
-  InsertInverseDsfIntoList(&list, inverse_dsf);
-  EXPECT_EQ(GetIndexOfElement(list, inverse_dsf), 0UL);
-  EXPECT_EQ(list.size(), kNumOfZoomFactors);
+  dsf = 0.6f;
+  list[0] = {0.6f, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f};
+  list[1] = {dsf, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f};
+  InsertDsfIntoList(&list[0], dsf);
+  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
+  EXPECT_EQ(list[0], list[1]);
 
-  list = {0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f, 1.05f};
-  inverse_dsf = 0.6f;
-  InsertInverseDsfIntoList(&list, inverse_dsf);
-  EXPECT_EQ(GetIndexOfElement(list, inverse_dsf), 0UL);
-  EXPECT_EQ(list.size(), kNumOfZoomFactors);
+  dsf = 0.6f;
+  list[0] = {0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f, 1.05f};
+  list[1] = {dsf, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f, 1.05f};
+  InsertDsfIntoList(&list[0], dsf);
+  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
+  EXPECT_EQ(list[0], list[1]);
 
-  list = {0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f, 1.4f};
-  inverse_dsf = 0.67f;
-  InsertInverseDsfIntoList(&list, inverse_dsf);
-  EXPECT_EQ(GetIndexOfElement(list, inverse_dsf), 1UL);
-  EXPECT_EQ(list.size(), kNumOfZoomFactors);
+  dsf = 0.67f;
+  list[0] = {0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f, 1.4f};
+  list[1] = {0.6f, dsf, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f, 1.4f};
+  InsertDsfIntoList(&list[0], dsf);
+  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
+  EXPECT_EQ(list[0], list[1]);
 
-  list = {0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f, 1.4f};
-  inverse_dsf = 0.9f;
-  InsertInverseDsfIntoList(&list, inverse_dsf);
-  EXPECT_EQ(GetIndexOfElement(list, inverse_dsf), 3UL);
-  EXPECT_EQ(list.size(), kNumOfZoomFactors);
+  dsf = 0.9f;
+  list[0] = {0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f, 1.4f};
+  list[1] = {0.6f, 0.7f, 0.8f, dsf, 1.f, 1.1f, 1.2f, 1.3f, 1.4f};
+  InsertDsfIntoList(&list[0], dsf);
+  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
+  EXPECT_EQ(list[0], list[1]);
 
-  list = {0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f, 1.4f};
-  inverse_dsf = 0.99f;
-  InsertInverseDsfIntoList(&list, inverse_dsf);
-  EXPECT_EQ(GetIndexOfElement(list, inverse_dsf), 3UL);
-  EXPECT_EQ(list.size(), kNumOfZoomFactors);
+  dsf = 0.99f;
+  list[0] = {0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f, 1.4f};
+  list[1] = {0.6f, 0.7f, 0.8f, dsf, 1.f, 1.1f, 1.2f, 1.3f, 1.4f};
+  InsertDsfIntoList(&list[0], dsf);
+  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
+  EXPECT_EQ(list[0], list[1]);
 
-  list = {0.8f, 1.f, 1.2f, 1.4f, 1.6f, 1.8f, 2.f, 2.2f, 2.4f};
-  inverse_dsf = 0.99f;
-  InsertInverseDsfIntoList(&list, inverse_dsf);
-  EXPECT_EQ(GetIndexOfElement(list, inverse_dsf), 0UL);
-  EXPECT_EQ(list.size(), kNumOfZoomFactors);
+  dsf = 0.99f;
+  list[0] = {0.8f, 1.f, 1.2f, 1.4f, 1.6f, 1.8f, 2.f, 2.2f, 2.4f};
+  list[1] = {dsf, 1.f, 1.2f, 1.4f, 1.6f, 1.8f, 2.f, 2.2f, 2.4f};
+  InsertDsfIntoList(&list[0], dsf);
+  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
+  EXPECT_EQ(list[0], list[1]);
 
-  list = {1.f, 1.25f, 1.5f, 1.75f, 2.f, 2.25f, 2.5f, 2.75f, 3.f};
-  inverse_dsf = 0.85f;
-  InsertInverseDsfIntoList(&list, inverse_dsf);
-  EXPECT_EQ(GetIndexOfElement(list, inverse_dsf), 0UL);
-  EXPECT_EQ(list.size(), kNumOfZoomFactors);
+  dsf = 0.85f;
+  list[0] = {1.f, 1.25f, 1.5f, 1.75f, 2.f, 2.25f, 2.5f, 2.75f, 3.f};
+  list[1] = {dsf, 1.f, 1.25f, 1.5f, 1.75f, 2.f, 2.25f, 2.5f, 2.75f};
+  InsertDsfIntoList(&list[0], dsf);
+  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
+  EXPECT_EQ(list[0], list[1]);
+}
+
+TEST_F(DisplayUtilTest, InsertDsfIntoListGreaterThanUnity) {
+  // list[0] -> actual
+  // list[1] -> expected
+  std::vector<float> list[2];
+  float dsf;
+
+  dsf = 1.f;
+  list[0] = {0.6f, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f};
+  list[1] = {0.6f, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f};
+  InsertDsfIntoList(&list[0], dsf);
+  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
+  EXPECT_EQ(list[0], list[1]);
+
+  dsf = 1.1f;
+  list[0] = {0.6f, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f};
+  list[1] = {0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f, dsf};
+  InsertDsfIntoList(&list[0], dsf);
+  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
+  EXPECT_EQ(list[0], list[1]);
+
+  dsf = 1.01f;
+  list[0] = {0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f, 1.4f};
+  list[1] = {0.6f, 0.7f, 0.8f, 0.9f, 1.f, dsf, 1.2f, 1.3f, 1.4f};
+  InsertDsfIntoList(&list[0], dsf);
+  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
+  EXPECT_EQ(list[0], list[1]);
+
+  dsf = 1.1f;
+  list[0] = {0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f, 1.4f};
+  list[1] = {0.6f, 0.7f, 0.8f, 0.9f, 1.f, dsf, 1.2f, 1.3f, 1.4f};
+  InsertDsfIntoList(&list[0], dsf);
+  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
+  EXPECT_EQ(list[0], list[1]);
+
+  dsf = 1.13f;
+  list[0] = {0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f, 1.4f};
+  list[1] = {0.6f, 0.7f, 0.8f, 0.9f, 1.f, dsf, 1.2f, 1.3f, 1.4f};
+  InsertDsfIntoList(&list[0], dsf);
+  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
+  EXPECT_EQ(list[0], list[1]);
+
+  dsf = 1.17f;
+  list[0] = {0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f, 1.4f};
+  list[1] = {0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, dsf, 1.3f, 1.4f};
+  InsertDsfIntoList(&list[0], dsf);
+  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
+  EXPECT_EQ(list[0], list[1]);
+
+  dsf = 1.1f;
+  list[0] = {1.f, 1.25f, 1.5f, 1.75f, 2.f, 2.25f, 2.5f, 2.75f, 3.f};
+  list[1] = {1.f, dsf, 1.5f, 1.75f, 2.f, 2.25f, 2.5f, 2.75f, 3.f};
+  InsertDsfIntoList(&list[0], dsf);
+  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
+  EXPECT_EQ(list[0], list[1]);
 }
 
 }  // namespace test

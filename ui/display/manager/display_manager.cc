@@ -656,9 +656,21 @@ void DisplayManager::RegisterDisplayProperty(
   display_info_[display_id].SetRotation(rotation,
                                         Display::RotationSource::ACTIVE);
 
-  if (features::IsDisplayZoomSettingEnabled())
-    display_info_[display_id].set_zoom_factor(display_zoom_factor);
-  else if (0.5f <= ui_scale && ui_scale <= 2.0f)
+  if (features::IsDisplayZoomSettingEnabled()) {
+    // If the |ui_scale| is anything other than 1, it means display zoom feature
+    // has just been enabled. We want to match the effective display resolution
+    // from what it was when ui scale was being used. This ensures that the
+    // users do not face any disruption after an update and/or when the display
+    // zoom feature is enabled. This also ensures that kiosk apps that have a ui
+    // scale set does not break when display zoom is enabled.
+    // NOTE - If the user tries to change the zoom level, they may not be able
+    // to come back to this zoom level again.
+    if (std::abs(ui_scale - 1.f) > std::numeric_limits<float>::epsilon())
+      display_info_[display_id].set_zoom_factor(1.f / ui_scale);
+    else
+      display_info_[display_id].set_zoom_factor(display_zoom_factor);
+    display_info_[display_id].set_configured_ui_scale(1.f);
+  } else if (0.5f <= ui_scale && ui_scale <= 2.0f)
     display_info_[display_id].set_configured_ui_scale(ui_scale);
 
   if (overscan_insets)

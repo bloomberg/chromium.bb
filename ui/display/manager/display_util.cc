@@ -167,52 +167,54 @@ std::vector<float> GetDisplayZoomFactors(const ManagedDisplayMode& mode) {
   // Make sure the inverse of the internal device scale factor is included in
   // the list. This ensures that the users have a way to go to the native
   // resolution and 1.0 effective device scale factor.
-  InsertInverseDsfIntoList(&zoom_values, 1.f / mode.device_scale_factor());
+  InsertDsfIntoList(&zoom_values, 1.f / mode.device_scale_factor());
 
   DCHECK_EQ(zoom_values.size(), static_cast<std::size_t>(kNumOfZoomFactors));
   return zoom_values;
 }
 
-void InsertInverseDsfIntoList(std::vector<float>* zoom_values,
-                              float inverse_dsf) {
-  // We can never set the device scale factor of a display that is < 1. Hence
-  // the inverse can never be greater than 1.
-  DCHECK(inverse_dsf <= 1.f);
-
+void InsertDsfIntoList(std::vector<float>* zoom_values, float dsf) {
   // 1.0 is already in the list of |zoom_values|. We do not need to add it.
-  if (WithinEpsilon(inverse_dsf, 1.f))
+  if (WithinEpsilon(dsf, 1.f))
     return;
 
-  auto it =
-      std::lower_bound(zoom_values->begin(), zoom_values->end(), inverse_dsf);
+  if (dsf > 1.f && WithinEpsilon(*(zoom_values->rbegin()), 1.f)) {
+    // If the last element of the vector is 1 then |dsf|, which is greater than
+    // 1, will simply be inserted after that.
+    zoom_values->push_back(dsf);
+    zoom_values->erase(zoom_values->begin());
+    return;
+  } else if (dsf < 1.f && WithinEpsilon(*(zoom_values->begin()), 1.f)) {
+    // If the first element in the list is 1 then |dsf|, which is less than 1,
+    // will simply be inseted before that.
+    zoom_values->insert(zoom_values->begin(), dsf);
+    zoom_values->pop_back();
+    return;
+  }
 
-  // We dont need to add it if the inverse dsf is already in the list.
-  if (WithinEpsilon(*it, inverse_dsf))
+  // We dont need to add |dsf| to the list if it is already in the list.
+  auto it = std::lower_bound(zoom_values->begin(), zoom_values->end(), dsf);
+  if (WithinEpsilon(*it, dsf))
     return;
 
-  if (it != zoom_values->begin()) {
-    // True if |inverse_dsf| is closer to |it| than it is to |it-1|.
-    const bool inverse_dsf_closer_to_it =
-        std::abs(*it - inverse_dsf) < std::abs(*(it - 1) - inverse_dsf);
-
-    if (WithinEpsilon(*it, 1.f) || !inverse_dsf_closer_to_it) {
-      // This cases handles the following 2 situations:
-      // - |it| points to 1.0 zoom level which we cannot replace.
-      // - If |it-1| is closer to |inverse_dsf| than |it|.
-      *(it - 1) = inverse_dsf;
-    } else {
-      // |inverse_dsf| is closer to |it| than it is to |it - 1|.
-      *it = inverse_dsf;
-    }
+  if (it == zoom_values->begin()) {
+    DCHECK_LT(dsf, 1.f);
+    *(zoom_values->begin()) = dsf;
+  } else if (it == zoom_values->end()) {
+    DCHECK_LT(dsf, 1.f);
+    *(zoom_values->rbegin()) = dsf;
   } else {
-    if (WithinEpsilon(*it, 1.f)) {
-      // If the first element in the list is 1.0 then we cannot replace it. The
-      // |inverse_dsf| needs to be inserted before it and the last item in the
-      // list needs to be removed to keep the list size fixed.
-      zoom_values->insert(zoom_values->begin(), inverse_dsf);
-      zoom_values->pop_back();
+    // There can only be 1 entry for 1.f value.
+    DCHECK(!(WithinEpsilon(*(it - 1), 1.f) && WithinEpsilon(*it, 1.f)));
+
+    // True if |dsf| is closer to |it| than it is to |it-1|.
+    const bool dsf_closer_to_it =
+        std::abs(*it - dsf) < std::abs(*(it - 1) - dsf);
+    if (WithinEpsilon(*(it - 1), 1.f) ||
+        (dsf_closer_to_it && !WithinEpsilon(*it, 1.f))) {
+      *it = dsf;
     } else {
-      *it = inverse_dsf;
+      *(it - 1) = dsf;
     }
   }
 }
