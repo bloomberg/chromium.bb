@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -21,6 +22,35 @@
 namespace device {
 
 namespace {
+
+#if defined(OS_MACOSX)
+
+// Convert byte array into GUID formatted string as defined by RFC 4122.
+// As we are converting 128 bit UUID, |bytes| must be have length of 16.
+// https://tools.ietf.org/html/rfc4122
+std::string ConvertBytesToUuid(base::span<const uint8_t, 16> bytes) {
+  uint64_t most_significant_bytes = 0;
+  for (size_t i = 0; i < sizeof(uint64_t); i++) {
+    most_significant_bytes |= base::strict_cast<uint64_t>(bytes[i])
+                              << 8 * (7 - i);
+  }
+
+  uint64_t least_significant_bytes = 0;
+  for (size_t i = 0; i < sizeof(uint64_t); i++) {
+    least_significant_bytes |= base::strict_cast<uint64_t>(bytes[i + 8])
+                               << 8 * (7 - i);
+  }
+
+  return base::StringPrintf(
+      "%08x-%04x-%04x-%04x-%012llx",
+      static_cast<unsigned int>(most_significant_bytes >> 32),
+      static_cast<unsigned int>((most_significant_bytes >> 16) & 0x0000ffff),
+      static_cast<unsigned int>(most_significant_bytes & 0x0000ffff),
+      static_cast<unsigned int>(least_significant_bytes >> 48),
+      least_significant_bytes & 0x0000ffff'ffffffffULL);
+}
+
+#endif
 
 const BluetoothUUID& CableAdvertisementUUID() {
   static const BluetoothUUID service_uuid(kCableAdvertisementUUID);
@@ -46,7 +76,7 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
 #if defined(OS_MACOSX)
   auto list = std::make_unique<BluetoothAdvertisement::UUIDList>();
   list->emplace_back(advertisement_uuid);
-  list->emplace_back(std::string(client_eid.cbegin(), client_eid.cend()));
+  list->emplace_back(ConvertBytesToUuid(client_eid));
   advertisement_data->set_service_uuids(std::move(list));
 
 #elif defined(OS_WIN)
