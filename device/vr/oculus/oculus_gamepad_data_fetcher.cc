@@ -96,7 +96,7 @@ void SetTouchData(PadState* state,
         return;
     }
   }
-  pad.timestamp = input_state.TimeInSeconds;
+  pad.timestamp = CurrentTimeInMicroseconds();
   pad.axes_length = 0;
   pad.buttons_length = 0;
   pad.axes[pad.axes_length++] = input_state.Thumbstick[hand].x;
