@@ -420,8 +420,10 @@ body.dark-theme .md-tile:active .md-menu::after {
 
 .md-tile.blacklisted {
   margin: 0;
+  padding: 0;
   transform: scale(0, 0);
-  transition-property: transform, box-shadow, margin, opacity, width;
+  transition-duration: 200ms;
+  transition-property: transform, box-shadow, margin, opacity, padding, width;
   width: 0;
 }
 
@@ -479,6 +481,10 @@ body.dark-theme .md-tile:active .md-menu::after {
 
 .md-favicon.failed-favicon img {
   display: none;
+}
+
+.md-title-container {
+  overflow: hidden;
 }
 
 .md-title {
