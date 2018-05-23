@@ -83,10 +83,10 @@ namespace {
 const int kIdleStateThresholdSeconds = 300;
 
 // How much time in the past to store active periods for.
-constexpr TimeDelta kMaxStoredPastActivity = TimeDelta::FromDays(30);
+constexpr TimeDelta kMaxStoredPastActivityInterval = TimeDelta::FromDays(30);
 
 // How much time in the future to store active periods for.
-constexpr TimeDelta kMaxStoredFutureActivity = TimeDelta::FromDays(2);
+constexpr TimeDelta kMaxStoredFutureActivityInterval = TimeDelta::FromDays(2);
 
 // How often, in seconds, to sample the hardware resource usage.
 const unsigned int kResourceUsageSampleIntervalSeconds = 120;
@@ -440,7 +440,9 @@ class DeviceStatusCollector::ActivityStorage {
     int activity_milliseconds;
   };
 
-  explicit ActivityStorage(PrefService* local_state);
+  // Creates activity storage. Activity data will be stored in the given
+  // |pref_service| under |pref_name| preference.
+  ActivityStorage(PrefService* pref_service, const std::string& pref_name);
   ~ActivityStorage();
 
   // Adds an activity period. Accepts empty |active_user_email| if it should not
@@ -450,10 +452,11 @@ class DeviceStatusCollector::ActivityStorage {
                          const std::string& active_user_email);
 
   // Clears stored activity periods outside of storage range defined by
-  // |max_past_activity| and |max_future_activity| from |base_time|.
+  // |max_past_activity_interval| and |max_future_activity_interval| from
+  // |base_time|.
   void PruneActivityPeriods(Time base_time,
-                            TimeDelta max_past_activity,
-                            TimeDelta max_future_activity);
+                            TimeDelta max_past_activity_interval,
+                            TimeDelta max_future_activity_interval);
 
   // Trims the store activity periods to only retain data within the
   // [|min_day_key|, |max_day_key|). The record for |min_day_key| will be
@@ -485,14 +488,22 @@ class DeviceStatusCollector::ActivityStorage {
                               const std::vector<std::string>& reporting_users,
                               base::DictionaryValue* const filtered_times);
 
-  PrefService* const local_state_ = nullptr;
+  PrefService* const pref_service_ = nullptr;
+  const std::string pref_name_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityStorage);
 };
 
 DeviceStatusCollector::ActivityStorage::ActivityStorage(
-    PrefService* local_state)
-    : local_state_(local_state) {}
+    PrefService* pref_service,
+    const std::string& pref_name)
+    : pref_service_(pref_service), pref_name_(pref_name) {
+  DCHECK(pref_service_);
+  const PrefService::PrefInitializationStatus pref_service_status =
+      pref_service_->GetInitializationStatus();
+  DCHECK(pref_service_status != PrefService::INITIALIZATION_STATUS_WAITING &&
+         pref_service_status != PrefService::INITIALIZATION_STATUS_ERROR);
+}
 
 DeviceStatusCollector::ActivityStorage::~ActivityStorage() = default;
 
@@ -503,7 +514,7 @@ void DeviceStatusCollector::ActivityStorage::AddActivityPeriod(
   DCHECK(start <= end);
 
   // Maintain the list of active periods in a local_state pref.
-  DictionaryPrefUpdate update(local_state_, prefs::kDeviceActivityTimes);
+  DictionaryPrefUpdate update(pref_service_, pref_name_);
   base::DictionaryValue* activity_times = update.Get();
 
   // Assign the period to day buckets in local time.
@@ -522,10 +533,10 @@ void DeviceStatusCollector::ActivityStorage::AddActivityPeriod(
 
 void DeviceStatusCollector::ActivityStorage::PruneActivityPeriods(
     Time base_time,
-    TimeDelta max_past_activity,
-    TimeDelta max_future_activity) {
-  Time min_time = base_time - max_past_activity;
-  Time max_time = base_time + max_future_activity;
+    TimeDelta max_past_activity_interval,
+    TimeDelta max_future_activity_interval) {
+  Time min_time = base_time - max_past_activity_interval;
+  Time max_time = base_time + max_future_activity_interval;
   TrimActivityPeriods(TimestampToDayKey(min_time), 0,
                       TimestampToDayKey(max_time));
 }
@@ -535,7 +546,7 @@ void DeviceStatusCollector::ActivityStorage::TrimActivityPeriods(
     int min_day_trim_duration,
     int64_t max_day_key) {
   const base::DictionaryValue* activity_times =
-      local_state_->GetDictionary(prefs::kDeviceActivityTimes);
+      pref_service_->GetDictionary(pref_name_);
 
   std::unique_ptr<base::DictionaryValue> copy(activity_times->DeepCopy());
   for (base::DictionaryValue::Iterator it(*activity_times); !it.IsAtEnd();
@@ -559,23 +570,23 @@ void DeviceStatusCollector::ActivityStorage::TrimActivityPeriods(
     // The entry is out of range or couldn't be parsed. Remove it.
     copy->Remove(it.key(), NULL);
   }
-  local_state_->Set(prefs::kDeviceActivityTimes, *copy);
+  pref_service_->Set(pref_name_, *copy);
 }
 
 void DeviceStatusCollector::ActivityStorage::FilterActivityPeriodsByUsers(
     const std::vector<std::string>& reporting_users) {
   const base::DictionaryValue* stored_activity_periods =
-      local_state_->GetDictionary(prefs::kDeviceActivityTimes);
+      pref_service_->GetDictionary(pref_name_);
   base::DictionaryValue filtered_activity_periods;
   ProcessActivityPeriods(*stored_activity_periods, reporting_users,
                          &filtered_activity_periods);
-  local_state_->Set(prefs::kDeviceActivityTimes, filtered_activity_periods);
+  pref_service_->Set(prefs::kDeviceActivityTimes, filtered_activity_periods);
 }
 
 std::vector<DeviceStatusCollector::ActivityStorage::ActivityPeriod>
 DeviceStatusCollector::ActivityStorage::GetFilteredActivityPeriods(
     bool omit_emails) {
-  DictionaryPrefUpdate update(local_state_, prefs::kDeviceActivityTimes);
+  DictionaryPrefUpdate update(pref_service_, pref_name_);
   base::DictionaryValue* stored_activity_periods = update.Get();
 
   base::DictionaryValue filtered_activity_periods;
@@ -666,16 +677,16 @@ void DeviceStatusCollector::ActivityStorage::ProcessActivityPeriods(
 }
 
 DeviceStatusCollector::DeviceStatusCollector(
-    PrefService* local_state,
+    PrefService* pref_service,
     chromeos::system::StatisticsProvider* provider,
     const VolumeInfoFetcher& volume_info_fetcher,
     const CPUStatisticsFetcher& cpu_statistics_fetcher,
     const CPUTempFetcher& cpu_temp_fetcher,
     const AndroidStatusFetcher& android_status_fetcher,
     bool is_enterprise_device)
-    : max_stored_past_activity_(kMaxStoredPastActivity),
-      max_stored_future_activity_(kMaxStoredFutureActivity),
-      local_state_(local_state),
+    : max_stored_past_activity_interval_(kMaxStoredPastActivityInterval),
+      max_stored_future_activity_interval_(kMaxStoredFutureActivityInterval),
+      pref_service_(pref_service),
       last_idle_check_(Time()),
       volume_info_fetcher_(volume_info_fetcher),
       cpu_statistics_fetcher_(cpu_statistics_fetcher),
@@ -683,7 +694,6 @@ DeviceStatusCollector::DeviceStatusCollector(
       android_status_fetcher_(android_status_fetcher),
       statistics_provider_(provider),
       cros_settings_(chromeos::CrosSettings::Get()),
-      activity_storage_(std::make_unique<ActivityStorage>(local_state)),
       is_enterprise_device_(is_enterprise_device),
       task_runner_(nullptr),
       weak_factory_(this) {
@@ -753,12 +763,31 @@ DeviceStatusCollector::DeviceStatusCollector(
   chromeos::version_loader::GetTpmVersion(
       base::BindOnce(&DeviceStatusCollector::OnTpmVersion,
                      weak_factory_.GetWeakPtr()));
-  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-  pref_change_registrar_->Init(local_state_);
-  pref_change_registrar_->Add(
-      prefs::kReportingUsers,
-      base::BindRepeating(&DeviceStatusCollector::ReportingUsersChanged,
-                          weak_factory_.GetWeakPtr()));
+
+  // If doing enterprise device-level reporting, observe the list of users to be
+  // reported. Consumer reporting is enforced for the signed-in registered user
+  // therefore this preference is not observed.
+  if (is_enterprise_device_) {
+    pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+    pref_change_registrar_->Init(pref_service_);
+    pref_change_registrar_->Add(
+        prefs::kReportingUsers,
+        base::BindRepeating(&DeviceStatusCollector::ReportingUsersChanged,
+                            weak_factory_.GetWeakPtr()));
+  }
+
+  // User |pref_service| might not be initialized yet. This can be removed once
+  // creation of DeviceStatusCollector for non-enterprise reporting guarantees
+  // that pref service is ready.
+  if (pref_service_->GetInitializationStatus() ==
+      PrefService::INITIALIZATION_STATUS_WAITING) {
+    pref_service->AddPrefInitObserver(
+        base::BindOnce(&DeviceStatusCollector::OnPrefServiceInitialized,
+                       weak_factory_.GetWeakPtr()));
+    return;
+  }
+  OnPrefServiceInitialized(pref_service_->GetInitializationStatus() !=
+                           PrefService::INITIALIZATION_STATUS_ERROR);
 }
 
 DeviceStatusCollector::~DeviceStatusCollector() {
@@ -773,6 +802,8 @@ void DeviceStatusCollector::RegisterPrefs(PrefRegistrySimple* registry) {
 // static
 void DeviceStatusCollector::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kReportArcStatusEnabled, false);
+  registry->RegisterDictionaryPref(prefs::kUserActivityTimes,
+                                   std::make_unique<base::DictionaryValue>());
 }
 
 void DeviceStatusCollector::CheckIdleState() {
@@ -855,8 +886,9 @@ void DeviceStatusCollector::ClearCachedResourceUsage() {
 }
 
 void DeviceStatusCollector::IdleStateCallback(ui::IdleState state) {
-  // Do nothing if device activity reporting is disabled.
-  if (!report_activity_times_)
+  // Do nothing if |activity_storage_| is not ready or device activity reporting
+  // is disabled.
+  if (!activity_storage_ || !report_activity_times_)
     return;
 
   Time now = GetCurrentTime();
@@ -888,8 +920,9 @@ void DeviceStatusCollector::IdleStateCallback(ui::IdleState state) {
                                            primary_user_email);
     }
 
-    activity_storage_->PruneActivityPeriods(now, max_stored_past_activity_,
-                                            max_stored_future_activity_);
+    activity_storage_->PruneActivityPeriods(
+        now, max_stored_past_activity_interval_,
+        max_stored_future_activity_interval_);
   }
   last_idle_check_ = now;
 }
@@ -987,16 +1020,38 @@ void DeviceStatusCollector::ReceiveCPUStatistics(const std::string& stats) {
 }
 
 void DeviceStatusCollector::ReportingUsersChanged() {
+  // Do nothing if |activity_storage_| is not ready.
+  if (!activity_storage_)
+    return;
+
   std::vector<std::string> reporting_users;
-  for (auto& value : local_state_->GetList(prefs::kReportingUsers)->GetList()) {
+  for (auto& value :
+       pref_service_->GetList(prefs::kReportingUsers)->GetList()) {
     if (value.is_string())
       reporting_users.push_back(value.GetString());
   }
   activity_storage_->FilterActivityPeriodsByUsers(reporting_users);
 }
 
+void DeviceStatusCollector::OnPrefServiceInitialized(bool succeeded) {
+  if (!succeeded) {
+    LOG(ERROR) << "Pref service was not initialized successfully - activity "
+                  "for device status reporting cannot be stored.";
+    return;
+  }
+
+  DCHECK(!activity_storage_);
+  activity_storage_ = std::make_unique<ActivityStorage>(
+      pref_service_, (is_enterprise_device_ ? prefs::kDeviceActivityTimes
+                                            : prefs::kUserActivityTimes));
+}
+
 bool DeviceStatusCollector::GetActivityTimes(
     em::DeviceStatusReportRequest* status) {
+  // Do nothing if |activity_storage_| is not ready.
+  if (!activity_storage_)
+    return false;
+
   // If user reporting is off, data should be aggregated per day.
   std::vector<ActivityStorage::ActivityPeriod> activity_times =
       activity_storage_->GetFilteredActivityPeriods(!report_users_);
@@ -1496,6 +1551,10 @@ std::string DeviceStatusCollector::GetAppVersion(
 }
 
 void DeviceStatusCollector::OnSubmittedSuccessfully() {
+  // Do nothing if |activity_storage_| is not ready.
+  if (!activity_storage_)
+    return;
+
   activity_storage_->TrimActivityPeriods(last_reported_day_,
                                          duration_for_last_reported_day_,
                                          std::numeric_limits<int64_t>::max());

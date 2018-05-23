@@ -97,7 +97,7 @@ const char kShillFakeUserhash[] = "user1";
 class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
   TestingDeviceStatusCollector(
-      PrefService* local_state,
+      PrefService* pref_service,
       chromeos::system::StatisticsProvider* provider,
       const policy::DeviceStatusCollector::VolumeInfoFetcher&
           volume_info_fetcher,
@@ -106,7 +106,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
       const policy::DeviceStatusCollector::AndroidStatusFetcher&
           android_status_fetcher,
       bool is_enterprise_device)
-      : policy::DeviceStatusCollector(local_state,
+      : policy::DeviceStatusCollector(pref_service,
                                       provider,
                                       volume_info_fetcher,
                                       cpu_fetcher,
@@ -123,12 +123,12 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
       IdleStateCallback(states[i]);
   }
 
-  void set_max_stored_past_activity(TimeDelta value) {
-    max_stored_past_activity_ = value;
+  void set_max_stored_past_activity_interval(TimeDelta value) {
+    max_stored_past_activity_interval_ = value;
   }
 
-  void set_max_stored_future_activity(TimeDelta value) {
-    max_stored_future_activity_ = value;
+  void set_max_stored_future_activity_interval(TimeDelta value) {
+    max_stored_future_activity_interval_ = value;
   }
 
   // Reset the baseline time.
@@ -339,6 +339,8 @@ class DeviceStatusCollectorTest : public testing::Test {
     // DiskMountManager takes ownership of the MockDiskMountManager.
     DiskMountManager::InitializeForTesting(mock_disk_mount_manager.release());
     TestingDeviceStatusCollector::RegisterPrefs(local_state_.registry());
+    TestingDeviceStatusCollector::RegisterProfilePrefs(
+        profile_pref_service_.registry());
 
     settings_helper_.ReplaceProvider(chromeos::kReportDeviceActivityTimes);
     owner_settings_service_ =
@@ -548,6 +550,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   em::SessionStatusReportRequest session_status_;
   bool got_session_status_;
   TestingPrefServiceSimple local_state_;
+  TestingPrefServiceSimple profile_pref_service_;
   std::unique_ptr<TestingDeviceStatusCollector> status_collector_;
   const policy::DeviceLocalAccount fake_kiosk_device_local_account_;
   const policy::ArcKioskAppBasicInfo fake_arc_kiosk_app_basic_info_;
@@ -696,6 +699,25 @@ TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
             GetActiveMilliseconds(device_status_));
 }
 
+TEST_F(DeviceStatusCollectorTest, ActivityNotWrittenToProfilePref) {
+  EXPECT_TRUE(
+      profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
+
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_ACTIVE};
+  status_collector_->Simulate(test_states,
+                              sizeof(test_states) / sizeof(ui::IdleState));
+  GetStatus();
+  EXPECT_EQ(1, device_status_.active_period_size());
+  EXPECT_EQ(3 * ActivePeriodMilliseconds(),
+            GetActiveMilliseconds(device_status_));
+
+  // Nothing should be written to profile pref service, because it is only used
+  // for consumer reporting.
+  EXPECT_TRUE(
+      profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
+}
+
 TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
   ui::IdleState test_states[] = {
     ui::IDLE_STATE_ACTIVE,
@@ -704,9 +726,10 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
   const int kMaxDays = 10;
 
   settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
-  status_collector_->set_max_stored_past_activity(
+  status_collector_->set_max_stored_past_activity_interval(
       TimeDelta::FromDays(kMaxDays - 1));
-  status_collector_->set_max_stored_future_activity(TimeDelta::FromDays(1));
+  status_collector_->set_max_stored_future_activity_interval(
+      TimeDelta::FromDays(1));
   Time baseline = Time::Now().LocalMidnight();
 
   // Simulate 12 active periods.
@@ -1820,6 +1843,14 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, ReportIfPublicSession) {
 
 // Tests collecting device status for registered consumer device.
 class ConsumerDeviceStatusCollectorTest : public DeviceStatusCollectorTest {
+ public:
+  ConsumerDeviceStatusCollectorTest() {
+    user_account_id_ = AccountId::FromUserEmail("user0@gmail.com");
+    MockRegularUserWithAffiliation(user_account_id_, true);
+  }
+
+  ~ConsumerDeviceStatusCollectorTest() override = default;
+
  protected:
   void RestartStatusCollector(
       const policy::DeviceStatusCollector::VolumeInfoFetcher& volume_info,
@@ -1827,11 +1858,13 @@ class ConsumerDeviceStatusCollectorTest : public DeviceStatusCollectorTest {
       const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher,
       const policy::DeviceStatusCollector::AndroidStatusFetcher&
           android_status_fetcher) override {
-    status_collector_.reset(new TestingDeviceStatusCollector(
-        &local_state_, &fake_statistics_provider_, volume_info, cpu_stats,
-        cpu_temp_fetcher, android_status_fetcher,
-        false /* is_enterprise_device */));
+    status_collector_ = std::make_unique<TestingDeviceStatusCollector>(
+        &profile_pref_service_, &fake_statistics_provider_, volume_info,
+        cpu_stats, cpu_temp_fetcher, android_status_fetcher,
+        false /* is_enterprise_device */);
   }
+
+  AccountId user_account_id_;
 };
 
 TEST_F(ConsumerDeviceStatusCollectorTest, ReportingBootMode) {
@@ -1858,6 +1891,50 @@ TEST_F(ConsumerDeviceStatusCollectorTest, ReportingActivityTimes) {
             GetActiveMilliseconds(device_status_));
 }
 
+TEST_F(ConsumerDeviceStatusCollectorTest, ActivityKeptInPref) {
+  EXPECT_TRUE(
+      profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
+
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE,
+                                 ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_IDLE,   ui::IDLE_STATE_IDLE};
+  status_collector_->Simulate(test_states,
+                              sizeof(test_states) / sizeof(ui::IdleState));
+  EXPECT_FALSE(
+      profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
+
+  // Process the list a second time after restarting the collector. It should be
+  // able to count the active periods found by the original collector, because
+  // the results are stored in a pref.
+  RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
+                         base::BindRepeating(&GetEmptyCPUStatistics),
+                         base::BindRepeating(&GetEmptyCPUTempInfo),
+                         base::BindRepeating(&GetEmptyAndroidStatus));
+  status_collector_->Simulate(test_states,
+                              sizeof(test_states) / sizeof(ui::IdleState));
+
+  GetStatus();
+  EXPECT_EQ(6 * ActivePeriodMilliseconds(),
+            GetActiveMilliseconds(device_status_));
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTest, ActivityNotWrittenToLocalState) {
+  EXPECT_TRUE(local_state_.GetDictionary(prefs::kDeviceActivityTimes)->empty());
+
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_ACTIVE};
+  status_collector_->Simulate(test_states,
+                              sizeof(test_states) / sizeof(ui::IdleState));
+  GetStatus();
+  EXPECT_EQ(1, device_status_.active_period_size());
+  EXPECT_EQ(3 * ActivePeriodMilliseconds(),
+            GetActiveMilliseconds(device_status_));
+
+  // Nothing should be written to local state, because it is only used for
+  // enterprise reporting.
+  EXPECT_TRUE(local_state_.GetDictionary(prefs::kDeviceActivityTimes)->empty());
+}
+
 TEST_F(ConsumerDeviceStatusCollectorTest, ReportingArcStatus) {
   RestartStatusCollector(
       base::BindRepeating(&GetEmptyVolumeInfo),
@@ -1865,8 +1942,6 @@ TEST_F(ConsumerDeviceStatusCollectorTest, ReportingArcStatus) {
       base::BindRepeating(&GetEmptyCPUTempInfo),
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo));
 
-  const AccountId account_id(AccountId::FromUserEmail("user0@gmail.com"));
-  MockRegularUserWithAffiliation(account_id, true);
   testing_profile_->GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled,
                                            true);
 
@@ -1876,7 +1951,7 @@ TEST_F(ConsumerDeviceStatusCollectorTest, ReportingArcStatus) {
   EXPECT_EQ(kDroidGuardInfo,
             session_status_.android_status().droid_guard_info());
   // In tests, GetUserDMToken returns the e-mail for easy verification.
-  EXPECT_EQ(account_id.GetUserEmail(), session_status_.user_dm_token());
+  EXPECT_EQ(user_account_id_.GetUserEmail(), session_status_.user_dm_token());
 }
 
 TEST_F(ConsumerDeviceStatusCollectorTest, ReportingPartialVersionInfo) {
@@ -1928,20 +2003,6 @@ TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingUsers) {
   GetStatus();
 
   EXPECT_EQ(0, device_status_.user_size());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingRunningKioskApp) {
-  MockPlatformVersion("1234.0.0");
-  MockAutoLaunchKioskAppWithRequiredPlatformVersion(
-      fake_kiosk_device_local_account_, "1235");
-  MockRunningKioskApp(fake_kiosk_device_local_account_, false /* arc_kiosk */);
-  status_collector_->set_kiosk_account(
-      std::make_unique<policy::DeviceLocalAccount>(
-          fake_kiosk_device_local_account_));
-
-  GetStatus();
-
-  EXPECT_FALSE(device_status_.has_running_kiosk_app());
 }
 
 TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingOSUpdateStatus) {
