@@ -40,8 +40,25 @@ function StartSingleFileDownloadWithBiggerThanActualDownloadTotal() {
   navigator.serviceWorker.ready.then(swRegistration => {
     const options = {
       icons: kIcon,
-      title: 'Single-file Background Fetch with incorrect downloadTotal',
-      downloadTotal: 1000
+      title: 'Single-file Background Fetch with downloadTotal too high',
+      downloadTotal: 1000,
+    };
+
+    return swRegistration.backgroundFetch.fetch(
+        kBackgroundFetchId, kBackgroundFetchResource, options);
+  }).then(bgFetchRegistration => {
+    sendResultToTest('ok');
+  }).catch(sendErrorToTest);
+}
+
+// Starts a Background Fetch request for a single to-be-downloaded file, with
+// downloadTotal smaller than the actual size.
+function StartSingleFileDownloadWithSmallerThanActualDownloadTotal() {
+  navigator.serviceWorker.ready.then(swRegistration => {
+    const options = {
+      icons: kIcon,
+      title: 'Single-file Background Fetch with downloadTotal too low',
+      downloadTotal: 80,
     };
 
     return swRegistration.backgroundFetch.fetch(
@@ -58,7 +75,7 @@ function StartSingleFileDownloadWithCorrectDownloadTotal() {
     const options = {
       icons: kIcon,
       title: 'Single-file Background Fetch with accurate downloadTotal',
-      downloadTotal: 82
+      downloadTotal: 82,
     };
 
     return swRegistration.backgroundFetch.fetch(

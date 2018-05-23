@@ -41,7 +41,7 @@ class CONTENT_EXPORT BackgroundFetchJobController final
  public:
   using FinishedCallback =
       base::OnceCallback<void(const BackgroundFetchRegistrationId&,
-                              bool /* aborted */)>;
+                              BackgroundFetchReasonToAbort)>;
   using ProgressCallback =
       base::RepeatingCallback<void(const std::string& /* unique_id */,
                                    uint64_t /* download_total */,
@@ -71,9 +71,6 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // of a notification for instance.
   void UpdateUI(const std::string& title);
 
-  // Aborts the job including cancelling any ongoing downloads.
-  void Abort();
-
   // Returns the options with which this job is fetching data.
   const BackgroundFetchOptions& options() const { return options_; }
 
@@ -89,17 +86,13 @@ class CONTENT_EXPORT BackgroundFetchJobController final
       uint64_t bytes_downloaded) override;
   void DidCompleteRequest(
       const scoped_refptr<BackgroundFetchRequestInfo>& request) override;
-  void AbortFromUser() override;
 
   // BackgroundFetchScheduler::Controller implementation:
   bool HasMoreRequests() override;
   void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request) override;
+  void Abort(BackgroundFetchReasonToAbort reason_to_abort) override;
 
  private:
-  // Aborts a job updating the registration with the new state. If
-  // |cancel_download| is true, the ongoing download is also cancelled
-  // (otherwise it assumes that has already happened).
-  void Abort(bool cancel_download);
 
   // Options for the represented background fetch registration.
   BackgroundFetchOptions options_;

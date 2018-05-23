@@ -103,7 +103,7 @@ class FakeController : public BackgroundFetchDelegateProxy::Controller {
     request_completed_ = true;
   }
 
-  void AbortFromUser() override {}
+  void Abort(BackgroundFetchReasonToAbort reason_to_abort) override {}
 
   bool request_started_ = false;
   bool request_completed_ = false;

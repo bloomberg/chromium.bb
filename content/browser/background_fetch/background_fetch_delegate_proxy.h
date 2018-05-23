@@ -44,8 +44,8 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
     virtual void DidCompleteRequest(
         const scoped_refptr<BackgroundFetchRequestInfo>& request) = 0;
 
-    // Called when the user aborts a Background Fetch registration.
-    virtual void AbortFromUser() = 0;
+    // Called when the delegate aborts a Background Fetch registration.
+    virtual void Abort(BackgroundFetchReasonToAbort) = 0;
 
     virtual ~Controller() {}
   };
@@ -84,8 +84,8 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   void UpdateUI(const std::string& job_unique_id, const std::string& title);
 
   // Aborts in progress downloads for the given registration. Called from the
-  // Controller (on the IO thread) after it is aborted, either by the user or
-  // website. May occur even if all requests already called OnDownloadComplete.
+  // Controller (on the IO thread) after it is aborted. May occur even if all
+  // requests already called OnDownloadComplete.
   void Abort(const std::string& job_unique_id);
 
  private:
@@ -93,7 +93,8 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
 
   // Called when the job identified by |job_unique|id| was cancelled by the
   // delegate. Should only be called on the IO thread.
-  void OnJobCancelled(const std::string& job_unique_id);
+  void OnJobCancelled(const std::string& job_unique_id,
+                      BackgroundFetchReasonToAbort reason_to_abort);
 
   // Called when the download identified by |guid| has succeeded/failed/aborted.
   // Should only be called on the IO thread.

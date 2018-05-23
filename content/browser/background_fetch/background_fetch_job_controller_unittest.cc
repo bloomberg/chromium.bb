@@ -190,7 +190,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   }
 
   static void OnJobFinished(const BackgroundFetchRegistrationId&,
-                            bool aborted) {}
+                            BackgroundFetchReasonToAbort reason_to_abort) {}
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchJobControllerTest);
 };
@@ -268,7 +268,7 @@ TEST_F(BackgroundFetchJobControllerTest, Abort) {
       CreateJobController(registration_id, requests.size());
 
   controller->StartRequest(requests[0]);
-  controller->AbortFromUser();
+  controller->Abort(BackgroundFetchReasonToAbort::CANCELLED_FROM_UI);
   // Tell the delegate to abort the job as well so it doesn't send completed
   // messages to the JobController.
   delegate_->Abort(registration_id.unique_id());

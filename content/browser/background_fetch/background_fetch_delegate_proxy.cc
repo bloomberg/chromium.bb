@@ -144,7 +144,8 @@ class BackgroundFetchDelegateProxy::Core
   }
 
   // BackgroundFetchDelegate::Client implementation:
-  void OnJobCancelled(const std::string& job_unique_id) override;
+  void OnJobCancelled(const std::string& job_unique_id,
+                      BackgroundFetchReasonToAbort reason_to_abort) override;
   void OnDownloadUpdated(const std::string& job_unique_id,
                          const std::string& guid,
                          uint64_t bytes_downloaded) override;
@@ -172,12 +173,13 @@ class BackgroundFetchDelegateProxy::Core
 };
 
 void BackgroundFetchDelegateProxy::Core::OnJobCancelled(
-    const std::string& job_unique_id) {
+    const std::string& job_unique_id,
+    BackgroundFetchReasonToAbort reason_to_abort) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&BackgroundFetchDelegateProxy::OnJobCancelled, io_parent_,
-                     job_unique_id));
+                     job_unique_id, reason_to_abort));
 }
 
 void BackgroundFetchDelegateProxy::Core::OnDownloadUpdated(
@@ -306,8 +308,12 @@ void BackgroundFetchDelegateProxy::Abort(const std::string& job_unique_id) {
 }
 
 void BackgroundFetchDelegateProxy::OnJobCancelled(
-    const std::string& job_unique_id) {
+    const std::string& job_unique_id,
+    BackgroundFetchReasonToAbort reason_to_abort) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(reason_to_abort == BackgroundFetchReasonToAbort::CANCELLED_FROM_UI ||
+         reason_to_abort ==
+             BackgroundFetchReasonToAbort::TOTAL_DOWNLOAD_SIZE_EXCEEDED);
 
   // TODO(delphick): The controller may not exist as persistence is not yet
   // implemented.
@@ -317,7 +323,7 @@ void BackgroundFetchDelegateProxy::OnJobCancelled(
 
   JobDetails& job_details = job_details_iter->second;
   if (job_details.controller)
-    job_details.controller->AbortFromUser();
+    job_details.controller->Abort(reason_to_abort);
 }
 
 void BackgroundFetchDelegateProxy::DidStartRequest(
