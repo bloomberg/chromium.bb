@@ -10,11 +10,6 @@ namespace blink {
 
 namespace {
 
-inline uintptr_t RoundUpToPageAllocationGranularity(uintptr_t address) {
-  return (address + base::kPageAllocationGranularityOffsetMask) &
-         base::kPageAllocationGranularityBaseMask;
-}
-
 constexpr inline bool IsPowerOfTwo(size_t value) {
   return value > 0 && (value & (value - 1)) == 0;
 }
@@ -29,7 +24,7 @@ static_assert(
     0 == base::kPageAllocationGranularity % base::kSystemPageSize,
     "System page size must be a multiple of page page allocation granularity");
 
-size_t ComputeInitialTableLimit() {
+constexpr size_t ComputeInitialTableLimit() {
   // (Light) experimentation suggests that Blink doesn't need more than this
   // while handling content on popular web properties.
   constexpr size_t kInitialWantedLimit = 512;
@@ -37,12 +32,12 @@ size_t ComputeInitialTableLimit() {
   // Different OSes have different page sizes, so we have to choose the minimum
   // of memory wanted and OS page size.
   constexpr size_t memory_wanted = kInitialWantedLimit * kEntrySize;
-  return RoundUpToPageAllocationGranularity(memory_wanted) / kEntrySize;
+  return base::RoundUpToPageAllocationGranularity(memory_wanted) / kEntrySize;
 }
 
-size_t MaxTableSize() {
-  static const size_t kMaxTableSize =
-      RoundUpToPageAllocationGranularity(GCInfoTable::kMaxIndex * kEntrySize);
+constexpr size_t MaxTableSize() {
+  constexpr size_t kMaxTableSize = base::RoundUpToPageAllocationGranularity(
+      GCInfoTable::kMaxIndex * kEntrySize);
   return kMaxTableSize;
 }
 
