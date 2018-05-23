@@ -30,7 +30,7 @@ struct FaviconLoader::RequestData {
 
 FaviconLoader::FaviconLoader(favicon::FaviconService* favicon_service)
     : favicon_service_(favicon_service),
-      favicon_cache_([NSMutableDictionary dictionaryWithCapacity:10]) {}
+      favicon_cache_([[NSCache alloc] init]) {}
 
 FaviconLoader::~FaviconLoader() {}
 
@@ -40,7 +40,6 @@ FaviconLoader::~FaviconLoader() {}
 UIImage* FaviconLoader::ImageForURL(const GURL& url,
                                     const favicon_base::IconTypeSet& types,
                                     ImageCompletionBlock block) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   NSString* key = base::SysUTF8ToNSString(url.spec());
   id value = [favicon_cache_ objectForKey:key];
   if (value) {
@@ -67,10 +66,8 @@ UIImage* FaviconLoader::ImageForURL(const GURL& url,
   return [UIImage imageNamed:@"default_favicon"];
 }
 
-void FaviconLoader::PurgeCache() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void FaviconLoader::CancellAllRequests() {
   cancelable_task_tracker_.TryCancelAll();
-  favicon_cache_ = [NSMutableDictionary dictionaryWithCapacity:10];
 }
 
 void FaviconLoader::OnFaviconAvailable(
@@ -78,13 +75,12 @@ void FaviconLoader::OnFaviconAvailable(
     const std::vector<favicon_base::FaviconRawBitmapResult>&
         favicon_bitmap_results) {
   DCHECK(request_data);
-  DCHECK(thread_checker_.CalledOnValidThread());
   if (favicon_bitmap_results.size() < 1 ||
       !favicon_bitmap_results[0].is_valid()) {
     // Return early if there were no results or if it is invalid, after adding a
     // "no favicon" entry to the cache so that we don't keep trying to fetch a
     // missing favicon over and over.
-    [favicon_cache_ setObject:[NSNull null] forKey:request_data->key];
+    [favicon_cache_ setObject:[NSNull null] forKey:[request_data->key copy]];
     return;
   }
 
@@ -94,7 +90,7 @@ void FaviconLoader::OnFaviconAvailable(
                      length:favicon_bitmap_results[0].bitmap_data->size()];
   UIImage* favicon =
       [UIImage imageWithData:image_data scale:[[UIScreen mainScreen] scale]];
-  [favicon_cache_ setObject:favicon forKey:request_data->key];
+  [favicon_cache_ setObject:favicon forKey:[request_data->key copy]];
 
   // Call the block to tell the caller this is complete.
   if (request_data->block)
