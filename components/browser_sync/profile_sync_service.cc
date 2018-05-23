@@ -1750,10 +1750,7 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
 
 void ProfileSyncService::OnPrimaryAccountSet() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // TODO(treib): We should be able to check that the engine doesn't even exist
-  // at this point, but some tests call this method directly (through
-  // ProfileSyncServiceHarness) after the engine has been created.
-  DCHECK(!IsEngineInitialized());
+  DCHECK(!engine_);
 }
 
 void ProfileSyncService::OnPrimaryAccountCleared() {
