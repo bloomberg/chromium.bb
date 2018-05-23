@@ -51,6 +51,10 @@ message CapabilitiesInfo {
   // root, whether the current user can add children to folders in this Team
   // Drive. This is always false when the item is not a folder or a Team Drive.
   optional bool can_add_children = 4;
+  // Whether the current user can modify the sharing settings for this file. For
+  // a Team Drive root, whether the current user can share files or folders in
+  // this Team Drive.
+  optional bool can_share = 5;
 }
 
 // File specific info, which is a part of ResourceEntry.

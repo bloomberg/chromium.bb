@@ -48,6 +48,14 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
   file_resource.set_file_size(892721);
   file_resource.set_md5_checksum("3b4382ebefec6e743578c76bbd0575ce");
 
+  google_apis::FileResourceCapabilities capabilities;
+  capabilities.set_can_copy(true);
+  capabilities.set_can_delete(false);
+  capabilities.set_can_rename(true);
+  capabilities.set_can_add_children(false);
+  capabilities.set_can_share(true);
+  file_resource.set_capabilities(capabilities);
+
   ResourceEntry entry;
   std::string parent_resource_id;
   EXPECT_TRUE(ConvertFileResourceToResourceEntry(
@@ -81,6 +89,13 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
   EXPECT_EQ(file_resource.file_size(), entry.file_info().size());
   EXPECT_EQ(file_resource.md5_checksum(), entry.file_specific_info().md5());
   EXPECT_FALSE(entry.file_info().is_directory());
+
+  // Capabilities.
+  EXPECT_TRUE(entry.capabilities_info().can_copy());
+  EXPECT_FALSE(entry.capabilities_info().can_delete());
+  EXPECT_TRUE(entry.capabilities_info().can_rename());
+  EXPECT_FALSE(entry.capabilities_info().can_add_children());
+  EXPECT_TRUE(entry.capabilities_info().can_share());
 }
 
 TEST(ResourceEntryConversionTest,
@@ -98,6 +113,14 @@ TEST(ResourceEntryConversionTest,
   file_resource.set_mime_type(util::kGoogleDocumentMimeType);
   file_resource.set_alternate_link(GURL("https://file_link_alternate"));
   // Do not set file size to represent a hosted document.
+
+  google_apis::FileResourceCapabilities capabilities;
+  capabilities.set_can_copy(false);
+  capabilities.set_can_delete(true);
+  capabilities.set_can_rename(false);
+  capabilities.set_can_add_children(true);
+  capabilities.set_can_share(false);
+  file_resource.set_capabilities(capabilities);
 
   ResourceEntry entry;
   std::string parent_resource_id;
@@ -133,6 +156,13 @@ TEST(ResourceEntryConversionTest,
   // The size should be 0 for a hosted document.
   EXPECT_EQ(0, entry.file_info().size());
   EXPECT_FALSE(entry.file_info().is_directory());
+
+  // Capabilities.
+  EXPECT_FALSE(entry.capabilities_info().can_copy());
+  EXPECT_TRUE(entry.capabilities_info().can_delete());
+  EXPECT_FALSE(entry.capabilities_info().can_rename());
+  EXPECT_TRUE(entry.capabilities_info().can_add_children());
+  EXPECT_FALSE(entry.capabilities_info().can_share());
 }
 
 TEST(ResourceEntryConversionTest,
@@ -423,6 +453,16 @@ TEST(ResourceEntryConversionTest,
   team_drive_resource->set_name("ABC Team Drive");
   team_drive_resource->set_id("team_drive_id");
 
+  google_apis::TeamDriveCapabilities team_drive_capabilities;
+  team_drive_capabilities.set_can_copy(true);
+  team_drive_capabilities.set_can_delete_team_drive(false);
+  team_drive_capabilities.set_can_rename_team_drive(true);
+  // Can_rename is ignored for team drives.
+  team_drive_capabilities.set_can_rename(false);
+  team_drive_capabilities.set_can_add_children(false);
+  team_drive_capabilities.set_can_share(true);
+  team_drive_resource->set_capabilities(team_drive_capabilities);
+
   ResourceEntry entry;
   std::string parent_resource_id;
   EXPECT_TRUE(ConvertChangeResourceToResourceEntry(change_resource, &entry,
@@ -437,6 +477,12 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ(util::kDriveTeamDrivesDirLocalId, entry.parent_local_id());
   EXPECT_EQ("", parent_resource_id);
   EXPECT_FALSE(entry.deleted());
+
+  EXPECT_TRUE(entry.capabilities_info().can_copy());
+  EXPECT_FALSE(entry.capabilities_info().can_delete());
+  EXPECT_TRUE(entry.capabilities_info().can_rename());
+  EXPECT_FALSE(entry.capabilities_info().can_add_children());
+  EXPECT_TRUE(entry.capabilities_info().can_share());
 }
 
 TEST(ResourceEntryConversionTest, ConvertTeamDriveResourceToResourceEntry) {

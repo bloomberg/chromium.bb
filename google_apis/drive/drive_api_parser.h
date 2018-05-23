@@ -346,36 +346,63 @@ class TeamDriveCapabilities {
 
   // Whether the current user can add children to folders in this Team Drive.
   bool can_add_children() const { return can_add_children_; }
+  void set_can_add_children(bool can_add_children) {
+    can_add_children_ = can_add_children;
+  }
   // Whether the current user can comment on files in this Team Drive.
   bool can_comment() const { return can_comment_; }
+  void set_can_comment(bool can_comment) { can_comment_ = can_comment; }
   // Whether files in this Team Drive can be copied by the current user.
   bool can_copy() const { return can_copy_; }
+  void set_can_copy(bool can_copy) { can_copy_ = can_copy; }
   // Whether this Team Drive can be deleted by the current user.
   bool can_delete_team_drive() const { return can_delete_team_drive_; }
+  void set_can_delete_team_drive(bool can_delete_team_drive) {
+    can_delete_team_drive_ = can_delete_team_drive;
+  }
   // Whether files in this Team Drive can be edited by the current user.
   bool can_download() const { return can_download_; }
+  void set_can_download(bool can_download) { can_download_ = can_download; }
   // Whether files in this Team Drive can be edited by current user.
   bool can_edit() const { return can_edit_; }
+  void set_can_edit(bool can_edit) { can_edit_ = can_edit; }
   // Whether the current user can list the children of folders in this Team
   // Drive.
   bool can_list_children() const { return can_list_children_; }
+  void set_can_list_children(bool can_list_children) {
+    can_list_children_ = can_list_children;
+  }
   // Whether the current user can add members to this Team Drive or remove them
   // or change their role.
   bool can_manage_members() const { return can_manage_members_; }
+  void set_can_manage_members(bool can_manage_members) {
+    can_manage_members_ = can_manage_members;
+  }
   // Whether the current user has read access to the Revisions resource of files
   // in this Team Drive.
   bool can_read_revisions() const { return can_read_revisions_; }
+  void set_can_read_revisions(bool can_read_revisions) {
+    can_read_revisions_ = can_read_revisions;
+  }
   // Whether the current user can remove children from folders in this Team
   // Drive.
   bool can_remove_children() const { return can_remove_children_; }
+  void set_can_remove_children(bool can_remove_children) {
+    can_remove_children_ = can_remove_children;
+  }
   // Whether files or folders in this Team Drive can be renamed by the current
   // user.
   bool can_rename() const { return can_rename_; }
+  void set_can_rename(bool can_rename) { can_rename_ = can_rename; }
   // Whether this Team Drive can be renamed by the current user.
   bool can_rename_team_drive() const { return can_rename_team_drive_; }
+  void set_can_rename_team_drive(bool can_rename_team_drive) {
+    can_rename_team_drive_ = can_rename_team_drive;
+  }
   // Whether files or folders in this Team Drive can be shared by the current
   // user.
   bool can_share() const { return can_share_; }
+  void set_can_share(bool can_share) { can_share_ = can_share; }
 
  private:
   bool can_add_children_;
@@ -418,6 +445,9 @@ class TeamDriveResource {
   void set_name(const std::string& name) { name_ = name; }
   // Capabilities the current user has on this Team Drive.
   const TeamDriveCapabilities& capabilities() const { return capabilities_; }
+  void set_capabilities(const TeamDriveCapabilities& capabilities) {
+    capabilities_ = capabilities;
+  }
 
  private:
   friend class DriveAPIParserTest;
@@ -600,27 +630,90 @@ class FileResourceCapabilities {
   static std::unique_ptr<FileResourceCapabilities> CreateFrom(
       const base::Value& value);
 
+  // Whether the current user can add children to this folder. This is always
+  // false when the item is not a folder.
   bool can_add_children() const { return can_add_children_; }
+  void set_can_add_children(bool can_add_children) {
+    can_add_children_ = can_add_children;
+  }
+  // Whether the current user can change the restricted download label of this
+  // file.
   bool can_change_restricted_download() const {
     return can_change_restricted_download_;
   }
+  void set_can_change_restricted_download(bool can_change_restricted_download) {
+    can_change_restricted_download_ = can_change_restricted_download;
+  }
+  // Whether the current user can comment on this file.
   bool can_comment() const { return can_comment_; }
+  void set_can_comment(bool can_comment) { can_comment_ = can_comment; }
+  // Whether the current user can copy this file. For a Team Drive item, whether
+  // the current user can copy non-folder descendants of this item, or this item
+  // itself if it is not a folder.
   bool can_copy() const { return can_copy_; }
+  void set_can_copy(bool can_copy) { can_copy_ = can_copy; }
+  // Whether the current user can delete this file.
   bool can_delete() const { return can_delete_; }
+  void set_can_delete(bool can_delete) { can_delete_ = can_delete; }
+  // Whether the current user can download this file.
   bool can_download() const { return can_download_; }
+  void set_can_download(bool can_download) { can_download_ = can_download; }
+  // Whether the current user can edit this file.
   bool can_edit() const { return can_edit_; }
+  void set_can_edit(bool can_edit) { can_edit_ = can_edit; }
+  // Whether the current user can list the children of this folder. This is
+  // always false when the item is not a folder.
   bool can_list_children() const { return can_list_children_; }
+  void set_can_list_children(bool can_list_children) {
+    can_list_children_ = can_list_children;
+  }
+  // Whether the current user can move this item into a Team Drive. If the item
+  // is in a Team Drive, this field is equivalent to canMoveTeamDriveItem.
   bool can_move_item_into_team_drive() const {
     return can_move_item_into_team_drive_;
   }
+  void set_can_move_item_into_team_drive(bool can_move_item_into_team_drive) {
+    can_move_item_into_team_drive_ = can_move_item_into_team_drive;
+  }
+  // Whether the current user can move this Team Drive item by changing its
+  // parent. Note that a request to change the parent for this item may still
+  // fail depending on the new parent that is being added. Only populated for
+  // Team Drive files.
   bool can_move_team_drive_item() const { return can_move_team_drive_item_; }
+  void set_can_move_team_drive_item(bool can_move_team_drive_item) {
+    can_move_team_drive_item_ = can_move_team_drive_item;
+  }
+  // Whether the current user can read the revisions resource of this file. For
+  // a Team Drive item, whether revisions of non-folder descendants of this
+  // item, or this item itself if it is not a folder, can be read.
   bool can_read_revisions() const { return can_read_revisions_; }
+  void set_can_read_revisions(bool can_read_revisions) {
+    can_read_revisions_ = can_read_revisions;
+  }
+  // Whether the current user can read the Team Drive to which this file
+  // belongs. Only populated for Team Drive files.
   bool can_read_team_drive() const { return can_read_team_drive_; }
+  void set_can_read_team_drive(bool can_read_team_drive) {
+    can_read_team_drive_ = can_read_team_drive;
+  }
+  // Whether the current user can remove children from this folder. This is
+  // always false when the item is not a folder.
   bool can_remove_children() const { return can_remove_children_; }
+  void set_can_remove_children(bool can_remove_children) {
+    can_remove_children_ = can_remove_children;
+  }
+  // Whether the current user can rename this file.
   bool can_rename() const { return can_rename_; }
+  void set_can_rename(bool can_rename) { can_rename_ = can_rename; }
+  // Whether the current user can modify the sharing settings for this file.
   bool can_share() const { return can_share_; }
+  void set_can_share(bool can_share) { can_share_ = can_share; }
+  // Whether the current user can move this file to trash.
   bool can_trash() const { return can_trash_; }
+  void set_can_trash(bool can_trash) { can_trash_ = can_trash; }
+  // Whether the current user can restore this file from trash.
   bool can_untrash() const { return can_untrash_; }
+  void set_can_untrash(bool can_untrash) { can_untrash_ = can_untrash; }
 
  private:
   bool can_add_children_;
@@ -790,6 +883,9 @@ class FileResource {
   }
   // Capabilities the current user has on this file resource.
   const FileResourceCapabilities& capabilities() const { return capabilities_; }
+  void set_capabilities(const FileResourceCapabilities& capabilities) {
+    capabilities_ = capabilities;
+  }
 
  private:
   friend class base::internal::RepeatedMessageConverter<FileResource>;
