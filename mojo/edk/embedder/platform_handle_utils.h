@@ -11,7 +11,6 @@
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/platform_handle.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/platform/platform_handle.h"
 
 namespace mojo {
 namespace edk {
