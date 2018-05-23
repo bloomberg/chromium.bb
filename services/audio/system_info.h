@@ -13,13 +13,10 @@
 #include "media/audio/audio_system_helper.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/audio/public/mojom/system_info.mojom.h"
+#include "services/audio/traced_service_ref.h"
 
 namespace media {
 class AudioManager;
-}
-
-namespace service_manager {
-class ServiceContextRef;
 }
 
 namespace audio {
@@ -29,8 +26,7 @@ class SystemInfo : public mojom::SystemInfo {
   explicit SystemInfo(media::AudioManager* audio_manager);
   ~SystemInfo() override;
 
-  void Bind(mojom::SystemInfoRequest request,
-            std::unique_ptr<service_manager::ServiceContextRef> context_ref);
+  void Bind(mojom::SystemInfoRequest request, TracedServiceRef context_ref);
 
  private:
   // audio::mojom::SystemInfo implementation.
@@ -56,9 +52,7 @@ class SystemInfo : public mojom::SystemInfo {
 
   // Each binding increases ref count of the service context, so that the
   // service knows when it is in use.
-  mojo::BindingSet<mojom::SystemInfo,
-                   std::unique_ptr<service_manager::ServiceContextRef>>
-      bindings_;
+  mojo::BindingSet<mojom::SystemInfo, TracedServiceRef> bindings_;
 
   // Validates thread-safe access to |bindings_| only. |helper_| takes care of
   // its thread safety/affinity itself.

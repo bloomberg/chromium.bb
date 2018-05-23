@@ -4,7 +4,7 @@
 
 #include "services/audio/system_info.h"
 
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include <utility>
 
 namespace audio {
 
@@ -17,9 +17,8 @@ SystemInfo::~SystemInfo() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(binding_sequence_checker_);
 }
 
-void SystemInfo::Bind(
-    mojom::SystemInfoRequest request,
-    std::unique_ptr<service_manager::ServiceContextRef> context_ref) {
+void SystemInfo::Bind(mojom::SystemInfoRequest request,
+                      TracedServiceRef context_ref) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(binding_sequence_checker_);
   bindings_.AddBinding(this, std::move(request), std::move(context_ref));
 }

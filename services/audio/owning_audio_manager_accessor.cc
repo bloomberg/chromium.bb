@@ -88,6 +88,7 @@ OwningAudioManagerAccessor::~OwningAudioManagerAccessor() {
 media::AudioManager* OwningAudioManagerAccessor::GetAudioManager() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!audio_manager_) {
+    TRACE_EVENT0("audio", "AudioManager creation");
     DCHECK(audio_manager_factory_cb_);
     base::TimeTicks creation_start_time = base::TimeTicks::Now();
 

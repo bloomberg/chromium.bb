@@ -12,14 +12,11 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
+#include "services/audio/traced_service_ref.h"
 
 namespace media {
 class AudioManager;
 enum class AudioDebugRecordingStreamType;
-}
-
-namespace service_manager {
-class ServiceContextRef;
 }
 
 namespace audio {
@@ -27,10 +24,9 @@ namespace audio {
 // Implementation for controlling audio debug recording.
 class DebugRecording : public mojom::DebugRecording {
  public:
-  DebugRecording(
-      mojom::DebugRecordingRequest request,
-      media::AudioManager* audio_manager,
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+  DebugRecording(mojom::DebugRecordingRequest request,
+                 media::AudioManager* audio_manager,
+                 TracedServiceRef service_ref);
 
   // Disables audio debug recording if Enable() was called before.
   ~DebugRecording() override;
@@ -41,7 +37,7 @@ class DebugRecording : public mojom::DebugRecording {
   // Releases and returns service ref. Used when creating a new debug recording
   // session while there is an ongoing debug recording session. Ref is
   // transfered to the latest debug recording session.
-  std::unique_ptr<service_manager::ServiceContextRef> ReleaseServiceRef();
+  TracedServiceRef ReleaseServiceRef();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DebugRecordingTest,
@@ -58,7 +54,7 @@ class DebugRecording : public mojom::DebugRecording {
   media::AudioManager* const audio_manager_;
   mojo::Binding<mojom::DebugRecording> binding_;
   mojom::DebugRecordingFileProviderPtr file_provider_;
-  std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
+  TracedServiceRef service_ref_;
 
   base::WeakPtrFactory<DebugRecording> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(DebugRecording);

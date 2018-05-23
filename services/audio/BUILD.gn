@@ -67,6 +67,8 @@ source_set("lib") {
     "sync_reader.h",
     "system_info.cc",
     "system_info.h",
+    "traced_service_ref.cc",
+    "traced_service_ref.h",
     "user_input_monitor.cc",
     "user_input_monitor.h",
   ]

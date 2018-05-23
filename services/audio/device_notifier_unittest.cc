@@ -10,6 +10,7 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/scoped_task_environment.h"
 #include "services/audio/public/mojom/device_notifications.mojom.h"
+#include "services/audio/traced_service_ref.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,7 +47,8 @@ class DeviceNotifierTest : public ::testing::Test {
   void CreateDeviceNotifier() {
     device_notifier_ = std::make_unique<DeviceNotifier>();
     device_notifier_->Bind(mojo::MakeRequest(&device_notifier_ptr_),
-                           service_ref_factory_.CreateRef());
+                           TracedServiceRef(service_ref_factory_.CreateRef(),
+                                            "audio::DeviceNotifier Binding"));
     EXPECT_FALSE(service_ref_factory_.HasNoRefs());
   }
 

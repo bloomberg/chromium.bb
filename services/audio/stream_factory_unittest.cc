@@ -11,6 +11,7 @@
 #include "media/audio/test_audio_thread.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
+#include "services/audio/traced_service_ref.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,7 +29,9 @@ TEST(AudioServiceStreamFactoryTest, TakesServiceRef) {
 
   mojom::StreamFactoryPtr factory_ptr;
 
-  factory.Bind(mojo::MakeRequest(&factory_ptr), ref_factory.CreateRef());
+  factory.Bind(mojo::MakeRequest(&factory_ptr),
+               TracedServiceRef(ref_factory.CreateRef(),
+                                "audio::StreamFactory binding"));
   EXPECT_FALSE(ref_factory.HasNoRefs());
   factory_ptr.reset();
   env.RunUntilIdle();

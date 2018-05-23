@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/audio/group_coordinator.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
+#include "services/audio/traced_service_ref.h"
 
 namespace base {
 class UnguessableToken;
@@ -28,10 +29,6 @@ namespace media {
 class AudioManager;
 class AudioParameters;
 }  // namespace media
-
-namespace service_manager {
-class ServiceContextRef;
-}
 
 namespace audio {
 
@@ -49,8 +46,7 @@ class StreamFactory final : public mojom::StreamFactory {
   explicit StreamFactory(media::AudioManager* audio_manager);
   ~StreamFactory() final;
 
-  void Bind(mojom::StreamFactoryRequest request,
-            std::unique_ptr<service_manager::ServiceContextRef> context_ref);
+  void Bind(mojom::StreamFactoryRequest request, TracedServiceRef context_ref);
 
   // StreamFactory implementation.
   void CreateInputStream(media::mojom::AudioInputStreamRequest stream_request,
@@ -97,9 +93,7 @@ class StreamFactory final : public mojom::StreamFactory {
 
   media::AudioManager* const audio_manager_;
 
-  mojo::BindingSet<mojom::StreamFactory,
-                   std::unique_ptr<service_manager::ServiceContextRef>>
-      bindings_;
+  mojo::BindingSet<mojom::StreamFactory, TracedServiceRef> bindings_;
 
   // Order of the following members is important for a clean shutdown.
   GroupCoordinator coordinator_;
