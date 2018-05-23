@@ -34,20 +34,7 @@ class ActiveStyleSheetsTest : public PageTestBase {
   }
 };
 
-class ApplyRulesetsTest : public ActiveStyleSheetsTest {
- protected:
-  ShadowRoot& AttachShadow(Element& host);
-};
-
-ShadowRoot& ApplyRulesetsTest::AttachShadow(Element& host) {
-  ShadowRootInit init;
-  init.setMode("open");
-  ShadowRoot* shadow_root =
-      host.attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()),
-                        init, ASSERT_NO_EXCEPTION);
-  EXPECT_TRUE(shadow_root);
-  return *shadow_root;
-}
+class ApplyRulesetsTest : public ActiveStyleSheetsTest {};
 
 TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_NoChange) {
   ActiveStyleSheetVector old_sheets;
@@ -451,7 +438,8 @@ TEST_F(ApplyRulesetsTest, AddUniversalRuleToShadowTree) {
   Element* host = GetElementById("host");
   ASSERT_TRUE(host);
 
-  ShadowRoot& shadow_root = AttachShadow(*host);
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
   UpdateAllLifecyclePhases();
 
   CSSStyleSheet* sheet = CreateSheet("body * { color:red }");
@@ -488,7 +476,8 @@ TEST_F(ApplyRulesetsTest, AddFontFaceRuleToShadowTree) {
   Element* host = GetElementById("host");
   ASSERT_TRUE(host);
 
-  ShadowRoot& shadow_root = AttachShadow(*host);
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
   UpdateAllLifecyclePhases();
 
   CSSStyleSheet* sheet =
@@ -512,7 +501,8 @@ TEST_F(ApplyRulesetsTest, RemoveSheetFromShadowTree) {
   Element* host = GetElementById("host");
   ASSERT_TRUE(host);
 
-  ShadowRoot& shadow_root = AttachShadow(*host);
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
   shadow_root.SetInnerHTMLFromString(
       "<style>::slotted(#dummy){color:pink}</style>");
   UpdateAllLifecyclePhases();
