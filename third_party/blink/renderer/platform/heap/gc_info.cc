@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/heap/gc_info.h"
 
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

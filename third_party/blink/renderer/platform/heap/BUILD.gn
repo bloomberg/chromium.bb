@@ -35,6 +35,7 @@ blink_platform_sources("heap") {
     "blink_gc.h",
     "blink_gc_memory_dump_provider.cc",
     "blink_gc_memory_dump_provider.h",
+    "finalizer_traits.h",
     "garbage_collected.h",
     "gc_info.cc",
     "gc_info.h",
