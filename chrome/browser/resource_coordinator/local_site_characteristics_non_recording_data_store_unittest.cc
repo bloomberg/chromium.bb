@@ -4,7 +4,9 @@
 
 #include "chrome/browser/resource_coordinator/local_site_characteristics_non_recording_data_store.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -15,6 +17,8 @@ namespace resource_coordinator {
 using LocalSiteCharacteristicsNonRecordingDataStoreTest = ::testing::Test;
 
 TEST_F(LocalSiteCharacteristicsNonRecordingDataStoreTest, EndToEnd) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kProactiveTabDiscarding);
   content::TestBrowserThreadBundle test_browser_thread_bundle;
   TestingProfile profile;
   const char kTestOrigin[] = "http://www.foo.com";
