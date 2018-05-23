@@ -17,7 +17,7 @@ class VIZ_CLIENT_EXPORT HitTestDataProviderDrawQuad
   explicit HitTestDataProviderDrawQuad(bool should_ask_for_child_region);
   ~HitTestDataProviderDrawQuad() override;
 
-  base::Optional<HitTestRegionList> GetHitTestData(
+  mojom::HitTestRegionListPtr GetHitTestData(
       const CompositorFrame& compositor_frame) const override;
 
  private:

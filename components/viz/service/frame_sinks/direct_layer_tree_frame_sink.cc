@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
-#include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
@@ -89,60 +88,6 @@ void DirectLayerTreeFrameSink::DetachFromClient() {
   cc::LayerTreeFrameSink::DetachFromClient();
 }
 
-static HitTestRegionList CreateHitTestData(const CompositorFrame& frame) {
-  HitTestRegionList hit_test_region_list;
-  hit_test_region_list.flags = HitTestRegionFlags::kHitTestMouse |
-                               HitTestRegionFlags::kHitTestTouch |
-                               HitTestRegionFlags::kHitTestMine;
-  hit_test_region_list.bounds.set_size(frame.size_in_pixels());
-
-  for (const auto& render_pass : frame.render_pass_list) {
-    // Skip the render_pass if the transform is not invertible (i.e. it will not
-    // be able to receive events).
-    gfx::Transform transform_from_root_target;
-    if (!render_pass->transform_to_root_target.GetInverse(
-            &transform_from_root_target)) {
-      continue;
-    }
-
-    for (const DrawQuad* quad : render_pass->quad_list) {
-      if (quad->material == DrawQuad::SURFACE_CONTENT) {
-        const SurfaceDrawQuad* surface_quad =
-            SurfaceDrawQuad::MaterialCast(quad);
-
-        // Skip the quad if the FrameSinkId between fallback and primary is not
-        // the same, because we don't know which FrameSinkId would be used to
-        // draw this quad.
-        if (surface_quad->fallback_surface_id.has_value() &&
-            surface_quad->fallback_surface_id->frame_sink_id() !=
-                surface_quad->primary_surface_id.frame_sink_id()) {
-          continue;
-        }
-
-        // Skip the quad if the transform is not invertible (i.e. it will not
-        // be able to receive events).
-        gfx::Transform target_to_quad_transform;
-        if (!quad->shared_quad_state->quad_to_target_transform.GetInverse(
-                &target_to_quad_transform)) {
-          continue;
-        }
-
-        hit_test_region_list.regions.emplace_back();
-        HitTestRegion* hit_test_region = &hit_test_region_list.regions.back();
-        hit_test_region->frame_sink_id =
-            surface_quad->primary_surface_id.frame_sink_id();
-        hit_test_region->flags = HitTestRegionFlags::kHitTestMouse |
-                                 HitTestRegionFlags::kHitTestTouch |
-                                 HitTestRegionFlags::kHitTestChildSurface;
-        hit_test_region->rect = surface_quad->rect;
-        hit_test_region->transform =
-            target_to_quad_transform * transform_from_root_target;
-      }
-    }
-  }
-  return hit_test_region_list;
-}
-
 void DirectLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber,
@@ -158,7 +103,7 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
         device_scale_factor_);
   }
 
-  HitTestRegionList hit_test_region_list = CreateHitTestData(frame);
+  auto hit_test_region_list = CreateHitTestData(frame);
   support_->SubmitCompositorFrame(
       parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
       std::move(frame), std::move(hit_test_region_list));
@@ -263,6 +208,59 @@ void DirectLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frame) {
 
 void DirectLayerTreeFrameSink::OnContextLost() {
   // The display will be listening for OnContextLost(). Do nothing here.
+}
+
+mojom::HitTestRegionListPtr DirectLayerTreeFrameSink::CreateHitTestData(
+    const CompositorFrame& frame) const {
+  auto hit_test_region_list = mojom::HitTestRegionList::New();
+  hit_test_region_list->flags =
+      mojom::kHitTestMouse | mojom::kHitTestTouch | mojom::kHitTestMine;
+  hit_test_region_list->bounds.set_size(frame.size_in_pixels());
+
+  for (const auto& render_pass : frame.render_pass_list) {
+    // Skip the render_pass if the transform is not invertible (i.e. it will not
+    // be able to receive events).
+    gfx::Transform transform_from_root_target;
+    if (!render_pass->transform_to_root_target.GetInverse(
+            &transform_from_root_target)) {
+      continue;
+    }
+
+    for (const DrawQuad* quad : render_pass->quad_list) {
+      if (quad->material == DrawQuad::SURFACE_CONTENT) {
+        const SurfaceDrawQuad* surface_quad =
+            SurfaceDrawQuad::MaterialCast(quad);
+
+        // Skip the quad if the FrameSinkId between fallback and primary is not
+        // the same, because we don't know which FrameSinkId would be used to
+        // draw this quad.
+        if (surface_quad->fallback_surface_id.has_value() &&
+            surface_quad->fallback_surface_id->frame_sink_id() !=
+                surface_quad->primary_surface_id.frame_sink_id()) {
+          continue;
+        }
+
+        // Skip the quad if the transform is not invertible (i.e. it will not
+        // be able to receive events).
+        gfx::Transform target_to_quad_transform;
+        if (!quad->shared_quad_state->quad_to_target_transform.GetInverse(
+                &target_to_quad_transform)) {
+          continue;
+        }
+
+        auto hit_test_region = mojom::HitTestRegion::New();
+        hit_test_region->frame_sink_id =
+            surface_quad->primary_surface_id.frame_sink_id();
+        hit_test_region->flags = mojom::kHitTestMouse | mojom::kHitTestTouch |
+                                 mojom::kHitTestChildSurface;
+        hit_test_region->rect = surface_quad->rect;
+        hit_test_region->transform =
+            target_to_quad_transform * transform_from_root_target;
+        hit_test_region_list->regions.push_back(std::move(hit_test_region));
+      }
+    }
+  }
+  return hit_test_region_list;
 }
 
 }  // namespace viz

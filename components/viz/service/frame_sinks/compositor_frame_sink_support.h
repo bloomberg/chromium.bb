@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -111,7 +110,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void SubmitCompositorFrame(
       const LocalSurfaceId& local_surface_id,
       CompositorFrame frame,
-      base::Optional<HitTestRegionList> hit_test_region_list = base::nullopt,
+      mojom::HitTestRegionListPtr hit_test_region_list = nullptr,
       uint64_t submit_time = 0);
   // Returns false if the notification was not valid (a duplicate).
   bool DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
@@ -131,7 +130,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   SubmitResult MaybeSubmitCompositorFrame(
       const LocalSurfaceId& local_surface_id,
       CompositorFrame frame,
-      base::Optional<HitTestRegionList> hit_test_region_list);
+      mojom::HitTestRegionListPtr hit_test_region_list);
 
   // CapturableFrameSink implementation.
   void AttachCaptureClient(CapturableFrameSink::Client* client) override;

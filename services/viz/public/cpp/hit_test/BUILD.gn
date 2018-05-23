@@ -13,7 +13,6 @@ source_set("tests") {
     "//base/test:test_support",
     "//components/viz/common:common",
     "//components/viz/test:test_support",
-    "//mojo/public/cpp/test_support:test_utils",
     "//services/viz/public/interfaces",
     "//testing/gtest",
     "//ui/gfx:test_support",

@@ -103,7 +103,7 @@ void RootCompositorFrameSinkImpl::SetWantsAnimateOnlyBeginFrames() {
 void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    base::Optional<HitTestRegionList> hit_test_region_list,
+    mojom::HitTestRegionListPtr hit_test_region_list,
     uint64_t submit_time) {
   // Update display when size or local surface id changes.
   if (support_->last_activated_local_surface_id() != local_surface_id) {

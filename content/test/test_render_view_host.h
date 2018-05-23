@@ -92,7 +92,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list) override;
+      viz::mojom::HitTestRegionListPtr hit_test_region_list) override;
   void ClearCompositorFrame() override {}
   void SetNeedsBeginFrames(bool needs_begin_frames) override {}
   void SetWantsAnimateOnlyBeginFrames() override {}

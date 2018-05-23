@@ -51,7 +51,6 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
 
   // Overridden from cc::LayerTreeFrameSinkClient:
   void SetBeginFrameSource(viz::BeginFrameSource* source) override;
-  base::Optional<viz::HitTestRegionList> BuildHitTestData() override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void SetTreeActivationCallback(const base::Closure& callback) override {}

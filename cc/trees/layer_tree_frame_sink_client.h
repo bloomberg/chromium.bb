@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "components/viz/common/resources/returned_resource.h"
@@ -20,7 +19,6 @@ class Transform;
 
 namespace viz {
 class BeginFrameSource;
-struct HitTestRegionList;
 }
 
 namespace cc {
@@ -33,12 +31,6 @@ class CC_EXPORT LayerTreeFrameSinkClient {
   // the viz::BeginFrameSource. LayerTreeFrameSink should call this once after
   // binding to the client and then call again with a null while detaching.
   virtual void SetBeginFrameSource(viz::BeginFrameSource* source) = 0;
-
-  // Builds and returns a HitTestRegionList from the active LayerTreeImpl. To be
-  // called during SubmitCompositorFrame().
-  // TODO(danakj): Just pass it into SubmitCompositorFrame(), with a
-  // LayerTreeSetting to enable it or not.
-  virtual base::Optional<viz::HitTestRegionList> BuildHitTestData() = 0;
 
   // Returns resources sent to SubmitCompositorFrame to be reused or freed.
   virtual void ReclaimResources(

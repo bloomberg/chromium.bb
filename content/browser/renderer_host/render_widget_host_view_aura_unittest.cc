@@ -3247,7 +3247,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   resource.id = 1;
   frame.resource_list.push_back(resource);
   view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId, std::move(frame),
-                               base::nullopt);
+                               nullptr);
   EXPECT_EQ(0u, sink_->message_count());
 
   // Signal that a new RendererCompositorFrameSink was created by the renderer.
@@ -3257,7 +3257,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   // old RendererCompositorFrameSink and should not be returned.
   view_->SubmitCompositorFrame(parent_local_surface_id_allocator_.GenerateId(),
                                MakeDelegatedFrame(1.f, view_size, view_rect),
-                               base::nullopt);
+                               nullptr);
   EXPECT_EQ(0u, sink_->message_count());
 
   // Report that the surface is drawn to trigger an ACK.
@@ -3300,7 +3300,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
         kArbitraryLocalSurfaceId,
         MakeDelegatedFrame(1.f, std::get<0>(params).new_size,
                            gfx::Rect(std::get<0>(params).new_size)),
-        base::nullopt);
+        nullptr);
     ui::DrawWaiterForTest::WaitForCommit(
         root_window->GetHost()->compositor());
   }
@@ -3326,7 +3326,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
         kArbitraryLocalSurfaceId,
         MakeDelegatedFrame(1.f, std::get<0>(params).new_size,
                            gfx::Rect(std::get<0>(params).new_size)),
-        base::nullopt);
+        nullptr);
     ui::DrawWaiterForTest::WaitForCommit(
         root_window->GetHost()->compositor());
   }
@@ -3424,7 +3424,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
   view_->Show();
   view_->SetSize(size1);
   view_->SubmitCompositorFrame(
-      id1, MakeDelegatedFrame(1.f, size1, gfx::Rect(size1)), base::nullopt);
+      id1, MakeDelegatedFrame(1.f, size1, gfx::Rect(size1)), nullptr);
   ui::DrawWaiterForTest::WaitForCommit(
       root_window->GetHost()->compositor());
   {
@@ -3468,7 +3468,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
   // message.
   view_->renderer_compositor_frame_sink_->Reset();
   view_->SubmitCompositorFrame(
-      id3, MakeDelegatedFrame(1.f, size3, gfx::Rect(size3)), base::nullopt);
+      id3, MakeDelegatedFrame(1.f, size3, gfx::Rect(size3)), nullptr);
   view_->renderer_compositor_frame_sink_->Flush();
   // Expect the frame ack;
   EXPECT_TRUE(view_->renderer_compositor_frame_sink_->did_receive_ack());
@@ -3478,7 +3478,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
   // produce a Resize message after the commit.
   view_->renderer_compositor_frame_sink_->Reset();
   view_->SubmitCompositorFrame(
-      id2, MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)), base::nullopt);
+      id2, MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)), nullptr);
   view_->renderer_compositor_frame_sink_->Flush();
   viz::SurfaceId surface_id = view_->surface_id();
   if (!surface_id.is_valid()) {
@@ -3540,7 +3540,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   // Swap a frame.
   view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId,
                                MakeDelegatedFrame(1.f, frame_size, view_rect),
-                               base::nullopt);
+                               nullptr);
   EXPECT_EQ(kFrameIndexStart + 1, FrameIndexForView(view_));
   EXPECT_EQ(view_rect, DamageRectForView(view_));
   view_->RunOnCompositingDidCommit();
@@ -3551,7 +3551,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   // Submit a frame from the new RendererCompositorFrameSink.
   view_->SubmitCompositorFrame(parent_local_surface_id_allocator_.GenerateId(),
                                MakeDelegatedFrame(1.f, frame_size, view_rect),
-                               base::nullopt);
+                               nullptr);
   EXPECT_EQ(kFrameIndexStart + 1, FrameIndexForView(view_));
   EXPECT_EQ(view_rect, DamageRectForView(view_));
   view_->RunOnCompositingDidCommit();
@@ -3562,7 +3562,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   // Submit a frame from the new RendererCompositorFrameSink.
   view_->SubmitCompositorFrame(parent_local_surface_id_allocator_.GenerateId(),
                                MakeDelegatedFrame(1.f, frame_size, view_rect),
-                               base::nullopt);
+                               nullptr);
   EXPECT_EQ(kFrameIndexStart + 1, FrameIndexForView(view_));
   EXPECT_EQ(view_rect, DamageRectForView(view_));
   view_->RunOnCompositingDidCommit();
@@ -3573,7 +3573,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   // Swap another frame, with a different surface id.
   view_->SubmitCompositorFrame(parent_local_surface_id_allocator_.GenerateId(),
                                MakeDelegatedFrame(1.f, frame_size, view_rect),
-                               base::nullopt);
+                               nullptr);
   EXPECT_EQ(kFrameIndexStart + 1, FrameIndexForView(view_));
   EXPECT_EQ(view_rect, DamageRectForView(view_));
   view_->RunOnCompositingDidCommit();
@@ -3604,7 +3604,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   view_->SubmitCompositorFrame(
       kArbitraryLocalSurfaceId,
       MakeDelegatedFrame(1.f, gfx::Size(400, 400), gfx::Rect(400, 400)),
-      base::nullopt);
+      nullptr);
   EXPECT_FALSE(view_->HasPrimarySurface());
   EXPECT_FALSE(view_->HasFallbackSurface());
 }
@@ -3641,7 +3641,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
   view_->SubmitCompositorFrame(
       kArbitraryLocalSurfaceId,
       MakeDelegatedFrame(1.f, gfx::Size(400, 400), gfx::Rect(400, 400)),
-      base::nullopt);
+      nullptr);
   EXPECT_EQ(gfx::Size(400, 400), view_->window_->layer()->size());
 }
 
@@ -3693,7 +3693,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // Swap a frame.
   view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId,
                                MakeDelegatedFrame(1.f, frame_size, view_rect),
-                               base::nullopt);
+                               nullptr);
   view_->RunOnCompositingDidCommit();
 
   // Signal that a new RendererCompositorFrameSink was created.
@@ -3702,7 +3702,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // Submit a frame from the new RendererCompositorFrameSink.
   view_->SubmitCompositorFrame(parent_local_surface_id_allocator_.GenerateId(),
                                MakeDelegatedFrame(1.f, frame_size, view_rect),
-                               base::nullopt);
+                               nullptr);
   view_->RunOnCompositingDidCommit();
 }
 
@@ -3757,7 +3757,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
     ASSERT_FALSE(views[i]->HasFallbackSurface());
     views[i]->SubmitCompositorFrame(
         views[i]->GetLocalSurfaceId(),
-        MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+        MakeDelegatedFrame(1.f, frame_size, view_rect), nullptr);
     ASSERT_TRUE(views[i]->HasPrimarySurface());
     EXPECT_TRUE(views[i]->HasFallbackSurface());
     views[i]->Hide();
@@ -3777,7 +3777,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // Swap a frame on it, it should evict the next LRU [1].
   views[0]->SubmitCompositorFrame(
       views[0]->GetLocalSurfaceId(),
-      MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+      MakeDelegatedFrame(1.f, frame_size, view_rect), nullptr);
   EXPECT_TRUE(views[0]->HasFallbackSurface());
   EXPECT_FALSE(views[1]->HasFallbackSurface());
   views[0]->Hide();
@@ -3787,7 +3787,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   views[1]->Show();
   views[1]->SubmitCompositorFrame(
       views[1]->GetLocalSurfaceId(),
-      MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+      MakeDelegatedFrame(1.f, frame_size, view_rect), nullptr);
   EXPECT_TRUE(views[0]->HasFallbackSurface());
   EXPECT_TRUE(views[1]->HasFallbackSurface());
   EXPECT_FALSE(views[2]->HasFallbackSurface());
@@ -3802,7 +3802,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
     // have a frame should not.
     views[i]->SubmitCompositorFrame(
         views[i]->GetLocalSurfaceId(),
-        MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+        MakeDelegatedFrame(1.f, frame_size, view_rect), nullptr);
     EXPECT_TRUE(views[i]->HasFallbackSurface());
   }
   EXPECT_FALSE(views[0]->HasFallbackSurface());
@@ -3810,7 +3810,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // Swap a frame on [0], it should be evicted immediately.
   views[0]->SubmitCompositorFrame(
       views[0]->GetLocalSurfaceId(),
-      MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+      MakeDelegatedFrame(1.f, frame_size, view_rect), nullptr);
   EXPECT_FALSE(views[0]->HasFallbackSurface());
 
   // Make [0] visible, and swap a frame on it. Nothing should be evicted
@@ -3818,7 +3818,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   views[0]->Show();
   views[0]->SubmitCompositorFrame(
       views[0]->GetLocalSurfaceId(),
-      MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+      MakeDelegatedFrame(1.f, frame_size, view_rect), nullptr);
   for (size_t i = 0; i < renderer_count; ++i)
     EXPECT_TRUE(views[i]->HasFallbackSurface()) << i;
 
@@ -3841,7 +3841,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   views[1]->Show();
   views[1]->SubmitCompositorFrame(
       views[1]->GetLocalSurfaceId(),
-      MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)), base::nullopt);
+      MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)), nullptr);
 
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Destroy();
@@ -3892,7 +3892,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
     views[i]->SubmitCompositorFrame(
         i ? parent_local_surface_id_allocator_.GenerateId()
           : kArbitraryLocalSurfaceId,
-        MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+        MakeDelegatedFrame(1.f, frame_size, view_rect), nullptr);
     EXPECT_TRUE(views[i]->HasFallbackSurface());
   }
 
@@ -3904,7 +3904,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   views[0]->Show();
   views[0]->SubmitCompositorFrame(
       kArbitraryLocalSurfaceId, MakeDelegatedFrame(1.f, frame_size, view_rect),
-      base::nullopt);
+      nullptr);
   EXPECT_TRUE(views[0]->HasFallbackSurface());
   views[0]->GetDelegatedFrameHost()->LockResources();
   views[0]->Hide();
@@ -3969,7 +3969,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
     views[i]->Show();
     views[i]->SubmitCompositorFrame(
         kArbitraryLocalSurfaceId,
-        MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+        MakeDelegatedFrame(1.f, frame_size, view_rect), nullptr);
     EXPECT_TRUE(views[i]->HasFallbackSurface());
   }
 
@@ -4056,8 +4056,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
     viz::BeginFrameAck ack(source_id, 5, true);
     viz::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
     frame.metadata.begin_frame_ack = ack;
-    view_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                 base::nullopt);
+    view_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
     view_->RunOnCompositingDidCommit();
     EXPECT_EQ(ack, observer.last_ack());
   }
@@ -6145,8 +6144,8 @@ TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
 
   viz::SurfaceId surface_id(view_->GetFrameSinkId(), kArbitraryLocalSurfaceId);
 
-  base::Optional<viz::HitTestRegionList> hit_test_region_list(base::in_place);
-  hit_test_region_list->flags = viz::HitTestRegionFlags::kHitTestMine;
+  auto hit_test_region_list = viz::mojom::HitTestRegionList::New();
+  hit_test_region_list->flags = viz::mojom::kHitTestMine;
   hit_test_region_list->bounds.SetRect(0, 0, 100, 100);
   view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId,
                                MakeDelegatedFrame(1.f, frame_size, view_rect),
@@ -6159,11 +6158,10 @@ TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
       view_->GetDelegatedFrameHost()
           ->GetCompositorFrameSinkSupportForTesting()
           ->frame_sink_manager();
-  const viz::HitTestRegionList* active_hit_test_region_list =
+  const viz::mojom::HitTestRegionList* active_hit_test_region_list =
       frame_sink_manager->hit_test_manager()->GetActiveHitTestRegionList(
           &delegate, surface_id.frame_sink_id());
-  EXPECT_EQ(active_hit_test_region_list->flags,
-            viz::HitTestRegionFlags::kHitTestMine);
+  EXPECT_EQ(active_hit_test_region_list->flags, viz::mojom::kHitTestMine);
   EXPECT_EQ(active_hit_test_region_list->bounds, view_rect);
 }
 

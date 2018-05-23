@@ -173,7 +173,7 @@ void TestRenderWidgetHostView::DidCreateNewRendererCompositorFrameSink(
 void TestRenderWidgetHostView::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
     viz::CompositorFrame frame,
-    base::Optional<viz::HitTestRegionList> hit_test_region_list) {
+    viz::mojom::HitTestRegionListPtr hit_test_region_list) {
   did_swap_compositor_frame_ = true;
   uint32_t frame_token = frame.metadata.frame_token;
   if (frame_token)

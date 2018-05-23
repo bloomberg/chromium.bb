@@ -12,6 +12,7 @@
 #include "components/viz/client/client_layer_tree_frame_sink.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
+#include "components/viz/client/hit_test_data_provider_surface_layer.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
 #include "content/renderer/mus/mus_embedded_frame.h"
@@ -144,6 +145,9 @@ void RendererWindowTreeClient::RequestLayerTreeFrameSinkInternal(
     params.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(
             true /* should_ask_for_child_region */);
+  } else if (features::IsVizHitTestingSurfaceLayerEnabled()) {
+    params.hit_test_data_provider =
+        std::make_unique<viz::HitTestDataProviderSurfaceLayer>();
   }
   auto frame_sink = std::make_unique<viz::ClientLayerTreeFrameSink>(
       std::move(context_provider), nullptr /* worker_context_provider */,
