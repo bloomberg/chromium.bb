@@ -1981,7 +1981,7 @@ void Node::WillMoveToNewDocument(Document& old_document,
       old_document.GetPage() == new_document.GetPage())
     return;
 
-  old_document.GetPage()->GetEventHandlerRegistry().DidMoveOutOfPage(*this);
+  old_document.GetFrame()->GetEventHandlerRegistry().DidMoveOutOfPage(*this);
 
   if (IsElementNode()) {
     StylePropertyMapReadOnly* computed_style_map_item =
@@ -2008,7 +2008,7 @@ void Node::DidMoveToNewDocument(Document& old_document) {
   old_document.Markers().RemoveMarkersForNode(this);
   if (GetDocument().GetPage() &&
       GetDocument().GetPage() != old_document.GetPage()) {
-    GetDocument().GetPage()->GetEventHandlerRegistry().DidMoveIntoPage(*this);
+    GetDocument().GetFrame()->GetEventHandlerRegistry().DidMoveIntoPage(*this);
   }
 
   if (const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
@@ -2029,9 +2029,10 @@ void Node::AddedEventListener(const AtomicString& event_type,
                               RegisteredEventListener& registered_listener) {
   EventTarget::AddedEventListener(event_type, registered_listener);
   GetDocument().AddListenerTypeIfNeeded(event_type, *this);
-  if (Page* page = GetDocument().GetPage())
-    page->GetEventHandlerRegistry().DidAddEventHandler(
+  if (auto* frame = GetDocument().GetFrame()) {
+    frame->GetEventHandlerRegistry().DidAddEventHandler(
         *this, event_type, registered_listener.Options());
+  }
 }
 
 void Node::RemovedEventListener(
@@ -2041,15 +2042,16 @@ void Node::RemovedEventListener(
   // FIXME: Notify Document that the listener has vanished. We need to keep
   // track of a number of listeners for each type, not just a bool - see
   // https://bugs.webkit.org/show_bug.cgi?id=33861
-  if (Page* page = GetDocument().GetPage())
-    page->GetEventHandlerRegistry().DidRemoveEventHandler(
+  if (auto* frame = GetDocument().GetFrame()) {
+    frame->GetEventHandlerRegistry().DidRemoveEventHandler(
         *this, event_type, registered_listener.Options());
+  }
 }
 
 void Node::RemoveAllEventListeners() {
   if (HasEventListeners() && GetDocument().GetPage())
     GetDocument()
-        .GetPage()
+        .GetFrame()
         ->GetEventHandlerRegistry()
         .DidRemoveAllEventHandlers(*this);
   EventTarget::RemoveAllEventListeners();

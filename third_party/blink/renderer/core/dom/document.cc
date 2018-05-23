@@ -2763,7 +2763,7 @@ void Document::Shutdown() {
 
   GetStyleEngine().DidDetach();
 
-  GetPage()->GetEventHandlerRegistry().DocumentDetached(*this);
+  frame_->GetEventHandlerRegistry().DocumentDetached(*this);
 
   // Signal destruction to mutation observers.
   DocumentShutdownNotifier::NotifyContextDestroyed();

@@ -3893,7 +3893,7 @@ TEST_F(WebViewTest, HasTouchEventHandlers) {
   Document* document =
       web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
   EventHandlerRegistry* registry =
-      &document->GetPage()->GetEventHandlerRegistry();
+      &document->GetFrame()->GetEventHandlerRegistry();
   registry->DidAddEventHandler(*document, kTouchEvent);
   EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
   EXPECT_EQ(1, client.GetAndResetHasTouchEventHandlerCallCount(true));
@@ -4010,7 +4010,7 @@ TEST_F(WebViewTest, DeleteElementWithRegisteredHandler) {
       web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
   Element* div = document->getElementById("div");
   EventHandlerRegistry& registry =
-      document->GetPage()->GetEventHandlerRegistry();
+      document->GetFrame()->GetEventHandlerRegistry();
 
   registry.DidAddEventHandler(*div, EventHandlerRegistry::kScrollEvent);
   EXPECT_TRUE(registry.HasEventHandlers(EventHandlerRegistry::kScrollEvent));

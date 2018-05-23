@@ -1389,9 +1389,10 @@ void LocalDOMWindow::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
   DOMWindow::AddedEventListener(event_type, registered_listener);
-  if (GetFrame() && GetFrame()->GetPage())
-    GetFrame()->GetPage()->GetEventHandlerRegistry().DidAddEventHandler(
+  if (auto* frame = GetFrame()) {
+    frame->GetEventHandlerRegistry().DidAddEventHandler(
         *this, event_type, registered_listener.Options());
+  }
 
   if (Document* document = this->document())
     document->AddListenerTypeIfNeeded(event_type, *this);
@@ -1421,9 +1422,10 @@ void LocalDOMWindow::RemovedEventListener(
     const AtomicString& event_type,
     const RegisteredEventListener& registered_listener) {
   DOMWindow::RemovedEventListener(event_type, registered_listener);
-  if (GetFrame() && GetFrame()->GetPage())
-    GetFrame()->GetPage()->GetEventHandlerRegistry().DidRemoveEventHandler(
+  if (auto* frame = GetFrame()) {
+    frame->GetEventHandlerRegistry().DidRemoveEventHandler(
         *this, event_type, registered_listener.Options());
+  }
 
   for (auto& it : event_listener_observers_) {
     it->DidRemoveEventListener(this, event_type);
@@ -1511,9 +1513,9 @@ void LocalDOMWindow::RemoveAllEventListeners() {
     it->DidRemoveAllEventListeners(this);
   }
 
-  if (GetFrame() && GetFrame()->GetPage())
-    GetFrame()->GetPage()->GetEventHandlerRegistry().DidRemoveAllEventHandlers(
-        *this);
+  if (GetFrame() && GetFrame()->GetPage()) {
+    GetFrame()->GetEventHandlerRegistry().DidRemoveAllEventHandlers(*this);
+  }
 
   UntrackAllUnloadEventListeners(this);
   UntrackAllBeforeUnloadEventListeners(this);

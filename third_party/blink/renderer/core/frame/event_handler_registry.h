@@ -20,11 +20,13 @@ typedef HashCountedSet<UntracedMember<EventTarget>> EventTargetSet;
 
 // Registry for keeping track of event handlers. Note that only handlers on
 // documents that can be rendered or can receive input (i.e., are attached to a
-// Page) are registered here.
+// Page) are registered here. Each local root has an EventHandlerRegistry;
+// event targets for a frame may only be registered with the
+// EventHandlerRegistry of its corresponding local root.
 class CORE_EXPORT EventHandlerRegistry final
     : public GarbageCollectedFinalized<EventHandlerRegistry> {
  public:
-  explicit EventHandlerRegistry(Page&);
+  explicit EventHandlerRegistry(LocalFrame&);
   virtual ~EventHandlerRegistry();
 
   // Supported event handler classes. Note that each one may correspond to
@@ -124,7 +126,9 @@ class CORE_EXPORT EventHandlerRegistry final
 
   void CheckConsistency(EventHandlerClass) const;
 
-  Member<Page> page_;
+  Page* GetPage() const;
+
+  Member<LocalFrame> frame_;
   EventTargetSet targets_[kEventHandlerClassCount];
 };
 

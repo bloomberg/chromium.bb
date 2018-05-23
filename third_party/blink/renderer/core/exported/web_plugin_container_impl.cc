@@ -602,8 +602,8 @@ void WebPluginContainerImpl::RequestTouchEventType(
   if (touch_event_request_type_ == request_type || !element_)
     return;
 
-  if (Page* page = element_->GetDocument().GetPage()) {
-    EventHandlerRegistry& registry = page->GetEventHandlerRegistry();
+  if (auto* frame = element_->GetDocument().GetFrame()) {
+    EventHandlerRegistry& registry = frame->GetEventHandlerRegistry();
     if (request_type == kTouchEventRequestTypeRawLowLatency) {
       if (touch_event_request_type_ != kTouchEventRequestTypeNone) {
         registry.DidRemoveEventHandler(
@@ -637,8 +637,9 @@ void WebPluginContainerImpl::RequestTouchEventType(
 void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
   if (wants_wheel_events_ == wants_wheel_events)
     return;
-  if (Page* page = element_->GetDocument().GetPage()) {
-    EventHandlerRegistry& registry = page->GetEventHandlerRegistry();
+
+  if (auto* frame = element_->GetDocument().GetFrame()) {
+    EventHandlerRegistry& registry = frame->GetEventHandlerRegistry();
     if (wants_wheel_events) {
       registry.DidAddEventHandler(*element_,
                                   EventHandlerRegistry::kWheelEventBlocking);
@@ -649,7 +650,7 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
   }
 
   wants_wheel_events_ = wants_wheel_events;
-  if (Page* page = element_->GetDocument().GetPage()) {
+  if (auto* page = element_->GetDocument().GetPage()) {
     if (ScrollingCoordinator* scrolling_coordinator =
             page->GetScrollingCoordinator()) {
       // Only call scrolling_coordinator if attached.  SetWantsWheelEvents can

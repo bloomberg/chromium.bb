@@ -266,6 +266,10 @@ class CORE_EXPORT EventHandler final
   // canceled.
   void ClearDragState();
 
+  EventHandlerRegistry& GetEventHandlerRegistry() const {
+    return *event_handler_registry_;
+  }
+
  private:
   enum NoCursorChangeType { kNoCursorChange };
 
@@ -389,6 +393,8 @@ class CORE_EXPORT EventHandler final
 
   scoped_refptr<UserGestureToken> last_mouse_down_user_gesture_token_;
 
+  // Local frames in the same local root share the same EventHandlerRegistry.
+  Member<EventHandlerRegistry> event_handler_registry_;
   Member<ScrollManager> scroll_manager_;
   Member<MouseEventManager> mouse_event_manager_;
   Member<MouseWheelEventManager> mouse_wheel_event_manager_;

@@ -163,8 +163,7 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
     }
   }
 
-  if (!frame_ || !frame_->GetPage() ||
-      !HasPointerEventListener(frame_->GetPage()->GetEventHandlerRegistry()))
+  if (!frame_ || !HasPointerEventListener(frame_->GetEventHandlerRegistry()))
     return WebInputEventResult::kNotHandled;
 
   if (event_type == EventTypeNames::pointerdown) {

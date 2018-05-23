@@ -9481,17 +9481,16 @@ TEST_F(WebFrameSwapTest, EventsOnDisconnectedSubDocumentSkipped) {
   WebLocalFrameImpl* local_child =
       FrameTestHelpers::CreateLocalChild(*remote_frame, "local-inside-remote");
 
-  Document* main_document =
-      WebView()->MainFrameImpl()->GetFrame()->GetDocument();
+  LocalFrame* main_frame = WebView()->MainFrameImpl()->GetFrame();
   Document* child_document = local_child->GetFrame()->GetDocument();
   EventHandlerRegistry& event_registry =
-      main_document->GetPage()->GetEventHandlerRegistry();
+      local_child->GetFrame()->GetEventHandlerRegistry();
 
   // Add the non-connected, but local, child document as having an event.
   event_registry.DidAddEventHandler(
       *child_document, EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
   // Passes if this does not crash or DCHECK.
-  main_document->View()->UpdateAllLifecyclePhases();
+  main_frame->View()->UpdateAllLifecyclePhases();
 }
 
 TEST_F(WebFrameSwapTest, EventsOnDisconnectedElementSkipped) {
@@ -9503,8 +9502,7 @@ TEST_F(WebFrameSwapTest, EventsOnDisconnectedElementSkipped) {
   WebLocalFrameImpl* local_child =
       FrameTestHelpers::CreateLocalChild(*remote_frame, "local-inside-remote");
 
-  Document* main_document =
-      WebView()->MainFrameImpl()->GetFrame()->GetDocument();
+  LocalFrame* main_frame = WebView()->MainFrameImpl()->GetFrame();
 
   // Layout ensures that elements in the local_child frame get LayoutObjects
   // attached, but doesn't paint, because the child frame needs to not have
@@ -9512,14 +9510,14 @@ TEST_F(WebFrameSwapTest, EventsOnDisconnectedElementSkipped) {
   local_child->GetFrameView()->UpdateLayout();
   Document* child_document = local_child->GetFrame()->GetDocument();
   EventHandlerRegistry& event_registry =
-      main_document->GetPage()->GetEventHandlerRegistry();
+      local_child->GetFrame()->GetEventHandlerRegistry();
 
   // Add the non-connected body element as having an event.
   event_registry.DidAddEventHandler(
       *child_document->body(),
       EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
   // Passes if this does not crash or DCHECK.
-  main_document->View()->UpdateAllLifecyclePhases();
+  main_frame->View()->UpdateAllLifecyclePhases();
 }
 
 TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren) {

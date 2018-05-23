@@ -405,7 +405,7 @@ void LocalFrame::Detach(FrameDetachType type) {
   CHECK(!view_->IsAttached());
   SetView(nullptr);
 
-  page_->GetEventHandlerRegistry().DidRemoveAllEventHandlers(*DomWindow());
+  GetEventHandlerRegistry().DidRemoveAllEventHandlers(*DomWindow());
 
   DomWindow()->FrameDestroyed();
 
@@ -920,6 +920,10 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
 
 FrameScheduler* LocalFrame::GetFrameScheduler() {
   return frame_scheduler_.get();
+}
+
+EventHandlerRegistry& LocalFrame::GetEventHandlerRegistry() const {
+  return event_handler_->GetEventHandlerRegistry();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> LocalFrame::GetTaskRunner(

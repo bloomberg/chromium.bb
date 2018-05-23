@@ -477,7 +477,7 @@ void SliderContainerElement::UpdateTouchEventHandlerRegistry() {
   if (GetDocument().GetPage() &&
       GetDocument().Lifecycle().GetState() < DocumentLifecycle::kStopping) {
     EventHandlerRegistry& registry =
-        GetDocument().GetPage()->GetEventHandlerRegistry();
+        GetDocument().GetFrame()->GetEventHandlerRegistry();
     registry.DidAddEventHandler(
         *this, EventHandlerRegistry::kTouchStartOrMoveEventPassive);
     registry.DidAddEventHandler(*this, EventHandlerRegistry::kPointerEvent);
