@@ -229,11 +229,13 @@ void AdsPageLoadMetricsObserver::OnComplete(
 
 void AdsPageLoadMetricsObserver::OnSubframeNavigationEvaluated(
     content::NavigationHandle* navigation_handle,
-    subresource_filter::LoadPolicy load_policy) {
+    subresource_filter::LoadPolicy load_policy,
+    bool is_ad_subframe) {
   // We don't track DISALLOW frames because their resources won't be loaded
   // and therefore would provide bad histogram data. Note that WOULD_DISALLOW
   // is only seen in dry runs.
-  if (load_policy == subresource_filter::LoadPolicy::WOULD_DISALLOW) {
+  if (is_ad_subframe &&
+      load_policy != subresource_filter::LoadPolicy::DISALLOW) {
     unfinished_subresource_ad_frames_.insert(
         navigation_handle->GetFrameTreeNodeId());
   }

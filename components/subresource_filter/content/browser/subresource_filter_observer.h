@@ -48,10 +48,13 @@ class SubresourceFilterObserver {
       const ActivationState& activation_state) {}
 
   // Called before navigation commit, either at the WillStartRequest stage or
-  // WillRedirectRequest stage.
+  // WillRedirectRequest stage. |is_ad_frame| is true if |load_policy| is
+  // ALLOW or WOULD_DISALLOW or if ad tagging has determined that the frame is
+  // an ad.
   virtual void OnSubframeNavigationEvaluated(
       content::NavigationHandle* navigation_handle,
-      LoadPolicy load_policy) {}
+      LoadPolicy load_policy,
+      bool is_ad_subframe) {}
 };
 
 }  // namespace subresource_filter

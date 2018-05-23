@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
+#include "components/subresource_filter/content/browser/subframe_navigation_filtering_throttle.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
@@ -34,7 +35,6 @@ namespace subresource_filter {
 
 class AsyncDocumentSubresourceFilter;
 class ActivationStateComputingNavigationThrottle;
-class SubframeNavigationFilteringThrottle;
 class SubresourceFilterObserverManager;
 class PageLoadStatistics;
 struct DocumentLoadStatistics;
@@ -50,7 +50,8 @@ struct DocumentLoadStatistics;
 // navgation, and has veto power for frame activation.
 class ContentSubresourceFilterThrottleManager
     : public content::WebContentsObserver,
-      public SubresourceFilterObserver {
+      public SubresourceFilterObserver,
+      public SubframeNavigationFilteringThrottle::Delegate {
  public:
   // It is expected that the Delegate outlives |this|, and manages the lifetime
   // of this class.
@@ -86,7 +87,11 @@ class ContentSubresourceFilterThrottleManager
     return ruleset_handle_.get();
   }
 
-  bool IsFrameTaggedAsAdForTesting(content::RenderFrameHost* frame_host);
+  // SubframeNavigationFilteringThrottle::Delegate:
+  bool CalculateIsAdSubframe(content::RenderFrameHost* frame_host,
+                             LoadPolicy load_policy) override;
+
+  bool IsFrameTaggedAsAdForTesting(content::RenderFrameHost* frame_host) const;
 
  protected:
   // content::WebContentsObserver:
@@ -108,7 +113,8 @@ class ContentSubresourceFilterThrottleManager
       const ActivationState& activation_state) override;
   void OnSubframeNavigationEvaluated(
       content::NavigationHandle* navigation_handle,
-      LoadPolicy load_policy) override;
+      LoadPolicy load_policy,
+      bool is_ad_subframe) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSubresourceFilterThrottleManagerTest,
@@ -159,14 +165,8 @@ class ContentSubresourceFilterThrottleManager
   // For each ongoing navigation that requires activation state computation,
   // keeps track of the throttle that is carrying out that computation, so that
   // the result can be retrieved when the navigation is ready to commit.
-  // |navigating_to_ad_url| is set if SubframeNavigationFilteringThrottle
-  // finds that the navigation URL matches the ruleset.
-  struct OngoingThrottleInfo {
-    ActivationStateComputingNavigationThrottle* throttle = nullptr;
-    bool navigating_to_ad_url = false;
-  };
-
-  std::map<content::NavigationHandle*, OngoingThrottleInfo>
+  std::map<content::NavigationHandle*,
+           ActivationStateComputingNavigationThrottle*>
       ongoing_activation_throttles_;
 
   // Set of RenderFrameHosts that have been identified as ads. An RFH is an ad

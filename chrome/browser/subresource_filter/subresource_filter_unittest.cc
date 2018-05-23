@@ -100,6 +100,25 @@ TEST_F(SubresourceFilterTest, ExplicitWhitelisting_ShouldNotClearMetadata) {
   EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
 }
 
+TEST_F(SubresourceFilterTest, SimpleAllowedLoad_WithObserver) {
+  GURL url("https://example.test");
+  ConfigureAsSubresourceFilterOnlyURL(url);
+
+  subresource_filter::TestSubresourceFilterObserver observer(web_contents());
+  SimulateNavigateAndCommit(url, main_rfh());
+
+  EXPECT_EQ(subresource_filter::ActivationDecision::ACTIVATED,
+            observer.GetPageActivation(url).value());
+
+  GURL allowed_url("https://example.test/foo");
+  auto* subframe =
+      content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
+  SimulateNavigateAndCommit(GURL(allowed_url), subframe);
+  EXPECT_EQ(subresource_filter::LoadPolicy::ALLOW,
+            *observer.GetSubframeLoadPolicy(allowed_url));
+  EXPECT_FALSE(*observer.GetIsAdSubframe(allowed_url));
+}
+
 TEST_F(SubresourceFilterTest, SimpleDisallowedLoad_WithObserver) {
   GURL url("https://example.test");
   ConfigureAsSubresourceFilterOnlyURL(url);
@@ -112,10 +131,9 @@ TEST_F(SubresourceFilterTest, SimpleDisallowedLoad_WithObserver) {
 
   GURL disallowed_url(SubresourceFilterTest::kDefaultDisallowedUrl);
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
-  auto optional_load_policy = observer.GetSubframeLoadPolicy(disallowed_url);
-  EXPECT_TRUE(optional_load_policy.has_value());
   EXPECT_EQ(subresource_filter::LoadPolicy::DISALLOW,
-            observer.GetSubframeLoadPolicy(disallowed_url).value());
+            *observer.GetSubframeLoadPolicy(disallowed_url));
+  EXPECT_TRUE(*observer.GetIsAdSubframe(disallowed_url));
 }
 
 TEST_F(SubresourceFilterTest, RefreshMetadataOnActivation) {

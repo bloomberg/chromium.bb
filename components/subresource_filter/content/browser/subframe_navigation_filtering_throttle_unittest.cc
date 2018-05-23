@@ -13,6 +13,7 @@
 #include "base/test/histogram_tester.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
+#include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
@@ -23,6 +24,20 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace subresource_filter {
+
+class MockDelegate : public SubframeNavigationFilteringThrottle::Delegate {
+ public:
+  MockDelegate() = default;
+  ~MockDelegate() override = default;
+
+  // SubframeNavigationFilteringThrottle::Delegate:
+  bool CalculateIsAdSubframe(content::RenderFrameHost* frame_host,
+                             LoadPolicy load_policy) override {
+    return false;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MockDelegate);
+};
 
 class SubframeNavigationFilteringThrottleTest
     : public content::RenderViewHostTestHarness,
@@ -58,7 +73,7 @@ class SubframeNavigationFilteringThrottleTest
     if (parent_filter_) {
       navigation_handle->RegisterThrottleForTesting(
           std::make_unique<SubframeNavigationFilteringThrottle>(
-              navigation_handle, parent_filter_.get()));
+              navigation_handle, parent_filter_.get(), &mock_delegate_));
     }
   }
 
@@ -131,6 +146,7 @@ class SubframeNavigationFilteringThrottleTest
   testing::TestRulesetCreator test_ruleset_creator_;
   testing::TestRulesetPair test_ruleset_pair_;
 
+  MockDelegate mock_delegate_;
   std::unique_ptr<VerifiedRulesetDealer::Handle> dealer_handle_;
   std::unique_ptr<VerifiedRuleset::Handle> ruleset_handle_;
 

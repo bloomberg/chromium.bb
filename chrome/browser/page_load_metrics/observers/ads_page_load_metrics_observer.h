@@ -83,7 +83,8 @@ class AdsPageLoadMetricsObserver
   // subresource_filter::SubresourceFilterObserver:
   void OnSubframeNavigationEvaluated(
       content::NavigationHandle* navigation_handle,
-      subresource_filter::LoadPolicy load_policy) override;
+      subresource_filter::LoadPolicy load_policy,
+      bool is_ad_subframe) override;
   void OnSubresourceFilterGoingAway() override;
 
   // Determines if the URL of a frame matches the SubresourceFilter block

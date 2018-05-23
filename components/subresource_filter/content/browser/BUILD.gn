@@ -50,6 +50,7 @@ static_library("browser") {
     "//url",
   ]
   public_deps = [
+    "//third_party/flatbuffers:flatbuffers",
     "//ui/base",
   ]
 }

@@ -49,9 +49,12 @@ class SubresourceFilterObserverManager
       ActivationDecision activation_decision,
       const ActivationState& activation_state);
 
+  // Called in WillStartRequest or WillRedirectRequest stage from a
+  // SubframeNavigationFilteringThrottle.
   void NotifySubframeNavigationEvaluated(
       content::NavigationHandle* navigation_handle,
-      LoadPolicy load_policy);
+      LoadPolicy load_policy,
+      bool is_ad_subframe);
 
  private:
   base::ObserverList<SubresourceFilterObserver> observers_;
