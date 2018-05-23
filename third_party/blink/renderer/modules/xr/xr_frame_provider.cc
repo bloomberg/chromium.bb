@@ -430,6 +430,10 @@ void XRFrameProvider::ProcessScheduledFrame(
                                              frame_pose_->input_state.value());
     }
 
+    if (frame_pose_ && frame_pose_->pose_reset) {
+      exclusive_session_->OnPoseReset();
+    }
+
     // If there's an exclusive session active only process its frame.
     std::unique_ptr<TransformationMatrix> pose_matrix =
         getPoseMatrix(frame_pose_);
@@ -467,6 +471,10 @@ void XRFrameProvider::ProcessScheduledFrame(
 
       if (frame_data) {
         session->SetNonExclusiveProjectionMatrix(frame_data->projection_matrix);
+      }
+
+      if (frame_pose_ && frame_pose_->pose_reset) {
+        session->OnPoseReset();
       }
 
       std::unique_ptr<TransformationMatrix> pose_matrix =

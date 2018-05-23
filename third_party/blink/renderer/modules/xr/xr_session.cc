@@ -531,6 +531,10 @@ void XRSession::OnSelect(XRInputSource* input_source) {
   }
 }
 
+void XRSession::OnPoseReset() {
+  DispatchEvent(XRSessionEvent::Create(EventTypeNames::resetpose, this));
+}
+
 void XRSession::UpdateInputSourceState(
     XRInputSource* input_source,
     const device::mojom::blink::XRInputSourceStatePtr& state) {

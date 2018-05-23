@@ -82,6 +82,11 @@ struct VRPose {
   // For WebXR sessions only, reports the state of all active input devices
   // synced with the head pose.
   array<XRInputSourceState>? input_state;
+
+  // Indicates that a reset pose event was triggered, either by device specific
+  // UI or by some other method, and handled on the browser side, and the
+  // renderer should now bubble up an event to the WebXRDevice API.
+  bool pose_reset;
 };
 
 struct VRDisplayCapabilities {
@@ -258,6 +263,8 @@ interface VRDisplayHost {
 
 // Provides the necessary functionality for a non-presenting WebXR session to
 // draw magic window content.
+// This interface is hosted in the Browser process, but will move to a sandboxed
+// utility process on Windows.  The render process communicates with it.
 // For AR displays (VRDisplayCapabilities.can_provide_pass_through_images
 // is true), clients can use GetFrameData to get images.
 // TODO(836478): rename VRMagicWindowProvider to NonExclusiveWindowProvider or

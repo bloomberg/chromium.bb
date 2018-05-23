@@ -117,6 +117,8 @@ class XRSession final : public EventTargetWithInlineData {
   void OnSelectEnd(XRInputSource*);
   void OnSelect(XRInputSource*);
 
+  void OnPoseReset();
+
   void SetNonExclusiveProjectionMatrix(const WTF::Vector<float>&);
 
   void Trace(blink::Visitor*) override;

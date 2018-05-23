@@ -430,6 +430,7 @@ class MockVRPresentationProvider {
       angularAcceleration: null,
       linearAcceleration: null,
       inputState: null,
+      poseReset: false,
       poseIndex: 0
     };
   }

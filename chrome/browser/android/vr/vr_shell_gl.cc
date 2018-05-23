@@ -2436,6 +2436,12 @@ void VrShellGl::SendVSync() {
                                                      prediction_nanos);
   TRACE_EVENT_END0("gpu", "VrShellGl::GetVRPosePtrWithNeckModel");
 
+  // Process all events. Check for ones we wish to react to.
+  gvr::Event last_event;
+  while (gvr_api_->PollEvent(&last_event)) {
+    pose->pose_reset |= last_event.type == GVR_EVENT_RECENTER;
+  }
+
   if (report_webxr_input_) {
     TRACE_EVENT0("gpu", "VrShellGl::XRInput");
     if (cardboard_) {
