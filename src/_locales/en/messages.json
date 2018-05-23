@@ -189,10 +189,6 @@
     "message": "Toggle timer",
     "description": "Label for the button to toggle the countdown timer."
   },
-  "toggleMultiButton": {
-    "message": "Toggle multi-shot",
-    "description": "Label for the button to toggle the multi-shot feature."
-  },
   "toggleCameraButton": {
     "message": "Toggle camera",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
@@ -224,14 +220,6 @@
   "toggleTimerInactiveMessage": {
     "message": "Timer inactive",
     "description": "Message shown when inactivating the timer."
-  },
-  "toggleMultiActiveMessage": {
-    "message": "Multi-shot active",
-    "description": "Message shown when activating the multi-shot feature."
-  },
-  "toggleMultiInactiveMessage": {
-    "message": "Multi-shot inactive",
-    "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
     "message": "Mirroring active",

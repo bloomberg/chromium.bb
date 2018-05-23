@@ -340,13 +340,6 @@ camera.views.Camera = function(context, router) {
   this.performanceMonitors_ = new camera.util.NamedPerformanceMonitors();
 
   /**
-   * Timer used for a multi-shot.
-   * @type {number?}
-   * @private
-   */
-  this.multiShotInterval_ = null;
-
-  /**
    * Timer used to countdown before taking the picture.
    * @type {number?}
    * @private
@@ -423,10 +416,6 @@ camera.views.Camera = function(context, router) {
       'keypress', this.onToggleTimerKeyPress_.bind(this));
   document.querySelector('#toggle-timer').addEventListener(
       'click', this.onToggleTimerClicked_.bind(this));
-  document.querySelector('#toggle-multi').addEventListener(
-      'keypress', this.onToggleMultiKeyPress_.bind(this));
-  document.querySelector('#toggle-multi').addEventListener(
-      'click', this.onToggleMultiClicked_.bind(this));
   document.querySelector('#toggle-camera').addEventListener(
       'click', this.onToggleCameraClicked_.bind(this));
   document.querySelector('#toggle-mirror').addEventListener(
@@ -520,15 +509,12 @@ camera.views.Camera.prototype.initialize = function(callback) {
     chrome.storage.local.get(
         {
           toggleTimer: false,
-          toggleMulti: false,
           toggleMirror: true,  // Deprecated.
           mirroringToggles: {},  // Per device.
         },
         function(values) {
           document.querySelector('#toggle-timer').checked =
               values.toggleTimer;
-          document.querySelector('#toggle-multi').checked =
-              values.toggleMulti;
           this.legacyMirroringToggle_ = values.toggleMirror;
           this.mirroringToggles_ = values.mirroringToggles;
 
@@ -536,7 +522,7 @@ camera.views.Camera.prototype.initialize = function(callback) {
           this.start_();
         }.bind(this));
     // Remove the deprecated values.
-    chrome.storage.local.remove(['effectIndex']);
+    chrome.storage.local.remove(['effectIndex', 'toggleMulti']);
   }
 
   // TODO: Replace with "devicechanged" event once it's implemented in Chrome.
@@ -665,16 +651,6 @@ camera.views.Camera.prototype.onToggleTimerKeyPress_ = function(event) {
 };
 
 /**
- * Handles pressing a key on the multi-shot switch.
- * @param {Event} event Key press event.
- * @private
- */
-camera.views.Camera.prototype.onToggleMultiKeyPress_ = function(event) {
-  if (camera.util.getShortcutIdentifier(event) == 'Enter')
-    document.querySelector('#toggle-multi').click();
-};
-
-/**
  * Handles pressing a key on the mirror switch.
  * @param {Event} event Key press event.
  * @private
@@ -695,19 +671,6 @@ camera.views.Camera.prototype.onToggleTimerClicked_ = function(event) {
       chrome.i18n.getMessage(enabled ? 'toggleTimerActiveMessage' :
                                        'toggleTimerInactiveMessage'));
   chrome.storage.local.set({toggleTimer: enabled});
-};
-
-/**
- * Handles clicking on the multi-shot switch.
- * @param {Event} event Click event.
- * @private
- */
-camera.views.Camera.prototype.onToggleMultiClicked_ = function(event) {
-  var enabled = document.querySelector('#toggle-multi').checked;
-  this.showToastMessage_(
-      chrome.i18n.getMessage(enabled ? 'toggleMultiActiveMessage' :
-                                       'toggleMultiInactiveMessage'));
-  chrome.storage.local.set({toggleMulti: enabled});
 };
 
 /**
@@ -759,7 +722,6 @@ camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
   }
   this.updateButtonLabel_(takePictureButton, label);
 
-  document.querySelector('#toggle-multi').hidden = this.is_recording_mode_;
   document.querySelector('#toggle-timer').hidden = this.is_recording_mode_;
 
   this.stop_();
@@ -858,7 +820,6 @@ camera.views.Camera.prototype.updateAlbumButton_ = function() {
 camera.views.Camera.prototype.updateToolbar_ = function() {
   var disabled = !this.capturing || this.taking_;
   document.querySelector('#toggle-timer').disabled = disabled;
-  document.querySelector('#toggle-multi').disabled = disabled;
   document.querySelector('#toggle-mirror').disabled = disabled;
   document.querySelector('#toggle-camera').disabled = disabled;
   document.querySelector('#toggle-record').disabled = disabled;
@@ -1103,40 +1064,25 @@ camera.views.Camera.prototype.takePicture_ = function() {
   this.updateToolbar_();
 
   var toggleTimer = document.querySelector('#toggle-timer');
-  var toggleMulti = document.querySelector('#toggle-multi');
-
   var tickCounter = (!toggleTimer.hidden && toggleTimer.checked) ? 6 : 1;
   var onTimerTick = function() {
     tickCounter--;
     if (tickCounter == 0) {
-      var multiEnabled = !toggleMulti.hidden && toggleMulti.checked;
-      var multiShotCounter = 3;
-      var takePicture = function() {
-        if (this.is_recording_mode_) {
-          // Play a sound before recording started, and don't end recording
-          // until another take-picture click.
-          this.recordStartSound_.currentTime = 0;
-          this.recordStartSound_.play();
-          setTimeout(function() {
-            // Record-started sound should have been ended by now; pause it just
-            // in case it's still playing to avoid the sound being recorded.
-            this.recordStartSound_.pause();
-            this.takePictureImmediately_(true);
-          }.bind(this), 250);
-        } else {
-          this.takePictureImmediately_(false);
-
-          if (multiEnabled) {
-            multiShotCounter--;
-            if (multiShotCounter)
-              return;
-          }
-          this.endTakePicture_();
-        }
-      }.bind(this);
-      takePicture();
-      if (multiEnabled)
-        this.multiShotInterval_ = setInterval(takePicture, 250);
+      if (this.is_recording_mode_) {
+        // Play a sound before recording started, and don't end recording
+        // until another take-picture click.
+        this.recordStartSound_.currentTime = 0;
+        this.recordStartSound_.play();
+        setTimeout(function() {
+          // Record-started sound should have been ended by now; pause it just
+          // in case it's still playing to avoid the sound being recorded.
+          this.recordStartSound_.pause();
+          this.takePictureImmediately_(true);
+        }.bind(this), 250);
+      } else {
+        this.takePictureImmediately_(false);
+        this.endTakePicture_();
+      }
     } else {
       this.takePictureTimer_ = setTimeout(onTimerTick, 1000);
       this.tickSound_.play();
@@ -1161,10 +1107,6 @@ camera.views.Camera.prototype.endTakePicture_ = function() {
   if (this.takePictureTimer_) {
     clearTimeout(this.takePictureTimer_);
     this.takePictureTimer_ = null;
-  }
-  if (this.multiShotInterval_) {
-    clearTimeout(this.multiShotInterval_);
-    this.multiShotInterval_ = null;
   }
   if (this.mediaRecorder_ && this.mediaRecorder_.state == 'recording') {
     this.mediaRecorder_.stop();
