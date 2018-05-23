@@ -156,7 +156,6 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
     {"anonymousFunction", IDS_MD_EXTENSIONS_ERROR_ANONYMOUS_FUNCTION},
     {"errorContext", IDS_MD_EXTENSIONS_ERROR_CONTEXT},
     {"errorContextUnknown", IDS_MD_EXTENSIONS_ERROR_CONTEXT_UNKNOWN},
-    {"openInDevtool", IDS_MD_EXTENSIONS_ERROR_LAUNCH_DEVTOOLS},
     {"stackTrace", IDS_MD_EXTENSIONS_ERROR_STACK_TRACE},
     // TODO(dpapad): Unify with Settings' IDS_SETTINGS_WEB_STORE.
     {"openChromeWebStore", IDS_MD_EXTENSIONS_SIDEBAR_OPEN_CHROME_WEB_STORE},

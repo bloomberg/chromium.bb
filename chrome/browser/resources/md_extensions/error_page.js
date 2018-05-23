@@ -24,11 +24,6 @@ cr.define('extensions', function() {
      * @return {!Promise<!chrome.developerPrivate.RequestFileSourceResponse>}
      */
     requestFileSource(args) {}
-
-    /**
-     * @param {!chrome.developerPrivate.OpenDevToolsProperties} args
-     */
-    openDevTools(args) {}
   }
 
   /**
@@ -340,22 +335,6 @@ cr.define('extensions', function() {
           return;
         }
       }
-    },
-
-    /** @private */
-    onDevToolButtonTap_: function() {
-      const selectedError = this.getSelectedError();
-      // This guarantees renderProcessId and renderViewId.
-      assert(selectedError.type == chrome.developerPrivate.ErrorType.RUNTIME);
-      assert(this.selectedStackFrame_);
-
-      this.delegate.openDevTools({
-        renderProcessId: selectedError.renderProcessId,
-        renderViewId: selectedError.renderViewId,
-        url: this.selectedStackFrame_.url,
-        lineNumber: this.selectedStackFrame_.lineNumber || 0,
-        columnNumber: this.selectedStackFrame_.columnNumber || 0,
-      });
     },
 
     /**

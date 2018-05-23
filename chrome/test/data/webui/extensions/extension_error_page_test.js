@@ -30,10 +30,6 @@ cr.define('extension_error_page_tests', function() {
       this.requestFileSourceResolver = new PromiseResolver();
       return this.requestFileSourceResolver.promise;
     },
-
-    openDevTools: function(args) {
-      this.openDevToolsArgs = args;
-    },
   };
 
   var suiteName = 'ExtensionErrorPageTest';
@@ -197,18 +193,6 @@ cr.define('extension_error_page_tests', function() {
       expectEquals('other_source.html', args.pathSuffix);
       expectTrue(ironCollapses[1].opened);
       expectFalse(ironCollapses[0].opened);
-
-      // Tapping the button sends the right parameter to open dev tool.
-      expectTrue(
-          ironCollapses[1].querySelector('li').classList.contains('selected'));
-      MockInteractions.tap(ironCollapses[1].querySelector('paper-button'));
-      expectDeepEquals(mockDelegate.openDevToolsArgs, {
-        renderProcessId: 111,
-        renderViewId: 222,
-        url: 'url',
-        lineNumber: 123,
-        columnNumber: 321,
-      });
 
       expectEquals(
           'Unknown',
