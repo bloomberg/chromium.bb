@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.util;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -159,6 +160,7 @@ public class AccessibilityUtil {
      * @param description The string shown in the toast.
      * @return Whether a toast has been shown successfully.
      */
+    @SuppressLint("RtlHardcoded")
     public static boolean showAccessibilityToast(
             Context context, View view, CharSequence description) {
         if (description == null) return false;
@@ -170,10 +172,16 @@ public class AccessibilityUtil {
         final int width = view.getWidth();
         final int height = view.getHeight();
 
+        final int horizontalGravity =
+                (screenPos[0] < screenWidth / 2) ? Gravity.LEFT : Gravity.RIGHT;
+        final int xOffset = (screenPos[0] < screenWidth / 2)
+                ? screenPos[0] + width / 2
+                : screenWidth - screenPos[0] - width / 2;
+        final int yOffset = (screenPos[1] < screenHeight / 2) ? screenPos[1] + height / 2
+                                                              : screenPos[1] - height * 3 / 2;
+
         Toast toast = Toast.makeText(context, description, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.TOP | Gravity.END, screenWidth - screenPos[0] - width / 2,
-                (screenPos[1] < screenHeight / 2) ? screenPos[1] + height / 2
-                                                  : screenPos[1] - height * 3 / 2);
+        toast.setGravity(Gravity.TOP | horizontalGravity, xOffset, yOffset);
         toast.show();
         return true;
     }
