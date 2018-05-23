@@ -14,20 +14,7 @@
 
 namespace blink {
 
-class WhitespaceAttacherTest : public PageTestBase {
- protected:
-  ShadowRoot& AttachShadow(Element& host);
-};
-
-ShadowRoot& WhitespaceAttacherTest::AttachShadow(Element& host) {
-  ShadowRootInit init;
-  init.setMode("open");
-  ShadowRoot* shadow_root =
-      host.attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()),
-                        init, ASSERT_NO_EXCEPTION);
-  EXPECT_TRUE(shadow_root);
-  return *shadow_root;
-}
+class WhitespaceAttacherTest : public PageTestBase {};
 
 TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedBlock) {
   GetDocument().body()->SetInnerHTMLFromString("<div id=block></div> ");
@@ -205,7 +192,8 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceAfterReattachedBlock) {
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
-  ShadowRoot& shadow_root = AttachShadow(*host);
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
   shadow_root.SetInnerHTMLFromString("<div id=block></div><slot></slot>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -231,7 +219,8 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceAfterReattachedInline) {
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
-  ShadowRoot& shadow_root = AttachShadow(*host);
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
   shadow_root.SetInnerHTMLFromString("<span id=inline></span><slot></slot>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -418,7 +407,8 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceInsideDisplayContents) {
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
-  ShadowRoot& shadow_root = AttachShadow(*host);
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
   shadow_root.SetInnerHTMLFromString(
       "<span id=inline></span>"
       "<div style='display:contents'><slot></slot></div>");
