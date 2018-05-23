@@ -78,13 +78,13 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
  private:
   // PasswordsClientUIDelegate:
   void OnPasswordSubmitted(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager)
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager)
       override;
   void OnUpdatePasswordSubmitted(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager)
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager)
       override;
   void OnShowManualFallbackForSaving(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager,
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager,
       bool has_generated_password,
       bool is_update) override;
   void OnHideManualFallbackForSaving() override;
@@ -164,7 +164,7 @@ void CustomManagePasswordsUIController::WaitForFallbackForSaving() {
 }
 
 void CustomManagePasswordsUIController::OnPasswordSubmitted(
-    std::unique_ptr<password_manager::PasswordFormManager> form_manager) {
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager) {
   was_prompt_automatically_shown_ = true;
   ProcessStateExpectations(password_manager::ui::PENDING_PASSWORD_STATE);
   return ManagePasswordsUIController::OnPasswordSubmitted(
@@ -172,7 +172,7 @@ void CustomManagePasswordsUIController::OnPasswordSubmitted(
 }
 
 void CustomManagePasswordsUIController::OnUpdatePasswordSubmitted(
-    std::unique_ptr<password_manager::PasswordFormManager> form_manager) {
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager) {
   was_prompt_automatically_shown_ = true;
   ProcessStateExpectations(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
   return ManagePasswordsUIController::OnUpdatePasswordSubmitted(
@@ -180,7 +180,7 @@ void CustomManagePasswordsUIController::OnUpdatePasswordSubmitted(
 }
 
 void CustomManagePasswordsUIController::OnShowManualFallbackForSaving(
-    std::unique_ptr<password_manager::PasswordFormManager> form_manager,
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager,
     bool has_generated_password,
     bool is_update) {
   if (wait_for_fallback_)

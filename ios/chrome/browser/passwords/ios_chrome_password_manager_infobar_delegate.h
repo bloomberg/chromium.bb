@@ -14,7 +14,7 @@
 @protocol ApplicationCommands;
 
 namespace password_manager {
-class PasswordFormManager;
+class PasswordFormManagerForUI;
 }
 
 // Base class for password manager infobar delegates, e.g.
@@ -28,9 +28,9 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
  protected:
   IOSChromePasswordManagerInfoBarDelegate(
       bool is_smart_lock_branding_enabled,
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager);
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager);
 
-  password_manager::PasswordFormManager* form_to_save() const {
+  password_manager::PasswordFormManagerForUI* form_to_save() const {
     return form_to_save_.get();
   }
 
@@ -59,7 +59,7 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // The password_manager::PasswordFormManager managing the form we're asking
   // the user about, and should save as per their decision.
-  std::unique_ptr<password_manager::PasswordFormManager> form_to_save_;
+  std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save_;
 
   // Used to track the results we get from the info bar.
   password_manager::metrics_util::UIDismissalReason infobar_response_;

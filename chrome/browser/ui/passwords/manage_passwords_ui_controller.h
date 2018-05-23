@@ -29,7 +29,7 @@ class WebContents;
 namespace password_manager {
 enum class CredentialType;
 struct InteractionsStats;
-class PasswordFormManager;
+class PasswordFormManagerForUI;
 }
 
 class AccountChooserPrompt;
@@ -57,13 +57,13 @@ class ManagePasswordsUIController
 
   // PasswordsClientUIDelegate:
   void OnPasswordSubmitted(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager)
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager)
       override;
   void OnUpdatePasswordSubmitted(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager)
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager)
       override;
   void OnShowManualFallbackForSaving(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager,
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager,
       bool has_generated_password,
       bool is_update) override;
   void OnHideManualFallbackForSaving() override;
@@ -76,7 +76,7 @@ class ManagePasswordsUIController
       const GURL& origin) override;
   void OnPromptEnableAutoSignin() override;
   void OnAutomaticPasswordSave(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager)
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager)
       override;
   void OnPasswordAutofilled(
       const std::map<base::string16, const autofill::PasswordForm*>&

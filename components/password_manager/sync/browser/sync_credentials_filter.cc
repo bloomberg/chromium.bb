@@ -92,7 +92,7 @@ void SyncCredentialsFilter::ReportFormLoginSuccess(
     const PasswordFormManager& form_manager) const {
   if (!form_manager.IsNewLogin() &&
       sync_util::IsSyncAccountCredential(
-          form_manager.pending_credentials(),
+          form_manager.GetPendingCredentials(),
           sync_service_factory_function_.Run(),
           signin_manager_factory_function_.Run())) {
     base::RecordAction(base::UserMetricsAction(

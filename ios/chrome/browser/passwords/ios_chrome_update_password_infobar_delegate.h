@@ -14,7 +14,7 @@
 @class UIViewController;
 
 namespace password_manager {
-class PasswordFormManager;
+class PasswordFormManagerForUI;
 }
 
 namespace infobars {
@@ -32,7 +32,7 @@ class IOSChromeUpdatePasswordInfoBarDelegate
   static void Create(
       bool is_smart_lock_branding_enabled,
       infobars::InfoBarManager* infobar_manager,
-      std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       UIViewController* baseViewController,
       id<ApplicationCommands> dispatcher);
 
@@ -56,7 +56,7 @@ class IOSChromeUpdatePasswordInfoBarDelegate
  private:
   IOSChromeUpdatePasswordInfoBarDelegate(
       bool is_smart_lock_branding_enabled,
-      std::unique_ptr<password_manager::PasswordFormManager> form_to_save);
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save);
 
   // Returns the string with the branded title of the password manager (e.g.
   // "Google Smart Lock for Passwords").

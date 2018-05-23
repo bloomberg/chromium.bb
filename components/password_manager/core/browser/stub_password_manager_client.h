@@ -24,10 +24,10 @@ class StubPasswordManagerClient : public PasswordManagerClient {
 
   // PasswordManagerClient:
   bool PromptUserToSaveOrUpdatePassword(
-      std::unique_ptr<PasswordFormManager> form_to_save,
+      std::unique_ptr<PasswordFormManagerForUI> form_to_save,
       bool update_password) override;
   void ShowManualFallbackForSaving(
-      std::unique_ptr<PasswordFormManager> form_to_save,
+      std::unique_ptr<PasswordFormManagerForUI> form_to_save,
       bool has_generated_password,
       bool update_password) override;
   void HideManualFallbackForSaving() override;
@@ -44,7 +44,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       const autofill::PasswordForm& form) override;
   void NotifyStorePasswordCalled() override;
   void AutomaticPasswordSave(
-      std::unique_ptr<PasswordFormManager> saved_manager) override;
+      std::unique_ptr<PasswordFormManagerForUI> saved_manager) override;
   PrefService* GetPrefs() const override;
   PasswordStore* GetPasswordStore() const override;
   const GURL& GetLastCommittedEntryURL() const override;

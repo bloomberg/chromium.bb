@@ -646,8 +646,9 @@ class PasswordFormManagerTest : public testing::Test {
     // value already to be the current password, and should no longer maintain
     // any info about the new password value.
     EXPECT_EQ(submitted_form.new_password_value,
-              form_manager.pending_credentials().password_value);
-    EXPECT_TRUE(form_manager.pending_credentials().new_password_value.empty());
+              form_manager.GetPendingCredentials().password_value);
+    EXPECT_TRUE(
+        form_manager.GetPendingCredentials().new_password_value.empty());
 
     std::map<base::string16, autofill::ServerFieldType> expected_types;
     expected_types[ASCIIToUTF16("full_name")] = autofill::UNKNOWN_TYPE;
@@ -966,19 +967,20 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   // Make sure the credentials that would be submitted on successful login
   // are going to match the stored entry in the db.
   EXPECT_EQ(observed_form()->origin.spec(),
-            form_manager()->pending_credentials().origin.spec());
+            form_manager()->GetPendingCredentials().origin.spec());
   EXPECT_EQ(observed_form()->signon_realm,
-            form_manager()->pending_credentials().signon_realm);
+            form_manager()->GetPendingCredentials().signon_realm);
   EXPECT_EQ(observed_form()->action,
-            form_manager()->pending_credentials().action);
-  EXPECT_TRUE(form_manager()->pending_credentials().preferred);
+            form_manager()->GetPendingCredentials().action);
+  EXPECT_TRUE(form_manager()->GetPendingCredentials().preferred);
   EXPECT_EQ(saved_match()->password_value,
-            form_manager()->pending_credentials().password_value);
+            form_manager()->GetPendingCredentials().password_value);
   EXPECT_EQ(saved_match()->username_value,
-            form_manager()->pending_credentials().username_value);
+            form_manager()->GetPendingCredentials().username_value);
   EXPECT_TRUE(
-      form_manager()->pending_credentials().new_password_element.empty());
-  EXPECT_TRUE(form_manager()->pending_credentials().new_password_value.empty());
+      form_manager()->GetPendingCredentials().new_password_element.empty());
+  EXPECT_TRUE(
+      form_manager()->GetPendingCredentials().new_password_value.empty());
 }
 
 // Test provisionally saving a new login in presence of other saved logins.
@@ -1000,15 +1002,16 @@ TEST_F(PasswordFormManagerTest, TestAdditionalLogin) {
   EXPECT_TRUE(form_manager()->IsNewLogin());
 
   EXPECT_EQ(observed_form()->origin.spec(),
-            form_manager()->pending_credentials().origin.spec());
+            form_manager()->GetPendingCredentials().origin.spec());
   EXPECT_EQ(observed_form()->signon_realm,
-            form_manager()->pending_credentials().signon_realm);
-  EXPECT_TRUE(form_manager()->pending_credentials().preferred);
-  EXPECT_EQ(new_pass, form_manager()->pending_credentials().password_value);
-  EXPECT_EQ(new_user, form_manager()->pending_credentials().username_value);
+            form_manager()->GetPendingCredentials().signon_realm);
+  EXPECT_TRUE(form_manager()->GetPendingCredentials().preferred);
+  EXPECT_EQ(new_pass, form_manager()->GetPendingCredentials().password_value);
+  EXPECT_EQ(new_user, form_manager()->GetPendingCredentials().username_value);
   EXPECT_TRUE(
-      form_manager()->pending_credentials().new_password_element.empty());
-  EXPECT_TRUE(form_manager()->pending_credentials().new_password_value.empty());
+      form_manager()->GetPendingCredentials().new_password_element.empty());
+  EXPECT_TRUE(
+      form_manager()->GetPendingCredentials().new_password_value.empty());
 }
 
 // Test blacklisting in the presence of saved results.
@@ -1025,22 +1028,22 @@ TEST_F(PasswordFormManagerTest, TestBlacklist) {
 
   EXPECT_TRUE(form_manager()->IsNewLogin());
   EXPECT_EQ(observed_form()->origin.spec(),
-            form_manager()->pending_credentials().origin.spec());
+            form_manager()->GetPendingCredentials().origin.spec());
   EXPECT_EQ(observed_form()->signon_realm,
-            form_manager()->pending_credentials().signon_realm);
+            form_manager()->GetPendingCredentials().signon_realm);
 
-  const PasswordForm pending_form = form_manager()->pending_credentials();
+  const PasswordForm pending_form = form_manager()->GetPendingCredentials();
   PasswordForm actual_add_form;
   // Now pretend the user wants to never save passwords on this origin. Chrome
   // is supposed to only request blacklisting of a single form.
   EXPECT_CALL(MockFormSaver::Get(form_manager()), PermanentlyBlacklist(_))
       .WillOnce(SaveArgPointee<0>(&actual_add_form));
   form_manager()->PermanentlyBlacklist();
-  EXPECT_EQ(pending_form, form_manager()->pending_credentials());
+  EXPECT_EQ(pending_form, form_manager()->GetPendingCredentials());
   // The PasswordFormManager should have updated its knowledge of blacklisting
   // without waiting for PasswordStore updates.
   EXPECT_TRUE(form_manager()->IsBlacklisted());
-  EXPECT_THAT(form_manager()->blacklisted_matches(),
+  EXPECT_THAT(form_manager()->GetBlacklistedMatches(),
               UnorderedElementsAre(Pointee(actual_add_form)));
 }
 
@@ -1072,10 +1075,10 @@ TEST_F(PasswordFormManagerTest, TestBlacklistMatching) {
   fake_form_fetcher()->SetNonFederated(matches, 0u);
 
   EXPECT_TRUE(form_manager()->IsBlacklisted());
-  EXPECT_THAT(form_manager()->blacklisted_matches(),
+  EXPECT_THAT(form_manager()->GetBlacklistedMatches(),
               ElementsAre(Pointee(blacklisted_match)));
-  EXPECT_EQ(1u, form_manager()->best_matches().size());
-  EXPECT_EQ(*saved_match(), *form_manager()->preferred_match());
+  EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
+  EXPECT_EQ(*saved_match(), *form_manager()->GetPreferredMatch());
 }
 
 // Test that even in the presence of blacklisted matches, the non-blacklisted
@@ -1094,9 +1097,9 @@ TEST_F(PasswordFormManagerTest, AutofillBlacklisted) {
       .WillOnce(SaveArg<0>(&fill_data));
 
   fake_form_fetcher()->SetNonFederated({&saved_form, &blacklisted}, 0u);
-  EXPECT_EQ(1u, form_manager()->blacklisted_matches().size());
+  EXPECT_EQ(1u, form_manager()->GetBlacklistedMatches().size());
   EXPECT_TRUE(form_manager()->IsBlacklisted());
-  EXPECT_EQ(1u, form_manager()->best_matches().size());
+  EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
   EXPECT_TRUE(fill_data.additional_logins.empty());
 }
 
@@ -1181,22 +1184,23 @@ TEST_F(PasswordFormManagerTest, TestNewLoginFromNewPasswordElement) {
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, which should know this is a new login.
   EXPECT_TRUE(form_manager.IsNewLogin());
-  EXPECT_EQ(credentials.origin, form_manager.pending_credentials().origin);
+  EXPECT_EQ(credentials.origin, form_manager.GetPendingCredentials().origin);
   EXPECT_EQ(credentials.signon_realm,
-            form_manager.pending_credentials().signon_realm);
-  EXPECT_EQ(credentials.action, form_manager.pending_credentials().action);
-  EXPECT_TRUE(form_manager.pending_credentials().preferred);
+            form_manager.GetPendingCredentials().signon_realm);
+  EXPECT_EQ(credentials.action, form_manager.GetPendingCredentials().action);
+  EXPECT_TRUE(form_manager.GetPendingCredentials().preferred);
   EXPECT_EQ(credentials.username_value,
-            form_manager.pending_credentials().username_value);
+            form_manager.GetPendingCredentials().username_value);
 
   // By this point, the PasswordFormManager should have promoted the new
   // password value to be the current password.
   EXPECT_EQ(credentials.new_password_value,
-            form_manager.pending_credentials().password_value);
+            form_manager.GetPendingCredentials().password_value);
   EXPECT_EQ(credentials.new_password_element,
-            form_manager.pending_credentials().password_element);
-  EXPECT_TRUE(form_manager.pending_credentials().new_password_value.empty());
-  EXPECT_TRUE(form_manager.pending_credentials().new_password_element.empty());
+            form_manager.GetPendingCredentials().password_element);
+  EXPECT_TRUE(form_manager.GetPendingCredentials().new_password_value.empty());
+  EXPECT_TRUE(
+      form_manager.GetPendingCredentials().new_password_element.empty());
 }
 
 TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
@@ -1222,12 +1226,12 @@ TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
   // Make sure the credentials that would be submitted on successful login
   // are going to match the stored entry in the db. (This verifies correct
   // behaviour for bug 1074420).
-  EXPECT_EQ(form_manager()->pending_credentials().origin.spec(),
+  EXPECT_EQ(form_manager()->GetPendingCredentials().origin.spec(),
             saved_match()->origin.spec());
-  EXPECT_EQ(form_manager()->pending_credentials().signon_realm,
+  EXPECT_EQ(form_manager()->GetPendingCredentials().signon_realm,
             saved_match()->signon_realm);
-  EXPECT_TRUE(form_manager()->pending_credentials().preferred);
-  EXPECT_EQ(new_pass, form_manager()->pending_credentials().password_value);
+  EXPECT_TRUE(form_manager()->GetPendingCredentials().preferred);
+  EXPECT_EQ(new_pass, form_manager()->GetPendingCredentials().password_value);
 }
 
 TEST_F(PasswordFormManagerTest, TestUpdatePasswordFromNewPasswordElement) {
@@ -1260,9 +1264,10 @@ TEST_F(PasswordFormManagerTest, TestUpdatePasswordFromNewPasswordElement) {
   // already to be the current password, and should no longer maintain any info
   // about the new password.
   EXPECT_EQ(credentials.new_password_value,
-            form_manager.pending_credentials().password_value);
-  EXPECT_TRUE(form_manager.pending_credentials().new_password_element.empty());
-  EXPECT_TRUE(form_manager.pending_credentials().new_password_value.empty());
+            form_manager.GetPendingCredentials().password_value);
+  EXPECT_TRUE(
+      form_manager.GetPendingCredentials().new_password_element.empty());
+  EXPECT_TRUE(form_manager.GetPendingCredentials().new_password_value.empty());
 
   // Trigger saving to exercise some special case handling for updating.
   PasswordForm new_credentials;
@@ -1299,8 +1304,8 @@ TEST_F(PasswordFormManagerTest, TestIgnoreResult_Paths) {
   fetcher.SetNonFederated({&saved_form}, 0u);
 
   // Different paths for action / origin are okay.
-  EXPECT_EQ(1u, form_manager.best_matches().size());
-  EXPECT_EQ(*form_manager.best_matches().begin()->second, saved_form);
+  EXPECT_EQ(1u, form_manager.GetBestMatches().size());
+  EXPECT_EQ(*form_manager.GetBestMatches().begin()->second, saved_form);
 }
 
 // Test that saved empty action URL is updated with the submitted action URL.
@@ -1317,7 +1322,7 @@ TEST_F(PasswordFormManagerTest, TestEmptyAction) {
   // Chrome updates the saved PasswordForm entry with the action URL of the
   // observed form.
   EXPECT_EQ(observed_form()->action,
-            form_manager()->pending_credentials().action);
+            form_manager()->GetPendingCredentials().action);
 }
 
 TEST_F(PasswordFormManagerTest, TestUpdateAction) {
@@ -1336,7 +1341,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateAction) {
   // should update the store by setting the pending credential's action URL to
   // be that of the currently observed form.
   EXPECT_EQ(observed_form()->action,
-            form_manager()->pending_credentials().action);
+            form_manager()->GetPendingCredentials().action);
 }
 
 TEST_F(PasswordFormManagerTest, TestDynamicAction) {
@@ -1351,7 +1356,7 @@ TEST_F(PasswordFormManagerTest, TestDynamicAction) {
   EXPECT_TRUE(form_manager()->IsNewLogin());
   // Check that the provisionally saved action URL is the same as the submitted
   // action URL, not the one observed on page load.
-  EXPECT_EQ(login.action, form_manager()->pending_credentials().action);
+  EXPECT_EQ(login.action, form_manager()->GetPendingCredentials().action);
 }
 
 // Test that if the saved match has other possible usernames stored, and the
@@ -1474,7 +1479,7 @@ TEST_F(PasswordFormManagerTest, TestBestCredentialsForEachUsernameAreIncluded) {
       0u);
 
   const std::map<base::string16, const PasswordForm*>& best_matches =
-      form_manager()->best_matches();
+      form_manager()->GetBestMatches();
   EXPECT_EQ(3u, best_matches.size());
   EXPECT_NE(best_matches.end(),
             best_matches.find(saved_match()->username_value));
@@ -1483,7 +1488,7 @@ TEST_F(PasswordFormManagerTest, TestBestCredentialsForEachUsernameAreIncluded) {
   EXPECT_NE(best_matches.end(), best_matches.find(kUsername1));
   EXPECT_NE(best_matches.end(), best_matches.find(kUsername2));
 
-  EXPECT_EQ(*saved_match(), *form_manager()->preferred_match());
+  EXPECT_EQ(*saved_match(), *form_manager()->GetPreferredMatch());
   EXPECT_EQ(2u, fill_data.additional_logins.size());
 }
 
@@ -1562,7 +1567,7 @@ TEST_F(PasswordFormManagerTest, TestAllPossiblePasswords) {
 
   form_manager()->ProvisionallySave(credentials);
 
-  EXPECT_THAT(form_manager()->pending_credentials().all_possible_passwords,
+  EXPECT_THAT(form_manager()->GetPendingCredentials().all_possible_passwords,
               UnorderedElementsAre(pair1, pair2, pair3));
 }
 
@@ -1644,9 +1649,9 @@ TEST_F(PasswordFormManagerTest, TestScoringPublicSuffixMatch) {
 
   fake_form_fetcher()->SetNonFederated({&psl_match, &same_origin_match}, 0u);
   EXPECT_TRUE(fill_data.additional_logins.empty());
-  EXPECT_EQ(1u, form_manager()->best_matches().size());
+  EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
   EXPECT_FALSE(
-      form_manager()->best_matches().begin()->second->is_public_suffix_match);
+      form_manager()->GetBestMatches().begin()->second->is_public_suffix_match);
 }
 
 TEST_F(PasswordFormManagerTest, AndroidCredentialsAreAutofilled) {
@@ -1671,7 +1676,7 @@ TEST_F(PasswordFormManagerTest, AndroidCredentialsAreAutofilled) {
   fake_form_fetcher()->SetNonFederated({&android_login}, 0u);
   EXPECT_TRUE(fill_data.additional_logins.empty());
   EXPECT_FALSE(fill_data.wait_for_username);
-  EXPECT_EQ(1u, form_manager()->best_matches().size());
+  EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
 
   // When the user submits the filled form, no copy of the credential should be
   // created, instead the usage counter of the original credential should be
@@ -1741,7 +1746,7 @@ TEST_F(PasswordFormManagerTest, AndroidCredentialsAreProtected) {
   EXPECT_EQ(1u, fill_data.additional_logins.size());
 
   std::vector<std::unique_ptr<PasswordForm>> actual_matches;
-  for (const auto& username_match_pair : form_manager()->best_matches())
+  for (const auto& username_match_pair : form_manager()->GetBestMatches())
     actual_matches.push_back(
         std::make_unique<PasswordForm>(*username_match_pair.second));
   EXPECT_THAT(actual_matches,
@@ -1923,7 +1928,7 @@ TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
 
   // |first| scored slightly higher.
   EXPECT_EQ(ASCIIToUTF16("first"),
-            form_manager()->preferred_match()->password_value);
+            form_manager()->GetPreferredMatch()->password_value);
 
   PasswordForm login(*observed_form());
   login.username_value = saved_match()->username_value;
@@ -2092,7 +2097,7 @@ TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
 }
 
 TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
-  // Check that preferred_match() is always a member of best_matches().
+  // Check that GetPreferredMatch() is always a member of GetBestMatches().
   PasswordForm form = *observed_form();
   form.username_value = ASCIIToUTF16("username");
   form.password_value = ASCIIToUTF16("password1");
@@ -2105,12 +2110,12 @@ TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
 
   fake_form_fetcher()->SetNonFederated({&form, &generated_form}, 0u);
 
-  EXPECT_EQ(1u, form_manager()->best_matches().size());
-  EXPECT_EQ(form_manager()->preferred_match(),
-            form_manager()->best_matches().begin()->second);
+  EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
+  EXPECT_EQ(form_manager()->GetPreferredMatch(),
+            form_manager()->GetBestMatches().begin()->second);
   // Make sure to access all fields of preferred_match; this way if it was
   // deleted, ASAN might notice it.
-  PasswordForm dummy(*form_manager()->preferred_match());
+  PasswordForm dummy(*form_manager()->GetPreferredMatch());
 }
 
 TEST_F(PasswordFormManagerTest, PasswordToSave_NoElements) {
@@ -2173,7 +2178,7 @@ TEST_F(PasswordFormManagerTest, TestSuggestingPasswordChangeForms) {
 
   PasswordForm result = CreateSavedMatch(false);
   fetcher.SetNonFederated({&result}, 0u);
-  EXPECT_EQ(1u, manager_creds.best_matches().size());
+  EXPECT_EQ(1u, manager_creds.GetBestMatches().size());
   EXPECT_EQ(0u, fill_data.additional_logins.size());
   EXPECT_TRUE(fill_data.wait_for_username);
 }
@@ -2215,8 +2220,8 @@ TEST_F(PasswordFormManagerTest, TestUpdateMethod) {
   // already to be the current password, and should no longer maintain any info
   // about the new password value.
   EXPECT_EQ(credentials.new_password_value,
-            form_manager.pending_credentials().password_value);
-  EXPECT_TRUE(form_manager.pending_credentials().new_password_value.empty());
+            form_manager.GetPendingCredentials().password_value);
+  EXPECT_TRUE(form_manager.GetPendingCredentials().new_password_value.empty());
 
   // Trigger saving to exercise some special case handling during updating.
   PasswordForm new_credentials;
@@ -2270,17 +2275,17 @@ TEST_F(PasswordFormManagerTest, TestUpdateNoUsernameTextfieldPresent) {
   // already to be the current password, and should no longer maintain any info
   // about the new password value.
   EXPECT_EQ(saved_match()->username_value,
-            form_manager.pending_credentials().username_value);
+            form_manager.GetPendingCredentials().username_value);
   EXPECT_EQ(credentials.new_password_value,
-            form_manager.pending_credentials().password_value);
-  EXPECT_TRUE(form_manager.pending_credentials().new_password_value.empty());
+            form_manager.GetPendingCredentials().password_value);
+  EXPECT_TRUE(form_manager.GetPendingCredentials().new_password_value.empty());
 
   // Trigger saving to exercise some special case handling during updating.
   PasswordForm new_credentials;
   EXPECT_CALL(MockFormSaver::Get(&form_manager), Update(_, _, _, nullptr))
       .WillOnce(SaveArg<0>(&new_credentials));
 
-  form_manager.Update(form_manager.pending_credentials());
+  form_manager.Update(form_manager.GetPendingCredentials());
 
   // The password should be updated, but the username should not.
   EXPECT_EQ(saved_match()->username_value, new_credentials.username_value);
@@ -2331,11 +2336,11 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_ValueOfAnotherField) {
 
     // User edits username in a prompt.
     form_manager.UpdateUsername(ASCIIToUTF16("edited_username"));
-    EXPECT_EQ(form_manager.pending_credentials().username_value,
+    EXPECT_EQ(form_manager.GetPendingCredentials().username_value,
               ASCIIToUTF16("edited_username"));
-    EXPECT_EQ(form_manager.pending_credentials().username_element,
+    EXPECT_EQ(form_manager.GetPendingCredentials().username_element,
               ASCIIToUTF16("correct_username_element"));
-    EXPECT_EQ(form_manager.pending_credentials().password_value,
+    EXPECT_EQ(form_manager.GetPendingCredentials().password_value,
               ASCIIToUTF16("password"));
     EXPECT_TRUE(form_manager.IsNewLogin());
 
@@ -2399,11 +2404,11 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_ValueSavedInStore) {
 
     // The username in credentials is expected to be updated.
     EXPECT_EQ(saved_match()->username_value,
-              form_manager()->pending_credentials().username_value);
+              form_manager()->GetPendingCredentials().username_value);
     EXPECT_EQ(saved_match()->username_element,
-              form_manager()->pending_credentials().username_element);
+              form_manager()->GetPendingCredentials().username_element);
     EXPECT_EQ(ASCIIToUTF16("different_pass"),
-              form_manager()->pending_credentials().password_value);
+              form_manager()->GetPendingCredentials().password_value);
     EXPECT_FALSE(form_manager()->IsNewLogin());
 
     // Create the expected credential to be saved.
@@ -2467,11 +2472,11 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_NoMatchNeitherOnFormNorInStore) {
     form_manager.UpdateUsername(ASCIIToUTF16("new_username"));
 
     // As there is no match on the form, |username_element| is empty.
-    EXPECT_TRUE(form_manager.pending_credentials().username_element.empty());
+    EXPECT_TRUE(form_manager.GetPendingCredentials().username_element.empty());
     EXPECT_EQ(ASCIIToUTF16("new_username"),
-              form_manager.pending_credentials().username_value);
+              form_manager.GetPendingCredentials().username_value);
     EXPECT_EQ(ASCIIToUTF16("different_pass"),
-              form_manager.pending_credentials().password_value);
+              form_manager.GetPendingCredentials().password_value);
     EXPECT_TRUE(form_manager.IsNewLogin());
 
     PasswordForm expected_pending(credential);
@@ -2523,9 +2528,9 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_UserRemovedUsername) {
 
   // The user clears the username value in the prompt.
   form_manager.UpdateUsername(base::string16());
-  EXPECT_TRUE(form_manager.pending_credentials().username_value.empty());
-  EXPECT_TRUE(form_manager.pending_credentials().username_element.empty());
-  EXPECT_EQ(form_manager.pending_credentials().password_value,
+  EXPECT_TRUE(form_manager.GetPendingCredentials().username_value.empty());
+  EXPECT_TRUE(form_manager.GetPendingCredentials().username_element.empty());
+  EXPECT_EQ(form_manager.GetPendingCredentials().password_value,
             ASCIIToUTF16("password"));
   EXPECT_TRUE(form_manager.IsNewLogin());
 
@@ -2559,10 +2564,10 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_PslMatch) {
   // The user edits the username to match the PSL entry.
   form_manager()->UpdateUsername(psl_saved_match()->username_value);
   EXPECT_EQ(psl_saved_match()->username_value,
-            form_manager()->pending_credentials().username_value);
+            form_manager()->GetPendingCredentials().username_value);
   EXPECT_TRUE(form_manager()->IsNewLogin());
   EXPECT_EQ(ASCIIToUTF16("some_pass"),
-            form_manager()->pending_credentials().password_value);
+            form_manager()->GetPendingCredentials().password_value);
 
   // The user clicks save, the edited username is saved.
   PasswordForm saved_result;
@@ -2631,18 +2636,18 @@ TEST_F(PasswordFormManagerTest, TestSelectPasswordMethod) {
         form_manager.ProvisionallySave(credential);
 
         // Pending credentials have the wrong values.
-        EXPECT_EQ(form_manager.pending_credentials().password_value,
+        EXPECT_EQ(form_manager.GetPendingCredentials().password_value,
                   ASCIIToUTF16("not-a-password"));
-        EXPECT_EQ(form_manager.pending_credentials().password_element,
+        EXPECT_EQ(form_manager.GetPendingCredentials().password_element,
                   ASCIIToUTF16("other_password_element"));
         // User selects another password in a prompt.
         if (has_passwords_revealed)
           form_manager.OnPasswordsRevealed();
         form_manager.UpdatePasswordValue(ASCIIToUTF16("p4ssword"));
         // Pending credentials are also corrected.
-        EXPECT_EQ(form_manager.pending_credentials().password_value,
+        EXPECT_EQ(form_manager.GetPendingCredentials().password_value,
                   ASCIIToUTF16("p4ssword"));
-        EXPECT_EQ(form_manager.pending_credentials().password_element,
+        EXPECT_EQ(form_manager.GetPendingCredentials().password_element,
                   ASCIIToUTF16("correct_password_element"));
         EXPECT_TRUE(form_manager.IsNewLogin());
 
@@ -2696,7 +2701,7 @@ TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_BeforeStoreCallback) {
 
   base::HistogramTester histogram_tester;
   EXPECT_CALL(MockFormSaver::Get(&form_manager),
-              WipeOutdatedCopies(form_manager.pending_credentials(), _, _));
+              WipeOutdatedCopies(form_manager.GetPendingCredentials(), _, _));
   form_manager.WipeStoreCopyIfOutdated();
   histogram_tester.ExpectUniqueSample("PasswordManager.StoreReadyWhenWiping", 0,
                                       1);
@@ -3019,19 +3024,20 @@ TEST_F(PasswordFormManagerTest,
   // Make sure the credentials that would be submitted on successful login
   // are going to match submitted form.
   EXPECT_EQ(observed_form()->origin.spec(),
-            form_manager()->pending_credentials().origin.spec());
+            form_manager()->GetPendingCredentials().origin.spec());
   EXPECT_EQ(observed_form()->signon_realm,
-            form_manager()->pending_credentials().signon_realm);
+            form_manager()->GetPendingCredentials().signon_realm);
   EXPECT_EQ(observed_form()->action,
-            form_manager()->pending_credentials().action);
-  EXPECT_TRUE(form_manager()->pending_credentials().preferred);
+            form_manager()->GetPendingCredentials().action);
+  EXPECT_TRUE(form_manager()->GetPendingCredentials().preferred);
   EXPECT_EQ(ASCIIToUTF16("new_password"),
-            form_manager()->pending_credentials().password_value);
+            form_manager()->GetPendingCredentials().password_value);
   EXPECT_EQ(base::string16(),
-            form_manager()->pending_credentials().username_value);
+            form_manager()->GetPendingCredentials().username_value);
   EXPECT_TRUE(
-      form_manager()->pending_credentials().new_password_element.empty());
-  EXPECT_TRUE(form_manager()->pending_credentials().new_password_value.empty());
+      form_manager()->GetPendingCredentials().new_password_element.empty());
+  EXPECT_TRUE(
+      form_manager()->GetPendingCredentials().new_password_value.empty());
 }
 
 TEST_F(PasswordFormManagerTest, TestUpdatingOnChangePasswordFormGeneration) {
@@ -3053,19 +3059,20 @@ TEST_F(PasswordFormManagerTest, TestUpdatingOnChangePasswordFormGeneration) {
   // Make sure the credentials that would be submitted on successful login
   // are going to match the stored entry in the db.
   EXPECT_EQ(saved_match()->origin.spec(),
-            form_manager()->pending_credentials().origin.spec());
+            form_manager()->GetPendingCredentials().origin.spec());
   EXPECT_EQ(saved_match()->signon_realm,
-            form_manager()->pending_credentials().signon_realm);
+            form_manager()->GetPendingCredentials().signon_realm);
   EXPECT_EQ(observed_form()->action,
-            form_manager()->pending_credentials().action);
-  EXPECT_TRUE(form_manager()->pending_credentials().preferred);
+            form_manager()->GetPendingCredentials().action);
+  EXPECT_TRUE(form_manager()->GetPendingCredentials().preferred);
   EXPECT_EQ(ASCIIToUTF16("new_password"),
-            form_manager()->pending_credentials().password_value);
+            form_manager()->GetPendingCredentials().password_value);
   EXPECT_EQ(saved_match()->username_value,
-            form_manager()->pending_credentials().username_value);
+            form_manager()->GetPendingCredentials().username_value);
   EXPECT_TRUE(
-      form_manager()->pending_credentials().new_password_element.empty());
-  EXPECT_TRUE(form_manager()->pending_credentials().new_password_value.empty());
+      form_manager()->GetPendingCredentials().new_password_element.empty());
+  EXPECT_TRUE(
+      form_manager()->GetPendingCredentials().new_password_value.empty());
 }
 
 TEST_F(PasswordFormManagerTest,
@@ -3089,19 +3096,20 @@ TEST_F(PasswordFormManagerTest,
   // Make sure the credentials that would be submitted on successful login
   // are going to match submitted form.
   EXPECT_EQ(observed_form()->origin.spec(),
-            form_manager()->pending_credentials().origin.spec());
+            form_manager()->GetPendingCredentials().origin.spec());
   EXPECT_EQ(observed_form()->signon_realm,
-            form_manager()->pending_credentials().signon_realm);
+            form_manager()->GetPendingCredentials().signon_realm);
   EXPECT_EQ(observed_form()->action,
-            form_manager()->pending_credentials().action);
-  EXPECT_TRUE(form_manager()->pending_credentials().preferred);
+            form_manager()->GetPendingCredentials().action);
+  EXPECT_TRUE(form_manager()->GetPendingCredentials().preferred);
   EXPECT_EQ(ASCIIToUTF16("new_password"),
-            form_manager()->pending_credentials().password_value);
+            form_manager()->GetPendingCredentials().password_value);
   EXPECT_EQ(base::string16(),
-            form_manager()->pending_credentials().username_value);
+            form_manager()->GetPendingCredentials().username_value);
   EXPECT_TRUE(
-      form_manager()->pending_credentials().new_password_element.empty());
-  EXPECT_TRUE(form_manager()->pending_credentials().new_password_value.empty());
+      form_manager()->GetPendingCredentials().new_password_element.empty());
+  EXPECT_TRUE(
+      form_manager()->GetPendingCredentials().new_password_value.empty());
 }
 
 TEST_F(PasswordFormManagerTest,
@@ -3144,8 +3152,8 @@ TEST_F(PasswordFormManagerTest,
   // value already to be the current password, and should no longer maintain
   // any info about the new password value.
   EXPECT_EQ(submitted_form.new_password_value,
-            form_manager.pending_credentials().password_value);
-  EXPECT_TRUE(form_manager.pending_credentials().new_password_value.empty());
+            form_manager.GetPendingCredentials().password_value);
+  EXPECT_TRUE(form_manager.GetPendingCredentials().new_password_value.empty());
 
   std::map<base::string16, autofill::ServerFieldType> expected_types;
   expected_types[observed_form()->password_element] = autofill::PASSWORD;
@@ -3337,7 +3345,7 @@ TEST_F(PasswordFormManagerTest, SkipZeroClickIntact) {
   saved_match()->skip_zero_click = true;
   psl_saved_match()->skip_zero_click = true;
   fake_form_fetcher()->SetNonFederated({saved_match(), psl_saved_match()}, 0u);
-  EXPECT_EQ(1u, form_manager()->best_matches().size());
+  EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
 
   // User submits a credentials with an old username and a new password.
   PasswordForm credentials(*observed_form());
@@ -3428,16 +3436,16 @@ TEST_F(PasswordFormManagerTest, RemoveResultsWithWrongScheme_ObservingHTML) {
       // First try putting the correct scheme first in returned matches.
       fetcher.SetNonFederated({&match, &non_match}, 0);
 
-      EXPECT_EQ(1u, form_manager.best_matches().size());
+      EXPECT_EQ(1u, form_manager.GetBestMatches().size());
       EXPECT_EQ(kCorrectScheme,
-                form_manager.best_matches().begin()->second->scheme);
+                form_manager.GetBestMatches().begin()->second->scheme);
 
       // Now try putting the correct scheme last in returned matches.
       fetcher.SetNonFederated({&non_match, &match}, 0);
 
-      EXPECT_EQ(1u, form_manager.best_matches().size());
+      EXPECT_EQ(1u, form_manager.GetBestMatches().size());
       EXPECT_EQ(kCorrectScheme,
-                form_manager.best_matches().begin()->second->scheme);
+                form_manager.GetBestMatches().begin()->second->scheme);
     }
   }
 }
@@ -3539,7 +3547,7 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
           autofill::ACCOUNT_CREATION_PASSWORD);
 
       std::string expected_login_signature =
-          FormStructure(form_manager.observed_form().form_data)
+          FormStructure(form_manager.GetObservedForm().form_data)
               .FormSignatureAsStr();
 
       std::map<base::string16, autofill::ServerFieldType> expected_types;
@@ -3668,9 +3676,9 @@ TEST_F(PasswordFormManagerTest, ResetStoredMatches) {
   fake_form_fetcher()->SetNonFederated(
       {&best_match1, &best_match2, &non_best_match, &blacklisted}, 0u);
 
-  EXPECT_EQ(2u, form_manager()->best_matches().size());
-  EXPECT_TRUE(form_manager()->preferred_match());
-  EXPECT_EQ(1u, form_manager()->blacklisted_matches().size());
+  EXPECT_EQ(2u, form_manager()->GetBestMatches().size());
+  EXPECT_TRUE(form_manager()->GetPreferredMatch());
+  EXPECT_EQ(1u, form_manager()->GetBlacklistedMatches().size());
 
   // Trigger Update to verify that there is a non-best match.
   PasswordForm updated(best_match1);
@@ -3687,9 +3695,9 @@ TEST_F(PasswordFormManagerTest, ResetStoredMatches) {
 
   form_manager()->ResetStoredMatches();
 
-  EXPECT_THAT(form_manager()->best_matches(), IsEmpty());
-  EXPECT_FALSE(form_manager()->preferred_match());
-  EXPECT_THAT(form_manager()->blacklisted_matches(), IsEmpty());
+  EXPECT_THAT(form_manager()->GetBestMatches(), IsEmpty());
+  EXPECT_FALSE(form_manager()->GetPreferredMatch());
+  EXPECT_THAT(form_manager()->GetBlacklistedMatches(), IsEmpty());
 
   // Simulate updating a saved credential again, but this time without non-best
   // matches. Verify that the old non-best matches are no longer present.
@@ -3738,7 +3746,7 @@ TEST_F(PasswordFormManagerTest, GrabFetcher_Same) {
   // There will be a RemoveConsumer call as soon as form_manager goes out of
   // scope, but the test needs to ensure that there is none as a result of
   // GrabFetcher.
-  Mock::VerifyAndClearExpectations(form_manager.form_fetcher());
+  Mock::VerifyAndClearExpectations(form_manager.GetFormFetcher());
 }
 
 // Check that if asked to take ownership of a different FormFetcher than which
@@ -3749,18 +3757,18 @@ TEST_F(PasswordFormManagerTest, GrabFetcher_Different) {
   old_match.username_value = ASCIIToUTF16("user1");
   old_match.password_value = ASCIIToUTF16("pass");
   fake_form_fetcher()->SetNonFederated({&old_match}, 0u);
-  EXPECT_EQ(1u, form_manager()->best_matches().size());
-  EXPECT_EQ(&old_match, form_manager()->best_matches().begin()->second);
+  EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
+  EXPECT_EQ(&old_match, form_manager()->GetBestMatches().begin()->second);
 
-  // |form_manager()| uses |fake_form_fetcher()|, which is an instance different
-  // from |fetcher| below.
+  // |form_manager()| uses |fake_form_fetcher()|, which is an instance
+  // different from |fetcher| below.
   auto fetcher = std::make_unique<MockFormFetcher>();
   fetcher->Fetch();
   fetcher->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
   EXPECT_CALL(*fetcher, AddConsumer(form_manager()));
   form_manager()->GrabFetcher(std::move(fetcher));
 
-  EXPECT_EQ(0u, form_manager()->best_matches().size());
+  EXPECT_EQ(0u, form_manager()->GetBestMatches().size());
 }
 
 // Check that on changing FormFetcher, the PasswordFormManager removes itself
@@ -4114,7 +4122,7 @@ TEST_F(PasswordFormManagerTest, Clone_OnSave) {
   saved_login.password_value = ASCIIToUTF16("newpass");
   form_manager->ProvisionallySave(saved_login);
 
-  const PasswordForm pending = form_manager->pending_credentials();
+  const PasswordForm pending = form_manager->GetPendingCredentials();
 
   std::unique_ptr<PasswordFormManager> clone = form_manager->Clone();
 
@@ -4164,7 +4172,7 @@ TEST_F(PasswordFormManagerTest, Clone_SurvivesOriginal) {
   saved_login.password_value = ASCIIToUTF16("newpass");
   form_manager->ProvisionallySave(saved_login);
 
-  const PasswordForm pending = form_manager->pending_credentials();
+  const PasswordForm pending = form_manager->GetPendingCredentials();
 
   std::unique_ptr<PasswordFormManager> clone = form_manager->Clone();
   form_manager.reset();

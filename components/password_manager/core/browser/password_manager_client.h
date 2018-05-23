@@ -32,7 +32,7 @@ class PasswordProtectionService;
 namespace password_manager {
 
 class LogManager;
-class PasswordFormManager;
+class PasswordFormManagerForUI;
 class PasswordManager;
 class PasswordManagerMetricsRecorder;
 class PasswordStore;
@@ -86,24 +86,24 @@ class PasswordManagerClient {
   // updated. Returns true if the prompt was indeed displayed.
   // There are 3 different cases when |update_password| == true:
   // 1.A change password form was submitted and the user has only one stored
-  // credential. Then form_to_save.pending_credentials() should correspond to
+  // credential. Then form_to_save.GetPendingCredentials() should correspond to
   // the unique element from |form_to_save.best_matches_|.
   // 2.A change password form was submitted and the user has more than one
   // stored credential. Then we shouldn't expect anything from
-  // form_to_save.pending_credentials() except correct origin, since we don't
+  // form_to_save.GetPendingCredentials() except correct origin, since we don't
   // know which credentials should be updated.
   // 3.A sign-in password form was submitted with a password different from
-  // the stored one. In this case form_to_save.password_overridden() == true
-  // and form_to_save.pending_credentials() should correspond to the credential
-  // that was overidden.
+  // the stored one. In this case form_to_save.IsPasswordOverridden() == true
+  // and form_to_save.GetPendingCredentials() should correspond to the
+  // credential that was overidden.
   virtual bool PromptUserToSaveOrUpdatePassword(
-      std::unique_ptr<PasswordFormManager> form_to_save,
+      std::unique_ptr<PasswordFormManagerForUI> form_to_save,
       bool is_update) = 0;
 
   // Informs the embedder that the user started typing a password and a password
   // prompt should be available on click on the omnibox icon.
   virtual void ShowManualFallbackForSaving(
-      std::unique_ptr<PasswordFormManager> form_to_save,
+      std::unique_ptr<PasswordFormManagerForUI> form_to_save,
       bool has_generated_password,
       bool is_update) = 0;
 
@@ -153,7 +153,7 @@ class PasswordManagerClient {
   // Called when a password is saved in an automated fashion. Embedder may
   // inform the user that this save has occured.
   virtual void AutomaticPasswordSave(
-      std::unique_ptr<PasswordFormManager> saved_form_manager) = 0;
+      std::unique_ptr<PasswordFormManagerForUI> saved_form_manager) = 0;
 
   // Called when a password is autofilled. |best_matches| contains the
   // PasswordForm into which a password was filled: the client may choose to

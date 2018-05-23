@@ -11,7 +11,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/password_manager/password_manager_infobar_delegate_android.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
-#include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "ui/gfx/range/range.h"
 
@@ -32,7 +32,7 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
   // for |web_contents|.
   static void Create(
       content::WebContents* web_contents,
-      std::unique_ptr<password_manager::PasswordFormManager> form_to_save);
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save);
 
   ~SavePasswordInfoBarDelegate() override;
 
@@ -47,13 +47,13 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
   // Makes a ctor available in tests.
   SavePasswordInfoBarDelegate(
       content::WebContents* web_contents,
-      std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool is_smartlock_branding_enabled);
 
  private:
   // The PasswordFormManager managing the form we're asking the user about,
   // and should update as per their decision.
-  std::unique_ptr<password_manager::PasswordFormManager> form_to_save_;
+  std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save_;
 
   // Used to track the results we get from the info bar.
   password_manager::metrics_util::UIDismissalReason infobar_response_;

@@ -41,7 +41,7 @@
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
-#include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -299,7 +299,7 @@ bool ChromePasswordManagerClient::OnCredentialManagerUsed() {
 }
 
 bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
-    std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
     bool update_password) {
   // Save password infobar and the password bubble prompts in case of
   // "webby" URLs and do not prompt in case of "non-webby" URLS (e.g. file://).
@@ -332,7 +332,7 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
 }
 
 void ChromePasswordManagerClient::ShowManualFallbackForSaving(
-    std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
     bool has_generated_password,
     bool is_update) {
   if (!CanShowBubbleOnURL(web_contents()->GetLastCommittedURL()))
@@ -428,7 +428,7 @@ void ChromePasswordManagerClient::NotifyStorePasswordCalled() {
 }
 
 void ChromePasswordManagerClient::AutomaticPasswordSave(
-    std::unique_ptr<password_manager::PasswordFormManager> saved_form) {
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> saved_form) {
 #if defined(OS_ANDROID)
   GeneratedPasswordSavedInfoBarDelegateAndroid::Create(web_contents());
 #else

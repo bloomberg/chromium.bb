@@ -18,7 +18,7 @@ class WebContents;
 }
 
 namespace password_manager {
-class PasswordFormManager;
+class PasswordFormManagerForUI;
 }
 
 // An interface for ChromePasswordManagerClient implemented by
@@ -30,19 +30,21 @@ class PasswordsClientUIDelegate {
   // This stores the provided object and triggers the UI to prompt the user
   // about whether they would like to save the password.
   virtual void OnPasswordSubmitted(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager) = 0;
+      std::unique_ptr<password_manager::PasswordFormManagerForUI>
+          form_manager) = 0;
 
   // Called when the user submits a new password for an existing credential.
   // This stores the provided object and triggers the UI to prompt the user
   // about whether they would like to update the password.
   virtual void OnUpdatePasswordSubmitted(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager) = 0;
+      std::unique_ptr<password_manager::PasswordFormManagerForUI>
+          form_manager) = 0;
 
   // Called when the user starts typing in a password field. This switches the
   // icon to a pending state, a user can click on the icon and open a
   // save/update bubble.
   virtual void OnShowManualFallbackForSaving(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager,
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager,
       bool has_generated_password,
       bool is_update) = 0;
 
@@ -73,7 +75,8 @@ class PasswordsClientUIDelegate {
   // Called when the password will be saved automatically, but we still wish to
   // visually inform the user that the save has occured.
   virtual void OnAutomaticPasswordSave(
-      std::unique_ptr<password_manager::PasswordFormManager> form_manager) = 0;
+      std::unique_ptr<password_manager::PasswordFormManagerForUI>
+          form_manager) = 0;
 
   // Called when a form is autofilled with login information, so we can manage
   // password credentials for the current site which are stored in

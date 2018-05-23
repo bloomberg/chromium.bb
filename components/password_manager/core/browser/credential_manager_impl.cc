@@ -217,7 +217,7 @@ void CredentialManagerImpl::DoneRequiringUserMediation() {
 void CredentialManagerImpl::OnProvisionalSaveComplete() {
   DCHECK(form_manager_);
   DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
-  const autofill::PasswordForm& form = form_manager_->pending_credentials();
+  const autofill::PasswordForm& form = form_manager_->GetPendingCredentials();
 
   if (form_manager_->IsPendingCredentialsPublicSuffixMatch()) {
     // Having a credential with a PSL match implies there is no credential with
@@ -231,7 +231,7 @@ void CredentialManagerImpl::OnProvisionalSaveComplete() {
     // If this is a federated credential, check it against the federated matches
     // produced by the PasswordFormManager. If a match is found, update it and
     // return.
-    for (auto* match : form_manager_->form_fetcher()->GetFederatedMatches()) {
+    for (auto* match : form_manager_->GetFormFetcher()->GetFederatedMatches()) {
       if (match->username_value == form.username_value &&
           match->federation_origin.IsSameOriginWith(form.federation_origin)) {
         form_manager_->Update(*match);
@@ -244,7 +244,7 @@ void CredentialManagerImpl::OnProvisionalSaveComplete() {
     // 'skip_zero_click' state, as we've gotten an explicit signal that the page
     // understands the credential management API and so can be trusted to notify
     // us when they sign the user out.
-    form_manager_->Update(form_manager_->pending_credentials());
+    form_manager_->Update(form_manager_->GetPendingCredentials());
     return;
   }
 

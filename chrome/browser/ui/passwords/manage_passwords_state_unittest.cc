@@ -149,11 +149,11 @@ ManagePasswordsStateTest::CreateFormManagerInternal(bool include_federated) {
     fetcher_.set_federated({&test_local_federated_form()});
   }
   EXPECT_EQ(include_federated ? 1u : 0u,
-            test_form_manager->form_fetcher()->GetFederatedMatches().size());
+            test_form_manager->GetFormFetcher()->GetFederatedMatches().size());
   if (include_federated) {
     EXPECT_EQ(
         test_local_federated_form(),
-        *test_form_manager->form_fetcher()->GetFederatedMatches().front());
+        *test_form_manager->GetFormFetcher()->GetFederatedMatches().front());
   }
   return test_form_manager;
 }
@@ -290,7 +290,7 @@ TEST_F(ManagePasswordsStateTest, PasswordSubmitted) {
   EXPECT_EQ(test_submitted_form().origin, passwords_data().origin());
   ASSERT_TRUE(passwords_data().form_manager());
   EXPECT_EQ(test_submitted_form(),
-            passwords_data().form_manager()->pending_credentials());
+            passwords_data().form_manager()->GetPendingCredentials());
   TestAllUpdates();
 }
 
@@ -376,7 +376,7 @@ TEST_F(ManagePasswordsStateTest, AutomaticPasswordSave) {
   EXPECT_EQ(test_submitted_form().origin, passwords_data().origin());
   ASSERT_TRUE(passwords_data().form_manager());
   EXPECT_EQ(test_submitted_form(),
-            passwords_data().form_manager()->pending_credentials());
+            passwords_data().form_manager()->GetPendingCredentials());
   TestAllUpdates();
 
   passwords_data().TransitionToState(password_manager::ui::MANAGE_STATE);
@@ -555,7 +555,7 @@ TEST_F(ManagePasswordsStateTest, PasswordUpdateSubmitted) {
   EXPECT_EQ(test_submitted_form().origin, passwords_data().origin());
   ASSERT_TRUE(passwords_data().form_manager());
   EXPECT_EQ(test_submitted_form(),
-            passwords_data().form_manager()->pending_credentials());
+            passwords_data().form_manager()->GetPendingCredentials());
   TestAllUpdates();
 }
 
@@ -579,7 +579,7 @@ TEST_F(ManagePasswordsStateTest, AndroidPasswordUpdateSubmitted) {
   ASSERT_TRUE(passwords_data().form_manager());
   android_form.password_value = test_submitted_form().password_value;
   EXPECT_EQ(android_form,
-            passwords_data().form_manager()->pending_credentials());
+            passwords_data().form_manager()->GetPendingCredentials());
   TestAllUpdates();
 }
 

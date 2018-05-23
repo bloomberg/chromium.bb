@@ -18,18 +18,18 @@ class LogManager;
 }
 
 namespace password_manager {
-class PasswordFormManager;
+class PasswordFormManagerForUI;
 }
 
 @protocol PasswordManagerClientDelegate
 
 // Shows UI to prompt the user to save the password.
 - (void)showSavePasswordInfoBar:
-    (std::unique_ptr<password_manager::PasswordFormManager>)formToSave;
+    (std::unique_ptr<password_manager::PasswordFormManagerForUI>)formToSave;
 
 // Shows UI to prompt the user to update the password.
 - (void)showUpdatePasswordInfoBar:
-    (std::unique_ptr<password_manager::PasswordFormManager>)formToUpdate;
+    (std::unique_ptr<password_manager::PasswordFormManagerForUI>)formToUpdate;
 
 // Shows UI to notify the user about auto sign in.
 - (void)showAutosigninNotification:
@@ -56,10 +56,10 @@ class IOSChromePasswordManagerClient
   // password_manager::PasswordManagerClient implementation.
   password_manager::PasswordSyncState GetPasswordSyncState() const override;
   bool PromptUserToSaveOrUpdatePassword(
-      std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool update_password) override;
   void ShowManualFallbackForSaving(
-      std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool has_generated_password,
       bool is_update) override;
   void HideManualFallbackForSaving() override;
@@ -68,8 +68,8 @@ class IOSChromePasswordManagerClient
       const GURL& origin,
       const CredentialsCallback& callback) override;
   void AutomaticPasswordSave(
-      std::unique_ptr<password_manager::PasswordFormManager> saved_form_manager)
-      override;
+      std::unique_ptr<password_manager::PasswordFormManagerForUI>
+          saved_form_manager) override;
   bool IsIncognito() const override;
   const password_manager::PasswordManager* GetPasswordManager() const override;
   PrefService* GetPrefs() const override;

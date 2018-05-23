@@ -53,7 +53,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD1(NotifyUserCouldBeAutoSignedInPtr,
                bool(autofill::PasswordForm* form));
   MOCK_METHOD0(NotifyStorePasswordCalled, void());
-  MOCK_METHOD1(PromptUserToSavePasswordPtr, void(PasswordFormManager*));
+  MOCK_METHOD1(PromptUserToSavePasswordPtr, void(PasswordFormManagerForUI*));
   MOCK_METHOD3(PromptUserToChooseCredentialsPtr,
                bool(const std::vector<autofill::PasswordForm*>& local_forms,
                     const GURL& origin,
@@ -70,7 +70,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   ~MockPasswordManagerClient() override {}
 
   bool PromptUserToSaveOrUpdatePassword(
-      std::unique_ptr<PasswordFormManager> manager,
+      std::unique_ptr<PasswordFormManagerForUI> manager,
       bool update_password) override {
     manager_.swap(manager);
     PromptUserToSavePasswordPtr(manager_.get());
@@ -119,7 +119,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
     NotifyUserAutoSigninPtr();
   }
 
-  PasswordFormManager* pending_manager() const { return manager_.get(); }
+  PasswordFormManagerForUI* pending_manager() const { return manager_.get(); }
 
   void set_zero_click_enabled(bool zero_click_enabled) {
     prefs_->SetBoolean(prefs::kCredentialsEnableAutosignin, zero_click_enabled);
@@ -137,7 +137,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
  private:
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
   PasswordStore* store_;
-  std::unique_ptr<PasswordFormManager> manager_;
+  std::unique_ptr<PasswordFormManagerForUI> manager_;
   PasswordManager password_manager_;
   GURL last_committed_url_{kTestWebOrigin};
 
@@ -373,10 +373,10 @@ TEST_F(CredentialManagerImplTest, CredentialManagerOnStore) {
 
   EXPECT_TRUE(called);
   EXPECT_EQ(FormFetcher::State::NOT_WAITING,
-            client_->pending_manager()->form_fetcher()->GetState());
+            client_->pending_manager()->GetFormFetcher()->GetState());
 
   autofill::PasswordForm new_form =
-      client_->pending_manager()->pending_credentials();
+      client_->pending_manager()->GetPendingCredentials();
   EXPECT_EQ(form_.username_value, new_form.username_value);
   EXPECT_EQ(form_.display_name, new_form.display_name);
   EXPECT_EQ(form_.password_value, new_form.password_value);
@@ -406,10 +406,10 @@ TEST_F(CredentialManagerImplTest, CredentialManagerOnStoreFederated) {
 
   EXPECT_TRUE(called);
   EXPECT_EQ(FormFetcher::State::NOT_WAITING,
-            client_->pending_manager()->form_fetcher()->GetState());
+            client_->pending_manager()->GetFormFetcher()->GetState());
 
   autofill::PasswordForm new_form =
-      client_->pending_manager()->pending_credentials();
+      client_->pending_manager()->GetPendingCredentials();
   EXPECT_EQ(form_.username_value, new_form.username_value);
   EXPECT_EQ(form_.display_name, new_form.display_name);
   EXPECT_EQ(form_.password_value, new_form.password_value);
@@ -445,7 +445,7 @@ TEST_F(CredentialManagerImplTest, StoreFederatedAfterPassword) {
 
   EXPECT_TRUE(called);
   EXPECT_EQ(FormFetcher::State::NOT_WAITING,
-            client_->pending_manager()->form_fetcher()->GetState());
+            client_->pending_manager()->GetFormFetcher()->GetState());
   client_->pending_manager()->Save();
 
   RunAllPendingTasks();
@@ -550,7 +550,8 @@ TEST_F(CredentialManagerImplTest,
   EXPECT_EQ(1U, passwords.size());
   EXPECT_EQ(1U, passwords[psl_form.signon_realm].size());
 
-  const auto& pending_cred = client_->pending_manager()->pending_credentials();
+  const auto& pending_cred =
+      client_->pending_manager()->GetPendingCredentials();
   EXPECT_EQ(info.id, pending_cred.username_value);
   EXPECT_EQ(info.password, pending_cred.password_value);
 }
@@ -581,7 +582,8 @@ TEST_F(CredentialManagerImplTest,
   EXPECT_EQ(1U, passwords.size());
   EXPECT_EQ(1U, passwords[psl_form.signon_realm].size());
 
-  const auto& pending_cred = client_->pending_manager()->pending_credentials();
+  const auto& pending_cred =
+      client_->pending_manager()->GetPendingCredentials();
   EXPECT_EQ(info.id, pending_cred.username_value);
   EXPECT_EQ(info.password, pending_cred.password_value);
 }
