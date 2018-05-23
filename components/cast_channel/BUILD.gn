@@ -65,6 +65,7 @@ source_set("unit_tests") {
     "cast_auth_util_unittest.cc",
     "cast_framer_unittest.cc",
     "cast_message_handler_unittest.cc",
+    "cast_message_util_unittest.cc",
     "cast_socket_service_unittest.cc",
     "cast_socket_unittest.cc",
     "cast_transport_unittest.cc",
