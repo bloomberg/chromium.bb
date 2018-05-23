@@ -146,6 +146,26 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
       field_info +=
           ", VOTE: " + autofill::AutofillType::ServerFieldTypeToString(type);
 
+    if (field->properties_mask) {
+      field_info += ", properties = ";
+      field_info +=
+          (field->properties_mask & autofill::FieldPropertiesFlags::USER_TYPED)
+              ? "T"
+              : "_";
+      field_info +=
+          (field->properties_mask & autofill::FieldPropertiesFlags::AUTOFILLED)
+              ? "A"
+              : "_";
+      field_info +=
+          (field->properties_mask & autofill::FieldPropertiesFlags::HAD_FOCUS)
+              ? "F"
+              : "_";
+      field_info +=
+          (field->properties_mask & autofill::FieldPropertiesFlags::KNOWN_VALUE)
+              ? "K"
+              : "_";
+    }
+
     std::string generation = GenerationTypeToString(field->generation_type());
     if (!generation.empty())
       field_info += ", GENERATION_EVENT: " + generation;

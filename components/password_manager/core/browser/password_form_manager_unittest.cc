@@ -80,6 +80,28 @@ namespace {
 // Enum that describes what button the user pressed on the save prompt.
 enum SavePromptInteraction { SAVE, NEVER, NO_INTERACTION };
 
+// Creates a form with 2 text fields and 1 password field. The first and second
+// fields are username and password respectively. |observed_form| is used for
+// default values.
+// TODO(crbug.com/824834): The minimal case should be a smaller form.
+PasswordForm CreateMinimalCrowdsourcableForm(
+    const PasswordForm& observed_form) {
+  PasswordForm form = observed_form;
+  autofill::FormFieldData field;
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "text";
+  form.form_data.fields.push_back(field);
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  form.form_data.fields.push_back(field);
+  field.name = ASCIIToUTF16("petname");
+  field.form_control_type = "text";
+  form.form_data.fields.push_back(field);
+  form.username_element = ASCIIToUTF16("email");
+  form.password_element = ASCIIToUTF16("password");
+  return form;
+}
+
 class MockFormSaver : public StubFormSaver {
  public:
   MockFormSaver() = default;
@@ -150,10 +172,6 @@ MATCHER_P(SignatureIsSameAs,
   return false;
 }
 
-MATCHER_P(PasswordsWereRevealed, revealed, "") {
-  return arg.passwords_were_revealed() == revealed;
-}
-
 MATCHER_P(UploadedAutofillTypesAre, expected_types, "") {
   size_t fields_matched_type_count = 0;
   bool conflict_found = false;
@@ -201,29 +219,41 @@ MATCHER_P(HasGenerationVote, expect_generation_vote, "") {
   return found_generation_vote == expect_generation_vote;
 }
 
-// Matches if a field has a USERNAME vote and its type is
-// |expected_username_vote_type|
-MATCHER_P(UsernameVoteTypeIs, expected_username_vote_type, "") {
+// Matches if all fields with a vote type are described in |expected_vote_types|
+// and all votes from |expected_vote_types| are found in a field.
+MATCHER_P(VoteTypesAre, expected_vote_types, "") {
+  size_t matched_count = 0;
+  bool conflict_found = false;
   for (const auto& field : arg) {
-    autofill::ServerFieldType actual_vote =
-        field->possible_types().empty() ? autofill::NO_SERVER_DATA
-                                        : *field->possible_types().begin();
-    if (actual_vote == autofill::USERNAME) {
-      if (field->username_vote_type() == expected_username_vote_type)
-        return true;
-      *result_listener << field->name
-                       << " field has expected username vote type "
-                       << expected_username_vote_type << ", but found "
-                       << field->username_vote_type();
-      return false;
-    } else {
-      EXPECT_EQ(autofill::AutofillUploadContents::Field::NO_INFORMATION,
-                field->username_vote_type())
-          << field->name << " field should not have a username vote type";
+    auto expectation = expected_vote_types.find(field->name);
+    if (expectation == expected_vote_types.end()) {
+      if (field->vote_type() !=
+          autofill::AutofillUploadContents::Field::NO_INFORMATION) {
+        *result_listener << (conflict_found ? ", " : "") << "field "
+                         << field->name << ": unexpected vote type "
+                         << field->vote_type();
+        conflict_found = true;
+      }
+      continue;
+    }
+
+    matched_count++;
+    if (expectation->second != field->vote_type()) {
+      *result_listener << (conflict_found ? ", " : "") << "field "
+                       << field->name << ": expected vote type "
+                       << expectation->second << " but has "
+                       << field->vote_type();
+      conflict_found = true;
     }
   }
-  *result_listener << "No USERNAME vote found";
-  return false;
+  if (expected_vote_types.size() != matched_count) {
+    *result_listener
+        << (conflict_found ? ", " : "")
+        << "some vote types were expected but not found in the vote";
+    conflict_found = true;
+  }
+
+  return !conflict_found;
 }
 
 MATCHER_P2(UploadedGenerationTypesAre,
@@ -278,6 +308,10 @@ MATCHER_P2(UploadedFormClassifierVoteIs,
     }
   }
   return true;
+}
+
+MATCHER_P(PasswordsWereRevealed, revealed, "") {
+  return arg.passwords_were_revealed() == revealed;
 }
 
 // Matches iff the masks in |expected_field_properties| match the mask in the
@@ -563,14 +597,15 @@ class PasswordFormManagerTest : public testing::Test {
       if (expect_username_vote) {
         EXPECT_CALL(
             *client()->mock_driver()->mock_autofill_download_manager(),
-            StartUploadRequest(
-                AllOf(SignatureIsSameAs(*saved_match()),
-                      UploadedAutofillTypesAre(expected_types),
-                      HasGenerationVote(expect_generation_vote),
-                      UsernameVoteTypeIs(autofill::AutofillUploadContents::
-                                             Field::CREDENTIALS_REUSED)),
-                false, expected_available_field_types, expected_login_signature,
-                true));
+            StartUploadRequest(AllOf(SignatureIsSameAs(*saved_match()),
+                                     UploadedAutofillTypesAre(expected_types),
+                                     HasGenerationVote(expect_generation_vote),
+                                     VoteTypesAre(VoteTypeMap(
+                                         {{match.username_element,
+                                           autofill::AutofillUploadContents::
+                                               Field::CREDENTIALS_REUSED}}))),
+                               false, expected_available_field_types,
+                               expected_login_signature, true));
       } else {
         EXPECT_CALL(
             *client()->mock_driver()->mock_autofill_download_manager(),
@@ -670,6 +705,11 @@ class PasswordFormManagerTest : public testing::Test {
     if (field_type == autofill::NEW_PASSWORD) {
       autofill::FormStructure pending_structure(saved_match()->form_data);
       expected_login_signature = pending_structure.FormSignatureAsStr();
+
+      // An unrelated vote that the credentials were used for the first time.
+      EXPECT_CALL(
+          *client()->mock_driver()->mock_autofill_download_manager(),
+          StartUploadRequest(SignatureIsSameAs(submitted_form), _, _, _, _));
     }
     EXPECT_CALL(
         *client()->mock_driver()->mock_autofill_download_manager(),
@@ -2354,15 +2394,15 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_ValueOfAnotherField) {
     expected_types[ASCIIToUTF16("correct_username_element")] =
         autofill::USERNAME;
     expected_types[ASCIIToUTF16("Passwd")] = autofill::PASSWORD;
+    VoteTypeMap expected_vote_types = {
+        {ASCIIToUTF16("correct_username_element"),
+         autofill::AutofillUploadContents::Field::USERNAME_EDITED}};
     EXPECT_CALL(
         *client()->mock_driver()->mock_autofill_download_manager(),
         StartUploadRequest(
-            AllOf(
-                SignatureIsSameAs(observed),
-                UploadedAutofillTypesAre(expected_types),
-                HasGenerationVote(false),
-                UsernameVoteTypeIs(
-                    autofill::AutofillUploadContents::Field::USERNAME_EDITED)),
+            AllOf(SignatureIsSameAs(observed),
+                  UploadedAutofillTypesAre(expected_types),
+                  HasGenerationVote(false), VoteTypesAre(expected_vote_types)),
             _, Contains(autofill::USERNAME), _, _));
     form_manager.Save();
 
@@ -2430,14 +2470,16 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_ValueSavedInStore) {
     expected_types[expected_pending.username_element] = autofill::USERNAME;
     expected_types[expected_pending.password_element] =
         autofill::ACCOUNT_CREATION_PASSWORD;
-    EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
-                StartUploadRequest(
-                    AllOf(SignatureIsSameAs(expected_pending),
-                          UploadedAutofillTypesAre(expected_types),
-                          HasGenerationVote(false),
-                          UsernameVoteTypeIs(autofill::AutofillUploadContents::
-                                                 Field::CREDENTIALS_REUSED)),
-                    _, Contains(autofill::USERNAME), _, _));
+    VoteTypeMap expected_vote_types = {
+        {expected_pending.username_element,
+         autofill::AutofillUploadContents::Field::CREDENTIALS_REUSED}};
+    EXPECT_CALL(
+        *client()->mock_driver()->mock_autofill_download_manager(),
+        StartUploadRequest(
+            AllOf(SignatureIsSameAs(expected_pending),
+                  UploadedAutofillTypesAre(expected_types),
+                  HasGenerationVote(false), VoteTypesAre(expected_vote_types)),
+            _, Contains(autofill::USERNAME), _, _));
     form_manager()->Save();
   }
 }
@@ -3167,6 +3209,11 @@ TEST_F(PasswordFormManagerTest,
   std::string expected_login_signature =
       autofill::FormStructure(saved_match()->form_data).FormSignatureAsStr();
 
+  // First login vote.
+  EXPECT_CALL(
+      *client()->mock_driver()->mock_autofill_download_manager(),
+      StartUploadRequest(SignatureIsSameAs(submitted_form), _, _, _, _));
+  // Password change vote.
   EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
               StartUploadRequest(AllOf(UploadedAutofillTypesAre(expected_types),
                                        HasGenerationVote(false),
@@ -3535,11 +3582,6 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
       expected_username_vote.username_element =
           saved_credential->other_possible_usernames[0].second;
 
-      // Checks the type of the username vote is saved.
-      autofill::AutofillUploadContents::Field::UsernameVoteType
-          expected_username_vote_type =
-              autofill::AutofillUploadContents::Field::USERNAME_OVERWRITTEN;
-
       // Checks the upload.
       autofill::ServerFieldTypeSet expected_available_field_types;
       expected_available_field_types.insert(autofill::USERNAME);
@@ -3556,6 +3598,11 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
       expected_types[expected_username_vote.password_element] =
           autofill::ACCOUNT_CREATION_PASSWORD;
       expected_types[ASCIIToUTF16("Email")] = autofill::UNKNOWN_TYPE;
+
+      // Checks the type of the username vote is saved.
+      VoteTypeMap expected_vote_types = {
+          {expected_username_vote.username_element,
+           autofill::AutofillUploadContents::Field::USERNAME_OVERWRITTEN}};
 
       InSequence s;
       std::unique_ptr<FormStructure> signin_vote_form_structure;
@@ -3575,14 +3622,14 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
             StartUploadRequest(_, false, field_types, std::string(), true));
       }
 
-      EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
-                  StartUploadRequest(
-                      AllOf(SignatureIsSameAs(expected_username_vote),
-                            UploadedAutofillTypesAre(expected_types),
-                            HasGenerationVote(false),
-                            UsernameVoteTypeIs(expected_username_vote_type)),
-                      false, expected_available_field_types,
-                      expected_login_signature, true));
+      EXPECT_CALL(
+          *client()->mock_driver()->mock_autofill_download_manager(),
+          StartUploadRequest(AllOf(SignatureIsSameAs(expected_username_vote),
+                                   UploadedAutofillTypesAre(expected_types),
+                                   HasGenerationVote(false),
+                                   VoteTypesAre(expected_vote_types)),
+                             false, expected_available_field_types,
+                             expected_login_signature, true));
       form_manager.Save();
     }
   }
@@ -3647,6 +3694,8 @@ TEST_F(PasswordFormManagerTest,
                        ElementsAre(Pair(saved_match()->username_value,
                                         Pointee(*saved_match()))),
                        Pointee(IsEmpty()), nullptr));
+    EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+                StartUploadRequest(_, _, _, _, _));
     EXPECT_CALL(
         *client()->mock_driver()->mock_autofill_download_manager(),
         StartUploadRequest(_, _, Not(Contains(autofill::USERNAME)), _, _));
@@ -4309,6 +4358,428 @@ TEST_F(PasswordFormManagerTest,
       .Times(0);
   PasswordForm simulated_result = CreateSavedMatch(false);
   fake_form_fetcher()->SetNonFederated({&simulated_result}, 0u);
+}
+
+TEST_F(PasswordFormManagerTest, FirstLoginVote) {
+  PasswordForm different_password(*saved_match());
+  different_password.password_value = ASCIIToUTF16("DifferentPassword");
+
+  struct {
+    std::vector<const autofill::PasswordForm*> stored_creds;
+    std::string description;
+  } test_cases[] = {
+      {{saved_match()}, "Credential reused"},
+      {{psl_saved_match()}, "PSL credential reused"},
+      {{&different_password}, "Different password"},  // I.e. update password.
+  };
+
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "Stored credentials: " << test_case.description);
+
+    fake_form_fetcher()->SetNonFederated(test_case.stored_creds, 0u);
+
+    PasswordForm submitted_form =
+        CreateMinimalCrowdsourcableForm(*observed_form());
+    submitted_form.username_value = saved_match()->username_value;
+    submitted_form.password_value = saved_match()->password_value;
+    submitted_form.form_data.fields[0].value = submitted_form.username_value;
+    submitted_form.form_data.fields[1].value = submitted_form.password_value;
+    submitted_form.preferred = true;
+    EXPECT_TRUE(FormStructure(submitted_form.form_data).ShouldBeUploaded());
+
+    form_manager()->ProvisionallySave(submitted_form);
+
+    // The username and password fields contain stored values. This should be
+    // signaled in the vote.
+    std::map<base::string16, autofill::FieldPropertiesMask>
+        expected_field_properties = {{submitted_form.username_element,
+                                      FieldPropertiesFlags::KNOWN_VALUE},
+                                     {submitted_form.password_element,
+                                      FieldPropertiesFlags::KNOWN_VALUE}};
+
+    // All votes should be FIRST_USE.
+    std::map<base::string16, autofill::AutofillUploadContents::Field::VoteType>
+        expected_vote_types = {
+            {submitted_form.username_element,
+             autofill::AutofillUploadContents::Field::FIRST_USE},
+            {submitted_form.password_element,
+             autofill::AutofillUploadContents::Field::FIRST_USE}};
+
+    // Unrelated vote.
+    EXPECT_CALL(
+        *client()->mock_driver()->mock_autofill_download_manager(),
+        StartUploadRequest(SignatureIsSameAs(*saved_match()), _, _, _, _))
+        .Times(1);
+    // First login vote.
+    EXPECT_CALL(
+        *client()->mock_driver()->mock_autofill_download_manager(),
+        StartUploadRequest(
+            AllOf(SignatureIsSameAs(submitted_form),
+                  UploadedAutofillTypesAre(FieldTypeMap(
+                      {{submitted_form.username_element, autofill::USERNAME},
+                       {submitted_form.password_element, autofill::PASSWORD},
+                       {ASCIIToUTF16("petname"), autofill::UNKNOWN_TYPE}})),
+                  UploadedFieldPropertiesMasksAre(expected_field_properties),
+                  VoteTypesAre(expected_vote_types)),
+            _,
+            autofill::ServerFieldTypeSet(
+                {autofill::USERNAME, autofill::PASSWORD}),
+            _, true));
+
+    form_manager()->Save();
+
+    Mock::VerifyAndClearExpectations(
+        client()->mock_driver()->mock_autofill_download_manager());
+  }
+}
+
+// Tests scenarios where no vote should be uploaded.
+TEST_F(PasswordFormManagerTest, FirstLoginVote_NoVote) {
+  PasswordForm old_credential(*saved_match());
+  old_credential.times_used = 1;
+
+  // A new username means a new credential. We will vote on it the next time it
+  // is used, not now.
+  PasswordForm different_username(*saved_match());
+  different_username.username_value = ASCIIToUTF16("DifferentUsername");
+
+  struct {
+    std::vector<const autofill::PasswordForm*> stored_creds;
+    std::string description;
+  } test_cases[] = {
+      {{}, "No credentials stored"},
+      {{&old_credential}, "Not first use"},
+      {{&different_username}, "Different username"},
+  };
+
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "Stored credentials: " << test_case.description);
+
+    fake_form_fetcher()->SetNonFederated(test_case.stored_creds, 0u);
+
+    // User submits credentials for the observed form.
+    PasswordForm submitted_form =
+        CreateMinimalCrowdsourcableForm(*observed_form());
+    submitted_form.username_value = saved_match()->username_value;
+    submitted_form.password_value = saved_match()->password_value;
+    submitted_form.form_data.fields[0].value = submitted_form.username_value;
+    submitted_form.form_data.fields[1].value = submitted_form.password_value;
+    submitted_form.preferred = true;
+    EXPECT_TRUE(FormStructure(submitted_form.form_data).ShouldBeUploaded());
+
+    form_manager()->ProvisionallySave(submitted_form);
+
+    EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+                StartUploadRequest(_, _, _, _, _))
+        .Times(0);
+
+    form_manager()->Save();
+
+    Mock::VerifyAndClearExpectations(
+        client()->mock_driver()->mock_autofill_download_manager());
+  }
+}
+
+// Values on a submitted form should be marked as KNOWN_VALUE only if they match
+// values from the credential which was used to log in. Other stored credentials
+// are ignored.
+TEST_F(PasswordFormManagerTest, FirstLoginVote_MatchOnlySubmittedCredentials) {
+  PasswordForm alternative_credential = *saved_match();
+  alternative_credential.username_value = ASCIIToUTF16("flatmate");
+  alternative_credential.password_value = ASCIIToUTF16("p@ssword");
+  fake_form_fetcher()->SetNonFederated({&alternative_credential, saved_match()},
+                                       0u);
+
+  // User submits credentials for the observed form.
+  PasswordForm submitted_form =
+      CreateMinimalCrowdsourcableForm(*observed_form());
+  submitted_form.username_value = saved_match()->username_value;
+  submitted_form.password_value = saved_match()->password_value;
+  submitted_form.form_data.fields[0].value = submitted_form.username_value;
+  submitted_form.form_data.fields[1].value = submitted_form.password_value;
+  // Use a value from an alternative credential. It should not be voted as a
+  // known value.
+  submitted_form.form_data.fields[2].value =
+      alternative_credential.username_value;
+  submitted_form.preferred = true;
+  EXPECT_TRUE(FormStructure(submitted_form.form_data).ShouldBeUploaded());
+
+  form_manager()->ProvisionallySave(submitted_form);
+
+  // The username and password fields contain stored values. This should be
+  // signaled in the vote.
+  std::map<base::string16, autofill::FieldPropertiesMask>
+      expected_field_properties = {
+          {submitted_form.username_element, FieldPropertiesFlags::KNOWN_VALUE},
+          {submitted_form.password_element, FieldPropertiesFlags::KNOWN_VALUE},
+          {ASCIIToUTF16("petname"), 0}};
+
+  // All votes should be FIRST_USE.
+  std::map<base::string16, autofill::AutofillUploadContents::Field::VoteType>
+      expected_vote_types = {
+          {submitted_form.username_element,
+           autofill::AutofillUploadContents::Field::FIRST_USE},
+          {submitted_form.password_element,
+           autofill::AutofillUploadContents::Field::FIRST_USE}};
+
+  // Unrelated vote.
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(SignatureIsSameAs(*saved_match()), _, _, _, _))
+      .Times(1);
+  // First login vote.
+  EXPECT_CALL(
+      *client()->mock_driver()->mock_autofill_download_manager(),
+      StartUploadRequest(
+          AllOf(SignatureIsSameAs(submitted_form),
+                UploadedAutofillTypesAre(FieldTypeMap(
+                    {{submitted_form.username_element, autofill::USERNAME},
+                     {submitted_form.password_element, autofill::PASSWORD},
+                     {ASCIIToUTF16("petname"), autofill::UNKNOWN_TYPE}})),
+                UploadedFieldPropertiesMasksAre(expected_field_properties),
+                VoteTypesAre(expected_vote_types)),
+          _,
+          autofill::ServerFieldTypeSet(
+              {autofill::USERNAME, autofill::PASSWORD}),
+          _, true));
+
+  form_manager()->Save();
+}
+
+TEST_F(PasswordFormManagerTest, FirstLoginVote_NoUsernameSaved) {
+  // We have a credential without a username saved.
+  saved_match()->username_element.clear();
+  saved_match()->username_value.clear();
+  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+
+  // User submits credentials for the observed form.
+  PasswordForm submitted_form =
+      CreateMinimalCrowdsourcableForm(*observed_form());
+  submitted_form.username_value = saved_match()->username_value;
+  submitted_form.password_value = saved_match()->password_value;
+  submitted_form.form_data.fields[0].value = submitted_form.username_value;
+  submitted_form.form_data.fields[1].value = submitted_form.password_value;
+  // An empty field should not be a known username, even if we have no username.
+  submitted_form.form_data.fields[2].value.clear();
+  submitted_form.preferred = true;
+  EXPECT_TRUE(FormStructure(submitted_form.form_data).ShouldBeUploaded());
+
+  form_manager()->ProvisionallySave(submitted_form);
+
+  // The username and password fields contain stored values. This should be
+  // signaled in the vote.
+  std::map<base::string16, autofill::FieldPropertiesMask>
+      expected_field_properties = {
+          {submitted_form.username_element, 0},  // Don't match empty values.
+          {submitted_form.password_element, FieldPropertiesFlags::KNOWN_VALUE}};
+
+  // All votes should be FIRST_USE.
+  std::map<base::string16, autofill::AutofillUploadContents::Field::VoteType>
+      expected_vote_types = {
+          {submitted_form.username_element,
+           autofill::AutofillUploadContents::Field::FIRST_USE},
+          {submitted_form.password_element,
+           autofill::AutofillUploadContents::Field::FIRST_USE},
+          {ASCIIToUTF16("petname"),
+           autofill::AutofillUploadContents::Field::NO_INFORMATION}};
+
+  // Unrelated vote.
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(SignatureIsSameAs(*saved_match()), _, _, _, _))
+      .Times(1);
+  // First login vote.
+  EXPECT_CALL(
+      *client()->mock_driver()->mock_autofill_download_manager(),
+      StartUploadRequest(
+          AllOf(SignatureIsSameAs(submitted_form),
+                UploadedAutofillTypesAre(FieldTypeMap(
+                    {{submitted_form.username_element, autofill::USERNAME},
+                     {submitted_form.password_element, autofill::PASSWORD},
+                     {ASCIIToUTF16("petname"), autofill::UNKNOWN_TYPE}})),
+                UploadedFieldPropertiesMasksAre(expected_field_properties),
+                VoteTypesAre(expected_vote_types)),
+          _,
+          autofill::ServerFieldTypeSet(
+              {autofill::USERNAME, autofill::PASSWORD}),
+          _, true));
+
+  form_manager()->Save();
+}
+
+// Upload a first login (i.e. first use) vote when the form has no username
+// field.
+TEST_F(PasswordFormManagerTest, FirstLoginVote_NoUsernameSubmitted) {
+  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+
+  // User submits credentials for the observed form.
+  PasswordForm submitted_form = *observed_form();
+  autofill::FormFieldData field;
+  field.name = ASCIIToUTF16("password1");
+  field.form_control_type = "password";
+  submitted_form.form_data.fields.push_back(field);
+  field.name = ASCIIToUTF16("password2");
+  field.form_control_type = "new-password";
+  submitted_form.form_data.fields.push_back(field);
+  field.name = ASCIIToUTF16("password3");
+  field.form_control_type = "new-password";
+  submitted_form.form_data.fields.push_back(field);
+
+  submitted_form.username_value.clear();
+  submitted_form.username_element.clear();
+  submitted_form.password_value = saved_match()->password_value;
+  submitted_form.password_element = ASCIIToUTF16("password1");
+  submitted_form.form_data.fields[0].value = saved_match()->password_value;
+  submitted_form.form_data.fields[1].value = ASCIIToUTF16("newpassword");
+  submitted_form.form_data.fields[2].value = ASCIIToUTF16("newpassword");
+  submitted_form.preferred = true;
+  EXPECT_TRUE(FormStructure(submitted_form.form_data).ShouldBeUploaded());
+
+  form_manager()->ProvisionallySave(submitted_form);
+
+  std::map<base::string16, autofill::FieldPropertiesMask>
+      expected_field_properties = {
+          {submitted_form.password_element, FieldPropertiesFlags::KNOWN_VALUE}};
+
+  std::map<base::string16, autofill::AutofillUploadContents::Field::VoteType>
+      expected_vote_types = {
+          {submitted_form.password_element,
+           autofill::AutofillUploadContents::Field::FIRST_USE}};
+
+  FieldTypeMap expected_votes = {
+      {submitted_form.form_data.fields[0].name, autofill::PASSWORD},
+      {submitted_form.form_data.fields[1].name, autofill::UNKNOWN_TYPE},
+      {submitted_form.form_data.fields[2].name, autofill::UNKNOWN_TYPE}};
+
+  // Unrelated vote.
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(SignatureIsSameAs(*saved_match()), _, _, _, _))
+      .Times(1);
+  // First login vote.
+  EXPECT_CALL(
+      *client()->mock_driver()->mock_autofill_download_manager(),
+      StartUploadRequest(
+          AllOf(SignatureIsSameAs(submitted_form),
+                UploadedAutofillTypesAre(expected_votes),
+                UploadedFieldPropertiesMasksAre(expected_field_properties),
+                VoteTypesAre(expected_vote_types)),
+          _, autofill::ServerFieldTypeSet({autofill::PASSWORD}), _, true));
+
+  form_manager()->Save();
+}
+
+// All fields with a known value should have the KNOWN_VALUE flag.
+TEST_F(PasswordFormManagerTest, FirstLoginVote_KnownValue) {
+  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+
+  autofill::FormFieldData field;
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "text";
+  observed_form()->form_data.fields.push_back(field);
+  field.name = ASCIIToUTF16("petname");
+  field.form_control_type = "text";
+  observed_form()->form_data.fields.push_back(field);
+  field.name = ASCIIToUTF16("pin");
+  field.form_control_type = "password";
+  observed_form()->form_data.fields.push_back(field);
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  observed_form()->form_data.fields.push_back(field);
+  field.name = ASCIIToUTF16("repeat password");
+  field.form_control_type = "password";
+  observed_form()->form_data.fields.push_back(field);
+  field.name = ASCIIToUTF16("repeat email");
+  field.form_control_type = "text";
+  observed_form()->form_data.fields.push_back(field);
+  field.name = ASCIIToUTF16("empty password");
+  field.form_control_type = "password";
+  observed_form()->form_data.fields.push_back(field);
+  field.name = ASCIIToUTF16("empty text");
+  field.form_control_type = "text";
+  observed_form()->form_data.fields.push_back(field);
+  observed_form()->username_element = ASCIIToUTF16("email");
+  observed_form()->password_element = ASCIIToUTF16("password");
+  // User submits credentials for the observed form.
+  PasswordForm submitted_form = *observed_form();
+  submitted_form.username_value = saved_match()->username_value;
+  submitted_form.password_value = saved_match()->password_value;
+  submitted_form.form_data.fields[0].value = submitted_form.username_value;
+  submitted_form.form_data.fields[1].value = ASCIIToUTF16("Snoop");
+  submitted_form.form_data.fields[2].value = ASCIIToUTF16("1234");
+  submitted_form.form_data.fields[3].value = submitted_form.password_value;
+  submitted_form.form_data.fields[4].value = submitted_form.password_value;
+  submitted_form.form_data.fields[5].value = submitted_form.username_value;
+  submitted_form.form_data.fields[6].value.clear();
+  submitted_form.form_data.fields[7].value.clear();
+  submitted_form.preferred = true;
+  EXPECT_TRUE(FormStructure(submitted_form.form_data).ShouldBeUploaded());
+
+  form_manager()->ProvisionallySave(submitted_form);
+
+  std::map<base::string16, autofill::FieldPropertiesMask>
+      expected_field_properties = {
+          {submitted_form.form_data.fields[0].name,
+           FieldPropertiesFlags::KNOWN_VALUE},
+          {submitted_form.form_data.fields[1].name, 0},
+          {submitted_form.form_data.fields[2].name, 0},
+          {submitted_form.form_data.fields[3].name,
+           FieldPropertiesFlags::KNOWN_VALUE},
+          {submitted_form.form_data.fields[4].name,
+           FieldPropertiesFlags::KNOWN_VALUE},
+          {submitted_form.form_data.fields[5].name,
+           FieldPropertiesFlags::KNOWN_VALUE},
+          {submitted_form.form_data.fields[6].name, 0},
+          {submitted_form.form_data.fields[7].name, 0}};
+
+  // Only the detected username_element and password_element fields should have
+  // a USERNAME and PASSWORD vote.
+  std::map<base::string16, autofill::AutofillUploadContents::Field::VoteType>
+      expected_vote_types = {
+          {submitted_form.form_data.fields[0].name,
+           autofill::AutofillUploadContents::Field::FIRST_USE},
+          {submitted_form.form_data.fields[1].name,
+           autofill::AutofillUploadContents::Field::NO_INFORMATION},
+          {submitted_form.form_data.fields[2].name,
+           autofill::AutofillUploadContents::Field::NO_INFORMATION},
+          {submitted_form.form_data.fields[3].name,
+           autofill::AutofillUploadContents::Field::FIRST_USE},
+          {submitted_form.form_data.fields[4].name,
+           autofill::AutofillUploadContents::Field::NO_INFORMATION},
+          {submitted_form.form_data.fields[5].name,
+           autofill::AutofillUploadContents::Field::NO_INFORMATION},
+          {submitted_form.form_data.fields[6].name,
+           autofill::AutofillUploadContents::Field::NO_INFORMATION},
+          {submitted_form.form_data.fields[7].name,
+           autofill::AutofillUploadContents::Field::NO_INFORMATION}};
+
+  FieldTypeMap expected_votes = {
+      {submitted_form.username_element, autofill::USERNAME},
+      {submitted_form.form_data.fields[1].name, autofill::UNKNOWN_TYPE},
+      {submitted_form.form_data.fields[2].name, autofill::UNKNOWN_TYPE},
+      {submitted_form.password_element, autofill::PASSWORD},
+      {submitted_form.form_data.fields[4].name, autofill::UNKNOWN_TYPE},
+      {submitted_form.form_data.fields[5].name, autofill::UNKNOWN_TYPE},
+      {submitted_form.form_data.fields[6].name, autofill::UNKNOWN_TYPE},
+      {submitted_form.form_data.fields[7].name, autofill::UNKNOWN_TYPE}};
+
+  // Unrelated vote.
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(SignatureIsSameAs(*saved_match()), _, _, _, _))
+      .Times(1);
+  // First login vote.
+  EXPECT_CALL(
+      *client()->mock_driver()->mock_autofill_download_manager(),
+      StartUploadRequest(
+          AllOf(SignatureIsSameAs(submitted_form),
+                UploadedAutofillTypesAre(expected_votes),
+                UploadedFieldPropertiesMasksAre(expected_field_properties),
+                VoteTypesAre(expected_vote_types)),
+          _,
+          autofill::ServerFieldTypeSet(
+              {autofill::USERNAME, autofill::PASSWORD}),
+          _, true));
+
+  form_manager()->Save();
 }
 
 }  // namespace password_manager

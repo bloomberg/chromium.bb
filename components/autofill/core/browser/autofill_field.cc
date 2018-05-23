@@ -27,7 +27,7 @@ AutofillField::AutofillField()
       generation_type_(AutofillUploadContents::Field::NO_GENERATION),
       generated_password_changed_(false),
       form_classifier_outcome_(AutofillUploadContents::Field::NO_OUTCOME),
-      username_vote_type_(AutofillUploadContents::Field::NO_INFORMATION) {}
+      vote_type_(AutofillUploadContents::Field::NO_INFORMATION) {}
 
 AutofillField::AutofillField(const FormFieldData& field,
                              const base::string16& unique_name)
@@ -46,7 +46,7 @@ AutofillField::AutofillField(const FormFieldData& field,
       generation_type_(AutofillUploadContents::Field::NO_GENERATION),
       generated_password_changed_(false),
       form_classifier_outcome_(AutofillUploadContents::Field::NO_OUTCOME),
-      username_vote_type_(AutofillUploadContents::Field::NO_INFORMATION) {}
+      vote_type_(AutofillUploadContents::Field::NO_INFORMATION) {}
 
 AutofillField::~AutofillField() {}
 

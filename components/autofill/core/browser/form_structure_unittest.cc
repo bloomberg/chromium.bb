@@ -2567,7 +2567,7 @@ TEST_F(FormStructureTest,
           AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
     }
     if (form_structure->field(i)->name == ASCIIToUTF16("username")) {
-      form_structure->field(i)->set_username_vote_type(
+      form_structure->field(i)->set_vote_type(
           AutofillUploadContents::Field::CREDENTIALS_REUSED);
     }
   }
@@ -2613,7 +2613,7 @@ TEST_F(FormStructureTest,
                         "email", 86U);
   upload_username_field->set_form_classifier_outcome(
       AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
-  upload_username_field->set_username_vote_type(
+  upload_username_field->set_vote_type(
       AutofillUploadContents::Field::CREDENTIALS_REUSED);
 
   AutofillUploadContents::Field* upload_password_field = upload.add_field();
