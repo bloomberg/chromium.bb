@@ -67,7 +67,6 @@ bool IsCableDevice(const BluetoothDevice* device) {
 // instead, and on Mac our only option is to advertise an additional service
 // with the EID as its UUID.
 std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
-    base::StringPiece advertisement_uuid,
     base::span<const uint8_t, FidoCableDiscovery::kEphemeralIdSize>
         client_eid) {
   auto advertisement_data = std::make_unique<BluetoothAdvertisement::Data>(
@@ -75,7 +74,7 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
 
 #if defined(OS_MACOSX)
   auto list = std::make_unique<BluetoothAdvertisement::UUIDList>();
-  list->emplace_back(advertisement_uuid);
+  list->emplace_back(kCableAdvertisementUUID);
   list->emplace_back(ConvertBytesToUuid(client_eid));
   advertisement_data->set_service_uuids(std::move(list));
 
@@ -95,7 +94,7 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
 
 #elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   auto service_data = std::make_unique<BluetoothAdvertisement::ServiceData>();
-  service_data->emplace(advertisement_uuid,
+  service_data->emplace(kCableAdvertisementUUID,
                         fido_parsing_utils::Materialize(client_eid));
   advertisement_data->set_service_data(std::move(service_data));
 #endif
@@ -174,7 +173,7 @@ void FidoCableDiscovery::StartAdvertisement(const EidArray& client_eid) {
   DCHECK(adapter());
 
   adapter()->RegisterAdvertisement(
-      ConstructAdvertisementData(kCableAdvertisementUUID, client_eid),
+      ConstructAdvertisementData(client_eid),
       base::AdaptCallbackForRepeating(
           base::BindOnce(&FidoCableDiscovery::OnAdvertisementRegistered,
                          weak_factory_.GetWeakPtr(), client_eid)),
