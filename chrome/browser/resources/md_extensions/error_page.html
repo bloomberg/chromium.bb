@@ -131,11 +131,6 @@
         background: var(--google-blue-100);
       }
 
-      .devtool-button {
-        margin-bottom: 20px;
-        max-width: 300px;
-      }
-
       extensions-code-section {
         background: white;
         height: 200px;
@@ -247,12 +242,6 @@
                           could-not-display-code="$i18n{noErrorsToShow}">
                       </extensions-code-section>
                     </template>
-                    <paper-button class="devtool-button action-button"
-                        hidden$="[[!computeIsRuntimeError_(item)]]"
-                        disabled="[[!item.canInspect]]"
-                        on-click="onDevToolButtonTap_">
-                      $i18n{openInDevtool}
-                    </paper-button>
                   </div>
                 </iron-collapse>
               </div>

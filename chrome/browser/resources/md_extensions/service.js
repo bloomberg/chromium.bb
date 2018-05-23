@@ -309,11 +309,6 @@ cr.define('extensions', function() {
     }
 
     /** @override */
-    openDevTools(args) {
-      chrome.developerPrivate.openDevTools(args);
-    }
-
-    /** @override */
     showInFolder(id) {
       chrome.developerPrivate.showPath(id);
     }

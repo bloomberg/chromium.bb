@@ -79,9 +79,6 @@
   <message name="IDS_MD_EXTENSIONS_A11Y_CLEAR_ENTRY" desc="The accessibility label for the button that clears a single error entry.">
     Clear entry
   </message>
-  <message name="IDS_MD_EXTENSIONS_ERROR_LAUNCH_DEVTOOLS" desc="The text for the button to view an extension error in the developer tools.">
-    View in Developer Tools
-  </message>
   <message name="IDS_MD_EXTENSIONS_ERROR_STACK_TRACE" desc="The label for the stack trace of an extension's error.">
     Stack Trace
   </message>
