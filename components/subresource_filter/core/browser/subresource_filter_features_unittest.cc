@@ -391,7 +391,8 @@ TEST_F(SubresourceFilterFeaturesTest, PerfMeasurementRate) {
                     {true, "1", 1},
                     {true, "1.0", 1},
                     {true, "0.333", 0.333},
-                    {true, "1e0", 1}};
+                    {true, "1e0", 1},
+                    {true, "5", 1}};
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(::testing::Message("Enabled = ") << test_case.feature_enabled);
