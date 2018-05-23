@@ -218,8 +218,8 @@ std::string Message::ToStringInternal(const std::string& indent,
         base::ScopedFD file_descriptor;
         if (!reader->PopFileDescriptor(&file_descriptor))
           return kBrokenMessage;
-        output += indent + "fd#" +
-                  base::IntToString(file_descriptor.get()) + "\n";
+        output +=
+            indent + "fd#" + base::IntToString(file_descriptor.get()) + "\n";
         break;
       }
       default:
@@ -428,9 +428,8 @@ std::unique_ptr<ErrorResponse> ErrorResponse::FromMethodCall(
     const std::string& error_name,
     const std::string& error_message) {
   std::unique_ptr<ErrorResponse> response(new ErrorResponse());
-  response->Init(dbus_message_new_error(method_call->raw_message(),
-                                        error_name.c_str(),
-                                        error_message.c_str()));
+  response->Init(dbus_message_new_error(
+      method_call->raw_message(), error_name.c_str(), error_message.c_str()));
   return response;
 }
 
@@ -439,8 +438,7 @@ std::unique_ptr<ErrorResponse> ErrorResponse::FromMethodCall(
 //
 
 MessageWriter::MessageWriter(Message* message)
-    : message_(message),
-      container_is_open_(false) {
+    : message_(message), container_is_open_(false) {
   memset(&raw_message_iter_, 0, sizeof(raw_message_iter_));
   if (message)
     dbus_message_iter_init_append(message_->raw_message(), &raw_message_iter_);
@@ -519,9 +517,7 @@ void MessageWriter::OpenArray(const std::string& signature,
   DCHECK(!container_is_open_);
 
   const bool success = dbus_message_iter_open_container(
-      &raw_message_iter_,
-      DBUS_TYPE_ARRAY,
-      signature.c_str(),
+      &raw_message_iter_, DBUS_TYPE_ARRAY, signature.c_str(),
       &writer->raw_message_iter_);
   CHECK(success) << "Unable to allocate memory";
   container_is_open_ = true;
@@ -532,9 +528,7 @@ void MessageWriter::OpenVariant(const std::string& signature,
   DCHECK(!container_is_open_);
 
   const bool success = dbus_message_iter_open_container(
-      &raw_message_iter_,
-      DBUS_TYPE_VARIANT,
-      signature.c_str(),
+      &raw_message_iter_, DBUS_TYPE_VARIANT, signature.c_str(),
       &writer->raw_message_iter_);
   CHECK(success) << "Unable to allocate memory";
   container_is_open_ = true;
@@ -576,9 +570,7 @@ void MessageWriter::AppendArrayOfBytes(const uint8_t* values, size_t length) {
   MessageWriter array_writer(message_);
   OpenArray("y", &array_writer);
   const bool success = dbus_message_iter_append_fixed_array(
-      &(array_writer.raw_message_iter_),
-      DBUS_TYPE_BYTE,
-      &values,
+      &(array_writer.raw_message_iter_), DBUS_TYPE_BYTE, &values,
       static_cast<int>(length));
   CHECK(success) << "Unable to allocate memory";
   CloseContainer(&array_writer);
@@ -589,9 +581,7 @@ void MessageWriter::AppendArrayOfDoubles(const double* values, size_t length) {
   MessageWriter array_writer(message_);
   OpenArray("d", &array_writer);
   const bool success = dbus_message_iter_append_fixed_array(
-      &(array_writer.raw_message_iter_),
-      DBUS_TYPE_DOUBLE,
-      &values,
+      &(array_writer.raw_message_iter_), DBUS_TYPE_DOUBLE, &values,
       static_cast<int>(length));
   CHECK(success) << "Unable to allocate memory";
   CloseContainer(&array_writer);
@@ -682,8 +672,8 @@ void MessageWriter::AppendVariantOfObjectPath(const ObjectPath& value) {
 void MessageWriter::AppendBasic(int dbus_type, const void* value) {
   DCHECK(!container_is_open_);
 
-  const bool success = dbus_message_iter_append_basic(
-      &raw_message_iter_, dbus_type, value);
+  const bool success =
+      dbus_message_iter_append_basic(&raw_message_iter_, dbus_type, value);
   // dbus_message_iter_append_basic() fails only when there is not enough
   // memory. We don't return this error as there is nothing we can do when
   // it fails to allocate memory for a byte etc.
@@ -708,8 +698,7 @@ void MessageWriter::AppendFileDescriptor(int value) {
 // MessageReader implementation.
 //
 
-MessageReader::MessageReader(Message* message)
-    : message_(message) {
+MessageReader::MessageReader(Message* message) : message_(message) {
   memset(&raw_message_iter_, 0, sizeof(raw_message_iter_));
   if (message)
     dbus_message_iter_init(message_->raw_message(), &raw_message_iter_);
@@ -799,7 +788,7 @@ bool MessageReader::PopVariant(MessageReader* sub_reader) {
 bool MessageReader::PopArrayOfBytes(const uint8_t** bytes, size_t* length) {
   MessageReader array_reader(message_);
   if (!PopArray(&array_reader))
-      return false;
+    return false;
   // An empty array is allowed.
   if (!array_reader.HasMoreData()) {
     *length = 0;
@@ -809,8 +798,7 @@ bool MessageReader::PopArrayOfBytes(const uint8_t** bytes, size_t* length) {
   if (!array_reader.CheckDataType(DBUS_TYPE_BYTE))
     return false;
   int int_length = 0;
-  dbus_message_iter_get_fixed_array(&array_reader.raw_message_iter_,
-                                    bytes,
+  dbus_message_iter_get_fixed_array(&array_reader.raw_message_iter_, bytes,
                                     &int_length);
   *length = static_cast<size_t>(int_length);
   return true;
@@ -828,15 +816,13 @@ bool MessageReader::PopArrayOfDoubles(const double** doubles, size_t* length) {
   if (!array_reader.CheckDataType(DBUS_TYPE_DOUBLE))
     return false;
   int int_length = 0;
-  dbus_message_iter_get_fixed_array(&array_reader.raw_message_iter_,
-                                    doubles,
+  dbus_message_iter_get_fixed_array(&array_reader.raw_message_iter_, doubles,
                                     &int_length);
   *length = static_cast<size_t>(int_length);
   return true;
 }
 
-bool MessageReader::PopArrayOfStrings(
-    std::vector<std::string> *strings) {
+bool MessageReader::PopArrayOfStrings(std::vector<std::string>* strings) {
   strings->clear();
   MessageReader array_reader(message_);
   if (!PopArray(&array_reader))
@@ -851,7 +837,7 @@ bool MessageReader::PopArrayOfStrings(
 }
 
 bool MessageReader::PopArrayOfObjectPaths(
-    std::vector<ObjectPath> *object_paths) {
+    std::vector<ObjectPath>* object_paths) {
   object_paths->clear();
   MessageReader array_reader(message_);
   if (!PopArray(&array_reader))
@@ -956,8 +942,7 @@ std::string MessageReader::GetDataSignature() {
 bool MessageReader::CheckDataType(int dbus_type) {
   const int actual_type = dbus_message_iter_get_arg_type(&raw_message_iter_);
   if (actual_type != dbus_type) {
-    VLOG(1) << "Type " << dbus_type  << " is expected but got "
-            << actual_type;
+    VLOG(1) << "Type " << dbus_type << " is expected but got " << actual_type;
     return false;
   }
   return true;
@@ -980,8 +965,7 @@ bool MessageReader::PopContainer(int dbus_type, MessageReader* sub_reader) {
 
   if (!CheckDataType(dbus_type))
     return false;
-  dbus_message_iter_recurse(&raw_message_iter_,
-                            &sub_reader->raw_message_iter_);
+  dbus_message_iter_recurse(&raw_message_iter_, &sub_reader->raw_message_iter_);
   dbus_message_iter_next(&raw_message_iter_);
   return true;
 }
