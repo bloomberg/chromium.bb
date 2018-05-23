@@ -42,6 +42,10 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   // Returns true if there is an HDR capable display connected.
   static bool IsHDRSupported();
 
+  // Returns true if swap chain tearing is supported for variable refresh rate
+  // displays.  Tearing is only used if vsync is also disabled via command line.
+  static bool IsSwapChainTearingSupported();
+
   static void EnableScaledOverlaysForTesting();
 
   bool InitializeNativeWindow();

@@ -1317,6 +1317,61 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
   return hdr_monitor_found;
 }
 
+// static
+bool DirectCompositionSurfaceWin::IsSwapChainTearingSupported() {
+  static bool initialized = false;
+  static bool supported = false;
+
+  if (initialized)
+    return supported;
+
+  initialized = true;
+
+  // Swap chain tearing is used only if vsync is disabled explicitly.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuVsync))
+    return false;
+
+  // Swap chain tearing is supported only on Windows 10 Anniversary Edition
+  // (Redstone 1) and above.
+  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+    return false;
+
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+  if (!d3d11_device) {
+    DLOG(ERROR) << "Not using swap chain tearing because failed to retrieve "
+                   "D3D11 device from ANGLE";
+    return false;
+  }
+  Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
+  d3d11_device.CopyTo(dxgi_device.GetAddressOf());
+  DCHECK(dxgi_device);
+  Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
+  dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
+  DCHECK(dxgi_adapter);
+  Microsoft::WRL::ComPtr<IDXGIFactory5> dxgi_factory;
+  if (FAILED(
+          dxgi_adapter->GetParent(IID_PPV_ARGS(dxgi_factory.GetAddressOf())))) {
+    DLOG(ERROR) << "Not using swap chain tearing because failed to retrieve "
+                   "IDXGIFactory5 interface";
+    return false;
+  }
+
+  // BOOL instead of bool because we want a well defined sized type.
+  BOOL present_allow_tearing = FALSE;
+  DCHECK(dxgi_factory);
+  if (FAILED(dxgi_factory->CheckFeatureSupport(
+          DXGI_FEATURE_PRESENT_ALLOW_TEARING, &present_allow_tearing,
+          sizeof(present_allow_tearing)))) {
+    DLOG(ERROR)
+        << "Not using swap chain tearing because CheckFeatureSupport failed";
+    return false;
+  }
+  supported = !!present_allow_tearing;
+  return supported;
+}
+
 bool DirectCompositionSurfaceWin::InitializeNativeWindow() {
   if (window_)
     return true;
@@ -1570,11 +1625,10 @@ void DirectCompositionSurfaceWin::WaitForSnapshotRendering() {
 
 bool DirectCompositionSurfaceWin::RecreateRootSurface() {
   root_surface_ = new DirectCompositionChildSurfaceWin(
-      size_, is_hdr_, has_alpha_, enable_dc_layers_);
-  bool initialized = root_surface_->Initialize();
-  if (initialized)
-    root_surface_->SetVSyncEnabled(vsync_enabled_);
-  return initialized;
+      size_, is_hdr_, has_alpha_, enable_dc_layers_,
+      IsSwapChainTearingSupported());
+  root_surface_->SetVSyncEnabled(vsync_enabled_);
+  return root_surface_->Initialize();
 }
 
 const Microsoft::WRL::ComPtr<IDCompositionSurface>
