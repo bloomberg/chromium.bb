@@ -3340,7 +3340,8 @@ RenderFrameImpl::CreateWorkerFetchContext() {
           GetContentClient()
               ->renderer()
               ->CreateWebSocketHandshakeThrottleProvider(),
-          ChildThreadImpl::current()->thread_safe_sender());
+          ChildThreadImpl::current()->thread_safe_sender(),
+          RenderThreadImpl::current()->GetIOTaskRunner());
 
   worker_fetch_context->set_parent_frame_id(routing_id_);
   worker_fetch_context->set_site_for_cookies(

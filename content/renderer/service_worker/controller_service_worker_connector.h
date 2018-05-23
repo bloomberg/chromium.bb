@@ -60,6 +60,14 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
       mojom::ControllerServiceWorkerPtr controller_ptr,
       const std::string& client_id);
 
+  // Used by service worker clients that are workers (i.e., dedicated workers
+  // and shared workers). Creates and holds the ownership of
+  // |container_host_ptr_| (as |this| will be created on a different thread from
+  // the worker thread that has the original |container_host|).
+  ControllerServiceWorkerConnector(
+      mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
+      const std::string& client_id);
+
   // This may return nullptr if the connection to the ContainerHost (in the
   // browser process) is already terminated.
   mojom::ControllerServiceWorker* GetControllerServiceWorker(
@@ -94,6 +102,11 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   // |controller_service_worker_| when it is not established.
   // Cleared when the connection is dropped.
   mojom::ServiceWorkerContainerHost* container_host_;
+
+  // Keeps the mojo end to the browser process on its own.
+  // Non-null only for the service worker clients that are workers (i.e., only
+  // when created for dedicated workers or shared workers).
+  mojom::ServiceWorkerContainerHostPtr container_host_ptr_;
 
   // Connection to the ControllerServiceWorker. The consumer of this connection
   // should not need to know which process this is connected to.
