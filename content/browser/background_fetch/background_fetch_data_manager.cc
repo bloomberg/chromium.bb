@@ -19,6 +19,7 @@
 #include "content/browser/background_fetch/storage/delete_registration_task.h"
 #include "content/browser/background_fetch/storage/get_developer_ids_task.h"
 #include "content/browser/background_fetch/storage/get_metadata_task.h"
+#include "content/browser/background_fetch/storage/get_num_requests_task.h"
 #include "content/browser/background_fetch/storage/get_settled_fetches_task.h"
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/background_fetch/storage/mark_request_complete_task.h"
@@ -608,7 +609,9 @@ void BackgroundFetchDataManager::GetNumCompletedRequests(
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBackgroundFetchPersistence)) {
-    // TODO(crbug.com/826257): Create database task to get number of requests.
+    AddDatabaseTask(std::make_unique<background_fetch::GetNumRequestsTask>(
+        this, registration_id, background_fetch::RequestType::kCompleted,
+        std::move(callback)));
     return;
   }
 

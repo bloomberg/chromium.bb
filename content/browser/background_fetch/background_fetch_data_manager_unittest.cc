@@ -18,6 +18,7 @@
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
+#include "content/browser/background_fetch/storage/get_num_requests_task.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
@@ -263,7 +264,7 @@ class BackgroundFetchDataManagerTest
     run_loop.Run();
   }
 
-  // Synchronous version of ServiceWorkerContextWrapper::MarkRequestAsComplete.
+  // Synchronous version of BackgroundFetchDataManager::MarkRequestAsComplete().
   void MarkRequestAsComplete(
       const BackgroundFetchRegistrationId& registration_id,
       BackgroundFetchRequestInfo* request_info) {
@@ -294,6 +295,38 @@ class BackgroundFetchDataManagerTest
                            DidGetSettledFetchesForRegistration,
                        base::Unretained(this), run_loop.QuitClosure(),
                        out_error, out_succeeded, out_settled_fetches));
+    run_loop.Run();
+  }
+
+  // Synchronous version of
+  // BackgroundFetchDataManager::GetNumCompletedRequests().
+  void GetNumCompletedRequests(
+      const BackgroundFetchRegistrationId& registration_id,
+      size_t* out_size) {
+    DCHECK(out_size);
+
+    base::RunLoop run_loop;
+    background_fetch_data_manager_->GetNumCompletedRequests(
+        registration_id,
+        base::BindOnce(&BackgroundFetchDataManagerTest::DidGetNumRequests,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       out_size));
+    run_loop.Run();
+  }
+
+  // Synchronous version of GetNumRequestsTask::Start().
+  void GetNumRequestsTask(const BackgroundFetchRegistrationId& registration_id,
+                          background_fetch::RequestType type,
+                          size_t* out_size) {
+    DCHECK(out_size);
+
+    base::RunLoop run_loop;
+    background_fetch_data_manager_->AddDatabaseTask(
+        std::make_unique<background_fetch::GetNumRequestsTask>(
+            background_fetch_data_manager_.get(), registration_id, type,
+            base::BindOnce(&BackgroundFetchDataManagerTest::DidGetNumRequests,
+                           base::Unretained(this), run_loop.QuitClosure(),
+                           out_size)));
     run_loop.Run();
   }
 
@@ -429,6 +462,13 @@ class BackgroundFetchDataManagerTest
     *out_succeeded = succeeded;
     *out_settled_fetches = std::move(settled_fetches);
 
+    std::move(quit_closure).Run();
+  }
+
+  void DidGetNumRequests(base::OnceClosure quit_closure,
+                         size_t* out_size,
+                         size_t size) {
+    *out_size = size;
     std::move(quit_closure).Run();
   }
 
@@ -875,6 +915,119 @@ TEST_P(BackgroundFetchDataManagerTest, GetSettledFetchesForRegistration) {
   // We are marking the responses as failed in Download Manager.
   EXPECT_FALSE(succeeded);
   EXPECT_EQ(settled_fetches.size(), requests.size());
+}
+
+TEST_P(BackgroundFetchDataManagerTest, GetNumCompletedRequests) {
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+
+  // The requests are default-initialized, but valid.
+  std::vector<ServiceWorkerFetchRequest> requests(2u);
+  BackgroundFetchOptions options;
+  blink::mojom::BackgroundFetchError error;
+
+  CreateRegistration(registration_id, requests, options, &error);
+
+  size_t num_completed = 0u;
+
+  GetNumCompletedRequests(registration_id, &num_completed);
+  EXPECT_EQ(num_completed, 0u);
+
+  scoped_refptr<BackgroundFetchRequestInfo> request_info;
+  // Download and store first request.
+  PopNextRequest(registration_id, &request_info);
+  ASSERT_TRUE(request_info);
+  AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get());
+
+  GetNumCompletedRequests(registration_id, &num_completed);
+  EXPECT_EQ(num_completed, 1u);
+
+  RestartDataManagerFromPersistentStorage();
+
+  GetNumCompletedRequests(registration_id, &num_completed);
+  EXPECT_EQ(num_completed, 1u);
+
+  // Download and store second request.
+  PopNextRequest(registration_id, &request_info);
+  ASSERT_TRUE(request_info);
+  AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get());
+
+  GetNumCompletedRequests(registration_id, &num_completed);
+  EXPECT_EQ(num_completed, 2u);
+}
+
+TEST_P(BackgroundFetchDataManagerTest, GetNumRequestsTask) {
+  // This test only applies to persistent storage.
+  if (registration_storage_ ==
+      BackgroundFetchRegistrationStorage::kNonPersistent)
+    return;
+
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+  BackgroundFetchOptions options;
+  blink::mojom::BackgroundFetchError error;
+
+  CreateRegistration(registration_id, {ServiceWorkerFetchRequest()}, options,
+                     &error);
+
+  size_t size = 0u;
+  GetNumRequestsTask(registration_id, background_fetch::RequestType::kAny,
+                     &size);
+  EXPECT_EQ(size, 1u);  // Total requests is 1.
+  GetNumRequestsTask(registration_id, background_fetch::RequestType::kPending,
+                     &size);
+  EXPECT_EQ(size, 1u);  // Total pending requests is 1.
+  GetNumRequestsTask(registration_id, background_fetch::RequestType::kActive,
+                     &size);
+  EXPECT_EQ(size, 0u);  // No active requests.
+  GetNumRequestsTask(registration_id, background_fetch::RequestType::kCompleted,
+                     &size);
+  EXPECT_EQ(size, 0u);  // No complete requests.
+
+  scoped_refptr<BackgroundFetchRequestInfo> request_info;
+  // Download and store first request.
+  PopNextRequest(registration_id, &request_info);
+  ASSERT_TRUE(request_info);
+
+  GetNumRequestsTask(registration_id, background_fetch::RequestType::kAny,
+                     &size);
+  EXPECT_EQ(size, 1u);  // Total requests is 1.
+  GetNumRequestsTask(registration_id, background_fetch::RequestType::kPending,
+                     &size);
+  EXPECT_EQ(size, 0u);  // Pending requests moved to active.
+  GetNumRequestsTask(registration_id, background_fetch::RequestType::kActive,
+                     &size);
+  EXPECT_EQ(size, 1u);  // Request is active.
+  GetNumRequestsTask(registration_id, background_fetch::RequestType::kCompleted,
+                     &size);
+  EXPECT_EQ(size, 0u);  // No complete requests.
+
+  AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get());
+
+  GetNumRequestsTask(registration_id, background_fetch::RequestType::kActive,
+                     &size);
+  EXPECT_EQ(size, 0u);  // No active requests.
+  GetNumRequestsTask(registration_id, background_fetch::RequestType::kCompleted,
+                     &size);
+  EXPECT_EQ(size, 1u);  // Request is complete.
+
+  RestartDataManagerFromPersistentStorage();
+
+  GetNumRequestsTask(registration_id, background_fetch::RequestType::kCompleted,
+                     &size);
+  EXPECT_EQ(size, 1u);
+  GetNumRequestsTask(registration_id, background_fetch::RequestType::kAny,
+                     &size);
+  EXPECT_EQ(size, 1u);  // Total requests is still 1.
 }
 
 TEST_P(BackgroundFetchDataManagerTest, Cleanup) {
