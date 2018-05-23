@@ -49,7 +49,7 @@ net::IPEndPoint CreateIPEndPointForTest() {
 
 MockCastMessageHandler::MockCastMessageHandler(
     MockCastSocketService* socket_service)
-    : CastMessageHandler(socket_service, "userAgent", "1.2.3.4") {}
+    : CastMessageHandler(socket_service, "userAgent", "1.2.3.4", "en-US") {}
 
 MockCastMessageHandler::~MockCastMessageHandler() = default;
 

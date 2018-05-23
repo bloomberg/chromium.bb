@@ -12,7 +12,7 @@ class CastMessageHandler;
 namespace media_router {
 
 // Returns the singleton instance of CastMessageHandler with Chrome as the
-// embedder, creating one if necessary.
+// embedder, creating one if necessary. This must be invoked on the UI thread.
 cast_channel::CastMessageHandler* GetCastMessageHandler();
 
 }  // namespace media_router

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/providers/cast/chrome_cast_message_handler.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_content_client.h"
 #include "components/cast_channel/cast_message_handler.h"
 #include "components/cast_channel/cast_socket_service.h"
@@ -15,7 +16,8 @@ cast_channel::CastMessageHandler* GetCastMessageHandler() {
   static cast_channel::CastMessageHandler* instance =
       new cast_channel::CastMessageHandler(
           cast_channel::CastSocketService::GetInstance(), GetUserAgent(),
-          version_info::GetVersionNumber());
+          version_info::GetVersionNumber(),
+          g_browser_process->GetApplicationLocale());
   return instance;
 }
 
