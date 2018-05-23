@@ -11,14 +11,120 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/posix/safe_strerror.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
+#include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
 namespace {
 
 const float kFixedPointScaleValue = 65536.0f;
+
+ScopedDrmColorLutPtr CreateLutBlob(
+    const std::vector<display::GammaRampRGBEntry>& source) {
+  TRACE_EVENT0("drm", "CreateLutBlob");
+  if (source.empty())
+    return nullptr;
+
+  ScopedDrmColorLutPtr lut(static_cast<drm_color_lut*>(
+      malloc(sizeof(drm_color_lut) * source.size())));
+  drm_color_lut* p = lut.get();
+  for (size_t i = 0; i < source.size(); ++i) {
+    p[i].red = source[i].r;
+    p[i].green = source[i].g;
+    p[i].blue = source[i].b;
+  }
+  return lut;
+}
+
+ScopedDrmColorCtmPtr CreateCTMBlob(
+    const std::vector<float>& correction_matrix) {
+  if (correction_matrix.empty())
+    return nullptr;
+
+  ScopedDrmColorCtmPtr ctm(
+      static_cast<drm_color_ctm*>(malloc(sizeof(drm_color_ctm))));
+  for (size_t i = 0; i < base::size(ctm->matrix); ++i) {
+    if (correction_matrix[i] < 0) {
+      ctm->matrix[i] = static_cast<uint64_t>(-correction_matrix[i] *
+                                             (static_cast<uint64_t>(1) << 32));
+      ctm->matrix[i] |= static_cast<uint64_t>(1) << 63;
+    } else {
+      ctm->matrix[i] = static_cast<uint64_t>(correction_matrix[i] *
+                                             (static_cast<uint64_t>(1) << 32));
+    }
+  }
+  return ctm;
+}
+
+bool SetBlobProperty(int fd,
+                     uint32_t object_id,
+                     uint32_t object_type,
+                     uint32_t prop_id,
+                     const char* property_name,
+                     unsigned char* data,
+                     size_t length) {
+  uint32_t blob_id = 0;
+  int res;
+
+  if (data) {
+    res = drmModeCreatePropertyBlob(fd, data, length, &blob_id);
+    if (res != 0) {
+      LOG(ERROR) << "Error creating property blob: " << base::safe_strerror(res)
+                 << " for property " << property_name;
+      return false;
+    }
+  }
+
+  bool success = false;
+  res = drmModeObjectSetProperty(fd, object_id, object_type, prop_id, blob_id);
+  if (res != 0) {
+    LOG(ERROR) << "Error updating property: " << base::safe_strerror(res)
+               << " for property " << property_name;
+  } else {
+    success = true;
+  }
+  if (blob_id != 0)
+    drmModeDestroyPropertyBlob(fd, blob_id);
+  return success;
+}
+
+std::vector<display::GammaRampRGBEntry> ResampleLut(
+    const std::vector<display::GammaRampRGBEntry>& lut_in,
+    size_t desired_size) {
+  TRACE_EVENT1("drm", "ResampleLut", "desired_size", desired_size);
+  if (lut_in.empty())
+    return std::vector<display::GammaRampRGBEntry>();
+
+  if (lut_in.size() == desired_size)
+    return lut_in;
+
+  std::vector<display::GammaRampRGBEntry> result;
+  result.resize(desired_size);
+
+  for (size_t i = 0; i < desired_size; ++i) {
+    size_t base_index = lut_in.size() * i / desired_size;
+    size_t remaining = lut_in.size() * i % desired_size;
+    if (base_index < lut_in.size() - 1) {
+      result[i].r = lut_in[base_index].r +
+                    (lut_in[base_index + 1].r - lut_in[base_index].r) *
+                        remaining / desired_size;
+      result[i].g = lut_in[base_index].g +
+                    (lut_in[base_index + 1].g - lut_in[base_index].g) *
+                        remaining / desired_size;
+      result[i].b = lut_in[base_index].b +
+                    (lut_in[base_index + 1].b - lut_in[base_index].b) *
+                        remaining / desired_size;
+    } else {
+      result[i] = lut_in.back();
+    }
+  }
+
+  return result;
+}
 
 }  // namespace
 
@@ -70,21 +176,13 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   has_universal_planes = drm->SetCapability(DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
 #endif  // defined(DRM_CLIENT_CAP_UNIVERSAL_PLANES)
 
-  ScopedDrmResourcesPtr resources(drmModeGetResources(drm->get_fd()));
-  if (!resources) {
-    PLOG(ERROR) << "Failed to get resources";
+  if (!InitializeCrtcProperties(drm))
     return false;
-  }
 
   ScopedDrmPlaneResPtr plane_resources(drmModeGetPlaneResources(drm->get_fd()));
   if (!plane_resources) {
     PLOG(ERROR) << "Failed to get plane resources";
     return false;
-  }
-
-  crtcs_.clear();
-  for (int i = 0; i < resources->count_crtcs; ++i) {
-    crtcs_.push_back(resources->crtcs[i]);
   }
 
   uint32_t num_planes = plane_resources->count_planes;
@@ -157,10 +255,10 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   // TODO(dnicoara): refactor this to simplify AssignOverlayPlanes and move
   // this workaround into HardwareDisplayPlaneLegacy.
   if (!has_universal_planes) {
-    for (int i = 0; i < resources->count_crtcs; ++i) {
-      if (plane_ids.find(resources->crtcs[i] - 1) == plane_ids.end()) {
+    for (size_t i = 0; i < crtc_properties_.size(); ++i) {
+      if (plane_ids.find(crtc_properties_[i].id - 1) == plane_ids.end()) {
         std::unique_ptr<HardwareDisplayPlane> dummy_plane(
-            CreatePlane(resources->crtcs[i] - 1, (1 << i)));
+            CreatePlane(crtc_properties_[i].id - 1, (1 << i)));
         if (dummy_plane->Initialize(drm, std::vector<uint32_t>(),
                                     std::vector<drm_format_modifier>(), true,
                                     false)) {
@@ -202,8 +300,8 @@ HardwareDisplayPlane* HardwareDisplayPlaneManager::FindNextUnusedPlane(
 }
 
 int HardwareDisplayPlaneManager::LookupCrtcIndex(uint32_t crtc_id) const {
-  for (size_t i = 0; i < crtcs_.size(); ++i)
-    if (crtcs_[i] == crtc_id)
+  for (size_t i = 0; i < crtc_properties_.size(); ++i)
+    if (crtc_properties_[i].id == crtc_id)
       return i;
   return -1;
 }
@@ -326,6 +424,111 @@ std::vector<uint64_t> HardwareDisplayPlaneManager::GetFormatModifiers(
   }
 
   return std::vector<uint64_t>();
+}
+
+bool HardwareDisplayPlaneManager::SetColorCorrection(
+    uint32_t crtc_id,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
+    const std::vector<float>& correction_matrix) {
+  const bool should_set_gamma_properties =
+      !degamma_lut.empty() || !gamma_lut.empty();
+  int crtc_index = LookupCrtcIndex(crtc_id);
+  if (crtc_index < 0) {
+    LOG(ERROR) << "Unknown CRTC ID=" << crtc_id;
+    return false;
+  }
+
+  const CrtcProperties& crtc_props = crtc_properties_[crtc_index];
+
+  if (correction_matrix.empty()) {
+    LOG(ERROR) << "CTM is empty. Expected a 3x3 matrix.";
+    return false;
+  }
+
+  if (crtc_props.ctm.id) {
+    ScopedDrmColorCtmPtr ctm_blob_data = CreateCTMBlob(correction_matrix);
+    if (!SetBlobProperty(drm_->get_fd(), crtc_id, DRM_MODE_OBJECT_CRTC,
+                         crtc_props.ctm.id, "CTM",
+                         reinterpret_cast<unsigned char*>(ctm_blob_data.get()),
+                         sizeof(drm_color_ctm))) {
+      return false;
+    }
+  } else if (!should_set_gamma_properties) {
+    return SetColorCorrectionOnAllCrtcPlanes(crtc_id,
+                                             CreateCTMBlob(correction_matrix));
+  }
+
+  if (!should_set_gamma_properties)
+    return true;
+
+  if (!crtc_props.degamma_lut_size.id || !crtc_props.gamma_lut_size.id ||
+      !crtc_props.degamma_lut.id || !crtc_props.gamma_lut.id) {
+    // If we can't find the degamma & gamma lut, it means the properties
+    // aren't available. We should then try to use the legacy gamma ramp ioctl.
+    if (degamma_lut.empty())
+      return drm_->SetGammaRamp(crtc_id, gamma_lut);
+
+    // We're missing either degamma or gamma lut properties. We shouldn't try to
+    // set just one of them.
+    return false;
+  }
+
+  ScopedDrmColorLutPtr degamma_blob_data = CreateLutBlob(
+      ResampleLut(degamma_lut, crtc_props.degamma_lut_size.value));
+  if (!SetBlobProperty(
+          drm_->get_fd(), crtc_id, DRM_MODE_OBJECT_CRTC,
+          crtc_props.degamma_lut.id, "DEGAMMA_LUT",
+          reinterpret_cast<unsigned char*>(degamma_blob_data.get()),
+          sizeof(drm_color_lut) * crtc_props.degamma_lut_size.value)) {
+    return false;
+  }
+
+  ScopedDrmColorLutPtr gamma_blob_data =
+      CreateLutBlob(ResampleLut(gamma_lut, crtc_props.gamma_lut_size.value));
+  if (!SetBlobProperty(
+          drm_->get_fd(), crtc_id, DRM_MODE_OBJECT_CRTC,
+          crtc_props.gamma_lut.id, "GAMMA_LUT",
+          reinterpret_cast<unsigned char*>(gamma_blob_data.get()),
+          sizeof(drm_color_lut) * crtc_props.gamma_lut_size.value)) {
+    return false;
+  }
+
+  return true;
+}
+
+bool HardwareDisplayPlaneManager::InitializeCrtcProperties(DrmDevice* drm) {
+  ScopedDrmResourcesPtr resources(drm->GetResources());
+  if (!resources) {
+    PLOG(ERROR) << "Failed to get resources.";
+    return false;
+  }
+
+  for (int i = 0; i < resources->count_crtcs; ++i) {
+    CrtcProperties p{};
+    p.id = resources->crtcs[i];
+
+    ScopedDrmObjectPropertyPtr props(
+        drm->GetObjectProperties(resources->crtcs[i], DRM_MODE_OBJECT_CRTC));
+    if (!props) {
+      PLOG(ERROR) << "Failed to get CRTC properties for crtc_id=" << p.id;
+      continue;
+    }
+
+    // These properties are optional. If they don't exist we can tell by the
+    // invalid ID.
+    GetDrmPropertyForName(drm, props.get(), "CTM", &p.ctm);
+    GetDrmPropertyForName(drm, props.get(), "GAMMA_LUT", &p.gamma_lut);
+    GetDrmPropertyForName(drm, props.get(), "GAMMA_LUT_SIZE",
+                          &p.gamma_lut_size);
+    GetDrmPropertyForName(drm, props.get(), "DEGAMMA_LUT", &p.degamma_lut);
+    GetDrmPropertyForName(drm, props.get(), "DEGAMMA_LUT_SIZE",
+                          &p.degamma_lut_size);
+
+    crtc_properties_.push_back(p);
+  }
+
+  return true;
 }
 
 }  // namespace ui

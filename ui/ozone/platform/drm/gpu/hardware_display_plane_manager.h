@@ -11,7 +11,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
+#include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
 
@@ -22,7 +24,6 @@ class Rect;
 namespace ui {
 
 class CrtcController;
-class DrmDevice;
 
 // This contains the list of planes controlled by one HDC on a given DRM fd.
 // It is owned by the HDC and filled by the CrtcController.
@@ -77,6 +78,13 @@ class HardwareDisplayPlaneManager {
   // calls.
   void BeginFrame(HardwareDisplayPlaneList* plane_list);
 
+  // TODO(dnicoara): Split this into atomic and legacy implementation.
+  bool SetColorCorrection(
+      uint32_t crtc_id,
+      const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+      const std::vector<display::GammaRampRGBEntry>& gamma_lut,
+      const std::vector<float>& correction_matrix);
+
   // Assign hardware planes from the |planes_| list to |overlay_list| entries,
   // recording the plane IDs in the |plane_list|. Only planes compatible with
   // |crtc_id| will be used. |overlay_list| must be sorted bottom-to-top.
@@ -121,6 +129,20 @@ class HardwareDisplayPlaneManager {
   std::vector<uint64_t> GetFormatModifiers(uint32_t crtc_id, uint32_t format);
 
  protected:
+  struct CrtcProperties {
+    // Unique identifier for the CRTC. This must be greater than 0 to be valid.
+    uint32_t id;
+
+    // Optional properties.
+    DrmDevice::Property ctm;
+    DrmDevice::Property gamma_lut;
+    DrmDevice::Property gamma_lut_size;
+    DrmDevice::Property degamma_lut;
+    DrmDevice::Property degamma_lut_size;
+  };
+
+  bool InitializeCrtcProperties(DrmDevice* drm);
+
   virtual bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
                             HardwareDisplayPlane* hw_plane,
                             const OverlayPlane& overlay,
@@ -157,7 +179,7 @@ class HardwareDisplayPlaneManager {
   DrmDevice* drm_;
 
   std::vector<std::unique_ptr<HardwareDisplayPlane>> planes_;
-  std::vector<uint32_t> crtcs_;
+  std::vector<CrtcProperties> crtc_properties_;
   std::vector<uint32_t> supported_formats_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManager);

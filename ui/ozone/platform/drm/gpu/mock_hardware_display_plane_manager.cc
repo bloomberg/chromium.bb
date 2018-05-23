@@ -20,8 +20,10 @@ MockHardwareDisplayPlaneManager::MockHardwareDisplayPlaneManager(
   const int kPlaneBaseId = 50;
   const struct drm_format_modifier linear_modifier { 0x1, DRM_FORMAT_MOD_NONE };
   drm_ = drm;
-  crtcs_ = crtcs;
-  for (size_t crtc_idx = 0; crtc_idx < crtcs_.size(); crtc_idx++) {
+  for (size_t i = 0; i < crtcs.size(); ++i)
+    crtc_properties_.push_back({.id = crtcs[i]});
+
+  for (size_t crtc_idx = 0; crtc_idx < crtc_properties_.size(); crtc_idx++) {
     for (size_t i = 0; i < planes_per_crtc; i++) {
       std::unique_ptr<HardwareDisplayPlane> plane(
           new HardwareDisplayPlane(kPlaneBaseId + i, 1 << crtc_idx));
@@ -53,7 +55,10 @@ void MockHardwareDisplayPlaneManager::InitForTest(
     const FakePlaneInfo* planes,
     size_t count,
     const std::vector<uint32_t>& crtcs) {
-  crtcs_ = crtcs;
+  crtc_properties_.clear();
+  for (size_t i = 0; i < crtcs.size(); ++i)
+    crtc_properties_.push_back({.id = crtcs[i]});
+
   planes_.clear();
   for (size_t i = 0; i < count; i++) {
     std::unique_ptr<HardwareDisplayPlane> plane(
@@ -96,7 +101,10 @@ void MockHardwareDisplayPlaneManager::SetPlaneProperties(
 
 void MockHardwareDisplayPlaneManager::SetCrtcInfo(
     const std::vector<uint32_t>& crtcs) {
-  crtcs_ = crtcs;
+  crtc_properties_.clear();
+  for (size_t i = 0; i < crtcs.size(); ++i)
+    crtc_properties_.push_back({.id = crtcs[i]});
+
   planes_.clear();
   ResetPlaneCount();
 }

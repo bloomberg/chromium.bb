@@ -32,6 +32,8 @@ source_set("gbm") {
     "gpu/drm_display.h",
     "gpu/drm_gpu_display_manager.cc",
     "gpu/drm_gpu_display_manager.h",
+    "gpu/drm_gpu_util.cc",
+    "gpu/drm_gpu_util.h",
     "gpu/drm_overlay_validator.cc",
     "gpu/drm_overlay_validator.h",
     "gpu/drm_thread.cc",
