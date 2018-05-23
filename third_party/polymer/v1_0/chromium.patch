@@ -127,3 +127,15 @@ index f50638bf6175..d38cde355822 100644
  
  <!--
  Material design: [Radio button](https://www.google.com/design/spec/components/selection-controls.html#selection-controls-radio-button)
+diff --git a/components-chromium/iron-flex-layout/iron-flex-layout.html b/components-chromium/iron-flex-layout/iron-flex-layout.html
+index 082b0c1e4af2..d985829702a2 100644
+--- a/components-chromium/iron-flex-layout/iron-flex-layout.html
++++ b/components-chromium/iron-flex-layout/iron-flex-layout.html
+@@ -409,4 +409,4 @@ A complete [guide](https://elements.polymer-project.org/guides/flex-layout) to `
+     }
+   </style>
+ </custom-style>
+-<script src="iron-flex-layout-extracted.js"></script></body></html>
+\ No newline at end of file
++</body></html>
+\ No newline at end of file

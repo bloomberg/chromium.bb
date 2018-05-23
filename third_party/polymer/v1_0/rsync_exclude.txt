@@ -27,7 +27,7 @@ package-lock.json
 */templates/
 
 # iron-flex-layout
-iron-flex-layout/classes/
+iron-flex-layout/gen-tsd.json
 
 # This is downloaded even though it's unused due to http://crbug.com/843701#c1
 # paper-radio-button

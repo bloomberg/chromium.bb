@@ -89,6 +89,11 @@ patch -p1 --forward -r - < chromium.patch
 # the original paper-ripple.
 git checkout -- components-chromium/paper-ripple/*
 
+# Remove iron-flex-layout-extracted.js since it only contains an unnecessary
+# backwards compatibiilty code that was added at
+# https://github.com/PolymerElements/iron-flex-layout/commit/f1c967fddbced2ecb5f78456b837fec5117dad14
+rm components-chromium/iron-flex-layout/iron-flex-layout-extracted.js
+
 new=$(git status --porcelain components-chromium | grep '^??' | \
       cut -d' ' -f2 | egrep '\.(html|js|css)$' || true)
 
