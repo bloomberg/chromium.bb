@@ -14,6 +14,7 @@
 #include "services/ui/ws2/client_root.h"
 #include "services/ui/ws2/client_window.h"
 #include "services/ui/ws2/pointer_watcher.h"
+#include "services/ui/ws2/window_delegate_impl.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_client_binding.h"
 #include "services/ui/ws2/window_service_delegate.h"
@@ -420,8 +421,13 @@ bool WindowServiceClient::NewWindowImpl(
     return false;
   }
   const bool is_top_level = false;
-  aura::Window* window = AddClientCreatedWindow(
-      client_window_id, is_top_level, std::make_unique<aura::Window>(nullptr));
+  // WindowDelegateImpl deletes itself when |window| is destroyed.
+  WindowDelegateImpl* window_delegate = new WindowDelegateImpl();
+  std::unique_ptr<aura::Window> window_ptr =
+      std::make_unique<aura::Window>(window_delegate);
+  window_delegate->set_window(window_ptr.get());
+  aura::Window* window = AddClientCreatedWindow(client_window_id, is_top_level,
+                                                std::move(window_ptr));
 
   SetWindowType(window, aura::GetWindowTypeFromProperties(properties));
   for (auto& pair : properties) {
@@ -477,7 +483,7 @@ bool WindowServiceClient::SetCaptureImpl(const ClientWindowId& window_id) {
   if (capture_controller->GetCaptureWindow() == window) {
     if (client_window->capture_owner() != this) {
       // The capture window didn't change, but the client that owns capture
-      // changed (see |ClientWindow::cpature_owner_| for details on this).
+      // changed (see |ClientWindow::capture_owner_| for details on this).
       // Notify the current owner that it lost capture.
       if (client_window->capture_owner())
         client_window->capture_owner()->OnCaptureLost(window);
@@ -760,6 +766,12 @@ std::vector<aura::Window*> WindowServiceClient::GetWindowTreeImpl(
   std::vector<aura::Window*> results;
   GetWindowTreeRecursive(window, &results);
   return results;
+}
+
+bool WindowServiceClient::SetFocusImpl(const ClientWindowId& window_id) {
+  DVLOG(3) << "SetFocus window_id=" << window_id;
+  // FocusHandler deals with a null window.
+  return focus_handler_.SetFocus(GetWindowByClientId(window_id));
 }
 
 void WindowServiceClient::GetWindowTreeRecursive(
@@ -1120,12 +1132,14 @@ void WindowServiceClient::EmbedUsingToken(Id window_id,
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::SetFocus(uint32_t change_id, Id window_id) {
-  NOTIMPLEMENTED_LOG_ONCE();
+void WindowServiceClient::SetFocus(uint32_t change_id, Id transport_window_id) {
+  window_tree_client_->OnChangeCompleted(
+      change_id, SetFocusImpl(MakeClientWindowId(transport_window_id)));
 }
 
-void WindowServiceClient::SetCanFocus(Id window_id, bool can_focus) {
-  NOTIMPLEMENTED_LOG_ONCE();
+void WindowServiceClient::SetCanFocus(Id transport_window_id, bool can_focus) {
+  focus_handler_.SetCanFocus(
+      GetWindowByClientId(MakeClientWindowId(transport_window_id)), can_focus);
 }
 
 void WindowServiceClient::SetCursor(uint32_t change_id,

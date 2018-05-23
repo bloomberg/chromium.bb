@@ -98,31 +98,61 @@ class ClientWindowEventHandler : public ui::EventHandler {
 
   // ui::EventHandler:
   void OnEvent(ui::Event* event) override {
-    // Because we StopPropagation() in the pre-phase an event should never be
-    // received for other phases.
-    DCHECK_EQ(event->phase(), EP_PRETARGET);
-
-    if (static_cast<aura::Window*>(event->target()) != window()) {
-      // As ClientWindow is a EP_PRETARGET EventHandler it gets events *before*
-      // descendants. Ignore all such events, and only process when
-      // window() is the the target.
+    if (event->phase() != EP_PRETARGET) {
+      // All work is done in the pre-phase. If this branch is hit, it means
+      // event propagation was not stopped, and normal processing should
+      // continue. Early out to avoid sending the event to the client again.
       return;
     }
 
-    // Events typically target the embedded client. Exceptions include when the
-    // embedder intercepts events, or the window is a top-level and the event is
-    // in the non-client area.
+    if (ShouldIgnoreEvent(*event))
+      return;
+
     auto* owning = client_window_->owning_window_service_client();
     auto* embedded = client_window_->embedded_window_service_client();
-    auto* client = (owning && owning->intercepts_events()) || !embedded
-                       ? owning
-                       : embedded;
-    DCHECK(client);
-    client->SendEventToClient(window(), *event);
+    WindowServiceClient* target_client = nullptr;
+    if (owning && owning->intercepts_events()) {
+      // A client that intercepts events, always gets the event regardless of
+      // focus/capture.
+      target_client = owning;
+    } else if (event->IsKeyEvent()) {
+      if (!client_window_->focus_owner())
+        return;  // The local environment is going to process the event.
+      target_client = client_window_->focus_owner();
+    } else {
+      // Prefer embedded over owner.
+      target_client = !embedded ? owning : embedded;
+    }
+    DCHECK(target_client);
+    target_client->SendEventToClient(window(), *event);
 
     // The event was forwarded to the remote client. We don't want it handled
     // locally too.
     event->StopPropagation();
+  }
+
+ protected:
+  // Returns true if the event should be ignored (not forwarded to the client).
+  bool ShouldIgnoreEvent(const ui::Event& event) {
+    if (static_cast<aura::Window*>(event.target()) != window()) {
+      // As ClientWindow is a EP_PRETARGET EventHandler it gets events *before*
+      // descendants. Ignore all such events, and only process when
+      // window() is the the target.
+      return true;
+    }
+    // WindowTreeClient takes care of sending ET_MOUSE_CAPTURE_CHANGED at the
+    // right point. The enter events are effectively synthetic, and indirectly
+    // generated in the client as the result of a move event.
+    switch (event.type()) {
+      case ET_MOUSE_CAPTURE_CHANGED:
+      case ET_MOUSE_ENTERED:
+      case ET_POINTER_CAPTURE_CHANGED:
+      case ET_POINTER_ENTERED:
+        return true;
+      default:
+        break;
+    }
+    return false;
   }
 
  private:
@@ -193,17 +223,13 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
       return;
     }
 
-    if (static_cast<aura::Window*>(event->target()) != window()) {
-      // As TopLevelEventHandler is a EP_PRETARGET EventHandler it gets events
-      // *before* descendants. Ignore all such events, and only process when
-      // window() is the the target.
-      return;
-    }
-
     if (!event->IsLocatedEvent()) {
       ClientWindowEventHandler::OnEvent(event);
       return;
     }
+
+    if (ShouldIgnoreEvent(*event))
+      return;
 
     // This code does has two specific behaviors. It's used to ensure events
     // go to the right target (either local, or the remote client).

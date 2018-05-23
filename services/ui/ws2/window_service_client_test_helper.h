@@ -78,6 +78,8 @@ class WindowServiceClientTestHelper {
                              uint32_t embed_flags = 0);
   void SetEventTargetingPolicy(aura::Window* window,
                                mojom::EventTargetingPolicy policy);
+  bool SetFocus(aura::Window* window);
+  void SetCanFocus(aura::Window* window, bool can_focus);
 
   Id TransportIdForWindow(aura::Window* window);
 

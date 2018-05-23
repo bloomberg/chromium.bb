@@ -26,6 +26,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/focus_controller.h"
 
 namespace ui {
 namespace ws2 {
@@ -210,9 +211,6 @@ TEST(WindowServiceClientTest, MovePressDragRelease) {
 
   test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(50, 50);
-  EXPECT_EQ("POINTER_ENTERED 40,40",
-            LocatedEventToEventTypeAndLocation(
-                window_tree_client->PopInputEvent().event.get()));
   EXPECT_EQ("POINTER_MOVED 40,40",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
@@ -281,10 +279,6 @@ TEST(WindowServiceClientTest, MoveFromClientToNonClient) {
 
   test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(50, 50);
-  // Move generates both an enter and move.
-  EXPECT_EQ("POINTER_ENTERED 40,40",
-            LocatedEventToEventTypeAndLocation(
-                window_tree_client->PopInputEvent().event.get()));
   EXPECT_EQ("POINTER_MOVED 40,40",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));

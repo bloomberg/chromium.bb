@@ -29,6 +29,8 @@ enum class ClientChangeType {
   kBounds,
   // Used for WindowTree::SetCapture() and WindowTree::ReleaseCapture().
   kCapture,
+  // Used for WindowTree::SetFocus().
+  kFocus,
   // Used for WindowTree::SetWindowProperty().
   kProperty,
 };

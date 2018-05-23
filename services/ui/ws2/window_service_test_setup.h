@@ -14,6 +14,7 @@
 #include "services/ui/ws2/window_service_client_test_helper.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/wm/core/focus_controller.h"
 
 namespace wm {
 class ScopedCaptureClient;
@@ -44,6 +45,7 @@ class WindowServiceTestSetup {
   WindowServiceClientTestHelper* client_test_helper() {
     return client_test_helper_.get();
   }
+  wm::FocusController* focus_controller() { return &focus_controller_; }
 
   std::vector<Change>* changes() {
     return window_tree_client_.tracker()->changes();
@@ -52,6 +54,7 @@ class WindowServiceTestSetup {
  private:
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  wm::FocusController focus_controller_;
   aura::test::AuraTestHelper aura_test_helper_;
   std::unique_ptr<wm::ScopedCaptureClient> scoped_capture_client_;
   TestWindowServiceDelegate delegate_;

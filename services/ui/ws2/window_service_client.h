@@ -13,6 +13,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ui/ws2/focus_handler.h"
 #include "services/ui/ws2/ids.h"
 #include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/window_observer.h"
@@ -29,6 +30,7 @@ namespace ws2 {
 
 class ClientChangeTracker;
 class ClientRoot;
+class FocusHandler;
 class PointerWatcher;
 class WindowService;
 class WindowServiceClientBinding;
@@ -87,6 +89,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
 
  private:
   friend class ClientRoot;
+  // TODO(sky): WindowServiceClient should be refactored such that it is not
+  // necessary to friend this.
+  friend class FocusHandler;
   friend class WindowServiceClientTestHelper;
 
   using ClientRoots = std::vector<std::unique_ptr<ClientRoot>>;
@@ -217,6 +222,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
       const gfx::Rect& bounds,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id);
   std::vector<aura::Window*> GetWindowTreeImpl(const ClientWindowId& window_id);
+  bool SetFocusImpl(const ClientWindowId& window_id);
+
   void GetWindowTreeRecursive(aura::Window* window,
                               std::vector<aura::Window*>* windows);
 
@@ -309,8 +316,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
                        const base::UnguessableToken& token,
                        uint32_t embed_flags,
                        EmbedUsingTokenCallback callback) override;
-  void SetFocus(uint32_t change_id, Id window_id) override;
-  void SetCanFocus(Id window_id, bool can_focus) override;
+  void SetFocus(uint32_t change_id, Id transport_window_id) override;
+  void SetCanFocus(Id transport_window_id, bool can_focus) override;
   void SetCursor(uint32_t change_id,
                  Id window_id,
                  ui::CursorData cursor) override;
@@ -396,6 +403,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   // If non-null the client has requested pointer events the client would not
   // normally get.
   std::unique_ptr<PointerWatcher> pointer_watcher_;
+
+  FocusHandler focus_handler_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceClient);
 };
