@@ -24,7 +24,7 @@ class DeveloperToolsPolicyHandlerTest
   }
 };
 
-TEST_F(DeveloperToolsPolicyHandlerTest, LegacyPolicyOverridesNewPolicy) {
+TEST_F(DeveloperToolsPolicyHandlerTest, NewPolicyOverridesLegacyPolicy) {
   EXPECT_FALSE(store_->GetValue(prefs::kDevToolsAvailability, nullptr));
 
   PolicyMap policy;
@@ -39,16 +39,13 @@ TEST_F(DeveloperToolsPolicyHandlerTest, LegacyPolicyOverridesNewPolicy) {
   UpdateProviderPolicy(policy);
   const base::Value* value = nullptr;
   ASSERT_TRUE(store_->GetValue(prefs::kDevToolsAvailability, &value));
-  EXPECT_EQ(
-      static_cast<int>(DeveloperToolsPolicyHandler::Availability::kDisallowed),
-      value->GetInt());
+  EXPECT_EQ(static_cast<int>(DeveloperToolsPolicyHandler::Availability::
+                                 kDisallowedForForceInstalledExtensions),
+            value->GetInt());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Developer mode on extensions UI is also disabled.
-  const base::Value* extensions_ui_dev_mode_value = nullptr;
-  ASSERT_TRUE(store_->GetValue(prefs::kExtensionsUIDeveloperMode,
-                               &extensions_ui_dev_mode_value));
-  EXPECT_FALSE(extensions_ui_dev_mode_value->GetBool());
+  // No force-disabling of developer mode on extensions UI.
+  EXPECT_FALSE(store_->GetValue(prefs::kExtensionsUIDeveloperMode, nullptr));
 #endif
 }
 
@@ -175,6 +172,49 @@ TEST_F(DeveloperToolsPolicyHandlerTest, InvalidValue) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   EXPECT_FALSE(store_->GetValue(prefs::kExtensionsUIDeveloperMode, nullptr));
 #endif
+}
+
+// Tests the |GetMostRestrictiveAvailability| static function.
+TEST_F(DeveloperToolsPolicyHandlerTest, MostRestrictiveAvailability) {
+  using Availability = DeveloperToolsPolicyHandler::Availability;
+
+  // kAllowed.
+  EXPECT_EQ(Availability::kAllowed,
+            DeveloperToolsPolicyHandler::GetMostRestrictiveAvailability(
+                Availability::kAllowed, Availability::kAllowed));
+
+  // kAllowed and kDisallowed.
+  EXPECT_EQ(Availability::kDisallowed,
+            DeveloperToolsPolicyHandler::GetMostRestrictiveAvailability(
+                Availability::kDisallowed, Availability::kAllowed));
+  EXPECT_EQ(Availability::kDisallowed,
+            DeveloperToolsPolicyHandler::GetMostRestrictiveAvailability(
+                Availability::kAllowed, Availability::kDisallowed));
+
+  // kAllowed and kDisallowedForForceInstalledExtensions.
+  EXPECT_EQ(Availability::kDisallowedForForceInstalledExtensions,
+            DeveloperToolsPolicyHandler::GetMostRestrictiveAvailability(
+                Availability::kAllowed,
+                Availability::kDisallowedForForceInstalledExtensions));
+  EXPECT_EQ(Availability::kDisallowedForForceInstalledExtensions,
+            DeveloperToolsPolicyHandler::GetMostRestrictiveAvailability(
+                Availability::kDisallowedForForceInstalledExtensions,
+                Availability::kAllowed));
+
+  // kDisallowedForForceInstalledExtensions and kDisallowed.
+  EXPECT_EQ(Availability::kDisallowed,
+            DeveloperToolsPolicyHandler::GetMostRestrictiveAvailability(
+                Availability::kDisallowed,
+                Availability::kDisallowedForForceInstalledExtensions));
+  EXPECT_EQ(Availability::kDisallowed,
+            DeveloperToolsPolicyHandler::GetMostRestrictiveAvailability(
+                Availability::kDisallowedForForceInstalledExtensions,
+                Availability::kDisallowed));
+
+  // kDisallowed.
+  EXPECT_EQ(Availability::kDisallowed,
+            DeveloperToolsPolicyHandler::GetMostRestrictiveAvailability(
+                Availability::kDisallowed, Availability::kDisallowed));
 }
 
 }  // namespace policy

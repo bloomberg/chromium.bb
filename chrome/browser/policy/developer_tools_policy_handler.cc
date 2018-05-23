@@ -125,20 +125,19 @@ base::Optional<Availability> GetValueFromDeveloperToolsAvailabilityPolicy(
 
 // Returns the target value of the |kDevToolsAvailability| pref, derived from
 // both the DeveloperToolsDisabled policy and the
-// DeveloperToolsAvailabilityPolicy. Disallowing developer tools through
-// DeveloperToolsDisabled overrides DeveloperToolsAvailability's value.
+// DeveloperToolsAvailability policy. If both policies are set,
+// DeveloperToolsAvailability wins.
 base::Optional<Availability> GetValueFromBothPolicies(
     const PolicyMap& policies) {
-  const base::Optional<Availability> developer_tools_disabled =
-      GetValueFromDeveloperToolsDisabledPolicy(policies);
+  const base::Optional<Availability> developer_tools_availability =
+      GetValueFromDeveloperToolsAvailabilityPolicy(policies);
 
-  if (developer_tools_disabled.has_value() &&
-      developer_tools_disabled.value() == Availability::kDisallowed) {
-    // DeveloperToolsDisabled=true overrides DeveloperToolsAvailability policy.
-    return developer_tools_disabled;
+  if (developer_tools_availability.has_value()) {
+    // DeveloperToolsAvailability overrides DeveloperToolsDisabled policy.
+    return developer_tools_availability;
   }
 
-  return GetValueFromDeveloperToolsAvailabilityPolicy(policies);
+  return GetValueFromDeveloperToolsDisabledPolicy(policies);
 }
 
 }  // namespace
@@ -164,8 +163,8 @@ bool DeveloperToolsPolicyHandler::CheckPolicySettings(
 
   if (developer_tools_disabled_result == PolicyCheckResult::kValid &&
       developer_tools_availability_result == PolicyCheckResult::kValid) {
-    errors->AddError(key::kDeveloperToolsAvailability, IDS_POLICY_OVERRIDDEN,
-                     key::kDeveloperToolsDisabled);
+    errors->AddError(key::kDeveloperToolsDisabled, IDS_POLICY_OVERRIDDEN,
+                     key::kDeveloperToolsAvailability);
   }
 
   // Always continue to ApplyPolicySettings which can handle invalid policy
@@ -195,11 +194,14 @@ void DeveloperToolsPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 // static
 void DeveloperToolsPolicyHandler::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  // This defines the default for unmanaged users to be
-  // |Availability::kAllowed|. The policy definition sets a default for managed
-  // users, see policy_templates.json.
-  registry->RegisterIntegerPref(prefs::kDevToolsAvailability,
-                                static_cast<int>(Availability::kAllowed));
+  // The default for this pref is |kDisallowedForForceInstalledExtensions|, both
+  // for managed and for unmanaged users. This is fine for unmanaged users too,
+  // because even if they have force-installed extensions (which could happen
+  // e.g. through GPO for Chrome on Windows), developer tools should be disabled
+  // for these by default.
+  registry->RegisterIntegerPref(
+      prefs::kDevToolsAvailability,
+      static_cast<int>(Availability::kDisallowedForForceInstalledExtensions));
 }
 
 // static
@@ -217,6 +219,22 @@ DeveloperToolsPolicyHandler::GetDevToolsAvailability(
   }
 
   return static_cast<Availability>(value);
+}
+
+// static
+DeveloperToolsPolicyHandler::Availability
+DeveloperToolsPolicyHandler::GetMostRestrictiveAvailability(
+    Availability availability_1,
+    Availability availability_2) {
+  if (availability_1 == Availability::kDisallowed ||
+      availability_2 == Availability::kDisallowed) {
+    return Availability::kDisallowed;
+  }
+  if (availability_1 == Availability::kDisallowedForForceInstalledExtensions ||
+      availability_2 == Availability::kDisallowedForForceInstalledExtensions) {
+    return Availability::kDisallowedForForceInstalledExtensions;
+  }
+  return Availability::kAllowed;
 }
 
 }  // namespace policy
