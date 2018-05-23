@@ -173,7 +173,8 @@ class GFX_EXPORT Transform {
   // have its back side facing frontwards after applying the transform.
   bool IsBackFaceVisible() const;
 
-  // Inverts the transform which is passed in. Returns true if successful.
+  // Inverts the transform which is passed in. Returns true if successful, or
+  // sets |transform| to the identify matrix on failure.
   bool GetInverse(Transform* transform) const WARN_UNUSED_RESULT;
 
   // Transposes this transform in place.

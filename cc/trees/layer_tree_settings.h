@@ -156,6 +156,10 @@ class CC_EXPORT LayerTreeSettings {
   // Whether SetViewportSizeAndScale should update the painted scale factor or
   // the device scale factor.
   bool use_painted_device_scale_factor = false;
+
+  // Whether a HitTestRegionList should be built from the active layer tree when
+  // submitting a CompositorFrame.
+  bool build_hit_test_data = false;
 };
 
 }  // namespace cc

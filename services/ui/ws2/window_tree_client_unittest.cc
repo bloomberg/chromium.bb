@@ -2285,8 +2285,8 @@ TEST_F(WindowTreeClientTest2, DISABLED_SurfaceIdPropagation) {
     compositor_frame.metadata.device_scale_factor = 1.f;
     compositor_frame.metadata.begin_frame_ack = viz::BeginFrameAck(0, 1, true);
     viz::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
-    surface_ptr->SubmitCompositorFrame(local_surface_id,
-                                       std::move(compositor_frame), nullptr, 0);
+    surface_ptr->SubmitCompositorFrame(
+        local_surface_id, std::move(compositor_frame), base::nullopt, 0);
   }
   // Make sure the parent connection gets the surface ID.
   wt_client1()->WaitForChangeCount(1);
@@ -2325,8 +2325,8 @@ TEST_F(WindowTreeClientTest2, DISABLED_SurfaceIdPropagation) {
     compositor_frame.metadata.device_scale_factor = 1.f;
     compositor_frame.metadata.begin_frame_ack = viz::BeginFrameAck(0, 1, true);
     viz::LocalSurfaceId local_surface_id(2, base::UnguessableToken::Create());
-    surface_ptr->SubmitCompositorFrame(local_surface_id,
-                                       std::move(compositor_frame), nullptr, 0);
+    surface_ptr->SubmitCompositorFrame(
+        local_surface_id, std::move(compositor_frame), base::nullopt, 0);
   }
   // Make sure the parent connection gets the surface ID.
   wt_client2()->WaitForChangeCount(1);

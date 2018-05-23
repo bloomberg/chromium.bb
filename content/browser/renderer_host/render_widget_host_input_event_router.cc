@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -21,7 +22,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/frame_messages.h"
-#include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -313,7 +313,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     } else {
       *transformed_point = point;
     }
-    if (target.flags & viz::mojom::kHitTestAsk)
+    if (target.flags & viz::HitTestRegionFlags::kHitTestAsk)
       query_renderer = true;
   } else {
     // The hittest delegate is used to reject hittesting quads based on extra

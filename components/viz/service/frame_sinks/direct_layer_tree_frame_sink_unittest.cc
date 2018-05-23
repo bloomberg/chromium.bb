@@ -185,7 +185,9 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
           display_.get(), display_->CurrentSurfaceId().frame_sink_id());
   EXPECT_TRUE(hit_test_region_list);
   EXPECT_EQ(display_rect_, hit_test_region_list->bounds);
-  EXPECT_EQ(mojom::kHitTestMouse | mojom::kHitTestTouch | mojom::kHitTestMine,
+  EXPECT_EQ(HitTestRegionFlags::kHitTestMouse |
+                HitTestRegionFlags::kHitTestTouch |
+                HitTestRegionFlags::kHitTestMine,
             hit_test_region_list->flags);
   EXPECT_FALSE(hit_test_region_list->regions.size());
 
@@ -261,18 +263,21 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
           display_.get(), display_->CurrentSurfaceId().frame_sink_id());
   EXPECT_TRUE(hit_test_region_list1);
   EXPECT_EQ(display_rect_, hit_test_region_list1->bounds);
-  EXPECT_EQ(mojom::kHitTestMouse | mojom::kHitTestTouch | mojom::kHitTestMine,
+  EXPECT_EQ(HitTestRegionFlags::kHitTestMouse |
+                HitTestRegionFlags::kHitTestTouch |
+                HitTestRegionFlags::kHitTestMine,
             hit_test_region_list1->flags);
   EXPECT_EQ(1u, hit_test_region_list1->regions.size());
   EXPECT_EQ(child_surface_id.frame_sink_id(),
-            hit_test_region_list1->regions[0]->frame_sink_id);
-  EXPECT_EQ(
-      mojom::kHitTestMouse | mojom::kHitTestTouch | mojom::kHitTestChildSurface,
-      hit_test_region_list1->regions[0]->flags);
-  EXPECT_EQ(gfx::Rect(20, 20), hit_test_region_list1->regions[0]->rect);
+            hit_test_region_list1->regions[0].frame_sink_id);
+  EXPECT_EQ(HitTestRegionFlags::kHitTestMouse |
+                HitTestRegionFlags::kHitTestTouch |
+                HitTestRegionFlags::kHitTestChildSurface,
+            hit_test_region_list1->regions[0].flags);
+  EXPECT_EQ(gfx::Rect(20, 20), hit_test_region_list1->regions[0].rect);
   gfx::Transform transform2_inverse;
   EXPECT_TRUE(transform2.GetInverse(&transform2_inverse));
-  EXPECT_EQ(transform2_inverse, hit_test_region_list1->regions[0]->transform);
+  EXPECT_EQ(transform2_inverse, hit_test_region_list1->regions[0].transform);
 }
 
 }  // namespace
