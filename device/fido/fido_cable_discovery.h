@@ -72,11 +72,18 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
       scoped_refptr<BluetoothAdvertisement> advertisement);
   void OnAdvertisementRegisterError(
       BluetoothAdvertisement::ErrorCode error_code);
+  // Keeps a counter of success/failure of advertisements done by the client.
+  // If all advertisements fail, then immediately stop discovery process and
+  // invoke NotifyDiscoveryStarted(false). Otherwise kick off discovery session
+  // once all advertisements has been processed.
+  void RecordAdvertisementResult(bool is_success);
   void CableDeviceFound(BluetoothAdapter* adapter, BluetoothDevice* device);
   const CableDiscoveryData* GetFoundCableDiscoveryData(
       const BluetoothDevice* device) const;
 
   std::vector<CableDiscoveryData> discovery_data_;
+  size_t advertisement_success_counter_ = 0;
+  size_t advertisement_failure_counter_ = 0;
   std::map<EidArray, scoped_refptr<BluetoothAdvertisement>> advertisements_;
   base::WeakPtrFactory<FidoCableDiscovery> weak_factory_;
 
