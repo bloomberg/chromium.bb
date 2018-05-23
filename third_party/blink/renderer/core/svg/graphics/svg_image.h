@@ -101,7 +101,12 @@ class CORE_EXPORT SVGImage final : public Image {
   // thus also independent of current zoom level.
   FloatSize ConcreteObjectSize(const FloatSize& default_object_size) const;
 
+  // Get the intrinsic dimensions (width, height and aspect ratio) from this
+  // SVGImage. Returns true if successful.
   bool GetIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
+
+  // Returns true if intrinsic dimensions can be extracted. (Essentially
+  // returns true if GetIntrinsicSizingInfo would.)
   bool HasIntrinsicSizingInfo() const;
 
   // Unlike the above (HasIntrinsicSizingInfo) - which only indicates that
