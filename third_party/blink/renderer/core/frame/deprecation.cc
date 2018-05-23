@@ -523,9 +523,9 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                      "in a `.css` file extension.")};
 
     case WebFeature::kCreateObjectURLMediaStream:
-      return {"CreateObjectURLMediaStreamDeprecated", kM68,
+      return {"CreateObjectURLMediaStreamDeprecated", kM69,
               ReplacedWillBeRemoved("URL.createObjectURL with media streams",
-                                    "HTMLMediaElement.srcObject", kM68,
+                                    "HTMLMediaElement.srcObject", kM69,
                                     "5618491470118912")};
 
     case WebFeature::kChromeLoadTimesRequestTime:
