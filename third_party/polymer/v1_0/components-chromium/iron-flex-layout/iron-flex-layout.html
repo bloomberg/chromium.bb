@@ -6,9 +6,7 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
-<link rel="import" href="../polymer/polymer.html">
+--><html><head><link rel="import" href="../polymer/polymer.html">
 
 <!--
 The `<iron-flex-layout>` component provides simple ways to use
@@ -20,14 +18,27 @@ The layout class stylesheet provides a simple set of class-based flexbox rules, 
 let you specify layout properties directly in markup. You must include this file
 in every element that needs to use them.
 
-  Sample use:
+    Sample use:
 
-      <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
-      <style is="custom-style" include="iron-flex iron-flex-alignment"></style>
+    ```
+    <custom-element-demo>
+      <template>
+        <script src="../webcomponentsjs/webcomponents-lite.js"></script>
+        <next-code-block></next-code-block>
+      </template>
+    </custom-element-demo>
+    ```
 
-      <div class="layout horizontal layout-start">
-        <div>cross axis start alignment</div>
-      </div>
+    ```html
+    <link rel="import" href="iron-flex-layout-classes.html">
+    <style is="custom-style" include="iron-flex iron-flex-alignment"></style>
+    <style>
+      .test { width: 100px; }
+    </style>
+    <div class="layout horizontal center-center">
+      <div class="test">horizontal layout center alignment</div>
+    </div>
+    ```
 
 2. [Custom CSS mixins](https://github.com/PolymerElements/iron-flex-layout/blob/master/iron-flex-layout.html).
 The mixin stylesheet includes custom CSS mixins that can be applied inside a CSS rule using the `@apply` function.
@@ -45,267 +56,269 @@ A complete [guide](https://elements.polymer-project.org/guides/flex-layout) to `
 @pseudoElement iron-flex-layout
 @demo demo/index.html
 -->
+</head><body><custom-style>
+  <style is="custom-style">
+    [hidden] {
+      display: none !important;
+    }
+  </style>
+</custom-style>
 
-<style>
-  /* IE 10 support for HTML5 hidden attr */
-  [hidden] {
-    display: none !important;
-  }
-</style>
+<custom-style>
+  <style is="custom-style">
+    html {
 
-<style is="custom-style">
-  :root {
+      --layout: {
+        display: flex;
+      };
 
-    --layout: {
-      display: flex;
-    };
+      --layout-inline: {
+        display: inline-flex;
+      };
 
-    --layout-inline: {
-      display: inline-flex;
-    };
+      --layout-horizontal: {
+        @apply --layout;
 
-    --layout-horizontal: {
-      @apply(--layout);
+        flex-direction: row;
+      };
 
-      flex-direction: row;
-    };
+      --layout-horizontal-reverse: {
+        @apply --layout;
 
-    --layout-horizontal-reverse: {
-      @apply(--layout);
+        flex-direction: row-reverse;
+      };
 
-      flex-direction: row-reverse;
-    };
+      --layout-vertical: {
+        @apply --layout;
 
-    --layout-vertical: {
-      @apply(--layout);
+        flex-direction: column;
+      };
 
-      flex-direction: column;
-    };
+      --layout-vertical-reverse: {
+        @apply --layout;
 
-    --layout-vertical-reverse: {
-      @apply(--layout);
+        flex-direction: column-reverse;
+      };
 
-      flex-direction: column-reverse;
-    };
+      --layout-wrap: {
+        flex-wrap: wrap;
+      };
 
-    --layout-wrap: {
-      flex-wrap: wrap;
-    };
+      --layout-wrap-reverse: {
+        flex-wrap: wrap-reverse;
+      };
 
-    --layout-wrap-reverse: {
-      flex-wrap: wrap-reverse;
-    };
+      --layout-flex-auto: {
+        flex: 1 1 auto;
+      };
 
-    --layout-flex-auto: {
-      flex: 1 1 auto;
-    };
+      --layout-flex-none: {
+        flex: none;
+      };
 
-    --layout-flex-none: {
-      flex: none;
-    };
+      --layout-flex: {
+        flex: 1;
+        flex-basis: 0.000000001px;
+      };
 
-    --layout-flex: {
-      flex: 1;
-      flex-basis: 0.000000001px;
-    };
+      --layout-flex-2: {
+        flex: 2;
+      };
 
-    --layout-flex-2: {
-      flex: 2;
-    };
+      --layout-flex-3: {
+        flex: 3;
+      };
 
-    --layout-flex-3: {
-      flex: 3;
-    };
+      --layout-flex-4: {
+        flex: 4;
+      };
 
-    --layout-flex-4: {
-      flex: 4;
-    };
+      --layout-flex-5: {
+        flex: 5;
+      };
 
-    --layout-flex-5: {
-      flex: 5;
-    };
+      --layout-flex-6: {
+        flex: 6;
+      };
 
-    --layout-flex-6: {
-      flex: 6;
-    };
+      --layout-flex-7: {
+        flex: 7;
+      };
 
-    --layout-flex-7: {
-      flex: 7;
-    };
+      --layout-flex-8: {
+        flex: 8;
+      };
 
-    --layout-flex-8: {
-      flex: 8;
-    };
+      --layout-flex-9: {
+        flex: 9;
+      };
 
-    --layout-flex-9: {
-      flex: 9;
-    };
+      --layout-flex-10: {
+        flex: 10;
+      };
 
-    --layout-flex-10: {
-      flex: 10;
-    };
+      --layout-flex-11: {
+        flex: 11;
+      };
 
-    --layout-flex-11: {
-      flex: 11;
-    };
+      --layout-flex-12: {
+        flex: 12;
+      };
 
-    --layout-flex-12: {
-      flex: 12;
-    };
+      /* alignment in cross axis */
 
-    /* alignment in cross axis */
+      --layout-start: {
+        align-items: flex-start;
+      };
 
-    --layout-start: {
-      align-items: flex-start;
-    };
+      --layout-center: {
+        align-items: center;
+      };
 
-    --layout-center: {
-      align-items: center;
-    };
+      --layout-end: {
+        align-items: flex-end;
+      };
 
-    --layout-end: {
-      align-items: flex-end;
-    };
+      --layout-baseline: {
+        align-items: baseline;
+      };
 
-    --layout-baseline: {
-      align-items: baseline;
-    };
-
-    /* alignment in main axis */
+      /* alignment in main axis */
 
-    --layout-start-justified: {
-      justify-content: flex-start;
-    };
+      --layout-start-justified: {
+        justify-content: flex-start;
+      };
 
-    --layout-center-justified: {
-      justify-content: center;
-    };
+      --layout-center-justified: {
+        justify-content: center;
+      };
 
-    --layout-end-justified: {
-      justify-content: flex-end;
-    };
-
-    --layout-around-justified: {
-      justify-content: space-around;
-    };
-
-    --layout-justified: {
-      justify-content: space-between;
-    };
-
-    --layout-center-center: {
-      @apply(--layout-center);
-      @apply(--layout-center-justified);
-    };
-
-    /* self alignment */
-
-    --layout-self-start: {
-      align-self: flex-start;
-    };
-
-    --layout-self-center: {
-      align-self: center;
-    };
-
-    --layout-self-end: {
-      align-self: flex-end;
-    };
-
-    --layout-self-stretch: {
-      align-self: stretch;
-    };
-
-    --layout-self-baseline: {
-      align-self: baseline;
-    };
-
-    /* multi-line alignment in main axis */
-
-    --layout-start-aligned: {
-      align-content: flex-start;
-    };
-
-    --layout-end-aligned: {
-      align-content: flex-end;
-    };
-
-    --layout-center-aligned: {
-      align-content: center;
-    };
-
-    --layout-between-aligned: {
-      align-content: space-between;
-    };
-
-    --layout-around-aligned: {
-      align-content: space-around;
-    };
-
-    /*******************************
-              Other Layout
-    *******************************/
-
-    --layout-block: {
-      display: block;
-    };
-
-    --layout-invisible: {
-      visibility: hidden !important;
-    };
-
-    --layout-relative: {
-      position: relative;
-    };
-
-    --layout-fit: {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-    --layout-scroll: {
-      -webkit-overflow-scrolling: touch;
-      overflow: auto;
-    };
-
-    --layout-fullbleed: {
-      margin: 0;
-      height: 100vh;
-    };
-
-    /* fixed position */
-
-    --layout-fixed-top: {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-    };
-
-    --layout-fixed-right: {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-    };
-
-    --layout-fixed-bottom: {
-      position: fixed;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-    --layout-fixed-left: {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-  }
-
-</style>
+      --layout-end-justified: {
+        justify-content: flex-end;
+      };
+
+      --layout-around-justified: {
+        justify-content: space-around;
+      };
+
+      --layout-justified: {
+        justify-content: space-between;
+      };
+
+      --layout-center-center: {
+        @apply --layout-center;
+        @apply --layout-center-justified;
+      };
+
+      /* self alignment */
+
+      --layout-self-start: {
+        align-self: flex-start;
+      };
+
+      --layout-self-center: {
+        align-self: center;
+      };
+
+      --layout-self-end: {
+        align-self: flex-end;
+      };
+
+      --layout-self-stretch: {
+        align-self: stretch;
+      };
+
+      --layout-self-baseline: {
+        align-self: baseline;
+      };
+
+      /* multi-line alignment in main axis */
+
+      --layout-start-aligned: {
+        align-content: flex-start;
+      };
+
+      --layout-end-aligned: {
+        align-content: flex-end;
+      };
+
+      --layout-center-aligned: {
+        align-content: center;
+      };
+
+      --layout-between-aligned: {
+        align-content: space-between;
+      };
+
+      --layout-around-aligned: {
+        align-content: space-around;
+      };
+
+      /*******************************
+                Other Layout
+      *******************************/
+
+      --layout-block: {
+        display: block;
+      };
+
+      --layout-invisible: {
+        visibility: hidden !important;
+      };
+
+      --layout-relative: {
+        position: relative;
+      };
+
+      --layout-fit: {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      };
+
+      --layout-scroll: {
+        -webkit-overflow-scrolling: touch;
+        overflow: auto;
+      };
+
+      --layout-fullbleed: {
+        margin: 0;
+        height: 100vh;
+      };
+
+      /* fixed position */
+
+      --layout-fixed-top: {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+      };
+
+      --layout-fixed-right: {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+      };
+
+      --layout-fixed-bottom: {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      };
+
+      --layout-fixed-left: {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+      };
+
+    }
+  </style>
+</custom-style>
+</body></html>

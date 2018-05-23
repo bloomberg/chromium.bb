@@ -60,9 +60,9 @@ Tree link: https://github.com/PolymerElements/iron-fit-behavior/tree/v2.1.0
 
 Name: iron-flex-layout
 Repository: https://github.com/PolymerElements/iron-flex-layout.git
-Tree: v1.3.1
-Revision: 6d88f29f3a7181daa2a5c7f678de44f0a0e6a717
-Tree link: https://github.com/PolymerElements/iron-flex-layout/tree/v1.3.1
+Tree: v2.0.3
+Revision: 67461d70607ca19d17b462b9a649c1585094f798
+Tree link: https://github.com/PolymerElements/iron-flex-layout/tree/v2.0.3
 
 Name: iron-form-element-behavior
 Repository: https://github.com/PolymerElements/iron-form-element-behavior.git
