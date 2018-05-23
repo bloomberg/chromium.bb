@@ -48,9 +48,6 @@ class USER_MANAGER_EXPORT UserManager {
     virtual void OnUserProfileImageUpdated(const User& user,
                                            const gfx::ImageSkia& profile_image);
 
-    // Called when the child status of the given user has changed.
-    virtual void OnChildStatusChanged(const User& user);
-
     // Called when any of the device cros settings which are responsible for
     // user sign in are changed.
     virtual void OnUsersSignInConstraintsChanged();

@@ -23,8 +23,6 @@ void UserManager::Observer::OnUserProfileImageUpdated(
     const User& user,
     const gfx::ImageSkia& profile_image) {}
 
-void UserManager::Observer::OnChildStatusChanged(const User& user) {}
-
 void UserManager::Observer::OnUsersSignInConstraintsChanged() {}
 
 void UserManager::UserSessionStateObserver::ActiveUserChanged(
