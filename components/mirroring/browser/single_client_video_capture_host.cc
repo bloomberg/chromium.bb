@@ -104,11 +104,16 @@ void SingleClientVideoCaptureHost::Stop(int32_t device_id) {
     return;
 
   // Returns all the buffers.
-  for (const auto& entry : buffer_context_map_) {
+  std::vector<int> buffers_in_use;
+  buffers_in_use.reserve(buffer_context_map_.size());
+  for (const auto& entry : buffer_context_map_)
+    buffers_in_use.push_back(entry.first);
+  for (int buffer_id : buffers_in_use) {
     OnFinishedConsumingBuffer(
-        entry.first,
+        buffer_id,
         media::VideoFrameConsumerFeedbackObserver::kNoUtilizationRecorded);
   }
+  DCHECK(buffer_context_map_.empty());
   observer_->OnStateChanged(media::mojom::VideoCaptureState::ENDED);
   observer_ = nullptr;
   weak_factory_.InvalidateWeakPtrs();
