@@ -39,6 +39,7 @@ def FixBotoCerts(activate=True, strict=False):
   """Fix for outdated cacerts.txt file in old versions of boto/gsutil."""
 
   if not activate:
+    logging.info('FixBotoCerts skipped')
     yield
     return
 

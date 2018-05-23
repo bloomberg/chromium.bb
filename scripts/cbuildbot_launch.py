@@ -335,6 +335,28 @@ def DepotToolsEnsureBootstrap(depot_tools_path):
                  ensure_bootstrap_script)
 
 
+def ShouldFixBotoCerts(options):
+  """Decide if FixBotoCerts should be applied for this branch."""
+  try:
+    # Only apply to factory and firmware branches.
+    branch = options.branch or ''
+    prefix = branch.split('-')[0]
+    if prefix not in ('factory', 'firmware'):
+      return False
+
+    # Only apply to "old" branches.
+    if branch.endswith('.B'):
+      version = branch[:-2].split('-')[-1]
+      major = int(version.split('.')[0])
+      return major <= 9667  # This is the newest known to be failing.
+
+    return False
+  except Exception, e:
+    logging.warning(' failed: %s', e)
+    # Conservatively continue without the fix.
+    return False
+
+
 @StageDecorator
 def Cbuildbot(buildroot, depot_tools_path, argv):
   """Start cbuildbot in specified directory with all arguments.
@@ -368,9 +390,8 @@ def Cbuildbot(buildroot, depot_tools_path, argv):
   logging.info('Adding depot_tools into PATH: %s', depot_tools_path)
   extra_env = {'PATH': PrependPath(depot_tools_path)}
 
-  # Apply boto cert fix for branch builders only.
   # TODO(crbug.com/845304): Remove once underlying boto issues are resolved.
-  fix_boto = (os.environ.get('BUILDBOT_MASTERNAME') == 'chromeos.branch')
+  fix_boto = ShouldFixBotoCerts(options)
 
   with boto_compat.FixBotoCerts(activate=fix_boto):
     result = cros_build_lib.RunCommand(
