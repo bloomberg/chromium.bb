@@ -5150,12 +5150,17 @@ bubblePresenterForFeature:(const base::Feature&)feature
       self.contentArea.frame = self.view.frame;
       newPage = tab.view;
       newPage.userInteractionEnabled = NO;
-      // Compute a frame for the new page by removing the status bar height from
-      // the bounds of |self.view|.
-      CGRect viewBounds, remainder;
-      CGRectDivide(self.view.bounds, &remainder, &viewBounds, StatusBarHeight(),
-                   CGRectMinYEdge);
-      newPage.frame = viewBounds;
+      if (base::FeatureList::IsEnabled(
+              web::features::kBrowserContainerFullscreen)) {
+        newPage.frame = self.view.bounds;
+      } else {
+        // Compute a frame for the new page by removing the status bar height
+        // from the bounds of |self.view|.
+        CGRect viewBounds, remainder;
+        CGRectDivide(self.view.bounds, &remainder, &viewBounds,
+                     StatusBarHeight(), CGRectMinYEdge);
+        newPage.frame = viewBounds;
+      }
     } else {
       UIImageView* pageScreenshot = [self pageOpenCloseAnimationView];
       tab.view.frame = self.contentArea.bounds;
