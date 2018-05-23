@@ -448,8 +448,6 @@ jumbo_split_static_library("browser") {
     "engagement/site_engagement_service_factory.h",
     "engagement/top_sites/site_engagement_top_sites_provider.cc",
     "engagement/top_sites/site_engagement_top_sites_provider.h",
-    "experiments/memory_ablation_experiment.cc",
-    "experiments/memory_ablation_experiment.h",
     "lifetime/browser_shutdown.cc",
     "lifetime/browser_shutdown.h",
     "media/webrtc/audio_debug_recordings_handler.cc",

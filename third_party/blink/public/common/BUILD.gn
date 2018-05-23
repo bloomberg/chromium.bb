@@ -36,6 +36,7 @@ source_set("headers") {
     "associated_interfaces/associated_interface_registry.h",
     "client_hints/client_hints.h",
     "device_memory/approximated_device_memory.h",
+    "experiments/memory_ablation_experiment.h",
     "feature_policy/feature_policy.h",
     "frame/frame_policy.h",
     "frame/sandbox_flags.h",
