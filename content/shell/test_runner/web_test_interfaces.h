@@ -12,7 +12,6 @@
 #include "content/shell/test_runner/test_runner_export.h"
 
 namespace blink {
-class WebAudioDevice;
 class WebFrameClient;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
@@ -66,10 +65,6 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
 
   std::unique_ptr<blink::WebMIDIAccessor> CreateMIDIAccessor(
       blink::WebMIDIAccessorClient* client);
-
-  std::unique_ptr<blink::WebAudioDevice> CreateAudioDevice(
-      double sample_rate,
-      int frames_per_buffer);
 
   TestInterfaces* GetTestInterfaces();
 

@@ -38,8 +38,6 @@ component("test_runner") {
     "mock_screen_orientation_client.h",
     "mock_spell_check.cc",
     "mock_spell_check.h",
-    "mock_web_audio_device.cc",
-    "mock_web_audio_device.h",
     "mock_web_document_subresource_filter.cc",
     "mock_web_document_subresource_filter.h",
     "mock_web_midi_accessor.cc",

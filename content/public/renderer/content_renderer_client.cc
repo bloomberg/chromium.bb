@@ -64,12 +64,6 @@ ContentRendererClient::OverrideCreateMIDIAccessor(
   return nullptr;
 }
 
-std::unique_ptr<blink::WebAudioDevice>
-ContentRendererClient::OverrideCreateAudioDevice(
-    const blink::WebAudioLatencyHint& latency_hint) {
-  return nullptr;
-}
-
 blink::WebThemeEngine* ContentRendererClient::OverrideThemeEngine() {
   return nullptr;
 }
