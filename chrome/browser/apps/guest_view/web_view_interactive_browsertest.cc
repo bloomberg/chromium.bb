@@ -1601,8 +1601,10 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, WordLookup) {
 }
 #endif
 
-// Flaky on Mac - http://crbug.com/811893
-#if defined(OS_MACOSX)
+// Flaky on Mac: http://crbug.com/811893
+// Flaky on Linux/ChromeOS/Windows: http://crbug.com/845638
+#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_WIN)
 #define MAYBE_FocusAndVisibility DISABLED_FocusAndVisibility
 #else
 #define MAYBE_FocusAndVisibility FocusAndVisibility
