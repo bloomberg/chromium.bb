@@ -8,8 +8,10 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/auto_enrollment_client_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chromeos/chromeos_switches.h"
@@ -282,6 +284,11 @@ AutoEnrollmentController::RegisterProgressCallback(
   return progress_callbacks_.Add(callback);
 }
 
+void AutoEnrollmentController::SetAutoEnrollmentClientFactoryForTesting(
+    policy::AutoEnrollmentClient::Factory* auto_enrollment_client_factory) {
+  testing_auto_enrollment_client_factory_ = auto_enrollment_client_factory;
+}
+
 void AutoEnrollmentController::DetermineAutoEnrollmentCheckType() {
   // Skip everything if neither FRE nor Initial Enrollment are enabled.
   if (!IsEnabled()) {
@@ -431,9 +438,9 @@ void AutoEnrollmentController::StartClientForFRE(
     power_initial = power_limit;
   }
 
-  client_ = policy::AutoEnrollmentClient::CreateForFRE(
-      base::Bind(&AutoEnrollmentController::UpdateState,
-                 weak_ptr_factory_.GetWeakPtr()),
+  client_ = GetAutoEnrollmentClientFactory()->CreateForFRE(
+      base::BindRepeating(&AutoEnrollmentController::UpdateState,
+                          weak_ptr_factory_.GetWeakPtr()),
       service, g_browser_process->local_state(),
       g_browser_process->system_request_context(), state_keys.front(),
       power_initial, power_limit);
@@ -464,7 +471,7 @@ void AutoEnrollmentController::StartClientForInitialEnrollment() {
   CHECK(!serial_number.empty() && rlz_brand_code_found &&
         !rlz_brand_code.empty());
 
-  client_ = policy::AutoEnrollmentClient::CreateForInitialEnrollment(
+  client_ = GetAutoEnrollmentClientFactory()->CreateForInitialEnrollment(
       base::BindRepeating(&AutoEnrollmentController::UpdateState,
                           weak_ptr_factory_.GetWeakPtr()),
       service, g_browser_process->local_state(),
@@ -556,6 +563,16 @@ void AutoEnrollmentController::Timeout() {
 
   // Make sure to nuke pending |client_| start sequences.
   client_start_weak_factory_.InvalidateWeakPtrs();
+}
+
+policy::AutoEnrollmentClient::Factory*
+AutoEnrollmentController::GetAutoEnrollmentClientFactory() {
+  static base::NoDestructor<policy::AutoEnrollmentClientImpl::FactoryImpl>
+      default_factory;
+  if (testing_auto_enrollment_client_factory_)
+    return testing_auto_enrollment_client_factory_;
+
+  return default_factory.get();
 }
 
 }  // namespace chromeos

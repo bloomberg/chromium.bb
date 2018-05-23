@@ -125,6 +125,14 @@ class AutoEnrollmentController {
 
   policy::AutoEnrollmentState state() const { return state_; }
 
+  // Sets the factory that will be used to create the |AutoEnrollmentClient|.
+  // Ownership is not transferred when calling this - the caller must ensure
+  // that the |Factory| pointed to by |auto_enrollment_client_factory| remains
+  // valid while this |AutoEnrollmentController| is using it.
+  // To use the default factory again, call with nullptr.
+  void SetAutoEnrollmentClientFactoryForTesting(
+      policy::AutoEnrollmentClient::Factory* auto_enrollment_client_factory);
+
  private:
   // Determines the type of auto-enrollment check that should be done. Sets
   // |auto_enrollment_check_type_| and |fre_requirement_|.
@@ -169,6 +177,15 @@ class AutoEnrollmentController {
 
   // Handles timeout of the safeguard timer and stops waiting for a result.
   void Timeout();
+
+  // Returns the factory that should be used to construct a new
+  // |AutoEnrollmentClient|.
+  policy::AutoEnrollmentClient::Factory* GetAutoEnrollmentClientFactory();
+
+  // Unowned pointer. If not nullptr, this will be used to create the |client_|.
+  // It can be set using |SetAutoEnrollmentClientFactoryForTesting|.
+  policy::AutoEnrollmentClient::Factory*
+      testing_auto_enrollment_client_factory_ = nullptr;
 
   policy::AutoEnrollmentState state_ = policy::AUTO_ENROLLMENT_STATE_IDLE;
   ProgressCallbackList progress_callbacks_;

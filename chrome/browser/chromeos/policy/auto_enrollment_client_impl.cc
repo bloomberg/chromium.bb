@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
+#include "chrome/browser/chromeos/policy/auto_enrollment_client_impl.h"
 
 #include <stdint.h>
 
@@ -116,7 +116,7 @@ std::string ConvertInitialEnrollmentMode(
 
 // Subclasses of this class provide an identifier and specify the identifier
 // set for the DeviceAutoEnrollmentRequest,
-class AutoEnrollmentClient::DeviceIdentifierProvider {
+class AutoEnrollmentClientImpl::DeviceIdentifierProvider {
  public:
   virtual ~DeviceIdentifierProvider() {}
 
@@ -136,7 +136,7 @@ class AutoEnrollmentClient::DeviceIdentifierProvider {
 // Subclasses of this class generate the request to download the device state
 // (after determining that there is server-side device state) and parse the
 // response.
-class AutoEnrollmentClient::StateDownloadMessageProcessor {
+class AutoEnrollmentClientImpl::StateDownloadMessageProcessor {
  public:
   virtual ~StateDownloadMessageProcessor() {}
 
@@ -163,7 +163,7 @@ namespace {
 // Provides device identifier for Forced Re-Enrollment (FRE), where the
 // server-backed state key is used.
 class DeviceIdentifierProviderFRE
-    : public AutoEnrollmentClient::DeviceIdentifierProvider {
+    : public AutoEnrollmentClientImpl::DeviceIdentifierProvider {
  public:
   explicit DeviceIdentifierProviderFRE(
       const std::string& server_backed_state_key) {
@@ -188,7 +188,7 @@ class DeviceIdentifierProviderFRE
 // Provides device identifier for Forced Initial Enrollment, where the brand
 // code and serial number is used.
 class DeviceIdentifierProviderInitialEnrollment
-    : public AutoEnrollmentClient::DeviceIdentifierProvider {
+    : public AutoEnrollmentClientImpl::DeviceIdentifierProvider {
  public:
   DeviceIdentifierProviderInitialEnrollment(
       const std::string& device_serial_number,
@@ -218,7 +218,7 @@ class DeviceIdentifierProviderInitialEnrollment
 // Handles DeviceStateRetrievalRequest / DeviceStateRetrievalResponse for
 // Forced Re-Enrollment (FRE).
 class StateDownloadMessageProcessorFRE
-    : public AutoEnrollmentClient::StateDownloadMessageProcessor {
+    : public AutoEnrollmentClientImpl::StateDownloadMessageProcessor {
  public:
   explicit StateDownloadMessageProcessorFRE(
       const std::string& server_backed_state_key)
@@ -268,7 +268,7 @@ class StateDownloadMessageProcessorFRE
 // Handles DeviceInitialEnrollmentStateRequest /
 // DeviceInitialEnrollmentStateResponse for Forced Initial Enrollment.
 class StateDownloadMessageProcessorInitialEnrollment
-    : public AutoEnrollmentClient::StateDownloadMessageProcessor {
+    : public AutoEnrollmentClientImpl::StateDownloadMessageProcessor {
  public:
   StateDownloadMessageProcessorInitialEnrollment(
       const std::string& device_serial_number,
@@ -330,8 +330,11 @@ class StateDownloadMessageProcessorInitialEnrollment
 
 }  // namespace
 
-// static
-std::unique_ptr<AutoEnrollmentClient> AutoEnrollmentClient::CreateForFRE(
+AutoEnrollmentClientImpl::FactoryImpl::FactoryImpl() {}
+AutoEnrollmentClientImpl::FactoryImpl::~FactoryImpl() {}
+
+std::unique_ptr<AutoEnrollmentClient>
+AutoEnrollmentClientImpl::FactoryImpl::CreateForFRE(
     const ProgressCallback& progress_callback,
     DeviceManagementService* device_management_service,
     PrefService* local_state,
@@ -339,7 +342,7 @@ std::unique_ptr<AutoEnrollmentClient> AutoEnrollmentClient::CreateForFRE(
     const std::string& server_backed_state_key,
     int power_initial,
     int power_limit) {
-  return base::WrapUnique(new AutoEnrollmentClient(
+  return base::WrapUnique(new AutoEnrollmentClientImpl(
       progress_callback, device_management_service, local_state,
       system_request_context,
       std::make_unique<DeviceIdentifierProviderFRE>(server_backed_state_key),
@@ -348,9 +351,8 @@ std::unique_ptr<AutoEnrollmentClient> AutoEnrollmentClient::CreateForFRE(
       power_initial, power_limit, kUMASuffixFRE));
 }
 
-// static
 std::unique_ptr<AutoEnrollmentClient>
-AutoEnrollmentClient::CreateForInitialEnrollment(
+AutoEnrollmentClientImpl::FactoryImpl::CreateForInitialEnrollment(
     const ProgressCallback& progress_callback,
     DeviceManagementService* device_management_service,
     PrefService* local_state,
@@ -359,7 +361,7 @@ AutoEnrollmentClient::CreateForInitialEnrollment(
     const std::string& device_brand_code,
     int power_initial,
     int power_limit) {
-  return base::WrapUnique(new AutoEnrollmentClient(
+  return base::WrapUnique(new AutoEnrollmentClientImpl(
       progress_callback, device_management_service, local_state,
       system_request_context,
       std::make_unique<DeviceIdentifierProviderInitialEnrollment>(
@@ -369,17 +371,17 @@ AutoEnrollmentClient::CreateForInitialEnrollment(
       power_initial, power_limit, kUMASuffixInitialEnrollment));
 }
 
-AutoEnrollmentClient::~AutoEnrollmentClient() {
+AutoEnrollmentClientImpl::~AutoEnrollmentClientImpl() {
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 // static
-void AutoEnrollmentClient::RegisterPrefs(PrefRegistrySimple* registry) {
+void AutoEnrollmentClientImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kShouldAutoEnroll, false);
   registry->RegisterIntegerPref(prefs::kAutoEnrollmentPowerLimit, -1);
 }
 
-void AutoEnrollmentClient::Start() {
+void AutoEnrollmentClientImpl::Start() {
   // (Re-)register the network change observer.
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
@@ -395,11 +397,11 @@ void AutoEnrollmentClient::Start() {
   NextStep();
 }
 
-void AutoEnrollmentClient::Retry() {
+void AutoEnrollmentClientImpl::Retry() {
   RetryStep();
 }
 
-void AutoEnrollmentClient::CancelAndDeleteSoon() {
+void AutoEnrollmentClientImpl::CancelAndDeleteSoon() {
   if (time_start_.is_null() || !request_job_) {
     // The client isn't running, just delete it.
     delete this;
@@ -412,7 +414,15 @@ void AutoEnrollmentClient::CancelAndDeleteSoon() {
   }
 }
 
-void AutoEnrollmentClient::OnNetworkChanged(
+std::string AutoEnrollmentClientImpl::device_id() const {
+  return device_id_;
+}
+
+AutoEnrollmentState AutoEnrollmentClientImpl::state() const {
+  return state_;
+}
+
+void AutoEnrollmentClientImpl::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   if (type != net::NetworkChangeNotifier::CONNECTION_NONE &&
       !progress_callback_.is_null()) {
@@ -420,7 +430,7 @@ void AutoEnrollmentClient::OnNetworkChanged(
   }
 }
 
-AutoEnrollmentClient::AutoEnrollmentClient(
+AutoEnrollmentClientImpl::AutoEnrollmentClientImpl(
     const ProgressCallback& callback,
     DeviceManagementService* service,
     PrefService* local_state,
@@ -450,7 +460,7 @@ AutoEnrollmentClient::AutoEnrollmentClient(
   DCHECK(!progress_callback_.is_null());
 }
 
-bool AutoEnrollmentClient::GetCachedDecision() {
+bool AutoEnrollmentClientImpl::GetCachedDecision() {
   const PrefService::Preference* has_server_state_pref =
       local_state_->FindPreference(prefs::kShouldAutoEnroll);
   const PrefService::Preference* previous_limit_pref =
@@ -458,11 +468,9 @@ bool AutoEnrollmentClient::GetCachedDecision() {
   bool has_server_state = false;
   int previous_limit = -1;
 
-  if (!has_server_state_pref ||
-      has_server_state_pref->IsDefaultValue() ||
+  if (!has_server_state_pref || has_server_state_pref->IsDefaultValue() ||
       !has_server_state_pref->GetValue()->GetAsBoolean(&has_server_state) ||
-      !previous_limit_pref ||
-      previous_limit_pref->IsDefaultValue() ||
+      !previous_limit_pref || previous_limit_pref->IsDefaultValue() ||
       !previous_limit_pref->GetValue()->GetAsInteger(&previous_limit) ||
       power_limit_ > previous_limit) {
     return false;
@@ -472,7 +480,7 @@ bool AutoEnrollmentClient::GetCachedDecision() {
   return true;
 }
 
-bool AutoEnrollmentClient::RetryStep() {
+bool AutoEnrollmentClientImpl::RetryStep() {
   // If there is a pending request job, let it finish.
   if (request_job_)
     return true;
@@ -496,7 +504,7 @@ bool AutoEnrollmentClient::RetryStep() {
   return false;
 }
 
-void AutoEnrollmentClient::ReportProgress(AutoEnrollmentState state) {
+void AutoEnrollmentClientImpl::ReportProgress(AutoEnrollmentState state) {
   state_ = state;
   if (progress_callback_.is_null()) {
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
@@ -505,7 +513,7 @@ void AutoEnrollmentClient::ReportProgress(AutoEnrollmentState state) {
   }
 }
 
-void AutoEnrollmentClient::NextStep() {
+void AutoEnrollmentClientImpl::NextStep() {
   if (RetryStep())
     return;
 
@@ -526,9 +534,9 @@ void AutoEnrollmentClient::NextStep() {
   }
 }
 
-void AutoEnrollmentClient::SendBucketDownloadRequest() {
+void AutoEnrollmentClientImpl::SendBucketDownloadRequest() {
   std::string id_hash = device_identifier_provider_->GetIdHash();
-  // Currently AutoEnrollmentClient supports working with hashes that are at
+  // Currently AutoEnrollmentClientImpl supports working with hashes that are at
   // least 8 bytes long. If this is reduced, the computation of the remainder
   // must also be adapted to handle the case of a shorter hash gracefully.
   DCHECK_GE(id_hash.size(), 8u);
@@ -549,10 +557,9 @@ void AutoEnrollmentClient::SendBucketDownloadRequest() {
   time_start_bucket_download_ = base::Time::Now();
 
   VLOG(1) << "Request bucket #" << remainder;
-  request_job_.reset(
-      device_management_service_->CreateJob(
-          DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT,
-          request_context_.get()));
+  request_job_.reset(device_management_service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT,
+      request_context_.get()));
   request_job_->SetClientID(device_id_);
   em::DeviceAutoEnrollmentRequest* request =
       request_job_->GetRequest()->mutable_auto_enrollment_request();
@@ -560,26 +567,26 @@ void AutoEnrollmentClient::SendBucketDownloadRequest() {
   request->set_modulus(INT64_C(1) << current_power_);
   request->set_enrollment_check_type(
       device_identifier_provider_->GetEnrollmentCheckType());
-  request_job_->Start(
-      base::Bind(&AutoEnrollmentClient::HandleRequestCompletion,
-                 base::Unretained(this),
-                 &AutoEnrollmentClient::OnBucketDownloadRequestCompletion));
+  request_job_->Start(base::BindRepeating(
+      &AutoEnrollmentClientImpl::HandleRequestCompletion,
+      base::Unretained(this),
+      &AutoEnrollmentClientImpl::OnBucketDownloadRequestCompletion));
 }
 
-void AutoEnrollmentClient::SendDeviceStateRequest() {
+void AutoEnrollmentClientImpl::SendDeviceStateRequest() {
   ReportProgress(AUTO_ENROLLMENT_STATE_PENDING);
 
   request_job_.reset(device_management_service_->CreateJob(
       state_download_message_processor_->GetJobType(), request_context_.get()));
   request_job_->SetClientID(device_id_);
   state_download_message_processor_->FillRequest(request_job_->GetRequest());
-  request_job_->Start(
-      base::Bind(&AutoEnrollmentClient::HandleRequestCompletion,
-                 base::Unretained(this),
-                 &AutoEnrollmentClient::OnDeviceStateRequestCompletion));
+  request_job_->Start(base::BindRepeating(
+      &AutoEnrollmentClientImpl::HandleRequestCompletion,
+      base::Unretained(this),
+      &AutoEnrollmentClientImpl::OnDeviceStateRequestCompletion));
 }
 
-void AutoEnrollmentClient::HandleRequestCompletion(
+void AutoEnrollmentClientImpl::HandleRequestCompletion(
     RequestCompletionHandler handler,
     DeviceManagementStatus status,
     int net_error,
@@ -610,7 +617,7 @@ void AutoEnrollmentClient::HandleRequestCompletion(
     ReportProgress(AUTO_ENROLLMENT_STATE_SERVER_ERROR);
 }
 
-bool AutoEnrollmentClient::OnBucketDownloadRequestCompletion(
+bool AutoEnrollmentClientImpl::OnBucketDownloadRequestCompletion(
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
@@ -667,7 +674,7 @@ bool AutoEnrollmentClient::OnBucketDownloadRequestCompletion(
   return progress;
 }
 
-bool AutoEnrollmentClient::OnDeviceStateRequestCompletion(
+bool AutoEnrollmentClientImpl::OnDeviceStateRequestCompletion(
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
@@ -700,8 +707,8 @@ bool AutoEnrollmentClient::OnDeviceStateRequestCompletion(
   return true;
 }
 
-bool AutoEnrollmentClient::IsIdHashInProtobuf(
-      const google::protobuf::RepeatedPtrField<std::string>& hashes) {
+bool AutoEnrollmentClientImpl::IsIdHashInProtobuf(
+    const google::protobuf::RepeatedPtrField<std::string>& hashes) {
   std::string id_hash = device_identifier_provider_->GetIdHash();
   for (int i = 0; i < hashes.size(); ++i) {
     if (hashes.Get(i) == id_hash)
@@ -710,7 +717,7 @@ bool AutoEnrollmentClient::IsIdHashInProtobuf(
   return false;
 }
 
-void AutoEnrollmentClient::UpdateBucketDownloadTimingHistograms() {
+void AutoEnrollmentClientImpl::UpdateBucketDownloadTimingHistograms() {
   // The minimum time can't be 0, must be at least 1.
   static const base::TimeDelta kMin = base::TimeDelta::FromMilliseconds(1);
   static const base::TimeDelta kMax = base::TimeDelta::FromMinutes(5);
