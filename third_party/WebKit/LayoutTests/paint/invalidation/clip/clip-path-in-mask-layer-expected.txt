@@ -18,45 +18,36 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='clip'",
-      "bounds": [800, 300],
-      "backfaceVisibility": "hidden",
-      "backgroundColor": "#FF0000E6",
+      "name": "LayoutBlockFlow DIV",
+      "position": [8, 8],
+      "bounds": [200, 200],
+      "backgroundColor": "#0000FF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 0, 200, 200],
+          "reason": "full"
+        }
+      ],
       "maskLayer": [
         {
           "name": "Mask Layer",
-          "bounds": [800, 300],
+          "bounds": [200, 200],
           "paintInvalidations": [
             {
               "object": "Mask Layer",
-              "rect": [0, 0, 800, 300],
+              "rect": [0, 0, 200, 200],
               "reason": "paint property change"
             }
           ]
         }
-      ],
-      "transform": 2
+      ]
     }
   ],
-  "transforms": [
+  "objectPaintInvalidations": [
     {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 100, 0, 1]
-      ]
+      "object": "LayoutBlockFlow DIV",
+      "reason": "full"
     }
   ]
 }

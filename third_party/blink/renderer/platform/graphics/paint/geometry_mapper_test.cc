@@ -384,6 +384,23 @@ TEST_P(GeometryMapperTest, RoundedClip) {
   CHECK_MAPPINGS();
 }
 
+TEST_P(GeometryMapperTest, ClipPath) {
+  FloatRoundedRect rect(FloatRect(10, 10, 50, 50),
+                        FloatRoundedRect::Radii(FloatSize(1, 1), FloatSize(),
+                                                FloatSize(), FloatSize()));
+  auto clip = CreateClipPathClip(ClipPaintPropertyNode::Root(),
+                                 TransformPaintPropertyNode::Root(),
+                                 FloatRoundedRect(10, 10, 50, 50));
+  local_state.SetClip(clip.get());
+
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_transformed_rect = input_rect;
+  expected_clip = FloatClipRect(FloatRect(10, 10, 50, 50));
+  expected_clip.ClearIsTight();
+  expected_visual_rect = expected_clip;
+  CHECK_MAPPINGS();
+}
+
 TEST_P(GeometryMapperTest, TwoClips) {
   FloatRoundedRect clip_rect1(
       FloatRect(10, 10, 30, 40),
