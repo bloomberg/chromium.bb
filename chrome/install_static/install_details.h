@@ -111,6 +111,9 @@ class InstallDetails {
     return payload_->mode->toast_activator_clsid;
   }
 
+  // The CLSID of the COM server that provides silent elevation functionality.
+  const CLSID& elevator_clsid() const { return payload_->mode->elevator_clsid; }
+
   // Returns the unsuffixed portion of the AppUserModelId. The AppUserModelId is
   // used to group an app's windows together on the Windows taskbar along with
   // its corresponding shortcuts; see

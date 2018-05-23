@@ -97,6 +97,9 @@ struct InstallConstants {
   // Center.
   CLSID toast_activator_clsid;
 
+  // The CLSID of the COM server that provides silent elevation functionality.
+  CLSID elevator_clsid;
+
   // The default name for this mode's update channel.
   const wchar_t* default_channel_name;
 

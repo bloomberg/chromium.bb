@@ -43,7 +43,11 @@ const InstallConstants kInstallModes[] = {
          0x4EC9,
          {0xBD, 0x14, 0x8A, 0x0F, 0xDE, 0x97, 0x51,
           0x59}},  // Toast Activator CLSID.
-        L"",       // Empty default channel name since no update integration.
+        {0xD133B120,
+         0x6DB4,
+         0x4D6B,
+         {0x8B, 0xFE, 0x83, 0xBF, 0x8C, 0xA1, 0xB1, 0xB0}},  // Elevator CLSID.
+        L"",  // Empty default channel name since no update integration.
         ChannelStrategy::UNSUPPORTED,
         true,   // Supports system-level installs.
         true,   // Supports in-product set as default browser UX.

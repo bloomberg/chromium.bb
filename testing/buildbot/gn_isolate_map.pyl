@@ -531,6 +531,10 @@
     "label": "//third_party/breakpad:dump_syms",
     "type": "additional_compile_target",
   },
+  "elevation_service_unittests": {
+    "label": "//chrome/elevation_service:elevation_service_unittests",
+    "type": "windowed_test_launcher",
+  },
   "empty_main": {
     "label": "//testing:empty_main",
     "type": "additional_compile_target",
