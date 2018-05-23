@@ -34,6 +34,24 @@ const char kUUID[] = "uuid";
 const char kPpdResource[] = "ppd_resource";
 const char kGuid[] = "guid";
 
+// Returns true if the uri was retrieved, is valid, and was set on |printer|.
+// Returns false otherwise.
+bool SetUri(const DictionaryValue& dict, Printer* printer) {
+  std::string uri;
+  if (!dict.GetString(kUri, &uri)) {
+    LOG(WARNING) << "Uri required";
+    return false;
+  }
+
+  if (!chromeos::ParseUri(uri).has_value()) {
+    LOG(WARNING) << "Uri is malformed";
+    return false;
+  }
+
+  printer->set_uri(uri);
+  return true;
+}
+
 // Populates the |printer| object with corresponding fields from |value|.
 // Returns false if |value| is missing a required field.
 bool DictionaryToPrinter(const DictionaryValue& value, Printer* printer) {
@@ -46,11 +64,7 @@ bool DictionaryToPrinter(const DictionaryValue& value, Printer* printer) {
     return false;
   }
 
-  std::string uri;
-  if (value.GetString(kUri, &uri)) {
-    printer->set_uri(uri);
-  } else {
-    LOG(WARNING) << "Uri required";
+  if (!SetUri(value, printer)) {
     return false;
   }
 
