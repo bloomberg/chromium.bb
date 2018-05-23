@@ -131,10 +131,8 @@ bool VP8Decoder::DecodeAndOutputCurrentFrame(scoped_refptr<VP8Picture> pic) {
   if (!accelerator_->SubmitDecode(pic, ref_frames_))
     return false;
 
-  if (show_frame) {
-    if (!accelerator_->OutputPicture(pic))
-      return false;
-  }
+  if (show_frame && !accelerator_->OutputPicture(pic))
+    return false;
 
   ref_frames_.Refresh(pic);
 
