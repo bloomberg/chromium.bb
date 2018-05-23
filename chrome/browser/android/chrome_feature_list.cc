@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/feed/feed_feature_list.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/offline_pages/core/offline_page_feature.h"
@@ -44,6 +45,9 @@ namespace {
 // in other locations in the code base (e.g. chrome/, components/, etc).
 const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::kAutofillScanCardholderName,
+    &contextual_suggestions::kContextualSuggestionsBottomSheet,
+    &contextual_suggestions::kContextualSuggestionsEnterprisePolicyBypass,
+    &contextual_suggestions::kContextualSuggestionsSlimPeekUI,
     &features::kClearOldBrowsingData,
     &features::kClipboardContentSetting,
     &features::kDownloadsForeground,
@@ -82,9 +86,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchMlTapSuppression,
     &kContextualSearchSecondTap,
     &kContextualSearchTapDisableOverride,
-    &kContextualSuggestionsBottomSheet,
-    &kContextualSuggestionsEnterprisePolicyBypass,
-    &kContextualSuggestionsSlimPeekUI,
     &kCustomContextMenu,
     &kCustomFeedbackUi,
     &kDontPrefetchLibraries,
@@ -233,16 +234,6 @@ const base::Feature kContextualSearchSecondTap{
 
 const base::Feature kContextualSearchTapDisableOverride{
     "ContextualSearchTapDisableOverride", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kContextualSuggestionsBottomSheet{
-    "ContextualSuggestionsBottomSheet", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kContextualSuggestionsEnterprisePolicyBypass{
-    "ContextualSuggestionsEnterprisePolicyBypass",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kContextualSuggestionsSlimPeekUI{
-    "ContextualSuggestionsSlimPeekUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCustomContextMenu{"CustomContextMenu",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

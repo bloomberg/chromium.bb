@@ -16,6 +16,7 @@
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher_impl.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
@@ -42,7 +43,7 @@ namespace {
 bool IsContextualContentSuggestionsEnabled() {
 #if defined(OS_ANDROID)
   return base::FeatureList::IsEnabled(
-      chrome::android::kContextualSuggestionsBottomSheet);
+      contextual_suggestions::kContextualSuggestionsBottomSheet);
 #else
   return false;
 #endif  // OS_ANDROID

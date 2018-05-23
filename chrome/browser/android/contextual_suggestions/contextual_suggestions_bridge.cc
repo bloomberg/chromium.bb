@@ -17,6 +17,7 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
@@ -54,7 +55,8 @@ static jboolean JNI_ContextualSuggestionsBridge_IsEnterprisePolicyManaged(
     const JavaParamRef<jclass>& clazz) {
   // Bypass policy check, if corresponding feature is enabled.
   if (base::FeatureList::IsEnabled(
-          chrome::android::kContextualSuggestionsEnterprisePolicyBypass)) {
+          contextual_suggestions::
+              kContextualSuggestionsEnterprisePolicyBypass)) {
     return false;
   }
 

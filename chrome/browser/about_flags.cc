@@ -64,6 +64,7 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_tiles/constants.h"
@@ -2493,11 +2494,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSuggestionsBottomSheetName,
      flag_descriptions::kContextualSuggestionsBottomSheetDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextualSuggestionsBottomSheet)},
+     FEATURE_VALUE_TYPE(
+         contextual_suggestions::kContextualSuggestionsBottomSheet)},
     {"contextual-suggestions-slim-peek-ui",
      flag_descriptions::kContextualSuggestionsSlimPeekUIName,
      flag_descriptions::kContextualSuggestionsSlimPeekUIDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextualSuggestionsSlimPeekUI)},
+     FEATURE_VALUE_TYPE(
+         contextual_suggestions::kContextualSuggestionsSlimPeekUI)},
     {"enable-content-suggestions-new-favicon-server",
      flag_descriptions::kEnableContentSuggestionsNewFaviconServerName,
      flag_descriptions::kEnableContentSuggestionsNewFaviconServerDescription,
