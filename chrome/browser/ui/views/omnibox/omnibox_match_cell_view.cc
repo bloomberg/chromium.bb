@@ -186,7 +186,7 @@ OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view)
 OmniboxMatchCellView::~OmniboxMatchCellView() = default;
 
 gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
-  const int text_height = content_view_->GetLineHeight();
+  const int text_height = content_view_->GetLineHeight() + kVerticalPadding;
   int height = text_height +
                GetVerticalInsets(text_height, is_old_style_answer_).height();
   if (is_rich_suggestion_ || is_old_style_answer_) {
@@ -270,7 +270,7 @@ void OmniboxMatchCellView::Layout() {
 }
 
 void OmniboxMatchCellView::LayoutOldStyleAnswer() {
-  const int text_height = content_view_->GetLineHeight();
+  const int text_height = content_view_->GetLineHeight() + kVerticalPadding;
   int x = GetIconAlignmentOffset() + HorizontalPadding();
   int y = GetVerticalInsets(text_height, /*is_old_style_answer=*/true).top();
   icon_view_->SetPosition(
@@ -295,7 +295,7 @@ void OmniboxMatchCellView::LayoutOldStyleAnswer() {
 }
 
 void OmniboxMatchCellView::LayoutRichSuggestion() {
-  const int text_height = content_view_->GetLineHeight();
+  const int text_height = content_view_->GetLineHeight() + kVerticalPadding;
   int x = GetIconAlignmentOffset() + HorizontalPadding();
   int y = GetVerticalInsets(text_height, /*is_old_style_answer=*/false).top();
   image_view_->SetImageSize(gfx::Size(kRichImageSize, kRichImageSize));
@@ -312,7 +312,7 @@ void OmniboxMatchCellView::LayoutRichSuggestion() {
 }
 
 void OmniboxMatchCellView::LayoutSplit() {
-  const int text_height = content_view_->GetLineHeight();
+  const int text_height = content_view_->GetLineHeight() + kVerticalPadding;
   int x = GetIconAlignmentOffset() + HorizontalPadding();
   icon_view_->SetSize(icon_view_->CalculatePreferredSize());
   int y = GetVerticalInsets(text_height, /*is_old_style_answer=*/false).top();
