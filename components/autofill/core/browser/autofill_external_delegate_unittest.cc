@@ -12,8 +12,10 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/user_action_tester.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -93,6 +95,11 @@ class MockAutofillManager : public AutofillManager {
       // really need personal_data in this test so we pass a NULL pointer.
       : AutofillManager(driver, client, nullptr) {}
   ~MockAutofillManager() override {}
+
+  PopupType GetPopupType(const FormData& form,
+                         const FormFieldData& field) override {
+    return PopupType::kPersonalInformation;
+  }
 
   MOCK_METHOD2(ShouldShowScanCreditCard,
                bool(const FormData& form, const FormFieldData& field));
@@ -780,5 +787,46 @@ TEST_F(AutofillExternalDelegateUnitTest, ShouldUseNewSettingName) {
   // This should call ShowAutofillPopup.
   external_delegate_->OnSuggestionsReturned(kQueryId, autofill_item);
 }
+
+#if !defined(OS_ANDROID)
+// Test that the delegate includes a separator between the content rows and the
+// footer, if and only if the kAutofillExpandedPopupViews feature is disabled.
+TEST_F(AutofillExternalDelegateUnitTest, IncludeFooterSeparatorForOldUIOnly) {
+  // The guts of the test. This will be run once with the feature enabled,
+  // expecting not to find a separator, and a second time with the feature
+  // disabled, expecting to find a separator.
+  auto tester = [this](bool enabled, auto element_ids) {
+    base::test::ScopedFeatureList scoped_feature_list;
+
+    if (enabled) {
+      scoped_feature_list.InitAndEnableFeature(
+          autofill::kAutofillExpandedPopupViews);
+    } else {
+      scoped_feature_list.InitAndDisableFeature(
+          autofill::kAutofillExpandedPopupViews);
+    }
+
+    IssueOnQuery(kQueryId);
+
+    EXPECT_CALL(
+        autofill_client_,
+        ShowAutofillPopup(_, _, SuggestionVectorIdsAre(element_ids), _));
+
+    std::vector<Suggestion> autofill_item;
+    autofill_item.push_back(Suggestion());
+    autofill_item[0].frontend_id = kAutofillProfileId;
+    external_delegate_->OnSuggestionsReturned(kQueryId, autofill_item);
+  };
+
+  tester(false,
+         testing::ElementsAre(
+             kAutofillProfileId, static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
+             static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS)));
+
+  tester(true, testing::ElementsAre(
+                   kAutofillProfileId,
+                   static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS)));
+}
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace autofill

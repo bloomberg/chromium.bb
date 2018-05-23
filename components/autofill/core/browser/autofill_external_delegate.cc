@@ -87,8 +87,11 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
 #if !defined(OS_ANDROID)
   // If there are above the fold suggestions at this point, add a separator to
-  // go between the values and menu items.
-  if (!suggestions.empty()) {
+  // go between the values and menu items. Skip this when using the Native Views
+  // implementation, which has its own logic for distinguishing footer rows.
+  // TODO(crbug.com/831603): Remove this when the relevant feature is on 100%.
+  if (!suggestions.empty() &&
+      !base::FeatureList::IsEnabled(autofill::kAutofillExpandedPopupViews)) {
     suggestions.push_back(Suggestion());
     suggestions.back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
   }

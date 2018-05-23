@@ -172,28 +172,28 @@ TEST_F(AutofillPopupViewNativeViewsTest, ShowHideTest) {
 }
 
 TEST_F(AutofillPopupViewNativeViewsTest, AccessibilityTest) {
-  CreateAndShowView({autofill::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY,
+  CreateAndShowView({autofill::POPUP_ITEM_ID_DATALIST_ENTRY,
                      autofill::POPUP_ITEM_ID_SEPARATOR,
+                     autofill::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY,
                      autofill::POPUP_ITEM_ID_AUTOFILL_OPTIONS});
 
   // Select first item.
-  static_cast<autofill::AutofillPopupRowView*>(view()->child_at(0))
-      ->SetSelected(true);
+  view()->GetRowsForTesting()[0]->SetSelected(true);
 
-  EXPECT_EQ(view()->child_count(), 3);
+  EXPECT_EQ(view()->GetRowsForTesting().size(), 4u);
 
   // Item 0.
   ui::AXNodeData node_data_0;
-  view()->child_at(0)->GetAccessibleNodeData(&node_data_0);
+  view()->GetRowsForTesting()[0]->GetAccessibleNodeData(&node_data_0);
   EXPECT_EQ(ax::mojom::Role::kMenuItem, node_data_0.role);
   EXPECT_EQ(1, node_data_0.GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
-  EXPECT_EQ(2, node_data_0.GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+  EXPECT_EQ(3, node_data_0.GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
   EXPECT_TRUE(
       node_data_0.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
 
   // Item 1 (separator).
   ui::AXNodeData node_data_1;
-  view()->child_at(1)->GetAccessibleNodeData(&node_data_1);
+  view()->GetRowsForTesting()[1]->GetAccessibleNodeData(&node_data_1);
   EXPECT_FALSE(node_data_1.HasIntAttribute(ax::mojom::IntAttribute::kPosInSet));
   EXPECT_FALSE(node_data_1.HasIntAttribute(ax::mojom::IntAttribute::kSetSize));
   EXPECT_EQ(ax::mojom::Role::kSplitter, node_data_1.role);
@@ -202,12 +202,21 @@ TEST_F(AutofillPopupViewNativeViewsTest, AccessibilityTest) {
 
   // Item 2.
   ui::AXNodeData node_data_2;
-  view()->child_at(2)->GetAccessibleNodeData(&node_data_2);
+  view()->GetRowsForTesting()[2]->GetAccessibleNodeData(&node_data_2);
   EXPECT_EQ(2, node_data_2.GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
-  EXPECT_EQ(2, node_data_2.GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+  EXPECT_EQ(3, node_data_2.GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
   EXPECT_EQ(ax::mojom::Role::kMenuItem, node_data_2.role);
   EXPECT_FALSE(
       node_data_2.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+
+  // Item 3 (footer).
+  ui::AXNodeData node_data_3;
+  view()->GetRowsForTesting()[3]->GetAccessibleNodeData(&node_data_3);
+  EXPECT_EQ(3, node_data_3.GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
+  EXPECT_EQ(3, node_data_3.GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+  EXPECT_EQ(ax::mojom::Role::kMenuItem, node_data_3.role);
+  EXPECT_FALSE(
+      node_data_3.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
 }
 
 TEST_P(AutofillPopupViewNativeViewsForEveryTypeTest, ShowClickTest) {

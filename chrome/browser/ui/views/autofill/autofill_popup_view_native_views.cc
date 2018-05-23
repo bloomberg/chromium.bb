@@ -229,6 +229,16 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
 
  protected:
   // AutofillPopupRowView:
+  void CreateContent() override {
+    SetBorder(views::CreateSolidSidedBorder(
+        /*top=*/views::MenuConfig::instance().separator_thickness,
+        /*left=*/0,
+        /*bottom=*/0,
+        /*right=*/0,
+        /*color=*/kSeparatorColor));
+    AutofillPopupItemView::CreateContent();
+  }
+
   std::unique_ptr<views::Background> CreateBackground() override {
     return views::CreateSolidBackground(is_selected_ ? kSelectedBackgroundColor
                                                      : kFooterBackgroundColor);
@@ -345,13 +355,8 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
     views::Widget* parent_widget)
     : AutofillPopupBaseView(controller, parent_widget),
       controller_(controller) {
-  // TODO(crbug.com/768881): kPopupTopBottomPadding is not needed on the bottom
-  // when a footer is present.
-  views::BoxLayout* layout =
-      SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical,
-          gfx::Insets(views::MenuConfig::instance().menu_vertical_border_size,
-                      0)));
+  views::BoxLayout* layout = SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
 
   CreateChildViews();
@@ -434,19 +439,79 @@ void AutofillPopupViewNativeViews::OnSuggestionsChanged() {
 void AutofillPopupViewNativeViews::CreateChildViews() {
   RemoveAllChildViews(true /* delete_children */);
   rows_.clear();
-  for (int i = 0; i < controller_->GetLineCount(); ++i) {
-    switch (controller_->GetSuggestionAt(i).frontend_id) {
-      case autofill::PopupItemId::POPUP_ITEM_ID_SEPARATOR:
-        rows_.push_back(AutofillPopupSeparatorView::Create(controller_, i));
-        break;
-      case autofill::PopupItemId::POPUP_ITEM_ID_CLEAR_FORM:
-      case autofill::PopupItemId::POPUP_ITEM_ID_AUTOFILL_OPTIONS:
-        rows_.push_back(AutofillPopupFooterView::Create(controller_, i));
-        break;
-      default:
-        rows_.push_back(AutofillPopupSuggestionView::Create(controller_, i));
+
+  // Create one container to wrap the "regular" (non-footer) rows.
+  // TODO(crbug.com/768881): Make |body_container| scrollable.
+  views::View* body_container = new views::View();
+  views::BoxLayout* body_layout =
+      body_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kVertical,
+          gfx::Insets(views::MenuConfig::instance().menu_vertical_border_size,
+                      0)));
+  body_layout->set_main_axis_alignment(
+      views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+
+  int line_number = 0;
+  bool has_footer = false;
+
+  // Process and add all the suggestions which are in the primary container.
+  // Stop once the first footer item is found, or there are no more items.
+  while (line_number < controller_->GetLineCount()) {
+    int item_id = controller_->GetSuggestionAt(line_number).frontend_id;
+
+    if (item_id == autofill::PopupItemId::POPUP_ITEM_ID_CLEAR_FORM ||
+        item_id == autofill::PopupItemId::POPUP_ITEM_ID_AUTOFILL_OPTIONS ||
+        item_id == autofill::PopupItemId::POPUP_ITEM_ID_SCAN_CREDIT_CARD ||
+        item_id ==
+            autofill::PopupItemId::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO) {
+      // This is a footer, so this suggestion will be processed later. Don't
+      // increment |line_number|, or else it will be skipped when adding footer
+      // rows below.
+      has_footer = true;
+      break;
     }
-    AddChildView(rows_.back());
+
+    if (item_id == autofill::PopupItemId::POPUP_ITEM_ID_SEPARATOR) {
+      rows_.push_back(
+          AutofillPopupSeparatorView::Create(controller_, line_number));
+    } else {
+      rows_.push_back(
+          AutofillPopupSuggestionView::Create(controller_, line_number));
+    }
+    body_container->AddChildView(rows_.back());
+    line_number++;
+  }
+
+  AddChildView(body_container);
+
+  // All the remaining rows (where index >= |line_number|) are part of the
+  // footer. This needs to be in its own container because it should not be
+  // affected by scrolling behavior (it's "sticky") and because it has a
+  // special background color.
+  if (has_footer) {
+    views::View* footer_container = new views::View();
+    footer_container->SetBackground(
+        views::CreateSolidBackground(kFooterBackgroundColor));
+
+    views::BoxLayout* footer_layout =
+        footer_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::kVertical,
+            gfx::Insets(/*top=*/0,
+                        /*left=*/0,
+                        /*bottom=*/
+                        views::MenuConfig::instance().menu_vertical_border_size,
+                        /*right=*/0)));
+    footer_layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+
+    while (line_number < controller_->GetLineCount()) {
+      rows_.push_back(
+          AutofillPopupFooterView::Create(controller_, line_number));
+      footer_container->AddChildView(rows_.back());
+      line_number++;
+    }
+
+    AddChildView(footer_container);
   }
 }
 
