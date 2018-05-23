@@ -176,7 +176,8 @@ enum EntryPropertyName {
   shared,
   starred,
   externalFileUrl,
-  alternateUrl
+  alternateUrl,
+  shareUrl
 };
 
 // Entry property visibility for setEntryTag();
@@ -305,8 +306,12 @@ dictionary EntryProperties {
   // externalfile:// URL to open the file in browser.
   DOMString? externalFileUrl;
 
-  // https:// URL to open the file in the Drive website.
+  // https:// URL to open the file or folder in the Drive website.
   DOMString? alternateUrl;
+
+  // https:// URL to open the file or folder in the Drive website with the
+  // sharing dialog open.
+  DOMString? shareUrl;
 };
 
 // Information about total and remaining size on the mount point.

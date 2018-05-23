@@ -71,26 +71,40 @@ function DriveShareAction(entry, volumeManager, ui) {
  * @param {!Array<!Entry>} entries
  * @param {!ActionModelUI} ui
  * @param {!VolumeManagerWrapper} volumeManager
- * @return {DriveShareAction|DriveManageAction}
+ * @return {DriveShareAction}
  */
 DriveShareAction.create = function(entries, volumeManager, ui) {
   if (entries.length !== 1)
     return null;
-
-  // The share URL for Team Drives currently does not support embedding. For
-  // Team Drives entries, instead point the user to the 'Manage' action.
-  var entry = entries[0];
-  if (util.isTeamDriveEntry(entry)) {
-    return new DriveManageAction(entry, volumeManager, ui);
-  }
-
-  return new DriveShareAction(entry, volumeManager, ui);
+  return new DriveShareAction(entries[0], volumeManager, ui);
 };
 
 /**
  * @override
  */
 DriveShareAction.prototype.execute = function() {
+  // For Team Drives entries, open the Sharing dialog in a new window.
+  if (util.isTeamDriveEntry(this.entry_)) {
+    chrome.fileManagerPrivate.getEntryProperties(
+        [this.entry_], ['shareUrl'], function(results) {
+          if (chrome.runtime.lastError) {
+            console.error(chrome.runtime.lastError.message);
+            return;
+          }
+          if (results.length != 1) {
+            console.error(
+                'getEntryProperties for shareUrl should return 1 entry ' +
+                '(returned ' + results.length + ')');
+            return;
+          }
+          if (results[0].shareUrl === undefined) {
+            console.error('getEntryProperties shareUrl is undefined');
+            return;
+          }
+          util.visitURL(results[0].shareUrl);
+        }.bind(this));
+    return;
+  }
   this.ui_.shareDialog.showEntry(this.entry_, function(result) {
     if (result == ShareDialog.Result.NETWORK_ERROR)
       this.ui_.errorDialog.show(str('SHARE_ERROR'), null, null, null);
@@ -478,6 +492,10 @@ DriveManageAction.prototype.execute = function() {
               '(returned ' + results.length + ')');
           return;
         }
+        if (results[0].alternateUrl === undefined) {
+          console.error('getEntryProperties alternateUrl is undefined');
+          return;
+        }
         util.visitURL(results[0].alternateUrl);
       }.bind(this));
 };
@@ -686,6 +704,7 @@ ActionsModel.prototype.initialize = function() {
     }
     // All entries need to be on the same volume to execute ActionsModel
     // commands.
+    // TODO(sashab): Move this to util.js.
     for (var i = 1; i < this.entries_.length; i++) {
       var volumeInfoToCompare =
           this.volumeManager_.getVolumeInfo(this.entries_[i]);

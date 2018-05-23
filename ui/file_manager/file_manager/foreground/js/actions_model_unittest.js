@@ -301,12 +301,10 @@ function testTeamDriveDirectoryEntry(callback) {
         var actions = model.getActions();
         assertEquals(3, Object.keys(actions).length);
 
-        // "Share" is enabled for Team Drive directories, and is the same as the
-        // "Manage in Drive" action.
+        // "Share" is enabled for Team Drive directories.
         var shareAction = actions[ActionsModel.CommonActionId.SHARE];
         assertTrue(!!shareAction);
         assertTrue(shareAction.canExecute());
-        assertTrue(shareAction instanceof DriveManageAction);
 
         // "Manage in drive" is enabled for Team Drive directories.
         var manageAction =
