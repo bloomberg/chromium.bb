@@ -282,7 +282,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual void SubmitCompositorFrame(
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list) = 0;
+      viz::mojom::HitTestRegionListPtr hit_test_region_list) = 0;
 
   virtual void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) {}
 

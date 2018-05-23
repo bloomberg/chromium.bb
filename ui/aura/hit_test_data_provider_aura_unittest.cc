@@ -5,7 +5,6 @@
 #include "ui/aura/hit_test_data_provider_aura.h"
 
 #include "components/viz/client/hit_test_data_provider.h"
-#include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
@@ -134,39 +133,41 @@ class HitTestDataProviderAuraTest : public test::AuraTestBaseMus {
 
 // Tests that the order of reported hit-test regions matches windows Z-order.
 TEST_F(HitTestDataProviderAuraTest, Stacking) {
-  const base::Optional<viz::HitTestRegionList> hit_test_data_1 =
+  const auto hit_test_data_1 =
       hit_test_data_provider()->GetHitTestData(compositor_frame_);
   ASSERT_TRUE(hit_test_data_1);
-  EXPECT_EQ(hit_test_data_1->flags, viz::HitTestRegionFlags::kHitTestMine);
+  EXPECT_EQ(hit_test_data_1->flags, viz::mojom::kHitTestMine);
   EXPECT_EQ(hit_test_data_1->bounds, root()->bounds());
   Window* expected_order_1[] = {window3(), window4(), window2()};
   EXPECT_EQ(hit_test_data_1->regions.size(), arraysize(expected_order_1));
   int i = 0;
   for (const auto& region : hit_test_data_1->regions) {
-    EXPECT_EQ(region.flags, viz::HitTestRegionFlags::kHitTestMine |
-                                viz::HitTestRegionFlags::kHitTestMouse |
-                                viz::HitTestRegionFlags::kHitTestTouch);
-    EXPECT_EQ(region.frame_sink_id, expected_order_1[i]->GetFrameSinkId());
-    EXPECT_EQ(region.rect.ToString(), expected_order_1[i]->bounds().ToString());
+    EXPECT_EQ(region->flags, viz::mojom::kHitTestMine |
+                                 viz::mojom::kHitTestMouse |
+                                 viz::mojom::kHitTestTouch);
+    EXPECT_EQ(region->frame_sink_id, expected_order_1[i]->GetFrameSinkId());
+    EXPECT_EQ(region->rect.ToString(),
+              expected_order_1[i]->bounds().ToString());
     i++;
   }
 
   root()->StackChildAbove(window2(), window3());
-  const base::Optional<viz::HitTestRegionList> hit_test_data_2 =
+  const auto hit_test_data_2 =
       hit_test_data_provider()->GetHitTestData(compositor_frame_);
   ASSERT_TRUE(hit_test_data_2);
-  EXPECT_EQ(hit_test_data_2->flags, viz::HitTestRegionFlags::kHitTestMine);
+  EXPECT_EQ(hit_test_data_2->flags, viz::mojom::kHitTestMine);
   EXPECT_EQ(hit_test_data_2->bounds, root()->bounds());
 
   Window* expected_order_2[] = {window2(), window3(), window4()};
   EXPECT_EQ(hit_test_data_2->regions.size(), arraysize(expected_order_2));
   i = 0;
   for (const auto& region : hit_test_data_2->regions) {
-    EXPECT_EQ(region.flags, viz::HitTestRegionFlags::kHitTestMine |
-                                viz::HitTestRegionFlags::kHitTestMouse |
-                                viz::HitTestRegionFlags::kHitTestTouch);
-    EXPECT_EQ(region.frame_sink_id, expected_order_2[i]->GetFrameSinkId());
-    EXPECT_EQ(region.rect.ToString(), expected_order_2[i]->bounds().ToString());
+    EXPECT_EQ(region->flags, viz::mojom::kHitTestMine |
+                                 viz::mojom::kHitTestMouse |
+                                 viz::mojom::kHitTestTouch);
+    EXPECT_EQ(region->frame_sink_id, expected_order_2[i]->GetFrameSinkId());
+    EXPECT_EQ(region->rect.ToString(),
+              expected_order_2[i]->bounds().ToString());
     i++;
   }
 }
@@ -180,10 +181,10 @@ TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
   window3()->SetEventTargeter(std::move(targeter));
 
   window2()->SetEmbedFrameSinkId(viz::FrameSinkId(1, 2));
-  const base::Optional<viz::HitTestRegionList> hit_test_data =
+  const auto hit_test_data =
       hit_test_data_provider()->GetHitTestData(compositor_frame_);
   ASSERT_TRUE(hit_test_data);
-  EXPECT_EQ(hit_test_data->flags, viz::HitTestRegionFlags::kHitTestMine);
+  EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
   EXPECT_EQ(hit_test_data->bounds, root()->bounds());
 
   // Children of a window that has the custom targeter installed as well as that
@@ -193,37 +194,29 @@ TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
     Window* window;
     uint32_t flags;
     int insets;
-  } expected[] = {{window3(),
-                   viz::HitTestRegionFlags::kHitTestMine |
-                       viz::HitTestRegionFlags::kHitTestMouse,
-                   kMouseInset},
-                  {window3(),
-                   viz::HitTestRegionFlags::kHitTestMine |
-                       viz::HitTestRegionFlags::kHitTestTouch,
-                   kTouchInset},
-                  {window4(),
-                   viz::HitTestRegionFlags::kHitTestMine |
-                       viz::HitTestRegionFlags::kHitTestMouse,
-                   kMouseInset},
-                  {window4(),
-                   viz::HitTestRegionFlags::kHitTestMine |
-                       viz::HitTestRegionFlags::kHitTestTouch,
-                   kTouchInset},
-                  {window2(),
-                   viz::HitTestRegionFlags::kHitTestChildSurface |
-                       viz::HitTestRegionFlags::kHitTestMouse |
-                       viz::HitTestRegionFlags::kHitTestTouch,
-                   0}};
+  } expected[] = {
+      {window3(), viz::mojom::kHitTestMine | viz::mojom::kHitTestMouse,
+       kMouseInset},
+      {window3(), viz::mojom::kHitTestMine | viz::mojom::kHitTestTouch,
+       kTouchInset},
+      {window4(), viz::mojom::kHitTestMine | viz::mojom::kHitTestMouse,
+       kMouseInset},
+      {window4(), viz::mojom::kHitTestMine | viz::mojom::kHitTestTouch,
+       kTouchInset},
+      {window2(),
+       viz::mojom::kHitTestChildSurface | viz::mojom::kHitTestMouse |
+           viz::mojom::kHitTestTouch,
+       0}};
   ASSERT_EQ(hit_test_data->regions.size(), arraysize(expected));
   ASSERT_EQ(hit_test_data->regions.size(), arraysize(expected));
   ASSERT_EQ(hit_test_data->regions.size(), arraysize(expected));
   int i = 0;
   for (const auto& region : hit_test_data->regions) {
-    EXPECT_EQ(region.frame_sink_id, expected[i].window->GetFrameSinkId());
-    EXPECT_EQ(region.flags, expected[i].flags);
+    EXPECT_EQ(region->frame_sink_id, expected[i].window->GetFrameSinkId());
+    EXPECT_EQ(region->flags, expected[i].flags);
     gfx::Rect expected_bounds = expected[i].window->bounds();
     expected_bounds.Inset(gfx::Insets(expected[i].insets));
-    EXPECT_EQ(region.rect.ToString(), expected_bounds.ToString());
+    EXPECT_EQ(region->rect.ToString(), expected_bounds.ToString());
     i++;
   }
 }
@@ -231,10 +224,10 @@ TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
 // Tests that the complex hit-test shape can be set with a custom targeter.
 TEST_F(HitTestDataProviderAuraTest, HoleTargeter) {
   window3()->SetEventTargeter(std::make_unique<TestHoleWindowTargeter>());
-  const base::Optional<viz::HitTestRegionList> hit_test_data =
+  const auto hit_test_data =
       hit_test_data_provider()->GetHitTestData(compositor_frame_);
   ASSERT_TRUE(hit_test_data);
-  EXPECT_EQ(hit_test_data->flags, viz::HitTestRegionFlags::kHitTestMine);
+  EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
   EXPECT_EQ(hit_test_data->bounds, root()->bounds());
 
   // Children of a container that has the custom targeter installed as well as
@@ -251,22 +244,22 @@ TEST_F(HitTestDataProviderAuraTest, HoleTargeter) {
       {window4(), {20, 10, 60, 10}},   {window4(), {20, 20, 20, 10}},
       {window4(), {60, 20, 20, 10}},   {window4(), {20, 30, 60, 10}},
       {window2(), window2()->bounds()}};
-  constexpr uint32_t expected_flags = viz::HitTestRegionFlags::kHitTestMine |
-                                      viz::HitTestRegionFlags::kHitTestMouse |
-                                      viz::HitTestRegionFlags::kHitTestTouch;
+  constexpr uint32_t expected_flags = viz::mojom::kHitTestMine |
+                                      viz::mojom::kHitTestMouse |
+                                      viz::mojom::kHitTestTouch;
   ASSERT_EQ(hit_test_data->regions.size(), arraysize(expected));
   int i = 0;
   for (const auto& region : hit_test_data->regions) {
-    EXPECT_EQ(region.frame_sink_id, expected[i].window->GetFrameSinkId());
-    EXPECT_EQ(region.flags, expected_flags);
-    EXPECT_EQ(region.rect.ToString(), expected[i].bounds.ToString());
+    EXPECT_EQ(region->frame_sink_id, expected[i].window->GetFrameSinkId());
+    EXPECT_EQ(region->flags, expected_flags);
+    EXPECT_EQ(region->rect.ToString(), expected[i].bounds.ToString());
     i++;
   }
 }
 
 TEST_F(HitTestDataProviderAuraTest, TargetingPolicies) {
   root()->SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy::NONE);
-  base::Optional<viz::HitTestRegionList> hit_test_data =
+  auto hit_test_data =
       hit_test_data_provider()->GetHitTestData(compositor_frame_);
   ASSERT_FALSE(hit_test_data);
 
@@ -275,7 +268,7 @@ TEST_F(HitTestDataProviderAuraTest, TargetingPolicies) {
       ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   hit_test_data = hit_test_data_provider()->GetHitTestData(compositor_frame_);
   ASSERT_TRUE(hit_test_data);
-  EXPECT_EQ(hit_test_data->flags, viz::HitTestRegionFlags::kHitTestMine);
+  EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
   EXPECT_EQ(hit_test_data->regions.size(), 3u);
 
   root()->SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy::TARGET_ONLY);
@@ -283,7 +276,7 @@ TEST_F(HitTestDataProviderAuraTest, TargetingPolicies) {
       ui::mojom::EventTargetingPolicy::TARGET_ONLY);
   hit_test_data = hit_test_data_provider()->GetHitTestData(compositor_frame_);
   ASSERT_TRUE(hit_test_data);
-  EXPECT_EQ(hit_test_data->flags, viz::HitTestRegionFlags::kHitTestMine);
+  EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
   EXPECT_EQ(hit_test_data->regions.size(), 2u);
 
   root()->SetEventTargetingPolicy(
@@ -292,7 +285,7 @@ TEST_F(HitTestDataProviderAuraTest, TargetingPolicies) {
       ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   hit_test_data = hit_test_data_provider()->GetHitTestData(compositor_frame_);
   ASSERT_TRUE(hit_test_data);
-  EXPECT_EQ(hit_test_data->flags, viz::HitTestRegionFlags::kHitTestIgnore);
+  EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestIgnore);
   EXPECT_EQ(hit_test_data->regions.size(), 2u);
 
   root()->SetEventTargetingPolicy(
@@ -301,14 +294,14 @@ TEST_F(HitTestDataProviderAuraTest, TargetingPolicies) {
       ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   hit_test_data = hit_test_data_provider()->GetHitTestData(compositor_frame_);
   ASSERT_TRUE(hit_test_data);
-  EXPECT_EQ(hit_test_data->flags, viz::HitTestRegionFlags::kHitTestMine);
+  EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
   EXPECT_EQ(hit_test_data->regions.size(), 3u);
 }
 
 // Tests that we do not submit hit-test data for invisible windows and for
 // children of a child surface.
 TEST_F(HitTestDataProviderAuraTest, DoNotSubmit) {
-  base::Optional<viz::HitTestRegionList> hit_test_data =
+  auto hit_test_data =
       hit_test_data_provider()->GetHitTestData(compositor_frame_);
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->regions.size(), 3u);

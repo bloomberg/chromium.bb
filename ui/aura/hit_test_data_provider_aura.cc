@@ -5,31 +5,31 @@
 #include "ui/aura/hit_test_data_provider_aura.h"
 
 #include "base/containers/adapters.h"
-#include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
 
 namespace {
 
-void PopulateHitTestRegion(viz::HitTestRegion* hit_test_region,
-                           const aura::Window* window,
-                           uint32_t flags,
-                           const gfx::Rect& rect) {
+viz::mojom::HitTestRegionPtr CreateHitTestRegion(const aura::Window* window,
+                                                 uint32_t flags,
+                                                 const gfx::Rect& rect) {
   const ui::Layer* layer = window->layer();
   DCHECK(layer);
 
+  auto hit_test_region = viz::mojom::HitTestRegion::New();
   DCHECK(window->GetFrameSinkId().is_valid());
   hit_test_region->frame_sink_id = window->GetFrameSinkId();
   // Checking |layer| may not be correct, since the actual layer that embeds
   // the surface may be a descendent of |layer|, instead of |layer| itself.
   if (window->IsEmbeddingClient())
-    hit_test_region->flags =
-        flags | viz::HitTestRegionFlags::kHitTestChildSurface;
+    hit_test_region->flags = flags | viz::mojom::kHitTestChildSurface;
   else
-    hit_test_region->flags = flags | viz::HitTestRegionFlags::kHitTestMine;
+    hit_test_region->flags = flags | viz::mojom::kHitTestMine;
   hit_test_region->rect = rect;
   hit_test_region->transform = layer->transform();
+
+  return hit_test_region;
 }
 
 }  // namespace
@@ -41,30 +41,30 @@ HitTestDataProviderAura::HitTestDataProviderAura(aura::Window* window)
 
 HitTestDataProviderAura::~HitTestDataProviderAura() {}
 
-base::Optional<viz::HitTestRegionList> HitTestDataProviderAura::GetHitTestData(
+viz::mojom::HitTestRegionListPtr HitTestDataProviderAura::GetHitTestData(
     const viz::CompositorFrame& compositor_frame) const {
   const ui::mojom::EventTargetingPolicy event_targeting_policy =
       window_->event_targeting_policy();
   if (!window_->IsVisible() ||
       event_targeting_policy == ui::mojom::EventTargetingPolicy::NONE)
-    return base::nullopt;
+    return nullptr;
 
-  base::Optional<viz::HitTestRegionList> hit_test_region_list(base::in_place);
+  auto hit_test_region_list = viz::mojom::HitTestRegionList::New();
   hit_test_region_list->flags =
       event_targeting_policy ==
               ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY
-          ? viz::HitTestRegionFlags::kHitTestIgnore
-          : viz::HitTestRegionFlags::kHitTestMine;
+          ? viz::mojom::kHitTestIgnore
+          : viz::mojom::kHitTestMine;
   // TODO(crbug.com/805416): Use pixels instead of DIP units for bounds.
   hit_test_region_list->bounds = window_->bounds();
 
-  GetHitTestDataRecursively(window_, &*hit_test_region_list);
+  GetHitTestDataRecursively(window_, hit_test_region_list.get());
   return hit_test_region_list;
 }
 
 void HitTestDataProviderAura::GetHitTestDataRecursively(
     aura::Window* window,
-    viz::HitTestRegionList* hit_test_region_list) const {
+    viz::mojom::HitTestRegionList* hit_test_region_list) const {
   if (window->IsEmbeddingClient())
     return;
 
@@ -110,28 +110,23 @@ void HitTestDataProviderAura::GetHitTestDataRecursively(
           rect.Intersect(rect_mouse);
           if (rect.IsEmpty())
             continue;
-          hit_test_region_list->regions.emplace_back();
-          PopulateHitTestRegion(&hit_test_region_list->regions.back(), child,
-                                viz::HitTestRegionFlags::kHitTestMouse |
-                                    viz::HitTestRegionFlags::kHitTestTouch,
-                                rect);
+          hit_test_region_list->regions.push_back(CreateHitTestRegion(
+              child, viz::mojom::kHitTestMouse | viz::mojom::kHitTestTouch,
+              rect));
         }
       } else {
         // The |child| has possibly same mouse and touch hit-test areas.
         if (!rect_mouse.IsEmpty()) {
-          hit_test_region_list->regions.emplace_back();
-          PopulateHitTestRegion(&hit_test_region_list->regions.back(), child,
-                                touch_and_mouse_are_same
-                                    ? (viz::HitTestRegionFlags::kHitTestMouse |
-                                       viz::HitTestRegionFlags::kHitTestTouch)
-                                    : viz::HitTestRegionFlags::kHitTestMouse,
-                                rect_mouse);
+          hit_test_region_list->regions.push_back(CreateHitTestRegion(
+              child,
+              touch_and_mouse_are_same
+                  ? (viz::mojom::kHitTestMouse | viz::mojom::kHitTestTouch)
+                  : viz::mojom::kHitTestMouse,
+              rect_mouse));
         }
         if (!touch_and_mouse_are_same && !rect_touch.IsEmpty()) {
-          hit_test_region_list->regions.emplace_back();
-          PopulateHitTestRegion(&hit_test_region_list->regions.back(), child,
-                                viz::HitTestRegionFlags::kHitTestTouch,
-                                rect_touch);
+          hit_test_region_list->regions.push_back(CreateHitTestRegion(
+              child, viz::mojom::kHitTestTouch, rect_touch));
         }
       }
     }

@@ -16,8 +16,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/compiler_specific.h"
-#include "base/containers/adapters.h"
 #include "base/containers/flat_map.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
@@ -85,7 +83,6 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gpu/texture_allocation.h"
-#include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/quads/frame_deadline.h"
@@ -2395,100 +2392,6 @@ void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
   single_thread_synchronous_task_graph_runner_->RunUntilIdle();
 }
 
-static uint32_t GetFlagsForSurfaceLayer(const SurfaceLayerImpl* layer) {
-  uint32_t flags = viz::HitTestRegionFlags::kHitTestMouse |
-                   viz::HitTestRegionFlags::kHitTestTouch;
-  const auto& surface_id = layer->primary_surface_id();
-  if (layer->is_clipped()) {
-    flags |= viz::HitTestRegionFlags::kHitTestAsk;
-  }
-  if (surface_id.local_surface_id().is_valid()) {
-    flags |= viz::HitTestRegionFlags::kHitTestChildSurface;
-  } else {
-    flags |= viz::HitTestRegionFlags::kHitTestMine;
-  }
-  return flags;
-}
-
-static void PopulateHitTestRegion(viz::HitTestRegion* hit_test_region,
-                                  const LayerImpl* layer,
-                                  uint32_t flags,
-                                  const gfx::Rect& rect,
-                                  const viz::SurfaceId& surface_id,
-                                  float device_scale_factor) {
-  hit_test_region->frame_sink_id = surface_id.frame_sink_id();
-  hit_test_region->flags = flags;
-
-  hit_test_region->rect = rect;
-  // The transform of hit test region maps a point from parent hit test region
-  // to the local space. This is the inverse of screen space transform. Because
-  // hit test query wants the point in target to be in Pixel space, we
-  // counterscale the transform here. Note that the rect is scaled by dsf, so
-  // the point and the rect are still in the same space.
-  gfx::Transform surface_to_root_transform = layer->ScreenSpaceTransform();
-  surface_to_root_transform.Scale(SK_MScalar1 / device_scale_factor,
-                                  SK_MScalar1 / device_scale_factor);
-  // TODO(sunxd): Avoid losing precision by not using inverse if possible.
-  bool ok = surface_to_root_transform.GetInverse(&hit_test_region->transform);
-  // Note: If |ok| is false, the |transform| is set to the identity before
-  // returning, which is what we want.
-  ALLOW_UNUSED_LOCAL(ok);
-}
-
-base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
-  if (!settings_.build_hit_test_data)
-    return {};
-
-  base::Optional<viz::HitTestRegionList> hit_test_region_list(base::in_place);
-  hit_test_region_list->flags = viz::HitTestRegionFlags::kHitTestMine |
-                                viz::HitTestRegionFlags::kHitTestMouse |
-                                viz::HitTestRegionFlags::kHitTestTouch;
-  hit_test_region_list->bounds = DeviceViewport();
-  hit_test_region_list->transform = DrawTransform();
-
-  float device_scale_factor = active_tree()->device_scale_factor();
-
-  Region overlapping_region;
-  for (const auto* layer : base::Reversed(*active_tree())) {
-    if (!layer->should_hit_test())
-      continue;
-
-    if (layer->is_surface_layer()) {
-      const auto* surface_layer = static_cast<const SurfaceLayerImpl*>(layer);
-
-      if (!surface_layer->surface_hit_testable()) {
-        overlapping_region.Union(MathUtil::MapEnclosingClippedRect(
-            layer->ScreenSpaceTransform(), gfx::Rect(surface_layer->bounds())));
-        continue;
-      }
-
-      gfx::Rect content_rect(
-          gfx::ScaleToEnclosingRect(gfx::Rect(surface_layer->bounds()),
-                                    device_scale_factor, device_scale_factor));
-
-      gfx::Rect layer_screen_space_rect = MathUtil::MapEnclosingClippedRect(
-          surface_layer->ScreenSpaceTransform(),
-          gfx::Rect(surface_layer->bounds()));
-      if (overlapping_region.Contains(layer_screen_space_rect))
-        continue;
-
-      auto flag = GetFlagsForSurfaceLayer(surface_layer);
-      if (overlapping_region.Intersects(layer_screen_space_rect))
-        flag |= viz::HitTestRegionFlags::kHitTestAsk;
-      auto surface_id = surface_layer->primary_surface_id();
-      hit_test_region_list->regions.emplace_back();
-      PopulateHitTestRegion(&hit_test_region_list->regions.back(), layer, flag,
-                            content_rect, surface_id, device_scale_factor);
-      continue;
-    }
-    // TODO(sunxd): Submit all overlapping layer bounds as hit test regions.
-    overlapping_region.Union(MathUtil::MapEnclosingClippedRect(
-        layer->ScreenSpaceTransform(), gfx::Rect(layer->bounds())));
-  }
-
-  return hit_test_region_list;
-}
-
 void LayerTreeHostImpl::DidLoseLayerTreeFrameSink() {
   // Check that we haven't already detected context loss because we get it via
   // two paths: compositor context loss on the compositor thread and worker
@@ -3060,6 +2963,8 @@ bool LayerTreeHostImpl::InitializeRenderer(
       resource_provider_.get(), layer_tree_frame_sink_->context_provider(),
       GetTaskRunner(), ResourcePool::kDefaultExpirationDelay,
       settings_.disallow_non_exact_resource_reuse);
+  if (features::IsVizHitTestingSurfaceLayerEnabled())
+    layer_tree_frame_sink_->UpdateHitTestData(this);
 
   // TODO(piman): Make oop raster always supported: http://crbug.com/786591
   use_oop_rasterization_ = settings_.enable_oop_rasterization;

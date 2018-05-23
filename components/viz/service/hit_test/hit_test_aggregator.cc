@@ -5,7 +5,7 @@
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "components/viz/common/hit_test/hit_test_region_list.h"
+#include "components/viz/common/hit_test/aggregated_hit_test_region.h"
 #include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 
@@ -52,7 +52,7 @@ void HitTestAggregator::SendHitTestData() {
 void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
   SCOPED_UMA_HISTOGRAM_TIMER("Event.VizHitTest.AggregateTime");
 
-  const HitTestRegionList* hit_test_region_list =
+  const mojom::HitTestRegionList* hit_test_region_list =
       hit_test_manager_->GetActiveHitTestRegionList(
           local_surface_id_lookup_delegate_, surface_id.frame_sink_id());
   if (!hit_test_region_list)
@@ -76,7 +76,7 @@ void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
 }
 
 size_t HitTestAggregator::AppendRegion(size_t region_index,
-                                       const HitTestRegion& region) {
+                                       const mojom::HitTestRegionPtr& region) {
   size_t parent_index = region_index++;
   if (region_index >= hit_test_data_capacity_ - 1) {
     if (hit_test_data_capacity_ > max_region_size_) {
@@ -87,16 +87,16 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
     }
   }
 
-  uint32_t flags = region.flags;
-  gfx::Transform transform = region.transform;
+  uint32_t flags = region->flags;
+  gfx::Transform transform = region->transform;
 
-  if (region.flags & HitTestRegionFlags::kHitTestChildSurface) {
-    if (referenced_child_regions_.count(region.frame_sink_id))
+  if (region->flags & mojom::kHitTestChildSurface) {
+    if (referenced_child_regions_.count(region->frame_sink_id))
       return parent_index;
 
-    const HitTestRegionList* hit_test_region_list =
+    const mojom::HitTestRegionList* hit_test_region_list =
         hit_test_manager_->GetActiveHitTestRegionList(
-            local_surface_id_lookup_delegate_, region.frame_sink_id);
+            local_surface_id_lookup_delegate_, region->frame_sink_id);
     if (!hit_test_region_list) {
       // Hit-test data not found with this FrameSinkId. This means that it
       // failed to find a surface corresponding to this FrameSinkId at surface
@@ -104,7 +104,7 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
       return parent_index;
     }
 
-    referenced_child_regions_.insert(region.frame_sink_id);
+    referenced_child_regions_.insert(region->frame_sink_id);
 
     // Rather than add a node in the tree for this hit_test_region_list
     // element we can simplify the tree by merging the flags and transform
@@ -122,8 +122,8 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
   }
   DCHECK_GE(region_index - parent_index - 1, 0u);
   int32_t child_count = region_index - parent_index - 1;
-  SetRegionAt(parent_index, region.frame_sink_id, flags, region.rect, transform,
-              child_count);
+  SetRegionAt(parent_index, region->frame_sink_id, flags, region->rect,
+              transform, child_count);
   return region_index;
 }
 

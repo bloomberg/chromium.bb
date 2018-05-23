@@ -880,7 +880,7 @@ void RenderWidgetHostViewAura::DidCreateNewRendererCompositorFrameSink(
 void RenderWidgetHostViewAura::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
     viz::CompositorFrame frame,
-    base::Optional<viz::HitTestRegionList> hit_test_region_list) {
+    viz::mojom::HitTestRegionListPtr hit_test_region_list) {
   DCHECK(delegated_frame_host_);
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
 

@@ -63,7 +63,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list);
+      viz::mojom::HitTestRegionListPtr hit_test_region_list);
   void DidNotProduceFrame(const viz::BeginFrameAck& ack);
 
   void DestroyDelegatedContent();

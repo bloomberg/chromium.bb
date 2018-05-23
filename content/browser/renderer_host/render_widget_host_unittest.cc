@@ -1589,8 +1589,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeoutWithoutSurfaceSync) {
                    .AddDefaultRenderPass()
                    .SetContentSourceId(5)
                    .Build();
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TimeDelta::FromMicroseconds(20));
@@ -1606,8 +1605,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeoutWithoutSurfaceSync) {
               .AddDefaultRenderPass()
               .SetContentSourceId(9)
               .Build();
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TimeDelta::FromMicroseconds(20));
@@ -1622,8 +1620,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeoutWithoutSurfaceSync) {
               .AddDefaultRenderPass()
               .SetContentSourceId(7)
               .Build();
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   host_->DidNavigate(7);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
@@ -1673,8 +1670,8 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
     host_->SetMockRendererCompositorFrameSink(
         mock_compositor_frame_sink_client.get());
 
-    host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                 base::nullopt, 0);
+    host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr,
+                                 0);
     EXPECT_FALSE(
         static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
     EXPECT_EQ(viz::BeginFrameAck(0, 1, false),
@@ -1689,8 +1686,8 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
                      .AddDefaultRenderPass()
                      .SetContentSourceId(100)
                      .Build();
-    host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                 base::nullopt, 0);
+    host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr,
+                                 0);
     EXPECT_TRUE(
         static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
     static_cast<TestView*>(host_->GetView())->reset_did_swap_compositor_frame();
@@ -1704,8 +1701,8 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
                      .AddDefaultRenderPass()
                      .SetContentSourceId(101)
                      .Build();
-    host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                 base::nullopt, 0);
+    host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr,
+                                 0);
     EXPECT_TRUE(
         static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
   }
@@ -2312,8 +2309,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
                    .AddDefaultRenderPass()
                    .SetFrameToken(frame_token)
                    .Build();
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 }
@@ -2334,8 +2330,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
                    .AddDefaultRenderPass()
                    .SetFrameToken(frame_token)
                    .Build();
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
@@ -2374,8 +2369,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
                    .AddDefaultRenderPass()
                    .SetFrameToken(frame_token1)
                    .Build();
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 
@@ -2383,8 +2377,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
               .AddDefaultRenderPass()
               .SetFrameToken(frame_token2)
               .Build();
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
 }
@@ -2408,8 +2401,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
                    .AddDefaultRenderPass()
                    .SetFrameToken(frame_token1)
                    .Build();
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
@@ -2417,8 +2409,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
               .AddDefaultRenderPass()
               .SetFrameToken(frame_token2)
               .Build();
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
@@ -2462,8 +2453,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
                    .AddDefaultRenderPass()
                    .SetFrameToken(frame_token2)
                    .Build();
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
 }
@@ -2507,8 +2497,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
                    .AddDefaultRenderPass()
                    .SetFrameToken(frame_token2)
                    .Build();
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
@@ -2527,8 +2516,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
               .AddDefaultRenderPass()
               .SetFrameToken(frame_token3)
               .Build();
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 }
