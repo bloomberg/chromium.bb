@@ -35,7 +35,7 @@ TEST(MessageTest, AppendAndPopByte) {
 
   uint8_t byte_value = 0;
   ASSERT_TRUE(reader.PopByte(&byte_value));
-  EXPECT_EQ(123, byte_value);  // Should match with the input.
+  EXPECT_EQ(123, byte_value);          // Should match with the input.
   ASSERT_FALSE(reader.HasMoreData());  // Should not have more data to read.
 
   // Try to get another byte. Should fail.
@@ -335,7 +335,6 @@ TEST(MessageTest, ProtoBuf) {
   EXPECT_EQ(receive_message.number(), send_message.number());
 }
 
-
 // Test that an array can be properly written and read. We only have this
 // test for array, as repeating this for other container types is too
 // redundant.
@@ -512,15 +511,16 @@ TEST(MessageTest, MethodCall) {
   MessageWriter writer(&method_call);
   writer.AppendString("payload");
 
-  EXPECT_EQ("message_type: MESSAGE_METHOD_CALL\n"
-            "destination: com.example.Service\n"
-            "path: /com/example/Object\n"
-            "interface: com.example.Interface\n"
-            "member: SomeMethod\n"
-            "signature: s\n"
-            "\n"
-            "string \"payload\"\n",
-            method_call.ToString());
+  EXPECT_EQ(
+      "message_type: MESSAGE_METHOD_CALL\n"
+      "destination: com.example.Service\n"
+      "path: /com/example/Object\n"
+      "interface: com.example.Interface\n"
+      "member: SomeMethod\n"
+      "signature: s\n"
+      "\n"
+      "string \"payload\"\n",
+      method_call.ToString());
 }
 
 TEST(MessageTest, MethodCall_FromRawMessage) {
@@ -544,14 +544,15 @@ TEST(MessageTest, Signal) {
   MessageWriter writer(&signal);
   writer.AppendString("payload");
 
-  EXPECT_EQ("message_type: MESSAGE_SIGNAL\n"
-            "path: /com/example/Object\n"
-            "interface: com.example.Interface\n"
-            "member: SomeSignal\n"
-            "signature: s\n"
-            "\n"
-            "string \"payload\"\n",
-            signal.ToString());
+  EXPECT_EQ(
+      "message_type: MESSAGE_SIGNAL\n"
+      "path: /com/example/Object\n"
+      "interface: com.example.Interface\n"
+      "member: SomeSignal\n"
+      "signature: s\n"
+      "\n"
+      "string \"payload\"\n",
+      signal.ToString());
 }
 
 TEST(MessageTest, Signal_FromRawMessage) {
@@ -585,7 +586,7 @@ TEST(MessageTest, Response_FromMethodCall) {
 
 TEST(MessageTest, ErrorResponse_FromMethodCall) {
   const uint32_t kSerial = 123;
-const char kErrorMessage[] = "error message";
+  const char kErrorMessage[] = "error message";
 
   MethodCall method_call("com.example.Interface", "SomeMethod");
   method_call.SetSerial(kSerial);
@@ -672,12 +673,13 @@ TEST(MessageTest, ToString_LongString) {
   MessageWriter writer(message.get());
   writer.AppendString(kLongString);
 
-  ASSERT_EQ("message_type: MESSAGE_METHOD_RETURN\n"
-            "signature: s\n\n"
-            "string \"oooooooooooooooooooooooooooooooooooooooooooooooo"
-            "oooooooooooooooooooooooooooooooooooooooooooooooooooo... "
-            "(1000 bytes in total)\"\n",
-            message->ToString());
+  ASSERT_EQ(
+      "message_type: MESSAGE_METHOD_RETURN\n"
+      "signature: s\n\n"
+      "string \"oooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oooooooooooooooooooooooooooooooooooooooooooooooooooo... "
+      "(1000 bytes in total)\"\n",
+      message->ToString());
 }
 
 }  // namespace dbus

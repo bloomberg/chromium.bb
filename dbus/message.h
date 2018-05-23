@@ -26,7 +26,6 @@ class MessageLite;
 }  // namespace protobuf
 }  // namespace google
 
-
 namespace dbus {
 
 class MessageWriter;
@@ -34,7 +33,7 @@ class MessageReader;
 
 // DBUS_TYPE_UNIX_FD was added in D-Bus version 1.4
 #if !defined(DBUS_TYPE_UNIX_FD)
-#define DBUS_TYPE_UNIX_FD      ((int) 'h')
+#define DBUS_TYPE_UNIX_FD ((int)'h')
 #endif
 
 // Returns true if Unix FD passing is supported in libdbus.
@@ -61,7 +60,7 @@ class CHROME_DBUS_EXPORT Message {
     MESSAGE_METHOD_RETURN = DBUS_MESSAGE_TYPE_METHOD_RETURN,
     MESSAGE_SIGNAL = DBUS_MESSAGE_TYPE_SIGNAL,
     MESSAGE_ERROR = DBUS_MESSAGE_TYPE_ERROR,
- };
+  };
 
   // The data type used in the D-Bus type system.  See the comment at
   // MessageType for why we are redefining data types here.
@@ -154,8 +153,7 @@ class CHROME_DBUS_EXPORT MethodCall : public Message {
   //   MethodCall method_call(DBUS_INTERFACE_INTROSPECTABLE, "Get");
   //
   // The constructor creates the internal raw message.
-  MethodCall(const std::string& interface_name,
-             const std::string& method_name);
+  MethodCall(const std::string& interface_name, const std::string& method_name);
 
   // Returns a newly created MethodCall from the given raw message of the
   // type DBUS_MESSAGE_TYPE_METHOD_CALL. Takes the ownership of |raw_message|.
@@ -182,8 +180,7 @@ class CHROME_DBUS_EXPORT Signal : public Message {
   //   Signal signal(DBUS_INTERFACE_INTROSPECTABLE, "PropertiesChanged");
   //
   // The constructor creates the internal raw_message_.
-  Signal(const std::string& interface_name,
-         const std::string& method_name);
+  Signal(const std::string& interface_name, const std::string& method_name);
 
   // Returns a newly created SIGNAL from the given raw message of the type
   // DBUS_MESSAGE_TYPE_SIGNAL. Takes the ownership of |raw_message|.
@@ -224,7 +221,7 @@ class CHROME_DBUS_EXPORT Response : public Message {
 
 // ErrorResponse is a type of message used to return an error to the
 // caller of a method.
-class CHROME_DBUS_EXPORT ErrorResponse: public Response {
+class CHROME_DBUS_EXPORT ErrorResponse : public Response {
  public:
   // Returns a newly created Response from the given raw message of the
   // type DBUS_MESSAGE_TYPE_METHOD_RETURN. Takes the ownership of |raw_message|.
@@ -485,7 +482,7 @@ class CHROME_DBUS_EXPORT MessageReader {
   bool CheckDataType(int dbus_type);
 
   // Helper function used to implement PopByte() etc.
-  bool PopBasic(int dbus_type, void *value);
+  bool PopBasic(int dbus_type, void* value);
 
   // Helper function used to implement PopArray() etc.
   bool PopContainer(int dbus_type, MessageReader* sub_reader);
