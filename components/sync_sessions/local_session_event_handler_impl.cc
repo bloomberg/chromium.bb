@@ -133,7 +133,7 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
     // session; the current tabbed windows are now the source of truth.
     session_tracker_->ResetSessionTracking(current_session_tag_);
     current_session->modified_time = base::Time::Now();
-  } else {
+  } else if (option == RELOAD_TABS) {
     DVLOG(1) << "Found no tabbed windows. Reloading "
              << current_session->windows.size()
              << " windows from previous session.";
@@ -149,12 +149,10 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
     // through and update them to the new SessionIds.
     for (auto& win_iter : current_session->windows) {
       for (auto& tab : win_iter.second->wrapped_window.tabs) {
-        int sync_id = TabNodePool::kInvalidTabNodeID;
-        if (!session_tracker_->GetTabNodeFromLocalTabId(tab->tab_id,
-                                                        &sync_id) ||
-            sync_id == TabNodePool::kInvalidTabNodeID) {
-          continue;
-        }
+        int sync_id = session_tracker_->LookupTabNodeFromTabId(
+            current_session_tag_, tab->tab_id);
+        DCHECK_NE(sync_id, TabNodePool::kInvalidTabNodeID);
+
         DVLOG(1) << "Rewriting tab node " << sync_id << " with tab id "
                  << tab->tab_id.id();
         AppendChangeForExistingTab(sync_id, *tab, batch);
