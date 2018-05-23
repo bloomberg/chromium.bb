@@ -128,7 +128,8 @@ class RenderFrameAudioInputStreamFactoryTest
         media::mojom::AudioInputStreamPtr stream,
         media::mojom::AudioInputStreamClientRequest client_request,
         media::mojom::AudioDataPipePtr data_pipe,
-        bool initially_muted) override {}
+        bool initially_muted,
+        const base::Optional<base::UnguessableToken>& stream_id) override {}
   };
 
   AudioInputDeviceManager* audio_input_device_manager() {

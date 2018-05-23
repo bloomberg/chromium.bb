@@ -26,9 +26,10 @@ interface LocalMuter {};
 // TODO(https://crbug.com/803102): Add other stream creation functionality to
 // this interface.
 interface StreamFactory {
-  // Creates an AudioInputStream and returns the AudioDataPipe it writes data
-  // to and a bool indicating whether the stream is initially muted. |data_pipe|
-  // is null and |initially_muted| is false in case stream creation failed.
+  // Creates an AudioInputStream and returns the AudioDataPipe it writes data to
+  // and a bool indicating whether the stream is initially muted. |data_pipe| is
+  // null, |initially_muted| is false and |stream_id| is empty in case stream
+  // creation failed.
   // |device_id| is either the |unique_id| field from an AudioDeviceDescription
   // obtained from the audio.mojom.SystemInfo interface, or "default".
   // |shared_memory_count| indicates how many buffer segments can the input
@@ -45,7 +46,8 @@ interface StreamFactory {
     string device_id, media.mojom.AudioParameters params,
     uint32 shared_memory_count, bool enable_agc,
     handle<shared_buffer>? key_press_count_buffer)
-    => (media.mojom.AudioDataPipe? data_pipe, bool initially_muted);
+      => (media.mojom.AudioDataPipe? data_pipe, bool initially_muted,
+          mojo_base.mojom.UnguessableToken? stream_id);
 
   // Creates an AudioOutputStream and returns the AudioDataPipe it reads data
   // from. |data_pipe| is null in case stream creation failed. |device_id| is
@@ -76,7 +78,9 @@ interface StreamFactory {
   // mixing-together all current and future AudioOutputStreams tagged with the
   // given |group_id|. The loopback re-mixes audio, if necessary, so that the
   // resulting data stream format matches the specified |params|. All other args
-  // and the result are as described in CreateInputStream() above.
+  // and the result are as described in CreateInputStream() above, except for
+  // |stream_id|. Loopback streams have no ID, since they cannot be used in
+  // echo cancellation.
   CreateLoopbackStream(media.mojom.AudioInputStream& stream,
                        media.mojom.AudioInputStreamClient client,
                        media.mojom.AudioInputStreamObserver observer,

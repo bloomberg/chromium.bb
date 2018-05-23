@@ -27,7 +27,8 @@ AudioInputStreamHandle::AudioInputStreamHandle(
     media::MojoAudioInputStream::CreateDelegateCallback
         create_delegate_callback,
     DeleterCallback deleter_callback)
-    : deleter_callback_(std::move(deleter_callback)),
+    : stream_id_(base::UnguessableToken::Create()),
+      deleter_callback_(std::move(deleter_callback)),
       client_(std::move(client)),
       stream_ptr_(),
       stream_client_request_(),
@@ -57,7 +58,7 @@ void AudioInputStreamHandle::OnCreated(media::mojom::AudioDataPipePtr data_pipe,
       << "|deleter_callback_| was called, but |this| hasn't been destructed!";
   client_->StreamCreated(std::move(stream_ptr_),
                          std::move(stream_client_request_),
-                         std::move(data_pipe), initially_muted);
+                         std::move(data_pipe), initially_muted, stream_id_);
 }
 
 void AudioInputStreamHandle::CallDeleter() {

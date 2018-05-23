@@ -45,7 +45,7 @@ class FakeStreamFactory : public audio::mojom::StreamFactory {
                          mojo::ScopedSharedBufferHandle key_press_count_buffer,
                          CreateInputStreamCallback created_callback) {
     if (should_fail_) {
-      std::move(created_callback).Run(nullptr, initially_muted_);
+      std::move(created_callback).Run(nullptr, initially_muted_, base::nullopt);
       return;
     }
 
@@ -64,7 +64,7 @@ class FakeStreamFactory : public audio::mojom::StreamFactory {
         .Run({base::in_place,
               h->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
               mojo::WrapPlatformFile(socket1.Release())},
-             initially_muted_);
+             initially_muted_, base::UnguessableToken::Create());
   }
 
   MOCK_METHOD7(CreateOutputStream,

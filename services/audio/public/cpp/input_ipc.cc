@@ -64,8 +64,10 @@ void InputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
       base::BindOnce(&InputIPC::StreamCreated, weak_factory_.GetWeakPtr()));
 }
 
-void InputIPC::StreamCreated(media::mojom::AudioDataPipePtr data_pipe,
-                             bool initially_muted) {
+void InputIPC::StreamCreated(
+    media::mojom::AudioDataPipePtr data_pipe,
+    bool initially_muted,
+    const base::Optional<base::UnguessableToken>& stream_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate_);
 
@@ -73,6 +75,10 @@ void InputIPC::StreamCreated(media::mojom::AudioDataPipePtr data_pipe,
     OnError();
     return;
   }
+
+  // Keep the stream_id, if we get one. Regular input stream have stream ids,
+  // but Loopback streams do not.
+  stream_id_ = stream_id;
 
   base::PlatformFile socket_handle;
   auto result =

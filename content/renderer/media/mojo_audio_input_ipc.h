@@ -54,7 +54,8 @@ class CONTENT_EXPORT MojoAudioInputIPC
       media::mojom::AudioInputStreamPtr stream,
       media::mojom::AudioInputStreamClientRequest stream_client_request,
       media::mojom::AudioDataPipePtr data_pipe,
-      bool initially_muted) override;
+      bool initially_muted,
+      const base::Optional<base::UnguessableToken>& stream_id) override;
   void OnError() override;
   void OnMutedStateChanged(bool is_muted) override;
 
@@ -63,6 +64,8 @@ class CONTENT_EXPORT MojoAudioInputIPC
   SEQUENCE_CHECKER(sequence_checker_);
 
   media::mojom::AudioInputStreamPtr stream_;
+  // Initialized on StreamCreated.
+  base::Optional<base::UnguessableToken> stream_id_;
   mojo::Binding<AudioInputStreamClient> stream_client_binding_;
   mojo::Binding<RendererAudioInputStreamFactoryClient> factory_client_binding_;
   media::AudioInputIPCDelegate* delegate_ = nullptr;

@@ -75,10 +75,13 @@ class MockRendererAudioInputStreamFactoryClient
  public:
   MOCK_METHOD0(Created, void());
 
-  void StreamCreated(media::mojom::AudioInputStreamPtr input_stream,
-                     media::mojom::AudioInputStreamClientRequest client_request,
-                     media::mojom::AudioDataPipePtr data_pipe,
-                     bool initially_muted) override {
+  void StreamCreated(
+      media::mojom::AudioInputStreamPtr input_stream,
+      media::mojom::AudioInputStreamClientRequest client_request,
+      media::mojom::AudioDataPipePtr data_pipe,
+      bool initially_muted,
+      const base::Optional<base::UnguessableToken>& stream_id) override {
+    EXPECT_TRUE(stream_id.has_value());
     Created();
   }
 };

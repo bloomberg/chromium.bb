@@ -35,7 +35,8 @@ InputStream::InputStream(CreatedCallback created_callback,
                          const media::AudioParameters& params,
                          uint32_t shared_memory_count,
                          bool enable_agc)
-    : binding_(this, std::move(request)),
+    : id_(base::UnguessableToken::Create()),
+      binding_(this, std::move(request)),
       client_(std::move(client)),
       observer_(std::move(observer)),
       log_(log ? media::mojom::ThreadSafeAudioLogPtr::Create(std::move(log))
@@ -96,7 +97,7 @@ InputStream::~InputStream() {
   if (created_callback_) {
     // Didn't manage to create the stream. Call the callback anyways as mandated
     // by mojo.
-    std::move(created_callback_).Run(nullptr, false);
+    std::move(created_callback_).Run(nullptr, false, base::nullopt);
   }
 
   if (!controller_) {
@@ -157,7 +158,7 @@ void InputStream::OnCreated(bool initially_muted) {
 
   std::move(created_callback_)
       .Run({base::in_place, std::move(buffer_handle), std::move(socket_handle)},
-           initially_muted);
+           initially_muted, id_);
 }
 
 void InputStream::OnError(media::AudioInputController::ErrorCode error_code) {

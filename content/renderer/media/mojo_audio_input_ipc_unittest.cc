@@ -90,7 +90,7 @@ class FakeStreamCreator {
          mojo::SharedBufferHandle::Create(kMemoryLength)
              ->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
          mojo::WrapPlatformFile(foreign_socket.Release())},
-        initially_muted_);
+        initially_muted_, base::UnguessableToken::Create());
   }
 
   MojoAudioInputIPC::StreamCreatorCB GetCallback() {
