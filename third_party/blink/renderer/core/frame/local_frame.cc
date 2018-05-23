@@ -731,21 +731,6 @@ void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
       return;
   }
 
-  if (page_zoom_factor_ != page_zoom_factor &&
-      !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    if (LocalFrameView* view = this->View()) {
-      // Update the scroll position when doing a full page zoom, so the content
-      // stays in relatively the same position.
-      ScrollableArea* scrollable_area = view->LayoutViewportScrollableArea();
-      ScrollOffset scroll_offset = scrollable_area->GetScrollOffset();
-      float percent_difference = (page_zoom_factor / page_zoom_factor_);
-      scrollable_area->SetScrollOffset(
-          ScrollOffset(scroll_offset.Width() * percent_difference,
-                       scroll_offset.Height() * percent_difference),
-          kProgrammaticScroll);
-    }
-  }
-
   page_zoom_factor_ = page_zoom_factor;
   text_zoom_factor_ = text_zoom_factor;
 

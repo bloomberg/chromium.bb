@@ -285,8 +285,7 @@ LayoutRect RootFrameViewport::ScrollIntoView(
   LayoutRect scroll_snapport_rect(VisibleScrollSnapportRect());
 
   LayoutRect rect_in_document = rect_in_absolute;
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    rect_in_document.Move(LayoutSize(LayoutViewport().GetScrollOffset()));
+  rect_in_document.Move(LayoutSize(LayoutViewport().GetScrollOffset()));
 
   ScrollOffset new_scroll_offset =
       ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(
@@ -312,8 +311,7 @@ LayoutRect RootFrameViewport::ScrollIntoView(
   // Return the newly moved rect to absolute coordinates.
   // TODO(szager): PaintLayerScrollableArea::ScrollIntoView clips the return
   // value to the visible content rect, but this does not.
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    rect_in_document.Move(-LayoutSize(LayoutViewport().GetScrollOffset()));
+  rect_in_document.Move(-LayoutSize(LayoutViewport().GetScrollOffset()));
   return rect_in_document;
 }
 

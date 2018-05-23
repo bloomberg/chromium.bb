@@ -892,13 +892,6 @@ void Fullscreen::FullscreenElementChanged(Element* old_element,
     frame->GetEventHandler().ScheduleHoverStateUpdate();
     frame->GetChromeClient().FullscreenElementChanged(old_element, new_element);
 
-    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      // Fullscreen status affects scroll paint properties through
-      // LocalFrameView::UserInputScrollable().
-      if (LocalFrameView* frame_view = frame->View())
-        frame_view->SetNeedsPaintPropertyUpdate();
-    }
-
     // Descendant frames may have been inert because their owner iframes were
     // outside of fullscreen element. SetIsInert recurses through subframes to
     // propagate the inert bit as needed.

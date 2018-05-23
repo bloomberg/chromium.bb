@@ -208,11 +208,6 @@ static bool PointInFrameContentIfVisible(Document& document,
     return false;
 
   point_in_frame.Scale(frame->PageZoomFactor(), frame->PageZoomFactor());
-  // For non RLS case, the point needs to be adjusted by the frame's scroll
-  // offset.
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    point_in_frame.Move(scrollable_area->GetScrollOffset());
-
   return true;
 }
 

@@ -763,20 +763,17 @@ int TextFinder::SelectFindMatch(unsigned index, WebRect* selection_rect) {
                                   ScrollAlignment::kAlignCenterIfNeeded,
                                   kUserScroll));
 
-      if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-        // If RLS is on, absolute coordinates are scroll-variant so the
-        // bounding box will change if the page is scrolled by
-        // ScrollRectToVisible above. Recompute the bounding box so we have the
-        // updated location for the zoom below.
-        // TODO(bokan): This should really use the return value from
-        // ScrollRectToVisible which returns the updated position of the
-        // scrolled rect. However, this was recently added and this is a fix
-        // that needs to be merged to a release branch.
-        // https://crbug.com/823365.
-        active_match_bounding_box =
-            EnclosingIntRect(LayoutObject::AbsoluteBoundingBoxRectForRange(
-                EphemeralRange(active_match_.Get())));
-      }
+      // Absolute coordinates are scroll-variant so the bounding box will change
+      // if the page is scrolled by ScrollRectToVisible above. Recompute the
+      // bounding box so we have the updated location for the zoom below.
+      // TODO(bokan): This should really use the return value from
+      // ScrollRectToVisible which returns the updated position of the
+      // scrolled rect. However, this was recently added and this is a fix
+      // that needs to be merged to a release branch.
+      // https://crbug.com/823365.
+      active_match_bounding_box =
+          EnclosingIntRect(LayoutObject::AbsoluteBoundingBoxRectForRange(
+              EphemeralRange(active_match_.Get())));
     }
 
     // Zoom to the active match.
