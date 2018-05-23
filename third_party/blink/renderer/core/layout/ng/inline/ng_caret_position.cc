@@ -288,4 +288,26 @@ NGCaretPosition ComputeNGCaretPosition(const PositionWithAffinity& position) {
   return ComputeNGCaretPosition(*context, offset, affinity);
 }
 
+Position NGCaretPosition::ToPositionInDOMTree() const {
+  if (!fragment)
+    return Position();
+  switch (position_type) {
+    case NGCaretPositionType::kBeforeBox:
+      if (!fragment->GetNode())
+        return Position();
+      return Position::BeforeNode(*fragment->GetNode());
+    case NGCaretPositionType::kAfterBox:
+      if (!fragment->GetNode())
+        return Position();
+      return Position::AfterNode(*fragment->GetNode());
+    case NGCaretPositionType::kAtTextOffset:
+      DCHECK(text_offset.has_value());
+      const NGOffsetMapping* mapping =
+          NGOffsetMapping::GetFor(fragment->GetLayoutObject());
+      return mapping->GetFirstPosition(*text_offset);
+  }
+  NOTREACHED();
+  return Position();
+}
+
 }  // namespace blink

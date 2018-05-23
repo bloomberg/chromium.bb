@@ -43,6 +43,10 @@ crbug.com/591099 fast/css/getComputedStyle/getComputedStyle-resolved-values.html
 # https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/layout_block.cc?l=1372&rcl=0e081149ecd6a83f6289e3aee5797936008a1e10
 crbug.com/591099 fast/block/marquee-width-shrinks-to-fit-in-fixed-size-container.html [ Failure ]
 
+# Needs bidi adjustment for SelectionController
+crbug.com/811502 editing/selection/mouse/drag_selects_bidi_image.html [ Failure ]
+crbug.com/811502 fast/text/selection/hebrew-selection.html [ Failure ]
+
 # New passes
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-adjoining-opposite-float.html [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-due-to-large-margin-after-left-right.html [ Pass ]
@@ -194,7 +198,6 @@ crbug.com/591099 editing/selection/4960137.html [ Failure ]
 crbug.com/591099 editing/selection/4975120.html [ Failure ]
 crbug.com/591099 editing/selection/5232159.html [ Failure ]
 crbug.com/591099 editing/selection/5354455-2.html [ Failure ]
-crbug.com/591099 editing/selection/caret-at-bidi-boundary.html [ Failure ]
 crbug.com/591099 editing/selection/continuations-with-move-caret-to-boundary.html [ Failure ]
 crbug.com/591099 editing/selection/continuations-without-move-caret-to-boundary.html [ Failure ]
 crbug.com/591099 editing/selection/doubleclick-beside-cr-span.html [ Failure ]
