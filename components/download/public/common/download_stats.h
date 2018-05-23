@@ -136,6 +136,10 @@ enum DownloadCountTypes {
   // Count of attempts for auto download resumption.
   AUTO_RESUMPTION_COUNT,
 
+  // Count of download attempts that are dropped due to content settings or
+  // request limiter before DownloadItem is created.
+  DOWNLOAD_DROPPED_COUNT,
+
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 
