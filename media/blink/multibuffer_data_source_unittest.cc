@@ -1251,6 +1251,41 @@ TEST_F(MultibufferDataSourceTest,
   EXPECT_FALSE(active_loader_allownull());
 }
 
+// This test tries to trigger an edge case where the read callback
+// never happens because the reader is deleted before that happens.
+TEST_F(MultibufferDataSourceTest,
+       ExternalResource_Response206_CancelAfterDefer3) {
+  set_preload(MultibufferDataSource::METADATA);
+  InitializeWith206Response();
+
+  EXPECT_EQ(MultibufferDataSource::METADATA, preload());
+  EXPECT_FALSE(is_local_source());
+
+  EXPECT_TRUE(data_source_->range_supported());
+  CheckReadThenDefer();
+
+  ReadAt(kDataSize);
+  ASSERT_TRUE(active_loader());
+
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
+  ReceiveData(kDataSize);
+
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3));
+  ReceiveData(kDataSize);
+
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 4));
+  ReceiveData(kDataSize);
+  EXPECT_EQ(data_source_->downloading(), false);
+  data_source_->Read(kDataSize * 10, kDataSize, buffer_,
+                     base::Bind(&MultibufferDataSourceTest::ReadCallback,
+                                base::Unretained(this)));
+  data_source_->OnBufferingHaveEnough(false);
+  EXPECT_TRUE(active_loader_allownull());
+  EXPECT_CALL(*this, ReadCallback(-1));
+  Stop();
+}
+
 TEST_F(MultibufferDataSourceTest,
        ExternalResource_Response206_CancelAfterPlay) {
   set_preload(MultibufferDataSource::METADATA);
