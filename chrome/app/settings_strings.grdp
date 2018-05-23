@@ -398,7 +398,7 @@
       <ph name="PERCENTAGE">$1<ex>120</ex>%</ph>
     </message>
     <message name="IDS_SETTINGS_DEFAULT_PERCENTAGE" desc="A number displayed as a percentage, which is the normal or default.">
-      <ph name="PERCENTAGE">$1<ex>120</ex>%</ph> (normal)
+      <ph name="PERCENTAGE">$1<ex>120</ex>%</ph> (default)
     </message>
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_HEADING" desc="The heading for a section of the text-to-speech settings page where a user can preview text to speech">
       Preview
