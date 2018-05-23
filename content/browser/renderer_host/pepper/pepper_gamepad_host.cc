@@ -7,12 +7,12 @@
 #include "base/bind.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "device/gamepad/gamepad_service.h"
+#include "device/gamepad/gamepad_shared_buffer.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/shared_impl/ppb_gamepad_shared.h"
 
 namespace content {
 
@@ -72,7 +72,7 @@ void PepperGamepadHost::GotUserGesture(
       gamepad_service_->DuplicateSharedMemoryHandle();
 
   context.params.AppendHandle(ppapi::proxy::SerializedHandle(
-      handle, sizeof(ppapi::ContentGamepadHardwareBuffer)));
+      handle, sizeof(device::GamepadHardwareBuffer)));
   host()->SendReply(context, PpapiPluginMsg_Gamepad_SendMemory());
 }
 
