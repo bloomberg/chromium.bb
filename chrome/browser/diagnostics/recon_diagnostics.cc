@@ -218,8 +218,6 @@ const TestPathInfo kPathsToTest[] = {
 };
 
 // Check that the user's data directory exists and the paths are writable.
-// If it is a system-wide install some paths are not expected to be writable.
-// This test depends on |InstallTypeTest| having run successfully.
 class PathTest : public DiagnosticsTest {
  public:
   explicit PathTest(const TestPathInfo& path_info)
@@ -266,7 +264,7 @@ class PathTest : public DiagnosticsTest {
         return true;
       }
     }
-    if (g_install_type->system_level() && !path_info_.test_writable) {
+    if (!path_info_.test_writable) {
       RecordSuccess("Path exists");
       return true;
     }
