@@ -17,18 +17,7 @@ namespace blink {
 class ScopedStyleResolverTest : public PageTestBase {
  protected:
   StyleEngine& GetStyleEngine() { return GetDocument().GetStyleEngine(); }
-  ShadowRoot& AttachShadow(Element& host);
 };
-
-ShadowRoot& ScopedStyleResolverTest::AttachShadow(Element& host) {
-  ShadowRootInit init;
-  init.setMode("open");
-  ShadowRoot* shadow_root =
-      host.attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()),
-                        init, ASSERT_NO_EXCEPTION);
-  EXPECT_TRUE(shadow_root);
-  return *shadow_root;
-}
 
 TEST_F(ScopedStyleResolverTest, HasSameStylesNullNull) {
   EXPECT_TRUE(ScopedStyleResolver::HaveSameStyles(nullptr, nullptr));
@@ -52,8 +41,8 @@ TEST_F(ScopedStyleResolverTest, HasSameStylesNonEmpty) {
   Element* host2 = GetDocument().getElementById("host2");
   ASSERT_TRUE(host1);
   ASSERT_TRUE(host2);
-  ShadowRoot& root1 = AttachShadow(*host1);
-  ShadowRoot& root2 = AttachShadow(*host2);
+  ShadowRoot& root1 = host1->AttachShadowRootInternal(ShadowRootType::kOpen);
+  ShadowRoot& root2 = host2->AttachShadowRootInternal(ShadowRootType::kOpen);
   root1.SetInnerHTMLFromString("<style>::slotted(#dummy){color:pink}</style>");
   root2.SetInnerHTMLFromString("<style>::slotted(#dummy){color:pink}</style>");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -68,8 +57,8 @@ TEST_F(ScopedStyleResolverTest, HasSameStylesDifferentSheetCount) {
   Element* host2 = GetDocument().getElementById("host2");
   ASSERT_TRUE(host1);
   ASSERT_TRUE(host2);
-  ShadowRoot& root1 = AttachShadow(*host1);
-  ShadowRoot& root2 = AttachShadow(*host2);
+  ShadowRoot& root1 = host1->AttachShadowRootInternal(ShadowRootType::kOpen);
+  ShadowRoot& root2 = host2->AttachShadowRootInternal(ShadowRootType::kOpen);
   root1.SetInnerHTMLFromString(
       "<style>::slotted(#dummy){color:pink}</style><style>div{}</style>");
   root2.SetInnerHTMLFromString("<style>::slotted(#dummy){color:pink}</style>");
@@ -85,8 +74,8 @@ TEST_F(ScopedStyleResolverTest, HasSameStylesCacheMiss) {
   Element* host2 = GetDocument().getElementById("host2");
   ASSERT_TRUE(host1);
   ASSERT_TRUE(host2);
-  ShadowRoot& root1 = AttachShadow(*host1);
-  ShadowRoot& root2 = AttachShadow(*host2);
+  ShadowRoot& root1 = host1->AttachShadowRootInternal(ShadowRootType::kOpen);
+  ShadowRoot& root2 = host2->AttachShadowRootInternal(ShadowRootType::kOpen);
   // Style equality is detected when StyleSheetContents is shared. That is only
   // the case when the source text is the same. The comparison will fail when
   // adding an extra space to one of the sheets.
