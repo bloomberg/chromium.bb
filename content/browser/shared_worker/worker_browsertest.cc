@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -55,6 +54,7 @@ class WorkerTest : public ContentBrowserTest {
     ShellContentBrowserClient::Get()->set_select_client_certificate_callback(
         base::Bind(&WorkerTest::OnSelectClientCertificate,
                    base::Unretained(this)));
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   void TearDownOnMainThread() override {
@@ -65,9 +65,8 @@ class WorkerTest : public ContentBrowserTest {
   int select_certificate_count() const { return select_certificate_count_; }
 
   GURL GetTestURL(const std::string& test_case, const std::string& query) {
-    base::FilePath test_file_path = GetTestFilePath(
-        "workers", test_case.c_str());
-    return GetFileUrlWithQuery(test_file_path, query);
+    std::string url_string = "/workers/" + test_case + "?" + query;
+    return embedded_test_server()->GetURL(url_string);
   }
 
   void RunTest(Shell* window, const GURL& url) {
@@ -129,11 +128,6 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, IncognitoSharedWorkers) {
   if (!SupportsSharedWorker())
     return;
 
-  // Launch the server to host a shared worker on http environment because a
-  // local file (file://) is treated like it has an opaque origin and the
-  // shared worker on the origin cannot be shared.
-  ASSERT_TRUE(embedded_test_server()->Start());
-
   // Load a non-incognito tab and have it create a shared worker
   RunTest(embedded_test_server()->GetURL("/workers/incognito_worker.html"));
 
@@ -145,7 +139,6 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, IncognitoSharedWorkers) {
 // Make sure that auth dialog is displayed from worker context.
 // http://crbug.com/33344
 IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerHttpAuth) {
-  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/workers/worker_auth.html");
 
   NavigateAndWaitForAuth(url);
