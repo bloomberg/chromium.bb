@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
@@ -150,9 +151,8 @@ class ExtensionTestMessageListener : public content::NotificationObserver {
   // Whether we've seen expected_message_ yet.
   bool satisfied_;
 
-  // If we're waiting, then we want to post a quit task when the expected
-  // message arrives.
-  bool waiting_;
+  // Holds the quit Closure for the RunLoop during WaitUntilSatisfied().
+  base::OnceClosure quit_wait_closure_;
 
   // Whether or not we will wait for any message, regardless of contents.
   bool wait_for_any_message_;
