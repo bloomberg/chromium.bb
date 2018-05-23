@@ -238,15 +238,15 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   void GetFileInfo(const std::string& storage_handle,
                    uint32_t file_id,
-                   const GetFileInfoCallback& callback) override {
+                   mojom::MtpManager::GetFileInfoCallback callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!base::ContainsKey(handles_, storage_handle) || !mtp_client_) {
-      callback.Run(mojom::MtpFileEntry(), true);
+      std::move(callback).Run(nullptr, true);
       return;
     }
     std::vector<uint32_t> file_ids;
     file_ids.push_back(file_id);
-    get_file_info_callbacks_.push(callback);
+    get_file_info_callbacks_.push(std::move(callback));
     mtp_client_->GetFileInfo(
         storage_handle,
         file_ids,
@@ -325,7 +325,8 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   using CreateDirectoryCallbackQueue = base::queue<CreateDirectoryCallback>;
   using ReadDirectoryCallbackQueue = base::queue<ReadDirectoryCallback>;
   using ReadFileCallbackQueue = base::queue<ReadFileCallback>;
-  using GetFileInfoCallbackQueue = base::queue<GetFileInfoCallback>;
+  using GetFileInfoCallbackQueue =
+      base::queue<mojom::MtpManager::GetFileInfoCallback>;
   using RenameObjectCallbackQueue = base::queue<RenameObjectCallback>;
   using CopyFileFromLocalCallbackQueue = base::queue<CopyFileFromLocalCallback>;
   using DeleteObjectCallbackQueue = base::queue<DeleteObjectCallback>;
@@ -552,7 +553,8 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   void OnGetFileInfo(const std::vector<mojom::MtpFileEntry>& entries) {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (entries.size() == 1) {
-      get_file_info_callbacks_.front().Run(entries[0], false /* no error */);
+      std::move(get_file_info_callbacks_.front())
+          .Run(entries[0].Clone(), false /* no error */);
       get_file_info_callbacks_.pop();
     } else {
       OnGetFileInfoError();
@@ -561,7 +563,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   void OnGetFileInfoError() {
     DCHECK(thread_checker_.CalledOnValidThread());
-    get_file_info_callbacks_.front().Run(mojom::MtpFileEntry(), true);
+    std::move(get_file_info_callbacks_.front()).Run(nullptr, true);
     get_file_info_callbacks_.pop();
   }
 
@@ -669,6 +671,12 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   std::string current_mtpd_owner_;
 
   // Queued callbacks.
+  // These queues are needed becasue MediaTransferProtocolDaemonClient provides
+  // different callbacks for result(success_callback, error_callback) with
+  // MediaTransferProtocolManager, so a passed callback for a method in this
+  // class will be referred in both success_callback and error_callback for
+  // underline MediaTransferProtocolDaemonClient, and it is also the case for
+  // mojom interfaces, as all mojom methods are defined as OnceCallback.
   GetStorageInfoFromDeviceCallbackQueue get_storage_info_from_device_callbacks_;
   OpenStorageCallbackQueue open_storage_callbacks_;
   CloseStorageCallbackQueue close_storage_callbacks_;
