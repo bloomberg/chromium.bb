@@ -89,12 +89,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 // Items notifying this items of changes happening to the ReadingList model.
 @property(nonatomic, strong) ReadingListMenuNotifier* readingListMenuNotifier;
 
-// Whether the hint for the "New Incognito Tab" item should be triggered.
-@property(nonatomic, assign) BOOL triggerNewIncognitoTabTip;
-
 #pragma mark*** Specific Items ***
 
-@property(nonatomic, strong) PopupMenuToolsItem* openNewIncognitoTabItem;
 @property(nonatomic, strong) PopupMenuToolsItem* reloadStopItem;
 @property(nonatomic, strong) PopupMenuToolsItem* readLaterItem;
 @property(nonatomic, strong) PopupMenuToolsItem* bookmarkItem;
@@ -117,11 +113,9 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 @synthesize dispatcher = _dispatcher;
 @synthesize engagementTracker = _engagementTracker;
 @synthesize readingListMenuNotifier = _readingListMenuNotifier;
-@synthesize triggerNewIncognitoTabTip = _triggerNewIncognitoTabTip;
 @synthesize type = _type;
 @synthesize webState = _webState;
 @synthesize webStateList = _webStateList;
-@synthesize openNewIncognitoTabItem = _openNewIncognitoTabItem;
 @synthesize reloadStopItem = _reloadStopItem;
 @synthesize readLaterItem = _readLaterItem;
 @synthesize bookmarkItem = _bookmarkItem;
@@ -135,9 +129,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 #pragma mark - Public
 
 - (instancetype)initWithType:(PopupMenuType)type
-                  isIncognito:(BOOL)isIncognito
-             readingListModel:(ReadingListModel*)readingListModel
-    triggerNewIncognitoTabTip:(BOOL)triggerNewIncognitoTabTip {
+                 isIncognito:(BOOL)isIncognito
+            readingListModel:(ReadingListModel*)readingListModel {
   self = [super init];
   if (self) {
     _isIncognito = isIncognito;
@@ -146,7 +139,6 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
         [[ReadingListMenuNotifier alloc] initWithReadingList:readingListModel];
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
-    _triggerNewIncognitoTabTip = triggerNewIncognitoTabTip;
   }
   return self;
 }
@@ -316,10 +308,6 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   }
 
   [_popupMenu setPopupMenuItems:self.items];
-  if (self.triggerNewIncognitoTabTip) {
-    _popupMenu.itemToHighlight = self.openNewIncognitoTabItem;
-    self.triggerNewIncognitoTabTip = NO;
-  }
   _popupMenu.commandHandler = self;
   if (self.webState) {
     [self updatePopupMenu];
@@ -603,11 +591,11 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
                           @"popup_menu_new_tab", kToolsMenuNewTabId);
 
   // Open New Incognito Tab.
-  self.openNewIncognitoTabItem = CreateTableViewItem(
+  TableViewItem* openNewIncognitoTabItem = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB, PopupMenuActionOpenNewIncognitoTab,
       @"popup_menu_new_incognito_tab", kToolsMenuNewIncognitoTabId);
 
-  return @[ openNewTabItem, self.openNewIncognitoTabItem ];
+  return @[ openNewTabItem, openNewIncognitoTabItem ];
 }
 
 - (NSArray<TableViewItem*>*)actionItems {
