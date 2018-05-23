@@ -430,11 +430,9 @@ TEST(EscapeTest, UnescapeBinaryURLComponent) {
 
 TEST(EscapeTest, EscapeForHTML) {
   const EscapeForHTMLCase tests[] = {
-      {"hello", "hello"},
-      {"<hello>", "&lt;hello&gt;"},
-      {"don\'t mess with me", "don&#39;t mess with me"},
-      {"[[alert('')]]", "&#91;&#91;alert(&#39;&#39;)&#93;&#93;"},
-      {"{{foo}}", "&#123;&#123;foo&#125;&#125;"},
+    { "hello", "hello" },
+    { "<hello>", "&lt;hello&gt;" },
+    { "don\'t mess with me", "don&#39;t mess with me" },
   };
   for (const auto& test : tests) {
     std::string result = EscapeForHTML(std::string(test.input));
@@ -444,18 +442,17 @@ TEST(EscapeTest, EscapeForHTML) {
 
 TEST(EscapeTest, UnescapeForHTML) {
   const EscapeForHTMLCase tests[] = {
-      {"", ""},
-      {"&lt;hello&gt;", "<hello>"},
-      {"don&#39;t mess with me", "don\'t mess with me"},
-      {"&lt;&gt;&amp;&quot;&#39;", "<>&\"'"},
-      {"& lt; &amp ; &; '", "& lt; &amp ; &; '"},
-      {"&amp;", "&"},
-      {"&quot;", "\""},
-      {"&#39;", "'"},
-      {"&lt;", "<"},
-      {"&gt;", ">"},
-      {"&amp; &", "& &"},
-      {"&#91;&#93;&#123;&#125;", "[]{}"},
+    { "", "" },
+    { "&lt;hello&gt;", "<hello>" },
+    { "don&#39;t mess with me", "don\'t mess with me" },
+    { "&lt;&gt;&amp;&quot;&#39;", "<>&\"'" },
+    { "& lt; &amp ; &; '", "& lt; &amp ; &; '" },
+    { "&amp;", "&" },
+    { "&quot;", "\"" },
+    { "&#39;", "'" },
+    { "&lt;", "<" },
+    { "&gt;", ">" },
+    { "&amp; &", "& &" },
   };
   for (const auto& test : tests) {
     base::string16 result = UnescapeForHTML(base::ASCIIToUTF16(test.input));
