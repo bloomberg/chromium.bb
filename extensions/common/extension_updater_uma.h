@@ -11,7 +11,11 @@ namespace extensions {
 enum class ExtensionUpdaterUpdateResult {
   NO_UPDATE = 0,
   UPDATE_SUCCESS = 1,
-  UPDATE_ERROR = 2,
+  DEPRECATED_UPDATE_ERROR = 2,  // DEPRECATED, use the error values below.
+  UPDATE_CHECK_ERROR = 3,
+  UPDATE_DOWNLOAD_ERROR = 4,
+  UPDATE_INSTALL_ERROR = 5,
+  UPDATE_SERVICE_ERROR = 6,
 
   UPDATE_RESULT_COUNT
 };

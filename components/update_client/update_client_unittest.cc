@@ -94,10 +94,10 @@ class MockPingManagerImpl : public PingManager {
     std::string id;
     base::Version previous_version;
     base::Version next_version;
-    int error_category = 0;
+    ErrorCategory error_category = ErrorCategory::kNone;
     int error_code = 0;
     int extra_code1 = 0;
-    int diff_error_category = 0;
+    ErrorCategory diff_error_category = ErrorCategory::kNone;
     int diff_error_code = 0;
     bool diff_update_failed = false;
   };
@@ -487,7 +487,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_data[0].id);
       EXPECT_EQ(base::Version("0.9"), ping_data[0].previous_version);
       EXPECT_EQ(base::Version("1.0"), ping_data[0].next_version);
-      EXPECT_EQ(0, ping_data[0].error_category);
+      EXPECT_EQ(0, static_cast<int>(ping_data[0].error_category));
       EXPECT_EQ(0, ping_data[0].error_code);
     }
   };
@@ -689,7 +689,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentData) {
       EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_data[0].id);
       EXPECT_EQ(base::Version("0.9"), ping_data[0].previous_version);
       EXPECT_EQ(base::Version("1.0"), ping_data[0].next_version);
-      EXPECT_EQ(0, ping_data[0].error_category);
+      EXPECT_EQ(0, static_cast<int>(ping_data[0].error_category));
       EXPECT_EQ(0, ping_data[0].error_code);
     }
   };
@@ -1037,12 +1037,12 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
       EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_data[0].id);
       EXPECT_EQ(base::Version("0.9"), ping_data[0].previous_version);
       EXPECT_EQ(base::Version("1.0"), ping_data[0].next_version);
-      EXPECT_EQ(1, ping_data[0].error_category);
+      EXPECT_EQ(1, static_cast<int>(ping_data[0].error_category));
       EXPECT_EQ(-118, ping_data[0].error_code);
       EXPECT_EQ("ihfokbkgjpifnbbojhneepfflplebdkc", ping_data[1].id);
       EXPECT_EQ(base::Version("0.8"), ping_data[1].previous_version);
       EXPECT_EQ(base::Version("1.0"), ping_data[1].next_version);
-      EXPECT_EQ(0, ping_data[1].error_category);
+      EXPECT_EQ(0, static_cast<int>(ping_data[1].error_category));
       EXPECT_EQ(0, ping_data[1].error_code);
     }
   };
@@ -1069,7 +1069,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
           CrxUpdateItem item;
           update_client->GetCrxUpdateState(id, &item);
           EXPECT_EQ(ComponentState::kUpdateError, item.state);
-          EXPECT_EQ(1, item.error_category);
+          EXPECT_EQ(1, static_cast<int>(item.error_category));
           EXPECT_EQ(-118, item.error_code);
           EXPECT_EQ(0, item.extra_code1);
         }));
@@ -1338,15 +1338,15 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
       EXPECT_EQ("ihfokbkgjpifnbbojhneepfflplebdkc", ping_data[0].id);
       EXPECT_EQ(base::Version("0.8"), ping_data[0].previous_version);
       EXPECT_EQ(base::Version("1.0"), ping_data[0].next_version);
-      EXPECT_EQ(0, ping_data[0].error_category);
+      EXPECT_EQ(0, static_cast<int>(ping_data[0].error_category));
       EXPECT_EQ(0, ping_data[0].error_code);
       EXPECT_EQ("ihfokbkgjpifnbbojhneepfflplebdkc", ping_data[1].id);
       EXPECT_EQ(base::Version("1.0"), ping_data[1].previous_version);
       EXPECT_EQ(base::Version("2.0"), ping_data[1].next_version);
       EXPECT_FALSE(ping_data[1].diff_update_failed);
-      EXPECT_EQ(0, ping_data[1].diff_error_category);
+      EXPECT_EQ(0, static_cast<int>(ping_data[1].diff_error_category));
       EXPECT_EQ(0, ping_data[1].diff_error_code);
-      EXPECT_EQ(0, ping_data[1].error_category);
+      EXPECT_EQ(0, static_cast<int>(ping_data[1].error_category));
       EXPECT_EQ(0, ping_data[1].error_code);
     }
   };
@@ -1596,8 +1596,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_data[0].id);
       EXPECT_EQ(base::Version("0.9"), ping_data[0].previous_version);
       EXPECT_EQ(base::Version("1.0"), ping_data[0].next_version);
-      EXPECT_EQ(3, ping_data[0].error_category);  // kInstall.
-      EXPECT_EQ(9, ping_data[0].error_code);      // kInstallerError.
+      EXPECT_EQ(3, static_cast<int>(ping_data[0].error_category));  // kInstall.
+      EXPECT_EQ(9, ping_data[0].error_code);  // kInstallerError.
     }
   };
 
@@ -1882,15 +1882,15 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
       EXPECT_EQ("ihfokbkgjpifnbbojhneepfflplebdkc", ping_data[0].id);
       EXPECT_EQ(base::Version("0.8"), ping_data[0].previous_version);
       EXPECT_EQ(base::Version("1.0"), ping_data[0].next_version);
-      EXPECT_EQ(0, ping_data[0].error_category);
+      EXPECT_EQ(0, static_cast<int>(ping_data[0].error_category));
       EXPECT_EQ(0, ping_data[0].error_code);
       EXPECT_EQ("ihfokbkgjpifnbbojhneepfflplebdkc", ping_data[1].id);
       EXPECT_EQ(base::Version("1.0"), ping_data[1].previous_version);
       EXPECT_EQ(base::Version("2.0"), ping_data[1].next_version);
-      EXPECT_EQ(0, ping_data[1].error_category);
+      EXPECT_EQ(0, static_cast<int>(ping_data[1].error_category));
       EXPECT_EQ(0, ping_data[1].error_code);
       EXPECT_TRUE(ping_data[1].diff_update_failed);
-      EXPECT_EQ(1, ping_data[1].diff_error_category);  // kNetworkError.
+      EXPECT_EQ(1, static_cast<int>(ping_data[1].diff_error_category));
       EXPECT_EQ(-1, ping_data[1].diff_error_code);
     }
   };
@@ -2224,7 +2224,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_data[0].id);
       EXPECT_EQ(base::Version("0.0"), ping_data[0].previous_version);
       EXPECT_EQ(base::Version("1.0"), ping_data[0].next_version);
-      EXPECT_EQ(0, ping_data[0].error_category);
+      EXPECT_EQ(0, static_cast<int>(ping_data[0].error_category));
       EXPECT_EQ(0, ping_data[0].error_code);
     }
   };
@@ -3004,12 +3004,12 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
       EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_data[0].id);
       EXPECT_EQ(base::Version("0.9"), ping_data[0].previous_version);
       EXPECT_EQ(base::Version("1.0"), ping_data[0].next_version);
-      EXPECT_EQ(4, ping_data[0].error_category);
+      EXPECT_EQ(4, static_cast<int>(ping_data[0].error_category));
       EXPECT_EQ(2, ping_data[0].error_code);
       EXPECT_EQ("ihfokbkgjpifnbbojhneepfflplebdkc", ping_data[1].id);
       EXPECT_EQ(base::Version("0.8"), ping_data[1].previous_version);
       EXPECT_EQ(base::Version("1.0"), ping_data[1].next_version);
-      EXPECT_EQ(0, ping_data[1].error_category);
+      EXPECT_EQ(0, static_cast<int>(ping_data[1].error_category));
       EXPECT_EQ(0, ping_data[1].error_code);
     }
   };
@@ -3159,7 +3159,7 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
         CrxUpdateItem item;
         update_client->GetCrxUpdateState(id, &item);
         EXPECT_EQ(ComponentState::kUpdateError, item.state);
-        EXPECT_EQ(5, item.error_category);
+        EXPECT_EQ(5, static_cast<int>(item.error_category));
         EXPECT_EQ(-1, item.error_code);
         EXPECT_EQ(0, item.extra_code1);
       }));

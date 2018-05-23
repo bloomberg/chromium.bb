@@ -141,8 +141,9 @@ std::string BuildUpdateCompleteEventElement(const Component& component) {
   std::string event("<event eventtype=\"3\"");
   const int event_result = component.state() == ComponentState::kUpdated;
   StringAppendF(&event, " eventresult=\"%d\"", event_result);
-  if (component.error_category())
-    StringAppendF(&event, " errorcat=\"%d\"", component.error_category());
+  if (component.error_category() != ErrorCategory::kNone)
+    StringAppendF(&event, " errorcat=\"%d\"",
+                  static_cast<int>(component.error_category()));
   if (component.error_code())
     StringAppendF(&event, " errorcode=\"%d\"", component.error_code());
   if (component.extra_code1())
@@ -150,9 +151,9 @@ std::string BuildUpdateCompleteEventElement(const Component& component) {
   if (HasDiffUpdate(component))
     StringAppendF(&event, " diffresult=\"%d\"",
                   !component.diff_update_failed());
-  if (component.diff_error_category()) {
+  if (component.diff_error_category() != ErrorCategory::kNone) {
     StringAppendF(&event, " differrorcat=\"%d\"",
-                  component.diff_error_category());
+                  static_cast<int>(component.diff_error_category()));
   }
   if (component.diff_error_code())
     StringAppendF(&event, " differrorcode=\"%d\"", component.diff_error_code());
