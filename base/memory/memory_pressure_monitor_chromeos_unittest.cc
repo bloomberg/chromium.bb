@@ -8,6 +8,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -74,6 +75,10 @@ class TestMemoryPressureMonitor : public MemoryPressureMonitor {
 // This test tests the various transition states from memory pressure, looking
 // for the correct behavior on event reposting as well as state updates.
 TEST(ChromeOSMemoryPressureMonitorTest, CheckMemoryPressure) {
+  // crbug.com/844102:
+  if (base::SysInfo::IsRunningOnChromeOS())
+    return;
+
   base::MessageLoopForUI message_loop;
   std::unique_ptr<TestMemoryPressureMonitor> monitor(
       new TestMemoryPressureMonitor);
