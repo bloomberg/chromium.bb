@@ -17,6 +17,7 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
+#include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/input_device.h"
@@ -85,12 +86,21 @@ VirtualKeyboardController::VirtualKeyboardController()
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
   UpdateDevices();
+
+  // Set callback to show the emoji panel
+  ui::SetShowEmojiKeyboardCallback(base::BindRepeating(
+      &VirtualKeyboardController::ForceShowKeyboardWithKeyset,
+      base::Unretained(this),
+      chromeos::input_method::mojom::ImeKeyset::kEmoji));
 }
 
 VirtualKeyboardController::~VirtualKeyboardController() {
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+
+  // Reset the emoji panel callback
+  ui::SetShowEmojiKeyboardCallback(base::DoNothing());
 }
 
 void VirtualKeyboardController::ForceShowKeyboardWithKeyset(

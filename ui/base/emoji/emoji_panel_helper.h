@@ -5,6 +5,8 @@
 #ifndef UI_BASE_EMOJI_EMOJI_PANEL_HELPER_H_
 #define UI_BASE_EMOJI_EMOJI_PANEL_HELPER_H_
 
+#include "base/callback.h"
+#include "base/macros.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {
@@ -15,6 +17,12 @@ UI_BASE_EXPORT bool IsEmojiPanelSupported();
 
 // Invokes the commands to show the Emoji Panel.
 UI_BASE_EXPORT void ShowEmojiPanel();
+
+#if defined(OS_CHROMEOS)
+// Sets a callback to show the emoji panel (ChromeOS only).
+UI_BASE_EXPORT void SetShowEmojiKeyboardCallback(
+    base::RepeatingClosure callback);
+#endif
 
 }  // namespace ui
 
