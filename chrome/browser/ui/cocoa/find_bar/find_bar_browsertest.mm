@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "ui/base/test/ui_controls.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
@@ -83,7 +84,10 @@ void SimulateKeyPress(NSWindow* window, ui::KeyboardCode key) {
 
 }  // namespace
 
-typedef InProcessBrowserTest FindBarBrowserTest;
+class FindBarBrowserTest : public InProcessBrowserTest {
+ private:
+  test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
+};
 
 // Disabled. See https://crbug.com/845389 - this regressed somewhere between
 // r545258 and r559030, but it may be obsolete soon.

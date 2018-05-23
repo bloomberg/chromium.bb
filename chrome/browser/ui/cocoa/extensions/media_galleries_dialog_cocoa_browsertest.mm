@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +22,8 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 
 class MediaGalleriesDialogBrowserTest : public InProcessBrowserTest {
+ private:
+  test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
 };
 
 // Verify that programatically closing the constrained window correctly closes

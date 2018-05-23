@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "content/public/test/test_utils.h"
 
 class ContentSettingDecorationTest : public InProcessBrowserTest {
@@ -42,6 +43,8 @@ class ContentSettingDecorationTest : public InProcessBrowserTest {
 
  private:
   std::unique_ptr<ContentSettingDecoration> content_setting_decoration_;
+
+  test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingDecorationTest);
 };

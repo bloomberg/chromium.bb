@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
@@ -44,6 +45,8 @@ class DevToolsControllerTest : public InProcessBrowserTest {
   DevToolsWindow* devtools_window_;
 
  private:
+  test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
+
   DISALLOW_COPY_AND_ASSIGN(DevToolsControllerTest);
 };
 

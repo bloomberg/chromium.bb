@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_touch_bar.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engines_test_util.cc"
 #include "content/public/test/browser_test_utils.h"
@@ -58,6 +59,8 @@ class BrowserWindowTouchBarTest : public InProcessBrowserTest {
 
  private:
   TestingBrowserWindowTouchBar* browser_touch_bar_;
+
+  test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowTouchBarTest);
 };
