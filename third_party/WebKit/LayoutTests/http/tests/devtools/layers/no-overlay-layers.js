@@ -42,6 +42,16 @@
   layersBeforeHighlight.sort();
   layersAfterHighlight.sort();
 
+  function inOverlay() {
+    return document;
+  }
+  function isCSSPropertyUseCountedInOverlay(overlay_document) {
+    assert_false(internals.isCSSPropertyUseCounted(overlay_document, "height"));
+    assert_false(internals.isCSSPropertyUseCounted(overlay_document, "width"));
+    assert_true(internals.isCSSPropertyUseCounted(document, "height"));
+    assert_true(internals.isCSSPropertyUseCounted(document, "width"));
+  }
+  TestRunner.evaluateFunctionInOverlay(inOverlay, isCSSPropertyUseCountedInOverlay);
   TestRunner.assertEquals(JSON.stringify(layersBeforeHighlight), JSON.stringify(layersAfterHighlight));
   TestRunner.addResult('DONE');
   TestRunner.completeTest();
