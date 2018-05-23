@@ -66,10 +66,8 @@
 
 #define DEFAULT_EXPLICIT_ORDER_HINT_BITS 7
 
-#if CONFIG_BUFFER_MODEL
 // av1 uses 10,000,000 ticks/second as time stamp
 #define TICKS_PER_SEC 10000000LL
-#endif
 
 #if CONFIG_ENTROPY_STATS
 FRAME_COUNTS aggregate_fc;
@@ -1033,12 +1031,6 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   cm->chroma_sample_position = oxcf->chroma_sample_position;
   cm->color_range = oxcf->color_range;
   cm->timing_info_present = oxcf->timing_info_present;
-#if !CONFIG_BUFFER_MODEL
-  cm->num_units_in_tick = oxcf->num_units_in_tick;
-  cm->time_scale = oxcf->time_scale;
-  cm->equal_picture_interval = oxcf->equal_picture_interval;
-  cm->num_ticks_per_picture = oxcf->num_ticks_per_picture;
-#else
   cm->timing_info.num_units_in_display_tick =
       oxcf->timing_info.num_units_in_display_tick;
   cm->timing_info.time_scale = oxcf->timing_info.time_scale;
@@ -1058,7 +1050,6 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
     set_dec_model_op_parameters(&cm->op_params[0], &cm->buffer_model,
                                 oxcf->target_bandwidth, 0);
   }
-#endif
   cm->width = oxcf->width;
   cm->height = oxcf->height;
   set_sb_size(&cm->seq_params,
@@ -2283,7 +2274,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   assert(IMPLIES(cm->profile <= PROFILE_1, cm->bit_depth <= AOM_BITS_10));
 
   cm->timing_info_present = oxcf->timing_info_present;
-#if CONFIG_BUFFER_MODEL
   cm->timing_info.num_units_in_display_tick =
       oxcf->timing_info.num_units_in_display_tick;
   cm->timing_info.time_scale = oxcf->timing_info.time_scale;
@@ -2303,12 +2293,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     set_dec_model_op_parameters(&cm->op_params[0], &cm->buffer_model,
                                 oxcf->target_bandwidth, 0);
   }
-#else
-  cm->num_units_in_tick = oxcf->num_units_in_tick;
-  cm->time_scale = oxcf->time_scale;
-  cm->equal_picture_interval = oxcf->equal_picture_interval;
-  cm->num_ticks_per_picture = oxcf->num_ticks_per_picture;
-#endif
 
   update_film_grain_parameters(cpi, oxcf);
 
@@ -5573,16 +5557,10 @@ static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
   return 0;
 }
 
-#if CONFIG_BUFFER_MODEL
 int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
                             size_t *size, uint8_t *dest, int64_t *time_stamp,
                             int64_t *time_end, int flush,
                             const aom_rational_t *timebase) {
-#else
-int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
-                            size_t *size, uint8_t *dest, int64_t *time_stamp,
-                            int64_t *time_end, int flush) {
-#endif
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -5872,11 +5850,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
   cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
 
-#if CONFIG_BUFFER_MODEL
   // only one operating point supported now
   cpi->common.tu_presentation_delay =
       ticks_to_timebase_units(timebase, *time_stamp);
-#endif
 
   // Start with a 0 size frame.
   *size = 0;
@@ -6166,7 +6142,6 @@ void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
   }
 }
 
-#if CONFIG_BUFFER_MODEL
 int64_t timebase_units_to_ticks(const aom_rational_t *timebase, int64_t n) {
   return n * TICKS_PER_SEC * timebase->num / timebase->den;
 }
@@ -6175,4 +6150,3 @@ int64_t ticks_to_timebase_units(const aom_rational_t *timebase, int64_t n) {
   const int64_t round = TICKS_PER_SEC * timebase->num / 2 - 1;
   return (n * timebase->den + round) / timebase->num / TICKS_PER_SEC;
 }
-#endif

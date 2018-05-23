@@ -171,14 +171,6 @@ static aom_codec_err_t parse_operating_points(struct aom_read_bit_buffer *rb,
       if (i == 0) operating_point_idc0 = operating_point_idc;
       int seq_level_idx = aom_rb_read_literal(rb, LEVEL_BITS);  // level
       if (seq_level_idx > 7) aom_rb_read_bit(rb);               // tier
-#if !CONFIG_BUFFER_MODEL
-      if (aom_rb_read_literal(rb,
-                              1)) {   // decoder_rate_model_param_present_flag
-        aom_rb_read_literal(rb, 12);  // decode_to_display_rate_ratio
-        aom_rb_read_literal(rb, 24);  // initial_display_delay
-        aom_rb_read_literal(rb, 4);   // extra_frame_buffers
-      }
-#endif  // !CONFIG_BUFFER_MODEL
     }
 
     if (aom_get_num_layers_from_operating_point_idc(

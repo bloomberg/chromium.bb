@@ -459,9 +459,7 @@ static const arg_def_t mtu_size =
 static const struct arg_enum_list timing_info_enum[] = {
   { "unspecified", AOM_TIMING_UNSPECIFIED },
   { "constant", AOM_TIMING_EQUAL },
-#if CONFIG_BUFFER_MODEL
   { "model", AOM_TIMING_DEC_MODEL },
-#endif
   { NULL, 0 }
 };
 static const arg_def_t timing_info =

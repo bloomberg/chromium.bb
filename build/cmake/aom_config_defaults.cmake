@@ -93,7 +93,6 @@ set(DECODE_HEIGHT_LIMIT 0 CACHE NUMBER "Set limit for decode height.")
 set(DECODE_WIDTH_LIMIT 0 CACHE NUMBER "Set limit for decode width.")
 
 # AV1 experiment flags.
-set(CONFIG_BUFFER_MODEL 1 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_COLLECT_INTER_MODE_RD_STATS 0 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_COLLECT_RD_STATS 0 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_DIST_8X8 1 CACHE NUMBER "AV1 experiment flag.")

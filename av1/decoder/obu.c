@@ -201,7 +201,6 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
       return 0;
     }
     seq_params->tier[0] = 0;
-    seq_params->decoder_rate_model_param_present_flag[0] = 0;
   } else {
     operating_points_cnt_minus_1 =
         aom_rb_read_literal(rb, OP_POINTS_CNT_MINUS_1_BITS);
@@ -218,16 +217,6 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
         seq_params->tier[i] = aom_rb_read_bit(rb);
       else
         seq_params->tier[i] = 0;
-#if !CONFIG_BUFFER_MODEL
-      seq_params->decoder_rate_model_param_present_flag[i] =
-          aom_rb_read_literal(rb, 1);
-      if (seq_params->decoder_rate_model_param_present_flag[i]) {
-        seq_params->decode_to_display_rate_ratio[i] =
-            aom_rb_read_literal(rb, 12);
-        seq_params->initial_display_delay[i] = aom_rb_read_literal(rb, 24);
-        seq_params->extra_frame_buffers[i] = aom_rb_read_literal(rb, 4);
-      }
-#endif
     }
   }
   // This decoder supports all levels.  Choose operating point provided by
@@ -248,12 +237,6 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 
   av1_read_color_config(cm, rb, pbi->allow_lowbitdepth);
 
-#if !CONFIG_BUFFER_MODEL
-  if (!seq_params->reduced_still_picture_hdr)
-    av1_read_timing_info_header(cm, rb);
-  else
-    cm->timing_info_present = 0;
-#else
   if (!seq_params->reduced_still_picture_hdr)
     cm->timing_info_present = aom_rb_read_bit(rb);  // timing_info_present_flag
   else
@@ -295,7 +278,6 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
         av1_read_op_parameters_info(cm, rb, op_num);
     }
   }
-#endif
 
   cm->film_grain_params_present = aom_rb_read_bit(rb);
 

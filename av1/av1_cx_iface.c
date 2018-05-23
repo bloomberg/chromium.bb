@@ -369,13 +369,8 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, tuning, AOM_TUNE_PSNR, AOM_TUNE_SSIM);
 #endif
 
-#if CONFIG_BUFFER_MODEL
   RANGE_CHECK(extra_cfg, timing_info_type, AOM_TIMING_UNSPECIFIED,
               AOM_TIMING_DEC_MODEL);
-#else
-  RANGE_CHECK(extra_cfg, timing_info_type, AOM_TIMING_UNSPECIFIED,
-              AOM_TIMING_EQUAL);
-#endif
 
   RANGE_CHECK(extra_cfg, film_grain_test_vector, 0, 16);
 
@@ -460,30 +455,16 @@ static aom_codec_err_t set_encoder_config(
   oxcf->input_bit_depth = cfg->g_input_bit_depth;
   // guess a frame rate if out of whack, use 30
   oxcf->init_framerate = (double)cfg->g_timebase.den / cfg->g_timebase.num;
-#if CONFIG_BUFFER_MODEL
   if (extra_cfg->timing_info_type == AOM_TIMING_EQUAL ||
       extra_cfg->timing_info_type == AOM_TIMING_DEC_MODEL) {
-#else
-  if (extra_cfg->timing_info_type == AOM_TIMING_EQUAL) {
-#endif
     oxcf->timing_info_present = 1;
-#if CONFIG_BUFFER_MODEL
     oxcf->timing_info.num_units_in_display_tick = cfg->g_timebase.num;
     oxcf->timing_info.time_scale = cfg->g_timebase.den;
     oxcf->timing_info.num_ticks_per_picture = 1;
-#else
-    oxcf->num_units_in_tick = cfg->g_timebase.num;
-    oxcf->time_scale = cfg->g_timebase.den;
-    oxcf->equal_picture_interval = 1;
-    oxcf->num_ticks_per_picture = 1;
-#endif
   } else {
     oxcf->timing_info_present = 0;
-#if CONFIG_BUFFER_MODEL
     oxcf->operating_points_decoder_model_cnt = 0;
-#endif
   }
-#if CONFIG_BUFFER_MODEL
   if (extra_cfg->timing_info_type == AOM_TIMING_EQUAL) {
     oxcf->timing_info.equal_picture_interval = 1;
     oxcf->decoder_model_info_present_flag = 0;
@@ -505,7 +486,6 @@ static aom_codec_err_t set_encoder_config(
     oxcf->buffer_removal_delay_present = 1;
     oxcf->operating_points_decoder_model_cnt = 1;
   }
-#endif
   if (oxcf->init_framerate > 180) {
     oxcf->init_framerate = 30;
     oxcf->timing_info_present = 0;
@@ -1189,21 +1169,6 @@ static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
   return AOM_CODEC_OK;
 }
 
-#if !CONFIG_BUFFER_MODEL
-// av1 uses 10,000,000 ticks/second as time stamp
-#define TICKS_PER_SEC 10000000LL
-
-static int64_t timebase_units_to_ticks(const aom_rational_t *timebase,
-                                       int64_t n) {
-  return n * TICKS_PER_SEC * timebase->num / timebase->den;
-}
-
-static int64_t ticks_to_timebase_units(const aom_rational_t *timebase,
-                                       int64_t n) {
-  const int64_t round = TICKS_PER_SEC * timebase->num / 2 - 1;
-  return (n * timebase->den + round) / timebase->num / TICKS_PER_SEC;
-}
-#endif
 static aom_codec_frame_flags_t get_frame_pkt_flags(const AV1_COMP *cpi,
                                                    unsigned int lib_flags) {
   aom_codec_frame_flags_t flags = lib_flags << 16;
@@ -1325,15 +1290,9 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
     // invisible frames get packed with the next visible frame
     while (cx_data_sz - index_size >= ctx->cx_data_sz / 2 &&
            !is_frame_visible &&
-#if CONFIG_BUFFER_MODEL
            -1 != av1_get_compressed_data(cpi, &lib_flags, &frame_size, cx_data,
                                          &dst_time_stamp, &dst_end_time_stamp,
                                          !img, timebase)) {
-#else
-           -1 != av1_get_compressed_data(cpi, &lib_flags, &frame_size, cx_data,
-                                         &dst_time_stamp, &dst_end_time_stamp,
-                                         !img)) {
-#endif
       if (cpi->common.seq_params.frame_id_numbers_present_flag) {
         if (cpi->common.invalid_delta_frame_id_minus_1) {
           ctx->base.err_detail = "Invalid delta_frame_id_minus_1";

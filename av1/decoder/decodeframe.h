@@ -49,11 +49,12 @@ void av1_decode_tg_tiles_and_wrapup(struct AV1Decoder *pbi, const uint8_t *data,
 // calling rb->error_handler() or aom_internal_error().
 void av1_read_color_config(AV1_COMMON *cm, struct aom_read_bit_buffer *rb,
                            int allow_lowbitdepth);
+
 // Implements the timing_info() function in the spec. Reports errors by calling
 // rb->error_handler().
 void av1_read_timing_info_header(AV1_COMMON *cm,
                                  struct aom_read_bit_buffer *rb);
-#if CONFIG_BUFFER_MODEL
+
 // Implements the decoder_model_info() function in the spec. Reports errors by
 // calling rb->error_handler().
 void av1_read_decoder_model_info(AV1_COMMON *cm,
@@ -63,7 +64,6 @@ void av1_read_decoder_model_info(AV1_COMMON *cm,
 // errors by calling rb->error_handler() or aom_internal_error().
 void av1_read_op_parameters_info(AV1_COMMON *const cm,
                                  struct aom_read_bit_buffer *rb, int op_num);
-#endif
 
 struct aom_read_bit_buffer *av1_init_read_bit_buffer(
     struct AV1Decoder *pbi, struct aom_read_bit_buffer *rb, const uint8_t *data,

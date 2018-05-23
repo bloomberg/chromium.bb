@@ -2908,48 +2908,29 @@ void av1_read_color_config(AV1_COMMON *cm, struct aom_read_bit_buffer *rb,
 
 void av1_read_timing_info_header(AV1_COMMON *cm,
                                  struct aom_read_bit_buffer *rb) {
-#if !CONFIG_BUFFER_MODEL
-  cm->timing_info_present = aom_rb_read_bit(rb);  // timing info present flag
-
-  if (cm->timing_info_present) {
-#endif
-#if CONFIG_BUFFER_MODEL
-    cm->timing_info.num_units_in_display_tick = aom_rb_read_unsigned_literal(
-        rb, 32);  // Number of units in a display tick
-    cm->timing_info.time_scale =
-        aom_rb_read_unsigned_literal(rb, 32);  // Time scale
-    if (cm->timing_info.num_units_in_display_tick == 0 ||
-        cm->timing_info.time_scale == 0) {
+  cm->timing_info.num_units_in_display_tick = aom_rb_read_unsigned_literal(
+      rb, 32);  // Number of units in a display tick
+  cm->timing_info.time_scale =
+      aom_rb_read_unsigned_literal(rb, 32);  // Time scale
+  if (cm->timing_info.num_units_in_display_tick == 0 ||
+      cm->timing_info.time_scale == 0) {
+    aom_internal_error(
+        &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+        "num_units_in_display_tick and time_scale must be greater than 0.");
+  }
+  cm->timing_info.equal_picture_interval =
+      aom_rb_read_bit(rb);  // Equal picture interval bit
+  if (cm->timing_info.equal_picture_interval) {
+    cm->timing_info.num_ticks_per_picture =
+        aom_rb_read_uvlc(rb) + 1;  // ticks per picture
+    if (cm->timing_info.num_ticks_per_picture == 0) {
       aom_internal_error(
           &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-          "num_units_in_display_tick and time_scale must be greater than 0.");
+          "num_ticks_per_picture_minus_1 cannot be (1 << 32) − 1.");
     }
-    cm->timing_info.equal_picture_interval =
-        aom_rb_read_bit(rb);  // Equal picture interval bit
-    if (cm->timing_info.equal_picture_interval) {
-      cm->timing_info.num_ticks_per_picture =
-          aom_rb_read_uvlc(rb) + 1;  // ticks per picture
-      if (cm->timing_info.num_ticks_per_picture == 0) {
-        aom_internal_error(
-            &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-            "num_ticks_per_picture_minus_1 cannot be (1 << 32) − 1.");
-      }
-#else
-  cm->num_units_in_tick =
-      aom_rb_read_unsigned_literal(rb, 32);  // Number of units in tick
-  cm->time_scale = aom_rb_read_unsigned_literal(rb, 32);  // Time scale
-  cm->equal_picture_interval =
-      aom_rb_read_bit(rb);  // Equal picture interval bit
-  if (cm->equal_picture_interval) {
-    cm->num_ticks_per_picture = aom_rb_read_uvlc(rb) + 1;  // ticks per picture
-#endif
-    }
-#if !CONFIG_BUFFER_MODEL
   }
-#endif
 }
 
-#if CONFIG_BUFFER_MODEL
 void av1_read_decoder_model_info(AV1_COMMON *cm,
                                  struct aom_read_bit_buffer *rb) {
   cm->buffer_model.bitrate_scale = aom_rb_read_literal(rb, 4);
@@ -2992,7 +2973,6 @@ static void av1_read_tu_pts_info(AV1_COMMON *const cm,
   cm->tu_presentation_delay =
       aom_rb_read_literal(rb, cm->buffer_model.frame_presentation_delay_length);
 }
-#endif
 
 void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   // rb->error_handler may be triggered during aom_rb_read_bit(), raising
@@ -3298,12 +3278,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       // Show an existing frame directly.
       const int existing_frame_idx = aom_rb_read_literal(rb, 3);
       const int frame_to_show = cm->ref_frame_map[existing_frame_idx];
-#if CONFIG_BUFFER_MODEL
       if (cm->decoder_model_info_present_flag &&
           cm->timing_info.equal_picture_interval == 0) {
         av1_read_tu_pts_info(cm, rb);
       }
-#endif
       if (cm->seq_params.frame_id_numbers_present_flag) {
         int frame_id_length = cm->seq_params.frame_id_length;
         int display_frame_id = aom_rb_read_literal(rb, frame_id_length);
@@ -3353,15 +3331,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                          "Still pictures must be coded as shown keyframes");
     }
     cm->showable_frame = 0;
-#if CONFIG_BUFFER_MODEL
     if (cm->show_frame) {
       if (cm->decoder_model_info_present_flag &&
           cm->timing_info.equal_picture_interval == 0)
         av1_read_tu_pts_info(cm, rb);
     } else {
-#else
-    if (!cm->show_frame) {
-#endif
       // See if this frame can be used as show_existing_frame in future
       cm->showable_frame = aom_rb_read_bit(rb);
     }
@@ -3449,7 +3423,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
   }
 
-#if CONFIG_BUFFER_MODEL
   if (cm->decoder_model_info_present_flag) {
     cm->buffer_removal_delay_present = aom_rb_read_bit(rb);
     if (cm->buffer_removal_delay_present) {
@@ -3469,7 +3442,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       }
     }
   }
-#endif
   if (cm->frame_type == KEY_FRAME) {
     if (!cm->show_frame)  // unshown keyframe (forward keyframe)
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
