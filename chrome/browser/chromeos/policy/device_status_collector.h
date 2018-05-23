@@ -94,7 +94,7 @@ class DeviceStatusCollector {
   // the default implementation. These callbacks are always executed on Blocking
   // Pool. If |is_enterprise_device| additional enterprise relevant status data
   // will be reported.
-  DeviceStatusCollector(PrefService* local_state,
+  DeviceStatusCollector(PrefService* pref_service,
                         chromeos::system::StatisticsProvider* provider,
                         const VolumeInfoFetcher& volume_info_fetcher,
                         const CPUStatisticsFetcher& cpu_statistics_fetcher,
@@ -150,12 +150,12 @@ class DeviceStatusCollector {
 
   // The timeout in the past to store device activity.
   // This is kept in case device status uploads fail for a number of days.
-  base::TimeDelta max_stored_past_activity_;
+  base::TimeDelta max_stored_past_activity_interval_;
 
   // The timeout in the future to store device activity.
   // When changing the system time and/or timezones, it's possible to record
   // activity time that is slightly in the future.
-  base::TimeDelta max_stored_future_activity_;
+  base::TimeDelta max_stored_future_activity_interval_;
 
  private:
   class ActivityStorage;
@@ -212,7 +212,11 @@ class DeviceStatusCollector {
   // Callback invoked when reporting users pref is changed.
   void ReportingUsersChanged();
 
-  PrefService* const local_state_;
+  // Called when |pref_service_| is initialized.
+  void OnPrefServiceInitialized(bool succeeded);
+
+  // Pref service that is mainly used to store activity periods for reporting.
+  PrefService* const pref_service_;
 
   // The last time an idle state check was performed.
   base::Time last_idle_check_;

@@ -215,6 +215,8 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // Observer called on profile shutdown.
   void ProfileShutdown();
 
+  void CreateStatusUploader();
+
   // Profile associated with the current user.
   Profile* const profile_;
 

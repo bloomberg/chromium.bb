@@ -1729,6 +1729,10 @@ const char kAutoEnrollmentPowerLimit[] = "AutoEnrollmentPowerLimit";
 // them to the policy server.
 const char kDeviceActivityTimes[] = "device_status.activity_times";
 
+// A pref that stores user activity times before reporting them to the policy
+// server.
+const char kUserActivityTimes[] = "consumer_device_status.activity_times";
+
 // A pref holding the value of the policy used to disable mounting of external
 // storage for the user.
 const char kExternalStorageDisabled[] = "hardware.external_storage_disabled";
