@@ -54,17 +54,19 @@ void HitTestManager::OnSurfaceActivated(
 void HitTestManager::SubmitHitTestRegionList(
     const SurfaceId& surface_id,
     const uint64_t frame_index,
-    mojom::HitTestRegionListPtr hit_test_region_list) {
-  if (!ValidateHitTestRegionList(surface_id, hit_test_region_list))
+    base::Optional<HitTestRegionList> hit_test_region_list) {
+  if (!hit_test_region_list)
+    return;
+  if (!ValidateHitTestRegionList(surface_id, &*hit_test_region_list))
     return;
   // TODO(gklassen): Runtime validation that hit_test_region_list is valid.
   // TODO(gklassen): Inform FrameSink that the hit_test_region_list is invalid.
   // TODO(gklassen): FrameSink needs to inform the host of a difficult renderer.
   hit_test_region_lists_[surface_id][frame_index] =
-      std::move(hit_test_region_list);
+      std::move(*hit_test_region_list);
 }
 
-const mojom::HitTestRegionList* HitTestManager::GetActiveHitTestRegionList(
+const HitTestRegionList* HitTestManager::GetActiveHitTestRegionList(
     LatestLocalSurfaceIdLookupDelegate* delegate,
     const FrameSinkId& frame_sink_id) const {
   if (!delegate)
@@ -89,23 +91,20 @@ const mojom::HitTestRegionList* HitTestManager::GetActiveHitTestRegionList(
   if (search2 == frame_index_map.end())
     return nullptr;
 
-  return search2->second.get();
+  return &search2->second;
 }
 
 bool HitTestManager::ValidateHitTestRegionList(
     const SurfaceId& surface_id,
-    const mojom::HitTestRegionListPtr& hit_test_region_list) {
-  if (!hit_test_region_list)
-    return false;
+    HitTestRegionList* hit_test_region_list) {
   if (hit_test_region_list->regions.size() > kMaxRegionsPerSurface)
     return false;
   for (auto& region : hit_test_region_list->regions) {
     // TODO(gklassen): Ensure that |region->frame_sink_id| is a child of
     // |frame_sink_id|.
-    if (region->frame_sink_id.client_id() == 0) {
-      region->frame_sink_id =
-          FrameSinkId(surface_id.frame_sink_id().client_id(),
-                      region->frame_sink_id.sink_id());
+    if (region.frame_sink_id.client_id() == 0) {
+      region.frame_sink_id = FrameSinkId(surface_id.frame_sink_id().client_id(),
+                                         region.frame_sink_id.sink_id());
     }
   }
   return true;

@@ -67,6 +67,8 @@ viz_component("common") {
     "gpu/texture_allocation.cc",
     "gpu/texture_allocation.h",
     "hit_test/aggregated_hit_test_region.h",
+    "hit_test/hit_test_region_list.cc",
+    "hit_test/hit_test_region_list.h",
     "quads/compositor_frame.cc",
     "quads/compositor_frame.h",
     "quads/compositor_frame_metadata.cc",

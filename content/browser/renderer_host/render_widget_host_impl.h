@@ -637,7 +637,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
-      viz::mojom::HitTestRegionListPtr hit_test_region_list,
+      base::Optional<viz::HitTestRegionList> hit_test_region_list,
       uint64_t submit_time) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
@@ -1148,7 +1148,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   struct {
     viz::LocalSurfaceId local_surface_id;
     viz::CompositorFrame frame;
-    viz::mojom::HitTestRegionListPtr hit_test_region_list;
+    base::Optional<viz::HitTestRegionList> hit_test_region_list;
   } saved_frame_;
 
   bool enable_surface_synchronization_ = false;

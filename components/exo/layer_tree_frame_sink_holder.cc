@@ -8,6 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/surface_tree_host.h"
+#include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/resources/returned_resource.h"
 
 namespace exo {
@@ -117,6 +118,11 @@ void LayerTreeFrameSinkHolder::SetBeginFrameSource(
     viz::BeginFrameSource* source) {
   if (surface_tree_host_)
     surface_tree_host_->SetBeginFrameSource(source);
+}
+
+base::Optional<viz::HitTestRegionList>
+LayerTreeFrameSinkHolder::BuildHitTestData() {
+  return {};
 }
 
 void LayerTreeFrameSinkHolder::ReclaimResources(

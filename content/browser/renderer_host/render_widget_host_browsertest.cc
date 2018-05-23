@@ -79,8 +79,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostBrowserTest,
   // Submit the frame and expect the renderer to be instantly killed.
   auto* const host = RenderWidgetHostImpl::From(view->GetRenderWidgetHost());
   RenderProcessHostKillWaiter waiter(host->GetProcess());
-  host->SubmitCompositorFrame(viz::LocalSurfaceId(), std::move(frame), nullptr,
-                              0);
+  host->SubmitCompositorFrame(viz::LocalSurfaceId(), std::move(frame),
+                              base::nullopt, 0);
   base::Optional<bad_message::BadMessageReason> result = waiter.Wait();
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(bad_message::RWH_COPY_REQUEST_ATTEMPT, *result);

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VIZ_SERVICE_HIT_TEST_HIT_TEST_MANAGER_H_
 #define COMPONENTS_VIZ_SERVICE_HIT_TEST_HIT_TEST_MANAGER_H_
 
+#include "base/optional.h"
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -40,22 +41,23 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
   void SubmitHitTestRegionList(
       const SurfaceId& surface_id,
       const uint64_t frame_index,
-      mojom::HitTestRegionListPtr hit_test_region_list);
+      base::Optional<HitTestRegionList> hit_test_region_list);
 
   // Returns the HitTestRegionList corresponding to the given
   // |frame_sink_id| and the active CompositorFrame matched by frame_index.
-  const mojom::HitTestRegionList* GetActiveHitTestRegionList(
+  // The returned pointer is not stable and should not be stored or used after
+  // calling any non-const methods on this class.
+  const HitTestRegionList* GetActiveHitTestRegionList(
       LatestLocalSurfaceIdLookupDelegate* delegate,
       const FrameSinkId& frame_sink_id) const;
 
  private:
-  bool ValidateHitTestRegionList(
-      const SurfaceId& surface_id,
-      const mojom::HitTestRegionListPtr& hit_test_region_list);
+  bool ValidateHitTestRegionList(const SurfaceId& surface_id,
+                                 HitTestRegionList* hit_test_region_list);
 
   SurfaceManager* const surface_manager_;
 
-  std::map<SurfaceId, base::flat_map<uint64_t, mojom::HitTestRegionListPtr>>
+  std::map<SurfaceId, base::flat_map<uint64_t, HitTestRegionList>>
       hit_test_region_lists_;
 
   DISALLOW_COPY_AND_ASSIGN(HitTestManager);

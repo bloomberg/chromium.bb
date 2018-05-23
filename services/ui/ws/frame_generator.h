@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
@@ -66,7 +67,7 @@ class FrameGenerator : public viz::mojom::CompositorFrameSinkClient {
 
   viz::CompositorFrame GenerateCompositorFrame();
 
-  viz::mojom::HitTestRegionListPtr GenerateHitTestRegionList() const;
+  viz::HitTestRegionList GenerateHitTestRegionList() const;
 
   // DrawWindow creates SurfaceDrawQuad for the window manager and appends it to
   // the provided viz::RenderPass.

@@ -171,19 +171,18 @@ viz::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
   return frame;
 }
 
-viz::mojom::HitTestRegionListPtr FrameGenerator::GenerateHitTestRegionList()
-    const {
-  auto hit_test_region_list = viz::mojom::HitTestRegionList::New();
-  hit_test_region_list->flags = viz::mojom::kHitTestMine;
-  hit_test_region_list->bounds.set_size(pixel_size_);
+viz::HitTestRegionList FrameGenerator::GenerateHitTestRegionList() const {
+  viz::HitTestRegionList hit_test_region_list;
+  hit_test_region_list.flags = viz::HitTestRegionFlags::kHitTestMine;
+  hit_test_region_list.bounds.set_size(pixel_size_);
 
-  auto hit_test_region = viz::mojom::HitTestRegion::New();
-  hit_test_region->frame_sink_id =
+  viz::HitTestRegion hit_test_region;
+  hit_test_region.frame_sink_id =
       window_manager_surface_info_.id().frame_sink_id();
-  hit_test_region->flags = viz::mojom::kHitTestChildSurface;
-  hit_test_region->rect = gfx::Rect(pixel_size_);
+  hit_test_region.flags = viz::HitTestRegionFlags::kHitTestChildSurface;
+  hit_test_region.rect = gfx::Rect(pixel_size_);
 
-  hit_test_region_list->regions.push_back(std::move(hit_test_region));
+  hit_test_region_list.regions.push_back(std::move(hit_test_region));
 
   return hit_test_region_list;
 }
