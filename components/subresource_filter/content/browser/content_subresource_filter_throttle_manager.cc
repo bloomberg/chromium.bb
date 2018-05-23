@@ -365,6 +365,15 @@ ContentSubresourceFilterThrottleManager::GetParentFrameFilter(
 void ContentSubresourceFilterThrottleManager::MaybeCallFirstDisallowedLoad() {
   if (current_committed_load_has_notified_disallowed_load_)
     return;
+
+  // This shouldn't happen normally, but in the rare case that an IPC from a
+  // previous page arrives late we should guard against it.
+  auto it = activated_frame_hosts_.find(web_contents()->GetMainFrame());
+  if (it == activated_frame_hosts_.end() ||
+      it->second->activation_state().activation_level !=
+          ActivationLevel::ENABLED) {
+    return;
+  }
   delegate_->OnFirstSubresourceLoadDisallowed();
   current_committed_load_has_notified_disallowed_load_ = true;
 }

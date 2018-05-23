@@ -123,6 +123,8 @@ class ContentSubresourceFilterThrottleManager
                            GrandchildNavigationTaggedAsAdByRenderer);
   FRIEND_TEST_ALL_PREFIXES(ContentSubresourceFilterThrottleManagerTest,
                            AdTagCarriesAcrossProcesses);
+  FRIEND_TEST_ALL_PREFIXES(ContentSubresourceFilterThrottleManagerTest,
+                           FirstDisallowedLoadCalledOutOfOrder);
   std::unique_ptr<SubframeNavigationFilteringThrottle>
   MaybeCreateSubframeNavigationFilteringThrottle(
       content::NavigationHandle* navigation_handle);

@@ -925,6 +925,21 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_EQ(0, disallowed_notification_count());
 }
 
+TEST_P(ContentSubresourceFilterThrottleManagerTest,
+       FirstDisallowedLoadCalledOutOfOrder) {
+  NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
+  NavigateAndCommitMainFrame(GURL(kTestURLWithNoActivation));
+
+  // Simulate the previous navigation sending an IPC that a load was disallowed.
+  // This could happen e.g. for cross-process navigations, which have no
+  // ordering guarantees.
+  throttle_manager()->OnMessageReceived(
+      SubresourceFilterHostMsg_DidDisallowFirstSubresource(
+          main_rfh()->GetRoutingID()),
+      main_rfh());
+  EXPECT_EQ(0, disallowed_notification_count());
+}
+
 // TODO(csharrison): Make sure the following conditions are exercised in tests:
 //
 // - Synchronous navigations to about:blank. These hit issues with the
