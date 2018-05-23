@@ -57,6 +57,7 @@ void D3D11VideoDecoderImpl::Initialize(
     const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) {
   init_cb_ = init_cb;
   output_cb_ = output_cb;
+  is_encrypted_ = config.is_encrypted();
 
   stub_ = get_stub_cb_.Run();
   if (!MakeContextCurrent(stub_)) {
@@ -155,6 +156,9 @@ void D3D11VideoDecoderImpl::Initialize(
     return;
   }
 
+  if (is_encrypted_)
+    dec_config.guidConfigBitstreamEncryption = D3D11_DECODER_ENCRYPTION_HW_CENC;
+
   memcpy(&decoder_guid_, &decoder_guid, sizeof decoder_guid_);
 
   Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
@@ -206,7 +210,6 @@ void D3D11VideoDecoderImpl::DoDecode() {
     }
     current_buffer_ = std::move(input_buffer_queue_.front().first);
     current_decode_cb_ = input_buffer_queue_.front().second;
-    current_timestamp_ = current_buffer_->timestamp();
     input_buffer_queue_.pop_front();
     if (current_buffer_->end_of_stream()) {
       // Flush, then signal the decode cb once all pictures have been output.
@@ -221,9 +224,13 @@ void D3D11VideoDecoderImpl::DoDecode() {
       std::move(current_decode_cb_).Run(DecodeStatus::OK);
       return;
     }
-    accelerated_video_decoder_->SetStream(
-        -1, (const uint8_t*)current_buffer_->data(),
-        current_buffer_->data_size());
+    // This must be after checking for EOS because there is no timestamp for an
+    // EOS buffer.
+    current_timestamp_ = current_buffer_->timestamp();
+
+    accelerated_video_decoder_->SetStream(-1, current_buffer_->data(),
+                                          current_buffer_->data_size(),
+                                          current_buffer_->decrypt_config());
   }
 
   while (true) {
@@ -310,6 +317,8 @@ void D3D11VideoDecoderImpl::CreatePictureBuffers() {
   texture_desc.Usage = D3D11_USAGE_DEFAULT;
   texture_desc.BindFlags = D3D11_BIND_DECODER | D3D11_BIND_SHADER_RESOURCE;
   texture_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
+  if (is_encrypted_)
+    texture_desc.MiscFlags |= D3D11_RESOURCE_MISC_HW_PROTECTED;
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> out_texture;
   HRESULT hr = device_->CreateTexture2D(&texture_desc, nullptr,
@@ -367,7 +376,13 @@ void D3D11VideoDecoderImpl::OutputResult(D3D11PictureBuffer* buffer) {
       &D3D11VideoDecoderImpl::OnMailboxReleased, weak_factory_.GetWeakPtr(),
       scoped_refptr<D3D11PictureBuffer>(buffer))));
   frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
+  // For NV12, overlay is allowed by default. If the decoder is going to support
+  // non-NV12 textures, then this may have to be conditionally set. Also note
+  // that ALLOW_OVERLAY is required for encrypted video path.
+  frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
 
+  if (is_encrypted_)
+    frame->metadata()->SetBoolean(VideoFrameMetadata::PROTECTED_VIDEO, true);
   output_cb_.Run(frame);
 }
 

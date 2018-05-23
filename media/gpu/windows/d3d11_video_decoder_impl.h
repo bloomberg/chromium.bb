@@ -108,6 +108,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
   // During init, these will be set.
   InitCB init_cb_;
   OutputCB output_cb_;
+  bool is_encrypted_ = false;
 
   // It would be nice to unique_ptr these, but we give a ref to the VideoFrame
   // so that the texture is retained until the mailbox is opened.
