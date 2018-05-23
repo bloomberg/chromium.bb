@@ -4,32 +4,32 @@
 <script src="../../assert_selection.js"></script>
 <script>
 selection_test(
-  '<div dir="ltr">|<br>abc</div>',
+  '<div contenteditable dir="ltr">|<br>abc</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div dir="ltr"><br>|abc</div>',
+  '<div contenteditable dir="ltr"><br>|abc</div>',
   '3-0 ltr right character');
 
 selection_test(
-  '<div dir="ltr"><br>|abc</div>',
+  '<div contenteditable dir="ltr"><br>|abc</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div dir="ltr"><br>a|bc</div>',
+  '<div contenteditable dir="ltr"><br>a|bc</div>',
   '3-1 ltr right character');
 
 selection_test(
-  '<div dir="ltr"><br>a|bc</div>',
+  '<div contenteditable dir="ltr"><br>a|bc</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div dir="ltr"><br>ab|c</div>',
+  '<div contenteditable dir="ltr"><br>ab|c</div>',
   '3-2 ltr right character');
 
 selection_test(
-  '<div dir="ltr"><br>ab|c</div>',
+  '<div contenteditable dir="ltr"><br>ab|c</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div dir="ltr"><br>abc|</div>',
+  '<div contenteditable dir="ltr"><br>abc|</div>',
   '3-3 ltr right character');
 
 selection_test(
-  '<div dir="ltr"><br>abc|</div>',
+  '<div contenteditable dir="ltr"><br>abc|</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div dir="ltr"><br>abc|</div>',
+  '<div contenteditable dir="ltr"><br>abc|</div>',
   '3-4 ltr right character');
 </script>

@@ -4,32 +4,32 @@
 <script src="../../assert_selection.js"></script>
 <script>
 selection_test(
-  '<div dir="rtl">|<br>\u05D0\u05D1\u05D2</div>',
+  '<div contenteditable dir="rtl">|<br>\u05D0\u05D1\u05D2</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div dir="rtl">|<br>\u05D0\u05D1\u05D2</div>',
+  '<div contenteditable dir="rtl">|<br>\u05D0\u05D1\u05D2</div>',
   '4-0 rtl right character');
 
 selection_test(
-  '<div dir="rtl"><br>|\u05D0\u05D1\u05D2</div>',
+  '<div contenteditable dir="rtl"><br>|\u05D0\u05D1\u05D2</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div dir="rtl">|<br>\u05D0\u05D1\u05D2</div>',
+  '<div contenteditable dir="rtl">|<br>\u05D0\u05D1\u05D2</div>',
   '4-1 rtl right character');
 
 selection_test(
-  '<div dir="rtl"><br>\u05D0|\u05D1\u05D2</div>',
+  '<div contenteditable dir="rtl"><br>\u05D0|\u05D1\u05D2</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div dir="rtl"><br>|\u05D0\u05D1\u05D2</div>',
+  '<div contenteditable dir="rtl"><br>|\u05D0\u05D1\u05D2</div>',
   '4-2 rtl right character');
 
 selection_test(
-  '<div dir="rtl"><br>\u05D0\u05D1|\u05D2</div>',
+  '<div contenteditable dir="rtl"><br>\u05D0\u05D1|\u05D2</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div dir="rtl"><br>\u05D0|\u05D1\u05D2</div>',
+  '<div contenteditable dir="rtl"><br>\u05D0|\u05D1\u05D2</div>',
   '4-3 rtl right character');
 
 selection_test(
-  '<div dir="rtl"><br>\u05D0\u05D1\u05D2|</div>',
+  '<div contenteditable dir="rtl"><br>\u05D0\u05D1\u05D2|</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div dir="rtl"><br>\u05D0\u05D1|\u05D2</div>',
+  '<div contenteditable dir="rtl"><br>\u05D0\u05D1|\u05D2</div>',
   '4-4 rtl right character');
 </script>
