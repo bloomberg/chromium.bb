@@ -29,6 +29,7 @@ static INLINE void compute_avg_4x4(
     const int16x4_t sub_const_vec, const int16_t round_bits,
     const int32_t use_jnt_comp_avg, uint8x8_t *t0, uint8x8_t *t1) {
   int16x4_t tmp0, tmp1, tmp2, tmp3;
+  uint16x4_t tmp_u0, tmp_u1, tmp_u2, tmp_u3;
   uint32x4_t sum0, sum1, sum2, sum3;
 
   int32x4_t dst0, dst1, dst2, dst3;
@@ -36,10 +37,8 @@ static INLINE void compute_avg_4x4(
   const int16x8_t zero = vdupq_n_s16(0);
 
   if (use_jnt_comp_avg) {
-    int32_t dist_prec_bits = -DIST_PRECISION_BITS;
     const int32x4_t round_bits_vec = vdupq_n_s32((int32_t)(-round_bits));
     const int32x4_t const_vec = vmovl_s16(sub_const_vec);
-    const int32x4_t dist_prec_bit_vec = vdupq_n_s32(dist_prec_bits);
 
     sum0 = vmull_n_u16(res0, fwd_offset);
     sum0 = vmlal_n_u16(sum0, d0, bck_offset);
@@ -50,14 +49,10 @@ static INLINE void compute_avg_4x4(
     sum3 = vmull_n_u16(res3, fwd_offset);
     sum3 = vmlal_n_u16(sum3, d3, bck_offset);
 
-    sum0 = vreinterpretq_u32_s32(
-        vshlq_s32(vreinterpretq_s32_u32(sum0), dist_prec_bit_vec));
-    sum1 = vreinterpretq_u32_s32(
-        vshlq_s32(vreinterpretq_s32_u32(sum1), dist_prec_bit_vec));
-    sum2 = vreinterpretq_u32_s32(
-        vshlq_s32(vreinterpretq_s32_u32(sum2), dist_prec_bit_vec));
-    sum3 = vreinterpretq_u32_s32(
-        vshlq_s32(vreinterpretq_s32_u32(sum3), dist_prec_bit_vec));
+    sum0 = vshrq_n_u32(sum0, DIST_PRECISION_BITS);
+    sum1 = vshrq_n_u32(sum1, DIST_PRECISION_BITS);
+    sum2 = vshrq_n_u32(sum2, DIST_PRECISION_BITS);
+    sum3 = vshrq_n_u32(sum3, DIST_PRECISION_BITS);
 
     dst0 = vsubq_s32(vreinterpretq_s32_u32(sum0), const_vec);
     dst1 = vsubq_s32(vreinterpretq_s32_u32(sum1), const_vec);
@@ -82,15 +77,15 @@ static INLINE void compute_avg_4x4(
     *t1 = vqmovn_u16(vreinterpretq_u16_s16(tmp5));
   } else {
     const int16x4_t round_bits_vec = vdup_n_s16(-round_bits);
-    tmp0 = vhadd_s16(vreinterpret_s16_u16(res0), vreinterpret_s16_u16(d0));
-    tmp1 = vhadd_s16(vreinterpret_s16_u16(res1), vreinterpret_s16_u16(d1));
-    tmp2 = vhadd_s16(vreinterpret_s16_u16(res2), vreinterpret_s16_u16(d2));
-    tmp3 = vhadd_s16(vreinterpret_s16_u16(res3), vreinterpret_s16_u16(d3));
+    tmp_u0 = vhadd_u16(res0, d0);
+    tmp_u1 = vhadd_u16(res1, d1);
+    tmp_u2 = vhadd_u16(res2, d2);
+    tmp_u3 = vhadd_u16(res3, d3);
 
-    tmp0 = vsub_s16(tmp0, sub_const_vec);
-    tmp1 = vsub_s16(tmp1, sub_const_vec);
-    tmp2 = vsub_s16(tmp2, sub_const_vec);
-    tmp3 = vsub_s16(tmp3, sub_const_vec);
+    tmp0 = vsub_s16(vreinterpret_s16_u16(tmp_u0), sub_const_vec);
+    tmp1 = vsub_s16(vreinterpret_s16_u16(tmp_u1), sub_const_vec);
+    tmp2 = vsub_s16(vreinterpret_s16_u16(tmp_u2), sub_const_vec);
+    tmp3 = vsub_s16(vreinterpret_s16_u16(tmp_u3), sub_const_vec);
 
     tmp0 = vqrshl_s16(tmp0, round_bits_vec);
     tmp1 = vqrshl_s16(tmp1, round_bits_vec);
@@ -104,6 +99,127 @@ static INLINE void compute_avg_4x4(
 
     *t0 = vqmovn_u16(vreinterpretq_u16_s16(tmp4));
     *t1 = vqmovn_u16(vreinterpretq_u16_s16(tmp5));
+  }
+}
+
+static INLINE void compute_avg_8x4(
+    uint16x8_t res0, uint16x8_t res1, uint16x8_t res2, uint16x8_t res3,
+    uint16x8_t d0, uint16x8_t d1, uint16x8_t d2, uint16x8_t d3,
+    const uint16_t fwd_offset, const uint16_t bck_offset,
+    const int16x4_t sub_const, const int16_t round_bits,
+    const int32_t use_jnt_comp_avg, uint8x8_t *t0, uint8x8_t *t1, uint8x8_t *t2,
+    uint8x8_t *t3) {
+  int16x4_t tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
+  int16x8_t f0, f1, f2, f3;
+  uint32x4_t sum0, sum1, sum2, sum3;
+  uint32x4_t sum4, sum5, sum6, sum7;
+  int32x4_t dst0, dst1, dst2, dst3;
+  int32x4_t dst4, dst5, dst6, dst7;
+  uint16x8_t tmp_u0, tmp_u1, tmp_u2, tmp_u3;
+  const int16x8_t zero = vdupq_n_s16(0);
+
+  if (use_jnt_comp_avg) {
+    const int32x4_t sub_const_vec = vmovl_s16(sub_const);
+    const int32x4_t round_bits_vec = vdupq_n_s32(-(int32_t)round_bits);
+
+    sum0 = vmull_n_u16(vget_low_u16(res0), fwd_offset);
+    sum0 = vmlal_n_u16(sum0, vget_low_u16(d0), bck_offset);
+    sum1 = vmull_n_u16(vget_low_u16(res1), fwd_offset);
+    sum1 = vmlal_n_u16(sum1, vget_low_u16(d1), bck_offset);
+    sum0 = vshrq_n_u32(sum0, DIST_PRECISION_BITS);
+    sum1 = vshrq_n_u32(sum1, DIST_PRECISION_BITS);
+
+    sum2 = vmull_n_u16(vget_high_u16(res0), fwd_offset);
+    sum2 = vmlal_n_u16(sum2, vget_high_u16(d0), bck_offset);
+    sum3 = vmull_n_u16(vget_high_u16(res1), fwd_offset);
+    sum3 = vmlal_n_u16(sum3, vget_high_u16(d1), bck_offset);
+    sum2 = vshrq_n_u32(sum2, DIST_PRECISION_BITS);
+    sum3 = vshrq_n_u32(sum3, DIST_PRECISION_BITS);
+
+    sum4 = vmull_n_u16(vget_low_u16(res2), fwd_offset);
+    sum4 = vmlal_n_u16(sum4, vget_low_u16(d2), bck_offset);
+    sum5 = vmull_n_u16(vget_low_u16(res3), fwd_offset);
+    sum5 = vmlal_n_u16(sum5, vget_low_u16(d3), bck_offset);
+    sum4 = vshrq_n_u32(sum4, DIST_PRECISION_BITS);
+    sum5 = vshrq_n_u32(sum5, DIST_PRECISION_BITS);
+
+    sum6 = vmull_n_u16(vget_high_u16(res2), fwd_offset);
+    sum6 = vmlal_n_u16(sum6, vget_high_u16(d2), bck_offset);
+    sum7 = vmull_n_u16(vget_high_u16(res3), fwd_offset);
+    sum7 = vmlal_n_u16(sum7, vget_high_u16(d3), bck_offset);
+    sum6 = vshrq_n_u32(sum6, DIST_PRECISION_BITS);
+    sum7 = vshrq_n_u32(sum7, DIST_PRECISION_BITS);
+
+    dst0 = vsubq_s32(vreinterpretq_s32_u32(sum0), sub_const_vec);
+    dst1 = vsubq_s32(vreinterpretq_s32_u32(sum1), sub_const_vec);
+    dst2 = vsubq_s32(vreinterpretq_s32_u32(sum2), sub_const_vec);
+    dst3 = vsubq_s32(vreinterpretq_s32_u32(sum3), sub_const_vec);
+    dst4 = vsubq_s32(vreinterpretq_s32_u32(sum4), sub_const_vec);
+    dst5 = vsubq_s32(vreinterpretq_s32_u32(sum5), sub_const_vec);
+    dst6 = vsubq_s32(vreinterpretq_s32_u32(sum6), sub_const_vec);
+    dst7 = vsubq_s32(vreinterpretq_s32_u32(sum7), sub_const_vec);
+
+    dst0 = vqrshlq_s32(dst0, round_bits_vec);
+    dst1 = vqrshlq_s32(dst1, round_bits_vec);
+    dst2 = vqrshlq_s32(dst2, round_bits_vec);
+    dst3 = vqrshlq_s32(dst3, round_bits_vec);
+    dst4 = vqrshlq_s32(dst4, round_bits_vec);
+    dst5 = vqrshlq_s32(dst5, round_bits_vec);
+    dst6 = vqrshlq_s32(dst6, round_bits_vec);
+    dst7 = vqrshlq_s32(dst7, round_bits_vec);
+
+    tmp0 = vqmovn_s32(dst0);
+    tmp1 = vqmovn_s32(dst1);
+    tmp2 = vqmovn_s32(dst2);
+    tmp3 = vqmovn_s32(dst3);
+    tmp4 = vqmovn_s32(dst4);
+    tmp5 = vqmovn_s32(dst5);
+    tmp6 = vqmovn_s32(dst6);
+    tmp7 = vqmovn_s32(dst7);
+
+    f0 = vcombine_s16(tmp0, tmp2);
+    f1 = vcombine_s16(tmp1, tmp3);
+    f2 = vcombine_s16(tmp4, tmp6);
+    f3 = vcombine_s16(tmp5, tmp7);
+
+    f0 = vmaxq_s16(f0, zero);
+    f1 = vmaxq_s16(f1, zero);
+    f2 = vmaxq_s16(f2, zero);
+    f3 = vmaxq_s16(f3, zero);
+
+    *t0 = vqmovn_u16(vreinterpretq_u16_s16(f0));
+    *t1 = vqmovn_u16(vreinterpretq_u16_s16(f1));
+    *t2 = vqmovn_u16(vreinterpretq_u16_s16(f2));
+    *t3 = vqmovn_u16(vreinterpretq_u16_s16(f3));
+
+  } else {
+    const int16x8_t sub_const_vec = vcombine_s16(sub_const, sub_const);
+    const int16x8_t round_bits_vec = vdupq_n_s16(-round_bits);
+
+    tmp_u0 = vhaddq_u16(res0, d0);
+    tmp_u1 = vhaddq_u16(res1, d1);
+    tmp_u2 = vhaddq_u16(res2, d2);
+    tmp_u3 = vhaddq_u16(res3, d3);
+
+    f0 = vsubq_s16(vreinterpretq_s16_u16(tmp_u0), sub_const_vec);
+    f1 = vsubq_s16(vreinterpretq_s16_u16(tmp_u1), sub_const_vec);
+    f2 = vsubq_s16(vreinterpretq_s16_u16(tmp_u2), sub_const_vec);
+    f3 = vsubq_s16(vreinterpretq_s16_u16(tmp_u3), sub_const_vec);
+
+    f0 = vqrshlq_s16(f0, round_bits_vec);
+    f1 = vqrshlq_s16(f1, round_bits_vec);
+    f2 = vqrshlq_s16(f2, round_bits_vec);
+    f3 = vqrshlq_s16(f3, round_bits_vec);
+
+    f0 = vmaxq_s16(f0, zero);
+    f1 = vmaxq_s16(f1, zero);
+    f2 = vmaxq_s16(f2, zero);
+    f3 = vmaxq_s16(f3, zero);
+
+    *t0 = vqmovn_u16(vreinterpretq_u16_s16(f0));
+    *t1 = vqmovn_u16(vreinterpretq_u16_s16(f1));
+    *t2 = vqmovn_u16(vreinterpretq_u16_s16(f2));
+    *t3 = vqmovn_u16(vreinterpretq_u16_s16(f3));
   }
 }
 
@@ -433,4 +549,130 @@ void av1_jnt_convolve_2d_neon(const uint8_t *src, int src_stride, uint8_t *dst8,
 
   jnt_convolve_2d_vert_neon(im_block, im_stride, dst8, dst8_stride, conv_params,
                             y_filter, h, w);
+}
+
+void av1_jnt_convolve_2d_copy_neon(const uint8_t *src, int src_stride,
+                                   uint8_t *dst8, int dst8_stride, int w, int h,
+                                   InterpFilterParams *filter_params_x,
+                                   InterpFilterParams *filter_params_y,
+                                   const int subpel_x_q4, const int subpel_y_q4,
+                                   ConvolveParams *conv_params) {
+  uint8x8_t res0_8, res1_8, res2_8, res3_8, tmp_shift0, tmp_shift1, tmp_shift2,
+      tmp_shift3;
+  uint16x8_t res_q0, res_q1, res_q2, res_q3, tmp_q0, tmp_q1, tmp_q2, tmp_q3;
+  uint16x4_t tmp4, tmp5, tmp6, tmp7, res4, res5, res6, res7;
+  const uint8_t *src1, *src2;
+  uint8_t *dst8_1;
+  CONV_BUF_TYPE *dst = conv_params->dst, *dst_1, *dst_2;
+  const int dst_stride = conv_params->dst_stride;
+  int x, y;
+  const int16_t bits =
+      FILTER_BITS * 2 - conv_params->round_1 - conv_params->round_0;
+  const int bd = 8;
+  const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
+  const int round_offset = (1 << (offset_bits - conv_params->round_1)) +
+                           (1 << (offset_bits - conv_params->round_1 - 1));
+  const int16x4_t sub_const_vec = vdup_n_s16((int16_t)round_offset);
+  const uint16x8_t dup_round_offset16x8 = vdupq_n_u16((uint16_t)round_offset);
+  const int16x4_t dup_bits16x4 = vdup_n_s16(bits);
+  const int16x8_t dup_bits16x8 = vdupq_n_s16(bits);
+
+  (void)filter_params_x;
+  (void)filter_params_y;
+  (void)subpel_x_q4;
+  (void)subpel_y_q4;
+
+  if (!(w & 0x07)) {
+    for (y = 0; y < (h >> 2); ++y) {
+      src1 = src;
+      dst8_1 = dst8;
+      dst_1 = dst;
+      for (x = 0; x < (w >> 3); ++x) {
+        src2 = src1;
+        load_u8_8x4(src2, src_stride, &res0_8, &res1_8, &res2_8, &res3_8);
+
+        res_q0 = vaddq_u16(vshlq_u16(vmovl_u8(res0_8), dup_bits16x8),
+                           dup_round_offset16x8);
+        res_q1 = vaddq_u16(vshlq_u16(vmovl_u8(res1_8), dup_bits16x8),
+                           dup_round_offset16x8);
+        res_q2 = vaddq_u16(vshlq_u16(vmovl_u8(res2_8), dup_bits16x8),
+                           dup_round_offset16x8);
+        res_q3 = vaddq_u16(vshlq_u16(vmovl_u8(res3_8), dup_bits16x8),
+                           dup_round_offset16x8);
+
+        if (conv_params->do_average) {
+          dst_2 = dst_1;
+          load_u16_8x4(dst_2, dst_stride, &tmp_q0, &tmp_q1, &tmp_q2, &tmp_q3);
+
+          compute_avg_8x4(tmp_q0, tmp_q1, tmp_q2, tmp_q3, res_q0, res_q1,
+                          res_q2, res_q3, conv_params->fwd_offset,
+                          conv_params->bck_offset, sub_const_vec, bits,
+                          conv_params->use_jnt_comp_avg, &tmp_shift0,
+                          &tmp_shift1, &tmp_shift2, &tmp_shift3);
+
+          vst1_u8(dst8_1 + (0 * dst8_stride), tmp_shift0);
+          vst1_u8(dst8_1 + (1 * dst8_stride), tmp_shift1);
+          vst1_u8(dst8_1 + (2 * dst8_stride), tmp_shift2);
+          vst1_u8(dst8_1 + (3 * dst8_stride), tmp_shift3);
+
+        } else {
+          vst1q_u16(dst_1 + (0 * dst_stride), res_q0);
+          vst1q_u16(dst_1 + (1 * dst_stride), res_q1);
+          vst1q_u16(dst_1 + (2 * dst_stride), res_q2);
+          vst1q_u16(dst_1 + (3 * dst_stride), res_q3);
+        }
+        src1 = src1 + 8;
+        dst_1 = dst_1 + 8;
+        dst8_1 = dst8_1 + 8;
+      }
+      src += src_stride * 4;
+      dst8 += dst8_stride * 4;
+      dst += dst_stride * 4;
+    }
+  } else if (!(w & 0x03)) {
+    for (y = 0; y < (h >> 2); ++y) {
+      src1 = src;
+      dst8_1 = dst8;
+      dst_1 = dst;
+
+      load_u8_8x4(src1, src_stride, &res0_8, &res1_8, &res2_8, &res3_8);
+
+      res4 = vadd_u16(vshl_u16(vget_low_u16(vmovl_u8(res0_8)), dup_bits16x4),
+                      vreinterpret_u16_s16(sub_const_vec));
+      res5 = vadd_u16(vshl_u16(vget_low_u16(vmovl_u8(res1_8)), dup_bits16x4),
+                      vreinterpret_u16_s16(sub_const_vec));
+      res6 = vadd_u16(vshl_u16(vget_low_u16(vmovl_u8(res2_8)), dup_bits16x4),
+                      vreinterpret_u16_s16(sub_const_vec));
+      res7 = vadd_u16(vshl_u16(vget_low_u16(vmovl_u8(res3_8)), dup_bits16x4),
+                      vreinterpret_u16_s16(sub_const_vec));
+      if (conv_params->do_average) {
+        load_u16_4x4(dst_1, dst_stride, &tmp4, &tmp5, &tmp6, &tmp7);
+
+        compute_avg_4x4(tmp4, tmp5, tmp6, tmp7, res4, res5, res6, res7,
+                        conv_params->fwd_offset, conv_params->bck_offset,
+                        sub_const_vec, bits, conv_params->use_jnt_comp_avg,
+                        &tmp_shift0, &tmp_shift1);
+
+        vst1_lane_u32((uint32_t *)(dst8_1), vreinterpret_u32_u8(tmp_shift0), 0);
+        dst8_1 += dst8_stride;
+        vst1_lane_u32((uint32_t *)(dst8_1), vreinterpret_u32_u8(tmp_shift0), 1);
+        dst8_1 += dst8_stride;
+        vst1_lane_u32((uint32_t *)(dst8_1), vreinterpret_u32_u8(tmp_shift1), 0);
+        dst8_1 += dst8_stride;
+        vst1_lane_u32((uint32_t *)(dst8_1), vreinterpret_u32_u8(tmp_shift1), 1);
+
+      } else {
+        vst1_u16(dst_1, res4);
+        dst_1 += dst_stride;
+        vst1_u16(dst_1, res5);
+        dst_1 += dst_stride;
+        vst1_u16(dst_1, res6);
+        dst_1 += dst_stride;
+        vst1_u16(dst_1, res7);
+      }
+      src += src_stride * 4;
+      dst += dst_stride * 4;
+      dst8 += dst8_stride * 4;
+    }
+  }
 }
