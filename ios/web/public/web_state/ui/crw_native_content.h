@@ -56,10 +56,6 @@ struct ContextMenuParams;
 - (void)executeJavaScript:(NSString*)script
         completionHandler:(web::JavaScriptResultBlock)handler;
 
-// Returns |YES| if CRWNativeContent wants the keyboard shield when the keyboard
-// is up.
-- (BOOL)wantsKeyboardShield;
-
 // Returns |YES| if CRWNativeContent wants the hint text displayed.
 // TODO(crbug.com/374984): Remove this. This is chrome level concept and should
 // not exist in the web/ layer.

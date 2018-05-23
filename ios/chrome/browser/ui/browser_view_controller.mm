@@ -4467,7 +4467,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
       postNotificationName:kLocationBarBecomesFirstResponderNotification
                     object:nil];
   [self.sideSwipeController setEnabled:NO];
-  if ([[_model currentTab].webController wantsKeyboardShield]) {
+
+  web::WebState* webState = _model.currentTab.webState;
+  bool isNTP =
+      webState && webState->GetVisibleURL().GetOrigin() == kChromeUINewTabURL;
+
+  if (!isNTP) {
+    // Tapping on web content area should dismiss the keyboard. Tapping on NTP
+    // gesture should propagate to NTP view.
     [self.view insertSubview:self.typingShield aboveSubview:self.contentArea];
     [self.typingShield setAlpha:0.0];
     [self.typingShield setHidden:NO];
