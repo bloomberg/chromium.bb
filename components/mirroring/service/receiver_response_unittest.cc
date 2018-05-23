@@ -10,7 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/test/mock_callback.h"
-#include "base/values.h"
+#include "components/mirroring/service/value_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,10 +30,8 @@ class ReceiverResponseTest : public ::testing::Test {
 
 TEST_F(ReceiverResponseTest, ParseValidJson) {
   const std::string response_string = "{\"type\":\"ANSWER\",\"result\":\"ok\"}";
-  base::Value value =
-      base::Value::FromUniquePtrValue(base::JSONReader::Read(response_string));
   ReceiverResponse response;
-  EXPECT_TRUE(response.Parse(value));
+  ASSERT_TRUE(response.Parse(response_string));
   EXPECT_EQ(-1, response.session_id);
   EXPECT_EQ(-1, response.sequence_number);
   EXPECT_EQ(ResponseType::ANSWER, response.type);
@@ -48,16 +46,14 @@ TEST_F(ReceiverResponseTest, ParseValidJson) {
 TEST_F(ReceiverResponseTest, ParseInvalidValueType) {
   const std::string response_string =
       "{\"sessionId\":123, \"seqNum\":\"one-two-three\"}";
-  base::Value value =
-      base::Value::FromUniquePtrValue(base::JSONReader::Read(response_string));
   ReceiverResponse response;
-  EXPECT_FALSE(response.Parse(value));
+  EXPECT_FALSE(response.Parse(response_string));
 }
 
 TEST_F(ReceiverResponseTest, ParseNonJsonString) {
-  base::Value value("This is not JSON.");
+  const std::string response_string = "This is not JSON.";
   ReceiverResponse response;
-  EXPECT_FALSE(response.Parse(value));
+  EXPECT_FALSE(response.Parse(response_string));
 }
 
 TEST_F(ReceiverResponseTest, ParseRealWorldAnswerMessage) {
@@ -67,15 +63,13 @@ TEST_F(ReceiverResponseTest, ParseRealWorldAnswerMessage) {
       "\"sendIndexes\":[0,1],\"ssrcs\":[40863,759293],\"udpPort\":50691,"
       "\"castMode\":\"mirroring\"},\"result\":\"ok\",\"seqNum\":989031000,"
       "\"type\":\"ANSWER\"}";
-  base::Value value =
-      base::Value::FromUniquePtrValue(base::JSONReader::Read(response_string));
   ReceiverResponse response;
-  EXPECT_TRUE(response.Parse(value));
+  ASSERT_TRUE(response.Parse(response_string));
   EXPECT_EQ(-1, response.session_id);
   EXPECT_EQ(989031000, response.sequence_number);
   EXPECT_EQ(ResponseType::ANSWER, response.type);
   EXPECT_EQ("ok", response.result);
-  EXPECT_TRUE(response.answer);
+  ASSERT_TRUE(response.answer);
   EXPECT_EQ(50691, response.answer->udp_port);
   EXPECT_EQ(std::vector<int32_t>({0, 1}), response.answer->send_indexes);
   EXPECT_EQ(std::vector<int32_t>({40863, 759293}), response.answer->ssrcs);
@@ -99,24 +93,28 @@ TEST_F(ReceiverResponseTest, ParseErrorMessage) {
       "\"details\": {\"foo\": -1, \"bar\": 88}"
       "}"
       "}";
-  base::Value value =
-      base::Value::FromUniquePtrValue(base::JSONReader::Read(response_string));
   ReceiverResponse response;
-  EXPECT_TRUE(response.Parse(value));
+  ASSERT_TRUE(response.Parse(response_string));
   EXPECT_EQ(123, response.session_id);
   EXPECT_EQ(999, response.sequence_number);
   EXPECT_EQ(ResponseType::ANSWER, response.type);
   EXPECT_EQ("error", response.result);
-  EXPECT_TRUE(response.error);
-  EXPECT_EQ(42, response.error->code);
-  EXPECT_EQ("it is broke", response.error->description);
-  EXPECT_TRUE(response.error->details.is_dict());
-  base::Value expected_details = base::Value::FromUniquePtrValue(
-      base::JSONReader::Read("{\"foo\": -1, \"bar\": 88}"));
-  EXPECT_EQ(expected_details, response.error->details);
   EXPECT_FALSE(response.answer);
   EXPECT_FALSE(response.status);
   EXPECT_FALSE(response.capabilities);
+  ASSERT_TRUE(response.error);
+  EXPECT_EQ(42, response.error->code);
+  EXPECT_EQ("it is broke", response.error->description);
+  std::unique_ptr<base::Value> parsed_details =
+      base::JSONReader::Read(response.error->details);
+  ASSERT_TRUE(parsed_details && parsed_details->is_dict());
+  EXPECT_EQ(2u, parsed_details->DictSize());
+  int fool_value = 0;
+  EXPECT_TRUE(GetInt(*parsed_details, "foo", &fool_value));
+  EXPECT_EQ(-1, fool_value);
+  int bar_value = 0;
+  EXPECT_TRUE(GetInt(*parsed_details, "bar", &bar_value));
+  EXPECT_EQ(88, bar_value);
 }
 
 TEST_F(ReceiverResponseTest, ParseStatusMessage) {
@@ -129,16 +127,14 @@ TEST_F(ReceiverResponseTest, ParseStatusMessage) {
       "\"wifiSpeed\": [1234, 5678, 3000, 3001],"
       "\"wifiFcsError\": [12, 13, 12, 12]}"  // This will be ignored.
       "}";
-  base::Value value =
-      base::Value::FromUniquePtrValue(base::JSONReader::Read(response_string));
   ReceiverResponse response;
-  EXPECT_TRUE(response.Parse(value));
+  ASSERT_TRUE(response.Parse(response_string));
   EXPECT_EQ(777, response.sequence_number);
   EXPECT_EQ(ResponseType::STATUS_RESPONSE, response.type);
   EXPECT_EQ("ok", response.result);
   EXPECT_FALSE(response.error);
   EXPECT_FALSE(response.answer);
-  EXPECT_TRUE(response.status);
+  ASSERT_TRUE(response.status);
   EXPECT_EQ(36.7, response.status->wifi_snr);
   const std::vector<int32_t> expect_speed({1234, 5678, 3000, 3001});
   EXPECT_EQ(expect_speed, response.status->wifi_speed);
@@ -170,10 +166,8 @@ TEST_F(ReceiverResponseTest, ParseCapabilityMessage) {
       "\"distinctiveIdentifierSupport\": \"ALWAYS_ENABLED\""
       "}"
       "]}}";
-  base::Value value =
-      base::Value::FromUniquePtrValue(base::JSONReader::Read(response_string));
   ReceiverResponse response;
-  EXPECT_TRUE(response.Parse(value));
+  ASSERT_TRUE(response.Parse(response_string));
   EXPECT_EQ(999888777, response.session_id);
   EXPECT_EQ(5551212, response.sequence_number);
   EXPECT_EQ(ResponseType::CAPABILITIES_RESPONSE, response.type);
@@ -181,7 +175,7 @@ TEST_F(ReceiverResponseTest, ParseCapabilityMessage) {
   EXPECT_FALSE(response.error);
   EXPECT_FALSE(response.answer);
   EXPECT_FALSE(response.status);
-  EXPECT_TRUE(response.capabilities);
+  ASSERT_TRUE(response.capabilities);
   EXPECT_EQ(std::vector<std::string>({"audio", "video", "vp9"}),
             response.capabilities->media_caps);
   const ReceiverKeySystem& first_key_system =
@@ -228,10 +222,8 @@ TEST_F(ReceiverResponseTest, ParseRpcMessage) {
       "\"result\": \"ok\","
       "\"rpc\": \"" +
       rpc_base64 + "\"}";
-  base::Value value =
-      base::Value::FromUniquePtrValue(base::JSONReader::Read(response_string));
   ReceiverResponse response;
-  EXPECT_TRUE(response.Parse(value));
+  ASSERT_TRUE(response.Parse(response_string));
   EXPECT_EQ(735189, response.session_id);
   EXPECT_EQ(6789, response.sequence_number);
   EXPECT_EQ("ok", response.result);
@@ -250,10 +242,8 @@ TEST_F(ReceiverResponseTest, ParseResponseWithNullField) {
       "\"answer\":{\"udpPort\":51706,\"sendIndexes\":[0,1],"
       "\"ssrcs\":[152818,556029],\"IV\":null,\"receiverGetStatus\":true,"
       "\"castMode\":\"mirroring\"},\"status\":null,\"capabilities\":null}";
-  base::Value value =
-      base::Value::FromUniquePtrValue(base::JSONReader::Read(response_string));
   ReceiverResponse response;
-  EXPECT_TRUE(response.Parse(value));
+  ASSERT_TRUE(response.Parse(response_string));
   EXPECT_EQ(808907000, response.sequence_number);
   EXPECT_EQ("ok", response.result);
   EXPECT_FALSE(response.error);
@@ -261,7 +251,7 @@ TEST_F(ReceiverResponseTest, ParseResponseWithNullField) {
   EXPECT_FALSE(response.capabilities);
   EXPECT_TRUE(response.rpc.empty());
   EXPECT_EQ(ResponseType::ANSWER, response.type);
-  EXPECT_TRUE(response.answer);
+  ASSERT_TRUE(response.answer);
   EXPECT_EQ(51706, response.answer->udp_port);
   EXPECT_EQ(std::vector<int32_t>({0, 1}), response.answer->send_indexes);
   EXPECT_EQ(std::vector<int32_t>({152818, 556029}), response.answer->ssrcs);

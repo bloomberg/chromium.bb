@@ -6,18 +6,22 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/values.h"
 #include "components/mirroring/service/fake_network_service.h"
 #include "components/mirroring/service/fake_video_capture_host.h"
 #include "components/mirroring/service/interface.h"
 #include "components/mirroring/service/mirror_settings.h"
 #include "components/mirroring/service/receiver_response.h"
+#include "components/mirroring/service/value_util.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/net_utility.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/base/ip_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,14 +61,13 @@ class SessionTest : public ResourceProvider,
   void Send(const CastMessage& message) {
     EXPECT_TRUE(message.message_namespace == kWebRtcNamespace ||
                 message.message_namespace == kRemotingNamespace);
+    std::unique_ptr<base::Value> value =
+        base::JSONReader::Read(message.json_format_data);
+    ASSERT_TRUE(value);
     std::string message_type;
-    auto* found = message.data.FindKey("type");
-    if (found && found->is_string())
-      message_type = found->GetString();
+    EXPECT_TRUE(GetString(*value, "type", &message_type));
     if (message_type == "OFFER") {
-      auto* found = message.data.FindKey("seqNum");
-      if (found && found->is_int())
-        offer_sequence_number_ = found->GetInt();
+      EXPECT_TRUE(GetInt(*value, "seqNum", &offer_sequence_number_));
       OnOffer();
     }
   }

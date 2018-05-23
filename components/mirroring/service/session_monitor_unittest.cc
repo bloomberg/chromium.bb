@@ -119,7 +119,9 @@ class SessionMonitorTest : public CastMessageChannel, public ::testing::Test {
                       int starting_speed,
                       int num_of_responses) {
     for (int i = 0; i < num_of_responses; ++i) {
-      const std::string response =
+      CastMessage message;
+      message.message_namespace = kWebRtcNamespace;
+      message.json_format_data =
           "{\"seqNum\":" +
           std::to_string(message_dispatcher_.GetNextSeqNumber()) +
           ","
@@ -134,11 +136,6 @@ class SessionMonitorTest : public CastMessageChannel, public ::testing::Test {
           "],"
           "\"wifiFcsError\": [12, 13, 12, 12]}"  // This will be ignored.
           "}";
-      std::unique_ptr<base::Value> value = base::JSONReader::Read(response);
-      ASSERT_TRUE(value);
-      CastMessage message;
-      message.message_namespace = kWebRtcNamespace;
-      message.data = base::Value::FromUniquePtrValue(std::move(value));
       static_cast<CastMessageChannel*>(&message_dispatcher_)->Send(message);
       scoped_task_environment_.RunUntilIdle();
     }

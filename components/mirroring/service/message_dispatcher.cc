@@ -5,21 +5,10 @@
 #include "components/mirroring/service/message_dispatcher.h"
 
 #include "base/bind_helpers.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 
 namespace mirroring {
-
-namespace {
-
-std::string GetMessageString(const CastMessage& message) {
-  std::string message_string;
-  base::JSONWriter::Write(message.data, &message_string);
-  return message_string;
-}
-
-}  // namespace
 
 // Holds a request until |timeout| elapses or an acceptable response is
 // received. When timeout, |response_callback| runs with an UNKNOWN type
@@ -84,13 +73,13 @@ void MessageDispatcher::Send(const CastMessage& message) {
              << message.message_namespace;
     return;  // Ignore message with wrong namespace.
   }
-  if (message.data.is_none())
+  if (message.json_format_data.empty())
     return;  // Ignore null message.
 
   ReceiverResponse response;
-  if (!response.Parse(message.data)) {
+  if (!response.Parse(message.json_format_data)) {
     error_callback_.Run("Response parsing error. message=" +
-                        GetMessageString(message));
+                        message.json_format_data);
     return;
   }
 
@@ -104,7 +93,7 @@ void MessageDispatcher::Send(const CastMessage& message) {
   const auto callback_iter = callback_map_.find(response.type);
   if (callback_iter == callback_map_.end()) {
     error_callback_.Run("No callback subscribed. message=" +
-                        GetMessageString(message));
+                        message.json_format_data);
     return;
   }
   callback_iter->second.Run(response);

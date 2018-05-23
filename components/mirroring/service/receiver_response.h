@@ -100,7 +100,7 @@ struct ReceiverError {
 
   int32_t code;
   std::string description;
-  base::Value details;
+  std::string details;  // In JSON format.
 };
 
 struct ReceiverResponse {
@@ -108,7 +108,7 @@ struct ReceiverResponse {
   ~ReceiverResponse();
   ReceiverResponse(ReceiverResponse&& receiver_response);
   ReceiverResponse& operator=(ReceiverResponse&& receiver_response);
-  bool Parse(const base::Value& raw_value);
+  bool Parse(const std::string& message_data);
 
   ResponseType type;
   // All messages have same |session_id| for each mirroring session. This value
