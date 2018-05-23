@@ -81,6 +81,8 @@
 /gvr-android-sdk/test-libraries/controller_test_api.aar
 /gvr-android-sdk/libgvr_shim_static_arm.a
 /gvr-android-sdk/libgvr_shim_static_arm64.a
+/gvr-android-sdk/libgvr_shim_static_custom_libcxx_arm.a
+/gvr-android-sdk/libgvr_shim_static_custom_libcxx_arm64.a
 /gvr-android-sdk/src
 /gvr-android-sdk/test-apks/daydream_home/*.apk
 /gvr-android-sdk/test-apks/vr_services/*.apk

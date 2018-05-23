@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//build/config/c++/c++.gni")
 
 android_aar_prebuilt("controller_test_api_java") {
   aar_path = "test-libraries/controller_test_api.aar"
@@ -108,15 +109,18 @@ component("gvr_shim") {
       "//clank/third_party/gvr_shim",
     ]
   } else {
-    libs +=
-        [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
+    if (use_custom_libcxx) {
+      library = "//third_party/gvr-android-sdk/libgvr_shim_static_custom_libcxx_${current_cpu}.a"
+    } else {
+      library =
+          "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a"
+    }
+    libs += [ library ]
 
     if (is_component_build) {
       ldflags = [
         "-Wl,--whole-archive",
-        rebase_path(
-            "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
-            root_build_dir),
+        rebase_path(library, root_build_dir),
         "-Wl,--no-whole-archive",
       ]
     }
