@@ -261,10 +261,18 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   // crbug.com/667547
   if (!layout_view_.GetDocument().Printing() ||
       RuntimeEnabledFeatures::PrintBrowserEnabled()) {
-    base::Optional<CompositorElementIdSet> composited_element_ids;
-    DocumentAnimations::UpdateAnimations(layout_view_.GetDocument(),
-                                         DocumentLifecycle::kCompositingClean,
-                                         composited_element_ids);
+    // Although BlinkGenPropertyTreesEnabled still uses PaintLayerCompositor to
+    // generate the composited layer tree/list, it also has the SPv2 behavior of
+    // removing layers that do not draw content. As such, we use the same path
+    // as SPv2 for updating composited animations once we know the final set of
+    // composited elements (see LocalFrameView::UpdateLifecyclePhasesInternal,
+    // during kPaintClean).
+    if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+      base::Optional<CompositorElementIdSet> composited_element_ids;
+      DocumentAnimations::UpdateAnimations(layout_view_.GetDocument(),
+                                           DocumentLifecycle::kCompositingClean,
+                                           composited_element_ids);
+    }
 
     layout_view_.GetFrameView()
         ->GetScrollableArea()
