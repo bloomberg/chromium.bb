@@ -55,8 +55,7 @@ void AddMultipartFileContentHeader(std::string* post_data,
 }
 
 // Adds |compressed_log| to |post_data|.
-void AddLogData(std::string* post_data,
-                const std::string& compressed_log) {
+void AddLogData(std::string* post_data, const std::string& compressed_log) {
   AddMultipartFileContentHeader(post_data, "webrtc_log");
   post_data->append(compressed_log);
   post_data->append("\r\n");
@@ -150,11 +149,9 @@ void WebRtcLogUploader::PrepareMultipartPostData(
   DCHECK(meta_data.get());
 
   std::unique_ptr<std::string> post_data(new std::string());
-  SetupMultipart(post_data.get(),
-                 compressed_log,
+  SetupMultipart(post_data.get(), compressed_log,
                  upload_done_data.incoming_rtp_dump,
-                 upload_done_data.outgoing_rtp_dump,
-                 *meta_data.get());
+                 upload_done_data.outgoing_rtp_dump, *meta_data.get());
 
   // If a test has set the test string pointer, write to it and skip uploading.
   // Still fire the upload callback so that we can run an extension API test
@@ -182,7 +179,7 @@ void WebRtcLogUploader::UploadStoredLog(
 
   base::FilePath native_log_path =
       upload_data.log_path.AppendASCII(upload_data.local_log_id)
-      .AddExtension(FILE_PATH_LITERAL(".gz"));
+          .AddExtension(FILE_PATH_LITERAL(".gz"));
 
   std::string compressed_log;
   if (!base::ReadFileToString(native_log_path, &compressed_log)) {
@@ -198,18 +195,18 @@ void WebRtcLogUploader::UploadStoredLog(
   // Optimistically set the rtp paths to what they should be if they exist.
   upload_data_with_rtp.incoming_rtp_dump =
       upload_data.log_path.AppendASCII(upload_data.local_log_id)
-      .AddExtension(FILE_PATH_LITERAL(".rtp_in"));
+          .AddExtension(FILE_PATH_LITERAL(".rtp_in"));
 
   upload_data_with_rtp.outgoing_rtp_dump =
       upload_data.log_path.AppendASCII(upload_data.local_log_id)
-      .AddExtension(FILE_PATH_LITERAL(".rtp_out"));
+          .AddExtension(FILE_PATH_LITERAL(".rtp_out"));
 
   std::unique_ptr<MetaDataMap> meta_data(new MetaDataMap());
   {
     std::string meta_data_contents;
     base::FilePath meta_path =
         upload_data.log_path.AppendASCII(upload_data.local_log_id)
-        .AddExtension(FILE_PATH_LITERAL(".meta"));
+            .AddExtension(FILE_PATH_LITERAL(".meta"));
     if (base::ReadFileToString(meta_path, &meta_data_contents) &&
         !meta_data_contents.empty()) {
       base::Pickle pickle(&meta_data_contents[0], meta_data_contents.size());
@@ -244,22 +241,25 @@ void WebRtcLogUploader::LoggingStoppedDoStore(
   // Store the native log with a ".gz" extension.
   std::string compressed_log;
   CompressLog(&compressed_log, log_buffer.get());
-  base::FilePath native_log_path = log_paths.log_path.AppendASCII(log_id)
-      .AddExtension(FILE_PATH_LITERAL(".gz"));
+  base::FilePath native_log_path =
+      log_paths.log_path.AppendASCII(log_id).AddExtension(
+          FILE_PATH_LITERAL(".gz"));
   WriteCompressedLogToFile(compressed_log, native_log_path);
   AddLocallyStoredLogInfoToUploadListFile(log_list_path, log_id);
 
   // Move the rtp dump files to the log directory with a name of
   // <log id>.rtp_[in|out].
   if (!log_paths.incoming_rtp_dump.empty()) {
-    base::FilePath rtp_path = log_paths.log_path.AppendASCII(log_id)
-        .AddExtension(FILE_PATH_LITERAL(".rtp_in"));
+    base::FilePath rtp_path =
+        log_paths.log_path.AppendASCII(log_id).AddExtension(
+            FILE_PATH_LITERAL(".rtp_in"));
     base::Move(log_paths.incoming_rtp_dump, rtp_path);
   }
 
   if (!log_paths.outgoing_rtp_dump.empty()) {
-    base::FilePath rtp_path = log_paths.log_path.AppendASCII(log_id)
-        .AddExtension(FILE_PATH_LITERAL(".rtp_out"));
+    base::FilePath rtp_path =
+        log_paths.log_path.AppendASCII(log_id).AddExtension(
+            FILE_PATH_LITERAL(".rtp_out"));
     base::Move(log_paths.outgoing_rtp_dump, rtp_path);
   }
 
@@ -269,10 +269,11 @@ void WebRtcLogUploader::LoggingStoppedDoStore(
       pickle.WriteString(it.first);
       pickle.WriteString(it.second);
     }
-    base::FilePath meta_path = log_paths.log_path.AppendASCII(log_id)
-        .AddExtension(FILE_PATH_LITERAL(".meta"));
+    base::FilePath meta_path =
+        log_paths.log_path.AppendASCII(log_id).AddExtension(
+            FILE_PATH_LITERAL(".meta"));
     base::WriteFile(meta_path, static_cast<const char*>(pickle.data()),
-        pickle.size());
+                    pickle.size());
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -291,8 +292,7 @@ void WebRtcLogUploader::StartShutdown() {
                                          base::Unretained(this)));
 }
 
-void WebRtcLogUploader::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+void WebRtcLogUploader::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(upload_done_data_.find(source) != upload_done_data_.end());
   DCHECK(!shutting_down_);
@@ -430,8 +430,8 @@ void WebRtcLogUploader::ResizeForNextOutput(std::string* compressed_log,
                                             z_stream* stream) {
   size_t old_size = compressed_log->size() - stream->avail_out;
   compressed_log->resize(old_size + kIntermediateCompressionBufferBytes);
-  stream->next_out = reinterpret_cast<unsigned char*>(
-      &(*compressed_log)[old_size]);
+  stream->next_out =
+      reinterpret_cast<unsigned char*>(&(*compressed_log)[old_size]);
   stream->avail_out = kIntermediateCompressionBufferBytes;
 }
 
@@ -482,27 +482,27 @@ void WebRtcLogUploader::UploadCompressedLog(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&WebRtcLogUploader::SetRequestContextOnUIThread,
-                     base::Unretained(this),
-                     base::Unretained(url_fetcher.release()),
+                     base::Unretained(this), std::move(url_fetcher),
                      upload_done_data));
 }
 
 void WebRtcLogUploader::SetRequestContextOnUIThread(
-    net::URLFetcher* url_fetcher, const WebRtcLogUploadDoneData& data) {
+    std::unique_ptr<net::URLFetcher> url_fetcher,
+    const WebRtcLogUploadDoneData& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   url_fetcher->SetRequestContext(g_browser_process->system_request_context());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&WebRtcLogUploader::StartAndTrackRequestContext,
-                     base::Unretained(this), base::Unretained(url_fetcher),
-                     data));
+                     base::Unretained(this), std::move(url_fetcher), data));
 }
 
 void WebRtcLogUploader::StartAndTrackRequestContext(
-    net::URLFetcher* url_fetcher, const WebRtcLogUploadDoneData& data) {
+    std::unique_ptr<net::URLFetcher> url_fetcher,
+    const WebRtcLogUploadDoneData& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   url_fetcher->Start();
-  upload_done_data_[url_fetcher] = data;
+  upload_done_data_[url_fetcher.release()] = data;
 }
 
 void WebRtcLogUploader::DecreaseLogCount() {
