@@ -19,6 +19,16 @@ enum class FlashError {
   HINT_FILE_RECORD_ERROR = 2,
 };
 
+// Converts a custom, specific installer error to an installer result.
+template <typename T>
+update_client::CrxInstaller::Result ToInstallerResult(const T& error) {
+  static_assert(std::is_enum<T>::value,
+                "Use an enum class to define custom installer errors");
+  return update_client::CrxInstaller::Result(
+      static_cast<int>(update_client::InstallError::CUSTOM_ERROR_BASE) +
+      static_cast<int>(error));
+}
+
 }  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_INSTALLER_ERRORS_H_

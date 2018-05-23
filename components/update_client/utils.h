@@ -97,18 +97,6 @@ CrxInstaller::Result InstallFunctionWrapper(
 std::unique_ptr<base::DictionaryValue> ReadManifest(
     const base::FilePath& unpack_path);
 
-// Converts a custom, specific installer error (and optionally extended error)
-// to an installer result.
-template <typename T>
-CrxInstaller::Result ToInstallerResult(const T& error, int extended_error = 0) {
-  static_assert(std::is_enum<T>::value,
-                "Use an enum class to define custom installer errors");
-  return CrxInstaller::Result(
-      static_cast<int>(update_client::InstallError::CUSTOM_ERROR_BASE) +
-          static_cast<int>(error),
-      extended_error);
-}
-
 }  // namespace update_client
 
 #endif  // COMPONENTS_UPDATE_CLIENT_UTILS_H_
