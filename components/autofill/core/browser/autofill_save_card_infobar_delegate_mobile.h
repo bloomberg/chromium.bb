@@ -53,8 +53,7 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   // to Google.
   bool IsGooglePayBrandingEnabled() const;
 
-  // All following changes are with respect to Google Pay branding.
-  base::string16 GetTitleText() const;
+  // Description text to be shown above the card information in the infobar.
   base::string16 GetDescriptionText() const;
 
   // ConfirmInfoBarDelegate:
