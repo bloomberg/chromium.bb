@@ -95,8 +95,7 @@ void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
 #if defined(USE_AURA)
   // IME driver must be available at login screen, so initialize before profile.
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
-    IMEDriver::Register();
+  IMEDriver::Register();
 
   // Start devtools server
   network::mojom::NetworkContext* network_context =

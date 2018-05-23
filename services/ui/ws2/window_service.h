@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/ui/ime/ime_driver_bridge.h"
+#include "services/ui/ime/ime_registrar_impl.h"
 #include "services/ui/input_devices/input_device_server.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
@@ -80,6 +82,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
  private:
   void BindClipboardRequest(mojom::ClipboardRequest request);
   void BindScreenProviderRequest(mojom::ScreenProviderRequest request);
+  void BindImeRegistrarRequest(mojom::IMERegistrarRequest request);
   void BindImeDriverRequest(mojom::IMEDriverRequest request);
   void BindInputDeviceServerRequest(mojom::InputDeviceServerRequest request);
   void BindWindowTreeFactoryRequest(
@@ -107,6 +110,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   // Id used for the next window created locally that is exposed to clients.
   ClientSpecificId next_window_id_ = 1;
+
+  IMERegistrarImpl ime_registrar_;
+  IMEDriverBridge ime_driver_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowService);
 };
