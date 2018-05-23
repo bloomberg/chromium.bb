@@ -9,6 +9,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -133,12 +134,21 @@ using chrome_test_util::SettingsDoneButton;
         performAction:grey_tap()];
   } else {
     [ChromeEarlGreyUI openToolsMenu];
-    id<GREYMatcher> bookmarkMatcher =
-        IsUIRefreshPhase1Enabled()
-            ? grey_accessibilityID(kToolsMenuAddToBookmarks)
-            : grey_accessibilityLabel(@"Add Bookmark");
-    [[EarlGrey selectElementWithMatcher:bookmarkMatcher]
-        performAction:grey_tap()];
+    if (IsUIRefreshPhase1Enabled()) {
+      [[[EarlGrey
+          selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                                  kToolsMenuAddToBookmarks),
+                                              grey_sufficientlyVisible(), nil)]
+             usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+          onElementWithMatcher:grey_accessibilityID(
+                                   kPopupMenuToolsMenuTableViewId)]
+          performAction:grey_tap()];
+
+    } else {
+      [[EarlGrey
+          selectElementWithMatcher:grey_accessibilityLabel(@"Add Bookmark")]
+          performAction:grey_tap()];
+    }
   }
 
   // Tap on the HUD.
