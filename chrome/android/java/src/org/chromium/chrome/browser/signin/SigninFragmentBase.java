@@ -286,6 +286,7 @@ public abstract class SigninFragmentBase
             RecordUserAction.record("Signin_MoreButton_Shown");
         });
         mView.getScrollView().setScrolledToBottomObserver(this::showAcceptButton);
+        mView.getDetailsDescriptionView().setMovementMethod(LinkMovementMethod.getInstance());
 
         if (isForcedSignin()) {
             mView.getAccountPickerEndImageView().setImageResource(
@@ -309,39 +310,41 @@ public abstract class SigninFragmentBase
             mView.getAccountPickerView().setVisibility(View.VISIBLE);
             mConsentTextTracker.setText(mView.getAcceptButton(), R.string.signin_accept_button);
             mView.getAcceptButton().setOnClickListener(this::onAcceptButtonClicked);
-
-            // The clickable "Settings" link.
-            mView.getDetailsDescriptionView().setMovementMethod(LinkMovementMethod.getInstance());
-            NoUnderlineClickableSpan settingsSpan =
-                    new NoUnderlineClickableSpan(this::onSettingsLinkClicked);
-            mConsentTextTracker.setText(mView.getDetailsDescriptionView(),
-                    R.string.signin_details_description, input -> {
-                        return SpanApplier.applySpans(input.toString(),
-                                new SpanApplier.SpanInfo(
-                                        SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, settingsSpan));
-                    });
         } else {
             mView.getAccountPickerView().setVisibility(View.GONE);
             mConsentTextTracker.setText(mView.getAcceptButton(), R.string.signin_add_account);
             mView.getAcceptButton().setOnClickListener(this::onAddAccountButtonClicked);
-
-            mConsentTextTracker.setText(mView.getDetailsDescriptionView(),
-                    R.string.signin_details_description, input -> {
-                        return SpanApplier.applySpans(input.toString(),
-                                new SpanApplier.SpanInfo(
-                                        SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, null));
-                    });
         }
+
+        // Show "Settings" link in description only if there are accounts on the device.
+        updateSigninDetailsDescription(hasAccounts);
+    }
+
+    private void updateSigninDetailsDescription(boolean addSettingsLink) {
+        final @StringRes int description = mChildAccountStatus == ChildAccountStatus.REGULAR_CHILD
+                ? R.string.signin_details_description_child_account
+                : R.string.signin_details_description;
+        final @Nullable Object settingsLinkSpan =
+                addSettingsLink ? new NoUnderlineClickableSpan(this::onSettingsLinkClicked) : null;
+        final SpanApplier.SpanInfo spanInfo =
+                new SpanApplier.SpanInfo(SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, settingsLinkSpan);
+        mConsentTextTracker.setText(mView.getDetailsDescriptionView(), description,
+                input -> SpanApplier.applySpans(input.toString(), spanInfo));
     }
 
     /** Sets texts for immutable elements. Accept button text is set by {@link #setHasAccounts}. */
     private void updateConsentText() {
-        // TODO(https://crbug.com/814728): Change texts if mIsChildAccount is true.
         mConsentTextTracker.setText(mView.getTitleView(), R.string.signin_title);
         mConsentTextTracker.setText(
                 mView.getSyncDescriptionView(), R.string.signin_sync_description);
-        mConsentTextTracker.setText(mView.getPersonalizationDescriptionView(),
-                R.string.signin_personalization_description);
+
+        final @StringRes int personalizationDescription =
+                mChildAccountStatus == ChildAccountStatus.REGULAR_CHILD
+                ? R.string.signin_personalization_description_child_account
+                : R.string.signin_personalization_description;
+        mConsentTextTracker.setText(
+                mView.getPersonalizationDescriptionView(), personalizationDescription);
+
         mConsentTextTracker.setText(mView.getGoogleServicesDescriptionView(),
                 R.string.signin_google_services_description);
         mConsentTextTracker.setText(mView.getRefuseButton(), mCancelButtonTextId);

@@ -2383,28 +2383,31 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- Strings for Streamlined Signin and Unified Consent. -->
-      <!-- TODO(https://crbug.com/814728): Make translatable when strings are approved. -->
-      <message name="IDS_SIGNIN_TITLE" desc="Title for the screen that asks users to sign-in and turn on Sync and personalization. [CHAR-LIMIT=27]" translateable="false">
+      <message name="IDS_SIGNIN_TITLE" desc="Title for the screen that asks users to sign-in and turn on Sync and personalization. [CHAR-LIMIT=27]">
         Get Google smarts in Chrome
       </message>
-      <message name="IDS_SIGNIN_SYNC_DESCRIPTION" desc="Description of Sync feature for the screen that asks users to sign-in and turn on Sync and personalization." translateable="false">
+      <message name="IDS_SIGNIN_SYNC_DESCRIPTION" desc="Description of Sync feature for the screen that asks users to sign-in and turn on Sync and personalization.">
         Your passwords, history &amp; more on all devices
       </message>
-      <message name="IDS_SIGNIN_PERSONALIZATION_DESCRIPTION" desc="Description of personalization feature for the screen that asks users to sign-in and turn on Sync and personalization." translateable="false">
+      <message name="IDS_SIGNIN_PERSONALIZATION_DESCRIPTION" desc="Description of personalization features for the screen that asks users to sign-in and turn on Sync and personalization.">
         Personalized Google services like Google Pay
       </message>
-      <message name="IDS_SIGNIN_GOOGLE_SERVICES_DESCRIPTION" desc="Description of Google Services for the screen that asks users to sign-in and turn on Sync and personalization." translateable="false">
+      <message name="IDS_SIGNIN_PERSONALIZATION_DESCRIPTION_CHILD_ACCOUNT" desc="Description of personalization features for the screen that asks users to sign-in and turn on Sync and personalization. This version of the description is used with child accounts.">
+        Personalized Google services
+      </message>
+      <message name="IDS_SIGNIN_GOOGLE_SERVICES_DESCRIPTION" desc="Description of Google Services for the screen that asks users to sign-in and turn on Sync and personalization.">
         Improve Chrome and its security by sending system and usage data to Google
       </message>
-      <message name="IDS_SIGNIN_DETAILS_DESCRIPTION" desc="Message explaining that user can customize Sync and personalization and explains what data is shared with Google. This message is shown in the screen that asks users to sign-in and turn on Sync and personalization." translateable="false">
-        Google may use content on sites you visit, browser interactions and activity to personalize Chrome and Google services like Translate, Search, and ads.
-
-Customize this anytime in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph>.
+      <message name="IDS_SIGNIN_DETAILS_DESCRIPTION" desc="Message explaining that user can customize Sync and personalization and explains what data is shared with Google. This message is shown in the screen that asks users to sign-in and turn on Sync and personalization.">
+        <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph> can be customized anytime. Google may use content on sites you visit, browser interactions and activity to personalize Chrome and Google services like Translate, Search, and ads.
       </message>
-      <message name="IDS_SIGNIN_ACCEPT_BUTTON" desc="Text for the confirmation button in the sign-in screen. By clicking this button users signs in and turns on Sync and personalization. [CHAR-LIMIT=20]" translateable="false">
+      <message name="IDS_SIGNIN_DETAILS_DESCRIPTION_CHILD_ACCOUNT" desc="Message explaining that user can customize Sync and personalization and explains what data is shared with Google. This message is shown in the screen that asks users to sign-in and turn on Sync and personalization. This version of the description is used with child accounts.">
+        <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph> can be customized by you or your parents anytime. Google may use content on sites you visit, browser interactions and activity to personalize Chrome and Google services like Translate, Search, and ads.
+      </message>
+      <message name="IDS_SIGNIN_ACCEPT_BUTTON" desc="Text for the confirmation button in the sign-in screen. By clicking this button users signs in and turns on Sync and personalization. [CHAR-LIMIT=20]">
         Yes, I'm in
       </message>
-      <message name="IDS_SIGNIN_ACCOUNT_PICKER_DIALOG_TITLE" desc="The title for the dialog that shows the list of accounts on the device and asks user to select one of these accounts. [CHAR-LIMIT=27]" translateable="false">
+      <message name="IDS_SIGNIN_ACCOUNT_PICKER_DIALOG_TITLE" desc="The title for the dialog that shows the list of accounts on the device and asks the user to select one of these accounts. [CHAR-LIMIT=27]">
         Choose an account
       </message>
 
@@ -2428,8 +2431,7 @@ Customize this anytime in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph n
         Not <ph name="EMAIL">%1$s<ex>john.doe@example.com</ex></ph>?
       </message>
       <!-- Strings for signin promos when Unified Consent is enabled. -->
-      <!-- TODO(https://crbug.com/814728): Make translatable when strings are approved. -->
-      <message name="IDS_SIGNIN_PROMO_CHOOSE_ANOTHER_ACCOUNT" desc="Button that the user can press if they are not the profile that Chrome found (opposite of 'Continue as Joe Doe')." translateable="false">
+      <message name="IDS_SIGNIN_PROMO_CHOOSE_ANOTHER_ACCOUNT" desc="Button that the user can press if they want to select a different account before signing in. This button is shown below 'Continue as Joe Doe' button that signs user in with default account.">
         Choose another account
       </message>
 
