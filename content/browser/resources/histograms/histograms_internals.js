@@ -14,13 +14,16 @@ function requestHistograms() {
 
 /**
  * Callback from backend with the list of histograms. Builds the UI.
- * @param {array} histograms The list of histograms.
+ * @param {!Array<string>} histograms A list of trusted HTML strings
+ *     representing histograms.
  */
 function addHistograms(histograms) {
   let htmlOutput = '';
   for (let histogram of histograms)
     htmlOutput += histogram;
 
+  // NOTE: This is generally unsafe due to XSS attacks. Make sure |htmlOutput|
+  // cannot be modified by an external party.
   $('histograms').innerHTML = htmlOutput;
 }
 
@@ -28,10 +31,7 @@ function addHistograms(histograms) {
  * Load the initial list of histograms.
  */
 document.addEventListener('DOMContentLoaded', function() {
-  $('refresh').onclick = function() {
-    requestHistograms();
-    return false;
-  };
+  $('refresh').onclick = requestHistograms;
 
   requestHistograms();
 });
