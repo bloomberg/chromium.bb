@@ -74,15 +74,13 @@ LoopbackStream::LoopbackStream(
                 [](const std::string& message) { VLOG(1) << message; }),
             shared_memory_count, params, &foreign_socket);
     if (writer) {
-      const base::SharedMemory* memory = writer->shared_memory();
-      base::SharedMemoryHandle foreign_memory_handle =
-          memory->GetReadOnlyHandle();
+      base::ReadOnlySharedMemoryRegion shared_memory_region =
+          writer->TakeSharedMemoryRegion();
       mojo::ScopedSharedBufferHandle buffer_handle;
       mojo::ScopedHandle socket_handle;
-      if (base::SharedMemory::IsHandleValid(foreign_memory_handle)) {
-        buffer_handle = mojo::WrapSharedMemoryHandle(
-            foreign_memory_handle, memory->requested_size(),
-            mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly);
+      if (shared_memory_region.IsValid()) {
+        buffer_handle = mojo::WrapReadOnlySharedMemoryRegion(
+            std::move(shared_memory_region));
         socket_handle = mojo::WrapPlatformFile(foreign_socket.Release());
         if (buffer_handle.is_valid() && socket_handle.is_valid()) {
           std::move(created_callback)

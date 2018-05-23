@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -73,24 +73,20 @@ void MojoAudioInputStream::SetVolume(double volume) {
 
 void MojoAudioInputStream::OnStreamCreated(
     int stream_id,
-    const base::SharedMemory* shared_memory,
+    base::ReadOnlySharedMemoryRegion shared_memory_region,
     std::unique_ptr<base::CancelableSyncSocket> foreign_socket,
     bool initially_muted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(stream_created_callback_);
-  DCHECK(shared_memory);
   DCHECK(foreign_socket);
 
-  base::SharedMemoryHandle foreign_memory_handle =
-      shared_memory->GetReadOnlyHandle();
-  if (!base::SharedMemory::IsHandleValid(foreign_memory_handle)) {
+  if (!shared_memory_region.IsValid()) {
     OnStreamError(/*not used*/ 0);
     return;
   }
 
-  mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      foreign_memory_handle, shared_memory->requested_size(),
-      mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly);
+  mojo::ScopedSharedBufferHandle buffer_handle =
+      mojo::WrapReadOnlySharedMemoryRegion(std::move(shared_memory_region));
   mojo::ScopedHandle socket_handle =
       mojo::WrapPlatformFile(foreign_socket->Release());
 

@@ -8,8 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/shared_memory.h"
-#include "base/memory/shared_memory_handle.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
@@ -93,11 +92,9 @@ class AudioInputStreamHandleTest : public Test {
     EXPECT_TRUE(event_handler_);
 
     const size_t kSize = 1234;
-    base::SharedMemoryCreateOptions shmem_options;
-    shmem_options.size = kSize;
-    shmem_options.share_read_only = true;
-    shared_memory_.Create(shmem_options);
-    shared_memory_.Map(kSize);
+    shared_memory_region_ =
+        base::ReadOnlySharedMemoryRegion::Create(kSize).region;
+    EXPECT_TRUE(shared_memory_region_.IsValid());
     EXPECT_TRUE(
         base::CancelableSyncSocket::CreatePair(local_.get(), remote_.get()));
   }
@@ -105,7 +102,8 @@ class AudioInputStreamHandleTest : public Test {
   void SendCreatedNotification() {
     const int kIrrelevantStreamId = 0;
     const bool kInitiallyMuted = false;
-    event_handler_->OnStreamCreated(kIrrelevantStreamId, &shared_memory_,
+    event_handler_->OnStreamCreated(kIrrelevantStreamId,
+                                    std::move(shared_memory_region_),
                                     std::move(remote_), kInitiallyMuted);
   }
 
@@ -132,7 +130,7 @@ class AudioInputStreamHandleTest : public Test {
   media::AudioInputDelegate::EventHandler* event_handler_ = nullptr;
   std::unique_ptr<AudioInputStreamHandle> handle_;
 
-  base::SharedMemory shared_memory_;
+  base::ReadOnlySharedMemoryRegion shared_memory_region_;
   std::unique_ptr<base::CancelableSyncSocket> local_;
   std::unique_ptr<base::CancelableSyncSocket> remote_;
 };
