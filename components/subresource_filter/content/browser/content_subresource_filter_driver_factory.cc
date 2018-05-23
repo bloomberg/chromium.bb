@@ -116,12 +116,6 @@ void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
         "SubresourceFilter.PageLoad.ForcedActivation.DisallowedLoad", true);
     return;
   }
-  // This shouldn't happen normally, but in the rare case that an IPC from a
-  // previous page arrives late we should guard against it.
-  if (matched_configuration_.activation_options.activation_level !=
-      ActivationLevel::ENABLED) {
-    return;
-  }
   client_->ShowNotification();
 }
 
