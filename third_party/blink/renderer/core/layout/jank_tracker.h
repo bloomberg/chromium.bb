@@ -31,6 +31,7 @@ class CORE_EXPORT JankTracker {
   void NotifyPrePaintFinished();
   bool IsActive();
   double Score() const { return score_; }
+  float MaxDistance() const { return max_distance_; }
 
  private:
   void TimerFired(TimerBase*);
@@ -47,6 +48,9 @@ class CORE_EXPORT JankTracker {
   // Timer that fires the first time we've had no layout jank for a few seconds.
   TaskRunnerTimer<JankTracker> timer_;
   bool has_fired_;
+
+  // The maximum distance any layout object has moved in any frame.
+  float max_distance_;
 };
 
 }  // namespace blink

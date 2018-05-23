@@ -16,13 +16,32 @@ namespace blink {
 
 static const float kTimerDelay = 3.0;
 
+static FloatPoint LogicalStart(const FloatRect& rect,
+                               const LayoutObject& object) {
+  const ComputedStyle* style = object.Style();
+  DCHECK(style);
+  auto logical =
+      PhysicalToLogical<float>(style->GetWritingMode(), style->Direction(),
+                               rect.Y(), rect.MaxX(), rect.MaxY(), rect.X());
+  return FloatPoint(logical.InlineStart(), logical.BlockStart());
+}
+
+static float GetMoveDistance(const FloatRect& old_rect,
+                             const FloatRect& new_rect,
+                             const LayoutObject& object) {
+  FloatSize location_delta =
+      LogicalStart(new_rect, object) - LogicalStart(old_rect, object);
+  return std::max(fabs(location_delta.Width()), fabs(location_delta.Height()));
+}
+
 JankTracker::JankTracker(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       score_(0.0),
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
              this,
              &JankTracker::TimerFired),
-      has_fired_(false) {}
+      has_fired_(false),
+      max_distance_(0.0) {}
 
 void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
                                        const LayoutRect& old_visual_rect,
@@ -34,7 +53,8 @@ void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
   if (old_visual_rect.IsEmpty() || new_visual_rect.IsEmpty())
     return;
 
-  if (old_visual_rect.Location() == new_visual_rect.Location())
+  if (LogicalStart(FloatRect(old_visual_rect), object) ==
+      LogicalStart(FloatRect(new_visual_rect), object))
     return;
 
   const auto* local_transform = painting_layer.GetLayoutObject()
@@ -68,6 +88,10 @@ void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
   DVLOG(2) << object.DebugName() << " moved from "
            << old_visual_rect_abs.ToString() << " to "
            << new_visual_rect_abs.ToString();
+
+  max_distance_ = std::max(
+      max_distance_,
+      GetMoveDistance(old_visual_rect_abs, new_visual_rect_abs, object));
 
   IntRect visible_old_visual_rect = RoundedIntRect(old_visual_rect_abs);
   visible_old_visual_rect.Intersect(viewport);
@@ -127,10 +151,11 @@ void JankTracker::TimerFired(TimerBase* timer) {
 
   DVLOG(1) << "final jank score for "
            << frame_view_->GetFrame().DomWindow()->location()->toString()
-           << " is " << score_;
+           << " is " << score_ << " with max move distance of "
+           << max_distance_;
 
-  TRACE_EVENT_INSTANT1("blink", "TotalLayoutJank", TRACE_EVENT_SCOPE_THREAD,
-                       "score", score_);
+  TRACE_EVENT_INSTANT2("blink", "TotalLayoutJank", TRACE_EVENT_SCOPE_THREAD,
+                       "score", score_, "maxDistance", max_distance_);
 }
 
 }  // namespace blink
