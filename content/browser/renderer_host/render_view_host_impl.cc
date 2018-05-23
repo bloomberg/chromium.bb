@@ -566,10 +566,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.background_video_track_optimization_enabled =
       base::FeatureList::IsEnabled(media::kBackgroundVideoTrackOptimization);
 
-  if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo) &&
-      base::FeatureList::IsEnabled(media::kPictureInPicture)) {
-    prefs.picture_in_picture_enabled = true;
-  }
+  prefs.picture_in_picture_enabled =
+      base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo);
 
   GetContentClient()->browser()->OverrideWebkitPrefs(this, &prefs);
   return prefs;
