@@ -9,13 +9,13 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "common/tools_common.h"
+
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "./tools_common.h"
 
 #if CONFIG_AV1_ENCODER
 #include "aom/aomcx.h"

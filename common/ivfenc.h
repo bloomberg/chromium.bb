@@ -11,7 +11,7 @@
 #ifndef IVFENC_H_
 #define IVFENC_H_
 
-#include "./tools_common.h"
+#include "common/tools_common.h"
 
 struct aom_codec_enc_cfg;
 struct aom_codec_cx_pkt;

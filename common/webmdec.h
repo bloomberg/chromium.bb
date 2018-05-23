@@ -11,7 +11,7 @@
 #ifndef WEBMDEC_H_
 #define WEBMDEC_H_
 
-#include "./tools_common.h"
+#include "common/tools_common.h"
 
 #ifdef __cplusplus
 extern "C" {

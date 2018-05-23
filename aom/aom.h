@@ -31,8 +31,8 @@
 #ifndef AOM_AOM_H_
 #define AOM_AOM_H_
 
-#include "./aom_codec.h"
-#include "./aom_image.h"
+#include "aom/aom_codec.h"
+#include "aom/aom_image.h"
 
 #ifdef __cplusplus
 extern "C" {

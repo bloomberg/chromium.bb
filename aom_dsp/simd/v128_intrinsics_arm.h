@@ -13,7 +13,8 @@
 #define _V128_INTRINSICS_H
 
 #include <arm_neon.h>
-#include "./v64_intrinsics_arm.h"
+
+#include "aom_dsp/simd/v64_intrinsics_arm.h"
 
 typedef int64x2_t v128;
 

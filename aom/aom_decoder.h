@@ -30,8 +30,8 @@
 extern "C" {
 #endif
 
-#include "./aom_codec.h"
-#include "./aom_frame_buffer.h"
+#include "aom/aom_codec.h"
+#include "aom/aom_frame_buffer.h"
 
 /*!\brief Current ABI version number
  *

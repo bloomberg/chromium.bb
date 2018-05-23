@@ -30,7 +30,7 @@
 extern "C" {
 #endif
 
-#include "./aom_codec.h"
+#include "aom/aom_codec.h"
 
 /*!\brief Current ABI version number
  *

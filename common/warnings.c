@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./warnings.h"
+#include "common/warnings.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -17,9 +17,8 @@
 #include <string.h>
 
 #include "aom/aom_encoder.h"
-
-#include "./tools_common.h"
-#include "./aomenc.h"
+#include "apps/aomenc.h"
+#include "common/tools_common.h"
 
 static const char quantizer_warning_string[] =
     "Bad quantizer values. Quantizer values should not be equal, and should "

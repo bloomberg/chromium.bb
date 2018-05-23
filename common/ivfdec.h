@@ -11,7 +11,7 @@
 #ifndef IVFDEC_H_
 #define IVFDEC_H_
 
-#include "./tools_common.h"
+#include "common/tools_common.h"
 
 #ifdef __cplusplus
 extern "C" {

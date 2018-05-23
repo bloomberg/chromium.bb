@@ -10,6 +10,11 @@
  */
 
 #include <string>
+
+#include "./aom_version.h"
+
+#include "aom_ports/aom_timer.h"
+#include "common/ivfenc.h"
 #include "test/codec_factory.h"
 #include "test/decode_test_driver.h"
 #include "test/encode_test_driver.h"
@@ -18,9 +23,6 @@
 #include "test/md5_helper.h"
 #include "test/util.h"
 #include "test/webm_video_source.h"
-#include "aom_ports/aom_timer.h"
-#include "./ivfenc.h"
-#include "./aom_version.h"
 
 using ::testing::make_tuple;
 

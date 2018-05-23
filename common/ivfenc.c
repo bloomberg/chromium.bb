@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./ivfenc.h"
+#include "common/ivfenc.h"
 
 #include "aom/aom_encoder.h"
 #include "aom_ports/mem_ops.h"

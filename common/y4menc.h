@@ -12,9 +12,8 @@
 #ifndef Y4MENC_H_
 #define Y4MENC_H_
 
-#include "./tools_common.h"
-
 #include "aom/aom_decoder.h"
+#include "common/tools_common.h"
 
 #ifdef __cplusplus
 extern "C" {

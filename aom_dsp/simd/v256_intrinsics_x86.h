@@ -14,7 +14,7 @@
 
 #if !defined(__AVX2__)
 
-#include "./v256_intrinsics_v128.h"
+#include "aom_dsp/simd/v256_intrinsics_v128.h"
 
 #else
 
@@ -26,7 +26,8 @@
 #endif
 
 #include <immintrin.h>
-#include "./v128_intrinsics_x86.h"
+
+#include "aom_dsp/simd/v128_intrinsics_x86.h"
 
 typedef __m256i v256;
 

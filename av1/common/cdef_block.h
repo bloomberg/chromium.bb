@@ -12,7 +12,7 @@
 #if !defined(_CDEF_BLOCK_H)
 #define _CDEF_BLOCK_H (1)
 
-#include "./odintrin.h"
+#include "av1/common/odintrin.h"
 
 #define CDEF_BLOCKSIZE 64
 #define CDEF_BLOCKSIZE_LOG2 6

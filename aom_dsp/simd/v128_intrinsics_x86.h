@@ -12,7 +12,7 @@
 #ifndef _V128_INTRINSICS_H
 #define _V128_INTRINSICS_H
 
-#include "./v64_intrinsics_x86.h"
+#include "aom_dsp/simd/v64_intrinsics_x86.h"
 
 typedef __m128i v128;
 

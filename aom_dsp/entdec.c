@@ -9,10 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "./config.h"
-#endif
-
 #include <assert.h>
 #include "aom_dsp/entdec.h"
 #include "aom_dsp/prob.h"

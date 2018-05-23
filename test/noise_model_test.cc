@@ -2,8 +2,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "./aom_dsp/noise_model.h"
-#include "./aom_dsp/noise_util.h"
+#include "aom_dsp/noise_model.h"
+#include "aom_dsp/noise_util.h"
 #include "test/acm_random.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 

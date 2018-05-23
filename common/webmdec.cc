@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./webmdec.h"
+#include "common/webmdec.h"
 
 #include <cassert>
 #include <cstring>

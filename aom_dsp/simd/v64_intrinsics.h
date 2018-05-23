@@ -14,7 +14,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "./v64_intrinsics_c.h"
+
+#include "aom_dsp/simd/v64_intrinsics_c.h"
 
 /* Fallback to plain, unoptimised C. */
 

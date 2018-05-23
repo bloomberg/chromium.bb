@@ -12,7 +12,7 @@
 #ifndef VIDEO_READER_H_
 #define VIDEO_READER_H_
 
-#include "./video_common.h"
+#include "common/video_common.h"
 
 // The following code is work in progress. It is going to  support transparent
 // reading of input files. Right now only IVF format is supported for

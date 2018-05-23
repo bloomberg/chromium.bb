@@ -10,7 +10,7 @@
  */
 #include "config/aom_config.h"
 
-#include "./bitreader_buffer.h"
+#include "aom_dsp/bitreader_buffer.h"
 
 size_t aom_rb_bytes_read(struct aom_read_bit_buffer *rb) {
   return (rb->bit_offset + 7) >> 3;

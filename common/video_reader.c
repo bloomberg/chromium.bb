@@ -8,14 +8,13 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
+#include "common/video_reader.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-#include "./ivfdec.h"
-#include "./video_reader.h"
-
 #include "aom_ports/mem_ops.h"
+#include "common/ivfdec.h"
 
 static const char *const kIVFSignature = "DKIF";
 

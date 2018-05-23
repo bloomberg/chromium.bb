@@ -12,7 +12,7 @@
 #ifndef VIDEO_COMMON_H_
 #define VIDEO_COMMON_H_
 
-#include "./tools_common.h"
+#include "common/tools_common.h"
 
 typedef struct {
   uint32_t codec_fourcc;

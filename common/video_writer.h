@@ -12,7 +12,7 @@
 #ifndef VIDEO_WRITER_H_
 #define VIDEO_WRITER_H_
 
-#include "./video_common.h"
+#include "common/video_common.h"
 
 typedef enum { kContainerIVF } AvxContainer;
 

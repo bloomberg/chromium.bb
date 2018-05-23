@@ -11,7 +11,7 @@
 #ifndef OBUDEC_H_
 #define OBUDEC_H_
 
-#include "./tools_common.h"
+#include "common/tools_common.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -11,7 +11,7 @@
 
 #include "config/av1_rtcd.h"
 
-#include "./cdef_block.h"
+#include "av1/common/cdef_block.h"
 
 /* partial A is a 16-bit vector of the form:
    [x8 x7 x6 x5 x4 x3 x2 x1] and partial B has the form:

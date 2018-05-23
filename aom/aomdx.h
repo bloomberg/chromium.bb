@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 /* Include controls common to both the encoder and decoder */
-#include "./aom.h"
+#include "aom/aom.h"
 
 /*!\name Algorithm interface for AV1
  *

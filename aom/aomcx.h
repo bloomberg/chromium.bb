@@ -16,8 +16,8 @@
  *
  * @{
  */
-#include "./aom.h"
-#include "./aom_encoder.h"
+#include "aom/aom.h"
+#include "aom/aom_encoder.h"
 
 /*!\file
  * \brief Provides definitions for using AOM or AV1 encoder algorithm within the

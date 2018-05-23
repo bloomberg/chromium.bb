@@ -13,11 +13,11 @@
 #define _V256_INTRINSICS_V128_H
 
 #if HAVE_NEON
-#include "./v128_intrinsics_arm.h"
+#include "aom_dsp/simd/v128_intrinsics_arm.h"
 #elif HAVE_SSE2
-#include "./v128_intrinsics_x86.h"
+#include "aom_dsp/simd/v128_intrinsics_x86.h"
 #else
-#include "./v128_intrinsics.h"
+#include "aom_dsp/simd/v128_intrinsics.h"
 #endif
 
 typedef struct {

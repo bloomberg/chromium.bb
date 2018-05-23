@@ -9,13 +9,13 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "stats/rate_hist.h"
+
 #include <assert.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <stdio.h>
 #include <math.h>
-
-#include "./rate_hist.h"
 
 #define RATE_BINS 100
 #define HIST_BAR_MAX 40

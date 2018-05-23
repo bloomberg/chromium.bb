@@ -15,9 +15,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "./v256_intrinsics_c.h"
-#include "./v128_intrinsics.h"
-#include "./v64_intrinsics.h"
+
+#include "aom_dsp/simd/v256_intrinsics_c.h"
+#include "aom_dsp/simd/v128_intrinsics.h"
+#include "aom_dsp/simd/v64_intrinsics.h"
 
 /* Fallback to plain, unoptimised C. */
 

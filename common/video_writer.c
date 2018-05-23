@@ -8,12 +8,12 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
+#include "common/video_writer.h"
 
 #include <stdlib.h>
 
-#include "./ivfenc.h"
-#include "./video_writer.h"
 #include "aom/aom_encoder.h"
+#include "common/ivfenc.h"
 
 struct AvxVideoWriterStruct {
   AvxVideoInfo info;

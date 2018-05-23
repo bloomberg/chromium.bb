@@ -14,7 +14,7 @@
 
 #include "config/aom_config.h"
 
-#include "./bitwriter_buffer.h"
+#include "aom_dsp/bitwriter_buffer.h"
 
 int aom_wb_is_byte_aligned(const struct aom_write_bit_buffer *wb) {
   return (wb->bit_offset % CHAR_BIT == 0);

@@ -9,14 +9,14 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "common/ivfdec.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "aom_ports/mem_ops.h"
 #include "aom_ports/sanitizer.h"
-
-#include "./ivfdec.h"
 
 static const char *IVF_SIGNATURE = "DKIF";
 

@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./webmenc.h"
+#include "common/webmenc.h"
 
 #include <string>
 

@@ -21,7 +21,7 @@
 #include "aom_ports/msvc.h"
 
 #if CONFIG_AV1_ENCODER
-#include "./y4minput.h"
+#include "common/y4minput.h"
 #endif
 
 #if defined(_MSC_VER)

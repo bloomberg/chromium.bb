@@ -15,7 +15,7 @@
 #include <string.h>
 
 #include "aom/aom_integer.h"
-#include "./accounting.h"
+#include "av1/decoder/accounting.h"
 
 static int aom_accounting_hash(const char *str) {
   uint32_t val;

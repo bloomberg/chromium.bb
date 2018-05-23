@@ -9,10 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "./config.h"
-#endif
-
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>

@@ -12,14 +12,10 @@
 #include <math.h>
 #include <stdlib.h>
 
-#ifdef HAVE_CONFIG_H
-#include "./config.h"
-#endif
-
 #include "config/aom_dsp_rtcd.h"
 #include "config/av1_rtcd.h"
 
-#include "./cdef.h"
+#include "av1/common/cdef.h"
 
 /* Generated from gen_filter_tables.c. */
 DECLARE_ALIGNED(16, const int, cdef_directions[8][2]) = {

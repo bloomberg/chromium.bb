@@ -9,10 +9,11 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "common/args.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-#include "args.h"
 
 #include "aom/aom_integer.h"
 #include "aom_ports/msvc.h"

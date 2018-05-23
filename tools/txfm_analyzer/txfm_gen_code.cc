@@ -15,7 +15,7 @@
 #include <float.h>
 #include <string.h>
 
-#include "./txfm_graph.h"
+#include "tools/txfm_analyzer/txfm_graph.h"
 
 typedef enum CODE_TYPE {
   CODE_TYPE_C,

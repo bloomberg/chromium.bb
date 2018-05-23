@@ -9,10 +9,11 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "tools/txfm_analyzer/txfm_graph.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "./txfm_graph.h"
 
 typedef struct Node Node;
 

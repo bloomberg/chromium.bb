@@ -9,13 +9,13 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./aomstats.h"
+#include "stats/aomstats.h"
 
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "./tools_common.h"
+#include "common/tools_common.h"
 
 int stats_open_file(stats_io_t *stats, const char *fpf, int pass) {
   int res;

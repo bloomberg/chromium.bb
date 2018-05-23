@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "./obudec.h"
+#include "common/obudec.h"
 
 #include "aom_ports/mem_ops.h"
 #include "av1/common/common.h"
