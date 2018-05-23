@@ -3272,6 +3272,7 @@ split_static_library("ui") {
         "views/toolbar/toolbar_action_view_delegate_views.h",
         "views/toolbar/toolbar_button.cc",
         "views/toolbar/toolbar_button.h",
+        "views/toolbar/toolbar_ink_drop_util.cc",
         "views/toolbar/toolbar_ink_drop_util.h",
         "views/toolbar/toolbar_view.cc",
         "views/toolbar/toolbar_view.h",

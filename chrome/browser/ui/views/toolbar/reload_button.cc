@@ -241,7 +241,6 @@ void ReloadButton::ChangeModeInternal(Mode mode) {
              gfx::CreateVectorIcon(icon, normal_color));
     SetImage(views::Button::STATE_DISABLED,
              gfx::CreateVectorIcon(icon, disabled_color));
-    set_ink_drop_base_color(normal_color);
   }
 
   visible_mode_ = mode;

@@ -166,6 +166,10 @@ std::unique_ptr<views::InkDropMask> ToolbarButton::CreateInkDropMask() const {
   return CreateToolbarInkDropMask<ImageButton>(this);
 }
 
+SkColor ToolbarButton::GetInkDropBaseColor() const {
+  return GetToolbarInkDropBaseColor(this);
+}
+
 void ToolbarButton::ShowContextMenuForView(View* source,
                                            const gfx::Point& point,
                                            ui::MenuSourceType source_type) {

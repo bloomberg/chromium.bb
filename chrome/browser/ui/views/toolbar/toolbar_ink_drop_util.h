@@ -7,7 +7,10 @@
 
 #include <memory>
 
+#include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -125,5 +128,8 @@ std::unique_ptr<views::InkDropMask> CreateToolbarInkDropMask(
       host_view->size(), GetInkDropInsets(host_view),
       host_view->ink_drop_large_corner_radius());
 }
+
+// Returns the ink drop base color that should be used by all toolbar buttons.
+SkColor GetToolbarInkDropBaseColor(const views::View* host_view);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_INK_DROP_UTIL_H_
