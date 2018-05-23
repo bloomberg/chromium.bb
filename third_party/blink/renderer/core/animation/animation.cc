@@ -853,7 +853,8 @@ Animation::CheckCanStartAnimationOnCompositorInternal(
   // If the optional element id set has no value we must be in SPv1 mode in
   // which case we trust the compositing logic will create a layer if needed.
   if (composited_element_ids) {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+           RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
     Element* target_element = ToKeyframeEffect(content_.Get())->target();
     if (!target_element) {
       return CompositorAnimations::FailureCode::Actionable(
