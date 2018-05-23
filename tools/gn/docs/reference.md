@@ -2676,7 +2676,7 @@
 
     template("shared_library") {
       shared_library(shlib) {
-        forward_variables_from(invoker, [ "*" ])
+        forward_variables_from(invoker, "*")
         ...
       }
     }
