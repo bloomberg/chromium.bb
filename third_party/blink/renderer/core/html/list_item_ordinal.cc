@@ -266,6 +266,9 @@ void ListItemOrdinal::InvalidateAllItemsForOrderedList(
   }
 }
 
+// TODO(layout-dev): We should use layout tree traversal instead of flat tree
+// traversal to invalidate ordinal number cache since lite items in unassigned
+// slots don't have cached value. See http://crbug.com/844277 for details.
 void ListItemOrdinal::ItemInsertedOrRemoved(
     const LayoutObject* layout_list_item) {
   // If distribution recalc is needed, updateListMarkerNumber will be re-invoked
@@ -279,6 +282,14 @@ void ListItemOrdinal::ItemInsertedOrRemoved(
   // is resolved.
   if (!list_node)
     return;
+
+  // Note: We don't need to invalidate list items in unassigned slots.
+  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
+    if (ShadowRoot* shadow_root = list_node->ContainingShadowRoot()) {
+      if (shadow_root->NeedsSlotAssignmentRecalc())
+        return;
+    }
+  }
 
   bool is_list_reversed = false;
   if (auto* o_list_element = ToHTMLOListElementOrNull(list_node)) {
