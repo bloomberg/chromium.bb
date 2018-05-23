@@ -172,14 +172,6 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
         mObservers.addObserver(observer);
     }
 
-    /**
-     * Removes an observer to this fading view.
-     * @param observer The observer to be removed.
-     */
-    public void removeObserver(FadingViewObserver observer) {
-        mObservers.removeObserver(observer);
-    }
-
     @Override
     public void onClick(View view) {
         for (FadingViewObserver o : mObservers) o.onFadingViewClick();
