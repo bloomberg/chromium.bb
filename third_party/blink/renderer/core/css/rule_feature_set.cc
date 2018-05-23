@@ -357,8 +357,10 @@ void RuleFeatureSet::UpdateFeaturesFromCombinator(
         ExtractInvalidationSetFeaturesFromCompound(
             *last_compound_in_adjacent_chain,
             last_compound_in_adjacent_chain_features, kAncestor);
-        if (!last_compound_in_adjacent_chain_features.HasFeatures())
-          last_compound_in_adjacent_chain_features.force_subtree = true;
+        if (!last_compound_in_adjacent_chain_features.HasFeatures()) {
+          last_compound_in_adjacent_chain_features.invalidation_flags
+              .SetWholeSubtreeInvalid(true);
+        }
       }
     }
     if (sibling_features->max_direct_adjacent_selectors == UINT_MAX)
@@ -377,10 +379,10 @@ void RuleFeatureSet::UpdateFeaturesFromCombinator(
   sibling_features = nullptr;
 
   if (last_in_compound.IsShadowSelector())
-    descendant_features.tree_boundary_crossing = true;
+    descendant_features.invalidation_flags.SetTreeBoundaryCrossing(true);
   if (last_in_compound.Relation() == CSSSelector::kShadowSlot ||
       last_in_compound.RelationIsAffectedByPseudoContent())
-    descendant_features.insertion_point_crossing = true;
+    descendant_features.invalidation_flags.SetInsertionPointCrossing(true);
   if (last_in_compound.RelationIsAffectedByPseudoContent())
     descendant_features.content_pseudo_crossing = true;
 }
@@ -408,14 +410,14 @@ void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSimpleSelector(
   switch (selector.GetPseudoType()) {
     case CSSSelector::kPseudoWebKitCustomElement:
     case CSSSelector::kPseudoBlinkInternalElement:
-      features.custom_pseudo_element = true;
+      features.invalidation_flags.SetInvalidateCustomPseudo(true);
       return;
     case CSSSelector::kPseudoBefore:
     case CSSSelector::kPseudoAfter:
       features.has_before_or_after = true;
       return;
     case CSSSelector::kPseudoSlotted:
-      features.invalidates_slotted = true;
+      features.invalidation_flags.SetInvalidatesSlotted(true);
       return;
     default:
       return;
@@ -508,10 +510,10 @@ void RuleFeatureSet::UpdateInvalidationSets(const RuleData& rule_data) {
       ExtractInvalidationSetFeaturesFromCompound(rule_data.Selector(), features,
                                                  kSubject);
 
-  if (features.force_subtree)
+  if (features.invalidation_flags.WholeSubtreeInvalid())
     features.has_features_for_rule_set_invalidation = false;
   else if (!features.HasFeatures())
-    features.force_subtree = true;
+    features.invalidation_flags.SetWholeSubtreeInvalid(true);
   if (features.has_nth_pseudo)
     AddFeaturesToInvalidationSet(EnsureNthInvalidationSet(), features);
   if (features.has_before_or_after)
@@ -536,15 +538,16 @@ void RuleFeatureSet::UpdateRuleSetInvalidation(
     const InvalidationSetFeatures& features) {
   if (features.has_features_for_rule_set_invalidation)
     return;
-  if (features.force_subtree ||
-      (!features.custom_pseudo_element && features.tag_names.IsEmpty())) {
+  if (features.invalidation_flags.WholeSubtreeInvalid() ||
+      (!features.invalidation_flags.InvalidateCustomPseudo() &&
+       features.tag_names.IsEmpty())) {
     metadata_.needs_full_recalc_for_rule_set_invalidation = true;
     return;
   }
 
   EnsureTypeRuleInvalidationSet();
 
-  if (features.custom_pseudo_element) {
+  if (features.invalidation_flags.InvalidateCustomPseudo()) {
     type_rule_invalidation_set_->SetCustomPseudoInvalid();
     type_rule_invalidation_set_->SetTreeBoundaryCrossing();
   }
@@ -609,8 +612,8 @@ RuleFeatureSet::ExtractInvalidationSetFeaturesFromSelectorList(
             simple_selector.GetPseudoType())) {
       // A null selector return means the sub-selector contained a
       // selector which requiresSubtreeInvalidation().
-      DCHECK(compound_features.force_subtree);
-      features.force_subtree = true;
+      DCHECK(compound_features.invalidation_flags.WholeSubtreeInvalid());
+      features.invalidation_flags.SetWholeSubtreeInvalid(true);
       return kRequiresSubtreeInvalidation;
     }
     if (compound_features.has_nth_pseudo)
@@ -645,7 +648,7 @@ const CSSSelector* RuleFeatureSet::ExtractInvalidationSetFeaturesFromCompound(
     // addFeaturesToInvalidationSets start marking invalidation sets for
     // subtree recalc for features in the rightmost compound selector.
     if (RequiresSubtreeInvalidation(*simple_selector)) {
-      features.force_subtree = true;
+      features.invalidation_flags.SetWholeSubtreeInvalid(true);
       return nullptr;
     }
 
@@ -674,7 +677,7 @@ const CSSSelector* RuleFeatureSet::ExtractInvalidationSetFeaturesFromCompound(
     if (ExtractInvalidationSetFeaturesFromSelectorList(*simple_selector,
                                                        features, position) ==
         kRequiresSubtreeInvalidation) {
-      DCHECK(features.force_subtree);
+      DCHECK(features.invalidation_flags.WholeSubtreeInvalid());
       return nullptr;
     }
 
@@ -701,15 +704,16 @@ const CSSSelector* RuleFeatureSet::ExtractInvalidationSetFeaturesFromCompound(
 void RuleFeatureSet::AddFeaturesToInvalidationSet(
     InvalidationSet& invalidation_set,
     const InvalidationSetFeatures& features) {
-  if (features.tree_boundary_crossing)
+  if (features.invalidation_flags.TreeBoundaryCrossing())
     invalidation_set.SetTreeBoundaryCrossing();
-  if (features.insertion_point_crossing)
+  if (features.invalidation_flags.InsertionPointCrossing())
     invalidation_set.SetInsertionPointCrossing();
-  if (features.invalidates_slotted)
+  if (features.invalidation_flags.InvalidatesSlotted())
     invalidation_set.SetInvalidatesSlotted();
-  if (features.force_subtree)
+  if (features.invalidation_flags.WholeSubtreeInvalid())
     invalidation_set.SetWholeSubtreeInvalid();
-  if (features.content_pseudo_crossing || features.force_subtree)
+  if (features.content_pseudo_crossing ||
+      features.invalidation_flags.WholeSubtreeInvalid())
     return;
 
   for (const auto& id : features.ids)
@@ -720,7 +724,7 @@ void RuleFeatureSet::AddFeaturesToInvalidationSet(
     invalidation_set.AddClass(class_name);
   for (const auto& attribute : features.attributes)
     invalidation_set.AddAttribute(attribute);
-  if (features.custom_pseudo_element)
+  if (features.invalidation_flags.InvalidateCustomPseudo())
     invalidation_set.SetCustomPseudoInvalid();
 }
 
@@ -785,9 +789,9 @@ void RuleFeatureSet::AddFeaturesToInvalidationSetsForSimpleSelector(
   }
 
   if (simple_selector.IsHostPseudoClass())
-    descendant_features.tree_boundary_crossing = true;
+    descendant_features.invalidation_flags.SetTreeBoundaryCrossing(true);
   if (simple_selector.IsV0InsertionPointCrossing())
-    descendant_features.insertion_point_crossing = true;
+    descendant_features.invalidation_flags.SetInsertionPointCrossing(true);
 
   AddFeaturesToInvalidationSetsForSelectorList(
       simple_selector, sibling_features, descendant_features);
@@ -1227,19 +1231,15 @@ void RuleFeatureSet::InvalidationSetFeatures::Add(
   tag_names.AppendVector(other.tag_names);
   max_direct_adjacent_selectors = std::max(max_direct_adjacent_selectors,
                                            other.max_direct_adjacent_selectors);
-  custom_pseudo_element |= other.custom_pseudo_element;
+  invalidation_flags.Merge(other.invalidation_flags);
   has_before_or_after |= other.has_before_or_after;
-  tree_boundary_crossing |= other.tree_boundary_crossing;
-  insertion_point_crossing |= other.insertion_point_crossing;
-  force_subtree |= other.force_subtree;
   content_pseudo_crossing |= other.content_pseudo_crossing;
-  invalidates_slotted |= other.invalidates_slotted;
   has_nth_pseudo |= other.has_nth_pseudo;
 }
 
 bool RuleFeatureSet::InvalidationSetFeatures::HasFeatures() const {
   return !classes.IsEmpty() || !attributes.IsEmpty() || !ids.IsEmpty() ||
-         !tag_names.IsEmpty() || custom_pseudo_element;
+         !tag_names.IsEmpty() || invalidation_flags.InvalidateCustomPseudo();
 }
 
 bool RuleFeatureSet::InvalidationSetFeatures::HasIdClassOrAttribute() const {

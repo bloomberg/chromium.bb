@@ -36,6 +36,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/invalidation/invalidation_flags.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -114,28 +115,55 @@ class CORE_EXPORT InvalidationSet
   void AddTagName(const AtomicString& tag_name);
   void AddAttribute(const AtomicString& attribute_local_name);
 
+  void SetInvalidationFlags(InvalidationFlags flags) {
+    invalidation_flags_ = flags;
+  };
+
   void SetWholeSubtreeInvalid();
-  bool WholeSubtreeInvalid() const { return all_descendants_might_be_invalid_; }
+  bool WholeSubtreeInvalid() const {
+    return invalidation_flags_.WholeSubtreeInvalid();
+  }
 
   void SetInvalidatesSelf() { invalidates_self_ = true; }
   bool InvalidatesSelf() const { return invalidates_self_; }
 
-  void SetTreeBoundaryCrossing() { tree_boundary_crossing_ = true; }
-  bool TreeBoundaryCrossing() const { return tree_boundary_crossing_; }
+  void SetTreeBoundaryCrossing() {
+    invalidation_flags_.SetTreeBoundaryCrossing(true);
+  }
+  bool TreeBoundaryCrossing() const {
+    return invalidation_flags_.TreeBoundaryCrossing();
+  }
 
-  void SetInsertionPointCrossing() { insertion_point_crossing_ = true; }
-  bool InsertionPointCrossing() const { return insertion_point_crossing_; }
+  void SetInsertionPointCrossing() {
+    invalidation_flags_.SetInsertionPointCrossing(true);
+  }
+  bool InsertionPointCrossing() const {
+    return invalidation_flags_.InsertionPointCrossing();
+  }
 
-  void SetCustomPseudoInvalid() { custom_pseudo_invalid_ = true; }
-  bool CustomPseudoInvalid() const { return custom_pseudo_invalid_; }
+  void SetCustomPseudoInvalid() {
+    invalidation_flags_.SetInvalidateCustomPseudo(true);
+  }
+  bool CustomPseudoInvalid() const {
+    return invalidation_flags_.InvalidateCustomPseudo();
+  }
 
-  void SetInvalidatesSlotted() { invalidates_slotted_ = true; }
-  bool InvalidatesSlotted() const { return invalidates_slotted_; }
+  void SetInvalidatesSlotted() {
+    invalidation_flags_.SetInvalidatesSlotted(true);
+  }
+  bool InvalidatesSlotted() const {
+    return invalidation_flags_.InvalidatesSlotted();
+  }
+
+  const InvalidationFlags GetInvalidationFlags() const {
+    return invalidation_flags_;
+  };
 
   bool IsEmpty() const {
     return !classes_ && !ids_ && !tag_names_ && !attributes_ &&
-           !custom_pseudo_invalid_ && !insertion_point_crossing_ &&
-           !invalidates_slotted_;
+           !invalidation_flags_.InvalidateCustomPseudo() &&
+           !invalidation_flags_.InsertionPointCrossing() &&
+           !invalidation_flags_.InvalidatesSlotted();
   }
 
   bool IsAlive() const { return is_alive_; }
@@ -196,27 +224,12 @@ class CORE_EXPORT InvalidationSet
   std::unique_ptr<HashSet<AtomicString>> tag_names_;
   std::unique_ptr<HashSet<AtomicString>> attributes_;
 
-  unsigned type_ : 1;
+  InvalidationFlags invalidation_flags_;
 
-  // If true, all descendants might be invalidated, so a full subtree recalc is
-  // required.
-  unsigned all_descendants_might_be_invalid_ : 1;
+  unsigned type_ : 1;
 
   // If true, the element or sibling itself is invalid.
   unsigned invalidates_self_ : 1;
-
-  // If true, all descendants which are custom pseudo elements must be
-  // invalidated.
-  unsigned custom_pseudo_invalid_ : 1;
-
-  // If true, the invalidation must traverse into ShadowRoots with this set.
-  unsigned tree_boundary_crossing_ : 1;
-
-  // If true, insertion point descendants must be invalidated.
-  unsigned insertion_point_crossing_ : 1;
-
-  // If true, distributed nodes of <slot> elements need to be invalidated.
-  unsigned invalidates_slotted_ : 1;
 
   // If true, the instance is alive and can be used.
   unsigned is_alive_ : 1;

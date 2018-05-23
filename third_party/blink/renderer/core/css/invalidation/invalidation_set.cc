@@ -62,16 +62,11 @@ void InvalidationSet::CacheTracingFlag() {
 
 InvalidationSet::InvalidationSet(InvalidationType type)
     : type_(type),
-      all_descendants_might_be_invalid_(false),
       invalidates_self_(false),
-      custom_pseudo_invalid_(false),
-      tree_boundary_crossing_(false),
-      insertion_point_crossing_(false),
-      invalidates_slotted_(false),
       is_alive_(true) {}
 
 bool InvalidationSet::InvalidatesElement(Element& element) const {
-  if (all_descendants_might_be_invalid_)
+  if (invalidation_flags_.WholeSubtreeInvalid())
     return true;
 
   if (tag_names_ && tag_names_->Contains(element.TagQName().LocalName())) {
@@ -264,14 +259,14 @@ void InvalidationSet::AddAttribute(const AtomicString& attribute) {
 }
 
 void InvalidationSet::SetWholeSubtreeInvalid() {
-  if (all_descendants_might_be_invalid_)
+  if (invalidation_flags_.WholeSubtreeInvalid())
     return;
 
-  all_descendants_might_be_invalid_ = true;
-  custom_pseudo_invalid_ = false;
-  tree_boundary_crossing_ = false;
-  insertion_point_crossing_ = false;
-  invalidates_slotted_ = false;
+  invalidation_flags_.SetWholeSubtreeInvalid(true);
+  invalidation_flags_.SetInvalidateCustomPseudo(false);
+  invalidation_flags_.SetTreeBoundaryCrossing(false);
+  invalidation_flags_.SetInsertionPointCrossing(false);
+  invalidation_flags_.SetInvalidatesSlotted(false);
   classes_ = nullptr;
   ids_ = nullptr;
   tag_names_ = nullptr;
@@ -298,15 +293,15 @@ void InvalidationSet::ToTracedValue(TracedValue* value) const {
 
   value->SetString("id", DescendantInvalidationSetToIdString(*this));
 
-  if (all_descendants_might_be_invalid_)
+  if (invalidation_flags_.WholeSubtreeInvalid())
     value->SetBoolean("allDescendantsMightBeInvalid", true);
-  if (custom_pseudo_invalid_)
+  if (invalidation_flags_.InvalidateCustomPseudo())
     value->SetBoolean("customPseudoInvalid", true);
-  if (tree_boundary_crossing_)
+  if (invalidation_flags_.TreeBoundaryCrossing())
     value->SetBoolean("treeBoundaryCrossing", true);
-  if (insertion_point_crossing_)
+  if (invalidation_flags_.InsertionPointCrossing())
     value->SetBoolean("insertionPointCrossing", true);
-  if (invalidates_slotted_)
+  if (invalidation_flags_.InvalidatesSlotted())
     value->SetBoolean("invalidatesSlotted", true);
 
   if (ids_) {

@@ -51,29 +51,31 @@ StyleInvalidator::~StyleInvalidator() = default;
 
 void StyleInvalidator::PushInvalidationSet(
     const InvalidationSet& invalidation_set) {
-  DCHECK(!whole_subtree_invalid_);
+  DCHECK(!invalidation_flags_.WholeSubtreeInvalid());
   DCHECK(!invalidation_set.WholeSubtreeInvalid());
   DCHECK(!invalidation_set.IsEmpty());
   if (invalidation_set.CustomPseudoInvalid())
-    invalidate_custom_pseudo_ = true;
+    invalidation_flags_.SetInvalidateCustomPseudo(true);
   if (invalidation_set.TreeBoundaryCrossing())
-    tree_boundary_crossing_ = true;
+    invalidation_flags_.SetTreeBoundaryCrossing(true);
   if (invalidation_set.InsertionPointCrossing())
-    insertion_point_crossing_ = true;
+    invalidation_flags_.SetInsertionPointCrossing(true);
   if (invalidation_set.InvalidatesSlotted())
-    invalidates_slotted_ = true;
+    invalidation_flags_.SetInvalidatesSlotted(true);
   invalidation_sets_.push_back(&invalidation_set);
 }
 
 ALWAYS_INLINE bool StyleInvalidator::MatchesCurrentInvalidationSets(
     Element& element) const {
-  if (invalidate_custom_pseudo_ && element.ShadowPseudoId() != g_null_atom) {
+  if (invalidation_flags_.InvalidateCustomPseudo() &&
+      element.ShadowPseudoId() != g_null_atom) {
     TRACE_STYLE_INVALIDATOR_INVALIDATION_IF_ENABLED(element,
                                                     kInvalidateCustomPseudo);
     return true;
   }
 
-  if (insertion_point_crossing_ && element.IsV0InsertionPoint())
+  if (invalidation_flags_.InsertionPointCrossing() &&
+      element.IsV0InsertionPoint())
     return true;
 
   for (auto* const invalidation_set : invalidation_sets_) {
@@ -86,7 +88,7 @@ ALWAYS_INLINE bool StyleInvalidator::MatchesCurrentInvalidationSets(
 
 bool StyleInvalidator::MatchesCurrentInvalidationSetsAsSlotted(
     Element& element) const {
-  DCHECK(invalidates_slotted_);
+  DCHECK(invalidation_flags_.InvalidatesSlotted());
 
   for (auto* const invalidation_set : invalidation_sets_) {
     if (!invalidation_set->InvalidatesSlotted())
