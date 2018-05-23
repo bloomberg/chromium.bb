@@ -18,6 +18,13 @@
 #error "This file requires ARC support."
 #endif
 
+// Typedefs of |completionHandler| in |fetchProfilesWithCompletionHandler:|
+// and |fetchProfilesWithCompletionHandler:|.
+typedef void (^CWVFetchProfilesCompletionHandler)(
+    NSArray<CWVAutofillProfile*>* profiles);
+typedef void (^CWVFetchCreditCardsCompletionHandler)(
+    NSArray<CWVCreditCard*>* creditCards);
+
 @interface CWVAutofillDataManager ()
 // Called when WebViewPersonalDataManagerObserverBridge's
 // |OnPersonalDataChanged| is invoked.
@@ -90,7 +97,7 @@ class WebViewPersonalDataManagerObserverBridge
 #pragma mark - Public Methods
 
 - (void)fetchProfilesWithCompletionHandler:
-    (CWVFetchProfilesCompletionHandler)completionHandler {
+    (void (^)(NSArray<CWVAutofillProfile*>* profiles))completionHandler {
   // If data is already loaded, return the existing data asynchronously to match
   // client expectation. Otherwise, save the |completionHandler| and wait for
   // |personalDataDidChange| to be invoked.
@@ -114,7 +121,7 @@ class WebViewPersonalDataManagerObserverBridge
 }
 
 - (void)fetchCreditCardsWithCompletionHandler:
-    (CWVFetchCreditCardsCompletionHandler)completionHandler {
+    (void (^)(NSArray<CWVCreditCard*>* creditCards))completionHandler {
   // If data is already loaded, return the existing data asynchronously to match
   // client expectation. Otherwise, save the |completionHandler| and wait for
   // |personalDataDidChange| to be invoked.
