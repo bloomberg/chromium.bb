@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/crostini/crostini_uninstaller_view.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -26,7 +27,17 @@ CrostiniUninstallerView* g_crostini_uninstaller_view = nullptr;
 // TODO(nverne): We should get this from a ChromeLayoutProvider
 constexpr int kDialogWidth = 448;
 
+constexpr char kCrostiniUninstallResultHistogram[] = "Crostini.UninstallResult";
 }  // namespace
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class CrostiniUninstallerView::UninstallResult {
+  kCancelled = 0,
+  kError = 1,
+  kSuccess = 2,
+  kCount
+};
 
 void CrostiniUninstallerView::Show(Profile* profile) {
   DCHECK(IsCrostiniUIAllowedForProfile(profile));
@@ -92,6 +103,7 @@ bool CrostiniUninstallerView::Accept() {
 }
 
 bool CrostiniUninstallerView::Cancel() {
+  RecordUninstallResultHistogram(UninstallResult::kCancelled);
   return true;  // Should close the dialog
 }
 
@@ -124,6 +136,10 @@ CrostiniUninstallerView::CrostiniUninstallerView(Profile* profile)
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CROSTINI_UNINSTALLER);
 }
 
+CrostiniUninstallerView::~CrostiniUninstallerView() {
+  g_crostini_uninstaller_view = nullptr;
+}
+
 void CrostiniUninstallerView::HandleError(const base::string16& error_message) {
   state_ = State::ERROR;
   message_label_->SetVisible(true);
@@ -131,6 +147,7 @@ void CrostiniUninstallerView::HandleError(const base::string16& error_message) {
   progress_bar_->SetVisible(false);
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
   GetWidget()->UpdateWindowTitle();
+  RecordUninstallResultHistogram(UninstallResult::kError);
 }
 
 void CrostiniUninstallerView::UninstallCrostiniFinished(
@@ -139,10 +156,23 @@ void CrostiniUninstallerView::UninstallCrostiniFinished(
     HandleError(
         l10n_util::GetStringFUTF16(IDS_CROSTINI_UNINSTALLER_ERROR, app_name_));
     return;
+  } else {
+    RecordUninstallResultHistogram(UninstallResult::kSuccess);
   }
   GetWidget()->Close();
 }
 
-CrostiniUninstallerView::~CrostiniUninstallerView() {
-  g_crostini_uninstaller_view = nullptr;
+void CrostiniUninstallerView::RecordUninstallResultHistogram(
+    UninstallResult result) {
+  // Prevent multiple results being logged for a given uninstall flow. This
+  // happens because Cancel is always called, either due to the user cancelling
+  // or the dialog being closed. The simplest way to prevent metrics being
+  // erroneously logged for user cancellation is to only record the first
+  // metric.
+  if (has_logged_result_)
+    return;
+
+  base::UmaHistogramEnumeration(kCrostiniUninstallResultHistogram, result,
+                                UninstallResult::kCount);
+  has_logged_result_ = true;
 }
