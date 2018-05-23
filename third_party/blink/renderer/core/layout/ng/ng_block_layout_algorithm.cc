@@ -558,6 +558,9 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   DCHECK(exclusion_space_);
   container_builder_.SetExclusionSpace(std::move(exclusion_space_));
 
+  if (ConstraintSpace().UseFirstLineStyle())
+    container_builder_.SetStyleVariant(NGStyleVariant::kFirstLine);
+
   return container_builder_.ToBoxFragment();
 }
 

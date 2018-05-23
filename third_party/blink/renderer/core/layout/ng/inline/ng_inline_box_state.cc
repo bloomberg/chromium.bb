@@ -442,6 +442,7 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   NGFragmentBuilder box(item->GetLayoutObject(), &style, style.GetWritingMode(),
                         TextDirection::kLtr);
   box.SetBoxType(NGPhysicalFragment::kInlineBox);
+  box.SetStyleVariant(item->StyleVariant());
 
   // Inline boxes have block start/end borders, even when its containing block
   // was fragmented. Fragmenting a line box in block direction is not

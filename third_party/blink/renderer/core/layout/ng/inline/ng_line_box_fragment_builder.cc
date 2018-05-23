@@ -160,8 +160,8 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
 
   scoped_refptr<NGPhysicalLineBoxFragment> fragment =
       base::AdoptRef(new NGPhysicalLineBoxFragment(
-          Style(), physical_size, children_, contents_visual_rect,
-          scrollable_overflow, metrics_, base_direction_,
+          Style(), style_variant_, physical_size, children_,
+          contents_visual_rect, scrollable_overflow, metrics_, base_direction_,
           break_token_ ? std::move(break_token_)
                        : NGInlineBreakToken::Create(node_)));
 
