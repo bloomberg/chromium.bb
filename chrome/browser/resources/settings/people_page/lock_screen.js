@@ -195,6 +195,7 @@ Polymer({
         settings.EasyUnlockBrowserProxyImpl.getInstance();
     this.fingerprintBrowserProxy_ =
         settings.FingerprintBrowserProxyImpl.getInstance();
+    this.updateNumFingerprints_();
 
     if (this.easyUnlockAllowed_) {
       this.addWebUIListener(
@@ -214,12 +215,7 @@ Polymer({
   currentRouteChanged: function(newRoute, oldRoute) {
     if (newRoute == settings.routes.LOCK_SCREEN) {
       this.updateUnlockType();
-      if (this.fingerprintUnlockEnabled_ && this.fingerprintBrowserProxy_) {
-        this.fingerprintBrowserProxy_.getNumFingerprints().then(
-            numFingerprints => {
-              this.numFingerprints_ = numFingerprints;
-            });
-      }
+      this.updateNumFingerprints_();
     }
 
     if (this.shouldAskForPassword_(newRoute)) {
@@ -403,5 +399,15 @@ Polymer({
   getShowEasyUnlockToggle_: function(
       easyUnlockEnabled, proximityDetectionAllowed) {
     return easyUnlockEnabled && proximityDetectionAllowed;
+  },
+
+  /** @private */
+  updateNumFingerprints_: function() {
+    if (this.fingerprintUnlockEnabled_ && this.fingerprintBrowserProxy_) {
+      this.fingerprintBrowserProxy_.getNumFingerprints().then(
+          numFingerprints => {
+            this.numFingerprints_ = numFingerprints;
+          });
+    }
   },
 });
