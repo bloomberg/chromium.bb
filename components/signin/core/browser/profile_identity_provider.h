@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_IDENTITY_PROVIDER_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_IDENTITY_PROVIDER_H_
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/identity_provider.h"
@@ -17,18 +16,14 @@ class ProfileOAuth2TokenService;
 class ProfileIdentityProvider : public IdentityProvider,
                                 public SigninManagerBase::Observer {
  public:
-  // |request_login_callback| may be null, in which case login attempts are
-  // ignored.
   ProfileIdentityProvider(SigninManagerBase* signin_manager,
-                          ProfileOAuth2TokenService* token_service,
-                          const base::Closure& request_login_callback);
+                          ProfileOAuth2TokenService* token_service);
   ~ProfileIdentityProvider() override;
 
   // IdentityProvider:
   std::string GetActiveUsername() override;
   std::string GetActiveAccountId() override;
   OAuth2TokenService* GetTokenService() override;
-  bool RequestLogin() override;
 
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const std::string& account_id,
@@ -39,7 +34,6 @@ class ProfileIdentityProvider : public IdentityProvider,
  private:
   SigninManagerBase* const signin_manager_;
   ProfileOAuth2TokenService* const token_service_;
-  base::Closure request_login_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileIdentityProvider);
 };

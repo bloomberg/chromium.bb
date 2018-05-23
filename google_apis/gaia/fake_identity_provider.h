@@ -32,7 +32,6 @@ class FakeIdentityProvider : public IdentityProvider {
   std::string GetActiveUsername() override;
   std::string GetActiveAccountId() override;
   OAuth2TokenService* GetTokenService() override;
-  bool RequestLogin() override;
 
  private:
   std::string account_id_;

@@ -70,9 +70,7 @@ IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   std::unique_ptr<IdentityProvider> identity_provider(
       new ProfileIdentityProvider(
           ios::SigninManagerFactory::GetForBrowserState(browser_state),
-          OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
-          // LoginUIServiceFactory is not built on iOS.
-          base::Closure()));
+          OAuth2TokenServiceFactory::GetForBrowserState(browser_state)));
 
   std::unique_ptr<TiclInvalidationService> service(new TiclInvalidationService(
       web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE),
