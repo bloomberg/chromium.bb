@@ -897,10 +897,10 @@ void ScrollAnimatorMac::DidAddVerticalScrollbar(Scrollbar& scrollbar) {
 void ScrollAnimatorMac::WillRemoveVerticalScrollbar(Scrollbar& scrollbar) {
   ScrollbarPainter painter = ScrollbarPainterForScrollbar(scrollbar);
   DCHECK_EQ([scrollbar_painter_controller_.Get() verticalScrollerImp], painter);
-  if (!painter)
-    return;
 
-  DCHECK(vertical_scrollbar_painter_delegate_);
+  if (!painter)
+    DCHECK(!vertical_scrollbar_painter_delegate_);
+
   [painter setDelegate:nil];
   [vertical_scrollbar_painter_delegate_.Get() invalidate];
   vertical_scrollbar_painter_delegate_ = nullptr;
@@ -924,10 +924,10 @@ void ScrollAnimatorMac::WillRemoveHorizontalScrollbar(Scrollbar& scrollbar) {
   ScrollbarPainter painter = ScrollbarPainterForScrollbar(scrollbar);
   DCHECK_EQ([scrollbar_painter_controller_.Get() horizontalScrollerImp],
             painter);
-  if (!painter)
-    return;
 
-  DCHECK(horizontal_scrollbar_painter_delegate_);
+  if (!painter)
+    DCHECK(!horizontal_scrollbar_painter_delegate_);
+
   [painter setDelegate:nil];
   [horizontal_scrollbar_painter_delegate_.Get() invalidate];
   horizontal_scrollbar_painter_delegate_ = nullptr;
