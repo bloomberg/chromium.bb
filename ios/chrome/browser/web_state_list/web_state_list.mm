@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
@@ -101,6 +102,7 @@ WebStateList::WebStateList(WebStateListDelegate* delegate)
 }
 
 WebStateList::~WebStateList() {
+  CHECK(!locked_);
   CloseAllWebStates(CLOSE_NO_FLAGS);
 }
 
@@ -154,32 +156,40 @@ int WebStateList::InsertWebState(int index,
                                  std::unique_ptr<web::WebState> web_state,
                                  int insertion_flags,
                                  WebStateOpener opener) {
-  if (IsInsertionFlagSet(insertion_flags, INSERT_INHERIT_OPENER))
-    opener = WebStateOpener(GetActiveWebState());
-
-  if (!IsInsertionFlagSet(insertion_flags, INSERT_FORCE_INDEX)) {
-    index = order_controller_->DetermineInsertionIndex(opener.opener);
-    if (index < 0 || count() < index)
-      index = count();
-  }
-
-  DCHECK(ContainsIndex(index) || index == count());
-  delegate_->WillAddWebState(web_state.get());
-
-  web::WebState* web_state_ptr = web_state.get();
-  web_state_wrappers_.insert(
-      web_state_wrappers_.begin() + index,
-      std::make_unique<WebStateWrapper>(std::move(web_state)));
-
-  if (active_index_ >= index)
-    ++active_index_;
-
   const bool activating = IsInsertionFlagSet(insertion_flags, INSERT_ACTIVATE);
-  for (auto& observer : observers_)
-    observer.WebStateInsertedAt(this, web_state_ptr, index, activating);
 
-  if (opener.opener)
-    SetOpenerOfWebStateAt(index, opener);
+  {
+    // Inner block for the mutation lock, because ActivateWebState might need to
+    // be called (if |activating| is true), and that method has its own mutation
+    // lock.
+    CHECK(!locked_);
+    base::AutoReset<bool> scoped_lock(&locked_, /* locked */ true);
+    if (IsInsertionFlagSet(insertion_flags, INSERT_INHERIT_OPENER))
+      opener = WebStateOpener(GetActiveWebState());
+
+    if (!IsInsertionFlagSet(insertion_flags, INSERT_FORCE_INDEX)) {
+      index = order_controller_->DetermineInsertionIndex(opener.opener);
+      if (index < 0 || count() < index)
+        index = count();
+    }
+
+    DCHECK(ContainsIndex(index) || index == count());
+    delegate_->WillAddWebState(web_state.get());
+
+    web::WebState* web_state_ptr = web_state.get();
+    web_state_wrappers_.insert(
+        web_state_wrappers_.begin() + index,
+        std::make_unique<WebStateWrapper>(std::move(web_state)));
+
+    if (active_index_ >= index)
+      ++active_index_;
+
+    for (auto& observer : observers_)
+      observer.WebStateInsertedAt(this, web_state_ptr, index, activating);
+
+    if (opener.opener)
+      SetOpenerOfWebStateAt(index, opener);
+  }
 
   if (activating)
     ActivateWebStateAt(index);
@@ -188,6 +198,8 @@ int WebStateList::InsertWebState(int index,
 }
 
 void WebStateList::MoveWebStateAt(int from_index, int to_index) {
+  CHECK(!locked_);
+  base::AutoReset<bool> scoped_lock(&locked_, /* locked */ true);
   DCHECK(ContainsIndex(from_index));
   DCHECK(ContainsIndex(to_index));
   if (from_index == to_index)
@@ -241,6 +253,8 @@ std::unique_ptr<web::WebState> WebStateList::ReplaceWebStateAt(
 }
 
 std::unique_ptr<web::WebState> WebStateList::DetachWebStateAt(int index) {
+  CHECK(!locked_);
+  base::AutoReset<bool> scoped_lock(&locked_, /* locked */ true);
   DCHECK(ContainsIndex(index));
   int new_active_index = order_controller_->DetermineNewActiveIndex(index);
 
@@ -275,8 +289,11 @@ std::unique_ptr<web::WebState> WebStateList::DetachWebStateAt(int index) {
 }
 
 void WebStateList::CloseWebStateAt(int index, int close_flags) {
+  // Lock after detaching, since that has its own lock.
   auto detached_web_state = DetachWebStateAt(index);
 
+  CHECK(!locked_);
+  base::AutoReset<bool> scoped_lock(&locked_, /* locked */ true);
   const bool user_action = IsClosingFlagSet(close_flags, CLOSE_USER_ACTION);
   for (auto& observer : observers_) {
     observer.WillCloseWebStateAt(this, detached_web_state.get(), index,
