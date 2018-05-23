@@ -699,6 +699,19 @@ std::string InitResourceBundleAndDetermineLocale(
   return locale;
 }
 
+bool IsSiteIsolationEnterprisePolicyApplicable() {
+#if defined(OS_ANDROID)
+  // https://crbug.com/844118: Limiting policy to devices with > 1GB RAM.
+  // Using 1077 rather than 1024 because 1) it helps ensure that devices with
+  // exactly 1GB of RAM won't get included because of inaccuracies or off-by-one
+  // errors and 2) this is the bucket boundary in Memory.Stats.Win.TotalPhys2.
+  bool have_enough_memory = base::SysInfo::AmountOfPhysicalMemoryMB() > 1077;
+  return have_enough_memory;
+#else
+  return true;
+#endif
+}
+
 }  // namespace
 
 namespace chrome_browser {
@@ -1389,6 +1402,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     auto* command_line = base::CommandLine::ForCurrentProcess();
     // Add Site Isolation switches as dictated by policy.
     if (local_state->GetBoolean(prefs::kSitePerProcess) &&
+        IsSiteIsolationEnterprisePolicyApplicable() &&
         !command_line->HasSwitch(switches::kSitePerProcess)) {
       command_line->AppendSwitch(switches::kSitePerProcess);
     }
@@ -1397,6 +1411,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     // enterprise policy. (This behavior is in harmony with other enterprise
     // policy settings.)
     if (local_state->HasPrefPath(prefs::kIsolateOrigins) &&
+        IsSiteIsolationEnterprisePolicyApplicable() &&
         (!command_line->HasSwitch(switches::kIsolateOrigins) ||
          command_line->GetSwitchValueASCII(switches::kIsolateOrigins) !=
              local_state->GetString(prefs::kIsolateOrigins))) {

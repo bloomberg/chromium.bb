@@ -11246,7 +11246,7 @@
 
       NOTE: On Android, Site Isolation is experimental. Support will improve over time, but currently it may cause performance problems.
 
-      NOTE: This policy applies only to Chrome on Android. To apply the policy on other platforms, use IsolateOrigins.
+      NOTE: This policy applies only to Chrome on Android running on devices with strictly more than 1GB of RAM. To apply the policy on non-Android platforms, use IsolateOrigins.
       ''',
     },
     {
@@ -11274,7 +11274,7 @@
 
       NOTE: On Android, Site Isolation is experimental. Support will improve over time, but currently it may cause performance problems.
 
-      NOTE: This policy applies only to Chrome on Android. To apply the policy on other platforms, use SitePerProcess.
+      NOTE: This policy applies only to Chrome on Android running on devices with strictly more than 1GB of RAM. To apply the policy on non-Android platforms, use SitePerProcess.
       ''',
     },
     {
