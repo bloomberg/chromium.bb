@@ -23,6 +23,7 @@
 #include "components/sync/protocol/favicon_tracking_specifics.pb.h"
 #include "components/sync/protocol/history_delete_directive_specifics.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
+#include "components/sync/protocol/mountain_share_specifics.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
@@ -364,7 +365,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(40 == MODEL_TYPE_COUNT,
+  static_assert(41 == MODEL_TYPE_COUNT,
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -390,6 +391,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(managed_user_setting);
   VISIT(managed_user_shared_setting);
   VISIT(managed_user_whitelist);
+  VISIT(mountain_share);
   VISIT(nigori);
   VISIT(password);
   VISIT(preference);
@@ -582,6 +584,15 @@ VISIT_PROTO_FIELDS(const sync_pb::ModelTypeState& proto) {
   VISIT(type_context);
   VISIT(encryption_key_name);
   VISIT(initial_sync_done);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::MountainShareSpecifics& proto) {
+  VISIT(id);
+  VISIT(url);
+  VISIT_BYTES(favicon);
+  VISIT(title);
+  VISIT(creation_time_ms);
+  VISIT(icon_url);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::NavigationRedirect& proto) {

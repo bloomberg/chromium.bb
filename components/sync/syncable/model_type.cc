@@ -139,6 +139,8 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      sync_pb::EntitySpecifics::kReadingListFieldNumber, 38},
     {USER_EVENTS, "USER_EVENT", "user_events", "User Events",
      sync_pb::EntitySpecifics::kUserEventFieldNumber, 39},
+    {MOUNTAIN_SHARES, "MOUNTAIN_SHARE", "mountain_shares", "Mountain Shares",
+     sync_pb::EntitySpecifics::kMountainShareFieldNumber, 40},
     // ---- Proxy types ----
     {PROXY_TABS, "", "", "Tabs", -1, 25},
     // ---- Control Types ----
@@ -262,6 +264,9 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case USER_EVENTS:
       specifics->mutable_user_event();
       break;
+    case MOUNTAIN_SHARES:
+      specifics->mutable_mountain_share();
+      break;
     case PROXY_TABS:
       NOTREACHED() << "No default field value for " << ModelTypeToString(type);
       break;
@@ -331,7 +336,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(40 == MODEL_TYPE_COUNT,
+  static_assert(41 == MODEL_TYPE_COUNT,
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -404,6 +409,8 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return READING_LIST;
   if (specifics.has_user_event())
     return USER_EVENTS;
+  if (specifics.has_mountain_share())
+    return MOUNTAIN_SHARES;
   if (specifics.has_nigori())
     return NIGORI;
   if (specifics.has_experiments())
@@ -425,7 +432,7 @@ ModelTypeNameMap GetUserSelectableTypeNameMap() {
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(40 == MODEL_TYPE_COUNT,
+  static_assert(41 == MODEL_TYPE_COUNT,
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();

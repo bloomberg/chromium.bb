@@ -155,6 +155,9 @@ void SyncRecordMemoryKbHistogram(const std::string& histogram_name_prefix,
       case ::syncer::EXPERIMENTS:                              \
         PER_DATA_TYPE_MACRO("Experiments");                    \
         break;                                                 \
+      case ::syncer::MOUNTAIN_SHARES:                          \
+        PER_DATA_TYPE_MACRO("MountainShares");                 \
+        break;                                                 \
       default:                                                 \
         NOTREACHED() << "Unknown datatype "                    \
                      << ::syncer::ModelTypeToString(datatype); \

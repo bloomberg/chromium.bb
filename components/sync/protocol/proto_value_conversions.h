@@ -46,6 +46,7 @@ class ManagedUserSettingSpecifics;
 class ManagedUserSharedSettingSpecifics;
 class ManagedUserSpecifics;
 class ManagedUserWhitelistSpecifics;
+class MountainShareSpecifics;
 class NavigationRedirect;
 class NigoriSpecifics;
 class PasswordSpecifics;
@@ -183,6 +184,9 @@ std::unique_ptr<base::DictionaryValue> ManagedUserSpecificsToValue(
 std::unique_ptr<base::DictionaryValue> ManagedUserWhitelistSpecificsToValue(
     const sync_pb::ManagedUserWhitelistSpecifics&
         managed_user_whitelist_specifics);
+
+std::unique_ptr<base::DictionaryValue> MountainShareSpecificsToValue(
+    const sync_pb::MountainShareSpecifics& mountain_share_specifics);
 
 std::unique_ptr<base::DictionaryValue> NavigationRedirectToValue(
     const sync_pb::NavigationRedirect& navigation_redirect);
