@@ -10,10 +10,13 @@
 #include "base/macros.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/blink/public/platform/ukm.mojom.h"
 #include "url/gurl.h"
 
 namespace ukm {
@@ -25,7 +28,8 @@ namespace internal {
 // SourceUrlRecorderWebContentsObserver records both the final URL for a
 // navigation, and, if the navigation was redirected, the initial URL as well.
 class SourceUrlRecorderWebContentsObserver
-    : public content::WebContentsObserver,
+    : public blink::mojom::UkmSourceIdFrameHost,
+      public content::WebContentsObserver,
       public content::WebContentsUserData<
           SourceUrlRecorderWebContentsObserver> {
  public:
@@ -41,17 +45,31 @@ class SourceUrlRecorderWebContentsObserver
 
   ukm::SourceId GetLastCommittedSourceId() const;
 
+  // blink::mojom::UkmSourceIdFrameHost
+  void SetDocumentSourceId(int64_t source_id) override;
+
  private:
   explicit SourceUrlRecorderWebContentsObserver(
       content::WebContents* web_contents);
   friend class content::WebContentsUserData<
       SourceUrlRecorderWebContentsObserver>;
 
+  // Record any pending DocumentCreated events to UKM.
+  void MaybeFlushPendingEvents();
+
   void MaybeRecordUrl(content::NavigationHandle* navigation_handle,
                       const GURL& initial_url);
 
+  // Recieves document source IDs from the renderer.
+  content::WebContentsFrameBindingSet<blink::mojom::UkmSourceIdFrameHost>
+      bindings_;
+
   // Map from navigation ID to the initial URL for that navigation.
   base::flat_map<int64_t, GURL> pending_navigations_;
+
+  // Holds pending DocumentCreated events.
+  using PendingEvent = std::pair<int64_t, bool>;
+  std::vector<PendingEvent> pending_document_created_events_;
 
   int64_t last_committed_source_id_;
 
@@ -61,6 +79,7 @@ class SourceUrlRecorderWebContentsObserver
 SourceUrlRecorderWebContentsObserver::SourceUrlRecorderWebContentsObserver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
+      bindings_(web_contents, this),
       last_committed_source_id_(ukm::kInvalidSourceId) {}
 
 void SourceUrlRecorderWebContentsObserver::DidStartNavigation(
@@ -81,6 +100,9 @@ void SourceUrlRecorderWebContentsObserver::DidStartNavigation(
   // in a download.
   pending_navigations_.insert(std::make_pair(
       navigation_handle->GetNavigationId(), navigation_handle->GetURL()));
+
+  // Clear any unassociated pending events.
+  pending_document_created_events_.clear();
 }
 
 void SourceUrlRecorderWebContentsObserver::DidFinishNavigation(
@@ -105,11 +127,40 @@ void SourceUrlRecorderWebContentsObserver::DidFinishNavigation(
     return;
 
   MaybeRecordUrl(navigation_handle, initial_url);
+
+  MaybeFlushPendingEvents();
 }
 
 ukm::SourceId SourceUrlRecorderWebContentsObserver::GetLastCommittedSourceId()
     const {
   return last_committed_source_id_;
+}
+
+void SourceUrlRecorderWebContentsObserver::SetDocumentSourceId(
+    int64_t source_id) {
+  pending_document_created_events_.emplace_back(
+      source_id, !bindings_.GetCurrentTargetFrame()->GetParent());
+  MaybeFlushPendingEvents();
+}
+
+void SourceUrlRecorderWebContentsObserver::MaybeFlushPendingEvents() {
+  if (!last_committed_source_id_)
+    return;
+
+  ukm::DelegatingUkmRecorder* ukm_recorder = ukm::DelegatingUkmRecorder::Get();
+  if (!ukm_recorder)
+    return;
+
+  while (!pending_document_created_events_.empty()) {
+    auto record = pending_document_created_events_.back();
+
+    ukm::builders::DocumentCreated(record.first)
+        .SetNavigationSourceId(last_committed_source_id_)
+        .SetIsMainFrame(record.second)
+        .Record(ukm_recorder);
+
+    pending_document_created_events_.pop_back();
+  }
 }
 
 void SourceUrlRecorderWebContentsObserver::MaybeRecordUrl(
