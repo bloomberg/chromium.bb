@@ -2580,6 +2580,7 @@ void UiSceneCreator::CreateOmnibox() {
           text_input->UpdateInput(model->omnibox_text_field_info);
         } else {
           model->editing_input = false;
+          model->pop_mode(kModeEditingOmnibox);
         }
       },
       base::Unretained(model_), base::Unretained(omnibox_text_field.get()));
