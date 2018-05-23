@@ -151,7 +151,9 @@ aom_codec_err_t aom_codec_dec_init_ver(aom_codec_ctx_t *ctx,
  * \param[in]      iface   Pointer to the algorithm interface
  * \param[in]      data    Pointer to a block of data to parse
  * \param[in]      data_sz Size of the data buffer
- * \param[in,out]  si      Pointer to stream info to update.
+ * \param[in,out]  si      Pointer to stream info to update. The is_annexb
+ *                         member \ref MUST be properly initialized. This
+ *                         function sets the rest of the members.
  *
  * \retval #AOM_CODEC_OK
  *     Bitstream is parsable and stream information updated.

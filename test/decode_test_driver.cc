@@ -65,6 +65,8 @@ void DecoderTest::RunLoop(CompressedVideoSource *video,
     PreDecodeFrameHook(*video, decoder);
 
     aom_codec_stream_info_t stream_info;
+    stream_info.is_annexb = 0;
+
     if (video->cxdata() != NULL) {
       const aom_codec_err_t res_peek = decoder->PeekStream(
           video->cxdata(), video->frame_size(), &stream_info);
