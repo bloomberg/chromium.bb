@@ -23,12 +23,14 @@ TEST_F(JankTrackerTest, SimpleBlockMovement) {
   )HTML");
 
   EXPECT_EQ(0.0, GetJankTracker().Score());
+  EXPECT_EQ(0.0, GetJankTracker().MaxDistance());
 
   GetDocument().getElementById("j")->setAttribute(HTMLNames::styleAttr,
                                                   AtomicString("top: 60px"));
   GetFrameView().UpdateAllLifecyclePhases();
   // 300 * (100 + 60) / (default viewport size 800 * 600)
   EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
+  EXPECT_FLOAT_EQ(60.0, GetJankTracker().MaxDistance());
 }
 
 TEST_F(JankTrackerTest, Transform) {
@@ -48,6 +50,19 @@ TEST_F(JankTrackerTest, Transform) {
   GetFrameView().UpdateAllLifecyclePhases();
   // (600 - 300) * (140 - 40 + 60) / (default viewport size 800 * 600)
   EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, RtlDistance) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #j { position: relative; width: 100px; height: 100px; direction: rtl; }
+    </style>
+    <div id='j'></div>
+  )HTML");
+  GetDocument().getElementById("j")->setAttribute(
+      HTMLNames::styleAttr, AtomicString("width: 70px; left: 10px"));
+  GetFrameView().UpdateAllLifecyclePhases();
+  EXPECT_FLOAT_EQ(20.0, GetJankTracker().MaxDistance());
 }
 
 }  // namespace blink
