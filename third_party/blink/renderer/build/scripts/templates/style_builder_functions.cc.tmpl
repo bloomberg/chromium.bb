@@ -86,42 +86,6 @@ namespace blink {
 {% endif %}
 {% endfor %}
 
-{% macro apply_animation(property_id, attribute, animation) %}
-{% set vector = attribute + "List()" %}
-{{declare_initial_function(property_id)}} {
-  CSS{{animation}}Data& data = state.Style()->Access{{animation}}s();
-  data.{{vector}}.clear();
-  data.{{vector}}.push_back(CSS{{animation}}Data::Initial{{attribute}}());
-}
-
-{{declare_inherit_function(property_id)}} {
-  const CSS{{animation}}Data* parentData = state.ParentStyle()->{{animation}}s();
-  if (!parentData)
-    applyInitial{{property_id}}(state);
-  else
-    state.Style()->Access{{animation}}s().{{vector}} = parentData->{{vector}};
-}
-
-{{declare_value_function(property_id)}} {
-  CSS{{animation}}Data& data = state.Style()->Access{{animation}}s();
-  data.{{vector}}.clear();
-  for (auto& listValue : ToCSSValueList(value))
-    data.{{vector}}.push_back(CSSToStyleMap::MapAnimation{{attribute}}(*listValue));
-}
-{% endmacro %}
-{{apply_animation('CSSPropertyAnimationDelay', 'Delay', 'Animation')}}
-{{apply_animation('CSSPropertyAnimationDirection', 'Direction', 'Animation')}}
-{{apply_animation('CSSPropertyAnimationDuration', 'Duration', 'Animation')}}
-{{apply_animation('CSSPropertyAnimationFillMode', 'FillMode', 'Animation')}}
-{{apply_animation('CSSPropertyAnimationIterationCount', 'IterationCount', 'Animation')}}
-{{apply_animation('CSSPropertyAnimationName', 'Name', 'Animation')}}
-{{apply_animation('CSSPropertyAnimationPlayState', 'PlayState', 'Animation')}}
-{{apply_animation('CSSPropertyAnimationTimingFunction', 'TimingFunction', 'Animation')}}
-{{apply_animation('CSSPropertyTransitionDelay', 'Delay', 'Transition')}}
-{{apply_animation('CSSPropertyTransitionDuration', 'Duration', 'Transition')}}
-{{apply_animation('CSSPropertyTransitionProperty', 'Property', 'Transition')}}
-{{apply_animation('CSSPropertyTransitionTimingFunction', 'TimingFunction', 'Transition')}}
-
 {% macro apply_counter(property_id, action) %}
 {% set property = properties_by_id[property_id] %}
 {{declare_initial_function(property_id)}} {

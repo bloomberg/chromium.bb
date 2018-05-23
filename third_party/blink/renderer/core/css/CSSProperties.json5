@@ -56,6 +56,7 @@
     // style builder functions.
     style_builder_template: {
       valid_values: [
+        "animation",
         "auto",
         "background_layer",
         "border_image",
@@ -66,6 +67,7 @@
         "legacy",
         "mask_box",
         "mask_layer",
+        "transition",
       ],
     },
 
@@ -379,8 +381,10 @@
     {
       name: "animation-delay",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "animation",
+      style_builder_template_args: {
+        attribute: "Delay",
+      },
       priority: "Animation",
       typedom_types: ["Time"],
       separator: ",",
@@ -391,8 +395,10 @@
       keywords: ["normal", "reverse", "alternate", "alternate-reverse"],
       typedom_types: ["Keyword"],
       separator: ",",
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "animation",
+      style_builder_template_args: {
+        attribute: "Direction",
+      },
       priority: "Animation",
       separator: ",",
     },
@@ -400,8 +406,10 @@
       name: "animation-duration",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       separator: ",",
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "animation",
+      style_builder_template_args: {
+        attribute: "Duration",
+      },
       priority: "Animation",
       typedom_types: ["Time"],
       separator: ",",
@@ -409,8 +417,10 @@
     {
       name: "animation-fill-mode",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "animation",
+      style_builder_template_args: {
+        attribute: "FillMode",
+      },
       priority: "Animation",
       keywords: ["none", "forwards", "backwards", "both"],
       typedom_types: ["Keyword"],
@@ -421,8 +431,10 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       keywords: ["infinite"],
       separator: ",",
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "animation",
+      style_builder_template_args: {
+        attribute: "IterationCount",
+      },
       priority: "Animation",
       keywords: ["infinite"],
       typedom_types: ["Keyword", "Number"],
@@ -431,8 +443,10 @@
     {
       name: "animation-name",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "animation",
+      style_builder_template_args: {
+        attribute: "Name",
+      },
       priority: "Animation",
       keywords: ["none"],
       typedom_types: ["Keyword"],
@@ -441,8 +455,10 @@
     {
       name: "animation-play-state",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "animation",
+      style_builder_template_args: {
+        attribute: "PlayState",
+      },
       priority: "Animation",
       keywords: ["running", "paused"],
       typedom_types: ["Keyword"],
@@ -451,8 +467,10 @@
     {
       name: "animation-timing-function",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "animation",
+      style_builder_template_args: {
+        attribute: "TimingFunction",
+      },
       priority: "Animation",
       keywords: ["linear", "ease", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end"],
       typedom_types: ["Keyword"],
@@ -461,8 +479,10 @@
     {
       name: "transition-delay",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "transition",
+      style_builder_template_args: {
+        attribute: "Delay",
+      },
       priority: "Animation",
       typedom_types: ["Time"],
       separator: ",",
@@ -472,15 +492,19 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       typedom_types: ["Keyword", "Time"],
       separator: ",",
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "transition",
+      style_builder_template_args: {
+        attribute: "Duration",
+      },
       priority: "Animation",
     },
     {
       name: "transition-property",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "transition",
+      style_builder_template_args: {
+        attribute: "Property",
+      },
       priority: "Animation",
       keywords: ["none"],
       typedom_types: ["Keyword"]
@@ -488,8 +512,10 @@
     {
       name: "transition-timing-function",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "transition",
+      style_builder_template_args: {
+        attribute: "TimingFunction",
+      },
       priority: "Animation",
       keywords: ["linear", "ease", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end"],
       typedom_types: ["Keyword"],

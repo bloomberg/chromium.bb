@@ -147,7 +147,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
                 property_['style_builder_template_args'].get('modifier_type')
                 in ['Width', 'Slice', 'Outset']):
             yield "core/css/properties/style_building_utils.h"
-        if property_.get('style_builder_template') in ['background_layer', 'mask_layer']:
+        if property_.get('style_builder_template') in ['background_layer', 'mask_layer', 'animation', 'transition']:
             yield "core/css/css_value_list.h"
 
 
