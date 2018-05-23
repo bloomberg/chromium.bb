@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/path.h"
+#include "ui/views/bubble/bubble_border.h"
 
 #include <memory>
 #include <vector>
@@ -96,12 +98,17 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   void CreateChildViews();
 
   // AutofillPopupBaseView:
+  void AddExtraInitParams(views::Widget::InitParams* params) override;
+  std::unique_ptr<views::View> CreateWrapperView() override;
+  std::unique_ptr<views::Border> CreateBorder() override;
   void DoUpdateBoundsAndRedrawPopup() override;
 
   // Controller for this view.
   AutofillPopupController* controller_;
 
   std::vector<AutofillPopupRowView*> rows_;
+
+  views::BubbleBorder* bubble_border_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupViewNativeViews);
 };

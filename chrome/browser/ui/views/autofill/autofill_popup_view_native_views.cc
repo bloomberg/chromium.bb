@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/popup_view_common.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/harmony/harmony_typography_provider.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
@@ -33,6 +34,8 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+#include "ui/gfx/shadow_value.h"
+
 namespace {
 
 // By spec, dropdowns should have a min width of 64, and should always have
@@ -40,7 +43,7 @@ namespace {
 const int kDropdownWidthMultiple = 12;
 const int kDropdownMinWidth = 64;
 
-// TODO(crbug.com/768881): Determine how colors should be shared with menus
+// TODO(crbug.com/831603): Determine how colors should be shared with menus
 // and/or omnibox, and how these should interact (if at all) with native
 // theme colors.
 const SkColor kBackgroundColor = SK_ColorWHITE;
@@ -374,11 +377,6 @@ gfx::Size AutofillPopupViewNativeViews::CalculatePreferredSize() const {
   int contents_width =
       gfx::ToEnclosingRect(controller_->element_bounds()).width();
 
-  // Compute the internal width needed for the contents by discounting the
-  // width required for the border. This will ensure that, once added, the
-  // dropdown border aligns with the element's border.
-  contents_width -= GetWidget()->GetRootView()->GetInsets().width();
-
   // Allow the dropdown to grow beyond the element width if it requires more
   // horizontal space to render the suggestions.
   gfx::Size size = AutofillPopupBaseView::CalculatePreferredSize();
@@ -452,17 +450,57 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   }
 }
 
+void AutofillPopupViewNativeViews::AddExtraInitParams(
+    views::Widget::InitParams* params) {
+  // Ensure the bubble border is not painted on an opaque background.
+  params->opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+}
+
+std::unique_ptr<views::View> AutofillPopupViewNativeViews::CreateWrapperView() {
+  // Create a wrapper view that contains the current view and will receive the
+  // bubble border. This is needed so that a clipping path can be later applied
+  // on the contents only and not affect the border.
+  auto wrapper_view = std::make_unique<views::View>();
+  wrapper_view->SetLayoutManager(std::make_unique<views::FillLayout>());
+  wrapper_view->AddChildView(this);
+  return wrapper_view;
+}
+
+std::unique_ptr<views::Border> AutofillPopupViewNativeViews::CreateBorder() {
+  auto border = std::make_unique<views::BubbleBorder>(
+      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
+      SK_ColorWHITE);
+  border->SetCornerRadius(
+      ChromeLayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_LOW));
+  border->set_md_shadow_elevation(
+      ChromeLayoutProvider::Get()->GetShadowElevationMetric(
+          views::EMPHASIS_LOW));
+  bubble_border_ = border.get();
+  return border;
+}
+
 void AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
   SizeToPreferredSize();
 
-  // The Widget's bounds need to account for the border.
-  gfx::Insets insets = GetWidget()->GetRootView()->GetInsets();
+  // When a bubble border is shown, the contents area (inside the shadow) is
+  // supposed to be aligned with input element boundaries.
   gfx::Rect popup_bounds = PopupViewCommon().CalculatePopupBounds(
-      size().width() + insets.width(), size().height() + insets.height(),
+      size().width(), size().height(),
       gfx::ToEnclosingRect(controller_->element_bounds()),
       controller_->container_view(), controller_->IsRTL());
 
+  // Expand the widget bounds to include the border.
+  popup_bounds.Inset(-bubble_border_->GetInsets());
+
   GetWidget()->SetBounds(popup_bounds);
+
+  // Ensure the child views are not rendered beyond the bubble border
+  // boundaries.
+  SkRect local_bounds = gfx::RectToSkRect(GetLocalBounds());
+  SkScalar radius = SkIntToScalar(bubble_border_->GetBorderCornerRadius());
+  gfx::Path clip_path;
+  clip_path.addRoundRect(local_bounds, radius, radius);
+  set_clip_path(clip_path);
 
   SchedulePaint();
 }

@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #include "ui/views/focus/widget_focus_manager.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -42,6 +43,14 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
 
   // Grows |bounds| to account for the border of the popup.
   void AdjustBoundsForBorder(gfx::Rect* bounds) const;
+
+  virtual void AddExtraInitParams(views::Widget::InitParams* params) {}
+
+  // Returns the widget's contents view.
+  virtual std::unique_ptr<views::View> CreateWrapperView();
+
+  // Returns the border to be applied to the popup.
+  virtual std::unique_ptr<views::Border> CreateBorder();
 
   // Update size of popup and paint (virtual for testing).
   virtual void DoUpdateBoundsAndRedrawPopup();
