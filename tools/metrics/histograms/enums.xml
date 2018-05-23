@@ -3047,7 +3047,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="124" label="OBSOLETE_DBMF_INVALID_ORIGIN_ON_GET_SPACE"/>
   <int value="125" label="OBSOLETE_DBMF_INVALID_ORIGIN_ON_MODIFIED"/>
   <int value="126" label="OBSOLETE_DBMF_INVALID_ORIGIN_ON_CLOSED"/>
-  <int value="127" label="WSI_INVALID_HEADER_VALUE"/>
+  <int value="127" label="OBSOLETE_WSI_INVALID_HEADER_VALUE"/>
   <int value="128" label="OBSOLETE_SWDH_SET_HOSTED_VERSION_INVALID_HOST"/>
   <int value="129" label="OBSOLETE_SWDH_SET_HOSTED_VERSION_PROCESS_MISMATCH"/>
   <int value="130" label="OBSOLETE_MSDH_INVALID_FRAME_ID"/>

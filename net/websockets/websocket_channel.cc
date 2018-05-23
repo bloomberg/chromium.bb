@@ -365,7 +365,7 @@ void WebSocketChannel::SendAddChannelRequest(
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
     const GURL& site_for_cookies,
-    const std::string& additional_headers) {
+    const HttpRequestHeaders& additional_headers) {
   SendAddChannelRequestWithSuppliedCallback(
       socket_url, requested_subprotocols, origin, site_for_cookies,
       additional_headers, base::Bind(&WebSocketStream::CreateAndConnectStream));
@@ -575,7 +575,7 @@ void WebSocketChannel::SendAddChannelRequestForTesting(
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
     const GURL& site_for_cookies,
-    const std::string& additional_headers,
+    const HttpRequestHeaders& additional_headers,
     const WebSocketStreamRequestCreationCallback& callback) {
   SendAddChannelRequestWithSuppliedCallback(socket_url, requested_subprotocols,
                                             origin, site_for_cookies,
@@ -597,7 +597,7 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCallback(
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
     const GURL& site_for_cookies,
-    const std::string& additional_headers,
+    const HttpRequestHeaders& additional_headers,
     const WebSocketStreamRequestCreationCallback& callback) {
   DCHECK_EQ(FRESHLY_CONSTRUCTED, state_);
   if (!socket_url.SchemeIsWSOrWSS()) {

@@ -14,6 +14,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_store.h"
+#include "net/http/http_request_headers.h"
 #include "net/socket/socket_test_util.h"
 #include "net/websockets/websocket_stream_create_test_base.h"
 #include "net/websockets/websocket_test_util.h"
@@ -48,8 +49,8 @@ class TestBase : public WebSocketStreamCreateTestBase {
                                             cookie_header, std::string(),
                                             std::string()),
         response_body);
-    CreateAndConnectStream(url, NoSubProtocols(), origin, site_for_cookies, "",
-                           nullptr);
+    CreateAndConnectStream(url, NoSubProtocols(), origin, site_for_cookies,
+                           HttpRequestHeaders(), nullptr);
   }
 
   std::string AddCRLFIfNotEmpty(const std::string& s) {

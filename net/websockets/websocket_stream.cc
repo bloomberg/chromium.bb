@@ -105,7 +105,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
       const URLRequestContext* context,
       const url::Origin& origin,
       const GURL& site_for_cookies,
-      const std::string& additional_headers,
+      const HttpRequestHeaders& additional_headers,
       std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate,
       std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper)
       : delegate_(std::make_unique<Delegate>(this)),
@@ -116,7 +116,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
         connect_delegate_(std::move(connect_delegate)),
         handshake_stream_(nullptr) {
     create_helper->set_stream_request(this);
-    HttpRequestHeaders headers;
+    HttpRequestHeaders headers = additional_headers;
     headers.SetHeader(websockets::kUpgrade, websockets::kWebSocketLowercase);
     if (base::FeatureList::IsEnabled(WebSocketBasicHandshakeStream::
                                          kWebSocketHandshakeReuseConnection)) {
@@ -134,7 +134,11 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
     headers.SetHeader(websockets::kSecWebSocketVersion,
                       websockets::kSupportedVersion);
 
-    headers.AddHeadersFromString(additional_headers);
+    // Remove HTTP headers that are important to websocket connections: they
+    // will be added later.
+    headers.RemoveHeader(websockets::kSecWebSocketExtensions);
+    headers.RemoveHeader(websockets::kSecWebSocketKey);
+    headers.RemoveHeader(websockets::kSecWebSocketProtocol);
 
     url_request_->SetExtraRequestHeaders(headers);
     url_request_->set_initiator(origin);
@@ -400,7 +404,7 @@ std::unique_ptr<WebSocketStreamRequest> WebSocketStream::CreateAndConnectStream(
     std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
     const url::Origin& origin,
     const GURL& site_for_cookies,
-    const std::string& additional_headers,
+    const HttpRequestHeaders& additional_headers,
     URLRequestContext* url_request_context,
     const NetLogWithSource& net_log,
     std::unique_ptr<ConnectDelegate> connect_delegate) {
@@ -418,7 +422,7 @@ WebSocketStream::CreateAndConnectStreamForTesting(
     std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
     const url::Origin& origin,
     const GURL& site_for_cookies,
-    const std::string& additional_headers,
+    const HttpRequestHeaders& additional_headers,
     URLRequestContext* url_request_context,
     const NetLogWithSource& net_log,
     std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate,

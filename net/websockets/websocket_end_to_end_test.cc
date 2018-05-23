@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "net/base/auth.h"
 #include "net/base/proxy_delegate.h"
+#include "net/http/http_request_headers.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -246,7 +247,7 @@ class WebSocketEndToEndTest : public TestWithScopedTaskEnvironment {
     channel_ = std::make_unique<WebSocketChannel>(
         base::WrapUnique(event_interface_), &context_);
     channel_->SendAddChannelRequest(GURL(socket_url), sub_protocols_, origin,
-                                    site_for_cookies, "");
+                                    site_for_cookies, HttpRequestHeaders());
     event_interface_->WaitForResponse();
     return !event_interface_->failed();
   }

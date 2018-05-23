@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "net/http/http_basic_state.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_stream_parser.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/third_party/spdy/core/spdy_header_block.h"
@@ -47,6 +48,10 @@ class LinearCongruentialGenerator {
 
 // Converts a vector of header key-value pairs into a single string.
 std::string WebSocketExtraHeadersToString(const WebSocketExtraHeaders& headers);
+
+// Converts a vector of header key-value pairs into an HttpRequestHeaders
+HttpRequestHeaders WebSocketExtraHeadersToHttpRequestHeaders(
+    const WebSocketExtraHeaders& headers);
 
 // Generates a standard WebSocket handshake request. The challenge key used is
 // "dGhlIHNhbXBsZSBub25jZQ==". Each header in |extra_headers| must be terminated

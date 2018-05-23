@@ -85,7 +85,7 @@ void WebSocketStreamCreateTestBase::CreateAndConnectStream(
     const std::vector<std::string>& sub_protocols,
     const url::Origin& origin,
     const GURL& site_for_cookies,
-    const std::string& additional_headers,
+    const HttpRequestHeaders& additional_headers,
     std::unique_ptr<base::Timer> timer) {
   auto connect_delegate = std::make_unique<TestConnectDelegate>(
       this, connect_run_loop_.QuitClosure());
