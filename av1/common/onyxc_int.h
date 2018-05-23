@@ -231,7 +231,8 @@ typedef struct SequenceHeader {
   int enable_restoration;  // To turn on/off loop restoration
   int operating_point_idc[MAX_NUM_OPERATING_POINTS];
   BitstreamLevel level[MAX_NUM_OPERATING_POINTS];
-  int tier[MAX_NUM_OPERATING_POINTS];
+  uint8_t tier[MAX_NUM_OPERATING_POINTS];  // seq_tier in the spec. One bit: 0
+                                           // or 1.
 } SequenceHeader;
 
 typedef struct AV1Common {
