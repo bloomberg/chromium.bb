@@ -49,7 +49,7 @@ if (is_android) {
   #
   template("crazy_linker_library") {
     source_set(target_name) {
-      forward_variables_from(invoker, [ "*" ])
+      forward_variables_from(invoker, "*")
       sources = [
         "src/include/crazy_linker.h",
         "src/src/crazy_linker_api.cpp",
@@ -110,7 +110,7 @@ if (is_android) {
 
       include_dirs = [ "src/src" ]
 
-      if (defined(invoker.unit_tests) && invoker.unit_tests) {
+      if (defined(unit_tests) && unit_tests) {
         sources += [
           "src/src/crazy_linker_system_mock.cpp",
           "src/src/crazy_linker_system_mock.h",
