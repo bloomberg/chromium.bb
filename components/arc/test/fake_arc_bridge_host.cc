@@ -49,6 +49,9 @@ void FakeArcBridgeHost::OnFileSystemInstanceReady(
 
 void FakeArcBridgeHost::OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) {}
 
+void FakeArcBridgeHost::OnInputMethodManagerInstanceReady(
+    mojom::InputMethodManagerInstancePtr input_method_manager_ptr) {}
+
 void FakeArcBridgeHost::OnIntentHelperInstanceReady(
     mojom::IntentHelperInstancePtr intent_helper_ptr) {}
 

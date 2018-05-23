@@ -40,6 +40,8 @@ class FakeArcBridgeHost : public mojom::ArcBridgeHost {
   void OnFileSystemInstanceReady(
       mojom::FileSystemInstancePtr file_system_ptr) override;
   void OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) override;
+  void OnInputMethodManagerInstanceReady(
+      mojom::InputMethodManagerInstancePtr input_method_manager_ptr) override;
   void OnIntentHelperInstanceReady(
       mojom::IntentHelperInstancePtr intent_helper_ptr) override;
   void OnKioskInstanceReady(mojom::KioskInstancePtr kiosk_ptr) override;
