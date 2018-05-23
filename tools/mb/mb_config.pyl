@@ -542,7 +542,7 @@
       'android-marshmallow-arm64-rel': 'android_release_trybot_arm64_no_symbols',
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',
-      'android-binary-size': 'official_goma_minimal_symbols_android',
+      'android-binary-size': 'android_binary_size',
       'android_blink_rel': 'android_release_trybot',
       'android_cfi_rel_ng': 'android_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
       'android_clang_dbg_recipe': 'android_clang_asan_debug_trybot_compile_only',
@@ -737,6 +737,10 @@
   # is not necessarily so (i.e., we might have mac, win, and linux
   # bots all using the 'release_bot' config).
   'configs': {
+    'android_binary_size': [
+      'android', 'chrome_with_codecs', 'goma', 'minimal_symbols', 'official_optimize',
+    ],
+
     'android_cast_debug_static_bot': [
       'android', 'cast', 'clang', 'debug_static_bot',
     ],
