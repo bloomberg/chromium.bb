@@ -174,14 +174,17 @@ void SetLibraryLoadedHook(LibraryLoadedHook* func) {
 
 static jboolean JNI_LibraryLoader_LibraryLoaded(
     JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller) {
+    const JavaParamRef<jobject>& jcaller,
+    jint library_process_type) {
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
   if (ShouldDoOrderfileMemoryOptimization()) {
     NativeLibraryPrefetcher::MadviseForOrderfile();
   }
 #endif
 
-  if (g_native_initialization_hook && !g_native_initialization_hook())
+  if (g_native_initialization_hook &&
+      !g_native_initialization_hook(
+          static_cast<LibraryProcessType>(library_process_type)))
     return false;
   if (g_registration_callback && !g_registration_callback(env, nullptr))
     return false;
@@ -237,11 +240,6 @@ ScopedJavaLocalRef<jstring> JNI_LibraryLoader_GetVersionNumber(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
   return ConvertUTF8ToJavaString(env, g_library_version_number);
-}
-
-LibraryProcessType GetLibraryProcessType(JNIEnv* env) {
-  return static_cast<LibraryProcessType>(
-      Java_LibraryLoader_getLibraryProcessType(env));
 }
 
 void InitAtExitManager() {

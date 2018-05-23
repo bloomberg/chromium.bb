@@ -12,7 +12,7 @@
 
 namespace {
 
-bool NativeInit() {
+bool NativeInit(base::android::LibraryProcessType) {
   return android::OnJNIOnLoadInit();
 }
 

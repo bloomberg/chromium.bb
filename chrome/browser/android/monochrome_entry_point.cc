@@ -10,9 +10,7 @@
 
 namespace {
 
-bool NativeInit() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  int library_process_type = base::android::GetLibraryProcessType(env);
+bool NativeInit(base::android::LibraryProcessType library_process_type) {
   switch (library_process_type) {
     case base::android::PROCESS_WEBVIEW:
     case base::android::PROCESS_WEBVIEW_CHILD:

@@ -25,7 +25,6 @@ import org.chromium.base.ResourceExtractor;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.metrics.RecordHistogram;
@@ -48,6 +47,7 @@ import javax.annotation.Nullable;
  * See also base/android/library_loader/library_loader_hooks.cc, which contains
  * the native counterpart to this class.
  */
+@MainDex
 @JNINamespace("base::android")
 public class LibraryLoader {
     private static final String TAG = "LibraryLoader";
@@ -548,7 +548,7 @@ public class LibraryLoader {
 
         ensureCommandLineSwitchedAlreadyLocked();
 
-        if (!nativeLibraryLoaded()) {
+        if (!nativeLibraryLoaded(mLibraryProcessType)) {
             Log.e(TAG, "error calling nativeLibraryLoaded");
             throw new ProcessInitException(LoaderErrors.LOADER_ERROR_FAILED_TO_REGISTER_JNI);
         }
@@ -622,17 +622,6 @@ public class LibraryLoader {
     }
 
     /**
-     * @return the process the shared library is loaded in, see the LibraryProcessType
-     *         for possible values.
-     */
-    @CalledByNative
-    @MainDex
-    public static int getLibraryProcessType() {
-        if (sInstance == null) return LibraryProcessType.PROCESS_UNINITIALIZED;
-        return sInstance.mLibraryProcessType;
-    }
-
-    /**
      * Override the library loader (normally with a mock) for testing.
      * @param loader the mock library loader.
      */
@@ -668,7 +657,7 @@ public class LibraryLoader {
     // definition in base/android/library_loader/library_loader_hooks.cc.
     //
     // Return true on success and false on failure.
-    private native boolean nativeLibraryLoaded();
+    private native boolean nativeLibraryLoaded(@LibraryProcessType int processType);
 
     // Method called to record statistics about the Chromium linker operation for the main
     // browser process. Indicates whether the linker attempted relro sharing for the browser,
