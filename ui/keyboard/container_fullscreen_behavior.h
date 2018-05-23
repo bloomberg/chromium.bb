@@ -25,6 +25,8 @@ class KEYBOARD_EXPORT ContainerFullscreenBehavior
   void SetCanonicalBounds(aura::Window* container,
                           const gfx::Rect& display_bounds) override;
   ContainerType GetType() const override;
+  gfx::Rect GetOccludedBounds(
+      const gfx::Rect& visual_bounds_in_screen) const override;
 };
 
 }  // namespace keyboard

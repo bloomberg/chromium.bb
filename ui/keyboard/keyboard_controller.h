@@ -148,16 +148,16 @@ class KEYBOARD_EXPORT KeyboardController
   // Returns true if keyboard window has been created.
   bool IsKeyboardWindowCreated();
 
-  // Returns the current keyboard bounds. An empty rectangle will get returned
-  // when the keyboard is not shown.
-  const gfx::Rect& current_keyboard_bounds() const {
-    return current_keyboard_bounds_;
+  // Returns the bounds in screen for the visible portion of the keyboard. An
+  // empty rectangle will get returned when the keyboard is hidden.
+  const gfx::Rect& visual_bounds_in_screen() const {
+    return visual_bounds_in_screen_;
   }
 
   // Returns the current bounds that affect the workspace layout. If the
   // keyboard is not shown or if the keyboard mode should not affect the usable
-  // region of the screen, an empty rectangle will get returned.
-  gfx::Rect GetWorkspaceObscuringBounds() const;
+  // region of the screen, an empty rectangle will be returned.
+  gfx::Rect GetWorkspaceOccludedBounds() const;
 
   // Returns the current bounds that affect the window layout of the various
   // lock screens.
@@ -301,10 +301,10 @@ class KEYBOARD_EXPORT KeyboardController
 
   base::ObserverList<KeyboardControllerObserver> observer_list_;
 
-  // The currently used keyboard position.
+  // The bounds in screen for the visible portion of the keyboard.
   // If the contents window is visible, this should be the same size as the
   // contents window. If not, this should be empty.
-  gfx::Rect current_keyboard_bounds_;
+  gfx::Rect visual_bounds_in_screen_;
 
   KeyboardControllerState state_;
 

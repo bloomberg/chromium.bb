@@ -72,15 +72,18 @@ class KEYBOARD_EXPORT ContainerBehavior {
   // Removing focus from a text field should cause the keyboard to be dismissed.
   virtual bool TextBlurHidesKeyboard() const = 0;
 
-  // The keyboard should be considered a reasonable hinderence to use the region
-  // of the screen behind it. This is used to determine if window manager or
-  // other system UI should respond to the presence of the keyboard such as
-  // moving windows out of the obscured region.
-  virtual bool BoundsObscureUsableRegion() const = 0;
+  // Gets the region of the screen that is occluded by the keyboard, or an empty
+  // rectangle if nothing is occluded. The occluded region is considered to be
+  // 'unusable', so the window manager or other system UI should respond to the
+  // occluded bounds (e.g. by moving windows out of the occluded region).
+  //
+  // The occluded bounds must be completely contained in the visual bounds.
+  virtual gfx::Rect GetOccludedBounds(
+      const gfx::Rect& visual_bounds_in_screen) const = 0;
 
   // Any region of the screen that is occluded by the keyboard should cause the
   // workspace to change its layout.
-  virtual bool BoundsAffectWorkspaceLayout() const = 0;
+  virtual bool OccludedBoundsAffectWorkspaceLayout() const = 0;
 
   // Sets floating keyboard drggable rect.
   virtual bool SetDraggableArea(const gfx::Rect& rect) = 0;

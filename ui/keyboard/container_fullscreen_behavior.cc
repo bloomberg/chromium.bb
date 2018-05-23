@@ -24,6 +24,13 @@ void ContainerFullscreenBehavior::SetCanonicalBounds(
   container->SetBounds(display_bounds);
 }
 
+gfx::Rect ContainerFullscreenBehavior::GetOccludedBounds(
+    const gfx::Rect& visual_bounds_in_screen) const {
+  // TODO(https://crbug.com/826617): Get occluded bounds from IME.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return {};
+}
+
 ContainerType ContainerFullscreenBehavior::GetType() const {
   return ContainerType::FULLSCREEN;
 }

@@ -310,7 +310,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, KeyboardBounds) {
   ShowKeyboard(true);
 
   gfx::Rect keyboard_bounds =
-      keyboard::KeyboardController::GetInstance()->current_keyboard_bounds();
+      keyboard::KeyboardController::GetInstance()->visual_bounds_in_screen();
   // Sanity check that the keyboard intersects woth original window bounds - if
   // this is not true, the window bounds would remain unchanged.
   ASSERT_TRUE(keyboard_bounds.Intersects(initial_bounds));

@@ -590,7 +590,7 @@ void AppListFolderView::UpdatePreferredBounds() {
     // This view should be on top of on-screen keyboard to prevent the folder
     // title from being blocked.
     gfx::Point keyboard_top_right =
-        keyboard_controller->current_keyboard_bounds().top_right();
+        keyboard_controller->GetWorkspaceOccludedBounds().top_right();
     ConvertPointFromScreen(parent(), &keyboard_top_right);
     int y_offset = keyboard_top_right.y() - kOnscreenKeyboardTopPadding -
                    preferred_bounds_.bottom();

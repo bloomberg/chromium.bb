@@ -258,7 +258,7 @@ gfx::Rect SystemModalContainerLayoutManager::GetUsableDialogArea() const {
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller) {
-    gfx::Rect bounds = keyboard_controller->GetWorkspaceObscuringBounds();
+    const gfx::Rect bounds = keyboard_controller->GetWorkspaceOccludedBounds();
     valid_bounds.set_height(
         std::max(0, valid_bounds.height() - bounds.height()));
   }
