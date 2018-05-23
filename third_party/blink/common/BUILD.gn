@@ -19,6 +19,7 @@ jumbo_source_set("common") {
     "client_hints/client_hints.cc",
     "common_export.h",
     "device_memory/approximated_device_memory.cc",
+    "experiments/memory_ablation_experiment.cc",
     "feature_policy/feature_policy.cc",
     "frame/frame_policy.cc",
     "manifest/manifest.cc",

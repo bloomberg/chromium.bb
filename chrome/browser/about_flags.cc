@@ -27,7 +27,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
-#include "chrome/browser/experiments/memory_ablation_experiment.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
@@ -118,6 +117,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/libaom/av1_buildflags.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
@@ -910,29 +910,29 @@ const FeatureEntry::FeatureVariation
          nullptr}};
 
 const FeatureEntry::FeatureParam kMemoryAblation5MiB_512[] = {
-    {kMemoryAblationFeatureSizeParam, "5242880"},
-    {kMemoryAblationFeatureMaxRAMParam, "512"}};
+    {blink::kMemoryAblationFeatureSizeParam, "5242880"},
+    {blink::kMemoryAblationFeatureMaxRAMParam, "512"}};
 const FeatureEntry::FeatureParam kMemoryAblation10MiB_512_1024[] = {
-    {kMemoryAblationFeatureSizeParam, "10485760"},
-    {kMemoryAblationFeatureMinRAMParam, "512"},
-    {kMemoryAblationFeatureMaxRAMParam, "1024"}};
+    {blink::kMemoryAblationFeatureSizeParam, "10485760"},
+    {blink::kMemoryAblationFeatureMinRAMParam, "512"},
+    {blink::kMemoryAblationFeatureMaxRAMParam, "1024"}};
 const FeatureEntry::FeatureParam kMemoryAblation20MiB_1024_2048[] = {
-    {kMemoryAblationFeatureSizeParam, "20971520"},
-    {kMemoryAblationFeatureMinRAMParam, "1024"},
-    {kMemoryAblationFeatureMaxRAMParam, "2048"}};
+    {blink::kMemoryAblationFeatureSizeParam, "20971520"},
+    {blink::kMemoryAblationFeatureMinRAMParam, "1024"},
+    {blink::kMemoryAblationFeatureMaxRAMParam, "2048"}};
 const FeatureEntry::FeatureParam kMemoryAblation30MiB[] = {
-    {kMemoryAblationFeatureSizeParam, "31457280"}};
+    {blink::kMemoryAblationFeatureSizeParam, "31457280"}};
 const FeatureEntry::FeatureParam kMemoryAblation40MiB_512_4096[] = {
-    {kMemoryAblationFeatureSizeParam, "41943040"},
-    {kMemoryAblationFeatureMinRAMParam, "512"},
-    {kMemoryAblationFeatureMaxRAMParam, "4096"}};
+    {blink::kMemoryAblationFeatureSizeParam, "41943040"},
+    {blink::kMemoryAblationFeatureMinRAMParam, "512"},
+    {blink::kMemoryAblationFeatureMaxRAMParam, "4096"}};
 const FeatureEntry::FeatureParam kMemoryAblation50MiB_2048_4096[] = {
-    {kMemoryAblationFeatureSizeParam, "52428800"},
-    {kMemoryAblationFeatureMinRAMParam, "2048"},
-    {kMemoryAblationFeatureMaxRAMParam, "4096"}};
+    {blink::kMemoryAblationFeatureSizeParam, "52428800"},
+    {blink::kMemoryAblationFeatureMinRAMParam, "2048"},
+    {blink::kMemoryAblationFeatureMaxRAMParam, "4096"}};
 const FeatureEntry::FeatureParam kMemoryAblation100MiB_4096[] = {
-    {kMemoryAblationFeatureSizeParam, "104857600"},
-    {kMemoryAblationFeatureMinRAMParam, "4096"}};
+    {blink::kMemoryAblationFeatureSizeParam, "104857600"},
+    {blink::kMemoryAblationFeatureMinRAMParam, "4096"}};
 
 const FeatureEntry::FeatureVariation kMemoryAblationFeatureVariations[] = {
     {"5 MiB (RAM <= 512)", kMemoryAblation5MiB_512,
@@ -3070,7 +3070,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"memory-ablation", flag_descriptions::kMemoryAblationName,
      flag_descriptions::kMemoryAblationDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kMemoryAblationFeature,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(blink::kMemoryAblationFeature,
                                     kMemoryAblationFeatureVariations,
                                     "MemoryAblation")},
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/experiments/memory_ablation_experiment.h"
+#include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 
 #include <algorithm>
 #include <limits>
@@ -15,6 +15,8 @@
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/sys_info.h"
+
+namespace blink {
 
 const base::Feature kMemoryAblationFeature{"MemoryAblation",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -68,7 +70,7 @@ void MemoryAblationExperiment::MaybeStart(
 void MemoryAblationExperiment::Start(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     size_t memory_size) {
-  DCHECK(task_runner_ == nullptr) << "Already started";
+  DCHECK(task_runner_) << "Already started";
   task_runner_ = task_runner;
   // This class is a singleton, so "Unretained(this)" below is fine.
   task_runner_->PostDelayedTask(
@@ -121,3 +123,5 @@ void MemoryAblationExperiment::ScheduleTouchMemory(size_t offset) {
                      base::Unretained(this), offset),
       base::TimeDelta::FromMilliseconds(kTouchDelayMilliseconds));
 }
+
+}  // namespace blink
