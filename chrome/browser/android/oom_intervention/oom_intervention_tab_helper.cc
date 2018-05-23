@@ -61,6 +61,7 @@ void RecordInterventionStateOnCrash(bool accepted) {
 // Field trial parameter names.
 const char kRendererPauseParamName[] = "pause_renderer";
 const char kShouldDetectInRenderer[] = "detect_in_renderer";
+const char kRendererWorkloadThreshold[] = "renderer_workload_threshold";
 
 bool RendererPauseIsEnabled() {
   static bool enabled = base::GetFieldTrialParamByFeatureAsBool(
@@ -72,6 +73,18 @@ bool ShouldDetectInRenderer() {
   static bool enabled = base::GetFieldTrialParamByFeatureAsBool(
       features::kOomIntervention, kShouldDetectInRenderer, true);
   return enabled;
+}
+
+uint64_t GetRendererMemoryWorkloadThreshold() {
+  const uint64_t kDefaultMemoryWorkloadThreshold = 80 * 1024 * 1024;
+
+  std::string threshold_str = base::GetFieldTrialParamValueByFeature(
+      features::kOomIntervention, kRendererWorkloadThreshold);
+  uint64_t threshold = 0;
+  if (!base::StringToUint64(threshold_str, &threshold)) {
+    return kDefaultMemoryWorkloadThreshold;
+  }
+  return threshold;
 }
 
 }  // namespace
@@ -87,8 +100,7 @@ OomInterventionTabHelper::OomInterventionTabHelper(
       decider_(OomInterventionDecider::GetForBrowserContext(
           web_contents->GetBrowserContext())),
       binding_(this),
-      renderer_memory_workload_threshold_(
-          NearOomMonitor::GetInstance()->renderer_workload_threshold()),
+      renderer_memory_workload_threshold_(GetRendererMemoryWorkloadThreshold()),
       weak_ptr_factory_(this) {
   OutOfMemoryReporter::FromWebContents(web_contents)->AddObserver(this);
   shared_metrics_buffer_ = base::UnsafeSharedMemoryRegion::Create(
