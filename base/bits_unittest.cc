@@ -170,5 +170,28 @@ TEST(BitsTest, CountTrailingZeroBitsSizeT) {
 #endif  // ARCH_CPU_64_BITS
 }
 
+TEST(BitsTest, PowerOfTwo) {
+  EXPECT_FALSE(IsPowerOfTwo(-1));
+  EXPECT_FALSE(IsPowerOfTwo(0));
+  EXPECT_TRUE(IsPowerOfTwo(1));
+  EXPECT_TRUE(IsPowerOfTwo(2));
+  // Unsigned 64 bit cases.
+  for (uint32_t i = 2; i < 64; i++) {
+    const uint64_t val = uint64_t{1} << i;
+    EXPECT_FALSE(IsPowerOfTwo(val - 1));
+    EXPECT_TRUE(IsPowerOfTwo(val));
+    EXPECT_FALSE(IsPowerOfTwo(val + 1));
+  }
+  // Signed 64 bit cases.
+  for (uint32_t i = 2; i < 63; i++) {
+    const int64_t val = int64_t{1} << i;
+    EXPECT_FALSE(IsPowerOfTwo(val - 1));
+    EXPECT_TRUE(IsPowerOfTwo(val));
+    EXPECT_FALSE(IsPowerOfTwo(val + 1));
+  }
+  // Signed integers with only the last bit set are negative, not powers of two.
+  EXPECT_FALSE(IsPowerOfTwo(int64_t{1} << 63));
+}
+
 }  // namespace bits
 }  // namespace base

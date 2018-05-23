@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/heap/gc_info.h"
 
+#include "base/bits.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -11,14 +12,10 @@ namespace blink {
 
 namespace {
 
-constexpr inline bool IsPowerOfTwo(size_t value) {
-  return value > 0 && (value & (value - 1)) == 0;
-}
-
 constexpr size_t kEntrySize = sizeof(GCInfo*);
 
 // Allocation and resizing are built around the following invariants.
-static_assert(IsPowerOfTwo(kEntrySize),
+static_assert(base::bits::IsPowerOfTwo(kEntrySize),
               "GCInfoTable entries size must be power of "
               "two");
 static_assert(
