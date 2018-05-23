@@ -110,6 +110,12 @@ void ArcBridgeHostImpl::OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) {
   OnInstanceReady(arc_bridge_service_->ime(), std::move(ime_ptr));
 }
 
+void ArcBridgeHostImpl::OnInputMethodManagerInstanceReady(
+    mojom::InputMethodManagerInstancePtr input_method_manager_ptr) {
+  OnInstanceReady(arc_bridge_service_->input_method_manager(),
+                  std::move(input_method_manager_ptr));
+}
+
 void ArcBridgeHostImpl::OnIntentHelperInstanceReady(
     mojom::IntentHelperInstancePtr intent_helper_ptr) {
   OnInstanceReady(arc_bridge_service_->intent_helper(),

@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/arc/enterprise/arc_enterprise_reporting_service.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_mounter.h"
+#include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_settings_service.h"
 #include "chrome/browser/chromeos/arc/kiosk/arc_kiosk_bridge.h"
 #include "chrome/browser/chromeos/arc/notification/arc_boot_error_notification.h"
@@ -149,6 +150,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcFileSystemBridge::GetForBrowserContext(profile);
   ArcFileSystemMounter::GetForBrowserContext(profile);
   ArcImeService::GetForBrowserContext(profile);
+  ArcInputMethodManagerBridge::GetForBrowserContext(profile);
   ArcIntentHelperBridge::GetForBrowserContext(profile);
   ArcKioskBridge::GetForBrowserContext(profile);
   ArcLockScreenBridge::GetForBrowserContext(profile);
