@@ -37,7 +37,6 @@ from make_settings import to_passing_type, to_idl_type
 
 class MakeInternalSettingsWriter(json5_generator.Writer):
     filters = {
-        'upper_first': name_utilities.upper_first,
         'to_passing_type': to_passing_type,
         'to_idl_type': to_idl_type,
     }

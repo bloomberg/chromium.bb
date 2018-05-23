@@ -32,59 +32,6 @@ import re
 from blinkbuild.name_style_converter import tokenize_name
 
 
-# Acronyms are kept as all caps.
-# TODO(tkent): Remove this. crbug.com/843927
-ACRONYMS = [
-    '2D',
-    '2G',
-    '3D',
-    '3G',
-    'API',
-    'CORS',
-    'CSP',
-    'CSS',
-    'CSSOM',
-    'DNS',
-    'DOM',
-    'FE',
-    'FTP',
-    'GL',
-    'HTML',
-    'IDB',
-    'IFrame',
-    'JS',
-    'NFC',
-    'NG',
-    'OM',
-    'RFC',
-    'RTCRtp',
-    'SMIL',
-    'SVG',
-    'UI',
-    'URL',
-    'USB',
-    'VR',
-    'VTT',
-    'WOFF',
-    'XML',
-    'XSLT',
-    'XSS',
-    'YUV',
-]
-
-
-def upper_first(name):
-    """Return name with first letter or initial acronym uppercased.
-       The acronym must have a capital letter following it to be considered.
-    """
-    # TODO(tkent): Remove dependency to ACRONYMS. crbug.com/843927
-    for acronym in ACRONYMS:
-        if name.startswith(acronym.lower()):
-            if len(name) == len(acronym) or name[len(acronym)].isupper():
-                return name.replace(acronym.lower(), acronym, 1)
-    return upper_first_letter(name)
-
-
 def lower_first_letter(name):
     """Return name with first letter lowercased."""
     if not name:

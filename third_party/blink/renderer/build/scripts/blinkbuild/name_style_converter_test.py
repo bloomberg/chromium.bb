@@ -125,9 +125,14 @@ class NameStyleConverterTest(unittest.TestCase):
     def test_upper_camel_case(self):
         converter = NameStyleConverter('someSuperThing')
         self.assertEqual(converter.to_upper_camel_case(), 'SomeSuperThing')
-
         converter = NameStyleConverter('SVGElement')
         self.assertEqual(converter.to_upper_camel_case(), 'SVGElement')
+        converter = NameStyleConverter('cssExternalScannerPreload')
+        self.assertEqual(converter.to_upper_camel_case(), 'CSSExternalScannerPreload')
+        converter = NameStyleConverter('xpathExpression')
+        self.assertEqual(converter.to_upper_camel_case(), 'XPathExpression')
+        converter = NameStyleConverter('feDropShadow')
+        self.assertEqual(converter.to_upper_camel_case(), 'FEDropShadow')
 
     def test_lower_camel_case(self):
         converter = NameStyleConverter('someSuperThing')
