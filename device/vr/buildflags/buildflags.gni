@@ -33,16 +33,14 @@ declare_args() {
 
   # TODO(crbug.com/837999, crbug.com/841389): We currently only support arm and
   # we are limiting to canary and dev until binary size issues are resolved.
-  # TODO(crbug.com/841881, crbug.com/845080): add android_channel == "dev"
-  # || "canary" || "default".
-  enable_arcore =
-      is_android && !is_chromecast && current_cpu == "arm" && !is_official_build
+  # TODO(crbug.com/845080): add android_channel == "dev" || "canary"
+  package_arcore = is_android && !is_chromecast && current_cpu == "arm" &&
+                   android_channel == "default"
 
-  # TODO(crbug.com/841389): This should not be necessary once 64 bit is properly
-  # supported and enable_arcore permits arm64 as well.
-  # TODO(crbug.com/841881, crbug.com/845080): add android_channel == "dev"
-  # || "canary" || "default".
-  enable_arcore_java =
-      is_android && !is_chromecast &&
-      (current_cpu == "arm" || current_cpu == "arm64") && !is_official_build
+  # TODO(crbug.com/841389): We should eventually have a single flag for
+  # enabling arcore, but we currently don't support ARCore in 64bit, and we do
+  # not support all channels. This flag governs the inclusion of code that must
+  # be identical across configs.
+  enable_arcore = is_android && !is_chromecast &&
+                  (current_cpu == "arm" || current_cpu == "arm64")
 }
