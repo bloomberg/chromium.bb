@@ -30,6 +30,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_cache.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/software_feature_state.h"
 
@@ -170,6 +171,7 @@ EasyUnlockServiceSignin::EasyUnlockServiceSignin(Profile* profile)
     : EasyUnlockService(profile),
       account_id_(EmptyAccountId()),
       user_pod_last_focused_timestamp_(base::TimeTicks::Now()),
+      remote_device_cache_(std::make_unique<cryptauth::RemoteDeviceCache>()),
       weak_ptr_factory_(this) {}
 
 EasyUnlockServiceSignin::~EasyUnlockServiceSignin() {}
@@ -490,7 +492,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
   if (devices.empty())
     return;
 
-  cryptauth::RemoteDeviceRefList remote_devices;
+  cryptauth::RemoteDeviceList remote_devices;
   for (const auto& device : devices) {
     std::string decoded_public_key, decoded_psk;
     if (!base::Base64UrlDecode(device.public_key,
@@ -510,12 +512,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     // last_update_time_millis) as part of EasyUnlockDeviceKeyData instead of
     // making that assumption here.
 
-    // While clients should usually handle a RemoteDeviceRef instead of a raw
-    // RemoteDevice, a raw RemoteDevice must be created here. Once the
-    // shared_ptr is passed into the new RemoteDeviceRef, it will be kept alive
-    // as long as at least one instance of that RemoteDeviceRef remains active.
-    std::shared_ptr<cryptauth::RemoteDevice> remote_device = std::make_shared<
-        cryptauth::RemoteDevice>(
+    cryptauth::RemoteDevice remote_device(
         account_id.GetUserEmail(), std::string(), decoded_public_key,
         decoded_psk, true /* unlock_key */, false /* supports_mobile_hotspot */,
         0L /* last_update_time_millis */,
@@ -525,21 +522,22 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     if (!device.serialized_beacon_seeds.empty()) {
       PA_LOG(INFO) << "Deserializing BeaconSeeds: "
                    << device.serialized_beacon_seeds;
-      remote_device->LoadBeaconSeeds(
+      remote_device.LoadBeaconSeeds(
           DeserializeBeaconSeeds(device.serialized_beacon_seeds));
     } else {
       PA_LOG(WARNING) << "No BeaconSeeds were loaded.";
     }
 
-    cryptauth::RemoteDeviceRef remote_device_ref(remote_device);
-    remote_devices.push_back(remote_device_ref);
+    remote_devices.push_back(remote_device);
     PA_LOG(INFO) << "Loaded Remote Device:\n"
-                 << "  user id: " << remote_device_ref.user_id() << "\n"
-                 << "  name: " << remote_device_ref.name() << "\n"
-                 << "  public key" << remote_device_ref.public_key();
+                 << "  user id: " << remote_device.user_id << "\n"
+                 << "  name: " << remote_device.name << "\n"
+                 << "  public key" << remote_device.public_key;
   }
 
-  SetProximityAuthDevices(account_id, remote_devices);
+  remote_device_cache_->SetRemoteDevices(remote_devices);
+
+  SetProximityAuthDevices(account_id, remote_device_cache_->GetRemoteDevices());
 }
 
 const EasyUnlockServiceSignin::UserData*
