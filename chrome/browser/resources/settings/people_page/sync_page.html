@@ -83,16 +83,6 @@
         left: auto;
         right: 0;
       }
-
-      #toast paper-button {
-        -webkit-margin-end: 0;
-        -webkit-margin-start: 32px;
-        color: var(--google-blue-300);
-        font-weight: 500;
-        height: 32px;
-        min-width: 52px;
-        padding: 8px;
-      }
 </if>
     </style>
 <if expr="not chromeos">
@@ -449,7 +439,7 @@
 
 <if expr="not chromeos">
     <cr-toast id="toast" open="[[syncStatus.setupInProgress]]">
-      $i18n{syncWillStart}
+      <div>$i18n{syncWillStart}</div>
       <paper-button on-click="onCancelSyncClick_">
         $i18n{cancelSync}
       </paper-button>
