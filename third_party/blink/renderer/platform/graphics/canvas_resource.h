@@ -61,7 +61,9 @@ class PLATFORM_EXPORT CanvasResource : public WTF::RefCounted<CanvasResource> {
   }
 
  protected:
-  CanvasResource(base::WeakPtr<CanvasResourceProvider>, SkFilterQuality);
+  CanvasResource(base::WeakPtr<CanvasResourceProvider>,
+                 SkFilterQuality,
+                 const CanvasColorParams&);
   virtual GLenum TextureTarget() const = 0;
   virtual bool IsOverlayCandidate() const { return false; }
   virtual bool HasGpuMailbox() const = 0;
@@ -73,13 +75,15 @@ class PLATFORM_EXPORT CanvasResource : public WTF::RefCounted<CanvasResource> {
   void PrepareTransferableResourceCommon(
       viz::TransferableResource* out_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* out_callback);
-  SkFilterQuality filterQuality() const { return filter_quality_; }
+  SkFilterQuality FilterQuality() const { return filter_quality_; }
+  const CanvasColorParams& ColorParams() const { return color_params_; }
 
  private:
   // Sync token that was provided when resource was released
   gpu::SyncToken sync_token_for_release_;
   base::WeakPtr<CanvasResourceProvider> provider_;
   SkFilterQuality filter_quality_;
+  CanvasColorParams color_params_;
 };
 
 // Resource type for skia Bitmaps (RAM and texture backed)
@@ -88,7 +92,8 @@ class PLATFORM_EXPORT CanvasResourceBitmap final : public CanvasResource {
   static scoped_refptr<CanvasResourceBitmap> Create(
       scoped_refptr<StaticBitmapImage>,
       base::WeakPtr<CanvasResourceProvider>,
-      SkFilterQuality);
+      SkFilterQuality,
+      const CanvasColorParams&);
   ~CanvasResourceBitmap() override { Abandon(); }
 
   // Not recyclable: Skia handles texture recycling internally and bitmaps are
@@ -115,7 +120,8 @@ class PLATFORM_EXPORT CanvasResourceBitmap final : public CanvasResource {
 
   CanvasResourceBitmap(scoped_refptr<StaticBitmapImage>,
                        base::WeakPtr<CanvasResourceProvider>,
-                       SkFilterQuality);
+                       SkFilterQuality,
+                       const CanvasColorParams&);
 
   scoped_refptr<StaticBitmapImage> image_;
 };

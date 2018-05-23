@@ -94,7 +94,7 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
   scoped_refptr<CanvasResource> resource = CanvasResourceBitmap::Create(
       StaticBitmapImage::Create(surface->makeImageSnapshot(),
                                 context_provider_wrapper_),
-      nullptr, kLow_SkFilterQuality);
+      nullptr, kLow_SkFilterQuality, CanvasColorParams());
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
@@ -208,7 +208,7 @@ TEST_F(CanvasResourceTest, MakeAcceleratedFromAcceleratedResourceIsNoOp) {
   scoped_refptr<CanvasResource> resource = CanvasResourceBitmap::Create(
       StaticBitmapImage::Create(surface->makeImageSnapshot(),
                                 context_provider_wrapper_),
-      nullptr, kLow_SkFilterQuality);
+      nullptr, kLow_SkFilterQuality, CanvasColorParams());
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
@@ -233,7 +233,7 @@ TEST_F(CanvasResourceTest, MakeAcceleratedFromRasterResource) {
   scoped_refptr<CanvasResource> resource = CanvasResourceBitmap::Create(
       StaticBitmapImage::Create(surface->makeImageSnapshot(),
                                 context_provider_wrapper_),
-      nullptr, kLow_SkFilterQuality);
+      nullptr, kLow_SkFilterQuality, CanvasColorParams());
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
@@ -258,7 +258,7 @@ TEST_F(CanvasResourceTest, MakeUnacceleratedFromUnacceleratedResourceIsNoOp) {
   scoped_refptr<CanvasResource> resource = CanvasResourceBitmap::Create(
       StaticBitmapImage::Create(surface->makeImageSnapshot(),
                                 context_provider_wrapper_),
-      nullptr, kLow_SkFilterQuality);
+      nullptr, kLow_SkFilterQuality, CanvasColorParams());
 
   EXPECT_FALSE(resource->IsAccelerated());
   scoped_refptr<CanvasResource> new_resource = resource->MakeUnaccelerated();
@@ -279,7 +279,7 @@ TEST_F(CanvasResourceTest, MakeUnacceleratedFromAcceleratedResource) {
   scoped_refptr<CanvasResource> resource = CanvasResourceBitmap::Create(
       StaticBitmapImage::Create(surface->makeImageSnapshot(),
                                 context_provider_wrapper_),
-      nullptr, kLow_SkFilterQuality);
+      nullptr, kLow_SkFilterQuality, CanvasColorParams());
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 

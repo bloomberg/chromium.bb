@@ -614,8 +614,6 @@ bool Canvas2DLayerBridge::PrepareTransferableResource(
     // Note frame is kept alive via a reference kept in out_release_callback.
     bool success =
         frame->PrepareTransferableResource(out_resource, out_release_callback);
-    if (success)
-      out_resource->color_space = color_params_.GetSamplerGfxColorSpace();
     return success;
   }
   return false;
