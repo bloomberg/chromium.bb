@@ -18,6 +18,7 @@
 #import "ui/base/cocoa/command_dispatcher.h"
 #import "ui/base/cocoa/tool_tip_base_view.h"
 #include "ui/base/ime/ime_text_span.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/range/range.h"
 
 namespace blink {
@@ -114,6 +115,8 @@ struct DidOverscrollParams;
   // the whole content yet.
   NSRange markedRange_;
 
+  ui::TextInputType textInputType_;
+
   // The text selection, cached from the RenderWidgetHostView. This is only ever
   // updated from the renderer.
   base::string16 textSelectionText_;
@@ -172,6 +175,7 @@ struct DidOverscrollParams;
 }
 
 @property(nonatomic, assign) NSRange markedRange;
+@property(nonatomic, assign) ui::TextInputType textInputType;
 
 // Common code path for handling begin gesture events. This helper method is
 // called via different codepaths based on OS version and SDK:

@@ -452,6 +452,8 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
   if (!did_update_state)
     return;
 
+  ns_view_bridge_->SetTextInputType(GetTextInputType());
+
   // |updated_view| is the last view to change its TextInputState which can be
   // used to start/stop monitoring composition info when it has a focused
   // editable text input field.
@@ -1618,11 +1620,6 @@ void RenderWidgetHostViewMac::OnNSViewLookUpDictionaryOverlayAtPoint(
       base::BindOnce(&RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay,
                      weak_factory_.GetWeakPtr(), target_widget_process_id,
                      target_widget_routing_id));
-}
-
-void RenderWidgetHostViewMac::OnNSViewSyncGetTextInputType(
-    ui::TextInputType* text_input_type) {
-  *text_input_type = GetTextInputType();
 }
 
 void RenderWidgetHostViewMac::OnNSViewSyncGetCharacterIndexAtPoint(

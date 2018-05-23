@@ -141,10 +141,6 @@ class RenderWidgetHostNSViewClient {
   virtual void OnNSViewLookUpDictionaryOverlayFromRange(
       const gfx::Range& range) = 0;
 
-  // Synchronously query the text input type from the
-  virtual void OnNSViewSyncGetTextInputType(
-      ui::TextInputType* text_input_type) = 0;
-
   // Synchronously query the character index for |root_point| and return it in
   // |*index|. Sets it to UINT32_MAX if the request fails or is not completed.
   virtual void OnNSViewSyncGetCharacterIndexAtPoint(

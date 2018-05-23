@@ -16,6 +16,7 @@
 #include "content/common/mac/attributed_string_coder.h"
 #include "third_party/blink/public/web/web_popup_type.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ime/text_input_type.h"
 
 namespace gfx {
 struct CALayerParams;
@@ -71,6 +72,9 @@ class RenderWidgetHostNSViewBridge {
 
   // Call the -[NSView setToolTipAtMousePoint] method.
   virtual void SetTooltipText(const base::string16& display_text) = 0;
+
+  // Forward changes in ui::TextInputType.
+  virtual void SetTextInputType(ui::TextInputType text_input_type) = 0;
 
   // Forward the TextInputManager::TextSelection from the renderer.
   virtual void SetTextSelection(const base::string16& text,
