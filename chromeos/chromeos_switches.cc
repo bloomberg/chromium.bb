@@ -554,6 +554,9 @@ const char kShelfHoverPreviews[] = "shelf-hover-previews";
 //  'interactive=3' - Interactive mode, connect/scan/etc requests take 3 secs
 const char kShillStub[] = "shill-stub";
 
+// If true, files in Android internal storage will be shown in Files app.
+const char kShowAndroidFilesInFilesApp[] = "show-android-files-in-files-app";
+
 // If true, the developer tool overlay will be shown for the login/lock screen.
 // This makes it easier to test layout logic.
 const char kShowLoginDevOverlay[] = "show-login-dev-overlay";

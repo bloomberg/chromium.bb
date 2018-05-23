@@ -364,6 +364,9 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
       case VolumeManagerCommon.VolumeType.CROSTINI:
         rootType = VolumeManagerCommon.RootType.CROSTINI;
         break;
+      case VolumeManagerCommon.VolumeType.ANDROID_FILES:
+        rootType = VolumeManagerCommon.RootType.ANDROID_FILES;
+        break;
       default:
         // Programming error, throw an exception.
         throw new Error('Invalid volume type: ' + volumeInfo.volumeType);

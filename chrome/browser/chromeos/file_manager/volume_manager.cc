@@ -51,6 +51,9 @@ const uint32_t kFilesystemTypeGenericHierarchical = 2;
 const char kFileManagerMTPMountNamePrefix[] = "fileman-mtp-";
 const char kMtpVolumeIdPrefix[] = "mtp:";
 const char kRootPath[] = "/";
+const char kAndroidFilesMountPointName[] = "android_files";
+const base::FilePath::CharType kAndroidFilesPath[] =
+    FILE_PATH_LITERAL("/run/arc/sdcard/write/emulated/0");
 
 // Registers |path| as the "Downloads" folder to the FileSystem API backend.
 // If another folder is already mounted. It revokes and overrides the old one.
@@ -71,6 +74,23 @@ bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path) {
                                           storage::kFileSystemTypeNativeLocal,
                                           storage::FileSystemMountOption(),
                                           path);
+}
+
+// Returns true if the flag to show Android files
+// (--show-android-files-in-files-app) is enabled.
+bool IsShowAndroidFilesEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kShowAndroidFilesInFilesApp);
+}
+
+// Registers a mount point for Android files to ExternalMountPoints.
+bool RegisterAndroidFilesMountPoint() {
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  return mount_points->RegisterFileSystem(kAndroidFilesMountPointName,
+                                          storage::kFileSystemTypeNativeLocal,
+                                          storage::FileSystemMountOption(),
+                                          base::FilePath(kAndroidFilesPath));
 }
 
 // Finds the path register as the "Downloads" folder to FileSystem API backend.
@@ -122,6 +142,8 @@ std::string VolumeTypeToString(VolumeType type) {
       return "mtp";
     case VOLUME_TYPE_MEDIA_VIEW:
       return "media_view";
+    case VOLUME_TYPE_ANDROID_FILES:
+      return "android_files";
     case VOLUME_TYPE_TESTING:
       return "testing";
     case VOLUME_TYPE_CROSTINI:
@@ -319,6 +341,20 @@ std::unique_ptr<Volume> Volume::CreateForSshfsCrostini(
 }
 
 // static
+std::unique_ptr<Volume> Volume::CreateForAndroidFiles() {
+  std::unique_ptr<Volume> volume(new Volume());
+  volume->type_ = VOLUME_TYPE_ANDROID_FILES;
+  volume->device_type_ = chromeos::DEVICE_TYPE_UNKNOWN;
+  // Keep source_path empty.
+  volume->source_ = SOURCE_SYSTEM;
+  volume->mount_path_ = base::FilePath(kAndroidFilesPath);
+  volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
+  volume->volume_id_ = GenerateVolumeId(*volume);
+  volume->watchable_ = true;
+  return volume;
+}
+
+// static
 std::unique_ptr<Volume> Volume::CreateForTesting(
     const base::FilePath& path,
     VolumeType volume_type,
@@ -436,6 +472,10 @@ void VolumeManager::Initialize() {
   // Subscribe to ARC file system events.
   if (base::FeatureList::IsEnabled(arc::kMediaViewFeature) &&
       arc::IsArcAllowedForProfile(profile_)) {
+    // Registers a mount point for Android files only when the flag is enabled.
+    if (IsShowAndroidFilesEnabled())
+      RegisterAndroidFilesMountPoint();
+
     arc::ArcSessionManager::Get()->AddObserver(this);
     OnArcPlayStoreEnabledChanged(
         arc::IsArcPlayStoreEnabledForProfile(profile_));
@@ -857,6 +897,8 @@ void VolumeManager::OnArcPlayStoreEnabledChanged(bool enabled) {
                  Volume::CreateForMediaView(arc::kVideosRootDocumentId));
     DoMountEvent(chromeos::MOUNT_ERROR_NONE,
                  Volume::CreateForMediaView(arc::kAudioRootDocumentId));
+    if (IsShowAndroidFilesEnabled())
+      DoMountEvent(chromeos::MOUNT_ERROR_NONE, Volume::CreateForAndroidFiles());
   } else {
     DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
                    *Volume::CreateForMediaView(arc::kImagesRootDocumentId));
@@ -864,6 +906,10 @@ void VolumeManager::OnArcPlayStoreEnabledChanged(bool enabled) {
                    *Volume::CreateForMediaView(arc::kVideosRootDocumentId));
     DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
                    *Volume::CreateForMediaView(arc::kAudioRootDocumentId));
+    if (IsShowAndroidFilesEnabled()) {
+      DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+                     *Volume::CreateForAndroidFiles());
+    }
   }
 
   arc_volumes_mounted_ = enabled;

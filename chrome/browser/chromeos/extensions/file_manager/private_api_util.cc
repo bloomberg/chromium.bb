@@ -268,6 +268,10 @@ void VolumeToVolumeMetadata(
     case VOLUME_TYPE_CROSTINI:
       volume_metadata->volume_type = file_manager_private::VOLUME_TYPE_CROSTINI;
       break;
+    case VOLUME_TYPE_ANDROID_FILES:
+      volume_metadata->volume_type =
+          file_manager_private::VOLUME_TYPE_ANDROID_FILES;
+      break;
     case VOLUME_TYPE_TESTING:
       volume_metadata->volume_type =
           file_manager_private::VOLUME_TYPE_TESTING;

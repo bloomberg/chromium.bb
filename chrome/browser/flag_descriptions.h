@@ -884,6 +884,9 @@ extern const char kShelfHoverPreviewsDescription[];
 extern const char kShowAllDialogsWithViewsToolkitName[];
 extern const char kShowAllDialogsWithViewsToolkitDescription[];
 
+extern const char kShowAndroidFilesInFilesAppName[];
+extern const char kShowAndroidFilesInFilesAppDescription[];
+
 extern const char kShowAutofillSignaturesName[];
 extern const char kShowAutofillSignaturesDescription[];
 

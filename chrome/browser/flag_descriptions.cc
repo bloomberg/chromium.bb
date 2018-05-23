@@ -1446,6 +1446,11 @@ const char kShowAllDialogsWithViewsToolkitDescription[] =
     "All browser dialogs will be shown using the Views toolkit rather than "
     "Cocoa. This requires <a href=\"#secondary-ui-md\">#secondary-ui-md</a>.";
 
+const char kShowAndroidFilesInFilesAppName[] =
+    "Show Android files in Files app";
+const char kShowAndroidFilesInFilesAppDescription[] =
+    "Show Android files in Files app if Android is enabled on the device.";
+
 const char kShowAutofillSignaturesName[] = "Show autofill signatures.";
 const char kShowAutofillSignaturesDescription[] =
     "Annotates web forms with Autofill signatures as HTML attributes. Also "

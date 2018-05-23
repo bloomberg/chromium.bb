@@ -2974,6 +2974,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-files", flag_descriptions::kCrostiniFilesName,
      flag_descriptions::kCrostiniFilesDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kCrostiniFiles)},
+    {"show-android-files-in-files-app",
+     flag_descriptions::kShowAndroidFilesInFilesAppName,
+     flag_descriptions::kShowAndroidFilesInFilesAppDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kShowAndroidFilesInFilesApp)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_WIN)
