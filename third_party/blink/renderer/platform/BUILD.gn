@@ -1828,6 +1828,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "graphics/paint/paint_record_builder_test.cc",
     "graphics/paint/property_tree_state_test.cc",
     "graphics/paint_invalidation_reason_test.cc",
+    "graphics/path_test.cc",
     "graphics/placeholder_image_test.cc",
     "graphics/skia/skia_utils_test.cc",
     "graphics/static_bitmap_image_test.cc",
