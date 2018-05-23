@@ -6,6 +6,7 @@
 
 #include "base/debug/alias.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_tracker.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/time/time.h"
@@ -17,7 +18,10 @@ ServiceThread::ServiceThread(const TaskTracker* task_tracker)
     : Thread("TaskSchedulerServiceThread"), task_tracker_(task_tracker) {}
 
 void ServiceThread::Init() {
-  if (task_tracker_) {
+  // In unit tests we sometimes do not have a fully functional TaskScheduler
+  // environment, do not perform the heartbeat report in that case since it
+  // relies on such an environment.
+  if (task_tracker_ && TaskScheduler::GetInstance()) {
     heartbeat_latency_timer_.Start(
         FROM_HERE, TimeDelta::FromSeconds(5),
         BindRepeating(&ServiceThread::PerformHeartbeatLatencyReport,
