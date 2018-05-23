@@ -1276,7 +1276,7 @@ void InProcessCommandBuffer::SetSnapshotRequestedCallback(
 
 void InProcessCommandBuffer::BufferPresented(
     const gfx::PresentationFeedback& feedback) {
-  const SwapBufferParams& params = pending_presented_params_.front();
+  SwapBufferParams params = pending_presented_params_.front();
   pending_presented_params_.pop_front();
 
   if (!origin_task_runner_) {
