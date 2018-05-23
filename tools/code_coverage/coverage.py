@@ -1007,7 +1007,7 @@ def _GetTargetProfDataPathsByExecutingCommands(targets, commands):
 
       profraw_file_paths = []
       if _IsIOS():
-        profraw_file_paths = _GetProfrawDataFileByParsingOutput(output)
+        profraw_file_paths = [_GetProfrawDataFileByParsingOutput(output)]
       else:
         for file_or_dir in os.listdir(_GetCoverageReportRootDirPath()):
           if file_or_dir.endswith(PROFRAW_FILE_EXTENSION):
@@ -1018,6 +1018,10 @@ def _GetTargetProfDataPathsByExecutingCommands(targets, commands):
           'Running target "%s" failed to generate any profraw data file, '
           'please make sure the binary exists, is properly instrumented and '
           'does not crash. %s' % (target, FILE_BUG_MESSAGE))
+
+      assert isinstance(profraw_file_paths, list), (
+        'Variable \'profraw_file_paths\' is expected to be of type \'list\', '
+        'but it is a %s. %s' % (type(profraw_file_paths), FILE_BUG_MESSAGE))
 
       try:
         profdata_file_path = _CreateTargetProfDataFileFromProfRawFiles(
