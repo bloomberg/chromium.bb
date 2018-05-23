@@ -162,6 +162,7 @@ enum ExecutableType : uint32_t {
   kExeTypeElfArm32 = ExeTypeToUint32("EA32"),
   kExeTypeElfAArch64 = ExeTypeToUint32("EA64"),
   kExeTypeDex = ExeTypeToUint32("DEX "),
+  kExeTypeZtf = ExeTypeToUint32("ZTF "),
 };
 
 constexpr ExecutableType CastToExecutableType(uint32_t possible_exe_type) {
@@ -174,6 +175,7 @@ constexpr ExecutableType CastToExecutableType(uint32_t possible_exe_type) {
     case kExeTypeElfArm32:    // Falls through.
     case kExeTypeElfAArch64:  // Falls through.
     case kExeTypeDex:         // Falls through.
+    case kExeTypeZtf:         // Falls through.
     case kExeTypeUnknown:
       return static_cast<ExecutableType>(possible_exe_type);
     default:
