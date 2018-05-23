@@ -205,13 +205,12 @@ TEST_F(WebElementTest, ShadowRoot) {
   EXPECT_TRUE(TestElement().ShadowRoot().IsNull())
       << "ShadowRoot() should not return a UA ShadowRoot.";
 
-  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
   {
     InsertHTML("<div id=testElement></div>");
     EXPECT_TRUE(TestElement().ShadowRoot().IsNull())
         << "No ShadowRoot initially.";
     auto* element = GetDocument().getElementById("testElement");
-    element->createShadowRoot(script_state, ASSERT_NO_EXCEPTION);
+    element->CreateV0ShadowRootForTesting();
     EXPECT_FALSE(TestElement().ShadowRoot().IsNull())
         << "Should return V0 ShadowRoot.";
   }
@@ -221,9 +220,7 @@ TEST_F(WebElementTest, ShadowRoot) {
     EXPECT_TRUE(TestElement().ShadowRoot().IsNull())
         << "No ShadowRoot initially.";
     auto* element = GetDocument().getElementById("testElement");
-    ShadowRootInit init;
-    init.setMode("open");
-    element->attachShadow(script_state, init, ASSERT_NO_EXCEPTION);
+    element->AttachShadowRootInternal(ShadowRootType::kOpen);
     EXPECT_FALSE(TestElement().ShadowRoot().IsNull())
         << "Should return V1 open ShadowRoot.";
   }
@@ -233,9 +230,7 @@ TEST_F(WebElementTest, ShadowRoot) {
     EXPECT_TRUE(TestElement().ShadowRoot().IsNull())
         << "No ShadowRoot initially.";
     auto* element = GetDocument().getElementById("testElement");
-    ShadowRootInit init;
-    init.setMode("closed");
-    element->attachShadow(script_state, init, ASSERT_NO_EXCEPTION);
+    element->AttachShadowRootInternal(ShadowRootType::kClosed);
     EXPECT_FALSE(TestElement().ShadowRoot().IsNull())
         << "Should return V1 closed ShadowRoot.";
   }
