@@ -21,7 +21,7 @@ SharedWorkerScriptLoader::SharedWorkerScriptLoader(
     network::mojom::URLLoaderClientPtr client,
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
     ResourceContext* resource_context,
-    scoped_refptr<network::SharedURLLoaderFactory> network_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
     : routing_id_(routing_id),
       request_id_(request_id),
@@ -30,7 +30,7 @@ SharedWorkerScriptLoader::SharedWorkerScriptLoader(
       client_(std::move(client)),
       service_worker_provider_host_(service_worker_provider_host),
       resource_context_(resource_context),
-      network_factory_(std::move(network_factory)),
+      default_loader_factory_(std::move(default_loader_factory)),
       traffic_annotation_(traffic_annotation),
       url_loader_client_binding_(this),
       weak_factory_(this) {
@@ -84,7 +84,7 @@ void SharedWorkerScriptLoader::MaybeStartLoader(
 void SharedWorkerScriptLoader::LoadFromNetwork() {
   network::mojom::URLLoaderClientPtr client;
   url_loader_client_binding_.Bind(mojo::MakeRequest(&client));
-  url_loader_factory_ = network_factory_;
+  url_loader_factory_ = default_loader_factory_;
   url_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_), routing_id_, request_id_, options_,
       resource_request_, std::move(client), traffic_annotation_);

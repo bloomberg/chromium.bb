@@ -22,10 +22,10 @@ SharedWorkerScriptLoaderFactory::SharedWorkerScriptLoaderFactory(
     ServiceWorkerContextWrapper* context,
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
     ResourceContext* resource_context,
-    scoped_refptr<network::SharedURLLoaderFactory> network_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : service_worker_provider_host_(service_worker_provider_host),
       resource_context_(resource_context),
-      network_factory_(std::move(network_factory)) {
+      loader_factory_(std::move(loader_factory)) {
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK_EQ(service_worker_provider_host_->provider_type(),
             blink::mojom::ServiceWorkerProviderType::kForSharedWorker);
@@ -54,7 +54,7 @@ void SharedWorkerScriptLoaderFactory::CreateLoaderAndStart(
   mojo::MakeStrongBinding(
       std::make_unique<SharedWorkerScriptLoader>(
           routing_id, request_id, options, resource_request, std::move(client),
-          service_worker_provider_host_, resource_context_, network_factory_,
+          service_worker_provider_host_, resource_context_, loader_factory_,
           traffic_annotation),
       std::move(request));
 }

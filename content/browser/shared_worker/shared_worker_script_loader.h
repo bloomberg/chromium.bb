@@ -26,15 +26,20 @@ class ServiceWorkerProviderHost;
 //
 // This acts much like NavigationURLLoaderImpl. It allows a
 // NavigationLoaderInterceptor to intercept the request with its own loader, and
-// goes to the network loader otherwise. Once a loader is started, this class
-// acts as the URLLoaderClient for it, forwarding messages to the outer client.
-// On redirects, it starts over with the new request URL, possibly starting a
-// new loader and becoming the client of that.
+// goes to |default_loader_factory| otherwise. Once a loader is started, this
+// class acts as the URLLoaderClient for it, forwarding messages to the outer
+// client. On redirects, it starts over with the new request URL, possibly
+// starting a new loader and becoming the client of that.
 //
 // Lives on the IO thread.
 class SharedWorkerScriptLoader : public network::mojom::URLLoader,
                                  public network::mojom::URLLoaderClient {
  public:
+  // |default_loader_factory| is used to load the script if the load is not
+  // intercepted by a feature like service worker. Typically it will load the
+  // script from the NetworkService. However, it may internally contain
+  // non-NetworkService factories used for non-http(s) URLs, e.g., a
+  // chrome-extension:// URL.
   SharedWorkerScriptLoader(
       int32_t routing_id,
       int32_t request_id,
@@ -43,7 +48,7 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
       network::mojom::URLLoaderClientPtr client,
       base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
       ResourceContext* resource_context,
-      scoped_refptr<network::SharedURLLoaderFactory> network_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
   ~SharedWorkerScriptLoader() override;
 
@@ -90,7 +95,7 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
   network::mojom::URLLoaderClientPtr client_;
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
   ResourceContext* resource_context_;
-  scoped_refptr<network::SharedURLLoaderFactory> network_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
   base::Optional<net::RedirectInfo> redirect_info_;
@@ -98,6 +103,9 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
 
   network::mojom::URLLoaderPtr url_loader_;
   mojo::Binding<network::mojom::URLLoaderClient> url_loader_client_binding_;
+  // The factory used to request the script. This is the same as
+  // |default_loader_factory_| if a service worker or other interceptor didn't
+  // elect to handle the request.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   base::WeakPtrFactory<SharedWorkerScriptLoader> weak_factory_;
