@@ -762,6 +762,25 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="DocumentCreated">
+  <owner>beccahughes@chromium.org</owner>
+  <summary>
+    Recorded when a Document object is created and records the source ID of the
+    navigation and whether the document was in the main frame. This can be used
+    to link subframe UKM events to the parent document.
+  </summary>
+  <metric name="IsMainFrame">
+    <summary>
+      Whether the document was in the main frame. This is can either be 0 or 1.
+    </summary>
+  </metric>
+  <metric name="NavigationSourceId">
+    <summary>
+      Contains the UKM source id of the navigation as an integer.
+    </summary>
+  </metric>
+</event>
+
 <event name="Document.OutliveTimeAfterShutdown">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>keishi@chromium.org</owner>

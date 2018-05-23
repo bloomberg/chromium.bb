@@ -37,6 +37,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom-shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -44,6 +45,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/site_engagement.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/ukm.mojom-blink.h"
 #include "third_party/blink/public/platform/web_prerendering_support.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
@@ -3371,6 +3373,15 @@ void Document::CheckCompleted() {
     frame_->Client()->DispatchDidFinishLoad();
     if (!frame_)
       return;
+
+    // Send the source ID of the document to the browser.
+    if (frame_->Client()->GetRemoteNavigationAssociatedInterfaces()) {
+      mojom::blink::UkmSourceIdFrameHostAssociatedPtr ukm_binding;
+      frame_->Client()->GetRemoteNavigationAssociatedInterfaces()->GetInterface(
+          &ukm_binding);
+      DCHECK(ukm_binding.is_bound());
+      ukm_binding->SetDocumentSourceId(ukm_source_id_);
+    }
   }
 
   frame_->Loader().DidFinishNavigation();
