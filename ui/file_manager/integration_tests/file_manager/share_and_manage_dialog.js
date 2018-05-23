@@ -190,6 +190,8 @@ testcase.shareDirectoryDrive = function() {
   share('photos');
 };
 
+// TODO(sashab): Add tests for sharing a file on Team Drives.
+
 /**
  * Tests managing a hosted file (gdoc) on Drive.
  */
