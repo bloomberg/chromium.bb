@@ -44,14 +44,15 @@ public class FeedbackCollector implements Runnable {
     private Callback<FeedbackCollector> mCallback;
 
     public FeedbackCollector(Activity activity, Profile profile, @Nullable String url,
-            @Nullable String categoryTag, @Nullable String description, boolean takeScreenshot,
+            @Nullable String categoryTag, @Nullable String description,
+            @Nullable String feedbackContext, boolean takeScreenshot,
             Callback<FeedbackCollector> callback) {
         mCategoryTag = categoryTag;
         mDescription = description;
         mCallback = callback;
 
         // 1. Build all synchronous and asynchronous sources.
-        mSynchronousSources = buildSynchronousFeedbackSources(profile, url);
+        mSynchronousSources = buildSynchronousFeedbackSources(profile, url, feedbackContext);
         mAsynchronousSources = buildAsynchronousFeedbackSources(profile);
 
         // 2. Build the screenshot task if necessary.
@@ -70,7 +71,7 @@ public class FeedbackCollector implements Runnable {
 
     @VisibleForTesting
     protected List<FeedbackSource> buildSynchronousFeedbackSources(
-            Profile profile, @Nullable String url) {
+            Profile profile, @Nullable String url, @Nullable String feedbackContext) {
         List<FeedbackSource> sources = new ArrayList<>();
 
         // This is the list of all synchronous sources of feedback.  Please add new synchronous
@@ -84,6 +85,7 @@ public class FeedbackCollector implements Runnable {
         sources.add(new IMEFeedbackSource());
         sources.add(new PermissionFeedbackSource());
         sources.add(new SimplifiedNtpFeedbackSource());
+        sources.add(new FeedbackContextFeedbackSource(feedbackContext));
 
         // Sanity check in case a source is added to the wrong list.
         for (FeedbackSource source : sources) {
