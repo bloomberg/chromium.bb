@@ -49,10 +49,16 @@ class DeveloperToolsPolicyHandler : public ConfigurationPolicyHandler {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns the current policy-set developer tools availability according to
-  // the values in |pref_service|. If the user is not managed, will return
-  // |kAllowed|. If the user is managed, enterprise policy will default to
+  // the values in |pref_service|. If no policy mandating developer tools
+  // availability is set, the default will be
   // |Availability::kDisallowedForForceInstalledExtensions|.
   static Availability GetDevToolsAvailability(const PrefService* pref_service);
+
+  // Returns the most restrictive availability within [|availability_1|,
+  // |availability_2|].
+  static Availability GetMostRestrictiveAvailability(
+      Availability availability_1,
+      Availability availability_2);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeveloperToolsPolicyHandler);
