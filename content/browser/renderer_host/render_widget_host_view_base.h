@@ -68,6 +68,7 @@ class WebMouseWheelEvent;
 namespace ui {
 enum class DomCode;
 class LatencyInfo;
+class Layer;
 struct DidOverscrollParams;
 }
 
@@ -552,6 +553,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // Use only for resize on macOS. Returns true if there is not currently a
   // frame of the view's size being displayed.
   virtual bool ShouldContinueToPauseForFrame();
+
+  // Specify a ui::Layer into which the renderer's content should be
+  // composited. If nullptr is specified, then this layer will create a
+  // separate ui::Compositor as needed (e.g, for tab capture).
+  virtual void SetParentUiLayer(ui::Layer* parent_ui_layer);
 #endif
 
   virtual void DidNavigate();

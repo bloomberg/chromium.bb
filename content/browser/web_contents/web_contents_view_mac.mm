@@ -450,7 +450,7 @@ void WebContentsViewMac::CloseTab() {
 
 void WebContentsViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
   parent_ui_layer_ = parent_ui_layer;
-  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
+  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       web_contents_->GetRenderWidgetHostView());
   if (view)
     view->SetParentUiLayer(parent_ui_layer);

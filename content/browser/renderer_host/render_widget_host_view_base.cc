@@ -720,6 +720,8 @@ RenderWidgetHostViewBase::GetWindowTreeClientFromRenderer() {
 bool RenderWidgetHostViewBase::ShouldContinueToPauseForFrame() {
   return false;
 }
+
+void RenderWidgetHostViewBase::SetParentUiLayer(ui::Layer* parent_ui_layer) {}
 #endif
 
 void RenderWidgetHostViewBase::DidNavigate() {

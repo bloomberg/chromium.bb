@@ -154,6 +154,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   base::Optional<SkColor> GetBackgroundColor() const override;
 
   bool ShouldContinueToPauseForFrame() override;
+  void SetParentUiLayer(ui::Layer* parent_ui_layer) override;
   gfx::Vector2d GetOffsetFromRootSurface() override;
   gfx::Rect GetBoundsInRootWindow() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
@@ -417,11 +418,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // not be the desired behavior.
   // https://crbug.com/831843
   RenderWidgetHostImpl* GetWidgetForKeyboardEvent();
-
-  // Specify a ui::Layer into which the renderer's content should be
-  // composited. If nullptr is specified, then this layer will create a
-  // separate ui::Compositor as needed (e.g, for tab capture).
-  void SetParentUiLayer(ui::Layer* parent_ui_layer);
 
  protected:
   // This class is to be deleted through the Destroy method.
