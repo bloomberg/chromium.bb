@@ -196,6 +196,10 @@ std::string TestPersonalDataManager::CountryCodeForCurrentTimezone()
   return timezone_country_code_;
 }
 
+bool TestPersonalDataManager::IsDataLoaded() const {
+  return true;
+}
+
 void TestPersonalDataManager::ClearProfiles() {
   web_profiles_.clear();
 }
