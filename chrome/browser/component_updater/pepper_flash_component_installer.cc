@@ -40,6 +40,7 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
+#include "components/update_client/utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_constants.h"
@@ -287,7 +288,8 @@ FlashComponentInstallerPolicy::OnCustomInstall(
     const base::FilePath& install_dir) {
   std::string version;
   if (!manifest.GetString("version", &version)) {
-    return ToInstallerResult(FlashError::MISSING_VERSION_IN_MANIFEST);
+    return update_client::ToInstallerResult(
+        FlashError::MISSING_VERSION_IN_MANIFEST);
   }
 
 #if defined(OS_CHROMEOS)

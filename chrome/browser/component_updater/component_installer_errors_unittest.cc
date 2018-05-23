@@ -5,6 +5,7 @@
 #include "chrome/browser/component_updater/component_installer_errors.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
+#include "components/update_client/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace component_updater {
@@ -14,7 +15,8 @@ enum class CustomInstallerError {
 };
 
 TEST(ComponentInstallerErrors, ToInstallerResult) {
-  auto result = ToInstallerResult(CustomInstallerError::AN_ERROR);
+  auto result =
+      update_client::ToInstallerResult(CustomInstallerError::AN_ERROR);
   constexpr int kErrorBase =
       static_cast<int>(update_client::InstallError::CUSTOM_ERROR_BASE);
   EXPECT_EQ(kErrorBase + 1, result.error);
