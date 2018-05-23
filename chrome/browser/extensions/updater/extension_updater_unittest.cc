@@ -64,7 +64,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_constants.h"
-#include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/escape.h"
@@ -140,7 +139,6 @@ int kExpectedLoadFlags =
 int kExpectedLoadFlagsForDownloadWithCookies = net::LOAD_DISABLE_CACHE;
 
 // Fake authentication constants
-const char kFakeAccountId[] = "bobloblaw@lawblog.example.com";
 const char kFakeOAuth2Token[] = "ce n'est pas un jeton";
 
 const ManifestFetchData::PingData kNeverPingedData(
@@ -303,6 +301,7 @@ class MockService : public TestExtensionService {
   explicit MockService(TestExtensionPrefs* prefs)
       : prefs_(prefs),
         pending_extension_manager_(prefs->profile()),
+        fake_account_id_("bobloblaw@lawblog.example.com"),
         downloader_delegate_override_(NULL) {}
 
   ~MockService() override {}
@@ -326,6 +325,8 @@ class MockService : public TestExtensionService {
   FakeOAuth2TokenService* fake_token_service() {
     return fake_token_service_.get();
   }
+
+  const std::string& fake_account_id() { return fake_account_id_; }
 
   // Creates test extensions and inserts them into list. The name and
   // version are all based on their index. If |update_url| is non-null, it
@@ -383,19 +384,19 @@ class MockService : public TestExtensionService {
 
   std::unique_ptr<ExtensionDownloader> CreateExtensionDownloaderWithIdentity(
       ExtensionDownloaderDelegate* delegate) {
-    std::unique_ptr<FakeIdentityProvider> fake_identity_provider;
     fake_token_service_.reset(new FakeOAuth2TokenService());
-    fake_identity_provider.reset(new FakeIdentityProvider(
-          fake_token_service_.get()));
-    fake_identity_provider->LogIn(kFakeAccountId);
-    fake_token_service_->AddAccount(kFakeAccountId);
+    fake_token_service_->AddAccount(fake_account_id_);
 
     std::unique_ptr<ExtensionDownloader> downloader(
         CreateExtensionDownloader(delegate));
-    downloader->SetWebstoreIdentityProvider(std::move(fake_identity_provider));
+    downloader->SetWebstoreAuthenticationCapabilities(
+        base::BindRepeating(&MockService::fake_account_id,
+                            base::Unretained(this)),
+        fake_token_service_.get());
     return downloader;
   }
 
+  std::string fake_account_id_;
   std::unique_ptr<FakeOAuth2TokenService> fake_token_service_;
 
   ExtensionDownloaderDelegate* downloader_delegate_override_;
@@ -1389,7 +1390,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     if (service->fake_token_service()) {
       service->fake_token_service()->IssueAllTokensForAccount(
-          kFakeAccountId, kFakeOAuth2Token, base::Time::Now());
+          service->fake_account_id(), kFakeOAuth2Token, base::Time::Now());
     }
     RunUntilIdle();
 
