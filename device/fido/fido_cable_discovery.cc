@@ -163,16 +163,6 @@ void FidoCableDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
 void FidoCableDiscovery::OnSetPowered() {
   DCHECK(adapter());
 
-  adapter()->StartDiscoverySessionWithFilter(
-      std::make_unique<BluetoothDiscoveryFilter>(
-          BluetoothTransport::BLUETOOTH_TRANSPORT_LE),
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&FidoCableDiscovery::OnStartDiscoverySessionWithFilter,
-                         weak_factory_.GetWeakPtr())),
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&FidoCableDiscovery::OnStartDiscoverySessionError,
-                         weak_factory_.GetWeakPtr())));
-
   for (const auto& data : discovery_data_) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&FidoCableDiscovery::StartAdvertisement,
@@ -198,12 +188,42 @@ void FidoCableDiscovery::OnAdvertisementRegistered(
     scoped_refptr<BluetoothAdvertisement> advertisement) {
   DVLOG(2) << "Advertisement registered.";
   advertisements_.emplace(client_eid, std::move(advertisement));
+  RecordAdvertisementResult(true /* is_success */);
 }
 
 void FidoCableDiscovery::OnAdvertisementRegisterError(
     BluetoothAdvertisement::ErrorCode error_code) {
   DLOG(ERROR) << "Failed to register advertisement: " << error_code;
-  NotifyDiscoveryStarted(false);
+  RecordAdvertisementResult(false /* is_success */);
+}
+
+void FidoCableDiscovery::RecordAdvertisementResult(bool is_success) {
+  is_success ? ++advertisement_success_counter_
+             : ++advertisement_failure_counter_;
+
+  // Wait until all advertisements are sent out.
+  if (advertisement_success_counter_ + advertisement_failure_counter_ !=
+      discovery_data_.size()) {
+    return;
+  }
+
+  // No advertisements succeeded, no point in starting scanning.
+  if (!advertisement_success_counter_) {
+    NotifyDiscoveryStarted(false);
+    return;
+  }
+
+  // At least one advertisement succeeded and all advertisement has been
+  // processed. Start scanning.
+  adapter()->StartDiscoverySessionWithFilter(
+      std::make_unique<BluetoothDiscoveryFilter>(
+          BluetoothTransport::BLUETOOTH_TRANSPORT_LE),
+      base::AdaptCallbackForRepeating(
+          base::BindOnce(&FidoCableDiscovery::OnStartDiscoverySessionWithFilter,
+                         weak_factory_.GetWeakPtr())),
+      base::AdaptCallbackForRepeating(
+          base::BindOnce(&FidoCableDiscovery::OnStartDiscoverySessionError,
+                         weak_factory_.GetWeakPtr())));
 }
 
 void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
