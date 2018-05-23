@@ -593,7 +593,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
   NSArray* collectionActions = [self collectionItems];
 
-  self.items = @[ tabActions, browserActions, collectionActions ];
+  self.items = @[ tabActions, collectionActions, browserActions ];
 }
 
 - (NSArray<TableViewItem*>*)itemsForNewTab {
