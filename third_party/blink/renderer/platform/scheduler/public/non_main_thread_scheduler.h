@@ -80,8 +80,6 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler,
   // definitions of the virtual function in question).
   //
   // virtual void Shutdown();
-  // virtual bool ShouldYieldForHighPriorityWork();
-  // virtual bool CanExceedIdleDeadlineIfRequired() const;
 
   scoped_refptr<WorkerTaskQueue> CreateTaskRunner();
 

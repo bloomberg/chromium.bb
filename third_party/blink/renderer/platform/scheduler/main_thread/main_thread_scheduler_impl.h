@@ -165,12 +165,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // This class implements those functions for both base classes.
   //
   // void Shutdown() override;
-  // bool ShouldYieldForHighPriorityWork() override;
-  // bool CanExceedIdleDeadlineIfRequied() override;
-  // void AddPendingNavigation(WebMainThreadScheduler::NavigatingFrameType)
-  //     override;
-  // void RemovePendingNavigation(WebMainThreadScheduler::NavigatingFrameType)
-  //     override;
   //
   // TODO(yutak): Reduce the overlaps and simplify.
 

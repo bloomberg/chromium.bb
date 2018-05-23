@@ -47,8 +47,6 @@ class FakeRendererScheduler : public WebMainThreadScheduler {
   void ResumeTimersForAndroidWebView() override;
 #endif
   bool IsHighPriorityWorkAnticipated() override;
-  bool CanExceedIdleDeadlineIfRequired() const override;
-  bool ShouldYieldForHighPriorityWork() override;
   void Shutdown() override;
   void SetFreezingWhenBackgroundedEnabled(bool enabled) override;
   void SetTopLevelBlameContext(

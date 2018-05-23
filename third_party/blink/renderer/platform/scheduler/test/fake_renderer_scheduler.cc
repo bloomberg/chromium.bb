@@ -91,14 +91,6 @@ void FakeRendererScheduler::PauseTimersForAndroidWebView() {}
 void FakeRendererScheduler::ResumeTimersForAndroidWebView() {}
 #endif
 
-bool FakeRendererScheduler::ShouldYieldForHighPriorityWork() {
-  return false;
-}
-
-bool FakeRendererScheduler::CanExceedIdleDeadlineIfRequired() const {
-  return false;
-}
-
 void FakeRendererScheduler::Shutdown() {}
 
 void FakeRendererScheduler::SetFreezingWhenBackgroundedEnabled(bool enabled) {}

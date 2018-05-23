@@ -27,23 +27,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
 
   virtual scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() = 0;
 
-  // Returns true if there is high priority work pending on the main thread
-  // and the caller should yield to let the scheduler service that work. Note
-  // that this is a stricter condition than |IsHighPriorityWorkAnticipated|,
-  // restricted to the case where real work is pending.
-  // Must be called from the thread this scheduler was created on.
-  virtual bool ShouldYieldForHighPriorityWork() = 0;
-
-  // Returns true if a currently running idle task could exceed its deadline
-  // without impacting user experience too much. This should only be used if
-  // there is a task which cannot be pre-empted and is likely to take longer
-  // than the largest expected idle task deadline. It should NOT be polled to
-  // check whether more work can be performed on the current idle task after
-  // its deadline has expired - post a new idle task for the continuation of the
-  // work in this case.
-  // Must be called from the thread this scheduler was created on.
-  virtual bool CanExceedIdleDeadlineIfRequired() const = 0;
-
   // Shuts down the scheduler by dropping any remaining pending work in the work
   // queues. After this call any work posted to the task runners will be
   // silently dropped.
