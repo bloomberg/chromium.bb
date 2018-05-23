@@ -43,6 +43,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gl/gl_enums.h"
 #include "ui/gl/trace_util.h"
 
 namespace cc {
@@ -84,8 +85,7 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     case media::PIXEL_FORMAT_NV12:
       DCHECK(target == GL_TEXTURE_EXTERNAL_OES || target == GL_TEXTURE_2D ||
              target == GL_TEXTURE_RECTANGLE_ARB)
-          << "Unsupported texture target " << std::hex << std::showbase
-          << target;
+          << "Unsupported target " << gl::GLEnums::GetStringEnum(target);
       // Single plane textures can be sampled as RGB.
       if (num_textures > 1)
         return VideoFrameResourceType::YUV;

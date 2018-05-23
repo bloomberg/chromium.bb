@@ -212,7 +212,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTextures(
   if (format != PIXEL_FORMAT_ARGB && format != PIXEL_FORMAT_XRGB &&
       format != PIXEL_FORMAT_RGB32 && format != PIXEL_FORMAT_UYVY &&
       format != PIXEL_FORMAT_NV12 && format != PIXEL_FORMAT_I420) {
-    LOG(DFATAL) << "Unsupported pixel format supported, got "
+    LOG(DFATAL) << "Unsupported pixel format: "
                 << VideoPixelFormatToString(format);
     return nullptr;
   }
