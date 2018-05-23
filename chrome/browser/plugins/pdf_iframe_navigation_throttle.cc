@@ -14,6 +14,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
+#include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "ppapi/buildflags/buildflags.h"
 
@@ -75,6 +76,16 @@ PDFIFrameNavigationThrottle::WillProcessResponse() {
   response_headers->GetMimeType(&mime_type);
   if (mime_type != kPDFMimeType)
     return content::NavigationThrottle::PROCEED;
+
+  // Following the same logic as navigational_loader_util, we MUST download
+  // responses marked as attachments rather than showing a placeholder.
+  std::string disposition;
+  if (response_headers->GetNormalizedHeader("content-disposition",
+                                            &disposition) &&
+      !disposition.empty() &&
+      net::HttpContentDisposition(disposition, std::string()).is_attachment()) {
+    return content::NavigationThrottle::PROCEED;
+  }
 
   ReportPDFLoadStatus(PDFLoadStatus::kLoadedIframePdfWithNoPdfViewer);
 

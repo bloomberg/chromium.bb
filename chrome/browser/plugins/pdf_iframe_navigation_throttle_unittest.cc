@@ -162,6 +162,32 @@ TEST_F(PDFIFrameNavigationThrottleTest, InterceptPDFOnly) {
             throttle->WillProcessResponse());
 }
 
+TEST_F(PDFIFrameNavigationThrottleTest, AllowPDFAttachments) {
+  // Setup
+  SetAlwaysOpenPdfExternallyForTests(true);
+
+  std::unique_ptr<content::NavigationHandle> handle =
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          GURL(kExampleURL), subframe());
+
+  // Verify that we PROCEED for PDF mime types with an attachment
+  // content-disposition.
+  std::string header =
+      "HTTP/1.1 200 OK\r\n"
+      "content-type: application/pdf\r\n"
+      "content-disposition: attachment\r\n";
+  handle->CallWillProcessResponseForTesting(
+      subframe(),
+      net::HttpUtil::AssembleRawHeaders(header.c_str(), header.size()));
+
+  std::unique_ptr<content::NavigationThrottle> throttle =
+      PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(handle.get());
+
+  ASSERT_NE(nullptr, throttle);
+  ASSERT_EQ(content::NavigationThrottle::PROCEED,
+            throttle->WillProcessResponse());
+}
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 TEST_F(PDFIFrameNavigationThrottleTest, CancelOnlyIfPDFViewerIsDisabled) {
   // Setup
