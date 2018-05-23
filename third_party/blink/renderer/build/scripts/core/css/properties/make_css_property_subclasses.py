@@ -97,7 +97,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
         return generate_property_cpp
 
     def calculate_apply_functions_to_declare(self, property_):
-        if property_['style_builder_template'] in ['background_layer', 'color', 'mask_layer']:
+        if property_['style_builder_template'] in ['background_layer', 'color', 'counter', 'mask_layer']:
             property_['should_implement_apply_functions_in_cpp'] = True
 
         property_['should_implement_apply_functions'] = (
@@ -147,8 +147,12 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
                 property_['style_builder_template_args'].get('modifier_type')
                 in ['Width', 'Slice', 'Outset']):
             yield "core/css/properties/style_building_utils.h"
-        if property_.get('style_builder_template') in ['background_layer', 'mask_layer', 'animation', 'transition']:
+        if property_.get('style_builder_template') in ['animation', 'background_layer', 'counter',
+                                                       'mask_layer', 'transition']:
             yield "core/css/css_value_list.h"
+        if property_.get('style_builder_template') in ['counter']:
+            yield "core/css/css_value_pair.h"
+            yield "core/css/css_custom_ident_value.h"
 
 
 if __name__ == '__main__':
