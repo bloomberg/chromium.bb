@@ -9,6 +9,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -62,6 +63,8 @@ PowerButtonMenuItemView::PowerButtonMenuItemView(
   title_->SetEnabledColor(kItemTitleColor);
   title_->SetText(title_text);
   AddChildView(title_);
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
+  GetViewAccessibility().OverrideName(title_->text());
 
   SetBorder(views::CreateEmptyBorder(kItemBorderThickness, kItemBorderThickness,
                                      kItemBorderThickness,
@@ -91,6 +94,8 @@ gfx::Size PowerButtonMenuItemView::CalculatePreferredSize() const {
 }
 
 void PowerButtonMenuItemView::OnFocus() {
+  parent()->SetFocusBehavior(FocusBehavior::NEVER);
+  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   SchedulePaint();
 }
 
