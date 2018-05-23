@@ -22,9 +22,9 @@ PASS video setParameters() check for codecs.sdpFmtpLine removed
 PASS video setParameters() check for encodings removed
 PASS video setParameters() check for encodings remove one
 PASS video setParameters() check for encodings add one
-PASS video setParameters() check for encodings.rid modification
+FAIL video setParameters() check for encodings.rid modification assert_unreached: Should have rejected: undefined Reached unreachable code
 PASS video setParameters() check for headerExtensions removed
-PASS video setParameters() check for headerExtensions created
+FAIL video setParameters() check for headerExtensions created assert_unreached: Should have rejected: undefined Reached unreachable code
 PASS video setParameters() check for headerExtensions remove one
 PASS video setParameters() check for headerExtensions add one
 PASS video setParameters() check for headerExtensions.uri modification
@@ -55,9 +55,9 @@ PASS audio setParameters() check for codecs.sdpFmtpLine removed
 PASS audio setParameters() check for encodings removed
 PASS audio setParameters() check for encodings remove one
 PASS audio setParameters() check for encodings add one
-PASS audio setParameters() check for encodings.rid modification
+FAIL audio setParameters() check for encodings.rid modification assert_unreached: Should have rejected: undefined Reached unreachable code
 PASS audio setParameters() check for headerExtensions removed
-PASS audio setParameters() check for headerExtensions created
+FAIL audio setParameters() check for headerExtensions created assert_unreached: Should have rejected: undefined Reached unreachable code
 PASS audio setParameters() check for headerExtensions remove one
 PASS audio setParameters() check for headerExtensions add one
 PASS audio setParameters() check for headerExtensions.uri modification
