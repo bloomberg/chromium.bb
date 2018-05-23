@@ -550,6 +550,8 @@ class PrivetRegisterTest : public PrivetHTTPTest {
   StrictMock<MockRegisterDelegate> register_delegate_;
 };
 
+INSTANTIATE_TEST_CASE_P(PrivetTests, PrivetRegisterTest, ValuesIn(kTestParams));
+
 TEST_P(PrivetRegisterTest, RegisterSuccessSimple) {
   register_operation_->Start();
 
