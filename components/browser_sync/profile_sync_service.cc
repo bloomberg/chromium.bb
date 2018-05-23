@@ -1370,7 +1370,7 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
         syncer::user_selectable_type::PROXY_TABS,
       };
 
-  static_assert(40 == syncer::MODEL_TYPE_COUNT,
+  static_assert(41 == syncer::MODEL_TYPE_COUNT,
                 "If adding a user selectable type, update "
                 "UserSelectableSyncType in user_selectable_sync_type.h and "
                 "histograms.xml.");

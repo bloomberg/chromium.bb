@@ -59,7 +59,7 @@ TEST_F(ProtoValueConversionsTest, ProtoChangeCheck) {
   // If this number changes, that means we added or removed a data
   // type.  Don't forget to add a unit test for {New
   // type}SpecificsToValue below.
-  EXPECT_EQ(40, MODEL_TYPE_COUNT);
+  EXPECT_EQ(41, MODEL_TYPE_COUNT);
 
   // We'd also like to check if we changed any field in our messages.
   // However, that's hard to do: sizeof could work, but it's
@@ -302,6 +302,10 @@ TEST_F(ProtoValueConversionsTest, ManagedUserWhitelistSpecificsToValue) {
   TestSpecificsToValue(ManagedUserWhitelistSpecificsToValue);
 }
 
+TEST_F(ProtoValueConversionsTest, MountainShareSpecificsToValue) {
+  TestSpecificsToValue(MountainShareSpecificsToValue);
+}
+
 TEST_F(ProtoValueConversionsTest, NigoriSpecificsToValue) {
   TestSpecificsToValue(NigoriSpecificsToValue);
 }
@@ -388,6 +392,7 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   SET_FIELD(managed_user_setting);
   SET_FIELD(managed_user_shared_setting);
   SET_FIELD(managed_user_whitelist);
+  SET_FIELD(mountain_share);
   SET_FIELD(nigori);
   SET_FIELD(password);
   SET_FIELD(preference);

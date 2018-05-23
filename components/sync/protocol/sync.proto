@@ -37,6 +37,7 @@ import "managed_user_setting_specifics.proto";
 import "managed_user_shared_setting_specifics.proto";
 import "managed_user_specifics.proto";
 import "managed_user_whitelist_specifics.proto";
+import "mountain_share_specifics.proto";
 import "nigori_specifics.proto";
 import "password_specifics.proto";
 import "preference_specifics.proto";
@@ -143,6 +144,7 @@ message EntitySpecifics {
   optional ReadingListSpecifics reading_list = 411028;
   optional UserEventSpecifics user_event = 455206;
   optional UserConsentSpecifics user_consent = 556014;
+  optional MountainShareSpecifics mountain_share = 545005;
 }
 
 message SyncEntity {

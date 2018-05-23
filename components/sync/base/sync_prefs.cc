@@ -361,6 +361,8 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
       return prefs::kSyncUserEvents;
     case PROXY_TABS:
       return prefs::kSyncTabs;
+    case MOUNTAIN_SHARES:
+      return prefs::kSyncMountainShares;
     case NIGORI:
     case EXPERIMENTS:
     case MODEL_TYPE_COUNT:

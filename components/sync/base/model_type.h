@@ -131,6 +131,8 @@ enum ModelType {
   READING_LIST,
   // Commit only user events.
   USER_EVENTS,
+  // Shares in project Mountain.
+  MOUNTAIN_SHARES,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered
@@ -218,7 +220,7 @@ constexpr ModelTypeSet ProtocolTypes() {
       SUPERVISED_USER_SETTINGS, DEPRECATED_SUPERVISED_USERS,
       DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, ARTICLES, APP_LIST,
       WIFI_CREDENTIALS, SUPERVISED_USER_WHITELISTS, ARC_PACKAGE, PRINTERS,
-      READING_LIST, USER_EVENTS, NIGORI, EXPERIMENTS);
+      READING_LIST, USER_EVENTS, NIGORI, EXPERIMENTS, MOUNTAIN_SHARES);
 }
 
 // These are the normal user-controlled types. This is to distinguish from

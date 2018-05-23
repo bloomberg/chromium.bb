@@ -148,4 +148,7 @@ message NigoriSpecifics {
 
   // Boolean corresponding to whether reading list items should be encrypted.
   optional bool encrypt_reading_list = 43;
+
+  // Boolean corresponding to whether mountain shares should be encrypted.
+  optional bool encrypt_mountain_shares = 44;
 }
