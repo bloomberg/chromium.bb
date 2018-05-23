@@ -40,19 +40,11 @@ bool g_deterministic;
 // A positive value if profiling is running, otherwise it's zero.
 Atomic32 g_running;
 
-// Number of lock-free safe (not causing rehashing) accesses to samples_ map
-// currently being performed.
-Atomic32 g_operations_in_flight;
-
-// Controls if new incoming lock-free accesses are allowed.
-// When set to true, threads should not enter lock-free paths.
-Atomic32 g_fast_path_is_closed;
+// Pointer to the current |SamplingHeapProfiler::SamplesMap|.
+AtomicWord g_current_samples_map;
 
 // Sampling interval parameter, the mean value for intervals between samples.
 AtomicWord g_sampling_interval = kDefaultSamplingIntervalBytes;
-
-// Last generated sample ordinal number.
-uint32_t g_last_sample_ordinal = 0;
 
 void (*g_hooks_install_callback)();
 Atomic32 g_hooks_installed;
@@ -182,6 +174,10 @@ SamplingHeapProfiler* SamplingHeapProfiler::instance_;
 
 SamplingHeapProfiler::SamplingHeapProfiler() {
   instance_ = this;
+  auto samples_map = std::make_unique<SamplesMap>(64);
+  base::subtle::NoBarrier_Store(
+      &g_current_samples_map, reinterpret_cast<AtomicWord>(samples_map.get()));
+  sample_maps_.push(std::move(samples_map));
 }
 
 // static
@@ -235,7 +231,7 @@ void SamplingHeapProfiler::SetHooksInstallCallback(
 uint32_t SamplingHeapProfiler::Start() {
   InstallAllocatorHooksOnce();
   base::subtle::Barrier_AtomicIncrement(&g_running, 1);
-  return g_last_sample_ordinal;
+  return last_sample_ordinal_;
 }
 
 void SamplingHeapProfiler::Stop() {
@@ -333,44 +329,19 @@ void SamplingHeapProfiler::DoRecordAlloc(size_t total_allocated,
   entered_.Set(true);
   {
     base::AutoLock lock(mutex_);
-
-    Sample sample(size, total_allocated, ++g_last_sample_ordinal);
+    Sample sample(size, total_allocated, ++last_sample_ordinal_);
     RecordStackTrace(&sample, skip_frames);
-
-    if (MayRehashOnInsert()) {
-      // Close the fast path as inserting an element into samples_ may cause
-      // rehashing that invalidates iterators affecting all the concurrent
-      // readers.
-      base::subtle::Release_Store(&g_fast_path_is_closed, 1);
-      // Wait until all current readers leave.
-      while (base::subtle::Acquire_Load(&g_operations_in_flight)) {
-        while (base::subtle::NoBarrier_Load(&g_operations_in_flight)) {
-        }
-      }
-      samples_.emplace(address, std::move(sample));
-      // Open the fast path.
-      base::subtle::Release_Store(&g_fast_path_is_closed, 0);
-    } else {
-      samples_.emplace(address, std::move(sample));
-    }
-
     for (auto* observer : observers_)
       observer->SampleAdded(sample.ordinal, size, total_allocated);
+    EnsureNoRehashingMap().emplace(address, std::move(sample));
   }
-
   entered_.Set(false);
 }
 
 // static
 void SamplingHeapProfiler::RecordFree(void* address) {
-  bool maybe_sampled = true;  // Pessimistically assume allocation was sampled.
-  base::subtle::Barrier_AtomicIncrement(&g_operations_in_flight, 1);
-  if (LIKELY(!base::subtle::NoBarrier_Load(&g_fast_path_is_closed))) {
-    maybe_sampled =
-        instance_->samples_.find(address) != instance_->samples_.end();
-  }
-  base::subtle::Barrier_AtomicIncrement(&g_operations_in_flight, -1);
-  if (maybe_sampled)
+  const SamplesMap& samples = SamplingHeapProfiler::samples();
+  if (UNLIKELY(samples.find(address) != samples.end()))
     instance_->DoRecordFree(address);
 }
 
@@ -382,21 +353,43 @@ void SamplingHeapProfiler::DoRecordFree(void* address) {
   entered_.Set(true);
   {
     base::AutoLock lock(mutex_);
-    auto it = samples_.find(address);
-    if (it != samples_.end()) {
-      for (auto* observer : observers_)
-        observer->SampleRemoved(it->second.ordinal);
-      samples_.erase(it);
-    }
+    SamplesMap& samples = this->samples();
+    auto it = samples.find(address);
+    CHECK(it != samples.end());
+    for (auto* observer : observers_)
+      observer->SampleRemoved(it->second.ordinal);
+    samples.erase(it);
   }
   entered_.Set(false);
 }
 
-bool SamplingHeapProfiler::MayRehashOnInsert() {
+SamplingHeapProfiler::SamplesMap& SamplingHeapProfiler::EnsureNoRehashingMap() {
+  // The function makes sure we never rehash the current map in place.
+  // Instead if it comes close to the rehashing boundary, we allocate a twice
+  // larger map, copy the samples into it, and atomically switch new readers
+  // to use the new map.
+  // We still have to keep all the old maps alive to resolve the theoretical
+  // race with readers in |RecordFree| that have already obtained the map,
+  // but haven't yet managed to access it.
+  SamplesMap& samples = this->samples();
   size_t max_items_before_rehash =
-      std::floor(samples_.bucket_count() * samples_.max_load_factor());
+      static_cast<size_t>(samples.bucket_count() * samples.max_load_factor());
   // Conservatively use 2 instead of 1 to workaround potential rounding errors.
-  return samples_.size() + 2 >= max_items_before_rehash;
+  bool may_rehash_on_insert = samples.size() + 2 >= max_items_before_rehash;
+  if (!may_rehash_on_insert)
+    return samples;
+  auto new_map = std::make_unique<SamplesMap>(samples.begin(), samples.end(),
+                                              samples.bucket_count() * 2);
+  base::subtle::Release_Store(&g_current_samples_map,
+                              reinterpret_cast<AtomicWord>(new_map.get()));
+  sample_maps_.push(std::move(new_map));
+  return this->samples();
+}
+
+// static
+SamplingHeapProfiler::SamplesMap& SamplingHeapProfiler::samples() {
+  return *reinterpret_cast<SamplesMap*>(
+      base::subtle::NoBarrier_Load(&g_current_samples_map));
 }
 
 // static
@@ -439,7 +432,7 @@ std::vector<SamplingHeapProfiler::Sample> SamplingHeapProfiler::GetSamples(
   std::vector<Sample> samples;
   {
     base::AutoLock lock(mutex_);
-    for (auto& it : samples_) {
+    for (auto& it : this->samples()) {
       Sample& sample = it.second;
       if (sample.ordinal > profile_id)
         samples.push_back(sample);

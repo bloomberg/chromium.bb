@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_SAMPLING_HEAP_PROFILER_SAMPLING_HEAP_PROFILER_H
-#define BASE_SAMPLING_HEAP_PROFILER_SAMPLING_HEAP_PROFILER_H
+#ifndef BASE_SAMPLING_HEAP_PROFILER_SAMPLING_HEAP_PROFILER_H_
+#define BASE_SAMPLING_HEAP_PROFILER_SAMPLING_HEAP_PROFILER_H_
 
+#include <memory>
+#include <stack>
 #include <unordered_map>
 #include <vector>
 
@@ -79,6 +81,8 @@ class BASE_EXPORT SamplingHeapProfiler {
   static SamplingHeapProfiler* GetInstance();
 
  private:
+  using SamplesMap = std::unordered_map<void*, Sample>;
+
   SamplingHeapProfiler();
   ~SamplingHeapProfiler() = delete;
 
@@ -92,12 +96,14 @@ class BASE_EXPORT SamplingHeapProfiler {
                      uint32_t skip_frames);
   void DoRecordFree(void* address);
   void RecordStackTrace(Sample*, uint32_t skip_frames);
-  bool MayRehashOnInsert();
+  SamplesMap& EnsureNoRehashingMap();
+  static SamplesMap& samples();
 
   base::ThreadLocalBoolean entered_;
   base::Lock mutex_;
-  std::unordered_map<void*, Sample> samples_;
+  std::stack<std::unique_ptr<SamplesMap>> sample_maps_;
   std::vector<SamplesObserver*> observers_;
+  uint32_t last_sample_ordinal_ = 0;
 
   static SamplingHeapProfiler* instance_;
 
@@ -108,4 +114,4 @@ class BASE_EXPORT SamplingHeapProfiler {
 
 }  // namespace base
 
-#endif  // BASE_SAMPLING_HEAP_PROFILER_SAMPLING_HEAP_PROFILER_H
+#endif  // BASE_SAMPLING_HEAP_PROFILER_SAMPLING_HEAP_PROFILER_H_
