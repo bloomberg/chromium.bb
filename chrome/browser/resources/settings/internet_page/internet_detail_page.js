@@ -1085,8 +1085,6 @@ Polymer({
       // network.
       return false;
     }
-    if (networkProperties.Type == CrOnc.Type.VPN)
-      return false;
     if (networkProperties.Type == CrOnc.Type.CELLULAR)
       return true;
     return this.isRememberedOrConnected_(networkProperties);

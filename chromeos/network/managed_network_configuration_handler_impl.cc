@@ -873,42 +873,41 @@ void ManagedNetworkConfigurationHandlerImpl::GetDeviceStateProperties(
   if (!network->IsConnectedState())
     return;  // No (non saved) IP Configs for non connected networks.
 
-  // Get the IPConfig properties from the device and store them in "IPConfigs"
-  // (plural) in the properties dictionary. (Note: Shill only provides a single
-  // "IPConfig" property for a network service, but a consumer of this API may
-  // want information about all ipv4 and ipv6 IPConfig properties.
   const DeviceState* device_state =
-      network_state_handler_->GetDeviceState(network->device_path());
-  if (!device_state) {
-    NET_LOG(ERROR) << "GetDeviceStateProperties: no device: "
-                   << network->device_path() << " For: " << service_path;
-    return;
-  }
+      network->device_path().empty()
+          ? nullptr
+          : network_state_handler_->GetDeviceState(network->device_path());
 
   // Get the hardware MAC address from the DeviceState.
-  if (!device_state->mac_address().empty()) {
+  if (device_state && !device_state->mac_address().empty()) {
     properties->SetKey(shill::kAddressProperty,
                        base::Value(device_state->mac_address()));
   }
 
-  // Build a list of IPConfigs.
+  // Get the IPConfig properties from the device and store them in "IPConfigs"
+  // (plural) in the properties dictionary. (Note: Shill only provides a single
+  // "IPConfig" property for a network service, but a consumer of this API may
+  // want information about all ipv4 and ipv6 IPConfig properties.
   auto ip_configs = std::make_unique<base::ListValue>();
 
-  if (device_state->ip_configs().empty()) {
-    // Shill may not provide IPConfigs for external Cellular devices
-    // (dongles), so build a dictionary of ipv4 properties from cached
-    // NetworkState properties (crbug.com/739314).
+  if (!device_state || device_state->ip_configs().empty()) {
+    // Shill may not provide IPConfigs for external Cellular devices/dongles
+    // (https://crbug.com/739314) or VPNs, so build a dictionary of ipv4
+    // properties from cached NetworkState properties .
     NET_LOG(DEBUG)
         << "GetDeviceStateProperties: Setting IPv4 properties from network: "
         << service_path;
-    ip_configs->GetList().push_back(network->ipv4_config().Clone());
+    if (!network->ipv4_config().empty())
+      ip_configs->GetList().push_back(network->ipv4_config().Clone());
   } else {
     // Convert the DeviceState IPConfigs dictionary to a ListValue.
     for (const auto iter : device_state->ip_configs().DictItems())
       ip_configs->GetList().push_back(iter.second.Clone());
   }
-  properties->SetWithoutPathExpansion(shill::kIPConfigsProperty,
-                                      std::move(ip_configs));
+  if (!ip_configs->GetList().empty()) {
+    properties->SetWithoutPathExpansion(shill::kIPConfigsProperty,
+                                        std::move(ip_configs));
+  }
 }
 
 void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
@@ -936,9 +935,8 @@ void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
   std::string type;
   shill_properties_copy->GetStringWithoutPathExpansion(shill::kTypeProperty,
                                                        &type);
-  // Add associated DeviceState properties for non-VPN networks.
-  if (type != shill::kTypeVPN)
-    GetDeviceStateProperties(service_path, shill_properties_copy.get());
+  // Add any associated DeviceState properties.
+  GetDeviceStateProperties(service_path, shill_properties_copy.get());
 
   // Only request additional Device properties for Cellular networks with a
   // valid device.
