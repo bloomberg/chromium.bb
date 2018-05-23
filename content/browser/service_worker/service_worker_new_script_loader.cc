@@ -39,7 +39,6 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
     : request_url_(original_request.url),
       resource_type_(static_cast<ResourceType>(original_request.resource_type)),
-      resource_request_(new network::ResourceRequest(original_request)),
       version_(version),
       network_client_binding_(this),
       network_watcher_(FROM_HERE,
@@ -48,6 +47,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
       loader_factory_(std::move(loader_factory)),
       client_(std::move(client)),
       weak_factory_(this) {
+  network::ResourceRequest resource_request(original_request);
+
   // ServiceWorkerNewScriptLoader is used for fetching the service worker main
   // script (RESOURCE_TYPE_SERVICE_WORKER) during worker startup or
   // importScripts() (RESOURCE_TYPE_SCRIPT).
@@ -88,7 +89,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
 
   if (ServiceWorkerUtils::ShouldBypassCacheDueToUpdateViaCache(
           is_main_script, registration->update_via_cache()))
-    resource_request_->load_flags |= net::LOAD_BYPASS_CACHE;
+    resource_request.load_flags |= net::LOAD_BYPASS_CACHE;
 
   // Create response readers only when we have to do the byte-for-byte check.
   std::unique_ptr<ServiceWorkerResponseReader> compare_reader;
@@ -106,15 +107,15 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
                                                      cache_resource_id);
   AdvanceState(State::kStarted);
 
-  // Disable MIME sniffing sniffing. The spec requires the header list to have
-  // a JavaScript MIME type. Therefore, no sniffing is needed.
+  // Disable MIME sniffing. The spec requires the header list to have a
+  // JavaScript MIME type. Therefore, no sniffing is needed.
   options &= ~network::mojom::kURLLoadOptionSniffMimeType;
 
   network::mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
   loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
-      *resource_request_.get(), std::move(network_client), traffic_annotation);
+      resource_request, std::move(network_client), traffic_annotation);
 }
 
 ServiceWorkerNewScriptLoader::~ServiceWorkerNewScriptLoader() = default;

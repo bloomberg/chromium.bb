@@ -136,8 +136,6 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
   // RESOURCE_TYPE_SCRIPT for an imported script.
   const ResourceType resource_type_;
 
-  std::unique_ptr<network::ResourceRequest> resource_request_;
-
   scoped_refptr<ServiceWorkerVersion> version_;
 
   std::unique_ptr<ServiceWorkerCacheWriter> cache_writer_;
