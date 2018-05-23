@@ -5,31 +5,48 @@
 #ifndef CHROMECAST_BROWSER_CAST_NETWORK_DELEGATE_H_
 #define CHROMECAST_BROWSER_CAST_NETWORK_DELEGATE_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "net/base/network_delegate_impl.h"
 
 namespace chromecast {
+
+class CastNetworkRequestInterceptor;
+
 namespace shell {
 
 class CastNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   static std::unique_ptr<CastNetworkDelegate> Create();
 
-  CastNetworkDelegate();
+  explicit CastNetworkDelegate(std::unique_ptr<CastNetworkRequestInterceptor>
+                                   network_request_interceptor);
   ~CastNetworkDelegate() override;
 
-  virtual void Initialize() = 0;
+  void Initialize();
 
-  virtual bool IsWhitelisted(const GURL& gurl,
-                             const std::string& session_id,
-                             int render_process_id,
-                             bool for_device_auth) const = 0;
+  bool IsWhitelisted(const GURL& gurl,
+                     const std::string& session_id,
+                     int render_process_id,
+                     bool for_device_auth) const;
 
  private:
   // net::NetworkDelegate implementation:
   bool OnCanAccessFile(const net::URLRequest& request,
                        const base::FilePath& original_path,
                        const base::FilePath& absolute_path) const override;
+  int OnBeforeURLRequest(net::URLRequest* request,
+                         const net::CompletionCallback& callback,
+                         GURL* new_url) override;
+  int OnBeforeStartTransaction(net::URLRequest* request,
+                               const net::CompletionCallback& callback,
+                               net::HttpRequestHeaders* headers) override;
+  void OnURLRequestDestroyed(net::URLRequest* request) override;
+
+  const std::unique_ptr<CastNetworkRequestInterceptor>
+      network_request_interceptor_;
 
   DISALLOW_COPY_AND_ASSIGN(CastNetworkDelegate);
 };
