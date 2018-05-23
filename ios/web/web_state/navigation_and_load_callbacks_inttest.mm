@@ -1262,7 +1262,8 @@ TEST_F(NavigationAndLoadCallbacksTest, DownloadNavigation) {
 }
 
 // Tests failed load after the navigation is sucessfully finished.
-TEST_F(NavigationAndLoadCallbacksTest, FailedLoad) {
+// TODO(crbug.com/845879): test is flaky (probably since crrev.com/1065632).
+TEST_F(NavigationAndLoadCallbacksTest, FLAKY_FailedLoad) {
   GURL url = test_server_->GetURL("/exabyte_response");
 
   NavigationContext* context = nullptr;
