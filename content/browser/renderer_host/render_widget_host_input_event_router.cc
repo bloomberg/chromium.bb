@@ -372,7 +372,7 @@ void RenderWidgetHostInputEventRouter::DispatchMouseEvent(
   // notify the CursorManager that it might need to change the cursor.
   if ((event.GetType() == blink::WebInputEvent::kMouseLeave ||
        event.GetType() == blink::WebInputEvent::kMouseMove) &&
-      target != last_mouse_move_target_) {
+      target != last_mouse_move_target_ && !root_view->IsMouseLocked()) {
     SendMouseEnterOrLeaveEvents(mouse_event, target, root_view);
     if (root_view->GetCursorManager())
       root_view->GetCursorManager()->UpdateViewUnderCursor(target);
