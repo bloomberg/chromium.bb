@@ -1547,6 +1547,11 @@ class CORE_EXPORT Document : public ContainerNode,
   // the LocalFrameClient.
   void ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy);
 
+  // Returns true if use of |method_name| for markup insertion is allowed by
+  // feature policy; otherwise returns false and throws a DOM exception.
+  bool AllowedToUseDynamicMarkUpInsertion(const char* method_name,
+                                          ExceptionState&);
+
   void SetFreezingInProgress(bool is_freezing_in_progress) {
     is_freezing_in_progress_ = is_freezing_in_progress;
   };
