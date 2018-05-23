@@ -20,6 +20,7 @@
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/x509_certificate.h"
@@ -331,7 +332,8 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
   if (result != net::OK) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy_.get(), "SignedExchangeHandler::OnCertVerifyComplete",
-        base::StringPrintf("Certificate verification error: %d", result));
+        base::StringPrintf("Certificate verification error: %s",
+                           net::ErrorToShortString(result).c_str()));
     RunErrorCallback(static_cast<net::Error>(result));
     return;
   }
