@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/picture_in_picture/html_video_element_picture_in_picture.h"
 
+#include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -79,6 +80,14 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(kNotAllowedError, kUserGestureRequired));
+  }
+
+  // TODO(crbug.com/806249): Remove this when MediaStreams are supported.
+  if (element.GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(kNotSupportedError,
+                             "MediaStreams are not supported yet."));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
