@@ -47,6 +47,9 @@ class FakeArcSupport : public extensions::NativeMessageHost::Client {
   // Emulates clicking Agree button on the fake terms of service page.
   void ClickAgreeButton();
 
+  // Emulates clicking Cancel button on the fake terms of service page.
+  void ClickCancelButton();
+
   // Emulates clicking Cancel button on the fake Active Directory auth page.
   void ClickAdAuthCancelButton();
 

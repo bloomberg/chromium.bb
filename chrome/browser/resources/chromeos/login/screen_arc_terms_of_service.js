@@ -336,7 +336,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     onSkip: function() {
       this.enableButtons_(false);
 
-      chrome.send('arcTermsOfServiceSkip');
+      chrome.send('arcTermsOfServiceSkip', [this.tosContent_]);
     },
 
     /**

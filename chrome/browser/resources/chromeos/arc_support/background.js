@@ -479,6 +479,19 @@ class TermsOfServicePage {
     return undefined;
   }
 
+  /** Returns user choices and page configuration for processing. */
+  getPageResults_() {
+    return {
+      tosContent: this.tosContent_,
+      tosShown: this.tosShown_,
+      isMetricsEnabled: this.metricsCheckbox_.isChecked(),
+      isBackupRestoreEnabled: this.backupRestoreCheckbox_.isChecked(),
+      isBackupRestoreManaged: this.backupRestoreCheckbox_.isManaged(),
+      isLocationServiceEnabled: this.locationServiceCheckbox_.isChecked(),
+      isLocationServiceManaged: this.locationServiceCheckbox_.isManaged()
+    };
+  }
+
   /** Called when the terms-view starts to be loaded. */
   onTermsViewLoadStarted_() {
     // Note: Reloading can be triggered by user action. E.g., user may select
@@ -555,19 +568,12 @@ class TermsOfServicePage {
 
   /** Called when "AGREE" button is clicked. */
   onAgree() {
-    sendNativeMessage('onAgreed', {
-      tosContent: this.tosContent_,
-      tosShown: this.tosShown_,
-      isMetricsEnabled: this.metricsCheckbox_.isChecked(),
-      isBackupRestoreEnabled: this.backupRestoreCheckbox_.isChecked(),
-      isBackupRestoreManaged: this.backupRestoreCheckbox_.isManaged(),
-      isLocationServiceEnabled: this.locationServiceCheckbox_.isChecked(),
-      isLocationServiceManaged: this.locationServiceCheckbox_.isManaged()
-    });
+    sendNativeMessage('onAgreed', this.getPageResults_());
   }
 
   /** Called when "CANCEL" button is clicked. */
   onCancel_() {
+    sendNativeMessage('onCanceled', this.getPageResults_());
     closeWindow();
   }
 

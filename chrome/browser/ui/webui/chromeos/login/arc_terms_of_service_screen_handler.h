@@ -66,7 +66,7 @@ class ArcTermsOfServiceScreenHandler
   void Initialize() override;
 
   void DoShow();
-  void HandleSkip();
+  void HandleSkip(const std::string& tos_content);
   void HandleAccept(bool enable_backup_restore,
                     bool enable_location_services,
                     const std::string& tos_content);
@@ -75,6 +75,16 @@ class ArcTermsOfServiceScreenHandler
   void MaybeLoadPlayStoreToS(bool ignore_network_state);
 
   void StartNetworkAndTimeZoneObserving();
+
+  // Handles the recording of consent given or not given after the user chooses
+  // to skip or accept.
+  void RecordConsents(const std::string& tos_content,
+                      bool record_tos_content,
+                      bool tos_accepted,
+                      bool record_backup_consent,
+                      bool backup_accepted,
+                      bool record_location_consent,
+                      bool location_accepted);
 
   // Sends if Arc enable status is manged to screen.
   void SendArcManagedStatus(Profile* profile);
