@@ -36,7 +36,6 @@ class MockUserManager : public ChromeUserManager {
   MOCK_CONST_METHOD0(GetLRULoggedInUsers, const user_manager::UserList&(void));
   MOCK_METHOD4(UserLoggedIn,
                void(const AccountId&, const std::string&, bool, bool));
-  MOCK_METHOD1(SwitchActiveUser, void(const AccountId& account_id));
   MOCK_METHOD0(SessionStarted, void(void));
   MOCK_METHOD2(RemoveUser,
                void(const AccountId&, user_manager::RemoveUserDelegate*));
@@ -61,6 +60,7 @@ class MockUserManager : public ChromeUserManager {
   MOCK_CONST_METHOD0(CanCurrentUserLock, bool(void));
   MOCK_CONST_METHOD0(IsUserLoggedIn, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsUserWithGaiaAccount, bool(void));
+  MOCK_CONST_METHOD0(IsLoggedInAsChildUser, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsPublicAccount, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsGuest, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsSupervisedUser, bool(void));
@@ -172,8 +172,10 @@ class MockUserManager : public ChromeUserManager {
   void AddUser(const AccountId& account_id);
 
   // The same as AddUser, but allows specifying affiliation with the domain,
-  // that owns the device.
-  void AddUserWithAffiliation(const AccountId& account_id, bool is_affiliated);
+  // that owns the device and user type.
+  void AddUserWithAffiliationAndType(const AccountId& account_id,
+                                     bool is_affiliated,
+                                     user_manager::UserType user_type);
 
   // Clears the user list and the active user. Users previously created by this
   // MockUserManager become invalid.

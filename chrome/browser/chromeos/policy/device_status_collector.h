@@ -100,7 +100,7 @@ class DeviceStatusCollector {
                         const CPUStatisticsFetcher& cpu_statistics_fetcher,
                         const CPUTempFetcher& cpu_temp_fetcher,
                         const AndroidStatusFetcher& android_status_fetcher,
-                        bool is_enterprise_device);
+                        bool is_enterprise_reporting);
   virtual ~DeviceStatusCollector();
 
   // Gathers device and session status information and calls the passed response
@@ -212,6 +212,11 @@ class DeviceStatusCollector {
   // Callback invoked when reporting users pref is changed.
   void ReportingUsersChanged();
 
+  // Returns user's email if it should be included in the activity reports or
+  // empty string otherwise. Primary user is used as unique identifier of a
+  // single session, even for multi-user sessions.
+  std::string GetUserForActivityReporting() const;
+
   // Called when |pref_service_| is initialized.
   void OnPrefServiceInitialized(bool succeeded);
 
@@ -281,8 +286,8 @@ class DeviceStatusCollector {
   bool report_os_update_status_ = false;
   bool report_running_kiosk_app_ = false;
 
-  // Whether device is managed by enterprise or owned by consumer.
-  bool is_enterprise_device_ = false;
+  // Whether reporting is for enterprise or consumer.
+  bool is_enterprise_reporting_ = false;
 
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       version_info_subscription_;

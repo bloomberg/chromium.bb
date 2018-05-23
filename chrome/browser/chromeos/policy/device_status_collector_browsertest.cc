@@ -53,10 +53,12 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/fake_statistics_provider.h"
+#include "components/account_id/account_id.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -432,9 +434,11 @@ class DeviceStatusCollectorTest : public testing::Test {
     run_loop_->Quit();
   }
 
-  void MockRegularUserWithAffiliation(const AccountId& account_id,
+  void MockUserWithTypeAndAffiliation(const AccountId& account_id,
+                                      user_manager::UserType user_type,
                                       bool is_affiliated) {
-    user_manager_->AddUserWithAffiliation(account_id, is_affiliated);
+    user_manager_->AddUserWithAffiliationAndType(account_id, is_affiliated,
+                                                 user_type);
     // The user just added will be the active user because there's only one
     // user.
     user_manager::User* user = user_manager_->GetActiveUser();
@@ -449,6 +453,19 @@ class DeviceStatusCollectorTest : public testing::Test {
 
     EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
         .WillRepeatedly(Return(false));
+  }
+
+  void MockRegularUserWithAffiliation(const AccountId& account_id,
+                                      bool is_affiliated) {
+    MockUserWithTypeAndAffiliation(account_id, user_manager::USER_TYPE_REGULAR,
+                                   is_affiliated);
+  }
+
+  void MockChildUser(const AccountId& account_id) {
+    MockUserWithTypeAndAffiliation(account_id, user_manager::USER_TYPE_CHILD,
+                                   false);
+    EXPECT_CALL(*user_manager_, IsLoggedInAsChildUser())
+        .WillRepeatedly(Return(true));
   }
 
   void MockRunningKioskApp(const DeviceLocalAccount& account, bool arc_kiosk) {
@@ -895,7 +912,8 @@ TEST_F(DeviceStatusCollectorTest, ActivityWithAffiliatedUser) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, true);
   const AccountId account_id0(AccountId::FromUserEmail("user0@managed.com"));
-  user_manager_->AddUserWithAffiliation(account_id0, true);
+  user_manager_->AddUserWithAffiliationAndType(account_id0, true,
+                                               user_manager::USER_TYPE_REGULAR);
 
   status_collector_->Simulate(test_states, 3);
   GetStatus();
@@ -918,7 +936,8 @@ TEST_F(DeviceStatusCollectorTest, ActivityWithNotAffiliatedUser) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, true);
   const AccountId account_id0(AccountId::FromUserEmail("user0@managed.com"));
-  user_manager_->AddUserWithAffiliation(account_id0, false);
+  user_manager_->AddUserWithAffiliationAndType(account_id0, false,
+                                               user_manager::USER_TYPE_REGULAR);
 
   status_collector_->Simulate(test_states, 3);
   GetStatus();
@@ -1016,12 +1035,18 @@ TEST_F(DeviceStatusCollectorTest, ReportUsers) {
   const AccountId account_id5(AccountId::FromUserEmail("user5@managed.com"));
 
   user_manager_->CreatePublicAccountUser(public_account_id);
-  user_manager_->AddUserWithAffiliation(account_id0, true);
-  user_manager_->AddUserWithAffiliation(account_id1, true);
-  user_manager_->AddUserWithAffiliation(account_id2, true);
-  user_manager_->AddUserWithAffiliation(account_id3, false);
-  user_manager_->AddUserWithAffiliation(account_id4, true);
-  user_manager_->AddUserWithAffiliation(account_id5, true);
+  user_manager_->AddUserWithAffiliationAndType(account_id0, true,
+                                               user_manager::USER_TYPE_REGULAR);
+  user_manager_->AddUserWithAffiliationAndType(account_id1, true,
+                                               user_manager::USER_TYPE_REGULAR);
+  user_manager_->AddUserWithAffiliationAndType(account_id2, true,
+                                               user_manager::USER_TYPE_REGULAR);
+  user_manager_->AddUserWithAffiliationAndType(account_id3, false,
+                                               user_manager::USER_TYPE_REGULAR);
+  user_manager_->AddUserWithAffiliationAndType(account_id4, true,
+                                               user_manager::USER_TYPE_REGULAR);
+  user_manager_->AddUserWithAffiliationAndType(account_id5, true,
+                                               user_manager::USER_TYPE_REGULAR);
 
   // Verify that users are reported by default.
   GetStatus();
@@ -1846,7 +1871,7 @@ class ConsumerDeviceStatusCollectorTest : public DeviceStatusCollectorTest {
  public:
   ConsumerDeviceStatusCollectorTest() {
     user_account_id_ = AccountId::FromUserEmail("user0@gmail.com");
-    MockRegularUserWithAffiliation(user_account_id_, true);
+    MockChildUser(user_account_id_);
   }
 
   ~ConsumerDeviceStatusCollectorTest() override = default;
@@ -1861,7 +1886,7 @@ class ConsumerDeviceStatusCollectorTest : public DeviceStatusCollectorTest {
     status_collector_ = std::make_unique<TestingDeviceStatusCollector>(
         &profile_pref_service_, &fake_statistics_provider_, volume_info,
         cpu_stats, cpu_temp_fetcher, android_status_fetcher,
-        false /* is_enterprise_device */);
+        false /* is_enterprise_reporting */);
   }
 
   AccountId user_account_id_;
@@ -1886,9 +1911,11 @@ TEST_F(ConsumerDeviceStatusCollectorTest, ReportingActivityTimes) {
 
   GetStatus();
 
-  EXPECT_EQ(1, device_status_.active_period_size());
+  ASSERT_EQ(1, device_status_.active_period_size());
   EXPECT_EQ(3 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
+  EXPECT_EQ(user_account_id_.GetUserEmail(),
+            device_status_.active_period(0).user_email());
 }
 
 TEST_F(ConsumerDeviceStatusCollectorTest, ActivityKeptInPref) {
@@ -1997,8 +2024,10 @@ TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingVolumeInfo) {
 TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingUsers) {
   const AccountId account_id0(AccountId::FromUserEmail("user0@gmail.com"));
   const AccountId account_id1(AccountId::FromUserEmail("user1@gmail.com"));
-  user_manager_->AddUserWithAffiliation(account_id0, true);
-  user_manager_->AddUserWithAffiliation(account_id1, true);
+  user_manager_->AddUserWithAffiliationAndType(account_id0, true,
+                                               user_manager::USER_TYPE_REGULAR);
+  user_manager_->AddUserWithAffiliationAndType(account_id1, true,
+                                               user_manager::USER_TYPE_CHILD);
 
   GetStatus();
 

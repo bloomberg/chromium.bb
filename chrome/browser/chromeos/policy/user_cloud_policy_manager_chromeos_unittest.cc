@@ -33,6 +33,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
+#include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
@@ -83,6 +84,9 @@ using PolicyEnforcement = UserCloudPolicyManagerChromeOS::PolicyEnforcement;
 const char kAccountId[] = "user@example.com";
 const char kTestGaiaId[] = "12345";
 
+const char kChildAccountId[] = "child@example.com";
+const char kChildTestGaiaId[] = "54321";
+
 const char kOAuthCodeCookie[] = "oauth_code=1234; Secure; HttpOnly";
 
 const char kOAuth2TokenPairData[] =
@@ -125,6 +129,17 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         signin_profile_(NULL),
         user_manager_(new chromeos::FakeChromeUserManager()),
         user_manager_enabler_(base::WrapUnique(user_manager_)) {}
+
+  void AddAndSwitchToChildAccountWithProfile() {
+    const AccountId child_account_id =
+        AccountId::FromUserEmailGaiaId(kChildAccountId, kChildTestGaiaId);
+    TestingProfile* profile =
+        profile_manager_->CreateTestingProfile(child_account_id.GetUserEmail());
+    user_manager_->AddUserWithAffiliationAndTypeAndProfile(
+        child_account_id, false, user_manager::UserType::USER_TYPE_CHILD,
+        profile);
+    user_manager_->SwitchActiveUser(child_account_id);
+  }
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
@@ -179,9 +194,14 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
 
     EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _))
         .Times(AnyNumber());
+
     AccountId account_id =
         AccountId::FromUserEmailGaiaId(kAccountId, kTestGaiaId);
     user_manager_->AddUser(account_id);
+    TestingProfile* profile =
+        profile_manager_->CreateTestingProfile(account_id.GetUserEmail());
+    user_manager_->AddUserWithAffiliationAndTypeAndProfile(
+        account_id, false, user_manager::UserType::USER_TYPE_REGULAR, profile);
     user_manager_->SwitchActiveUser(account_id);
     ASSERT_TRUE(user_manager_->GetActiveUser());
   }
@@ -373,15 +393,16 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     store_ = store.get();
     external_data_manager_ = new MockCloudExternalDataManager;
     external_data_manager_->SetPolicyStore(store_);
+    const user_manager::User* active_user = user_manager_->GetActiveUser();
     manager_.reset(new UserCloudPolicyManagerChromeOS(
-        profile_, std::move(store),
+        chromeos::ProfileHelper::Get()->GetProfileByUser(active_user),
+        std::move(store),
         base::WrapUnique<MockCloudExternalDataManager>(external_data_manager_),
         base::FilePath(), enforcement_type, fetch_timeout,
         base::BindOnce(
             &UserCloudPolicyManagerChromeOSTest::OnFatalErrorEncountered,
             base::Unretained(this)),
-        user_manager_->GetActiveUser()->GetAccountId(), task_runner_,
-        task_runner_));
+        active_user->GetAccountId(), task_runner_, task_runner_));
     manager_->AddObserver(&observer_);
     should_create_token_forwarder_ = fetch_timeout.is_zero();
   }
@@ -797,6 +818,38 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, TestHasAppInstallEventLogUploader) {
   ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
       base::TimeDelta(), PolicyEnforcement::kPolicyRequired));
   EXPECT_TRUE(manager_->GetAppInstallEventLogUploader());
+}
+
+class ConsumerDeviceStatusUploadingTest
+    : public UserCloudPolicyManagerChromeOSTest {
+ protected:
+  ConsumerDeviceStatusUploadingTest() = default;
+
+  ~ConsumerDeviceStatusUploadingTest() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ConsumerDeviceStatusUploadingTest);
+};
+
+TEST_F(ConsumerDeviceStatusUploadingTest, RegularAccountShouldNotUploadStatus) {
+  ASSERT_NO_FATAL_FAILURE(MakeManagerWithPreloadedStore(base::TimeDelta()));
+
+  manager_->OnRegistrationStateChanged(manager_->core()->client());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(manager_->core()->client()->is_registered());
+  EXPECT_FALSE(manager_->GetStatusUploader());
+}
+
+TEST_F(ConsumerDeviceStatusUploadingTest, ChildAccountShouldUploadStatus) {
+  AddAndSwitchToChildAccountWithProfile();
+  ASSERT_NO_FATAL_FAILURE(MakeManagerWithPreloadedStore(base::TimeDelta()));
+
+  manager_->OnRegistrationStateChanged(manager_->core()->client());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(manager_->core()->client()->is_registered());
+  EXPECT_TRUE(manager_->GetStatusUploader());
 }
 
 }  // namespace policy
