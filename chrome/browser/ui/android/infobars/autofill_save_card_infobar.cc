@@ -43,19 +43,10 @@ void AutofillSaveCardInfoBar::OnLegalMessageLinkClicked(JNIEnv* env,
       GURL(base::android::ConvertJavaStringToUTF16(env, url)));
 }
 
-int AutofillSaveCardInfoBar::GetGooglePayBrandingIconId() {
-  return IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER;
-}
-
 base::android::ScopedJavaLocalRef<jobject>
 AutofillSaveCardInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   autofill::AutofillSaveCardInfoBarDelegateMobile* delegate =
       GetSaveCardDelegate();
-  ScopedJavaLocalRef<jobject> java_bitmap;
-  if (delegate->GetIconId() == infobars::InfoBarDelegate::kNoIconID &&
-      !delegate->GetIcon().IsEmpty()) {
-    java_bitmap = gfx::ConvertToJavaBitmap(delegate->GetIcon().ToSkBitmap());
-  }
 
   base::string16 cancel_button_text =
       GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL);
@@ -65,32 +56,25 @@ AutofillSaveCardInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   base::android::ScopedJavaLocalRef<jobject> java_delegate =
       Java_AutofillSaveCardInfoBar_create(
           env, reinterpret_cast<intptr_t>(this), GetEnumeratedIconId(),
-          java_bitmap,
+          ScopedJavaLocalRef<jobject>(),
           base::android::ConvertUTF16ToJavaString(env,
                                                   delegate->GetMessageText()),
           base::android::ConvertUTF16ToJavaString(env, delegate->GetLinkText()),
           base::android::ConvertUTF16ToJavaString(
               env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK)),
-          base::android::ConvertUTF16ToJavaString(env, cancel_button_text));
+          base::android::ConvertUTF16ToJavaString(env, cancel_button_text),
+          delegate->IsGooglePayBrandingEnabled());
+
+  Java_AutofillSaveCardInfoBar_setDescriptionText(
+      env, java_delegate,
+      base::android::ConvertUTF16ToJavaString(env,
+                                              delegate->GetDescriptionText()));
 
   Java_AutofillSaveCardInfoBar_addDetail(
       env, java_delegate,
       ResourceMapper::MapFromChromiumId(delegate->issuer_icon_id()),
       base::android::ConvertUTF16ToJavaString(env, delegate->card_label()),
       base::android::ConvertUTF16ToJavaString(env, delegate->card_sub_label()));
-
-  if (delegate->IsGooglePayBrandingEnabled()) {
-    Java_AutofillSaveCardInfoBar_setBrandIconId(
-        env, java_delegate,
-        ResourceMapper::MapFromChromiumId(GetGooglePayBrandingIconId()));
-    Java_AutofillSaveCardInfoBar_setTitleText(
-        env, java_delegate,
-        base::android::ConvertUTF16ToJavaString(env, delegate->GetTitleText()));
-    Java_AutofillSaveCardInfoBar_setDescriptionText(
-        env, java_delegate,
-        base::android::ConvertUTF16ToJavaString(
-            env, delegate->GetDescriptionText()));
-  }
 
   for (const auto& line : delegate->legal_messages()) {
     Java_AutofillSaveCardInfoBar_addLegalMessageLine(
