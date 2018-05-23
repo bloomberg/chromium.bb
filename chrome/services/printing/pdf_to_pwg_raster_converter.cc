@@ -98,7 +98,7 @@ base::ReadOnlySharedMemoryRegion RenderPdfPagesToPwgRaster(
 
   base::MappedReadOnlyRegion region_mapping =
       CreateReadOnlySharedMemoryRegion(pwg_data.size());
-  if (!region_mapping.region.IsValid() || !region_mapping.mapping.IsValid())
+  if (!region_mapping.IsValid())
     return invalid_pwg_region;
 
   memcpy(region_mapping.mapping.memory(), pwg_data.data(), pwg_data.size());
