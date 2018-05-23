@@ -36,14 +36,6 @@ class CustomElementUpgradeSorterTest : public PageTestBase {
   ScriptState* GetScriptState() {
     return ToScriptStateForMainWorld(&GetFrame());
   }
-
-  ShadowRoot* AttachShadowTo(Element* element) {
-    NonThrowableExceptionState no_exceptions;
-    ShadowRootInit shadow_root_init;
-    shadow_root_init.setMode("open");
-    return element->attachShadow(GetScriptState(), shadow_root_init,
-                                 no_exceptions);
-  }
 };
 
 TEST_F(CustomElementUpgradeSorterTest, inOtherDocument_notInSet) {
@@ -185,7 +177,7 @@ TEST_F(CustomElementUpgradeSorterTest, sorter_shadow) {
   Element* d = CreateElementWithId("a-a", "d");
 
   GetDocument().documentElement()->AppendChild(a);
-  ShadowRoot* s = AttachShadowTo(a);
+  ShadowRoot* s = &a->AttachShadowRootInternal(ShadowRootType::kOpen);
   a->AppendChild(d);
 
   s->AppendChild(b);
