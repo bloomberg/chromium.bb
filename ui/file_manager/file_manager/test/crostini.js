@@ -82,6 +82,11 @@ function testCrostiniSuccess(done) {
             '#directory-tree .tree-item [root-type-icon="crostini"]');
       })
       .then(() => {
+        // Downloads folder should be shown when crostini goes away.
+        return test.waitForFiles(
+            test.TestEntryInfo.getExpectedRows(test.BASIC_LOCAL_ENTRY_SET));
+      })
+      .then(() => {
         done();
       });
 }
