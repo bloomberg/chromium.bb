@@ -190,7 +190,7 @@ class KEYBOARD_EXPORT KeyboardController
                         base::Optional<gfx::Rect> target_bounds,
                         base::OnceCallback<void(bool)> callback);
 
-  // Sets floating keyboard drggable rect.
+  // Sets floating keyboard draggable rect.
   bool SetDraggableArea(const gfx::Rect& rect);
 
   void MoveToDisplayWithTransition(display::Display display,
