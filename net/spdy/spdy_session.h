@@ -547,6 +547,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Change this session's socket tag to |new_tag|. Returns true on success.
   bool ChangeSocketTag(const SocketTag& new_tag);
 
+  static void RecordSpdyPushedStreamFateHistogram(SpdyPushedStreamFate value);
+
  private:
   friend class test::SpdyStreamTest;
   friend class base::RefCounted<SpdySession>;
