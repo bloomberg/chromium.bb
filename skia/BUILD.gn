@@ -85,9 +85,6 @@ config("skia_config") {
       "//third_party/skia/src/gpu",
       "//third_party/skia/src/sksl",
     ]
-    if (enable_vulkan) {
-      include_dirs += [ "//third_party/skia/include/gpu/vk/" ]
-    }
     workaround_header = "gpu/config/gpu_driver_bug_workaround_autogen.h"
     defines += [
       "SK_SUPPORT_GPU=1",
