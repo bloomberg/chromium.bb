@@ -9,19 +9,6 @@
 namespace ui {
 namespace {
 
-const char* kCrtcPropName = "CRTC_ID";
-const char* kFbPropName = "FB_ID";
-const char* kCrtcXPropName = "CRTC_X";
-const char* kCrtcYPropName = "CRTC_Y";
-const char* kCrtcWPropName = "CRTC_W";
-const char* kCrtcHPropName = "CRTC_H";
-const char* kSrcXPropName = "SRC_X";
-const char* kSrcYPropName = "SRC_Y";
-const char* kSrcWPropName = "SRC_W";
-const char* kSrcHPropName = "SRC_H";
-const char* kRotationPropName = "rotation";
-const char* kInFenceFdPropName = "IN_FENCE_FD";
-
 // TODO(dcastagna): Remove the following defines once they're in libdrm headers.
 #if !defined(DRM_ROTATE_0)
 #define BIT(n) (1 << (n))
@@ -54,31 +41,41 @@ uint32_t OverlayTransformToDrmRotationPropertyValue(
   return 0;
 }
 
+bool AddProperty(drmModeAtomicReqPtr property_set,
+                 uint32_t object_id,
+                 const DrmDevice::Property& property) {
+  int ret = drmModeAtomicAddProperty(property_set, object_id, property.id,
+                                     property.value);
+  if (ret < 0) {
+    LOG(ERROR) << "Failed to set property object_id=" << object_id
+               << " property_id=" << property.id
+               << " property_value=" << property.value << " error=" << -ret;
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
-HardwareDisplayPlaneAtomic::Property::Property() {
-}
+HardwareDisplayPlaneAtomic::HardwareDisplayPlaneAtomic(uint32_t id)
+    : HardwareDisplayPlane(id) {}
 
-bool HardwareDisplayPlaneAtomic::Property::Initialize(
-    DrmDevice* drm,
-    const char* name,
-    const ScopedDrmObjectPropertyPtr& plane_props) {
-  for (uint32_t i = 0; i < plane_props->count_props; i++) {
-    ScopedDrmPropertyPtr property(
-        drmModeGetProperty(drm->get_fd(), plane_props->props[i]));
-    if (property && !strcmp(property->name, name)) {
-      id = property->prop_id;
-      break;
-    }
-  }
-  return !!id;
-}
+HardwareDisplayPlaneAtomic::~HardwareDisplayPlaneAtomic() {}
 
-HardwareDisplayPlaneAtomic::HardwareDisplayPlaneAtomic(uint32_t plane_id,
-                                                       uint32_t possible_crtcs)
-    : HardwareDisplayPlane(plane_id, possible_crtcs) {
-}
-HardwareDisplayPlaneAtomic::~HardwareDisplayPlaneAtomic() {
+bool HardwareDisplayPlaneAtomic::Initialize(DrmDevice* drm) {
+  if (!HardwareDisplayPlane::Initialize(drm))
+    return false;
+
+  // Check that all the required properties have been found.
+  bool ret = properties_.crtc_id.id && properties_.crtc_x.id &&
+             properties_.crtc_y.id && properties_.crtc_w.id &&
+             properties_.crtc_h.id && properties_.fb_id.id &&
+             properties_.src_x.id && properties_.src_y.id &&
+             properties_.src_w.id && properties_.src_h.id;
+  LOG_IF(ERROR, !ret) << "Failed to find all required properties for plane="
+                      << id_;
+  return ret;
 }
 
 bool HardwareDisplayPlaneAtomic::SetPlaneData(
@@ -89,72 +86,51 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(
     const gfx::Rect& src_rect,
     const gfx::OverlayTransform transform,
     int in_fence_fd) {
-  if (transform != gfx::OVERLAY_TRANSFORM_NONE && !rotation_prop_.id)
+  if (transform != gfx::OVERLAY_TRANSFORM_NONE && !properties_.rotation.id)
     return false;
 
-  int plane_set_succeeded =
-      drmModeAtomicAddProperty(property_set, plane_id_, crtc_prop_.id,
-                               crtc_id) &&
-      drmModeAtomicAddProperty(property_set, plane_id_, fb_prop_.id,
-                               framebuffer) &&
-      drmModeAtomicAddProperty(property_set, plane_id_, crtc_x_prop_.id,
-                               crtc_rect.x()) &&
-      drmModeAtomicAddProperty(property_set, plane_id_, crtc_y_prop_.id,
-                               crtc_rect.y()) &&
-      drmModeAtomicAddProperty(property_set, plane_id_, crtc_w_prop_.id,
-                               crtc_rect.width()) &&
-      drmModeAtomicAddProperty(property_set, plane_id_, crtc_h_prop_.id,
-                               crtc_rect.height()) &&
-      drmModeAtomicAddProperty(property_set, plane_id_, src_x_prop_.id,
-                               src_rect.x()) &&
-      drmModeAtomicAddProperty(property_set, plane_id_, src_y_prop_.id,
-                               src_rect.y()) &&
-      drmModeAtomicAddProperty(property_set, plane_id_, src_w_prop_.id,
-                               src_rect.width()) &&
-      drmModeAtomicAddProperty(property_set, plane_id_, src_h_prop_.id,
-                               src_rect.height());
+  properties_.crtc_id.value = crtc_id;
+  properties_.crtc_x.value = crtc_rect.x();
+  properties_.crtc_y.value = crtc_rect.y();
+  properties_.crtc_w.value = crtc_rect.width();
+  properties_.crtc_h.value = crtc_rect.height();
+  properties_.fb_id.value = framebuffer;
+  properties_.src_x.value = src_rect.x();
+  properties_.src_y.value = src_rect.y();
+  properties_.src_w.value = src_rect.width();
+  properties_.src_h.value = src_rect.height();
 
-  if (rotation_prop_.id) {
+  bool plane_set_succeeded =
+      AddProperty(property_set, id_, properties_.crtc_id) &&
+      AddProperty(property_set, id_, properties_.crtc_x) &&
+      AddProperty(property_set, id_, properties_.crtc_y) &&
+      AddProperty(property_set, id_, properties_.crtc_w) &&
+      AddProperty(property_set, id_, properties_.crtc_h) &&
+      AddProperty(property_set, id_, properties_.fb_id) &&
+      AddProperty(property_set, id_, properties_.src_x) &&
+      AddProperty(property_set, id_, properties_.src_y) &&
+      AddProperty(property_set, id_, properties_.src_w) &&
+      AddProperty(property_set, id_, properties_.src_h);
+
+  if (properties_.rotation.id) {
+    properties_.rotation.value =
+        OverlayTransformToDrmRotationPropertyValue(transform);
+    plane_set_succeeded = plane_set_succeeded &&
+                          AddProperty(property_set, id_, properties_.rotation);
+  }
+
+  if (properties_.in_fence_fd.id && in_fence_fd >= 0) {
+    properties_.in_fence_fd.value = in_fence_fd;
     plane_set_succeeded =
         plane_set_succeeded &&
-        drmModeAtomicAddProperty(
-            property_set, plane_id_, rotation_prop_.id,
-            OverlayTransformToDrmRotationPropertyValue(transform));
+        AddProperty(property_set, id_, properties_.in_fence_fd);
   }
-  if (in_fence_fd_prop_.id && in_fence_fd >= 0) {
-    plane_set_succeeded =
-        plane_set_succeeded &&
-        drmModeAtomicAddProperty(property_set, plane_id_, in_fence_fd_prop_.id,
-                                 in_fence_fd);
-  }
+
   if (!plane_set_succeeded) {
-    PLOG(ERROR) << "Failed to set plane data";
+    LOG(ERROR) << "Failed to set plane data";
     return false;
   }
-  return true;
-}
 
-bool HardwareDisplayPlaneAtomic::InitializeProperties(
-    DrmDevice* drm,
-    const ScopedDrmObjectPropertyPtr& plane_props) {
-  bool props_init = crtc_prop_.Initialize(drm, kCrtcPropName, plane_props) &&
-                    fb_prop_.Initialize(drm, kFbPropName, plane_props) &&
-                    crtc_x_prop_.Initialize(drm, kCrtcXPropName, plane_props) &&
-                    crtc_y_prop_.Initialize(drm, kCrtcYPropName, plane_props) &&
-                    crtc_w_prop_.Initialize(drm, kCrtcWPropName, plane_props) &&
-                    crtc_h_prop_.Initialize(drm, kCrtcHPropName, plane_props) &&
-                    src_x_prop_.Initialize(drm, kSrcXPropName, plane_props) &&
-                    src_y_prop_.Initialize(drm, kSrcYPropName, plane_props) &&
-                    src_w_prop_.Initialize(drm, kSrcWPropName, plane_props) &&
-                    src_h_prop_.Initialize(drm, kSrcHPropName, plane_props);
-
-  if (!props_init) {
-    LOG(ERROR) << "Unable to get plane properties.";
-    return false;
-  }
-  // The following properties are optional.
-  rotation_prop_.Initialize(drm, kRotationPropName, plane_props);
-  in_fence_fd_prop_.Initialize(drm, kInFenceFdPropName, plane_props);
   return true;
 }
 

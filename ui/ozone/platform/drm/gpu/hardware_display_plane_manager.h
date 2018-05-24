@@ -14,7 +14,6 @@
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
-#include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
 
 namespace gfx {
@@ -24,6 +23,7 @@ class Rect;
 namespace ui {
 
 class CrtcController;
+class HardwareDisplayPlane;
 
 // This contains the list of planes controlled by one HDC on a given DRM fd.
 // It is owned by the HDC and filled by the CrtcController.
@@ -150,9 +150,7 @@ class HardwareDisplayPlaneManager {
                             const gfx::Rect& src_rect,
                             CrtcController* crtc) = 0;
 
-  virtual std::unique_ptr<HardwareDisplayPlane> CreatePlane(
-      uint32_t plane_id,
-      uint32_t possible_crtcs);
+  virtual std::unique_ptr<HardwareDisplayPlane> CreatePlane(uint32_t plane_id);
 
   // Finds the plane located at or after |*index| that is not in use and can
   // be used with |crtc_index|.
