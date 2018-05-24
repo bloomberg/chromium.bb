@@ -2183,8 +2183,9 @@ void RenderFrameImpl::ExtractSmartClipData(
     ExtractSmartClipDataCallback callback) {
   blink::WebString clip_text;
   blink::WebString clip_html;
-  GetWebFrame()->ExtractSmartClipData(rect, clip_text, clip_html);
-  std::move(callback).Run(clip_text.Utf16(), clip_html.Utf16());
+  blink::WebRect clip_rect;
+  GetWebFrame()->ExtractSmartClipData(rect, clip_text, clip_html, clip_rect);
+  std::move(callback).Run(clip_text.Utf16(), clip_html.Utf16(), clip_rect);
 }
 #endif  // defined(OS_ANDROID)
 

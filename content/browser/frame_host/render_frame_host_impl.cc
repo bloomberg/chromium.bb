@@ -1931,7 +1931,8 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   for (base::IDMap<std::unique_ptr<ExtractSmartClipDataCallback>>::iterator
            iter(&smart_clip_callbacks_);
        !iter.IsAtEnd(); iter.Advance()) {
-    std::move(*iter.GetCurrentValue()).Run(base::string16(), base::string16());
+    std::move(*iter.GetCurrentValue())
+        .Run(base::string16(), base::string16(), gfx::Rect());
   }
   smart_clip_callbacks_.Clear();
 #endif  // defined(OS_ANDROID)
@@ -2056,8 +2057,10 @@ void RenderFrameHostImpl::RequestSmartClipExtract(
 
 void RenderFrameHostImpl::OnSmartClipDataExtracted(int32_t callback_id,
                                                    const base::string16& text,
-                                                   const base::string16& html) {
-  std::move(*smart_clip_callbacks_.Lookup(callback_id)).Run(text, html);
+                                                   const base::string16& html,
+                                                   const gfx::Rect& clip_rect) {
+  std::move(*smart_clip_callbacks_.Lookup(callback_id))
+      .Run(text, html, clip_rect);
   smart_clip_callbacks_.Remove(callback_id);
 }
 #endif  // defined(OS_ANDROID)

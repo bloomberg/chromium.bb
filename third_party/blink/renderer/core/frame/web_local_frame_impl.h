@@ -325,7 +325,8 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void ExtractSmartClipData(WebRect rect_in_viewport,
                             WebString& clip_text,
-                            WebString& clip_html) override;
+                            WebString& clip_html,
+                            WebRect& clip_rect) override;
 
   void AdvanceFocusInForm(WebFocusType) override;
 

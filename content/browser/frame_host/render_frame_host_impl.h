@@ -483,15 +483,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
 #if defined(OS_ANDROID)
   // Samsung Galaxy Note-specific "smart clip" stylus text getter.
-  using ExtractSmartClipDataCallback =
-      base::OnceCallback<void(const base::string16&, const base::string16&)>;
+  using ExtractSmartClipDataCallback = base::OnceCallback<
+      void(const base::string16&, const base::string16&, const gfx::Rect&)>;
 
   void RequestSmartClipExtract(ExtractSmartClipDataCallback callback,
                                gfx::Rect rect);
 
   void OnSmartClipDataExtracted(int32_t callback_id,
                                 const base::string16& text,
-                                const base::string16& html);
+                                const base::string16& html,
+                                const gfx::Rect& clip_rect);
 #endif  // defined(OS_ANDROID)
 
   // Request a one-time snapshot of the accessibility tree without changing

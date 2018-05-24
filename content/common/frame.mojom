@@ -38,7 +38,8 @@ interface Frame {
   // Extracts the data at the given rect.
   [EnableIf=is_android]
   ExtractSmartClipData(gfx.mojom.Rect rect)
-      => (mojo_base.mojom.String16 text, mojo_base.mojom.String16 html);
+      => (mojo_base.mojom.String16 text, mojo_base.mojom.String16 html,
+              gfx.mojom.Rect clip_rect);
 };
 
 // See src/content/common/navigation_params.h
