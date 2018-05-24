@@ -38,6 +38,19 @@ const DomCode writing_system_key_domcodes[] = {
 const size_t kWritingSystemKeyDomCodeEntries =
     base::size(writing_system_key_domcodes);
 
+// Mapping from Unicode combining characters to corresponding printable
+// character.
+const static struct {
+  uint16_t combining;
+  uint16_t printable;
+} kCombiningKeyMapping[] = {
+    {0x0300, 0x0060},  // Grave
+    {0x0301, 0x0027},  // Acute
+    {0x0302, 0x005e},  // Circumflex
+    {0x0303, 0x007e},  // Tilde
+    {0x0308, 0x00a8},  // Diaeresis
+};
+
 DomKeyboardLayout::DomKeyboardLayout() = default;
 
 DomKeyboardLayout::~DomKeyboardLayout() = default;
@@ -51,6 +64,19 @@ base::flat_map<std::string, std::string> DomKeyboardLayout::GetMap() {
   for (size_t i = 0; i < kWritingSystemKeyDomCodeEntries; ++i) {
     ui::DomCode dom_code = ui::writing_system_key_domcodes[i];
     uint16_t unicode = layout_[dom_code];
+
+    // Map combining accents into the corresponding printable character.
+    if (unicode >= 0x0300 && unicode <= 0x036f) {
+      uint16_t printable = 0;
+      for (size_t j = 0; j < base::size(kCombiningKeyMapping); ++j) {
+        if (kCombiningKeyMapping[j].combining == unicode) {
+          printable = kCombiningKeyMapping[j].printable;
+          break;
+        }
+      }
+      unicode = printable;
+    }
+
     if (unicode == 0)
       continue;
 
