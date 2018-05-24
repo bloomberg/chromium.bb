@@ -2138,14 +2138,25 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
   //
   // Since a CSS property cannot be applied directly to a text node, a
   // handler will have already been added for its parent so ignore it.
-  TouchAction old_touch_action =
-      style_ ? style_->GetTouchAction() : TouchAction::kTouchActionAuto;
+  //
+  // Elements may inherit touch action from parent frame, so we need to report
+  // touchstart handler if the root layout object has non-auto effective touch
+  // action.
+  TouchAction old_touch_action = TouchAction::kTouchActionAuto;
+  bool is_document_element = GetNode() && IsDocumentElement();
+  if (style_) {
+    old_touch_action = is_document_element ? style_->GetEffectiveTouchAction()
+                                           : style_->GetTouchAction();
+  }
+  TouchAction new_touch_action = is_document_element
+                                     ? new_style.GetEffectiveTouchAction()
+                                     : new_style.GetTouchAction();
   if (GetNode() && !GetNode()->IsTextNode() &&
       (old_touch_action == TouchAction::kTouchActionAuto) !=
-          (new_style.GetTouchAction() == TouchAction::kTouchActionAuto)) {
+          (new_touch_action == TouchAction::kTouchActionAuto)) {
     EventHandlerRegistry& registry =
         GetDocument().GetFrame()->GetEventHandlerRegistry();
-    if (new_style.GetTouchAction() != TouchAction::kTouchActionAuto) {
+    if (new_touch_action != TouchAction::kTouchActionAuto) {
       registry.DidAddEventHandler(*GetNode(),
                                   EventHandlerRegistry::kTouchAction);
     } else {

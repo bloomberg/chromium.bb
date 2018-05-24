@@ -7,11 +7,15 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/svg/svg_g_element.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
@@ -722,6 +726,69 @@ TEST_F(LayoutObjectTest, DisplayContentsSVGGElementInHTML) {
 
   ASSERT_FALSE(svg_element->GetLayoutObject());
   ASSERT_FALSE(text->GetLayoutObject());
+}
+
+class LayoutObjectSimTest : public SimTest {
+ public:
+  bool DocumentHasTouchActionRegion(const EventHandlerRegistry& registry) {
+    GetDocument().View()->UpdateAllLifecyclePhases();
+    return registry.HasEventHandlers(
+        EventHandlerRegistry::EventHandlerClass::kTouchAction);
+  }
+};
+
+TEST_F(LayoutObjectSimTest, TouchActionUpdatesSubframeEventHandler) {
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest frame_resource("https://example.com/frame.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+  main_resource.Complete(
+      "<!DOCTYPE html>"
+      "<div id='container'>"
+      "<iframe src=frame.html></iframe>"
+      "</div>");
+  frame_resource.Complete(
+      "<!DOCTYPE html>"
+      "<html><body>"
+      "<div id='inner'></div>"
+      "</body></html>");
+
+  Element* iframe_element = GetDocument().QuerySelector("iframe");
+  HTMLFrameOwnerElement* frame_owner_element =
+      ToHTMLFrameOwnerElement(iframe_element);
+  Document* iframe_doc = frame_owner_element->contentDocument();
+  Element* inner = iframe_doc->getElementById("inner");
+  Element* iframe_doc_element = iframe_doc->documentElement();
+  Element* container = GetDocument().getElementById("container");
+
+  EventHandlerRegistry& registry =
+      iframe_doc->GetFrame()->GetEventHandlerRegistry();
+
+  // We should add event handler if touch action is set on subframe.
+  inner->setAttribute("style", "touch-action: none");
+  EXPECT_TRUE(DocumentHasTouchActionRegion(registry));
+
+  // We should remove event handler if touch action is removed on subframe.
+  inner->setAttribute("style", "touch-action: auto");
+  EXPECT_FALSE(DocumentHasTouchActionRegion(registry));
+
+  // We should add event handler if touch action is set on main frame.
+  container->setAttribute("style", "touch-action: none");
+  EXPECT_TRUE(DocumentHasTouchActionRegion(registry));
+
+  // We should keep event handler if touch action is set on subframe document
+  // element.
+  iframe_doc_element->setAttribute("style", "touch-action: none");
+  EXPECT_TRUE(DocumentHasTouchActionRegion(registry));
+
+  // We should keep the event handler if touch action is removed on subframe
+  // document element.
+  iframe_doc_element->setAttribute("style", "touch-action: auto");
+  EXPECT_TRUE(DocumentHasTouchActionRegion(registry));
+
+  // We should remove the handler if touch action is removed on main frame.
+  container->setAttribute("style", "touch-action: auto");
+  EXPECT_FALSE(DocumentHasTouchActionRegion(registry));
 }
 
 }  // namespace blink
