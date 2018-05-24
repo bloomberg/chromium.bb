@@ -196,6 +196,11 @@ const CGFloat kShadowRadius = 12.0f;
 // property is set to nil after it is used.
 @property(nonatomic, strong) NSNumber* cachedContentPosition;
 
+// Set to YES, only when this view controller instance is being created
+// from cached path. Once the view controller is shown, this is set to NO.
+// This is so that the cache code is called only once in loadBookmarkViews.
+@property(nonatomic, assign) BOOL isReconstructingFromCache;
+
 // Dispatcher for sending commands.
 @property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
 
@@ -273,6 +278,59 @@ const CGFloat kShadowRadius = 12.0f;
 
 - (void)setRootNode:(const bookmarks::BookmarkNode*)rootNode {
   _rootNode = rootNode;
+}
+
+- (NSArray<BookmarkHomeViewController*>*)cachedViewControllerStack {
+  // This method is only designed to be called for the view controller
+  // associated with the root node.
+  DCHECK(self.bookmarks->loaded());
+  DCHECK_EQ(_rootNode, self.bookmarks->root_node());
+
+  NSMutableArray<BookmarkHomeViewController*>* stack = [NSMutableArray array];
+  [stack addObject:self];
+
+  int64_t cachedFolderID;
+  double cachedScrollPosition;
+  // If cache is present then reconstruct the last visited bookmark from
+  // cache.
+  if (![BookmarkPathCache
+          getBookmarkUIPositionCacheWithPrefService:self.browserState
+                                                        ->GetPrefs()
+                                              model:self.bookmarks
+                                           folderId:&cachedFolderID
+                                     scrollPosition:&cachedScrollPosition] ||
+      cachedFolderID == self.bookmarks->root_node()->id()) {
+    return stack;
+  }
+
+  NSArray* path =
+      bookmark_utils_ios::CreateBookmarkPath(self.bookmarks, cachedFolderID);
+  if (!path) {
+    return stack;
+  }
+
+  DCHECK_EQ(self.bookmarks->root_node()->id(),
+            [[path firstObject] longLongValue]);
+  for (NSUInteger ii = 1; ii < [path count]; ii++) {
+    int64_t nodeID = [[path objectAtIndex:ii] longLongValue];
+    const BookmarkNode* node =
+        bookmark_utils_ios::FindFolderById(self.bookmarks, nodeID);
+    DCHECK(node);
+    // if node is an empty permanent node, stop.
+    if (node->empty() && IsPrimaryPermanentNode(node, self.bookmarks)) {
+      break;
+    }
+
+    BookmarkHomeViewController* controller =
+        [self createControllerWithRootFolder:node];
+    if (nodeID == cachedFolderID) {
+      [controller
+          setCachedContentPosition:[NSNumber
+                                       numberWithDouble:cachedScrollPosition]];
+    }
+    [stack addObject:controller];
+  }
+  return stack;
 }
 
 #pragma mark - UIViewController
@@ -870,51 +928,10 @@ const CGFloat kShadowRadius = 12.0f;
 - (void)setupUIStackCacheIfApplicable {
   self.isReconstructingFromCache = NO;
 
-  int64_t folderId;
-  double scrollPosition;
-  // If folderId is invalid or rootNode reached the cached folderId, stop
-  // stacking and return.
-  if (![BookmarkPathCache
-          getBookmarkUIPositionCacheWithPrefService:self.browserState
-                                                        ->GetPrefs()
-                                              model:self.bookmarks
-                                           folderId:&folderId
-                                     scrollPosition:&scrollPosition] ||
-      folderId == _rootNode->id()) {
-    return;
-  }
-
-  // Otherwise drill down until we recreate the UI stack for the cached bookmark
-  // path.
-  NSMutableArray* mutablePath = [bookmark_utils_ios::CreateBookmarkPath(
-      self.bookmarks, folderId) mutableCopy];
-  if (!mutablePath) {
-    return;
-  }
-  NSArray* thisBookmarkPath =
-      bookmark_utils_ios::CreateBookmarkPath(self.bookmarks, _rootNode->id());
-  if (!thisBookmarkPath) {
-    return;
-  }
-
-  [mutablePath removeObjectsInArray:thisBookmarkPath];
-  const BookmarkNode* node = bookmark_utils_ios::FindFolderById(
-      self.bookmarks, [[mutablePath firstObject] longLongValue]);
-  DCHECK(node);
-  // if node is an empty permanent node, return.
-  if (node->empty() && IsPrimaryPermanentNode(node, self.bookmarks)) {
-    return;
-  }
-
-  BookmarkHomeViewController* controller =
-      [self createControllerWithRootFolder:node];
-  // Only scroll to the last viewing position for the leaf node.
-  if (mutablePath.count == 1 && scrollPosition) {
-    [controller
-        setCachedContentPosition:[NSNumber numberWithDouble:scrollPosition]];
-  }
-  controller.isReconstructingFromCache = YES;
-  [self.navigationController pushViewController:controller animated:NO];
+  NSArray<BookmarkHomeViewController*>* replacementViewControllers =
+      [self cachedViewControllerStack];
+  DCHECK(replacementViewControllers);
+  [self.navigationController setViewControllers:replacementViewControllers];
 }
 
 // Set up context bar for the new UI.

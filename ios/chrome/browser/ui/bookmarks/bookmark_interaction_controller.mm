@@ -182,32 +182,24 @@ using bookmarks::BookmarkNode;
                                               dispatcher:self.dispatcher];
   self.bookmarkBrowser.homeDelegate = self;
 
-  // Set the root node if the model has been loaded. If the model has not been
-  // loaded yet, the root node will be set in BookmarkHomeViewController after
-  // the model is finished loading.
+  NSArray<BookmarkHomeViewController*>* replacementViewControllers = nil;
   if (self.bookmarkModel->loaded()) {
+    // Set the root node if the model has been loaded. If the model has not been
+    // loaded yet, the root node will be set in BookmarkHomeViewController after
+    // the model is finished loading.
     [self.bookmarkBrowser setRootNode:self.bookmarkModel->root_node()];
-  }
-
-  int64_t unusedFolderId;
-  double unusedScrollPosition;
-  // If cache is present then reconstruct the last visited bookmark from
-  // cache.  If bookmarkModel is not loaded yet, the following checking will
-  // be done again at bookmarkModelLoaded in BookmarkHomeViewController to
-  // prevent http://crbug.com/765503.
-  if ([BookmarkPathCache
-          getBookmarkUIPositionCacheWithPrefService:_currentBrowserState
-                                                        ->GetPrefs()
-                                              model:self.bookmarkModel
-                                           folderId:&unusedFolderId
-                                     scrollPosition:&unusedScrollPosition]) {
-    self.bookmarkBrowser.isReconstructingFromCache = YES;
+    replacementViewControllers =
+        [self.bookmarkBrowser cachedViewControllerStack];
   }
 
   if (experimental_flags::IsBookmarksUIRebootEnabled()) {
     TableViewNavigationController* navController =
         [[TableViewNavigationController alloc]
             initWithTable:self.bookmarkBrowser];
+    if (replacementViewControllers) {
+      [navController setViewControllers:replacementViewControllers];
+    }
+
     navController.toolbarHidden = YES;
     self.bookmarkTransitioningDelegate =
         [[BookmarkTransitioningDelegate alloc] init];
@@ -220,6 +212,9 @@ using bookmarks::BookmarkNode;
     FormSheetNavigationController* navController =
         [[FormSheetNavigationController alloc]
             initWithRootViewController:self.bookmarkBrowser];
+    if (replacementViewControllers) {
+      [navController setViewControllers:replacementViewControllers];
+    }
     [navController setModalPresentationStyle:UIModalPresentationFormSheet];
     [_parentController presentViewController:navController
                                     animated:YES
