@@ -176,6 +176,11 @@ void RemoteFrameClientImpl::SetIsInert(bool inert) {
   web_frame_->Client()->SetIsInert(inert);
 }
 
+void RemoteFrameClientImpl::SetInheritedEffectiveTouchAction(
+    TouchAction touch_action) {
+  web_frame_->Client()->SetInheritedEffectiveTouchAction(touch_action);
+}
+
 void RemoteFrameClientImpl::UpdateRenderThrottlingStatus(
     bool is_throttled,
     bool subtree_throttled) {

@@ -11,7 +11,6 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
-#include "cc/input/touch_action.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/edit_command.h"
@@ -66,7 +65,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     content::SyntheticPointerActionParams::Button::BUTTON_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventDispatchType,
                           content::InputEventDispatchType::DISPATCH_TYPE_MAX)
-IPC_ENUM_TRAITS_MAX_VALUE(cc::TouchAction, cc::kTouchActionMax)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebPointerProperties::Button,
                               blink::WebPointerProperties::Button::kNoButton,
                               blink::WebPointerProperties::Button::kLastEntry)

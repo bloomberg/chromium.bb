@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "cc/input/touch_action.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/surface_info.h"
@@ -226,7 +227,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void UpdateViewportIntersection(const gfx::Rect& viewport_intersection,
                                   const gfx::Rect& compositor_visible_rect);
 
+  // TODO(sunxd): Rename SetIsInert to UpdateIsInert.
   void SetIsInert();
+  void UpdateInheritedEffectiveTouchAction();
 
   void UpdateRenderThrottlingStatus();
 

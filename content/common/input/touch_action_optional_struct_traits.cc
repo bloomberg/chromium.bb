@@ -4,7 +4,7 @@
 
 #include "content/common/input/touch_action_optional_struct_traits.h"
 
-#include "content/common/input_messages.h"
+#include "content/public/common/common_param_traits_macros.h"
 
 namespace mojo {
 bool StructTraits<

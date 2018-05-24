@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "cc/input/touch_action.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
@@ -106,6 +107,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector
                         const gfx::Size& max_size) override;
   void DisableAutoResize() override;
   bool IsInert() const override;
+  cc::TouchAction InheritedEffectiveTouchAction() const override;
   bool IsHidden() const override;
   bool IsThrottled() const override;
   bool IsSubtreeThrottled() const override;
@@ -162,6 +164,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector
                                     const gfx::Rect& compositor_visible_rect);
   void OnVisibilityChanged(bool visible);
   void OnSetIsInert(bool);
+  void OnSetInheritedEffectiveTouchAction(cc::TouchAction);
   void OnUpdateRenderThrottlingStatus(bool is_throttled,
                                       bool subtree_throttled);
 
@@ -170,6 +173,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   RenderFrameProxyHost* frame_proxy_in_parent_renderer_;
 
   bool is_inert_ = false;
+  cc::TouchAction inherited_effective_touch_action_ =
+      cc::TouchAction::kTouchActionAuto;
 
   bool is_throttled_ = false;
   bool subtree_throttled_ = false;

@@ -193,6 +193,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       const blink::WebRect& viewport_intersection) override;
   void VisibilityChanged(bool visible) override;
   void SetIsInert(bool) override;
+  void SetInheritedEffectiveTouchAction(cc::TouchAction) override;
   void UpdateRenderThrottlingStatus(bool is_throttled,
                                     bool subtree_throttled) override;
   void DidChangeOpener(blink::WebFrame* opener) override;

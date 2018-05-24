@@ -492,6 +492,14 @@ void RenderWidgetHostViewChildFrame::SetIsInert() {
   }
 }
 
+void RenderWidgetHostViewChildFrame::UpdateInheritedEffectiveTouchAction() {
+  if (host_ && frame_connector_) {
+    host_->Send(new ViewMsg_SetInheritedEffectiveTouchAction(
+        host_->GetRoutingID(),
+        frame_connector_->InheritedEffectiveTouchAction()));
+  }
+}
+
 void RenderWidgetHostViewChildFrame::UpdateRenderThrottlingStatus() {
   if (host() && frame_connector_) {
     host()->Send(new ViewMsg_UpdateRenderThrottlingStatus(
@@ -841,6 +849,7 @@ void RenderWidgetHostViewChildFrame::WillSendScreenRects() {
     UpdateViewportIntersection(frame_connector_->viewport_intersection_rect(),
                                frame_connector_->compositor_visible_rect());
     SetIsInert();
+    UpdateInheritedEffectiveTouchAction();
     UpdateRenderThrottlingStatus();
   }
 }

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/frame_client.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/platform/graphics/touch_action.h"
 
 namespace blink {
 
@@ -53,6 +54,8 @@ class RemoteFrameClient : public FrameClient {
   virtual void VisibilityChanged(bool visible) = 0;
 
   virtual void SetIsInert(bool) = 0;
+
+  virtual void SetInheritedEffectiveTouchAction(TouchAction) = 0;
 
   virtual void UpdateRenderThrottlingStatus(bool isThrottled,
                                             bool subtreeThrottled) = 0;

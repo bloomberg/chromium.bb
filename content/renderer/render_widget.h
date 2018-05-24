@@ -582,6 +582,7 @@ class CONTENT_EXPORT RenderWidget
   void OnSetViewportIntersection(const gfx::Rect& viewport_intersection,
                                  const gfx::Rect& compositor_visible_rect);
   void OnSetIsInert(bool);
+  void OnSetInheritedEffectiveTouchAction(cc::TouchAction touch_action);
   void OnUpdateRenderThrottlingStatus(bool is_throttled,
                                       bool subtree_throttled);
   // Real data that is dragged is not included at DragEnter time.

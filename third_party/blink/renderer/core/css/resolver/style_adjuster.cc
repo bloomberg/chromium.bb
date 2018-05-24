@@ -457,15 +457,18 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
     element_touch_action = style.GetTouchAction();
   }
 
-  bool is_child_document =
-      element && element == element->GetDocument().documentElement() &&
-      element->GetDocument().LocalOwner();
+  if (!element) {
+    style.SetEffectiveTouchAction(element_touch_action & inherited_action);
+    return;
+  }
 
-  if (is_child_document) {
-    const ComputedStyle* frame_style =
-        element->GetDocument().LocalOwner()->GetComputedStyle();
-    if (frame_style)
-      inherited_action = frame_style->GetEffectiveTouchAction();
+  bool is_child_document = element == element->GetDocument().documentElement();
+
+  // Apply touch action inherited from parent frame.
+  if (is_child_document && element->GetDocument().GetFrame()) {
+    inherited_action &=
+        TouchAction::kTouchActionPan |
+        element->GetDocument().GetFrame()->InheritedEffectiveTouchAction();
   }
 
   // The effective touch action is the intersection of the touch-action values
@@ -492,34 +495,12 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   style.SetEffectiveTouchAction((element_touch_action & inherited_action) |
                                 enforced_by_policy);
 
-  // Touch action is inherited across frames.
-  if (element && element->IsFrameOwnerElement() &&
-      ToHTMLFrameOwnerElement(element)->contentDocument()) {
-    Element* content_document_element =
-        ToHTMLFrameOwnerElement(element)->contentDocument()->documentElement();
-    if (content_document_element) {
-      // Actively trigger recalc for child document if the document does not
-      // have computed style created, or its effective touch action is out of
-      // date.
-      bool child_document_needs_recalc = true;
-      if (const ComputedStyle* content_document_style =
-              content_document_element->GetComputedStyle()) {
-        TouchAction document_touch_action =
-            content_document_style->GetEffectiveTouchAction();
-        TouchAction expected_document_touch_action =
-            AdjustTouchActionForElement(style.GetEffectiveTouchAction(),
-                                        *content_document_style,
-                                        content_document_element) &
-            content_document_style->GetTouchAction();
-        child_document_needs_recalc =
-            document_touch_action != expected_document_touch_action;
-      }
-      if (child_document_needs_recalc) {
-        content_document_element->SetNeedsStyleRecalc(
-            kSubtreeStyleChange,
-            StyleChangeReasonForTracing::Create(
-                StyleChangeReason::kInheritedStyleChangeFromParentFrame));
-      }
+  // Propagate touch action to child frames.
+  if (element->IsFrameOwnerElement()) {
+    Frame* content_frame = ToHTMLFrameOwnerElement(element)->ContentFrame();
+    if (content_frame) {
+      content_frame->SetInheritedEffectiveTouchAction(
+          style.GetEffectiveTouchAction());
     }
   }
 }

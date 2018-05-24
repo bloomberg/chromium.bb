@@ -43,6 +43,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   void DidFreeze() override;
   void DidResume() override;
   void SetIsInert(bool) override;
+  void SetInheritedEffectiveTouchAction(TouchAction) override;
 
   void SetCcLayer(cc::Layer*, bool prevent_contents_opaque_changes);
   cc::Layer* GetCcLayer() const { return cc_layer_; }
