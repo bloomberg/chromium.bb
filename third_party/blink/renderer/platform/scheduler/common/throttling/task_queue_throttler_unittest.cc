@@ -96,6 +96,8 @@ class TaskQueueThrottlerTest : public testing::Test {
         base::sequence_manager::TaskQueueManagerForTest::Create(
             nullptr, mock_task_runner_, clock_.get()),
         base::nullopt));
+    scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
+        base::TimeDelta());
     task_queue_throttler_ = scheduler_->task_queue_throttler();
     timer_queue_ = scheduler_->NewTimerTaskQueue(
         MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);

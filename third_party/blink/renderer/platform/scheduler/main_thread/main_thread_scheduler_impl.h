@@ -653,6 +653,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
                          PageSchedulerImpl* page_scheduler,
                          size_t page_schedulers_to_attribute);
 
+  void InitWakeUpBudgetPoolIfNeeded();
+
   // Indicates that scheduler has been shutdown.
   // It should be accessed only on the main thread, but couldn't be a member
   // of MainThreadOnly struct because last might be destructed before we

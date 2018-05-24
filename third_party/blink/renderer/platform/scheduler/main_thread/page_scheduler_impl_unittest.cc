@@ -168,8 +168,8 @@ TEST_F(PageSchedulerImplTest, RepeatingTimer_PageInBackgroundThenForeground) {
   ThrottleableTaskQueue()->PostDelayedTask(
       FROM_HERE,
       MakeRepeatingTask(ThrottleableTaskQueue(), &run_count,
-                        base::TimeDelta::FromMilliseconds(1)),
-      base::TimeDelta::FromMilliseconds(1));
+                        base::TimeDelta::FromMilliseconds(20)),
+      base::TimeDelta::FromMilliseconds(20));
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(1, run_count);
@@ -180,9 +180,7 @@ TEST_F(PageSchedulerImplTest, RepeatingTimer_PageInBackgroundThenForeground) {
 
   run_count = 0;
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(1001, run_count);  // Note we end up running 1001 here because the
-  // task was posted while throttled with a delay of 1ms so the first task was
-  // due to run before the 1s period started.
+  EXPECT_EQ(50, run_count);
 }
 
 TEST_F(PageSchedulerImplTest, RepeatingLoadingTask_PageInBackground) {
@@ -214,18 +212,18 @@ TEST_F(PageSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
   ThrottleableTaskQueue()->PostDelayedTask(
       FROM_HERE,
       MakeRepeatingTask(ThrottleableTaskQueue(), &run_count1,
-                        base::TimeDelta::FromMilliseconds(1)),
-      base::TimeDelta::FromMilliseconds(1));
+                        base::TimeDelta::FromMilliseconds(20)),
+      base::TimeDelta::FromMilliseconds(20));
   ThrottleableTaskQueueForScheduler(frame_scheduler2.get())
       ->PostDelayedTask(
           FROM_HERE,
           MakeRepeatingTask(
               ThrottleableTaskQueueForScheduler(frame_scheduler2.get()),
-              &run_count2, base::TimeDelta::FromMilliseconds(1)),
-          base::TimeDelta::FromMilliseconds(1));
+              &run_count2, base::TimeDelta::FromMilliseconds(20)),
+          base::TimeDelta::FromMilliseconds(20));
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(1000, run_count1);
+  EXPECT_EQ(50, run_count1);
   EXPECT_EQ(1, run_count2);
 }
 

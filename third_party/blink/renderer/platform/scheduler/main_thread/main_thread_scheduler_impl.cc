@@ -68,7 +68,8 @@ const double kSamplingRateForTaskUkm = 0.0001;
 const char kWakeUpThrottlingTrial[] = "RendererSchedulerWakeUpThrottling";
 const char kWakeUpDurationParam[] = "wake_up_duration_ms";
 
-constexpr base::TimeDelta kDefaultWakeUpDuration = base::TimeDelta();
+constexpr base::TimeDelta kDefaultWakeUpDuration =
+    base::TimeDelta::FromMilliseconds(3);
 
 base::TimeDelta GetWakeUpDuration() {
   int duration_ms;
@@ -1829,6 +1830,7 @@ IdleTimeEstimator* MainThreadSchedulerImpl::GetIdleTimeEstimatorForTesting() {
 }
 
 WakeUpBudgetPool* MainThreadSchedulerImpl::GetWakeUpBudgetPoolForTesting() {
+  InitWakeUpBudgetPoolIfNeeded();
   return main_thread_only().wake_up_budget_pool;
 }
 
@@ -2704,15 +2706,20 @@ MainThreadSchedulerImpl::GetVirtualTimeDomain() {
 
 void MainThreadSchedulerImpl::AddQueueToWakeUpBudgetPool(
     MainThreadTaskQueue* queue) {
-  if (!main_thread_only().wake_up_budget_pool) {
-    main_thread_only().wake_up_budget_pool =
-        task_queue_throttler()->CreateWakeUpBudgetPool("renderer_wake_up_pool");
-    main_thread_only().wake_up_budget_pool->SetWakeUpRate(1);
-    main_thread_only().wake_up_budget_pool->SetWakeUpDuration(
-        GetWakeUpDuration());
-  }
+  InitWakeUpBudgetPoolIfNeeded();
   main_thread_only().wake_up_budget_pool->AddQueue(tick_clock()->NowTicks(),
                                                    queue);
+}
+
+void MainThreadSchedulerImpl::InitWakeUpBudgetPoolIfNeeded() {
+  if (main_thread_only().wake_up_budget_pool)
+    return;
+
+  main_thread_only().wake_up_budget_pool =
+      task_queue_throttler()->CreateWakeUpBudgetPool("renderer_wake_up_pool");
+  main_thread_only().wake_up_budget_pool->SetWakeUpRate(1);
+  main_thread_only().wake_up_budget_pool->SetWakeUpDuration(
+      GetWakeUpDuration());
 }
 
 TimeDomain* MainThreadSchedulerImpl::GetActiveTimeDomain() {
