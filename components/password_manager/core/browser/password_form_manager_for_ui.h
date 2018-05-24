@@ -30,8 +30,8 @@ class PasswordFormManagerForUI {
   // from the store for the observed from.
   virtual FormFetcher* GetFormFetcher() = 0;
 
-  // Returns the form that was initially observed on the page.
-  virtual const autofill::PasswordForm& GetObservedForm() const = 0;
+  // Returns origin of the initially observed form.
+  virtual const GURL& GetOrigin() const = 0;
 
   // Returns the best saved matches for the observed form.
   virtual const std::map<base::string16, const autofill::PasswordForm*>&

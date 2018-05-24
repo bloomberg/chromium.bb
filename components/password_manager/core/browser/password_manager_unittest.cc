@@ -448,9 +448,9 @@ TEST_F(PasswordManagerTest, BestMatchFormToManager) {
 
   // Verify that PasswordFormManager to be save owns the correct pair of
   // observed and submitted forms.
-  EXPECT_EQ(form.action, form_manager_to_save->GetObservedForm().action);
+  EXPECT_EQ(form.action, form_manager_to_save->observed_form().action);
   EXPECT_EQ(form.form_data.name,
-            form_manager_to_save->GetObservedForm().form_data.name);
+            form_manager_to_save->observed_form().form_data.name);
   EXPECT_EQ(changed_form.action,
             form_manager_to_save->submitted_form()->action);
   EXPECT_EQ(changed_form.form_data.name,
@@ -498,9 +498,9 @@ TEST_F(PasswordManagerTest, AnyMatchFormToManager) {
 
   // Verify that we matched the form to a PasswordFormManager, although with the
   // worst possible match.
-  EXPECT_EQ(form.action, form_manager_to_save->GetObservedForm().action);
+  EXPECT_EQ(form.action, form_manager_to_save->observed_form().action);
   EXPECT_EQ(form.form_data.name,
-            form_manager_to_save->GetObservedForm().form_data.name);
+            form_manager_to_save->observed_form().form_data.name);
   EXPECT_EQ(changed_form.action,
             form_manager_to_save->submitted_form()->action);
   EXPECT_EQ(changed_form.form_data.name,

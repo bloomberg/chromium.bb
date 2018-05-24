@@ -746,7 +746,7 @@ bool PasswordManager::CanProvisionalManagerSave() {
     // We just give up.
     client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::MATCHING_NOT_COMPLETE, main_frame_url_,
-        provisional_save_manager_->GetObservedForm().origin, logger.get());
+        provisional_save_manager_->GetOrigin(), logger.get());
     provisional_save_manager_.reset();
     return false;
   }
@@ -886,7 +886,7 @@ void PasswordManager::OnLoginSuccessful() {
     provisional_save_manager_->WipeStoreCopyIfOutdated();
     client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::SYNC_CREDENTIAL, main_frame_url_,
-        provisional_save_manager_->GetObservedForm().origin, logger.get());
+        provisional_save_manager_->GetOrigin(), logger.get());
     provisional_save_manager_.reset();
     return;
   }

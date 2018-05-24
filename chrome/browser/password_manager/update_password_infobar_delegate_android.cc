@@ -72,7 +72,7 @@ UpdatePasswordInfoBarDelegate::UpdatePasswordInfoBarDelegate(
   base::string16 message;
   gfx::Range message_link_range = gfx::Range();
   GetSavePasswordDialogTitleTextAndLinkRange(
-      web_contents->GetVisibleURL(), form_to_update->GetObservedForm().origin,
+      web_contents->GetVisibleURL(), form_to_update->GetOrigin(),
       is_smartlock_branding_enabled, PasswordTitleType::UPDATE_PASSWORD,
       &message, &message_link_range);
   SetMessage(message);
