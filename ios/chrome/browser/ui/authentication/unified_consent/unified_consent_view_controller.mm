@@ -80,6 +80,8 @@ const char* kSettingsSyncURL = "internal://settings-sync";
 @property(nonatomic, strong) NSLayoutConstraint* withIdentityConstraint;
 // Settings link controller.
 @property(nonatomic, strong) LabelLinkController* settingsLinkController;
+// Label related to customize sync text.
+@property(nonatomic, strong) UILabel* customizeSyncLabel;
 
 @end
 
@@ -94,6 +96,7 @@ const char* kSettingsSyncURL = "internal://settings-sync";
 @synthesize scrollView = _scrollView;
 @synthesize settingsLinkController = _settingsLinkController;
 @synthesize withIdentityConstraint = _withIdentityConstraint;
+@synthesize customizeSyncLabel = _customizeSyncLabel;
 
 - (const std::vector<int>&)consentStringIds {
   return _consentStringIds;
@@ -106,9 +109,11 @@ const char* kSettingsSyncURL = "internal://settings-sync";
   self.noIdentityConstraint.active = NO;
   self.withIdentityConstraint.active = YES;
   [self.identityPickerView setIdentityName:fullName email:email];
+  [self setSettingsLinkURLShown:YES];
 }
 
 - (void)updateIdentityPickerViewWithAvatar:(UIImage*)avatar {
+  DCHECK(!self.identityPickerView.hidden);
   [self.identityPickerView setIdentityAvatar:avatar];
 }
 
@@ -116,6 +121,7 @@ const char* kSettingsSyncURL = "internal://settings-sync";
   self.identityPickerView.hidden = YES;
   self.withIdentityConstraint.active = NO;
   self.noIdentityConstraint.active = YES;
+  [self setSettingsLinkURLShown:NO];
 }
 
 - (void)scrollToBottom {
@@ -214,13 +220,11 @@ const char* kSettingsSyncURL = "internal://settings-sync";
       [UIColor colorWithWhite:0 alpha:kSeparatorColorAlpha];
   [container addSubview:separator];
   // Customize label.
-  UILabel* customizeLabel =
-      [self addLabelWithStringId:IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SETTINGS
-                        withIcon:nil
-          iconVerticallyCentered:NO
-                      parentView:container];
   self.openSettingsStringId = IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SETTINGS;
-  [self addSettingsLinkURLWithLabel:customizeLabel];
+  self.customizeSyncLabel = [self addLabelWithStringId:self.openSettingsStringId
+                                              withIcon:nil
+                                iconVerticallyCentered:NO
+                                            parentView:container];
 
   // Layouts
   NSDictionary* views = @{
@@ -233,7 +237,7 @@ const char* kSettingsSyncURL = "internal://settings-sync";
     @"synctext" : syncBookmarkLabel,
     @"personalizedtext" : morePersonalizedLabel,
     @"powerfultext" : powerfulGoogleLabel,
-    @"customizetext" : customizeLabel,
+    @"customizesynctext" : self.customizeSyncLabel,
   };
   NSDictionary* metrics = @{
     @"TitlePickerMargin" : @(KTitlePickerMargin),
@@ -259,7 +263,7 @@ const char* kSettingsSyncURL = "internal://settings-sync";
     @"V:[synctext]-(VBetweenText)-[personalizedtext]",
     @"V:[personalizedtext]-(VBetweenText)-[powerfultext]",
     @"V:[powerfultext]-(VTextMargin)-[separator]",
-    @"V:[separator]-(VBetweenText)-[customizetext]-(VTextMargin)-|",
+    @"V:[separator]-(VBetweenText)-[customizesynctext]-(VTextMargin)-|",
     // Size constraints.
     @"V:[header(HeaderHeight)]",
     @"V:[separator(SeparatorHeight)]",
@@ -392,24 +396,29 @@ const char* kSettingsSyncURL = "internal://settings-sync";
   return label;
 }
 
-// Adds settings link in the customize label.
-- (void)addSettingsLinkURLWithLabel:(UILabel*)label {
-  DCHECK(!self.settingsLinkController);
+// Adds or removes the Settings link in |self.customizeSyncLabel|.
+- (void)setSettingsLinkURLShown:(BOOL)showLink {
+  self.customizeSyncLabel.text =
+      l10n_util::GetNSString(self.openSettingsStringId);
   GURL URL = google_util::AppendGoogleLocaleParam(
       GURL(kSettingsSyncURL), GetApplicationContext()->GetApplicationLocale());
   NSRange range;
-  NSString* text = label.text;
-  label.text = ParseStringWithLink(text, &range);
+  NSString* text = self.customizeSyncLabel.text;
+  self.customizeSyncLabel.text = ParseStringWithLink(text, &range);
   DCHECK(range.location != NSNotFound && range.length != 0);
-  __weak UnifiedConsentViewController* weakSelf = self;
-  self.settingsLinkController =
-      [[LabelLinkController alloc] initWithLabel:label
-                                          action:^(const GURL& URL) {
-                                            [weakSelf openSettings];
-                                          }];
-  [self.settingsLinkController
-      setLinkColor:[[MDCPalette cr_bluePalette] tint500]];
-  [self.settingsLinkController addLinkWithRange:range url:URL];
+  if (!showLink) {
+    self.settingsLinkController = nil;
+  } else {
+    __weak UnifiedConsentViewController* weakSelf = self;
+    self.settingsLinkController =
+        [[LabelLinkController alloc] initWithLabel:self.customizeSyncLabel
+                                            action:^(const GURL& URL) {
+                                              [weakSelf openSettings];
+                                            }];
+    [self.settingsLinkController
+        setLinkColor:[[MDCPalette cr_bluePalette] tint500]];
+    [self.settingsLinkController addLinkWithRange:range url:URL];
+  }
 }
 
 // Updates constraints and content insets for the |scrollView| and
