@@ -750,15 +750,6 @@ PendingScript* ScriptLoader::TakePendingScript(
   return pending_script;
 }
 
-void ScriptLoader::Execute() {
-  DCHECK(!will_be_parser_executed_);
-  DCHECK(pending_script_->IsControlledByScriptRunner());
-  DCHECK(pending_script_->IsExternalOrModule());
-  PendingScript* pending_script = pending_script_;
-  pending_script_ = nullptr;
-  pending_script->ExecuteScriptBlock(NullURL());
-}
-
 void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
   DCHECK(!will_be_parser_executed_);
   DCHECK_EQ(pending_script_, pending_script);
@@ -774,6 +765,7 @@ void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
   DCHECK_EQ(pending_script->GetElement()->Loader(), this);
   context_document->GetScriptRunner()->NotifyScriptReady(pending_script);
   pending_script_->StopWatchingForLoad();
+  pending_script_ = nullptr;
 }
 
 bool ScriptLoader::IgnoresLoadRequest() const {

@@ -215,13 +215,7 @@ bool ScriptRunner::ExecuteInOrderTask() {
   DCHECK_EQ(pending_script->GetSchedulingType(), ScriptSchedulingType::kInOrder)
       << "In-order scripts queue should not contain any async script.";
 
-  // TODO(hiroshige): Move ExecuteScriptBlock() to PendingScript and remove
-  // the use of ScriptLoader here.
-  ScriptLoader* script_loader = pending_script->GetElement()->Loader();
-  DCHECK(script_loader);
-  DCHECK_EQ(script_loader->GetPendingScriptIfControlledByScriptRunner(),
-            pending_script);
-  script_loader->Execute();
+  pending_script->ExecuteScriptBlock(NullURL());
 
   document_->DecrementLoadEventDelayCount();
   return true;
@@ -246,13 +240,7 @@ bool ScriptRunner::ExecuteAsyncTask() {
   DCHECK_EQ(pending_script->GetSchedulingType(), ScriptSchedulingType::kAsync)
       << "Async scripts queue should not contain any in-order script.";
 
-  // TODO(hiroshige): Move ExecuteScriptBlock() to PendingScript and remove
-  // the use of ScriptLoader here.
-  ScriptLoader* script_loader = pending_script->GetElement()->Loader();
-  DCHECK(script_loader);
-  DCHECK_EQ(script_loader->GetPendingScriptIfControlledByScriptRunner(),
-            pending_script);
-  script_loader->Execute();
+  pending_script->ExecuteScriptBlock(NullURL());
 
   document_->DecrementLoadEventDelayCount();
   return true;
