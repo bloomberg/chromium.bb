@@ -674,6 +674,24 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
     return crash_handler->GetDeathSignalSocket();
   }
 
+#if defined(OS_CHROMEOS)
+  // Mash services are utility processes, but crashes are reported using the
+  // service name as the process type to make the crash console easier to read.
+  if (command_line.HasSwitch(switches::kMashServiceName)) {
+    static base::NoDestructor<
+        std::map<std::string, breakpad::CrashHandlerHostLinux*>>
+        crash_handlers;
+    std::string service_name =
+        command_line.GetSwitchValueASCII(switches::kMashServiceName);
+    auto it = crash_handlers->find(service_name);
+    if (it == crash_handlers->end()) {
+      crash_handlers->insert(
+          std::make_pair(service_name, CreateCrashHandlerHost(service_name)));
+    }
+    return crash_handlers->at(service_name)->GetDeathSignalSocket();
+  }
+#endif  // defined(OS_CHROMEOS)
+
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
@@ -1806,14 +1824,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                     client_info->client_id);
   }
 #elif defined(OS_POSIX)
-  bool enable_crash_reporter = breakpad::IsCrashReporterEnabled();
-#if defined(OS_CHROMEOS)
-  // Chrome OS uses the OS-level crash_reporter for mash services, so disable
-  // breakpad in-process crashing dumping.
-  if (command_line->HasSwitch(switches::kMashServiceName))
-    enable_crash_reporter = false;
-#endif
-  if (enable_crash_reporter) {
+  if (breakpad::IsCrashReporterEnabled()) {
     std::string switch_value;
     std::unique_ptr<metrics::ClientInfo> client_info =
         GoogleUpdateSettings::LoadMetricsClientInfo();
