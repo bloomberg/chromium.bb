@@ -189,10 +189,9 @@ class SyncedSessionTracker {
   SessionID LookupTabIdFromTabNodeId(const std::string& session_tag,
                                      int tab_node_id) const;
 
-  // Fills |tab_node_id| with a tab node for |tab_id|. Returns true if an
-  // existing tab node was found, false if there was none and one had to be
-  // created.
-  bool GetTabNodeFromLocalTabId(SessionID tab_id, int* tab_node_id);
+  // Returns a valid tab node for |tab_id|. Will reuse an existing tab node if
+  // possible, and otherwise create a new one.
+  int AssociateLocalTabWithFreeTabNode(SessionID tab_id);
 
   // Reassociates the tab denoted by |tab_node_id| with a new tab id, preserving
   // any previous SessionTab object the node was associated with. This is useful

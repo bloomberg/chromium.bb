@@ -515,8 +515,7 @@ SessionID SyncedSessionTracker::LookupTabIdFromTabNodeId(
   return session->tab_node_pool.GetTabIdFromTabNodeId(tab_node_id);
 }
 
-bool SyncedSessionTracker::GetTabNodeFromLocalTabId(SessionID tab_id,
-                                                    int* tab_node_id) {
+int SyncedSessionTracker::AssociateLocalTabWithFreeTabNode(SessionID tab_id) {
   DCHECK(!local_session_tag_.empty());
   TrackedSession* session = GetTrackedSession(local_session_tag_);
 
@@ -527,17 +526,7 @@ bool SyncedSessionTracker::GetTabNodeFromLocalTabId(SessionID tab_id,
   // sync and as consistent as possible.
   GetTab(local_session_tag_, tab_id);  // Ignore result.
 
-  *tab_node_id = session->tab_node_pool.GetTabNodeIdFromTabId(tab_id);
-  if (*tab_node_id != TabNodePool::kInvalidTabNodeID) {
-    return true;  // Reused existing tab.
-  }
-
-  // Could not reuse an existing tab so create a new one.
-  bool reused_existing_tab = false;
-  *tab_node_id = session->tab_node_pool.AssociateWithFreeTabNode(
-      tab_id, &reused_existing_tab);
-  DCHECK_NE(TabNodePool::kInvalidTabNodeID, *tab_node_id);
-  return reused_existing_tab;
+  return session->tab_node_pool.AssociateWithFreeTabNode(tab_id);
 }
 
 void SyncedSessionTracker::ReassociateLocalTab(int tab_node_id,
