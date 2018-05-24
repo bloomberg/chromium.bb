@@ -216,47 +216,47 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
   }
   Member(WTF::HashTableDeletedValueType x) : Parent(x) {}
 
-  Member(const Member& other) : Parent(other) { WriteBarrier(this->raw_); }
+  Member(const Member& other) : Parent(other) { WriteBarrier(); }
   template <typename U>
   Member(const Member<U>& other) : Parent(other) {
-    WriteBarrier(this->raw_);
+    WriteBarrier();
   }
   template <typename U>
   Member(const Persistent<U>& other) : Parent(other) {
-    WriteBarrier(this->raw_);
+    WriteBarrier();
   }
 
   template <typename U>
   Member& operator=(const Persistent<U>& other) {
     Parent::operator=(other);
-    WriteBarrier(this->raw_);
+    WriteBarrier();
     return *this;
   }
 
   Member& operator=(const Member& other) {
     Parent::operator=(other);
-    WriteBarrier(this->raw_);
+    WriteBarrier();
     return *this;
   }
 
   template <typename U>
   Member& operator=(const Member<U>& other) {
     Parent::operator=(other);
-    WriteBarrier(this->raw_);
+    WriteBarrier();
     return *this;
   }
 
   template <typename U>
   Member& operator=(const WeakMember<U>& other) {
     Parent::operator=(other);
-    WriteBarrier(this->raw_);
+    WriteBarrier();
     return *this;
   }
 
   template <typename U>
   Member& operator=(U* other) {
     Parent::operator=(other);
-    WriteBarrier(this->raw_);
+    WriteBarrier();
     return *this;
   }
 
@@ -271,12 +271,10 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
   }
 
  protected:
-  ALWAYS_INLINE void WriteBarrier(T* value) const {
+  ALWAYS_INLINE void WriteBarrier() const {
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
-    if (LIKELY(!this->IsHashTableDeletedValue())) {
-      MarkingVisitor::WriteBarrier(
-          const_cast<typename std::remove_const<T>::type*>(value));
-    }
+    MarkingVisitor::WriteBarrier(
+        const_cast<typename std::remove_const<T>::type*>(this->raw_));
 #endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   }
 
@@ -604,13 +602,13 @@ class ConstructTraits<blink::Member<T>, Traits, Allocator> {
                                                      Args&&... args) {
     blink::Member<T>* object =
         new (NotNull, location) blink::Member<T>(std::forward<Args>(args)...);
-    object->WriteBarrier(object->raw_);
+    object->WriteBarrier();
     return object;
   }
 
   static void NotifyNewElements(blink::Member<T>* array, size_t len) {
     while (len-- > 0) {
-      array->WriteBarrier(array->raw_);
+      array->WriteBarrier();
       array++;
     }
   }

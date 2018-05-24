@@ -37,14 +37,14 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
 
   // Write barrier that adds |value| to the set of marked objects. The barrier
   // bails out if marking is off or the object is not yet marked.
-  inline static void WriteBarrier(void* value);
+  ALWAYS_INLINE static void WriteBarrier(void* value);
 
   // Eagerly traces an already marked backing store ensuring that all its
   // children are discovered by the marker. The barrier bails out if marking
   // is off and on individual objects reachable if they are already marked. The
   // barrier uses the callback function through GcInfo, so it will not inline
   // any templated type-specific code.
-  inline static void TraceMarkedBackingStore(void* value);
+  ALWAYS_INLINE static void TraceMarkedBackingStore(void* value);
 
   MarkingVisitor(ThreadState*, MarkingMode);
   ~MarkingVisitor() override;
@@ -157,6 +157,10 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
              const ScriptWrappable* key) final {}
 
  private:
+  // Exact version of the marking write barriers.
+  static void WriteBarrierSlow(void*);
+  static void TraceMarkedBackingStoreSlow(void*);
+
   void RegisterBackingStoreReference(void* slot);
 
   void ConservativelyMarkHeader(HeapObjectHeader*);
@@ -191,41 +195,25 @@ inline void MarkingVisitor::MarkHeader(HeapObjectHeader* header,
   }
 }
 
-inline void MarkingVisitor::WriteBarrier(void* value) {
+ALWAYS_INLINE void MarkingVisitor::WriteBarrier(void* value) {
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
-  if (!ThreadState::IsAnyIncrementalMarking() || !value)
+  if (!ThreadState::IsAnyIncrementalMarking())
     return;
 
-  ThreadState* const thread_state = ThreadState::Current();
-  if (!thread_state->IsIncrementalMarking())
-    return;
-
-  thread_state->Heap().WriteBarrier(value);
+  // Avoid any further checks and dispatch to a call at this point. Aggressive
+  // inlining otherwise pollutes the regular execution paths.
+  WriteBarrierSlow(value);
 #endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
 }
 
-inline void MarkingVisitor::TraceMarkedBackingStore(void* value) {
+ALWAYS_INLINE void MarkingVisitor::TraceMarkedBackingStore(void* value) {
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
-  if (!ThreadState::IsAnyIncrementalMarking() || !value)
+  if (!ThreadState::IsAnyIncrementalMarking())
     return;
 
-  ThreadState* const thread_state = ThreadState::Current();
-  if (!thread_state->IsIncrementalMarking())
-    return;
-
-  // |value| is pointing to the start of a backing store.
-  HeapObjectHeader* header = HeapObjectHeader::FromPayload(value);
-  CHECK(header->IsMarked());
-  DCHECK(thread_state->CurrentVisitor());
-  // This check ensures that the visitor will not eagerly recurse into children
-  // but rather push all blink::GarbageCollected objects and only eagerly trace
-  // non-managed objects.
-  DCHECK(!thread_state->Heap().GetStackFrameDepth().IsEnabled());
-  // No weak handling for write barriers. Modifying weakly reachable objects
-  // strongifies them for the current cycle.
-  GCInfoTable::Get()
-      .GCInfoFromIndex(header->GcInfoIndex())
-      ->trace_(thread_state->CurrentVisitor(), value);
+  // Avoid any further checks and dispatch to a call at this point. Aggressive
+  // inlining otherwise pollutes the regular execution paths.
+  TraceMarkedBackingStoreSlow(value);
 #endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
 }
 

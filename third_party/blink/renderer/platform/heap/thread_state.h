@@ -220,7 +220,7 @@ class PLATFORM_EXPORT ThreadState {
   // Returns true if any thread is currently incremental marking its heap and
   // false otherwise. For an exact check use
   // ThreadState::IsIncrementalMarking().
-  static bool IsAnyIncrementalMarking() {
+  ALWAYS_INLINE static bool IsAnyIncrementalMarking() {
     // Stores use full barrier to allow using the simplest relaxed load here.
     return base::subtle::NoBarrier_Load(&incremental_marking_counter_) > 0;
   }
