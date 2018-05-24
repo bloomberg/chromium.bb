@@ -655,12 +655,12 @@
   {
     "prefix": "picture-in-picture",
     "base": "external/wpt/picture-in-picture",
-    "args": ["--enable-features=PictureInPicture,UseSurfaceLayerForVideo"]
+    "args": ["--enable-features=UseSurfaceLayerForVideo"]
   },
   {
     "prefix": "picture-in-picture",
     "base": "external/wpt/feature-policy",
-    "args": ["--enable-features=PictureInPicture,UseSurfaceLayerForVideo"]
+    "args": ["--enable-features=UseSurfaceLayerForVideo"]
   },
   {
     "prefix": "picture-in-picture",
