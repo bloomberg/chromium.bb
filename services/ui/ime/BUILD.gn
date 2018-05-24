@@ -35,6 +35,7 @@ source_set("tests") {
     "//base",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
+    "//services/ui/ime/test_ime_driver/public/mojom",
     "//services/ui/public/interfaces",
   ]
 

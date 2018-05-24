@@ -1516,6 +1516,8 @@ static_library("ash_shell_lib_with_content") {
     "//content/shell:content_shell_lib",
     "//device/bluetooth",
     "//net",
+    "//services/ui/ime/test_ime_driver:lib",
+    "//services/ui/ime/test_ime_driver/public/mojom",
     "//services/ui/ws2:lib",
     "//skia",
     "//ui/aura",
