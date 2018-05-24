@@ -413,7 +413,7 @@ TEST_F(AudioOutputDeviceTest, VerifyDataFlow) {
   audio_device->OnDeviceAuthorized(OUTPUT_DEVICE_STATUS_OK, params,
                                    kDefaultDeviceId);
   audio_device->OnStreamCreated(
-      ToSharedMemoryHandle(env.reader->shared_memory_region()->Duplicate()),
+      ToSharedMemoryHandle(env.reader->TakeSharedMemoryRegion()),
       env.renderer_socket.Release(), /*playing_automatically*/ false);
 
   task_env_.RunUntilIdle();
@@ -474,7 +474,7 @@ TEST_F(AudioOutputDeviceTest, CreateNondefaultDevice) {
   audio_device->OnDeviceAuthorized(OUTPUT_DEVICE_STATUS_OK, params,
                                    kNonDefaultDeviceId);
   audio_device->OnStreamCreated(
-      ToSharedMemoryHandle(env.reader->shared_memory_region()->Duplicate()),
+      ToSharedMemoryHandle(env.reader->TakeSharedMemoryRegion()),
       env.renderer_socket.Release(), /*playing_automatically*/ false);
 
   audio_device->Stop();
@@ -510,7 +510,7 @@ TEST_F(AudioOutputDeviceTest, CreateBitStreamStream) {
   audio_device->OnDeviceAuthorized(OUTPUT_DEVICE_STATUS_OK, params,
                                    kNonDefaultDeviceId);
   audio_device->OnStreamCreated(
-      ToSharedMemoryHandle(env.reader->shared_memory_region()->Duplicate()),
+      ToSharedMemoryHandle(env.reader->TakeSharedMemoryRegion()),
       env.renderer_socket.Release(), /*playing_automatically*/ false);
 
   task_env_.RunUntilIdle();

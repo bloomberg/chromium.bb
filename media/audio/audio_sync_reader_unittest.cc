@@ -62,7 +62,7 @@ TEST_P(AudioSyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
   std::unique_ptr<AudioSyncReader> reader = AudioSyncReader::Create(
       base::BindRepeating(&NoLog), params, socket.get());
   const base::WritableSharedMemoryMapping shmem =
-      reader->shared_memory_region()->Map();
+      reader->TakeSharedMemoryRegion().Map();
   AudioOutputBuffer* buffer =
       reinterpret_cast<AudioOutputBuffer*>(shmem.memory());
   reader->RequestMoreData(base::TimeDelta(), base::TimeTicks(), 0);

@@ -247,7 +247,7 @@ TEST(OldRenderFrameAudioOutputStreamFactoryTest, CreateStream) {
   auto remote = std::make_unique<base::CancelableSyncSocket>();
   ASSERT_TRUE(
       base::CancelableSyncSocket::CreatePair(local.get(), remote.get()));
-  event_handler->OnStreamCreated(kStreamId, &shared_memory_region,
+  event_handler->OnStreamCreated(kStreamId, std::move(shared_memory_region),
                                  std::move(remote));
 
   base::RunLoop().RunUntilIdle();

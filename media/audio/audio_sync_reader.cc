@@ -144,6 +144,11 @@ std::unique_ptr<AudioSyncReader> AudioSyncReader::Create(
       std::move(shared_memory_mapping), std::move(socket));
 }
 
+base::UnsafeSharedMemoryRegion AudioSyncReader::TakeSharedMemoryRegion() {
+  DCHECK(shared_memory_region_.IsValid());
+  return std::move(shared_memory_region_);
+}
+
 // AudioOutputController::SyncReader implementations.
 void AudioSyncReader::RequestMoreData(base::TimeDelta delay,
                                       base::TimeTicks delay_timestamp,
