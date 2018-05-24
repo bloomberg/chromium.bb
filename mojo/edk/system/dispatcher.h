@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -130,9 +131,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   virtual MojoResult EndWriteData(uint32_t num_bytes_written);
 
   // Invitation API.
-  virtual MojoResult AttachMessagePipe(uint64_t name,
+  virtual MojoResult AttachMessagePipe(base::StringPiece name,
                                        ports::PortRef remote_peer_port);
-  virtual MojoResult ExtractMessagePipe(uint64_t name,
+  virtual MojoResult ExtractMessagePipe(base::StringPiece name,
                                         MojoHandle* message_pipe_handle);
 
   ///////////// General-purpose API for all handle types /////////

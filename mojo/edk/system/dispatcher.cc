@@ -98,12 +98,12 @@ MojoResult Dispatcher::EndWriteData(uint32_t num_bytes_written) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::AttachMessagePipe(uint64_t name,
+MojoResult Dispatcher::AttachMessagePipe(base::StringPiece name,
                                          ports::PortRef remote_peer_port) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::ExtractMessagePipe(uint64_t name,
+MojoResult Dispatcher::ExtractMessagePipe(base::StringPiece name,
                                           MojoHandle* message_pipe_handle) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }

@@ -30,10 +30,10 @@ MojoResult InvitationDispatcher::Close() {
 }
 
 MojoResult InvitationDispatcher::AttachMessagePipe(
-    uint64_t name,
+    base::StringPiece name,
     ports::PortRef remote_peer_port) {
   base::AutoLock lock(lock_);
-  auto result = attached_ports_.emplace(name, remote_peer_port);
+  auto result = attached_ports_.emplace(name.as_string(), remote_peer_port);
   if (!result.second) {
     Core::Get()->GetNodeController()->ClosePort(remote_peer_port);
     return MOJO_RESULT_ALREADY_EXISTS;
@@ -42,12 +42,12 @@ MojoResult InvitationDispatcher::AttachMessagePipe(
 }
 
 MojoResult InvitationDispatcher::ExtractMessagePipe(
-    uint64_t name,
+    base::StringPiece name,
     MojoHandle* message_pipe_handle) {
   ports::PortRef remote_peer_port;
   {
     base::AutoLock lock(lock_);
-    auto it = attached_ports_.find(name);
+    auto it = attached_ports_.find(name.as_string());
     if (it == attached_ports_.end())
       return MOJO_RESULT_NOT_FOUND;
     remote_peer_port = std::move(it->second);

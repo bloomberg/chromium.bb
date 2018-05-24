@@ -294,20 +294,22 @@ MojoResult MojoCreateInvitationImpl(const MojoCreateInvitationOptions* options,
 
 MojoResult MojoAttachMessagePipeToInvitationImpl(
     MojoHandle invitation_handle,
-    uint64_t name,
+    const void* name,
+    uint32_t name_num_bytes,
     const MojoAttachMessagePipeToInvitationOptions* options,
     MojoHandle* message_pipe_handle) {
-  return g_core->AttachMessagePipeToInvitation(invitation_handle, name, options,
-                                               message_pipe_handle);
+  return g_core->AttachMessagePipeToInvitation(
+      invitation_handle, name, name_num_bytes, options, message_pipe_handle);
 }
 
 MojoResult MojoExtractMessagePipeFromInvitationImpl(
     MojoHandle invitation_handle,
-    uint64_t name,
+    const void* name,
+    uint32_t name_num_bytes,
     const MojoExtractMessagePipeFromInvitationOptions* options,
     MojoHandle* message_pipe_handle) {
-  return g_core->ExtractMessagePipeFromInvitation(invitation_handle, name,
-                                                  options, message_pipe_handle);
+  return g_core->ExtractMessagePipeFromInvitation(
+      invitation_handle, name, name_num_bytes, options, message_pipe_handle);
 }
 
 MojoResult MojoSendInvitationImpl(

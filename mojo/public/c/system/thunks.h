@@ -193,12 +193,14 @@ struct MojoSystemThunks {
       MojoHandle* invitation_handle);
   MojoResult (*AttachMessagePipeToInvitation)(
       MojoHandle invitation_handle,
-      uint64_t name,
+      const void* name,
+      uint32_t name_num_bytes,
       const MojoAttachMessagePipeToInvitationOptions* options,
       MojoHandle* message_pipe_handle);
   MojoResult (*ExtractMessagePipeFromInvitation)(
       MojoHandle invitation_handle,
-      uint64_t name,
+      const void* name,
+      uint32_t name_num_bytes,
       const MojoExtractMessagePipeFromInvitationOptions* options,
       MojoHandle* message_pipe_handle);
   MojoResult (*SendInvitation)(
