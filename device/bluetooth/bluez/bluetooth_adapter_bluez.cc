@@ -1062,8 +1062,14 @@ void BluetoothAdapterBlueZ::RemoveAdapter() {
     NotifyAdapterPoweredChanged(false);
   if (properties->discoverable.value())
     DiscoverableChanged(false);
-  if (properties->discovering.value())
-    DiscoveringChanged(false);
+
+  // The properties->discovering.value() may not be up to date with the real
+  // discovering state (BlueZ bug: http://crbug.com/822104).
+  // When the adapter is removed, make sure to clear all discovery sessions no
+  // matter what the current properties->discovering.value() is.
+  // DiscoveringChanged() properly handles the case where there is no discovery
+  // sessions currently.
+  DiscoveringChanged(false);
 
   // Move all elements of the original devices list to a new list here,
   // leaving the original list empty so that when we send DeviceRemoved(),
