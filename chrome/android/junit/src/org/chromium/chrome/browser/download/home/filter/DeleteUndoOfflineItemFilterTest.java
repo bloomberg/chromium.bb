@@ -63,7 +63,7 @@ public class DeleteUndoOfflineItemFilterTest {
         // Test removing more items.
         filter.addPendingDeletions(CollectionUtil.newHashSet(item3));
         verify(mObserver, times(1)).onItemsRemoved(CollectionUtil.newHashSet(item3));
-        Assert.assertEquals(Collections.EMPTY_SET, filter.getItems());
+        Assert.assertEquals(Collections.emptySet(), filter.getItems());
 
         // Test undoing items across removals.
         filter.removePendingDeletions(CollectionUtil.newHashSet(item1, item3));

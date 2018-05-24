@@ -9,9 +9,10 @@ import android.view.View;
 
 import org.chromium.chrome.browser.download.home.filter.DeleteUndoOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
-import org.chromium.chrome.browser.download.home.filter.OfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.SearchOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.TypeOfflineItemFilter;
+import org.chromium.chrome.browser.download.home.list.DateOrderedListModel;
+import org.chromium.chrome.browser.download.home.list.DateOrderedListMutator;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
@@ -24,7 +25,8 @@ public class DownloadManagerCoordinatorImpl {
     private final OfflineContentProvider mProvider;
     private final FilterCoordinator mFilterCoordinator;
     private final OfflineItemSource mSource;
-    private final OfflineItemFilter mFilteredItems;
+    private final DateOrderedListMutator mMutator;
+    private final DateOrderedListModel mModel;
 
     public DownloadManagerCoordinatorImpl(Profile profile, Context context) {
         mProvider = OfflineContentAggregatorFactory.forProfile(profile);
@@ -35,10 +37,11 @@ public class DownloadManagerCoordinatorImpl {
         DeleteUndoOfflineItemFilter deleteFilter = new DeleteUndoOfflineItemFilter(mSource);
         TypeOfflineItemFilter typeFilter = new TypeOfflineItemFilter(deleteFilter);
         SearchOfflineItemFilter searchFilter = new SearchOfflineItemFilter(typeFilter);
+        mModel = new DateOrderedListModel();
+        mMutator = new DateOrderedListMutator(searchFilter, mModel);
 
         mFilterCoordinator = new FilterCoordinator(context, deleteFilter);
         mFilterCoordinator.addObserver(filter -> typeFilter.onFilterSelected(filter));
-        mFilteredItems = searchFilter;
 
         // TODO(dtrainor): mFilteredItems will be used to generate the UI.
     }
