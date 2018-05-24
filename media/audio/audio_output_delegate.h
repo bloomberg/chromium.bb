@@ -30,7 +30,7 @@ class MEDIA_EXPORT AudioOutputDelegate {
     // Called when the underlying stream is ready for playout.
     virtual void OnStreamCreated(
         int stream_id,
-        const base::UnsafeSharedMemoryRegion* shared_memory_region,
+        base::UnsafeSharedMemoryRegion shared_memory_region,
         std::unique_ptr<base::CancelableSyncSocket> socket) = 0;
 
     // Called if stream encounters an error and has become unusable.

@@ -206,7 +206,7 @@ TEST_F(MojoAudioOutputStreamTest, Play_Plays) {
   EXPECT_CALL(client_, GotNotification());
   EXPECT_CALL(*delegate_, OnPlayStream());
 
-  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_,
+  delegate_event_handler_->OnStreamCreated(kStreamId, std::move(mem_),
                                            std::move(foreign_socket_));
   audio_output_ptr->Play();
   base::RunLoop().RunUntilIdle();
@@ -218,7 +218,7 @@ TEST_F(MojoAudioOutputStreamTest, Pause_Pauses) {
   EXPECT_CALL(client_, GotNotification());
   EXPECT_CALL(*delegate_, OnPauseStream());
 
-  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_,
+  delegate_event_handler_->OnStreamCreated(kStreamId, std::move(mem_),
                                            std::move(foreign_socket_));
   audio_output_ptr->Pause();
   base::RunLoop().RunUntilIdle();
@@ -230,7 +230,7 @@ TEST_F(MojoAudioOutputStreamTest, SetVolume_SetsVolume) {
   EXPECT_CALL(client_, GotNotification());
   EXPECT_CALL(*delegate_, OnSetVolume(kNewVolume));
 
-  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_,
+  delegate_event_handler_->OnStreamCreated(kStreamId, std::move(mem_),
                                            std::move(foreign_socket_));
   audio_output_ptr->SetVolume(kNewVolume);
   base::RunLoop().RunUntilIdle();
@@ -243,7 +243,7 @@ TEST_F(MojoAudioOutputStreamTest, DestructWithCallPending_Safe) {
 
   ASSERT_NE(nullptr, delegate_event_handler_);
   foreign_socket_->ExpectOwnershipTransfer();
-  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_,
+  delegate_event_handler_->OnStreamCreated(kStreamId, std::move(mem_),
                                            std::move(foreign_socket_));
   audio_output_ptr->Play();
   impl_.reset();
@@ -258,7 +258,7 @@ TEST_F(MojoAudioOutputStreamTest, Created_NotifiesClient) {
 
   ASSERT_NE(nullptr, delegate_event_handler_);
   foreign_socket_->ExpectOwnershipTransfer();
-  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_,
+  delegate_event_handler_->OnStreamCreated(kStreamId, std::move(mem_),
                                            std::move(foreign_socket_));
 
   base::RunLoop().RunUntilIdle();
@@ -269,7 +269,7 @@ TEST_F(MojoAudioOutputStreamTest, SetVolumeTooLarge_Error) {
   EXPECT_CALL(deleter_, Finished(true));
   EXPECT_CALL(client_, GotNotification());
 
-  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_,
+  delegate_event_handler_->OnStreamCreated(kStreamId, std::move(mem_),
                                            std::move(foreign_socket_));
   audio_output_ptr->SetVolume(15);
   base::RunLoop().RunUntilIdle();
@@ -281,7 +281,7 @@ TEST_F(MojoAudioOutputStreamTest, SetVolumeNegative_Error) {
   EXPECT_CALL(deleter_, Finished(true));
   EXPECT_CALL(client_, GotNotification());
 
-  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_,
+  delegate_event_handler_->OnStreamCreated(kStreamId, std::move(mem_),
                                            std::move(foreign_socket_));
   audio_output_ptr->SetVolume(-0.5);
   base::RunLoop().RunUntilIdle();
@@ -307,7 +307,7 @@ TEST_F(MojoAudioOutputStreamTest, DelegateErrorAfterCreated_PropagatesError) {
 
   ASSERT_NE(nullptr, delegate_event_handler_);
   foreign_socket_->ExpectOwnershipTransfer();
-  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_,
+  delegate_event_handler_->OnStreamCreated(kStreamId, std::move(mem_),
                                            std::move(foreign_socket_));
   delegate_event_handler_->OnStreamError(kStreamId);
 
@@ -321,7 +321,7 @@ TEST_F(MojoAudioOutputStreamTest, RemoteEndGone_CallsDeleter) {
   EXPECT_CALL(client_, GotNotification());
   EXPECT_CALL(deleter_, Finished(false));
 
-  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_,
+  delegate_event_handler_->OnStreamCreated(kStreamId, std::move(mem_),
                                            std::move(foreign_socket_));
   audio_output_ptr.reset();
   base::RunLoop().RunUntilIdle();

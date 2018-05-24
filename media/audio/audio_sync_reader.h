@@ -52,9 +52,9 @@ class MEDIA_EXPORT AudioSyncReader : public AudioOutputController::SyncReader {
       const AudioParameters& params,
       base::CancelableSyncSocket* foreign_socket);
 
-  const base::UnsafeSharedMemoryRegion* shared_memory_region() const {
-    return &shared_memory_region_;
-  }
+  // Transfers shared memory region ownership to a caller. It shouldn't be
+  // called more than once.
+  base::UnsafeSharedMemoryRegion TakeSharedMemoryRegion();
 
   void set_max_wait_timeout_for_test(base::TimeDelta time) {
     maximum_wait_time_ = time;
