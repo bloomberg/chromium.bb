@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/ime_driver/ime_driver_mus.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "services/service_manager/sandbox/switches.h"
 
@@ -94,9 +93,6 @@ void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 
 void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
 #if defined(USE_AURA)
-  // IME driver must be available at login screen, so initialize before profile.
-  IMEDriver::Register();
-
   // Start devtools server
   network::mojom::NetworkContext* network_context =
       g_browser_process->system_network_context_manager()->GetContext();
