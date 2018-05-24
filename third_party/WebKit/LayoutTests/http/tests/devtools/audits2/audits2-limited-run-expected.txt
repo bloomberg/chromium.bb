@@ -7,7 +7,8 @@ Tests that audits panel works when only performance category is selected.
 [ ] Best practices
 [ ] Accessibility
 [ ] SEO
-Run audit: enabled visible
+[x] Clear storage
+Run audits: enabled visible
 
 =============== Lighthouse Results ===============
 bootup-time: true

@@ -11,7 +11,8 @@
   var dialogElement = Audits2TestRunner.getContainerElement();
   var checkboxes = dialogElement.querySelectorAll('.checkbox');
   for (var checkbox of checkboxes) {
-    if (checkbox.textElement.textContent === 'Performance')
+    if (checkbox.textElement.textContent === 'Performance' ||
+        checkbox.textElement.textContent === 'Clear storage')
       continue;
 
     checkbox.checkboxElement.click();
