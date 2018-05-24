@@ -71,6 +71,15 @@ void MockInputRouterClient::ForwardGestureEventWithLatencyInfo(
   if (input_router_)
     input_router_->SendGestureEvent(
         GestureEventWithLatencyInfo(gesture_event, latency_info));
+
+  if (gesture_event.SourceDevice() != blink::kWebGestureDeviceTouchpad)
+    return;
+
+  if (gesture_event.GetType() == WebInputEvent::kGestureScrollBegin) {
+    is_wheel_scroll_in_progress_ = true;
+  } else if (gesture_event.GetType() == WebInputEvent::kGestureScrollEnd) {
+    is_wheel_scroll_in_progress_ = false;
+  }
 }
 
 void MockInputRouterClient::ForwardWheelEventWithLatencyInfo(
@@ -80,6 +89,10 @@ void MockInputRouterClient::ForwardWheelEventWithLatencyInfo(
     input_router_->SendWheelEvent(
         MouseWheelEventWithLatencyInfo(wheel_event, latency_info));
   }
+}
+
+bool MockInputRouterClient::IsWheelScrollInProgress() {
+  return is_wheel_scroll_in_progress_;
 }
 
 bool MockInputRouterClient::GetAndResetFilterEventCalled() {

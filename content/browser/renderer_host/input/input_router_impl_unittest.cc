@@ -160,6 +160,10 @@ class MockInputRouterImplClient : public InputRouterImplClient {
                                                             latency_info);
   }
 
+  bool IsWheelScrollInProgress() override {
+    return input_router_client_.IsWheelScrollInProgress();
+  }
+
   void OnSetWhiteListedTouchAction(cc::TouchAction touch_action) override {
     input_router_client_.OnSetWhiteListedTouchAction(touch_action);
   }

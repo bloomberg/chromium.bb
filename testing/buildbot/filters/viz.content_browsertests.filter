@@ -18,7 +18,6 @@
 # Further WaitForChildFrameSurfaceReady doesn't work http://crbug.com/787945
 -SitePerProcessBrowserTest.CompositorViewportPixelSizeTest
 -SitePerProcessBrowserTest.GestureFlingStartEventsBubble
--SitePerProcessBrowserTest.GestureFlingStart
 -SitePerProcessBrowserTest.NavigateCrashedSubframeToSameSite
 -SitePerProcessBrowserTest.OOPIFDetachDuringAnimation
 -SitePerProcessBrowserTest.PhysicalBackingSizeTest
@@ -26,6 +25,8 @@
 -SitePerProcessBrowserTest.ScrollBubblingFromOOPIFTest
 -SitePerProcessBrowserTest.ScrollBubblingFromOOPIFWithBodyOverflowHidden
 -SitePerProcessBrowserTest.ScrollLocalSubframeInOOPIF
+-SitePerProcessBrowserTest.TouchpadGestureFlingStart
+-SitePerProcessBrowserTest.TouchscreenGestureFlingStart
 -SitePerProcessBrowserTest.TwoSubframesCreatePopupMenuWidgetsSimultaneously
 -SitePerProcessBrowserTest.ViewBoundsInNestedFrameTest
 -SitePerProcessHitTestBrowserTest.AsynchronousHitTestChildTimeout*

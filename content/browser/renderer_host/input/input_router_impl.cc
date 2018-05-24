@@ -409,6 +409,10 @@ void InputRouterImpl::ForwardGestureEventWithLatencyInfo(
   client_->ForwardGestureEventWithLatencyInfo(event, latency_info);
 }
 
+bool InputRouterImpl::IsWheelScrollInProgress() {
+  return client_->IsWheelScrollInProgress();
+}
+
 void InputRouterImpl::FilterAndSendWebInputEvent(
     const WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
