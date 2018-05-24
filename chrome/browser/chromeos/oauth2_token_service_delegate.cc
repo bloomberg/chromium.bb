@@ -21,12 +21,6 @@ ChromeOSOAuth2TokenServiceDelegate::ChromeOSOAuth2TokenServiceDelegate(
     : account_tracker_service_(account_tracker_service),
       account_manager_(account_manager),
       weak_factory_(this) {
-  DCHECK(account_manager_);
-  load_credentials_state_ = LOAD_CREDENTIALS_IN_PROGRESS;
-  account_manager_->AddObserver(this);
-  account_manager_->GetAccounts(
-      base::BindOnce(&ChromeOSOAuth2TokenServiceDelegate::GetAccountsCallback,
-                     weak_factory_.GetWeakPtr()));
 }
 
 ChromeOSOAuth2TokenServiceDelegate::~ChromeOSOAuth2TokenServiceDelegate() {
@@ -109,10 +103,28 @@ std::vector<std::string> ChromeOSOAuth2TokenServiceDelegate::GetAccounts() {
   return accounts;
 }
 
+void ChromeOSOAuth2TokenServiceDelegate::LoadCredentials(
+    const std::string& primary_account_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (load_credentials_state_ != LOAD_CREDENTIALS_NOT_STARTED) {
+    return;
+  }
+
+  load_credentials_state_ = LOAD_CREDENTIALS_IN_PROGRESS;
+
+  DCHECK(account_manager_);
+  account_manager_->AddObserver(this);
+  account_manager_->GetAccounts(
+      base::BindOnce(&ChromeOSOAuth2TokenServiceDelegate::GetAccountsCallback,
+                     weak_factory_.GetWeakPtr()));
+}
+
 void ChromeOSOAuth2TokenServiceDelegate::UpdateCredentials(
     const std::string& account_id,
     const std::string& refresh_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state_);
   DCHECK(!account_id.empty());
   DCHECK(!refresh_token.empty());
 
@@ -145,6 +157,11 @@ ChromeOSOAuth2TokenServiceDelegate::GetLoadCredentialsState() const {
 void ChromeOSOAuth2TokenServiceDelegate::GetAccountsCallback(
     std::vector<AccountManager::AccountKey> account_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // This callback should only be triggered during |LoadCredentials|, which
+  // implies that |load_credentials_state_| should in
+  // |LOAD_CREDENTIALS_IN_PROGRESS| state.
+  DCHECK_EQ(LOAD_CREDENTIALS_IN_PROGRESS, load_credentials_state_);
 
   load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
 

@@ -100,6 +100,8 @@ class CrOSOAuthDelegateTest : public testing::Test {
 
     delegate_ = std::make_unique<ChromeOSOAuth2TokenServiceDelegate>(
         &account_tracker_service_, &account_manager_);
+    delegate_->LoadCredentials(
+        account_info_.account_id /* primary_account_id */);
   }
 
   AccountInfo CreateAccountInfoTestFixture(const std::string& gaia_id,
@@ -251,6 +253,7 @@ TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
   // Register callbacks before AccountManager has been fully initialized.
   auto delegate = std::make_unique<ChromeOSOAuth2TokenServiceDelegate>(
       &account_tracker_service_, &account_manager);
+  delegate->LoadCredentials(account1.account_id /* primary_account_id */);
   TokenServiceObserver observer;
   delegate->AddObserver(&observer);
   // Wait until AccountManager is fully initialized.
