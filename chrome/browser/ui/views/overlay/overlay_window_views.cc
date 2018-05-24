@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "media/base/video_util.h"
@@ -15,6 +16,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/vector_icons.h"
@@ -28,15 +30,19 @@ std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create(
 }
 
 namespace {
-const gfx::Size kMinWindowSize = gfx::Size(144, 100);
+constexpr gfx::Size kMinWindowSize = gfx::Size(144, 100);
 
 const int kBorderThickness = 5;
 const int kResizeAreaCornerSize = 16;
 
 // TODO(apacible): Update sizes per UX feedback and when scaling is determined.
 // http://crbug.com/836389
-const gfx::Size kCloseIconSize = gfx::Size(50, 50);
-const gfx::Size kPlayPauseIconSize = gfx::Size(90, 90);
+constexpr gfx::Size kCloseButtonSize = gfx::Size(42, 42);
+constexpr gfx::Size kPlayPauseButtonSize = gfx::Size(90, 90);
+
+// Colors for the control buttons.
+SkColor kBgColor = SK_ColorWHITE;
+SkColor kControlIconColor = gfx::kChromeIconGrey;
 }  // namespace
 
 // OverlayWindow implementation of NonClientFrameView.
@@ -202,12 +208,20 @@ void OverlayWindowViews::SetUpViews() {
   GetControlsBackgroundLayer()->SetOpacity(0.4f);
 
   // views::View that closes the window. --------------------------------------
-  close_controls_view_->SetSize(kCloseIconSize);
+  close_controls_view_->SetSize(kCloseButtonSize);
   close_controls_view_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                           views::ImageButton::ALIGN_MIDDLE);
   close_controls_view_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(views::kPictureInPictureCloseIcon, SK_ColorWHITE));
+      gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseButtonSize.width() / 2,
+                            kControlIconColor));
+  close_controls_view_->SetBackgroundImageAlignment(
+      views::ImageButton::ALIGN_LEFT, views::ImageButton::ALIGN_TOP);
+  const gfx::ImageSkia close_background =
+      gfx::CreateVectorIcon(kPictureInPictureControlBackgroundIcon,
+                            kCloseButtonSize.width(), kBgColor);
+  close_controls_view_->SetBackgroundImage(kBgColor, &close_background,
+                                           &close_background);
 
   // Accessibility.
   close_controls_view_->SetFocusForPlatform();  // Make button focusable.
@@ -217,19 +231,25 @@ void OverlayWindowViews::SetUpViews() {
   close_controls_view_->SetTooltipText(close_button_label);
 
   // views::View that toggles play/pause. -------------------------------------
-  play_pause_controls_view_->SetSize(kPlayPauseIconSize);
+  play_pause_controls_view_->SetSize(kPlayPauseButtonSize);
   play_pause_controls_view_->SetImageAlignment(
       views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
   play_pause_controls_view_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(views::kPictureInPicturePlayIcon,
-                            kPlayPauseIconSize.width(), SK_ColorWHITE));
-  gfx::ImageSkia pause_icon =
-      gfx::CreateVectorIcon(views::kPictureInPicturePauseIcon,
-                            kPlayPauseIconSize.width(), SK_ColorWHITE);
+      gfx::CreateVectorIcon(kPlayArrowIcon, kPlayPauseButtonSize.width() / 2,
+                            kControlIconColor));
+  gfx::ImageSkia pause_icon = gfx::CreateVectorIcon(
+      kPauseIcon, kPlayPauseButtonSize.width() / 2, kControlIconColor);
   play_pause_controls_view_->SetToggledImage(views::Button::STATE_NORMAL,
                                              &pause_icon);
   play_pause_controls_view_->SetToggled(!controller_->IsPlayerActive());
+  play_pause_controls_view_->SetBackgroundImageAlignment(
+      views::ImageButton::ALIGN_LEFT, views::ImageButton::ALIGN_TOP);
+  const gfx::ImageSkia play_pause_background =
+      gfx::CreateVectorIcon(kPictureInPictureControlBackgroundIcon,
+                            kPlayPauseButtonSize.width(), kBgColor);
+  play_pause_controls_view_->SetBackgroundImage(
+      kBgColor, &play_pause_background, &play_pause_background);
 
   // Accessibility.
   play_pause_controls_view_->SetFocusForPlatform();  // Make button focusable.
@@ -344,16 +364,16 @@ ui::Layer* OverlayWindowViews::GetPlayPauseControlsLayer() {
 
 gfx::Rect OverlayWindowViews::GetCloseControlsBounds() {
   return gfx::Rect(
-      gfx::Point(GetBounds().size().width() - kCloseIconSize.width(), 0),
-      kCloseIconSize);
+      gfx::Point(GetBounds().size().width() - kCloseButtonSize.width(), 0),
+      kCloseButtonSize);
 }
 
 gfx::Rect OverlayWindowViews::GetPlayPauseControlsBounds() {
   return gfx::Rect(
       gfx::Point(
-          (GetBounds().size().width() - kPlayPauseIconSize.width()) / 2,
-          (GetBounds().size().height() - kPlayPauseIconSize.height()) / 2),
-      kPlayPauseIconSize);
+          (GetBounds().size().width() - kPlayPauseButtonSize.width()) / 2,
+          (GetBounds().size().height() - kPlayPauseButtonSize.height()) / 2),
+      kPlayPauseButtonSize);
 }
 
 gfx::Size OverlayWindowViews::GetMinimumSize() const {
