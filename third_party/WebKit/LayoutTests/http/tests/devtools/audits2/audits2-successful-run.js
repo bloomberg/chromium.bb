@@ -16,13 +16,13 @@
 
   var results = await Audits2TestRunner.waitForResults();
   TestRunner.addResult(`\n=============== Lighthouse Results ===============`);
-  TestRunner.addResult(`URL: ${results.url}`);
+  TestRunner.addResult(`URL: ${results.finalUrl}`);
   TestRunner.addResult(`Version: ${results.lighthouseVersion}`);
   TestRunner.addResult('\n');
 
   Object.keys(results.audits).sort().forEach(auditName => {
     var audit = results.audits[auditName];
-    TestRunner.addResult(`${audit.name}: ${Boolean(audit.rawValue)}`);
+    TestRunner.addResult(`${audit.id}: ${Boolean(audit.rawValue)}`);
   });
 
   const resultsElement = Audits2TestRunner.getResultsElement();

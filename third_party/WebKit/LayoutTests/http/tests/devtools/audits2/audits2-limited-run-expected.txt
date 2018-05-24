@@ -12,20 +12,23 @@ Run audits: enabled visible
 
 =============== Lighthouse Results ===============
 bootup-time: true
-consistently-interactive: false
 critical-request-chains: true
 dom-size: true
-estimated-input-latency: false
-first-interactive: false
-first-meaningful-paint: false
+efficient-animated-content: false
+estimated-input-latency: true
+first-contentful-paint: true
+first-cpu-idle: true
+first-meaningful-paint: true
 font-display: true
-link-blocking-first-paint: false
+interactive: true
 mainthread-work-breakdown: true
+metrics: false
+network-requests: true
 offscreen-images: false
 redirects: false
+render-blocking-resources: false
 screenshot-thumbnails: false
-script-blocking-first-paint: false
-speed-index-metric: false
+speed-index: false
 time-to-first-byte: true
 total-byte-weight: true
 unminified-css: false
@@ -34,8 +37,9 @@ unused-css-rules: false
 user-timings: true
 uses-long-cache-ttl: false
 uses-optimized-images: false
+uses-rel-preconnect: false
 uses-rel-preload: false
-uses-request-compression: false
 uses-responsive-images: false
+uses-text-compression: false
 uses-webp-images: false
 
