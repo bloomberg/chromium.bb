@@ -121,25 +121,6 @@ LayoutObject* SVGForeignObjectElement::CreateLayoutObject(
   return new LayoutSVGForeignObject(this);
 }
 
-bool SVGForeignObjectElement::LayoutObjectIsNeeded(
-    const ComputedStyle& style) const {
-  // Suppress foreignObject layoutObjects in SVG hidden containers.
-  // (https://bugs.webkit.org/show_bug.cgi?id=87297)
-  // Note that we currently do not support foreignObject instantiation via
-  // <use>, hence it is safe to use parentElement() here. If that changes, this
-  // method should be updated to use parentOrShadowHostElement() instead.
-  Element* ancestor = parentElement();
-  while (ancestor && ancestor->IsSVGElement()) {
-    if (ancestor->GetLayoutObject() &&
-        ancestor->GetLayoutObject()->IsSVGHiddenContainer())
-      return false;
-
-    ancestor = ancestor->parentElement();
-  }
-
-  return SVGGraphicsElement::LayoutObjectIsNeeded(style);
-}
-
 bool SVGForeignObjectElement::SelfHasRelativeLengths() const {
   return x_->CurrentValue()->IsRelative() || y_->CurrentValue()->IsRelative() ||
          width_->CurrentValue()->IsRelative() ||
