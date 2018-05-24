@@ -35,6 +35,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -616,20 +617,16 @@ TEST_F(CustomFrameViewAshTest, CustomButtonModel) {
   custom_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(test_api.menu_button()->enabled());
 
-// The addresses in library and in the main binary differ in
-// comoponent build.
-#if !defined(COMPONENT_BUILD)
   // zoom button
-  EXPECT_EQ(&kWindowControlMaximizeIcon,
-            test_api.size_button()->icon_definition_for_test());
+  EXPECT_STREQ(kWindowControlMaximizeIcon.name,
+               test_api.size_button()->icon_definition_for_test()->name);
   model_ptr->set_zoom_mode(true);
   custom_frame_view->SizeConstraintsChanged();
-  EXPECT_EQ(&ash::kWindowControlZoomIcon,
-            test_api.size_button()->icon_definition_for_test());
+  EXPECT_STREQ(kWindowControlZoomIcon.name,
+               test_api.size_button()->icon_definition_for_test()->name);
   widget->Maximize();
-  EXPECT_EQ(&ash::kWindowControlDezoomIcon,
-            test_api.size_button()->icon_definition_for_test());
-#endif
+  EXPECT_STREQ(kWindowControlDezoomIcon.name,
+               test_api.size_button()->icon_definition_for_test()->name);
 }
 
 TEST_F(CustomFrameViewAshTest, WideFrame) {
@@ -703,6 +700,40 @@ TEST_F(CustomFrameViewAshTest, WideFrame) {
   UpdateDisplay("1234x800");
   EXPECT_EQ(1234,
             wide_frame_view->GetWidget()->GetWindowBoundsInScreen().width());
+}
+
+TEST_F(CustomFrameViewAshTest, WideFrameButton) {
+  auto* delegate = new CustomFrameTestWidgetDelegate();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      delegate, kShellWindowId_DefaultContainer, gfx::Rect(100, 0, 400, 500));
+
+  WideFrameView* wide_frame_view = WideFrameView::Create(widget.get());
+  wide_frame_view->GetWidget()->Show();
+  HeaderView* header_view = wide_frame_view->header_view();
+  FrameCaptionButtonContainerView::TestApi test_api(
+      header_view->caption_button_container());
+
+  EXPECT_STREQ(kWindowControlMaximizeIcon.name,
+               test_api.size_button()->icon_definition_for_test()->name);
+  widget->Maximize();
+  header_view->Layout();
+  EXPECT_STREQ(kWindowControlRestoreIcon.name,
+               test_api.size_button()->icon_definition_for_test()->name);
+
+  widget->Restore();
+  header_view->Layout();
+  EXPECT_STREQ(kWindowControlMaximizeIcon.name,
+               test_api.size_button()->icon_definition_for_test()->name);
+
+  widget->SetFullscreen(true);
+  header_view->Layout();
+  EXPECT_STREQ(kWindowControlRestoreIcon.name,
+               test_api.size_button()->icon_definition_for_test()->name);
+
+  widget->SetFullscreen(false);
+  header_view->Layout();
+  EXPECT_STREQ(kWindowControlMaximizeIcon.name,
+               test_api.size_button()->icon_definition_for_test()->name);
 }
 
 namespace {

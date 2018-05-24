@@ -47,7 +47,8 @@ void FrameHeader::PaintHeader(gfx::Canvas* canvas, Mode mode) {
   if (mode_ != old_mode) {
     UpdateCaptionButtonColors();
 
-    if (!initial_paint_ && FrameHeaderUtil::CanAnimateActivation(GetWidget())) {
+    if (!initial_paint_ &&
+        FrameHeaderUtil::CanAnimateActivation(target_widget_)) {
       activation_animation_.SetSlideDuration(kActivationCrossfadeDurationMs);
       if (mode_ == MODE_ACTIVE)
         activation_animation_.Show();
@@ -136,14 +137,10 @@ void FrameHeader::AnimationProgressed(const gfx::Animation* animation) {
 ///////////////////////////////////////////////////////////////////////////////
 // FrameHeader, protected:
 
-FrameHeader::FrameHeader() = default;
-
-views::Widget* FrameHeader::GetWidget() {
-  return view_->GetWidget();
-}
-
-const views::Widget* FrameHeader::GetWidget() const {
-  return view_->GetWidget();
+FrameHeader::FrameHeader(views::Widget* target_widget, views::View* view)
+    : target_widget_(target_widget), view_(view) {
+  DCHECK(target_widget);
+  DCHECK(view);
 }
 
 gfx::Rect FrameHeader::GetPaintedBounds() const {
@@ -160,11 +157,13 @@ void FrameHeader::UpdateCaptionButtonColors() {
 }
 
 void FrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
-  if (GetWidget()->widget_delegate() &&
-      GetWidget()->widget_delegate()->ShouldShowWindowTitle() &&
-      !GetWidget()->widget_delegate()->GetWindowTitle().empty()) {
+  views::WidgetDelegate* target_widget_delegate =
+      target_widget_->widget_delegate();
+  if (target_widget_delegate &&
+      target_widget_delegate->ShouldShowWindowTitle() &&
+      !target_widget_delegate->GetWindowTitle().empty()) {
     canvas->DrawStringRectWithFlags(
-        GetWidget()->widget_delegate()->GetWindowTitle(),
+        target_widget_delegate->GetWindowTitle(),
         views::NativeWidgetAura::GetWindowTitleFontList(), GetTitleColor(),
         GetTitleBounds(), gfx::Canvas::NO_SUBPIXEL_RENDERING);
   }
@@ -189,17 +188,15 @@ void FrameHeader::SetCaptionButtonContainer(
 // FrameHeader, private:
 
 void FrameHeader::LayoutHeaderInternal() {
-  if (!GetWidget())
-    return;
-
   bool use_zoom_icons = caption_button_container()->model()->InZoomMode();
   const gfx::VectorIcon& restore_icon =
       use_zoom_icons ? kWindowControlDezoomIcon : kWindowControlRestoreIcon;
   const gfx::VectorIcon& maximize_icon =
       use_zoom_icons ? kWindowControlZoomIcon : kWindowControlMaximizeIcon;
   const gfx::VectorIcon& icon =
-      GetWidget()->IsMaximized() || GetWidget()->IsFullscreen() ? restore_icon
-                                                                : maximize_icon;
+      target_widget_->IsMaximized() || target_widget_->IsFullscreen()
+          ? restore_icon
+          : maximize_icon;
   caption_button_container()->SetButtonImage(
       CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, icon);
 

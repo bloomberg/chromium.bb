@@ -118,25 +118,22 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameHeader, public:
 
-CustomFrameHeader::CustomFrameHeader() = default;
-
-CustomFrameHeader::~CustomFrameHeader() = default;
-
-void CustomFrameHeader::Init(
+CustomFrameHeader::CustomFrameHeader(
+    views::Widget* target_widget,
     views::View* view,
     AppearanceProvider* appearance_provider,
     bool incognito,
-    FrameCaptionButtonContainerView* caption_button_container) {
-  DCHECK(view);
+    FrameCaptionButtonContainerView* caption_button_container)
+    : FrameHeader(target_widget, view) {
   DCHECK(appearance_provider);
   DCHECK(caption_button_container);
-
-  set_view(view);
   appearance_provider_ = appearance_provider;
   is_incognito_ = incognito;
 
   SetCaptionButtonContainer(caption_button_container);
 }
+
+CustomFrameHeader::~CustomFrameHeader() = default;
 
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameHeader, protected:
@@ -148,7 +145,7 @@ void CustomFrameHeader::DoPaintHeader(gfx::Canvas* canvas) {
 }
 
 AshLayoutSize CustomFrameHeader::GetButtonLayoutSize() const {
-  return GetWidget()->IsMaximized() || GetWidget()->IsFullscreen() ||
+  return target_widget()->IsMaximized() || target_widget()->IsFullscreen() ||
                  appearance_provider_->IsTabletMode()
              ? AshLayoutSize::kBrowserCaptionMaximized
              : AshLayoutSize::kBrowserCaptionRestored;
@@ -189,7 +186,7 @@ void CustomFrameHeader::PaintFrameImages(gfx::Canvas* canvas, bool active) {
       SkColorSetA(appearance_provider_->GetFrameHeaderColor(active), 0xFF);
 
   int corner_radius = 0;
-  if (!GetWidget()->IsMaximized() && !GetWidget()->IsFullscreen())
+  if (!target_widget()->IsMaximized() && !target_widget()->IsFullscreen())
     corner_radius = FrameHeaderUtil::GetTopCornerRadiusWhenRestored();
 
   PaintFrameImagesInRoundRect(canvas, frame_image, frame_overlay_image, alpha,

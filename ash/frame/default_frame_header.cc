@@ -58,13 +58,13 @@ namespace ash {
 // DefaultFrameHeader, public:
 
 DefaultFrameHeader::DefaultFrameHeader(
+    views::Widget* target_widget,
     views::View* header_view,
     FrameCaptionButtonContainerView* caption_button_container)
-    : active_frame_color_(kDefaultFrameColor),
+    : FrameHeader(target_widget, header_view),
+      active_frame_color_(kDefaultFrameColor),
       inactive_frame_color_(kDefaultFrameColor) {
-  DCHECK(header_view);
   DCHECK(caption_button_container);
-  set_view(header_view);
   SetCaptionButtonContainer(caption_button_container);
 }
 
@@ -80,7 +80,7 @@ void DefaultFrameHeader::SetThemeColor(SkColor theme_color) {
 
 void DefaultFrameHeader::DoPaintHeader(gfx::Canvas* canvas) {
   int corner_radius =
-      (GetWidget()->IsMaximized() || GetWidget()->IsFullscreen())
+      (target_widget()->IsMaximized() || target_widget()->IsFullscreen())
           ? 0
           : FrameHeaderUtil::GetTopCornerRadiusWhenRestored();
 

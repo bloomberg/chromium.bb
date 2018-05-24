@@ -78,17 +78,17 @@ HeaderView::HeaderView(views::Widget* target_widget,
   AddChildView(caption_button_container_);
 
   if (window_style == mojom::WindowStyle::DEFAULT) {
-    frame_header_ =
-        std::make_unique<DefaultFrameHeader>(this, caption_button_container_);
+    frame_header_ = std::make_unique<DefaultFrameHeader>(
+        target_widget, this, caption_button_container_);
   } else {
     DCHECK_EQ(mojom::WindowStyle::BROWSER, window_style);
     DCHECK_EQ(Config::MASH, Shell::GetAshConfig());
     appearance_provider_ = std::make_unique<WindowPropertyAppearanceProvider>(
         target_widget_->GetNativeWindow());
-    auto frame_header = std::make_unique<CustomFrameHeader>();
     // TODO(estade): pass correct value for |incognito|.
-    frame_header->Init(this, appearance_provider_.get(), false,
-                       caption_button_container_);
+    auto frame_header = std::make_unique<CustomFrameHeader>(
+        target_widget, this, appearance_provider_.get(), false,
+        caption_button_container_);
     frame_header_ = std::move(frame_header);
   }
   aura::Window* window = target_widget->GetNativeWindow();

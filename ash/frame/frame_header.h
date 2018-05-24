@@ -75,10 +75,10 @@ class ASH_EXPORT FrameHeader : public gfx::AnimationDelegate {
   void AnimationProgressed(const gfx::Animation* animation) override;
 
  protected:
-  FrameHeader();
+  FrameHeader(views::Widget* target_widget, views::View* view);
 
-  views::Widget* GetWidget();
-  const views::Widget* GetWidget() const;
+  views::Widget* target_widget() { return target_widget_; }
+  const views::Widget* target_widget() const { return target_widget_; }
 
   // Returns bounds of the region in |view_| which is painted with the header
   // images. The region is assumed to start at the top left corner of |view_|
@@ -91,8 +91,6 @@ class ASH_EXPORT FrameHeader : public gfx::AnimationDelegate {
 
   void SetCaptionButtonContainer(
       FrameCaptionButtonContainerView* caption_button_container);
-
-  void set_view(views::View* view) { view_ = view; }
 
   void set_button_color_mode(FrameCaptionButton::ColorMode button_color_mode) {
     button_color_mode_ = button_color_mode;
@@ -129,10 +127,14 @@ class ASH_EXPORT FrameHeader : public gfx::AnimationDelegate {
 
   gfx::Rect GetTitleBounds() const;
 
+  // The widget that the caption buttons act on. This can be different from
+  // |view_|'s widget.
+  views::Widget* target_widget_;
+
   // The view into which |this| paints.
-  views::View* view_ = nullptr;
-  FrameCaptionButton* back_button_ = nullptr;  // May be nullptr.
-  views::View* left_header_view_ = nullptr;    // May be nullptr.
+  views::View* view_;
+  FrameCaptionButton* back_button_ = nullptr;  // May remain nullptr.
+  views::View* left_header_view_ = nullptr;    // May remain nullptr.
   FrameCaptionButton::ColorMode button_color_mode_ =
       FrameCaptionButton::ColorMode::kDefault;
   FrameCaptionButtonContainerView* caption_button_container_ = nullptr;

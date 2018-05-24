@@ -20,7 +20,8 @@ namespace ash {
 class ASH_EXPORT DefaultFrameHeader : public FrameHeader {
  public:
   // DefaultFrameHeader does not take ownership of any of the parameters.
-  DefaultFrameHeader(views::View* header_view,
+  DefaultFrameHeader(views::Widget* target_widget,
+                     views::View* header_view,
                      FrameCaptionButtonContainerView* caption_button_container);
   ~DefaultFrameHeader() override;
 
