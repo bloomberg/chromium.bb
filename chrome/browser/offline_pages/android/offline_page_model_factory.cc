@@ -15,11 +15,11 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/offline_pages/android/cct_origin_observer.h"
 #include "chrome/browser/offline_pages/android/offline_pages_download_manager_bridge.h"
+#include "chrome/browser/offline_pages/download_archive_manager.h"
 #include "chrome/browser/offline_pages/fresh_offline_content_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/offline_pages/core/archive_manager.h"
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
 
@@ -62,9 +62,10 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
     temporary_archives_dir =
         temporary_archives_dir.Append(chrome::kOfflinePageArchivesDirname);
   }
-  std::unique_ptr<ArchiveManager> archive_manager(new ArchiveManager(
+  std::unique_ptr<ArchiveManager> archive_manager(new DownloadArchiveManager(
       temporary_archives_dir, persistent_archives_dir,
-      DownloadPrefs::GetDefaultDownloadDirectory(), background_task_runner));
+      DownloadPrefs::GetDefaultDownloadDirectory(), background_task_runner,
+      profile));
   auto clock = std::make_unique<base::DefaultClock>();
 
   std::unique_ptr<SystemDownloadManager> download_manager(

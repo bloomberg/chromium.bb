@@ -3763,6 +3763,8 @@ jumbo_split_static_library("browser") {
     sources += [
       "offline_pages/background_loader_offliner.cc",
       "offline_pages/background_loader_offliner.h",
+      "offline_pages/download_archive_manager.cc",
+      "offline_pages/download_archive_manager.h",
       "offline_pages/downloads/resource_throttle.cc",
       "offline_pages/downloads/resource_throttle.h",
       "offline_pages/fresh_offline_content_observer.cc",
