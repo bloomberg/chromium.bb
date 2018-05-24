@@ -42,6 +42,20 @@ enum UsernameDetectionMethod {
   USERNAME_DETECTION_METHOD_COUNT
 };
 
+// The susbset of autocomplete flags related to passwords.
+enum class AutocompleteFlag {
+  NONE,
+  USERNAME,
+  CURRENT_PASSWORD,
+  NEW_PASSWORD,
+  // Represents the whole family of cc-* flags.
+  CREDIT_CARD
+};
+
+// Returns the AutocompleteFlag derived from |element|'s autocomplete attribute.
+AutocompleteFlag AutocompleteFlagForElement(
+    const blink::WebInputElement& element);
+
 // The caller of this function is responsible for deleting the returned object.
 re2::RE2* CreateMatcher(void* instance, const char* pattern);
 
@@ -80,15 +94,6 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     const FieldValueAndPropertiesMaskMap* nonscript_modified_values,
     const FormsPredictionsMap* form_predictions,
     UsernameDetectorCache* username_detector_cache);
-
-// Checks in a case-insensitive way if the autocomplete attribute for the given
-// |element| is present and has the specified |value_in_lowercase|.
-bool HasAutocompleteAttributeValue(const blink::WebInputElement& element,
-                                   base::StringPiece value_in_lowercase);
-
-// Checks in a case-insensitive way if credit card autocomplete attributes for
-// the given |element| are present.
-bool HasCreditCardAutocompleteAttributes(const blink::WebInputElement& element);
 
 // Returns whether the form |field| has a "password" type, but looks like a
 // credit card verification field.

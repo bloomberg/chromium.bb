@@ -167,10 +167,12 @@ bool HasPasswordWithAutocompleteAttribute(
 
     const blink::WebInputElement input_element =
         control_element.ToConst<blink::WebInputElement>();
+    const AutocompleteFlag flag = AutocompleteFlagForElement(input_element);
     if (input_element.IsPasswordFieldForAutofill() &&
-        (HasAutocompleteAttributeValue(input_element, "current-password") ||
-         HasAutocompleteAttributeValue(input_element, "new-password")))
+        (flag == AutocompleteFlag::CURRENT_PASSWORD ||
+         flag == AutocompleteFlag::NEW_PASSWORD)) {
       return true;
+    }
   }
 
   return false;
@@ -232,7 +234,8 @@ bool FindFormInputElement(
     // set. Also make sure we avoid keeping password fields having
     // |autocomplete='new-password'| attribute set.
     if (ambiguous_and_multiple_password_fields_with_autocomplete &&
-        !HasAutocompleteAttributeValue(input_element, "current-password")) {
+        AutocompleteFlagForElement(input_element) !=
+            AutocompleteFlag::CURRENT_PASSWORD) {
       continue;
     }
 
@@ -591,7 +594,7 @@ bool ShouldShowStandaloneManuallFallback(const blink::WebInputElement& element,
   return (
       element.IsPasswordFieldForAutofill() &&
       !IsCreditCardVerificationPasswordField(element) &&
-      !HasCreditCardAutocompleteAttributes(element) &&
+      AutocompleteFlagForElement(element) != AutocompleteFlag::CREDIT_CARD &&
       !base::StartsWith(url.scheme(), "chrome", base::CompareCase::SENSITIVE) &&
       !url.SchemeIs(url::kAboutScheme) &&
       base::FeatureList::IsEnabled(
@@ -922,7 +925,7 @@ bool PasswordAutofillAgent::IsUsernameOrPasswordField(
     return true;
 
   // If a field declares itself a username input, show the warning.
-  if (HasAutocompleteAttributeValue(element, "username"))
+  if (AutocompleteFlagForElement(element) == AutocompleteFlag::USERNAME)
     return true;
 
   // Otherwise, analyze the form and return true if this input element seems
