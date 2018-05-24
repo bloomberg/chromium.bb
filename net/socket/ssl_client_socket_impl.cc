@@ -137,22 +137,6 @@ std::unique_ptr<base::Value> NetLogSSLInfoCallback(
   return std::move(dict);
 }
 
-int GetBufferSize(const char* field_trial) {
-  // Get buffer sizes from field trials, if possible. If values not present,
-  // use default.  Also make sure values are in reasonable range.
-  int buffer_size = kDefaultOpenSSLBufferSize;
-#if !defined(OS_NACL)
-  int override_buffer_size;
-  if (base::StringToInt(base::FieldTrialList::FindFullName(field_trial),
-                        &override_buffer_size)) {
-    buffer_size = override_buffer_size;
-    buffer_size = std::max(buffer_size, 1000);
-    buffer_size = std::min(buffer_size, 2 * kDefaultOpenSSLBufferSize);
-  }
-#endif  // !defined(OS_NACL)
-  return buffer_size;
-}
-
 std::unique_ptr<base::Value> NetLogSSLAlertCallback(
     const void* bytes,
     size_t len,
@@ -845,9 +829,9 @@ int SSLClientSocketImpl::Init() {
       SSL_set_session(ssl_.get(), session.get());
   }
 
-  transport_adapter_.reset(new SocketBIOAdapter(
-      transport_->socket(), GetBufferSize("SSLBufferSizeRecv"),
-      GetBufferSize("SSLBufferSizeSend"), this));
+  transport_adapter_.reset(
+      new SocketBIOAdapter(transport_->socket(), kDefaultOpenSSLBufferSize,
+                           kDefaultOpenSSLBufferSize, this));
   BIO* transport_bio = transport_adapter_->bio();
 
   BIO_up_ref(transport_bio);  // SSL_set0_rbio takes ownership.
