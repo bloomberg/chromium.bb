@@ -353,6 +353,28 @@ fuzzer_test("media_webm_muxer_fuzzer") {
   ]
 }
 
+fuzzer_test("cbcs_decryptor_fuzzer") {
+  sources = [
+    "cdm/cbcs_decryptor_fuzzer.cc",
+  ]
+  deps = [
+    ":media",
+    "//base",
+    "//crypto",
+  ]
+}
+
+fuzzer_test("cenc_decryptor_fuzzer") {
+  sources = [
+    "cdm/cenc_decryptor_fuzzer.cc",
+  ]
+  deps = [
+    ":media",
+    "//base",
+    "//crypto",
+  ]
+}
+
 if (proprietary_codecs) {
   fuzzer_test("media_mp4_avcc_parser_fuzzer") {
     sources = [
