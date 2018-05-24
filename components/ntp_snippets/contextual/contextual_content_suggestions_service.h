@@ -17,7 +17,7 @@
 #include "components/ntp_snippets/callbacks.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_reporter.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace ntp_snippets {
@@ -39,8 +39,9 @@ class ContextualContentSuggestionsService : public KeyedService {
       std::unique_ptr<ntp_snippets::CachedImageFetcher> image_fetcher,
       std::unique_ptr<ntp_snippets::RemoteSuggestionsDatabase>
           contextual_suggestions_database,
-      std::unique_ptr<ContextualSuggestionsMetricsReporterProvider>
-          metrics_reporter_provider);
+      std::unique_ptr<
+          contextual_suggestions::ContextualSuggestionsReporterProvider>
+          reporter_provider);
   ~ContextualContentSuggestionsService() override;
 
   // Asynchronously fetches contextual suggestions for the given URL.
@@ -72,8 +73,8 @@ class ContextualContentSuggestionsService : public KeyedService {
 
   std::unique_ptr<ntp_snippets::CachedImageFetcher> image_fetcher_;
 
-  std::unique_ptr<ContextualSuggestionsMetricsReporterProvider>
-      metrics_reporter_provider_;
+  std::unique_ptr<contextual_suggestions::ContextualSuggestionsReporterProvider>
+      reporter_provider_;
 
   // Look up by ContentSuggestion::ID::id_within_category() aka std::string to
   // get image URL.

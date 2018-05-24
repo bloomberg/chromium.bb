@@ -18,7 +18,7 @@
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher_impl.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_reporter.h"
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/prefs/pref_service.h"
@@ -105,18 +105,18 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   base::FilePath database_dir(profile->GetPath().Append(kDatabaseFolder));
   auto contextual_suggestions_database =
       std::make_unique<RemoteSuggestionsDatabase>(database_dir);
-  auto cached_image_fetcher = std::make_unique<CachedImageFetcher>(
-      std::make_unique<image_fetcher::ImageFetcherImpl>(
-          std::make_unique<suggestions::ImageDecoderImpl>(),
-          request_context.get()),
-      pref_service, contextual_suggestions_database.get());
-  auto metrics_reporter_provider = std::make_unique<
-      contextual_suggestions::ContextualSuggestionsMetricsReporterProvider>();
+  auto cached_image_fetcher =
+      std::make_unique<ntp_snippets::CachedImageFetcher>(
+          std::make_unique<image_fetcher::ImageFetcherImpl>(
+              std::make_unique<suggestions::ImageDecoderImpl>(),
+              request_context.get()),
+          pref_service, contextual_suggestions_database.get());
+  auto reporter_provider = std::make_unique<
+      contextual_suggestions::ContextualSuggestionsReporterProvider>();
   auto* service = new ContextualContentSuggestionsService(
       std::move(contextual_suggestions_fetcher),
       std::move(cached_image_fetcher),
-      std::move(contextual_suggestions_database),
-      std::move(metrics_reporter_provider));
+      std::move(contextual_suggestions_database), std::move(reporter_provider));
 
   return service;
 }

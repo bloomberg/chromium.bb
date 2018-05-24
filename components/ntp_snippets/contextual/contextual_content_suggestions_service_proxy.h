@@ -27,7 +27,7 @@ class ContextualContentSuggestionsServiceProxy {
  public:
   ContextualContentSuggestionsServiceProxy(
       ContextualContentSuggestionsService* service,
-      std::unique_ptr<ContextualSuggestionsMetricsReporter> metrics_reporter);
+      std::unique_ptr<ContextualSuggestionsReporter> reporter);
   ~ContextualContentSuggestionsServiceProxy();
 
   // Fetches contextual suggestions for a given |url|.
@@ -50,7 +50,9 @@ class ContextualContentSuggestionsServiceProxy {
   void ClearState();
 
   // Reports user interface event to the service.
-  void ReportEvent(ukm::SourceId, ContextualSuggestionsEvent event);
+  void ReportEvent(ukm::SourceId,
+                   const std::string& url,
+                   ContextualSuggestionsEvent event);
 
   // Ensures that all metrics are properly flushed.
   void FlushMetrics();
@@ -68,8 +70,8 @@ class ContextualContentSuggestionsServiceProxy {
   std::map<std::string, ContextualSuggestion> suggestions_;
 
   // Sink for reporting metrics for this proxy.
-  std::unique_ptr<contextual_suggestions::ContextualSuggestionsMetricsReporter>
-      metrics_reporter_;
+  std::unique_ptr<contextual_suggestions::ContextualSuggestionsReporter>
+      reporter_;
 
   // The most recent SourceId in use by metrics_reporter_, or
   // ukm::kInvalidSourceId.

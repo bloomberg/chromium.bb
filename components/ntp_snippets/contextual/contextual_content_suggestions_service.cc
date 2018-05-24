@@ -40,14 +40,13 @@ ContextualContentSuggestionsService::ContextualContentSuggestionsService(
         contextual_suggestions_fetcher,
     std::unique_ptr<CachedImageFetcher> image_fetcher,
     std::unique_ptr<RemoteSuggestionsDatabase> contextual_suggestions_database,
-    std::unique_ptr<ContextualSuggestionsMetricsReporterProvider>
-        metrics_reporter_provider)
+    std::unique_ptr<ContextualSuggestionsReporterProvider> reporter_provider)
     : contextual_suggestions_database_(
           std::move(contextual_suggestions_database)),
       contextual_suggestions_fetcher_(
           std::move(contextual_suggestions_fetcher)),
       image_fetcher_(std::move(image_fetcher)),
-      metrics_reporter_provider_(std::move(metrics_reporter_provider)) {}
+      reporter_provider_(std::move(reporter_provider)) {}
 
 ContextualContentSuggestionsService::~ContextualContentSuggestionsService() =
     default;
@@ -97,7 +96,7 @@ std::unique_ptr<
 ContextualContentSuggestionsService::CreateProxy() {
   return std::make_unique<
       contextual_suggestions::ContextualContentSuggestionsServiceProxy>(
-      this, metrics_reporter_provider_->CreateMetricsReporter());
+      this, reporter_provider_->CreateReporter());
 }
 
 }  // namespace contextual_suggestions
