@@ -1397,14 +1397,6 @@ bool Browser::ShouldAllowRunningInsecureContent(
   return false;
 }
 
-void Browser::OnAudioStateChanged(content::WebContents* web_contents,
-                                  bool is_audible) {
-  SoundContentSettingObserver* sound_content_setting_observer =
-      SoundContentSettingObserver::FromWebContents(web_contents);
-  if (sound_content_setting_observer)
-    sound_content_setting_observer->OnAudioStateChanged(is_audible);
-}
-
 void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
                                   const GURL& url) {
   TabSpecificContentSettings* content_settings =

@@ -87,8 +87,6 @@ class TabWebContentsDelegateAndroid
       content::SecurityStyleExplanations* security_style_explanations) override;
   void RequestAppBannerFromDevTools(
       content::WebContents* web_contents) override;
-  void OnAudioStateChanged(content::WebContents* web_contents,
-                           bool audible) override;
   void OnDidBlockFramebust(content::WebContents* web_contents,
                            const GURL& url) override;
 

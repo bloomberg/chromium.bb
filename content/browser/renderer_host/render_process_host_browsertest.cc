@@ -17,6 +17,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -706,16 +707,16 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessOnBadMojoMessage) {
     rph->RemoveObserver(this);
 }
 
-class AudioStartObserver : public WebContentsDelegate {
+class AudioStartObserver : public WebContentsObserver {
  public:
   AudioStartObserver(WebContents* web_contents,
                      base::OnceClosure audible_closure)
-      : audible_closure_(std::move(audible_closure)) {
-    web_contents->SetDelegate(this);
-  }
+      : WebContentsObserver(web_contents),
+        audible_closure_(std::move(audible_closure)) {}
   ~AudioStartObserver() override {}
 
-  void OnAudioStateChanged(WebContents* web_contents, bool audible) override {
+  // WebContentsObserver:
+  void OnAudioStateChanged(bool audible) override {
     if (audible && audible_closure_)
       std::move(audible_closure_).Run();
   }

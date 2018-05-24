@@ -388,6 +388,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // process.
   virtual void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) {}
 
+  // Called when an audio change occurs.
+  virtual void OnAudioStateChanged(bool audible) {}
+
   // Invoked when the WebContents is muted/unmuted.
   virtual void DidUpdateAudioMutingState(bool muted) {}
 

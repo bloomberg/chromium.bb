@@ -1491,8 +1491,8 @@ void WebContentsImpl::OnAudioStateChanged(bool is_audible) {
 
   was_ever_audible_ = was_ever_audible_ || is_audible;
 
-  if (delegate_)
-    delegate_->OnAudioStateChanged(this, is_audible);
+  for (auto& observer : observers_)
+    observer.OnAudioStateChanged(is_audible);
 }
 
 base::TimeTicks WebContentsImpl::GetLastActiveTime() const {

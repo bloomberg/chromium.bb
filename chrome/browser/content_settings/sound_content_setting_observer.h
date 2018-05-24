@@ -31,16 +31,13 @@ class SoundContentSettingObserver
   // content::WebContentsObserver implementation.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void OnAudioStateChanged(bool audible) override;
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
                                const ContentSettingsPattern& secondary_pattern,
                                ContentSettingsType content_type,
                                std::string resource_identifier) override;
-
-  // This method is called by the WebContentsDelegate to indicate that the audio
-  // state of the WebContents has changed.
-  void OnAudioStateChanged(bool is_audible);
 
  private:
   explicit SoundContentSettingObserver(content::WebContents* web_contents);
