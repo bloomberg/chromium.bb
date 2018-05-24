@@ -17,7 +17,6 @@
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/common/chrome_features.h"
 #include "components/mirroring/browser/cast_remoting_sender.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -429,10 +428,8 @@ void CastRemotingConnector::OnSinkAvailable(
   }
   sink_metadata_ = *metadata;
 #if !defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kMediaRemoting)) {
-    sink_metadata_.features.push_back(
-        media::mojom::RemotingSinkFeature::RENDERING);
-  }
+  sink_metadata_.features.push_back(
+      media::mojom::RemotingSinkFeature::RENDERING);
 #endif
 
   for (RemotingBridge* notifyee : bridges_)

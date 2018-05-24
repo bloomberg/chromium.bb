@@ -969,12 +969,6 @@ const char kMaterialDesignIncognitoNTPDescription[] =
     "If enabled, the Incognito New Tab page uses the new material design with "
     "a better readable text.";
 
-const char kMediaRemotingName[] = "Media Remoting during Cast Tab Mirroring";
-const char kMediaRemotingDescription[] =
-    "When Casting a tab to a remote device, enabling this turns on an "
-    "optimization that forwards the content bitstream directly to the remote "
-    "device when a video is fullscreened.";
-
 const char kMediaRouterCastAllowAllIPsName[] =
     "Connect to Cast devices on all IP addresses";
 const char kMediaRouterCastAllowAllIPsDescription[] =

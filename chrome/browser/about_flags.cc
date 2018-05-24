@@ -2831,11 +2831,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrossProcessGuestViewIsolationName,
      flag_descriptions::kCrossProcessGuestViewIsolationDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kGuestViewCrossProcessFrames)},
-#if !defined(OS_ANDROID)
-    {"media-remoting", flag_descriptions::kMediaRemotingName,
-     flag_descriptions::kMediaRemotingDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kMediaRemoting)},
-#endif
 #if defined(OS_ANDROID)
     {"video-fullscreen-orientation-lock",
      flag_descriptions::kVideoFullscreenOrientationLockName,

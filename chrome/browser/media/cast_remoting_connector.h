@@ -166,12 +166,9 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
 
   const SessionID tab_id_;
 
-  // Describes the remoting sink's metadata and the enabled features. The sink's
+  // Describes the remoting sink's metadata and its enabled features. The sink's
   // metadata is updated by the mirror service calling OnSinkAvailable() and
-  // cleared when remoting stops. The enabled features are set according to what
-  // has been enabled via |features::kMediaRemoting|. These are controlled
-  // manually via chrome://flags or the command line; or in-the-wild via feature
-  // experiments.
+  // cleared when remoting stops.
   media::mojom::RemotingSinkMetadata sink_metadata_;
 
   // Set of registered RemotingBridges, maintained by RegisterBridge() and
