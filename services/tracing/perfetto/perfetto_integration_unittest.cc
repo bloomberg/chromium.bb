@@ -36,15 +36,20 @@ const char kPerfettoTestString[] = "d00df00d";
 
 class PerfettoIntegrationTest : public testing::Test {
  public:
-  PerfettoIntegrationTest() {
+  void SetUp() override {
     perfetto_service_ = std::make_unique<PerfettoService>(
         base::SequencedTaskRunnerHandle::Get());
     // The actual Perfetto service is created async on the given task_runner;
     // wait until that's done.
-    base::RunLoop().RunUntilIdle();
+    RunUntilIdle();
+    ProducerClient::ResetTaskRunnerForTesting();
   }
 
+  void TearDown() override { perfetto_service_.reset(); }
+
   PerfettoService* perfetto_service() const { return perfetto_service_.get(); }
+
+  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
  private:
   std::unique_ptr<PerfettoService> perfetto_service_;
@@ -126,11 +131,16 @@ class MockProducerClient : public ProducerClient {
 
   void CommitData(const perfetto::CommitDataRequest& commit,
                   CommitDataCallback callback = {}) override {
-    perfetto::protos::CommitDataRequest proto;
-    commit.ToProto(&proto);
-    std::string proto_string;
-    CHECK(proto.SerializeToString(&proto_string));
-    all_client_commit_data_requests_ += proto_string;
+    // Only write out commits that have actual data in it; Perfetto
+    // might send two commits from different threads (one always empty),
+    // which causes TSan to complain.
+    if (commit.chunks_to_patch_size() || commit.chunks_to_move_size()) {
+      perfetto::protos::CommitDataRequest proto;
+      commit.ToProto(&proto);
+      std::string proto_string;
+      CHECK(proto.SerializeToString(&proto_string));
+      all_client_commit_data_requests_ += proto_string;
+    }
     ProducerClient::CommitData(commit, callback);
   }
 
@@ -140,13 +150,6 @@ class MockProducerClient : public ProducerClient {
 
   void SetAgentDisabledCallback(base::OnceClosure client_disabled_callback) {
     client_disabled_callback_ = std::move(client_disabled_callback);
-  }
-
-  void FlushTaskRunner() {
-    base::RunLoop wait_for_client_task_runner;
-    GetTaskRunner()->PostTask(FROM_HERE,
-                              wait_for_client_task_runner.QuitClosure());
-    wait_for_client_task_runner.Run();
   }
 
   const std::string& all_client_commit_data_requests() const {
@@ -244,11 +247,24 @@ class MockProducer : public ProducerHost {
   }
 
   void OnCommit(const perfetto::CommitDataRequest& commit_data_request) {
+    if (!commit_data_request.chunks_to_patch_size() &&
+        !commit_data_request.chunks_to_move_size()) {
+      return;
+    }
+
     perfetto::protos::CommitDataRequest proto;
     commit_data_request.ToProto(&proto);
     std::string proto_string;
     CHECK(proto.SerializeToString(&proto_string));
     all_host_commit_data_requests_ += proto_string;
+  }
+
+  void OnMessagepipesReadyCallback(
+      perfetto::Service* perfetto_service,
+      mojom::ProducerClientPtr producer_client_pipe,
+      mojom::ProducerHostRequest producer_host_pipe) {
+    Initialize(std::move(producer_client_pipe), std::move(producer_host_pipe),
+               perfetto_service, kPerfettoProducerName);
   }
 
   const std::string& all_host_commit_data_requests() const {
@@ -268,10 +284,11 @@ TEST_F(PerfettoIntegrationTest, ProducerDatasourceInitialized) {
   base::RunLoop producer_initialized_runloop;
   auto new_producer = std::make_unique<MockProducer>(
       kPerfettoTestDataSourceName, producer_initialized_runloop.QuitClosure());
-  new_producer->Initialize(dummy_client->CreateAndBindProducerClient(),
-                           dummy_client->CreateProducerHostRequest(),
-                           perfetto_service()->GetService(),
-                           kPerfettoProducerName);
+  dummy_client->CreateMojoMessagepipes(
+      base::BindOnce(&MockProducer::OnMessagepipesReadyCallback,
+                     base::Unretained(new_producer.get()),
+                     base::Unretained(perfetto_service()->GetService())));
+
   producer_initialized_runloop.Run();
 
   ProducerClient::DeleteSoon(std::move(dummy_client));
@@ -293,14 +310,14 @@ TEST_F(PerfettoIntegrationTest, ClientEnabledAndDisabled) {
       client_disabled_callback.QuitClosure());
 
   auto producer = std::make_unique<MockProducer>(kPerfettoTestDataSourceName);
-  producer->Initialize(client->CreateAndBindProducerClient(),
-                       client->CreateProducerHostRequest(),
-                       perfetto_service()->GetService(), kPerfettoProducerName);
+  client->CreateMojoMessagepipes(
+      base::BindOnce(&MockProducer::OnMessagepipesReadyCallback,
+                     base::Unretained(producer.get()),
+                     base::Unretained(perfetto_service()->GetService())));
 
   client_enabled_callback.Run();
 
-  // Wait until all Mojo messages have been sent.
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   consumer.StopTracing();
 
@@ -322,9 +339,10 @@ TEST_F(PerfettoIntegrationTest, PacketsEndToEndProducerFirst) {
       client_disabled_callback.QuitClosure());
 
   auto producer = std::make_unique<MockProducer>(kPerfettoTestDataSourceName);
-  producer->Initialize(client->CreateAndBindProducerClient(),
-                       client->CreateProducerHostRequest(),
-                       perfetto_service()->GetService(), kPerfettoProducerName);
+  client->CreateMojoMessagepipes(
+      base::BindOnce(&MockProducer::OnMessagepipesReadyCallback,
+                     base::Unretained(producer.get()),
+                     base::Unretained(perfetto_service()->GetService())));
 
   base::RunLoop no_more_packets_runloop;
   MockConsumer consumer(perfetto_service()->GetService(),
@@ -337,8 +355,7 @@ TEST_F(PerfettoIntegrationTest, PacketsEndToEndProducerFirst) {
 
   client_enabled_callback.Run();
 
-  // Wait until all Mojo messages have been sent.
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   consumer.StopTracing();
   client_disabled_callback.Run();
@@ -368,15 +385,14 @@ TEST_F(PerfettoIntegrationTest, PacketsEndToEndConsumerFirst) {
 
   auto new_producer =
       std::make_unique<MockProducer>(kPerfettoTestDataSourceName);
-  new_producer->Initialize(client->CreateAndBindProducerClient(),
-                           client->CreateProducerHostRequest(),
-                           perfetto_service()->GetService(),
-                           kPerfettoProducerName);
+  client->CreateMojoMessagepipes(
+      base::BindOnce(&MockProducer::OnMessagepipesReadyCallback,
+                     base::Unretained(new_producer.get()),
+                     base::Unretained(perfetto_service()->GetService())));
 
   client_enabled_callback.Run();
 
-  // Wait until all Mojo messages have been sent.
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   consumer.StopTracing();
 
@@ -403,19 +419,16 @@ TEST_F(PerfettoIntegrationTest, CommitDataRequestIsMaybeComplete) {
       kNumPackets, client_enabled_callback.QuitClosure());
   auto new_producer =
       std::make_unique<MockProducer>(kPerfettoTestDataSourceName);
-  new_producer->Initialize(client->CreateAndBindProducerClient(),
-                           client->CreateProducerHostRequest(),
-                           perfetto_service()->GetService(),
-                           kPerfettoProducerName);
+  client->CreateMojoMessagepipes(
+      base::BindOnce(&MockProducer::OnMessagepipesReadyCallback,
+                     base::Unretained(new_producer.get()),
+                     base::Unretained(perfetto_service()->GetService())));
 
   client_enabled_callback.Run();
 
   client->data_source()->WritePacketBigly();
 
-  client->FlushTaskRunner();
-
-  // Wait until all Mojo messages have been sent.
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   consumer.StopTracing();
 
@@ -445,15 +458,14 @@ TEST_F(PerfettoIntegrationTest, TracingRestarted) {
 
   auto new_producer =
       std::make_unique<MockProducer>(kPerfettoTestDataSourceName);
-  new_producer->Initialize(client->CreateAndBindProducerClient(),
-                           client->CreateProducerHostRequest(),
-                           perfetto_service()->GetService(),
-                           kPerfettoProducerName);
+  client->CreateMojoMessagepipes(
+      base::BindOnce(&MockProducer::OnMessagepipesReadyCallback,
+                     base::Unretained(new_producer.get()),
+                     base::Unretained(perfetto_service()->GetService())));
 
   client_enabled_callback.Run();
 
-  // Wait until all Mojo messages have been sent.
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   perfetto::SharedMemory* first_session_shm = client->shared_memory();
   consumer.StopTracing();
@@ -469,8 +481,7 @@ TEST_F(PerfettoIntegrationTest, TracingRestarted) {
   consumer.StartTracing();
   client_reenabled_callback.Run();
 
-  // Wait until all Mojo messages have been sent.
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   // We should still be using the same shared memory.
   EXPECT_EQ(first_session_shm, client->shared_memory());
@@ -498,10 +509,10 @@ TEST_F(PerfettoIntegrationTest, NoPacketsReceivedOnWrongSourceName) {
   base::RunLoop producer_initialized_runloop;
   auto new_producer = std::make_unique<MockProducer>(
       "fake", producer_initialized_runloop.QuitClosure());
-  new_producer->Initialize(client->CreateAndBindProducerClient(),
-                           client->CreateProducerHostRequest(),
-                           perfetto_service()->GetService(),
-                           kPerfettoProducerName);
+  client->CreateMojoMessagepipes(
+      base::BindOnce(&MockProducer::OnMessagepipesReadyCallback,
+                     base::Unretained(new_producer.get()),
+                     base::Unretained(perfetto_service()->GetService())));
   producer_initialized_runloop.Run();
 
   base::RunLoop no_more_packets_runloop;
@@ -513,8 +524,7 @@ TEST_F(PerfettoIntegrationTest, NoPacketsReceivedOnWrongSourceName) {
                           }
                         });
 
-  // Wait until all Mojo messages have been sent.
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   consumer.StopTracing();
 
@@ -534,16 +544,16 @@ TEST_F(PerfettoIntegrationTest,
       0 /* send_packet_count */, client2_enabled_callback.QuitClosure());
 
   auto producer1 = std::make_unique<MockProducer>(kPerfettoTestDataSourceName);
-  producer1->Initialize(client1->CreateAndBindProducerClient(),
-                        client1->CreateProducerHostRequest(),
-                        perfetto_service()->GetService(),
-                        kPerfettoProducerName);
+  client1->CreateMojoMessagepipes(
+      base::BindOnce(&MockProducer::OnMessagepipesReadyCallback,
+                     base::Unretained(producer1.get()),
+                     base::Unretained(perfetto_service()->GetService())));
 
   auto producer2 = std::make_unique<MockProducer>(kPerfettoTestDataSourceName);
-  producer2->Initialize(client2->CreateAndBindProducerClient(),
-                        client2->CreateProducerHostRequest(),
-                        perfetto_service()->GetService(),
-                        kPerfettoProducerName);
+  client2->CreateMojoMessagepipes(
+      base::BindOnce(&MockProducer::OnMessagepipesReadyCallback,
+                     base::Unretained(producer2.get()),
+                     base::Unretained(perfetto_service()->GetService())));
 
   MockConsumer consumer(perfetto_service()->GetService(),
                         kPerfettoTestDataSourceName, nullptr);

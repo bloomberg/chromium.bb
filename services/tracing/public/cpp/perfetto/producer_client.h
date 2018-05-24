@@ -46,15 +46,17 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
 
   static void DeleteSoon(std::unique_ptr<ProducerClient>);
 
-  // Connect to the service-side ProducerHost which will
-  // let Perfetto know we're ready to start logging
-  // our data.
-  mojom::ProducerClientPtr CreateAndBindProducerClient();
-  mojom::ProducerHostRequest CreateProducerHostRequest();
+  // Returns the taskrunner used by Perfetto.
+  static base::SequencedTaskRunner* GetTaskRunner();
 
-  bool has_connected_producer_host_for_testing() const {
-    return !!producer_host_;
-  }
+  // Create the messagepipes that'll be used to connect
+  // to the service-side ProducerHost, on the correct
+  // sequence. The callback will be called on same sequence
+  // as CreateMojoMessagepipes() got called on.
+  using MessagepipesReadyCallback =
+      base::OnceCallback<void(mojom::ProducerClientPtr,
+                              mojom::ProducerHostRequest)>;
+  void CreateMojoMessagepipes(MessagepipesReadyCallback);
 
   // mojom::ProducerClient implementation.
   // Called through Mojo by the ProducerHost on the service-side to control
@@ -87,17 +89,18 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   size_t shared_buffer_page_size_kb() const override;
   void NotifyFlushComplete(perfetto::FlushRequestID) override;
 
- protected:
-  base::SequencedTaskRunner* GetTaskRunner();
+  static void ResetTaskRunnerForTesting();
 
  private:
-  void BindOnSequence(mojom::ProducerClientRequest request);
   void CommitDataOnSequence(mojom::CommitDataRequestPtr request);
+  // The callback will be run on the |origin_task_runner|, meaning
+  // the same sequence as CreateMojoMessagePipes() got called on.
+  void CreateMojoMessagepipesOnSequence(
+      scoped_refptr<base::SequencedTaskRunner> origin_task_runner,
+      MessagepipesReadyCallback,
+      mojom::ProducerClientRequest,
+      mojom::ProducerClientPtr);
 
-  // Keep the TaskRunner first in the member list so it outlives
-  // everything else and no dependent classes will try to use
-  // an invalid taskrunner.
-  PerfettoTaskRunner perfetto_task_runner_;
   std::unique_ptr<mojo::Binding<mojom::ProducerClient>> binding_;
   std::unique_ptr<perfetto::SharedMemoryArbiter> shared_memory_arbiter_;
   mojom::ProducerHostPtr producer_host_;
