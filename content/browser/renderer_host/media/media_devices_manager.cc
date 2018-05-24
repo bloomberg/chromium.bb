@@ -296,31 +296,48 @@ class MediaDevicesManager::AudioServiceDeviceListener
     // Check if the service manager is managing the audio service.
     connector->QueryService(
         service_manager::Identity(audio::mojom::kServiceName),
-        base::BindOnce(&AudioServiceDeviceListener::DoConnectToService,
+        base::BindOnce(&AudioServiceDeviceListener::ServiceQueried,
                        weak_factory_.GetWeakPtr(), connector));
   }
 
-  void DoConnectToService(service_manager::Connector* connector,
-                          service_manager::mojom::ConnectResult connect_result,
-                          const std::string& ignore) {
+  void ServiceQueried(service_manager::Connector* connector,
+                      service_manager::mojom::ConnectResult connect_result,
+                      const std::string& ignore) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(!mojo_audio_device_notifier_);
-    DCHECK(!binding_);
     // Do not connect if the service manager is not managing the audio service.
     if (connect_result != service_manager::mojom::ConnectResult::SUCCEEDED) {
       LOG(WARNING) << "Audio service not available: " << connect_result;
       return;
     }
+    DoConnectToService(connector);
+  }
 
+  void DoConnectToService(service_manager::Connector* connector) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK(!mojo_audio_device_notifier_);
+    DCHECK(!binding_);
     connector->BindInterface(audio::mojom::kServiceName,
                              mojo::MakeRequest(&mojo_audio_device_notifier_));
     mojo_audio_device_notifier_.set_connection_error_handler(base::BindOnce(
-        &MediaDevicesManager::AudioServiceDeviceListener::TryConnectToService,
+        &MediaDevicesManager::AudioServiceDeviceListener::OnConnectionError,
         weak_factory_.GetWeakPtr(), connector));
     audio::mojom::DeviceListenerPtr audio_device_listener_ptr;
     binding_.Bind(mojo::MakeRequest(&audio_device_listener_ptr));
     mojo_audio_device_notifier_->RegisterListener(
         std::move(audio_device_listener_ptr));
+  }
+
+  void OnConnectionError(service_manager::Connector* connector) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    mojo_audio_device_notifier_.reset();
+    binding_.Close();
+
+    // Resetting the error handler in a posted task since doing it synchronously
+    // results in a browser crash. See https://crbug.com/845142.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AudioServiceDeviceListener::TryConnectToService,
+                       weak_factory_.GetWeakPtr(), connector));
   }
 
   mojo::Binding<audio::mojom::DeviceListener> binding_;
