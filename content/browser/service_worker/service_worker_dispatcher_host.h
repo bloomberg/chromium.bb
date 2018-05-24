@@ -25,7 +25,6 @@
 
 namespace content {
 
-class ResourceContext;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 
@@ -66,9 +65,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       public BrowserAssociatedInterface<mojom::ServiceWorkerDispatcherHost>,
       public mojom::ServiceWorkerDispatcherHost {
  public:
-  ServiceWorkerDispatcherHost(
-      int render_process_id,
-      ResourceContext* resource_context);
+  explicit ServiceWorkerDispatcherHost(int render_process_id);
 
   void Init(ServiceWorkerContextWrapper* context_wrapper);
 
@@ -76,8 +73,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void OnFilterRemoved() override;
   void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
-
-  ResourceContext* resource_context() { return resource_context_; }
 
   base::WeakPtr<ServiceWorkerDispatcherHost> AsWeakPtr();
 
@@ -111,7 +106,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   ServiceWorkerContextCore* GetContext();
 
   const int render_process_id_;
-  ResourceContext* resource_context_;
   // Only accessed on the IO thread.
   Phase phase_ = Phase::kInitial;
   // Only accessed on the IO thread.

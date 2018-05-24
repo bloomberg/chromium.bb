@@ -1838,8 +1838,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new TextInputClientMessageFilter());
 #endif
 
-  scoped_refptr<ServiceWorkerDispatcherHost> service_worker_filter =
-      new ServiceWorkerDispatcherHost(GetID(), resource_context);
+  auto service_worker_filter =
+      base::MakeRefCounted<ServiceWorkerDispatcherHost>(GetID());
   service_worker_filter->Init(
       storage_partition_impl_->GetServiceWorkerContext());
   AddFilter(service_worker_filter.get());

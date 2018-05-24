@@ -25,7 +25,6 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
@@ -87,9 +86,8 @@ std::unique_ptr<ServiceWorkerNavigationHandleCore> CreateNavigationHandleCore(
 class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
  public:
   TestingServiceWorkerDispatcherHost(int process_id,
-                                     ResourceContext* resource_context,
                                      EmbeddedWorkerTestHelper* helper)
-      : ServiceWorkerDispatcherHost(process_id, resource_context),
+      : ServiceWorkerDispatcherHost(process_id),
         bad_messages_received_count_(0),
         helper_(helper) {}
 
@@ -130,8 +128,8 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     helper_.reset(helper.release());
     // Replace the default dispatcher host.
     int process_id = helper_->mock_render_process_id();
-    dispatcher_host_ = new TestingServiceWorkerDispatcherHost(
-        process_id, &resource_context_, helper_.get());
+    dispatcher_host_ =
+        new TestingServiceWorkerDispatcherHost(process_id, helper_.get());
     helper_->RegisterDispatcherHost(process_id, nullptr);
     dispatcher_host_->Init(context_wrapper());
   }
@@ -179,7 +177,6 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   }
 
   TestBrowserThreadBundle browser_thread_bundle_;
-  content::MockResourceContext resource_context_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
@@ -285,9 +282,9 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   // We should be able to hook up a new dispatcher host although the old object
   // is not yet destroyed. This is what the browser does when reusing a crashed
   // render process.
-  scoped_refptr<TestingServiceWorkerDispatcherHost> new_dispatcher_host(
-      new TestingServiceWorkerDispatcherHost(process_id, &resource_context_,
-                                             helper_.get()));
+  auto new_dispatcher_host =
+      base::MakeRefCounted<TestingServiceWorkerDispatcherHost>(process_id,
+                                                               helper_.get());
   new_dispatcher_host->Init(context_wrapper());
 
   // To show the new dispatcher can operate, simulate provider creation. Since
