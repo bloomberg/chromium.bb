@@ -13,7 +13,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
+#include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -78,9 +78,8 @@ class TabManagerStatsCollectorTest : public ChromeRenderViewHostTestHarness {
 
   std::unique_ptr<WebContents> CreateWebContentsForUKM(ukm::SourceId id) {
     std::unique_ptr<WebContents> contents(CreateTestWebContents());
-    ResourceCoordinatorWebContentsObserver::CreateForWebContents(
-        contents.get());
-    ResourceCoordinatorWebContentsObserver::FromWebContents(contents.get())
+    ResourceCoordinatorTabHelper::CreateForWebContents(contents.get());
+    ResourceCoordinatorTabHelper::FromWebContents(contents.get())
         ->SetUkmSourceIdForTest(id);
     return contents;
   }

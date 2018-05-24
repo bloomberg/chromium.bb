@@ -11,7 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/resource_coordinator/resource_coordinator_render_process_probe.h"
+#include "chrome/browser/resource_coordinator/render_process_probe.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -24,15 +24,14 @@
 
 namespace resource_coordinator {
 
-class TestingResourceCoordinatorRenderProcessProbe
-    : public ResourceCoordinatorRenderProcessProbe {
+class TestingRenderProcessProbe : public RenderProcessProbe {
  public:
   // Make these types public for testing.
-  using ResourceCoordinatorRenderProcessProbe::RenderProcessInfo;
-  using ResourceCoordinatorRenderProcessProbe::RenderProcessInfoMap;
+  using RenderProcessProbe::RenderProcessInfo;
+  using RenderProcessProbe::RenderProcessInfoMap;
 
-  TestingResourceCoordinatorRenderProcessProbe() = default;
-  ~TestingResourceCoordinatorRenderProcessProbe() override = default;
+  TestingRenderProcessProbe() = default;
+  ~TestingRenderProcessProbe() override = default;
 
   bool DispatchMetrics(
       mojom::ProcessResourceMeasurementBatchPtr batch) override {
@@ -42,8 +41,7 @@ class TestingResourceCoordinatorRenderProcessProbe
   }
 
   void FinishCollectionOnUIThread(bool restart_cycle) override {
-    ResourceCoordinatorRenderProcessProbe::FinishCollectionOnUIThread(
-        restart_cycle);
+    RenderProcessProbe::FinishCollectionOnUIThread(restart_cycle);
 
     current_run_loop_->QuitWhenIdle();
   }
@@ -93,14 +91,13 @@ class TestingResourceCoordinatorRenderProcessProbe
 
   mojom::ProcessResourceMeasurementBatchPtr last_measurement_batch_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestingResourceCoordinatorRenderProcessProbe);
+  DISALLOW_COPY_AND_ASSIGN(TestingRenderProcessProbe);
 };
 
-class ResourceCoordinatorRenderProcessProbeBrowserTest
-    : public InProcessBrowserTest {
+class RenderProcessProbeBrowserTest : public InProcessBrowserTest {
  public:
-  ResourceCoordinatorRenderProcessProbeBrowserTest() = default;
-  ~ResourceCoordinatorRenderProcessProbeBrowserTest() override = default;
+  RenderProcessProbeBrowserTest() = default;
+  ~RenderProcessProbeBrowserTest() override = default;
 
   static bool AtLeastOneMemoryMeasurementIsNonZero(
       const mojom::ProcessResourceMeasurementBatchPtr& batch) {
@@ -113,10 +110,10 @@ class ResourceCoordinatorRenderProcessProbeBrowserTest
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorRenderProcessProbeBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(RenderProcessProbeBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
+IN_PROC_BROWSER_TEST_F(RenderProcessProbeBrowserTest,
                        TrackAndMeasureActiveRenderProcesses) {
 #if defined(OS_WIN)
   // TODO(https://crbug.com/833430): Spare-RPH-related failures when run with
@@ -130,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
                                  features::kGRCRenderProcessCPUProfiling},
                                 {});
 
-  TestingResourceCoordinatorRenderProcessProbe probe;
+  TestingRenderProcessProbe probe;
 
   ASSERT_TRUE(embedded_test_server()->Start());
   EXPECT_EQ(0u, probe.current_gather_cycle());
@@ -175,8 +172,7 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
 
   // Verify that the elements in the map are reused across multiple
   // measurement cycles.
-  using RenderProcessInfo =
-      TestingResourceCoordinatorRenderProcessProbe::RenderProcessInfo;
+  using RenderProcessInfo = TestingRenderProcessProbe::RenderProcessInfo;
   std::map<int, const RenderProcessInfo*> info_map;
   for (const auto& entry : probe.render_process_info_map()) {
     const RenderProcessInfo& info = entry.second;
@@ -217,15 +213,14 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
   EXPECT_TRUE(probe.AllMeasurementsAreAtCurrentCycle());
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
-                       StartSingleGather) {
+IN_PROC_BROWSER_TEST_F(RenderProcessProbeBrowserTest, StartSingleGather) {
   // Ensure that the |resource_coordinator| service is enabled.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures({features::kGlobalResourceCoordinator,
                                  features::kGRCRenderProcessCPUProfiling},
                                 {});
 
-  TestingResourceCoordinatorRenderProcessProbe probe;
+  TestingRenderProcessProbe probe;
 
   // Test the gather cycle state.
   EXPECT_FALSE(probe.is_gather_cycle_started());

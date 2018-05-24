@@ -18,7 +18,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
+#include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -58,8 +58,9 @@ bool ShouldReportExpectedTaskQueueingDurationToUKM(
 }
 
 ukm::SourceId GetUkmSourceId(content::WebContents* contents) {
-  ResourceCoordinatorWebContentsObserver* observer =
-      ResourceCoordinatorWebContentsObserver::FromWebContents(contents);
+  resource_coordinator::ResourceCoordinatorTabHelper* observer =
+      resource_coordinator::ResourceCoordinatorTabHelper::FromWebContents(
+          contents);
   if (!observer)
     return ukm::kInvalidSourceId;
 
