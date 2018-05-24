@@ -42,13 +42,7 @@ def gen(old_file, new_file, patch_file, output_dir, is_raw, is_win):
   # Handle Windows executable names.
   zucchini = 'zucchini'
   protoc = 'protoc'
-  # NOTE: Windows can't find Python via #! so we have to help it.
-  python = sys.executable
-  if not python:
-    python = 'python'
   if is_win:
-    if not python.lower().endswith('.exe'):
-      python += '.exe'
     zucchini += '.exe'
     protoc += '.exe'
 
@@ -64,7 +58,7 @@ def gen(old_file, new_file, patch_file, output_dir, is_raw, is_win):
                                                                 new_file))
     return ret
   # Binary encode the protobuf pair.
-  ret = subprocess.call([python,
+  ret = subprocess.call([sys.executable,
                          os.path.join(ABS_PATH, 'create_seed_file_pair.py'),
                          os.path.abspath(protoc), old_file, patch_file,
                          os.path.join(output_dir, 'seed_proto.bin')],
