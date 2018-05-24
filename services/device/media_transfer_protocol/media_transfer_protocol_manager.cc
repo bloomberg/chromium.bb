@@ -123,14 +123,13 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   // MediaTransferProtocolManager override.
   void GetStorageInfoFromDevice(
       const std::string& storage_name,
-      const GetStorageInfoFromDeviceCallback& callback) override {
+      mojom::MtpManager::GetStorageInfoFromDeviceCallback callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!base::ContainsKey(storage_info_map_, storage_name) || !mtp_client_) {
-      mojom::MtpStorageInfo info;
-      callback.Run(info, true /* error */);
+      std::move(callback).Run(nullptr, true /* error */);
       return;
     }
-    get_storage_info_from_device_callbacks_.push(callback);
+    get_storage_info_from_device_callbacks_.push(std::move(callback));
     mtp_client_->GetStorageInfoFromDevice(
         storage_name,
         base::Bind(
@@ -316,7 +315,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
  private:
   // Map of storage names to storage info.
   using GetStorageInfoFromDeviceCallbackQueue =
-      base::queue<GetStorageInfoFromDeviceCallback>;
+      base::queue<mojom::MtpManager::GetStorageInfoFromDeviceCallback>;
   // Callback queues - DBus communication is in-order, thus callbacks are
   // received in the same order as the requests.
   using OpenStorageCallbackQueue = base::queue<OpenStorageCallback>;
@@ -397,14 +396,14 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   void OnGetStorageInfoFromDevice(const mojom::MtpStorageInfo& storage_info) {
-    get_storage_info_from_device_callbacks_.front().Run(storage_info,
-                                                        false /* no error */);
+    std::move(get_storage_info_from_device_callbacks_.front())
+        .Run(storage_info.Clone(), false /* no error */);
     get_storage_info_from_device_callbacks_.pop();
   }
 
   void OnGetStorageInfoFromDeviceError() {
-    mojom::MtpStorageInfo info;
-    get_storage_info_from_device_callbacks_.front().Run(info, true /* error */);
+    std::move(get_storage_info_from_device_callbacks_.front())
+        .Run(nullptr, true /* error */);
     get_storage_info_from_device_callbacks_.pop();
   }
 

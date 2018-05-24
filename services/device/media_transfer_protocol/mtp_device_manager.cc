@@ -41,13 +41,6 @@ void EnumerateStorageCallbackWrapper(
   std::move(callback).Run(std::move(storage_info_ptr_list));
 }
 
-void GetStorageInfoFromDeviceCallbackWrapper(
-    mojom::MtpManager::GetStorageInfoFromDeviceCallback callback,
-    const mojom::MtpStorageInfo& storage_info,
-    bool error) {
-  std::move(callback).Run(storage_info.Clone(), error);
-}
-
 void ReadDirectoryCallbackWrapper(
     mojom::MtpManager::ReadDirectoryCallback callback,
     const std::vector<mojom::MtpFileEntry>& file_entries,
@@ -97,9 +90,7 @@ void MtpDeviceManager::GetStorageInfoFromDevice(
     const std::string& storage_name,
     GetStorageInfoFromDeviceCallback callback) {
   media_transfer_protocol_manager_->GetStorageInfoFromDevice(
-      storage_name,
-      base::Bind(GetStorageInfoFromDeviceCallbackWrapper,
-                 base::AdaptCallbackForRepeating(std::move(callback))));
+      storage_name, std::move(callback));
 }
 
 void MtpDeviceManager::OpenStorage(const std::string& storage_name,
