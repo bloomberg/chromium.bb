@@ -1146,6 +1146,8 @@ component("ash") {
     "wm/tablet_mode/tablet_mode_observer.h",
     "wm/tablet_mode/tablet_mode_window_manager.cc",
     "wm/tablet_mode/tablet_mode_window_manager.h",
+    "wm/tablet_mode/tablet_mode_window_resizer.cc",
+    "wm/tablet_mode/tablet_mode_window_resizer.h",
     "wm/tablet_mode/tablet_mode_window_state.cc",
     "wm/tablet_mode/tablet_mode_window_state.h",
     "wm/top_level_window_factory.cc",

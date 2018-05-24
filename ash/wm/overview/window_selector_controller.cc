@@ -62,6 +62,11 @@ bool ShouldExcludeWindowFromOverview(const aura::Window* window) {
     return true;
   }
 
+  // The window that is currently in tab-dragging process should be ignored in
+  // overview grid.
+  if (ash::wm::IsDraggingTabs(window))
+    return true;
+
   return false;
 }
 

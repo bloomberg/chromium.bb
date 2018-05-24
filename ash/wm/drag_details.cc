@@ -5,10 +5,13 @@
 #include "ash/wm/drag_details.h"
 
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_resizer.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
@@ -41,6 +44,21 @@ int GetSizeChangeDirectionForWindowComponent(int window_component) {
   return size_change_direction;
 }
 
+gfx::Rect GetWindowInitialBoundsInParent(aura::Window* window) {
+  const bool is_tablet_mode = Shell::Get()
+                                  ->tablet_mode_controller()
+                                  ->IsTabletModeWindowManagerEnabled();
+  if (is_tablet_mode) {
+    gfx::Rect* override_bounds = window->GetProperty(kRestoreBoundsOverrideKey);
+    if (override_bounds && !override_bounds->IsEmpty()) {
+      gfx::Rect bounds = *override_bounds;
+      ::wm::ConvertRectFromScreen(window->GetRootWindow(), &bounds);
+      return bounds;
+    }
+  }
+  return window->bounds();
+}
+
 }  // namespace
 
 DragDetails::DragDetails(aura::Window* window,
@@ -48,7 +66,7 @@ DragDetails::DragDetails(aura::Window* window,
                          int window_component,
                          ::wm::WindowMoveSource source)
     : initial_state_type(wm::GetWindowState(window)->GetStateType()),
-      initial_bounds_in_parent(window->bounds()),
+      initial_bounds_in_parent(GetWindowInitialBoundsInParent(window)),
       initial_location_in_parent(location),
       // When drag starts, we might be in the middle of a window opacity
       // animation, on drag completion we must set the opacity to the target
@@ -67,10 +85,22 @@ DragDetails::DragDetails(aura::Window* window,
       should_attach_to_shelf(window->type() ==
                                  aura::client::WINDOW_TYPE_PANEL &&
                              window->GetProperty(kPanelAttachedKey)) {
+  if (window_component != HTCAPTION)
+    return;
+
   wm::WindowState* window_state = wm::GetWindowState(window);
-  if (window_state->IsNormalOrSnapped() && window_state->HasRestoreBounds() &&
-      window_component == HTCAPTION) {
+  const bool is_tablet_mode = Shell::Get()
+                                  ->tablet_mode_controller()
+                                  ->IsTabletModeWindowManagerEnabled();
+  // TODO(xdai): Move these logic to WindowState::GetRestoreBoundsInScreen()
+  // and let it return the right value.
+  if (!is_tablet_mode && window_state->IsNormalOrSnapped() &&
+      window_state->HasRestoreBounds()) {
     restore_bounds = window_state->GetRestoreBoundsInScreen();
+  } else if (is_tablet_mode) {
+    gfx::Rect* override_bounds = window->GetProperty(kRestoreBoundsOverrideKey);
+    if (override_bounds && !override_bounds->IsEmpty())
+      restore_bounds = *override_bounds;
   }
 }
 

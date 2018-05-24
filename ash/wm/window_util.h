@@ -119,6 +119,9 @@ ASH_EXPORT void InstallResizeHandleWindowTargeterForWindow(
     aura::Window* window,
     ImmersiveFullscreenController* immersive_fullscreen_controller);
 
+// Returns true if |window| is currently in tab-dragging process.
+ASH_EXPORT bool IsDraggingTabs(const aura::Window* window);
+
 }  // namespace wm
 }  // namespace ash
 
