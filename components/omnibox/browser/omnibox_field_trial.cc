@@ -46,8 +46,10 @@ const base::Feature kOmniboxNewAnswerLayout{"OmniboxNewAnswerLayout",
 const base::Feature kOmniboxTailSuggestions{
     "OmniboxTailSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const char kOmniboxTabSwitchSuggestionsFlag[] =
-    "omnibox-tab-switch-suggestions";
+// Feature used to force on the experiment of showing a button for suggestions
+// whose URL is open in another tab, with the ability to switch to that tab.
+const base::Feature kOmniboxTabSwitchSuggestions{
+    "OmniboxTabSwitchSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature used to enable clipboard provider, which provides the user with
 // suggestions of the URL in the user's clipboard (if any) upon omnibox focus.
@@ -676,11 +678,7 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
 
 // static
 bool OmniboxFieldTrial::InTabSwitchSuggestionTrial() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(omnibox::kOmniboxTabSwitchSuggestionsFlag) &&
-         command_line.GetSwitchValueASCII(
-             omnibox::kOmniboxTabSwitchSuggestionsFlag) != "disabled";
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
 }
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
