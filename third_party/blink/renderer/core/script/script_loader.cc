@@ -138,14 +138,6 @@ void ScriptLoader::DetachPendingScript() {
   pending_script_ = nullptr;
 }
 
-void ScriptLoader::DispatchErrorEvent() {
-  element_->DispatchErrorEvent();
-}
-
-void ScriptLoader::DispatchLoadEvent() {
-  element_->DispatchLoadEvent();
-}
-
 namespace {
 
 bool IsValidClassicScriptTypeAndLanguage(
@@ -392,7 +384,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     if (src.IsEmpty()) {
       // TODO(hiroshige): Make this asynchronous. Currently we fire the error
       // event synchronously to keep the existing behavior.
-      DispatchErrorEvent();
+      element_->DispatchErrorEvent();
       return false;
     }
 
@@ -409,7 +401,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     if (!url.IsValid()) {
       // TODO(hiroshige): Make this asynchronous. Currently we fire the error
       // event synchronously to keep the existing behavior.
-      DispatchErrorEvent();
+      element_->DispatchErrorEvent();
       return false;
     }
 
