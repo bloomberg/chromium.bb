@@ -48,22 +48,22 @@ bool ValidatePushedHeaders(const HttpRequestInfo& request_info,
     if (!request_info.extra_headers.GetHeader(HttpRequestHeaders::kRange,
                                               &client_request_range)) {
       // Client initiated request is not a range request.
-      UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
-                                SpdyPushedStreamFate::kClientRequestNotRange);
+      SpdySession::RecordSpdyPushedStreamFateHistogram(
+          SpdyPushedStreamFate::kClientRequestNotRange);
       return false;
     }
     spdy::SpdyHeaderBlock::const_iterator pushed_request_range_it =
         pushed_request_headers.find("range");
     if (pushed_request_range_it == pushed_request_headers.end()) {
       // Pushed request is not a range request.
-      UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
-                                SpdyPushedStreamFate::kPushedRequestNotRange);
+      SpdySession::RecordSpdyPushedStreamFateHistogram(
+          SpdyPushedStreamFate::kPushedRequestNotRange);
       return false;
     }
     if (client_request_range != pushed_request_range_it->second) {
       // Client and pushed request ranges do not match.
-      UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
-                                SpdyPushedStreamFate::kRangeMismatch);
+      SpdySession::RecordSpdyPushedStreamFateHistogram(
+          SpdyPushedStreamFate::kRangeMismatch);
       return false;
     }
   }
@@ -75,20 +75,20 @@ bool ValidatePushedHeaders(const HttpRequestInfo& request_info,
   if (!vary_data.Init(pushed_request_info,
                       *pushed_response_info.headers.get())) {
     // Pushed response did not contain non-empty Vary header.
-    UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
-                              SpdyPushedStreamFate::kAcceptedNoVary);
+    SpdySession::RecordSpdyPushedStreamFateHistogram(
+        SpdyPushedStreamFate::kAcceptedNoVary);
     return true;
   }
 
   if (vary_data.MatchesRequest(request_info,
                                *pushed_response_info.headers.get())) {
-    UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
-                              SpdyPushedStreamFate::kAcceptedMatchingVary);
+    SpdySession::RecordSpdyPushedStreamFateHistogram(
+        SpdyPushedStreamFate::kAcceptedMatchingVary);
     return true;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
-                            SpdyPushedStreamFate::kVaryMismatch);
+  SpdySession::RecordSpdyPushedStreamFateHistogram(
+      SpdyPushedStreamFate::kVaryMismatch);
   return false;
 }
 
