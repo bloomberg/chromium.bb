@@ -214,40 +214,6 @@ class WebSocketChannel::ConnectDelegate
   DISALLOW_COPY_AND_ASSIGN(ConnectDelegate);
 };
 
-class WebSocketChannel::HandshakeNotificationSender
-    : public base::SupportsWeakPtr<HandshakeNotificationSender> {
- public:
-  explicit HandshakeNotificationSender(WebSocketChannel* channel);
-  ~HandshakeNotificationSender();
-
-  static void Send(base::WeakPtr<HandshakeNotificationSender> sender);
-
-  void SendImmediately(WebSocketEventInterface* event_interface);
-
-  const WebSocketHandshakeRequestInfo* handshake_request_info() const {
-    return handshake_request_info_.get();
-  }
-
-  void set_handshake_request_info(
-      std::unique_ptr<WebSocketHandshakeRequestInfo> request_info) {
-    handshake_request_info_ = std::move(request_info);
-  }
-
-  const WebSocketHandshakeResponseInfo* handshake_response_info() const {
-    return handshake_response_info_.get();
-  }
-
-  void set_handshake_response_info(
-      std::unique_ptr<WebSocketHandshakeResponseInfo> response_info) {
-    handshake_response_info_ = std::move(response_info);
-  }
-
- private:
-  WebSocketChannel* owner_;
-  std::unique_ptr<WebSocketHandshakeRequestInfo> handshake_request_info_;
-  std::unique_ptr<WebSocketHandshakeResponseInfo> handshake_response_info_;
-};
-
 class WebSocketChannel::PendingReceivedFrame {
  public:
   PendingReceivedFrame(bool final,
@@ -297,38 +263,6 @@ class WebSocketChannel::PendingReceivedFrame {
   uint64_t size_;
 };
 
-WebSocketChannel::HandshakeNotificationSender::HandshakeNotificationSender(
-    WebSocketChannel* channel)
-    : owner_(channel) {}
-
-WebSocketChannel::HandshakeNotificationSender::~HandshakeNotificationSender() =
-    default;
-
-void WebSocketChannel::HandshakeNotificationSender::Send(
-    base::WeakPtr<HandshakeNotificationSender> sender) {
-  // Do nothing if |sender| is already destructed.
-  if (sender) {
-    WebSocketChannel* channel = sender->owner_;
-    sender->SendImmediately(channel->event_interface_.get());
-  }
-}
-
-void WebSocketChannel::HandshakeNotificationSender::SendImmediately(
-    WebSocketEventInterface* event_interface) {
-  if (handshake_request_info_.get()) {
-    event_interface->OnStartOpeningHandshake(
-        std::move(handshake_request_info_));
-  }
-
-  if (handshake_response_info_.get()) {
-    event_interface->OnFinishOpeningHandshake(
-        std::move(handshake_response_info_));
-
-    // TODO(yhirano): We can release |this| to save memory because
-    // there will be no more opening handshake notification.
-  }
-}
-
 WebSocketChannel::WebSocketChannel(
     std::unique_ptr<WebSocketEventInterface> event_interface,
     URLRequestContext* url_request_context)
@@ -345,7 +279,6 @@ WebSocketChannel::WebSocketChannel(
       has_received_close_frame_(false),
       received_close_code_(0),
       state_(FRESHLY_CONSTRUCTED),
-      notification_sender_(std::make_unique<HandshakeNotificationSender>(this)),
       sending_text_message_(false),
       receiving_text_message_(false),
       expecting_to_handle_continuation_(false),
@@ -655,7 +588,6 @@ void WebSocketChannel::OnConnectFailure(const std::string& message) {
   SetState(CLOSED);
   stream_request_.reset();
 
-  notification_sender_->SendImmediately(event_interface_.get());
   event_interface_->OnFailChannel(message_copy);
   // |this| has been deleted.
 }
@@ -671,28 +603,12 @@ void WebSocketChannel::OnSSLCertificateError(
 
 void WebSocketChannel::OnStartOpeningHandshake(
     std::unique_ptr<WebSocketHandshakeRequestInfo> request) {
-  DCHECK(!notification_sender_->handshake_request_info());
-
-  // Because it is hard to handle an IPC error synchronously is difficult,
-  // we asynchronously notify the information.
-  notification_sender_->set_handshake_request_info(std::move(request));
-  ScheduleOpeningHandshakeNotification();
+  event_interface_->OnStartOpeningHandshake(std::move(request));
 }
 
 void WebSocketChannel::OnFinishOpeningHandshake(
     std::unique_ptr<WebSocketHandshakeResponseInfo> response) {
-  DCHECK(!notification_sender_->handshake_response_info());
-
-  // Because it is hard to handle an IPC error synchronously is difficult,
-  // we asynchronously notify the information.
-  notification_sender_->set_handshake_response_info(std::move(response));
-  ScheduleOpeningHandshakeNotification();
-}
-
-void WebSocketChannel::ScheduleOpeningHandshakeNotification() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(HandshakeNotificationSender::Send,
-                            notification_sender_->AsWeakPtr()));
+  event_interface_->OnFinishOpeningHandshake(std::move(response));
 }
 
 ChannelState WebSocketChannel::WriteFrames() {
@@ -1192,7 +1108,6 @@ bool WebSocketChannel::ParseClose(scoped_refptr<IOBuffer> buffer,
 void WebSocketChannel::DoDropChannel(bool was_clean,
                                      uint16_t code,
                                      const std::string& reason) {
-  notification_sender_->SendImmediately(event_interface_.get());
   event_interface_->OnDropChannel(was_clean, code, reason);
 }
 
