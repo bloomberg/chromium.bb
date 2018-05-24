@@ -7,7 +7,9 @@
 
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/child_accounts/usage_time_limit_processor.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/session_manager/core/session_manager_observer.h"
 
 class PrefRegistrySimple;
@@ -26,26 +28,6 @@ namespace chromeos {
 class ScreenTimeController : public KeyedService,
                              public session_manager::SessionManagerObserver {
  public:
-  // Fake enum from time limit processor, should be removed when the processer
-  // is ready.
-  enum class ActivePolicy {
-    kNoActivePolicy,
-    kOverride,
-    kFixedLimit,
-    kUsageLimit
-  };
-
-  // Fake struct from time limit processor, should be removed when the
-  // processer is ready.
-  struct TimeLimitState {
-    bool is_locked = false;
-    ActivePolicy active_policy = ActivePolicy::kNoActivePolicy;
-    bool is_time_usage_limit_enabled = false;
-    base::TimeDelta remaining_usage = base::TimeDelta();
-    base::Time next_state_change_time = base::Time();
-    ActivePolicy next_state_active_policy = ActivePolicy::kNoActivePolicy;
-  };
-
   // Registers preferences.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -92,6 +74,13 @@ class ScreenTimeController : public KeyedService,
   // outage.
   void SaveScreenTimeProgressPeriodically();
 
+  // Save the |state| to |prefs::kScreenTimeLastState|.
+  void SaveCurrentStateToPref(const usage_time_limit::State& state);
+
+  // Get the last calculated |state| from |prefs::kScreenTimeLastState|, if it
+  // exists.
+  base::Optional<usage_time_limit::State> GetLastStateFromPref();
+
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
 
@@ -113,6 +102,8 @@ class ScreenTimeController : public KeyedService,
   // Used to calculate the screen time limit and this will be refreshed by
   // RefreshScreenLimit();
   base::Time first_screen_start_time_;
+
+  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenTimeController);
 };
