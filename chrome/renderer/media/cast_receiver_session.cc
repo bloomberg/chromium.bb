@@ -30,6 +30,8 @@ class CastReceiverSession::AudioCapturerSource :
   void Stop() override;
   void SetVolume(double volume) override;
   void SetAutomaticGainControl(bool enable) override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
+
  private:
   ~AudioCapturerSource() override;
   const scoped_refptr<CastReceiverSession> cast_receiver_session_;
@@ -172,5 +174,10 @@ void CastReceiverSession::AudioCapturerSource::SetVolume(double volume) {
 
 void CastReceiverSession::AudioCapturerSource::SetAutomaticGainControl(
     bool enable) {
+  // not supported
+}
+
+void CastReceiverSession::AudioCapturerSource::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
   // not supported
 }

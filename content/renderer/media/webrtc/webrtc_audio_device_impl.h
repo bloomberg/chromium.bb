@@ -64,6 +64,9 @@ class WebRtcAudioRendererSource {
   // Otherwise a race may occur.
   virtual void AudioRendererThreadStopped() = 0;
 
+  // Callback to notify the client of the output device the renderer is using.
+  virtual void SetOutputDeviceForAec(const std::string& output_device_id) = 0;
+
  protected:
   virtual ~WebRtcAudioRendererSource() {}
 };
@@ -199,6 +202,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
   // Called on the main render thread.
   void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) override;
   void AudioRendererThreadStopped() override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
 
   // WebRtcPlayoutDataSource implementation.
   void AddPlayoutSink(WebRtcPlayoutDataSource::Sink* sink) override;
@@ -244,6 +248,9 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
   // Buffer used for temporary storage during render callback.
   // It is only accessed by the audio render thread.
   std::vector<int16_t> render_buffer_;
+
+  // The output device used for echo cancellation
+  std::string output_device_id_for_aec_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioDeviceImpl);
 };

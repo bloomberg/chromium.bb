@@ -187,6 +187,7 @@ class MockAudioCapturerSource : public media::AudioCapturerSource {
   void Stop() override {}
   void SetVolume(double volume) override {}
   void SetAutomaticGainControl(bool enable) override {}
+  void SetOutputDeviceForAec(const std::string& output_device_id) override{};
 
  protected:
   ~MockAudioCapturerSource() override {}

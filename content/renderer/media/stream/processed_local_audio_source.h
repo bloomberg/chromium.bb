@@ -83,6 +83,8 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   // remove it.
   media::AudioParameters GetInputFormat() const;
 
+  void SetOutputDeviceForAec(const std::string& output_device_id);
+
  protected:
   // MediaStreamAudioSource implementation.
   void* GetClassIdentifier() const final;

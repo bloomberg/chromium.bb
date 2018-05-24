@@ -67,6 +67,11 @@ class AudioCapturerSource
   // Enables or disables the WebRtc AGC control.
   virtual void SetAutomaticGainControl(bool enable) = 0;
 
+  // Sets the output device the source should cancel echo from, if
+  // supported. Must be called on the main thread. Device ids are gotten from
+  // device enumerations.
+  virtual void SetOutputDeviceForAec(const std::string& output_device_id) = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<AudioCapturerSource>;
   virtual ~AudioCapturerSource() {}

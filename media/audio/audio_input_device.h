@@ -51,6 +51,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "media/audio/alive_checker.h"
@@ -75,6 +76,7 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
   void Stop() override;
   void SetVolume(double volume) override;
   void SetAutomaticGainControl(bool enabled) override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
 
  private:
   friend class base::RefCountedThreadSafe<AudioInputDevice>;
@@ -129,6 +131,10 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
   std::unique_ptr<AudioDeviceThread> audio_thread_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // Cache the output device used for AEC in case it's called before the stream
+  // is created.
+  base::Optional<std::string> output_device_id_for_aec_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputDevice);
 };

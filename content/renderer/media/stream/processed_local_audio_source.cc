@@ -348,6 +348,13 @@ media::AudioParameters ProcessedLocalAudioSource::GetInputFormat() const {
                           : media::AudioParameters();
 }
 
+void ProcessedLocalAudioSource::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  DVLOG(1) << "ProcessedLocalAudioSource::SetOutputDeviceForAec()";
+  if (source_)
+    source_->SetOutputDeviceForAec(output_device_id);
+}
+
 int ProcessedLocalAudioSource::GetBufferSize(int sample_rate) const {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
 #if defined(OS_ANDROID)

@@ -120,6 +120,16 @@ void WebRtcAudioDeviceImpl::AudioRendererThreadStopped() {
     sink->OnPlayoutDataSourceChanged();
 }
 
+void WebRtcAudioDeviceImpl::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  output_device_id_for_aec_ = output_device_id;
+  base::AutoLock lock(lock_);
+  for (auto* capturer : capturers_) {
+    capturer->SetOutputDeviceForAec(output_device_id);
+  }
+}
+
 int32_t WebRtcAudioDeviceImpl::RegisterAudioCallback(
     webrtc::AudioTransport* audio_callback) {
   DVLOG(1) << "WebRtcAudioDeviceImpl::RegisterAudioCallback()";
@@ -390,6 +400,7 @@ void WebRtcAudioDeviceImpl::AddAudioCapturer(
   base::AutoLock auto_lock(lock_);
   DCHECK(!base::ContainsValue(capturers_, capturer));
   capturers_.push_back(capturer);
+  capturer->SetOutputDeviceForAec(output_device_id_for_aec_);
 }
 
 void WebRtcAudioDeviceImpl::RemoveAudioCapturer(

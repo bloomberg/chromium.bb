@@ -48,6 +48,7 @@ class MockAudioRendererSource : public WebRtcAudioRendererSource {
                                 base::TimeDelta* current_time));
   MOCK_METHOD1(RemoveAudioRenderer, void(WebRtcAudioRenderer* renderer));
   MOCK_METHOD0(AudioRendererThreadStopped, void());
+  MOCK_METHOD1(SetOutputDeviceForAec, void(const std::string&));
 };
 
 }  // namespace
@@ -76,6 +77,7 @@ class WebRtcAudioRendererTest : public testing::Test,
                                         1, 1, device_id);
     EXPECT_CALL(*this, MockCreateAudioRendererSink(
                            AudioDeviceFactory::kSourceWebRtc, _, _, device_id));
+    EXPECT_CALL(*source_.get(), SetOutputDeviceForAec(device_id));
     EXPECT_TRUE(renderer_->Initialize(source_.get()));
 
     renderer_proxy_ = renderer_->CreateSharedAudioRendererProxy(stream_);
@@ -237,6 +239,7 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDevice) {
               MockCreateAudioRendererSink(AudioDeviceFactory::kSourceWebRtc, _,
                                           _, kOtherOutputDeviceId));
   EXPECT_CALL(*source_.get(), AudioRendererThreadStopped());
+  EXPECT_CALL(*source_.get(), SetOutputDeviceForAec(kOtherOutputDeviceId));
   EXPECT_CALL(*this, MockSwitchDeviceCallback(media::OUTPUT_DEVICE_STATUS_OK));
   base::RunLoop loop;
   renderer_proxy_->SwitchOutputDevice(
