@@ -2819,11 +2819,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNupPrintingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kNupPrinting)},
 #endif
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_WIN) && !defined(OS_MACOSX)
-    {"print-pdf-as-image", flag_descriptions::kPrintPdfAsImageName,
-     flag_descriptions::kPrintPdfAsImageDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kPrintPdfAsImage)},
-#endif
 #if defined(OS_ANDROID)
     {"concurrent-background-loading-on-svelte",
      flag_descriptions::kOfflinePagesSvelteConcurrentLoadingName,

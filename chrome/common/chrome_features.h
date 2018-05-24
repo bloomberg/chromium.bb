@@ -275,10 +275,6 @@ extern const base::Feature kNewPrintPreview;
 extern const base::Feature kNupPrinting;
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_WIN) && !defined(OS_MACOSX)
-extern const base::Feature kPrintPdfAsImage;
-#endif
-
 extern const base::Feature kPushMessagingBackgroundMode;
 
 #if !defined(OS_ANDROID)

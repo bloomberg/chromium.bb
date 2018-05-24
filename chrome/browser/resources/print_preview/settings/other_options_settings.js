@@ -138,8 +138,7 @@ cr.define('print_preview', function() {
      * @private {boolean} rasterizeEnabled Whether the print as image feature is
      *     enabled.
      */
-    this.rasterizeEnabled_ = (!cr.isWindows && !cr.isMac) &&
-        loadTimeData.getBoolean('printPdfAsImageEnabled');
+    this.rasterizeEnabled_ = !cr.isWindows && !cr.isMac;
 
     /**
      * @private {!Array<!CheckboxTicketItemElement>} checkbox ticket item
