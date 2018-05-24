@@ -116,6 +116,7 @@ enum SourceEventType {
   WHEEL,
   MOUSE,
   TOUCH,
+  INERTIAL,
   KEY_PRESS,
   FRAME,
   OTHER,

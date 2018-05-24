@@ -191,6 +191,8 @@ ui::mojom::SourceEventType UISourceEventTypeToMojo(ui::SourceEventType type) {
       return ui::mojom::SourceEventType::MOUSE;
     case ui::TOUCH:
       return ui::mojom::SourceEventType::TOUCH;
+    case ui::INERTIAL:
+      return ui::mojom::SourceEventType::INERTIAL;
     case ui::KEY_PRESS:
       return ui::mojom::SourceEventType::KEY_PRESS;
     case ui::FRAME:
@@ -212,6 +214,8 @@ ui::SourceEventType MojoSourceEventTypeToUI(ui::mojom::SourceEventType type) {
       return ui::MOUSE;
     case ui::mojom::SourceEventType::TOUCH:
       return ui::TOUCH;
+    case ui::mojom::SourceEventType::INERTIAL:
+      return ui::INERTIAL;
     case ui::mojom::SourceEventType::KEY_PRESS:
       return ui::KEY_PRESS;
     case ui::mojom::SourceEventType::FRAME:
