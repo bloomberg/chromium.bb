@@ -20,6 +20,8 @@ namespace blink {
 
 const base::Feature kMemoryAblationFeature{"MemoryAblation",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kRendererMemoryAblationFeature{
+    "RendererMemoryAblation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kMemoryAblationFeatureSizeParam[] = "Size";
 const char kMemoryAblationFeatureMinRAMParam[] = "MinRAM";
@@ -48,11 +50,22 @@ MemoryAblationExperiment* MemoryAblationExperiment::GetInstance() {
 
 void MemoryAblationExperiment::MaybeStart(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  MaybeStartInternal(kMemoryAblationFeature, task_runner);
+}
+
+void MemoryAblationExperiment::MaybeStartForRenderer(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  MaybeStartInternal(kRendererMemoryAblationFeature, task_runner);
+}
+
+void MemoryAblationExperiment::MaybeStartInternal(
+    const base::Feature& memory_ablation_feature,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   int min_ram_mib = base::GetFieldTrialParamByFeatureAsInt(
-      kMemoryAblationFeature, kMemoryAblationFeatureMinRAMParam,
+      memory_ablation_feature, kMemoryAblationFeatureMinRAMParam,
       0 /* default value */);
   int max_ram_mib = base::GetFieldTrialParamByFeatureAsInt(
-      kMemoryAblationFeature, kMemoryAblationFeatureMaxRAMParam,
+      memory_ablation_feature, kMemoryAblationFeatureMaxRAMParam,
       std::numeric_limits<int>::max() /* default value */);
   if (base::SysInfo::AmountOfPhysicalMemoryMB() > max_ram_mib ||
       base::SysInfo::AmountOfPhysicalMemoryMB() <= min_ram_mib) {
@@ -60,7 +73,7 @@ void MemoryAblationExperiment::MaybeStart(
   }
 
   int size = base::GetFieldTrialParamByFeatureAsInt(
-      kMemoryAblationFeature, kMemoryAblationFeatureSizeParam,
+      memory_ablation_feature, kMemoryAblationFeatureSizeParam,
       0 /* default value */);
   if (size > 0) {
     GetInstance()->Start(task_runner, size);
@@ -70,7 +83,7 @@ void MemoryAblationExperiment::MaybeStart(
 void MemoryAblationExperiment::Start(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     size_t memory_size) {
-  DCHECK(task_runner_) << "Already started";
+  DCHECK(!task_runner_) << "Already started";
   task_runner_ = task_runner;
   // This class is a singleton, so "Unretained(this)" below is fine.
   task_runner_->PostDelayedTask(
