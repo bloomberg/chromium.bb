@@ -369,6 +369,7 @@ if (enable_extensions) {
       "api/declarative_net_request/dnr_manifest_unittest.cc",
       "api/printer_provider/usb_printer_manifest_unittest.cc",
       "api/sockets/sockets_manifest_permission_unittest.cc",
+      "component_extension_url_pattern_unittest.cc",
       "csp_validator_unittest.cc",
       "event_filter_unittest.cc",
       "extension_builder_unittest.cc",

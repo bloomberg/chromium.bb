@@ -144,6 +144,9 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
   const int valid_schemes =
       UserScript::ValidUserScriptSchemes(can_execute_script_everywhere);
 
+  const bool all_urls_includes_chrome_urls =
+      PermissionsData::AllUrlsIncludesChromeUrls(extension->id());
+
   for (size_t j = 0; j < matches->GetSize(); ++j) {
     std::string match_str;
     if (!matches->GetString(j, &match_str)) {
@@ -165,9 +168,10 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
     }
 
     // TODO(aboxhall): check for webstore
-    if (!can_execute_script_everywhere &&
+    if (!all_urls_includes_chrome_urls &&
         pattern.scheme() != content::kChromeUIScheme) {
-      // Exclude SCHEME_CHROMEUI unless it's been explicitly requested.
+      // Exclude SCHEME_CHROMEUI unless it's been explicitly requested or
+      // been granted by extension ID.
       // If the --extensions-on-chrome-urls flag has not been passed, requesting
       // a chrome:// url will cause a parse failure above, so there's no need to
       // check the flag here.
