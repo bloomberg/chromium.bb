@@ -21,17 +21,11 @@ TestShellDelegate::~TestShellDelegate() = default;
   return nullptr;
 }
 
-bool TestShellDelegate::IsRunningInForcedAppMode() const {
-  return false;
-}
-
 bool TestShellDelegate::CanShowWindowForUser(aura::Window* window) const {
   return true;
 }
 
 void TestShellDelegate::PreInit() {}
-
-void TestShellDelegate::PreShutdown() {}
 
 std::unique_ptr<keyboard::KeyboardUI> TestShellDelegate::CreateKeyboardUI() {
   return std::make_unique<TestKeyboardUI>();

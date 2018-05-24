@@ -26,10 +26,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   // ash::ShellDelegate overrides;
   service_manager::Connector* GetShellConnector() const override;
-  bool IsRunningInForcedAppMode() const override;
   bool CanShowWindowForUser(aura::Window* window) const override;
   void PreInit() override;
-  void PreShutdown() override;
   std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
   void OpenUrlFromArc(const GURL& url) override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() override;

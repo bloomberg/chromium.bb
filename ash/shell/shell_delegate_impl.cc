@@ -33,17 +33,11 @@ ShellDelegateImpl::~ShellDelegateImpl() = default;
   return nullptr;
 }
 
-bool ShellDelegateImpl::IsRunningInForcedAppMode() const {
-  return false;
-}
-
 bool ShellDelegateImpl::CanShowWindowForUser(aura::Window* window) const {
   return true;
 }
 
 void ShellDelegateImpl::PreInit() {}
-
-void ShellDelegateImpl::PreShutdown() {}
 
 std::unique_ptr<keyboard::KeyboardUI> ShellDelegateImpl::CreateKeyboardUI() {
   return std::make_unique<TestKeyboardUI>();

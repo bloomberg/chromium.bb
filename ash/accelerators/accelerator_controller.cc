@@ -1660,7 +1660,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) const {
       !base::ContainsKey(actions_allowed_at_power_menu_, action)) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
-  if (Shell::Get()->shell_delegate()->IsRunningInForcedAppMode() &&
+  if (Shell::Get()->session_controller()->IsRunningInAppMode() &&
       actions_allowed_in_app_mode_.find(action) ==
           actions_allowed_in_app_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;

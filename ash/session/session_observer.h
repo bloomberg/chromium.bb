@@ -24,6 +24,9 @@ class ASH_EXPORT SessionObserver {
   // Called when a user session gets added to the existing session.
   virtual void OnUserSessionAdded(const AccountId& account_id) {}
 
+  // Called once the first time a user session starts.
+  virtual void OnFirstSessionStarted() {}
+
   // Called when a user session is updated, such as avatar change.
   virtual void OnUserSessionUpdated(const AccountId& account_id) {}
 

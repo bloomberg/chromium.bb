@@ -332,6 +332,11 @@ void SessionController::SetUserSessionOrder(
   if (user_sessions_[0]->session_id != active_session_id_) {
     active_session_id_ = user_sessions_[0]->session_id;
 
+    if (!last_active_account_id.is_valid()) {
+      for (auto& observer : observers_)
+        observer.OnFirstSessionStarted();
+    }
+
     session_activation_observer_holder_.NotifyActiveSessionChanged(
         last_active_account_id, user_sessions_[0]->user_info->account_id);
 

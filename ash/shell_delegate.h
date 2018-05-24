@@ -45,9 +45,6 @@ class ASH_EXPORT ShellDelegate {
   // Returns the connector for the mojo service manager. Returns null in tests.
   virtual service_manager::Connector* GetShellConnector() const = 0;
 
-  // Returns true if we're running in forced app mode.
-  virtual bool IsRunningInForcedAppMode() const = 0;
-
   // Returns true if |window| can be shown for the delegate's concept of current
   // user.
   virtual bool CanShowWindowForUser(aura::Window* window) const = 0;
@@ -55,10 +52,6 @@ class ASH_EXPORT ShellDelegate {
   // Called before processing |Shell::Init()| so that the delegate
   // can perform tasks necessary before the shell is initialized.
   virtual void PreInit() = 0;
-
-  // Called at the beginninig of Shell destructor so that
-  // delegate can use Shell instance to perform cleanup tasks.
-  virtual void PreShutdown() = 0;
 
   // Create a shell-specific keyboard::KeyboardUI.
   virtual std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() = 0;
