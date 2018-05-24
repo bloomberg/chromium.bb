@@ -492,13 +492,8 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   InvalidatePaintForScrollOffsetChange(offset_was_zero);
 
   // The scrollOffsetTranslation paint property depends on the scroll offset.
-  // (see: PaintPropertyTreeBuilder.updateProperties(LocalFrameView&,...) and
-  // PaintPropertyTreeBuilder.updateScrollAndScrollTranslation).
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() && is_root_layer) {
-    frame_view->SetNeedsPaintPropertyUpdate();
-  } else {
-    GetLayoutBox()->SetNeedsPaintPropertyUpdate();
-  }
+  // (see: PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation).
+  GetLayoutBox()->SetNeedsPaintPropertyUpdate();
 
   // Schedule the scroll DOM event.
   if (GetLayoutBox()->GetNode()) {
@@ -864,13 +859,6 @@ int PaintLayerScrollableArea::PixelSnappedScrollHeight() const {
 }
 
 void PaintLayerScrollableArea::UpdateScrollOrigin() {
-  // LayoutView doesn't scroll when RLS is turned off so we should avoid
-  // changing the scroll origin in that case as it can affect coordinate
-  // conversions.
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() && GetLayoutBox() &&
-      GetLayoutBox()->IsLayoutView())
-    return;
-
   // This should do nothing prior to first layout; the if-clause will catch
   // that.
   if (OverflowRect().IsEmpty())
@@ -1164,9 +1152,7 @@ bool PaintLayerScrollableArea::HasVerticalOverflow() const {
 // overflow. Currently, we need to avoid producing scrollbars here if they'll be
 // handled externally in the RLC.
 static bool CanHaveOverflowScrollbars(const LayoutBox& box) {
-  return (RuntimeEnabledFeatures::RootLayerScrollingEnabled() ||
-          !box.IsLayoutView()) &&
-         box.GetDocument().ViewportDefiningElement() != box.GetNode();
+  return box.GetDocument().ViewportDefiningElement() != box.GetNode();
 }
 
 void PaintLayerScrollableArea::UpdateAfterStyleChange(
@@ -2156,11 +2142,10 @@ void PaintLayerScrollableArea::UpdateCompositingLayersAfterScroll() {
     if (HasStickyDescendants())
       InvalidateAllStickyConstraints();
 
-    // If we have fixed elements and we scroll the root layer in RLS we might
+    // If we have fixed elements and we scroll the root layer we might
     // change compositing since the fixed elements might now overlap a
     // composited layer.
-    if (Layer()->IsRootLayer() &&
-        RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    if (Layer()->IsRootLayer()) {
       LocalFrame* frame = GetLayoutBox()->GetFrame();
       if (frame && frame->View() &&
           frame->View()->HasViewportConstrainedObjects()) {

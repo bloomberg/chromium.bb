@@ -43,18 +43,9 @@ void FramePainter::Paint(GraphicsContext& context,
                                           GetFrameView().VisibleContentSize());
   IntPoint content_offset =
       -frame_view_location + GetFrameView().ScrollOffsetInt();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
-      !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    auto content_cull_rect = rect;
-    content_cull_rect.UpdateForScrollingContents(
-        visible_area_without_scrollbars,
-        AffineTransform().Translate(-content_offset.X(), -content_offset.Y()));
-    document_dirty_rect = content_cull_rect.rect_;
-  } else {
-    document_dirty_rect = rect.rect_;
-    document_dirty_rect.Intersect(visible_area_without_scrollbars);
-    document_dirty_rect.MoveBy(content_offset);
-  }
+  document_dirty_rect = rect.rect_;
+  document_dirty_rect.Intersect(visible_area_without_scrollbars);
+  document_dirty_rect.MoveBy(content_offset);
 
   bool should_paint_contents = !document_dirty_rect.IsEmpty();
   bool should_paint_scrollbars = !GetFrameView().ScrollbarsSuppressed() &&
@@ -74,28 +65,6 @@ void FramePainter::Paint(GraphicsContext& context,
                                DisplayItem::kClipFrameToVisibleContentRect,
                                GetFrameView().VisibleContentRect());
     PaintContents(context, global_paint_flags, document_dirty_rect);
-  }
-
-  if (should_paint_scrollbars) {
-    DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
-    IntRect scroll_view_dirty_rect = rect.rect_;
-    IntRect visible_area_with_scrollbars(
-        frame_view_location,
-        GetFrameView().VisibleContentSize(kIncludeScrollbars));
-    scroll_view_dirty_rect.Intersect(visible_area_with_scrollbars);
-    scroll_view_dirty_rect.MoveBy(-frame_view_location);
-
-    TransformRecorder transform_recorder(
-        context, *GetFrameView().GetLayoutView(),
-        AffineTransform::Translation(frame_view_location.X(),
-                                     frame_view_location.Y()));
-
-    ClipRecorder recorder(
-        context, *GetFrameView().GetLayoutView(),
-        DisplayItem::kClipFrameScrollbars,
-        IntRect(IntPoint(), visible_area_with_scrollbars.Size()));
-
-    PaintScrollbars(context, scroll_view_dirty_rect);
   }
 }
 
