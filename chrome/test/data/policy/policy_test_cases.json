@@ -3079,21 +3079,11 @@
   },
 
   "ArcBackupRestoreEnabled": {
-    "os": ["chromeos"],
-    "can_be_recommended": false,
-    "test_policy": { "ArcBackupRestoreEnabled": false },
-    "pref_mappings": [
-      { "pref": "arc.backup_restore.enabled" }
-    ]
+    "note": "This policy has been removed. See https://bugs.chromium.org/p/chromium/issues/detail?id=845962"
   },
 
   "ArcLocationServiceEnabled": {
-    "os": ["chromeos"],
-    "can_be_recommended": false,
-    "test_policy": { "ArcLocationServiceEnabled": false },
-    "pref_mappings": [
-      { "pref": "arc.location_service.enabled" }
-    ]
+    "note": "This policy has been removed. See https://bugs.chromium.org/p/chromium/issues/detail?id=845962"
   },
 
   "ReportArcStatusEnabled": {
@@ -3765,5 +3755,19 @@
   },
 
   "AllowedLocales": {
+  },
+
+  "ArcBackupRestoreServiceEnabled": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "ArcBackupRestoreServiceEnabled": 1 },
+    "note": "pref_mappings cannot be tested here because the policy has very unusual semantics, making a pref managed when unset."
+  },
+
+  "ArcGoogleLocationServicesEnabled": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "ArcGoogleLocationServicesEnabled": 1 },
+    "note": "pref_mappings cannot be tested here because the policy has very unusual semantics, making a pref managed when unset."
   }
 }

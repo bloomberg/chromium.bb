@@ -46,6 +46,7 @@
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
@@ -5139,46 +5140,57 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
   EXPECT_FALSE(arc_session_manager->enable_requested());
 }
 
-// Test ArcBackupRestoreEnabled policy.
-IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcBackupRestoreEnabled) {
+// Test ArcBackupRestoreServiceEnabled policy.
+IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcBackupRestoreServiceEnabled) {
   PrefService* const pref = browser()->profile()->GetPrefs();
 
-  // ARC Backup & Restore is switched off by default.
-  EXPECT_FALSE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
-  EXPECT_FALSE(pref->IsManagedPreference(arc::prefs::kArcBackupRestoreEnabled));
+  // Enable ARC backup and restore in user prefs.
+  pref->SetBoolean(arc::prefs::kArcBackupRestoreEnabled, true);
 
-  // Switch on ARC Backup & Restore in the user prefs.
+  // ARC backup and restore is disabled by policy by default.
+  EXPECT_FALSE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
+  EXPECT_TRUE(pref->IsManagedPreference(arc::prefs::kArcBackupRestoreEnabled));
+
+  // Set ARC backup and restore to user control via policy.
+  PolicyMap policies;
+  policies.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(
+                   static_cast<int>(ArcServicePolicyValue::kUnderUserControl)),
+               nullptr);
+  UpdateProviderPolicy(policies);
+
+  // User choice should be honored now.
+  EXPECT_TRUE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
+  EXPECT_FALSE(pref->IsManagedPreference(arc::prefs::kArcBackupRestoreEnabled));
+  pref->SetBoolean(arc::prefs::kArcBackupRestoreEnabled, false);
+  EXPECT_FALSE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
   pref->SetBoolean(arc::prefs::kArcBackupRestoreEnabled, true);
   EXPECT_TRUE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
 
-  // Disable ARC Backup & Restore through the policy.
-  PolicyMap policies;
-  policies.Set(key::kArcBackupRestoreEnabled, POLICY_LEVEL_MANDATORY,
+  // Set ARC backup and restore to disabled via policy.
+  policies.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               std::make_unique<base::Value>(
+                   static_cast<int>(ArcServicePolicyValue::kDisabled)),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
   EXPECT_TRUE(pref->IsManagedPreference(arc::prefs::kArcBackupRestoreEnabled));
-
-  // Enable ARC Backup & Restore through the policy.
-  policies.Set(key::kArcBackupRestoreEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
-  EXPECT_TRUE(pref->IsManagedPreference(arc::prefs::kArcBackupRestoreEnabled));
 }
 
-// Test ArcLocationServiceEnabled policy and its interplay with the
+// Test ArcGoogleLocationServicesEnabled policy and its interplay with the
 // DefaultGeolocationSetting policy.
-IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcLocationServiceEnabled) {
+IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcGoogleLocationServicesEnabled) {
   PrefService* const pref = browser()->profile()->GetPrefs();
 
-  // Values of the ArcLocationServiceEnabled policy to be tested.
+  // Values of the ArcGoogleLocationServicesEnabled policy to be tested.
   std::vector<base::Value> test_policy_values;
-  test_policy_values.emplace_back();       // unset
-  test_policy_values.emplace_back(false);  // disabled
-  test_policy_values.emplace_back(true);   // enabled
+  test_policy_values.emplace_back();  // unset
+  test_policy_values.emplace_back(
+      static_cast<int>(ArcServicePolicyValue::kDisabled));
+  test_policy_values.emplace_back(
+      static_cast<int>(ArcServicePolicyValue::kUnderUserControl));
 
   // Values of the DefaultGeolocationSetting policy to be tested.
   std::vector<base::Value> test_default_geo_policy_values;
@@ -5187,23 +5199,22 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcLocationServiceEnabled) {
   test_default_geo_policy_values.emplace_back(2);  // 'BlockGeolocation'
   test_default_geo_policy_values.emplace_back(3);  // 'AskGeolocation'
 
-  // The pref is switched off by default.
-  EXPECT_FALSE(pref->GetBoolean(arc::prefs::kArcLocationServiceEnabled));
-  EXPECT_FALSE(
-      pref->IsManagedPreference(arc::prefs::kArcLocationServiceEnabled));
-
-  // Switch on the pref in the user prefs.
+  // Switch on the pref in user prefs.
   pref->SetBoolean(arc::prefs::kArcLocationServiceEnabled, true);
-  EXPECT_TRUE(pref->GetBoolean(arc::prefs::kArcLocationServiceEnabled));
+
+  // The pref is overridden to disabled by policy by default.
+  EXPECT_FALSE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
+  EXPECT_TRUE(pref->IsManagedPreference(arc::prefs::kArcBackupRestoreEnabled));
 
   for (const auto& test_policy_value : test_policy_values) {
     for (const auto& test_default_geo_policy_value :
          test_default_geo_policy_values) {
       PolicyMap policies;
-      if (test_policy_value.is_bool()) {
-        policies.Set(key::kArcLocationServiceEnabled, POLICY_LEVEL_MANDATORY,
-                     POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                     test_policy_value.CreateDeepCopy(), nullptr);
+      if (test_policy_value.is_int()) {
+        policies.Set(key::kArcGoogleLocationServicesEnabled,
+                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                     POLICY_SOURCE_CLOUD, test_policy_value.CreateDeepCopy(),
+                     nullptr);
       }
       if (test_default_geo_policy_value.is_int()) {
         policies.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
@@ -5213,7 +5224,9 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcLocationServiceEnabled) {
       UpdateProviderPolicy(policies);
 
       const bool should_be_disabled_by_policy =
-          test_policy_value.is_bool() && !test_policy_value.GetBool();
+          test_policy_value.is_none() ||
+          (test_policy_value.GetInt() ==
+           static_cast<int>(ArcServicePolicyValue::kDisabled));
       const bool should_be_disabled_by_default_geo_policy =
           test_default_geo_policy_value.is_int() &&
           test_default_geo_policy_value.GetInt() == 2;
@@ -5227,9 +5240,8 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcLocationServiceEnabled) {
           << test_default_geo_policy_value;
 
       const bool expected_pref_managed =
-          test_policy_value.is_bool() ||
-          (test_default_geo_policy_value.is_int() &&
-           test_default_geo_policy_value.GetInt() == 2);
+          should_be_disabled_by_policy ||
+          should_be_disabled_by_default_geo_policy;
       EXPECT_EQ(
           expected_pref_managed,
           pref->IsManagedPreference(arc::prefs::kArcLocationServiceEnabled))

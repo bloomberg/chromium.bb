@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_settings_service.h"
+#include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -335,6 +336,16 @@ class ArcSettingsServiceTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
+  // The policy is initially set to user control.
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kArcBackupRestoreServiceEnabled,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(static_cast<int>(
+                 policy::ArcServicePolicyValue::kUnderUserControl)),
+             nullptr);
+  UpdatePolicy(policy);
+
   PrefService* const prefs = browser()->profile()->GetPrefs();
 
   // Set the user pref as initially enabled.
@@ -343,11 +354,12 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
 
   fake_backup_settings_instance_->ClearCallHistory();
 
-  // The policy is set to false.
-  policy::PolicyMap policy;
-  policy.Set(policy::key::kArcBackupRestoreEnabled,
+  // The policy is set to disabled.
+  policy.Set(policy::key::kArcBackupRestoreServiceEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false),
+             policy::POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(
+                 static_cast<int>(policy::ArcServicePolicyValue::kDisabled)),
              nullptr);
   UpdatePolicy(policy);
 
@@ -361,25 +373,13 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
 
   fake_backup_settings_instance_->ClearCallHistory();
 
-  // The policy is set to true.
-  policy.Set(policy::key::kArcBackupRestoreEnabled,
+  // The policy is set to user control.
+  policy.Set(policy::key::kArcBackupRestoreServiceEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
+             policy::POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(static_cast<int>(
+                 policy::ArcServicePolicyValue::kUnderUserControl)),
              nullptr);
-  UpdatePolicy(policy);
-
-  // The pref is enabled and managed, but the corresponding sync method does
-  // not reflect the pref as it is not dynamically applied.
-  EXPECT_TRUE(prefs->GetBoolean(prefs::kArcBackupRestoreEnabled));
-  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
-  EXPECT_EQ(0, fake_backup_settings_instance_->set_backup_enabled_count());
-  EXPECT_FALSE(fake_backup_settings_instance_->enabled());
-  EXPECT_FALSE(fake_backup_settings_instance_->managed());
-
-  fake_backup_settings_instance_->ClearCallHistory();
-
-  // The policy is unset.
-  policy.Erase(policy::key::kArcBackupRestoreEnabled);
   UpdatePolicy(policy);
 
   // The pref is unmanaged, but the corresponding sync method does not reflect
@@ -392,6 +392,16 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, LocationServicePolicyTest) {
+  // The policy is initially set to user control.
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kArcGoogleLocationServicesEnabled,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(static_cast<int>(
+                 policy::ArcServicePolicyValue::kUnderUserControl)),
+             nullptr);
+  UpdatePolicy(policy);
+
   PrefService* const prefs = browser()->profile()->GetPrefs();
 
   // Set the user pref as initially enabled.
@@ -400,11 +410,12 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, LocationServicePolicyTest) {
 
   fake_intent_helper_instance_->clear_broadcasts();
 
-  // The policy is set to false.
-  policy::PolicyMap policy;
-  policy.Set(policy::key::kArcLocationServiceEnabled,
+  // The policy is set to disabled.
+  policy.Set(policy::key::kArcGoogleLocationServicesEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false),
+             policy::POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(
+                 static_cast<int>(policy::ArcServicePolicyValue::kDisabled)),
              nullptr);
   UpdatePolicy(policy);
 
@@ -416,23 +427,13 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, LocationServicePolicyTest) {
 
   fake_intent_helper_instance_->clear_broadcasts();
 
-  // The policy is set to true.
-  policy.Set(policy::key::kArcLocationServiceEnabled,
+  // The policy is set to user control.
+  policy.Set(policy::key::kArcGoogleLocationServicesEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
+             policy::POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(static_cast<int>(
+                 policy::ArcServicePolicyValue::kUnderUserControl)),
              nullptr);
-  UpdatePolicy(policy);
-
-  // The pref is enabled and managed, but no broadcast is sent as the setting
-  // is not dynamically applied.
-  EXPECT_TRUE(prefs->GetBoolean(prefs::kArcLocationServiceEnabled));
-  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled));
-  EXPECT_EQ(0UL, fake_intent_helper_instance_->broadcasts().size());
-
-  fake_intent_helper_instance_->clear_broadcasts();
-
-  // The policy is unset.
-  policy.Erase(policy::key::kArcLocationServiceEnabled);
   UpdatePolicy(policy);
 
   // The pref is unmanaged, but no broadcast is sent as the setting is not
