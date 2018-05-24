@@ -888,34 +888,6 @@ bool LocalFrameView::ShouldScrollOnMainThread() const {
   return ScrollableArea::ShouldScrollOnMainThread();
 }
 
-GraphicsLayer* LocalFrameView::LayerForScrolling() const {
-  auto* layout_view = GetLayoutView();
-  if (!layout_view)
-    return nullptr;
-  return layout_view->Compositor()->FrameScrollLayer();
-}
-
-GraphicsLayer* LocalFrameView::LayerForHorizontalScrollbar() const {
-  auto* layout_view = GetLayoutView();
-  if (!layout_view)
-    return nullptr;
-  return layout_view->Compositor()->LayerForHorizontalScrollbar();
-}
-
-GraphicsLayer* LocalFrameView::LayerForVerticalScrollbar() const {
-  auto* layout_view = GetLayoutView();
-  if (!layout_view)
-    return nullptr;
-  return layout_view->Compositor()->LayerForVerticalScrollbar();
-}
-
-GraphicsLayer* LocalFrameView::LayerForScrollCorner() const {
-  auto* layout_view = GetLayoutView();
-  if (!layout_view)
-    return nullptr;
-  return layout_view->Compositor()->LayerForScrollCorner();
-}
-
 bool LocalFrameView::IsEnclosedInCompositingLayer() const {
   // FIXME: It's a bug that compositing state isn't always up to date when this
   // is called. crbug.com/366314
@@ -1641,8 +1613,6 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
       if (root_layer_scrolling_enabled) {
         layout_view->Layer()->SetNeedsCompositingInputsUpdate();
         SetNeedsPaintPropertyUpdate();
-      } else {
-        layout_view->Compositor()->FrameViewDidChangeSize();
       }
     }
   }
@@ -2203,14 +2173,6 @@ void LocalFrameView::ScrollbarExistenceMaybeChanged() {
 
   if (!uses_overlay_scrollbars && NeedsLayout())
     UpdateLayout();
-
-  auto* layout_view = GetLayoutView();
-  if (layout_view && layout_view->UsesCompositing()) {
-    layout_view->Compositor()->FrameViewScrollbarsExistenceDidChange();
-
-    if (!uses_overlay_scrollbars)
-      layout_view->Compositor()->FrameViewDidChangeSize();
-  }
 }
 
 void LocalFrameView::HandleLoadCompleted() {
@@ -4500,11 +4462,8 @@ void LocalFrameView::UpdateScrollOffset(const ScrollOffset& offset,
   }
 
   auto* layout_view = GetLayoutView();
-  if (layout_view) {
-    if (layout_view->UsesCompositing())
-      layout_view->Compositor()->FrameViewDidScroll();
+  if (layout_view)
     layout_view->ClearHitTestCache();
-  }
 
   did_scroll_timer_.StartOneShot(kResourcePriorityUpdateDelayAfterScroll,
                                  FROM_HERE);
@@ -5073,14 +5032,9 @@ void LocalFrameView::PositionScrollbarLayers() {
 }
 
 bool LocalFrameView::UpdateAfterCompositingChange() {
-  if (ScrollOriginChanged()) {
-    // If the scroll origin changed, we need to update the layer position on
-    // the compositor since the offset itself might not have changed.
-    auto* layout_view = GetLayoutView();
-    if (layout_view && layout_view->UsesCompositing())
-      layout_view->Compositor()->FrameViewDidScroll();
+  if (ScrollOriginChanged())
     ResetScrollOriginChanged();
-  }
+
   return false;
 }
 

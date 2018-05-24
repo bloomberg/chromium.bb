@@ -31,15 +31,11 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
 class PaintLayer;
 class GraphicsLayer;
-class IntPoint;
-class JSONObject;
 class LayoutEmbeddedContent;
 class Page;
 class Scrollbar;
@@ -69,23 +65,15 @@ enum CompositingStateTransitionType {
 // decides for each PaintLayer whether it should get a CompositedLayerMapping,
 // and asks each CLM to set up its GraphicsLayers.
 //
-// When root layer scrolling is disabled, PaintLayerCompositor also directly
-// manages GraphicsLayers related to FrameView scrolling.  See VisualViewport.h
-// for a diagram of how these layers are wired.
-//
-// When root layer scrolling is enabled, PaintLayerCompositor does not create
-// any of its own GraphicsLayers.  Instead the LayoutView's CLM is wired
-// directly to the scroll layer of the visual viewport.
-//
 // In Slimming Paint v2, PaintLayerCompositor will be eventually replaced by
 // PaintArtifactCompositor.
 
-class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
+class CORE_EXPORT PaintLayerCompositor {
   USING_FAST_MALLOC(PaintLayerCompositor);
 
  public:
   explicit PaintLayerCompositor(LayoutView&);
-  ~PaintLayerCompositor() override;
+  ~PaintLayerCompositor();
 
   void UpdateIfNeededRecursive(DocumentLifecycle::LifecycleState target_state);
 
@@ -131,20 +119,7 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 
   PaintLayer* RootLayer() const;
 
-  GraphicsLayer* ContainerLayer() const { return container_layer_.get(); }
-  GraphicsLayer* FrameScrollLayer() const { return scroll_layer_.get(); }
-  GraphicsLayer* LayerForHorizontalScrollbar() const {
-    return layer_for_horizontal_scrollbar_.get();
-  }
-  GraphicsLayer* LayerForVerticalScrollbar() const {
-    return layer_for_vertical_scrollbar_.get();
-  }
-  GraphicsLayer* LayerForScrollCorner() const {
-    return layer_for_scroll_corner_.get();
-  }
-
-  // In root layer scrolling mode, returns the LayoutView's main GraphicsLayer.
-  // In non-RLS mode, returns the outermost PaintLayerCompositor layer.
+  // The LayoutView's main GraphicsLayer.
   GraphicsLayer* RootGraphicsLayer() const;
 
   // Returns the GraphicsLayer we should start painting from. This can differ
@@ -152,11 +127,8 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   // swapped out for an overlay video layer.
   GraphicsLayer* PaintRootGraphicsLayer() const;
 
-  // In root layer scrolling mode, this is the LayoutView's scroll layer.
-  // In non-RLS mode, this is the same as frameScrollLayer().
+  // The LayoutView's scroll layer.
   GraphicsLayer* ScrollLayer() const;
-
-  void UpdateRootLayerPosition();
 
   void SetIsInWindow(bool);
 
@@ -164,18 +136,8 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   // Return true if the layers changed.
   static bool AttachFrameContentLayersToIframeLayer(LayoutEmbeddedContent&);
 
-  // Update the geometry of the layers used for clipping and scrolling in
-  // frames.
-  void FrameViewDidChangeLocation(const IntPoint& contents_offset);
-  void FrameViewDidChangeSize();
-  void FrameViewDidScroll();
-  void FrameViewScrollbarsExistenceDidChange();
-
-  std::unique_ptr<JSONObject> LayerTreeAsJSON(LayerTreeFlags) const;
-
   void UpdateTrackingRasterInvalidations();
 
-  String DebugName(const GraphicsLayer*) const override;
   DocumentLifecycle& Lifecycle() const;
 
   void UpdatePotentialCompositingReasonsFromStyle(PaintLayer&);
@@ -194,10 +156,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 
   bool IsRootScrollerAncestor() const;
 
-  // GraphicsLayerClient implementation
-  bool ShouldThrottleRendering() const override;
-  bool IsTrackingRasterInvalidations() const override;
-
  private:
 #if DCHECK_IS_ON()
   void AssertNoUnresolvedDirtyBits();
@@ -206,15 +164,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   void UpdateIfNeededRecursiveInternal(
       DocumentLifecycle::LifecycleState target_state,
       CompositingReasonsStats&);
-
-  // GraphicsLayerClient implementation
-  bool NeedsRepaint(const GraphicsLayer&) const override { return true; }
-  IntRect ComputeInterestRect(const GraphicsLayer*,
-                              const IntRect&) const override;
-  void PaintContents(const GraphicsLayer*,
-                     GraphicsContext&,
-                     GraphicsLayerPaintingPhase,
-                     const IntRect& interest_rect) const override;
 
   void UpdateWithoutAcceleratedCompositing(CompositingUpdateType);
   void UpdateIfNeeded(DocumentLifecycle::LifecycleState target_state,
@@ -229,22 +178,13 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   void AttachCompositorTimeline();
   void DetachCompositorTimeline();
 
-  void UpdateOverflowControlsLayers();
-
   Page* GetPage() const;
 
   ScrollingCoordinator* GetScrollingCoordinator() const;
 
   void EnableCompositingModeIfNeeded();
 
-  bool RequiresHorizontalScrollbarLayer() const;
-  bool RequiresVerticalScrollbarLayer() const;
-  bool RequiresScrollCornerLayer() const;
-  void ShowScrollbarLayersIfNeeded();
-
   void ApplyOverlayFullscreenVideoAdjustmentIfNeeded();
-
-  void UpdateContainerSizes();
 
   // Checks the given graphics layer against the compositor's horizontal and
   // vertical scrollbar graphics layers, returning the associated Scrollbar
@@ -282,23 +222,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
     kRootLayerAttachedViaEnclosingFrame
   };
   RootLayerAttachment root_layer_attachment_;
-
-  // Outermost layer, holds overflow controls and the container layer
-  std::unique_ptr<GraphicsLayer> overflow_controls_host_layer_;
-
-  // Clips for iframe content
-  std::unique_ptr<GraphicsLayer> container_layer_;
-
-  // Scrolls with the FrameView
-  std::unique_ptr<GraphicsLayer> scroll_layer_;
-
-  // Innermost layer, parent of LayoutView main GraphicsLayer
-  std::unique_ptr<GraphicsLayer> root_content_layer_;
-
-  // Layers for overflow controls
-  std::unique_ptr<GraphicsLayer> layer_for_horizontal_scrollbar_;
-  std::unique_ptr<GraphicsLayer> layer_for_vertical_scrollbar_;
-  std::unique_ptr<GraphicsLayer> layer_for_scroll_corner_;
 
   FRIEND_TEST_ALL_PREFIXES(FrameThrottlingTest,
                            IntersectionObservationOverridesThrottling);
