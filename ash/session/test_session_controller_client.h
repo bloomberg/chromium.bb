@@ -33,6 +33,8 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
   explicit TestSessionControllerClient(SessionController* controller);
   ~TestSessionControllerClient() override;
 
+  static void DisableAutomaticallyProvideSigninPref();
+
   // Initialize using existing info in |controller| and bind as its client.
   void InitializeAndBind();
 

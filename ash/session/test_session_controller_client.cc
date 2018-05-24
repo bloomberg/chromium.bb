@@ -22,6 +22,8 @@ namespace ash {
 
 namespace {
 
+bool g_provide_signin_pref_service = true;
+
 // Returns the "canonicalized" email from a given |email| address. Note
 // production code should use gaia::CanonicalizeEmail. This is used in tests
 // without introducing dependency on google_api.
@@ -32,6 +34,11 @@ std::string GetUserIdFromEmail(const std::string& email) {
 }
 
 }  // namespace
+
+// static
+void TestSessionControllerClient::DisableAutomaticallyProvideSigninPref() {
+  g_provide_signin_pref_service = false;
+}
 
 TestSessionControllerClient::TestSessionControllerClient(
     SessionController* controller)
@@ -64,7 +71,8 @@ void TestSessionControllerClient::Reset() {
   controller_->ClearUserSessionsForTest();
   controller_->SetSessionInfo(session_info_->Clone());
 
-  if (!controller_->GetSigninScreenPrefService()) {
+  if (g_provide_signin_pref_service &&
+      !controller_->GetSigninScreenPrefService()) {
     auto pref_service = std::make_unique<TestingPrefServiceSimple>();
     Shell::RegisterSigninProfilePrefs(pref_service->registry(),
                                       true /* for_test */);

@@ -13,6 +13,7 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/components/autoclick/public/mojom/autoclick.mojom.h"
 #include "ash/high_contrast/high_contrast_controller.h"
+#include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -51,6 +52,17 @@ namespace {
 
 constexpr char kNotificationId[] = "chrome://settings/accessibility";
 constexpr char kNotifierAccessibility[] = "ash.accessibility";
+
+// TODO(warx): Signin screen has more controllable accessibility prefs. We may
+// want to expand this to a complete list. If so, merge this with
+// |kCopiedOnSigninAccessibilityPrefs|.
+constexpr const char* const kA11yPrefsForRecommendedValueOnSignin[]{
+    prefs::kAccessibilityLargeCursorEnabled,
+    prefs::kAccessibilityHighContrastEnabled,
+    prefs::kAccessibilityScreenMagnifierEnabled,
+    prefs::kAccessibilitySpokenFeedbackEnabled,
+    prefs::kAccessibilityVirtualKeyboardEnabled,
+};
 
 // List of accessibility prefs that are to be copied (if changed by the user) on
 // signin screen profile to a newly created user profile or a guest session.
@@ -594,6 +606,14 @@ void AccessibilityController::SetAccessibilityPanelFullscreen(bool fullscreen) {
 
 void AccessibilityController::OnSigninScreenPrefServiceInitialized(
     PrefService* prefs) {
+  // Make |kA11yPrefsForRecommendedValueOnSignin| observing recommended values
+  // on signin screen. See PolicyRecommendationRestorer.
+  PolicyRecommendationRestorer* policy_recommendation_restorer =
+      Shell::Get()->policy_recommendation_restorer();
+  for (auto* const pref_name : kA11yPrefsForRecommendedValueOnSignin)
+    policy_recommendation_restorer->ObservePref(pref_name);
+
+  // Observe user settings. This must happen after PolicyRecommendationRestorer.
   ObservePrefs(prefs);
 }
 

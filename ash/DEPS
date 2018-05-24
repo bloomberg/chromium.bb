@@ -118,6 +118,9 @@ specific_include_rules = {
   "message_center_controller\.*": [
     "+components/arc/common/notifications.mojom.h"
   ],
+  "policy_recommendation_restorer_unittest.cc": [
+    "+components/sync_preferences/testing_pref_service_syncable.h"
+  ],
   "root_window_controller\.*": [
     "+ash/host"
   ],
