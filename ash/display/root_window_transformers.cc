@@ -40,22 +40,6 @@ gfx::Transform CreateRootWindowRotationTransform(
                                  info.GetActiveRotation(), display.bounds());
 }
 
-gfx::Transform CreateMagnifierTransform(aura::Window* root_window) {
-  MagnificationController* magnifier = Shell::Get()->magnification_controller();
-  float magnifier_scale = 1.f;
-  gfx::Point magnifier_offset;
-  if (magnifier && magnifier->IsEnabled()) {
-    magnifier_scale = magnifier->GetScale();
-    magnifier_offset = magnifier->GetWindowPosition();
-  }
-  gfx::Transform transform;
-  if (magnifier_scale != 1.f) {
-    transform.Scale(magnifier_scale, magnifier_scale);
-    transform.Translate(-magnifier_offset.x(), -magnifier_offset.y());
-  }
-  return transform;
-}
-
 gfx::Transform CreateInsetsAndScaleTransform(const gfx::Insets& insets,
                                              float device_scale_factor,
                                              float ui_scale) {
@@ -99,7 +83,12 @@ class AshRootWindowTransformer : public RootWindowTransformer {
       root_window_bounds_transform_ =
           root_window_bounds_transform_ * CreateMirrorTransform(display);
     }
-    transform_ = root_window_bounds_transform_ * CreateMagnifierTransform(root);
+
+    transform_ = root_window_bounds_transform_;
+    MagnificationController* magnifier =
+        Shell::Get()->magnification_controller();
+    if (magnifier)
+      transform_ *= magnifier->GetMagnifierTransform();
 
     CHECK(transform_.GetInverse(&invert_transform_));
   }

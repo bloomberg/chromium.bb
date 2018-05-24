@@ -145,6 +145,7 @@
 -MagnificationControllerTest.MoveToSecondDisplayWithTouch
 -MagnificationControllerTest.PanWindowToLeft
 -MagnificationControllerTest.PanWindowToRight
+-MagnificationControllerTest.TextfieldFocusedWithKeyboard
 
 # TODO: CursorManagerTestApi. http://crbug.com/780637
 -MirrorWindowControllerTest.MirrorCursorBasic
