@@ -6,12 +6,14 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/content_verifier/test_utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -20,6 +22,7 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/file_util.h"
 #include "net/url_request/test_url_request_interceptor.h"
+#include "services/network/public/cpp/features.h"
 
 namespace extensions {
 
@@ -68,6 +71,12 @@ class ContentVerifierHashTest
   void TearDown() override {
     ExtensionBrowserTest::TearDown();
     ChromeContentVerifierDelegate::SetDefaultModeForTesting(base::nullopt);
+  }
+
+  void TearDownOnMainThread() override {
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+      url_loader_interceptor_.reset();
+    ExtensionBrowserTest::TearDownOnMainThread();
   }
 
   bool uses_enforce_strict_mode() {
@@ -317,7 +326,7 @@ class ContentVerifierHashTest
   }
 
   bool AddInterceptor() {
-    if (interceptor_) {
+    if (interceptor_ || url_loader_interceptor_) {
       ADD_FAILURE() << "Already created interceptor.";
       return false;
     }
@@ -335,6 +344,27 @@ class ContentVerifierHashTest
 
     // Mock serving |copied_verified_contents_path| for content hash, so that
     // hash fetch succeeds.
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      url_loader_interceptor_ =
+          std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
+              [](GURL fetch_url, base::FilePath file_path,
+                 content::URLLoaderInterceptor::RequestParams* params) {
+                GURL url = params->url_request.url;
+                if (url == fetch_url) {
+                  base::ScopedAllowBlockingForTesting allow_io;
+                  std::string contents;
+                  CHECK(base::ReadFileToString(file_path, &contents));
+
+                  content::URLLoaderInterceptor::WriteResponse(
+                      std::string(), contents, params->client.get());
+                  return true;
+                }
+                return false;
+              },
+              fetch_url, copied_verified_contents_path));
+      return true;
+    }
+
     interceptor_ = std::make_unique<net::TestURLRequestInterceptor>(
         fetch_url.scheme(), fetch_url.host(),
         content::BrowserThread::GetTaskRunnerForThread(
@@ -378,6 +408,7 @@ class ContentVerifierHashTest
   }
 
   std::unique_ptr<net::TestURLRequestInterceptor> interceptor_;
+  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
   base::ScopedTempDir temp_dir_;
 
   // Information about the loaded extension.

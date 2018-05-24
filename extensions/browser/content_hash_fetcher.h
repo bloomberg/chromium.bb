@@ -16,15 +16,14 @@
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/content_verifier/content_hash.h"
 #include "extensions/common/extension_id.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 namespace base {
 class SequencedTaskRunner;
 }
 
-namespace net {
-class URLFetcher;
-}
+namespace network {
+class SimpleURLLoader;
+}  // namespace network
 
 namespace extensions {
 namespace internals {
@@ -36,13 +35,13 @@ namespace internals {
 // have the contents of verified_contents.json files from the webstore.
 //
 // Note: This class manages its own lifetime. It deletes itself when
-// Start() completes at OnURLFetchComplete().
+// Start() completes at OnSimpleLoaderComplete().
 //
 // Note: This class is an internal implementation detail of ContentHash and is
 // not be used independently.
 // TODO(lazyboy): Consider changing BUILD rules to enforce the above, yet
 // keeping the class unit testable.
-class ContentHashFetcher : public net::URLFetcherDelegate {
+class ContentHashFetcher {
  public:
   // A callback for when fetch is complete.
   // The response contents is passed through std::unique_ptr<std::string>.
@@ -54,16 +53,15 @@ class ContentHashFetcher : public net::URLFetcherDelegate {
   ContentHashFetcher(const ContentHash::ExtensionKey& extension_key,
                      const ContentHash::FetchParams& fetch_params);
 
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-
-  // Note: |this| is deleted once OnURLFetchComplete() completes.
+  // Note: |this| is deleted once OnSimpleLoaderComplete() completes.
   void Start(HashFetcherCallback hash_fetcher_callback);
 
  private:
   friend class base::RefCounted<ContentHashFetcher>;
 
-  ~ContentHashFetcher() override;
+  ~ContentHashFetcher();
+
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   ContentHash::ExtensionKey extension_key_;
   ContentHash::FetchParams fetch_params_;
@@ -73,7 +71,7 @@ class ContentHashFetcher : public net::URLFetcherDelegate {
   scoped_refptr<base::SequencedTaskRunner> response_task_runner_;
 
   // Alive when url fetch is ongoing.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

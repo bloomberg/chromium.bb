@@ -363,11 +363,12 @@ ContentVerifier::ContentVerifier(
     std::unique_ptr<ContentVerifierDelegate> delegate)
     : context_(context),
       delegate_(std::move(delegate)),
-      request_context_getter_(
-          content::BrowserContext::GetDefaultStoragePartition(context)
-              ->GetURLRequestContext()),
       observer_(this),
-      io_data_(new ContentVerifierIOData) {}
+      io_data_(new ContentVerifierIOData) {
+  shared_url_loader_factory_info_ =
+      content::BrowserContext::GetDefaultStoragePartition(context_)
+          ->GetURLLoaderFactoryForBrowserProcessIOThread();
+}
 
 ContentVerifier::~ContentVerifier() {
 }
@@ -391,6 +392,10 @@ void ContentVerifier::ShutdownOnIO() {
   shutdown_on_io_ = true;
   io_data_->Clear();
   hash_helper_.reset();
+
+  shared_url_loader_factory_info_.reset();
+  scoped_refptr<network::SharedURLLoaderFactory> deleter =
+      std::move(shared_url_loader_factory_);
 }
 
 ContentVerifyJob* ContentVerifier::CreateJobFor(
@@ -578,8 +583,13 @@ void ContentVerifier::OnFetchComplete(
 ContentHash::FetchParams ContentVerifier::GetFetchParams(
     const ExtensionId& extension_id,
     const base::Version& extension_version) {
+  if (!shared_url_loader_factory_) {
+    DCHECK(shared_url_loader_factory_info_);
+    shared_url_loader_factory_ = network::SharedURLLoaderFactory::Create(
+        std::move(shared_url_loader_factory_info_));
+  }
   return ContentHash::FetchParams(
-      request_context_getter_,
+      shared_url_loader_factory_.get(),
       delegate_->GetSignatureFetchUrl(extension_id, extension_version));
 }
 
