@@ -411,6 +411,14 @@ void WindowServiceClient::OnWillBecomeClientRootWindow(aura::Window* window) {
     window->RemoveChild(window->children().front());
 }
 
+base::Optional<viz::LocalSurfaceId> WindowServiceClient::GetLocalSurfaceId(
+    aura::Window* window) {
+  auto iter = FindClientRootWithRoot(window);
+  if (iter == client_roots_.end())
+    return base::nullopt;
+  return iter->get()->GetLocalSurfaceId();
+}
+
 bool WindowServiceClient::NewWindowImpl(
     const ClientWindowId& client_window_id,
     const std::map<std::string, std::vector<uint8_t>>& properties) {
@@ -687,8 +695,10 @@ bool WindowServiceClient::SetWindowBoundsImpl(
     return false;
   }
 
-  if (window->bounds() == bounds)
+  if (window->bounds() == bounds &&
+      GetLocalSurfaceId(window) == local_surface_id) {
     return true;
+  }
 
   ClientChange change(property_change_tracker_.get(), window,
                       ClientChangeType::kBounds);
@@ -698,17 +708,13 @@ bool WindowServiceClient::SetWindowBoundsImpl(
     return true;  // Return value doesn't matter if window destroyed.
 
   if (IsClientRootWindow(window)) {
-    // ClientRoot always notifies the client of changes to the bounds. This is
-    // important as OnWindowBoundsChanged() includes a LocalSurfaceId, which is
-    // assigned by the WindowService (not by the client requesting the change).
-    // Returning false ensures the client applies the LocalSurfaceId assigned
-    // by ClientRoot and sent to the client in
+    // ClientRoot handles notification in this case. Note that this
+    // unconditionally returns false, because the LocalSurfaceId changes with
+    // the bounds. Returning false ensures the client applies the LocalSurfaceId
+    // assigned by ClientRoot and sent to the client in
     // ClientRoot::OnWindowBoundsChanged().
     return false;
   }
-
-  if (window->bounds() == bounds)
-    return true;
 
   if (window->bounds() == original_bounds)
     return false;
@@ -952,8 +958,6 @@ void WindowServiceClient::SetWindowBounds(
     Id window_id,
     const gfx::Rect& bounds,
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
-  // TODO: figure out if need to pass through |local_surface_id|. Doesn't
-  // matter in all cases.
   window_tree_client_->OnChangeCompleted(
       change_id, SetWindowBoundsImpl(MakeClientWindowId(window_id), bounds,
                                      local_surface_id));

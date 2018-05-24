@@ -112,7 +112,8 @@ TEST(WindowServiceClientTest, SetTopLevelWindowBounds) {
   setup.changes()->clear();
 
   const gfx::Rect bounds_from_client = gfx::Rect(1, 2, 300, 400);
-  setup.client_test_helper()->SetWindowBounds(top_level, bounds_from_client, 2);
+  setup.client_test_helper()->SetWindowBoundsWithAck(top_level,
+                                                     bounds_from_client, 2);
   EXPECT_EQ(bounds_from_client, top_level->bounds());
   ASSERT_EQ(2u, setup.changes()->size());
   {
@@ -142,7 +143,8 @@ TEST(WindowServiceClientTest, SetTopLevelWindowBounds) {
   const gfx::Rect restricted_bounds = gfx::Rect(401, 405, 406, 407);
   layout_manager->set_next_bounds(restricted_bounds);
   top_level->parent()->SetLayoutManager(layout_manager);
-  setup.client_test_helper()->SetWindowBounds(top_level, bounds_from_client, 3);
+  setup.client_test_helper()->SetWindowBoundsWithAck(top_level,
+                                                     bounds_from_client, 3);
   ASSERT_EQ(2u, setup.changes()->size());
   // The layout manager changes the bounds to a different value than the client
   // requested, so the client should get OnWindowBoundsChanged() with
@@ -153,6 +155,21 @@ TEST(WindowServiceClientTest, SetTopLevelWindowBounds) {
   // And because the layout manager changed the bounds the result is false.
   EXPECT_EQ("ChangeCompleted id=3 sucess=false",
             ChangeToDescription((*setup.changes())[1]));
+}
+
+TEST(WindowServiceClientTest, SetTopLevelWindowBoundsFailsForSameSize) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  setup.changes()->clear();
+  const gfx::Rect bounds = gfx::Rect(1, 2, 300, 400);
+  top_level->SetBounds(bounds);
+  setup.changes()->clear();
+  // WindowServiceClientTestHelper::SetWindowBounds() uses a null
+  // LocalSurfaceId, which differs from the current LocalSurfaceId (assigned by
+  // ClientRoot). Because of this, the LocalSurfaceIds differ and the call
+  // returns false.
+  EXPECT_FALSE(setup.client_test_helper()->SetWindowBounds(top_level, bounds));
+  EXPECT_TRUE(setup.changes()->empty());
 }
 
 // Tests the ability of the client to change properties on the server.

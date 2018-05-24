@@ -12,6 +12,7 @@
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/focus_handler.h"
 #include "services/ui/ws2/ids.h"
@@ -195,6 +196,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   // destroys the existing ClientRoot if there is one (because a Window can
   // only be the root Window of a single ClientRoot).
   void OnWillBecomeClientRootWindow(aura::Window* window);
+
+  // Returns the LocalSurfaceId for |window|. If |window| is not a ClientRoot,
+  // this returns null.
+  base::Optional<viz::LocalSurfaceId> GetLocalSurfaceId(aura::Window* window);
 
   // Methods with the name Impl() mirror those of mojom::WindowTree. The return
   // value indicates whether they succeeded or not. Generally failure means the
