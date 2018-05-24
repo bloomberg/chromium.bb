@@ -30,6 +30,8 @@ void FakeMultiplexedChannel::SetDisconnected() {
   DCHECK(!is_disconnected_);
   is_disconnecting_ = false;
   is_disconnected_ = true;
+
+  NotifyDisconnected();
 }
 
 bool FakeMultiplexedChannel::IsDisconnecting() const {
