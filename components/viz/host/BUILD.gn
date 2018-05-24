@@ -9,6 +9,8 @@ viz_component("host") {
   defines = [ "VIZ_HOST_IMPLEMENTATION" ]
 
   sources = [
+    "client_frame_sink_video_capturer.cc",
+    "client_frame_sink_video_capturer.h",
     "hit_test/hit_test_query.cc",
     "hit_test/hit_test_query.h",
     "host_frame_sink_client.h",

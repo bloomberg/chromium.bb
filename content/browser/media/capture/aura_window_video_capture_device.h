@@ -37,7 +37,7 @@ class CONTENT_EXPORT AuraWindowVideoCaptureDevice
   // LameWindowCapturerChromeOS for window capture where compositor frame sinks
   // are not present. See class comments for LameWindowCapturerChromeOS for
   // further details.
-  void CreateCapturer(CreatedCapturerCallback callback) final;
+  void CreateCapturer(viz::mojom::FrameSinkVideoCapturerRequest request) final;
 #endif
 
  private:
