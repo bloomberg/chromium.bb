@@ -198,6 +198,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ReloadIndependently) {
   ASSERT_EQ(0U, CountNotifications());
 }
 
+// Flaky. crbug.com/846172
+
+#if defined(OS_LINUX)
+#define MAYBE_ReloadIndependentlyChangeTabs \
+  DISABLED_ReloadIndependentlyChangeTabs
+#else
+#define MAYBE_ReloadIndependentlyChangeTabs ReloadIndependentlyChangeTabs
+#endif
+
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
                        ReloadIndependentlyChangeTabs) {
   const size_t count_before = GetEnabledExtensionCount();
