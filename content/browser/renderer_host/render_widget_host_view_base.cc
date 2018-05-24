@@ -737,7 +737,8 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
     viz::EventSource source) const {
   DCHECK(use_viz_hit_test_);
   viz::FrameSinkId root_frame_sink_id = original_view->GetRootFrameSinkId();
-  DCHECK(root_frame_sink_id.is_valid());
+  if (!root_frame_sink_id.is_valid())
+    return false;
   const auto& display_hit_test_query_map =
       GetHostFrameSinkManager()->display_hit_test_query();
   const auto iter = display_hit_test_query_map.find(root_frame_sink_id);
