@@ -111,6 +111,10 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
   picture_in_picture_window_ = new PictureInPictureWindow(
       GetSupplementable(), picture_in_picture_window_size);
 
+  element->GetWebMediaPlayer()->RegisterPictureInPictureWindowResizeCallback(
+      WTF::BindRepeating(&PictureInPictureWindow::OnResize,
+                         WrapPersistent(picture_in_picture_window_.Get())));
+
   if (resolver)
     resolver->Resolve(picture_in_picture_window_);
 }

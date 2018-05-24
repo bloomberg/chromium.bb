@@ -89,6 +89,11 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   // Returns whether or not the given player id is active.
   bool IsPlayerActive(const MediaPlayerId& player_id) const;
 
+  // Called by the Picture-in-Picture controller when the associated window is
+  // resized. |window_size| represents the new size of the window. It MUST be
+  // called when there is a player in Picture-in-Picture.
+  void OnPictureInPictureWindowResize(const gfx::Size& window_size);
+
   bool has_audio_wake_lock_for_testing() const {
     return has_audio_wake_lock_for_testing_;
   }

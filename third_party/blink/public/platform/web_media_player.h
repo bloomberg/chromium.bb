@@ -116,10 +116,13 @@ class WebMediaPlayer {
     bool skipped = false;
   };
 
-  // Callback to get window size when video enters Picture-in-Picture.
-  using PipWindowSizeCallback = base::OnceCallback<void(const WebSize&)>;
+  // Callback to get notified when the Picture-in-Picture window is opened.
+  using PipWindowOpenedCallback = base::OnceCallback<void(const WebSize&)>;
   // Callback to get notified when Picture-in-Picture window is closed.
   using PipWindowClosedCallback = base::OnceClosure;
+  // Callback to get notified when the Picture-in-Picture window is resized.
+  using PipWindowResizedCallback =
+      base::RepeatingCallback<void(const WebSize&)>;
 
   virtual ~WebMediaPlayer() = default;
 
@@ -134,9 +137,13 @@ class WebMediaPlayer {
 
   // Enter Picture-in-Picture and notifies Blink with window size
   // when video successfully enters Picture-in-Picture.
-  virtual void EnterPictureInPicture(PipWindowSizeCallback) = 0;
+  virtual void EnterPictureInPicture(PipWindowOpenedCallback) = 0;
   // Exit Picture-in-Picture and notifies Blink when it's done.
   virtual void ExitPictureInPicture(PipWindowClosedCallback) = 0;
+  // Register a callback that will be run when the Picture-in-Picture window
+  // is resized.
+  virtual void RegisterPictureInPictureWindowResizeCallback(
+      PipWindowResizedCallback) = 0;
 
   virtual void RequestRemotePlayback() {}
   virtual void RequestRemotePlaybackControl() {}

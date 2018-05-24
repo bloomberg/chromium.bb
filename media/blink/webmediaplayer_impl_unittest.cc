@@ -224,11 +224,13 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
                void(int,
                     const viz::SurfaceId&,
                     const gfx::Size&,
-                    blink::WebMediaPlayer::PipWindowSizeCallback));
+                    blink::WebMediaPlayer::PipWindowOpenedCallback));
   MOCK_METHOD2(DidPictureInPictureModeEnd,
                void(int, blink::WebMediaPlayer::PipWindowClosedCallback));
   MOCK_METHOD3(DidPictureInPictureSurfaceChange,
                void(int, const viz::SurfaceId&, const gfx::Size&));
+  MOCK_METHOD2(RegisterPictureInPictureWindowResizeCallback,
+               void(int, blink::WebMediaPlayer::PipWindowResizedCallback));
 
   void ClearStaleFlag(int player_id) override {
     DCHECK_EQ(player_id_, player_id);

@@ -122,7 +122,7 @@ void RendererWebMediaPlayerDelegate::DidPictureInPictureModeStart(
     int delegate_id,
     const viz::SurfaceId& surface_id,
     const gfx::Size& natural_size,
-    blink::WebMediaPlayer::PipWindowSizeCallback callback) {
+    blink::WebMediaPlayer::PipWindowOpenedCallback callback) {
   int request_id = next_picture_in_picture_callback_id_++;
   enter_picture_in_picture_callback_map_.insert(
       std::make_pair(request_id, std::move(callback)));
@@ -146,6 +146,14 @@ void RendererWebMediaPlayerDelegate::DidPictureInPictureSurfaceChange(
     const gfx::Size& natural_size) {
   Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureSurfaceChanged(
       routing_id(), delegate_id, surface_id, natural_size));
+}
+
+void RendererWebMediaPlayerDelegate::
+    RegisterPictureInPictureWindowResizeCallback(
+        int player_id,
+        blink::WebMediaPlayer::PipWindowResizedCallback callback) {
+  picture_in_picture_window_resize_observer_ =
+      std::make_pair(player_id, std::move(callback));
 }
 
 void RendererWebMediaPlayerDelegate::DidPause(int player_id) {
@@ -273,6 +281,8 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
     IPC_MESSAGE_HANDLER(
         MediaPlayerDelegateMsg_OnPictureInPictureModeStarted_ACK,
         OnPictureInPictureModeStartedAck)
+    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_OnPictureInPictureWindowResize,
+                        OnPictureInPictureWindowResize)
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
   return true;
@@ -403,6 +413,18 @@ void RendererWebMediaPlayerDelegate::OnPictureInPictureModeStartedAck(
 
   std::move(iter->second).Run(blink::WebSize(window_size));
   enter_picture_in_picture_callback_map_.erase(iter);
+}
+
+void RendererWebMediaPlayerDelegate::OnPictureInPictureWindowResize(
+    int player_id,
+    const gfx::Size& window_size) {
+  if (!picture_in_picture_window_resize_observer_ ||
+      picture_in_picture_window_resize_observer_->first != player_id) {
+    return;
+  }
+
+  picture_in_picture_window_resize_observer_->second.Run(
+      blink::WebSize(window_size));
 }
 
 void RendererWebMediaPlayerDelegate::ScheduleUpdateTask() {
