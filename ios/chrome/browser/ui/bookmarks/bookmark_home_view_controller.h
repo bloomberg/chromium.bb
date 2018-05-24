@@ -46,17 +46,12 @@ class BookmarkNode;
 // Class to navigate the bookmark hierarchy.
 @interface BookmarkHomeViewController : ChromeTableViewController
 
-// Set to YES, only when this view controller instance is being created
-// from cached path. Once the view controller is shown, this is set to NO.
-// This is so that the cache code is called only once in viewWillAppear, and
-// not every time the view appears.
-@property(nonatomic, assign) BOOL isReconstructingFromCache;
-
 // Delegate for presenters. Note that this delegate is currently being set only
 // in case of handset, and not tablet. In the future it will be used by both
 // cases.
 @property(nonatomic, weak) id<BookmarkHomeViewControllerDelegate> homeDelegate;
 
+// Initializers.
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState
                     dispatcher:(id<ApplicationCommands>)dispatcher
@@ -68,6 +63,13 @@ class BookmarkNode;
 
 // Setter to set _rootNode value.
 - (void)setRootNode:(const bookmarks::BookmarkNode*)rootNode;
+
+// Returns an array of BookmarkHomeViewControllers, one per BookmarkNode in the
+// path from this view controller's node to the latest cached node (as
+// determined by BookmarkPathCache).  Includes |self| as the first element of
+// the returned array.  Sets the cached scroll position for the last element of
+// the returned array, if appropriate.
+- (NSArray<BookmarkHomeViewController*>*)cachedViewControllerStack;
 
 @end
 
