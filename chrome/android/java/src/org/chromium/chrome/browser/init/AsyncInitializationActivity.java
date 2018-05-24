@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
-import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.upgrade.UpgradeActivity;
@@ -256,7 +255,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     private final void onCreateInternal(Bundle savedInstanceState) {
-        UmaUtils.recordActivityStartTime();
+        initializeStartupMetrics();
         setIntent(validateIntent(getIntent()));
 
         @LaunchIntentDispatcher.Action
@@ -309,6 +308,12 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         mStartupDelayed = shouldDelayBrowserStartup();
         ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(this);
     }
+
+    /**
+     * This method is called very early on during Activity.onCreate. Subclassing activities should
+     * use this to initialize their tracking metrics including things like Activity start time.
+     */
+    protected void initializeStartupMetrics() {}
 
     private void abortLaunch() {
         super.onCreate(null);

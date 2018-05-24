@@ -94,6 +94,7 @@ import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.PictureInPicture;
 import org.chromium.chrome.browser.media.PictureInPictureController;
+import org.chromium.chrome.browser.metrics.ActivityTabStartupMetricsTracker;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.metrics.WebApkUma;
@@ -293,6 +294,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     /** Adds TabObserver and TabModelObserver to measure page view times. */
     private PageViewTimer mPageViewTimer;
 
+    private ActivityTabStartupMetricsTracker mActivityTabStartupMetricsTracker;
+
     /**
      * @param factory The {@link AppMenuHandlerFactory} for creating {@link #mAppMenuHandler}
      */
@@ -408,6 +411,15 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         mModalDialogManager = createModalDialogManager();
         mPageViewTimer = new PageViewTimer(mTabModelSelector);
+    }
+
+    @Override
+    protected void initializeStartupMetrics() {
+        mActivityTabStartupMetricsTracker = new ActivityTabStartupMetricsTracker(this);
+    }
+
+    protected ActivityTabStartupMetricsTracker getActivityTabStartupMetricsTracker() {
+        return mActivityTabStartupMetricsTracker;
     }
 
     @Override
@@ -1234,6 +1246,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (mManualFillingController != null) {
             mManualFillingController.destroy();
             mManualFillingController = null;
+        }
+
+        if (mActivityTabStartupMetricsTracker != null) {
+            mActivityTabStartupMetricsTracker.destroy();
+            mActivityTabStartupMetricsTracker = null;
         }
 
         AccessibilityManager manager = (AccessibilityManager)
