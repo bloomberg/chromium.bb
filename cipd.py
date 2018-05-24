@@ -382,8 +382,8 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
     version_cache = local_caching.DiskContentAddressedCache(
         unicode(os.path.join(cache_dir, 'versions')),
         local_caching.CachePolicies(
-            # 512GiB.
-            max_cache_size=512*1024*1024*1024,
+            # 1GiB.
+            max_cache_size=1024*1024*1024,
             min_free_space=0,
             max_items=300,
             # 3 weeks.
