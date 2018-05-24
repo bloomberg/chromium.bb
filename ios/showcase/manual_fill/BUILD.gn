@@ -19,12 +19,12 @@ source_set("manual_fill") {
   ]
   deps = [
     ":ic_credit_card",
-    ":ic_keyboard_arrow_down",
     ":ic_keyboard_arrow_up",
     ":ic_vpn_key",
     "//base",
     "//ios/showcase/common",
     "//third_party/material_design_icons:ic_account_circle",
+    "//third_party/material_design_icons:ic_keyboard_arrow_down",
   ]
   libs = [
     "UIKit.framework",
@@ -39,7 +39,6 @@ import("//build/config/ios/asset_catalog.gni")
 _image_sets = [
   "action/ic_credit_card",
   "communication/ic_vpn_key",
-  "hardware/ic_keyboard_arrow_down",
   "hardware/ic_keyboard_arrow_up",
 ]
 
