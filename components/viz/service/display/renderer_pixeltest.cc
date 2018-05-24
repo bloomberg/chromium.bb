@@ -1217,12 +1217,6 @@ class IntersectingQuadPixelTest : public RendererPixelTest<TypeParam> {
   RenderPassList pass_list_;
 };
 
-// TODO(weiliangc): Move these tests to normal RendererPixelTest as they pass
-// with SkiaRenderer. Failed test list recorded in crbug.com/821176.
-template <typename TypeParam>
-class IntersectingQuadNonSkiaPixelTest
-    : public IntersectingQuadPixelTest<TypeParam> {};
-
 template <typename TypeParam>
 class IntersectingQuadGLPixelTest
     : public IntersectingQuadPixelTest<TypeParam> {
@@ -1260,7 +1254,6 @@ using GLRendererTypes =
     ::testing::Types<GLRenderer, cc::GLRendererWithExpandedViewport>;
 
 TYPED_TEST_CASE(IntersectingQuadPixelTest, RendererTypes);
-TYPED_TEST_CASE(IntersectingQuadNonSkiaPixelTest, NonSkiaRendererTypes);
 TYPED_TEST_CASE(IntersectingQuadGLPixelTest, GLRendererTypes);
 TYPED_TEST_CASE(IntersectingQuadSoftwareTest, SoftwareRendererTypes);
 
@@ -1280,6 +1273,11 @@ TYPED_TEST(IntersectingQuadPixelTest, SolidColorQuads) {
       FILE_PATH_LITERAL("intersecting_blue_green.png"));
 }
 
+static inline SkColor GetSkiaOrGLColor(const SkColor& color) {
+  return SkColorSetARGB(SkColorGetA(color), SkColorGetB(color),
+                        SkColorGetG(color), SkColorGetR(color));
+}
+
 template <typename TypeParam>
 SkColor GetColor(const SkColor& color) {
   return color;
@@ -1287,15 +1285,20 @@ SkColor GetColor(const SkColor& color) {
 
 template <>
 SkColor GetColor<GLRenderer>(const SkColor& color) {
-  return SkColorSetARGB(SkColorGetA(color), SkColorGetB(color),
-                        SkColorGetG(color), SkColorGetR(color));
-}
-template <>
-SkColor GetColor<cc::GLRendererWithExpandedViewport>(const SkColor& color) {
-  return GetColor<GLRenderer>(color);
+  return GetSkiaOrGLColor(color);
 }
 
-TYPED_TEST(IntersectingQuadNonSkiaPixelTest, TexturedQuads) {
+template <>
+SkColor GetColor<SkiaRenderer>(const SkColor& color) {
+  return GetSkiaOrGLColor(color);
+}
+
+template <>
+SkColor GetColor<cc::GLRendererWithExpandedViewport>(const SkColor& color) {
+  return GetSkiaOrGLColor(color);
+}
+
+TYPED_TEST(IntersectingQuadPixelTest, TexturedQuads) {
   this->SetupQuadStateAndRenderPass();
   CreateTestTwoColoredTextureDrawQuad(
       this->use_gpu(), this->quad_rect_,
@@ -1373,7 +1376,7 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
       FILE_PATH_LITERAL("intersecting_blue_green_squares.png"));
 }
 
-TYPED_TEST(IntersectingQuadNonSkiaPixelTest, RenderPassQuads) {
+TYPED_TEST(IntersectingQuadPixelTest, RenderPassQuads) {
   this->SetupQuadStateAndRenderPass();
   int child_pass_id1 = 2;
   int child_pass_id2 = 3;
