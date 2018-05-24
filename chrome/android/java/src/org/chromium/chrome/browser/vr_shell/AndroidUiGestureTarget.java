@@ -9,7 +9,7 @@ import android.view.View;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.MotionEventSynthesizer;
+import org.chromium.content_public.browser.MotionEventSynthesizer;
 
 /**
  * Forwards events for Java native UI pages to MotionEventSynthesizer.
@@ -21,7 +21,7 @@ public class AndroidUiGestureTarget {
 
     public AndroidUiGestureTarget(
             View target, float scaleFactor, float scrollRatio, int touchSlop) {
-        mMotionEventSynthesizer = new MotionEventSynthesizer(target);
+        mMotionEventSynthesizer = MotionEventSynthesizer.create(target);
         mNativePointer = nativeInit(scaleFactor, scrollRatio, touchSlop);
     }
 

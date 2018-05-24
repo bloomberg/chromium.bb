@@ -10,10 +10,12 @@ import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
 import android.view.View;
 
+import org.chromium.content_public.browser.MotionEventSynthesizer;
+
 /**
  * Injects synthetic touch events. All the coordinates are of physical unit.
  */
-public class MotionEventSynthesizer {
+public class MotionEventSynthesizerImpl implements MotionEventSynthesizer {
     private static final int MAX_NUM_POINTERS = 16;
 
     private final PointerProperties[] mPointerProperties;
@@ -21,7 +23,11 @@ public class MotionEventSynthesizer {
     private final View mTarget;
     private long mDownTimeInMs;
 
-    public MotionEventSynthesizer(View target) {
+    public static MotionEventSynthesizerImpl create(View target) {
+        return new MotionEventSynthesizerImpl(target);
+    }
+
+    private MotionEventSynthesizerImpl(View target) {
         assert target != null;
         mTarget = target;
         mPointerProperties = new PointerProperties[MAX_NUM_POINTERS];
@@ -37,6 +43,7 @@ public class MotionEventSynthesizer {
      * @param id Id property of the point.
      * @param toolType ToolType property of the point.
      */
+    @Override
     public void setPointer(int index, int x, int y, int id, int toolType) {
         assert (0 <= index && index < MAX_NUM_POINTERS);
 
@@ -85,6 +92,7 @@ public class MotionEventSynthesizer {
      * @param pointerCount The number of points associated with the event.
      * @param timeInMs Timestamp for the event.
      */
+    @Override
     public void inject(int action, int pointerCount, long timeInMs) {
         switch (action) {
             case MotionEventAction.START: {
