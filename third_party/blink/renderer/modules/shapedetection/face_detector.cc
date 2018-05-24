@@ -16,6 +16,8 @@
 #include "third_party/blink/renderer/modules/shapedetection/detected_face.h"
 #include "third_party/blink/renderer/modules/shapedetection/face_detector_options.h"
 #include "third_party/blink/renderer/modules/shapedetection/landmark.h"
+#include "third_party/blink/renderer/modules/shapedetection/shape_detection_type_converter.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -81,17 +83,7 @@ void FaceDetector::OnDetectFaces(
 
       Landmark web_landmark;
       web_landmark.setLocations(locations);
-      // TODO(junwei.fu): Consider using TypeConverter to convert the type of
-      // landmark from Mojo to IDL (https://crbug.com/841649).
-      if (landmark->type == shape_detection::mojom::blink::LandmarkType::EYE) {
-        web_landmark.setType("eye");
-      } else if (landmark->type ==
-                 shape_detection::mojom::blink::LandmarkType::MOUTH) {
-        web_landmark.setType("mouth");
-      } else if (landmark->type ==
-                 shape_detection::mojom::blink::LandmarkType::NOSE) {
-        web_landmark.setType("nose");
-      }
+      web_landmark.setType(mojo::ConvertTo<String>(landmark->type));
       landmarks.push_back(web_landmark);
     }
 

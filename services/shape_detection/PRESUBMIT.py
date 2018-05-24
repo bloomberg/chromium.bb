@@ -20,6 +20,6 @@ def PostUploadHook(cl, change, output_api):
     cl,
     [
       'luci.chromium.try:mac_optional_gpu_tests_rel',
-      'master.tryserver.chromium.win:win10_chromium_x64_rel_ng'
+      'luci.chromium.try:win10_chromium_x64_rel_ng'
     ],
     'Automatically added optional Mac GPU and Windows 10 tests to run on CQ.')
