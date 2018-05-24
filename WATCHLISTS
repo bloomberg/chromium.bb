@@ -677,9 +677,6 @@
     'chromeos_calculator': {
       'filepath': 'chrome/common/extensions/docs/examples/apps/calculator/',
     },
-    'chromeos_dbus': {
-      'filepath': 'chromeos/dbus/',
-    },
     'chromeos_geolocation': {
       'filepath': 'chromeos/geolocation/',
     },
@@ -777,6 +774,9 @@
                   'data_reduction_proxy|'\
                   'chrome_proxy',
     },
+    'dbus': {
+      'filepath': 'dbus/',
+    },
     'deep_memory_profiler': {
       'filepath': 'tools/(deep_memory_profiler|find_runtime_symbols)',
     },
@@ -831,7 +831,7 @@
                   'chrome/browser/google_apis/'
     },
     'drive_resource_metadata': {
-      'filepath': 'chrome/browser/chromeos/drive/resource_metadata'
+      'filepath': 'drive.*resource_metadata'
     },
     'eme': {
       'filepath': 'components/cdm/|' \
@@ -1976,7 +1976,6 @@
     'chromeos': ['oshima+watch@chromium.org'],
     'chromeos_attestation': ['dkrahn+watch@chromium.org'],
     'chromeos_calculator': ['dharcourt@chromium.org'],
-    'chromeos_dbus': ['hashimoto+watch@chromium.org'],
     'chromeos_geolocation': ['alemate+watch@chromium.org'],
     'chromeos_lkgm': ['achuith+watch@chromium.org',
                       'bpastene+watch@chromium.org',
@@ -2036,6 +2035,7 @@
     'crostini': ['crostini-ui@chromium.org'],
     'custom_tabs': ['lizeb+watch-custom-tabs@chromium.org'],
     'data_reduction_proxy': ['tbansal+watch-data-reduction-proxy@chromium.org'],
+    'dbus': ['hashimoto+watch@chromium.org'],
     'deep_memory_profiler': ['dmikurube@chromium.org'],
     'device_bluetooth': ['mattreynolds+watch@chromium.org',
                          'ortuno+watch@chromium.org'],
