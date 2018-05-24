@@ -26,6 +26,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_factory.h"
@@ -704,9 +705,11 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
       EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* LOOK UP */));
       EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
     }
-    EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* EMOJI */));
-    EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
 #endif
+    if (ui::IsEmojiPanelSupported()) {
+      EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* EMOJI */));
+      EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
+    }
 
     EXPECT_EQ(can_undo, menu->IsEnabledAt(menu_index++ /* UNDO */));
     EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
@@ -3432,6 +3435,69 @@ TEST_F(TextfieldTest, SendingDeletePreservesShiftFlag) {
   EXPECT_EQ(ui::EF_SHIFT_DOWN, textfield_->event_flags());
 }
 
+TEST_F(TextfieldTest, EmojiItem_EmptyField) {
+  InitTextfield();
+  EXPECT_TRUE(textfield_->context_menu_controller());
+
+  // Enable the emoji feature.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kEnableEmojiContextMenu);
+
+  // A normal empty field may show the Emoji option (if supported).
+  ui::MenuModel* context_menu = GetContextMenuModel();
+  EXPECT_TRUE(context_menu);
+  EXPECT_GT(context_menu->GetItemCount(), 0);
+  // Not all OS/versions support the emoji menu.
+  EXPECT_EQ(ui::IsEmojiPanelSupported(),
+            context_menu->GetLabelAt(0) ==
+                l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_EMOJI));
+}
+
+TEST_F(TextfieldTest, EmojiItem_ReadonlyField) {
+  InitTextfield();
+  EXPECT_TRUE(textfield_->context_menu_controller());
+
+  // Enable the emoji feature.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kEnableEmojiContextMenu);
+
+  textfield_->SetReadOnly(true);
+  // In no case is the emoji option showing on a read-only field.
+  ui::MenuModel* context_menu = GetContextMenuModel();
+  EXPECT_TRUE(context_menu);
+  EXPECT_GT(context_menu->GetItemCount(), 0);
+  EXPECT_NE(context_menu->GetLabelAt(0),
+            l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_EMOJI));
+}
+
+TEST_F(TextfieldTest, EmojiItem_FieldWithText) {
+  InitTextfield();
+  EXPECT_TRUE(textfield_->context_menu_controller());
+
+#if defined(OS_MACOSX)
+  // On Mac, when there is text, the "Look up" item (+ separator) takes the top
+  // position, and emoji comes after.
+  constexpr int kExpectedEmojiIndex = 2;
+#else
+  constexpr int kExpectedEmojiIndex = 0;
+#endif
+
+  // Enable the emoji feature.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kEnableEmojiContextMenu);
+
+  // A field with text may still show the Emoji option (if supported).
+  textfield_->SetText(base::ASCIIToUTF16("some text"));
+  textfield_->SelectAll(false);
+  ui::MenuModel* context_menu = GetContextMenuModel();
+  EXPECT_TRUE(context_menu);
+  EXPECT_GT(context_menu->GetItemCount(), 0);
+  // Not all OS/versions support the emoji menu.
+  EXPECT_EQ(ui::IsEmojiPanelSupported(),
+            context_menu->GetLabelAt(kExpectedEmojiIndex) ==
+                l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_EMOJI));
+}
+
 #if defined(OS_MACOSX)
 // Tests to see if the BiDi submenu items are updated correctly when the
 // textfield's text direction is changed.
@@ -3469,6 +3535,10 @@ TEST_F(TextfieldTest, TextServicesContextMenuTextDirectionTest) {
 TEST_F(TextfieldTest, LookUpItemUpdate) {
   InitTextfield();
   EXPECT_TRUE(textfield_->context_menu_controller());
+
+  // Make sure the Emoji feature is disabled for this test.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kEnableEmojiContextMenu);
 
   const base::string16 kTextOne = ASCIIToUTF16("crake");
   textfield_->SetText(kTextOne);
