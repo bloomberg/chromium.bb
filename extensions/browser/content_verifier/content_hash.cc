@@ -20,7 +20,6 @@
 #include "extensions/common/file_util.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace extensions {
 
@@ -80,11 +79,10 @@ ContentHash::ExtensionKey& ContentHash::ExtensionKey::operator=(
     const ContentHash::ExtensionKey& other) = default;
 
 ContentHash::FetchParams::FetchParams(
-    network::mojom::URLLoaderFactory* url_loader_factory,
+    net::URLRequestContextGetter* request_context,
     const GURL& fetch_url)
-    : url_loader_factory(url_loader_factory), fetch_url(fetch_url) {}
+    : request_context(request_context), fetch_url(fetch_url) {}
 
-ContentHash::FetchParams::~FetchParams() = default;
 ContentHash::FetchParams::FetchParams(const FetchParams& other) = default;
 ContentHash::FetchParams& ContentHash::FetchParams::operator=(
     const FetchParams& other) = default;
@@ -104,11 +102,8 @@ void ContentHash::Create(const ExtensionKey& key,
 
   if (!verified_contents) {
     // Fetch verified_contents.json and then respond.
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&ContentHash::FetchVerifiedContentsOnIOThread, key,
-                       fetch_params, is_cancelled,
-                       std::move(created_callback)));
+    FetchVerifiedContents(key, fetch_params, is_cancelled,
+                          std::move(created_callback));
     return;
   }
 
@@ -157,34 +152,16 @@ ContentHash::ContentHash(
 ContentHash::~ContentHash() = default;
 
 // static
-void ContentHash::FetchVerifiedContentsOnIOThread(
+void ContentHash::FetchVerifiedContents(
     const ContentHash::ExtensionKey& extension_key,
     const ContentHash::FetchParams& fetch_params,
     const ContentHash::IsCancelledCallback& is_cancelled,
     ContentHash::CreatedCallback created_callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
   // |fetcher| deletes itself when it's done.
   internals::ContentHashFetcher* fetcher =
       new internals::ContentHashFetcher(extension_key, fetch_params);
-  fetcher->Start(
-      base::BindOnce(&ContentHash::DidFetchVerifiedContentsOnIOThread,
-                     std::move(created_callback), is_cancelled));
-}
-
-// static
-void ContentHash::DidFetchVerifiedContentsOnIOThread(
-    ContentHash::CreatedCallback created_callback,
-    const ContentHash::IsCancelledCallback& is_cancelled,
-    const ContentHash::ExtensionKey& key,
-    const ContentHash::FetchParams& fetch_params,
-    std::unique_ptr<std::string> fetched_contents) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  GetExtensionFileTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ContentHash::DidFetchVerifiedContents,
-                                std::move(created_callback), is_cancelled, key,
-                                fetch_params, std::move(fetched_contents)));
-  return;
+  fetcher->Start(base::BindOnce(&ContentHash::DidFetchVerifiedContents,
+                                std::move(created_callback), is_cancelled));
 }
 
 // static
@@ -194,7 +171,6 @@ void ContentHash::DidFetchVerifiedContents(
     const ContentHash::ExtensionKey& key,
     const ContentHash::FetchParams& fetch_params,
     std::unique_ptr<std::string> fetched_contents) {
-  DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
   base::AssertBlockingAllowed();
   if (!fetched_contents) {
     ContentHash::DispatchFetchFailure(key, std::move(created_callback),

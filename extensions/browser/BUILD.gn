@@ -642,7 +642,6 @@ source_set("unit_tests") {
     "//services/data_decoder:lib",
     "//services/data_decoder/public/cpp:test_support",
     "//services/device/public/mojom",
-    "//services/network:test_support",
     "//services/service_manager/public/cpp/test:test_support",
     "//storage/browser:test_support",
     "//third_party/leveldatabase",

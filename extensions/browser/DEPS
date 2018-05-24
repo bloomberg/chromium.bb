@@ -27,7 +27,6 @@ include_rules = [
   "+services/data_decoder/public",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
-  "+services/network",
   "+services/preferences/public/cpp",
   "+services/service_manager/public/cpp",
   "+skia/ext/image_operations.h",
