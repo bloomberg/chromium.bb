@@ -22,7 +22,6 @@ PaymentCurrencyAmount ToPaymentCurrencyAmount(
   PaymentCurrencyAmount amount;
   amount.setCurrency(web_amount.currency);
   amount.setValue(web_amount.value);
-  amount.setCurrencySystem(web_amount.currency_system);
   return amount;
 }
 

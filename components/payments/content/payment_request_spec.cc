@@ -155,15 +155,15 @@ bool PaymentRequestSpec::IsMethodSupportedThroughBasicCard(
 
 base::string16 PaymentRequestSpec::GetFormattedCurrencyAmount(
     const mojom::PaymentCurrencyAmountPtr& currency_amount) {
-  CurrencyFormatter* formatter = GetOrCreateCurrencyFormatter(
-      currency_amount->currency, currency_amount->currency_system, app_locale_);
+  CurrencyFormatter* formatter =
+      GetOrCreateCurrencyFormatter(currency_amount->currency, app_locale_);
   return formatter->Format(currency_amount->value);
 }
 
 std::string PaymentRequestSpec::GetFormattedCurrencyCode(
     const mojom::PaymentCurrencyAmountPtr& currency_amount) {
-  CurrencyFormatter* formatter = GetOrCreateCurrencyFormatter(
-      currency_amount->currency, currency_amount->currency_system, app_locale_);
+  CurrencyFormatter* formatter =
+      GetOrCreateCurrencyFormatter(currency_amount->currency, app_locale_);
 
   return formatter->formatted_currency_code();
 }
@@ -306,14 +306,13 @@ void PaymentRequestSpec::NotifyOnSpecUpdated() {
 
 CurrencyFormatter* PaymentRequestSpec::GetOrCreateCurrencyFormatter(
     const std::string& currency_code,
-    const std::string& currency_system,
     const std::string& locale_name) {
   // Create a currency formatter for |currency_code|, or if already created
   // return the cached version.
   std::pair<std::map<std::string, CurrencyFormatter>::iterator, bool>
       emplace_result = currency_formatters_.emplace(
           std::piecewise_construct, std::forward_as_tuple(currency_code),
-          std::forward_as_tuple(currency_code, currency_system, locale_name));
+          std::forward_as_tuple(currency_code, locale_name));
 
   return &(emplace_result.first->second);
 }

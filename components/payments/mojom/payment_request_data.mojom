@@ -43,10 +43,4 @@ struct PaymentCurrencyAmount {
   // ISO 20022 CurrencyAnd30Amount. Up to 30 total digits. Up to 10 fraction
   // digits. Separated by a dot.
   string value;
-
-  // currency_system is a URL that indicates the currency system that the
-  // currency identifier belongs to. By default, the value is
-  // urn:iso:std:iso:4217 indicating that currency is defined by [ISO4217]
-  // (for example, USD for US Dollars).
-  string currency_system = "urn:iso:std:iso:4217";
 };

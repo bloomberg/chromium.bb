@@ -256,7 +256,6 @@ CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter() {
     DCHECK(web_payment_request_.details.total);
     currency_formatter_ = std::make_unique<CurrencyFormatter>(
         web_payment_request_.details.total->amount->currency,
-        web_payment_request_.details.total->amount->currency_system,
         GetApplicationLocale());
   }
   return currency_formatter_.get();

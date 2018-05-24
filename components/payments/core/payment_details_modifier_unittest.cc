@@ -44,7 +44,6 @@ TEST(PaymentRequestTest, PopulatedDetailsModifierDictionary) {
       std::make_unique<base::DictionaryValue>();
   amount_dict->SetString("currency", "USD");
   amount_dict->SetString("value", "139.99");
-  amount_dict->SetString("currencySystem", "urn:iso:std:iso:4217");
   item_dict->SetDictionary("amount", std::move(amount_dict));
   item_dict->SetBoolean("pending", false);
   expected_value.SetDictionary("total", std::move(item_dict));

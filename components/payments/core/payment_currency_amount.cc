@@ -12,7 +12,6 @@ namespace {
 
 // These are defined as part of the spec at:
 // https://w3c.github.io/browser-payment-api/#dom-paymentcurrencyamount
-static const char kPaymentCurrencyAmountCurrencySystem[] = "currencySystem";
 static const char kPaymentCurrencyAmountCurrency[] = "currency";
 static const char kPaymentCurrencyAmountValue[] = "value";
 
@@ -31,10 +30,6 @@ bool PaymentCurrencyAmountFromDictionaryValue(
     return false;
   }
 
-  // Currency_system is optional
-  dictionary_value.GetString(kPaymentCurrencyAmountCurrencySystem,
-                             &amount->currency_system);
-
   return true;
 }
 
@@ -43,10 +38,6 @@ std::unique_ptr<base::DictionaryValue> PaymentCurrencyAmountToDictionaryValue(
   auto result = std::make_unique<base::DictionaryValue>();
   result->SetString(kPaymentCurrencyAmountCurrency, amount.currency);
   result->SetString(kPaymentCurrencyAmountValue, amount.value);
-  if (!amount.currency_system.empty()) {
-    result->SetString(kPaymentCurrencyAmountCurrencySystem,
-                      amount.currency_system);
-  }
 
   return result;
 }

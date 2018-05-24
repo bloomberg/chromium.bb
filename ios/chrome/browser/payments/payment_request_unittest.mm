@@ -132,16 +132,6 @@ TEST_F(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
   currency_formatter = payment_request2.GetOrCreateCurrencyFormatter();
   EXPECT_EQ(base::UTF8ToUTF16("¥55"), currency_formatter->Format("55.00"));
   EXPECT_EQ("JPY", currency_formatter->formatted_currency_code());
-
-  web_payment_request.details.total->amount->currency_system = "NOT_ISO4217";
-  web_payment_request.details.total->amount->currency = "USD";
-  TestPaymentRequest payment_request3(web_payment_request,
-                                      chrome_browser_state_.get(), &web_state_,
-                                      &test_personal_data_manager_);
-  ASSERT_EQ("en", payment_request3.GetApplicationLocale());
-  currency_formatter = payment_request3.GetOrCreateCurrencyFormatter();
-  EXPECT_EQ(base::UTF8ToUTF16("55.00"), currency_formatter->Format("55.00"));
-  EXPECT_EQ("USD", currency_formatter->formatted_currency_code());
 }
 
 // Tests that the accepted card networks are identified correctly.

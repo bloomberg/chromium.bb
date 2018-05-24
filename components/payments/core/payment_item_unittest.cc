@@ -87,7 +87,6 @@ TEST(PaymentRequestTest, EmptyPaymentItemDictionary) {
       std::make_unique<base::DictionaryValue>();
   amount_dict->SetString("currency", "");
   amount_dict->SetString("value", "");
-  amount_dict->SetString("currencySystem", "urn:iso:std:iso:4217");
   expected_value.SetDictionary("amount", std::move(amount_dict));
   expected_value.SetBoolean("pending", false);
 
@@ -104,7 +103,6 @@ TEST(PaymentRequestTest, PopulatedPaymentItemDictionary) {
       std::make_unique<base::DictionaryValue>();
   amount_dict->SetString("currency", "NZD");
   amount_dict->SetString("value", "2,242,093.00");
-  amount_dict->SetString("currencySystem", "urn:iso:std:iso:4217");
   expected_value.SetDictionary("amount", std::move(amount_dict));
   expected_value.SetBoolean("pending", true);
 

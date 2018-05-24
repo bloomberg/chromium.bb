@@ -12,14 +12,11 @@ namespace blink {
 namespace {
 
 struct CurrencyCodeTestCase {
-  CurrencyCodeTestCase(const char* code,
-                       const char* system,
-                       bool expected_valid)
-      : code(code), system(system), expected_valid(expected_valid) {}
+  CurrencyCodeTestCase(const char* code, bool expected_valid)
+      : code(code), expected_valid(expected_valid) {}
   ~CurrencyCodeTestCase() = default;
 
   const char* code;
-  const char* system;
   bool expected_valid;
 };
 
@@ -34,26 +31,18 @@ const char* LongString2048() {
   return long_string;
 }
 
-const char* LongString2049() {
-  static char long_string[2050];
-  for (int i = 0; i < 2049; i++)
-    long_string[i] = 'a';
-  long_string[2049] = '\0';
-  return long_string;
-}
-
 TEST_P(PaymentsCurrencyValidatorTest, IsValidCurrencyCodeFormat) {
   String error_message;
   EXPECT_EQ(GetParam().expected_valid,
-            PaymentsValidators::IsValidCurrencyCodeFormat(
-                GetParam().code, GetParam().system, &error_message))
+            PaymentsValidators::IsValidCurrencyCodeFormat(GetParam().code,
+                                                          &error_message))
       << error_message;
   EXPECT_EQ(GetParam().expected_valid, error_message.IsEmpty())
       << error_message;
 
-  EXPECT_EQ(GetParam().expected_valid,
-            PaymentsValidators::IsValidCurrencyCodeFormat(
-                GetParam().code, GetParam().system, nullptr));
+  EXPECT_EQ(
+      GetParam().expected_valid,
+      PaymentsValidators::IsValidCurrencyCodeFormat(GetParam().code, nullptr));
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -68,24 +57,14 @@ INSTANTIATE_TEST_CASE_P(
         // by [[ISO4217]], however any string of at most 2048
         // characters is considered valid in other currencySystem. Returns false
         // if currency |code| is too long (greater than 2048).
-        CurrencyCodeTestCase("USD", "urn:iso:std:iso:4217", true),
-        CurrencyCodeTestCase("US1", "http://www.example.com", true),
-        CurrencyCodeTestCase("US1", "urn:iso:std:iso:4217", false),
-        CurrencyCodeTestCase("US", "http://www.example.com", true),
-        CurrencyCodeTestCase("US", "urn:iso:std:iso:4217", false),
-        CurrencyCodeTestCase("USDO", "http://www.example.com", true),
-        CurrencyCodeTestCase("USDO", "urn:iso:std:iso:4217", false),
-        CurrencyCodeTestCase("usd", "http://www.example.com", true),
-        CurrencyCodeTestCase("usd", "urn:iso:std:iso:4217", true),
-        CurrencyCodeTestCase("ANYSTRING", "http://www.example.com", true),
-        CurrencyCodeTestCase("ANYSTRING", "urn:iso:std:iso:4217", false),
-        CurrencyCodeTestCase("", "http://www.example.com", true),
-        CurrencyCodeTestCase("", "urn:iso:std:iso:4217", false),
-        CurrencyCodeTestCase(LongString2048(), "http://www.example.com", true),
-        CurrencyCodeTestCase(LongString2048(), "urn:iso:std:iso:4217", false),
-        CurrencyCodeTestCase(LongString2049(),
-                             "http://www.example.com",
-                             false)));
+        CurrencyCodeTestCase("USD", true),
+        CurrencyCodeTestCase("US1", false),
+        CurrencyCodeTestCase("US", false),
+        CurrencyCodeTestCase("USDO", false),
+        CurrencyCodeTestCase("usd", true),
+        CurrencyCodeTestCase("ANYSTRING", false),
+        CurrencyCodeTestCase("", false),
+        CurrencyCodeTestCase(LongString2048(), false)));
 
 struct TestCase {
   TestCase(const char* input, bool expected_valid)

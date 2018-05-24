@@ -34,13 +34,8 @@ bool ValidateShippingOptionOrPaymentItem(const T& item,
     return false;
   }
 
-  if (item.amount->currency_system.empty()) {
-    *error_message = "Currency system can't be empty";
-    return false;
-  }
-
   if (!payments::PaymentsValidators::IsValidCurrencyCodeFormat(
-          item.amount->currency, item.amount->currency_system, error_message)) {
+          item.amount->currency, error_message)) {
     return false;
   }
 

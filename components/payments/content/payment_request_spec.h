@@ -178,7 +178,6 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // the CurrencyFormatter is cached here.
   CurrencyFormatter* GetOrCreateCurrencyFormatter(
       const std::string& currency_code,
-      const std::string& currency_system,
       const std::string& locale_name);
 
   mojom::PaymentOptionsPtr options_;

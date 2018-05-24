@@ -225,9 +225,7 @@ var SerializedPaymentResponse;
           amountName + ' currency cannot be longer than ' +
           __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH + ' characters');
     }
-    if ((typeof amount.currencySystem === 'undefined' ||
-        amount.currencySystem == 'urn:iso:std:iso:4217') &&
-        !/^[a-zA-Z]{3}$/.test(amount.currency)) {
+    if (!/^[a-zA-Z]{3}$/.test(amount.currency)) {
       throw new RangeError(
           amountName + ' currency is not a valid ISO 4217 currency code');
     }
@@ -1346,7 +1344,6 @@ window.PaymentMethodData;
  * @typedef {{
  *   currency: string,
  *   value: string,
- *   currencySystem: (string|undefined)
  * }}
  */
 window.PaymentCurrencyAmount;
