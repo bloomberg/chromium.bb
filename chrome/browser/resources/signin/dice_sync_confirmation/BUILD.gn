@@ -23,6 +23,7 @@ js_library("sync_confirmation_app") {
   deps = [
     ":sync_confirmation_browser_proxy",
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:load_time_data",
   ]
 }
 
