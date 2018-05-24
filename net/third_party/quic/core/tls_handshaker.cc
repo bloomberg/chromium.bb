@@ -9,6 +9,7 @@
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_singleton.h"
+#include "third_party/boringssl/src/include/openssl/crypto.h"
 
 namespace net {
 
@@ -31,6 +32,7 @@ class SslIndexSingleton {
 
  private:
   SslIndexSingleton() {
+    CRYPTO_library_init();
     ssl_ex_data_index_handshaker_ =
         SSL_get_ex_new_index(0, nullptr, nullptr, nullptr, nullptr);
     CHECK_LE(0, ssl_ex_data_index_handshaker_);
@@ -89,6 +91,7 @@ std::unique_ptr<QuicDecrypter> TlsHandshaker::CreateDecrypter(
 
 // static
 bssl::UniquePtr<SSL_CTX> TlsHandshaker::CreateSslCtx() {
+  CRYPTO_library_init();
   bssl::UniquePtr<SSL_CTX> ssl_ctx(SSL_CTX_new(TLS_with_buffers_method()));
   SSL_CTX_set_min_proto_version(ssl_ctx.get(), TLS1_3_VERSION);
   SSL_CTX_set_max_proto_version(ssl_ctx.get(), TLS1_3_VERSION);

@@ -19,7 +19,7 @@ const size_t kNonceSize = 12;
 }  // namespace
 
 Aes128GcmDecrypter::Aes128GcmDecrypter()
-    : AeadBaseDecrypter(EVP_aead_aes_128_gcm(),
+    : AeadBaseDecrypter(EVP_aead_aes_128_gcm,
                         kKeySize,
                         kAuthTagSize,
                         kNonceSize,

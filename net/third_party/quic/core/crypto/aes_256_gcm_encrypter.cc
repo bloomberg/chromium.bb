@@ -16,7 +16,7 @@ const size_t kNonceSize = 12;
 }  // namespace
 
 Aes256GcmEncrypter::Aes256GcmEncrypter()
-    : AeadBaseEncrypter(EVP_aead_aes_256_gcm(),
+    : AeadBaseEncrypter(EVP_aead_aes_256_gcm,
                         kKeySize,
                         kAuthTagSize,
                         kNonceSize,
