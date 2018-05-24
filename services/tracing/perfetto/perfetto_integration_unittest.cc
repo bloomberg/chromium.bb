@@ -402,7 +402,13 @@ TEST_F(PerfettoIntegrationTest, PacketsEndToEndConsumerFirst) {
   ProducerClient::DeleteSoon(std::move(client));
 }
 
-TEST_F(PerfettoIntegrationTest, CommitDataRequestIsMaybeComplete) {
+#if defined(THREAD_SANITIZER)
+#define MAYBE_CommitDataRequestIsMaybeComplete \
+  DISABLED_CommitDataRequestIsMaybeComplete
+#else
+#define MAYBE_CommitDataRequestIsMaybeComplete CommitDataRequestIsMaybeComplete
+#endif
+TEST_F(PerfettoIntegrationTest, MAYBE_CommitDataRequestIsMaybeComplete) {
   const size_t kNumPackets = 100;
 
   base::RunLoop no_more_packets_runloop;
