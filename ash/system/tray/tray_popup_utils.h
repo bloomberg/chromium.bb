@@ -135,12 +135,6 @@ class TrayPopupUtils {
   static void ConfigureContainer(TriView::Container container,
                                  views::View* container_view);
 
-  // Creates a button for use in the system menu that only has a visible border
-  // when being hovered/clicked. Caller assumes ownership.
-  static views::LabelButton* CreateTrayPopupBorderlessButton(
-      views::ButtonListener* listener,
-      const base::string16& text);
-
   // Creates a button for use in the system menu. For MD, this is a prominent
   // text
   // button. For non-MD, this does the same thing as the above. Caller assumes

@@ -17,7 +17,6 @@
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/size_range_layout.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_popup_item_style.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -31,7 +30,6 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/image_view.h"
@@ -110,53 +108,6 @@ void ConfigureDefaultSizeAndFlex(TriView* tri_view,
       container,
       gfx::Size(SizeRangeLayout::kAbsoluteMaxSize, kTrayPopupItemMaxHeight));
 }
-
-class BorderlessLabelButton : public views::LabelButton {
- public:
-  BorderlessLabelButton(views::ButtonListener* listener,
-                        const base::string16& text)
-      : LabelButton(listener, text) {
-    const int kHorizontalPadding = 20;
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kHorizontalPadding)));
-    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::BUTTON);
-    style.SetupLabel(label());
-    SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
-
-    TrayPopupUtils::ConfigureTrayPopupButton(this);
-  }
-
-  ~BorderlessLabelButton() override = default;
-
-  // views::LabelButton:
-  int GetHeightForWidth(int width) const override { return kMenuButtonSize; }
-
- private:
-  // TODO(estade,bruthig): there's a lot in common here with ActionableView.
-  // Find a way to share. See related TODO on InkDropHostView::SetInkDropMode().
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    return TrayPopupUtils::CreateInkDrop(this);
-  }
-
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    return TrayPopupUtils::CreateInkDropRipple(
-        TrayPopupInkDropStyle::INSET_BOUNDS, this,
-        GetInkDropCenterBasedOnLastEvent());
-  }
-
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override {
-    return TrayPopupUtils::CreateInkDropHighlight(
-        TrayPopupInkDropStyle::INSET_BOUNDS, this);
-  }
-
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return TrayPopupUtils::CreateInkDropMask(
-        TrayPopupInkDropStyle::INSET_BOUNDS, this);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(BorderlessLabelButton);
-};
 
 }  // namespace
 
@@ -303,12 +254,6 @@ void TrayPopupUtils::ShowStickyHeaderSeparator(views::View* view,
 void TrayPopupUtils::ConfigureContainer(TriView::Container container,
                                         views::View* container_view) {
   container_view->SetLayoutManager(CreateDefaultLayoutManager(container));
-}
-
-views::LabelButton* TrayPopupUtils::CreateTrayPopupBorderlessButton(
-    views::ButtonListener* listener,
-    const base::string16& text) {
-  return new BorderlessLabelButton(listener, text);
 }
 
 views::LabelButton* TrayPopupUtils::CreateTrayPopupButton(
