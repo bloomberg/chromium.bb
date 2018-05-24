@@ -220,7 +220,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
           forControlEvents:UIControlEventTouchUpInside];
 
       [self.locationBarSteadyView.trailingButton
-          setImage:[UIImage imageNamed:@"toolbar_share"]
+          setImage:[UIImage imageNamed:@"location_bar_share"]
           forState:UIControlStateNormal];
       break;
     };
@@ -234,7 +234,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
                     action:@selector(startVoiceSearch)
           forControlEvents:UIControlEventTouchUpInside];
       [self.locationBarSteadyView.trailingButton
-          setImage:[UIImage imageNamed:@"voice_icon"]
+          setImage:[UIImage imageNamed:@"location_bar_voice"]
           forState:UIControlStateNormal];
     }
   }
