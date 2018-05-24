@@ -197,7 +197,7 @@ class EntriesCallbacks final : public FileSystemCallbacksBase {
   Persistent<OnDidGetEntriesCallback> success_callback_;
   Persistent<DirectoryReaderBase> directory_reader_;
   String base_path_;
-  PersistentHeapVector<Member<Entry>> entries_;
+  Persistent<HeapVector<Member<Entry>>> entries_;
 };
 
 class FileSystemCallbacks final : public FileSystemCallbacksBase {

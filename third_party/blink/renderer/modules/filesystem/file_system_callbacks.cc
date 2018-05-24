@@ -194,7 +194,8 @@ EntriesCallbacks::EntriesCallbacks(OnDidGetEntriesCallback* success_callback,
                               context),
       success_callback_(success_callback),
       directory_reader_(directory_reader),
-      base_path_(base_path) {
+      base_path_(base_path),
+      entries_(new HeapVector<Member<Entry>>()) {
   DCHECK(directory_reader_);
 }
 
@@ -206,12 +207,12 @@ void EntriesCallbacks::DidReadDirectoryEntry(const String& name,
       is_directory
           ? static_cast<Entry*>(DirectoryEntry::Create(filesystem, path))
           : static_cast<Entry*>(FileEntry::Create(filesystem, path));
-  entries_.push_back(entry);
+  entries_->push_back(entry);
 }
 
 void EntriesCallbacks::DidReadDirectoryEntries(bool has_more) {
   directory_reader_->SetHasMoreEntries(has_more);
-  EntryHeapVector* entries = new EntryHeapVector(std::move(entries_));
+  EntryHeapVector* entries = new EntryHeapVector(std::move(*entries_));
 
   if (!success_callback_)
     return;

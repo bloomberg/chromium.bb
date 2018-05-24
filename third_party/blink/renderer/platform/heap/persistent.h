@@ -618,6 +618,9 @@ class PersistentHeapCollectionBase : public Collection {
 
   NO_SANITIZE_ADDRESS
   void Initialize() {
+    CHECK(IsMainThread()) << "Persistent heap collections are disabled on "
+                             "non-main threads. Put the heap collection in a "
+                             "Persistent instead.";
     // FIXME: Derive affinity based on the collection.
     ThreadState* state = ThreadState::Current();
     DCHECK(state->CheckThread());

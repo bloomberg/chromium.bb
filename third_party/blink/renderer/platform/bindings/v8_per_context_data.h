@@ -160,8 +160,8 @@ class PLATFORM_EXPORT V8PerContextData final {
   // This is owned by a static hash map in V8DOMActivityLogger.
   V8DOMActivityLogger* activity_logger_;
 
-  using DataMap = PersistentHeapHashMap<const char*, Member<Data>>;
-  DataMap data_map_;
+  using DataMap = HeapHashMap<const char*, Member<Data>>;
+  Persistent<DataMap> data_map_;
 };
 
 }  // namespace blink
