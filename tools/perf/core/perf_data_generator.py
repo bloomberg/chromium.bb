@@ -494,6 +494,10 @@ BENCHMARKS_TO_OUTPUT_HISTOGRAMS = [
     'thread_times.tough_scrolling_cases',
     'tracing.tracing_with_background_memory_infra',
     'tracing.tracing_with_debug_overhead',
+    'v8.browsing_desktop',
+    'v8.browsing_mobile',
+    'v8.browsing_desktop-future',
+    'v8.browsing_mobile-future',
 ]
 
 
