@@ -47,7 +47,8 @@ blink::WebGestureEvent DummyGestureScrollUpdate(base::TimeTicks time_stamp) {
 viz::HitTestQuery* GetHitTestQuery(
     viz::HostFrameSinkManager* host_frame_sink_manager,
     const viz::FrameSinkId& frame_sink_id) {
-  DCHECK(frame_sink_id.is_valid());
+  if (!frame_sink_id.is_valid())
+    return nullptr;
   const auto& display_hit_test_query_map =
       host_frame_sink_manager->display_hit_test_query();
   const auto iter = display_hit_test_query_map.find(frame_sink_id);

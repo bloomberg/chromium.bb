@@ -1663,7 +1663,7 @@ bool RenderWidgetHostViewAura::TransformPointToCoordSpaceForView(
 }
 
 viz::FrameSinkId RenderWidgetHostViewAura::GetRootFrameSinkId() {
-  if (window_->GetHost()->compositor())
+  if (window_ && window_->GetHost() && window_->GetHost()->compositor())
     return window_->GetHost()->compositor()->frame_sink_id();
   return viz::FrameSinkId();
 }
