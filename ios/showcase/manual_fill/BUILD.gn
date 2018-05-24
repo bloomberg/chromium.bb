@@ -1,0 +1,61 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("manual_fill") {
+  sources = [
+    "ipad_keyboard_proto_view_controller.h",
+    "ipad_keyboard_proto_view_controller.mm",
+    "iphone_keyboard_proto_view_controller.h",
+    "iphone_keyboard_proto_view_controller.mm",
+    "keyboard_accessory_view.h",
+    "keyboard_accessory_view.mm",
+    "keyboard_complement_view.h",
+    "keyboard_complement_view.mm",
+    "keyboard_proto_view_controller.h",
+    "keyboard_proto_view_controller.mm",
+    "password_picker_view_controller.h",
+    "password_picker_view_controller.mm",
+  ]
+  deps = [
+    ":ic_credit_card",
+    ":ic_keyboard_arrow_down",
+    ":ic_keyboard_arrow_up",
+    ":ic_vpn_key",
+    "//base",
+    "//ios/showcase/common",
+    "//third_party/material_design_icons:ic_account_circle",
+  ]
+  libs = [
+    "UIKit.framework",
+    "WebKit.framework",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+import("//build/config/ios/asset_catalog.gni")
+
+# List of all the icons used in the demo that are not already used in Chromium.
+_image_sets = [
+  "action/ic_credit_card",
+  "communication/ic_vpn_key",
+  "hardware/ic_keyboard_arrow_down",
+  "hardware/ic_keyboard_arrow_up",
+]
+
+# Define all the imagesets using the description from _image_sets variable.
+# All imagesets are assumed to be universal and to include @1x, @2x and @3x
+# version of the images.
+foreach(_image_set, _image_sets) {
+  _category = get_path_info(_image_set, "dir")
+  _image_name = get_path_info(_image_set, "file")
+  imageset(_image_name) {
+    _imageset_dir = "//third_party/material_design_icons/src/$_category/ios/$_image_name.imageset"
+    sources = [
+      "$_imageset_dir/${_image_name}.png",
+      "$_imageset_dir/${_image_name}_2x.png",
+      "$_imageset_dir/${_image_name}_3x.png",
+      "$_imageset_dir/Contents.json",
+    ]
+  }
+}

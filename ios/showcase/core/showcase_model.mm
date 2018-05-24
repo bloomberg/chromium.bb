@@ -4,6 +4,8 @@
 
 #import "ios/showcase/core/showcase_model.h"
 
+#include "ios/chrome/browser/ui/ui_util.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -15,7 +17,23 @@
 // |kShowcaseClassForDisplayKey| and |kShowcaseClassForInstantiationKey| are
 // required. |kShowcaseUseCaseKey| is optional.
 + (NSArray<showcase::ModelRow*>*)model {
+  NSDictionary* manualFillDictionary;
+  if (IsIPadIdiom()) {
+    manualFillDictionary = @{
+      showcase::kClassForDisplayKey : @"IPadKeyboardProtoViewController",
+      showcase::kClassForInstantiationKey : @"IPadKeyboardProtoViewController",
+      showcase::kUseCaseKey : @"Manual Fill for iPad",
+    };
+  } else {
+    manualFillDictionary = @{
+      showcase::kClassForDisplayKey : @"IPhoneKeyboardProtoViewController",
+      showcase::
+      kClassForInstantiationKey : @"IPhoneKeyboardProtoViewController",
+      showcase::kUseCaseKey : @"Manual Fill for iPhone",
+    };
+  }
   return @[
+    manualFillDictionary,
     @{
       showcase::kClassForDisplayKey : @"ContentSuggestionsViewController",
       showcase::kClassForInstantiationKey : @"SCContentSuggestionsCoordinator",
