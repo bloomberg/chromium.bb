@@ -18,7 +18,14 @@ namespace mac {
 class API_AVAILABLE(macosx(10.12.2)) TouchIdAuthenticator
     : public FidoAuthenticator {
  public:
-  TouchIdAuthenticator();
+  // IsAvailable returns true iff Touch ID is enabled and enrolled on the
+  // current device.
+  static bool IsAvailable();
+
+  // CreateIfAvailable returns a TouchIdAuthenticator if IsAvailable() returns
+  // true and nullptr otherwise.
+  static std::unique_ptr<TouchIdAuthenticator> CreateIfAvailable();
+
   ~TouchIdAuthenticator() override;
 
   // TouchIdAuthenticator
@@ -33,6 +40,8 @@ class API_AVAILABLE(macosx(10.12.2)) TouchIdAuthenticator
   std::string GetId() const override;
 
  private:
+  TouchIdAuthenticator();
+
   // The profile ID identifies the user profile from which the request
   // originates. It is used to scope credentials to the profile under which they
   // were created.

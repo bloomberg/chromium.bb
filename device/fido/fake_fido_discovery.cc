@@ -93,6 +93,9 @@ ScopedFakeFidoDiscoveryFactory::CreateFidoDiscovery(
       return std::move(next_ble_discovery_);
     case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
       return std::move(next_cable_discovery_);
+    case FidoTransportProtocol::kInternal:
+      NOTREACHED() << "Internal authenticators should be handled separately.";
+      return nullptr;
   }
   NOTREACHED();
   return nullptr;

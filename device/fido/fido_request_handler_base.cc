@@ -7,9 +7,14 @@
 #include <utility>
 
 #include "base/strings/string_piece.h"
+#include "build/build_config.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_task.h"
 #include "services/service_manager/public/cpp/connector.h"
+
+#if defined(OS_MACOSX)
+#include "device/fido/mac/authenticator.h"
+#endif
 
 namespace device {
 
@@ -21,6 +26,11 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
     // requires an extension passed on from the relying party.
     if (transport == FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)
       continue;
+
+    if (transport == FidoTransportProtocol::kInternal) {
+      use_platform_authenticator_ = true;
+      continue;
+    }
 
     auto discovery = FidoDiscovery::Create(transport, connector);
     if (discovery == nullptr) {
@@ -54,6 +64,21 @@ void FidoRequestHandlerBase::Start() {
   for (const auto& discovery : discoveries_) {
     discovery->Start();
   }
+  if (use_platform_authenticator_) {
+    MaybeAddPlatformAuthenticator();
+  }
+}
+
+void FidoRequestHandlerBase::MaybeAddPlatformAuthenticator() {
+#if defined(OS_MACOSX)
+  if (__builtin_available(macOS 10.12.2, *)) {
+    auto authenticator = fido::mac::TouchIdAuthenticator::CreateIfAvailable();
+    if (!authenticator) {
+      return;
+    }
+    AddAuthenticator(std::move(authenticator));
+  }
+#endif
 }
 
 void FidoRequestHandlerBase::DiscoveryStarted(FidoDiscovery* discovery,
@@ -66,11 +91,7 @@ void FidoRequestHandlerBase::DeviceAdded(FidoDiscovery* discovery,
   // AuthenticatorGetInfo command is sent to all connected devices. If device
   // errors out, then it is assumed to support U2F protocol.
   device->set_supported_protocol(ProtocolVersion::kCtap);
-  auto* authenticator =
-      active_authenticators_
-          .emplace(device->GetId(), CreateAuthenticatorFromDevice(device))
-          .first->second.get();
-  DispatchRequest(authenticator);
+  AddAuthenticator(CreateAuthenticatorFromDevice(device));
 }
 
 std::unique_ptr<FidoDeviceAuthenticator>
@@ -86,6 +107,15 @@ void FidoRequestHandlerBase::DeviceRemoved(FidoDiscovery* discovery,
   // already removed due to processing error or due to invocation of
   // CancelOngoingTasks().
   active_authenticators_.erase(device->GetId());
+}
+
+void FidoRequestHandlerBase::AddAuthenticator(
+    std::unique_ptr<FidoAuthenticator> authenticator) {
+  DCHECK(!base::ContainsKey(active_authenticators(), authenticator->GetId()));
+  FidoAuthenticator* authenticator_ptr = authenticator.get();
+  active_authenticators_.emplace(authenticator->GetId(),
+                                 std::move(authenticator));
+  DispatchRequest(authenticator_ptr);
 }
 
 }  // namespace device

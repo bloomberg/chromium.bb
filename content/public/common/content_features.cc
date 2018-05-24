@@ -635,6 +635,11 @@ const base::Feature kIOSurfaceCapturer{"IOSurfaceCapturer",
 // entire life of the process.
 const base::Feature kMacV2Sandbox{"MacV2Sandbox",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the CTAP2 implementation should use a built-in platform
+// authenticator, where available.
+const base::Feature kWebAuthTouchId{"WebAuthenticationTouchId",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
 bool IsVideoCaptureServiceEnabledForOutOfProcess() {

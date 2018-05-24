@@ -14,6 +14,7 @@ enum class FidoTransportProtocol {
   kNearFieldCommunication,
   kBluetoothLowEnergy,
   kCloudAssistedBluetoothLowEnergy,
+  kInternal,
 };
 
 }  // namespace device

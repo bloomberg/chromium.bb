@@ -80,8 +80,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   void DeviceAdded(FidoDiscovery* discovery, FidoDevice* device) final;
   void DeviceRemoved(FidoDiscovery* discovery, FidoDevice* device) final;
 
+  void AddAuthenticator(std::unique_ptr<FidoAuthenticator> authenticator);
+
+  void MaybeAddPlatformAuthenticator();
+
   AuthenticatorMap active_authenticators_;
   std::vector<std::unique_ptr<FidoDiscovery>> discoveries_;
+
+  // If set to true at any point before calling Start(), the request handler
+  // will try to create a platform authenticator to handle the request
+  // (currently only TouchIdAuthenticator on macOS).
+  bool use_platform_authenticator_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FidoRequestHandlerBase);
 };

@@ -4,6 +4,9 @@
 
 #include "device/fido/mac/authenticator.h"
 
+#import <LocalAuthentication/LocalAuthentication.h>
+
+#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "device/fido/authenticator_selection_criteria.h"
@@ -17,7 +20,24 @@ namespace device {
 namespace fido {
 namespace mac {
 
-TouchIdAuthenticator::TouchIdAuthenticator() = default;
+// static
+// NOTE(martinkr): This is currently only called from |CreateIfAvailable| but
+// will also be needed for the implementation of
+// IsUserVerifyingPlatformAuthenticatorAvailable() (see
+// https://www.w3.org/TR/webauthn/#isUserVerifyingPlatformAuthenticatorAvailable).
+bool TouchIdAuthenticator::IsAvailable() {
+  base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
+  return
+      [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
+                           error:nil];
+}
+
+// static
+std::unique_ptr<TouchIdAuthenticator>
+TouchIdAuthenticator::CreateIfAvailable() {
+  return IsAvailable() ? base::WrapUnique(new TouchIdAuthenticator()) : nullptr;
+}
+
 TouchIdAuthenticator::~TouchIdAuthenticator() = default;
 
 void TouchIdAuthenticator::MakeCredential(
@@ -51,6 +71,8 @@ void TouchIdAuthenticator::Cancel() {
 std::string TouchIdAuthenticator::GetId() const {
   return "TouchIdAuthenticator";
 }
+
+TouchIdAuthenticator::TouchIdAuthenticator() = default;
 
 base::StringPiece TouchIdAuthenticator::GetOrInitializeProfileId() {
   // TODO(martinkr): Implement.
