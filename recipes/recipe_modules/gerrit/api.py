@@ -115,6 +115,22 @@ class GerritApi(recipe_api.RecipeApi):
     Returns:
       The description corresponding to given CL and patchset.
     """
+    ri = self.get_revision_info(host, change, patchset)
+    return ri['commit']['message']
+
+  def get_revision_info(self, host, change, patchset):
+    """
+    Returns the info for a given patchset of a given change.
+
+    Args:
+      host: Gerrit host to query.
+      change: The change number.
+      patchset: The patchset number.
+
+    Returns:
+      A dict for the target revision as documented here:
+          https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
+    """
     assert int(change), change
     assert int(patchset), patchset
     cls = self.get_changes(
@@ -126,7 +142,7 @@ class GerritApi(recipe_api.RecipeApi):
     for ri in cl['revisions'].itervalues():
       # TODO(tandrii): add support for patchset=='current'.
       if str(ri['_number']) == str(patchset):
-        return ri['commit']['message']
+        return ri
 
     raise self.m.step.InfraFailure(
         'Error querying for CL description: host:%r change:%r; patchset:%r' % (
