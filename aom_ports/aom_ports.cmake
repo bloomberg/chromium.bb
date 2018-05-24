@@ -32,6 +32,9 @@ set(AOM_PORTS_INCLUDES_X86 "${AOM_ROOT}/aom_ports/x86_abi_support.asm")
 set(AOM_PORTS_SOURCES_ARM "${AOM_ROOT}/aom_ports/arm.h"
     "${AOM_ROOT}/aom_ports/arm_cpudetect.c")
 
+set(AOM_PORTS_SOURCES_PPC "${AOM_ROOT}/aom_ports/ppc.h"
+    "${AOM_ROOT}/aom_ports/ppc_cpudetect.c")
+
 # For arm and x86 targets:
 #
 # * Creates the aom_ports build target, adds the includes in aom_ports to the
@@ -50,6 +53,10 @@ function(setup_aom_ports_targets)
     set(aom_ports_has_symbols 1)
   elseif("${AOM_TARGET_CPU}" MATCHES "arm")
     add_library(aom_ports OBJECT ${AOM_PORTS_SOURCES_ARM})
+    set(aom_ports_has_symbols 1)
+    target_sources(aom PRIVATE $<TARGET_OBJECTS:aom_ports>)
+  elseif("${AOM_TARGET_CPU}" MATCHES "ppc")
+    add_library(aom_ports OBJECT ${AOM_PORTS_SOURCES_PPC})
     set(aom_ports_has_symbols 1)
     target_sources(aom PRIVATE $<TARGET_OBJECTS:aom_ports>)
   endif()
