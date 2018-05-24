@@ -5,8 +5,9 @@
 #include "components/viz/host/hit_test/hit_test_query.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
+#include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace viz {
 namespace {
@@ -15,10 +16,11 @@ namespace {
 // ui::EventPointerType instead of EventSource.
 bool RegionMatchEventSource(EventSource event_source, uint32_t flags) {
   if (event_source == EventSource::TOUCH)
-    return (flags & mojom::kHitTestTouch) != 0u;
+    return (flags & HitTestRegionFlags::kHitTestTouch) != 0u;
   if (event_source == EventSource::MOUSE)
-    return (flags & mojom::kHitTestMouse) != 0u;
-  return (flags & (mojom::kHitTestMouse | mojom::kHitTestTouch)) != 0u;
+    return (flags & HitTestRegionFlags::kHitTestMouse) != 0u;
+  return (flags & (HitTestRegionFlags::kHitTestMouse |
+                   HitTestRegionFlags::kHitTestTouch)) != 0u;
 }
 
 bool CheckChildCount(int32_t child_count, uint32_t child_count_max) {
@@ -124,7 +126,8 @@ bool HitTestQuery::FindTargetInRegionForLocation(
   const uint32_t flags = hit_test_data_[region_index].flags;
   if (!RegionMatchEventSource(event_source, flags))
     return false;
-  if (flags & (mojom::kHitTestMine | mojom::kHitTestAsk)) {
+  if (flags &
+      (HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestAsk)) {
     target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
     target->location_in_target = location_in_target;
     target->flags = flags;
@@ -140,7 +143,7 @@ bool HitTestQuery::TransformLocationForTargetRecursively(
     uint32_t region_index,
     gfx::PointF* location_in_target) const {
   const uint32_t flags = hit_test_data_[region_index].flags;
-  if ((flags & mojom::kHitTestChildSurface) == 0u &&
+  if ((flags & HitTestRegionFlags::kHitTestChildSurface) == 0u &&
       !RegionMatchEventSource(event_source, flags)) {
     return false;
   }

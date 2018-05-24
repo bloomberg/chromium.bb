@@ -7,6 +7,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
+#include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -98,7 +99,7 @@ class DelegatedFrameHostAndroidTest : public testing::Test {
     frame.metadata.begin_frame_ack.sequence_number = 1;
     frame.metadata.device_scale_factor = 1;
     frame_host_->SubmitCompositorFrame(GetFakeId(), std::move(frame),
-                                       viz::mojom::HitTestRegionList::New());
+                                       base::nullopt);
   }
 
   void SetUpValidFrame(const gfx::Size& frame_size) {

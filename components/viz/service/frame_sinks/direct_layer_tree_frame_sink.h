@@ -84,8 +84,6 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   // ContextLostObserver implementation:
   void OnContextLost() override;
 
-  mojom::HitTestRegionListPtr CreateHitTestData(
-      const CompositorFrame& frame) const;
   void DidReceiveCompositorFrameAckInternal(
       const std::vector<ReturnedResource>& resources);
 

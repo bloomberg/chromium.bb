@@ -640,7 +640,7 @@ void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedderImpl(
 void RenderWidgetHostViewChildFrame::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
     viz::CompositorFrame frame,
-    viz::mojom::HitTestRegionListPtr hit_test_region_list) {
+    base::Optional<viz::HitTestRegionList> hit_test_region_list) {
   DCHECK(!enable_viz_);
   TRACE_EVENT0("content",
                "RenderWidgetHostViewChildFrame::OnSwapCompositorFrame");

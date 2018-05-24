@@ -241,7 +241,7 @@ void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
 void CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    mojom::HitTestRegionListPtr hit_test_region_list,
+    base::Optional<HitTestRegionList> hit_test_region_list,
     uint64_t submit_time) {
   const auto result = MaybeSubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list),
@@ -270,7 +270,7 @@ CompositorFrameSinkSupport::SubmitResult
 CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    mojom::HitTestRegionListPtr hit_test_region_list,
+    base::Optional<HitTestRegionList> hit_test_region_list,
     mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback callback) {
   TRACE_EVENT1("viz", "CompositorFrameSinkSupport::MaybeSubmitCompositorFrame",
                "FrameSinkId", frame_sink_id_.ToString());

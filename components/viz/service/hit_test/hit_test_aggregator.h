@@ -10,10 +10,10 @@
 #include "components/viz/service/hit_test/hit_test_manager.h"
 #include "components/viz/service/surfaces/surface_observer.h"
 #include "components/viz/service/viz_service_export.h"
-#include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 
 namespace viz {
 class HitTestAggregatorDelegate;
+struct HitTestRegion;
 
 // HitTestAggregator assembles the list of HitTestRegion objects that define the
 // hit test information required for one display. Active HitTestRegionList
@@ -48,8 +48,7 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
   // Appends a |region| to the HitTestRegionList structure to recursively
   // build the tree. |region_index| indicates the current index of the end of
   // the list.
-  size_t AppendRegion(size_t region_index,
-                      const mojom::HitTestRegionPtr& region);
+  size_t AppendRegion(size_t region_index, const HitTestRegion& region);
 
   // Populates the HitTestRegion element at the given element |index|.
   void SetRegionAt(size_t index,
