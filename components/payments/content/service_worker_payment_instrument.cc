@@ -110,6 +110,13 @@ void ServiceWorkerPaymentInstrument::ValidateCanMakePayment(
     return;
   }
 
+  // Returns true if we are in incognito (avoiding sending the event to the
+  // payment handler).
+  if (payment_request_delegate_->IsIncognito()) {
+    OnCanMakePayment(std::move(callback), true);
+    return;
+  }
+
   // Do not send CanMakePayment event to payment apps that have not been
   // explicitly verified.
   if (!stored_payment_app_info_->has_explicitly_verified_methods) {
