@@ -46987,6 +46987,9 @@ Full version information for the fingerprint enum values:
   <int value="61" label="no extension"/>
   <int value="62" label="unknown extension"/>
   <int value="63" label=".mhtml"/>
+  <int value="64" label=".gdoc"/>
+  <int value="65" label=".gsheet"/>
+  <int value="66" label=".gslides"/>
 </enum>
 
 <enum name="VirtualKeyboardContainerType">
