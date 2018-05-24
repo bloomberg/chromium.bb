@@ -6,12 +6,14 @@
 
 #include "base/debug/stack_trace.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_composite_reporter.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_debugging_reporter.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
 
 namespace contextual_suggestions {
 
-ContextualSuggestionsReporterProvider::ContextualSuggestionsReporterProvider() =
-    default;
+ContextualSuggestionsReporterProvider::ContextualSuggestionsReporterProvider(
+    std::unique_ptr<ContextualSuggestionsDebuggingReporter> debugging_reporter)
+    : debugging_reporter_(std::move(debugging_reporter)) {}
 
 ContextualSuggestionsReporterProvider::
     ~ContextualSuggestionsReporterProvider() = default;
@@ -22,6 +24,7 @@ ContextualSuggestionsReporterProvider::CreateReporter() {
       std::make_unique<ContextualSuggestionsCompositeReporter>();
   reporter->AddOwnedReporter(
       std::make_unique<ContextualSuggestionsMetricsReporter>());
+  reporter->AddRawReporter(debugging_reporter_.get());
   return reporter;
 }
 

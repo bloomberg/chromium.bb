@@ -54,6 +54,8 @@ static_library("ntp_snippets") {
     "contextual/contextual_suggestion.h",
     "contextual/contextual_suggestions_composite_reporter.cc",
     "contextual/contextual_suggestions_composite_reporter.h",
+    "contextual/contextual_suggestions_debugging_reporter.cc",
+    "contextual/contextual_suggestions_debugging_reporter.h",
     "contextual/contextual_suggestions_features.cc",
     "contextual/contextual_suggestions_features.h",
     "contextual/contextual_suggestions_fetch.cc",

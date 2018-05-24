@@ -16,6 +16,7 @@
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_debugging_reporter.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher_impl.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_reporter.h"
@@ -112,7 +113,9 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
               request_context.get()),
           pref_service, contextual_suggestions_database.get());
   auto reporter_provider = std::make_unique<
-      contextual_suggestions::ContextualSuggestionsReporterProvider>();
+      contextual_suggestions::ContextualSuggestionsReporterProvider>(
+      std::make_unique<
+          contextual_suggestions::ContextualSuggestionsDebuggingReporter>());
   auto* service = new ContextualContentSuggestionsService(
       std::move(contextual_suggestions_fetcher),
       std::move(cached_image_fetcher),

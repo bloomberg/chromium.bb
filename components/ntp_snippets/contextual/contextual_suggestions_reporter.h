@@ -13,6 +13,7 @@
 
 namespace contextual_suggestions {
 
+class ContextualSuggestionsDebuggingReporter;
 class ContextualSuggestionsReporter;
 
 // Class producing |ContextualSuggestionsReporter| instances. It enables
@@ -21,10 +22,18 @@ class ContextualSuggestionsReporter;
 // initialize them.
 class ContextualSuggestionsReporterProvider {
  public:
-  ContextualSuggestionsReporterProvider();
+  explicit ContextualSuggestionsReporterProvider(
+      std::unique_ptr<ContextualSuggestionsDebuggingReporter>
+          debugging_reporter);
   virtual ~ContextualSuggestionsReporterProvider();
 
   virtual std::unique_ptr<ContextualSuggestionsReporter> CreateReporter();
+
+ private:
+  // The debugging reporter is shared between instances of top-level reporter.
+  // Since multiple objects need a reference to this, it's kept as a unique
+  // pointer, and the raw pointer is given out to sub reporters.
+  std::unique_ptr<ContextualSuggestionsDebuggingReporter> debugging_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSuggestionsReporterProvider);
 };
