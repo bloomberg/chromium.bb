@@ -103,9 +103,6 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethod(ScriptWrappable* callback_th
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
-  v8::Local<v8::Object> argument_creation_context =
-      CallbackRelevantScriptState()->GetContext()->Global();
-  ALLOW_UNUSED_LOCAL(argument_creation_context);
   v8::Local<v8::Value> *argv = nullptr;
 
   // step 13. Let callResult be Call(X, thisArg, esArgs).
@@ -210,9 +207,6 @@ v8::Maybe<bool> V8TestCallbackInterface::booleanMethod(ScriptWrappable* callback
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
-  v8::Local<v8::Object> argument_creation_context =
-      CallbackRelevantScriptState()->GetContext()->Global();
-  ALLOW_UNUSED_LOCAL(argument_creation_context);
   v8::Local<v8::Value> *argv = nullptr;
 
   // step 13. Let callResult be Call(X, thisArg, esArgs).

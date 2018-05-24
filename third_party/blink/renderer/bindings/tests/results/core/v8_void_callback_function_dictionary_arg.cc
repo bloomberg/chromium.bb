@@ -22,7 +22,7 @@
 namespace blink {
 
 v8::Maybe<void> V8VoidCallbackFunctionDictionaryArg::Invoke(ScriptWrappable* callback_this_value, const TestDictionary& arg) {
-  // This function implements "invoke" steps in
+  // This function implements "invoke" algorithm defined in
   // "3.10. Invoking callback functions".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
 

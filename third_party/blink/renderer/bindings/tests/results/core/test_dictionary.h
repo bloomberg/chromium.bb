@@ -388,9 +388,9 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   void setTreatNullAsStringSequenceMember(const Vector<String>&);
 
-  bool hasUint8ArrayMember() const { return uint8_array_member_; }
+  bool hasUint8ArrayMember() const { return uint_8_array_member_; }
   NotShared<DOMUint8Array> uint8ArrayMember() const {
-    return uint8_array_member_;
+    return uint_8_array_member_;
   }
   inline void setUint8ArrayMember(NotShared<DOMUint8Array>);
 
@@ -529,7 +529,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   HeapVector<Member<TestInterfaceImplementation>> test_interface_sequence_member_;
   HeapVector<Member<TestObject>> test_object_sequence_member_;
   Vector<String> treat_null_as_string_sequence_member_;
-  Member<DOMUint8Array> uint8_array_member_;
+  Member<DOMUint8Array> uint_8_array_member_;
   HeapVector<std::pair<String, LongOrBoolean>> union_in_record_member_;
   DoubleOrDoubleSequence union_member_with_sequence_default_;
   HeapVector<std::pair<String, DoubleOrString>> union_or_null_record_member_;
@@ -663,7 +663,7 @@ void TestDictionary::setTestInterfaceOrNullMemberToNull() {
 }
 
 void TestDictionary::setUint8ArrayMember(NotShared<DOMUint8Array> value) {
-  uint8_array_member_ = value.View();
+  uint_8_array_member_ = value.View();
 }
 
 void TestDictionary::setUnrestrictedDoubleMember(double value) {
