@@ -17,9 +17,11 @@
 #include "extensions/common/extension_id.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+namespace mojom {
+class URLLoaderFactory;
 }
+}  // namespace network
 
 namespace extensions {
 
@@ -71,11 +73,12 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
 
   // Parameters to fetch verified_contents.json.
   struct FetchParams {
-    net::URLRequestContextGetter* request_context;
+    network::mojom::URLLoaderFactory* url_loader_factory;
     GURL fetch_url;
 
-    FetchParams(net::URLRequestContextGetter* request_context,
+    FetchParams(network::mojom::URLLoaderFactory* url_loader_factory,
                 const GURL& fetch_url);
+    ~FetchParams();
 
     FetchParams(const FetchParams& other);
     FetchParams& operator=(const FetchParams& other);
@@ -145,10 +148,17 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
               std::unique_ptr<ComputedHashes::Reader> computed_hashes);
   ~ContentHash();
 
-  static void FetchVerifiedContents(const ExtensionKey& extension_key,
-                                    const FetchParams& fetch_params,
-                                    const IsCancelledCallback& is_cancelled,
-                                    CreatedCallback created_callback);
+  static void FetchVerifiedContentsOnIOThread(
+      const ExtensionKey& extension_key,
+      const FetchParams& fetch_params,
+      const IsCancelledCallback& is_cancelled,
+      CreatedCallback created_callback);
+  static void DidFetchVerifiedContentsOnIOThread(
+      CreatedCallback created_callback,
+      const IsCancelledCallback& is_cancelled,
+      const ExtensionKey& key,
+      const FetchParams& fetch_params,
+      std::unique_ptr<std::string> fetched_contents);
   static void DidFetchVerifiedContents(
       CreatedCallback created_callback,
       const IsCancelledCallback& is_cancelled,

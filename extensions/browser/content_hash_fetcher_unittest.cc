@@ -23,9 +23,11 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/file_util.h"
-#include "net/url_request/test_url_request_interceptor.h"
-#include "net/url_request/url_request_interceptor.h"
-#include "net/url_request/url_request_test_util.h"
+#include "net/http/http_status_code.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/zip.h"
 
@@ -95,13 +97,12 @@ class ContentHashWaiter {
 class ContentHashFetcherTest : public ExtensionsTest {
  public:
   ContentHashFetcherTest()
-      // We need a real IO thread to be able to intercept the network request
+      // We need a real IO thread to be able to entercept the network request
       // for the missing verified_contents.json file.
-      : ExtensionsTest(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
-    request_context_ = new net::TestURLRequestContextGetter(
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::IO));
-  }
+      : ExtensionsTest(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+        test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {}
   ~ContentHashFetcherTest() override {}
 
   bool LoadTestExtension() {
@@ -137,7 +138,8 @@ class ContentHashFetcherTest : public ExtensionsTest {
             ContentHash::ExtensionKey(extension_->id(), extension_->path(),
                                       extension_->version(),
                                       delegate_->GetPublicKey()),
-            ContentHash::FetchParams(request_context(), fetch_url_));
+            ContentHash::FetchParams(test_shared_loader_factory_.get(),
+                                     fetch_url_));
 
     delegate_.reset();
 
@@ -162,20 +164,20 @@ class ContentHashFetcherTest : public ExtensionsTest {
   void RegisterInterception(const GURL& url,
                             const base::FilePath& response_path) {
     ASSERT_TRUE(base::PathExists(response_path));
-    ASSERT_FALSE(interceptor_);
-    interceptor_ = std::make_unique<net::TestURLRequestInterceptor>(
-        url.scheme(), url.host(),
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::IO),
-        GetExtensionFileTaskRunner());
-    interceptor_->SetResponse(url, response_path);
+    std::string data;
+    EXPECT_TRUE(ReadFileToString(response_path, &data));
+    constexpr size_t kMaxFileSize = 1024 * 2;  // Using 2k file size for safety.
+    ASSERT_LE(data.length(), kMaxFileSize);
+    test_url_loader_factory_.AddResponse(url.spec(), data);
+  }
+
+  void RegisterInterceptionWithFailure(const GURL& url, int net_error) {
+    test_url_loader_factory_.AddResponse(
+        GURL(url), network::ResourceResponseHead(), std::string(),
+        network::URLLoaderCompletionStatus(net_error));
   }
 
  private:
-  net::URLRequestContextGetter* request_context() {
-    return request_context_.get();
-  }
-
   // Helper to get files from our subdirectory in the general extensions test
   // data dir.
   base::FilePath GetTestPath(const base::FilePath& relative_path) {
@@ -200,8 +202,9 @@ class ContentHashFetcherTest : public ExtensionsTest {
     return extension;
   }
 
-  std::unique_ptr<net::TestURLRequestInterceptor> interceptor_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+
   base::ScopedTempDir temp_dir_;
 
   GURL fetch_url_;
@@ -262,7 +265,7 @@ TEST_F(ContentHashFetcherTest, FetchInvalidVerifiedContents) {
 TEST_F(ContentHashFetcherTest, Fetch404VerifiedContents) {
   ASSERT_TRUE(LoadTestExtension());
 
-  // NOTE: No RegisterInterception(), hash fetch will result in 404.
+  RegisterInterceptionWithFailure(fetch_url(), net::HTTP_NOT_FOUND);
 
   // Make sure the fetch was *not* successful.
   std::unique_ptr<ContentHashFetcherResult> result = DoHashFetch();
