@@ -347,8 +347,6 @@ _COPY_PATHS_CHROME = (
     Path('keyboard_resources.pak'),
     Path('libassistant.so', exe=True, optional=True),
     Path('libmojo_core.so', exe=True),
-    Path('libmojo_core_arc32.so', exe=True),
-    Path('libmojo_core_arc64.so', exe=True),
     # Widevine CDM is already pre-stripped.  In addition, it doesn't
     # play well with the binutils stripping tools, so skip stripping.
     Path('libwidevinecdm.so',
