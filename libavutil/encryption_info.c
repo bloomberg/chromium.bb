@@ -64,6 +64,9 @@ AVEncryptionInfo *av_encryption_info_clone(const AVEncryptionInfo *info)
 {
     AVEncryptionInfo *ret;
 
+    if (!info)
+        return NULL;
+
     ret = av_encryption_info_alloc(info->subsample_count, info->key_id_size, info->iv_size);
     if (!ret)
         return NULL;

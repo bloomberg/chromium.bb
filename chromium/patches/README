@@ -109,3 +109,8 @@ Current patches:
 
   libavcodec/mpegaudio_parser.c
     Don't invoke trailing garbage discard for every flush. (261398f81e5).
+
+  libavutil/encryption_info.c
+    Add null check for encryption info.  Sent for upstream approval.
+    https://crbug.com/846009 .
+
