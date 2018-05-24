@@ -35,10 +35,10 @@ class Element;
 class HTMLScriptElementOrSVGScriptElement;
 class ScriptLoader;
 
+ScriptLoader* ScriptLoaderFromElement(Element*);
+
 class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
  public:
-  static ScriptElementBase* FromElementIfPossible(Element*);
-
   virtual bool AsyncAttributeValue() const = 0;
   virtual String CharsetAttributeValue() const = 0;
   virtual String CrossOriginAttributeValue() const = 0;
@@ -66,16 +66,14 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
   virtual void SetScriptElementForBinding(
       HTMLScriptElementOrSVGScriptElement&) = 0;
 
-  virtual ScriptLoader* Loader() const = 0;
+  virtual void DispatchLoadEvent() = 0;
+  virtual void DispatchErrorEvent() = 0;
 
  protected:
   ScriptLoader* InitializeScriptLoader(bool parser_inserted,
                                        bool already_started);
 
-  friend class ScriptLoader;
-  friend class PendingScript;
-  virtual void DispatchLoadEvent() = 0;
-  virtual void DispatchErrorEvent() = 0;
+  virtual ScriptLoader* Loader() const = 0;
 };
 
 }  // namespace blink

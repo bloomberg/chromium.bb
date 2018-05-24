@@ -50,18 +50,18 @@ namespace {
 // TODO(bmcquade): move this to a shared location if we find ourselves wanting
 // to trace similar data elsewhere in the codebase.
 std::unique_ptr<TracedValue> GetTraceArgsForScriptElement(
-    ScriptElementBase* element,
+    Document& document,
     const TextPosition& text_position,
     const KURL& url) {
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   if (!url.IsNull())
     value->SetString("url", url.GetString());
-  if (element->GetDocument().GetFrame()) {
+  if (document.GetFrame()) {
     value->SetString(
         "frame",
         String::Format("0x%" PRIx64,
-                       static_cast<uint64_t>(reinterpret_cast<intptr_t>(
-                           element->GetDocument().GetFrame()))));
+                       static_cast<uint64_t>(
+                           reinterpret_cast<intptr_t>(document.GetFrame()))));
   }
   if (text_position.line_.ZeroBasedInt() > 0 ||
       text_position.column_.ZeroBasedInt() > 0) {
@@ -74,9 +74,9 @@ std::unique_ptr<TracedValue> GetTraceArgsForScriptElement(
 std::unique_ptr<TracedValue> GetTraceArgsForScriptElement(
     const PendingScript* pending_script) {
   DCHECK(pending_script);
-  return GetTraceArgsForScriptElement(pending_script->GetElement(),
-                                      pending_script->StartingPosition(),
-                                      pending_script->UrlForTracing());
+  return GetTraceArgsForScriptElement(
+      pending_script->GetElement()->GetDocument(),
+      pending_script->StartingPosition(), pending_script->UrlForTracing());
 }
 
 void DoExecuteScript(PendingScript* pending_script, const KURL& document_url) {
@@ -221,7 +221,7 @@ void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
     parser_blocking_script_ = nullptr;
   }
 
-  if (pending_script->GetElement()->Loader()) {
+  {
     // <spec label="scriptEndTag" step="B.7">Increment the parser's script
     // nesting level by one (it should be zero before this step, so this sets it
     // to one).</spec>
@@ -477,15 +477,11 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
   DCHECK(document_);
   DCHECK(!HasParserBlockingScript());
   {
-    ScriptElementBase* element =
-        ScriptElementBase::FromElementIfPossible(script);
-    DCHECK(element);
-    ScriptLoader* script_loader = element->Loader();
-    DCHECK(script_loader);
+    ScriptLoader* script_loader = ScriptLoaderFromElement(script);
 
     // FIXME: Align trace event name and function name.
     TRACE_EVENT1("blink", "HTMLParserScriptRunner::execute", "data",
-                 GetTraceArgsForScriptElement(element, script_start_position,
+                 GetTraceArgsForScriptElement(*document_, script_start_position,
                                               NullURL()));
     DCHECK(script_loader->IsParserInserted());
 

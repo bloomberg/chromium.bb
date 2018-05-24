@@ -762,7 +762,6 @@ void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
     return;
   }
 
-  DCHECK_EQ(pending_script->GetElement()->Loader(), this);
   context_document->GetScriptRunner()->NotifyScriptReady(pending_script);
   pending_script_->StopWatchingForLoad();
   pending_script_ = nullptr;
