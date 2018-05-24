@@ -53,6 +53,7 @@ class CORE_EXPORT StyleInvalidator {
 
   bool MatchesCurrentInvalidationSets(Element&) const;
   bool MatchesCurrentInvalidationSetsAsSlotted(Element&) const;
+  bool MatchesCurrentInvalidationSetsAsParts(Element&) const;
 
   bool HasInvalidationSets() const {
     return !WholeSubtreeInvalid() && invalidation_sets_.size();
@@ -70,6 +71,9 @@ class CORE_EXPORT StyleInvalidator {
   }
   bool InvalidatesSlotted() const {
     return invalidation_flags_.InvalidatesSlotted();
+  }
+  bool InvalidatesParts() const {
+    return invalidation_flags_.InvalidatesParts();
   }
 
   PendingInvalidationMap& pending_invalidation_map_;

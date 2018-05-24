@@ -16,7 +16,8 @@ class InvalidationFlags {
         whole_subtree_invalid_(false),
         tree_boundary_crossing_(false),
         insertion_point_crossing_(false),
-        invalidates_slotted_(false) {}
+        invalidates_slotted_(false),
+        invalidates_parts_(false) {}
 
   // Merges two sets of flags together by orring all fields.
   void Merge(const InvalidationFlags& other);
@@ -40,6 +41,9 @@ class InvalidationFlags {
   bool InvalidatesSlotted() const { return invalidates_slotted_; }
   void SetInvalidatesSlotted(bool value) { invalidates_slotted_ = value; }
 
+  bool InvalidatesParts() const { return invalidates_parts_; }
+  void SetInvalidatesParts(bool value) { invalidates_parts_ = value; }
+
  private:
   // If true, all descendants which are custom pseudo elements must be
   // invalidated.
@@ -53,6 +57,8 @@ class InvalidationFlags {
   bool insertion_point_crossing_ : 1;
   // If true, distributed nodes of <slot> elements need to be invalidated.
   bool invalidates_slotted_ : 1;
+  // If true, parts inside this node's shadow tree need to be invalidated.
+  bool invalidates_parts_ : 1;
 };
 
 }  // namespace blink

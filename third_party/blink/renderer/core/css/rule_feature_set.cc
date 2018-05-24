@@ -419,6 +419,10 @@ void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSimpleSelector(
     case CSSSelector::kPseudoSlotted:
       features.invalidation_flags.SetInvalidatesSlotted(true);
       return;
+    case CSSSelector::kPseudoPart:
+      features.invalidation_flags.SetInvalidatesParts(true);
+      features.invalidation_flags.SetTreeBoundaryCrossing(true);
+      return;
     default:
       return;
   }
@@ -476,6 +480,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoDefined:
       case CSSSelector::kPseudoVideoPersistent:
       case CSSSelector::kPseudoVideoPersistentAncestor:
+      case CSSSelector::kPseudoPart:
         return &EnsurePseudoInvalidationSet(selector.GetPseudoType(), type,
                                             position);
       case CSSSelector::kPseudoFirstOfType:
@@ -712,6 +717,8 @@ void RuleFeatureSet::AddFeaturesToInvalidationSet(
     invalidation_set.SetInvalidatesSlotted();
   if (features.invalidation_flags.WholeSubtreeInvalid())
     invalidation_set.SetWholeSubtreeInvalid();
+  if (features.invalidation_flags.InvalidatesParts())
+    invalidation_set.SetInvalidatesParts();
   if (features.content_pseudo_crossing ||
       features.invalidation_flags.WholeSubtreeInvalid())
     return;
@@ -792,6 +799,8 @@ void RuleFeatureSet::AddFeaturesToInvalidationSetsForSimpleSelector(
     descendant_features.invalidation_flags.SetTreeBoundaryCrossing(true);
   if (simple_selector.IsV0InsertionPointCrossing())
     descendant_features.invalidation_flags.SetInsertionPointCrossing(true);
+  if (simple_selector.GetPseudoType() == CSSSelector::kPseudoPart)
+    descendant_features.invalidation_flags.SetInvalidatesParts(true);
 
   AddFeaturesToInvalidationSetsForSelectorList(
       simple_selector, sibling_features, descendant_features);
@@ -1239,7 +1248,8 @@ void RuleFeatureSet::InvalidationSetFeatures::Add(
 
 bool RuleFeatureSet::InvalidationSetFeatures::HasFeatures() const {
   return !classes.IsEmpty() || !attributes.IsEmpty() || !ids.IsEmpty() ||
-         !tag_names.IsEmpty() || invalidation_flags.InvalidateCustomPseudo();
+         !tag_names.IsEmpty() || invalidation_flags.InvalidateCustomPseudo() ||
+         invalidation_flags.InvalidatesParts();
 }
 
 bool RuleFeatureSet::InvalidationSetFeatures::HasIdClassOrAttribute() const {

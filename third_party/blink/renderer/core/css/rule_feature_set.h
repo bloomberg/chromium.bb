@@ -203,6 +203,7 @@ class CORE_EXPORT RuleFeatureSet {
     bool content_pseudo_crossing = false;
     bool has_nth_pseudo = false;
     bool has_features_for_rule_set_invalidation = false;
+    bool invalidates_parts = false;  // ::part() selector
   };
 
   static void ExtractInvalidationSetFeature(const CSSSelector&,

@@ -105,6 +105,12 @@ bool InvalidationSet::InvalidatesElement(Element& element) const {
     }
   }
 
+  if (element.HasPartName() && invalidation_flags_.InvalidatesParts()) {
+    TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
+        element, kInvalidationSetMatchedPart, *this, "");
+    return true;
+  }
+
   return false;
 }
 
@@ -177,6 +183,9 @@ void InvalidationSet::Combine(const InvalidationSet& other) {
 
   if (other.InvalidatesSlotted())
     SetInvalidatesSlotted();
+
+  if (other.InvalidatesParts())
+    SetInvalidatesParts();
 
   if (other.classes_) {
     for (const auto& class_name : *other.classes_)
@@ -267,6 +276,7 @@ void InvalidationSet::SetWholeSubtreeInvalid() {
   invalidation_flags_.SetTreeBoundaryCrossing(false);
   invalidation_flags_.SetInsertionPointCrossing(false);
   invalidation_flags_.SetInvalidatesSlotted(false);
+  invalidation_flags_.SetInvalidatesParts(false);
   classes_ = nullptr;
   ids_ = nullptr;
   tag_names_ = nullptr;
@@ -303,6 +313,8 @@ void InvalidationSet::ToTracedValue(TracedValue* value) const {
     value->SetBoolean("insertionPointCrossing", true);
   if (invalidation_flags_.InvalidatesSlotted())
     value->SetBoolean("invalidatesSlotted", true);
+  if (invalidation_flags_.InvalidatesParts())
+    value->SetBoolean("invalidatesParts", true);
 
   if (ids_) {
     value->BeginArray("ids");

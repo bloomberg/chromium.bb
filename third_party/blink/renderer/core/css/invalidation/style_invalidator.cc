@@ -62,6 +62,8 @@ void StyleInvalidator::PushInvalidationSet(
     invalidation_flags_.SetInsertionPointCrossing(true);
   if (invalidation_set.InvalidatesSlotted())
     invalidation_flags_.SetInvalidatesSlotted(true);
+  if (invalidation_set.InvalidatesParts())
+    invalidation_flags_.SetInvalidatesParts(true);
   invalidation_sets_.push_back(&invalidation_set);
 }
 
@@ -92,6 +94,19 @@ bool StyleInvalidator::MatchesCurrentInvalidationSetsAsSlotted(
 
   for (auto* const invalidation_set : invalidation_sets_) {
     if (!invalidation_set->InvalidatesSlotted())
+      continue;
+    if (invalidation_set->InvalidatesElement(element))
+      return true;
+  }
+  return false;
+}
+
+bool StyleInvalidator::MatchesCurrentInvalidationSetsAsParts(
+    Element& element) const {
+  DCHECK(invalidation_flags_.InvalidatesParts());
+
+  for (auto* const invalidation_set : invalidation_sets_) {
+    if (!invalidation_set->InvalidatesParts())
       continue;
     if (invalidation_set->InvalidatesElement(element))
       return true;
