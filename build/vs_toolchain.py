@@ -205,8 +205,7 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
   # DEPOT_TOOLS_WIN_TOOLCHAIN=0 and vcvarsall.bat has not been run.
   win_sdk_dir = os.path.normpath(
       os.environ.get('WINDOWSSDKDIR',
-                     os.path.expandvars('%ProgramFiles(x86)%'
-                                        '\\Windows Kits\\10')))
+                     'C:\\Program Files (x86)\\Windows Kits\\10'))
   ucrt_dll_dirs = os.path.join(win_sdk_dir, 'Redist', 'ucrt', 'DLLs',
                                target_cpu)
   ucrt_files = glob.glob(os.path.join(ucrt_dll_dirs, 'api-ms-win-*.dll'))
