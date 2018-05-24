@@ -472,7 +472,9 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
     NGInlineBoxState* box,
     NGLineBoxFragmentBuilder::ChildList* line_box,
     FontBaseline baseline_type) {
-  // Compute descendants that depend on the layout size of this box if any.
+  // Some 'vertical-align' values require the size of their parents. Align all
+  // such descendant boxes that require the size of this box; they are queued in
+  // |pending_descendants|.
   LayoutUnit baseline_shift;
   if (!box->pending_descendants.IsEmpty()) {
     for (auto& child : box->pending_descendants) {
@@ -524,9 +526,15 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
   if (vertical_align == EVerticalAlign::kBaseline)
     return kPositionNotPending;
 
-  // 'vertical-align' aplies only to inline-level elements.
+  // 'vertical-align' aligns boxes relative to themselves, to their parent
+  // boxes, or to the line box, depends on the value.
+  // Because |box| is an item in |stack_|, |box[-1]| is its parent box.
+  // If this box doesn't have a parent; i.e., this box is a line box,
+  // 'vertical-align' has no effect.
+  DCHECK(box >= stack_.begin() && box < stack_.end());
   if (box == stack_.begin())
     return kPositionNotPending;
+  NGInlineBoxState& parent_box = box[-1];
 
   // Check if there are any fragments to move.
   unsigned fragment_end = line_box->size();
@@ -535,10 +543,10 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
 
   switch (vertical_align) {
     case EVerticalAlign::kSub:
-      baseline_shift = style.ComputedFontSizeAsFixed() / 5 + 1;
+      baseline_shift = parent_box.style->ComputedFontSizeAsFixed() / 5 + 1;
       break;
     case EVerticalAlign::kSuper:
-      baseline_shift = -(style.ComputedFontSizeAsFixed() / 3 + 1);
+      baseline_shift = -(parent_box.style->ComputedFontSizeAsFixed() / 3 + 1);
       break;
     case EVerticalAlign::kLength: {
       // 'Percentages: refer to the 'line-height' of the element itself'.
@@ -552,9 +560,10 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
     }
     case EVerticalAlign::kMiddle:
       baseline_shift = (box->metrics.ascent - box->metrics.descent) / 2;
-      if (const SimpleFontData* font_data = style.GetFont().PrimaryFont()) {
+      if (const SimpleFontData* parent_font_data =
+              parent_box.style->GetFont().PrimaryFont()) {
         baseline_shift -= LayoutUnit::FromFloatRound(
-            font_data->GetFontMetrics().XHeight() / 2);
+            parent_font_data->GetFontMetrics().XHeight() / 2);
       }
       break;
     case EVerticalAlign::kBaselineMiddle:
@@ -568,8 +577,7 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
       return kPositionPending;
     default:
       // Other values require the layout size of the parent box.
-      SECURITY_CHECK(box != stack_.begin());
-      box[-1].pending_descendants.push_back(NGPendingPositions{
+      parent_box.pending_descendants.push_back(NGPendingPositions{
           box->fragment_start, fragment_end, box->metrics, vertical_align});
       return kPositionPending;
   }
