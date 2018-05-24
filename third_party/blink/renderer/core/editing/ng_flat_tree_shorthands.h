@@ -9,6 +9,7 @@
 
 namespace blink {
 
+struct NGCaretPosition;
 class LayoutBlockFlow;
 struct LocalCaretRect;
 
@@ -17,6 +18,8 @@ struct LocalCaretRect;
 // functions that accept DOM tree variants only.
 
 const LayoutBlockFlow* NGInlineFormattingContextOf(const PositionInFlatTree&);
+
+NGCaretPosition ComputeNGCaretPosition(const PositionInFlatTreeWithAffinity&);
 
 LocalCaretRect ComputeNGLocalCaretRect(const PositionInFlatTreeWithAffinity&);
 
