@@ -1738,15 +1738,26 @@ public class ToolbarPhone extends ToolbarLayout
     public void updateButtonVisibility() {
         if (mHomeButton == null) return;
 
-        if (mIsHomeButtonEnabled) {
-            mHomeButton.setVisibility(urlHasFocus() || isTabSwitcherAnimationRunning()
-                    ? INVISIBLE : VISIBLE);
-            mHomeButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
-            mBrowsingModeViews.add(mHomeButton);
+        boolean isNTP = getToolbarDataProvider().getNewTabPageForCurrentTab() != null;
+        boolean hideHomeButton =
+                FeatureUtilities.isNewTabPageButtonEnabled() ? isNTP : !mIsHomeButtonEnabled;
+        if (hideHomeButton) {
+            removeHomeButton();
         } else {
-            mHomeButton.setVisibility(GONE);
-            mBrowsingModeViews.remove(mHomeButton);
+            addHomeButton();
         }
+    }
+
+    private void removeHomeButton() {
+        mHomeButton.setVisibility(GONE);
+        mBrowsingModeViews.remove(mHomeButton);
+    }
+
+    private void addHomeButton() {
+        mHomeButton.setVisibility(
+                urlHasFocus() || isTabSwitcherAnimationRunning() ? INVISIBLE : VISIBLE);
+        mHomeButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
+        mBrowsingModeViews.add(mHomeButton);
     }
 
     private ObjectAnimator createEnterTabSwitcherModeAnimation() {
