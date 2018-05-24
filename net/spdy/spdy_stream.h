@@ -156,7 +156,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   RequestPriority priority() const { return priority_; }
 
-  // Update priority and send PRIORITY frames on the wire if necessary.
+  // Update priority.
   void SetPriority(RequestPriority priority);
 
   int32_t send_window_size() const { return send_window_size_; }
