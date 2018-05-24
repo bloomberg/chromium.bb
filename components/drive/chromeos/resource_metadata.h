@@ -56,12 +56,6 @@ class ResourceMetadata {
   // Resets this object.
   FileError Reset();
 
-  // Returns the largest changestamp.
-  FileError GetLargestChangestamp(int64_t* out_value);
-
-  // Sets the largest changestamp.
-  FileError SetLargestChangestamp(int64_t value);
-
   // Returns the start page token for the users default corpus.
   FileError GetStartPageToken(std::string* out_value);
 

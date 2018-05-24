@@ -235,20 +235,6 @@ void ResourceMetadata::DestroyOnBlockingPool() {
   delete this;
 }
 
-FileError ResourceMetadata::GetLargestChangestamp(int64_t* out_value) {
-  DCHECK(blocking_task_runner_->RunsTasksInCurrentSequence());
-  return storage_->GetLargestChangestamp(out_value);
-}
-
-FileError ResourceMetadata::SetLargestChangestamp(int64_t value) {
-  DCHECK(blocking_task_runner_->RunsTasksInCurrentSequence());
-
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-    return FILE_ERROR_NO_LOCAL_SPACE;
-
-  return storage_->SetLargestChangestamp(value);
-}
-
 FileError ResourceMetadata::GetStartPageToken(std::string* out_value) {
   DCHECK(blocking_task_runner_->RunsTasksInCurrentSequence());
   return storage_->GetStartPageToken(out_value);

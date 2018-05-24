@@ -171,16 +171,6 @@ class ResourceMetadataTest : public testing::Test {
       resource_metadata_;
 };
 
-TEST_F(ResourceMetadataTest, LargestChangestamp) {
-  const int64_t kChangestamp = 123456;
-  EXPECT_EQ(FILE_ERROR_OK,
-            resource_metadata_->SetLargestChangestamp(kChangestamp));
-  int64_t changestamp = 0;
-  EXPECT_EQ(FILE_ERROR_OK,
-            resource_metadata_->GetLargestChangestamp(&changestamp));
-  EXPECT_EQ(kChangestamp, changestamp);
-}
-
 TEST_F(ResourceMetadataTest, StartPageToken) {
   constexpr char kStartPageToken[] = "1234567";
   EXPECT_EQ(FILE_ERROR_OK,
