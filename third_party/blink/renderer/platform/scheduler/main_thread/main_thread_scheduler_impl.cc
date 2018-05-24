@@ -303,11 +303,10 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
   ipc_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
       MainThreadTaskQueue::QueueType::kIPC));
 
-  // TODO(kraynov): Ditch kDeprecatedNone here.
-  v8_task_runner_ =
-      TaskQueueWithTaskType::Create(v8_task_queue_, TaskType::kDeprecatedNone);
+  v8_task_runner_ = TaskQueueWithTaskType::Create(
+      v8_task_queue_, TaskType::kMainThreadTaskQueueV8);
   compositor_task_runner_ = TaskQueueWithTaskType::Create(
-      compositor_task_queue_, TaskType::kDeprecatedNone);
+      compositor_task_queue_, TaskType::kMainThreadTaskQueueCompositor);
 
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "MainThreadScheduler",
