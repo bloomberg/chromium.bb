@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
 #include "chrome/common/chrome_features.h"
 #include "components/prefs/pref_service.h"
 
@@ -96,7 +95,7 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
 
     if (!crostini_manager->IsCrosTerminaInstalled() ||
         !IsCrostiniEnabled(profile)) {
-      CrostiniInstallerView::Show(profile);
+      ShowCrostiniInstallerView(profile);
     } else {
       crostini_manager->RestartCrostini(
           profile, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,

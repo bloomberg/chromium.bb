@@ -3641,10 +3641,6 @@ split_static_library("ui") {
         "app_list/crostini/crostini_app_item.h",
         "app_list/crostini/crostini_app_model_builder.cc",
         "app_list/crostini/crostini_app_model_builder.h",
-        "app_list/crostini/crostini_installer_view.cc",
-        "app_list/crostini/crostini_installer_view.h",
-        "app_list/crostini/crostini_uninstaller_view.cc",
-        "app_list/crostini/crostini_uninstaller_view.h",
         "app_list/internal_app/internal_app_icon_loader.cc",
         "app_list/internal_app/internal_app_icon_loader.h",
         "app_list/internal_app/internal_app_item.cc",
@@ -3690,6 +3686,10 @@ split_static_library("ui") {
         "ash/launcher/shelf_spinner_item_controller.cc",
         "ash/launcher/shelf_spinner_item_controller.h",
         "views/arc_app_dialog_view.cc",
+        "views/crostini/crostini_installer_view.cc",
+        "views/crostini/crostini_installer_view.h",
+        "views/crostini/crostini_uninstaller_view.cc",
+        "views/crostini/crostini_uninstaller_view.h",
       ]
       deps += [ "//mash/common" ]
     }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_INSTALLER_VIEW_H_
-#define CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_INSTALLER_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_INSTALLER_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_INSTALLER_VIEW_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -106,4 +106,4 @@ class CrostiniInstallerView
   DISALLOW_COPY_AND_ASSIGN(CrostiniInstallerView);
 };
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_INSTALLER_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_INSTALLER_VIEW_H_

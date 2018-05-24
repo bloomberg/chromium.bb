@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
+#include "chrome/browser/ui/views/crostini/crostini_installer_view.h"
 
 #include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"

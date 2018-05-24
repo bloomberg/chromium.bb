@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/crostini/crostini_uninstaller_view.h"
+#include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
 
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -22,12 +23,11 @@
 #include "ui/views/layout/layout_provider.h"
 
 namespace {
+
 CrostiniUninstallerView* g_crostini_uninstaller_view = nullptr;
 
-// TODO(nverne): We should get this from a ChromeLayoutProvider
-constexpr int kDialogWidth = 448;
-
 constexpr char kCrostiniUninstallResultHistogram[] = "Crostini.UninstallResult";
+
 }  // namespace
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -38,6 +38,10 @@ enum class CrostiniUninstallerView::UninstallResult {
   kSuccess = 2,
   kCount
 };
+
+void ShowCrostiniUninstallerView(Profile* profile) {
+  return CrostiniUninstallerView::Show(profile);
+}
 
 void CrostiniUninstallerView::Show(Profile* profile) {
   DCHECK(IsCrostiniUIAllowedForProfile(profile));
@@ -108,9 +112,10 @@ bool CrostiniUninstallerView::Cancel() {
 }
 
 gfx::Size CrostiniUninstallerView::CalculatePreferredSize() const {
-  int height =
-      GetLayoutManager()->GetPreferredHeightForWidth(this, kDialogWidth);
-  return gfx::Size(kDialogWidth, height);
+  const int dialog_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                               DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
+                           margins().width();
+  return gfx::Size(dialog_width, GetHeightForWidth(dialog_width));
 }
 
 CrostiniUninstallerView::CrostiniUninstallerView(Profile* profile)

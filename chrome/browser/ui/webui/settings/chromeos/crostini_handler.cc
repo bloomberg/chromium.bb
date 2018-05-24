@@ -8,8 +8,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
-#include "chrome/browser/ui/app_list/crostini/crostini_uninstaller_view.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -33,12 +31,12 @@ void CrostiniHandler::RegisterMessages() {
 void CrostiniHandler::HandleRequestCrostiniInstallerView(
     const base::ListValue* args) {
   AllowJavascript();
-  CrostiniInstallerView::Show(Profile::FromWebUI(web_ui()));
+  ShowCrostiniInstallerView(Profile::FromWebUI(web_ui()));
 }
 
 void CrostiniHandler::HandleRequestRemoveCrostini(const base::ListValue* args) {
   AllowJavascript();
-  CrostiniUninstallerView::Show(Profile::FromWebUI(web_ui()));
+  ShowCrostiniUninstallerView(Profile::FromWebUI(web_ui()));
 }
 
 }  // namespace settings

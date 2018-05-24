@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_UNINSTALLER_VIEW_H_
-#define CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_UNINSTALLER_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UNINSTALLER_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UNINSTALLER_VIEW_H_
 
 #include "ui/views/window/dialog_delegate.h"
 
@@ -61,4 +61,4 @@ class CrostiniUninstallerView : public views::DialogDelegateView {
   DISALLOW_COPY_AND_ASSIGN(CrostiniUninstallerView);
 };
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_UNINSTALLER_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UNINSTALLER_VIEW_H_
