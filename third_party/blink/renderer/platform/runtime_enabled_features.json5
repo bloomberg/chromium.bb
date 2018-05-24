@@ -1084,7 +1084,7 @@
     },
     {
       name: "RTCRtpSenderParameters",
-      status: "experimental",
+      status: "stable",
     },
     // Enables the use of |RTCConfiguration::sdpSemantics| to override the
     // default SDP semantics at RTCPeerConnection construction.
