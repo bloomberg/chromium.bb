@@ -14,7 +14,7 @@ namespace blink {
 // LayoutMultiColumnSpannerPlaceholder. NG needs to skip these special
 // objects. The actual content is inside the flow thread.
 
-LayoutObject* GetLayoutObjectForFirstChildNode(LayoutBlockFlow* parent) {
+LayoutObject* GetLayoutObjectForFirstChildNode(LayoutBlock* parent) {
   LayoutObject* child = parent->FirstChild();
   if (!child)
     return nullptr;
@@ -37,7 +37,7 @@ LayoutObject* GetLayoutObjectForParentNode(LayoutObject* object) {
   return parent;
 }
 
-bool AreNGBlockFlowChildrenInline(const LayoutBlockFlow* block) {
+bool AreNGBlockFlowChildrenInline(const LayoutBlock* block) {
   if (block->ChildrenInline())
     return true;
   if (const auto* first_child = block->FirstChild()) {
@@ -48,14 +48,15 @@ bool AreNGBlockFlowChildrenInline(const LayoutBlockFlow* block) {
 }
 
 bool IsManagedByLayoutNG(const LayoutObject& object) {
-  if (!object.IsLayoutNGMixin())
+  if (!object.IsLayoutNGMixin() && !object.IsLayoutNGFlexibleBox())
     return false;
   const auto* containing_block = object.ContainingBlock();
   if (!containing_block)
     return false;
   if (containing_block->IsLayoutFlowThread())
     containing_block = containing_block->ContainingBlock();
-  return containing_block && containing_block->IsLayoutNGMixin();
+  return containing_block && (containing_block->IsLayoutNGMixin() ||
+                              containing_block->IsLayoutNGFlexibleBox());
 }
 
 }  // namespace blink

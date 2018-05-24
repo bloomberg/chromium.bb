@@ -321,21 +321,23 @@ NGLayoutInputNode NGBlockNode::NextSibling() const {
 }
 
 NGLayoutInputNode NGBlockNode::FirstChild() const {
-  auto* block = ToLayoutBlockFlow(box_);
+  auto* block = ToLayoutBlock(box_);
   auto* child = GetLayoutObjectForFirstChildNode(block);
   if (!child)
     return nullptr;
   if (AreNGBlockFlowChildrenInline(block))
-    return NGInlineNode(block);
+    return NGInlineNode(ToLayoutBlockFlow(block));
   return NGBlockNode(ToLayoutBox(child));
 }
 
 bool NGBlockNode::CanUseNewLayout(const LayoutBox& box) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
+  if (box.StyleRef().ForceLegacyLayout())
+    return false;
 
   // When the style has |ForceLegacyLayout|, it's usually not LayoutNGMixin,
   // but anonymous block can be.
-  return box.IsLayoutNGMixin() && !box.StyleRef().ForceLegacyLayout();
+  return box.IsLayoutNGMixin() || box.IsLayoutNGFlexibleBox();
 }
 
 bool NGBlockNode::CanUseNewLayout() const {

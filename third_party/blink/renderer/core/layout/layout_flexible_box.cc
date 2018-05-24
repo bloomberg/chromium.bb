@@ -1492,6 +1492,8 @@ void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
     // computeInnerFlexBaseSizeForChild.
     bool force_child_relayout =
         relayout_children && !relaid_out_children_.Contains(child);
+    // TODO(dgrogan): Broaden the NG part of this check once NG types other
+    // than Mixin derivatives are cached.
     if ((child->IsLayoutNGMixin() &&
          ShouldForceLayoutForNGChild(ToLayoutBlockFlow(*child))) ||
         (child->IsLayoutBlock() &&

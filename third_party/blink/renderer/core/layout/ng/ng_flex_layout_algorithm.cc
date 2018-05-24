@@ -121,12 +121,6 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
           {flex_item.desired_location.X(), flex_item.desired_location.Y()});
     }
   }
-  // TODO(dgrogan): This line is only needed because we erroneously tell the
-  // parent block layout algorithm that the flexbox doesn't create a new BFC, so
-  // a DCHECK is triggered. Remove this line after adding a LayoutNGFlexibleBox
-  // class and returning it from LayoutObject::CreateLayoutObject().
-  container_builder_.SetExclusionSpace(
-      std::make_unique<NGExclusionSpace>(ConstraintSpace().ExclusionSpace()));
   return container_builder_.ToBoxFragment();
 }
 

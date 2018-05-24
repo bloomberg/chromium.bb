@@ -522,6 +522,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsLayoutNGBlockFlow() const {
     return IsOfType(kLayoutObjectNGBlockFlow);
   }
+  bool IsLayoutNGFlexibleBox() const {
+    return IsOfType(kLayoutObjectNGFlexibleBox);
+  }
   bool IsLayoutNGMixin() const { return IsOfType(kLayoutObjectNGMixin); }
   bool IsLayoutNGListItem() const { return IsOfType(kLayoutObjectNGListItem); }
   bool IsLayoutNGListMarker() const {
@@ -1989,6 +1992,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectMedia,
     kLayoutObjectMenuList,
     kLayoutObjectNGBlockFlow,
+    kLayoutObjectNGFlexibleBox,
     kLayoutObjectNGMixin,
     kLayoutObjectNGListItem,
     kLayoutObjectNGListMarker,
