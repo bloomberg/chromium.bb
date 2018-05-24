@@ -799,9 +799,16 @@ class VerifyCallsToObserverDelegate : public SchedulerWorkerDefaultDelegate {
 
 }  // namespace
 
+// Flaky: crbug.com/846121
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_SchedulerWorkerObserver DISABLED_SchedulerWorkerObserver
+#else
+#define MAYBE_SchedulerWorkerObserver SchedulerWorkerObserver
+#endif
+
 // Verify that the SchedulerWorkerObserver is notified when the worker enters
 // and exits its main function.
-TEST(TaskSchedulerWorkerTest, SchedulerWorkerObserver) {
+TEST(TaskSchedulerWorkerTest, MAYBE_SchedulerWorkerObserver) {
   StrictMock<test::MockSchedulerWorkerObserver> observer;
   {
     TaskTracker task_tracker("Test");
