@@ -860,6 +860,9 @@ const char kScreenTimeMinutesUsed[] = "screen_time.time_usage";
 // A dictionary preference holding the usage time limit definitions for a user.
 const char kUsageTimeLimit[] = "screen_time.limit";
 
+// Last state of the screen time limit.
+const char kScreenTimeLastState[] = "screen_time.last_state";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be
