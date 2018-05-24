@@ -53,6 +53,8 @@ class MockDB : public LevelDB {
                     const leveldb_env::Options& options));
   MOCK_METHOD2(Save, bool(const KeyValueVector&, const KeyVector&));
   MOCK_METHOD1(Load, bool(std::vector<std::string>*));
+  MOCK_METHOD2(LoadWithFilter,
+               bool(const KeyFilter&, std::vector<std::string>*));
   MOCK_METHOD3(Get, bool(const std::string&, bool*, std::string*));
   MOCK_METHOD0(Destroy, bool());
 
@@ -114,6 +116,10 @@ class OptionsEqMatcher : public MatcherInterface<const Options&> {
 
 Matcher<const Options&> OptionsEq(const Options& expected) {
   return MakeMatcher(new OptionsEqMatcher(expected));
+}
+
+bool ZeroFilter(const std::string& key) {
+  return key == "0";
 }
 
 }  // namespace
@@ -245,7 +251,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBDestroyFailure) {
 }
 
 ACTION_P(AppendLoadEntries, model) {
-  std::vector<std::string>* output = arg0;
+  std::vector<std::string>* output = arg1;
   for (const auto& pair : model)
     output->push_back(pair.second.SerializeAsString());
 
@@ -274,7 +280,8 @@ TEST_F(ProtoDatabaseImplTest, TestDBLoadSuccess) {
       base::WrapUnique(mock_db), path, CreateSimpleOptions(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
-  EXPECT_CALL(*mock_db, Load(_)).WillOnce(AppendLoadEntries(model));
+  EXPECT_CALL(*mock_db, LoadWithFilter(_, _))
+      .WillOnce(AppendLoadEntries(model));
   EXPECT_CALL(caller, LoadCallback1(true, _))
       .WillOnce(VerifyLoadEntries(testing::ByRef(model)));
   db_->LoadEntries(
@@ -295,7 +302,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBLoadFailure) {
       base::WrapUnique(mock_db), path, CreateSimpleOptions(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
-  EXPECT_CALL(*mock_db, Load(_)).WillOnce(Return(false));
+  EXPECT_CALL(*mock_db, LoadWithFilter(_, _)).WillOnce(Return(false));
   EXPECT_CALL(caller, LoadCallback1(false, _));
   db_->LoadEntries(
       base::Bind(&MockDatabaseCaller::LoadCallback, base::Unretained(&caller)));
@@ -694,6 +701,34 @@ TEST_F(ProtoDatabaseImplLevelDBTest, TestDBSaveAndLoad) {
 
 TEST_F(ProtoDatabaseImplLevelDBTest, TestDBCloseAndReopen) {
   TestLevelDBSaveAndLoad(true);
+}
+
+TEST_F(ProtoDatabaseImplLevelDBTest, TestDBLoadWithFilter) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  EntryMap model = GetSmallModel();
+
+  KeyValueVector save_entries;
+  std::vector<std::string> load_entries;
+  KeyVector remove_keys;
+
+  for (const auto& pair : model) {
+    save_entries.push_back(
+        std::make_pair(pair.second.id(), pair.second.SerializeAsString()));
+  }
+
+  std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
+  EXPECT_TRUE(db->Init(temp_dir.GetPath(), CreateSimpleOptions()));
+  EXPECT_TRUE(db->Save(save_entries, remove_keys));
+
+  EXPECT_TRUE(
+      db->LoadWithFilter(base::BindRepeating(&ZeroFilter), &load_entries));
+
+  EXPECT_EQ(load_entries.size(), 1u);
+  TestProto entry;
+  ASSERT_TRUE(entry.ParseFromString(load_entries[0]));
+  EXPECT_EQ(entry.SerializeAsString(), model["0"].SerializeAsString());
 }
 
 TEST_F(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {

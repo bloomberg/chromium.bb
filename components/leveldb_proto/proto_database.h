@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "components/leveldb_proto/leveldb_database.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 namespace base {
@@ -58,6 +59,12 @@ class ProtoDatabase {
   // Asynchronously loads all entries from the database and invokes |callback|
   // when complete.
   virtual void LoadEntries(LoadCallback callback) = 0;
+
+  // Asynchronously loads entries that satisfies the |filter| from the database
+  // and invokes |callback| when complete. The filter will be called on
+  // ProtoDatabase's taskrunner.
+  virtual void LoadEntriesWithFilter(const LevelDB::KeyFilter& filter,
+                                     LoadCallback callback) = 0;
 
   // Asynchronously loads all keys from the database and invokes |callback| with
   // those keys when complete.
