@@ -452,36 +452,20 @@ class OutputApi(object):
         CQ_INCLUDE_TRYBOTS was updated.
     """
     description = cl.GetDescription(force=True)
-    include_re = re.compile(r'^CQ_INCLUDE_TRYBOTS=(.*)$', re.M | re.I)
-
+    trybot_footers = git_footers.parse_footers(description).get(
+        git_footers.normalize_name('Cq-Include-Trybots'), [])
     prior_bots = []
-    if cl.IsGerrit():
-      trybot_footers = git_footers.parse_footers(description).get(
-          git_footers.normalize_name('Cq-Include-Trybots'), [])
-      for f in trybot_footers:
-        prior_bots += [b.strip() for b in f.split(';') if b.strip()]
-    else:
-      trybot_tags = include_re.finditer(description)
-      for t in trybot_tags:
-        prior_bots += [b.strip() for b in t.group(1).split(';') if b.strip()]
+    for f in trybot_footers:
+      prior_bots += [b.strip() for b in f.split(';') if b.strip()]
 
     if set(prior_bots) >= set(bots_to_include):
       return []
     all_bots = ';'.join(sorted(set(prior_bots) | set(bots_to_include)))
 
-    if cl.IsGerrit():
-      description = git_footers.remove_footer(
-          description, 'Cq-Include-Trybots')
-      description = git_footers.add_footer(
-          description, 'Cq-Include-Trybots', all_bots,
-          before_keys=['Change-Id'])
-    else:
-      new_include_trybots = 'CQ_INCLUDE_TRYBOTS=%s' % all_bots
-      m = include_re.search(description)
-      if m:
-        description = include_re.sub(new_include_trybots, description)
-      else:
-        description = '%s\n%s\n' % (description, new_include_trybots)
+    description = git_footers.remove_footer(description, 'Cq-Include-Trybots')
+    description = git_footers.add_footer(
+        description, 'Cq-Include-Trybots', all_bots,
+        before_keys=['Change-Id'])
 
     cl.UpdateDescription(description, force=True)
     return [self.PresubmitNotifyResult(message)]

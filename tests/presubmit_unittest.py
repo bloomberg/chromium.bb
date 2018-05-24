@@ -1461,21 +1461,16 @@ class OutputApiUnittest(PresubmitTestsBase):
     self.failIf(output.should_continue())
     self.failUnless(output.getvalue().count('???'))
 
-  def _testIncludingCQTrybots(self, cl_text, new_trybots, updated_cl_text,
-                              is_gerrit=False):
+  def _testIncludingCQTrybots(self, cl_text, new_trybots, updated_cl_text):
     class FakeCL(object):
       def __init__(self, description):
         self._description = description
-        self._is_gerrit = is_gerrit
 
       def GetDescription(self, force=False):
         return self._description
 
       def UpdateDescription(self, description, force=False):
         self._description = description
-
-      def IsGerrit(self):
-        return self._is_gerrit
 
     def FakePresubmitNotifyResult(message):
       return message
@@ -1499,7 +1494,7 @@ class OutputApiUnittest(PresubmitTestsBase):
     self._testIncludingCQTrybots(
       """A change to GPU-related code.
 
-CQ_INCLUDE_TRYBOTS= master.tryserver.blink:linux_trusty_blink_rel ;luci.chromium.try:win_optional_gpu_tests_rel
+Cq-Include-Trybots:  master.tryserver.blink:linux_trusty_blink_rel ;luci.chromium.try:win_optional_gpu_tests_rel
 """,
       [
         'luci.chromium.try:linux_optional_gpu_tests_rel',
@@ -1507,8 +1502,7 @@ CQ_INCLUDE_TRYBOTS= master.tryserver.blink:linux_trusty_blink_rel ;luci.chromium
       ],
       """A change to GPU-related code.
 
-CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel;master.tryserver.blink:linux_trusty_blink_rel
-""")
+Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel;master.tryserver.blink:linux_trusty_blink_rel""")
 
     # Starting without any CQ_INCLUDE_TRYBOTS line.
     self._testIncludingCQTrybots(
@@ -1518,14 +1512,14 @@ CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.
         'luci.chromium.try:mac_optional_gpu_tests_rel',
       ],
       """A change to GPU-related code.
-CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:mac_optional_gpu_tests_rel
-""")
+
+Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:mac_optional_gpu_tests_rel""")
 
     # All pre-existing bots are already in output set.
     self._testIncludingCQTrybots(
       """A change to GPU-related code.
 
-CQ_INCLUDE_TRYBOTS=luci.chromium.try:win_optional_gpu_tests_rel
+Cq-Include-Trybots: luci.chromium.try:win_optional_gpu_tests_rel
 """,
       [
         'luci.chromium.try:linux_optional_gpu_tests_rel',
@@ -1533,10 +1527,9 @@ CQ_INCLUDE_TRYBOTS=luci.chromium.try:win_optional_gpu_tests_rel
       ],
       """A change to GPU-related code.
 
-CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel
-""")
+Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel""")
 
-    # Equivalent tests for Gerrit (pre-existing Change-Id line).
+    # Equivalent tests with a pre-existing Change-Id line.
     self._testIncludingCQTrybots(
       """A change to GPU-related code.
 
@@ -1548,7 +1541,7 @@ Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""",
       """A change to GPU-related code.
 
 Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:mac_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""", is_gerrit=True)
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""")
 
     self._testIncludingCQTrybots(
       """A change to GPU-related code.
@@ -1563,7 +1556,7 @@ Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
       """A change to GPU-related code.
 
 Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""", is_gerrit=True)
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""")
 
     self._testIncludingCQTrybots(
       """A change to GPU-related code.
@@ -1579,7 +1572,7 @@ Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
       """A change to GPU-related code.
 
 Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_dbg;luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""", is_gerrit=True)
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""")
 
 
 class AffectedFileUnittest(PresubmitTestsBase):
