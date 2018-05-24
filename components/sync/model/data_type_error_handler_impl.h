@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "components/sync/model/data_type_error_handler.h"
 
 namespace syncer {
@@ -21,7 +21,7 @@ class DataTypeErrorHandlerImpl : public DataTypeErrorHandler {
   using ErrorCallback = base::Callback<void(const SyncError&)>;
 
   DataTypeErrorHandlerImpl(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
       const base::Closure& dump_stack,
       const ErrorCallback& sync_callback);
   ~DataTypeErrorHandlerImpl() override;
@@ -36,7 +36,7 @@ class DataTypeErrorHandlerImpl : public DataTypeErrorHandler {
   // The thread task runner that |sync_callback_| runs on. This is passed in
   // separately instead of bound inside the callback because we want to be able
   // to perform the PostTask using the error location.
-  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
+  scoped_refptr<base::SequencedTaskRunner> ui_thread_;
 
   // The callback to dump and upload the stack from the current thread.
   base::Closure dump_stack_;
