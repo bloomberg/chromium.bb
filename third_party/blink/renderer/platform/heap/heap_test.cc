@@ -634,11 +634,9 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
       {
         Persistent<HeapHashMap<ThreadMarker, WeakMember<IntWrapper>>> weak_map =
             new HeapHashMap<ThreadMarker, WeakMember<IntWrapper>>;
-        PersistentHeapHashMap<ThreadMarker, WeakMember<IntWrapper>> weak_map2;
 
         for (int i = 0; i < kNumberOfAllocations; i++) {
           weak_map->insert(static_cast<unsigned>(i), IntWrapper::Create(0));
-          weak_map2.insert(static_cast<unsigned>(i), IntWrapper::Create(0));
           test::YieldCurrentThread();
         }
 
@@ -655,7 +653,6 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
         //                            BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
         PreciselyCollectGarbage();
         EXPECT_TRUE(weak_map->IsEmpty());
-        EXPECT_TRUE(weak_map2.IsEmpty());
       }
       test::YieldCurrentThread();
     }
@@ -6623,11 +6620,11 @@ class ThreadedClearOnShutdownTester : public ThreadedTesterBase {
   class HeapObject;
   friend class HeapObject;
 
-  using WeakHeapObjectSet = PersistentHeapHashSet<WeakMember<HeapObject>>;
+  using WeakHeapObjectSet = HeapHashSet<WeakMember<HeapObject>>;
 
   static WeakHeapObjectSet& GetWeakHeapObjectSet();
 
-  using HeapObjectSet = PersistentHeapHashSet<Member<HeapObject>>;
+  using HeapObjectSet = HeapHashSet<Member<HeapObject>>;
   static HeapObjectSet& GetHeapObjectSet();
 
   static IntWrapper& ThreadSpecificIntWrapper() {
@@ -6676,21 +6673,26 @@ class ThreadedClearOnShutdownTester::HeapObject final
 
 ThreadedClearOnShutdownTester::WeakHeapObjectSet&
 ThreadedClearOnShutdownTester::GetWeakHeapObjectSet() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WeakHeapObjectSet>, singleton,
-                                  ());
-  if (!singleton.IsSet())
-    singleton->RegisterAsStaticReference();
-
-  return *singleton;
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<Persistent<WeakHeapObjectSet>>,
+                                  singleton, ());
+  Persistent<WeakHeapObjectSet>& singleton_persistent = *singleton;
+  if (!singleton_persistent) {
+    singleton_persistent = new WeakHeapObjectSet();
+    singleton_persistent.RegisterAsStaticReference();
+  }
+  return *singleton_persistent;
 }
 
 ThreadedClearOnShutdownTester::HeapObjectSet&
 ThreadedClearOnShutdownTester::GetHeapObjectSet() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<HeapObjectSet>, singleton, ());
-  if (!singleton.IsSet())
-    singleton->RegisterAsStaticReference();
-
-  return *singleton;
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<Persistent<HeapObjectSet>>,
+                                  singleton, ());
+  Persistent<HeapObjectSet>& singleton_persistent = *singleton;
+  if (!singleton_persistent) {
+    singleton_persistent = new HeapObjectSet();
+    singleton_persistent.RegisterAsStaticReference();
+  }
+  return *singleton_persistent;
 }
 
 void ThreadedClearOnShutdownTester::RunWhileAttached() {

@@ -472,7 +472,7 @@ class MyGarbageCollectedClass : public GarbageCollected<MyGarbageCollectedClass>
 };
 ```
 
-When you want to add a heap collection as a member of a non-garbage-collected class, please use the persistent variants (just prefix the type with Persistent e.g. PersistentHeapVector, PersistentHeapHashMap, etc.).
+When you want to add a heap collection as a member of a non-garbage-collected class (on the main thread), please use the persistent variants (just prefix the type with Persistent e.g. PersistentHeapVector, PersistentHeapHashMap, etc.).
 
 ```c++
 class MyNotGarbageCollectedClass {
@@ -480,6 +480,8 @@ class MyNotGarbageCollectedClass {
   PersistentHeapVector<Member<MyGarbageCollectedClass>> list_;
 };
 ```
+
+On non-main threads these persistent heap collections have been disabled to simplify the thread termination sequence. Please wrap the heap collections in a `Persistent` instead.
 
 Please be very cautious if you want to use a heap collection from multiple threads. Reference to heap collections may be passed to another thread using CrossThreadPersistents, but *you may not modify the collection from the non-owner thread*. This is because modifications to collections may trigger backing store reallocations, and Oilpan's per thread heap requires that modifications to a heap happen on its owner thread.
 
