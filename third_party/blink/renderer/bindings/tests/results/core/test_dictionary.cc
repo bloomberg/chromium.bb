@@ -217,7 +217,7 @@ void TestDictionary::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_interface_or_null_member_);
   visitor->Trace(test_interface_sequence_member_);
   visitor->Trace(test_object_sequence_member_);
-  visitor->Trace(uint8_array_member_);
+  visitor->Trace(uint_8_array_member_);
   visitor->Trace(union_in_record_member_);
   visitor->Trace(union_member_with_sequence_default_);
   visitor->Trace(union_or_null_record_member_);

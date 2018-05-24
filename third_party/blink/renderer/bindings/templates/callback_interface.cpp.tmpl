@@ -169,13 +169,13 @@ v8::Maybe<{{method.cpp_type}}> {{v8_class}}::{{method.name}}({{method.argument_d
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
+  {% if method.arguments %}
   v8::Local<v8::Object> argument_creation_context =
       CallbackRelevantScriptState()->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
   {% for argument in method.arguments %}
   v8::Local<v8::Value> {{argument.handle}} = {{argument.cpp_value_to_v8_value}};
   {% endfor %}
-  {% if method.arguments %}
   v8::Local<v8::Value> argv[] = { {{method.arguments | join(', ', 'handle')}} };
   {% else %}
   {# Zero-length arrays are ill-formed in C++. #}

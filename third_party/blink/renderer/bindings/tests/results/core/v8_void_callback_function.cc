@@ -21,7 +21,7 @@
 namespace blink {
 
 v8::Maybe<void> V8VoidCallbackFunction::Invoke(ScriptWrappable* callback_this_value) {
-  // This function implements "invoke" steps in
+  // This function implements "invoke" algorithm defined in
   // "3.10. Invoking callback functions".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
 
@@ -75,9 +75,6 @@ v8::Maybe<void> V8VoidCallbackFunction::Invoke(ScriptWrappable* callback_this_va
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
-  v8::Local<v8::Object> argument_creation_context =
-      CallbackRelevantScriptState()->GetContext()->Global();
-  ALLOW_UNUSED_LOCAL(argument_creation_context);
   v8::Local<v8::Value> *argv = nullptr;
 
   // step 11. Let callResult be Call(X, thisArg, esArgs).
