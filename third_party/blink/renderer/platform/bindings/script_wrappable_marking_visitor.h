@@ -72,7 +72,8 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
       return;
 
     CurrentVisitor(thread_state->GetIsolate())
-        ->Visit(WrapperDescriptorFor(dst_object));
+        ->Visit(const_cast<T*>(dst_object),
+                TraceWrapperDescriptorFor(dst_object));
   }
 
   static void WriteBarrier(v8::Isolate*,
@@ -98,12 +99,14 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   void EnterFinalPause() override;
   size_t NumberOfWrappersToTrace() override;
 
- protected:
-  // ScriptWrappableVisitor interface.
+  // Visitor interface.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) override;
-  void Visit(const TraceWrapperDescriptor&) override;
+  void Visit(void*, TraceWrapperDescriptor) override;
   void Visit(DOMWrapperMap<ScriptWrappable>*,
              const ScriptWrappable* key) override;
+
+ protected:
+  using Visitor::Visit;
 
   v8::Isolate* isolate() const { return isolate_; }
 

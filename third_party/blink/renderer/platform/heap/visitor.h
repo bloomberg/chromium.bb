@@ -39,19 +39,25 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
 template <typename T>
 class GarbageCollected;
 template <typename T>
+class DOMWrapperMap;
+template <typename T>
 class TraceTrait;
 class ThreadState;
 class Visitor;
 template <typename T>
 class SameThreadCheckedMember;
+class ScriptWrappable;
 template <typename T>
 class TraceWrapperMember;
+template <typename T>
+class TraceWrapperV8Reference;
 
 // The TraceMethodDelegate is used to convert a trace method for type T to a
 // TraceCallback.  This allows us to pass a type's trace method as a parameter
@@ -86,11 +92,6 @@ class PLATFORM_EXPORT Visitor {
   }
 
   template <typename T>
-  void Trace(const TraceWrapperMember<T>& t) {
-    Trace(*(static_cast<const Member<T>*>(&t)));
-  }
-
-  template <typename T>
   void Trace(const SameThreadCheckedMember<T>& t) {
     Trace(*(static_cast<const Member<T>*>(&t)));
   }
@@ -110,8 +111,7 @@ class PLATFORM_EXPORT Visitor {
     if (!t)
       return;
     Visit(const_cast<void*>(reinterpret_cast<const void*>(t)),
-          TraceTrait<T>::GetTraceDescriptor(
-              const_cast<void*>(reinterpret_cast<const void*>(t))));
+          TraceDescriptorFor(t));
   }
 
   template <typename T>
@@ -124,8 +124,7 @@ class PLATFORM_EXPORT Visitor {
       return;
     VisitBackingStoreStrongly(reinterpret_cast<void*>(backing_store),
                               reinterpret_cast<void**>(backing_store_slot),
-                              TraceTrait<T>::GetTraceDescriptor(
-                                  reinterpret_cast<void*>(backing_store)));
+                              TraceDescriptorFor(backing_store));
   }
 
   template <typename T>
@@ -208,10 +207,42 @@ class PLATFORM_EXPORT Visitor {
                          &TraceMethodDelegate<T, method>::Trampoline);
   }
 
+  // Cross-component tracing interface.
+  // TODO(mlippautz): Add required Trace methods to delegate to the subgraph
+  // relevant for wrapper tracing.
+
+  template <typename T>
+  void Trace(const TraceWrapperMember<T>& t) {
+    DCHECK(!t.IsHashTableDeletedValue());
+    TraceWithWrappers(t.Get());
+  }
+
+  template <typename T>
+  void TraceWithWrappers(T* t) {
+    static_assert(sizeof(T), "T must be fully defined");
+    static_assert(IsGarbageCollectedType<T>::value,
+                  "T needs to be a garbage collected object");
+    if (!t)
+      return;
+
+    // Dispatch two both, the TraceDescritpor and the TraceWrapperDescriptor,
+    // versions of the visitor. This way the wrapper-tracing world can ignore
+    // the TraceDescriptor versions.
+    Visit(const_cast<void*>(reinterpret_cast<const void*>(t)),
+          TraceDescriptorFor(t));
+    Visit(const_cast<void*>(reinterpret_cast<const void*>(t)),
+          TraceWrapperDescriptorFor(t));
+  }
+
   // Dynamic visitor interface.
 
   // Visits an object through a strong reference.
   virtual void Visit(void*, TraceDescriptor) = 0;
+  // Subgraph of objects that are interested in wrappers. Note that the same
+  // object is also passed to Visit(void*, TraceDescriptor).
+  // TODO(mlippautz): Remove this visit method once wrapper tracing also uses
+  // Trace() instead of TraceWrappers().
+  virtual void Visit(void*, TraceWrapperDescriptor) = 0;
 
   // Visits an object through a weak reference.
   virtual void VisitWeak(void*, void**, TraceDescriptor, WeakCallback) = 0;
@@ -224,6 +255,12 @@ class PLATFORM_EXPORT Visitor {
                                        WeakCallback,
                                        void*) = 0;
   virtual void VisitBackingStoreOnly(void*, void**) = 0;
+
+  // Visits cross-component references to V8.
+
+  virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) = 0;
+  virtual void Visit(DOMWrapperMap<ScriptWrappable>*,
+                     const ScriptWrappable* key) = 0;
 
   // Registers backing store pointers so that they can be moved and properly
   // updated.
@@ -246,6 +283,18 @@ class PLATFORM_EXPORT Visitor {
   // backing store requires resizing. These collections know how to deal with
   // WeakMember elements though.
   virtual void RegisterWeakCallback(void* closure, WeakCallback) = 0;
+
+ protected:
+  template <typename T>
+  static inline TraceDescriptor TraceDescriptorFor(const T* traceable) {
+    return TraceTrait<T>::GetTraceDescriptor(const_cast<T*>(traceable));
+  }
+
+  template <typename T>
+  static inline TraceWrapperDescriptor TraceWrapperDescriptorFor(
+      const T* traceable) {
+    return TraceTrait<T>::GetTraceWrapperDescriptor(const_cast<T*>(traceable));
+  }
 
  private:
   template <typename T>

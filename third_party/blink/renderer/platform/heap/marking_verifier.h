@@ -55,6 +55,10 @@ class MarkingVerifier final : public Visitor {
   void VisitBackingStoreOnly(void*, void**) final {}
   void RegisterBackingStoreCallback(void*, MovingObjectCallback, void*) final {}
   void RegisterWeakCallback(void*, WeakCallback) final {}
+  void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
+  void Visit(DOMWrapperMap<ScriptWrappable>*,
+             const ScriptWrappable* key) final {}
+  void Visit(void*, TraceWrapperDescriptor) final {}
 
  private:
   void VerifyChild(void* base_object_payload) {

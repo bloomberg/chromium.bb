@@ -253,7 +253,8 @@ void ScriptWrappableMarkingVisitor::Visit(
 }
 
 void ScriptWrappableMarkingVisitor::Visit(
-    const TraceWrapperDescriptor& wrapper_descriptor) {
+    void* object,
+    TraceWrapperDescriptor wrapper_descriptor) {
   HeapObjectHeader* header =
       HeapObjectHeader::FromPayload(wrapper_descriptor.base_object_payload);
   if (header->IsWrapperHeaderMarked())

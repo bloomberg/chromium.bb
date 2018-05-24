@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_base.h"
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -43,12 +44,14 @@ class TraceWrapperV8Reference;
 // - Call visitor.DispatchTraceWrappers(traceable).
 // DispatchTraceWrappers will invoke Visit() method for all
 // wrapper references in traceable.
-class PLATFORM_EXPORT ScriptWrappableVisitor {
+class PLATFORM_EXPORT ScriptWrappableVisitor : public Visitor {
  public:
   template <typename T>
   static NOINLINE void MissedWriteBarrier() {
     NOTREACHED();
   }
+
+  ScriptWrappableVisitor() : Visitor(ThreadState::Current()) {}
 
   // Trace all wrappers of |tracable|.
   //
@@ -103,18 +106,25 @@ class PLATFORM_EXPORT ScriptWrappableVisitor {
   // Catch all handlers needed because of mixins except for Supplement<T>.
   void DispatchTraceWrappers(const void*) const { CHECK(false); }
 
- protected:
-  // The visitor interface. Derived visitors should override this
-  // function to visit V8 references and ScriptWrappables.
-  virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) = 0;
-  virtual void Visit(const TraceWrapperDescriptor&) = 0;
-  virtual void Visit(DOMWrapperMap<ScriptWrappable>*,
-                     const ScriptWrappable* key) = 0;
+  // Unused blink::Visitor overrides. Derived visitors should still override
+  // the cross-component visitation methods. See Visitor documentation.
+  void Visit(void* object, TraceDescriptor desc) final {}
+  void VisitWeak(void* object,
+                 void** object_slot,
+                 TraceDescriptor desc,
+                 WeakCallback callback) final {}
+  void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) final {}
+  void VisitBackingStoreWeakly(void*,
+                               void**,
+                               TraceDescriptor,
+                               WeakCallback,
+                               void*) final {}
+  void VisitBackingStoreOnly(void*, void**) final {}
+  void RegisterBackingStoreCallback(void*, MovingObjectCallback, void*) final {}
+  void RegisterWeakCallback(void*, WeakCallback) final {}
 
-  template <typename T>
-  static TraceWrapperDescriptor WrapperDescriptorFor(const T* traceable) {
-    return TraceTrait<T>::GetTraceWrapperDescriptor(const_cast<T*>(traceable));
-  }
+ protected:
+  using Visitor::Visit;
 
  private:
   // Helper method to invoke the virtual Visit method with wrapper descriptor.
@@ -123,7 +133,7 @@ class PLATFORM_EXPORT ScriptWrappableVisitor {
     static_assert(sizeof(T), "T must be fully defined");
     if (!traceable)
       return;
-    Visit(WrapperDescriptorFor(traceable));
+    Visit(const_cast<T*>(traceable), TraceWrapperDescriptorFor(traceable));
   }
 
   // Supplement-specific implementation of DispatchTraceWrappers.  The suffix of
