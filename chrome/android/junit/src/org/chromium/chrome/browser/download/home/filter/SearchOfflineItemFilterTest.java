@@ -52,7 +52,7 @@ public class SearchOfflineItemFilterTest {
         // Test a query that doesn't match.
         filter.onQueryChanged("dogs");
         verify(mObserver, times(1)).onItemsRemoved(CollectionUtil.newHashSet(item1, item2, item3));
-        Assert.assertEquals(Collections.EMPTY_SET, filter.getItems());
+        Assert.assertEquals(Collections.emptySet(), filter.getItems());
 
         // Test undoing the query.
         filter.onQueryChanged("");
@@ -102,7 +102,7 @@ public class SearchOfflineItemFilterTest {
         // Test a query that doesn't match.
         filter.onQueryChanged("cows");
         verify(mObserver, times(1)).onItemsRemoved(CollectionUtil.newHashSet(item1, item2, item3));
-        Assert.assertEquals(Collections.EMPTY_SET, filter.getItems());
+        Assert.assertEquals(Collections.emptySet(), filter.getItems());
 
         // Test undoing the query.
         filter.onQueryChanged("");
