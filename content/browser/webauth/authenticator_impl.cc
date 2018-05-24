@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/webauth/authenticator_type_converters.h"
 #include "content/public/browser/content_browser_client.h"
@@ -335,24 +336,9 @@ std::string Base64UrlEncode(const base::span<const uint8_t> input) {
 }  // namespace
 
 AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host)
-    : WebContentsObserver(WebContents::FromRenderFrameHost(render_frame_host)),
-      render_frame_host_(render_frame_host),
-      timer_(std::make_unique<base::OneShotTimer>()),
-      binding_(this),
-      weak_factory_(this) {
-  DCHECK(render_frame_host_);
-  DCHECK(timer_);
-
-  protocols_.insert(device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
-  if (base::FeatureList::IsEnabled(features::kWebAuthBle)) {
-    protocols_.insert(device::FidoTransportProtocol::kBluetoothLowEnergy);
-  }
-
-  if (base::FeatureList::IsEnabled(features::kWebAuthCable)) {
-    protocols_.insert(
-        device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
-  }
-}
+    : AuthenticatorImpl(render_frame_host,
+                        nullptr /* connector */,
+                        std::make_unique<base::OneShotTimer>()) {}
 
 AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host,
                                      service_manager::Connector* connector,
@@ -375,6 +361,11 @@ AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host,
     protocols_.insert(
         device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
   }
+#if defined(OS_MACOSX)
+  if (base::FeatureList::IsEnabled(features::kWebAuthTouchId)) {
+    protocols_.insert(device::FidoTransportProtocol::kInternal);
+  }
+#endif
 }
 
 AuthenticatorImpl::~AuthenticatorImpl() {}

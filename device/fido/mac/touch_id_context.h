@@ -18,8 +18,8 @@ namespace device {
 namespace fido {
 namespace mac {
 
-// TouchIdContext wraps a Touch ID consent prompt for signing with a secure
-// enclave key.
+// TouchIdContext wraps a macOS Touch ID consent prompt for signing with a
+// secure enclave key.
 class API_AVAILABLE(macosx(10.12.2)) TouchIdContext {
  public:
   // The callback is invoked when the Touch ID prompt completes. It receives a

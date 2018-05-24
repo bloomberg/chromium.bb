@@ -43,8 +43,11 @@ std::unique_ptr<FidoDiscovery> CreateFidoDiscoveryImpl(
     case FidoTransportProtocol::kNearFieldCommunication:
       // TODO(https://crbug.com/825949): Add NFC support.
       return nullptr;
+    case FidoTransportProtocol::kInternal:
+      NOTREACHED() << "Internal authenticators should be handled separately.";
+      return nullptr;
   }
-  NOTREACHED();
+  NOTREACHED() << "Unhandled transport type";
   return nullptr;
 }
 
