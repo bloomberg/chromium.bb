@@ -374,7 +374,6 @@ js_library("import_controller") {
     "../../../externs/background/media_import_handler.js",
     "../../../externs/background/media_scanner.js",
     "../../../externs/command_handler_deps.js",
-    "../../../externs/es6_workaround.js",
   ]
 }
 

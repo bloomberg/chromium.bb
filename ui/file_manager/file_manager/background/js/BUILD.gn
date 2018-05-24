@@ -110,7 +110,6 @@ js_library("drive_sync_handler") {
   deps = [
     ":progress_center",
   ]
-  externs_list = [ "../../../externs/connection.js" ]
 }
 
 js_library("duplicate_finder") {
