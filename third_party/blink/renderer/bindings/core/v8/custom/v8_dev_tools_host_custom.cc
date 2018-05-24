@@ -32,6 +32,7 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/web_menu_item_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_document.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_mouse_event.h"
@@ -40,7 +41,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/dev_tools_host.h"
 #include "third_party/blink/renderer/core/inspector/inspector_frontend_client.h"
-#include "third_party/blink/renderer/platform/context_menu.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -58,7 +58,7 @@ void V8DevToolsHost::platformMethodCustom(
 
 static bool PopulateContextMenuItems(v8::Isolate* isolate,
                                      const v8::Local<v8::Array>& item_array,
-                                     ContextMenu& menu) {
+                                     WebVector<WebMenuItemInfo>& items) {
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   for (size_t i = 0; i < item_array->Length(); ++i) {
     v8::Local<v8::Object> item =
@@ -82,36 +82,42 @@ static bool PopulateContextMenuItems(v8::Isolate* isolate,
     if (!type->IsString())
       continue;
     String type_string = ToCoreStringWithNullCheck(type.As<v8::String>());
+    items.emplace_back();
+    WebMenuItemInfo& item_info = items[items.size() - 1];
     if (type_string == "separator") {
-      menu.AppendItem(ContextMenuItem(
-          kSeparatorType, kContextMenuItemCustomTagNoAction, String()));
+      item_info.type = WebMenuItemInfo::kSeparator;
+      item_info.enabled = true;
+      item_info.action = DevToolsHost::kMaxContextMenuAction;
     } else if (type_string == "subMenu" && sub_items->IsArray()) {
-      ContextMenu sub_menu;
+      item_info.type = WebMenuItemInfo::kSubMenu;
+      item_info.enabled = true;
+      item_info.action = DevToolsHost::kMaxContextMenuAction;
       v8::Local<v8::Array> sub_items_array =
           v8::Local<v8::Array>::Cast(sub_items);
-      if (!PopulateContextMenuItems(isolate, sub_items_array, sub_menu))
+      if (!PopulateContextMenuItems(isolate, sub_items_array,
+                                    item_info.sub_menu_items))
         return false;
       TOSTRING_DEFAULT(V8StringResource<kTreatNullAsNullString>, label_string,
                        label, false);
-      menu.AppendItem(ContextMenuItem(kSubmenuType,
-                                      kContextMenuItemCustomTagNoAction,
-                                      label_string, &sub_menu));
+      item_info.label = String(label_string);
     } else {
       int32_t int32_id;
-      if (!id->Int32Value(context).To(&int32_id))
+      if (!id->Int32Value(context).To(&int32_id) || int32_id < 0 ||
+          int32_id >= static_cast<int>(DevToolsHost::kMaxContextMenuAction))
         return false;
-      ContextMenuAction typed_id = static_cast<ContextMenuAction>(
-          kContextMenuItemBaseCustomTag + int32_id);
       TOSTRING_DEFAULT(V8StringResource<kTreatNullAsNullString>, label_string,
                        label, false);
-      ContextMenuItem menu_item(
-          (type_string == "checkbox" ? kCheckableActionType : kActionType),
-          typed_id, label_string);
+      if (type_string == "checkbox")
+        item_info.type = WebMenuItemInfo::kCheckableOption;
+      else
+        item_info.type = WebMenuItemInfo::kOption;
+      item_info.label = String(label_string);
+      item_info.enabled = true;
+      item_info.action = int32_id;
       if (checked->IsBoolean())
-        menu_item.SetChecked(checked.As<v8::Boolean>()->Value());
+        item_info.checked = checked.As<v8::Boolean>()->Value();
       if (enabled->IsBoolean())
-        menu_item.SetEnabled(enabled.As<v8::Boolean>()->Value());
-      menu.AppendItem(menu_item);
+        item_info.enabled = enabled.As<v8::Boolean>()->Value();
     }
   }
   return true;
@@ -137,9 +143,9 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(
   v8::Local<v8::Value> array = info[2];
   if (!array->IsArray())
     return;
-  ContextMenu menu;
+  WebVector<WebMenuItemInfo> items;
   if (!PopulateContextMenuItems(isolate, v8::Local<v8::Array>::Cast(array),
-                                menu))
+                                items))
     return;
 
   Document* document = nullptr;
@@ -158,8 +164,7 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(
     return;
 
   DevToolsHost* devtools_host = V8DevToolsHost::ToImpl(info.Holder());
-  Vector<ContextMenuItem> items = menu.Items();
-  devtools_host->ShowContextMenu(document->GetFrame(), x, y, items);
+  devtools_host->ShowContextMenu(document->GetFrame(), x, y, std::move(items));
 }
 
 }  // namespace blink

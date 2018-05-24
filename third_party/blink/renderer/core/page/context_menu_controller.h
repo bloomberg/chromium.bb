@@ -36,8 +36,6 @@
 
 namespace blink {
 
-class ContextMenu;
-class ContextMenuItem;
 class ContextMenuProvider;
 class Document;
 class LocalFrame;
@@ -52,7 +50,6 @@ class CORE_EXPORT ContextMenuController final
   ~ContextMenuController();
   void Trace(blink::Visitor*);
 
-  ContextMenu* GetContextMenu() const { return context_menu_.get(); }
   void ClearContextMenu();
 
   void DocumentDetached(Document*);
@@ -63,30 +60,20 @@ class CORE_EXPORT ContextMenuController final
                               float y,
                               ContextMenuProvider*);
 
-  void ContextMenuItemSelected(const ContextMenuItem*);
+  void CustomContextMenuItemSelected(unsigned action);
 
   Node* ContextMenuNodeForFrame(LocalFrame*);
-
-  void SetHitTestResultForTests(const HitTestResult& hit_test_result) {
-    hit_test_result_ = hit_test_result;
-  }
 
  private:
   friend class ContextMenuControllerTest;
 
   explicit ContextMenuController(Page*);
 
-  std::unique_ptr<ContextMenu> CreateContextMenu(MouseEvent*);
-  std::unique_ptr<ContextMenu> CreateContextMenu(LocalFrame*,
-                                                 const LayoutPoint&);
-  void ShowContextMenu(MouseEvent*);
-
   // Returns whether a Context Menu was actually shown.
-  bool ShowContextMenu(const ContextMenu*, WebMenuSourceType);
+  bool ShowContextMenu(LocalFrame*, const LayoutPoint&, WebMenuSourceType);
   bool ShouldShowContextMenuFromTouch(const WebContextMenuData&);
 
   Member<Page> page_;
-  std::unique_ptr<ContextMenu> context_menu_;
   Member<ContextMenuProvider> menu_provider_;
   HitTestResult hit_test_result_;
   DISALLOW_COPY_AND_ASSIGN(ContextMenuController);

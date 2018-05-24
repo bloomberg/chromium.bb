@@ -29,6 +29,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_DEV_TOOLS_HOST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_DEV_TOOLS_HOST_H_
 
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -36,10 +37,10 @@
 
 namespace blink {
 
-class ContextMenuItem;
 class FrontendMenuProvider;
 class InspectorFrontendClient;
 class LocalFrame;
+struct WebMenuItemInfo;
 
 class CORE_EXPORT DevToolsHost final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -63,7 +64,7 @@ class CORE_EXPORT DevToolsHost final : public ScriptWrappable {
   void ShowContextMenu(LocalFrame* target_frame,
                        float x,
                        float y,
-                       const Vector<ContextMenuItem>& items);
+                       WebVector<WebMenuItemInfo> items);
   void sendMessageToEmbedder(const String& message);
 
   String getSelectionBackgroundColor();
@@ -76,6 +77,10 @@ class CORE_EXPORT DevToolsHost final : public ScriptWrappable {
   LocalFrame* FrontendFrame() { return frontend_frame_; }
 
   void ClearMenuProvider() { menu_provider_ = nullptr; }
+
+  // kMaxContextMenuAction means no action (e.g. separator), all
+  // actual actions should be less.
+  static const unsigned kMaxContextMenuAction = 1000;
 
  private:
   friend class FrontendMenuProvider;

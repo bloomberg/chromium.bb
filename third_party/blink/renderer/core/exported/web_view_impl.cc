@@ -147,8 +147,6 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
-#include "third_party/blink/renderer/platform/context_menu.h"
-#include "third_party/blink/renderer/platform/context_menu_item.h"
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/exported/web_active_gesture_animation.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
@@ -3181,16 +3179,8 @@ void WebViewImpl::DisableDeviceEmulation() {
 }
 
 void WebViewImpl::PerformCustomContextMenuAction(unsigned action) {
-  if (!page_)
-    return;
-  ContextMenu* menu = page_->GetContextMenuController().GetContextMenu();
-  if (!menu)
-    return;
-  const ContextMenuItem* item = menu->ItemWithAction(
-      static_cast<ContextMenuAction>(kContextMenuItemBaseCustomTag + action));
-  if (item)
-    page_->GetContextMenuController().ContextMenuItemSelected(item);
-  page_->GetContextMenuController().ClearContextMenu();
+  if (page_)
+    page_->GetContextMenuController().CustomContextMenuItemSelected(action);
 }
 
 void WebViewImpl::ShowContextMenu(WebMenuSourceType source_type) {

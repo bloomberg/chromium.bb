@@ -63,8 +63,6 @@
 #include "third_party/blink/renderer/core/page/context_menu_provider.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/context_menu.h"
-#include "third_party/blink/renderer/platform/context_menu_item.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 
 namespace blink {
@@ -84,7 +82,6 @@ void ContextMenuController::Trace(blink::Visitor* visitor) {
 }
 
 void ContextMenuController::ClearContextMenu() {
-  context_menu_.reset();
   if (menu_provider_)
     menu_provider_->ContextMenuCleared();
   menu_provider_ = nullptr;
@@ -100,11 +97,11 @@ void ContextMenuController::DocumentDetached(Document* document) {
 }
 
 void ContextMenuController::HandleContextMenuEvent(MouseEvent* mouse_event) {
-  context_menu_ = CreateContextMenu(mouse_event);
-  if (!context_menu_)
-    return;
-
-  ShowContextMenu(mouse_event);
+  DCHECK(mouse_event->type() == EventTypeNames::contextmenu);
+  LocalFrame* frame = mouse_event->target()->ToNode()->GetDocument().GetFrame();
+  LayoutPoint location(mouse_event->AbsoluteLocation());
+  if (ShowContextMenu(frame, location, mouse_event->GetMenuSourceType()))
+    mouse_event->SetDefaultHandled();
 }
 
 void ContextMenuController::ShowContextMenuAtPoint(
@@ -113,67 +110,15 @@ void ContextMenuController::ShowContextMenuAtPoint(
     float y,
     ContextMenuProvider* menu_provider) {
   menu_provider_ = menu_provider;
-
-  LayoutPoint location(x, y);
-  context_menu_ = CreateContextMenu(frame, location);
-  if (!context_menu_) {
+  if (!ShowContextMenu(frame, LayoutPoint(x, y), kMenuSourceNone))
     ClearContextMenu();
+}
+
+void ContextMenuController::CustomContextMenuItemSelected(unsigned action) {
+  if (!menu_provider_)
     return;
-  }
-
-  menu_provider_->PopulateContextMenu(context_menu_.get());
-  ShowContextMenu(nullptr);
-}
-
-std::unique_ptr<ContextMenu> ContextMenuController::CreateContextMenu(
-    MouseEvent* mouse_event) {
-  DCHECK(mouse_event);
-
-  return CreateContextMenu(
-      mouse_event->target()->ToNode()->GetDocument().GetFrame(),
-      LayoutPoint(mouse_event->AbsoluteLocation()));
-}
-
-std::unique_ptr<ContextMenu> ContextMenuController::CreateContextMenu(
-    LocalFrame* frame,
-    const LayoutPoint& location) {
-  HitTestRequest::HitTestRequestType type =
-      HitTestRequest::kReadOnly | HitTestRequest::kActive;
-  HitTestResult result(type, location);
-
-  if (frame)
-    result = frame->GetEventHandler().HitTestResultAtPoint(location, type);
-
-  if (!result.InnerNodeOrImageMapImage())
-    return nullptr;
-
-  hit_test_result_ = result;
-
-  return std::make_unique<ContextMenu>();
-}
-
-void ContextMenuController::ShowContextMenu(MouseEvent* mouse_event) {
-  WebMenuSourceType source_type = kMenuSourceNone;
-  if (mouse_event) {
-    DCHECK(mouse_event->type() == EventTypeNames::contextmenu);
-    source_type = mouse_event->GetMenuSourceType();
-  }
-
-  if (ShowContextMenu(context_menu_.get(), source_type) && mouse_event)
-    mouse_event->SetDefaultHandled();
-}
-
-void ContextMenuController::ContextMenuItemSelected(
-    const ContextMenuItem* item) {
-  DCHECK(item->GetType() == kActionType ||
-         item->GetType() == kCheckableActionType);
-
-  if (item->Action() < kContextMenuItemBaseCustomTag ||
-      item->Action() > kContextMenuItemLastCustomTag)
-    return;
-
-  DCHECK(menu_provider_);
-  menu_provider_->ContextMenuItemSelected(item);
+  menu_provider_->ContextMenuItemSelected(action);
+  ClearContextMenu();
 }
 
 Node* ContextMenuController::ContextMenuNodeForFrame(LocalFrame* frame) {
@@ -232,47 +177,8 @@ bool ContextMenuController::ShouldShowContextMenuFromTouch(
          data.is_editable || !data.selected_text.IsEmpty();
 }
 
-static void PopulateSubMenuItems(const Vector<ContextMenuItem>& input_menu,
-                                 WebVector<WebMenuItemInfo>& sub_menu_items) {
-  Vector<WebMenuItemInfo> sub_items;
-  for (size_t i = 0; i < input_menu.size(); ++i) {
-    const ContextMenuItem* input_item = &input_menu.at(i);
-    if (input_item->Action() < kContextMenuItemBaseCustomTag ||
-        input_item->Action() > kContextMenuItemLastCustomTag)
-      continue;
-
-    WebMenuItemInfo output_item;
-    output_item.label = input_item->Title();
-    output_item.enabled = input_item->Enabled();
-    output_item.checked = input_item->Checked();
-    output_item.action = static_cast<unsigned>(input_item->Action() -
-                                               kContextMenuItemBaseCustomTag);
-    switch (input_item->GetType()) {
-      case kActionType:
-        output_item.type = WebMenuItemInfo::kOption;
-        break;
-      case kCheckableActionType:
-        output_item.type = WebMenuItemInfo::kCheckableOption;
-        break;
-      case kSeparatorType:
-        output_item.type = WebMenuItemInfo::kSeparator;
-        break;
-      case kSubmenuType:
-        output_item.type = WebMenuItemInfo::kSubMenu;
-        PopulateSubMenuItems(input_item->SubMenuItems(),
-                             output_item.sub_menu_items);
-        break;
-    }
-    sub_items.push_back(output_item);
-  }
-
-  WebVector<WebMenuItemInfo> output_items(sub_items.size());
-  for (size_t i = 0; i < sub_items.size(); ++i)
-    output_items[i] = sub_items[i];
-  sub_menu_items.Swap(output_items);
-}
-
-bool ContextMenuController::ShowContextMenu(const ContextMenu* default_menu,
+bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
+                                            const LayoutPoint& location,
                                             WebMenuSourceType source_type) {
   // Displaying the context menu in this function is a big hack as we don't
   // have context, i.e. whether this is being invoked via a script or in
@@ -282,7 +188,15 @@ bool ContextMenuController::ShowContextMenu(const ContextMenu* default_menu,
   if (!ContextMenuAllowedScope::IsContextMenuAllowed())
     return false;
 
-  HitTestResult r = hit_test_result_;
+  HitTestRequest::HitTestRequestType type =
+      HitTestRequest::kReadOnly | HitTestRequest::kActive;
+  HitTestResult r(type, location);
+  if (frame)
+    r = frame->GetEventHandler().HitTestResultAtPoint(location, type);
+  if (!r.InnerNodeOrImageMapImage())
+    return false;
+
+  hit_test_result_ = r;
   r.SetToShadowHostIfInRestrictedShadowRoot();
 
   LocalFrame* selected_frame = r.InnerNodeFrame();
@@ -494,8 +408,10 @@ bool ContextMenuController::ShowContextMenu(const ContextMenu* default_menu,
   data.referrer_policy = static_cast<WebReferrerPolicy>(
       selected_frame->GetDocument()->GetReferrerPolicy());
 
-  // Filter out custom menu elements and add them into the data.
-  PopulateSubMenuItems(default_menu->Items(), data.custom_items);
+  if (menu_provider_) {
+    // Filter out custom menu elements and add them into the data.
+    data.custom_items = menu_provider_->PopulateContextMenu();
+  }
 
   if (auto* anchor = ToHTMLAnchorElementOrNull(r.URLElement())) {
     // Extract suggested filename for same-origin URLS for saving file.
