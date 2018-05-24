@@ -59,6 +59,9 @@ class MEDIA_EXPORT AudioTimestampValidator {
   // logs if things get worse. See CheckTimestampForGap().
   uint32_t drift_warning_threshold_msec_;
 
+  // Tracks the number of MEDIA_LOG warnings when large timestamp gap detected.
+  int num_timestamp_gap_warnings_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(AudioTimestampValidator);
 };
 

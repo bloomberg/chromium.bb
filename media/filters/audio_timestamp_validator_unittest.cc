@@ -204,6 +204,9 @@ TEST_P(AudioTimestampValidatorTest, RepeatedWarnForSlowAccumulatingDrift) {
                              "with decoded output."))
       .Times(0);
 
+  int num_timestamp_gap_warnings = 0;
+  const int kMaxTimestampGapWarnings = 10;  // Must be the same as in .cc
+
   for (int i = 0; i < 100; ++i) {
     // Wait for delayed output to begin plus an additional two iterations to
     // start using drift offset. The the two iterations without offset will
@@ -218,9 +221,12 @@ TEST_P(AudioTimestampValidatorTest, RepeatedWarnForSlowAccumulatingDrift) {
     encoded_buffer->set_timestamp((i * kBufferDuration) + offset);
 
     // Expect gap warnings to start when drift hits 50 milliseconds. Warnings
-    // should continue as the gap widens.
+    // should continue as the gap widens until log limit is hit.
+
     if (offset > base::TimeDelta::FromMilliseconds(50)) {
-      EXPECT_MEDIA_LOG(HasSubstr("timestamp gap detected"));
+      EXPECT_LIMITED_MEDIA_LOG(HasSubstr("timestamp gap detected"),
+                               num_timestamp_gap_warnings,
+                               kMaxTimestampGapWarnings);
     }
 
     validator.CheckForTimestampGap(*encoded_buffer);
