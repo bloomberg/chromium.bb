@@ -67,6 +67,8 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
                         OnUpdateViewportIntersection)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisibilityChanged, OnVisibilityChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SetIsInert, OnSetIsInert)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SetInheritedEffectiveTouchAction,
+                        OnSetInheritedEffectiveTouchAction)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateRenderThrottlingStatus,
                         OnUpdateRenderThrottlingStatus)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -376,6 +378,13 @@ void CrossProcessFrameConnector::OnSetIsInert(bool inert) {
     view_->SetIsInert();
 }
 
+void CrossProcessFrameConnector::OnSetInheritedEffectiveTouchAction(
+    cc::TouchAction touch_action) {
+  inherited_effective_touch_action_ = touch_action;
+  if (view_)
+    view_->UpdateInheritedEffectiveTouchAction();
+}
+
 RenderWidgetHostViewBase*
 CrossProcessFrameConnector::GetRootRenderWidgetHostView() {
   // Tests may not have frame_proxy_in_parent_renderer_ set.
@@ -431,6 +440,11 @@ void CrossProcessFrameConnector::DisableAutoResize() {
 
 bool CrossProcessFrameConnector::IsInert() const {
   return is_inert_;
+}
+
+cc::TouchAction CrossProcessFrameConnector::InheritedEffectiveTouchAction()
+    const {
+  return inherited_effective_touch_action_;
 }
 
 bool CrossProcessFrameConnector::IsHidden() const {

@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/user_activation_state.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
+#include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -214,6 +215,12 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   virtual void SetIsInert(bool) = 0;
   void UpdateInertIfPossible();
 
+  virtual void SetInheritedEffectiveTouchAction(TouchAction) = 0;
+  void UpdateInheritedEffectiveTouchActionIfPossible();
+  TouchAction InheritedEffectiveTouchAction() const {
+    return inherited_effective_touch_action_;
+  }
+
   const base::UnguessableToken& GetDevToolsFrameToken() const {
     return devtools_frame_token_;
   }
@@ -249,6 +256,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // parent frame's document becomes inert. This should always be false for
   // the main frame.
   bool is_inert_ = false;
+
+  TouchAction inherited_effective_touch_action_ = TouchAction::kTouchActionAuto;
 
  private:
   // Activates the user activation state of this frame and all its ancestors.

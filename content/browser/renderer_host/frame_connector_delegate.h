@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_FRAME_CONNECTOR_DELEGATE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_FRAME_CONNECTOR_DELEGATE_H_
 
+#include "cc/input/touch_action.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
@@ -203,6 +204,10 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // an HTMLDialogElement is being modally displayed in a higher-level frame,
   // or because the inert attribute has been specified.
   virtual bool IsInert() const;
+
+  // Returns the inherited effective touch action property that should be
+  // applied to any nested child RWHVCFs inside the caller RWHVCF.
+  virtual cc::TouchAction InheritedEffectiveTouchAction() const;
 
   // Determines whether the RenderWidgetHostViewChildFrame is hidden due to
   // a higher-level embedder being hidden. This is distinct from the

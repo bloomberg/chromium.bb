@@ -91,6 +91,10 @@ bool FrameConnectorDelegate::IsInert() const {
   return false;
 }
 
+cc::TouchAction FrameConnectorDelegate::InheritedEffectiveTouchAction() const {
+  return cc::TouchAction::kTouchActionAuto;
+}
+
 bool FrameConnectorDelegate::IsHidden() const {
   return false;
 }

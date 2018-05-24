@@ -19,6 +19,7 @@
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "cc/input/touch_action.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/shared_bitmap.h"
@@ -490,6 +491,9 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SetViewportIntersection,
 
 // Sets the inert bit on an out-of-process iframe.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetIsInert, bool /* inert */)
+
+// Sets the inherited effective touch action on an out-of-process iframe.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetInheritedEffectiveTouchAction, cc::TouchAction)
 
 // Toggles render throttling for an out-of-process iframe.
 IPC_MESSAGE_ROUTED2(ViewMsg_UpdateRenderThrottlingStatus,

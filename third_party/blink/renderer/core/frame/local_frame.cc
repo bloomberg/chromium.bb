@@ -578,6 +578,18 @@ void LocalFrame::PropagateInertToChildFrames() {
   }
 }
 
+void LocalFrame::SetInheritedEffectiveTouchAction(TouchAction touch_action) {
+  if (inherited_effective_touch_action_ == touch_action)
+    return;
+  inherited_effective_touch_action_ = touch_action;
+  if (GetDocument()->documentElement()) {
+    GetDocument()->documentElement()->SetNeedsStyleRecalc(
+        kSubtreeStyleChange,
+        StyleChangeReasonForTracing::Create(
+            StyleChangeReason::kInheritedStyleChangeFromParentFrame));
+  }
+}
+
 LocalFrame& LocalFrame::LocalFrameRoot() const {
   const LocalFrame* cur_frame = this;
   while (cur_frame && cur_frame->Tree().Parent() &&
@@ -894,6 +906,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
     // inert state from a higher-level frame. If this is an OOPIF local root,
     // it will be updated later.
     UpdateInertIfPossible();
+    UpdateInheritedEffectiveTouchActionIfPossible();
     probe_sink_ = LocalFrameRoot().probe_sink_;
     ad_tracker_ = LocalFrameRoot().ad_tracker_;
     performance_monitor_ = LocalFrameRoot().performance_monitor_;

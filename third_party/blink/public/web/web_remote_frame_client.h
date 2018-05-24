@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_touch_action.h"
 #include "third_party/blink/public/web/web_dom_message_event.h"
 #include "third_party/blink/public/web/web_frame.h"
 
@@ -52,6 +53,9 @@ class WebRemoteFrameClient {
 
   // Set or clear the inert property on the remote frame.
   virtual void SetIsInert(bool) {}
+
+  // Set inherited effective touch action on the remote frame.
+  virtual void SetInheritedEffectiveTouchAction(blink::WebTouchAction) {}
 
   // Toggles render throttling for the remote frame.
   virtual void UpdateRenderThrottlingStatus(bool is_throttled,

@@ -806,6 +806,12 @@ void RenderFrameProxy::SetIsInert(bool inert) {
   Send(new FrameHostMsg_SetIsInert(routing_id_, inert));
 }
 
+void RenderFrameProxy::SetInheritedEffectiveTouchAction(
+    cc::TouchAction touch_action) {
+  Send(new FrameHostMsg_SetInheritedEffectiveTouchAction(routing_id_,
+                                                         touch_action));
+}
+
 void RenderFrameProxy::UpdateRenderThrottlingStatus(bool is_throttled,
                                                     bool subtree_throttled) {
   Send(new FrameHostMsg_UpdateRenderThrottlingStatus(routing_id_, is_throttled,

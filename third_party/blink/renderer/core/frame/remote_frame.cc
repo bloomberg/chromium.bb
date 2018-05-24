@@ -31,6 +31,7 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
       security_context_(RemoteSecurityContext::Create()) {
   dom_window_ = RemoteDOMWindow::Create(*this);
   UpdateInertIfPossible();
+  UpdateInheritedEffectiveTouchActionIfPossible();
 }
 
 RemoteFrame* RemoteFrame::Create(RemoteFrameClient* client,
@@ -145,6 +146,12 @@ void RemoteFrame::SetIsInert(bool inert) {
   if (inert != is_inert_)
     Client()->SetIsInert(inert);
   is_inert_ = inert;
+}
+
+void RemoteFrame::SetInheritedEffectiveTouchAction(TouchAction touch_action) {
+  if (inherited_effective_touch_action_ != touch_action)
+    Client()->SetInheritedEffectiveTouchAction(touch_action);
+  inherited_effective_touch_action_ = touch_action;
 }
 
 void RemoteFrame::SetView(RemoteFrameView* view) {

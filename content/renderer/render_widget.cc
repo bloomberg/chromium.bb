@@ -663,6 +663,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetViewportIntersection,
                         OnSetViewportIntersection)
     IPC_MESSAGE_HANDLER(ViewMsg_SetIsInert, OnSetIsInert)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetInheritedEffectiveTouchAction,
+                        OnSetInheritedEffectiveTouchAction)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateRenderThrottlingStatus,
                         OnUpdateRenderThrottlingStatus)
     IPC_MESSAGE_HANDLER(ViewMsg_WaitForNextFrameForTests,
@@ -1830,6 +1832,14 @@ void RenderWidget::OnSetIsInert(bool inert) {
   if (auto* frame_widget = GetFrameWidget()) {
     DCHECK_EQ(popup_type_, WebPopupType::kWebPopupTypeNone);
     frame_widget->SetIsInert(inert);
+  }
+}
+
+void RenderWidget::OnSetInheritedEffectiveTouchAction(
+    cc::TouchAction touch_action) {
+  if (auto* frame_widget = GetFrameWidget()) {
+    DCHECK_EQ(popup_type_, WebPopupType::kWebPopupTypeNone);
+    frame_widget->SetInheritedEffectiveTouchAction(touch_action);
   }
 }
 

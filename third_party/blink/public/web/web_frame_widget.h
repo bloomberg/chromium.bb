@@ -34,6 +34,7 @@
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
+#include "third_party/blink/public/platform/web_touch_action.h"
 #include "third_party/blink/public/web/web_widget.h"
 
 namespace blink {
@@ -123,6 +124,9 @@ class WebFrameWidget : public WebWidget {
   // Sets the inert bit on an out-of-process iframe, causing it to ignore
   // input.
   virtual void SetIsInert(bool) {}
+
+  // Sets the inherited effective touch action on an out-of-process iframe.
+  virtual void SetInheritedEffectiveTouchAction(WebTouchAction) {}
 
   // Toggles render throttling for an out-of-process iframe. Local frames are
   // throttled based on their visibility in the viewport, but remote frames
