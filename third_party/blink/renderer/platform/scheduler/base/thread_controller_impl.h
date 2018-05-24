@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_THREAD_CONTROLLER_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_THREAD_CONTROLLER_IMPL_H_
 
-#include "third_party/blink/renderer/platform/scheduler/base/thread_controller.h"
-
 #include "base/cancelable_callback.h"
 #include "base/debug/task_annotator.h"
 #include "base/macros.h"
@@ -14,15 +12,13 @@
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/sequence_manager/thread_controller.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/base/sequenced_task_source.h"
 
 namespace base {
+
 class MessageLoop;
-class TickClock;
-}  // namespace base
 
-namespace base {
 namespace sequence_manager {
 namespace internal {
 

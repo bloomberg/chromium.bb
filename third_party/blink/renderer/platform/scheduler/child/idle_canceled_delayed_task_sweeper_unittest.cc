@@ -4,10 +4,10 @@
 
 #include "third_party/blink/renderer/platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 
+#include "base/task/sequence_manager/lazy_now.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/child/idle_helper.h"

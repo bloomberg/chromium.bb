@@ -16,13 +16,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
+#include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "third_party/blink/renderer/platform/scheduler/base/enqueue_order.h"
 #include "third_party/blink/renderer/platform/scheduler/base/graceful_queue_shutdown_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/base/intrusive_heap.h"
-#include "third_party/blink/renderer/platform/scheduler/base/sequenced_task_source.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 
 namespace base {

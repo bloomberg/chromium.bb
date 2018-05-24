@@ -8,9 +8,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/time/tick_clock.h"
+#include "base/task/sequence_manager/lazy_now.h"
+#include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/trace_event/trace_event.h"
-#include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
 
 namespace base {
 namespace sequence_manager {

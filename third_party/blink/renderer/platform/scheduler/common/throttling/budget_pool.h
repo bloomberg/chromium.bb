@@ -10,8 +10,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/task/sequence_manager/lazy_now.h"
 #include "base/time/time.h"
-#include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace base {
 namespace sequence_manager {

@@ -1,37 +1,36 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_THREAD_CONTROLLER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_THREAD_CONTROLLER_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_H_
+#define BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_H_
 
-#include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/sequence_manager/lazy_now.h"
 #include "base/time/time.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
 
 namespace base {
+
 class TickClock;
 struct PendingTask;
-};
 
-namespace base {
 namespace sequence_manager {
 namespace internal {
 
 class SequencedTaskSource;
 
-// Interface for TaskQueueManager to schedule work to be run.
-class PLATFORM_EXPORT ThreadController {
+// Implementation of this interface is used by TaskQueueManager to schedule
+// actual work to be run. Hopefully we can stop using MessageLoop and this
+// interface will become more concise.
+class ThreadController {
  public:
   virtual ~ThreadController() = default;
 
-  // Set the number of tasks executed in a single invocation of DoWork.
+  // Sets the number of tasks executed in a single invocation of DoWork.
   // Increasing the batch size can reduce the overhead of yielding back to the
-  // main message loop. The batch size is 1 by default.
-  virtual void SetWorkBatchSize(int work_batch_size) = 0;
+  // main message loop.
+  virtual void SetWorkBatchSize(int work_batch_size = 1) = 0;
 
   // Notifies that |pending_task| was enqueued. Needed for tracing purposes.
   virtual void DidQueueTask(const PendingTask& pending_task) = 0;
@@ -80,4 +79,4 @@ class PLATFORM_EXPORT ThreadController {
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_THREAD_CONTROLLER_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_H_
