@@ -368,7 +368,7 @@ void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
 #if defined(OS_CHROMEOS)
 void ComponentLoader::AddAssessmentAssistantExtension() {
   Add(IDR_ASSESSMENT_ASSISTANT_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("chromeos/assessment_assistant")));
+      base::FilePath(FILE_PATH_LITERAL("chromeos/assessmentassistant")));
 }
 
 void ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
