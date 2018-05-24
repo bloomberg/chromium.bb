@@ -237,9 +237,8 @@ HttpURLFetcher::~HttpURLFetcher() = default;
 void HttpURLFetcher::StartFetch(const Request* request,
                                 ResultListener* result_listener) {
   delegate_.reset(new Delegate(
-      request->GetURLRequest()->url(), request->GetURLRequest()->method(),
-      request->GetPostData(), request->GetHttpRequestHeaders(),
-      url_request_context_, result_listener));
+      request->GetURL(), request->GetMethod(), request->GetPostData(),
+      request->GetHttpRequestHeaders(), url_request_context_, result_listener));
 }
 
 }  // namespace headless

@@ -21,8 +21,8 @@ class TestInMemoryProtocolHandler::MockURLFetcher : public URLFetcher {
   // URLFetcher implementation:
   void StartFetch(const Request* request,
                   ResultListener* result_listener) override {
-    GURL url = request->GetURLRequest()->url();
-    const std::string& method = request->GetURLRequest()->method();
+    GURL url = request->GetURL();
+    const std::string& method = request->GetMethod();
     if (method == "POST" || method == "PUT") {
       request->GetPostData();
     } else if (method == "GET") {

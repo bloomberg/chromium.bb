@@ -226,6 +226,18 @@ uint64_t GenericURLRequestJob::GenericURLRequestJob::GetRequestId() const {
          (static_cast<uint64_t>(request_->url_chain().size()) << 32);
 }
 
+const std::string& GenericURLRequestJob::GetMethod() const {
+  return request_->method();
+}
+
+const GURL& GenericURLRequestJob::GetURL() const {
+  return request_->url();
+}
+
+int GenericURLRequestJob::GetPriority() const {
+  return request_->priority();
+}
+
 const net::URLRequest* GenericURLRequestJob::GetURLRequest() const {
   return request_;
 }

@@ -41,7 +41,15 @@ class HEADLESS_EXPORT Request {
  public:
   virtual uint64_t GetRequestId() const = 0;
 
+  // Deprecated, use more specific getters below instead.
   virtual const net::URLRequest* GetURLRequest() const = 0;
+
+  virtual const std::string& GetMethod() const = 0;
+
+  virtual const GURL& GetURL() const = 0;
+
+  // Larger numbers mean higher priority.
+  virtual int GetPriority() const = 0;
 
   virtual const net::HttpRequestHeaders& GetHttpRequestHeaders() const = 0;
 
@@ -162,6 +170,9 @@ class HEADLESS_EXPORT GenericURLRequestJob
   uint64_t GetRequestId() const override;
   const net::HttpRequestHeaders& GetHttpRequestHeaders() const override;
   const net::URLRequest* GetURLRequest() const override;
+  const std::string& GetMethod() const override;
+  const GURL& GetURL() const override;
+  int GetPriority() const override;
   std::string GetDevToolsFrameId() const override;
   std::string GetDevToolsAgentHostId() const override;
   std::string GetPostData() const override;
