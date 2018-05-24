@@ -375,14 +375,6 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickManage) {
   DestroyModelExpectReason(password_manager::metrics_util::CLICKED_MANAGE);
 }
 
-TEST_F(ManagePasswordsBubbleModelTest, ClickDone) {
-  PretendManagingPasswords();
-
-  model()->OnDoneClicked();
-  EXPECT_EQ(password_manager::ui::MANAGE_STATE, model()->state());
-  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_DONE);
-}
-
 TEST_F(ManagePasswordsBubbleModelTest, PopupAutoSigninToast) {
   PretendAutoSigningIn();
 

@@ -111,8 +111,6 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
  private:
   void UpdateBubbleAndIconVisibility() override;
   void SavePasswordInternal() override {}
-  void UpdatePasswordInternal(
-      const autofill::PasswordForm& password_form) override {}
   void NeverSavePasswordInternal() override;
   bool ShowAuthenticationDialog() override { return true; }
 
@@ -901,12 +899,14 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordUpdated) {
   controller()->OnUpdatePasswordSubmitted(std::move(test_form_manager));
 
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
-  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   base::HistogramTester histogram_tester;
-  controller()->UpdatePassword(autofill::PasswordForm());
+  controller()->SavePassword(test_local_form().username_value,
+                             test_local_form().password_value);
   ExpectIconStateIs(password_manager::ui::MANAGE_STATE);
   histogram_tester.ExpectUniqueSample(
-      "PasswordManager.PasswordUpdatedWithManualFallback", false, 1);
+      "PasswordManager.PasswordSavedWithManualFallback", false, 1);
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnBubbleHidden();
 }
 
 TEST_F(ManagePasswordsUIControllerTest, SavePendingStatePasswordAutofilled) {
@@ -971,12 +971,8 @@ TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_UseFallback) {
     EXPECT_FALSE(controller()->opened_automatic_bubble());
 
     // A user clicks on omnibox icon, opens the bubble and press Save/Update.
-    if (is_update) {
-      controller()->UpdatePassword(autofill::PasswordForm());
-    } else {
-      controller()->SavePassword(test_local_form().username_value,
-                                 test_local_form().password_value);
-    }
+    controller()->SavePassword(test_local_form().username_value,
+                               test_local_form().password_value);
 
     // Fake navigation so that the old form manager gets destroyed and
     // reports its metrics. Need to close the bubble, otherwise the bubble
@@ -998,19 +994,10 @@ TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_UseFallback) {
     auto* entry = entries[0];
     EXPECT_EQ(source_id, entry->source_id);
 
-    if (is_update) {
-      histogram_tester.ExpectUniqueSample(
-          "PasswordManager.PasswordUpdatedWithManualFallback", true, 1);
-      test_ukm_recorder.ExpectEntryMetric(
-          entry, UkmEntry::kUser_Action_TriggeredManualFallbackForUpdatingName,
-          1u);
-    } else {
-      histogram_tester.ExpectUniqueSample(
-          "PasswordManager.PasswordSavedWithManualFallback", true, 1);
-      test_ukm_recorder.ExpectEntryMetric(
-          entry, UkmEntry::kUser_Action_TriggeredManualFallbackForSavingName,
-          1u);
-    }
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.PasswordSavedWithManualFallback", true, 1);
+    test_ukm_recorder.ExpectEntryMetric(
+        entry, UkmEntry::kUser_Action_TriggeredManualFallbackForSavingName, 1u);
   }
 }
 

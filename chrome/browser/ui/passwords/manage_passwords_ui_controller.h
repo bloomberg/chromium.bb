@@ -122,7 +122,6 @@ class ManagePasswordsUIController
   void OnPasswordsRevealed() override;
   void SavePassword(const base::string16& username,
                     const base::string16& password) override;
-  void UpdatePassword(const autofill::PasswordForm& password_form) override;
   void ChooseCredential(
       const autofill::PasswordForm& form,
       password_manager::CredentialType credential_type) override;
@@ -149,8 +148,6 @@ class ManagePasswordsUIController
   // The pieces of saving and blacklisting passwords that interact with
   // FormManager, split off into internal functions for testing/mocking.
   virtual void SavePasswordInternal();
-  virtual void UpdatePasswordInternal(
-      const autofill::PasswordForm& password_form);
   virtual void NeverSavePasswordInternal();
 
   // Called when a PasswordForm is autofilled, when a new PasswordForm is

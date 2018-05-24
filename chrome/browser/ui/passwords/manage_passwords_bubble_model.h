@@ -63,17 +63,6 @@ class ManagePasswordsBubbleModel {
   // Called by the view code when the save/update button is clicked by the user.
   void OnSaveClicked();
 
-  // Called by the view code when the update link is clicked by the user.
-  // TODO(vasilii): remove when the cocoa bubble is gone.
-  void OnUpdateClicked(const autofill::PasswordForm& password_form);
-
-  // Called by the view code when the "Done" button is clicked by the user.
-  // TODO(vasilii): remove when the cocoa bubble is gone.
-  void OnDoneClicked();
-
-  // TODO(vasilii): remove when the cocoa bubble is gone.
-  void OnOKClicked();
-
   // Called by the view code when the manage button is clicked by the user.
   void OnManageClicked();
 
@@ -142,11 +131,6 @@ class ManagePasswordsBubbleModel {
 
   Profile* GetProfile() const;
   content::WebContents* GetWebContents() const;
-
-  // Returns true iff the multiple account selection prompt for account update
-  // should be presented.
-  // TODO(vasilii): remove when the cocoa bubble is gone.
-  bool ShouldShowMultipleAccountUpdateUI() const;
 
   // The password bubble can switch its state between "save" and "update"
   // depending on the user input. |state_| only captures the correct state on

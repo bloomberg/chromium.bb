@@ -380,20 +380,6 @@ void ManagePasswordsBubbleModel::OnSaveClicked() {
   }
 }
 
-void ManagePasswordsBubbleModel::OnUpdateClicked(
-    const autofill::PasswordForm& password_form) {
-  if (delegate_)
-    delegate_->UpdatePassword(password_form);
-}
-
-void ManagePasswordsBubbleModel::OnDoneClicked() {
-  interaction_keeper_->set_dismissal_reason(metrics_util::CLICKED_DONE);
-}
-
-void ManagePasswordsBubbleModel::OnOKClicked() {
-  interaction_keeper_->set_dismissal_reason(metrics_util::CLICKED_OK);
-}
-
 void ManagePasswordsBubbleModel::OnManageClicked() {
   interaction_keeper_->set_dismissal_reason(metrics_util::CLICKED_MANAGE);
   if (delegate_)
@@ -464,11 +450,6 @@ Profile* ManagePasswordsBubbleModel::GetProfile() const {
 
 content::WebContents* ManagePasswordsBubbleModel::GetWebContents() const {
   return delegate_ ? delegate_->GetWebContents() : nullptr;
-}
-
-bool ManagePasswordsBubbleModel::ShouldShowMultipleAccountUpdateUI() const {
-  return state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE &&
-         local_credentials_.size() > 1;
 }
 
 bool ManagePasswordsBubbleModel::IsCurrentStateUpdate() const {

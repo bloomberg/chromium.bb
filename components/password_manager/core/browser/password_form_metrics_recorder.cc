@@ -39,14 +39,14 @@ PasswordFormMetricsRecorder::BubbleDismissalReason GetBubbleDismissalReason(
 
     // Ignore these for metrics collection:
     case metrics_util::CLICKED_MANAGE:
-    case metrics_util::CLICKED_DONE:
-    case metrics_util::CLICKED_OK:
     case metrics_util::CLICKED_BRAND_NAME:
     case metrics_util::CLICKED_PASSWORDS_DASHBOARD:
     case metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT:
       break;
 
     // These should not reach here:
+    case metrics_util::CLICKED_DONE_OBSOLETE:
+    case metrics_util::CLICKED_OK_OBSOLETE:
     case metrics_util::CLICKED_UNBLACKLIST_OBSOLETE:
     case metrics_util::CLICKED_CREDENTIAL_OBSOLETE:
     case metrics_util::AUTO_SIGNIN_TOAST_CLICKED_OBSOLETE:
@@ -118,13 +118,12 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
         ukm_entry_builder_.SetUser_Action_TriggeredManualFallbackForSaving(
             action.second);
         break;
-      case DetailedUserAction::kTriggeredManualFallbackForUpdating:
-        ukm_entry_builder_.SetUser_Action_TriggeredManualFallbackForUpdating(
-            action.second);
-        break;
       case DetailedUserAction::kCorrectedUsernameInForm:
         ukm_entry_builder_.SetUser_Action_CorrectedUsernameInForm(
             action.second);
+        break;
+      case DetailedUserAction::kObsoleteTriggeredManualFallbackForUpdating:
+        NOTREACHED();
         break;
     }
   }
