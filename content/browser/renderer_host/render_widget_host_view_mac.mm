@@ -1002,6 +1002,8 @@ bool RenderWidgetHostViewMac::RequestRepaintForTesting() {
 }
 
 gfx::Vector2d RenderWidgetHostViewMac::GetOffsetFromRootSurface() {
+  if (display_only_using_parent_ui_layer_)
+    return view_bounds_in_window_dip_.OffsetFromOrigin();
   return gfx::Vector2d();
 }
 
