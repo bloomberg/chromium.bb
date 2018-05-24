@@ -90,7 +90,7 @@ void ManagePasswordsState::OnPendingPassword(
       DeepCopyNonPSLMapToVector(form_manager_->GetBestMatches());
   AppendDeepCopyVector(form_manager_->GetFormFetcher()->GetFederatedMatches(),
                        &local_credentials_forms_);
-  origin_ = form_manager_->GetObservedForm().origin;
+  origin_ = form_manager_->GetOrigin();
   SetState(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
@@ -102,7 +102,7 @@ void ManagePasswordsState::OnUpdatePassword(
       DeepCopyNonPSLMapToVector(form_manager_->GetBestMatches());
   AppendDeepCopyVector(form_manager_->GetFormFetcher()->GetFederatedMatches(),
                        &local_credentials_forms_);
-  origin_ = form_manager_->GetObservedForm().origin;
+  origin_ = form_manager_->GetOrigin();
   SetState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
 }
 
@@ -150,7 +150,7 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
   }
   AppendDeepCopyVector(form_manager_->GetFormFetcher()->GetFederatedMatches(),
                        &local_credentials_forms_);
-  origin_ = form_manager_->GetObservedForm().origin;
+  origin_ = form_manager_->GetOrigin();
   SetState(password_manager::ui::CONFIRMATION_STATE);
 }
 

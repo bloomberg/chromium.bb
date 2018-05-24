@@ -1267,8 +1267,8 @@ PasswordFormManager::GetBestMatches() const {
   return best_matches_;
 }
 
-const autofill::PasswordForm& PasswordFormManager::GetObservedForm() const {
-  return observed_form_;
+const GURL& PasswordFormManager::GetOrigin() const {
+  return observed_form_.origin;
 }
 
 const autofill::PasswordForm& PasswordFormManager::GetPendingCredentials()

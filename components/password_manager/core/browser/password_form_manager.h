@@ -186,6 +186,8 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // Called if the user could generate a password for this form.
   void MarkGenerationAvailable();
 
+  const autofill::PasswordForm& observed_form() const { return observed_form_; }
+
   // Returns the provisionally saved form, if it exists, otherwise nullptr.
   const autofill::PasswordForm* submitted_form() const {
     return submitted_form_.get();
@@ -231,7 +233,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
 
   // PasswordFormManagerForUI:
   FormFetcher* GetFormFetcher() override;
-  const autofill::PasswordForm& GetObservedForm() const override;
+  const GURL& GetOrigin() const override;
   const std::map<base::string16, const autofill::PasswordForm*>&
   GetBestMatches() const override;
   const autofill::PasswordForm& GetPendingCredentials() const override;

@@ -3590,7 +3590,7 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
           autofill::ACCOUNT_CREATION_PASSWORD);
 
       std::string expected_login_signature =
-          FormStructure(form_manager.GetObservedForm().form_data)
+          FormStructure(form_manager.observed_form().form_data)
               .FormSignatureAsStr();
 
       std::map<base::string16, autofill::ServerFieldType> expected_types;

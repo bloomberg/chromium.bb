@@ -59,7 +59,7 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
           ? PasswordTitleType::SAVE_PASSWORD
           : PasswordTitleType::SAVE_ACCOUNT;
   GetSavePasswordDialogTitleTextAndLinkRange(
-      web_contents->GetVisibleURL(), form_to_save_->GetObservedForm().origin,
+      web_contents->GetVisibleURL(), form_to_save_->GetOrigin(),
       is_smartlock_branding_enabled, type, &message, &message_link_range);
   SetMessage(message);
   SetMessageLinkRange(message_link_range);
