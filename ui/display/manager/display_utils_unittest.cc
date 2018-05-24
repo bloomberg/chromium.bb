@@ -210,13 +210,6 @@ TEST_F(DisplayUtilTest, InsertDsfIntoListGreaterThanUnity) {
   EXPECT_EQ(list[0], list[1]);
 
   dsf = 1.1f;
-  list[0] = {0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f, 1.05f};
-  list[1] = {0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f, dsf};
-  InsertDsfIntoList(&list[0], dsf);
-  EXPECT_EQ(list[1].size(), kNumOfZoomFactors);
-  EXPECT_EQ(list[0], list[1]);
-
-  dsf = 1.1f;
   list[0] = {0.6f, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f};
   list[1] = {0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f, dsf};
   InsertDsfIntoList(&list[0], dsf);
