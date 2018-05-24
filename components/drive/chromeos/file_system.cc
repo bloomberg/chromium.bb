@@ -181,13 +181,13 @@ void RunIsMountedCallback(const IsMountedCallback& callback,
 
 // Callback for ResourceMetadata::GetLargestChangestamp.
 // |callback| must not be null.
-void OnGetLargestChangestamp(FileSystemMetadata metadata,  // Will be modified.
-                             const GetFilesystemMetadataCallback& callback,
-                             const int64_t* largest_changestamp,
-                             FileError error) {
+void OnGetStartPageToken(FileSystemMetadata metadata,  // Will be modified.
+                         const GetFilesystemMetadataCallback& callback,
+                         const std::string* start_page_token,
+                         FileError error) {
   DCHECK(callback);
 
-  metadata.largest_changestamp = *largest_changestamp;
+  metadata.start_page_token = *start_page_token;
   callback.Run(metadata);
 }
 
@@ -891,17 +891,13 @@ void FileSystem::GetMetadata(
   metadata.last_update_check_time = last_update_check_time_;
   metadata.last_update_check_error = last_update_check_error_;
 
-  int64_t* largest_changestamp = new int64_t(0);
+  std::string* start_page_token = new std::string();
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&internal::ResourceMetadata::GetLargestChangestamp,
-                 base::Unretained(resource_metadata_),
-                 largest_changestamp),
-      base::Bind(&OnGetLargestChangestamp,
-                 metadata,
-                 callback,
-                 base::Owned(largest_changestamp)));
+      blocking_task_runner_.get(), FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::GetStartPageToken,
+                 base::Unretained(resource_metadata_), start_page_token),
+      base::Bind(&OnGetStartPageToken, metadata, callback,
+                 base::Owned(start_page_token)));
 }
 
 void FileSystem::MarkCacheFileAsMounted(

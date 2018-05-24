@@ -6,6 +6,7 @@
 #define COMPONENTS_DRIVE_FILE_SYSTEM_METADATA_H_
 
 #include <stdint.h>
+#include <string>
 
 #include "base/time/time.h"
 #include "components/drive/file_errors.h"
@@ -17,9 +18,9 @@ struct FileSystemMetadata {
   FileSystemMetadata();
   ~FileSystemMetadata();
 
-  // The largest changestamp that the file system holds (may be different
+  // The start_page_token that the file system holds (may be different
   // from the one on the server)
-  int64_t largest_changestamp;
+  std::string start_page_token = "";
 
   // True if the resource metadata is now being fetched from the server.
   bool refreshing;

@@ -555,8 +555,8 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForLocal(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::DictionaryValue local_metadata;
-  local_metadata.SetDouble("account-largest-changestamp-local",
-                           metadata.largest_changestamp);
+  local_metadata.SetString("account-start-page-token-local",
+                           metadata.start_page_token);
   local_metadata.SetBoolean("account-metadata-refreshing", metadata.refreshing);
   web_ui()->CallJavascriptFunctionUnsafe("updateLocalMetadata", local_metadata);
 }
