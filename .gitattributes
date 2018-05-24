@@ -36,7 +36,6 @@
 # move to vpython/cipd.
 /third_party/**                     recipes
 /third_party/pymox/**              -recipes
-/third_party/cq_client/testdata/** -recipes
 
 /win_toolchain/** recipes
 
