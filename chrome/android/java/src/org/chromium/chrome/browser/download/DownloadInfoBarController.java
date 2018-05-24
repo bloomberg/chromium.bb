@@ -13,6 +13,7 @@ import android.text.format.Formatter;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -74,7 +75,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
      * Note: This enum is append-only and the values must match the DownloadInfoBarState enum in
      * enums.xml.
      */
-    private enum DownloadInfoBarState {
+    @VisibleForTesting
+    protected enum DownloadInfoBarState {
         // Default initial state. It is also the final state after all the downloads are paused or
         // removed. No InfoBar is shown in this state.
         INITIAL,
@@ -383,6 +385,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         boolean isNewDownload = forceShowDownloadStarted
                 || (updatedItem != null && updatedItem.state == OfflineItemState.IN_PROGRESS
                            && !mSeenItems.contains(updatedItem.id));
+        boolean itemResumedFromPending = itemResumedFromPending(updatedItem);
 
         if (updatedItem != null) {
             mTrackedItems.put(updatedItem.id, updatedItem);
@@ -441,7 +444,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                     boolean currentlyShowingPending = mCurrentInfo != null
                             && mCurrentInfo.resultState != null
                             && mCurrentInfo.resultState == OfflineItemState.PENDING;
-                    if (currentlyShowingPending && itemResumedFromPending(updatedItem)) {
+                    if (currentlyShowingPending && itemResumedFromPending) {
                         nextState = DownloadInfoBarState.DOWNLOADING;
                     }
                     if (itemWasRemoved && mTrackedItems.size() == 0) {
@@ -611,8 +614,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         clearEndTimerRunnable();
 
         if (startTimer) {
-            long delay = showAccelerating ? DURATION_ACCELERATED_INFOBAR_IN_MS
-                                          : DURATION_SHOW_RESULT_IN_MS;
+            long delay =
+                    showAccelerating ? getDurationAcceleratedInfoBar() : getDurationShowResult();
             mEndTimerRunnable = () -> {
                 mEndTimerRunnable = null;
                 if (mCurrentInfo != null) mCurrentInfo.resultState = null;
@@ -662,6 +665,16 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                 && updatedItem.state == OfflineItemState.IN_PROGRESS;
     }
 
+    @VisibleForTesting
+    protected long getDurationAcceleratedInfoBar() {
+        return DURATION_ACCELERATED_INFOBAR_IN_MS;
+    }
+
+    @VisibleForTesting
+    protected long getDurationShowResult() {
+        return DURATION_SHOW_RESULT_IN_MS;
+    }
+
     /**
      * Central function called to show an InfoBar. If the previous InfoBar was on a different
      * tab which is currently not active, based on the value of |info.forceReparent|, it is
@@ -669,7 +682,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
      * @param state The state of the infobar to be shown.
      * @param info Contains the information to be displayed in the UI.
      */
-    private void showInfoBar(DownloadInfoBarState state, DownloadProgressInfoBarData info) {
+    @VisibleForTesting
+    protected void showInfoBar(DownloadInfoBarState state, DownloadProgressInfoBarData info) {
         if (!FeatureUtilities.isDownloadProgressInfoBarEnabled()) return;
 
         mCurrentInfo = info;
@@ -714,7 +728,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         mCurrentInfoBar.updateInfoBar(info);
     }
 
-    private void closePreviousInfoBar() {
+    @VisibleForTesting
+    protected void closePreviousInfoBar() {
         if (mCurrentInfoBar == null) return;
 
         Tab prevTab = mCurrentInfoBar.getTab();
