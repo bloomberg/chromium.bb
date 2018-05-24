@@ -295,6 +295,11 @@ dbg_list="\
   zlib1g-dbg
 "
 
+if package_exists libpixman-1-0-dbgsym; then
+  dbg_list="${dbg_list} libpixman-1-0-dbgsym"
+elif package_exists libpixman-1-0-dbg; then
+  dbg_list="${dbg_list} libpixman-1-0-dbg"
+fi
 if package_exists libstdc++6-6-dbg; then
   dbg_list="${dbg_list} libstdc++6-6-dbg"
 elif package_exists libstdc++6-4.9-dbg; then

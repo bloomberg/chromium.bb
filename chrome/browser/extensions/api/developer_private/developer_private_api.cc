@@ -1064,7 +1064,7 @@ ExtensionFunction::ResponseAction DeveloperPrivateLoadUnpackedFunction::Run() {
     return RespondLater();
   }
 
-  if (!ShowPicker(ui::SelectFileDialog::SELECT_FOLDER,
+  if (!ShowPicker(ui::SelectFileDialog::SELECT_EXISTING_FOLDER,
                   l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY),
                   ui::SelectFileDialog::FileTypeInfo(),
                   0 /* file_type_index */)) {

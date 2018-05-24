@@ -370,8 +370,8 @@ TEST_F(SelectFileDialogMacTest, SelectionType) {
     std::string prompt;
   } test_cases[] = {
       {SelectFileDialog::SELECT_FOLDER, PICK_DIRS | CREATE_DIRS, "Select"},
-      {SelectFileDialog::SELECT_UPLOAD_FOLDER, PICK_DIRS | CREATE_DIRS,
-       "Upload"},
+      {SelectFileDialog::SELECT_UPLOAD_FOLDER, PICK_DIRS, "Upload"},
+      {SelectFileDialog::SELECT_EXISTING_FOLDER, PICK_DIRS, "Select"},
       {SelectFileDialog::SELECT_SAVEAS_FILE, HAS_ACCESSORY_VIEW | CREATE_DIRS,
        "Save"},
       {SelectFileDialog::SELECT_OPEN_FILE, HAS_ACCESSORY_VIEW | PICK_FILES,

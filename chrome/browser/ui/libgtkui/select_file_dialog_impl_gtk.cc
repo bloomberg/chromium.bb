@@ -135,6 +135,7 @@ void SelectFileDialogImplGTK::SelectFileImpl(
   switch (type) {
     case SELECT_FOLDER:
     case SELECT_UPLOAD_FOLDER:
+    case SELECT_EXISTING_FOLDER:
       dialog = CreateSelectFolderDialog(type, title_string, default_path,
                                         owning_window);
       break;
@@ -257,7 +258,7 @@ void SelectFileDialogImplGTK::FileSelected(GtkWidget* dialog,
   if (type_ == SELECT_SAVEAS_FILE) {
     *last_saved_path_ = path.DirName();
   } else if (type_ == SELECT_OPEN_FILE || type_ == SELECT_FOLDER ||
-             type_ == SELECT_UPLOAD_FOLDER) {
+             type_ == SELECT_UPLOAD_FOLDER || type_ == SELECT_EXISTING_FOLDER) {
     *last_opened_path_ = path.DirName();
   } else {
     NOTREACHED();
@@ -345,15 +346,24 @@ GtkWidget* SelectFileDialogImplGTK::CreateSelectFolderDialog(
       GTK_RESPONSE_ACCEPT, nullptr);
   G_GNUC_END_IGNORE_DEPRECATIONS;
   SetGtkTransientForAura(dialog, parent);
-
+  GtkFileChooser* chooser = GTK_FILE_CHOOSER(dialog);
+  if (type == SELECT_UPLOAD_FOLDER || type == SELECT_EXISTING_FOLDER)
+    gtk_file_chooser_set_create_folders(chooser, FALSE);
   if (!default_path.empty()) {
-    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),
-                                  default_path.value().c_str());
+    gtk_file_chooser_set_filename(chooser, default_path.value().c_str());
   } else if (!last_opened_path_->empty()) {
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
+    gtk_file_chooser_set_current_folder(chooser,
                                         last_opened_path_->value().c_str());
   }
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), FALSE);
+  GtkFileFilter* only_folders = gtk_file_filter_new();
+  gtk_file_filter_set_name(
+      only_folders,
+      l10n_util::GetStringUTF8(IDS_SELECT_FOLDER_DIALOG_TITLE).c_str());
+  gtk_file_filter_add_mime_type(only_folders, "application/x-directory");
+  gtk_file_filter_add_mime_type(only_folders, "inode/directory");
+  gtk_file_filter_add_mime_type(only_folders, "text/directory");
+  gtk_file_chooser_add_filter(chooser, only_folders);
+  gtk_file_chooser_set_select_multiple(chooser, FALSE);
   g_signal_connect(dialog, "response",
                    G_CALLBACK(OnSelectSingleFolderDialogResponseThunk), this);
   return dialog;

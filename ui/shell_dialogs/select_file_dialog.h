@@ -39,6 +39,9 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
     // specifically for "upload".
     SELECT_UPLOAD_FOLDER,
 
+    // Like SELECT_FOLDER, but folder creation is disabled, if possible.
+    SELECT_EXISTING_FOLDER,
+
     // For saving into a file, allowing a nonexistent file to be selected.
     SELECT_SAVEAS_FILE,
 

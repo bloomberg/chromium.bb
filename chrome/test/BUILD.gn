@@ -3691,7 +3691,9 @@ test("unit_tests") {
       "../browser/password_manager/native_backend_kwallet_x_unittest.cc",
       "../browser/shell_integration_linux_unittest.cc",
       "../browser/ui/input_method/input_method_engine_unittest.cc",
+      "../browser/ui/libgtkui/select_file_dialog_impl_gtk_unittest.cc",
     ]
+    deps += [ "//build/config/linux/gtk" ]
   }
 
   if (is_android || is_chromeos) {
