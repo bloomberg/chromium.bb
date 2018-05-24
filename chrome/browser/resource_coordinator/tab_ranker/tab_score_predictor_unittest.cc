@@ -135,7 +135,7 @@ TEST_F(TabScorePredictorTest, KnownScore) {
   window.tab_count = 27;
 
   // Pre-calculated score using the generated model outside of Chrome.
-  EXPECT_FLOAT_EQ(7.5816331, ScoreTab(tab, window, mru));
+  EXPECT_FLOAT_EQ(8.0287771, ScoreTab(tab, window, mru));
 }
 
 // Checks the score for a different example that we have calculated a known
@@ -164,7 +164,7 @@ TEST_F(TabScorePredictorTest, KnownScoreMissingOptionalFeatures) {
   window.tab_count = 127;
 
   // Pre-calculated score using the generated model outside of Chrome.
-  EXPECT_FLOAT_EQ(12.989228, ScoreTab(tab, window, mru));
+  EXPECT_FLOAT_EQ(10.577342, ScoreTab(tab, window, mru));
 }
 
 TEST_F(TabScorePredictorTest, InactiveDuration) {
@@ -195,12 +195,12 @@ TEST_F(TabScorePredictorTest, NumReactivationBefore) {
   float no_reactivations_score = ScoreTab(example);
 
   // A tab with reactivations is more likely to be reactivated than one without.
-  example.num_reactivations = 4;
+  example.num_reactivations = 10;
   float reactivations_score = ScoreTab(example);
   ASSERT_GT(reactivations_score, no_reactivations_score);
 
   // A tab with more reactivations is more likely to be reactivated.
-  example.num_reactivations = 10;
+  example.num_reactivations = 20;
   float more_reactivations_score = ScoreTab(example);
   ASSERT_GT(more_reactivations_score, reactivations_score);
 }
@@ -220,7 +220,7 @@ TEST_F(TabScorePredictorTest, PageTransitionTypes) {
 
 TEST_F(TabScorePredictorTest, SiteEngagementScore) {
   TabFeatures example = GetTabFeatures(kUnseenHost, true /*user_activity*/);
-  example.site_engagement_score = 0;
+  example.site_engagement_score.reset();
   float engagement_score_0 = ScoreTab(example);
 
   // A site with low engagement ranks higher than one with no engagement.
@@ -233,7 +233,7 @@ TEST_F(TabScorePredictorTest, SiteEngagementScore) {
   float engagement_score_medium = ScoreTab(example);
   ASSERT_GT(engagement_score_medium, engagement_score_low);
 
-  example.site_engagement_score = 100;
+  example.site_engagement_score = 80;
   float engagement_score_high = ScoreTab(example);
   ASSERT_GT(engagement_score_high, engagement_score_medium);
 }
@@ -249,12 +249,11 @@ TEST_F(TabScorePredictorTest, TopURLHigherScore) {
 }
 
 TEST_F(TabScorePredictorTest, TopURLLowerScore) {
-  // Expect Wikipedia tabs to be less likely to be reactivated.
-  // See also: https://xkcd.com/214/
+  // Expect www.google.com tabs to be less likely to be reactivated.
   TabFeatures unseen_example =
       GetTabFeatures(kUnseenHost, true /*user_activity*/);
   TabFeatures lower_example =
-      GetTabFeatures("en.wikipedia.org", true /*user_activity*/);
+      GetTabFeatures("www.google.com", true /*user_activity*/);
   ASSERT_LT(ScoreTab(lower_example), ScoreTab(unseen_example));
 }
 
