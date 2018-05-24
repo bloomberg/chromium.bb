@@ -141,18 +141,15 @@ src:*ppapi/*
 src:*content/renderer/pepper*
 fun:*PpapiThread*
 fun:*BrokerProcessDispatcher*
-# ppapi tests use base::Callback to call into libppappi_test.so.
-# Callback to PPP_GetInterface
-fun:*FunctorTraits*FPKvPKcE*
-# Callback to _ZN2pp25CompletionCallbackFactoryI15TestingInstanceNS_22ThreadSafeThreadTraitsEE12CallbackDataINS3_11Dispatcher0IMS1_FviEEEE5ThunkEPvi
-fun:*FunctorTraits*FvPviE*
-# Callback to _ZN2pp12_GLOBAL__N_17DestroyEiPv
-fun:*FunctorTraits*FviPvE*
+# Blacklist base::Callback due to https://crbug.com/845855
+fun:*FunctorTraits*
 
 # Calls to auto-generated stubs by generate_stubs.py
 src:*audio/pulse/pulse_stubs.cc
 
 # Calls to auto-generated stubs by generate_library_loader.py
+src:*chrome/browser/speech/tts_linux.cc
+src:*device/udev_linux/udev0_loader.cc
 src:*device/udev_linux/udev1_loader.cc
 src:*net/proxy_resolution/proxy_config_service_linux.cc
 
