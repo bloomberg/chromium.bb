@@ -405,9 +405,14 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
                     g_browser_process->platform_part()
                         ->browser_policy_connector_chromeos()
                         ->IsEnterpriseManaged());
-  params.SetBoolean(
-      "hasDeviceOwner",
-      user_manager::UserManager::Get()->GetOwnerAccountId().is_valid());
+  const AccountId& owner_account_id =
+      user_manager::UserManager::Get()->GetOwnerAccountId();
+  params.SetBoolean("hasDeviceOwner", owner_account_id.is_valid());
+  if (owner_account_id.is_valid() &&
+      user_manager::UserManager::Get()->FindUser(owner_account_id)->GetType() ==
+          user_manager::UserType::USER_TYPE_CHILD) {
+    params.SetString("obfuscatedOwnerId", owner_account_id.GetGaiaId());
+  }
 
   params.SetString("chromeType", GetChromeType());
   params.SetString("clientId",
