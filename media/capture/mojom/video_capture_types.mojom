@@ -11,7 +11,8 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum VideoCapturePixelFormat {
   I420,
-  Y16
+  Y16,
+  ARGB
 };
 
 enum ResolutionChangePolicy {
