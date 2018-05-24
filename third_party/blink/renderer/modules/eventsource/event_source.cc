@@ -232,13 +232,14 @@ ExecutionContext* EventSource::GetExecutionContext() const {
 }
 
 void EventSource::DidReceiveResponse(
-    unsigned long,
+    unsigned long identifier,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK(!handle);
   DCHECK_EQ(kConnecting, state_);
   DCHECK(loader_);
 
+  resource_identifier_ = identifier;
   current_url_ = response.Url();
   event_stream_origin_ = SecurityOrigin::Create(response.Url())->ToString();
   int status_code = response.HttpStatusCode();
@@ -338,7 +339,8 @@ void EventSource::OnMessageEvent(const AtomicString& event_type,
   e->initMessageEvent(event_type, false, false, data, event_stream_origin_,
                       last_event_id, nullptr, nullptr);
 
-  probe::willDispatchEventSourceEvent(GetExecutionContext(), this, event_type,
+  probe::willDispatchEventSourceEvent(GetExecutionContext(),
+                                      resource_identifier_, event_type,
                                       last_event_id, data);
   DispatchEvent(e);
 }

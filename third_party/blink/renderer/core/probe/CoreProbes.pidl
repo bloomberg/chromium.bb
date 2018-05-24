@@ -104,14 +104,12 @@ interface CoreProbes {
   void documentThreadableLoaderStartedLoadingForClient(ExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
   void documentThreadableLoaderFailedToStartLoadingForClient(ExecutionContext*, ThreadableLoaderClient* client);
   void willSendEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
-  void willDispatchEventSourceEvent(ExecutionContext*, ThreadableLoaderClient* eventSource, const AtomicString& eventName, const AtomicString& eventId, const String& data);
+  void willDispatchEventSourceEvent(ExecutionContext*, unsigned long identifier, const AtomicString& eventName, const AtomicString& eventId, const String& data);
   void didFinishEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
   void willLoadXHR(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, const HTTPHeaderMap& headers, bool includeCredentials);
   void didFailXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
   void didFinishXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
   void willStartFetch(ExecutionContext*, ThreadableLoaderClient*);
-  void didFailFetch(ExecutionContext*, ThreadableLoaderClient*);
-  void didFinishFetch([Keep] ExecutionContext*, ThreadableLoaderClient*, const AtomicString& method, const String& url);
   // Detach and remove all references to the given client.
   void detachClientRequest(ExecutionContext*, ThreadableLoaderClient*);
   void scriptImported(ExecutionContext*, unsigned long identifier, const String& sourceString);

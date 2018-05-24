@@ -1099,7 +1099,6 @@ void InspectorNetworkAgent::DocumentThreadableLoaderStartedLoadingForClient(
     return;
   }
 
-  known_request_id_map_.Set(client, identifier);
   String request_id = IdentifiersFactory::SubresourceRequestId(identifier);
   resources_data_->SetResourceType(request_id, pending_request_type_);
   if (pending_request_type_ == InspectorPageAgent::kXHRResource) {
@@ -1175,33 +1174,12 @@ void InspectorNetworkAgent::DidFinishXHRInternal(ExecutionContext* context,
   // This method will be called from the XHR.
   // We delay deleting the replay XHR, as deleting here may delete the caller.
   DelayedRemoveReplayXHR(xhr);
-
-  ThreadableLoaderClientRequestIdMap::iterator it =
-      known_request_id_map_.find(client);
-  if (it == known_request_id_map_.end())
-    return;
-  known_request_id_map_.erase(client);
 }
 
 void InspectorNetworkAgent::WillStartFetch(ThreadableLoaderClient* client) {
   DCHECK(!pending_request_);
   pending_request_ = client;
   pending_request_type_ = InspectorPageAgent::kFetchResource;
-}
-
-void InspectorNetworkAgent::DidFailFetch(ThreadableLoaderClient* client) {
-  known_request_id_map_.erase(client);
-}
-
-void InspectorNetworkAgent::DidFinishFetch(ExecutionContext* context,
-                                           ThreadableLoaderClient* client,
-                                           const AtomicString& method,
-                                           const String& url) {
-  ThreadableLoaderClientRequestIdMap::iterator it =
-      known_request_id_map_.find(client);
-  if (it == known_request_id_map_.end())
-    return;
-  known_request_id_map_.erase(client);
 }
 
 void InspectorNetworkAgent::WillSendEventSourceRequest(
@@ -1212,23 +1190,18 @@ void InspectorNetworkAgent::WillSendEventSourceRequest(
 }
 
 void InspectorNetworkAgent::WillDispatchEventSourceEvent(
-    ThreadableLoaderClient* event_source,
+    unsigned long identifier,
     const AtomicString& event_name,
     const AtomicString& event_id,
     const String& data) {
-  ThreadableLoaderClientRequestIdMap::iterator it =
-      known_request_id_map_.find(event_source);
-  if (it == known_request_id_map_.end())
-    return;
   GetFrontend()->eventSourceMessageReceived(
-      IdentifiersFactory::SubresourceRequestId(it->value),
+      IdentifiersFactory::SubresourceRequestId(identifier),
       CurrentTimeTicksInSeconds(), event_name.GetString(), event_id.GetString(),
       data);
 }
 
 void InspectorNetworkAgent::DidFinishEventSourceRequest(
     ThreadableLoaderClient* event_source) {
-  known_request_id_map_.erase(event_source);
   ClearPendingRequestData();
 }
 
@@ -1243,7 +1216,6 @@ void InspectorNetworkAgent::DetachClientRequest(
       pending_xhr_replay_data_.Clear();
     }
   }
-  known_request_id_map_.erase(client);
 }
 
 void InspectorNetworkAgent::ApplyUserAgentOverride(String* user_agent) {
@@ -1449,7 +1421,6 @@ Response InspectorNetworkAgent::disable() {
   state_->setString(NetworkAgentState::kUserAgentOverride, "");
   instrumenting_agents_->removeInspectorNetworkAgent(this);
   resources_data_->Clear();
-  known_request_id_map_.clear();
   return Response::OK();
 }
 

@@ -586,8 +586,6 @@ void FetchManager::Loader::LoadSucceeded() {
     GetDocument()->GetFrame()->GetPage()->GetChromeClient().AjaxSucceeded(
         GetDocument()->GetFrame());
   }
-  probe::didFinishFetch(execution_context_, this, fetch_request_data_->Method(),
-                        fetch_request_data_->Url().GetString());
   NotifyFinished();
 }
 
@@ -718,8 +716,6 @@ void FetchManager::Loader::Abort() {
     threadable_loader_ = nullptr;
     loader->Cancel();
   }
-  // TODO(ricea): Maybe a more specific probe is needed?
-  probe::didFailFetch(execution_context_, this);
   NotifyFinished();
 }
 
@@ -905,7 +901,6 @@ void FetchManager::Loader::Failed(const String& message) {
     resolver_->Reject(V8ThrowException::CreateTypeError(state->GetIsolate(),
                                                         "Failed to fetch"));
   }
-  probe::didFailFetch(execution_context_, this);
   NotifyFinished();
 }
 
