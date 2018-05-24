@@ -113,17 +113,19 @@ void IdentityTestEnvironment::SetAutomaticIssueOfAccessTokens(bool grant) {
       grant);
 }
 
-void IdentityTestEnvironment::WaitForAccessTokenRequestAndRespondWithToken(
-    const std::string& token,
-    const base::Time& expiration) {
-  WaitForAccessTokenRequest();
+void IdentityTestEnvironment::
+    WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+        const std::string& token,
+        const base::Time& expiration) {
+  WaitForAccessTokenRequestIfNecessary();
   internals_->token_service()->IssueTokenForAllPendingRequests(token,
                                                                expiration);
 }
 
-void IdentityTestEnvironment::WaitForAccessTokenRequestAndRespondWithError(
-    const GoogleServiceAuthError& error) {
-  WaitForAccessTokenRequest();
+void IdentityTestEnvironment::
+    WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+        const GoogleServiceAuthError& error) {
+  WaitForAccessTokenRequestIfNecessary();
   internals_->token_service()->IssueErrorForAllPendingRequests(error);
 }
 
@@ -131,11 +133,24 @@ void IdentityTestEnvironment::OnAccessTokenRequested(
     const std::string& account_id,
     const std::string& consumer_id,
     const OAuth2TokenService::ScopeSet& scopes) {
+  // Post a task to handle this access token request in order to support the
+  // case where the access token request is handled synchronously in the
+  // production code, in which case this callback could be coming in ahead
+  // of an invocation of WaitForAccessTokenRequestIfNecessary() that will be
+  // made in this same iteration of the run loop.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&IdentityTestEnvironment::HandleOnAccessTokenRequested,
+                     base::Unretained(this)));
+}
+
+void IdentityTestEnvironment::HandleOnAccessTokenRequested() {
   if (on_access_token_requested_callback_)
     std::move(on_access_token_requested_callback_).Run();
 }
 
-void IdentityTestEnvironment::WaitForAccessTokenRequest() {
+void IdentityTestEnvironment::WaitForAccessTokenRequestIfNecessary() {
+  DCHECK(!on_access_token_requested_callback_);
   base::RunLoop run_loop;
   on_access_token_requested_callback_ = run_loop.QuitClosure();
   run_loop.Run();

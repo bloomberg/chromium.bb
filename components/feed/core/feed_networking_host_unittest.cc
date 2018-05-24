@@ -304,7 +304,7 @@ TEST_F(FeedNetworkingHostTest, ShouldIncludeAPIKeyForAuthError) {
                   std::vector<uint8_t>(),
                   base::BindOnce(&MockResponseDoneCallback::Done,
                                  base::Unretained(&done_callback)));
-  identity_env()->WaitForAccessTokenRequestAndRespondWithError(
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(
           GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
 

@@ -178,7 +178,7 @@ TEST_F(SubscriptionManagerImplTest,
   manager->Subscribe(subscription_token);
 
   // Wait for the access token request and issue the access token.
-  GetIdentityTestEnv()->WaitForAccessTokenRequestAndRespondWithToken(
+  GetIdentityTestEnv()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Max());
 
   ASSERT_FALSE(manager->IsSubscribed());
@@ -247,7 +247,7 @@ TEST_F(SubscriptionManagerImplTest,
 
   // Wait for the access token request that should occur and grant the access
   // token.
-  GetIdentityTestEnv()->WaitForAccessTokenRequestAndRespondWithToken(
+  GetIdentityTestEnv()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Max());
 
   RespondToSubscriptionRequestSuccessfully(/*is_signed_in=*/true);
@@ -269,7 +269,7 @@ TEST_F(SubscriptionManagerImplTest,
   std::unique_ptr<SubscriptionManagerImpl> manager = BuildSubscriptionManager();
   manager->Subscribe(subscription_token);
 
-  GetIdentityTestEnv()->WaitForAccessTokenRequestAndRespondWithToken(
+  GetIdentityTestEnv()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Max());
   RespondToSubscriptionRequestSuccessfully(/*is_signed_in=*/true);
 

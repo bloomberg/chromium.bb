@@ -87,8 +87,9 @@ TEST_F(DeviceSyncCryptAuthAccessTokenFetcherImplTest, TestSuccess) {
   StartFetchingAccessToken();
   EXPECT_EQ(nullptr, GetTokenAndReset());
 
-  identity_test_environment_->WaitForAccessTokenRequestAndRespondWithToken(
-      kAccessToken, base::Time::Max() /* expiration */);
+  identity_test_environment_
+      ->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+          kAccessToken, base::Time::Max() /* expiration */);
 
   // Run the request and confirm that the access token was returned.
   run_loop.Run();
@@ -104,9 +105,10 @@ TEST_F(DeviceSyncCryptAuthAccessTokenFetcherImplTest, TestFailure) {
   StartFetchingAccessToken();
   EXPECT_EQ(nullptr, GetTokenAndReset());
 
-  identity_test_environment_->WaitForAccessTokenRequestAndRespondWithError(
-      GoogleServiceAuthError(
-          GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
+  identity_test_environment_
+      ->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+          GoogleServiceAuthError(
+              GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
 
   // Run the request and confirm that an empty string was returned, signifying a
   // failure to fetch the token.
