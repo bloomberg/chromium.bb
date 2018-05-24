@@ -49,7 +49,7 @@ Message::~Message() = default;
 Message::Message() : base::Pickle(sizeof(Header)) {
   header()->routing = header()->type = 0;
   header()->flags = GetRefNumUpper24();
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   header()->num_fds = 0;
   header()->pad = 0;
 #endif
@@ -62,7 +62,7 @@ Message::Message(int32_t routing_id, uint32_t type, PriorityValue priority)
   header()->type = type;
   DCHECK((priority & 0xffffff00) == 0);
   header()->flags = priority | GetRefNumUpper24();
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   header()->num_fds = 0;
   header()->pad = 0;
 #endif
