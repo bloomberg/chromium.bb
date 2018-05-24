@@ -7,15 +7,15 @@
 
 #import <UIKit/UIKit.h>
 
-// View with the avatar on the leading side, the name and the email address of
-// an identity.
-// The email address is required. The name and the avatar are optional.
-// If the name is empty (or nil), then the email address is vertically centered.
+// View with the avatar on the leading side, a title and a subtitle. Only the
+// title is required. The title contains the user name if it exists, or the
+// email address. The subtitle contains the email address if the name exists,
+// otherwise it is hidden.
 // The avatar is displayed as a round image.
 // +--------------------------------+
 // |  +------+                      |
-// |  |      |  Full Name           |
-// |  |Avatar|  Email address       |
+// |  |      |  Title (name)        |
+// |  |Avatar|  Subtitle (email)    |
 // |  +------+                      |
 // +--------------------------------+
 @interface IdentityView : UIView
@@ -35,8 +35,8 @@
 // image.
 - (void)setAvatar:(UIImage*)avatar;
 
-// Sets the name and the email address. |name| can be nil.
-- (void)setName:(NSString*)name email:(NSString*)email;
+// Sets the title and subtitle. |subtitle| can be nil.
+- (void)setTitle:(NSString*)title subtitle:(NSString*)subtitle;
 
 @end
 

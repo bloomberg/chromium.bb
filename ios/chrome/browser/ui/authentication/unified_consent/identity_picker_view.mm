@@ -100,7 +100,11 @@ const int kHeaderBackgroundColor = 0xf1f3f4;
 
 - (void)setIdentityName:(NSString*)name email:(NSString*)email {
   DCHECK(email);
-  [self.identityView setName:name email:email];
+  if (!name.length) {
+    [self.identityView setTitle:email subtitle:nil];
+  } else {
+    [self.identityView setTitle:name subtitle:email];
+  }
 }
 
 #pragma mark - Private

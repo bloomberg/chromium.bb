@@ -29,8 +29,14 @@
 - (void)configureCell:(IdentityChooserCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
-  [cell configureCellWithTitle:self.name
-                      subtitle:self.email
+  NSString* title = self.name;
+  NSString* subtitle = self.email;
+  if (!title.length) {
+    title = subtitle;
+    subtitle = nil;
+  }
+  [cell configureCellWithTitle:title
+                      subtitle:subtitle
                          image:self.avatar
                        checked:self.selected];
 }
