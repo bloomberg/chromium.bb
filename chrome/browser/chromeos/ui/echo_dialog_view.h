@@ -7,12 +7,17 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/views/controls/styled_label_listener.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
-class StyledLabel;
-}
+class ImageButton;
+class View;
+}  // namespace views
+
+namespace gfx {
+class FontList;
+}  // namespace gfx
 
 namespace chromeos {
 
@@ -24,7 +29,7 @@ class EchoDialogListener;
 // extension is not allowed by policy to redeem offers, the dialog informs user
 // about this.
 class EchoDialogView : public views::DialogDelegateView,
-                       public views::StyledLabelListener {
+                       public views::ButtonListener {
  public:
   explicit EchoDialogView(EchoDialogListener* listener);
   ~EchoDialogView() override;
@@ -50,8 +55,8 @@ class EchoDialogView : public views::DialogDelegateView,
   friend class ExtensionEchoPrivateApiTest;
 
   // views::DialogDelegate overrides.
+  View* CreateExtraView() override;
   int GetDialogButtons() const override;
-  int GetDefaultDialogButton() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Cancel() override;
   bool Accept() override;
@@ -59,22 +64,20 @@ class EchoDialogView : public views::DialogDelegateView,
   // views::WidgetDelegate overrides.
   ui::ModalType GetModalType() const override;
   bool ShouldShowWindowTitle() const override;
-  bool ShouldShowWindowIcon() const override;
+  bool ShouldShowCloseButton() const override;
 
-  // views::LinkListener override.
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
+  // views::ButtonListener overrides.
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::View override.
   gfx::Size CalculatePreferredSize() const override;
 
-  // Sets the border and bounds for the styled label containing the dialog
-  // text.
-  void SetLabelBorderAndBounds();
+  // Sets the border and label view.
+  void SetBorderAndLabel(views::View* label,
+                         const gfx::FontList& label_font_list);
 
-  views::StyledLabel* label_;
   EchoDialogListener* listener_;
+  views::ImageButton* learn_more_button_;
   int ok_button_label_id_;
   int cancel_button_label_id_;
 
