@@ -89,6 +89,8 @@ const size_t kDefaultAllocatedObjectSizeThreshold = 100 * 1024;
 // doesn't cause jank even though it is scheduled as a normal task.
 const double kIncrementalMarkingStepDurationInSeconds = 0.001;
 
+constexpr size_t kMaxTerminationGCLoops = 20;
+
 namespace {
 
 const char* GcReasonString(BlinkGC::GCReason reason) {
@@ -236,9 +238,23 @@ void ThreadState::RunTerminationGC() {
     old_count = current_count;
     current_count = GetPersistentRegion()->NumberOfPersistents();
   }
+
   // We should not have any persistents left when getting to this point,
-  // if we have it is probably a bug so adding a debug ASSERT to catch this.
-  DCHECK(!current_count);
+  // if we have it is a bug, and we have a reference cycle or a missing
+  // RegisterAsStaticReference. Clearing out all the Persistents will avoid
+  // stale pointers and gets them reported as nullptr dereferences.
+  if (!current_count) {
+    for (size_t i = 0; i < kMaxTerminationGCLoops &&
+                       GetPersistentRegion()->NumberOfPersistents();
+         i++) {
+      GetPersistentRegion()->PrepareForThreadStateTermination();
+      CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
+                     BlinkGC::kEagerSweeping, BlinkGC::kThreadTerminationGC);
+    }
+  }
+
+  CHECK(!GetPersistentRegion()->NumberOfPersistents());
+
   // All of pre-finalizers should be consumed.
   DCHECK(ordered_pre_finalizers_.IsEmpty());
   CHECK_EQ(GcState(), kNoGCScheduled);

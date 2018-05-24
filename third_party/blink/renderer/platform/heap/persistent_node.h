@@ -151,6 +151,7 @@ class PLATFORM_EXPORT PersistentRegion final {
       Visitor*,
       ShouldTraceCallback = PersistentRegion::ShouldTracePersistentNode);
   int NumberOfPersistents();
+  void PrepareForThreadStateTermination();
 
  private:
   friend CrossThreadPersistentRegion;
