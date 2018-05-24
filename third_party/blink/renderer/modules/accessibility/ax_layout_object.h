@@ -86,6 +86,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   // Check object state.
   bool IsFocused() const override;
   AccessibilitySelectedState IsSelected() const override;
+  bool IsSelectedFromFocus() const override;
 
   // Whether objects are ignored, i.e. not included in the tree.
   AXObjectInclusion DefaultObjectInclusion(
