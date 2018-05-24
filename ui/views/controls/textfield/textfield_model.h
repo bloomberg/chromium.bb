@@ -260,7 +260,7 @@ class VIEWS_EXPORT TextfieldModel {
   void ExecuteAndRecordReplaceSelection(internal::MergeType merge_type,
                                         const base::string16& new_text);
   void ExecuteAndRecordReplace(internal::MergeType merge_type,
-                               size_t old_cursor_pos,
+                               gfx::Range replacement_range,
                                size_t new_cursor_pos,
                                const base::string16& new_text,
                                size_t new_text_start);
@@ -270,15 +270,15 @@ class VIEWS_EXPORT TextfieldModel {
   void AddOrMergeEditHistory(std::unique_ptr<internal::Edit> edit);
 
   // Modify the text buffer in following way:
-  // 1) Delete the string from |delete_from| to |delte_to|.
+  // 1) Delete the string from |delete_from| to |delete_to|.
   // 2) Insert the |new_text| at the index |new_text_insert_at|.
   //    Note that the index is after deletion.
-  // 3) Move the cursor to |new_cursor_pos|.
+  // 3) Select |selection|.
   void ModifyText(size_t delete_from,
                   size_t delete_to,
                   const base::string16& new_text,
                   size_t new_text_insert_at,
-                  size_t new_cursor_pos);
+                  gfx::Range selection);
 
   void ClearComposition();
 
