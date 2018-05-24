@@ -5,6 +5,7 @@ var lengthInSeconds = 1;
 var sampleRate = 44100;
 var source = 0;
 var audio = 0;
+var spn = 0;
 
 // Create an MediaElementSource node with the given |url| and connect it to webaudio.
 // |oncomplete| is given the completion event to check the result.
@@ -17,13 +18,15 @@ function runTest (url, oncomplete, tester)
 
     window.jsTestIsAsync = true;
 
-    context = new OfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
+    context = new AudioContext();
+    context.suspend();
 
     audio = document.createElement('audio');
     audio.autoplay = true;
 
     source = context.createMediaElementSource(audio);
-    source.connect(context.destination);
+    spn = context.createScriptProcessor(16384, 1, 1);
+    source.connect(spn).connect(context.destination);
 
     // Note: In practice this is not a reliable way to ensure the media element
     // is ready to provide samples; unfortunately if the element is not ready
@@ -35,13 +38,14 @@ function runTest (url, oncomplete, tester)
     audio.addEventListener("playing", function(e) {
         // If we receive multiple playing events, we still can't invoke
         // startRendering multiple times.
-        context.startRendering().catch(() => {});
+        context.resume().then(() => {
+                              spn.onaudioprocess = function(e) {
+                                checkResult(e.inputBuffer);
+                                finishJSTest();
+                              }
+          });
     });
 
-    context.oncomplete = function(e) {
-        checkResult(e);
-        finishJSTest();
-    }
 
     if (tester) {
         tester();
