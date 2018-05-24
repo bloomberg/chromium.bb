@@ -12,7 +12,7 @@
 #include "services/tracing/coordinator.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 
-#if defined(PERFETTO_SERVICE_AVAILABLE)
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX)
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/perfetto/perfetto_tracing_coordinator.h"
 #endif
@@ -26,7 +26,7 @@ std::unique_ptr<service_manager::Service> TracingService::Create() {
 TracingService::TracingService() : weak_factory_(this) {}
 
 TracingService::~TracingService() {
-#if defined(PERFETTO_SERVICE_AVAILABLE)
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX)
   if (perfetto_tracing_coordinator_) {
     PerfettoTracingCoordinator::DestroyOnSequence(
         std::move(perfetto_tracing_coordinator_));
@@ -48,7 +48,7 @@ void TracingService::OnStart() {
                           base::Unretained(tracing_agent_registry_.get())));
 
   if (TracingUsesPerfettoBackend()) {
-#if defined(PERFETTO_SERVICE_AVAILABLE)
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX)
     perfetto_service_ = std::make_unique<tracing::PerfettoService>();
     registry_.AddInterface(
         base::BindRepeating(&tracing::PerfettoService::BindRequest,
