@@ -19,7 +19,6 @@
 #include "extensions/browser/content_verifier_io_data.h"
 #include "extensions/browser/content_verify_job.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace base {
 class FilePath;
@@ -27,6 +26,10 @@ class FilePath;
 
 namespace content {
 class BrowserContext;
+}
+
+namespace net {
+class URLRequestContextGetter;
 }
 
 namespace extensions {
@@ -161,9 +164,7 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   std::unique_ptr<ContentVerifierDelegate> delegate_;
 
   // Used by ContentHashFetcher.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-      shared_url_loader_factory_info_;
-  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  net::URLRequestContextGetter* request_context_getter_;
 
   // For observing the ExtensionRegistry.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
