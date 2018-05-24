@@ -201,7 +201,7 @@ void InsertDsfIntoList(std::vector<float>* zoom_values, float dsf) {
     DCHECK_LT(dsf, 1.f);
     *(zoom_values->begin()) = dsf;
   } else if (it == zoom_values->end()) {
-    DCHECK_GT(dsf, 1.f);
+    DCHECK_LT(dsf, 1.f);
     *(zoom_values->rbegin()) = dsf;
   } else {
     // There can only be 1 entry for 1.f value.
