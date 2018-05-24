@@ -171,8 +171,10 @@ std::string TestURLRequest::TestSetProperty() {
   // thresholds, etc). Error checking is delayed until request opening (aka url
   // loading).
 #define ID_STR(arg) arg, #arg
-    PropertyTestData test_data[] = {
-      TEST_BOOL(PP_URLREQUESTPROPERTY_STREAMTOFILE),
+  PropertyTestData test_data[] = {
+      TEST_INT_INVALID(PP_URLREQUESTPROPERTY_STREAMTOFILE),
+      PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_STREAMTOFILE),
+                       PP_MakeBool(PP_TRUE), PP_FALSE),
       TEST_BOOL(PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS),
       TEST_BOOL(PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS),
       TEST_BOOL(PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS),
@@ -196,8 +198,8 @@ std::string TestURLRequest::TestSetProperty() {
                        PP_MakeString("POST"), PP_TRUE),
       PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_HEADERS),
                        PP_MakeString("Accept: text/plain"), PP_TRUE),
-      PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_HEADERS),
-                       PP_MakeString(""), PP_TRUE),
+      PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_HEADERS), PP_MakeString(""),
+                       PP_TRUE),
       PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL),
                        PP_MakeString("http://www.google.com"), PP_TRUE),
       PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL),
@@ -213,19 +215,16 @@ std::string TestURLRequest::TestSetProperty() {
       PropertyTestData(
           ID_STR(PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING),
           PP_MakeUndefined(), PP_TRUE),
-      PropertyTestData(
-          ID_STR(PP_URLREQUESTPROPERTY_CUSTOMUSERAGENT),
-          PP_MakeString("My Crazy Plugin"), PP_TRUE),
-      PropertyTestData(
-          ID_STR(PP_URLREQUESTPROPERTY_CUSTOMUSERAGENT),
-          PP_MakeString(""), PP_TRUE),
-      PropertyTestData(
-          ID_STR(PP_URLREQUESTPROPERTY_CUSTOMUSERAGENT),
-          PP_MakeUndefined(), PP_TRUE),
-      PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_URL),
-                       PP_MakeUndefined(), PP_FALSE),
-      PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_METHOD),
-                       PP_MakeUndefined(), PP_FALSE),
+      PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_CUSTOMUSERAGENT),
+                       PP_MakeString("My Crazy Plugin"), PP_TRUE),
+      PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_CUSTOMUSERAGENT),
+                       PP_MakeString(""), PP_TRUE),
+      PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_CUSTOMUSERAGENT),
+                       PP_MakeUndefined(), PP_TRUE),
+      PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_URL), PP_MakeUndefined(),
+                       PP_FALSE),
+      PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_METHOD), PP_MakeUndefined(),
+                       PP_FALSE),
       PropertyTestData(
           ID_STR(PP_URLREQUESTPROPERTY_HEADERS),
           PP_MakeString("Proxy-Authorization: Basic dXNlcjpwYXNzd29yZA=="),
@@ -250,7 +249,7 @@ std::string TestURLRequest::TestSetProperty() {
       PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_URL),
                        PP_MakeString("::::::::::::"), PP_TRUE),
       PropertyTestData(ID_STR(PP_URLREQUESTPROPERTY_METHOD),
-          PP_MakeString("INVALID"), PP_TRUE),
+                       PP_MakeString("INVALID"), PP_TRUE),
       PropertyTestData(
           ID_STR(PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING),
           PP_MakeString("invalid"), PP_TRUE),
@@ -261,7 +260,7 @@ std::string TestURLRequest::TestSetProperty() {
           ID_STR(PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERTHRESHOLD),
           PP_MakeInt32(-100), PP_TRUE),
 
-    };
+  };
   std::string error;
 
   PP_Resource url_request = ppb_url_request_interface_->Create(
@@ -281,7 +280,6 @@ std::string TestURLRequest::TestSetProperty() {
       error = std::string("Setting property ") +
           test_data[i].property_name + " to " + var.DebugString() +
           " did not return " + (test_data[i].expected_value ? "True" : "False");
-      error = test_data[i].property_name;
     }
     ppb_var_interface_->Release(test_data[i].var);
   }
@@ -452,9 +450,9 @@ std::string TestURLRequest::TestStress() {
         url_request_info[i])) {
       error = "IsURLRequestInfo() failed";
     } else if (PP_FALSE == ppb_url_request_interface_->SetProperty(
-        url_request_info[i],
-        PP_URLREQUESTPROPERTY_STREAMTOFILE,
-        PP_MakeBool(PP_FALSE))) {
+                               url_request_info[i],
+                               PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS,
+                               PP_MakeBool(PP_TRUE))) {
       error = "SetProperty() failed";
     }
     if (!error.empty()) {

@@ -44,17 +44,11 @@ class URLResponseInfo : public Resource {
   /// invalid.
   Var GetProperty(PP_URLResponseProperty property) const;
 
-  /// This function returns a <code>FileRef</code>
-  /// pointing to the file containing the response body.  This
-  /// is only valid if <code>PP_URLREQUESTPROPERTY_STREAMTOFILE</code> was set
-  /// on the <code>URLRequestInfo</code> used to produce this response.  This
-  /// file remains valid until the <code>URLLoader</code> associated with this
+  /// This function returns an <code>is_null</code> object, as the
+  /// <code>PP_URLREQUESTPROPERTY_STREAMTOFILE</code> is no longer supported.
   /// <code>URLResponseInfo</code> is closed or destroyed.
   ///
-  /// @return A <code>FileRef</code> corresponding to a
-  /// <code>FileRef</code> if successful, an <code>is_null</code> object if
-  /// <code>PP_URLREQUESTPROPERTY_STREAMTOFILE</code> was not requested or if
-  /// the <code>URLLoader</code> has not been opened yet.
+  /// @return An <code>is_null</code> object.
   FileRef GetBodyAsFileRef() const;
 
   /// This function gets the <code>PP_URLRESPONSEPROPERTY_URL</code>

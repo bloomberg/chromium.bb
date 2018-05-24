@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "content/public/test/javascript_test_observer.h"
@@ -89,6 +90,8 @@ class PPAPITestBase : public InProcessBrowserTest {
   GURL GetTestURL(const net::EmbeddedTestServer& http_server,
                   const std::string& test_case,
                   const std::string& extra_params);
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // In-process plugin test runner.  See OutOfProcessPPAPITest below for the

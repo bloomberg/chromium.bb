@@ -46,6 +46,8 @@ component("shared_impl") {
     "platform_file.cc",
     "platform_file.h",
     "ppapi_constants.h",
+    "ppapi_features.cc",
+    "ppapi_features.h",
     "ppapi_globals.cc",
     "ppapi_globals.h",
     "ppapi_nacl_plugin_args.cc",

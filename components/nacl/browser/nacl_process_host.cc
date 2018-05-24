@@ -14,6 +14,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -933,6 +934,19 @@ bool NaClProcessHost::StartPPAPIProxy(
       args.switch_names.push_back(flag_whitelist[i]);
       args.switch_values.push_back(value);
     }
+  }
+
+  std::string enabled_features;
+  std::string disabled_features;
+  base::FeatureList::GetInstance()->GetFeatureOverrides(&enabled_features,
+                                                        &disabled_features);
+  if (!enabled_features.empty()) {
+    args.switch_names.push_back(switches::kEnableFeatures);
+    args.switch_values.push_back(enabled_features);
+  }
+  if (!disabled_features.empty()) {
+    args.switch_names.push_back(switches::kDisableFeatures);
+    args.switch_values.push_back(disabled_features);
   }
 
   ppapi_host_->GetPpapiHost()->AddHostFactoryFilter(
