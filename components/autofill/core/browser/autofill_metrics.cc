@@ -1579,6 +1579,22 @@ void AutofillMetrics::FormEventLogger::SetBankNameAvailable() {
   has_logged_bank_name_available_ = true;
 }
 
+void AutofillMetrics::FormEventLogger::OnDidSeeDynamicForm() {
+  Log(AutofillMetrics::FORM_EVENT_DID_SEE_DYNAMIC_FORM);
+}
+
+void AutofillMetrics::FormEventLogger::OnDidSeeFillableDynamicForm() {
+  Log(AutofillMetrics::FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM);
+}
+
+void AutofillMetrics::FormEventLogger::OnDidRefill() {
+  Log(AutofillMetrics::FORM_EVENT_DID_DYNAMIC_REFILL);
+}
+
+void AutofillMetrics::FormEventLogger::OnSubsequentRefillAttempt() {
+  Log(AutofillMetrics::FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL);
+}
+
 void AutofillMetrics::FormEventLogger::Log(FormEvent event) const {
   DCHECK_LT(event, NUM_FORM_EVENTS);
   std::string name("Autofill.FormEvents.");

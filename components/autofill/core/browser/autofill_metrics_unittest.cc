@@ -7076,4 +7076,101 @@ TEST_F(AutofillMetricsTest, AutofillSuggestionShownTest) {
          Collapse(CalculateFormSignature(form))}}});
 }
 
+TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAutofillDynamicForms},
+      {features::kAutofillRequireSecureCreditCardContext,
+       features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
+
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("State", "state", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STATE);
+  test::CreateTestFormField("City", "city", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_CITY);
+  test::CreateTestFormField("Street", "street", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STREET_ADDRESS);
+
+  // Simulate seeing.
+  base::HistogramTester histogram_tester;
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+  std::string guid("00000000-0000-0000-0000-000000000001");
+
+  // Simulate checking whether to fill a dynamic form before the form was filled
+  // initially.
+  FormStructure form_structure(form);
+  autofill_manager_->ShouldTriggerRefill(form_structure);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DID_SEE_DYNAMIC_FORM, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM, 0);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DID_DYNAMIC_REFILL, 0);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL, 0);
+
+  // Simulate filling the form.
+  autofill_manager_->FillOrPreviewForm(
+      AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+      autofill_manager_->MakeFrontendID(std::string(), guid));
+
+  // Simulate checking whether to fill a dynamic form after the form was filled
+  // initially.
+  autofill_manager_->ShouldTriggerRefill(form_structure);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DID_SEE_DYNAMIC_FORM, 2);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DID_DYNAMIC_REFILL, 0);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL, 0);
+
+  // Trigger a refill, the refill metric should be updated.
+  autofill_manager_->TriggerRefill(form, &form_structure);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DID_SEE_DYNAMIC_FORM, 2);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DID_DYNAMIC_REFILL, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL, 0);
+
+  // Trigger a check to see whether a refill should happen. The
+  autofill_manager_->ShouldTriggerRefill(form_structure);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DID_SEE_DYNAMIC_FORM, 3);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM, 2);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DID_DYNAMIC_REFILL, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL, 1);
+}
+
 }  // namespace autofill
