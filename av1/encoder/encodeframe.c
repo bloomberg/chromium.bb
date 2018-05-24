@@ -537,6 +537,13 @@ static int set_segment_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   return av1_compute_rd_mult(cpi, segment_qindex + cm->y_dc_delta_q);
 }
 
+static int set_deltaq_rdmult(const AV1_COMP *const cpi, MACROBLOCKD *const xd) {
+  const AV1_COMMON *const cm = &cpi->common;
+
+  return av1_compute_rd_mult(
+      cpi, cm->base_qindex + xd->delta_qindex + cm->y_dc_delta_q);
+}
+
 static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                              MACROBLOCK *const x, int mi_row, int mi_col,
                              RD_STATS *rd_cost, PARTITION_TYPE partition,
@@ -551,6 +558,7 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   struct macroblock_plane *const p = x->plane;
   struct macroblockd_plane *const pd = xd->plane;
   const AQ_MODE aq_mode = cpi->oxcf.aq_mode;
+  const DELTAQ_MODE deltaq_mode = cpi->oxcf.deltaq_mode;
   int i, orig_rdmult;
 
   aom_clear_system_state();
@@ -631,6 +639,8 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     if (cyclic_refresh_segment_id_boosted(mbmi->segment_id))
       x->rdmult = av1_cyclic_refresh_get_rdmult(cpi->cyclic_refresh);
   }
+
+  if (deltaq_mode > 0) x->rdmult = set_deltaq_rdmult(cpi, xd);
 
   // Find best coding mode & reconstruct the MB so it is available
   // as a predictor for MBs that follow in the SB
@@ -3888,14 +3898,11 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     xd->cur_frame_force_integer_mv = cm->cur_frame_force_integer_mv;
 
     if (cm->delta_q_present_flag) {
-      // Test mode for delta quantization
-      int sb_row = mi_row >> 3;
-      int sb_col = mi_col >> 3;
-      int sb_stride = (cm->width + MAX_SB_SIZE - 1) >> MAX_SB_SIZE_LOG2;
-      int index = ((sb_row * sb_stride + sb_col + 8) & 31) - 16;
-
-      // Ensure divisibility of delta_qindex by delta_q_res
-      int offset_qindex = (index < 0 ? -index - 8 : index - 8);
+      // Delta-q modulation based on variance
+      av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes);
+      int block_var_level = av1_block_energy(cpi, x, cm->seq_params.sb_size);
+      int offset_qindex =
+          av1_compute_deltaq_from_energy_level(cpi, block_var_level);
       int qmask = ~(cm->delta_q_res - 1);
       int current_qindex = clamp(cm->base_qindex + offset_qindex,
                                  cm->delta_q_res, 256 - cm->delta_q_res);

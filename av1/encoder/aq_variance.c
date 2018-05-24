@@ -194,3 +194,20 @@ int av1_block_energy(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs) {
   energy = av1_log_block_var(cpi, x, bs) - energy_midpoint;
   return clamp((int)round(energy), ENERGY_MIN, ENERGY_MAX);
 }
+
+int av1_compute_deltaq_from_energy_level(const AV1_COMP *const cpi,
+                                         int block_var_level) {
+  ENERGY_IN_BOUNDS(block_var_level);
+
+  const int rate_level = SEGMENT_ID(block_var_level);
+  const AV1_COMMON *const cm = &cpi->common;
+  int qindex_delta =
+      av1_compute_qdelta_by_rate(&cpi->rc, cm->frame_type, cm->base_qindex,
+                                 rate_ratio[rate_level], cm->bit_depth);
+
+  if ((cm->base_qindex != 0) && ((cm->base_qindex + qindex_delta) == 0)) {
+    qindex_delta = -cm->base_qindex + 1;
+  }
+
+  return qindex_delta;
+}
