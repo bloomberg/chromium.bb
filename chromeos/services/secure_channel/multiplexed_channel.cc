@@ -11,8 +11,9 @@ namespace chromeos {
 
 namespace secure_channel {
 
-MultiplexedChannel::MultiplexedChannel(Delegate* delegate)
-    : delegate_(delegate), channel_id_(base::UnguessableToken::Create()) {
+MultiplexedChannel::MultiplexedChannel(Delegate* delegate,
+                                       ConnectionDetails connection_details)
+    : delegate_(delegate), connection_details_(connection_details) {
   DCHECK(delegate);
 }
 
@@ -29,7 +30,7 @@ bool MultiplexedChannel::AddClientToChannel(
 }
 
 void MultiplexedChannel::NotifyDisconnected() {
-  delegate_->OnDisconnected(channel_id_);
+  delegate_->OnDisconnected(connection_details_);
 }
 
 }  // namespace secure_channel

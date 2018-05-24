@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/authenticated_channel.h"
+#include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/multiplexed_channel.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "chromeos/services/secure_channel/single_client_message_proxy.h"
@@ -44,6 +44,7 @@ class MultiplexedChannelImpl : public MultiplexedChannel,
     virtual std::unique_ptr<MultiplexedChannel> BuildInstance(
         std::unique_ptr<AuthenticatedChannel> authenticated_channel,
         MultiplexedChannel::Delegate* delegate,
+        ConnectionDetails connection_details,
         InitialClientList* initial_clients);
 
    private:
@@ -55,7 +56,8 @@ class MultiplexedChannelImpl : public MultiplexedChannel,
  private:
   MultiplexedChannelImpl(
       std::unique_ptr<AuthenticatedChannel> authenticated_channel,
-      MultiplexedChannel::Delegate* delegate);
+      MultiplexedChannel::Delegate* delegate,
+      ConnectionDetails connection_details);
 
   // MultiplexedChannel:
   bool IsDisconnecting() override;

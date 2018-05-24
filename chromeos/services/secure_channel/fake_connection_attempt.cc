@@ -11,8 +11,9 @@ namespace chromeos {
 namespace secure_channel {
 
 FakeConnectionAttempt::FakeConnectionAttempt(
-    ConnectionAttemptDelegate* delegate)
-    : ConnectionAttempt<std::string>(delegate) {}
+    ConnectionAttemptDelegate* delegate,
+    const ConnectionDetails& connection_details)
+    : ConnectionAttempt<std::string>(delegate, connection_details) {}
 
 FakeConnectionAttempt::~FakeConnectionAttempt() = default;
 

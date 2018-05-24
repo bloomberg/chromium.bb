@@ -17,6 +17,7 @@
 #include "chromeos/services/secure_channel/connect_to_device_operation.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation_factory.h"
 #include "chromeos/services/secure_channel/connection_attempt.h"
+#include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
 #include "chromeos/services/secure_channel/pending_connection_request_delegate.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
@@ -51,9 +52,10 @@ class ConnectionAttemptBase : public ConnectionAttempt<FailureDetailType>,
       std::unique_ptr<ConnectToDeviceOperationFactory<FailureDetailType>>
           connect_to_device_operation_factory,
       ConnectionAttemptDelegate* delegate,
+      const ConnectionDetails& connection_details,
       scoped_refptr<base::TaskRunner> task_runner =
           base::ThreadTaskRunnerHandle::Get())
-      : ConnectionAttempt<FailureDetailType>(delegate),
+      : ConnectionAttempt<FailureDetailType>(delegate, connection_details),
         connect_to_device_operation_factory_(
             std::move(connect_to_device_operation_factory)),
         task_runner_(task_runner),

@@ -16,21 +16,18 @@ FakeConnectionAttemptDelegate::FakeConnectionAttemptDelegate() = default;
 FakeConnectionAttemptDelegate::~FakeConnectionAttemptDelegate() = default;
 
 void FakeConnectionAttemptDelegate::OnConnectionAttemptSucceeded(
-    const base::UnguessableToken& attempt_id,
+    const ConnectionDetails& connection_details,
     std::unique_ptr<AuthenticatedChannel> authenticated_channel) {
-  DCHECK(attempt_id_.is_empty());
-  DCHECK(!attempt_id.is_empty());
-
-  attempt_id_ = attempt_id;
+  DCHECK(!connection_details_);
+  connection_details_ = connection_details;
   authenticated_channel_ = std::move(authenticated_channel);
 }
 
 void FakeConnectionAttemptDelegate::
     OnConnectionAttemptFinishedWithoutConnection(
-        const base::UnguessableToken& attempt_id) {
-  DCHECK(attempt_id_.is_empty());
-  DCHECK(!attempt_id.is_empty());
-  attempt_id_ = attempt_id;
+        const ConnectionDetails& connection_details) {
+  DCHECK(!connection_details_);
+  connection_details_ = connection_details;
 }
 
 }  // namespace secure_channel

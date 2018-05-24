@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "chromeos/services/secure_channel/connection_details.h"
+#include "chromeos/services/secure_channel/connection_medium.h"
 #include "chromeos/services/secure_channel/fake_authenticated_channel.h"
 #include "chromeos/services/secure_channel/fake_connect_to_device_operation.h"
 #include "chromeos/services/secure_channel/fake_connect_to_device_operation_factory.h"
@@ -25,6 +27,7 @@ namespace secure_channel {
 
 namespace {
 
+const char kTestDeviceId[] = "testDeviceId";
 const char kTestFailureDetail[] = "testFailureDetail";
 
 // Since ConnectionAttemptBase is templatized, a concrete implementation
@@ -38,6 +41,8 @@ class TestConnectionAttempt : public ConnectionAttemptBase<std::string> {
       : ConnectionAttemptBase<std::string>(
             std::move(connect_to_device_operation_factory),
             delegate,
+            ConnectionDetails(kTestDeviceId,
+                              ConnectionMedium::kBluetoothLowEnergy),
             task_runner) {}
   ~TestConnectionAttempt() override = default;
 };
@@ -164,7 +169,8 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
 
     // |fake_delegate_|'s delegate should have received the
     // AuthenticatedChannel.
-    EXPECT_EQ(connection_attempt_->attempt_id(), fake_delegate_->attempt_id());
+    EXPECT_EQ(connection_attempt_->connection_details(),
+              fake_delegate_->connection_details());
     EXPECT_EQ(fake_authenticated_channel_raw,
               fake_delegate_->authenticated_channel());
   }
@@ -176,13 +182,14 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
   }
 
   void VerifyDelegateNotNotified() {
-    EXPECT_TRUE(fake_delegate_->attempt_id().is_empty());
+    EXPECT_FALSE(fake_delegate_->connection_details());
   }
 
   void VerifyDelegateNotifiedOfFailure() {
     // |fake_delegate_| should have received the failing attempt's ID but no
     // AuthenticatedChannel.
-    EXPECT_EQ(connection_attempt_->attempt_id(), fake_delegate_->attempt_id());
+    EXPECT_EQ(connection_attempt_->connection_details(),
+              fake_delegate_->connection_details());
     EXPECT_FALSE(fake_delegate_->authenticated_channel());
   }
 

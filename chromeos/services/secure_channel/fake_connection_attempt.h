@@ -23,7 +23,8 @@ class ConnectionAttemptDelegate;
 // std::string.
 class FakeConnectionAttempt : public ConnectionAttempt<std::string> {
  public:
-  FakeConnectionAttempt(ConnectionAttemptDelegate* delegate);
+  FakeConnectionAttempt(ConnectionAttemptDelegate* delegate,
+                        const ConnectionDetails& connection_details);
   ~FakeConnectionAttempt() override;
 
   using IdToRequestMap =

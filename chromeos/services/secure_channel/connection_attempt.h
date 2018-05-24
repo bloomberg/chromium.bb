@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/unguessable_token.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/connection_attempt_delegate.h"
+#include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
 
 namespace chromeos {
@@ -40,7 +40,9 @@ class ConnectionAttempt {
 
   virtual ~ConnectionAttempt() = default;
 
-  const base::UnguessableToken& attempt_id() const { return attempt_id_; }
+  const ConnectionDetails& connection_details() const {
+    return connection_details_;
+  }
 
   // Associates |request| with this attempt. If the attempt succeeds, |request|
   // will be notified of success; on failure, |request| will be notified of a
@@ -65,8 +67,9 @@ class ConnectionAttempt {
   }
 
  protected:
-  ConnectionAttempt(ConnectionAttemptDelegate* delegate)
-      : delegate_(delegate), attempt_id_(base::UnguessableToken::Create()) {
+  ConnectionAttempt(ConnectionAttemptDelegate* delegate,
+                    const ConnectionDetails& connection_details)
+      : delegate_(delegate), connection_details_(connection_details) {
     DCHECK(delegate);
   }
 
@@ -90,7 +93,7 @@ class ConnectionAttempt {
     }
 
     has_notified_delegate_ = true;
-    delegate_->OnConnectionAttemptSucceeded(attempt_id_,
+    delegate_->OnConnectionAttemptSucceeded(connection_details_,
                                             std::move(authenticated_channel));
   }
 
@@ -104,12 +107,13 @@ class ConnectionAttempt {
     }
 
     has_notified_delegate_ = true;
-    delegate_->OnConnectionAttemptFinishedWithoutConnection(attempt_id_);
+    delegate_->OnConnectionAttemptFinishedWithoutConnection(
+        connection_details_);
   }
 
  private:
   ConnectionAttemptDelegate* delegate_;
-  const base::UnguessableToken attempt_id_;
+  const ConnectionDetails connection_details_;
 
   bool has_notified_delegate_ = false;
 

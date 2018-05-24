@@ -6,7 +6,7 @@
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_MULTIPLEXED_CHANNEL_H_
 
 #include "base/macros.h"
-#include "base/unguessable_token.h"
+#include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
 namespace chromeos {
@@ -23,7 +23,8 @@ class MultiplexedChannel {
   class Delegate {
    public:
     virtual ~Delegate() = default;
-    virtual void OnDisconnected(const base::UnguessableToken& channel_id) = 0;
+    virtual void OnDisconnected(
+        const ConnectionDetails& connection_details) = 0;
   };
 
   virtual ~MultiplexedChannel();
@@ -37,10 +38,10 @@ class MultiplexedChannel {
   bool AddClientToChannel(const std::string& feature,
                           mojom::ConnectionDelegatePtr connection_delegate_ptr);
 
-  const base::UnguessableToken& channel_id() { return channel_id_; }
+  const ConnectionDetails& connection_details() { return connection_details_; }
 
  protected:
-  MultiplexedChannel(Delegate* delegate);
+  MultiplexedChannel(Delegate* delegate, ConnectionDetails connection_details);
 
   virtual void PerformAddClientToChannel(
       const std::string& feature,
@@ -50,7 +51,7 @@ class MultiplexedChannel {
 
  private:
   Delegate* delegate_;
-  const base::UnguessableToken channel_id_;
+  const ConnectionDetails connection_details_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiplexedChannel);
 };

@@ -39,6 +39,7 @@ std::unique_ptr<MultiplexedChannel>
 MultiplexedChannelImpl::Factory::BuildInstance(
     std::unique_ptr<AuthenticatedChannel> authenticated_channel,
     MultiplexedChannel::Delegate* delegate,
+    ConnectionDetails connection_details,
     InitialClientList* initial_clients) {
   DCHECK(authenticated_channel);
   DCHECK(!authenticated_channel->is_disconnected());
@@ -46,8 +47,8 @@ MultiplexedChannelImpl::Factory::BuildInstance(
   DCHECK(initial_clients);
   DCHECK(!initial_clients->empty());
 
-  auto channel = base::WrapUnique(
-      new MultiplexedChannelImpl(std::move(authenticated_channel), delegate));
+  auto channel = base::WrapUnique(new MultiplexedChannelImpl(
+      std::move(authenticated_channel), delegate, connection_details));
   for (auto& client : *initial_clients) {
     bool success =
         channel->AddClientToChannel(client.first, std::move(client.second));
@@ -63,8 +64,9 @@ MultiplexedChannelImpl::Factory::BuildInstance(
 
 MultiplexedChannelImpl::MultiplexedChannelImpl(
     std::unique_ptr<AuthenticatedChannel> authenticated_channel,
-    MultiplexedChannel::Delegate* delegate)
-    : MultiplexedChannel(delegate),
+    MultiplexedChannel::Delegate* delegate,
+    ConnectionDetails connection_details)
+    : MultiplexedChannel(delegate, connection_details),
       authenticated_channel_(std::move(authenticated_channel)) {
   authenticated_channel_->AddObserver(this);
 }
