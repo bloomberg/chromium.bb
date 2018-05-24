@@ -100,7 +100,7 @@ public class DownloadLocationDialog extends ModalDialogView {
         if (selectedItemId == NO_SELECTED_ITEM_ID
                 || dialogType == DownloadLocationDialogType.LOCATION_FULL
                 || dialogType == DownloadLocationDialogType.LOCATION_NOT_FOUND) {
-            selectedItemId = mDirectoryAdapter.getFirstSelectableItemId();
+            selectedItemId = mDirectoryAdapter.useFirstValidSelectableItemId();
         }
         mFileLocation.setSelection(selectedItemId);
 

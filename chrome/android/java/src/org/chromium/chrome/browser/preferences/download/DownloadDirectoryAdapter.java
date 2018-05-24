@@ -33,6 +33,9 @@ import java.util.List;
  */
 public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
     public static int NO_SELECTED_ITEM_ID = -1;
+    public static int SELECTED_ITEM_NOT_INITIALIZED = -2;
+
+    protected int mSelectedPosition = SELECTED_ITEM_NOT_INITIALIZED;
 
     private Context mContext;
     private LayoutInflater mLayoutInflater;
@@ -150,6 +153,14 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
      *          NO_SELECTED_ITEM_ID if no item matches the default path.
      */
     public int getSelectedItemId() {
+        if (mSelectedPosition == SELECTED_ITEM_NOT_INITIALIZED) {
+            mSelectedPosition = initSelectedIdFromPref();
+        }
+
+        return mSelectedPosition;
+    }
+
+    private int initSelectedIdFromPref() {
         if (!mErrorOptions.isEmpty()) return 0;
         String defaultLocation = PrefServiceBridge.getInstance().getDownloadDefaultDirectory();
         for (int i = 0; i < getCount(); i++) {
@@ -167,13 +178,14 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
      *
      * @return  ID of the first valid, selectable item and the new default location.
      */
-    public int getFirstSelectableItemId() {
+    public int useFirstValidSelectableItemId() {
         for (int i = 0; i < getCount(); i++) {
             DirectoryOption option = (DirectoryOption) getItem(i);
             if (option == null) continue;
             if (option.availableSpace > 0) {
                 PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(
                         option.location.getAbsolutePath());
+                mSelectedPosition = i;
                 return i;
             }
         }

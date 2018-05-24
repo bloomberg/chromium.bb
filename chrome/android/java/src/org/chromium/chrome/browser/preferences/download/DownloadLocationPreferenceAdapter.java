@@ -35,6 +35,10 @@ public class DownloadLocationPreferenceAdapter
             Context context, DownloadLocationPreference preference) {
         super(context);
         mPreference = preference;
+
+        if (getSelectedItemId() == NO_SELECTED_ITEM_ID) {
+            useFirstValidSelectableItemId();
+        }
     }
 
     @Override
@@ -48,9 +52,8 @@ public class DownloadLocationPreferenceAdapter
         view.setTag(position);
         view.setOnClickListener(this);
 
-        boolean isSelected = (getSelectedItemId() == position);
         RadioButton radioButton = view.findViewById(R.id.radio_button);
-        radioButton.setChecked(isSelected);
+        radioButton.setChecked(getSelectedItemId() == position);
 
         view.setEnabled(isEnabled(position));
 
@@ -97,6 +100,8 @@ public class DownloadLocationPreferenceAdapter
                 DownloadPreferences.PREF_LOCATION_CHANGE, option.location.getAbsolutePath());
         editor.apply();
         mPreference.setSummary(option.location.getAbsolutePath());
+
+        mSelectedPosition = selectedId;
 
         // Refresh the list of download directories UI.
         notifyDataSetChanged();
