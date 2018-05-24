@@ -36,21 +36,6 @@ async_test(function(t) {
 }, "Test that call convertToBlob on an OffscreenCanvas with size 0 throws exception");
 
 async_test(function(t) {
-  // Based on third_party/libwebp/src/webp/encode.h:WEBP_MAX_DIMENSION
-  var webp_max_dimension = 16383;
-  // This test simulates the encoding failure.
-  var offscreenCanvas = new OffscreenCanvas(10, webp_max_dimension + 1);
-  var ctx = offscreenCanvas.getContext("2d");
-  ctx.fillRect(0, 0, 1, 1);
-  offscreenCanvas.convertToBlob({type: "image/webp"}).then(t.step_func_done(function() {
-    assert_false("convertToBlob didn't throw, but should be");
-  }), t.step_func_done(function(e) {
-    assert_true(e instanceof DOMException);
-    assert_equals(e.name, "EncodingError");
-  }));
-}, "Test that call convertToBlob throws EncodingError exception when encoding fails");
-
-async_test(function(t) {
   var offscreenCanvas = new OffscreenCanvas(10, 10);
   offscreenCanvas.convertToBlob().then(t.step_func_done(function() {
     assert_false("convertToBlob didn't throw, but should be");
