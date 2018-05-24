@@ -177,10 +177,24 @@ void EnableNewTabTipTriggering(base::test::ScopedFeatureList& feature_list) {
       assertWithMatcher:grey_notNil()];
 
   // Close tools menu by tapping reload.
-  [[[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionUp, 150)
-      onElementWithMatcher:grey_accessibilityID(kPopupMenuToolsMenuTableViewId)]
-      performAction:grey_tap()];
+  if (IsUIRefreshPhase1Enabled()) {
+    [[[EarlGrey
+        selectElementWithMatcher:grey_allOf(
+                                     chrome_test_util::ReloadButton(),
+                                     grey_ancestor(grey_accessibilityID(
+                                         kPopupMenuToolsMenuTableViewId)),
+                                     nil)]
+           usingSearchAction:grey_scrollInDirection(kGREYDirectionUp, 150)
+        onElementWithMatcher:grey_accessibilityID(
+                                 kPopupMenuToolsMenuTableViewId)]
+        performAction:grey_tap()];
+  } else {
+    [[[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]
+           usingSearchAction:grey_scrollInDirection(kGREYDirectionUp, 150)
+        onElementWithMatcher:grey_accessibilityID(
+                                 kPopupMenuToolsMenuTableViewId)]
+        performAction:grey_tap()];
+  }
 
   // Reopen tools menu to verify that the badge does not appear again.
   [ChromeEarlGreyUI openToolsMenu];
