@@ -141,7 +141,7 @@ How to fix?
     them to terminate before quitting.
 
 See
-https://github.com/luci/luci-py/blob/master/appengine/swarming/doc/Bot.md#graceful-termination-aka-the-sigterm-and-sigkill-dance
+https://chromium.googlesource.com/infra/luci/luci-py.git/+/master/appengine/swarming/doc/Bot.md#Graceful-termination_aka-the-SIGTERM-and-SIGKILL-dance
 for more information.
 
 *** May the SIGKILL force be with you ***

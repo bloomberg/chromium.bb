@@ -1686,7 +1686,7 @@ def CMDreproduce(parser, args):
   if properties.get('command'):
     command.extend(properties['command'])
 
-  # https://github.com/luci/luci-py/blob/master/appengine/swarming/doc/Magic-Values.md
+  # https://chromium.googlesource.com/infra/luci/luci-py.git/+/master/appengine/swarming/doc/Magic-Values.md
   command = tools.fix_python_cmd(command, env)
   if not options.output_dir:
     new_command = run_isolated.process_command(command, 'invalid', None)

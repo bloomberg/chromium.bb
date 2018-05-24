@@ -112,7 +112,7 @@ _service_config_cache_lock = threading.Lock()
 
 # LUCI context parameters as loaded from JSON file.
 #
-# See https://github.com/luci/luci-py/blob/master/client/LUCI_CONTEXT.md.
+# https://chromium.googlesource.com/infra/luci/luci-py.git/+/master/client/LUCI_CONTEXT.md
 LocalAuthParameters = collections.namedtuple('LocalAuthParameters', [
   'rpc_port',
   'secret',

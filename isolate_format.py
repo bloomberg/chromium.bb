@@ -8,8 +8,8 @@ This module doesn't touch the file system. It's the job of the client code to do
 I/O on behalf of this module.
 
 See more information at
-  https://github.com/luci/luci-py/tree/master/appengine/isolate/doc/client
-  https://github.com/luci/luci-py/blob/master/appengine/isolate/doc/Design.md#isolated-file-format
+  https://chromium.googlesource.com/infra/luci/luci-py.git/+/master/appengine/isolate/doc/client/
+  https://chromium.googlesource.com/infra/luci/luci-py.git/+/master/appengine/isolate/doc/Design.md#file-format
 """
 
 import ast

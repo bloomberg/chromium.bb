@@ -71,7 +71,7 @@ def archive_isolated_triggers(isolate_server, tree_isolated, tests):
     for test in tests:
       test_name = os.path.basename(test)
       # Creates a manual .isolated file. See
-      # https://github.com/luci/luci-py/blob/master/appengine/isolate/doc/Design.md#isolated-file-format
+      # https://chromium.googlesource.com/infra/luci/luci-py.git/+/master/appengine/isolate/doc/Design.md#file-format
       isolated = {
         'algo': 'sha-1',
         'command': ['python', test],

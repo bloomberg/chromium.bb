@@ -8,8 +8,8 @@
 This includes creating, merging or compiling them to generate a .isolated file.
 
 See more information at
-  https://github.com/luci/luci-py/tree/master/appengine/isolate/doc/client
-  https://github.com/luci/luci-py/blob/master/appengine/isolate/doc/Design.md#isolated-file-format
+  https://chromium.googlesource.com/infra/luci/luci-py.git/+/master/appengine/isolate/doc/client/
+  https://chromium.googlesource.com/infra/luci/luci-py.git/+/master/appengine/isolate/doc/Design.md#file-format
 """
 # Run ./isolate.py --help for more detailed information.
 
@@ -369,7 +369,7 @@ class SavedState(Flattenable):
   def to_isolated(self):
     """Creates a .isolated dictionary out of the saved state.
 
-    https://github.com/luci/luci-py/blob/master/appengine/isolate/doc/Design.md#isolated-file-format
+    https://chromium.googlesource.com/infra/luci/luci-py.git/+/master/appengine/isolate/doc/Design.md#file-format
     """
     def strip(data):
       """Returns a 'files' entry with only the whitelisted keys."""

@@ -21,7 +21,7 @@ set -e
 SERVER=https://CHANGE-ME-TO-PROPER-VALUE.appspot.com
 
 # Source code to use.
-REPO=https://github.com/luci/client-py
+REPO=https://chromium.googlesource.com/infra/luci/client-py.git
 
 # Once the tasks are completed, one can harvest the logs back:
 #   scp "slave:/var/log/swarming/*.*" .
