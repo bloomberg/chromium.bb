@@ -31,10 +31,15 @@ class BLINK_COMMON_EXPORT MemoryAblationExperiment {
 
   // Starts the experiment if corresponding field trial is enabled
   static void MaybeStart(scoped_refptr<base::SequencedTaskRunner> task_runner);
+  static void MaybeStartForRenderer(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
  private:
   MemoryAblationExperiment();
 
+  static void MaybeStartInternal(
+      const base::Feature& memory_ablation_feature,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   void Start(scoped_refptr<base::SequencedTaskRunner> task_runner, size_t size);
 
   void AllocateMemory(size_t size);

@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_thread.h"
@@ -126,6 +127,13 @@ void Initialize(Platform* platform, service_manager::BinderRegistry* registry) {
     DCHECK(!g_end_of_task_runner);
     g_end_of_task_runner = new EndOfTaskRunner;
     current_thread->AddTaskObserver(g_end_of_task_runner);
+  }
+
+  if (WebThread* main_thread = Platform::Current()->MainThread()) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner =
+        main_thread->GetTaskRunner();
+    if (task_runner)
+      MemoryAblationExperiment::MaybeStartForRenderer(task_runner);
   }
 }
 
