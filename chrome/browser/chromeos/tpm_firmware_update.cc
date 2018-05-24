@@ -32,18 +32,31 @@ namespace tpm_firmware_update {
 namespace {
 
 // Checks whether |kSettingsKeyAllowPowerwash| is set to true in |settings|.
-bool SettingsAllowUpdateViaPowerwash(const base::Value* settings) {
+std::set<Mode> GetModesFromSetting(const base::Value* settings) {
+  std::set<Mode> modes;
   if (!settings)
-    return false;
+    return modes;
 
   const base::Value* const allow_powerwash = settings->FindKeyOfType(
       kSettingsKeyAllowPowerwash, base::Value::Type::BOOLEAN);
-  return allow_powerwash && allow_powerwash->GetBool();
+  if (allow_powerwash && allow_powerwash->GetBool()) {
+    modes.insert(Mode::kPowerwash);
+  }
+  const base::Value* const allow_preserve_device_state =
+      settings->FindKeyOfType(kSettingsKeyAllowPreserveDeviceState,
+                              base::Value::Type::BOOLEAN);
+  if (allow_preserve_device_state && allow_preserve_device_state->GetBool()) {
+    modes.insert(Mode::kPreserveDeviceState);
+  }
+
+  return modes;
 }
 
 }  // namespace
 
 const char kSettingsKeyAllowPowerwash[] = "allow-user-initiated-powerwash";
+const char kSettingsKeyAllowPreserveDeviceState[] =
+    "allow-user-initiated-preserve-device-state";
 
 std::unique_ptr<base::DictionaryValue> DecodeSettingsProto(
     const enterprise_management::TPMFirmwareUpdateSettingsProto& settings) {
@@ -53,6 +66,11 @@ std::unique_ptr<base::DictionaryValue> DecodeSettingsProto(
   if (settings.has_allow_user_initiated_powerwash()) {
     result->SetKey(kSettingsKeyAllowPowerwash,
                    base::Value(settings.allow_user_initiated_powerwash()));
+  }
+  if (settings.has_allow_user_initiated_preserve_device_state()) {
+    result->SetKey(
+        kSettingsKeyAllowPreserveDeviceState,
+        base::Value(settings.allow_user_initiated_preserve_device_state()));
   }
 
   return result;
@@ -170,61 +188,77 @@ class AvailabilityChecker {
   DISALLOW_COPY_AND_ASSIGN(AvailabilityChecker);
 };
 
-void ShouldOfferUpdateViaPowerwash(
-    base::OnceCallback<void(bool)> completion,
+void GetAvailableUpdateModes(
+    base::OnceCallback<void(const std::set<Mode>&)> completion,
     base::TimeDelta timeout) {
   // Wrap |completion| in a RepeatingCallback. This is necessary to cater to the
   // somewhat awkward PrepareTrustedValues interface, which for some return
   // values invokes the callback passed to it, and for others requires the code
   // here to do so.
-  base::RepeatingCallback<void(bool)> callback(
+  base::RepeatingCallback<void(const std::set<Mode>&)> callback(
       base::AdaptCallbackForRepeating(std::move(completion)));
 
   if (!base::FeatureList::IsEnabled(features::kTPMFirmwareUpdate)) {
-    callback.Run(false);
+    callback.Run(std::set<Mode>());
     return;
   }
 
+  std::set<Mode> modes;
   if (g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
           ->IsEnterpriseManaged()) {
     // For enterprise-managed devices, always honor the device setting.
     CrosSettings* const cros_settings = CrosSettings::Get();
     switch (cros_settings->PrepareTrustedValues(
-        base::Bind(&ShouldOfferUpdateViaPowerwash, callback, timeout))) {
+        base::BindRepeating(&GetAvailableUpdateModes, callback, timeout))) {
       case CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
         // Retry happens via the callback registered above.
         return;
       case CrosSettingsProvider::PERMANENTLY_UNTRUSTED:
         // No device settings? Default to disallow.
-        callback.Run(false);
+        callback.Run(std::set<Mode>());
         return;
       case CrosSettingsProvider::TRUSTED:
         // Setting is present and trusted so respect its value.
-        if (!SettingsAllowUpdateViaPowerwash(
-                cros_settings->GetPref(kTPMFirmwareUpdateSettings))) {
-          callback.Run(false);
-          return;
-        }
+        modes = GetModesFromSetting(
+            cros_settings->GetPref(kTPMFirmwareUpdateSettings));
         break;
     }
   } else {
     // Consumer device or still in OOBE. If FRE is required, enterprise
-    // enrollment might still be pending, in which case powerwash is disallowed
-    // until FRE determines that the device is not remotely managed or it does
-    // get enrolled and the admin allows TPM firmware update via powerwash.
+    // enrollment might still be pending, in which case TPM firmware updates are
+    // disallowed until FRE determines that the device is not remotely managed
+    // or it does get enrolled and the admin allows TPM firmware updates.
     const AutoEnrollmentController::FRERequirement requirement =
         AutoEnrollmentController::GetFRERequirement();
     if (requirement ==
         AutoEnrollmentController::FRERequirement::kExplicitlyRequired) {
-      callback.Run(false);
+      callback.Run(std::set<Mode>());
       return;
     }
+
+    // All modes are available for consumer devices.
+    modes.insert(Mode::kPowerwash);
+    modes.insert(Mode::kPreserveDeviceState);
   }
 
-  // OK to offer TPM firmware update via powerwash to the user. Last thing to
-  // check is whether there actually is a pending update.
-  AvailabilityChecker::Start(callback, timeout);
+  // No need to check for availability if no update modes are allowed.
+  if (modes.empty()) {
+    callback.Run(std::set<Mode>());
+    return;
+  }
+
+  // Some TPM firmware update modes are allowed. Last thing to check is whether
+  // there actually is a pending update.
+  AvailabilityChecker::Start(
+      base::BindOnce(
+          [](std::set<Mode> modes,
+             base::OnceCallback<void(const std::set<Mode>&)> callback,
+             bool available) {
+            std::move(callback).Run(available ? modes : std::set<Mode>());
+          },
+          std::move(modes), callback),
+      timeout);
 }
 
 }  // namespace tpm_firmware_update

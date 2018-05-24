@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_RESET_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_RESET_SCREEN_H_
 
+#include <set>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -13,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chromeos/dbus/update_engine_client.h"
 
 class PrefRegistrySimple;
@@ -44,7 +46,8 @@ class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
   void UpdateStatusChanged(const UpdateEngineClient::Status& status) override;
 
   void OnRollbackCheck(bool can_rollback);
-  void OnTPMFirmwareUpdateAvailableCheck(bool update_available);
+  void OnTPMFirmwareUpdateAvailableCheck(
+      const std::set<tpm_firmware_update::Mode>& modes);
 
   enum State {
     STATE_RESTART_REQUIRED = 0,

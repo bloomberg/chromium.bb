@@ -48,9 +48,43 @@ constexpr const char kContextKeyIsTPMFirmwareUpdateChecked[] =
     "tpm-firmware-update-checked";
 constexpr const char kContextKeyIsTPMFirmwareUpdateEditable[] =
     "tpm-firmware-update-editable";
+constexpr const char kContextKeyTPMFirmwareUpdateMode[] =
+    "tpm-firmware-update-mode";
 constexpr const char kContextKeyIsConfirmational[] = "is-confirmational-view";
 constexpr const char kContextKeyIsOfficialBuild[] = "is-official-build";
 constexpr const char kContextKeyScreenState[] = "screen-state";
+
+void StartTPMFirmwareUpdate(
+    tpm_firmware_update::Mode requested_mode,
+    const std::set<tpm_firmware_update::Mode>& available_modes) {
+  if (available_modes.count(requested_mode) == 0) {
+    // This should not happen, except for edge cases such as hijacked
+    // UI, device policy changing while the dialog was up, etc.
+    LOG(ERROR) << "Firmware update no longer available?";
+    return;
+  }
+
+  std::string mode_string;
+  switch (requested_mode) {
+    case tpm_firmware_update::Mode::kNone:
+      // Error handled below.
+      break;
+    case tpm_firmware_update::Mode::kPowerwash:
+      mode_string = "first_boot";
+      break;
+    case tpm_firmware_update::Mode::kPreserveDeviceState:
+      mode_string = "preserve_stateful";
+      break;
+  }
+
+  if (mode_string.empty()) {
+    LOG(ERROR) << "Invalid mode " << static_cast<int>(requested_mode);
+    return;
+  }
+
+  DBusThreadManager::Get()->GetSessionManagerClient()->StartTPMFirmwareUpdate(
+      mode_string);
+}
 
 }  // namespace
 
@@ -68,6 +102,8 @@ ResetScreen::ResetScreen(BaseScreenDelegate* base_screen_delegate,
   context_.SetBoolean(kContextKeyIsTPMFirmwareUpdateAvailable, false);
   context_.SetBoolean(kContextKeyIsTPMFirmwareUpdateChecked, false);
   context_.SetBoolean(kContextKeyIsTPMFirmwareUpdateEditable, true);
+  context_.SetInteger(kContextKeyTPMFirmwareUpdateMode,
+                      static_cast<int>(tpm_firmware_update::Mode::kPowerwash));
   context_.SetBoolean(kContextKeyIsConfirmational, false);
   context_.SetBoolean(kContextKeyIsOfficialBuild, false);
 #if defined(OFFICIAL_BUILD)
@@ -84,8 +120,9 @@ ResetScreen::~ResetScreen() {
 // static
 void ResetScreen::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kFactoryResetRequested, false);
-  registry->RegisterBooleanPref(prefs::kFactoryResetTPMFirmwareUpdateRequested,
-                                false);
+  registry->RegisterIntegerPref(
+      prefs::kFactoryResetTPMFirmwareUpdateMode,
+      static_cast<int>(tpm_firmware_update::Mode::kNone));
 }
 
 void ResetScreen::Show() {
@@ -126,19 +163,22 @@ void ResetScreen::Show() {
   // Set availability of TPM firmware update.
   PrefService* prefs = g_browser_process->local_state();
   bool tpm_firmware_update_requested =
-      prefs->GetBoolean(prefs::kFactoryResetTPMFirmwareUpdateRequested);
+      prefs->HasPrefPath(prefs::kFactoryResetTPMFirmwareUpdateMode);
   if (tpm_firmware_update_requested) {
     // If an update has been requested previously, rely on the earlier update
     // availability test to initialize the dialog. This avoids a race condition
     // where the powerwash dialog gets shown immediately after reboot before the
     // init job to determine update availability has completed.
     context_editor.SetBoolean(kContextKeyIsTPMFirmwareUpdateAvailable, true);
+    context_editor.SetInteger(
+        kContextKeyTPMFirmwareUpdateMode,
+        prefs->GetInteger(prefs::kFactoryResetTPMFirmwareUpdateMode));
   } else {
     // If a TPM firmware update hasn't previously been requested, check the
     // system to see whether to offer the checkbox to update TPM firmware. Note
     // that due to the asynchronous availability check, the decision might not
     // be available immediately, so set a timeout of a couple seconds.
-    tpm_firmware_update::ShouldOfferUpdateViaPowerwash(
+    tpm_firmware_update::GetAvailableUpdateModes(
         base::BindOnce(&ResetScreen::OnTPMFirmwareUpdateAvailableCheck,
                        weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(10));
@@ -152,7 +192,7 @@ void ResetScreen::Show() {
   // Clear prefs so the reset screen isn't triggered again the next time the
   // device is about to show the login screen.
   prefs->ClearPref(prefs::kFactoryResetRequested);
-  prefs->ClearPref(prefs::kFactoryResetTPMFirmwareUpdateRequested);
+  prefs->ClearPref(prefs::kFactoryResetTPMFirmwareUpdateMode);
   prefs->CommitPendingWrite();
 }
 
@@ -224,19 +264,11 @@ void ResetScreen::OnPowerwash() {
     // Re-check availability with a couple seconds timeout. This addresses the
     // case where the powerwash dialog gets shown immediately after reboot and
     // the decision on whether the update is available is not known immediately.
-    tpm_firmware_update::ShouldOfferUpdateViaPowerwash(
-        base::BindOnce([](bool available) {
-          if (!available) {
-            // This should not happen, except for edge cases such as hijacked
-            // UI, device policy changing while the dialog was up, etc.
-            LOG(ERROR) << "Firmware update no longer available?";
-            return;
-          }
-
-          DBusThreadManager::Get()
-              ->GetSessionManagerClient()
-              ->StartTPMFirmwareUpdate("first_boot");
-        }),
+    tpm_firmware_update::GetAvailableUpdateModes(
+        base::BindOnce(
+            &StartTPMFirmwareUpdate,
+            static_cast<tpm_firmware_update::Mode>(
+                context_.GetInteger(kContextKeyTPMFirmwareUpdateMode))),
         base::TimeDelta::FromSeconds(10));
   } else {
     VLOG(1) << "Starting Powerwash";
@@ -248,9 +280,10 @@ void ResetScreen::OnRestart() {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   if (context_.GetBoolean(kContextKeyIsTPMFirmwareUpdateChecked)) {
-    prefs->SetBoolean(prefs::kFactoryResetTPMFirmwareUpdateRequested, true);
+    prefs->SetInteger(prefs::kFactoryResetTPMFirmwareUpdateMode,
+                      static_cast<int>(tpm_firmware_update::Mode::kPowerwash));
   } else {
-    prefs->ClearPref(prefs::kFactoryResetTPMFirmwareUpdateRequested);
+    prefs->ClearPref(prefs::kFactoryResetTPMFirmwareUpdateMode);
   }
   prefs->CommitPendingWrite();
 
@@ -335,9 +368,16 @@ void ResetScreen::OnRollbackCheck(bool can_rollback) {
   GetContextEditor().SetBoolean(kContextKeyIsRollbackAvailable, can_rollback);
 }
 
-void ResetScreen::OnTPMFirmwareUpdateAvailableCheck(bool update_available) {
-  GetContextEditor().SetBoolean(kContextKeyIsTPMFirmwareUpdateAvailable,
-                                update_available);
+void ResetScreen::OnTPMFirmwareUpdateAvailableCheck(
+    const std::set<tpm_firmware_update::Mode>& modes) {
+  bool available = modes.count(tpm_firmware_update::Mode::kPowerwash) > 0;
+  ContextEditor context_editor = GetContextEditor();
+  context_editor.SetBoolean(kContextKeyIsTPMFirmwareUpdateAvailable, available);
+  if (available) {
+    context_editor.SetInteger(
+        kContextKeyTPMFirmwareUpdateMode,
+        static_cast<int>(tpm_firmware_update::Mode::kPowerwash));
+  }
 }
 
 ErrorScreen* ResetScreen::GetErrorScreen() {

@@ -21,6 +21,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/task/cancelable_task_tracker.h"
+#include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chromeos/system/version_loader.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -117,7 +118,8 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   // Called once when the page has loaded to retrieve the TPM firmware update
   // status.
   void HandleRefreshTPMFirmwareUpdateStatus(const base::ListValue* args);
-  void RefreshTPMFirmwareUpdateStatus(bool update_available);
+  void RefreshTPMFirmwareUpdateStatus(
+      const std::set<chromeos::tpm_firmware_update::Mode>& modes);
 #endif
 
   // Checks for and applies update.
