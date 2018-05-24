@@ -159,11 +159,17 @@ class CORE_EXPORT InvalidationSet
     return invalidation_flags_;
   };
 
+  void SetInvalidatesParts() { invalidation_flags_.SetInvalidatesParts(true); }
+  bool InvalidatesParts() const {
+    return invalidation_flags_.InvalidatesParts();
+  }
+
   bool IsEmpty() const {
     return !classes_ && !ids_ && !tag_names_ && !attributes_ &&
            !invalidation_flags_.InvalidateCustomPseudo() &&
            !invalidation_flags_.InsertionPointCrossing() &&
-           !invalidation_flags_.InvalidatesSlotted();
+           !invalidation_flags_.InvalidatesSlotted() &&
+           !invalidation_flags_.InvalidatesParts();
   }
 
   bool IsAlive() const { return is_alive_; }

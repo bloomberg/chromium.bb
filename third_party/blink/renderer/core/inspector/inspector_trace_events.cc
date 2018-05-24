@@ -481,6 +481,9 @@ const char
 const char
     InspectorStyleInvalidatorInvalidateEvent::kInvalidationSetMatchedTagName[] =
         "Invalidation set matched tagName";
+const char
+    InspectorStyleInvalidatorInvalidateEvent::kInvalidationSetMatchedPart[] =
+        "Invalidation set matched part";
 
 namespace InspectorStyleInvalidatorInvalidateEvent {
 std::unique_ptr<TracedValue> FillCommonPart(ContainerNode& node,

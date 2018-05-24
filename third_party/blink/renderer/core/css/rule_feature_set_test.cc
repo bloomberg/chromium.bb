@@ -279,6 +279,11 @@ class RuleFeatureSetTest : public testing::Test {
               rule_feature_set_.NeedsFullRecalcForRuleSetInvalidation());
   }
 
+  void ExpectPartsInvalidation(InvalidationSetVector& invalidation_sets) {
+    EXPECT_EQ(1u, invalidation_sets.size());
+    EXPECT_TRUE(invalidation_sets[0]->InvalidatesParts());
+  }
+
  private:
   RuleFeatureSet rule_feature_set_;
   Persistent<Document> document_;
@@ -1203,4 +1208,23 @@ TEST_F(RuleFeatureSetTest, pseudoISTooLarge) {
   ExpectNoInvalidation(invalidation_lists.siblings);
 }
 
+TEST_F(RuleFeatureSetTest, invalidatesParts) {
+  EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
+            CollectFeatures(".a .b::part(partname)"));
+
+  {
+    InvalidationLists invalidation_lists;
+    CollectInvalidationSetsForClass(invalidation_lists, "a");
+    EXPECT_EQ(1u, invalidation_lists.descendants.size());
+    ExpectNoSelfInvalidation(invalidation_lists.descendants);
+  }
+
+  {
+    InvalidationLists invalidation_lists;
+    CollectInvalidationSetsForClass(invalidation_lists, "b");
+    EXPECT_EQ(1u, invalidation_lists.descendants.size());
+    ExpectPartsInvalidation(invalidation_lists.descendants);
+    EXPECT_FALSE(invalidation_lists.descendants[0]->WholeSubtreeInvalid());
+  }
+}
 }  // namespace blink

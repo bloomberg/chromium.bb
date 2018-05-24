@@ -168,6 +168,7 @@ extern const char kInvalidationSetMatchedAttribute[];
 extern const char kInvalidationSetMatchedClass[];
 extern const char kInvalidationSetMatchedId[];
 extern const char kInvalidationSetMatchedTagName[];
+extern const char kInvalidationSetMatchedPart[];
 
 std::unique_ptr<TracedValue> Data(Element&, const char* reason);
 std::unique_ptr<TracedValue> SelectorPart(Element&,
