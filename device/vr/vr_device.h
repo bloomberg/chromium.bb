@@ -36,6 +36,17 @@ enum class XrRuntimeAvailable {
 
 const unsigned int VR_DEVICE_LAST_ID = 0xFFFFFFFF;
 
+class VRDeviceEventListener {
+ public:
+  virtual ~VRDeviceEventListener() {}
+
+  virtual void OnChanged(mojom::VRDisplayInfoPtr vr_device_info) = 0;
+  virtual void OnExitPresent() = 0;
+  virtual void OnActivate(mojom::VRDisplayEventReason reason,
+                          base::OnceCallback<void(bool)> on_handled) = 0;
+  virtual void OnDeactivate(mojom::VRDisplayEventReason reason) = 0;
+};
+
 // Represents one of the platform's VR devices. Owned by the respective
 // VRDeviceProvider.
 // TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
@@ -48,6 +59,13 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual void ResumeTracking() = 0;
   virtual mojom::VRDisplayInfoPtr GetVRDisplayInfo() = 0;
   virtual void SetMagicWindowEnabled(bool enabled) = 0;
+  virtual void ExitPresent() = 0;
+  virtual void RequestPresent(
+      mojom::VRSubmitFrameClientPtr submit_client,
+      mojom::VRPresentationProviderRequest request,
+      mojom::VRRequestPresentOptionsPtr present_options,
+      mojom::VRDisplayHost::RequestPresentCallback callback) = 0;
+  virtual void SetListeningForActivate(bool is_listening) = 0;
 
   // The fallback device should only be provided in lieu of other devices.
   virtual bool IsFallbackDevice() = 0;
@@ -58,6 +76,8 @@ class DEVICE_VR_EXPORT VRDevice {
   // exiting of presentation before notifying displays. This is currently messy
   // because browser-side notions of presentation are mostly Android-specific.
   virtual void OnExitPresent() = 0;
+
+  virtual void SetVRDeviceEventListener(VRDeviceEventListener* listener) = 0;
 };
 
 }  // namespace device

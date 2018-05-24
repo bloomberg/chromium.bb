@@ -10,11 +10,13 @@ MockVRDisplayImpl::MockVRDisplayImpl(device::VRDevice* device,
                                      mojom::VRServiceClient* service_client,
                                      mojom::VRDisplayInfoPtr display_info,
                                      mojom::VRDisplayHostPtr display_host,
+                                     mojom::VRDisplayClientRequest request,
                                      bool in_frame_focused)
     : VRDisplayImpl(device,
                     std::move(service_client),
                     std::move(display_info),
                     std::move(display_host),
+                    std::move(request),
                     in_frame_focused) {}
 
 MockVRDisplayImpl::~MockVRDisplayImpl() = default;

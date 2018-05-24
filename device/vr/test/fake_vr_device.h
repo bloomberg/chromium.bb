@@ -20,7 +20,6 @@ class DEVICE_VR_EXPORT FakeVRDevice : public VRDeviceBase {
   ~FakeVRDevice() override;
 
   void RequestPresent(
-      VRDisplayImpl* display,
       mojom::VRSubmitFrameClientPtr submit_client,
       mojom::VRPresentationProviderRequest request,
       mojom::VRRequestPresentOptionsPtr present_options,
@@ -28,6 +27,8 @@ class DEVICE_VR_EXPORT FakeVRDevice : public VRDeviceBase {
   void ExitPresent() override;
 
   void SetPose(mojom::VRPosePtr pose) { pose_ = std::move(pose); }
+
+  using VRDeviceBase::IsPresenting;  // Make it public for tests.
 
  private:
   void OnMagicWindowPoseRequest(

@@ -18,22 +18,24 @@ class RenderFrameHost;
 }
 
 namespace device {
-class VRDevice;
 class VRDisplayImpl;
 }  // namespace device
 
 namespace vr {
 
+class BrowserXrDevice;
+
 // The browser-side host for a device::VRDisplayImpl. Controls access to VR
 // APIs like poses and presentation.
 class VRDisplayHost : public device::mojom::VRDisplayHost {
  public:
-  VRDisplayHost(device::VRDevice* device,
+  VRDisplayHost(BrowserXrDevice* device,
                 content::RenderFrameHost* render_frame_host,
                 device::mojom::VRServiceClient* service_client,
                 device::mojom::VRDisplayInfoPtr display_info);
   ~VRDisplayHost() override;
 
+  // device::mojom::VRDisplayHost
   void RequestPresent(device::mojom::VRSubmitFrameClientPtr client,
                       device::mojom::VRPresentationProviderRequest request,
                       device::mojom::VRRequestPresentOptionsPtr options,
@@ -43,13 +45,28 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   void SetListeningForActivate(bool listening);
   void SetInFocusedFrame(bool in_focused_frame);
 
+  // Notifications/calls from BrowserXrDevice:
+  void OnChanged(device::mojom::VRDisplayInfoPtr vr_device_info);
+  void OnExitPresent();
+  void OnBlur();
+  void OnFocus();
+  void OnActivate(device::mojom::VRDisplayEventReason reason,
+                  base::OnceCallback<void(bool)> on_handled);
+  void OnDeactivate(device::mojom::VRDisplayEventReason reason);
+  bool ListeningForActivate() { return listening_for_activate_; }
+  bool InFocusedFrame() { return in_focused_frame_; }
+
  private:
   void ReportRequestPresent();
 
   std::unique_ptr<device::VRDisplayImpl> display_;
+  BrowserXrDevice* browser_device_ = nullptr;
+  bool in_focused_frame_ = false;
+  bool listening_for_activate_ = false;
 
   content::RenderFrameHost* render_frame_host_;
   mojo::Binding<device::mojom::VRDisplayHost> binding_;
+  device::mojom::VRDisplayClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(VRDisplayHost);
 };

@@ -44,6 +44,25 @@ class VRDeviceBaseForTesting : public VRDeviceBase {
   DISALLOW_COPY_AND_ASSIGN(VRDeviceBaseForTesting);
 };
 
+class StubVRDeviceEventListener : public VRDeviceEventListener {
+ public:
+  ~StubVRDeviceEventListener() override {}
+
+  MOCK_METHOD1(DoOnChanged, void(mojom::VRDisplayInfo* vr_device_info));
+  void OnChanged(mojom::VRDisplayInfoPtr vr_device_info) override {
+    DoOnChanged(vr_device_info.get());
+  }
+
+  MOCK_METHOD2(OnActivate,
+               void(mojom::VRDisplayEventReason,
+                    base::OnceCallback<void(bool)>));
+
+  MOCK_METHOD0(OnExitPresent, void());
+  MOCK_METHOD0(OnBlur, void());
+  MOCK_METHOD0(OnFocus, void());
+  MOCK_METHOD1(OnDeactivate, void(mojom::VRDisplayEventReason));
+};
+
 }  // namespace
 
 class VRDeviceTest : public testing::Test {
@@ -58,8 +77,10 @@ class VRDeviceTest : public testing::Test {
   }
 
   std::unique_ptr<MockVRDisplayImpl> MakeMockDisplay(VRDeviceBase* device) {
+    mojom::VRDisplayClientPtr display_client;
     return std::make_unique<testing::NiceMock<MockVRDisplayImpl>>(
-        device, client(), nullptr, nullptr, false);
+        device, client(), nullptr, nullptr, mojo::MakeRequest(&display_client),
+        false);
   }
 
   std::unique_ptr<VRDeviceBaseForTesting> MakeVRDevice() {
@@ -88,8 +109,9 @@ class VRDeviceTest : public testing::Test {
 // will receive the "vrdevicechanged" event.
 TEST_F(VRDeviceTest, DeviceChangedDispatched) {
   auto device = MakeVRDevice();
-  auto display = MakeMockDisplay(device.get());
-  EXPECT_CALL(*display, DoOnChanged(testing::_)).Times(1);
+  StubVRDeviceEventListener listener;
+  device->SetVRDeviceEventListener(&listener);
+  EXPECT_CALL(listener, DoOnChanged(testing::_)).Times(1);
   device->SetVRDisplayInfoForTest(MakeVRDisplayInfo(device->GetId()));
 }
 
@@ -97,57 +119,14 @@ TEST_F(VRDeviceTest, DisplayActivateRegsitered) {
   device::mojom::VRDisplayEventReason mounted =
       device::mojom::VRDisplayEventReason::MOUNTED;
   auto device = MakeVRDevice();
-  auto display1 = MakeMockDisplay(device.get());
-  auto display2 = MakeMockDisplay(device.get());
+  StubVRDeviceEventListener listener;
+  device->SetVRDeviceEventListener(&listener);
 
-  EXPECT_CALL(*display1, ListeningForActivate())
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*display1, InFocusedFrame())
-      .WillRepeatedly(testing::Return(false));
-  device->OnListeningForActivateChanged(display1.get());
   EXPECT_FALSE(device->ListeningForActivate());
-
-  EXPECT_CALL(*display1, OnActivate(mounted, testing::_)).Times(0);
-  EXPECT_CALL(*display2, OnActivate(mounted, testing::_)).Times(0);
-  device->FireDisplayActivate();
-
-  EXPECT_CALL(*display1, InFocusedFrame())
-      .WillRepeatedly(testing::Return(true));
-  device->OnFrameFocusChanged(display1.get());
+  device->SetListeningForActivate(true);
   EXPECT_TRUE(device->ListeningForActivate());
 
-  EXPECT_CALL(*display1, OnActivate(mounted, testing::_)).Times(1);
-  device->FireDisplayActivate();
-
-  EXPECT_CALL(*display2, ListeningForActivate())
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*display2, InFocusedFrame())
-      .WillRepeatedly(testing::Return(true));
-  device->OnListeningForActivateChanged(display2.get());
-  EXPECT_TRUE(device->ListeningForActivate());
-
-  EXPECT_CALL(*display2, OnActivate(mounted, testing::_)).Times(2);
-  device->FireDisplayActivate();
-
-  EXPECT_CALL(*display1, ListeningForActivate())
-      .WillRepeatedly(testing::Return(false));
-  device->OnListeningForActivateChanged(display1.get());
-  EXPECT_TRUE(device->ListeningForActivate());
-
-  device->FireDisplayActivate();
-
-  EXPECT_CALL(*display2, ListeningForActivate())
-      .WillRepeatedly(testing::Return(false));
-  device->OnListeningForActivateChanged(display2.get());
-  EXPECT_FALSE(device->ListeningForActivate());
-
-  // Make sure we don't send the DisplayActivate event.
-  device->FireDisplayActivate();
-
-  EXPECT_CALL(*display2, InFocusedFrame())
-      .WillRepeatedly(testing::Return(false));
-  device->OnFrameFocusChanged(display2.get());
-
+  EXPECT_CALL(listener, OnActivate(mounted, testing::_)).Times(1);
   device->FireDisplayActivate();
 }
 

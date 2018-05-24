@@ -95,7 +95,6 @@ OculusDevice::OculusDevice(ovrSession session, ovrGraphicsLuid luid)
 OculusDevice::~OculusDevice() {}
 
 void OculusDevice::RequestPresent(
-    VRDisplayImpl* display,
     mojom::VRSubmitFrameClientPtr submit_client,
     mojom::VRPresentationProviderRequest request,
     mojom::VRRequestPresentOptionsPtr present_options,
@@ -130,6 +129,7 @@ void OculusDevice::ExitPresent() {
   render_loop_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&OculusRenderLoop::ExitPresent,
                                 render_loop_->GetWeakPtr()));
+  OnExitPresent();
 }
 
 void OculusDevice::OnMagicWindowPoseRequest(

@@ -17,7 +17,6 @@
 namespace device {
 
 class GvrDelegateProvider;
-class VRDisplayImpl;
 
 // TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase {
@@ -27,7 +26,6 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase {
 
   // VRDeviceBase
   void RequestPresent(
-      VRDisplayImpl* display,
       mojom::VRSubmitFrameClientPtr submit_client,
       mojom::VRPresentationProviderRequest request,
       mojom::VRRequestPresentOptionsPtr present_options,
@@ -51,7 +49,6 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase {
 
   void OnRequestPresentResult(
       mojom::VRDisplayHost::RequestPresentCallback callback,
-      VRDisplayImpl* display,
       bool result,
       mojom::VRDisplayFrameTransportOptionsPtr transport_options);
 

@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+
+#include "chrome/browser/vr/service/browser_xr_device.h"
 #include "chrome/browser/vr/service/vr_device_manager.h"
 #include "chrome/browser/vr/service/vr_display_host.h"
 #include "content/public/browser/render_frame_host.h"
@@ -71,11 +73,12 @@ void VRServiceImpl::InitializationComplete() {
 
 // Creates a VRDisplayImpl unique to this service so that the associated page
 // can communicate with the VRDevice.
-void VRServiceImpl::ConnectDevice(device::VRDevice* device) {
+void VRServiceImpl::ConnectDevice(BrowserXrDevice* device) {
   // Client should always be set as this is called through SetClient.
   DCHECK(client_);
   DCHECK(displays_.find(device) == displays_.end());
-  device::mojom::VRDisplayInfoPtr display_info = device->GetVRDisplayInfo();
+  device::mojom::VRDisplayInfoPtr display_info =
+      device->GetDevice()->GetVRDisplayInfo();
   DCHECK(display_info);
   if (!display_info)
     return;
@@ -83,7 +86,7 @@ void VRServiceImpl::ConnectDevice(device::VRDevice* device) {
       device, render_frame_host_, client_.get(), std::move(display_info));
 }
 
-void VRServiceImpl::RemoveDevice(device::VRDevice* device) {
+void VRServiceImpl::RemoveDevice(BrowserXrDevice* device) {
   DCHECK(client_);
   auto it = displays_.find(device);
   DCHECK(it != displays_.end());

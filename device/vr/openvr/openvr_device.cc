@@ -169,7 +169,6 @@ void OpenVRDevice::Shutdown() {
 }
 
 void OpenVRDevice::RequestPresent(
-    VRDisplayImpl* display,
     mojom::VRSubmitFrameClientPtr submit_client,
     mojom::VRPresentationProviderRequest request,
     mojom::VRRequestPresentOptionsPtr present_options,
@@ -224,6 +223,7 @@ void OpenVRDevice::ExitPresent() {
       FROM_HERE,
       base::Bind(&OpenVRRenderLoop::ExitPresent, render_loop_->GetWeakPtr()));
   render_loop_->Stop();
+  OnExitPresent();
 }
 
 void OpenVRDevice::OnMagicWindowPoseRequest(

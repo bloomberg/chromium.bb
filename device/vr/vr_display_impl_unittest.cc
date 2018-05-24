@@ -35,8 +35,10 @@ class VRDisplayImplTest : public testing::Test {
   }
 
   std::unique_ptr<VRDisplayImpl> MakeDisplay() {
+    mojom::VRDisplayClientPtr display_client;
     return std::make_unique<VRDisplayImpl>(
-        device(), client(), device()->GetVRDisplayInfo(), nullptr, false);
+        device(), client(), device()->GetVRDisplayInfo(), nullptr,
+        mojo::MakeRequest(&display_client), false);
   }
 
   void RequestPresent(VRDisplayImpl* display_impl) {
@@ -45,15 +47,15 @@ class VRDisplayImplTest : public testing::Test {
     // is ok.
     device::mojom::VRSubmitFrameClientPtr submit_client = nullptr;
     device::mojom::VRPresentationProviderRequest request = nullptr;
-    display_impl->RequestPresent(
+    device_->RequestPresent(
         std::move(submit_client), std::move(request), nullptr,
-        base::Bind(&VRDisplayImplTest::onPresentComplete,
-                   base::Unretained(this)));
+        base::BindOnce(&VRDisplayImplTest::onPresentComplete,
+                       base::Unretained(this)));
   }
 
-  void ExitPresent(VRDisplayImpl* display_impl) { display_impl->ExitPresent(); }
+  void ExitPresent() { device_->ExitPresent(); }
 
-  bool presenting() { return !!device_->GetPresentingDisplay(); }
+  bool presenting() { return device_->IsPresenting(); }
   VRDeviceBase* device() { return device_.get(); }
   FakeVRServiceClient* client() { return client_.get(); }
 
@@ -73,33 +75,17 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
   EXPECT_TRUE(device()->IsAccessAllowed(display_1.get()));
   EXPECT_TRUE(device()->IsAccessAllowed(display_2.get()));
 
-  // Attempt to present without focus.
-  RequestPresent(display_1.get());
-  EXPECT_FALSE(is_request_presenting_success_);
-  EXPECT_FALSE(presenting());
-
-  // Begin presenting to the fake device with service 1.
-  display_1->SetInFocusedFrame(true);
+  // Attempt to present.
   RequestPresent(display_1.get());
   EXPECT_TRUE(is_request_presenting_success_);
   EXPECT_TRUE(presenting());
 
-  // Service 2 should not be able to present to the device while service 1
-  // is still presenting.
-  RequestPresent(display_2.get());
-  EXPECT_FALSE(is_request_presenting_success_);
-  display_2->SetInFocusedFrame(true);
-  RequestPresent(display_2.get());
-  EXPECT_FALSE(is_request_presenting_success_);
-  EXPECT_TRUE(device()->IsAccessAllowed(display_1.get()));
+  // While a device is presenting, noone should have access to magic window.
+  EXPECT_FALSE(device()->IsAccessAllowed(display_1.get()));
   EXPECT_FALSE(device()->IsAccessAllowed(display_2.get()));
 
-  // Service 2 should not be able to exit presentation to the device.
-  ExitPresent(display_2.get());
-  EXPECT_TRUE(presenting());
-
   // Service 1 should be able to exit the presentation it initiated.
-  ExitPresent(display_1.get());
+  ExitPresent();
   EXPECT_FALSE(presenting());
 
   // Once presentation had ended both services should be able to access the
@@ -108,14 +94,4 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
   EXPECT_TRUE(device()->IsAccessAllowed(display_2.get()));
 }
 
-// This test case tests that VRDisplayImpl dispatches a "vrdevicechanged" event
-// to its client when it's been told the device has changed.
-TEST_F(VRDisplayImplTest, DeviceChangedDispatched) {
-  auto display = MakeDisplay();
-  display->OnChanged(device()->GetVRDisplayInfo());
-
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(client()->CheckDeviceId(device()->GetId()));
-}
 }

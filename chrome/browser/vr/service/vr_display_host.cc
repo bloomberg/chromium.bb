@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/mode.h"
+#include "chrome/browser/vr/service/browser_xr_device.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -36,20 +37,26 @@ bool IsSecureContext(content::RenderFrameHost* host) {
 
 }  // namespace
 
-VRDisplayHost::VRDisplayHost(device::VRDevice* device,
+VRDisplayHost::VRDisplayHost(BrowserXrDevice* device,
                              content::RenderFrameHost* render_frame_host,
                              device::mojom::VRServiceClient* service_client,
                              device::mojom::VRDisplayInfoPtr display_info)
-    : render_frame_host_(render_frame_host), binding_(this) {
+    : browser_device_(device),
+      in_focused_frame_(
+          render_frame_host ? render_frame_host->GetView()->HasFocus() : false),
+      render_frame_host_(render_frame_host),
+      binding_(this) {
   device::mojom::VRDisplayHostPtr display;
   binding_.Bind(mojo::MakeRequest(&display));
   display_ = std::make_unique<device::VRDisplayImpl>(
-      device, std::move(service_client), std::move(display_info),
-      std::move(display),
-      render_frame_host ? render_frame_host->GetView()->HasFocus() : false);
+      device->GetDevice(), std::move(service_client), std::move(display_info),
+      std::move(display), mojo::MakeRequest(&client_), in_focused_frame_);
+  browser_device_->OnDisplayHostAdded(this);
 }
 
-VRDisplayHost::~VRDisplayHost() = default;
+VRDisplayHost::~VRDisplayHost() {
+  browser_device_->OnDisplayHostRemoved(this);
+}
 
 void VRDisplayHost::RequestPresent(
     device::mojom::VRSubmitFrameClientPtr client,
@@ -70,8 +77,17 @@ void VRDisplayHost::RequestPresent(
     ReportRequestPresent();
   }
 
-  display_->RequestPresent(std::move(client), std::move(request),
-                           std::move(options), std::move(callback));
+  // Check with browser-side device for whether something is already presenting.
+  bool another_page_presenting =
+      (browser_device_->GetPresentingDisplayHost() != this &&
+       browser_device_->GetPresentingDisplayHost() != nullptr);
+  if (another_page_presenting || !in_focused_frame_) {
+    std::move(callback).Run(false, nullptr);
+    return;
+  }
+
+  browser_device_->RequestPresent(this, std::move(client), std::move(request),
+                                  std::move(options), std::move(callback));
 }
 
 void VRDisplayHost::ReportRequestPresent() {
@@ -89,15 +105,42 @@ void VRDisplayHost::ReportRequestPresent() {
 }
 
 void VRDisplayHost::ExitPresent() {
-  display_->ExitPresent();
+  browser_device_->ExitPresent(this);
 }
 
 void VRDisplayHost::SetListeningForActivate(bool listening) {
-  display_->SetListeningForActivate(listening);
+  listening_for_activate_ = listening;
+  browser_device_->UpdateListeningForActivate(this);
 }
 
 void VRDisplayHost::SetInFocusedFrame(bool in_focused_frame) {
+  in_focused_frame_ = in_focused_frame;
   display_->SetInFocusedFrame(in_focused_frame);
+}
+
+void VRDisplayHost::OnChanged(device::mojom::VRDisplayInfoPtr vr_device_info) {
+  client_->OnChanged(std::move(vr_device_info));
+}
+
+void VRDisplayHost::OnExitPresent() {
+  client_->OnExitPresent();
+}
+
+void VRDisplayHost::OnBlur() {
+  client_->OnBlur();
+}
+
+void VRDisplayHost::OnFocus() {
+  client_->OnFocus();
+}
+
+void VRDisplayHost::OnActivate(device::mojom::VRDisplayEventReason reason,
+                               base::OnceCallback<void(bool)> on_handled) {
+  client_->OnActivate(reason, std::move(on_handled));
+}
+
+void VRDisplayHost::OnDeactivate(device::mojom::VRDisplayEventReason reason) {
+  client_->OnDeactivate(reason);
 }
 
 }  // namespace vr

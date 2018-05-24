@@ -17,11 +17,12 @@ class MockVRDisplayImpl : public VRDisplayImpl {
                     mojom::VRServiceClient* service_client,
                     mojom::VRDisplayInfoPtr display_info,
                     mojom::VRDisplayHostPtr display_host,
+                    mojom::VRDisplayClientRequest request,
                     bool in_frame_focused);
   ~MockVRDisplayImpl() override;
 
   MOCK_METHOD1(DoOnChanged, void(mojom::VRDisplayInfo* vr_device_info));
-  void OnChanged(mojom::VRDisplayInfoPtr vr_device_info) override {
+  void OnChanged(mojom::VRDisplayInfoPtr vr_device_info) {
     DoOnChanged(vr_device_info.get());
   }
 
