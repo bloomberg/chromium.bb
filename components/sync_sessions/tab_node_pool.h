@@ -51,12 +51,9 @@ class TabNodePool {
   SessionID GetTabIdFromTabNodeId(int tab_node_id) const;
 
   // Gets the next free tab node (or creates a new one if needed) and associates
-  // it to |tab_id|. Returns the tab node ID associated to |tab_id|. If
-  // |reused_existing_node| is not null, it will be set with a value that
-  // represents if an existing free tab node was reused or a new one created.
-  // TODO(crbug.com/681921): Remove all logic related to |reused_existing_node|
-  // once the migration to USS is finished.
-  int AssociateWithFreeTabNode(SessionID tab_id, bool* reused_existing_node);
+  // it to |tab_id|. Returns the tab node ID associated to |tab_id|. |tab_id|
+  // must not be previously associated.
+  int AssociateWithFreeTabNode(SessionID tab_id);
 
   // Reassociates |tab_node_id| with |tab_id|. If |tab_node_id| is not already
   // known, it is added to the tab node pool before being associated.

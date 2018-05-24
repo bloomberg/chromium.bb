@@ -348,15 +348,17 @@ void LocalSessionEventHandlerImpl::AssociateTab(
   DVLOG(1) << "Syncing tab " << tab_id.id() << " from window "
            << tab_delegate->GetWindowId().id();
 
-  int tab_node_id = tab_delegate->GetSyncId();
+  int tab_node_id =
+      session_tracker_->LookupTabNodeFromTabId(current_session_tag_, tab_id);
+
   if (tab_node_id != TabNodePool::kInvalidTabNodeID) {
-    DCHECK_EQ(tab_id, session_tracker_->LookupTabIdFromTabNodeId(
-                          current_session_tag_, tab_node_id));
+    DCHECK(tab_delegate->GetSyncId() == TabNodePool::kInvalidTabNodeID ||
+           tab_delegate->GetSyncId() == tab_node_id);
   } else if (has_tabbed_window) {
-    session_tracker_->GetTabNodeFromLocalTabId(tab_id, &tab_node_id);
-    CHECK_NE(TabNodePool::kInvalidTabNodeID, tab_node_id)
+    // Allocate a new (or reused) sync node for this tab.
+    tab_node_id = session_tracker_->AssociateLocalTabWithFreeTabNode(tab_id);
+    DCHECK_NE(TabNodePool::kInvalidTabNodeID, tab_node_id)
         << "https://crbug.com/639009";
-    tab_delegate->SetSyncId(tab_node_id);
   } else {
     // Only allowed to allocate sync ids when we have native data, which is only
     // true when we have a tabbed window. Without a sync id we cannot sync this
@@ -366,6 +368,8 @@ void LocalSessionEventHandlerImpl::AssociateTab(
     // atomically, see https://crbug.com/681921.
     return;
   }
+
+  tab_delegate->SetSyncId(tab_node_id);
 
   // Get the previously synced url.
   sessions::SessionTab* session_tab =

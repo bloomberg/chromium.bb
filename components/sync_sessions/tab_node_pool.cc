@@ -72,22 +72,17 @@ void TabNodePool::FreeTab(SessionID tab_id) {
   free_nodes_pool_.insert(tab_node_id);
 }
 
-int TabNodePool::AssociateWithFreeTabNode(SessionID tab_id,
-                                          bool* reused_existing_node) {
+int TabNodePool::AssociateWithFreeTabNode(SessionID tab_id) {
+  DCHECK_EQ(0U, tabid_nodeid_map_.count(tab_id));
+
   int tab_node_id;
   if (free_nodes_pool_.empty()) {
     // Tab pool has no free nodes, allocate new one.
     tab_node_id = ++max_used_tab_node_id_;
     AddTabNode(tab_node_id);
-    if (reused_existing_node) {
-      *reused_existing_node = false;
-    }
   } else {
     // Return the next free node.
     tab_node_id = *free_nodes_pool_.begin();
-    if (reused_existing_node) {
-      *reused_existing_node = true;
-    }
   }
 
   AssociateTabNode(tab_node_id, tab_id);

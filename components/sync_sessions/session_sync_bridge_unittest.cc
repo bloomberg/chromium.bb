@@ -770,6 +770,57 @@ TEST_F(SessionSyncBridgeTest, ShouldIgnoreIfCustomTabOnlyOnStartup) {
                                                kLocalSessionTag, _, _)))));
 }
 
+// Ensure that all tabs are exposed in a scenario where only a custom tab
+// (without tabbed windows) was present during startup, and later tabbed windows
+// appear (browser started).
+TEST_F(SessionSyncBridgeTest, ShouldExposeTabbedWindowAfterCustomTabOnly) {
+  const int kWindowId1 = 1000001;
+  const int kWindowId2 = 1000002;
+  const int kTabId1 = 1000003;
+  const int kTabId2 = 1000004;
+
+  AddWindow(kWindowId1, sync_pb::SessionWindow_BrowserType_TYPE_CUSTOM_TAB);
+  TestSyncedTabDelegate* custom_tab =
+      AddTab(kWindowId1, "http://foo.com/", kTabId1);
+
+  InitializeBridge();
+  StartSyncing();
+
+  ASSERT_THAT(GetAllData(),
+              UnorderedElementsAre(Pair(_, EntityDataHasSpecifics(MatchesHeader(
+                                               kLocalSessionTag, _, _)))));
+
+  // Load the actual tabbed window, now that we're syncing.
+  AddWindow(kWindowId2);
+  AddTab(kWindowId2, "http://bar.com/", kTabId2);
+
+  // The local change should be created and tracked correctly. This doesn't
+  // actually start syncing the custom tab yet, because the tab itself isn't
+  // associated yet.
+  EXPECT_THAT(GetAllData(),
+              UnorderedElementsAre(
+                  Pair(_, EntityDataHasSpecifics(MatchesHeader(
+                              kLocalSessionTag, {kWindowId2}, {kTabId2}))),
+                  Pair(_, EntityDataHasSpecifics(MatchesTab(
+                              kLocalSessionTag, kWindowId2, kTabId2,
+                              /*tab_node_id=*/0, {"http://bar.com/"})))));
+
+  // Now trigger OnLocalTabModified() for the custom tab again, it should sync.
+  custom_tab->Navigate("http://baz.com/");
+  EXPECT_THAT(GetAllData(),
+              UnorderedElementsAre(
+                  Pair(_, EntityDataHasSpecifics(MatchesHeader(
+                              kLocalSessionTag, {kWindowId1, kWindowId2},
+                              {kTabId1, kTabId2}))),
+                  Pair(_, EntityDataHasSpecifics(MatchesTab(
+                              kLocalSessionTag, kWindowId2, kTabId2,
+                              /*tab_node_id=*/0, {"http://bar.com/"}))),
+                  Pair(_, EntityDataHasSpecifics(MatchesTab(
+                              kLocalSessionTag, kWindowId1, kTabId1,
+                              /*tab_node_id=*/1,
+                              {"http://foo.com/", "http://baz.com/"})))));
+}
+
 // Ensure that newly assigned tab node IDs do not conflict with IDs provided
 // by the delegate, for IDs the tracker might not know about. This is possible
 // for example if an Android client gets killed after Android's tab restore

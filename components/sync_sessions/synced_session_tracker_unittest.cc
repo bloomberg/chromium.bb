@@ -498,7 +498,6 @@ TEST_F(SyncedSessionTrackerTest, DeleteForeignTab) {
 
 TEST_F(SyncedSessionTrackerTest, CleanupLocalTabs) {
   std::set<int> free_node_ids;
-  int tab_node_id = TabNodePool::kInvalidTabNodeID;
 
   GetTracker()->InitLocalSession(kTag, kSessionName, kDeviceType);
 
@@ -519,7 +518,7 @@ TEST_F(SyncedSessionTrackerTest, CleanupLocalTabs) {
   GetTracker()->ResetSessionTracking(kTag);
   GetTracker()->PutWindowInSession(kTag, kWindow1);
   GetTracker()->PutTabInWindow(kTag, kWindow1, kTab1);
-  EXPECT_TRUE(GetTracker()->GetTabNodeFromLocalTabId(kTab1, &tab_node_id));
+  EXPECT_EQ(kTabNode1, GetTracker()->AssociateLocalTabWithFreeTabNode(kTab1));
   GetTracker()->CleanupLocalTabs(&free_node_ids);
   EXPECT_TRUE(free_node_ids.empty());
 
@@ -529,20 +528,20 @@ TEST_F(SyncedSessionTrackerTest, CleanupLocalTabs) {
   EXPECT_FALSE(GetLocalTabNodePool()->Full());
 
   // Simulate a tab opening, which should use the last free tab node.
-  EXPECT_TRUE(GetTracker()->GetTabNodeFromLocalTabId(kTab2, &tab_node_id));
+  EXPECT_EQ(kTabNode2, GetTracker()->AssociateLocalTabWithFreeTabNode(kTab2));
+  EXPECT_EQ(kTabNode2, GetTracker()->LookupTabNodeFromTabId(kTag, kTab2));
   EXPECT_TRUE(GetLocalTabNodePool()->Empty());
 
   // Simulate another tab opening, which should create a new associated tab
   // node.
-  EXPECT_FALSE(GetTracker()->GetTabNodeFromLocalTabId(kTab3, &tab_node_id));
-  EXPECT_EQ(kTabNode3, tab_node_id);
+  EXPECT_EQ(kTabNode3, GetTracker()->AssociateLocalTabWithFreeTabNode(kTab3));
+  EXPECT_EQ(kTabNode3, GetTracker()->LookupTabNodeFromTabId(kTag, kTab3));
   EXPECT_EQ(3U, GetLocalTabNodePool()->Capacity());
   EXPECT_TRUE(GetLocalTabNodePool()->Empty());
 
-  // Fetching the same tab should return the same tab node id.
-  EXPECT_TRUE(GetTracker()->GetTabNodeFromLocalTabId(kTab3, &tab_node_id));
-  EXPECT_EQ(kTabNode3, tab_node_id);
-  EXPECT_TRUE(GetLocalTabNodePool()->Empty());
+  // Previous tabs should still be associated.
+  EXPECT_EQ(kTabNode1, GetTracker()->LookupTabNodeFromTabId(kTag, kTab1));
+  EXPECT_EQ(kTabNode2, GetTracker()->LookupTabNodeFromTabId(kTag, kTab2));
 
   // Associate with no tabs. All tabs should be freed again, and the pool
   // should now be full.
@@ -664,8 +663,8 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabMappedTwice) {
   // Attempting to access the original tab will create a new SessionTab object.
   EXPECT_NE(GetTracker()->GetTab(kTag, kTab1),
             GetTracker()->GetTab(kTag, kTab2));
-  int tab_node_id = -1;
-  EXPECT_FALSE(GetTracker()->GetTabNodeFromLocalTabId(kTab1, &tab_node_id));
+  EXPECT_EQ(TabNodePool::kInvalidTabNodeID,
+            GetTracker()->LookupTabNodeFromTabId(kTag, kTab1));
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
 }
 
