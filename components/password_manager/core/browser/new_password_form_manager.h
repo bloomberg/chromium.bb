@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
+#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 
 namespace password_manager {
 
@@ -21,7 +22,8 @@ class PasswordManagerDriver;
 // stored information about it. It is aimed to replace PasswordFormManager and
 // to be renamed in new Password Manager design. Details
 // go/new-cpm-design-refactoring.
-class NewPasswordFormManager : public FormFetcher::Consumer {
+class NewPasswordFormManager : public PasswordFormManagerForUI,
+                               public FormFetcher::Consumer {
  public:
   // TODO(crbug.com/621355): So far, |form_fetcher| can be null. In that case
   // |this| creates an instance of it itself (meant for production code). Once
@@ -47,6 +49,31 @@ class NewPasswordFormManager : public FormFetcher::Consumer {
                                    const PasswordManagerDriver* driver);
   bool is_submitted() { return is_submitted_; }
   void set_not_submitted() { is_submitted_ = false; }
+
+  // PasswordFormManagerForUI:
+  FormFetcher* GetFormFetcher() override;
+  const GURL& GetOrigin() const override;
+  const std::map<base::string16, const autofill::PasswordForm*>&
+  GetBestMatches() const override;
+  const autofill::PasswordForm& GetPendingCredentials() const override;
+  metrics_util::CredentialSourceType GetCredentialSource() override;
+  PasswordFormMetricsRecorder* GetMetricsRecorder() override;
+  const std::vector<const autofill::PasswordForm*>& GetBlacklistedMatches()
+      const override;
+  bool IsBlacklisted() const override;
+  bool IsPasswordOverridden() const override;
+  const autofill::PasswordForm* GetPreferredMatch() const override;
+
+  void Save() override;
+  void Update(const autofill::PasswordForm& credentials_to_update) override;
+  void UpdateUsername(const base::string16& new_username) override;
+  void UpdatePasswordValue(const base::string16& new_password) override;
+
+  void OnNopeUpdateClicked() override;
+  void OnNeverClicked() override;
+  void OnNoInteraction(bool is_update) override;
+  void PermanentlyBlacklist() override;
+  void OnPasswordsRevealed() override;
 
  protected:
   // FormFetcher::Consumer:
