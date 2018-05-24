@@ -151,6 +151,11 @@ bool ApplyReferencesCorrection(ExecutableType exe_type,
             LOG(ERROR) << "Error reading reference_delta";
             return false;
           }
+          const key_t key = expected_key + delta.value();
+          if (!targets.KeyIsValid(key)) {
+            LOG(ERROR) << "Invalid reference_delta";
+            return false;
+          }
           ref->target = targets.OffsetForKey(expected_key + delta.value());
           ref->location =
               ref->location - equivalence->src_offset + equivalence->dst_offset;
