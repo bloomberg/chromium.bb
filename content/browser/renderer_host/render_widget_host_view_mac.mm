@@ -1108,6 +1108,11 @@ viz::FrameSinkId RenderWidgetHostViewMac::GetFrameSinkId() {
 
 bool RenderWidgetHostViewMac::ShouldRouteEvent(
     const WebInputEvent& event) const {
+  // Event routing requires a valid frame sink (that is, that we be connected to
+  // a ui::Compositor), which is not guaranteed to be the case.
+  // https://crbug.com/844095
+  if (!browser_compositor_->GetRootFrameSinkId().is_valid())
+    return false;
   // See also RenderWidgetHostViewAura::ShouldRouteEvent.
   // TODO(wjmaclean): Update this function if RenderWidgetHostViewMac implements
   // OnTouchEvent(), to match what we are doing in RenderWidgetHostViewAura.
