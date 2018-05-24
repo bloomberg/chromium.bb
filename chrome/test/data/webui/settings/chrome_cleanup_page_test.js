@@ -177,11 +177,13 @@ function testLogsUploading(testingScanOffered) {
   const logsControl = chromeCleanupPage.$$('#chromeCleanupLogsUploadControl');
   assertTrue(!!logsControl);
 
-  cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', true);
+  cr.webUIListenerCallback(
+      'chrome-cleanup-upload-permission-change', false, true);
   Polymer.dom.flush();
   assertTrue(logsControl.checked);
 
-  cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', false);
+  cr.webUIListenerCallback(
+      'chrome-cleanup-upload-permission-change', false, false);
   Polymer.dom.flush();
   assertFalse(logsControl.checked);
 

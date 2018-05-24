@@ -19,7 +19,6 @@
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/test_reg_util_win.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/version.h"
@@ -115,9 +114,10 @@ class ReporterRunnerPolicyTest
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    EXPECT_CALL(provider_, IsInitializationComplete(_))
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
-    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
 
     // Setup polices as needed.
     if (is_managed_) {
@@ -126,18 +126,13 @@ class ReporterRunnerPolicyTest
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_PLATFORM,
                    std::make_unique<base::Value>(is_enabled_), nullptr);
-      provider_.UpdateChromePolicy(policies);
+      policy_provider_.UpdateChromePolicy(policies);
     }
   }
 
   void ComponentRegistered() { waiter_.Signal(); }
 
-  void SetUpOnMainThread() override {}
-
-  void TearDownInProcessBrowserTestFixture() override {}
-
-  registry_util::RegistryOverrideManager registry_override_manager_;
-  policy::MockConfigurationPolicyProvider provider_;
+  policy::MockConfigurationPolicyProvider policy_provider_;
   Waiter waiter_;
   bool is_managed_;
   bool is_enabled_;
@@ -168,13 +163,21 @@ INSTANTIATE_TEST_CASE_P(
                       ReporterRunnerPolicyTestParams(true, false),
                       ReporterRunnerPolicyTestParams(true, true)));
 
+// The state of the the enterprise policy to use during tests.
+enum class PolicyState {
+  kNoLogs,            // Don't set the policy for logs.
+  kLogsForceEnable,   // Force the logs to be enabled.
+  kLogsForceDisable,  // Force the logs to be disabled.
+};
+
 // Parameters for this test:
 //  - SwReporterInvocationType invocation_type_: identifies the type of
 //        invocation being tested.
 //  - const char* old_seed_: The old "Seed" Finch parameter saved in prefs.
 //  - const char* incoming_seed_: The new "Seed" Finch parameter.
+//  - PolicyState policy_state_: The state of logs reporting enterprise policy.
 using ReporterRunnerTestParams =
-    std::tuple<SwReporterInvocationType, const char*, const char*>;
+    std::tuple<SwReporterInvocationType, const char*, const char*, PolicyState>;
 
 class ReporterRunnerTest
     : public InProcessBrowserTest,
@@ -182,7 +185,8 @@ class ReporterRunnerTest
       public ::testing::WithParamInterface<ReporterRunnerTestParams> {
  public:
   ReporterRunnerTest() {
-    std::tie(invocation_type_, old_seed_, incoming_seed_) = GetParam();
+    std::tie(invocation_type_, old_seed_, incoming_seed_, policy_state_) =
+        GetParam();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -193,6 +197,29 @@ class ReporterRunnerTest
 
   void SetUpInProcessBrowserTestFixture() override {
     SetSwReporterTestingDelegate(this);
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
+        .WillRepeatedly(Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+
+    switch (policy_state_) {
+      case PolicyState::kNoLogs:
+        break;
+
+      case PolicyState::kLogsForceEnable:
+      case PolicyState::kLogsForceDisable: {
+        bool is_enabled = policy_state_ == PolicyState::kLogsForceEnable;
+        policy::PolicyMap policies;
+        policies.Set(policy::key::kChromeCleanupReportingEnabled,
+                     policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                     policy::POLICY_SOURCE_PLATFORM,
+                     std::make_unique<base::Value>(is_enabled), nullptr);
+        policy_provider_.UpdateChromePolicy(policies);
+        EXPECT_CALL(mock_chrome_cleaner_controller_, logs_enabled())
+            .WillRepeatedly(Return(is_enabled));
+        break;
+      }
+    }
   }
 
   void SetUpOnMainThread() override {
@@ -379,6 +406,20 @@ class ReporterRunnerTest
     EXPECT_GE(now, last_time_sent_logs);
   }
 
+  // Returns true if it is expected that the test will enable logging.
+  bool ExpectLogging(bool expect_logging_by_default) {
+    bool expect_logging = expect_logging_by_default;
+    if (policy_state_ == PolicyState::kLogsForceDisable ||
+        invocation_type_ ==
+            SwReporterInvocationType::kUserInitiatedWithLogsDisallowed) {
+      expect_logging = false;
+    } else if (invocation_type_ ==
+               SwReporterInvocationType::kUserInitiatedWithLogsAllowed) {
+      expect_logging = true;
+    }
+    return expect_logging;
+  }
+
   // Expects |invocation|'s command line to contain all the switches required
   // for reporter logging if and only if |expect_switches| is true.
   void ExpectLoggingSwitches(const SwReporterInvocation& invocation,
@@ -399,14 +440,18 @@ class ReporterRunnerTest
   }
 
   void ExpectReporterLoggingHappenedInTheLastHour(
-      const SwReporterInvocation& invocation) {
-    ExpectLoggingSwitches(invocation, true);
-    ExpectLastReportSentInTheLastHour();
+      const SwReporterInvocation& invocation,
+      bool expect_logging) {
+    ExpectLoggingSwitches(invocation, expect_logging);
+    if (expect_logging)
+      ExpectLastReportSentInTheLastHour();
   }
 
   void FutureExpectReporterLoggingHappenedInTheLastHour(
-      base::OnceCallback<const SwReporterInvocation&()> get_invocation) {
-    ExpectReporterLoggingHappenedInTheLastHour(std::move(get_invocation).Run());
+      base::OnceCallback<const SwReporterInvocation&()> get_invocation,
+      bool expect_logging) {
+    ExpectReporterLoggingHappenedInTheLastHour(std::move(get_invocation).Run(),
+                                               expect_logging);
   }
 
   void ExpectNoReporterLoggingWithLastTimeSentReportNotSet(
@@ -429,9 +474,18 @@ class ReporterRunnerTest
         std::move(get_invocation).Run(), last_time_sent_logs);
   }
 
-  bool LogsEnabledByUser() {
-    return invocation_type_ ==
-           SwReporterInvocationType::kUserInitiatedWithLogsAllowed;
+  void ExpectReporterLoggingBehavior(const SwReporterInvocation& invocation,
+                                     bool expect_logging_by_default,
+                                     int64_t last_time_sent_logs) {
+    bool expect_logging = ExpectLogging(expect_logging_by_default);
+    if (expect_logging) {
+      ExpectReporterLoggingHappenedInTheLastHour(invocation, expect_logging);
+    } else if (last_time_sent_logs == -1) {
+      ExpectNoReporterLoggingWithLastTimeSentReportNotSet(invocation);
+    } else {
+      ExpectNoReporterLoggingWithLastTimeSentReportSet(invocation,
+                                                       last_time_sent_logs);
+    }
   }
 
   bool LogsDisabledByUser() {
@@ -519,11 +573,15 @@ class ReporterRunnerTest
   SwReporterInvocationType invocation_type_;
   std::string old_seed_;
   std::string incoming_seed_;
+  PolicyState policy_state_;
 
   bool dialog_controller_created_ = false;
   int reporter_launch_count_ = 0;
   std::vector<SwReporterInvocation> reporter_launch_parameters_;
   int exit_code_to_report_ = kReporterNotLaunchedExitCode;
+
+  // Using NiceMock to suppress warnings about uninteresting calls.
+  ::testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 
   // Using NiceMock to suppress warnings about uninteresting calls to state().
   ::testing::NiceMock<MockChromeCleanerController>
@@ -695,13 +753,9 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest,
                            SwReporterInvocationResult::kNothingFound);
   ExpectNumReporterLaunches(/*expected_launch_count=*/1,
                             /*expect_prompt=*/false);
-  if (LogsEnabledByUser()) {
-    ExpectReporterLoggingHappenedInTheLastHour(
-        reporter_launch_parameters_.front());
-  } else {
-    ExpectNoReporterLoggingWithLastTimeSentReportNotSet(
-        reporter_launch_parameters_.front());
-  }
+  ExpectReporterLoggingBehavior(reporter_launch_parameters_.front(),
+                                /*expect_logging_by_default=*/false,
+                                /*last_time_sent_logs=*/-1);
 }
 
 IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, ReporterLogging_EnabledFirstRun) {
@@ -713,13 +767,9 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, ReporterLogging_EnabledFirstRun) {
                            SwReporterInvocationResult::kNothingFound);
   ExpectNumReporterLaunches(/*expected_launch_count=*/1,
                             /*expect_prompt=*/false);
-  if (LogsDisabledByUser()) {
-    ExpectNoReporterLoggingWithLastTimeSentReportNotSet(
-        reporter_launch_parameters_.front());
-  } else {
-    ExpectReporterLoggingHappenedInTheLastHour(
-        reporter_launch_parameters_.front());
-  }
+  ExpectReporterLoggingBehavior(reporter_launch_parameters_.front(),
+                                /*expect_logging_by_default=*/true,
+                                /*last_time_sent_logs=*/-1);
 }
 
 IN_PROC_BROWSER_TEST_P(ReporterRunnerTest,
@@ -733,13 +783,9 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest,
                            SwReporterInvocationResult::kNothingFound);
   ExpectNumReporterLaunches(/*expected_launch_count=*/1,
                             /*expect_prompt=*/false);
-  if (LogsDisabledByUser()) {
-    ExpectNoReporterLoggingWithLastTimeSentReportSet(
-        reporter_launch_parameters_.front(), last_time_sent_logs);
-  } else {
-    ExpectReporterLoggingHappenedInTheLastHour(
-        reporter_launch_parameters_.front());
-  }
+  ExpectReporterLoggingBehavior(reporter_launch_parameters_.front(),
+                                /*expect_logging_by_default=*/true,
+                                last_time_sent_logs);
 }
 
 IN_PROC_BROWSER_TEST_P(ReporterRunnerTest,
@@ -754,13 +800,9 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest,
                            SwReporterInvocationResult::kNothingFound);
   ExpectNumReporterLaunches(/*expected_launch_count=*/1,
                             /*expect_prompt=*/false);
-  if (LogsEnabledByUser()) {
-    ExpectReporterLoggingHappenedInTheLastHour(
-        reporter_launch_parameters_.front());
-  } else {
-    ExpectNoReporterLoggingWithLastTimeSentReportSet(
-        reporter_launch_parameters_.front(), last_time_sent_logs);
-  }
+  ExpectReporterLoggingBehavior(reporter_launch_parameters_.front(),
+                                /*expect_logging_by_default=*/false,
+                                last_time_sent_logs);
 }
 
 IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, ReporterLogging_MultipleLaunches) {
@@ -785,9 +827,11 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, ReporterLogging_MultipleLaunches) {
         base::Unretained(this), base::Passed(&get_first_invocation),
         last_time_sent_logs);
   } else {
+    bool expect_logging = ExpectLogging(true);
     first_launch_callback_ = base::BindOnce(
         &ReporterRunnerTest::FutureExpectReporterLoggingHappenedInTheLastHour,
-        base::Unretained(this), base::Passed(&get_first_invocation));
+        base::Unretained(this), base::Passed(&get_first_invocation),
+        expect_logging);
   }
 
   RunReporterQueueAndWait(chrome_cleaner::kSwReporterNothingFound,
@@ -805,13 +849,9 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, ReporterLogging_MultipleLaunches) {
   // is now recent, because the run is part of the same set of invocations.
   {
     SCOPED_TRACE("second launch");
-    if (LogsDisabledByUser()) {
-      ExpectNoReporterLoggingWithLastTimeSentReportSet(
-          reporter_launch_parameters_[1], last_time_sent_logs);
-    } else {
-      ExpectReporterLoggingHappenedInTheLastHour(
-          reporter_launch_parameters_[1]);
-    }
+    ExpectReporterLoggingBehavior(reporter_launch_parameters_[1],
+                                  /*expect_logging_by_default=*/true,
+                                  last_time_sent_logs);
   }
 }
 
@@ -851,6 +891,21 @@ std::ostream& operator<<(std::ostream& out,
   }
 }
 
+// Make the invocation type test parameter printable.
+std::ostream& operator<<(std::ostream& out, PolicyState policy_state) {
+  switch (policy_state) {
+    case PolicyState::kNoLogs:
+      return out << "NoLogs";
+    case PolicyState::kLogsForceEnable:
+      return out << "LogsEnabled";
+    case PolicyState::kLogsForceDisable:
+      return out << "LogsDisabled";
+    default:
+      NOTREACHED();
+      return out << "UnknownPolicyState";
+  }
+}
+
 // ::testing::PrintToStringParamName does not format tuples as a valid test
 // name, so this functor can be used to get each element in the tuple
 // explicitly and format them using the above operator<< overrides.
@@ -862,13 +917,14 @@ struct ReporterRunTestParamsToString {
     const std::string old_seed(std::get<1>(info.param));
     param_name << (old_seed.empty() ? "EmptySeed" : old_seed) << "_";
     const std::string incoming_seed(std::get<2>(info.param));
-    param_name << (incoming_seed.empty() ? "EmptySeed" : incoming_seed);
+    param_name << (incoming_seed.empty() ? "EmptySeed" : incoming_seed) << "_";
+    param_name << std::get<3>(info.param);
     return param_name.str();
   }
 };
 
 // Tests for kUserInitiatedChromeCleanupsFeature enabled (all invocation types
-// are allowed).
+// are allowed) without an enterprise policy set.
 INSTANTIATE_TEST_CASE_P(
     UserInitiatedRunsEnabled,
     ReporterRunnerTest,
@@ -877,8 +933,26 @@ INSTANTIATE_TEST_CASE_P(
             SwReporterInvocationType::kPeriodicRun,
             SwReporterInvocationType::kUserInitiatedWithLogsDisallowed,
             SwReporterInvocationType::kUserInitiatedWithLogsAllowed),
-        ::testing::Values("", "Seed1"),            // old_seed_
-        ::testing::Values("", "Seed1", "Seed2")),  // incoming_seed_
+        ::testing::Values("", "Seed1"),           // old_seed_
+        ::testing::Values("", "Seed1", "Seed2"),  // incoming_seed_
+        ::testing::Values(PolicyState::kNoLogs)),
+    ReporterRunTestParamsToString());
+
+// Tests for kUserInitiatedChromeCleanupsFeature enabled (all invocation types
+// are allowed) with enterprise policies forcing reporting to be either enabled
+// or disabled.
+INSTANTIATE_TEST_CASE_P(
+    UserInitiatedRunsEnabledWithPolicy,
+    ReporterRunnerTest,
+    ::testing::Combine(
+        ::testing::Values(
+            SwReporterInvocationType::kPeriodicRun,
+            SwReporterInvocationType::kUserInitiatedWithLogsDisallowed,
+            SwReporterInvocationType::kUserInitiatedWithLogsAllowed),
+        ::testing::Values("Seed1"),  // old_seed_
+        ::testing::Values("Seed2"),  // incoming_seed_
+        ::testing::Values(PolicyState::kLogsForceEnable,
+                          PolicyState::kLogsForceDisable)),
     ReporterRunTestParamsToString());
 
 }  // namespace safe_browsing

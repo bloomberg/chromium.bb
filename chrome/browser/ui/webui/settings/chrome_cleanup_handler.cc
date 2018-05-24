@@ -96,7 +96,14 @@ std::string IdleReasonToString(
 }  // namespace
 
 ChromeCleanupHandler::ChromeCleanupHandler(Profile* profile)
-    : controller_(ChromeCleanerController::GetInstance()), profile_(profile) {}
+    : controller_(ChromeCleanerController::GetInstance()), profile_(profile) {
+  DCHECK(g_browser_process->local_state());
+  logs_enabled_pref_.Init(g_browser_process->local_state());
+  logs_enabled_pref_.Add(
+      prefs::kSwReporterReportingEnabled,
+      base::BindRepeating(&ChromeCleanupHandler::OnLogsEnabledPrefChanged,
+                          base::Unretained(this)));
+}
 
 ChromeCleanupHandler::~ChromeCleanupHandler() {
   controller_->RemoveObserver(this);
@@ -187,8 +194,20 @@ void ChromeCleanupHandler::OnRebootRequired() {
 }
 
 void ChromeCleanupHandler::OnLogsEnabledChanged(bool logs_enabled) {
+  // Logs are considered managed if the logs themselves are managed or if the
+  // entire cleanup feature is disabled by policy.
+  PrefService* local_state = g_browser_process->local_state();
+  bool is_managed = !controller_->IsAllowedByPolicy() ||
+                    (local_state && local_state->IsManagedPreference(
+                                        prefs::kSwReporterReportingEnabled));
   FireWebUIListener("chrome-cleanup-upload-permission-change",
-                    base::Value(logs_enabled));
+                    base::Value(is_managed), base::Value(logs_enabled));
+}
+
+void ChromeCleanupHandler::OnLogsEnabledPrefChanged() {
+  bool is_enabled = controller_->IsReportingAllowedByPolicy();
+  controller_->SetLogsEnabled(is_enabled);
+  OnLogsEnabledChanged(is_enabled);
 }
 
 void ChromeCleanupHandler::HandleRegisterChromeCleanerObserver(
@@ -203,11 +222,7 @@ void ChromeCleanupHandler::HandleRegisterChromeCleanerObserver(
   // Send the current logs upload state.
   OnLogsEnabledChanged(controller_->logs_enabled());
 
-  // Inform the UI of the current chrome cleanup state.
-  bool is_managed = g_browser_process->local_state() &&
-                    g_browser_process->local_state()->IsManagedPreference(
-                        prefs::kSwReporterEnabled);
-  FireWebUIListener("chrome-cleanup-enabled-change", base::Value(is_managed),
+  FireWebUIListener("chrome-cleanup-enabled-change",
                     base::Value(controller_->IsAllowedByPolicy()));
 }
 
