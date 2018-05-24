@@ -80,13 +80,11 @@ constexpr uint8_t kTestChallengeBytes[] = {
 
 constexpr char kTestRegisterClientDataJsonString[] =
     R"({"challenge":"aHE0loIi7BcgLkJQX47SsWriLxa7BbiMJdueYCZF8UE","origin":)"
-    R"("https://a.google.com","tokenBinding":{"status":"not-supported"},)"
-    R"("type":"webauthn.create"})";
+    R"("https://a.google.com", "type":"webauthn.create"})";
 
 constexpr char kTestSignClientDataJsonString[] =
     R"({"challenge":"aHE0loIi7BcgLkJQX47SsWriLxa7BbiMJdueYCZF8UE","origin":)"
-    R"("https://a.google.com","tokenBinding":{"status":"not-supported"},)"
-    R"("type":"webauthn.get"})";
+    R"("https://a.google.com", "type":"webauthn.get"})";
 
 constexpr OriginClaimedAuthorityPair kValidRelyingPartyTestCases[] = {
     {"http://localhost", "localhost"},
@@ -529,8 +527,7 @@ TEST_F(AuthenticatorImplTest, TestTokenBindingClientData) {
   const std::vector<
       std::pair<base::Optional<std::vector<uint8_t>>, const char*>>
       kTestCases = {
-          std::make_pair(base::nullopt,
-                         R"({"tokenBinding":{"status":"not-supported"}})"),
+          std::make_pair(base::nullopt, ""),
           std::make_pair(std::vector<uint8_t>{},
                          R"({"tokenBinding":{"status":"supported"}})"),
           std::make_pair(
@@ -542,9 +539,15 @@ TEST_F(AuthenticatorImplTest, TestTokenBindingClientData) {
     const auto& token_binding = test.first;
     const std::string expected_json_subset = test.second;
     SCOPED_TRACE(expected_json_subset);
+    const std::string client_data =
+        GetTokenBindingTestClientDataJSON(token_binding);
 
-    CheckJSONIsSubsetOfJSON(expected_json_subset,
-                            GetTokenBindingTestClientDataJSON(token_binding));
+    if (!expected_json_subset.empty()) {
+      CheckJSONIsSubsetOfJSON(expected_json_subset, client_data);
+    } else {
+      EXPECT_TRUE(client_data.find("tokenBinding") == std::string::npos)
+          << client_data;
+    }
   }
 }
 
