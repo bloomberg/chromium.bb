@@ -52,9 +52,12 @@ ConfirmQuitBubbleController::ConfirmQuitBubbleController(
       browser_hide_animation_(std::move(animation)) {
   browser_hide_animation_->SetSlideDuration(
       kWindowFadeOutDuration.InMilliseconds());
+  BrowserList::AddObserver(this);
 }
 
-ConfirmQuitBubbleController::~ConfirmQuitBubbleController() {}
+ConfirmQuitBubbleController::~ConfirmQuitBubbleController() {
+  BrowserList::RemoveObserver(this);
+}
 
 bool ConfirmQuitBubbleController::HandleKeyboardEvent(
     const ui::Accelerator& accelerator) {
@@ -66,6 +69,7 @@ bool ConfirmQuitBubbleController::HandleKeyboardEvent(
       !accelerator.IsRepeat()) {
     if (state_ == State::kWaiting) {
       state_ = State::kPressed;
+      browser_ = BrowserList::GetInstance()->GetLastActive();
       view_->Show();
       hide_timer_->Start(FROM_HERE, kShowDuration, this,
                          &ConfirmQuitBubbleController::OnTimerElapsed);
@@ -99,6 +103,17 @@ void ConfirmQuitBubbleController::AnimationProgressed(
 void ConfirmQuitBubbleController::AnimationEnded(
     const gfx::Animation* animation) {
   AnimationProgressed(animation);
+}
+
+void ConfirmQuitBubbleController::OnBrowserNoLongerActive(Browser* browser) {
+  if (browser != browser_ || state_ == State::kWaiting ||
+      state_ == State::kQuitting) {
+    return;
+  }
+  state_ = State::kWaiting;
+  view_->Hide();
+  hide_timer_->Stop();
+  browser_hide_animation_->Hide();
 }
 
 void ConfirmQuitBubbleController::OnTimerElapsed() {
