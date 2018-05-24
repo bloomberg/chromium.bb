@@ -20,12 +20,11 @@ MultiplexedChannel::MultiplexedChannel(Delegate* delegate,
 MultiplexedChannel::~MultiplexedChannel() = default;
 
 bool MultiplexedChannel::AddClientToChannel(
-    const std::string& feature,
-    mojom::ConnectionDelegatePtr connection_delegate_ptr) {
+    ClientConnectionParameters client_connection_parameters) {
   if (IsDisconnecting() || IsDisconnected())
     return false;
 
-  PerformAddClientToChannel(feature, std::move(connection_delegate_ptr));
+  PerformAddClientToChannel(std::move(client_connection_parameters));
   return true;
 }
 

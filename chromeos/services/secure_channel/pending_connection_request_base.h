@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
@@ -33,27 +34,28 @@ class PendingConnectionRequestBase
  public:
   ~PendingConnectionRequestBase() override = default;
 
+  // PendingConnectionRequest<FailureDetailType>:
+  const base::UnguessableToken& GetRequestId() const override {
+    return client_connection_parameters_.id();
+  }
+
  protected:
   PendingConnectionRequestBase(
-      const std::string& feature,
+      ClientConnectionParameters client_connection_parameters,
       const std::string& readable_request_type_for_logging,
-      PendingConnectionRequestDelegate* delegate,
-      mojom::ConnectionDelegatePtr connection_delegate_ptr)
+      PendingConnectionRequestDelegate* delegate)
       : PendingConnectionRequest<FailureDetailType>(delegate),
-        feature_(feature),
+        client_connection_parameters_(std::move(client_connection_parameters)),
         readable_request_type_for_logging_(readable_request_type_for_logging),
-        connection_delegate_ptr_(std::move(connection_delegate_ptr)),
         weak_ptr_factory_(this) {
-    DCHECK(!feature_.empty());
-    DCHECK(connection_delegate_ptr_);
-
     // If the client disconnects its delegate, the client is signaling that the
     // connection request has been canceled.
-    connection_delegate_ptr_.set_connection_error_handler(base::BindOnce(
-        &PendingConnectionRequestBase::OnFinishedWithoutConnection,
-        weak_ptr_factory_.GetWeakPtr(),
-        PendingConnectionRequestDelegate::FailedConnectionReason::
-            kRequestCanceledByClient));
+    client_connection_parameters_.connection_delegate_ptr()
+        .set_connection_error_handler(base::BindOnce(
+            &PendingConnectionRequestBase::OnFinishedWithoutConnection,
+            weak_ptr_factory_.GetWeakPtr(),
+            PendingConnectionRequestDelegate::FailedConnectionReason::
+                kRequestCanceledByClient));
   }
 
   // Derived classes should invoke this function if they would like to give up
@@ -67,7 +69,8 @@ class PendingConnectionRequestBase
       return;
     }
 
-    connection_delegate_ptr_->OnConnectionAttemptFailure(failure_reason);
+    client_connection_parameters_.connection_delegate_ptr()
+        ->OnConnectionAttemptFailure(failure_reason);
 
     OnFinishedWithoutConnection(PendingConnectionRequestDelegate::
                                     FailedConnectionReason::kRequestFailed);
@@ -79,9 +82,9 @@ class PendingConnectionRequestBase
   using PendingConnectionRequest<
       FailureDetailType>::NotifyRequestFinishedWithoutConnection;
 
-  std::pair<std::string, mojom::ConnectionDelegatePtr> ExtractClientData()
-      override {
-    return std::make_pair(feature_, std::move(connection_delegate_ptr_));
+  // PendingConnectionRequest<FailureDetailType>:
+  ClientConnectionParameters ExtractClientConnectionParameters() override {
+    return std::move(client_connection_parameters_);
   }
 
   void OnFinishedWithoutConnection(
@@ -90,15 +93,14 @@ class PendingConnectionRequestBase
     has_finished_without_connection_ = true;
 
     PA_LOG(INFO) << "Request finished without connection; notifying delegate. "
-                 << "Feature: \"" << feature_ << "\""
-                 << ", Reason: " << reason << ", Request type: \""
-                 << readable_request_type_for_logging_ << "\"";
+                 << "Request type: \"" << readable_request_type_for_logging_
+                 << "\", Reason: " << reason
+                 << ", Client parameters: " << client_connection_parameters_;
     NotifyRequestFinishedWithoutConnection(reason);
   }
 
-  const std::string feature_;
+  ClientConnectionParameters client_connection_parameters_;
   const std::string readable_request_type_for_logging_;
-  mojom::ConnectionDelegatePtr connection_delegate_ptr_;
 
   bool has_finished_without_connection_ = false;
 

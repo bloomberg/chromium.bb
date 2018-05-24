@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/channel_impl.h"
+#include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "chromeos/services/secure_channel/single_client_message_proxy.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -29,8 +30,7 @@ class SingleClientMessageProxyImpl : public SingleClientMessageProxy,
     virtual ~Factory();
     virtual std::unique_ptr<SingleClientMessageProxy> BuildInstance(
         SingleClientMessageProxy::Delegate* delegate,
-        const std::string& feature,
-        mojom::ConnectionDelegatePtr connection_delegate_ptr);
+        ClientConnectionParameters client_connection_parameters);
 
    private:
     static Factory* test_factory_;
@@ -38,13 +38,15 @@ class SingleClientMessageProxyImpl : public SingleClientMessageProxy,
 
   ~SingleClientMessageProxyImpl() override;
 
+  // SingleClientMessageProxy:
+  const base::UnguessableToken& GetProxyId() override;
+
  private:
   friend class SecureChannelSingleClientMessageProxyImplTest;
 
   SingleClientMessageProxyImpl(
       SingleClientMessageProxy::Delegate* delegate,
-      const std::string& feature,
-      mojom::ConnectionDelegatePtr connection_delegate_ptr);
+      ClientConnectionParameters client_connection_parameters);
 
   // SingleClientMessageProxy:
   void HandleReceivedMessage(const std::string& feature,
@@ -59,8 +61,7 @@ class SingleClientMessageProxyImpl : public SingleClientMessageProxy,
 
   void FlushForTesting();
 
-  const std::string feature_;
-  mojom::ConnectionDelegatePtr connection_delegate_ptr_;
+  ClientConnectionParameters client_connection_parameters_;
   std::unique_ptr<ChannelImpl> channel_;
   mojom::MessageReceiverPtr message_receiver_ptr_;
 

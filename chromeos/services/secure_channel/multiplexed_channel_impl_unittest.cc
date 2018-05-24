@@ -12,6 +12,7 @@
 
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/connection_medium.h"
 #include "chromeos/services/secure_channel/fake_authenticated_channel.h"
@@ -52,10 +53,9 @@ class FakeSingleClientMessageProxyImplFactory
  private:
   std::unique_ptr<SingleClientMessageProxy> BuildInstance(
       SingleClientMessageProxy::Delegate* delegate,
-      const std::string& feature,
-      mojom::ConnectionDelegatePtr connection_delegate_ptr) override {
-    EXPECT_EQ(kTestFeature, feature);
-    EXPECT_TRUE(connection_delegate_ptr);
+      ClientConnectionParameters client_connection_parameters) override {
+    EXPECT_EQ(kTestFeature, client_connection_parameters.feature());
+    EXPECT_TRUE(client_connection_parameters.connection_delegate_ptr());
 
     if (!expected_delegate_)
       expected_delegate_ = delegate;
@@ -70,7 +70,7 @@ class FakeSingleClientMessageProxyImplFactory
             base::Unretained(this)));
     FakeSingleClientMessageProxy* proxy_raw =
         static_cast<FakeSingleClientMessageProxy*>(proxy.get());
-    id_to_active_proxy_map_[proxy->proxy_id()] = proxy_raw;
+    id_to_active_proxy_map_[proxy->GetProxyId()] = proxy_raw;
 
     return proxy;
   }
@@ -108,7 +108,7 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
     // The default list contains one client.
     initial_fake_connection_delegate_ =
         std::make_unique<FakeConnectionDelegate>();
-    initial_client_list_.push_back(std::make_pair(
+    initial_client_list_.push_back(ClientConnectionParameters(
         kTestFeature,
         initial_fake_connection_delegate_->GenerateInterfacePtr()));
   }
@@ -196,7 +196,7 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
     bool is_last_client = id_to_active_proxy_map().size() == 1u;
     EXPECT_EQ(is_last_client, expected_to_be_last_client);
 
-    base::UnguessableToken proxy_id = sending_proxy->proxy_id();
+    base::UnguessableToken proxy_id = sending_proxy->GetProxyId();
 
     // All relevant parties should still indicate that the connection is valid.
     EXPECT_TRUE(base::ContainsKey(id_to_active_proxy_map(), proxy_id));
@@ -255,12 +255,13 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
   void AddClientToChannel(
       const std::string& feature,
       mojom::ConnectionDelegatePtr connection_delegate_ptr) {
-    bool success = multiplexed_channel_->AddClientToChannel(
-        feature, std::move(connection_delegate_ptr));
+    bool success =
+        multiplexed_channel_->AddClientToChannel(ClientConnectionParameters(
+            feature, std::move(connection_delegate_ptr)));
     EXPECT_TRUE(success);
   }
 
-  MultiplexedChannelImpl::Factory::InitialClientList& initial_client_list() {
+  std::vector<ClientConnectionParameters>& initial_client_list() {
     return initial_client_list_;
   }
 
@@ -292,7 +293,7 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
 
   std::unique_ptr<FakeSingleClientMessageProxyImplFactory> fake_proxy_factory_;
 
-  MultiplexedChannelImpl::Factory::InitialClientList initial_client_list_;
+  std::vector<ClientConnectionParameters> initial_client_list_;
   std::unique_ptr<FakeConnectionDelegate> initial_fake_connection_delegate_;
 
   FakeAuthenticatedChannel* fake_authenticated_channel_ = nullptr;
@@ -393,7 +394,7 @@ TEST_F(SecureChannelMultiplexedChannelImplTest,
   // Add a second initial client.
   std::unique_ptr<FakeConnectionDelegate> fake_connection_delegate_2 =
       std::make_unique<FakeConnectionDelegate>();
-  initial_client_list().push_back(std::make_pair(
+  initial_client_list().push_back(ClientConnectionParameters(
       kTestFeature, fake_connection_delegate_2->GenerateInterfacePtr()));
 
   CreateChannel();

@@ -36,10 +36,8 @@ bool FakeMultiplexedChannel::IsDisconnected() {
 }
 
 void FakeMultiplexedChannel::PerformAddClientToChannel(
-    const std::string& feature,
-    mojom::ConnectionDelegatePtr connection_delegate_ptr) {
-  added_clients_.push_back(
-      std::make_pair(feature, std::move(connection_delegate_ptr)));
+    ClientConnectionParameters client_connection_parameters) {
+  added_clients_.push_back(std::move(client_connection_parameters));
 }
 
 FakeMultiplexedChannelDelegate::FakeMultiplexedChannelDelegate() = default;

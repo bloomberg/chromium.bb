@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/unguessable_token.h"
+#include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/pending_connection_request_delegate.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
@@ -26,12 +26,12 @@ namespace secure_channel {
 template <typename FailureDetailType>
 class PendingConnectionRequest {
  public:
-  // Extracts |request|'s feature and ConnectionDelegate. This function deletes
+  // Extracts |request|'s ClientConnectionParameters. This function deletes
   // |request| as part of this process to ensure that it is no longer used after
   // extraction is complete.
-  static std::pair<std::string, mojom::ConnectionDelegatePtr> ExtractClientData(
+  static ClientConnectionParameters ExtractClientConnectionParameters(
       std::unique_ptr<PendingConnectionRequest<FailureDetailType>> request) {
-    return request->ExtractClientData();
+    return request->ExtractClientConnectionParameters();
   }
 
   virtual ~PendingConnectionRequest() = default;
@@ -40,26 +40,24 @@ class PendingConnectionRequest {
   // trying to connect after some number of failures.
   virtual void HandleConnectionFailure(FailureDetailType failure_detail) = 0;
 
-  const base::UnguessableToken& request_id() const { return request_id_; }
+  virtual const base::UnguessableToken& GetRequestId() const = 0;
 
  protected:
   PendingConnectionRequest(PendingConnectionRequestDelegate* delegate)
-      : delegate_(delegate), request_id_(base::UnguessableToken::Create()) {
+      : delegate_(delegate) {
     DCHECK(delegate_);
   }
 
   // Extracts the feature and ConnectionDelegate from this request.
-  virtual std::pair<std::string, mojom::ConnectionDelegatePtr>
-  ExtractClientData() = 0;
+  virtual ClientConnectionParameters ExtractClientConnectionParameters() = 0;
 
   void NotifyRequestFinishedWithoutConnection(
       PendingConnectionRequestDelegate::FailedConnectionReason reason) {
-    delegate_->OnRequestFinishedWithoutConnection(request_id_, reason);
+    delegate_->OnRequestFinishedWithoutConnection(GetRequestId(), reason);
   }
 
  private:
   PendingConnectionRequestDelegate* delegate_;
-  const base::UnguessableToken request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingConnectionRequest);
 };

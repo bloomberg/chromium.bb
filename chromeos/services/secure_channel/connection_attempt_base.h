@@ -71,7 +71,7 @@ class ConnectionAttemptBase : public ConnectionAttempt<FailureDetailType>,
   void ProcessAddingNewConnectionRequest(
       std::unique_ptr<PendingConnectionRequest<FailureDetailType>> request)
       override {
-    if (base::ContainsKey(id_to_request_map_, request->request_id())) {
+    if (base::ContainsKey(id_to_request_map_, request->GetRequestId())) {
       PA_LOG(ERROR) << "ConnectionAttemptBase::"
                     << "ProcessAddingNewConnectionRequest(): Processing "
                     << "request whose ID has already been processed.";
@@ -79,7 +79,7 @@ class ConnectionAttemptBase : public ConnectionAttempt<FailureDetailType>,
     }
 
     bool was_empty = id_to_request_map_.empty();
-    id_to_request_map_[request->request_id()] = std::move(request);
+    id_to_request_map_[request->GetRequestId()] = std::move(request);
 
     // In the case that this ConnectionAttempt was just created and had not yet
     // received a request yet, start up an operation.
@@ -87,13 +87,13 @@ class ConnectionAttemptBase : public ConnectionAttempt<FailureDetailType>,
       StartNextConnectToDeviceOperation();
   }
 
-  std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>
-  ExtractClientData() override {
-    std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>> data_list;
+  std::vector<ClientConnectionParameters> ExtractClientConnectionParameters()
+      override {
+    std::vector<ClientConnectionParameters> data_list;
     for (auto& map_entry : id_to_request_map_) {
       data_list.push_back(
-          PendingConnectionRequest<FailureDetailType>::ExtractClientData(
-              std::move(map_entry.second)));
+          PendingConnectionRequest<FailureDetailType>::
+              ExtractClientConnectionParameters(std::move(map_entry.second)));
     }
     return data_list;
   }

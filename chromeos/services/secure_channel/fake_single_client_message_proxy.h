@@ -35,6 +35,9 @@ class FakeSingleClientMessageProxy : public SingleClientMessageProxy {
     return processed_messages_;
   }
 
+  // SingleClientMessageProxy:
+  const base::UnguessableToken& GetProxyId() override;
+
   // Public for testing.
   using SingleClientMessageProxy::NotifySendMessageRequested;
   using SingleClientMessageProxy::NotifyClientDisconnected;
@@ -46,6 +49,7 @@ class FakeSingleClientMessageProxy : public SingleClientMessageProxy {
                              const std::string& payload) override;
   void HandleRemoteDeviceDisconnection() override;
 
+  const base::UnguessableToken proxy_id_;
   base::OnceCallback<void(const base::UnguessableToken&)> destructor_callback_;
 
   std::vector<std::pair<std::string, std::string>> processed_messages_;

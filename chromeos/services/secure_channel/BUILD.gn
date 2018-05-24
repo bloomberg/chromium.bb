@@ -12,6 +12,8 @@ static_library("secure_channel") {
     "authenticated_channel_impl.h",
     "channel_impl.cc",
     "channel_impl.h",
+    "client_connection_parameters.cc",
+    "client_connection_parameters.h",
     "connect_to_device_operation.h",
     "connect_to_device_operation_base.h",
     "connect_to_device_operation_factory.h",

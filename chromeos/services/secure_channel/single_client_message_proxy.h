@@ -44,7 +44,7 @@ class SingleClientMessageProxy {
   // because of instability on the communication channel).
   virtual void HandleRemoteDeviceDisconnection() = 0;
 
-  const base::UnguessableToken& proxy_id() { return proxy_id_; }
+  virtual const base::UnguessableToken& GetProxyId() = 0;
 
  protected:
   SingleClientMessageProxy(Delegate* delegate);
@@ -57,7 +57,6 @@ class SingleClientMessageProxy {
 
  private:
   Delegate* delegate_;
-  const base::UnguessableToken proxy_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleClientMessageProxy);
 };

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/unguessable_token.h"
+#include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_attempt.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
 
@@ -34,8 +35,7 @@ class FakeConnectionAttempt : public ConnectionAttempt<std::string> {
   const IdToRequestMap& id_to_request_map() const { return id_to_request_map_; }
 
   void set_client_data_for_extraction(
-      std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>
-          client_data_for_extraction) {
+      std::vector<ClientConnectionParameters> client_data_for_extraction) {
     client_data_for_extraction_ = std::move(client_data_for_extraction);
   }
 
@@ -49,13 +49,12 @@ class FakeConnectionAttempt : public ConnectionAttempt<std::string> {
   // ConnectionAttempt<std::string>:
   void ProcessAddingNewConnectionRequest(
       std::unique_ptr<PendingConnectionRequest<std::string>> request) override;
-  std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>
-  ExtractClientData() override;
+  std::vector<ClientConnectionParameters> ExtractClientConnectionParameters()
+      override;
 
   IdToRequestMap id_to_request_map_;
 
-  std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>
-      client_data_for_extraction_;
+  std::vector<ClientConnectionParameters> client_data_for_extraction_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConnectionAttempt);
 };

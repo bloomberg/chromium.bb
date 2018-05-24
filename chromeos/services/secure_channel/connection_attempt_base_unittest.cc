@@ -69,8 +69,8 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
   }
 
   void TearDown() override {
-    // ExtractClientData() tests destroy |connection_attempt_|, so no additional
-    // verifications should be performed.
+    // ExtractClientConnectionParameters() tests destroy |connection_attempt_|,
+    // so no additional verifications should be performed.
     if (is_extract_client_data_test_)
       return;
 
@@ -138,7 +138,7 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
                        base::UnguessableTokenHash>
         id_to_num_details_map;
     for (const auto* request : active_requests_) {
-      id_to_num_details_map[request->request_id()] =
+      id_to_num_details_map[request->GetRequestId()] =
           request->handled_failure_details().size();
     }
 
@@ -149,7 +149,7 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
     // Now, ensure that each active request had one additional failure detail
     // added, and verify that it was |kTestFailureDetail|.
     for (const auto* request : active_requests_) {
-      EXPECT_EQ(id_to_num_details_map[request->request_id()] + 1,
+      EXPECT_EQ(id_to_num_details_map[request->GetRequestId()] + 1,
                 request->handled_failure_details().size());
       EXPECT_EQ(kTestFailureDetail, request->handled_failure_details().back());
     }
@@ -193,10 +193,9 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
     EXPECT_FALSE(fake_delegate_->authenticated_channel());
   }
 
-  std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>
-  ExtractClientData() {
+  std::vector<ClientConnectionParameters> ExtractClientConnectionParameters() {
     is_extract_client_data_test_ = true;
-    return ConnectionAttempt<std::string>::ExtractClientData(
+    return ConnectionAttempt<std::string>::ExtractClientConnectionParameters(
         std::move(connection_attempt_));
   }
 
@@ -360,13 +359,14 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_FailThenSuccess) {
   FinishOperationSuccessfully(operation3);
 }
 
-TEST_F(SecureChannelConnectionAttemptBaseTest, ExtractClientData) {
+TEST_F(SecureChannelConnectionAttemptBaseTest,
+       ExtractClientConnectionParameters) {
   FakePendingConnectionRequest* request1 = AddNewRequest();
   auto fake_connection_delegate_1 = std::make_unique<FakeConnectionDelegate>();
   auto fake_connection_delegate_ptr_1 =
       fake_connection_delegate_1->GenerateInterfacePtr();
   auto* fake_connection_delegate_proxy_1 = fake_connection_delegate_ptr_1.get();
-  request1->set_client_data_for_extraction(std::make_pair(
+  request1->set_client_data_for_extraction(ClientConnectionParameters(
       "request1Feature", std::move(fake_connection_delegate_ptr_1)));
 
   FakePendingConnectionRequest* request2 = AddNewRequest();
@@ -374,27 +374,24 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, ExtractClientData) {
   auto fake_connection_delegate_ptr_2 =
       fake_connection_delegate_2->GenerateInterfacePtr();
   auto* fake_connection_delegate_proxy_2 = fake_connection_delegate_ptr_2.get();
-  request2->set_client_data_for_extraction(std::make_pair(
+  request2->set_client_data_for_extraction(ClientConnectionParameters(
       "request2Feature", std::move(fake_connection_delegate_ptr_2)));
 
-  auto extracted_client_data = ExtractClientData();
+  auto extracted_client_data = ExtractClientConnectionParameters();
   EXPECT_EQ(2u, extracted_client_data.size());
 
   // The extracted client data may not be returned in the same order that as the
   // associated requests were added to |conenction_attempt_|, since
   // ConnectionAttemptBase internally utilizes a std::unordered_map. Sort the
   // data before making verifications to ensure correctness.
-  std::sort(extracted_client_data.begin(), extracted_client_data.end(),
-            [](const auto& client_data_pair_1, const auto& client_data_pair_2) {
-              return client_data_pair_1.first < client_data_pair_2.first;
-            });
+  std::sort(extracted_client_data.begin(), extracted_client_data.end());
 
-  EXPECT_EQ("request1Feature", extracted_client_data[0].first);
+  EXPECT_EQ("request1Feature", extracted_client_data[0].feature());
   EXPECT_EQ(fake_connection_delegate_proxy_1,
-            extracted_client_data[0].second.get());
-  EXPECT_EQ("request2Feature", extracted_client_data[1].first);
+            extracted_client_data[0].connection_delegate_ptr().get());
+  EXPECT_EQ("request2Feature", extracted_client_data[1].feature());
   EXPECT_EQ(fake_connection_delegate_proxy_2,
-            extracted_client_data[1].second.get());
+            extracted_client_data[1].connection_delegate_ptr().get());
 }
 
 }  // namespace secure_channel

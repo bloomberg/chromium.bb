@@ -9,7 +9,7 @@ namespace chromeos {
 namespace secure_channel {
 
 SingleClientMessageProxy::SingleClientMessageProxy(Delegate* delegate)
-    : delegate_(delegate), proxy_id_(base::UnguessableToken::Create()) {}
+    : delegate_(delegate) {}
 
 SingleClientMessageProxy::~SingleClientMessageProxy() = default;
 
@@ -22,7 +22,7 @@ void SingleClientMessageProxy::NotifySendMessageRequested(
 }
 
 void SingleClientMessageProxy::NotifyClientDisconnected() {
-  delegate_->OnClientDisconnected(proxy_id_);
+  delegate_->OnClientDisconnected(GetProxyId());
 }
 
 const mojom::ConnectionMetadata&
