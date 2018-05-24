@@ -87,6 +87,7 @@ class UkmRecorderImpl : public UkmRecorder {
     double value_square_sum = 0.0;
     uint64_t dropped_due_to_limits = 0;
     uint64_t dropped_due_to_sampling = 0;
+    uint64_t dropped_due_to_whitelist = 0;
   };
 
   struct EventAggregate {
@@ -97,6 +98,7 @@ class UkmRecorderImpl : public UkmRecorder {
     uint64_t total_count = 0;
     uint64_t dropped_due_to_limits = 0;
     uint64_t dropped_due_to_sampling = 0;
+    uint64_t dropped_due_to_whitelist = 0;
   };
 
   using MetricAggregateMap = std::map<uint64_t, MetricAggregate>;

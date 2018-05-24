@@ -251,6 +251,8 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
         event_aggregate.dropped_due_to_limits);
     proto_aggregate->set_dropped_due_to_sampling(
         event_aggregate.dropped_due_to_sampling);
+    proto_aggregate->set_dropped_due_to_whitelist(
+        event_aggregate.dropped_due_to_whitelist);
     for (const auto& metric_and_aggregate : event_aggregate.metrics) {
       const MetricAggregate& aggregate = metric_and_aggregate.second;
       Aggregate::Metric* proto_metric = proto_aggregate->add_metrics();
@@ -269,6 +271,11 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
           event_aggregate.dropped_due_to_sampling) {
         proto_metric->set_dropped_due_to_sampling(
             aggregate.dropped_due_to_sampling);
+      }
+      if (aggregate.dropped_due_to_whitelist !=
+          event_aggregate.dropped_due_to_whitelist) {
+        proto_metric->set_dropped_due_to_whitelist(
+            aggregate.dropped_due_to_whitelist);
       }
     }
   }
@@ -400,15 +407,6 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
     return;
   }
 
-  if (ShouldRestrictToWhitelistedEntries() &&
-      !base::ContainsKey(whitelisted_entry_hashes_, entry->event_hash)) {
-    RecordDroppedEntry(DroppedDataReason::NOT_WHITELISTED);
-    return;
-  }
-
-  if (default_sampling_rate_ == 0)
-    LoadExperimentSamplingInfo();
-
   EventAggregate& event_aggregate = event_aggregations_[entry->event_hash];
   event_aggregate.total_count++;
   for (const auto& metric : entry->metrics) {
@@ -418,6 +416,18 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
     aggregate.value_sum += value;
     aggregate.value_square_sum += value * value;
   }
+
+  if (ShouldRestrictToWhitelistedEntries() &&
+      !base::ContainsKey(whitelisted_entry_hashes_, entry->event_hash)) {
+    RecordDroppedEntry(DroppedDataReason::NOT_WHITELISTED);
+    event_aggregate.dropped_due_to_whitelist++;
+    for (auto& metric : entry->metrics)
+      event_aggregate.metrics[metric.first].dropped_due_to_whitelist++;
+    return;
+  }
+
+  if (default_sampling_rate_ == 0)
+    LoadExperimentSamplingInfo();
 
   auto found = event_sampling_rates_.find(entry->event_hash);
   int sampling_rate = (found != event_sampling_rates_.end())
