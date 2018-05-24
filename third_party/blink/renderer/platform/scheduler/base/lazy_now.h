@@ -10,10 +10,9 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace base {
-class TickClock;
-}
 
-namespace base {
+class TickClock;
+
 namespace sequence_manager {
 
 // Now() is somewhat expensive so it makes sense not to call Now() unless we
@@ -24,14 +23,14 @@ class PLATFORM_EXPORT LazyNow {
   explicit LazyNow(TimeTicks now);
   explicit LazyNow(const TickClock* tick_clock);
 
-  LazyNow(LazyNow&& move_from);
+  LazyNow(LazyNow&& move_from) noexcept;
 
   // Result will not be updated on any subsesequent calls.
   TimeTicks Now();
 
  private:
   const TickClock* tick_clock_;  // Not owned.
-  TimeTicks now_;
+  Optional<TimeTicks> now_;
 
   DISALLOW_COPY_AND_ASSIGN(LazyNow);
 };
