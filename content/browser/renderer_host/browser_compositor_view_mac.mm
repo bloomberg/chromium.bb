@@ -338,21 +338,19 @@ bool BrowserCompositorMac::UpdateNSViewAndDisplay(
   return true;
 }
 
-void BrowserCompositorMac::UpdateForAutoResize(
-    const gfx::Size& new_size_in_pixels) {
-  if (new_size_in_pixels == dfh_size_pixels_)
-    return;
-
-  dfh_size_dip_ = gfx::ConvertSizeToDIP(dfh_display_.device_scale_factor(),
-                                        new_size_in_pixels);
-  dfh_size_pixels_ = new_size_in_pixels;
-  root_layer_->SetBounds(gfx::Rect(dfh_size_dip_));
-
-  if (recyclable_compositor_)
-    recyclable_compositor_->Suspend();
-  GetDelegatedFrameHost()->SynchronizeVisualProperties(
-      dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(), dfh_size_dip_,
-      GetDeadlinePolicy());
+void BrowserCompositorMac::SynchronizeVisualProperties(
+    const gfx::Size& new_size_in_pixels,
+    const viz::LocalSurfaceId& child_allocated_local_surface_id) {
+  if (dfh_local_surface_id_allocator_.UpdateFromChild(
+          child_allocated_local_surface_id)) {
+    dfh_size_dip_ = gfx::ConvertSizeToDIP(dfh_display_.device_scale_factor(),
+                                          new_size_in_pixels);
+    dfh_size_pixels_ = new_size_in_pixels;
+    root_layer_->SetBounds(gfx::Rect(dfh_size_dip_));
+    GetDelegatedFrameHost()->SynchronizeVisualProperties(
+        dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        dfh_size_dip_, GetDeadlinePolicy());
+  }
   client_->SynchronizeVisualProperties();
 }
 
@@ -558,16 +556,16 @@ void BrowserCompositorMac::OnFrameTokenChanged(uint32_t frame_token) {
 void BrowserCompositorMac::DidNavigate() {
   // The first navigation does not need a new LocalSurfaceID. The renderer can
   // use the ID that was already provided.
-  if (!is_first_navigation_) {
-    const viz::LocalSurfaceId& new_local_surface_id =
-        dfh_local_surface_id_allocator_.GenerateId();
-    delegated_frame_host_->SynchronizeVisualProperties(
-        new_local_surface_id, dfh_size_dip_,
-        cc::DeadlinePolicy::UseExistingDeadline());
-  }
-  is_first_navigation_ = false;
+  if (!is_first_navigation_)
+    dfh_local_surface_id_allocator_.GenerateId();
+  const viz::LocalSurfaceId& local_surface_id =
+      dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+  delegated_frame_host_->SynchronizeVisualProperties(
+      local_surface_id, dfh_size_dip_,
+      cc::DeadlinePolicy::UseExistingDeadline());
   client_->SynchronizeVisualProperties();
   delegated_frame_host_->DidNavigate();
+  is_first_navigation_ = false;
 }
 
 void BrowserCompositorMac::DidReceiveFirstFrameAfterNavigation() {

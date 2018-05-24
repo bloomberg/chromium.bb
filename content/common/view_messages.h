@@ -175,7 +175,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::VisualProperties)
   IPC_STRUCT_TRAITS_MEMBER(visible_viewport_size)
   IPC_STRUCT_TRAITS_MEMBER(is_fullscreen_granted)
   IPC_STRUCT_TRAITS_MEMBER(display_mode)
-  IPC_STRUCT_TRAITS_MEMBER(content_source_id)
   IPC_STRUCT_TRAITS_MEMBER(capture_sequence_number)
 IPC_STRUCT_TRAITS_END()
 

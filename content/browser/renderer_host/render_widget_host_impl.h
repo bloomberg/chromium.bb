@@ -501,12 +501,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // mode.
   void GotResponseToKeyboardLockRequest(bool allowed);
 
-  // Resets state variables related to tracking pending size and painting.
-  //
-  // We need to reset these flags when we want to repaint the contents of
-  // browser plugin in this RWH. Resetting these flags will ensure we ignore
-  // any previous pending acks that are not relevant upon repaint.
-  void ResetSizeAndRepaintPendingFlags();
+  // Resets state variables related to tracking pending updates to visual
+  // properties.
+  void ResetSentVisualProperties();
 
   void DetachDelegate();
 

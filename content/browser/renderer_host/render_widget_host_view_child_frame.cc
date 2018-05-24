@@ -1181,6 +1181,7 @@ void RenderWidgetHostViewChildFrame::OnDidUpdateVisualPropertiesComplete(
 }
 
 void RenderWidgetHostViewChildFrame::DidNavigate() {
+  host()->ResetSentVisualProperties();
   host()->SynchronizeVisualProperties();
 }
 
