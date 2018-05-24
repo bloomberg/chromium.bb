@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
 #include "components/sync/engine/cycle/status_counters.h"
@@ -167,15 +167,16 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
  protected:
   explicit DataTypeController(ModelType type);
 
-  // Allows subclasses to DCHECK that they're on the correct thread.
+  // Allows subclasses to DCHECK that they're on the correct sequence.
+  // TODO(treib): Rename this to CalledOnValidSequence.
   bool CalledOnValidThread() const;
 
  private:
   // The type this object is responsible for controlling.
   const ModelType type_;
 
-  // Used to check that functions are called on the correct thread.
-  base::ThreadChecker thread_checker_;
+  // Used to check that functions are called on the correct sequence.
+  base::SequenceChecker sequence_checker_;
 };
 
 }  // namespace syncer

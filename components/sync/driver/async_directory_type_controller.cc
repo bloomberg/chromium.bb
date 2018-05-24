@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/model_type.h"
@@ -226,7 +226,7 @@ bool AsyncDirectoryTypeController::StartAssociationAsync() {
       FROM_HERE,
       base::Bind(
           &SharedChangeProcessor::StartAssociation, shared_change_processor_,
-          BindToCurrentThread(base::Bind(
+          BindToCurrentSequence(base::Bind(
               &AsyncDirectoryTypeController::StartDone, base::AsWeakPtr(this))),
           sync_client_, processor_factory_.get(), user_share_,
           base::Passed(CreateErrorHandler())));
@@ -260,7 +260,7 @@ std::unique_ptr<DataTypeErrorHandler>
 AsyncDirectoryTypeController::CreateErrorHandler() {
   DCHECK(CalledOnValidThread());
   return std::make_unique<DataTypeErrorHandlerImpl>(
-      base::ThreadTaskRunnerHandle::Get(), dump_stack_,
+      base::SequencedTaskRunnerHandle::Get(), dump_stack_,
       base::Bind(&AsyncDirectoryTypeController::DisableImpl,
                  base::AsWeakPtr(this)));
 }

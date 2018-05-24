@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/driver/sync_client.h"
@@ -57,7 +57,7 @@ void DisableSyncHelperOnModelThread(
 }
 
 void ReportError(ModelType model_type,
-                 scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+                 scoped_refptr<base::SequencedTaskRunner> ui_thread,
                  const ModelErrorHandler& error_handler,
                  const ModelError& error) {
   // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
@@ -118,11 +118,11 @@ void ModelTypeController::LoadModels(
 
   // Callback that posts back to the UI thread.
   ModelTypeControllerDelegate::StartCallback callback_bound_to_ui_thread =
-      BindToCurrentThread(base::BindOnce(
+      BindToCurrentSequence(base::BindOnce(
           &ModelTypeController::OnProcessorStarted, base::AsWeakPtr(this)));
 
   ModelErrorHandler error_handler = base::BindRepeating(
-      &ReportError, type(), base::ThreadTaskRunnerHandle::Get(),
+      &ReportError, type(), base::SequencedTaskRunnerHandle::Get(),
       base::Bind(&ModelTypeController::ReportModelError,
                  base::AsWeakPtr(this)));
 
@@ -244,7 +244,7 @@ DataTypeController::State ModelTypeController::state() const {
 void ModelTypeController::GetAllNodes(const AllNodesCallback& callback) {
   PostModelTask(FROM_HERE,
                 base::BindOnce(&GetAllNodesForDebuggingHelperOnModelThread,
-                               BindToCurrentThread(callback)));
+                               BindToCurrentSequence(callback)));
 }
 
 void ModelTypeController::GetStatusCounters(
@@ -252,7 +252,7 @@ void ModelTypeController::GetStatusCounters(
   PostModelTask(
       FROM_HERE,
       base::BindOnce(&GetStatusCountersForDebuggingHelperOnModelThread,
-                     BindToCurrentThread(callback)));
+                     BindToCurrentSequence(callback)));
 }
 
 void ModelTypeController::RecordMemoryUsageHistogram() {

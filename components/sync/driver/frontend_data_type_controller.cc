@@ -5,7 +5,7 @@
 #include "components/sync/driver/frontend_data_type_controller.h"
 
 #include "base/logging.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/model_associator.h"
@@ -69,7 +69,7 @@ void FrontendDataTypeController::StartAssociating(
   start_callback_ = start_callback;
   state_ = ASSOCIATING;
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&FrontendDataTypeController::Associate,
                             base::AsWeakPtr(this)));
 }
@@ -209,7 +209,7 @@ void FrontendDataTypeController::StartDone(
 std::unique_ptr<DataTypeErrorHandler>
 FrontendDataTypeController::CreateErrorHandler() {
   return std::make_unique<DataTypeErrorHandlerImpl>(
-      base::ThreadTaskRunnerHandle::Get(), dump_stack_,
+      base::SequencedTaskRunnerHandle::Get(), dump_stack_,
       base::Bind(&FrontendDataTypeController::OnUnrecoverableError,
                  base::AsWeakPtr(this)));
 }

@@ -50,7 +50,7 @@ bool DataTypeController::ReadyForStart() const {
 }
 
 bool DataTypeController::CalledOnValidThread() const {
-  return thread_checker_.CalledOnValidThread();
+  return sequence_checker_.CalledOnValidSequence();
 }
 
 }  // namespace syncer
