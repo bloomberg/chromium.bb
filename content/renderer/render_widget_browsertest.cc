@@ -60,7 +60,6 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   visual_properties.top_controls_height = 0.f;
   visual_properties.browser_controls_shrink_blink_size = false;
   visual_properties.is_fullscreen_granted = false;
-  visual_properties.content_source_id = 0u;
   OnSynchronizeVisualProperties(visual_properties);
 
   // Setting empty physical backing size should not send the ack.
@@ -74,7 +73,6 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   visual_properties.local_surface_id = local_surface_id_allocator.GenerateId();
   visual_properties.new_size = size;
   visual_properties.compositor_viewport_pixel_size = size;
-  visual_properties.content_source_id = 1u;
   OnSynchronizeVisualProperties(visual_properties);
 
   // Clear the flag.

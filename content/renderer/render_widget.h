@@ -848,7 +848,7 @@ class CONTENT_EXPORT RenderWidget
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
   std::unique_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
 
-  viz::LocalSurfaceId local_surface_id_;
+  viz::LocalSurfaceId local_surface_id_from_parent_;
 
  private:
   // TODO(ekaramad): This method should not be confused with its RenderView

@@ -89,7 +89,9 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
 
   // Update the renderer's SurfaceId to reflect |new_size_in_pixels| in
   // anticipation of the NSView resizing during auto-resize.
-  void UpdateForAutoResize(const gfx::Size& new_size_in_pixels);
+  void SynchronizeVisualProperties(
+      const gfx::Size& new_size_in_pixels,
+      const viz::LocalSurfaceId& child_allocated_local_surface_id);
 
   // This is used to ensure that the ui::Compositor be attached to the
   // DelegatedFrameHost while the RWHImpl is visible.

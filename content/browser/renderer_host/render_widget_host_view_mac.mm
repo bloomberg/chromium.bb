@@ -742,14 +742,9 @@ void RenderWidgetHostViewMac::UpdateNeedsBeginFramesInternal() {
 
 void RenderWidgetHostViewMac::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
-  if (browser_compositor_->UpdateRendererLocalSurfaceIdFromChild(
-          metadata.local_surface_id.value_or(viz::LocalSurfaceId()))) {
-    if (host()->auto_resize_enabled()) {
-      browser_compositor_->UpdateForAutoResize(
-          metadata.viewport_size_in_pixels);
-    }
-  }
-  SynchronizeVisualProperties();
+  browser_compositor_->SynchronizeVisualProperties(
+      metadata.viewport_size_in_pixels,
+      metadata.local_surface_id.value_or(viz::LocalSurfaceId()));
 }
 
 void RenderWidgetHostViewMac::SetWantsAnimateOnlyBeginFrames() {

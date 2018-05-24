@@ -2817,7 +2817,7 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
                   .compositor_viewport_pixel_size.ToString());  // backing size
   }
 
-  widget_host_->ResetSizeAndRepaintPendingFlags();
+  widget_host_->ResetSentVisualProperties();
   sink_->ClearMessages();
 
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
@@ -2831,7 +2831,7 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
   EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SynchronizeVisualProperties::ID),
             sink_->GetMessageAt(0)->type());
 
-  widget_host_->ResetSizeAndRepaintPendingFlags();
+  widget_host_->ResetSentVisualProperties();
   sink_->ClearMessages();
 
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(1.0f);
@@ -3278,7 +3278,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
   root_window->SetLayoutManager(new FullscreenLayoutManager(root_window));
   view_->InitAsFullscreen(parent_view_);
   view_->Show();
-  widget_host_->ResetSizeAndRepaintPendingFlags();
+  widget_host_->ResetSentVisualProperties();
   sink_->ClearMessages();
 
   // Call SynchronizeVisualProperties to flush the old screen info.
@@ -3305,7 +3305,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
         root_window->GetHost()->compositor());
   }
 
-  widget_host_->ResetSizeAndRepaintPendingFlags();
+  widget_host_->ResetSentVisualProperties();
   sink_->ClearMessages();
 
   // Make sure the corrent screen size is set along in the resize
@@ -4086,7 +4086,7 @@ TEST_F(RenderWidgetHostViewAuraTest, VisibleViewportTest) {
   // Defaults to full height of the view.
   EXPECT_EQ(100, view_->GetVisibleViewportSize().height());
 
-  widget_host_->ResetSizeAndRepaintPendingFlags();
+  widget_host_->ResetSentVisualProperties();
   sink_->ClearMessages();
   view_->SetInsets(gfx::Insets(0, 0, 40, 0));
 

@@ -2328,7 +2328,12 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   visual_properties.top_controls_height = 0.f;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted();
   visual_properties.display_mode = display_mode_;
-  visual_properties.content_source_id = GetContentSourceId();
+  visual_properties.local_surface_id = local_surface_id_from_parent_;
+  // We are changing the device scale factor from the renderer, so allocate a
+  // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
+  if (compositor_)
+    compositor_->RequestNewLocalSurfaceId();
+
   OnSynchronizeVisualProperties(visual_properties);
 }
 
@@ -2345,6 +2350,11 @@ void RenderViewImpl::SetDeviceColorSpaceForTesting(
   visual_properties.top_controls_height = 0.f;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted();
   visual_properties.display_mode = display_mode_;
+  visual_properties.local_surface_id = local_surface_id_from_parent_;
+  // We are changing the device color space from the renderer, so allocate a
+  // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
+  if (compositor_)
+    compositor_->RequestNewLocalSurfaceId();
   OnSynchronizeVisualProperties(visual_properties);
 }
 
