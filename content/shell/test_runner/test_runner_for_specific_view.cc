@@ -32,6 +32,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/web_canvas.h"
@@ -637,7 +638,8 @@ bool TestRunnerForSpecificView::FindString(
   WebLocalFrame* frame = GetLocalMainFrame();
   const bool find_result = frame->Find(0, WebString::FromUTF8(search_text),
                                        find_options, wrap_around, nullptr);
-  frame->StopFinding(WebLocalFrame::kStopFindActionKeepSelection);
+  frame->StopFindingForTesting(
+      blink::mojom::StopFindAction::kStopFindActionKeepSelection);
   return find_result;
 }
 

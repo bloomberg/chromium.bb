@@ -7,6 +7,13 @@ module blink.mojom;
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 interface FindInPage {
+
+  // Notifies the frame that we are no longer interested in searching. This
+  // will abort any asynchronous scoping effort already under way and erase
+  // all tick-marks and highlighting from the previous search.  It will also
+  // follow the specified StopFindAction.
+  StopFinding(StopFindAction action);
+
   // Notify the frame that it is no longer the active frame in the
   // current find session, and so it should clear its active find match
   // (and no longer highlight it with special coloring).
@@ -59,4 +66,15 @@ interface FindInPage {
   FindMatchRects(int32 current_version) =>
                 (int32 version, array<gfx.mojom.RectF> rects,
                 gfx.mojom.RectF active_match_rect);
+};
+
+// This enum defines what actions the renderer should take next when
+// the user has completed a find-in-page;
+enum StopFindAction {
+  // No selection will be left.
+  kStopFindActionClearSelection,
+  // The active match will remain selected.
+  kStopFindActionKeepSelection,
+  // The active match selection will be activated.
+  kStopFindActionActivateSelection
 };

@@ -43,6 +43,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_cache.h"
@@ -4872,7 +4873,8 @@ TEST_F(WebFrameTest, FindInPage) {
   // Find in a <div> element.
   EXPECT_TRUE(frame->Find(kFindIdentifier, WebString::FromUTF8("bar1"), options,
                           false));
-  frame->StopFinding(WebLocalFrame::kStopFindActionKeepSelection);
+  frame->StopFindingForTesting(
+      blink::mojom::StopFindAction::kStopFindActionKeepSelection);
   WebRange range = frame->SelectionRange();
   EXPECT_EQ(5, range.StartOffset());
   EXPECT_EQ(9, range.EndOffset());
@@ -4883,7 +4885,8 @@ TEST_F(WebFrameTest, FindInPage) {
                           false));
   // Confirm stopFinding(WebLocalFrame::StopFindActionKeepSelection) sets the
   // selection on the found text.
-  frame->StopFinding(WebLocalFrame::kStopFindActionKeepSelection);
+  frame->StopFindingForTesting(
+      blink::mojom::StopFindAction::kStopFindActionKeepSelection);
   range = frame->SelectionRange();
   ASSERT_FALSE(range.IsNull());
   EXPECT_EQ(5, range.StartOffset());
@@ -4895,7 +4898,8 @@ TEST_F(WebFrameTest, FindInPage) {
                           false));
   // Confirm stopFinding(WebLocalFrame::StopFindActionKeepSelection) sets the
   // selection on the found text.
-  frame->StopFinding(WebLocalFrame::kStopFindActionKeepSelection);
+  frame->StopFindingForTesting(
+      blink::mojom::StopFindAction::kStopFindActionKeepSelection);
   range = frame->SelectionRange();
   ASSERT_FALSE(range.IsNull());
   EXPECT_EQ(5, range.StartOffset());
@@ -4907,7 +4911,8 @@ TEST_F(WebFrameTest, FindInPage) {
                           false));
   // Confirm stopFinding(WebLocalFrame::StopFindActionKeepSelection) sets the
   // selection on the found text.
-  frame->StopFinding(WebLocalFrame::kStopFindActionKeepSelection);
+  frame->StopFindingForTesting(
+      blink::mojom::StopFindAction::kStopFindActionKeepSelection);
   range = frame->SelectionRange();
   ASSERT_FALSE(range.IsNull());
   EXPECT_EQ(0, range.StartOffset());
@@ -4922,7 +4927,8 @@ TEST_F(WebFrameTest, FindInPage) {
   // If there are any matches, stopFinding will set the selection on the found
   // text.  However, we do not expect any matches, so check that the selection
   // is null.
-  frame->StopFinding(WebLocalFrame::kStopFindActionKeepSelection);
+  frame->StopFindingForTesting(
+      blink::mojom::StopFindAction::kStopFindActionKeepSelection);
   range = frame->SelectionRange();
   ASSERT_TRUE(range.IsNull());
 }
@@ -5162,7 +5168,8 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
 
   RunPendingTasks();
   EXPECT_TRUE(main_frame->Find(kFindIdentifier, search_text, options, false));
-  main_frame->StopFinding(WebLocalFrame::kStopFindActionClearSelection);
+  main_frame->StopFindingForTesting(
+      mojom::StopFindAction::kStopFindActionClearSelection);
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
        frame = static_cast<WebLocalFrameImpl*>(frame->TraverseNext())) {
@@ -5440,7 +5447,8 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOM) {
   // Find in the inserted text node.
   EXPECT_TRUE(
       frame->Find(kFindIdentifier, search_text, options, false, &active_now));
-  frame->StopFinding(WebLocalFrame::kStopFindActionKeepSelection);
+  frame->StopFindingForTesting(
+      blink::mojom::StopFindAction::kStopFindActionKeepSelection);
   WebRange range = frame->SelectionRange();
   EXPECT_EQ(5, range.StartOffset());
   EXPECT_EQ(8, range.EndOffset());
@@ -5548,7 +5556,8 @@ TEST_F(WebFrameTest, FindInPageStopFindActionKeepSelectionInAnotherDocument) {
 
   // Stop Find-In-Page. |TextFinder::active_match_| still hold a |Range| in
   // "find.html".
-  frame->StopFinding(WebLocalFrame::kStopFindActionKeepSelection);
+  frame->StopFindingForTesting(
+      blink::mojom::StopFindAction::kStopFindActionKeepSelection);
 
   // Pass if not crash. See http://crbug.com/719880 for details.
 }

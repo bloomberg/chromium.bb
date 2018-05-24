@@ -270,8 +270,13 @@ void FindRequestManager::Find(int request_id,
 
 void FindRequestManager::StopFinding(StopFindAction action) {
   for (WebContentsImpl* contents : contents_->GetWebContentsAndAllInner()) {
-    contents->SendToAllFrames(
-        new FrameMsg_StopFinding(MSG_ROUTING_NONE, action));
+    for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
+      RenderFrameHostImpl* rfh = node->current_frame_host();
+      if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
+        continue;
+      rfh->GetFindInPage()->StopFinding(
+          static_cast<blink::mojom::StopFindAction>(action));
+    }
   }
 
   current_session_id_ = kInvalidId;
