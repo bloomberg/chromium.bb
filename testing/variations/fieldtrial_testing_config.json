@@ -508,7 +508,8 @@
     "AutofillUpstreamUseGooglePayOnAndroidBranding": [
         {
             "platforms": [
-                "android"
+                "android",
+                "ios"
             ],
             "experiments": [
                 {
