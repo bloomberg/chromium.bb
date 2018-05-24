@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
+#include "chrome/browser/resource_coordinator/test_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "content/public/browser/visibility.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,47 +31,14 @@ class MockLifecycleUnitObserver : public LifecycleUnitObserver {
   DISALLOW_COPY_AND_ASSIGN(MockLifecycleUnitObserver);
 };
 
-class DummyLifecycleUnit : public LifecycleUnitBase {
- public:
-  using LifecycleUnitBase::SetState;
-  using LifecycleUnitBase::OnLifecycleUnitVisibilityChanged;
-
-  DummyLifecycleUnit() : LifecycleUnitBase(content::Visibility::VISIBLE) {}
-  ~DummyLifecycleUnit() override { OnLifecycleUnitDestroyed(); }
-
-  // LifecycleUnit:
-  TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() override {
-    return nullptr;
-  }
-  base::string16 GetTitle() const override { return base::string16(); }
-  base::TimeTicks GetLastFocusedTime() const override {
-    return base::TimeTicks();
-  }
-  base::ProcessHandle GetProcessHandle() const override {
-    return base::ProcessHandle();
-  }
-  SortKey GetSortKey() const override { return SortKey(base::TimeTicks()); }
-  content::Visibility GetVisibility() const override {
-    return content::Visibility::VISIBLE;
-  }
-  bool Freeze() override { return false; }
-  int GetEstimatedMemoryFreedOnDiscardKB() const override { return 0; }
-  bool CanPurge() const override { return false; }
-  bool CanDiscard(DiscardReason reason) const override { return false; }
-  bool Discard(DiscardReason discard_reason) override { return false; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DummyLifecycleUnit);
-};
-
 }  // namespace
 
 // Verify that GetID() returns different ids for different LifecycleUnits, but
 // always the same id for the same LifecycleUnit.
 TEST(LifecycleUnitBaseTest, GetID) {
-  DummyLifecycleUnit a;
-  DummyLifecycleUnit b;
-  DummyLifecycleUnit c;
+  TestLifecycleUnit a;
+  TestLifecycleUnit b;
+  TestLifecycleUnit c;
 
   EXPECT_NE(a.GetID(), b.GetID());
   EXPECT_NE(a.GetID(), c.GetID());
@@ -85,7 +53,7 @@ TEST(LifecycleUnitBaseTest, GetID) {
 // LifecycleUnit is destroyed.
 TEST(LifecycleUnitBaseTest, SetStateNotifiesObservers) {
   testing::StrictMock<MockLifecycleUnitObserver> observer;
-  DummyLifecycleUnit lifecycle_unit;
+  TestLifecycleUnit lifecycle_unit;
   lifecycle_unit.AddObserver(&observer);
 
   // Observer is notified when the state changes.
@@ -104,7 +72,7 @@ TEST(LifecycleUnitBaseTest, SetStateNotifiesObservers) {
 TEST(LifecycleUnitBaseTest, DestroyNotifiesObservers) {
   testing::StrictMock<MockLifecycleUnitObserver> observer;
   {
-    DummyLifecycleUnit lifecycle_unit;
+    TestLifecycleUnit lifecycle_unit;
     lifecycle_unit.AddObserver(&observer);
     EXPECT_CALL(observer, OnLifecycleUnitDestroyed(&lifecycle_unit));
   }
@@ -117,7 +85,7 @@ TEST(LifecycleUnitBaseTest, VisibilityChangeNotifiesObserversAndUpdatesTime) {
   base::SimpleTestTickClock test_clock_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_(&test_clock_);
   testing::StrictMock<MockLifecycleUnitObserver> observer;
-  DummyLifecycleUnit lifecycle_unit;
+  TestLifecycleUnit lifecycle_unit;
   lifecycle_unit.AddObserver(&observer);
 
   // Observer is notified when the visibility changes.
