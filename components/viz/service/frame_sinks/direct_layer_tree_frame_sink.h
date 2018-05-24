@@ -17,14 +17,10 @@
 #include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
-namespace cc {
-class LocalSurfaceIdAllocator;
-class FrameSinkManagerImpl;
-}  // namespace cc
-
 namespace viz {
 class CompositorFrameSinkSupportManager;
 class Display;
+class FrameSinkManagerImpl;
 
 // This class submits compositor frames to an in-process Display, with the
 // client's frame being the root surface of the Display.

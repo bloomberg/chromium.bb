@@ -29,11 +29,6 @@
 #include "ui/gfx/color_space.h"
 #include "ui/latency/latency_info.h"
 
-namespace cc {
-class DisplayResourceProvider;
-class RendererSettings;
-}  // namespace cc
-
 namespace gfx {
 class Size;
 }
@@ -41,7 +36,9 @@ class Size;
 namespace viz {
 class DirectRenderer;
 class DisplayClient;
+class DisplayResourceProvider;
 class OutputSurface;
+class RendererSettings;
 class SharedBitmapManager;
 class SkiaOutputSurface;
 class SoftwareRenderer;
