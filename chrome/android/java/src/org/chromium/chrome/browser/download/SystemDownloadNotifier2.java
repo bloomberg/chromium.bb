@@ -39,7 +39,7 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
         final int notificationId = mDownloadNotificationService.notifyDownloadSuccessful(
                 info.getContentId(), info.getFilePath(), info.getFileName(), systemDownloadId,
                 info.isOffTheRecord(), isSupportedMimeType, info.getIsOpenable(), info.getIcon(),
-                info.getOriginalUrl(), info.getReferrer());
+                info.getOriginalUrl(), info.getReferrer(), info.getBytesTotalSize());
 
         if (info.getIsOpenable()) {
             DownloadManagerService.getDownloadManagerService().onSuccessNotificationShown(

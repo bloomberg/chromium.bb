@@ -157,7 +157,7 @@ public class DownloadNotificationService2Test {
 
         // Download is successful.
         mDownloadNotificationService.notifyDownloadSuccessful(
-                ID1, "", "test", 1L, true, true, true, null, "", "");
+                ID1, "", "test", 1L, true, true, true, null, "", "", 0);
         assertEquals(1, mDownloadNotificationService.getNotificationIds().size());
         assertFalse(mDownloadForegroundServiceManager.mDownloadUpdateQueue.containsKey(
                 notificationId1));

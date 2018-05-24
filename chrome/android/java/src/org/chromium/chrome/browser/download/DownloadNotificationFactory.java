@@ -74,20 +74,14 @@ public final class DownloadNotificationFactory {
                 Preconditions.checkNotNull(downloadUpdate.getContentId());
                 Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
 
-                boolean indeterminate = downloadUpdate.getProgress().isIndeterminate()
-                        || downloadUpdate.getIsDownloadPending();
                 if (downloadUpdate.getIsDownloadPending()) {
                     contentText =
                             DownloadUtils.getPendingStatusString(downloadUpdate.getPendingState());
-                } else if (indeterminate || downloadUpdate.getTimeRemainingInMillis() < 0) {
-                    // TODO(dimich): Enable the byte count back in M59. See bug 704049 for more info
-                    // and details of what was temporarily reverted (for M58).
-                    contentText = context.getResources().getString(R.string.download_started);
                 } else {
-                    contentText = DownloadUtils.getTimeOrFilesLeftString(context,
-                            downloadUpdate.getProgress(),
-                            downloadUpdate.getTimeRemainingInMillis());
+                    contentText = DownloadUtils.getProgressTextForNotification(
+                            downloadUpdate.getProgress());
                 }
+
                 iconId = downloadUpdate.getIsDownloadPending()
                         ? R.drawable.ic_download_pending
                         : android.R.drawable.stat_sys_download;
@@ -128,19 +122,22 @@ public final class DownloadNotificationFactory {
                                         context, cancelIntent, downloadUpdate.getNotificationId()));
 
                 if (!downloadUpdate.getIsDownloadPending()) {
+                    boolean indeterminate = downloadUpdate.getProgress().isIndeterminate();
                     builder.setProgress(100,
                             indeterminate ? -1 : downloadUpdate.getProgress().getPercentage(),
                             indeterminate);
                 }
 
-                if (!indeterminate
+                if (!downloadUpdate.getProgress().isIndeterminate()
+                        && downloadUpdate.getTimeRemainingInMillis() >= 0
                         && !LegacyHelpers.isLegacyOfflinePage(downloadUpdate.getContentId())) {
-                    String percentText = DownloadUtils.getPercentageString(
-                            downloadUpdate.getProgress().getPercentage());
+                    String subText = DownloadUtils.formatRemainingTime(
+                            context, downloadUpdate.getTimeRemainingInMillis());
+
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        builder.setSubText(percentText);
+                        builder.setSubText(subText);
                     } else {
-                        builder.setContentInfo(percentText);
+                        builder.setContentInfo(subText);
                     }
                 }
 
@@ -187,8 +184,16 @@ public final class DownloadNotificationFactory {
             case COMPLETED:
                 Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
 
-                contentText =
-                        context.getResources().getString(R.string.download_notification_completed);
+                if (downloadUpdate.getTotalBytes() > 0) {
+                    contentText = context.getResources().getString(
+                            R.string.download_notification_completed_with_size,
+                            DownloadUtils.getStringForBytes(
+                                    context, downloadUpdate.getTotalBytes()));
+                } else {
+                    contentText = context.getResources().getString(
+                            R.string.download_notification_completed);
+                }
+
                 iconId = R.drawable.offline_pin;
 
                 if (downloadUpdate.getIsOpenable()) {

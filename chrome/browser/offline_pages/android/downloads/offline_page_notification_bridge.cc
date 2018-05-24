@@ -22,7 +22,7 @@ void OfflinePageNotificationBridge::NotifyDownloadSuccessful(
   Java_OfflinePageNotificationBridge_notifyDownloadSuccessful(
       env, ConvertUTF8ToJavaString(env, item.id.id),
       ConvertUTF8ToJavaString(env, item.page_url.spec()),
-      ConvertUTF8ToJavaString(env, item.title));
+      ConvertUTF8ToJavaString(env, item.title), item.total_size_bytes);
 }
 
 void OfflinePageNotificationBridge::NotifyDownloadFailed(

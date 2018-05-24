@@ -2069,6 +2069,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_NOTIFICATION_COMPLETED" desc="Download notification to be displayed when a download completes.">
         Download complete
       </message>
+      <message name="IDS_DOWNLOAD_NOTIFICATION_COMPLETED_WITH_SIZE" desc="Download notification to be displayed when a download completes, includes the size of the download as well after a separator character.">
+        Download complete <ph name="SEPARATOR">•</ph> <ph name="BYTES_DOWNLOADED">%1$s<ex>4.3 MB</ex></ph>
+      </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_FAILED" desc="Download notification to be displayed when a download fails.">
         Download failed
       </message>
@@ -2117,6 +2120,21 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_STARTED" desc="Message to show when download has started [CHAR LIMIT=30]">
         Downloading…
       </message>
+      <message name="IDS_DOWNLOAD_UI_KB" desc="String indicating the size of a downloaded file (in progress or complete), in kilobytes.">
+        <ph name="kilobytes">%1$3.2f<ex>12.5</ex></ph> KB
+      </message>
+      <message name="IDS_DOWNLOAD_UI_MB" desc="String indicating the size of a downloaded file (in progress or complete), in megabytes.">
+        <ph name="megabytes">%1$3.2f<ex>12.5</ex></ph> MB
+      </message>
+      <message name="IDS_DOWNLOAD_UI_GB" desc="String indicating the size of a downloaded file (in progress or complete), in gigabytes.">
+        <ph name="gigabytes">%1$3.2f<ex>12.5</ex></ph> GB
+      </message>
+      <message name="IDS_DOWNLOAD_UI_INDETERMINATE_BYTES" desc="Appears in a notification when a user starts downloading a file. Indicates the number of bytes downloaded out of an unknown total file size. E.g. 3/? MB [downloaded]. As appropriate for your language, use '/' or 'of'; and change word order as needed.">
+        <ph name="BYTES_DOWNLOADED_WITH_UNITS">%1$s<ex>12.2 MB</ex></ph> / ?
+      </message>
+      <message name="IDS_DOWNLOAD_UI_DETERMINATE_BYTES" desc="Appears in a notification when a user starts downloading a file. Indicates the number of bytes downloaded out of the total file size. E.g. 3/7 MB [downloaded]. As appropriate for your language, use '/' or 'of'; and change word order as needed.">
+        <ph name="BYTES_DOWNLOADED_WITH_UNITS">%1$s<ex>12.2 MB</ex></ph> / <ph name="FILE_SIZE_WITH_UNITS">%2$s<ex>20.3 GB</ex></ph>
+      </message>
       <message name="IDS_PREFETCH_BADGE_NEW" desc="Message on download home to show that there are new prefetched contents">
         New
       </message>
@@ -2132,14 +2150,17 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_FILE_SIZE_DOWNLOADED_MB" desc="Notification message showing how many MBs have been downloaded.">
         Downloaded <ph name="MBS">%1$.1f<ex>10.1</ex></ph> MB
       </message>
+      <message name="IDS_FILE_SIZE_DOWNLOADED_GB" desc="Notification message showing how many GBs have been downloaded.">
+        Downloaded <ph name="GBS">%1$.1f<ex>10.1</ex></ph> GB
+      </message>
       <message name="IDS_ONE_FILE_LEFT" desc="Message showing 1 file left">
         1 file left
       </message>
       <message name="IDS_FILES_LEFT" desc="Message showing how many files are left.">
         <ph name="FILES">%1$d<ex>10</ex></ph> files left
       </message>
-      <message name="IDS_FILE_SIZE_DOWNLOADED_GB" desc="Notification message showing how many GBs have been downloaded.">
-        Downloaded <ph name="GBS">%1$.1f<ex>10.1</ex></ph> GB
+      <message name="IDS_DOWNLOAD_UI_FILES_DOWNLOADED" desc="Number of files that have been downloaded. [ICU Syntax]">
+        {FILES, plural, =1 {%1$d file downloaded} other {%1$d files downloaded}}
       </message>
       <message name="IDS_REMAINING_DURATION_DAYS" desc="Message to show remaining duration in multiple days">
         <ph name="DAYS">%1$d<ex>2</ex></ph> days left

@@ -32,6 +32,7 @@ public final class DownloadUpdate {
     private final long mStartTime;
     private final long mSystemDownloadId;
     private final long mTimeRemainingInMillis;
+    private final long mTotalBytes;
     private final @FailState int mFailState;
     private final @PendingState int mPendingState;
 
@@ -52,6 +53,7 @@ public final class DownloadUpdate {
         this.mStartTime = builder.mStartTime;
         this.mSystemDownloadId = builder.mSystemDownloadId;
         this.mTimeRemainingInMillis = builder.mTimeRemainingInMillis;
+        this.mTotalBytes = builder.mTotalBytes;
         this.mFailState = builder.mFailState;
         this.mPendingState = builder.mPendingState;
     }
@@ -124,6 +126,10 @@ public final class DownloadUpdate {
         return mTimeRemainingInMillis;
     }
 
+    public long getTotalBytes() {
+        return mTotalBytes;
+    }
+
     public @FailState int getFailState() {
         return mFailState;
     }
@@ -152,6 +158,7 @@ public final class DownloadUpdate {
         private long mStartTime;
         private long mSystemDownloadId = -1;
         private long mTimeRemainingInMillis;
+        private long mTotalBytes;
         private @FailState int mFailState;
         private @PendingState int mPendingState;
 
@@ -232,6 +239,11 @@ public final class DownloadUpdate {
 
         public Builder setTimeRemainingInMillis(long timeRemainingInMillis) {
             this.mTimeRemainingInMillis = timeRemainingInMillis;
+            return this;
+        }
+
+        public Builder setTotalBytes(long totalBytes) {
+            this.mTotalBytes = totalBytes;
             return this;
         }
 

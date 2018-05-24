@@ -99,6 +99,9 @@ public class DownloadUtils {
             R.string.download_manager_ui_space_free_kb, R.string.download_manager_ui_space_free_mb,
             R.string.download_manager_ui_space_free_gb};
 
+    private static final int[] BYTES_STRINGS = {
+            R.string.download_ui_kb, R.string.download_ui_mb, R.string.download_ui_gb};
+
     private static final String TAG = "download";
 
     private static final String DEFAULT_MIME_TYPE = "*/*";
@@ -647,6 +650,51 @@ public class DownloadUtils {
     }
 
     /**
+     * Helper method to determine the progress text to use for an in progress download notification.
+     * @param progress The {@link Progress} struct that represents the current state of an in
+     *                 progress download.
+     * @return         The {@link String} that represents the progress.
+     */
+    public static String getProgressTextForNotification(Progress progress) {
+        Context context = ContextUtils.getApplicationContext();
+
+        if (progress.isIndeterminate() && progress.value == 0) {
+            return context.getResources().getString(R.string.download_started);
+        }
+
+        switch (progress.unit) {
+            case OfflineItemProgressUnit.PERCENTAGE:
+                if (progress.isIndeterminate()) {
+                    return context.getResources().getString(R.string.download_started);
+                } else {
+                    return getPercentageString(progress.getPercentage());
+                }
+            case OfflineItemProgressUnit.BYTES:
+                String bytes = getStringForBytes(context, progress.value);
+                if (progress.isIndeterminate()) {
+                    return context.getResources().getString(
+                            R.string.download_ui_indeterminate_bytes, bytes);
+                } else {
+                    String total = getStringForBytes(context, progress.max);
+                    return context.getResources().getString(
+                            R.string.download_ui_determinate_bytes, bytes, total);
+                }
+            case OfflineItemProgressUnit.FILES:
+                if (progress.isIndeterminate()) {
+                    int fileCount = (int) Math.min(Integer.MAX_VALUE, progress.value);
+                    return context.getResources().getQuantityString(
+                            R.plurals.download_ui_files_downloaded, fileCount, fileCount);
+                } else {
+                    return formatRemainingFiles(context, progress);
+                }
+            default:
+                assert false;
+        }
+
+        return "";
+    }
+
+    /**
      * Create a string that represents the percentage of the file that has downloaded.
      * @param percentage Current percentage of the file.
      * @return String representing the percentage of the file that has been downloaded.
@@ -696,7 +744,6 @@ public class DownloadUtils {
      * @param millis the remaining time in milli seconds.
      * @return the formatted remaining time.
      */
-    @VisibleForTesting
     public static String formatRemainingTime(Context context, long millis) {
         long secondsLong = millis / 1000;
 
@@ -914,7 +961,7 @@ public class DownloadUtils {
 
     /**
      * Format the number of available bytes into KB, MB, or GB and return the corresponding string
-     * resource. Uses deafult format "20 KB available."
+     * resource. Uses default format "20 KB available."
      *
      * @param context   Context to use.
      * @param bytes     Number of bytes needed to display.
@@ -922,6 +969,16 @@ public class DownloadUtils {
      */
     public static String getStringForAvailableBytes(Context context, long bytes) {
         return getStringForBytes(context, BYTES_AVAILABLE_STRINGS, bytes);
+    }
+
+    /**
+     * Format the number of bytes into KB, MB, or GB and return the corresponding generated string.
+     * @param context Context to use.
+     * @param bytes   Number of bytes needed to display.
+     * @return        The formatted string to be displayed.
+     */
+    public static String getStringForBytes(Context context, long bytes) {
+        return getStringForBytes(context, BYTES_STRINGS, bytes);
     }
 
     /**

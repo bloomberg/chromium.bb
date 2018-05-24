@@ -32,12 +32,14 @@ public class OfflinePageNotificationBridge {
     /**
      * Update download notification to success.
      *
-     * @param guid        GUID of a request to download a page related to the notification.
-     * @param url         URL of the page to download.
-     * @param displayName Name to be displayed on notification.
+     * @param guid             GUID of a request to download a page related to the notification.
+     * @param url              URL of the page to download.
+     * @param displayName      Name to be displayed on notification.
+     * @param networkBytesUsed The total number of bytes downloaded for this item.
      */
     @CalledByNative
-    public static void notifyDownloadSuccessful(String guid, String url, String displayName) {
+    public static void notifyDownloadSuccessful(
+            String guid, String url, String displayName, long networkBytesUsed) {
         DownloadNotifier notifier = getDownloadNotifier();
         if (notifier == null) return;
 
@@ -47,6 +49,7 @@ public class OfflinePageNotificationBridge {
                                             .setFileName(displayName)
                                             .setIsResumable(false)
                                             .setIsOffTheRecord(false)
+                                            .setBytesTotalSize(networkBytesUsed)
                                             .build();
 
         notifier.notifyDownloadSuccessful(downloadInfo, -1, false, true);
