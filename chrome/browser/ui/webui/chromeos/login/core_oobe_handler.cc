@@ -388,12 +388,13 @@ void CoreOobeHandler::HandleToggleResetScreen() {
           ->IsEnterpriseManaged()) {
     // Powerwash is only available if allowed by the admin specifically for the
     // purpose of installing a TPM firmware update.
-    tpm_firmware_update::ShouldOfferUpdateViaPowerwash(
-        base::BindOnce([](bool offer_update) {
-          if (offer_update) {
+    tpm_firmware_update::GetAvailableUpdateModes(
+        base::BindOnce([](const std::set<tpm_firmware_update::Mode>& modes) {
+          if (modes.count(tpm_firmware_update::Mode::kPowerwash) > 0) {
             // Force the TPM firmware update option to be enabled.
-            g_browser_process->local_state()->SetBoolean(
-                prefs::kFactoryResetTPMFirmwareUpdateRequested, true);
+            g_browser_process->local_state()->SetInteger(
+                prefs::kFactoryResetTPMFirmwareUpdateMode,
+                static_cast<int>(tpm_firmware_update::Mode::kPowerwash));
             LaunchResetScreen();
           }
         }),

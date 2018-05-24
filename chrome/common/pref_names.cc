@@ -1910,10 +1910,10 @@ const char kTabStripStackedLayout[] = "tab-strip-stacked-layout";
 // Indicates that factory reset was requested from options page or reset screen.
 const char kFactoryResetRequested[] = "FactoryResetRequested";
 
-// Indicates that a TPM firmware update should be requested when triggering a
-// factory reset.
-const char kFactoryResetTPMFirmwareUpdateRequested[] =
-    "FactoryResetTPMFirmwareUpdateRequested";
+// Presence of this value indicates that a TPM firmware update has been
+// requested. The value indicates the requested update mode.
+const char kFactoryResetTPMFirmwareUpdateMode[] =
+    "FactoryResetTPMFirmwareUpdateMode";
 
 // Indicates that debugging features were requested from oobe screen.
 const char kDebuggingFeaturesRequested[] = "DebuggingFeaturesRequested";

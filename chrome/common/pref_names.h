@@ -700,7 +700,7 @@ extern const char kHardwareAccelerationModePrevious[];
 extern const char kDevicePolicyRefreshRate[];
 
 extern const char kFactoryResetRequested[];
-extern const char kFactoryResetTPMFirmwareUpdateRequested[];
+extern const char kFactoryResetTPMFirmwareUpdateMode[];
 extern const char kDebuggingFeaturesRequested[];
 
 #if defined(OS_CHROMEOS)
