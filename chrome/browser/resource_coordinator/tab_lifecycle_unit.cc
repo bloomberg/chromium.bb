@@ -15,6 +15,7 @@
 #include "chrome/browser/resource_coordinator/lifecycle_state.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -227,6 +228,25 @@ int TabLifecycleUnitSource::TabLifecycleUnit::
 bool TabLifecycleUnitSource::TabLifecycleUnit::CanPurge() const {
   // A renderer can be purged if it's not playing media.
   return !IsMediaTab();
+}
+
+bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze() const {
+  if (IsFrozen())
+    return false;
+
+  if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE)
+    return false;
+
+  if (IsMediaTab())
+    return false;
+
+  // Allow a page to load fully before freezing it.
+  if (TabLoadTracker::Get()->GetLoadingState(GetWebContents()) !=
+      TabLoadTracker::LoadingState::LOADED) {
+    return false;
+  }
+
+  return true;
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(

@@ -34,6 +34,7 @@ extern const char kProactiveTabDiscard_FaviconUpdateObservationWindow[];
 extern const char kProactiveTabDiscard_TitleUpdateObservationWindow[];
 extern const char kProactiveTabDiscard_AudioUsageObservationWindow[];
 extern const char kProactiveTabDiscard_NotificationsUsageObservationWindow[];
+extern const char kProactiveTabDiscard_FreezeTimeout[];
 
 // Default values of parameters related to proactive discarding.
 // See ProactiveTabDiscardsParams for details.
@@ -52,6 +53,7 @@ extern const base::TimeDelta
     kProactiveTabDiscard_AudioUsageObservationWindow_Default;
 extern const base::TimeDelta
     kProactiveTabDiscard_NotificationsUsageObservationWindow_Default;
+extern const base::TimeDelta kProactiveTabDiscard_FreezeTimeout_Default;
 
 // Parameters used by the proactive tab discarding feature.
 //
@@ -136,6 +138,8 @@ struct ProactiveTabDiscardParams {
   // Minimum observation window before considering that this website doesn't
   // use notifications while in background.
   base::TimeDelta notifications_usage_observation_window;
+  // Amount of time a tab must be occluded before it is frozen.
+  base::TimeDelta freeze_timeout;
 };
 
 // Gets parameters for the proactive tab discarding feature. This does no

@@ -126,6 +126,9 @@ class LifecycleUnit {
   // not on a LifecycleUnit. https://crbug.com/775644
   virtual bool CanPurge() const = 0;
 
+  // Returns true if this LifecycleUnit can be frozen.
+  virtual bool CanFreeze() const = 0;
+
   // Returns true if this LifecycleUnit can be discared.
   virtual bool CanDiscard(DiscardReason reason) const = 0;
 
