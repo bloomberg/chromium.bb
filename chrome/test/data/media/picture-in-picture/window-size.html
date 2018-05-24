@@ -24,11 +24,19 @@
     video.addEventListener('loadedmetadata', enterPictureInPictureInternal, { once: true });
   }
 
+  function isInPictureInPicture() {
+    window.domAutomationController.send(document.pictureInPictureElement == video);
+  }
+
   function enterPictureInPictureInternal() {
     video.requestPictureInPicture().then(win => {
       pipWindow = win;
       updateTitle();
       pipWindow.addEventListener('resize', updateTitle);
+
+      video.addEventListener('leavepictureinpicture', () => {
+        document.title = 'left';
+      }, { once: true });
     });
   }
 </script>

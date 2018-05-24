@@ -147,10 +147,11 @@ void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture() {
     // Pause the current video so there is only one video playing at a time.
     media_player_id_->first->Send(new MediaPlayerDelegateMsg_Pause(
         media_player_id_->first->GetRoutingID(), media_player_id_->second));
-    media_player_id_->first->Send(
-        new MediaPlayerDelegateMsg_EndPictureInPictureMode(
-            media_player_id_->first->GetRoutingID(), media_player_id_->second));
   }
+
+  media_player_id_->first->Send(
+      new MediaPlayerDelegateMsg_EndPictureInPictureMode(
+          media_player_id_->first->GetRoutingID(), media_player_id_->second));
 }
 
 }  // namespace content
