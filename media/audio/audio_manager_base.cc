@@ -164,26 +164,14 @@ void AudioManagerBase::GetAudioDeviceDescriptions(
   }
 
   for (auto& name : device_names) {
-    // The |device_name| field as returned by get_device_names() contains a
-    // a generic string such as "Default" or "Communications" for the default
-    // and communications devices. If the names of the real devices mapped to
-    // the default or communications devices were found, append the name of
-    // the real devices to the corresponding entries.
-    // It is possible that the real names were not found if a new device was
-    // plugged in and designated as default/communications device after
-    // get_device_names() returns and before get_default_device_id() or
-    // get_communications_device_id() is called.
-    std::string device_name = std::move(name.device_name);
-    if (AudioDeviceDescription::IsDefaultDevice(name.unique_id) &&
-        !real_default_name.empty()) {
-      device_name += " - " + real_default_name;
-    } else if (AudioDeviceDescription::IsCommunicationsDevice(name.unique_id) &&
-               !real_communications_name.empty()) {
-      device_name += " - " + real_communications_name;
-    }
+    if (AudioDeviceDescription::IsDefaultDevice(name.unique_id))
+      name.device_name = real_default_name;
+    else if (AudioDeviceDescription::IsCommunicationsDevice(name.unique_id))
+      name.device_name = real_communications_name;
     std::string group_id = (this->*get_group_id)(name.unique_id);
-    device_descriptions->emplace_back(
-        std::move(device_name), std::move(name.unique_id), std::move(group_id));
+    device_descriptions->emplace_back(std::move(name.device_name),
+                                      std::move(name.unique_id),
+                                      std::move(group_id));
   }
 }
 

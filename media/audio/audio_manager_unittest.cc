@@ -288,9 +288,6 @@ class AudioManagerTest : public ::testing::Test {
       AudioDeviceDescriptions::const_iterator it = device_descriptions.begin();
 
       // The first device in the list should always be the default device.
-      EXPECT_TRUE(base::StartsWith(
-          it->device_name, AudioDeviceDescription::GetDefaultDeviceName(),
-          base::CompareCase::SENSITIVE));
       EXPECT_EQ(std::string(AudioDeviceDescription::kDefaultDeviceId),
                 it->unique_id);
       ++it;

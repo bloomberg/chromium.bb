@@ -17,13 +17,13 @@ AudioDeviceName::AudioDeviceName(std::string device_name, std::string unique_id)
 
 // static
 AudioDeviceName AudioDeviceName::CreateDefault() {
-  return AudioDeviceName(AudioDeviceDescription::GetDefaultDeviceName(),
+  return AudioDeviceName(std::string(),
                          AudioDeviceDescription::kDefaultDeviceId);
 }
 
 // static
 AudioDeviceName AudioDeviceName::CreateCommunications() {
-  return AudioDeviceName(AudioDeviceDescription::GetCommunicationsDeviceName(),
+  return AudioDeviceName(std::string(),
                          AudioDeviceDescription::kCommunicationsDeviceId);
 }
 

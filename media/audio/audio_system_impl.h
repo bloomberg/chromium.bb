@@ -5,6 +5,10 @@
 #ifndef MEDIA_AUDIO_AUDIO_SYSTEM_IMPL_H_
 #define MEDIA_AUDIO_AUDIO_SYSTEM_IMPL_H_
 
+#include <memory>
+#include <string>
+
+#include "base/callback.h"
 #include "base/threading/thread_checker.h"
 #include "media/audio/audio_system.h"
 #include "media/audio/audio_system_helper.h"

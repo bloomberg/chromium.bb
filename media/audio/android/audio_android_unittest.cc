@@ -109,7 +109,6 @@ void CheckDeviceDescriptions(
   AudioDeviceDescriptions::const_iterator it = device_descriptions.begin();
 
   // The first device in the list should always be the default device.
-  EXPECT_EQ(AudioDeviceDescription::GetDefaultDeviceName(), it->device_name);
   EXPECT_EQ(std::string(AudioDeviceDescription::kDefaultDeviceId),
             it->unique_id);
   ++it;

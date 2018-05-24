@@ -16,9 +16,13 @@ struct MEDIA_EXPORT AudioDeviceName {
   AudioDeviceName(std::string device_name, std::string unique_id);
 
   // Creates default device representation.
+  // Shouldn't be used in the audio service, since the audio service doesn't
+  // have access to localized device names.
   static AudioDeviceName CreateDefault();
 
   // Creates communications device representation.
+  // Shouldn't be used in the audio service, since the audio service doesn't
+  // have access to localized device names.
   static AudioDeviceName CreateCommunications();
 
   std::string device_name;  // Friendly name of the device.

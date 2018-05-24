@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/localized_strings.h"
 
@@ -64,7 +65,8 @@ std::string AudioDeviceDescription::GetCommunicationsDeviceName() {
 // static
 std::string AudioDeviceDescription::GetDefaultDeviceName(
     const std::string& real_device_name) {
-  DCHECK(!real_device_name.empty());
+  if (real_device_name.empty())
+    return GetDefaultDeviceName();
   // TODO(guidou): Put the names together in a localized manner.
   // http://crbug.com/788767
   return GetDefaultDeviceName() + " - " + real_device_name;
@@ -73,10 +75,28 @@ std::string AudioDeviceDescription::GetDefaultDeviceName(
 // static
 std::string AudioDeviceDescription::GetCommunicationsDeviceName(
     const std::string& real_device_name) {
-  DCHECK(!real_device_name.empty());
+  if (real_device_name.empty())
+    return GetCommunicationsDeviceName();
   // TODO(guidou): Put the names together in a localized manner.
   // http://crbug.com/788767
   return GetCommunicationsDeviceName() + " - " + real_device_name;
+}
+
+// static
+void AudioDeviceDescription::LocalizeDeviceDescriptions(
+    AudioDeviceDescriptions* device_descriptions) {
+  for (auto& description : *device_descriptions) {
+    if (media::AudioDeviceDescription::IsDefaultDevice(description.unique_id)) {
+      description.device_name =
+          media::AudioDeviceDescription::GetDefaultDeviceName(
+              description.device_name);
+    } else if (media::AudioDeviceDescription::IsCommunicationsDevice(
+                   description.unique_id)) {
+      description.device_name =
+          media::AudioDeviceDescription::GetCommunicationsDeviceName(
+              description.device_name);
+    }
+  }
 }
 
 AudioDeviceDescription::AudioDeviceDescription(std::string device_name,

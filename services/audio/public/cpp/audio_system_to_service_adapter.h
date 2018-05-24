@@ -6,6 +6,7 @@
 #define SERVICES_AUDIO_PUBLIC_CPP_AUDIO_SYSTEM_TO_SERVICE_ADAPTER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
