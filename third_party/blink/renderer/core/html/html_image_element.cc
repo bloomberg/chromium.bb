@@ -258,9 +258,9 @@ void HTMLImageElement::ParseAttribute(
   if (name == altAttr || name == titleAttr) {
     if (UserAgentShadowRoot()) {
       Element* text = UserAgentShadowRoot()->getElementById("alttext");
-      String value = AltText();
-      if (text && text->textContent() != params.new_value)
-        text->setTextContent(AltText());
+      String alt_text_content = AltText();
+      if (text && text->textContent() != alt_text_content)
+        text->setTextContent(alt_text_content);
     }
   } else if (name == srcAttr || name == srcsetAttr || name == sizesAttr) {
     SelectSourceURL(ImageLoader::kUpdateIgnorePreviousError);
