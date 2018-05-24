@@ -156,47 +156,4 @@ int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
   return net::OK;
 }
 
-// static
-scoped_refptr<network::ResourceRequestBody>
-ServiceWorkerLoaderHelpers::CloneResourceRequestBody(
-    const network::ResourceRequestBody* body) {
-  auto clone = base::MakeRefCounted<network::ResourceRequestBody>();
-
-  clone->set_identifier(body->identifier());
-  clone->set_contains_sensitive_info(body->contains_sensitive_info());
-  for (const network::DataElement& element : *body->elements()) {
-    switch (element.type()) {
-      case network::DataElement::TYPE_UNKNOWN:
-        NOTREACHED();
-        break;
-      case network::DataElement::TYPE_DATA_PIPE: {
-        clone->AppendDataPipe(element.CloneDataPipeGetter());
-        break;
-      }
-      case network::DataElement::TYPE_RAW_FILE:
-        clone->AppendRawFileRange(element.file().Duplicate(), element.path(),
-                                  element.offset(), element.length(),
-                                  element.expected_modification_time());
-        break;
-      case network::DataElement::TYPE_CHUNKED_DATA_PIPE:
-        NOTREACHED() << "There should be no chunked data pipes going through "
-                        "ServiceWorker";
-        break;
-      case network::DataElement::TYPE_BLOB:
-        NOTREACHED() << "There should be no blob elements in NetworkService";
-        break;
-      case network::DataElement::TYPE_FILE:
-        clone->AppendFileRange(element.path(), element.offset(),
-                               element.length(),
-                               element.expected_modification_time());
-        break;
-      case network::DataElement::TYPE_BYTES:
-        clone->AppendBytes(element.bytes(), element.length());
-        break;
-    }
-  }
-
-  return clone;
-}
-
 }  // namespace content

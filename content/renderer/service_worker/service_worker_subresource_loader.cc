@@ -6,17 +6,27 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/optional.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
+#include "content/renderer/loader/web_url_request_util.h"
+#include "content/renderer/render_thread_impl.h"
+#include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
+#include "third_party/blink/public/platform/web_http_body.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -227,31 +237,23 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
     return;
   }
 
-  // TODO(kinuko): Implement request timeout and ask the browser to kill
-  // the controller if it takes too long. (crbug.com/774374)
-
-  // Passing the request body over Mojo moves it out. But the request body
-  // may be needed later, in the case where the service worker doesn't provide a
-  // response in the fetch event. So instead send a cloned body. (Note that
-  // we can't do the reverse, i.e., send the original and restore the clone
-  // later.  By always sending the clone, we ensure the original ResourceRequest
-  // passed into the constructor always points to a valid ResourceRequestBody,
-  // even if this loader gets destructed.)
-  if (resource_request_.request_body) {
-    inflight_fetch_request_->request_body =
-        ServiceWorkerLoaderHelpers::CloneResourceRequestBody(
-            resource_request_.request_body.get());
-  }
-
   auto params = mojom::DispatchFetchEventParams::New();
   params->request = *inflight_fetch_request_;
   params->client_id = controller_connector_->client_id();
+
+  // S13nServiceWorker without NetworkService:
+  // BlobPtr for each blob data element in the request body needs to be created
+  // before dispatching the fetch event for keeping the blob alive.
+  if (resource_request_.request_body &&
+      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    params->request_body_blob_ptrs =
+        GetBlobPtrsForRequestBody(*resource_request_.request_body);
+  }
+
   controller->DispatchFetchEvent(
       std::move(params), std::move(response_callback_ptr),
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
                      weak_factory_.GetWeakPtr()));
-  // |inflight_fetch_request_->request_body| should not be used after this
-  // point.
 }
 
 void ServiceWorkerSubresourceLoader::OnFetchEventFinished(

@@ -86,11 +86,13 @@ bool WebHTTPBody::ElementAt(size_t index, Element& result) const {
     case FormDataElement::kEncodedBlob:
       result.type = Element::kTypeBlob;
       result.blob_uuid = element.blob_uuid_;
+      result.blob_length = std::numeric_limits<uint64_t>::max();
       if (element.optional_blob_data_handle_) {
         result.optional_blob_handle =
             element.optional_blob_data_handle_->CloneBlobPtr()
                 .PassInterface()
                 .PassHandle();
+        result.blob_length = element.optional_blob_data_handle_->size();
       }
       break;
     case FormDataElement::kDataPipe:
@@ -133,6 +135,17 @@ void WebHTTPBody::AppendFileRange(const WebString& file_path,
 void WebHTTPBody::AppendBlob(const WebString& uuid) {
   EnsureMutable();
   private_->AppendBlob(uuid, nullptr);
+}
+
+void WebHTTPBody::AppendBlob(const WebString& uuid,
+                             uint64_t length,
+                             mojo::ScopedMessagePipeHandle blob_handle) {
+  EnsureMutable();
+  mojom::blink::BlobPtrInfo blob_ptr_info(std::move(blob_handle),
+                                          mojom::blink::Blob::Version_);
+  private_->AppendBlob(
+      uuid, BlobDataHandle::Create(uuid, "" /* type is not necessary */, length,
+                                   std::move(blob_ptr_info)));
 }
 
 void WebHTTPBody::AppendDataPipe(mojo::ScopedMessagePipeHandle message_pipe) {
