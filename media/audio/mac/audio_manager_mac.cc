@@ -160,8 +160,9 @@ static void GetAudioDeviceInfo(bool is_input,
   }
 }
 
-static AudioDeviceID GetAudioDeviceIdByUId(bool is_input,
-                                           const std::string& device_id) {
+AudioDeviceID AudioManagerMac::GetAudioDeviceIdByUId(
+    bool is_input,
+    const std::string& device_id) {
   DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   AudioObjectPropertyAddress property_address = {
     kAudioHardwarePropertyDevices,
@@ -233,7 +234,7 @@ static bool GetDefaultDevice(AudioDeviceID* device, bool input) {
   return true;
 }
 
-static bool GetDefaultOutputDevice(AudioDeviceID* device) {
+bool AudioManagerMac::GetDefaultOutputDevice(AudioDeviceID* device) {
   return GetDefaultDevice(device, false);
 }
 
