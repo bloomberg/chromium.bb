@@ -1256,10 +1256,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // document or not.
   bool is_loading_;
 
-  // Used to track whether a commit is expected in this frame. Only used in
-  // tests.
-  bool pending_commit_;
-
   // The unique ID of the latest NavigationEntry that this RenderFrameHost is
   // showing. This may change even when this frame hasn't committed a page,
   // such as for a new subframe navigation in a different frame.  Tracking this

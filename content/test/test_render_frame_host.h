@@ -171,10 +171,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // interaction with the IO thread up until the response is ready to commit.
   void PrepareForCommitIfNecessary();
 
-  // PlzNavigate
-  void set_pending_commit(bool pending) { pending_commit_ = pending; }
-  bool pending_commit() const { return pending_commit_; }
-
   // Send a message with the sandbox flags and feature policy
   void SendFramePolicy(blink::WebSandboxFlags sandbox_flags,
                        const blink::ParsedFeaturePolicy& declared_policy);
@@ -195,8 +191,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   CreateStubInterfaceProviderRequest();
 
  private:
-  class NavigationInterceptor;
-
   void SendNavigateWithParameters(int nav_entry_id,
                                   bool did_create_new_entry,
                                   bool should_replace_entry,
@@ -211,11 +205,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // Computes the page ID for a pending navigation in this RenderFrameHost;
   int32_t ComputeNextPageID();
 
-  // RenderFrameHostImpl:
-  mojom::FrameNavigationControl* GetNavigationControl() override;
-
-  mojom::FrameNavigationControl* GetInternalNavigationControl();
-
   // Keeps a running vector of messages sent to AddMessageToConsole.
   std::vector<std::string> console_messages_;
 
@@ -228,9 +217,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
 
   // The last commit was for an error page.
   bool last_commit_was_error_page_;
-
-  // Used to track and forward outgoing navigation requests from the host.
-  std::unique_ptr<NavigationInterceptor> navigation_interceptor_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrameHost);
 };

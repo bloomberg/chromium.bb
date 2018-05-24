@@ -520,7 +520,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       unload_ack_is_for_navigation_(false),
       was_discarded_(false),
       is_loading_(false),
-      pending_commit_(false),
       nav_entry_id_(0),
       accessibility_reset_token_(0),
       accessibility_reset_count_(0),
@@ -3739,7 +3738,6 @@ void RenderFrameHostImpl::CommitNavigation(
       last_navigation_previews_state_ = common_params.previews_state;
   }
 
-  pending_commit_ = true;
   is_loading_ = true;
 }
 
@@ -4966,7 +4964,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
       is_loading_ = true;
       frame_tree_node()->DidStartLoading(true, was_loading);
     }
-    pending_commit_ = false;
   }
 
   if (navigation_request_)
@@ -4988,7 +4985,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   frame_tree_node()->navigator()->DidNavigate(this, *validated_params,
                                               std::move(navigation_handle),
                                               is_same_document_navigation);
-
   return true;
 }
 
