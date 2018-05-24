@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "extensions/common/extension_builder.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
@@ -300,6 +301,8 @@ class BrowserActionButtonUiTest : public extensions::ExtensionBrowserTest {
   ToolbarController* toolbarController_ = nil;
   AppMenuController* appMenuController_ = nil;
   ToolbarActionsModel* model_ = nullptr;
+
+  test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionButtonUiTest);
 };
