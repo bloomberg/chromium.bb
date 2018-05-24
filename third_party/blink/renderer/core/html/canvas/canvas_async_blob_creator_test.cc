@@ -20,7 +20,7 @@ typedef CanvasAsyncBlobCreator::IdleTaskStatus IdleTaskStatus;
 class MockCanvasAsyncBlobCreator : public CanvasAsyncBlobCreator {
  public:
   MockCanvasAsyncBlobCreator(scoped_refptr<StaticBitmapImage> image,
-                             MimeType mime_type,
+                             ImageEncoder::MimeType mime_type,
                              Document* document,
                              bool fail_encoder_initialization = false)
       : CanvasAsyncBlobCreator(image,
@@ -69,7 +69,9 @@ class MockCanvasAsyncBlobCreatorWithoutStart
  public:
   MockCanvasAsyncBlobCreatorWithoutStart(scoped_refptr<StaticBitmapImage> image,
                                          Document* document)
-      : MockCanvasAsyncBlobCreator(image, kMimeTypePng, document) {}
+      : MockCanvasAsyncBlobCreator(image,
+                                   ImageEncoder::kMimeTypePng,
+                                   document) {}
 
  protected:
   void ScheduleInitiateEncoding(double) override {
@@ -88,7 +90,7 @@ class MockCanvasAsyncBlobCreatorWithoutComplete
       Document* document,
       bool fail_encoder_initialization = false)
       : MockCanvasAsyncBlobCreator(image,
-                                   kMimeTypePng,
+                                   ImageEncoder::kMimeTypePng,
                                    document,
                                    fail_encoder_initialization) {}
 

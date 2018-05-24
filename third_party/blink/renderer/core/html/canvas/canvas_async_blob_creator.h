@@ -40,12 +40,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 
   void ScheduleAsyncBlobCreation(const double& quality);
   virtual ~CanvasAsyncBlobCreator();
-  enum MimeType {
-    kMimeTypePng,
-    kMimeTypeJpeg,
-    kMimeTypeWebp,
-    kNumberOfMimeTypeSupported
-  };
+
   // This enum is used to back an UMA histogram, and should therefore be treated
   // as append-only.
   enum IdleTaskStatus {
@@ -73,7 +68,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 
  protected:
   CanvasAsyncBlobCreator(scoped_refptr<StaticBitmapImage>,
-                         MimeType,
+                         ImageEncoder::MimeType,
                          V8BlobCallback*,
                          double,
                          ExecutionContext*,
@@ -106,7 +101,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   Member<ExecutionContext> context_;
 
   SkPixmap src_data_;
-  const MimeType mime_type_;
+  const ImageEncoder::MimeType mime_type_;
 
   // Chrome metrics use
   double start_time_;

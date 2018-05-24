@@ -55,6 +55,20 @@ std::unique_ptr<ImageEncoder> ImageEncoder::Create(
   return image_encoder;
 }
 
+int ImageEncoder::MaxDimension(MimeType mime_type) {
+  switch (mime_type) {
+    case kMimeTypePng:
+      return 65535;
+    case kMimeTypeJpeg:
+      return JPEG_MAX_DIMENSION;
+    case kMimeTypeWebp:
+      return WEBP_MAX_DIMENSION;
+    default:
+      NOTREACHED();
+  }
+  return -1;
+}
+
 int ImageEncoder::ComputeJpegQuality(double quality) {
   int compression_quality = 92;  // Default value
   if (0.0f <= quality && quality <= 1.0)
