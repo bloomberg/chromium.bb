@@ -10,7 +10,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/default_tick_clock.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
@@ -63,6 +65,8 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
   non_main_thread_scheduler_ = CreateNonMainThreadScheduler();
   non_main_thread_scheduler_->Init();
   task_queue_ = non_main_thread_scheduler_->DefaultTaskQueue();
+  task_runner_ = TaskQueueWithTaskType::Create(
+      task_queue_, TaskType::kWorkerThreadTaskQueueDefault);
   idle_task_runner_ = non_main_thread_scheduler_->IdleTaskRunner();
   base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
   completion->Signal();
@@ -73,6 +77,7 @@ void WebThreadImplForWorkerScheduler::ShutdownOnThread(
   was_shutdown_on_thread_.Set();
 
   task_queue_ = nullptr;
+  task_runner_ = nullptr;
   idle_task_runner_ = nullptr;
   non_main_thread_scheduler_ = nullptr;
 
@@ -105,7 +110,7 @@ SingleThreadIdleTaskRunner* WebThreadImplForWorkerScheduler::GetIdleTaskRunner()
 
 scoped_refptr<base::SingleThreadTaskRunner>
 WebThreadImplForWorkerScheduler::GetTaskRunner() const {
-  return task_queue_;
+  return task_runner_;
 }
 
 void WebThreadImplForWorkerScheduler::AddTaskObserverInternal(

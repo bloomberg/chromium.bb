@@ -109,6 +109,8 @@ class PLATFORM_EXPORT WorkerThreadScheduler
 
   WorkerMetricsHelper worker_metrics_helper_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
+
   base::WeakPtrFactory<WorkerThreadScheduler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThreadScheduler);

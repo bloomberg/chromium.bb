@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/tick_clock.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 
@@ -98,7 +99,8 @@ class PLATFORM_EXPORT SchedulerHelper
  protected:
   void InitDefaultQueues(
       scoped_refptr<base::sequence_manager::TaskQueue> default_task_queue,
-      scoped_refptr<base::sequence_manager::TaskQueue> control_task_queue);
+      scoped_refptr<base::sequence_manager::TaskQueue> control_task_queue,
+      TaskType default_task_type);
 
   base::ThreadChecker thread_checker_;
   std::unique_ptr<base::sequence_manager::TaskQueueManager> task_queue_manager_;

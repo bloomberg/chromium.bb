@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_helper.h"
 
+#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 
 namespace blink {
@@ -25,7 +26,8 @@ MainThreadSchedulerHelper::MainThreadSchedulerHelper(
           NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
                            MainThreadTaskQueue::QueueType::kControl)
                            .SetShouldNotifyObservers(false))) {
-  InitDefaultQueues(default_task_queue_, control_task_queue_);
+  InitDefaultQueues(default_task_queue_, control_task_queue_,
+                    TaskType::kMainThreadTaskQueueDefault);
   task_queue_manager_->EnableCrashKeys("blink_scheduler_task_file_name",
                                        "blink_scheduler_task_function_name");
 }

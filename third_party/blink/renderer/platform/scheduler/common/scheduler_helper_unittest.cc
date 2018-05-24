@@ -62,7 +62,7 @@ class SchedulerHelperTest : public testing::Test {
                 task_environment_.GetMockTickClock());
     task_queue_manager_ = task_queue_manager.get();
     scheduler_helper_ = std::make_unique<NonMainThreadSchedulerHelper>(
-        std::move(task_queue_manager), nullptr);
+        std::move(task_queue_manager), nullptr, TaskType::kInternalTest);
     default_task_runner_ = scheduler_helper_->DefaultWorkerTaskQueue();
   }
 

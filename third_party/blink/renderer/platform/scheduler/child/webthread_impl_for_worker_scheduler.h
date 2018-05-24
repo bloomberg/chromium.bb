@@ -80,6 +80,7 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   std::unique_ptr<scheduler::NonMainThreadScheduler> non_main_thread_scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
   scoped_refptr<base::sequence_manager::TaskQueue> task_queue_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<scheduler::SingleThreadIdleTaskRunner> idle_task_runner_;
 
   base::AtomicFlag was_shutdown_on_thread_;
