@@ -285,6 +285,42 @@ public class ContextualSuggestionsTest {
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions"})
+    public void testTriggerAfterClose() throws InterruptedException, TimeoutException {
+        int firstTabId = mActivityTestRule.getActivity().getActivityTab().getId();
+        mActivityTestRule.loadUrlInNewTab(mTestServer.getURL(TEST_PAGE));
+        int secondTabId = mActivityTestRule.getActivity().getActivityTab().getId();
+
+        // Show suggestions on the second tab and simulate clicking close button.
+        forceShowSuggestions();
+        openSheet();
+        simulateClickOnCloseButton();
+
+        // Switch to the first tab and verify that the suggestions can be shown.
+        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), firstTabId);
+        forceShowSuggestions();
+
+        // Switch to the second tab.
+        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), secondTabId);
+        ThreadUtils.runOnUiThreadBlocking(() -> mBottomSheet.endAnimations());
+
+        // Simulate reverse scroll.
+        FullscreenManagerTestUtils.disableBrowserOverrides();
+        FullscreenManagerTestUtils.waitForBrowserControlsToBeMoveable(
+                mActivityTestRule, mActivityTestRule.getActivity().getActivityTab());
+
+        // Verify that the model is empty.
+        assertEquals("Model should be empty.", 0, mModel.getClusterList().getItemCount());
+        assertEquals("Bottom sheet should be hidden.", BottomSheet.SHEET_STATE_HIDDEN,
+                mBottomSheet.getSheetState());
+
+        // Switch to the first tab and verify that the suggestions can still be shown.
+        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), firstTabId);
+        forceShowSuggestions();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
     public void testOpenSuggestion() throws InterruptedException, TimeoutException {
         forceShowSuggestions();
         openSheet();

@@ -369,6 +369,8 @@ class ContextualSuggestionsMediator
                                         : ContextualSuggestionsEvent.UI_DISMISSED_WITHOUT_OPEN;
             reportEvent(openedEvent);
             clearSuggestions();
+            assert mFetchHelper != null && mTabModelSelector.getCurrentTab() != null;
+            mFetchHelper.onSuggestionsDismissed(mTabModelSelector.getCurrentTab());
         });
         mModel.setMenuButtonVisibility(false);
         if (!mModel.isSlimPeekEnabled()) {
