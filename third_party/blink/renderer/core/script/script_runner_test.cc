@@ -8,7 +8,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/script/mock_script_element_base.h"
-#include "third_party/blink/renderer/core/script/script_loader.h"
+#include "third_party/blink/renderer/core/script/pending_script.h"
+#include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
@@ -24,10 +25,14 @@ namespace blink {
 
 class MockPendingScript : public PendingScript {
  public:
-  static MockPendingScript* Create(ScriptElementBase* element,
-                                   ScriptSchedulingType scheduling_type) {
-    return new MockPendingScript(element, scheduling_type);
+  static MockPendingScript* CreateInOrder(Document* document) {
+    return Create(document, ScriptSchedulingType::kInOrder);
   }
+
+  static MockPendingScript* CreateAsync(Document* document) {
+    return Create(document, ScriptSchedulingType::kAsync);
+  }
+
   ~MockPendingScript() override {}
 
   MOCK_CONST_METHOD0(GetScriptType, ScriptType());
@@ -88,54 +93,21 @@ class MockPendingScript : public PendingScript {
     SetSchedulingType(scheduling_type);
   }
 
+  static MockPendingScript* Create(Document* document,
+                                   ScriptSchedulingType scheduling_type) {
+    MockScriptElementBase* element = MockScriptElementBase::Create();
+    EXPECT_CALL(*element, GetDocument())
+        .WillRepeatedly(testing::ReturnRef(*document));
+    MockPendingScript* pending_script =
+        new MockPendingScript(element, scheduling_type);
+    EXPECT_CALL(*pending_script, IsExternal()).WillRepeatedly(Return(true));
+    return pending_script;
+  }
+
   State state_ = State::kStreamingNotReady;
   bool is_ready_ = false;
   base::OnceClosure streaming_finished_callback_;
 };
-
-class MockScriptLoader final : public ScriptLoader {
- public:
-  static MockScriptLoader* CreateInOrder(Document* document) {
-    return Create(document, ScriptSchedulingType::kInOrder);
-  }
-
-  static MockScriptLoader* CreateAsync(Document* document) {
-    return Create(document, ScriptSchedulingType::kAsync);
-  }
-
-  ~MockScriptLoader() override {}
-
-  void Trace(blink::Visitor*) override;
-
-  MockPendingScript* GetPendingScriptIfControlledByScriptRunner() override {
-    return mock_pending_script_.Get();
-  }
-
- private:
-  explicit MockScriptLoader(ScriptElementBase* element)
-      : ScriptLoader(element, false, false) {}
-
-  static MockScriptLoader* Create(Document* document,
-                                  ScriptSchedulingType scheduling_type) {
-    MockScriptElementBase* element = MockScriptElementBase::Create();
-    auto* loader = new MockScriptLoader(element);
-    EXPECT_CALL(*element, Loader()).WillRepeatedly(Return(loader));
-    EXPECT_CALL(*element, GetDocument())
-        .WillRepeatedly(testing::ReturnRef(*document));
-    MockPendingScript* pending_script =
-        MockPendingScript::Create(element, scheduling_type);
-    EXPECT_CALL(*pending_script, IsExternal()).WillRepeatedly(Return(true));
-    loader->mock_pending_script_ = pending_script;
-    return loader;
-  }
-
-  Member<MockPendingScript> mock_pending_script_;
-};
-
-void MockScriptLoader::Trace(blink::Visitor* visitor) {
-  ScriptLoader::Trace(visitor);
-  visitor->Trace(mock_pending_script_);
-}
 
 class ScriptRunnerTest : public testing::Test {
  public:
@@ -155,16 +127,12 @@ class ScriptRunnerTest : public testing::Test {
   }
 
  protected:
-  void NotifyScriptReady(MockScriptLoader* script_loader) {
-    MockPendingScript* pending_script =
-        script_loader->GetPendingScriptIfControlledByScriptRunner();
+  void NotifyScriptReady(MockPendingScript* pending_script) {
     pending_script->SetIsReady(true);
     script_runner_->NotifyScriptReady(pending_script);
   }
 
-  void QueueScriptForExecution(MockScriptLoader* script_loader) {
-    MockPendingScript* pending_script =
-        script_loader->GetPendingScriptIfControlledByScriptRunner();
+  void QueueScriptForExecution(MockPendingScript* pending_script) {
     script_runner_->QueueScriptForExecution(pending_script);
   }
 
@@ -176,51 +144,47 @@ class ScriptRunnerTest : public testing::Test {
 };
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_Async) {
-  auto* script_loader = MockScriptLoader::CreateAsync(document_);
+  auto* pending_script = MockPendingScript::CreateAsync(document_);
 
-  QueueScriptForExecution(script_loader);
-  NotifyScriptReady(script_loader);
+  QueueScriptForExecution(pending_script);
+  NotifyScriptReady(pending_script);
 
-  EXPECT_CALL(*script_loader->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_));
+  EXPECT_CALL(*pending_script, ExecuteScriptBlock(_));
   platform_->RunUntilIdle();
 }
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder) {
-  auto* script_loader = MockScriptLoader::CreateInOrder(document_);
-  QueueScriptForExecution(script_loader);
+  auto* pending_script = MockPendingScript::CreateInOrder(document_);
+  QueueScriptForExecution(pending_script);
 
-  EXPECT_CALL(*script_loader->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_));
+  EXPECT_CALL(*pending_script, ExecuteScriptBlock(_));
 
-  NotifyScriptReady(script_loader);
+  NotifyScriptReady(pending_script);
 
   platform_->RunUntilIdle();
 }
 
 TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder) {
-  auto* script_loader1 = MockScriptLoader::CreateInOrder(document_);
-  auto* script_loader2 = MockScriptLoader::CreateInOrder(document_);
-  auto* script_loader3 = MockScriptLoader::CreateInOrder(document_);
+  auto* pending_script1 = MockPendingScript::CreateInOrder(document_);
+  auto* pending_script2 = MockPendingScript::CreateInOrder(document_);
+  auto* pending_script3 = MockPendingScript::CreateInOrder(document_);
 
-  HeapVector<Member<MockScriptLoader>> script_loaders;
-  script_loaders.push_back(script_loader1);
-  script_loaders.push_back(script_loader2);
-  script_loaders.push_back(script_loader3);
+  HeapVector<Member<MockPendingScript>> pending_scripts;
+  pending_scripts.push_back(pending_script1);
+  pending_scripts.push_back(pending_script2);
+  pending_scripts.push_back(pending_script3);
 
-  for (MockScriptLoader* script_loader : script_loaders) {
-    QueueScriptForExecution(script_loader);
+  for (MockPendingScript* pending_script : pending_scripts) {
+    QueueScriptForExecution(pending_script);
   }
 
-  for (size_t i = 0; i < script_loaders.size(); ++i) {
-    EXPECT_CALL(
-        *script_loaders[i]->GetPendingScriptIfControlledByScriptRunner(),
-        ExecuteScriptBlock(_))
+  for (size_t i = 0; i < pending_scripts.size(); ++i) {
+    EXPECT_CALL(*pending_scripts[i], ExecuteScriptBlock(_))
         .WillOnce(InvokeWithoutArgs([this, i] { order_.push_back(i + 1); }));
   }
 
   for (int i = 2; i >= 0; i--) {
-    NotifyScriptReady(script_loaders[i]);
+    NotifyScriptReady(pending_scripts[i]);
     platform_->RunUntilIdle();
   }
 
@@ -229,38 +193,33 @@ TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder) {
 }
 
 TEST_F(ScriptRunnerTest, QueueMixedScripts) {
-  auto* script_loader1 = MockScriptLoader::CreateInOrder(document_);
-  auto* script_loader2 = MockScriptLoader::CreateInOrder(document_);
-  auto* script_loader3 = MockScriptLoader::CreateInOrder(document_);
-  auto* script_loader4 = MockScriptLoader::CreateAsync(document_);
-  auto* script_loader5 = MockScriptLoader::CreateAsync(document_);
+  auto* pending_script1 = MockPendingScript::CreateInOrder(document_);
+  auto* pending_script2 = MockPendingScript::CreateInOrder(document_);
+  auto* pending_script3 = MockPendingScript::CreateInOrder(document_);
+  auto* pending_script4 = MockPendingScript::CreateAsync(document_);
+  auto* pending_script5 = MockPendingScript::CreateAsync(document_);
 
-  QueueScriptForExecution(script_loader1);
-  QueueScriptForExecution(script_loader2);
-  QueueScriptForExecution(script_loader3);
-  QueueScriptForExecution(script_loader4);
-  QueueScriptForExecution(script_loader5);
+  QueueScriptForExecution(pending_script1);
+  QueueScriptForExecution(pending_script2);
+  QueueScriptForExecution(pending_script3);
+  QueueScriptForExecution(pending_script4);
+  QueueScriptForExecution(pending_script5);
 
-  NotifyScriptReady(script_loader1);
-  NotifyScriptReady(script_loader2);
-  NotifyScriptReady(script_loader3);
-  NotifyScriptReady(script_loader4);
-  NotifyScriptReady(script_loader5);
+  NotifyScriptReady(pending_script1);
+  NotifyScriptReady(pending_script2);
+  NotifyScriptReady(pending_script3);
+  NotifyScriptReady(pending_script4);
+  NotifyScriptReady(pending_script5);
 
-  EXPECT_CALL(*script_loader1->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script1, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(1); }));
-  EXPECT_CALL(*script_loader2->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script2, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(2); }));
-  EXPECT_CALL(*script_loader3->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script3, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(3); }));
-  EXPECT_CALL(*script_loader4->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script4, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(4); }));
-  EXPECT_CALL(*script_loader5->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script5, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(5); }));
 
   platform_->RunUntilIdle();
@@ -270,33 +229,30 @@ TEST_F(ScriptRunnerTest, QueueMixedScripts) {
 }
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_Async) {
-  auto* script_loader1 = MockScriptLoader::CreateAsync(document_);
-  auto* script_loader2 = MockScriptLoader::CreateAsync(document_);
-  auto* script_loader3 = MockScriptLoader::CreateAsync(document_);
+  auto* pending_script1 = MockPendingScript::CreateAsync(document_);
+  auto* pending_script2 = MockPendingScript::CreateAsync(document_);
+  auto* pending_script3 = MockPendingScript::CreateAsync(document_);
 
-  QueueScriptForExecution(script_loader1);
-  QueueScriptForExecution(script_loader2);
-  QueueScriptForExecution(script_loader3);
-  NotifyScriptReady(script_loader1);
+  QueueScriptForExecution(pending_script1);
+  QueueScriptForExecution(pending_script2);
+  QueueScriptForExecution(pending_script3);
+  NotifyScriptReady(pending_script1);
 
-  auto* script_loader = script_loader2;
-  EXPECT_CALL(*script_loader1->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
-      .WillOnce(InvokeWithoutArgs([script_loader, this] {
+  auto* pending_script = pending_script2;
+  EXPECT_CALL(*pending_script1, ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([pending_script, this] {
         order_.push_back(1);
-        NotifyScriptReady(script_loader);
+        NotifyScriptReady(pending_script);
       }));
 
-  script_loader = script_loader3;
-  EXPECT_CALL(*script_loader2->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
-      .WillOnce(InvokeWithoutArgs([script_loader, this] {
+  pending_script = pending_script3;
+  EXPECT_CALL(*pending_script2, ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([pending_script, this] {
         order_.push_back(2);
-        NotifyScriptReady(script_loader);
+        NotifyScriptReady(pending_script);
       }));
 
-  EXPECT_CALL(*script_loader3->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script3, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(3); }));
 
   // Make sure that re-entrant calls to notifyScriptReady don't cause
@@ -312,33 +268,30 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_Async) {
 }
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_InOrder) {
-  auto* script_loader1 = MockScriptLoader::CreateInOrder(document_);
-  auto* script_loader2 = MockScriptLoader::CreateInOrder(document_);
-  auto* script_loader3 = MockScriptLoader::CreateInOrder(document_);
+  auto* pending_script1 = MockPendingScript::CreateInOrder(document_);
+  auto* pending_script2 = MockPendingScript::CreateInOrder(document_);
+  auto* pending_script3 = MockPendingScript::CreateInOrder(document_);
 
-  QueueScriptForExecution(script_loader1);
-  NotifyScriptReady(script_loader1);
+  QueueScriptForExecution(pending_script1);
+  NotifyScriptReady(pending_script1);
 
-  MockScriptLoader* script_loader = script_loader2;
-  EXPECT_CALL(*script_loader1->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
-      .WillOnce(InvokeWithoutArgs([script_loader, &script_loader2, this] {
+  MockPendingScript* pending_script = pending_script2;
+  EXPECT_CALL(*pending_script1, ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([pending_script, &pending_script2, this] {
         order_.push_back(1);
-        QueueScriptForExecution(script_loader);
-        NotifyScriptReady(script_loader2);
+        QueueScriptForExecution(pending_script);
+        NotifyScriptReady(pending_script2);
       }));
 
-  script_loader = script_loader3;
-  EXPECT_CALL(*script_loader2->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
-      .WillOnce(InvokeWithoutArgs([script_loader, &script_loader3, this] {
+  pending_script = pending_script3;
+  EXPECT_CALL(*pending_script2, ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([pending_script, &pending_script3, this] {
         order_.push_back(2);
-        QueueScriptForExecution(script_loader);
-        NotifyScriptReady(script_loader3);
+        QueueScriptForExecution(pending_script);
+        NotifyScriptReady(pending_script3);
       }));
 
-  EXPECT_CALL(*script_loader3->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script3, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(3); }));
 
   // Make sure that re-entrant calls to queueScriptForExecution don't cause
@@ -354,31 +307,28 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_InOrder) {
 }
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts) {
-  MockScriptLoader* script_loaders[20];
+  MockPendingScript* pending_scripts[20];
   for (int i = 0; i < 20; i++)
-    script_loaders[i] = nullptr;
+    pending_scripts[i] = nullptr;
 
   for (int i = 0; i < 20; i++) {
-    script_loaders[i] = MockScriptLoader::CreateAsync(document_);
+    pending_scripts[i] = MockPendingScript::CreateAsync(document_);
 
-    QueueScriptForExecution(script_loaders[i]);
+    QueueScriptForExecution(pending_scripts[i]);
 
     if (i > 0) {
-      EXPECT_CALL(
-          *script_loaders[i]->GetPendingScriptIfControlledByScriptRunner(),
-          ExecuteScriptBlock(_))
+      EXPECT_CALL(*pending_scripts[i], ExecuteScriptBlock(_))
           .WillOnce(InvokeWithoutArgs([this, i] { order_.push_back(i); }));
     }
   }
 
-  NotifyScriptReady(script_loaders[0]);
-  NotifyScriptReady(script_loaders[1]);
+  NotifyScriptReady(pending_scripts[0]);
+  NotifyScriptReady(pending_scripts[1]);
 
-  EXPECT_CALL(*script_loaders[0]->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
-      .WillOnce(InvokeWithoutArgs([&script_loaders, this] {
+  EXPECT_CALL(*pending_scripts[0], ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([&pending_scripts, this] {
         for (int i = 2; i < 20; i++) {
-          NotifyScriptReady(script_loaders[i]);
+          NotifyScriptReady(pending_scripts[i]);
         }
         order_.push_back(0);
       }));
@@ -392,27 +342,24 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts) {
 }
 
 TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder) {
-  auto* script_loader1 = MockScriptLoader::CreateInOrder(document_);
-  auto* script_loader2 = MockScriptLoader::CreateInOrder(document_);
-  auto* script_loader3 = MockScriptLoader::CreateInOrder(document_);
+  auto* pending_script1 = MockPendingScript::CreateInOrder(document_);
+  auto* pending_script2 = MockPendingScript::CreateInOrder(document_);
+  auto* pending_script3 = MockPendingScript::CreateInOrder(document_);
 
-  QueueScriptForExecution(script_loader1);
-  QueueScriptForExecution(script_loader2);
-  QueueScriptForExecution(script_loader3);
+  QueueScriptForExecution(pending_script1);
+  QueueScriptForExecution(pending_script2);
+  QueueScriptForExecution(pending_script3);
 
-  EXPECT_CALL(*script_loader1->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script1, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(1); }));
-  EXPECT_CALL(*script_loader2->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script2, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(2); }));
-  EXPECT_CALL(*script_loader3->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script3, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(3); }));
 
-  NotifyScriptReady(script_loader1);
-  NotifyScriptReady(script_loader2);
-  NotifyScriptReady(script_loader3);
+  NotifyScriptReady(pending_script1);
+  NotifyScriptReady(pending_script2);
+  NotifyScriptReady(pending_script3);
 
   platform_->RunSingleTask();
   script_runner_->Suspend();
@@ -424,26 +371,23 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder) {
 }
 
 TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async) {
-  auto* script_loader1 = MockScriptLoader::CreateAsync(document_);
-  auto* script_loader2 = MockScriptLoader::CreateAsync(document_);
-  auto* script_loader3 = MockScriptLoader::CreateAsync(document_);
+  auto* pending_script1 = MockPendingScript::CreateAsync(document_);
+  auto* pending_script2 = MockPendingScript::CreateAsync(document_);
+  auto* pending_script3 = MockPendingScript::CreateAsync(document_);
 
-  QueueScriptForExecution(script_loader1);
-  QueueScriptForExecution(script_loader2);
-  QueueScriptForExecution(script_loader3);
+  QueueScriptForExecution(pending_script1);
+  QueueScriptForExecution(pending_script2);
+  QueueScriptForExecution(pending_script3);
 
-  NotifyScriptReady(script_loader1);
-  NotifyScriptReady(script_loader2);
-  NotifyScriptReady(script_loader3);
+  NotifyScriptReady(pending_script1);
+  NotifyScriptReady(pending_script2);
+  NotifyScriptReady(pending_script3);
 
-  EXPECT_CALL(*script_loader1->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script1, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(1); }));
-  EXPECT_CALL(*script_loader2->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script2, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(2); }));
-  EXPECT_CALL(*script_loader3->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script3, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(3); }));
 
   platform_->RunSingleTask();
@@ -456,41 +400,39 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async) {
 }
 
 TEST_F(ScriptRunnerTest, LateNotifications) {
-  auto* script_loader1 = MockScriptLoader::CreateInOrder(document_);
-  auto* script_loader2 = MockScriptLoader::CreateInOrder(document_);
+  auto* pending_script1 = MockPendingScript::CreateInOrder(document_);
+  auto* pending_script2 = MockPendingScript::CreateInOrder(document_);
 
-  QueueScriptForExecution(script_loader1);
-  QueueScriptForExecution(script_loader2);
+  QueueScriptForExecution(pending_script1);
+  QueueScriptForExecution(pending_script2);
 
-  EXPECT_CALL(*script_loader1->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script1, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(1); }));
-  EXPECT_CALL(*script_loader2->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
+  EXPECT_CALL(*pending_script2, ExecuteScriptBlock(_))
       .WillOnce(InvokeWithoutArgs([this] { order_.push_back(2); }));
 
-  NotifyScriptReady(script_loader1);
+  NotifyScriptReady(pending_script1);
   platform_->RunUntilIdle();
 
   // At this moment all tasks can be already executed. Make sure that we do not
   // crash here.
-  NotifyScriptReady(script_loader2);
+  NotifyScriptReady(pending_script2);
   platform_->RunUntilIdle();
 
   EXPECT_THAT(order_, ElementsAre(1, 2));
 }
 
 TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner) {
-  Persistent<MockScriptLoader> script_loader1 =
-      MockScriptLoader::CreateAsync(document_);
-  Persistent<MockScriptLoader> script_loader2 =
-      MockScriptLoader::CreateAsync(document_);
+  Persistent<MockPendingScript> pending_script1 =
+      MockPendingScript::CreateAsync(document_);
+  Persistent<MockPendingScript> pending_script2 =
+      MockPendingScript::CreateAsync(document_);
 
-  QueueScriptForExecution(script_loader1);
-  QueueScriptForExecution(script_loader2);
+  QueueScriptForExecution(pending_script1);
+  QueueScriptForExecution(pending_script2);
 
-  NotifyScriptReady(script_loader1);
-  NotifyScriptReady(script_loader2);
+  NotifyScriptReady(pending_script1);
+  NotifyScriptReady(pending_script2);
 
   script_runner_.Release();
 
@@ -498,52 +440,41 @@ TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner) {
 
   // m_scriptRunner is gone. We need to make sure that ScriptRunner::Task do not
   // access dead object.
-  EXPECT_CALL(*script_loader1->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
-      .Times(0);
-  EXPECT_CALL(*script_loader2->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
-      .Times(0);
+  EXPECT_CALL(*pending_script1, ExecuteScriptBlock(_)).Times(0);
+  EXPECT_CALL(*pending_script2, ExecuteScriptBlock(_)).Times(0);
 
   platform_->RunUntilIdle();
 }
 
 TEST_F(ScriptRunnerTest, TryStreamWhenEnqueingScript) {
-  auto* script_loader1 = MockScriptLoader::CreateAsync(document_);
-  script_loader1->GetPendingScriptIfControlledByScriptRunner()->SetIsReady(
-      true);
-  QueueScriptForExecution(script_loader1);
+  auto* pending_script1 = MockPendingScript::CreateAsync(document_);
+  pending_script1->SetIsReady(true);
+  QueueScriptForExecution(pending_script1);
 }
 
 TEST_F(ScriptRunnerTest, DontExecuteWhileStreaming) {
-  auto* script_loader = MockScriptLoader::CreateAsync(document_);
+  auto* pending_script = MockPendingScript::CreateAsync(document_);
 
   // Enqueue script.
-  QueueScriptForExecution(script_loader);
+  QueueScriptForExecution(pending_script);
 
   // Simulate script load and mark the pending script as streaming ready.
-  script_loader->GetPendingScriptIfControlledByScriptRunner()->SetIsReady(true);
-  script_loader->GetPendingScriptIfControlledByScriptRunner()
-      ->PrepareForStreaming();
-  NotifyScriptReady(script_loader);
+  pending_script->SetIsReady(true);
+  pending_script->PrepareForStreaming();
+  NotifyScriptReady(pending_script);
 
   // ScriptLoader should have started streaming by now.
-  EXPECT_EQ(
-      script_loader->GetPendingScriptIfControlledByScriptRunner()->state(),
-      MockPendingScript::State::kStreaming);
+  EXPECT_EQ(pending_script->state(), MockPendingScript::State::kStreaming);
 
   // Note that there is no expectation for ScriptLoader::Execute() yet,
   // so the mock will fail if it's called anyway.
   platform_->RunUntilIdle();
 
   // Finish streaming.
-  script_loader->GetPendingScriptIfControlledByScriptRunner()
-      ->SimulateStreamingEnd();
+  pending_script->SimulateStreamingEnd();
 
   // Now that streaming is finished, expect Execute() to be called.
-  EXPECT_CALL(*script_loader->GetPendingScriptIfControlledByScriptRunner(),
-              ExecuteScriptBlock(_))
-      .Times(1);
+  EXPECT_CALL(*pending_script, ExecuteScriptBlock(_)).Times(1);
   platform_->RunUntilIdle();
 }
 
