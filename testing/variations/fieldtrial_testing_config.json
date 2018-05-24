@@ -4384,6 +4384,24 @@
             ]
         }
     ],
+    "WebRTC-NewCpuLoadEstimator": [
+        {
+            "platforms": [
+                "win",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NewEncodeCpuLoadEstimator"
+                    ]
+                }
+            ]
+        }
+    ],
     "WebRTC-ProbingScreenshareBwe": [
         {
             "platforms": [
