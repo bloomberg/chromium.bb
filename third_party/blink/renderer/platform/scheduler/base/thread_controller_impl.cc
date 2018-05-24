@@ -76,15 +76,20 @@ void ThreadControllerImpl::ScheduleWork() {
   task_runner_->PostTask(FROM_HERE, immediate_do_work_closure_);
 }
 
-void ThreadControllerImpl::ScheduleDelayedWork(TimeTicks now,
-                                               TimeTicks run_time) {
+void ThreadControllerImpl::SetNextDelayedDoWork(LazyNow* lazy_now,
+                                                TimeTicks run_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sequence_);
 
-  // If there's a delayed DoWork scheduled to run sooner, we don't need to do
-  // anything because a delayed continuation will be posted as needed.
-  if (main_sequence_only().next_delayed_do_work <= run_time)
+  if (main_sequence_only().next_delayed_do_work == run_time)
     return;
+
+  // Cancel DoWork if it was scheduled and we set an "infinite" delay now.
+  if (run_time == TimeTicks::Max()) {
+    cancelable_delayed_do_work_closure_.Cancel();
+    main_sequence_only().next_delayed_do_work = TimeTicks::Max();
+    return;
+  }
 
   // If DoWork is running then we don't need to do anything because it will post
   // a continuation as needed. Bailing out here is by far the most common case.
@@ -100,25 +105,16 @@ void ThreadControllerImpl::ScheduleDelayedWork(TimeTicks now,
       return;
   }
 
-  base::TimeDelta delay = std::max(TimeDelta(), run_time - now);
+  base::TimeDelta delay = std::max(TimeDelta(), run_time - lazy_now->Now());
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
-               "ThreadControllerImpl::ScheduleDelayedWork::PostDelayedTask",
+               "ThreadControllerImpl::SetNextDelayedDoWork::PostDelayedTask",
                "delay_ms", delay.InMillisecondsF());
 
   main_sequence_only().next_delayed_do_work = run_time;
+  // Reset also causes cancellation of the previous DoWork task.
   cancelable_delayed_do_work_closure_.Reset(delayed_do_work_closure_);
   task_runner_->PostDelayedTask(
       FROM_HERE, cancelable_delayed_do_work_closure_.callback(), delay);
-}
-
-void ThreadControllerImpl::CancelDelayedWork(TimeTicks run_time) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(sequence_);
-  if (main_sequence_only().next_delayed_do_work != run_time)
-    return;
-
-  cancelable_delayed_do_work_closure_.Cancel();
-  main_sequence_only().next_delayed_do_work = TimeTicks::Max();
 }
 
 bool ThreadControllerImpl::RunsTasksInCurrentSequence() {
