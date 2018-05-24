@@ -4,10 +4,13 @@
 
 #include "services/audio/public/cpp/audio_system_to_service_adapter.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
+#include "media/audio/audio_device_description.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -282,18 +285,16 @@ void AudioSystemToServiceAdapter::HasOutputDevices(
 void AudioSystemToServiceAdapter::GetDeviceDescriptions(
     bool for_input,
     OnDeviceDescriptionsCallback on_descriptions_callback) {
+  auto reply_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      WrapCallbackWithDeviceNameLocalization(
+          std::move(on_descriptions_callback)),
+      media::AudioDeviceDescriptions());
   if (for_input)
     GetSystemInfo()->GetInputDeviceDescriptions(
-        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-            WrapGetDeviceDescriptionsReply(kInput,
-                                           std::move(on_descriptions_callback)),
-            media::AudioDeviceDescriptions()));
+        WrapGetDeviceDescriptionsReply(kInput, std::move(reply_callback)));
   else
     GetSystemInfo()->GetOutputDeviceDescriptions(
-        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-            WrapGetDeviceDescriptionsReply(kOutput,
-                                           std::move(on_descriptions_callback)),
-            media::AudioDeviceDescriptions()));
+        WrapGetDeviceDescriptionsReply(kOutput, std::move(reply_callback)));
 }
 
 void AudioSystemToServiceAdapter::GetAssociatedOutputDeviceID(

@@ -75,8 +75,14 @@ class MEDIA_EXPORT AudioSystem {
   virtual void GetInputDeviceInfo(
       const std::string& input_device_id,
       OnInputDeviceInfoCallback on_input_device_info_cb) = 0;
+
+  // This function wraps |callback| with a call to
+  // AudioDeviceDescription::LocalizeDeviceDescriptions for convenience. This is
+  // typically used by AudioSystem implementations, not AudioSystem clients.
+  static OnDeviceDescriptionsCallback WrapCallbackWithDeviceNameLocalization(
+      OnDeviceDescriptionsCallback callback);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_AUDIO_SYSTEM_H_s
+#endif  // MEDIA_AUDIO_AUDIO_SYSTEM_H_

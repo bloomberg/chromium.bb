@@ -124,6 +124,7 @@ source_set("audio") {
     "audio_source_diverter.h",
     "audio_sync_reader.cc",
     "audio_sync_reader.h",
+    "audio_system.cc",
     "audio_system.h",
     "audio_system_helper.cc",
     "audio_system_helper.h",

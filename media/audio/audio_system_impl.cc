@@ -4,9 +4,12 @@
 
 #include "media/audio/audio_system_impl.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/bind_to_current_loop.h"
 
@@ -144,10 +147,11 @@ void AudioSystemImpl::GetDeviceDescriptions(
     OnDeviceDescriptionsCallback on_descriptions_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   audio_manager_->GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&GetDeviceDescriptionsOnAudioThread,
-                     base::Unretained(audio_manager_), for_input,
-                     MaybeBindToCurrentLoop(std::move(on_descriptions_cb))));
+      FROM_HERE, base::BindOnce(&GetDeviceDescriptionsOnAudioThread,
+                                base::Unretained(audio_manager_), for_input,
+                                MaybeBindToCurrentLoop(
+                                    WrapCallbackWithDeviceNameLocalization(
+                                        std::move(on_descriptions_cb)))));
 }
 
 void AudioSystemImpl::GetAssociatedOutputDeviceID(

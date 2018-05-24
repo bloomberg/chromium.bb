@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+
 #include "media/base/media_export.h"
 
 namespace media {
@@ -52,6 +53,8 @@ struct MEDIA_EXPORT AudioDeviceDescription {
   static bool UseSessionIdToSelectDevice(int session_id,
                                          const std::string& device_id);
 
+  // The functions dealing with localization are not reliable in the audio
+  // service, and should be avoided there.
   // Returns the localized name of the generic "default" device.
   static std::string GetDefaultDeviceName();
 
@@ -67,6 +70,11 @@ struct MEDIA_EXPORT AudioDeviceDescription {
   // that includes the given |real_device_name|.
   static std::string GetCommunicationsDeviceName(
       const std::string& real_device_name);
+
+  // This prepends localized "Default" or "Communications" strings to
+  // default and communications device names in |device_descriptions|.
+  static void LocalizeDeviceDescriptions(
+      std::vector<AudioDeviceDescription>* device_descriptions);
 
   AudioDeviceDescription() = default;
   AudioDeviceDescription(const AudioDeviceDescription& other) = default;
