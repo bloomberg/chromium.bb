@@ -19,7 +19,7 @@
 #endif
 
 // Typedefs of |completionHandler| in |fetchProfilesWithCompletionHandler:|
-// and |fetchProfilesWithCompletionHandler:|.
+// and |fetchCreditCardsWithCompletionHandler:|.
 typedef void (^CWVFetchProfilesCompletionHandler)(
     NSArray<CWVAutofillProfile*>* profiles);
 typedef void (^CWVFetchCreditCardsCompletionHandler)(
