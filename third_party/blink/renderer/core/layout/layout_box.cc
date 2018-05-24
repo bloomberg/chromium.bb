@@ -2968,6 +2968,9 @@ bool LayoutBox::SizesLogicalWidthToFitContent(
   if (IsHorizontalWritingMode() != ContainingBlock()->IsHorizontalWritingMode())
     return true;
 
+  if (IsCustomItem())
+    return IsCustomItemShrinkToFit();
+
   return false;
 }
 
@@ -5048,6 +5051,13 @@ void LayoutBox::UnmarkOrthogonalWritingModeRoot() {
 bool LayoutBox::IsCustomItem() const {
   return Parent() && Parent()->IsLayoutCustom() &&
          ToLayoutCustom(Parent())->State() == LayoutCustomState::kBlock;
+}
+
+// LayoutCustom items are only shrink-to-fit during the web-developer defined
+// layout phase (not during fallback).
+bool LayoutBox::IsCustomItemShrinkToFit() const {
+  DCHECK(IsCustomItem());
+  return ToLayoutCustom(Parent())->Phase() == LayoutCustomPhase::kCustom;
 }
 
 bool LayoutBox::IsRenderedLegend() const {
