@@ -68,6 +68,15 @@ class RootScrollerTest : public testing::Test,
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
+  void SetAndSelectRootScroller(Document& document, Element* element) {
+    document.setRootScroller(element, ASSERT_NO_EXCEPTION);
+    if (document.GetFrame()) {
+      LocalFrameView* root_view = document.GetFrame()->LocalFrameRoot().View();
+      if (root_view)
+        root_view->UpdateAllLifecyclePhases();
+    }
+  }
+
   WebViewImpl* Initialize(const std::string& page_name,
                           FrameTestHelpers::TestWebViewClient* client) {
     return InitializeInternal(base_url_ + page_name, client);
@@ -215,10 +224,9 @@ TEST_F(RootScrollerTest, defaultEffectiveRootScrollerIsDocumentNode) {
 
   // Replace the documentElement with the iframe. The effectiveRootScroller
   // should remain the same.
-  NonThrowableExceptionState non_throw;
   HeapVector<NodeOrString> nodes;
   nodes.push_back(NodeOrString::FromNode(iframe));
-  document->documentElement()->ReplaceWith(nodes, non_throw);
+  document->documentElement()->ReplaceWith(nodes, ASSERT_NO_EXCEPTION);
 
   MainFrameView()->UpdateAllLifecyclePhases();
 
@@ -243,7 +251,7 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
   Initialize("root-scroller.html", &client);
 
   Element* container = MainFrame()->GetDocument()->getElementById("container");
-  MainFrame()->GetDocument()->setRootScroller(container);
+  SetAndSelectRootScroller(*MainFrame()->GetDocument(), container);
   ASSERT_EQ(container, MainFrame()->GetDocument()->rootScroller());
 
   // Content is 1000x1000, WebView size is 400x400 but hiding the top controls
@@ -345,7 +353,8 @@ TEST_F(RootScrollerTest, TestRemoveRootScrollerFromDom) {
   ASSERT_EQ(nullptr, MainFrame()->GetDocument()->rootScroller());
 
   Element* container = MainFrame()->GetDocument()->getElementById("container");
-  MainFrame()->GetDocument()->setRootScroller(container);
+  SetAndSelectRootScroller(*MainFrame()->GetDocument(), container);
+  MainFrameView()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(container, MainFrame()->GetDocument()->rootScroller());
   EXPECT_EQ(container, EffectiveRootScroller(MainFrame()->GetDocument()));
@@ -366,8 +375,7 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnInvalidElement) {
     // Set to a non-block element. Should be rejected and a console message
     // logged.
     Element* element = MainFrame()->GetDocument()->getElementById("nonBlock");
-    MainFrame()->GetDocument()->setRootScroller(element);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    SetAndSelectRootScroller(*MainFrame()->GetDocument(), element);
     EXPECT_EQ(element, MainFrame()->GetDocument()->rootScroller());
     EXPECT_NE(element, EffectiveRootScroller(MainFrame()->GetDocument()));
   }
@@ -375,8 +383,7 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnInvalidElement) {
   {
     // Set to an element with no size.
     Element* element = MainFrame()->GetDocument()->getElementById("empty");
-    MainFrame()->GetDocument()->setRootScroller(element);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    SetAndSelectRootScroller(*MainFrame()->GetDocument(), element);
     EXPECT_EQ(element, MainFrame()->GetDocument()->rootScroller());
     EXPECT_NE(element, EffectiveRootScroller(MainFrame()->GetDocument()));
   }
@@ -394,8 +401,7 @@ TEST_F(RootScrollerTest, TestRootScrollerBecomesInvalid) {
             EffectiveRootScroller(MainFrame()->GetDocument()));
 
   {
-    MainFrame()->GetDocument()->setRootScroller(container);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    SetAndSelectRootScroller(*MainFrame()->GetDocument(), container);
 
     EXPECT_EQ(container, MainFrame()->GetDocument()->rootScroller());
     EXPECT_EQ(container, EffectiveRootScroller(MainFrame()->GetDocument()));
@@ -410,15 +416,13 @@ TEST_F(RootScrollerTest, TestRootScrollerBecomesInvalid) {
   }
 
   ExecuteScript("document.querySelector('#container').style.display = 'block'");
-  MainFrame()->GetDocument()->setRootScroller(nullptr);
-  MainFrameView()->UpdateAllLifecyclePhases();
+  SetAndSelectRootScroller(*MainFrame()->GetDocument(), nullptr);
   EXPECT_EQ(nullptr, MainFrame()->GetDocument()->rootScroller());
   EXPECT_EQ(MainFrame()->GetDocument(),
             EffectiveRootScroller(MainFrame()->GetDocument()));
 
   {
-    MainFrame()->GetDocument()->setRootScroller(container);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    SetAndSelectRootScroller(*MainFrame()->GetDocument(), container);
 
     EXPECT_EQ(container, MainFrame()->GetDocument()->rootScroller());
     EXPECT_EQ(container, EffectiveRootScroller(MainFrame()->GetDocument()));
@@ -446,8 +450,7 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnElementInIframe) {
     Element* inner_container =
         iframe->contentDocument()->getElementById("container");
 
-    MainFrame()->GetDocument()->setRootScroller(inner_container);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    SetAndSelectRootScroller(*MainFrame()->GetDocument(), inner_container);
 
     EXPECT_EQ(inner_container, MainFrame()->GetDocument()->rootScroller());
     EXPECT_EQ(inner_container,
@@ -459,8 +462,7 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnElementInIframe) {
     HTMLFrameOwnerElement* iframe = ToHTMLFrameOwnerElement(
         MainFrame()->GetDocument()->getElementById("iframe"));
 
-    MainFrame()->GetDocument()->setRootScroller(iframe);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    SetAndSelectRootScroller(*MainFrame()->GetDocument(), iframe);
 
     EXPECT_EQ(iframe, MainFrame()->GetDocument()->rootScroller());
     EXPECT_EQ(iframe, EffectiveRootScroller(MainFrame()->GetDocument()));
@@ -483,8 +485,7 @@ TEST_F(RootScrollerTest, TestRootScrollerWithinIframe) {
 
     Element* inner_container =
         iframe->contentDocument()->getElementById("container");
-    iframe->contentDocument()->setRootScroller(inner_container);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    SetAndSelectRootScroller(*iframe->contentDocument(), inner_container);
 
     EXPECT_EQ(inner_container, iframe->contentDocument()->rootScroller());
     EXPECT_EQ(inner_container,
@@ -499,21 +500,19 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeBecomesEffective) {
   ASSERT_EQ(nullptr, MainFrame()->GetDocument()->rootScroller());
 
   {
-    NonThrowableExceptionState non_throw;
-
     // Try to set the root scroller in the main frame to be the iframe
     // element.
     HTMLFrameOwnerElement* iframe = ToHTMLFrameOwnerElement(
         MainFrame()->GetDocument()->getElementById("iframe"));
 
-    MainFrame()->GetDocument()->setRootScroller(iframe, non_throw);
+    SetAndSelectRootScroller(*MainFrame()->GetDocument(), iframe);
 
     EXPECT_EQ(iframe, MainFrame()->GetDocument()->rootScroller());
     EXPECT_EQ(iframe, EffectiveRootScroller(MainFrame()->GetDocument()));
 
     Element* container = iframe->contentDocument()->getElementById("container");
 
-    iframe->contentDocument()->setRootScroller(container, non_throw);
+    SetAndSelectRootScroller(*iframe->contentDocument(), container);
 
     EXPECT_EQ(container, iframe->contentDocument()->rootScroller());
     EXPECT_EQ(container, EffectiveRootScroller(iframe->contentDocument()));
@@ -536,8 +535,6 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   const TopDocumentRootScrollerController& main_controller =
       MainFrame()->GetDocument()->GetPage()->GlobalRootScrollerController();
 
-  NonThrowableExceptionState non_throw;
-
   // No root scroller set, the documentElement should be the effective root
   // and the main LocalFrameView's scroll layer should be the layer to use.
   {
@@ -551,8 +548,7 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   // Set a root scroller in the iframe. Since the main document didn't set a
   // root scroller, the global root scroller shouldn't change.
   {
-    iframe->contentDocument()->setRootScroller(container, non_throw);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    SetAndSelectRootScroller(*iframe->contentDocument(), container);
 
     EXPECT_EQ(
         main_controller.RootScrollerLayer(),
@@ -565,8 +561,7 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   // link the root scrollers so the container should now be the global root
   // scroller.
   {
-    MainFrame()->GetDocument()->setRootScroller(iframe, non_throw);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    SetAndSelectRootScroller(*MainFrame()->GetDocument(), iframe);
 
     ScrollableArea* container_scroller =
         static_cast<PaintInvalidationCapableScrollableArea*>(
@@ -584,8 +579,7 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   // root scroller to the iframe's documentElement and thus the iframe's
   // documentElement becomes the global root scroller.
   {
-    iframe->contentDocument()->setRootScroller(nullptr, non_throw);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    SetAndSelectRootScroller(*iframe->contentDocument(), nullptr);
     EXPECT_EQ(main_controller.RootScrollerLayer(),
               iframe->contentDocument()
                   ->View()
@@ -602,8 +596,7 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   // Finally, unsetting the main frame's root scroller should reset it to the
   // documentElement and corresponding layer.
   {
-    MainFrame()->GetDocument()->setRootScroller(nullptr, non_throw);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    SetAndSelectRootScroller(*MainFrame()->GetDocument(), nullptr);
     EXPECT_EQ(
         main_controller.RootScrollerLayer(),
         MainFrameView()->LayoutViewportScrollableArea()->LayerForScrolling());
@@ -695,15 +688,13 @@ TEST_F(RootScrollerTest, AlwaysCreateCompositedScrollingLayers) {
 
   ASSERT_FALSE(layer->HasCompositedLayerMapping());
 
-  MainFrame()->GetDocument()->setRootScroller(container, ASSERT_NO_EXCEPTION);
-  MainFrameView()->UpdateAllLifecyclePhases();
+  SetAndSelectRootScroller(*MainFrame()->GetDocument(), container);
 
   ASSERT_TRUE(layer->HasCompositedLayerMapping());
   EXPECT_TRUE(layer->GetCompositedLayerMapping()->ScrollingContentsLayer());
   EXPECT_TRUE(layer->GetCompositedLayerMapping()->ScrollingLayer());
 
-  MainFrame()->GetDocument()->setRootScroller(nullptr, ASSERT_NO_EXCEPTION);
-  MainFrameView()->UpdateAllLifecyclePhases();
+  SetAndSelectRootScroller(*MainFrame()->GetDocument(), nullptr);
 
   EXPECT_FALSE(layer->HasCompositedLayerMapping());
 }
@@ -727,9 +718,8 @@ TEST_F(RootScrollerTest,
     // <iframe> element in the parent document.
     HTMLFrameOwnerElement* iframe = ToHTMLFrameOwnerElement(
         MainFrame()->GetDocument()->getElementById("iframe"));
-    NonThrowableExceptionState non_throw;
     Element* body =
-        MainFrame()->GetDocument()->QuerySelector("body", non_throw);
+        MainFrame()->GetDocument()->QuerySelector("body", ASSERT_NO_EXCEPTION);
 
     EXPECT_EQ(nullptr, iframe->contentDocument()->rootScroller());
 
@@ -757,8 +747,7 @@ TEST_F(RootScrollerTest, RemoteIFrame) {
   // remote). Make sure we don't promote a remote frame to the root scroller.
   {
     Element* iframe = MainFrame()->GetDocument()->getElementById("iframe");
-    NonThrowableExceptionState non_throw;
-    MainFrame()->GetDocument()->setRootScroller(iframe, non_throw);
+    SetAndSelectRootScroller(*MainFrame()->GetDocument(), iframe);
     EXPECT_EQ(iframe, MainFrame()->GetDocument()->rootScroller());
     EXPECT_EQ(MainFrame()->GetDocument(),
               EffectiveRootScroller(MainFrame()->GetDocument()));
@@ -773,15 +762,14 @@ TEST_F(RootScrollerTest, IFrameSwapToRemote) {
   Element* iframe = MainFrame()->GetDocument()->getElementById("iframe");
 
   {
-    NonThrowableExceptionState non_throw;
-    MainFrame()->GetDocument()->setRootScroller(iframe, non_throw);
+    SetAndSelectRootScroller(*MainFrame()->GetDocument(), iframe);
     ASSERT_EQ(iframe, EffectiveRootScroller(MainFrame()->GetDocument()));
-    MainFrameView()->UpdateAllLifecyclePhases();
   }
 
   // Swap in a remote frame. Make sure we revert back to the document.
   {
     MainWebFrame()->FirstChild()->Swap(FrameTestHelpers::CreateRemote());
+    MainFrameView()->UpdateAllLifecyclePhases();
     EXPECT_EQ(MainFrame()->GetDocument(),
               EffectiveRootScroller(MainFrame()->GetDocument()));
     GetWebView()->ResizeWithBrowserControls(IntSize(400, 450), 50, 0, false);
@@ -837,8 +825,7 @@ TEST_F(RootScrollerTest, RemoteMainFrame) {
 
   // Set the container Element as the root scroller.
   {
-    NonThrowableExceptionState non_throw;
-    document->setRootScroller(container, non_throw);
+    SetAndSelectRootScroller(*document, container);
     EXPECT_EQ(container, document->rootScroller());
   }
 
@@ -929,9 +916,8 @@ TEST_F(RootScrollerTest, RemoveRootScrollerFromDom) {
     Element* inner_container =
         iframe->contentDocument()->getElementById("container");
 
-    MainFrame()->GetDocument()->setRootScroller(iframe);
-    iframe->contentDocument()->setRootScroller(inner_container);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    SetAndSelectRootScroller(*MainFrame()->GetDocument(), iframe);
+    SetAndSelectRootScroller(*iframe->contentDocument(), inner_container);
 
     ASSERT_EQ(iframe, MainFrame()->GetDocument()->rootScroller());
     ASSERT_EQ(iframe, EffectiveRootScroller(MainFrame()->GetDocument()));
@@ -974,9 +960,7 @@ TEST_F(RootScrollerTest, UseVisualViewportScrollbars) {
   Initialize("root-scroller.html");
 
   Element* container = MainFrame()->GetDocument()->getElementById("container");
-  NonThrowableExceptionState non_throw;
-  MainFrame()->GetDocument()->setRootScroller(container, non_throw);
-  MainFrameView()->UpdateAllLifecyclePhases();
+  SetAndSelectRootScroller(*MainFrame()->GetDocument(), container);
 
   ScrollableArea* container_scroller =
       static_cast<PaintInvalidationCapableScrollableArea*>(
@@ -998,8 +982,7 @@ TEST_F(RootScrollerTest, UseVisualViewportScrollbarsIframe) {
   LocalFrame* child_frame =
       ToLocalFrame(ToHTMLFrameOwnerElement(iframe)->ContentFrame());
 
-  NonThrowableExceptionState non_throw;
-  MainFrame()->GetDocument()->setRootScroller(iframe, non_throw);
+  SetAndSelectRootScroller(*MainFrame()->GetDocument(), iframe);
 
   WebLocalFrame* child_web_frame =
       MainWebFrame()->FirstChild()->ToWebLocalFrame();
@@ -1046,7 +1029,7 @@ TEST_F(RootScrollerTest, TopControlsAdjustmentAppliedToRootScroller) {
   MainFrameView()->UpdateAllLifecyclePhases();
 
   Element* container = MainFrame()->GetDocument()->getElementById("container");
-  MainFrame()->GetDocument()->setRootScroller(container, ASSERT_NO_EXCEPTION);
+  SetAndSelectRootScroller(*MainFrame()->GetDocument(), container);
 
   ScrollableArea* container_scroller =
       static_cast<PaintInvalidationCapableScrollableArea*>(
@@ -1088,9 +1071,7 @@ TEST_F(RootScrollerTest, RotationAnchoring) {
 
     Element* container =
         MainFrame()->GetDocument()->getElementById("container");
-    NonThrowableExceptionState non_throw;
-    MainFrame()->GetDocument()->setRootScroller(container, non_throw);
-    MainFrameView()->UpdateAllLifecyclePhases();
+    SetAndSelectRootScroller(*MainFrame()->GetDocument(), container);
 
     container_scroller = static_cast<PaintInvalidationCapableScrollableArea*>(
         ToLayoutBox(container->GetLayoutObject())->GetScrollableArea());
@@ -1173,9 +1154,8 @@ TEST_F(RootScrollerTest, IFrameRootScrollerGetsNonFixedLayoutSize) {
   // Make the iframe the rootscroller. This should cause the iframe's layout
   // size to be manually controlled.
   {
-    document->setRootScroller(iframe);
+    SetAndSelectRootScroller(*document, iframe);
     EXPECT_FALSE(iframe_view->LayoutSizeFixedToFrameSize());
-    MainFrameView()->UpdateAllLifecyclePhases();
     EXPECT_EQ(IntSize(400, 400), iframe_view->GetLayoutSize());
     EXPECT_EQ(IntSize(400, 400), iframe_view->Size());
   }
@@ -1216,9 +1196,8 @@ TEST_F(RootScrollerTest, IFrameRootScrollerGetsNonFixedLayoutSize) {
     MainFrameView()->UpdateAllLifecyclePhases();
     EXPECT_EQ(IntSize(400, 400), iframe_view->GetLayoutSize());
     EXPECT_EQ(IntSize(400, 450), iframe_view->Size());
-    document->setRootScroller(nullptr);
+    SetAndSelectRootScroller(*document, nullptr);
     EXPECT_TRUE(iframe_view->LayoutSizeFixedToFrameSize());
-    MainFrameView()->UpdateAllLifecyclePhases();
     EXPECT_EQ(IntSize(400, 400), iframe_view->GetLayoutSize());
     EXPECT_EQ(IntSize(400, 400), iframe_view->Size());
   }
@@ -1234,8 +1213,7 @@ TEST_F(RootScrollerTest, ImmediateUpdateOfLayoutViewport) {
   HTMLFrameOwnerElement* iframe = ToHTMLFrameOwnerElement(
       MainFrame()->GetDocument()->getElementById("iframe"));
 
-  document->setRootScroller(iframe);
-  MainFrameView()->UpdateAllLifecyclePhases();
+  SetAndSelectRootScroller(*document, iframe);
 
   RootScrollerController& main_controller =
       MainFrame()->GetDocument()->GetRootScrollerController();
@@ -1265,6 +1243,94 @@ class RootScrollerSimTest : public SimTest {
  private:
   ScopedImplicitRootScrollerForTest implicit_root_scroller_for_test_;
 };
+
+// Test that setting a root scroller causes us to request a begin frame.
+// However, until a frame is produced, the effective root scroller should
+// not change.
+TEST_F(RootScrollerSimTest, SetCausesNeedsBeginFrame) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            body, html {
+              margin: 0;
+              width: 100%;
+              height: 100%;
+            }
+            #container {
+              width: 100%;
+              height: 100%;
+              overflow: scroll;
+            }
+          </style>
+          <div id="container"></div>
+      )HTML");
+  Compositor().BeginFrame();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+
+  Element* container = GetDocument().getElementById("container");
+  GetDocument().setRootScroller(container);
+
+  // Setting the root scroller should cause us to need a new frame but we
+  // shouldn't have set the effective yet.
+  EXPECT_TRUE(Compositor().NeedsBeginFrame());
+  EXPECT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  Compositor().BeginFrame();
+
+  EXPECT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+}
+
+// Test that layout from outside a lifecycle wont select a new effective root
+// scroller.
+TEST_F(RootScrollerSimTest, NonLifecycleLayoutDoesntCauseReselection) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            body, html {
+              margin: 0;
+              width: 100%;
+              height: 100%;
+            }
+            #container {
+              width: 100%;
+              height: 100%;
+              overflow: scroll;
+            }
+          </style>
+          <div id="container"></div>
+      )HTML");
+  Element* container = GetDocument().getElementById("container");
+  GetDocument().setRootScroller(container);
+  Compositor().BeginFrame();
+  ASSERT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  container->style()->setProperty(&GetDocument(), "width", "95%", String(),
+                                  ASSERT_NO_EXCEPTION);
+
+  ASSERT_TRUE(Compositor().NeedsBeginFrame());
+
+  // Cause a layout.
+  container->scrollTop();
+  ASSERT_TRUE(Compositor().NeedsBeginFrame());
+
+  // Shouldn't yet cause a change since we haven't done a full lifecycle update.
+  EXPECT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  Compositor().BeginFrame();
+
+  EXPECT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+}
 
 // Tests that we don't explode when a layout occurs and the effective
 // rootScroller no longer has a ContentFrame(). We setup the frame tree such
@@ -1325,10 +1391,10 @@ TEST_F(RootScrollerSimTest, RecomputeEffectiveWithNoContentFrame) {
           </script>
       )HTML");
 
-  Compositor().BeginFrame();
-
   Element* container = GetDocument().getElementById("first");
   GetDocument().GetRootScrollerController().Set(container);
+  Compositor().BeginFrame();
+
   ASSERT_EQ(container,
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
 
@@ -1361,10 +1427,11 @@ TEST_F(RootScrollerSimTest, UsePaddingBoxForViewportFillingCondition) {
           </style>
           <div id="container"></div>
       )HTML");
-  Compositor().BeginFrame();
 
   Element* container = GetDocument().getElementById("container");
   GetDocument().setRootScroller(container);
+  Compositor().BeginFrame();
+
   ASSERT_EQ(container,
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
 
@@ -1876,6 +1943,131 @@ TEST_F(ImplicitRootScrollerSimTest, ImplicitRootScrollerIframe) {
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
 }
 
+// Test that when a valid iframe becomes loaded and thus should be promoted, it
+// becomes the root scroller, without needing an intervening layout.
+TEST_F(ImplicitRootScrollerSimTest, IframeLoadedWithoutLayout) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  SimRequest child_request("https://example.com/child.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            iframe {
+              width: 100%;
+              height: 100%;
+              border: 0;
+            }
+          </style>
+          <iframe id="container" src="child.html">
+          </iframe>
+      )HTML");
+  Compositor().BeginFrame();
+  ASSERT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "The iframe isn't yet scrollable.";
+
+  // Ensure that it gets promoted when the new FrameView is connected even
+  // though there's no layout in the parent to trigger it.
+  child_request.Complete(R"HTML(
+        <!DOCTYPE html>
+        <style>
+          body {
+            height: 1000px;
+          }
+        </style>
+  )HTML");
+
+  Compositor().BeginFrame();
+  EXPECT_EQ(GetDocument().getElementById("container"),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "Once loaded, the iframe should be promoted.";
+}
+
+// Ensure that navigating an iframe while it is the effective root scroller,
+// causes it to remain the effective root scroller after the navigation (to a
+// page where it remains valid) is finished.
+TEST_F(ImplicitRootScrollerSimTest, NavigateToValidRemainsRootScroller) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  SimRequest child_request("https://example.com/child.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            iframe {
+              width: 100%;
+              height: 100%;
+              border: 0;
+            }
+          </style>
+          <iframe id="container" src="child.html">
+          </iframe>
+      )HTML");
+  child_request.Complete(R"HTML(
+        <!DOCTYPE html>
+        <style>
+          body {
+            height: 1000px;
+          }
+        </style>
+  )HTML");
+  Compositor().BeginFrame();
+  ASSERT_EQ(GetDocument().getElementById("container"),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // Navigate the child frame. When it's loaded, the FrameView should swap.
+  // Ensure that we remain the root scroller even though there's no layout in
+  // the parent.
+  SimRequest child_request2("https://example.com/child-next.html", "text/html");
+  WebURLRequest request(KURL("https://example.com/child-next.html"));
+  WebView().MainFrameImpl()->FirstChild()->ToWebLocalFrame()->LoadRequest(
+      request);
+
+  child_request2.Start();
+  child_request2.Write(R"HTML(
+        <!DOCTYPE html>
+  )HTML");
+  Compositor().BeginFrame();
+  EXPECT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "The iframe should be demoted once a navigation is committed";
+
+  // Ensure that it gets promoted when the new FrameView is connected even
+  // though there's no layout in the parent to trigger it.
+  child_request2.Write(R"HTML(
+        <style>
+          body {
+            height: 2000px;
+          }
+        </style>
+  )HTML");
+  child_request2.Finish();
+  Compositor().BeginFrame();
+
+  EXPECT_EQ(GetDocument().getElementById("container"),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "Once loaded, the iframe should be promoted again.";
+}
+
 // Test that a root scroller is considered to fill the viewport at both the URL
 // bar shown and URL bar hidden height.
 TEST_F(ImplicitRootScrollerSimTest,
@@ -2047,6 +2239,64 @@ TEST_F(ImplicitRootScrollerSimTest, ContinuallyReevaluateImplicitPromotion) {
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
 }
 
+// Tests that implicit mode correctly recognizes when an iframe becomes
+// scrollable.
+TEST_F(ImplicitRootScrollerSimTest, IframeScrollingAffectsPromotion) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            iframe {
+              width: 100%;
+              height: 100%;
+              border: 0;
+            }
+          </style>
+          <iframe id="container"
+                  srcdoc="<!DOCTYPE html><style>html {overflow: hidden; height: 300%;}</style>">
+          </iframe>
+      )HTML");
+
+  // srcdoc iframe loads via posted tasks.
+  RunPendingTasks();
+  Compositor().BeginFrame();
+
+  HTMLFrameOwnerElement* container =
+      ToHTMLFrameOwnerElement(GetDocument().getElementById("container"));
+  Element* inner_html_element = container->contentDocument()->documentElement();
+
+  // Shouldn't be promoted since it's not scrollable.
+  EXPECT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // Allows scrolling now so promote.
+  inner_html_element->style()->setProperty(container->contentDocument(),
+                                           "overflow", "auto", String(),
+                                           ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // Demote again.
+  inner_html_element->style()->setProperty(container->contentDocument(),
+                                           "overflow", "hidden", String(),
+                                           ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+}
+
 // Loads with a larger than the ICB (but otherwise valid) implicit root
 // scrolling iframe. When the iframe is promoted (which happens at the end of
 // layout) its layout size is changed which makes it easy to violate lifecycle
@@ -2171,7 +2421,7 @@ TEST_F(RootScrollerHitTest, DISABLED_HitTestInAreaRevealedByURLBarSameLayer) {
   Document* document = MainFrame()->GetDocument();
   Element* container = document->getElementById("container");
   Element* target = document->getElementById("target");
-  document->setRootScroller(container);
+  SetAndSelectRootScroller(*document, container);
 
   // This test checks hit testing while the target is in the same PaintLayer as
   // the root scroller.
@@ -2221,7 +2471,7 @@ TEST_F(RootScrollerHitTest, HitTestInAreaRevealedByURLBarDifferentLayer) {
   Document* document = MainFrame()->GetDocument();
   Element* container = document->getElementById("container");
   Element* target = document->getElementById("target");
-  document->setRootScroller(container);
+  SetAndSelectRootScroller(*document, container);
 
   // Ensure the target and container weren't put into the same layer.
   ASSERT_NE(ToLayoutBox(target->GetLayoutObject())->EnclosingLayer(),

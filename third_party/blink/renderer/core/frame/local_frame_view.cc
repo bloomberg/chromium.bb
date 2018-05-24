@@ -3199,6 +3199,23 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
   UpdateStyleAndLayoutIfNeededRecursive();
   DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
 
+  frame_->GetDocument()
+      ->GetRootScrollerController()
+      .PerformRootScrollerSelection();
+
+  // PerformRootScrollerSelection can dirty layout if an effective root
+  // scroller is changed so make sure we get back to LayoutClean.
+  if (RuntimeEnabledFeatures::ImplicitRootScrollerEnabled() ||
+      RuntimeEnabledFeatures::SetRootScrollerEnabled()) {
+    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+      if (frame_view.NeedsLayout())
+        frame_view.UpdateLayout();
+
+      DCHECK(frame_view.Lifecycle().GetState() >=
+             DocumentLifecycle::kLayoutClean);
+    });
+  }
+
   if (target_state == DocumentLifecycle::kLayoutClean) {
     UpdateViewportIntersectionsForSubtree(target_state);
     return Lifecycle().GetState() == target_state;

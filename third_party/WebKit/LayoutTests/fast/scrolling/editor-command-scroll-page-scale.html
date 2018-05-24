@@ -5,6 +5,9 @@
   var pageHeight = 2000;
   var pageWidth = 2000;
 
+  if (testRunner)
+    testRunner.waitUntilDone();
+
   function reset()
   {
     window.scrollTo(0, 0);
@@ -73,10 +76,17 @@
       debug('');
       debug('Testing Line Scrolling:');
       testScroll('ScrollLineDown', 'ScrollLineUp');
+
+      if (testRunner)
+        testRunner.notifyDone();
     }
   }
 
-  addEventListener('load', runTest);
+  // Run after rAF to ensure the viewports are registered which happens after a
+  // full lifecycle update (and rAF comes before lifecycle update so X2).
+  addEventListener('load', () => {
+    requestAnimationFrame(() => { requestAnimationFrame(runTest); } );
+  });
 </script>
 <style>
   ::-webkit-scrollbar {

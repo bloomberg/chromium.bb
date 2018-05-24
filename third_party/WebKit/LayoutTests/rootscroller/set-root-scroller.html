@@ -53,17 +53,30 @@
 
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="resources/rootscroller-util.js"></script>
 
 <script>
   var parentScroller = document.querySelector('#parent');
   var container = document.querySelector('#container');
   var spanner = document.querySelector('#spanner');
 
-  test(function() {
+  async function setRootScrollerAndCheckEffective(element, expected_effective) {
+    document.rootScroller = element;
+    // Root Scroller selection happens in a lifecycle update. However, rAF is
+    // executed before the lifecycle in a BeginMainFrame so we need to wait for
+    // a second rAF before the we can check the effective root scrollers.
+    await nFrames(2);
+    assert_equals(window.internals.effectiveRootScroller(document),
+                  expected_effective,
+                  "Unexpected effective root scroller");
+
+  }
+
+  test(async function() {
       assert_false(typeof document.rootScroller === 'undefined');
   }, 'setRootScroller API enabled');
 
-  test(function() {
+  test(async function() {
       // Setting the container object should succeed.
       assert_equals(document.rootScroller, null);
       document.rootScroller = container;
@@ -72,17 +85,17 @@
       assert_equals(document.rootScroller, null);
   }, 'Setter and getter on a valid element works');
 
-  test(function() {
+  test(async function() {
       // Trying to set the <span> should succeed even though it's not a valid
       // scroller.
-      document.rootScroller = spanner;
+      setRootScrollerAndCheckEffective(spanner, document);
       assert_equals(document.rootScroller, spanner);
   }, 'Can set a non-scrolling element as the rootScroller');
 
-  test(function() {
+  test(async function() {
       // Scroll the container <div> past the end. The scrolls should not chain
       // past the rootScroller to the parentScroller element.
-      document.rootScroller = container;
+      setRootScrollerAndCheckEffective(container, container);
       if (typeof eventSender !== 'undefined') {
           eventSender.gestureScrollBegin(500, 500);
           eventSender.gestureScrollUpdate(-300, -300);
@@ -116,8 +129,8 @@
       }
   }, "Scrolls don't chain past root scroller element");
 
-  test(function() {
-      document.rootScroller = container;
+  test(async function() {
+      setRootScrollerAndCheckEffective(container, container);
       container.scrollTop = 999;
       container.scrollLeft = 998;
 
@@ -133,12 +146,18 @@
 
   }, "document.scrollingElement and window scroll API reflect rootScroller offsets");
 
-  test(function() {
+  test(async function() {
       // Making the current rootScroller an invalid scroller (by making it not
       // fill the viewport) should fallback to the default element, the
       // documentElement, but the rootScroller property should remain the same.
-      document.rootScroller = container;
+      setRootScrollerAndCheckEffective(container, container);
       container.style.width = "95%";
+
+      // We need a compositing update since root scroller selection happens as
+      // part of a full lifecycle update.
+      window.internals.forceCompositingUpdate(document);
+      assert_equals(window.internals.effectiveRootScroller(document), document,
+          "Effective root scroller should be reset after width is modified");
       assert_equals(document.rootScroller, container);
 
       // Reset parentScroller's offsets, make container fully scrolled.
@@ -147,8 +166,9 @@
       container.scrollTop = 10000;
       container.scrollLeft = 10000;
 
-      // Now scrolling over the container should scroll the scrollingElement
-      // since the rootElement is invalid (doesn't fill the viewport).
+      // Now scrolling over the container should bubble the scroll up to the
+      // scrollingElement since the rootElement is invalid (doesn't fill the
+      // viewport).
       if (typeof eventSender !== 'undefined') {
           eventSender.gestureScrollBegin(500, 500);
           eventSender.gestureScrollUpdate(-300, -300);

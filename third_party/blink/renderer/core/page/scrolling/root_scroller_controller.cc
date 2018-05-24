@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 
 namespace blink {
@@ -106,8 +107,7 @@ RootScrollerController* RootScrollerController::Create(Document& document) {
 RootScrollerController::RootScrollerController(Document& document)
     : document_(&document),
       effective_root_scroller_(&document),
-      document_has_document_element_(false),
-      needs_apply_properties_(false) {}
+      document_has_document_element_(false) {}
 
 void RootScrollerController::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
@@ -122,7 +122,9 @@ void RootScrollerController::Set(Element* new_root_scroller) {
     return;
 
   root_scroller_ = new_root_scroller;
-  RecomputeEffectiveRootScroller();
+
+  if (LocalFrame* frame = document_->GetFrame())
+    frame->ScheduleVisualUpdateUnlessThrottled();
 }
 
 Element* RootScrollerController::Get() const {
@@ -132,24 +134,6 @@ Element* RootScrollerController::Get() const {
 Node& RootScrollerController::EffectiveRootScroller() const {
   DCHECK(effective_root_scroller_);
   return *effective_root_scroller_;
-}
-
-void RootScrollerController::DidUpdateLayout() {
-  RecomputeEffectiveRootScroller();
-}
-
-void RootScrollerController::DidUpdateStyle() {
-  // Only implicit root scroller evaluation depends on properties that don't
-  // also affect layout.
-  if (!RuntimeEnabledFeatures::ImplicitRootScrollerEnabled())
-    return;
-
-  // If we need layout we'll recompute everything after that so don't do
-  // anything here.
-  if (!document_->View() || document_->View()->NeedsLayout())
-    return;
-
-  RecomputeEffectiveRootScroller();
 }
 
 void RootScrollerController::DidResizeFrameView() {
@@ -173,12 +157,16 @@ void RootScrollerController::DidUpdateIFrameFrameView(
   if (&element != root_scroller_.Get() && &element != implicit_root_scroller_)
     return;
 
-  // Reevaluate whether the iframe should be the effective root scroller (e.g.
-  // demote it if it became remote). Ensure properties are re-applied even if
-  // the effective root scroller doesn't change since the FrameView might have
-  // been swapped out.
-  needs_apply_properties_ = true;
-  RecomputeEffectiveRootScroller();
+  // Ensure properties are re-applied even if the effective root scroller
+  // doesn't change since the FrameView might have been swapped out and the new
+  // one should have the properties reapplied.
+  if (element.OwnedEmbeddedContentView())
+    ApplyRootScrollerProperties(element);
+
+  // Schedule a frame so we can reevaluate whether the iframe should be the
+  // effective root scroller (e.g.  demote it if it became remote).
+  if (LocalFrame* frame = document_->GetFrame())
+    frame->ScheduleVisualUpdateUnlessThrottled();
 }
 
 void RootScrollerController::RecomputeEffectiveRootScroller() {
@@ -206,12 +194,8 @@ void RootScrollerController::RecomputeEffectiveRootScroller() {
   document_has_document_element_ = document_->documentElement();
 
   if (old_has_document_element || !document_has_document_element_) {
-    if (effective_root_scroller_ == new_effective_root_scroller) {
-      if (needs_apply_properties_)
-        ApplyRootScrollerProperties(*effective_root_scroller_);
-
+    if (effective_root_scroller_ == new_effective_root_scroller)
       return;
-    }
   }
 
   Node* old_effective_root_scroller = effective_root_scroller_;
@@ -308,9 +292,6 @@ bool RootScrollerController::IsValidImplicit(const Element& element) const {
 void RootScrollerController::ApplyRootScrollerProperties(Node& node) {
   DCHECK(document_->GetFrame());
   DCHECK(document_->GetFrame()->View());
-
-  if (&node == effective_root_scroller_)
-    needs_apply_properties_ = false;
 
   // If the node has been removed from the Document, we shouldn't be touching
   // anything related to the Frame- or Layout- hierarchies.
@@ -444,6 +425,45 @@ void RootScrollerController::ConsiderForImplicit(Node& node) {
     return;
 
   implicit_candidates_.insert(&ToElement(node));
+}
+
+template <typename Function>
+void RootScrollerController::ForAllNonThrottledLocalControllers(
+    const Function& function) {
+  if (!document_->View() || !document_->GetFrame())
+    return;
+
+  LocalFrameView* frame_view = document_->View();
+  if (frame_view->ShouldThrottleRendering())
+    return;
+
+  LocalFrame* frame = document_->GetFrame();
+  for (Frame* child = frame->Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    if (!child->IsLocalFrame())
+      continue;
+    if (Document* child_document = ToLocalFrame(child)->GetDocument()) {
+      child_document->GetRootScrollerController()
+          .ForAllNonThrottledLocalControllers(function);
+    }
+  }
+
+  function(*this);
+}
+
+void RootScrollerController::PerformRootScrollerSelection() {
+  TRACE_EVENT0("blink", "RootScrollerController::PerformRootScrollerSelection");
+
+  // Printing can cause a lifecycle update on a detached frame. In that case,
+  // don't make any changes.
+  if (!document_->GetFrame() || !document_->GetFrame()->IsLocalRoot())
+    return;
+
+  DCHECK(document_->Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
+
+  ForAllNonThrottledLocalControllers([](RootScrollerController& controller) {
+    controller.RecomputeEffectiveRootScroller();
+  });
 }
 
 }  // namespace blink
