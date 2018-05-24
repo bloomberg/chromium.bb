@@ -47,7 +47,7 @@ class GLContext;
 namespace gpu {
 class GpuDriverBugWorkarounds;
 struct GpuPreferences;
-}
+}  // namespace gpu
 
 typedef HRESULT(WINAPI* CreateDXGIDeviceManager)(
     UINT* reset_token,
@@ -57,6 +57,7 @@ namespace media {
 class DXVAPictureBuffer;
 class EGLStreamCopyPictureBuffer;
 class EGLStreamPictureBuffer;
+class MediaLog;
 class PbufferPictureBuffer;
 
 class ConfigChangeDetector {
@@ -94,7 +95,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb,
       const gpu::GpuDriverBugWorkarounds& workarounds,
-      const gpu::GpuPreferences& gpu_preferences);
+      const gpu::GpuPreferences& gpu_preferences,
+      MediaLog* media_log);
   ~DXVAVideoDecodeAccelerator() override;
 
   // VideoDecodeAccelerator implementation.
@@ -480,6 +482,9 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Callback to set the correct gl context.
   MakeGLContextCurrentCallback make_context_current_cb_;
   BindGLImageCallback bind_image_cb_;
+
+  // This may be null, e.g. when not using MojoVideoDecoder.
+  MediaLog* const media_log_;
 
   // Which codec we are decoding with hardware acceleration.
   VideoCodec codec_;

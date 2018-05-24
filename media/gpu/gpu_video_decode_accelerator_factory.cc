@@ -178,7 +178,7 @@ GpuVideoDecodeAcceleratorFactory::CreateDXVAVDA(
   DVLOG(0) << "Initializing DXVA HW decoder for windows.";
   decoder.reset(new DXVAVideoDecodeAccelerator(
       get_gl_context_cb_, make_context_current_cb_, bind_image_cb_, workarounds,
-      gpu_preferences));
+      gpu_preferences, media_log));
   return decoder;
 }
 #endif

@@ -46,6 +46,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/base/win/mf_initializer.h"
@@ -477,9 +478,7 @@ class H264ConfigChangeDetector : public ConfigChangeDetector {
 };
 
 H264ConfigChangeDetector::H264ConfigChangeDetector()
-    : last_sps_id_(0),
-      last_pps_id_(0),
-      pending_config_changed_(false) {}
+    : last_sps_id_(0), last_pps_id_(0), pending_config_changed_(false) {}
 
 H264ConfigChangeDetector::~H264ConfigChangeDetector() {}
 
@@ -700,7 +699,8 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
     const gpu::GpuDriverBugWorkarounds& workarounds,
-    const gpu::GpuPreferences& gpu_preferences)
+    const gpu::GpuPreferences& gpu_preferences,
+    MediaLog* media_log)
     : client_(NULL),
       dev_manager_reset_token_(0),
       dx11_dev_manager_reset_token_(0),
@@ -712,6 +712,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       get_gl_context_cb_(get_gl_context_cb),
       make_context_current_cb_(make_context_current_cb),
       bind_image_cb_(bind_image_cb),
+      media_log_(media_log),
       codec_(kUnknownVideoCodec),
       decoder_thread_("DXVAVideoDecoderThread"),
       pending_flush_(false),
@@ -892,6 +893,9 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
   if (d3d9_.Get())
     return true;
 
+  if (media_log_)
+    MEDIA_LOG(INFO, media_log_) << __func__ << ": Creating D3D9 device.";
+
   HRESULT hr = E_FAIL;
 
   hr = Direct3DCreate9Ex(D3D_SDK_VERSION, d3d9_.GetAddressOf());
@@ -1039,6 +1043,10 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   // The device may exist if the last state was a config change.
   if (D3D11Device())
     return true;
+
+  if (media_log_)
+    MEDIA_LOG(INFO, media_log_) << __func__ << ": Creating D3D11 device.";
+
   HRESULT hr = create_dxgi_device_manager_(
       &dx11_dev_manager_reset_token_, d3d11_device_manager_.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "MFCreateDXGIDeviceManager failed", false);
@@ -1629,8 +1637,8 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
     RETURN_ON_FAILURE(false, "Unsupported codec.", false);
   }
 
-  HRESULT hr = CreateCOMObjectFromDll(decoder_dll, clsid,
-                                      IID_PPV_ARGS(&decoder_));
+  HRESULT hr =
+      CreateCOMObjectFromDll(decoder_dll, clsid, IID_PPV_ARGS(&decoder_));
   RETURN_ON_HR_FAILURE(hr, "Failed to create decoder instance", false);
 
   RETURN_ON_FAILURE(CheckDecoderDxvaSupport(),
@@ -1757,6 +1765,8 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
     UINT32 dx11_aware = 0;
     attributes->GetUINT32(MF_SA_D3D11_AWARE, &dx11_aware);
     use_dx11_ = !!dx11_aware;
+    if (media_log_)
+      MEDIA_LOG(INFO, media_log_) << __func__ << ": Using DX11? " << use_dx11_;
   }
 
   use_keyed_mutex_ =
