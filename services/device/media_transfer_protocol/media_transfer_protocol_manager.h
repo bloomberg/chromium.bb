@@ -40,13 +40,6 @@ class MediaTransferProtocolManager {
   using GetStoragesCallback =
       base::OnceCallback<void(const std::vector<std::string>& storages)>;
 
-  // A callback to handle the result of GetStorageInfoFromDevice.
-  // The first argument is the returned storage info.
-  // The second argument is true if there was an error.
-  using GetStorageInfoFromDeviceCallback =
-      base::Callback<void(const mojom::MtpStorageInfo& storage_info,
-                          const bool error)>;
-
   // A callback to handle the result of OpenStorage.
   // The first argument is the returned handle.
   // The second argument is true if there was an error.
@@ -121,7 +114,7 @@ class MediaTransferProtocolManager {
   // Read the metadata of |storage_name| from device and runs |callback|.
   virtual void GetStorageInfoFromDevice(
       const std::string& storage_name,
-      const GetStorageInfoFromDeviceCallback& callback) = 0;
+      mojom::MtpManager::GetStorageInfoFromDeviceCallback callback) = 0;
 
   // Opens |storage_name| in |mode| and runs |callback|.
   virtual void OpenStorage(const std::string& storage_name,
