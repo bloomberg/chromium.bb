@@ -55,7 +55,9 @@
 - (void)updateIdentityPickerViewWithUserFullName:(NSString*)fullName
                                            email:(NSString*)email;
 
-// Updates the IdentityPickerView avatar.
+// Updates the IdentityPickerView avatar. If the identity picker view is hidden,
+// -[UnifiedConsentViewController updateIdentityPickerViewWithUserFullName:
+//  email:] has to be called before.
 - (void)updateIdentityPickerViewWithAvatar:(UIImage*)avatar;
 
 // Hides the IdentityPickerView.
