@@ -21,6 +21,7 @@ const CGFloat kExpandAnimationDuration = 0.1;
 const CGFloat kCollapseAnimationDuration = 0.05;
 const CGFloat kShadowHeight = 10;
 const CGFloat kiPadVerticalOffset = 3;
+const CGFloat kRefreshVerticalOffset = 6;
 NS_INLINE CGFloat BottomPadding() {
   return IsIPadIdiom() ? kShadowHeight : 0;
 }
@@ -141,7 +142,11 @@ NS_INLINE CGFloat BottomPadding() {
       [NamedGuide guideWithName:kOmniboxGuide view:popup];
   NSLayoutConstraint* topConstraint =
       [popup.topAnchor constraintEqualToAnchor:topLayout.bottomAnchor];
-  if (IsIPadIdiom()) {
+  if (IsUIRefreshPhase1Enabled()) {
+    // TODO(crbug.com/846337) Remove this workaround and clean up popup
+    // presentation.
+    topConstraint.constant = kRefreshVerticalOffset;
+  } else if (IsIPadIdiom()) {
     topConstraint.constant = kiPadVerticalOffset;
   }
 
