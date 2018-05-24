@@ -1614,15 +1614,16 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedo) {
 
   // Perform an undo.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, kCtrlOrCmdMask));
-  EXPECT_FALSE(omnibox_view->IsSelectAll());
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
 
-  // The cursor should be at the end.
+  // The text should be selected.
   size_t start, end;
   omnibox_view->GetSelectionBounds(&start, &end);
   EXPECT_EQ(old_text.size(), start);
-  EXPECT_EQ(old_text.size(), end);
+  EXPECT_EQ(0U, end);
 
   // Delete three characters; "about:bl" should not trigger inline autocomplete.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, 0));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));

@@ -1386,7 +1386,9 @@ TEST_F(TextfieldModelTest, UndoRedo_CutCopyPasteTest) {
   EXPECT_EQ(1U, model.GetCursorPosition());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCDE", model.text());
-  EXPECT_EQ(3U, model.GetCursorPosition());
+  EXPECT_EQ(1U, model.GetCursorPosition());
+  EXPECT_TRUE(model.render_text()->selection().EqualsIgnoringDirection(
+      gfx::Range(1, 3)));
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("", model.text());
   EXPECT_EQ(0U, model.GetCursorPosition());
@@ -1417,7 +1419,9 @@ TEST_F(TextfieldModelTest, UndoRedo_CutCopyPasteTest) {
   EXPECT_EQ(1U, model.GetCursorPosition());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCDE", model.text());
-  EXPECT_EQ(3U, model.GetCursorPosition());
+  EXPECT_EQ(1U, model.GetCursorPosition());
+  EXPECT_TRUE(model.render_text()->selection().EqualsIgnoringDirection(
+      gfx::Range(1, 3)));
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("", model.text());
   EXPECT_EQ(0U, model.GetCursorPosition());
@@ -1459,8 +1463,9 @@ TEST_F(TextfieldModelTest, UndoRedo_CutCopyPasteTest) {
   // An empty cut shouldn't create an edit.
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCBCBCDE", model.text());
-  EXPECT_EQ(3U, model.GetCursorPosition());
-
+  EXPECT_EQ(1U, model.GetCursorPosition());
+  EXPECT_TRUE(model.render_text()->selection().EqualsIgnoringDirection(
+      gfx::Range(1, 3)));
   // Test Copy.
   ResetModel(&model);
   model.SetText(base::ASCIIToUTF16("12345"));
@@ -1530,6 +1535,47 @@ TEST_F(TextfieldModelTest, UndoRedo_CursorTest) {
   EXPECT_STR_EQ("ab", model.text());
   EXPECT_EQ(2U, model.GetCursorPosition());
   EXPECT_FALSE(model.Redo());
+}
+
+TEST_F(TextfieldModelTest, Undo_SelectionTest) {
+  gfx::Range range = gfx::Range(2, 4);
+  TextfieldModel model(nullptr);
+  model.SetText(base::ASCIIToUTF16("abcdef"));
+  model.SelectRange(range);
+  EXPECT_EQ(model.render_text()->selection(), range);
+
+  // Deleting the selected text should change the text and the range.
+  EXPECT_TRUE(model.Backspace());
+  EXPECT_STR_EQ("abef", model.text());
+  EXPECT_EQ(model.render_text()->selection(), gfx::Range(2, 2));
+
+  // Undoing the deletion should restore the former range.
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("abcdef", model.text());
+  EXPECT_EQ(model.render_text()->selection(), range);
+
+  // When range.start = range.end, nothing is selected and
+  // range.start = range.end = cursor position
+  model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, gfx::SELECTION_NONE);
+  EXPECT_EQ(model.render_text()->selection(), gfx::Range(2, 2));
+
+  // Deleting a single character should change the text and cursor location.
+  EXPECT_TRUE(model.Backspace());
+  EXPECT_STR_EQ("acdef", model.text());
+  EXPECT_EQ(model.render_text()->selection(), gfx::Range(1, 1));
+
+  // Undoing the deletion should restore the former range.
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("abcdef", model.text());
+  EXPECT_EQ(model.render_text()->selection(), gfx::Range(2, 2));
+
+  MoveCursorTo(model, model.text().length());
+  EXPECT_TRUE(model.Backspace());
+  model.SelectRange(gfx::Range(1, 3));
+  model.SetText(base::ASCIIToUTF16("[set]"));
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("abcde", model.text());
+  EXPECT_EQ(model.render_text()->selection(), gfx::Range(1, 3));
 }
 
 void RunInsertReplaceTest(TextfieldModel& model) {
