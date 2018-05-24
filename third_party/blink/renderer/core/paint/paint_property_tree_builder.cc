@@ -1321,17 +1321,17 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
     OnClear(properties_->ClearCssClipFixedPosition());
 }
 
-static LayoutRect BorderBoxRectInPaginationContainer(
+static LayoutRect BoundingRectInPaginationContainer(
     const LayoutBox& box,
+    const LayoutRect& local_bounding_rect,
     const PaintLayer& enclosing_pagination_layer) {
-  auto rect = box.BorderBoxRect();
   TransformState transform_state(TransformState::kApplyTransformDirection,
-                                 FloatPoint(rect.Location()));
+                                 FloatPoint(local_bounding_rect.Location()));
   box.MapLocalToAncestor(&enclosing_pagination_layer.GetLayoutObject(),
                          transform_state, kApplyContainerFlip);
   transform_state.Flatten();
   return LayoutRect(LayoutPoint(transform_state.LastPlanarPoint()),
-                    rect.Size());
+                    local_bounding_rect.Size());
 }
 
 static LayoutRect BoundingBoxInPaginationContainer(
@@ -1340,9 +1340,21 @@ static LayoutRect BoundingBoxInPaginationContainer(
     bool& should_repeat_in_fragments) {
   // Non-boxes that have no layer paint in the space of their containing block.
   if (!object.IsBox() && !object.HasLayer()) {
-    return BoundingBoxInPaginationContainer(*object.ContainingBlock(),
-                                            enclosing_pagination_layer,
-                                            should_repeat_in_fragments);
+    const LayoutBox& containining_block = *object.ContainingBlock();
+    should_repeat_in_fragments = false;
+    LayoutRect bounds_rect;
+    // For non-SVG we can get a more accurate result
+    // with LocalVisualRect, instead of falling back to the bounds of the
+    // enclosing block.
+    if (!object.IsSVG()) {
+      bounds_rect = object.LocalVisualRect();
+      containining_block.FlipForWritingMode(bounds_rect);
+    } else {
+      bounds_rect = LayoutRect(SVGLayoutSupport::LocalVisualRect(object));
+    }
+
+    return BoundingRectInPaginationContainer(containining_block, bounds_rect,
+                                             enclosing_pagination_layer);
   }
 
   should_repeat_in_fragments = false;
@@ -1360,8 +1372,9 @@ static LayoutRect BoundingBoxInPaginationContainer(
 
   // Compute the bounding box without transforms.
   // The object is guaranteed to be a box due to the logic above.
-  auto bounding_box = BorderBoxRectInPaginationContainer(
-      ToLayoutBox(object), enclosing_pagination_layer);
+  const LayoutBox& box = ToLayoutBox(object);
+  auto bounding_box = BoundingRectInPaginationContainer(
+      box, box.BorderBoxRect(), enclosing_pagination_layer);
 
   if (!object.IsTableSection())
     return bounding_box;
@@ -1377,8 +1390,9 @@ static LayoutRect BoundingBoxInPaginationContainer(
     // with all fragments containing the original and repeatings, i.e. to
     // intersect any fragment containing any row.
     if (const auto* bottom_section = table.BottomNonEmptySection()) {
-      bounding_box.Unite(BorderBoxRectInPaginationContainer(
-          *bottom_section, enclosing_pagination_layer));
+      bounding_box.Unite(BoundingRectInPaginationContainer(
+          *bottom_section, bottom_section->BorderBoxRect(),
+          enclosing_pagination_layer));
     }
     return bounding_box;
   }
@@ -1388,8 +1402,9 @@ static LayoutRect BoundingBoxInPaginationContainer(
   // fragment containing any row first.
   const auto* top_section = table.TopNonEmptySection();
   if (top_section) {
-    bounding_box.Unite(BorderBoxRectInPaginationContainer(
-        *top_section, enclosing_pagination_layer));
+    bounding_box.Unite(BoundingRectInPaginationContainer(
+        *top_section, top_section->BorderBoxRect(),
+        enclosing_pagination_layer));
     // However, the first fragment intersecting the expanded bounding_box may
     // not have enough space to contain the repeating footer. Exclude the
     // total height of the first row and repeating footers from the top of

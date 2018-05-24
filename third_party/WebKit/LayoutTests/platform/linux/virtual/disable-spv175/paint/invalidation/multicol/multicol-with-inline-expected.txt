@@ -31,42 +31,6 @@
       "reason": "style change"
     },
     {
-      "object": "LayoutInline SPAN id='target'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutInline SPAN id='target'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutInline SPAN id='target'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "style change"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "style change"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "style change"
     },
