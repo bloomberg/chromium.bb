@@ -331,14 +331,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("openFileDialogCancelDrive"),
                       TestCase("openFileDialogEscapeDrive")));
 
-// Enabled in RELEASE/DEBUG/MSAN https://crbug.com/845087
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
-#else
-#define MAYBE_CopyBetweenWindows CopyBetweenWindows
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_CopyBetweenWindows, /* copy_between_windows.js */
+    CopyBetweenWindows, /* copy_between_windows.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("copyBetweenWindowsLocalToDrive"),
                       TestCase("copyBetweenWindowsLocalToUsb"),
