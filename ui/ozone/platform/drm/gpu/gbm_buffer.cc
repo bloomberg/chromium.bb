@@ -40,6 +40,7 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      const std::vector<gfx::NativePixmapPlane>&& planes)
     : drm_(gbm),
       bo_(bo),
+      format_modifier_(modifier),
       format_(format),
       flags_(flags),
       fds_(std::move(fds)),
@@ -50,7 +51,6 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
     framebuffer_pixel_format_ = format;
     opaque_framebuffer_pixel_format_ = GetFourCCFormatForOpaqueFramebuffer(
         GetBufferFormatFromFourCCFormat(format));
-    format_modifier_ = modifier;
 
     uint32_t handles[4] = {0};
     uint32_t strides[4] = {0};
