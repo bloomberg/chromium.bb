@@ -136,7 +136,7 @@ const base::FilePath& ArchiveManager::GetPrivateArchivesDir() const {
   return private_archives_dir_;
 }
 
-const base::FilePath& ArchiveManager::GetPublicArchivesDir() const {
+const base::FilePath& ArchiveManager::GetPublicArchivesDir() {
   return public_archives_dir_;
 }
 

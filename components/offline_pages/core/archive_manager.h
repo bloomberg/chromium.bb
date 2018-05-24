@@ -64,7 +64,7 @@ class ArchiveManager {
   // Gets the archive directories.
   const base::FilePath& GetTemporaryArchivesDir() const;
   const base::FilePath& GetPrivateArchivesDir() const;
-  const base::FilePath& GetPublicArchivesDir() const;
+  virtual const base::FilePath& GetPublicArchivesDir();
 
  protected:
   // Used for testing.
