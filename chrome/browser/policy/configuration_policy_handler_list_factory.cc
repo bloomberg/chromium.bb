@@ -610,12 +610,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kArcEnabled,
     arc::prefs::kArcEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kArcBackupRestoreEnabled,
-    arc::prefs::kArcBackupRestoreEnabled,
-    base::Value::Type::BOOLEAN },
-  { key::kArcLocationServiceEnabled,
-    arc::prefs::kArcLocationServiceEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kReportArcStatusEnabled,
     prefs::kReportArcStatusEnabled,
     base::Value::Type::BOOLEAN },
@@ -1224,6 +1218,12 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SCHEMA_STRICT,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+  handlers->AddHandler(std::make_unique<ArcServicePolicyHandler>(
+      key::kArcBackupRestoreServiceEnabled,
+      arc::prefs::kArcBackupRestoreEnabled));
+  handlers->AddHandler(std::make_unique<ArcServicePolicyHandler>(
+      key::kArcGoogleLocationServicesEnabled,
+      arc::prefs::kArcLocationServiceEnabled));
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)

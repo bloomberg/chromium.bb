@@ -13338,6 +13338,8 @@ Called by update_net_error_codes.py.-->
   <int value="446" label="SitePerProcessAndroid"/>
   <int value="447" label="ArcAppInstallEventLoggingEnabled"/>
   <int value="448" label="UsageTimeLimit"/>
+  <int value="449" label="ArcBackupRestoreServiceEnabled"/>
+  <int value="450" label="ArcGoogleLocationServicesEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

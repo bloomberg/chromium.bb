@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_CONFIGURATION_POLICY_HANDLER_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_CONFIGURATION_POLICY_HANDLER_CHROMEOS_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/extensions/policy_handlers.h"
@@ -171,6 +173,29 @@ class ScreenLockDelayPolicyHandler : public SchemaValidatingPolicyHandler {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenLockDelayPolicyHandler);
+};
+
+// Supported values for the |ArcBackupRestoreServiceEnabled| and
+// |ArcGoogleLocationServicesEnabled| policies.
+enum class ArcServicePolicyValue { kDisabled = 0, kUnderUserControl = 1 };
+
+// Instantiated once each for the |ArcBackupRestoreServiceEnabled| and
+// |ArcGoogleLocationServicesEnabled| policies to handle their special logic:
+// If the policy is unset or set to |kDisabled|, the corresponding pref is
+// managed and |false|. Only if the policy is set to |kUnderUserControl| is the
+// pref unmanaged, allowing the user to change its value.
+class ArcServicePolicyHandler : public IntRangePolicyHandlerBase {
+ public:
+  ArcServicePolicyHandler(const char* policy, const char* pref);
+
+  // IntRangePolicyHandlerBase:
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
+
+ private:
+  const std::string pref_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcServicePolicyHandler);
 };
 
 }  // namespace policy
