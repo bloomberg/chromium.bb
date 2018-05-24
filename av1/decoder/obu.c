@@ -52,6 +52,7 @@ static int valid_obu_type(int obu_type) {
     case OBU_FRAME:
     case OBU_TILE_GROUP:
     case OBU_METADATA:
+    case OBU_TILE_LIST:
     case OBU_PADDING: valid_type = 1; break;
     default: break;
   }
@@ -660,6 +661,7 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         }
         decoded_payload_size = read_metadata(data, payload_size);
         break;
+      case OBU_TILE_LIST:
       case OBU_PADDING:
       default:
         // Skip unrecognized OBUs
