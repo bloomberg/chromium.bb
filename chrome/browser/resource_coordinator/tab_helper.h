@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_RESOURCE_COORDINATOR_WEB_CONTENTS_OBSERVER_H_
-#define CHROME_BROWSER_RESOURCE_COORDINATOR_RESOURCE_COORDINATOR_WEB_CONTENTS_OBSERVER_H_
+#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_HELPER_H_
+#define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_HELPER_H_
 
 #include <memory>
 
@@ -15,15 +15,14 @@
 #include "url/gurl.h"
 
 namespace resource_coordinator {
-class PageResourceCoordinator;
-}  // namespace resource_coordinator
 
-class ResourceCoordinatorWebContentsObserver
+class PageResourceCoordinator;
+
+class ResourceCoordinatorTabHelper
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<
-          ResourceCoordinatorWebContentsObserver> {
+      public content::WebContentsUserData<ResourceCoordinatorTabHelper> {
  public:
-  ~ResourceCoordinatorWebContentsObserver() override;
+  ~ResourceCoordinatorTabHelper() override;
 
   static bool ukm_recorder_initialized;
 
@@ -54,15 +53,13 @@ class ResourceCoordinatorWebContentsObserver
   void SetUkmSourceIdForTest(ukm::SourceId id) { ukm_source_id_ = id; }
 
  private:
-  explicit ResourceCoordinatorWebContentsObserver(
-      content::WebContents* web_contents);
+  explicit ResourceCoordinatorTabHelper(content::WebContents* web_contents);
   // Favicon, title are set the first time a page is loaded, thus we want to
   // ignore the very first update, and reset the flags when a non same-document
   // navigation finished in main frame.
   void ResetFlag();
 
-  friend class content::WebContentsUserData<
-      ResourceCoordinatorWebContentsObserver>;
+  friend class content::WebContentsUserData<ResourceCoordinatorTabHelper>;
 
   std::unique_ptr<resource_coordinator::PageResourceCoordinator>
       page_resource_coordinator_;
@@ -75,7 +72,9 @@ class ResourceCoordinatorWebContentsObserver
   bool first_time_favicon_set_ = false;
   bool first_time_title_set_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorWebContentsObserver);
+  DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorTabHelper);
 };
 
-#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_RESOURCE_COORDINATOR_WEB_CONTENTS_OBSERVER_H_
+}  // namespace resource_coordinator
+
+#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_HELPER_H_

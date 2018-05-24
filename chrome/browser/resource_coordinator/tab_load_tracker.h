@@ -13,7 +13,7 @@
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 
-class ResourceCoordinatorWebContentsObserver;
+class WebContentsObserver;
 
 namespace content {
 class WebContents;
@@ -21,6 +21,7 @@ class WebContents;
 
 namespace resource_coordinator {
 
+class ResourceCoordinatorTabHelper;
 class TabManagerResourceCoordinatorSignalObserverHelper;
 
 // This class has the sole purpose of tracking the state of all tab-related
@@ -39,7 +40,7 @@ class TabManagerResourceCoordinatorSignalObserverHelper;
 // This class isn't directly an observer of anything. An external source must
 // invoke the callbacks in the protected section of the class. In the case of
 // the TabManager this is done by a combination of the
-// ResourceCoordinatorWebContentsObserver and the
+// ResourceCoordinatorTabHelper and the
 // TabManagerResourceCoordinatorSignalObserver.
 class TabLoadTracker {
  public:
@@ -109,7 +110,7 @@ class TabLoadTracker {
 
   // These declarations allows the various bits of TabManager plumbing to
   // forward notifications to the TabLoadTracker.
-  friend class ::ResourceCoordinatorWebContentsObserver;
+  friend class resource_coordinator::ResourceCoordinatorTabHelper;
   friend class ::resource_coordinator::
       TabManagerResourceCoordinatorSignalObserverHelper;
 

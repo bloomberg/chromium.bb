@@ -43,7 +43,7 @@
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/previews/previews_infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
+#include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/safe_browsing/trigger_creator.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ssl/connection_help_tab_helper.h"
@@ -346,6 +346,8 @@ offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
   if (MediaEngagementService::IsEnabled())
     MediaEngagementService::CreateWebContentsObserver(web_contents);
 
-  if (ResourceCoordinatorWebContentsObserver::IsEnabled())
-    ResourceCoordinatorWebContentsObserver::CreateForWebContents(web_contents);
+  if (resource_coordinator::ResourceCoordinatorTabHelper::IsEnabled()) {
+    resource_coordinator::ResourceCoordinatorTabHelper::CreateForWebContents(
+        web_contents);
+  }
 }

@@ -734,7 +734,7 @@ be describing additional metrics about the same event.
     <summary>
       The event associated with the measurement. This is an integer value
       corresponding to the enum defined in
-      resource_coordinator::ResourceCoordinatorRenderProcessProbe.
+      resource_coordinator::RenderProcessProbe.
     </summary>
   </metric>
   <metric name="IsVisible">

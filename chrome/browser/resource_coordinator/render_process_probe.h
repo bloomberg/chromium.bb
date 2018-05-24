@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_RESOURCE_COORDINATOR_RENDER_PROCESS_PROBE_H_
-#define CHROME_BROWSER_RESOURCE_COORDINATOR_RESOURCE_COORDINATOR_RENDER_PROCESS_PROBE_H_
+#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_RENDER_PROCESS_PROBE_H_
+#define CHROME_BROWSER_RESOURCE_COORDINATOR_RENDER_PROCESS_PROBE_H_
 
 #include <map>
 #include <memory>
@@ -19,16 +19,16 @@
 
 namespace resource_coordinator {
 
-// |ResourceCoordinatorRenderProcessProbe| collects measurements about render
+// |RenderProcessProbe| collects measurements about render
 // processes and propagates them to the |resource_coordinator| service.
 // Currently this is only supported for Chrome Metrics experiments.
 // The measurements are initiated from the UI thread, while acquiring and
 // dispatching the measurements is done on the IO thread.
-class ResourceCoordinatorRenderProcessProbe {
+class RenderProcessProbe {
  public:
-  // Returns the current |ResourceCoordinatorRenderProcessProbe| instance
+  // Returns the current |RenderProcessProbe| instance
   // if one exists; otherwise it constructs a new instance.
-  static ResourceCoordinatorRenderProcessProbe* GetInstance();
+  static RenderProcessProbe* GetInstance();
 
   static bool IsEnabled();
 
@@ -56,10 +56,10 @@ class ResourceCoordinatorRenderProcessProbe {
   };
   using RenderProcessInfoMap = std::map<int, RenderProcessInfo>;
 
-  friend class base::NoDestructor<ResourceCoordinatorRenderProcessProbe>;
+  friend class base::NoDestructor<RenderProcessProbe>;
 
-  ResourceCoordinatorRenderProcessProbe();
-  virtual ~ResourceCoordinatorRenderProcessProbe();
+  RenderProcessProbe();
+  virtual ~RenderProcessProbe();
 
   // (1) Identify all of the render processes that are active to measure.
   // Child render processes can only be discovered in the browser's UI thread.
@@ -94,7 +94,7 @@ class ResourceCoordinatorRenderProcessProbe {
   // Time duration between measurements.
   base::TimeDelta interval_;
 
-  // Timer to signal the |ResourceCoordinatorRenderProcessProbe| instance
+  // Timer to signal the |RenderProcessProbe| instance
   // to conduct its measurements as a regular interval;
   base::OneShotTimer timer_;
 
@@ -110,9 +110,9 @@ class ResourceCoordinatorRenderProcessProbe {
   // Used to signal the end of a CPU measurement cycle to the RC.
   std::unique_ptr<SystemResourceCoordinator> system_resource_coordinator_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorRenderProcessProbe);
+  DISALLOW_COPY_AND_ASSIGN(RenderProcessProbe);
 };
 
 }  // namespace resource_coordinator
 
-#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_RESOURCE_COORDINATOR_RENDER_PROCESS_PROBE_H_
+#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_RENDER_PROCESS_PROBE_H_

@@ -25,7 +25,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
-#include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
+#include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/tab_manager_resource_coordinator_signal_observer.h"
@@ -200,16 +200,13 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
                    const char* url2 = kTestUrl,
                    const char* url3 = kTestUrl) {
     contents1_ = CreateTestWebContents();
-    ResourceCoordinatorWebContentsObserver::CreateForWebContents(
-        contents1_.get());
+    ResourceCoordinatorTabHelper::CreateForWebContents(contents1_.get());
     nav_handle1_ = CreateTabAndNavigation(url1, contents1_.get());
     contents2_ = CreateTestWebContents();
-    ResourceCoordinatorWebContentsObserver::CreateForWebContents(
-        contents2_.get());
+    ResourceCoordinatorTabHelper::CreateForWebContents(contents2_.get());
     nav_handle2_ = CreateTabAndNavigation(url2, contents2_.get());
     contents3_ = CreateTestWebContents();
-    ResourceCoordinatorWebContentsObserver::CreateForWebContents(
-        contents3_.get());
+    ResourceCoordinatorTabHelper::CreateForWebContents(contents3_.get());
     nav_handle3_ = CreateTabAndNavigation(url3, contents3_.get());
 
     contents1_->WasHidden();
