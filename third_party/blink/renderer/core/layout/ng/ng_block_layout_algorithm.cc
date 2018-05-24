@@ -182,7 +182,8 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
       // an anonymous box that contains all line boxes.
       // |NextSibling| returns the next block sibling, or nullptr, skipping all
       // following inline siblings and descendants.
-      child_sizes = child.ComputeMinMaxSize(child_input);
+      child_sizes =
+          child.ComputeMinMaxSize(Style().GetWritingMode(), child_input);
     } else {
       child_sizes = ComputeMinAndMaxContentContribution(
           Style().GetWritingMode(), child, child_input);
@@ -1639,7 +1640,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
       // We only want to guess the child's size here, so preceding floats are of
       // no interest.
       MinMaxSizeInput zero_input;
-      sizes = child.ComputeMinMaxSize(zero_input);
+      sizes = child.ComputeMinMaxSize(child_style.GetWritingMode(), zero_input);
     }
 
     LayoutUnit child_inline_size =

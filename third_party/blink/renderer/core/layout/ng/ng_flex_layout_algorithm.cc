@@ -36,11 +36,15 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       continue;
     // Assume row flexbox with no orthogonal items, which lets us just use
     // MinMaxSize for flex base size. An orthogonal item would need full layout.
+    // TODO(layout-ng): Now that ComputeMinMaxSize takes a writing mode, this
+    // should be easy to fix by just passing an appropriate constraint space to
+    // ComputeMinMaxSize.
     DCHECK(IsParallelWritingMode(Node().Style().GetWritingMode(),
                                  child.Style().GetWritingMode()))
         << "Orthogonal items aren't supported yet.";
     MinMaxSizeInput zero_input;
-    MinMaxSize min_max_sizes = child.ComputeMinMaxSize(zero_input);
+    MinMaxSize min_max_sizes =
+        child.ComputeMinMaxSize(ConstraintSpace().GetWritingMode(), zero_input);
 
     LayoutUnit flex_base_content_size;
     if (child.Style().FlexBasis().IsAuto() && child.Style().Width().IsAuto()) {
