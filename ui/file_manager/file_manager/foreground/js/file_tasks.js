@@ -326,7 +326,8 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
   '.htm',      '.jar',         '.ps',
   '.torrent',  '.txt',         '.zip',
   'directory', 'no extension', 'unknown extension',
-  '.mhtml'
+  '.mhtml',    '.gdoc',        '.gsheet',
+  '.gslides'
 ]);
 
 /**
