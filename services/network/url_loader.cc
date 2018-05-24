@@ -792,7 +792,6 @@ void URLLoader::DeleteSelf() {
 }
 
 void URLLoader::SendResponseToClient() {
-  base::Optional<net::SSLInfo> ssl_info;
   mojom::DownloadedTempFilePtr downloaded_file_ptr;
   url_loader_client_->OnReceiveResponse(response_->head,
                                         std::move(downloaded_file_ptr));
