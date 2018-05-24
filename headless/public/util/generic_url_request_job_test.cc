@@ -24,7 +24,6 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -252,7 +251,6 @@ class GenericURLRequestJobTest : public testing::Test {
 };
 
 TEST_F(GenericURLRequestJobTest, BasicGetRequestParams) {
-  net::StaticHttpUserAgentSettings user_agent_settings("en-UK", "TestBrowser");
 
   json_fetch_reply_map_["https://example.com/"] = R"(
       {
@@ -263,7 +261,6 @@ TEST_F(GenericURLRequestJobTest, BasicGetRequestParams) {
         }
       })";
 
-  url_request_context_.set_http_user_agent_settings(&user_agent_settings);
   std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
       GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_,
       TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -277,10 +274,8 @@ TEST_F(GenericURLRequestJobTest, BasicGetRequestParams) {
         "url": "https://example.com/",
         "method": "GET",
         "headers": {
-          "Accept-Language": "en-UK",
           "Extra-Header": "Value",
-          "Referer": "https://referrer.example.com/",
-          "User-Agent": "TestBrowser"
+          "Referer": "https://referrer.example.com/"
         }
       })";
 
