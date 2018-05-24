@@ -15,9 +15,10 @@ namespace blink {
 // after marking is complete. The Visit method checks that the given wrapper
 // is also marked.
 class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
- protected:
+ public:
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
-  void Visit(const TraceWrapperDescriptor& descriptor) final {
+
+  void Visit(void* object, TraceWrapperDescriptor descriptor) final {
     HeapObjectHeader* header =
         HeapObjectHeader::FromPayload(descriptor.base_object_payload);
     const char* name = GCInfoTable::Get()
@@ -35,8 +36,14 @@ class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
     LOG_IF(FATAL, !header->IsWrapperHeaderMarked())
         << "Write barrier missed for " << name;
   }
+
   void Visit(DOMWrapperMap<ScriptWrappable>*,
              const ScriptWrappable* key) final {}
+
+ protected:
+  using Visitor::Visit;
 };
-}
-#endif
+
+}  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_WRAPPABLE_VISITOR_VERIFIER_H_

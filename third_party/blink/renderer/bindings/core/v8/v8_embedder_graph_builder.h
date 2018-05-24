@@ -26,11 +26,13 @@ class V8EmbedderGraphBuilder : public ScriptWrappableVisitor,
   void VisitPersistentHandle(v8::Persistent<v8::Value>*,
                              uint16_t class_id) override;
 
- protected:
-  // ScriptWrappableVisitor overrides.
+  // Visitor overrides.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
-  void Visit(const TraceWrapperDescriptor&) final;
+  void Visit(void*, TraceWrapperDescriptor) final;
   void Visit(DOMWrapperMap<ScriptWrappable>*, const ScriptWrappable*) final;
+
+ protected:
+  using Visitor::Visit;
 
  private:
   // Information about whether a node is attached to the main DOM tree

@@ -109,6 +109,10 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
                desc.callback);
   }
 
+  void Visit(void*, TraceWrapperDescriptor) final {
+    // Ignore as the object is also passed to Visit(void*, TraceDescriptor).
+  }
+
   void VisitWeak(void* object,
                  void** object_slot,
                  TraceDescriptor desc,
@@ -146,6 +150,11 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
   bool RegisterWeakTable(const void* closure,
                          EphemeronCallback iteration_callback) final;
   void RegisterWeakCallback(void* closure, WeakCallback) final;
+
+  // Unused cross-component visit methods.
+  void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
+  void Visit(DOMWrapperMap<ScriptWrappable>*,
+             const ScriptWrappable* key) final {}
 
  private:
   void RegisterBackingStoreReference(void* slot);

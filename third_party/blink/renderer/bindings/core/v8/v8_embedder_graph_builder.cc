@@ -110,7 +110,7 @@ void V8EmbedderGraphBuilder::VisitPersistentHandle(
   EmbedderNode* graph_node = GraphNode(
       traceable, traceable->NameInHeapSnapshot(), wrapper, dom_tree_state);
   const TraceWrapperDescriptor& wrapper_descriptor =
-      WrapperDescriptorFor<ScriptWrappable>(traceable);
+      TraceWrapperDescriptorFor<ScriptWrappable>(traceable);
   WorklistItem item = ToWorklistItem(graph_node, wrapper_descriptor);
   switch (graph_node->GetDomTreeState()) {
     case DomTreeState::kAttached:
@@ -135,8 +135,8 @@ void V8EmbedderGraphBuilder::Visit(
   }
 }
 
-void V8EmbedderGraphBuilder::Visit(
-    const TraceWrapperDescriptor& wrapper_descriptor) {
+void V8EmbedderGraphBuilder::Visit(void* object,
+                                   TraceWrapperDescriptor wrapper_descriptor) {
   // Add an edge from the current parent to this object.
   // Also push the object to the worklist in order to process its members.
   const void* traceable = wrapper_descriptor.base_object_payload;
