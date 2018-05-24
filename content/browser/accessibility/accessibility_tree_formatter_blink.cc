@@ -83,6 +83,8 @@ std::string AccessibilityTreeFormatterBlink::IntAttrToString(
       return ui::ToString(static_cast<ax::mojom::SortDirection>(value));
     case ax::mojom::IntAttribute::kTextDirection:
       return ui::ToString(static_cast<ax::mojom::TextDirection>(value));
+    case ax::mojom::IntAttribute::kTextPosition:
+      return ui::ToString(static_cast<ax::mojom::TextPosition>(value));
     // No pretty printing necessary for these:
     case ax::mojom::IntAttribute::kActivedescendantId:
     case ax::mojom::IntAttribute::kAriaCellColumnIndex:

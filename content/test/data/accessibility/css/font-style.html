@@ -1,13 +1,12 @@
 <!--
 @BLINK-ALLOW:textStyle=*
-@WIN-ALLOW:font-weight:*
-@WIN-ALLOW:font-style:*
+@BLINK-ALLOW:textPosition=*
+@WIN-ALLOW:font*
+@WIN-DENY:font-size*
+@WIN-DENY:font-family*
 @WIN-ALLOW:ia2_hypertext=*
 @WIN-ALLOW:offset:*
-@WIN-ALLOW:text-line-through-style:*
-@WIN-ALLOW:text-line-through-type:*
-@WIN-ALLOW:text-underline-style:*
-@WIN-ALLOW:text-underline-type:*
+@WIN-ALLOW:text*
 -->
 <!DOCTYPE html>
 <html>
@@ -18,6 +17,8 @@
         <span style="font-style: italic;">italic</span>
         <span style="text-decoration: underline;">underline</span>
         <span style="text-decoration: line-through;">line-through</span>
+        <span style="vertical-align: sub;">subscript</span>
+        <span style="vertical-align: super;">superscript</span>
     </div>
   </body>
 </html>

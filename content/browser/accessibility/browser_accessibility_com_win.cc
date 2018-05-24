@@ -2086,6 +2086,19 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
       break;
   }
 
+  auto text_position = static_cast<ax::mojom::TextPosition>(
+      owner()->GetIntAttribute(ax::mojom::IntAttribute::kTextPosition));
+  switch (text_position) {
+    case ax::mojom::TextPosition::kNone:
+      break;
+    case ax::mojom::TextPosition::kSubscript:
+      attributes.push_back(L"text-position:sub");
+      break;
+    case ax::mojom::TextPosition::kSuperscript:
+      attributes.push_back(L"text-position:super");
+      break;
+  }
+
   return attributes;
 }
 

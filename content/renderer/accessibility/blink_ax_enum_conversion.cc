@@ -529,6 +529,20 @@ ax::mojom::TextDirection AXTextDirectionFromBlink(
   return ax::mojom::TextDirection::kNone;
 }
 
+ax::mojom::TextPosition AXTextPositionFromBlink(
+    blink::WebAXTextPosition text_position) {
+  switch (text_position) {
+    case blink::kWebAXTextPositionNone:
+      return ax::mojom::TextPosition::kNone;
+    case blink::kWebAXTextPositionSubscript:
+      return ax::mojom::TextPosition::kSubscript;
+    case blink::kWebAXTextPositionSuperscript:
+      return ax::mojom::TextPosition::kSuperscript;
+  }
+  NOTREACHED();
+  return ax::mojom::TextPosition::kNone;
+}
+
 ax::mojom::TextStyle AXTextStyleFromBlink(blink::WebAXTextStyle text_style) {
   uint32_t browser_text_style =
       static_cast<uint32_t>(ax::mojom::TextStyle::kNone);

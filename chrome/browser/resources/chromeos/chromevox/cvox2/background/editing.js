@@ -510,6 +510,10 @@ AutomationRichEditableText.prototype = {
     var msgs = [];
     if (style.state.linked)
       msgs.push(opt_end ? 'link_end' : 'link_start');
+    if (style.subscript)
+      msgs.push(opt_end ? 'subscript_end' : 'subscript_start');
+    if (style.superscript)
+      msgs.push(opt_end ? 'superscript_end' : 'superscript_start');
     if (style.bold)
       msgs.push(opt_end ? 'bold_end' : 'bold_start');
     if (style.italic)
@@ -573,6 +577,7 @@ AutomationRichEditableText.prototype = {
       if (!style)
         return;
       var formType = FormType.PLAIN_TEXT;
+      // Currently no support for sub/superscript in 3rd party liblouis library.
       if (style.bold)
         formType |= FormType.BOLD;
       if (style.italic)

@@ -190,6 +190,7 @@ class WebAXObject {
   BLINK_EXPORT WebAXRole Role() const;
   BLINK_EXPORT WebString StringValue() const;
   BLINK_EXPORT WebAXTextDirection GetTextDirection() const;
+  BLINK_EXPORT WebAXTextPosition GetTextPosition() const;
   BLINK_EXPORT WebAXTextStyle TextStyle() const;
   BLINK_EXPORT WebURL Url() const;
 

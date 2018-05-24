@@ -237,6 +237,12 @@ enum AccessibilityTextDirection {
   kAccessibilityTextDirectionBTT
 };
 
+enum AXTextPosition {
+  kAXTextPositionNone = 0,
+  kAXTextPositionSubscript,
+  kAXTextPositionSuperscript
+};
+
 enum SortDirection {
   kSortDirectionUndefined = 0,
   kSortDirectionNone,

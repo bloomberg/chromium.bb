@@ -167,6 +167,11 @@ struct AX_EXPORT AXNodeData {
         GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
   }
 
+  ax::mojom::TextPosition GetTextPosition() const {
+    return static_cast<ax::mojom::TextPosition>(
+        GetIntAttribute(ax::mojom::IntAttribute::kTextPosition));
+  }
+
   // Helper functions to set some common int attributes.
   void SetCheckedState(ax::mojom::CheckedState checked_state) {
     AddIntAttribute(ax::mojom::IntAttribute::kCheckedState,
@@ -195,6 +200,11 @@ struct AX_EXPORT AXNodeData {
   void SetTextDirection(ax::mojom::TextDirection text_direction) {
     AddIntAttribute(ax::mojom::IntAttribute::kTextDirection,
                     static_cast<int32_t>(text_direction));
+  }
+
+  void SetTextPosition(ax::mojom::TextPosition text_position) {
+    AddIntAttribute(ax::mojom::IntAttribute::kTextPosition,
+                    static_cast<int32_t>(text_position));
   }
 
   // Return a string representation of this data, for debugging.

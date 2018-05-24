@@ -79,6 +79,10 @@ AX_EXPORT const char* ToString(ax::mojom::TextDirection text_direction);
 AX_EXPORT ax::mojom::TextDirection ParseTextDirection(
     const char* text_direction);
 
+// ax::mojom::TextPosition
+AX_EXPORT const char* ToString(ax::mojom::TextPosition text_position);
+AX_EXPORT ax::mojom::TextPosition ParseTextPosition(const char* text_position);
+
 // ax::mojom::TextStyle
 AX_EXPORT const char* ToString(ax::mojom::TextStyle text_style);
 AX_EXPORT ax::mojom::TextStyle ParseTextStyle(const char* text_style);

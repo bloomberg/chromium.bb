@@ -507,6 +507,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual AccessibilityTextDirection GetTextDirection() const {
     return kAccessibilityTextDirectionLTR;
   }
+  virtual AXTextPosition GetTextPosition() const { return kAXTextPositionNone; }
   virtual int TextLength() const { return 0; }
   virtual TextStyle GetTextStyle() const { return kTextStyleNone; }
   virtual AXObjectVector RadioButtonsInGroup() const {

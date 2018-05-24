@@ -195,6 +195,10 @@ STATIC_ASSERT_ENUM(kWebAXTextDirectionRL, kAccessibilityTextDirectionRTL);
 STATIC_ASSERT_ENUM(kWebAXTextDirectionTB, kAccessibilityTextDirectionTTB);
 STATIC_ASSERT_ENUM(kWebAXTextDirectionBT, kAccessibilityTextDirectionBTT);
 
+STATIC_ASSERT_ENUM(kWebAXTextPositionNone, kAXTextPositionNone);
+STATIC_ASSERT_ENUM(kWebAXTextPositionSubscript, kAXTextPositionSubscript);
+STATIC_ASSERT_ENUM(kWebAXTextPositionSuperscript, kAXTextPositionSuperscript);
+
 STATIC_ASSERT_ENUM(kWebAXSortDirectionUndefined, kSortDirectionUndefined);
 STATIC_ASSERT_ENUM(kWebAXSortDirectionNone, kSortDirectionNone);
 STATIC_ASSERT_ENUM(kWebAXSortDirectionAscending, kSortDirectionAscending);

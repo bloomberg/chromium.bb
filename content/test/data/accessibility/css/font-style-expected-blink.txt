@@ -43,3 +43,11 @@ rootWebArea
 ++++++inlineTextBox name=' '
 ++++staticText name='line-through' textStyle=8
 ++++++inlineTextBox name='line-through'
+++++staticText name=' '
+++++++inlineTextBox name=' '
+++++staticText name='subscript' textPosition=subscript
+++++++inlineTextBox name='subscript'
+++++staticText name=' '
+++++++inlineTextBox name=' '
+++++staticText name='superscript' textPosition=superscript
+++++++inlineTextBox name='superscript'

@@ -784,6 +784,25 @@ void AutomationInternalCustomBindings::AddRoutes() {
         std::string name_from_str = ui::ToString(name_from);
         result.Set(v8::String::NewFromUtf8(isolate, name_from_str.c_str()));
       });
+  RouteNodeIDFunction("GetSubscript", [](v8::Isolate* isolate,
+                                         v8::ReturnValue<v8::Value> result,
+                                         AutomationAXTreeWrapper* tree_wrapper,
+                                         ui::AXNode* node) {
+    bool value =
+        node->data().GetIntAttribute(ax::mojom::IntAttribute::kTextPosition) ==
+        static_cast<int32_t>(ax::mojom::TextPosition::kSubscript);
+    result.Set(v8::Boolean::New(isolate, value));
+  });
+  RouteNodeIDFunction(
+      "GetSuperscript",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        bool value =
+            node->data().GetIntAttribute(
+                ax::mojom::IntAttribute::kTextPosition) ==
+            static_cast<int32_t>(ax::mojom::TextPosition::kSuperscript);
+        result.Set(v8::Boolean::New(isolate, value));
+      });
   RouteNodeIDFunction(
       "GetBold", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
                     AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {

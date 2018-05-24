@@ -34,6 +34,9 @@ ax::mojom::MarkerType AXMarkerTypeFromBlink(blink::WebAXMarkerType marker_type);
 ax::mojom::TextDirection AXTextDirectionFromBlink(
     blink::WebAXTextDirection text_direction);
 
+ax::mojom::TextPosition AXTextPositionFromBlink(
+    blink::WebAXTextPosition text_position);
+
 ax::mojom::TextStyle AXTextStyleFromBlink(blink::WebAXTextStyle text_style);
 
 ax::mojom::AriaCurrentState AXAriaCurrentStateFromBlink(

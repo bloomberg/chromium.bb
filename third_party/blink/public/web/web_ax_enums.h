@@ -274,6 +274,12 @@ enum WebAXTextDirection {
   kWebAXTextDirectionBT
 };
 
+enum WebAXTextPosition {
+  kWebAXTextPositionNone = 0,
+  kWebAXTextPositionSubscript,
+  kWebAXTextPositionSuperscript
+};
+
 // Sort direction, only used for roles = WebAXRoleRowHeader and
 // WebAXRoleColumnHeader.
 enum WebAXSortDirection {
