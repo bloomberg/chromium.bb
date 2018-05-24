@@ -310,7 +310,6 @@ void BrowserCompositorMac::OnDidNotProduceFrame(const viz::BeginFrameAck& ack) {
 
 void BrowserCompositorMac::SetBackgroundColor(SkColor background_color) {
   background_color_ = background_color;
-  root_layer_->SetColor(background_color_);
   if (recyclable_compositor_)
     recyclable_compositor_->compositor()->SetBackgroundColor(background_color_);
 }
