@@ -67,6 +67,12 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
     case 2: cm->lf.filter_level_v = filter_level[0]; break;
   }
 
+      // TODO(any): please enable multi-thread and remove the flag when loop
+      // filter mask is compatible with multi-thread.
+#if LOOP_FILTER_BITMASK
+  av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, plane,
+                        plane + 1, partial_frame);
+#else
   if (cpi->num_workers > 1)
     av1_loop_filter_frame_mt(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, plane,
                              plane + 1, partial_frame, cpi->workers,
@@ -74,6 +80,7 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
   else
     av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, plane,
                           plane + 1, partial_frame);
+#endif
 
   int highbd = 0;
   highbd = cm->use_highbitdepth;
