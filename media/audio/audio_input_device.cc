@@ -179,6 +179,17 @@ void AudioInputDevice::SetAutomaticGainControl(bool enabled) {
   agc_is_enabled_ = enabled;
 }
 
+void AudioInputDevice::SetOutputDeviceForAec(
+    const std::string& output_device_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  TRACE_EVENT1("audio", "AudioInputDevice::SetOutputDeviceForAec",
+               "output_device_id", output_device_id);
+
+  output_device_id_for_aec_ = output_device_id;
+  if (state_ > CREATING_STREAM)
+    ipc_->SetOutputDeviceForAec(output_device_id);
+}
+
 void AudioInputDevice::OnStreamCreated(base::SharedMemoryHandle handle,
                                        base::SyncSocket::Handle socket_handle,
                                        bool initially_muted) {
@@ -200,6 +211,9 @@ void AudioInputDevice::OnStreamCreated(base::SharedMemoryHandle handle,
 
   if (initially_muted)
     callback_->OnCaptureMuted(true);
+
+  if (output_device_id_for_aec_)
+    ipc_->SetOutputDeviceForAec(*output_device_id_for_aec_);
 
 // Set up checker for detecting missing audio data. We pass a callback which
 // holds a reference to this. |alive_checker_| is deleted in
