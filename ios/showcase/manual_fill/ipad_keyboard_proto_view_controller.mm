@@ -12,7 +12,16 @@
 #error "This file requires ARC support."
 #endif
 
+@interface IPadKeyboardProtoViewController ()
+
+/// The view controller presented or nil if none.
+@property(nonatomic, weak) UIViewController* presentedPickerViewController;
+
+@end
+
 @implementation IPadKeyboardProtoViewController
+
+@synthesize presentedPickerViewController = _presentedPickerViewController;
 
 #pragma mark - Life Cycle
 
@@ -36,7 +45,9 @@
 #pragma mark - ManualFillContentDelegate
 
 - (void)userDidPickContent:(NSString*)content {
-  [self dismissViewControllerAnimated:NO completion:nil];
+  UIViewController* presentingViewController =
+      self.presentedPickerViewController.presentingViewController;
+  [presentingViewController dismissViewControllerAnimated:YES completion:nil];
   [self fillLastSelectedFieldWithString:content];
 
 // This code jump by to the next field by invoking a method on an Apple's owned
@@ -101,19 +112,41 @@
 - (void)presentPopOverForSender:(UIBarButtonItem*)sender {
   [self updateActiveFieldID];
   self.lastFirstResponder = manualfill::GetFirstResponderSubview(self.view);
+
+  // TODO:(javierrobles) Test this on iOS 10.
+  // TODO:(javierrobles) Support / dismiss on rotation.
+  UIViewController* presenter;
+  UIView* buttonView;
+  id view = [sender valueForKey:@"view"];
+  if ([view isKindOfClass:[UIView class]]) {
+    buttonView = view;
+    presenter = buttonView.window.rootViewController;
+    while (presenter.childViewControllers.count) {
+      presenter = presenter.childViewControllers.firstObject;
+    }
+  }
+  if (!presenter) {
+    // TODO:(javierrobles) log an error.
+    return;
+  }
+
   // TODO:(javierrobles) support addresses and credit cards.
   PasswordPickerViewController* passwordPickerViewController =
       [[PasswordPickerViewController alloc] initWithDelegate:self];
   passwordPickerViewController.modalPresentationStyle =
       UIModalPresentationPopover;
-  [self presentViewController:passwordPickerViewController
-                     animated:YES
-                   completion:nil];
+
+  [presenter presentViewController:passwordPickerViewController
+                          animated:YES
+                        completion:nil];
 
   UIPopoverPresentationController* presentationController =
       passwordPickerViewController.popoverPresentationController;
-  presentationController.permittedArrowDirections = UIPopoverArrowDirectionDown;
-  presentationController.barButtonItem = sender;
+  presentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionDown | UIPopoverArrowDirectionUp;
+  presentationController.sourceView = buttonView;
+  presentationController.sourceRect = buttonView.bounds;
+  self.presentedPickerViewController = passwordPickerViewController;
 }
 
 // Called when the user presses the "key" button. Causing a list of credentials
