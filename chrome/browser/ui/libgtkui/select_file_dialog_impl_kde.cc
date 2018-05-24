@@ -261,6 +261,7 @@ void SelectFileDialogImplKDE::SelectFileImpl(
   switch (type) {
     case SELECT_FOLDER:
     case SELECT_UPLOAD_FOLDER:
+    case SELECT_EXISTING_FOLDER:
       CreateSelectFolderDialog(type, title_string, default_path,
                                window_xid, params);
       return;
@@ -372,7 +373,8 @@ void SelectFileDialogImplKDE::FileSelected(const base::FilePath& path,
     *last_saved_path_ = path.DirName();
   else if (type_ == SELECT_OPEN_FILE)
     *last_opened_path_ = path.DirName();
-  else if (type_ == SELECT_FOLDER || type_ == SELECT_UPLOAD_FOLDER)
+  else if (type_ == SELECT_FOLDER || type_ == SELECT_UPLOAD_FOLDER ||
+           type_ == SELECT_EXISTING_FOLDER)
     *last_opened_path_ = path;
   else
     NOTREACHED();

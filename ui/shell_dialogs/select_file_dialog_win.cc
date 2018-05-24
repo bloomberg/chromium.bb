@@ -373,7 +373,8 @@ void SelectFileDialogImpl::ExecuteSelectFile(
   base::FilePath path = params.default_path;
   bool success = false;
   unsigned filter_index = params.file_type_index;
-  if (params.type == SELECT_FOLDER || params.type == SELECT_UPLOAD_FOLDER) {
+  if (params.type == SELECT_FOLDER || params.type == SELECT_UPLOAD_FOLDER ||
+      params.type == SELECT_EXISTING_FOLDER) {
     success = RunSelectFolderDialog(params, &path);
   } else if (params.type == SELECT_SAVEAS_FILE) {
     std::wstring path_as_wstring = path.value();
@@ -561,8 +562,10 @@ bool SelectFileDialogImpl::RunSelectFolderDialog(
     dialog_options.default_path = path->value().c_str();
   if (params.type == SELECT_UPLOAD_FOLDER) {
     dialog_options.is_upload = true;
-    browse_info.ulFlags |= BIF_NONEWFOLDERBUTTON;
   }
+  if (params.type == SELECT_UPLOAD_FOLDER ||
+      params.type == SELECT_EXISTING_FOLDER)
+    browse_info.ulFlags |= BIF_NONEWFOLDERBUTTON;
   if (dialog_options.is_upload || dialog_options.default_path) {
     browse_info.lParam = reinterpret_cast<LPARAM>(&dialog_options);
     browse_info.lpfn = &BrowseCallbackProc;

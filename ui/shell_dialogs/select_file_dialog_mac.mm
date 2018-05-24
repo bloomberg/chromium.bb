@@ -143,11 +143,9 @@ void SelectFileDialogImpl::SelectFileImpl(
     const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owning_window,
     void* params) {
-  DCHECK(type == SELECT_FOLDER ||
-         type == SELECT_UPLOAD_FOLDER ||
-         type == SELECT_OPEN_FILE ||
-         type == SELECT_OPEN_MULTI_FILE ||
-         type == SELECT_SAVEAS_FILE);
+  DCHECK(type == SELECT_FOLDER || type == SELECT_UPLOAD_FOLDER ||
+         type == SELECT_EXISTING_FOLDER || type == SELECT_OPEN_FILE ||
+         type == SELECT_OPEN_MULTI_FILE || type == SELECT_SAVEAS_FILE);
   parents_.insert(owning_window);
 
   // Note: we need to retain the dialog as owning_window can be null.
@@ -177,7 +175,8 @@ void SelectFileDialogImpl::SelectFileImpl(
   }
 
   base::scoped_nsobject<ExtensionDropdownHandler> handler;
-  if (type != SELECT_FOLDER && type != SELECT_UPLOAD_FOLDER) {
+  if (type != SELECT_FOLDER && type != SELECT_UPLOAD_FOLDER &&
+      type != SELECT_EXISTING_FOLDER) {
     if (file_types) {
       handler = SelectFileDialogImpl::SetAccessoryView(
           dialog, file_types, file_type_index, default_extension);
@@ -217,10 +216,16 @@ void SelectFileDialogImpl::SelectFileImpl(
     else
       [open_dialog setAllowsMultipleSelection:NO];
 
-    if (type == SELECT_FOLDER || type == SELECT_UPLOAD_FOLDER) {
+    if (type == SELECT_FOLDER || type == SELECT_UPLOAD_FOLDER ||
+        type == SELECT_EXISTING_FOLDER) {
       [open_dialog setCanChooseFiles:NO];
       [open_dialog setCanChooseDirectories:YES];
-      [open_dialog setCanCreateDirectories:YES];
+
+      if (type == SELECT_FOLDER)
+        [open_dialog setCanCreateDirectories:YES];
+      else
+        [open_dialog setCanCreateDirectories:NO];
+
       NSString *prompt = (type == SELECT_UPLOAD_FOLDER)
           ? l10n_util::GetNSString(IDS_SELECT_UPLOAD_FOLDER_BUTTON_TITLE)
           : l10n_util::GetNSString(IDS_SELECT_FOLDER_BUTTON_TITLE);
