@@ -28,7 +28,7 @@ source_set("lib") {
     "//services/tracing/public/cpp",
   ]
 
-  if (is_mac || is_linux || is_android || is_win) {
+  if (is_mac || is_linux || is_android) {
     sources += [
       "perfetto/json_trace_exporter.cc",
       "perfetto/json_trace_exporter.h",

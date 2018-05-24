@@ -22,7 +22,7 @@ component("cpp") {
     "//services/tracing/public/mojom",
   ]
 
-  if (is_mac || is_linux || is_android || is_win) {
+  if (is_mac || is_linux || is_android) {
     sources += [
       "perfetto/producer_client.cc",
       "perfetto/producer_client.h",
