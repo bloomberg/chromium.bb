@@ -398,14 +398,6 @@ void AddPrintPreviewImages(content::WebUIDataSource* source) {
 }
 
 void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
-#if !defined(OS_MACOSX) && !defined(OS_WIN)
-  bool print_pdf_as_image_enabled = base::FeatureList::IsEnabled(
-      features::kPrintPdfAsImage);
-  source->AddBoolean("printPdfAsImageEnabled", print_pdf_as_image_enabled);
-#else
-  source->AddBoolean("printPdfAsImageEnabled", false);
-#endif
-
 #if defined(OS_CHROMEOS)
   source->AddBoolean("useSystemDefaultPrinter", false);
 #else

@@ -304,9 +304,7 @@ cr.define('print_preview_test', function() {
   /** @return {boolean} */
   function isPrintAsImageEnabled() {
     // Should be enabled by default on non Windows/Mac.
-    return (
-        !cr.isWindows && !cr.isMac &&
-        loadTimeData.getBoolean('printPdfAsImageEnabled'));
+    return !cr.isWindows && !cr.isMac;
   }
 
   const suiteName = 'PrintPreview';

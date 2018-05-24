@@ -506,12 +506,6 @@ const base::Feature kNupPrinting{"NupPrinting",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_WIN) && !defined(OS_MACOSX)
-// Enables the Print as Image feature in print preview.
-const base::Feature kPrintPdfAsImage{"PrintPdfAsImage",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 // Enables or disables push subscriptions keeping Chrome running in the
 // background when closed.
 const base::Feature kPushMessagingBackgroundMode{
