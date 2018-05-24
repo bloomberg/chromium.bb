@@ -42,6 +42,9 @@ std::string AppNameFromCrostiniAppId(const std::string& id);
 base::Optional<std::string> CrostiniAppIdFromAppName(
     const std::string& app_name);
 
+void ShowCrostiniInstallerView(Profile* profile);
+void ShowCrostiniUninstallerView(Profile* profile);
+
 constexpr char kCrostiniTerminalAppName[] = "Terminal";
 // We can use any arbitrary well-formed extension id for the Terminal app, this
 // is equal to GenerateId("Terminal").

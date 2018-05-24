@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
+#include "chrome/browser/ui/views/crostini/crostini_installer_view.h"
 
 #include <memory>
 #include <vector>
@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
@@ -40,11 +41,13 @@ CrostiniInstallerView* g_crostini_installer_view = nullptr;
 // TODO(timloh): This is just a placeholder.
 constexpr int kDownloadSizeInBytes = 300 * 1024 * 1024;
 
-constexpr int kDialogWidth = 448;
-
 constexpr char kCrostiniSetupResultHistogram[] = "Crostini.SetupResult";
 
 }  // namespace
+
+void ShowCrostiniInstallerView(Profile* profile) {
+  return CrostiniInstallerView::Show(profile);
+}
 
 void CrostiniInstallerView::Show(Profile* profile) {
   DCHECK(IsCrostiniUIAllowedForProfile(profile));
@@ -130,9 +133,10 @@ bool CrostiniInstallerView::Cancel() {
 }
 
 gfx::Size CrostiniInstallerView::CalculatePreferredSize() const {
-  int height =
-      GetLayoutManager()->GetPreferredHeightForWidth(this, kDialogWidth);
-  return gfx::Size(kDialogWidth, height);
+  const int dialog_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                               DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
+                           margins().width();
+  return gfx::Size(dialog_width, GetHeightForWidth(dialog_width));
 }
 
 void CrostiniInstallerView::OnComponentLoaded(ConciergeClientResult result) {
