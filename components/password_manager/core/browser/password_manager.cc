@@ -474,7 +474,6 @@ void PasswordManager::OnPasswordFormSubmitted(
           password_manager::features::kNewPasswordFormParsing))
     ProcessSubmittedForm(password_form.form_data, driver);
   ProvisionallySavePassword(password_form, driver);
-  pending_login_managers_.clear();
 }
 
 void PasswordManager::OnPasswordFormSubmittedNoChecks(
