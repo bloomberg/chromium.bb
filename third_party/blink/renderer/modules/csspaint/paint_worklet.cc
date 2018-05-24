@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet.h"
 
+#include "base/rand_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -11,7 +12,6 @@
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
-#include "third_party/blink/renderer/platform/wtf/cryptographically_random_number.h"
 
 namespace blink {
 
@@ -79,11 +79,11 @@ int PaintWorklet::GetPaintsBeforeSwitching() {
   // according to the actual paints per frame. For example, if we found that
   // there are typically ~1000 paints in each frame, we'd want to set the number
   // to average at 500.
-  return CryptographicallyRandomNumber() % kMaxPaintCountToSwitch;
+  return base::RandInt(0, kMaxPaintCountToSwitch - 1);
 }
 
 size_t PaintWorklet::SelectNewGlobalScope() {
-  return CryptographicallyRandomNumber() % kNumGlobalScopes;
+  return static_cast<size_t>(base::RandGenerator(kNumGlobalScopes));
 }
 
 scoped_refptr<Image> PaintWorklet::Paint(const String& name,

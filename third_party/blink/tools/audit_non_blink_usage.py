@@ -80,6 +80,13 @@ _CONFIG = [
             # Debugging helpers from //base/debug are allowed everywhere.
             'base::debug::.+',
 
+            # (Cryptographic) random number generation
+            'base::RandUint64',
+            'base::RandInt',
+            'base::RandGenerator',
+            'base::RandDouble',
+            'base::RandBytes',
+
             # Feature list checking.
             'base::Feature.*',
             'base::FEATURE_.+',
@@ -282,6 +289,12 @@ _CONFIG = [
             'third_party/blink/renderer/core/paint/theme_painter.cc',
         ],
         'allowed': ['ui::NativeTheme.*'],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/crypto/',
+        ],
+        'allowed': ['crypto::.+'],
     },
 ]
 

@@ -12,6 +12,7 @@ include_rules = [
     "+base/memory/weak_ptr.h",
     "+base/metrics/histogram_macros.h",
     "+base/optional.h",
+    "+base/rand_util.h",
     "+base/sequenced_task_runner.h",
     "+base/single_thread_task_runner.h",
     "+base/stl_util.h",

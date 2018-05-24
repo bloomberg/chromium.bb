@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/platform/network/form_data_encoder.h"
 
 #include <limits>
-#include "third_party/blink/renderer/platform/wtf/cryptographically_random_number.h"
+#include "base/rand_util.h"
 #include "third_party/blink/renderer/platform/wtf/hex_number.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
@@ -120,17 +120,12 @@ Vector<char> FormDataEncoder::GenerateUniqueBoundaryString() {
   Append(boundary, "----WebKitFormBoundary");
 
   // Append 16 random 7bit ascii AlphaNumeric characters.
-  Vector<char> random_bytes;
+  char random_bytes[16];
+  base::RandBytes(random_bytes, sizeof(random_bytes));
+  for (char& c : random_bytes)
+    c = kAlphaNumericEncodingMap[c & 0x3F];
+  boundary.Append(random_bytes, sizeof(random_bytes));
 
-  for (unsigned i = 0; i < 4; ++i) {
-    uint32_t randomness = CryptographicallyRandomNumber();
-    random_bytes.push_back(kAlphaNumericEncodingMap[(randomness >> 24) & 0x3F]);
-    random_bytes.push_back(kAlphaNumericEncodingMap[(randomness >> 16) & 0x3F]);
-    random_bytes.push_back(kAlphaNumericEncodingMap[(randomness >> 8) & 0x3F]);
-    random_bytes.push_back(kAlphaNumericEncodingMap[randomness & 0x3F]);
-  }
-
-  boundary.AppendVector(random_bytes);
   boundary.push_back(
       0);  // Add a 0 at the end so we can use this as a C-style string.
   return boundary;
