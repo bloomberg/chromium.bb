@@ -676,7 +676,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) override;
   void OnImeCancelComposition() override;
-  bool IsWheelScrollInProgress() override;
 
   // FrameTokenMessageQueue::Client:
   void OnInvalidFrameToken(uint32_t frame_token) override;

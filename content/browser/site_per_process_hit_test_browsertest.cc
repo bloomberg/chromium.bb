@@ -2955,9 +2955,8 @@ void SendTouchpadFlingSequenceWithExpectedTarget(
                               ui::EventTimeForNow(), 0, 1, 0, 1, 0, 1);
   UpdateEventRootLocation(&fling_start, root_view_aura);
   TestInputEventObserver target_monitor(expected_target->GetRenderWidgetHost());
-  InputEventAckWaiter fling_start_waiter(
-      expected_target->GetRenderWidgetHost(),
-      blink::WebInputEvent::kGestureFlingStart);
+  InputEventAckWaiter waiter(expected_target->GetRenderWidgetHost(),
+                             blink::WebInputEvent::kGestureFlingStart);
   root_view_aura->OnScrollEvent(&fling_start);
   // If the expected target is not the root, then we should be doing async
   // targeting first. So event dispatch should not happen synchronously.
@@ -2965,17 +2964,11 @@ void SendTouchpadFlingSequenceWithExpectedTarget(
   // such cases.
   if (root_view != expected_target)
     EXPECT_FALSE(target_monitor.EventWasReceived());
-  fling_start_waiter.Wait();
+  waiter.Wait();
   EXPECT_TRUE(target_monitor.EventWasReceived());
   EXPECT_EQ(expected_target, router_touchpad_gesture_target);
   target_monitor.ResetEventsReceived();
 
-  // Send a GFC event, the fling_controller will process the GFC and stop the
-  // fling by generating a wheel event with phaseEnded. The
-  // mouse_wheel_event_queue will process the wheel event and generate a GSE.
-  InputEventAckWaiter gestrue_scroll_end_waiter(
-      expected_target->GetRenderWidgetHost(),
-      blink::WebInputEvent::kGestureScrollEnd);
   ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL, gesture_point,
                                ui::EventTimeForNow(), 0, 1, 0, 1, 0, 1);
   UpdateEventRootLocation(&fling_cancel, root_view_aura);
@@ -2984,7 +2977,16 @@ void SendTouchpadFlingSequenceWithExpectedTarget(
   EXPECT_TRUE(target_monitor.EventWasReceived());
   EXPECT_EQ(target_monitor.EventType(),
             blink::WebInputEvent::kGestureFlingCancel);
-  gestrue_scroll_end_waiter.Wait();
+
+  if (root_view_aura->wheel_scroll_latching_enabled()) {
+    blink::WebGestureEvent gesture_event(
+        blink::WebGestureEvent::kGestureScrollEnd,
+        blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::GetStaticTimeStampForTests(),
+        blink::kWebGestureDeviceTouchpad);
+    gesture_event.SetPositionInWidget(gfx::PointF(gesture_point));
+    expected_target->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
+  }
 }
 #endif  // !defined(OS_WIN)
 
