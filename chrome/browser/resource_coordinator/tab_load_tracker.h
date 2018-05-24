@@ -13,8 +13,6 @@
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 
-class WebContentsObserver;
-
 namespace content {
 class WebContents;
 }  // namespace content
