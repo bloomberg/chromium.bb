@@ -121,8 +121,6 @@ class LocalSiteCharacteristicsDataImpl
   FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataImplTest,
                            LateAsyncReadDoesntBypassClearEvent);
 
-  static const int64_t kZeroIntervalInternalRepresentation;
-
   // Add |extra_observation_duration| to the observation window of a given
   // feature if it hasn't been used yet, do nothing otherwise.
   static void IncrementFeatureObservationDuration(

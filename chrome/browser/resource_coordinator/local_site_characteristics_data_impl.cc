@@ -35,12 +35,6 @@ std::vector<SiteCharacteristicsFeatureProto*> GetAllFeaturesFromProto(
 
 }  // namespace
 
-// static:
-const int64_t
-    LocalSiteCharacteristicsDataImpl::kZeroIntervalInternalRepresentation =
-        LocalSiteCharacteristicsDataImpl::TimeDeltaToInternalRepresentation(
-            base::TimeDelta());
-
 void LocalSiteCharacteristicsDataImpl::NotifySiteLoaded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Update the last loaded time when this origin gets loaded for the first
@@ -203,8 +197,11 @@ void LocalSiteCharacteristicsDataImpl::
     InitSiteCharacteristicsFeatureProtoWithDefaultValues(
         SiteCharacteristicsFeatureProto* proto) {
   DCHECK_NE(nullptr, proto);
-  proto->set_observation_duration(kZeroIntervalInternalRepresentation);
-  proto->set_use_timestamp(kZeroIntervalInternalRepresentation);
+  static const auto zero_interval =
+      LocalSiteCharacteristicsDataImpl::TimeDeltaToInternalRepresentation(
+          base::TimeDelta());
+  proto->set_observation_duration(zero_interval);
+  proto->set_use_timestamp(zero_interval);
 }
 
 void LocalSiteCharacteristicsDataImpl::InitWithDefaultValues(
@@ -219,7 +216,9 @@ void LocalSiteCharacteristicsDataImpl::InitWithDefaultValues(
 
   if (!only_init_uninitialized_fields ||
       !site_characteristics_.has_last_loaded()) {
-    site_characteristics_.set_last_loaded(kZeroIntervalInternalRepresentation);
+    site_characteristics_.set_last_loaded(
+        LocalSiteCharacteristicsDataImpl::TimeDeltaToInternalRepresentation(
+            base::TimeDelta()));
   }
 }
 
@@ -274,7 +273,9 @@ void LocalSiteCharacteristicsDataImpl::NotifyFeatureUsage(
 
   feature_proto->set_use_timestamp(
       TimeDeltaToInternalRepresentation(GetTickDeltaSinceEpoch()));
-  feature_proto->set_observation_duration(kZeroIntervalInternalRepresentation);
+  feature_proto->set_observation_duration(
+      LocalSiteCharacteristicsDataImpl::TimeDeltaToInternalRepresentation(
+          base::TimeDelta()));
 }
 
 void LocalSiteCharacteristicsDataImpl::OnInitCallback(
@@ -300,13 +301,17 @@ void LocalSiteCharacteristicsDataImpl::OnInitCallback(
           (*this_features_iter)
               ->set_use_timestamp((*db_features_iter)->use_timestamp());
           (*this_features_iter)
-              ->set_observation_duration(kZeroIntervalInternalRepresentation);
+              ->set_observation_duration(
+                  LocalSiteCharacteristicsDataImpl::
+                      TimeDeltaToInternalRepresentation(base::TimeDelta()));
         } else {
           // Else, add the observation duration from the database to the
           // in-memory observation duration.
           if (!(*this_features_iter)->has_observation_duration()) {
             (*this_features_iter)
-                ->set_observation_duration(kZeroIntervalInternalRepresentation);
+                ->set_observation_duration(
+                    LocalSiteCharacteristicsDataImpl::
+                        TimeDeltaToInternalRepresentation(base::TimeDelta()));
           }
           IncrementFeatureObservationDuration(
               (*this_features_iter),
