@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/threading/platform_thread.h"
 
 namespace base {
@@ -31,8 +32,8 @@ struct StaticData {
 };
 
 StaticData* GetStaticData() {
-  static auto* static_data = new StaticData();
-  return static_data;
+  static base::NoDestructor<StaticData> static_data;
+  return static_data.get();
 }
 
 }  // namespace
@@ -62,17 +63,14 @@ Watchdog::~Watchdog() {
     return;
   if (!IsJoinable())
     Cleanup();
-  condition_variable_.Signal();
   PlatformThread::Join(handle_);
 }
 
 void Watchdog::Cleanup() {
   if (!enabled_)
     return;
-  {
-    AutoLock lock(lock_);
-    state_ = SHUTDOWN;
-  }
+  AutoLock lock(lock_);
+  state_ = SHUTDOWN;
   condition_variable_.Signal();
 }
 
@@ -93,11 +91,9 @@ void Watchdog::ArmSomeTimeDeltaAgo(const TimeDelta& time_delta) {
 
 // Start clock for watchdog.
 void Watchdog::ArmAtStartTime(const TimeTicks start_time) {
-  {
-    AutoLock lock(lock_);
-    start_time_ = start_time;
-    state_ = ARMED;
-  }
+  AutoLock lock(lock_);
+  start_time_ = start_time;
+  state_ = ARMED;
   // Force watchdog to wake up, and go to sleep with the timer ticking with the
   // proper duration.
   condition_variable_.Signal();
