@@ -458,16 +458,29 @@ AccessibilitySelectedState AXLayoutObject::IsSelected() const {
 
   // Selection follows focus, but ONLY in single selection containers,
   // and only if aria-selected was not present to override
+  return IsSelectedFromFocus() ? kSelectedStateTrue : kSelectedStateFalse;
+}
 
+// In single selection containers, selection follows focus unless aria_selected
+// is set to false.
+bool AXLayoutObject::IsSelectedFromFocus() const {
+  // If not a single selection container, selection does not follow focus.
   AXObject* container = ContainerWidget();
   if (!container || container->IsMultiSelectable())
-    return kSelectedStateFalse;
+    return false;
 
+  // If this object is not accessibility focused, then it is not selected from
+  // focus.
   AXObject* focused_object = AXObjectCache().FocusedObject();
-  return (focused_object == this ||
-          (focused_object && focused_object->ActiveDescendant() == this))
-             ? kSelectedStateTrue
-             : kSelectedStateFalse;
+  if (focused_object != this &&
+      (!focused_object || focused_object->ActiveDescendant() != this))
+    return false;
+
+  // In single selection container and accessibility focused => true if
+  // aria-selected wasn't used as an override.
+  bool is_selected;
+  return !HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kSelected,
+                                        is_selected);
 }
 
 //
@@ -2214,8 +2227,21 @@ void AXLayoutObject::HandleActiveDescendantChanged() {
   if (!GetLayoutObject())
     return;
 
+  Vector<String> ids;
+  TokenVectorFromAttribute(ids, aria_activedescendantAttr);
+  if (!ids.IsEmpty())
+    AXObjectCache().UpdateReverseRelations(this, ids);
+
   AXObject* focused_object = AXObjectCache().FocusedObject();
   if (focused_object == this && SupportsARIAActiveDescendant()) {
+    AXObject* active_descendant = ActiveDescendant();
+    if (active_descendant && active_descendant->IsSelectedFromFocus()) {
+      // In single selection containers, selection follows focus, so a selection
+      // changed event must be fired. This ensures the AT is notified that the
+      // selected state has changed, so that it does not read "unselected" as
+      // the user navigates through the items.
+      AXObjectCache().HandleAriaSelectedChanged(active_descendant->GetNode());
+    }
     AXObjectCache().PostNotification(
         GetLayoutObject(), AXObjectCacheImpl::kAXActiveDescendantChanged);
   }
@@ -2417,7 +2443,6 @@ void AXLayoutObject::LineBreaks(Vector<int>& line_breaks) const {
 //
 // Private.
 //
-
 
 bool AXLayoutObject::IsTabItemSelected() const {
   if (!IsTabItem() || !GetLayoutObject())
