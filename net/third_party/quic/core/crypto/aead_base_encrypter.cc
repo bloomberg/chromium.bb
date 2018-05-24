@@ -9,6 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
+#include "third_party/boringssl/src/include/openssl/crypto.h"
 #include "third_party/boringssl/src/include/openssl/err.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
@@ -31,14 +32,21 @@ void DLogOpenSslErrors() {
 #endif
 }
 
+const EVP_AEAD* InitAndCall(const EVP_AEAD* (*aead_getter)()) {
+  // Ensure BoringSSL is initialized before calling |aead_getter|. In Chromium,
+  // the static initializer is disabled.
+  CRYPTO_library_init();
+  return aead_getter();
+}
+
 }  // namespace
 
-AeadBaseEncrypter::AeadBaseEncrypter(const EVP_AEAD* aead_alg,
+AeadBaseEncrypter::AeadBaseEncrypter(const EVP_AEAD* (*aead_getter)(),
                                      size_t key_size,
                                      size_t auth_tag_size,
                                      size_t nonce_size,
                                      bool use_ietf_nonce_construction)
-    : aead_alg_(aead_alg),
+    : aead_alg_(InitAndCall(aead_getter)),
       key_size_(key_size),
       auth_tag_size_(auth_tag_size),
       nonce_size_(nonce_size),

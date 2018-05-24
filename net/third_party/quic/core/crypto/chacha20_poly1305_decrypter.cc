@@ -17,7 +17,7 @@ const size_t kNonceSize = 12;
 }  // namespace
 
 ChaCha20Poly1305Decrypter::ChaCha20Poly1305Decrypter()
-    : AeadBaseDecrypter(EVP_aead_chacha20_poly1305(),
+    : AeadBaseDecrypter(EVP_aead_chacha20_poly1305,
                         kKeySize,
                         kAuthTagSize,
                         kNonceSize,

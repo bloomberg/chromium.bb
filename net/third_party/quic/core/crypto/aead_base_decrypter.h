@@ -19,7 +19,9 @@ namespace net {
 // AeadBaseDecrypter is the base class of AEAD QuicDecrypter subclasses.
 class QUIC_EXPORT_PRIVATE AeadBaseDecrypter : public QuicDecrypter {
  public:
-  AeadBaseDecrypter(const EVP_AEAD* aead_alg,
+  // This takes the function pointer rather than the EVP_AEAD itself so
+  // subclasses do not need to call CRYPTO_library_init.
+  AeadBaseDecrypter(const EVP_AEAD* (*aead_getter)(),
                     size_t key_size,
                     size_t auth_tag_size,
                     size_t nonce_size,

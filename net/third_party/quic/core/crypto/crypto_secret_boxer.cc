@@ -12,6 +12,7 @@
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "third_party/boringssl/src/include/openssl/aead.h"
+#include "third_party/boringssl/src/include/openssl/crypto.h"
 
 using std::string;
 
@@ -29,7 +30,9 @@ struct CryptoSecretBoxer::State {
   std::vector<bssl::UniquePtr<EVP_AEAD_CTX>> ctxs;
 };
 
-CryptoSecretBoxer::CryptoSecretBoxer() {}
+CryptoSecretBoxer::CryptoSecretBoxer() {
+  CRYPTO_library_init();
+}
 
 CryptoSecretBoxer::~CryptoSecretBoxer() {}
 
