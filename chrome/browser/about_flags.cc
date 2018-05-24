@@ -600,17 +600,6 @@ const FeatureEntry::Choice kForceTextDirectionChoices[] = {
      switches::kForceDirectionRTL},
 };
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-// Feature used to enable the identification of open tabs given URLs in
-// suggestions, and converting those suggestions to ones that allow switching to
-// the tab if found.  Currently only on the desktop. Includes button option
-// for placing element in suggestions for explicit selection.
-const flags_ui::FeatureEntry::Choice kOmniboxTabSwitchSuggestions[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {"Enabled", omnibox::kOmniboxTabSwitchSuggestionsFlag, "enabled"},
-    {"Disabled", omnibox::kOmniboxTabSwitchSuggestionsFlag, "disabled"}};
-#endif
-
 #if defined(OS_CHROMEOS)
 const FeatureEntry::Choice kAshUiModeChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -3029,7 +3018,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-tab-switch-suggestions",
      flag_descriptions::kOmniboxTabSwitchSuggestionsName,
      flag_descriptions::kOmniboxTabSwitchSuggestionsDescription, kOsDesktop,
-     MULTI_VALUE_TYPE(kOmniboxTabSwitchSuggestions)},
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
     {"enable-new-app-menu-icon", flag_descriptions::kEnableNewAppMenuIconName,
      flag_descriptions::kEnableNewAppMenuIconDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kAnimatedAppMenuIcon)},
