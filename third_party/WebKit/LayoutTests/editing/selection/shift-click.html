@@ -6,8 +6,8 @@
 // TODO(editing-dev): Once http://crbug.com/736253 fixed, we should use
 // |chrome.pointerActionSequence()| instead of |eventSender|.
 const kSample = [
-  '<div id="first">one <span id="start"></span>two three</div>',
-  '<div id="second">four <span id="end"></span>five six</div>',
+  '<div id="first">one <span id="start">two three</span></div>',
+  '<div id="second">four <span id="end">five six</span></div>',
 ].join('');
 
 function doTest(behavior) {
@@ -52,8 +52,8 @@ function doTest(behavior) {
     kSample,
     selection => doDrag(selection),
     [
-      '<div id="first">one <span id="start"></span>^two three</div>',
-      '<div id="second">four <span id="end"></span>five| six</div>',
+      '<div id="first">one <span id="start">^two three</span></div>',
+      '<div id="second">four <span id="end">five| six</span></div>',
     ].join(''),
     `${behavior}-1: Drag start to end`);
 
@@ -65,8 +65,8 @@ function doTest(behavior) {
       doShiftClick(selection, second, second.offsetWidth);
     },
     [
-      '<div id="first">one <span id="start"></span>^two three</div>',
-      '<div id="second">four <span id="end"></span>five six|</div>',
+      '<div id="first">one <span id="start">^two three</span></div>',
+      '<div id="second">four <span id="end">five six|</span></div>',
     ].join(''),
     `${behavior}-2: Shift click second`);
 
@@ -80,8 +80,8 @@ function doTest(behavior) {
       doShiftClick(selection, end, 0);
     },
     [
-      '<div id="first">one <span id="start"></span>^two three</div>',
-      '<div id="second">four <span id="end"></span>five| six</div>',
+      '<div id="first">one <span id="start">^two three</span></div>',
+      '<div id="second">four <span id="end">five| six</span></div>',
     ].join(''),
     `${behavior}-3: Shift click end`);
 
@@ -98,12 +98,12 @@ function doTest(behavior) {
     },
     behavior === 'mac'
       ? [
-          '<div id="first">|one <span id="start"></span>two three</div>',
-          '<div id="second">four <span id="end"></span>five^ six</div>',
+          '<div id="first">|one <span id="start">two three</span></div>',
+          '<div id="second">four <span id="end">five^ six</span></div>',
         ].join('')
       : [
-          '<div id="first">|one <span id="start"></span>two^ three</div>',
-          '<div id="second">four <span id="end"></span>five six</div>',
+          '<div id="first">|one <span id="start">two^ three</span></div>',
+          '<div id="second">four <span id="end">five six</span></div>',
         ].join(''),
     `${behavior}-4: Shift click first`);
 
@@ -122,12 +122,12 @@ function doTest(behavior) {
     },
     behavior === 'mac'
       ? [
-          '<div id="first">one <span id="start"></span>|two three</div>',
-          '<div id="second">four <span id="end"></span>five^ six</div>',
+          '<div id="first">one <span id="start">|two three</span></div>',
+          '<div id="second">four <span id="end">five^ six</span></div>',
         ].join('')
       : [
-          '<div id="first">one <span id="start"></span>|two^ three</div>',
-          '<div id="second">four <span id="end"></span>five six</div>',
+          '<div id="first">one <span id="start">|two^ three</span></div>',
+          '<div id="second">four <span id="end">five six</span></div>',
         ].join(''),
     `${behavior}-5: Shift click start`);
 }
