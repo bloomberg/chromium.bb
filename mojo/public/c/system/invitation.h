@@ -17,8 +17,22 @@
 #include "mojo/public/c/system/system_export.h"
 #include "mojo/public/c/system/types.h"
 
+// Flags included in |MojoProcessErrorDetails| indicating additional status
+// information.
+typedef uint32_t MojoProcessErrorFlags;
+
+// No flags.
+#define MOJO_PROCESS_ERROR_FLAG_NONE ((MojoProcessErrorFlags)0)
+
+// If set, the process has been disconnected. No further
+// |MojoProcessErrorHandler| invocations occur for it, and any IPC primitives
+// (message pipes, data pipes) which were connected to it have been or will
+// imminently be disconnected.
+#define MOJO_PROCESS_ERROR_FLAG_DISCONNECTED ((MojoProcessErrorFlags)1)
+
 // Details regarding why an invited process has had its connection to this
-// process terminated by the system. See |MojoProcessErrorHandler|.
+// process terminated by the system. See |MojoProcessErrorHandler| and
+// |MojoSendInvitation()|.
 struct MOJO_ALIGNAS(8) MojoProcessErrorDetails {
   // The size of this structure, used for versioning.
   uint32_t struct_size;
@@ -30,9 +44,14 @@ struct MOJO_ALIGNAS(8) MojoProcessErrorDetails {
   // terminated. This is an information message which may be useful to
   // developers.
   const char* error_message;
+
+  // See |MojoProcessErrorFlags|.
+  MojoProcessErrorFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoProcessErrorDetails) == 16,
-                   "MojoProcessErrorDetails has wrong size.");
+MOJO_STATIC_ASSERT_FOR_32_BIT(sizeof(MojoProcessErrorDetails) == 16,
+                              "MojoProcessErrorDetails has wrong size.");
+MOJO_STATIC_ASSERT_FOR_64_BIT(sizeof(MojoProcessErrorDetails) == 24,
+                              "MojoProcessErrorDetails has wrong size.");
 
 // An opaque process handle value which must be provided when sending an
 // invitation to another process via a platform transport. See
@@ -252,8 +271,9 @@ MojoCreateInvitation(const struct MojoCreateInvitationOptions* options,
 // |name| is an arbitrary name to give this pipe, required to extract the pipe
 //     on the receiving end of the invitation. Note that the name is scoped to
 //     this invitation only, so e.g. multiple invitations may attach pipes with
-//     the name |0|, but any given invitation may only have a single pipe
+//     the name "foo", but any given invitation may only have a single pipe
 //     attached with that name.
+// |name_num_bytes| is the number of bytes from |name| to use as the name.
 // |options| controls behavior. May be null for default behavior.
 // |message_pipe_handle| is the address of storage for a MojoHandle value.
 //     Upon success, the handle of the local endpoint of the new message pipe
@@ -273,7 +293,8 @@ MojoCreateInvitation(const struct MojoCreateInvitationOptions* options,
 //       new local message pipe endpoint.
 MOJO_SYSTEM_EXPORT MojoResult MojoAttachMessagePipeToInvitation(
     MojoHandle invitation_handle,
-    uint64_t name,
+    const void* name,
+    uint32_t name_num_bytes,
     const struct MojoAttachMessagePipeToInvitationOptions* options,
     MojoHandle* message_pipe_handle);
 
@@ -283,6 +304,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoAttachMessagePipeToInvitation(
 // |name| is the name of the endpoint within the invitation. This corresponds
 //     to the name that was given to |MojoAttachMessagePipeToInvitation()| when
 //     the endpoint was attached.
+// |name_num_bytes| is the number of bytes from |name| to use as the name.
 // |options| controls behavior. May be null for default behavior.
 // |message_pipe_handle| is the address of storage for a MojoHandle value.
 //     Upon success, the handle of the extracted message pipe endpoint will be
@@ -312,7 +334,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoAttachMessagePipeToInvitation(
 //       |MojoCreateInvitation()|.
 MOJO_SYSTEM_EXPORT MojoResult MojoExtractMessagePipeFromInvitation(
     MojoHandle invitation_handle,
-    uint64_t name,
+    const void* name,
+    uint32_t name_num_bytes,
     const struct MojoExtractMessagePipeFromInvitationOptions* options,
     MojoHandle* message_pipe_handle);
 
@@ -330,15 +353,13 @@ MOJO_SYSTEM_EXPORT MojoResult MojoExtractMessagePipeFromInvitation(
 //     other endpoint of which should be established within the process
 //     corresponding to |*process_handle|. See |MojoInvitationTransportEndpoint|
 //     for details.
+// |error_handler| is a function to invoke if the connection to the invitee
+//     encounters any kind of error condition, e.g. a message validation failure
+//     reported by |MojoNotifyBadMessage()|, or permanent disconnection. See
+//     |MojoProcessErrorDetails| for more information.
 // |error_handler_context| is an arbitrary value to be associated with this
-//     process invitation. Its only relevance is that if the connection to this
-//     invitee is terminated at any point due to e.g. a message validation
-//     error, |error_handler| will be invoked with this value for its |context|
-//     argument.
-// |error_handler| is a function to invoke if the connection to the invitee is
-//     ever terminated by the system due to certain error conditions, generally
-//     constrained to message validation errors (i.e. the process is behaving
-//     badly). May be null.
+//     process invitation. This value is passed as the |context| argument to
+//     |error_handler| when invoked regarding this invitee.
 // |options| controls behavior. May be null for default behavior.
 //
 // This assumes ownership of any platform handles in |transport_endpoint| if

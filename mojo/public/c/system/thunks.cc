@@ -358,20 +358,22 @@ MojoResult MojoCreateInvitation(const MojoCreateInvitationOptions* options,
 
 MojoResult MojoAttachMessagePipeToInvitation(
     MojoHandle invitation_handle,
-    uint64_t name,
+    const void* name,
+    uint32_t name_num_bytes,
     const MojoAttachMessagePipeToInvitationOptions* options,
     MojoHandle* message_pipe_handle) {
-  return g_thunks.AttachMessagePipeToInvitation(invitation_handle, name,
-                                                options, message_pipe_handle);
+  return g_thunks.AttachMessagePipeToInvitation(
+      invitation_handle, name, name_num_bytes, options, message_pipe_handle);
 }
 
 MojoResult MojoExtractMessagePipeFromInvitation(
     MojoHandle invitation_handle,
-    uint64_t name,
+    const void* name,
+    uint32_t name_num_bytes,
     const MojoExtractMessagePipeFromInvitationOptions* options,
     MojoHandle* message_pipe_handle) {
   return g_thunks.ExtractMessagePipeFromInvitation(
-      invitation_handle, name, options, message_pipe_handle);
+      invitation_handle, name, name_num_bytes, options, message_pipe_handle);
 }
 
 MojoResult MojoSendInvitation(

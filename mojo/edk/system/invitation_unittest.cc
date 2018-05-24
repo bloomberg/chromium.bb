@@ -6,13 +6,19 @@
 #include <string>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
+#include "base/synchronization/lock.h"
 #include "base/test/multiprocess_test.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/c/system/invitation.h"
@@ -39,9 +45,13 @@ class InvitationTest : public test::MojoTestBase {
       const std::string& test_client_name,
       MojoHandle* primordial_pipes,
       size_t num_primordial_pipes,
-      TransportType transport_type);
+      TransportType transport_type,
+      MojoProcessErrorHandler error_handler = nullptr,
+      uintptr_t error_handler_context = 0);
 
  private:
+  base::test::ScopedTaskEnvironment task_environment_;
+
   DISALLOW_COPY_AND_ASSIGN(InvitationTest);
 };
 
@@ -74,24 +84,26 @@ TEST_F(InvitationTest, InvalidArguments) {
   MojoAttachMessagePipeToInvitationOptions invalid_attach_options;
   invalid_attach_options.struct_size = 0;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoAttachMessagePipeToInvitation(MOJO_HANDLE_INVALID, 0, nullptr,
-                                              &pipe));
+            MojoAttachMessagePipeToInvitation(MOJO_HANDLE_INVALID, "x", 1,
+                                              nullptr, &pipe));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoAttachMessagePipeToInvitation(invitation, 0,
+            MojoAttachMessagePipeToInvitation(invitation, "x", 1,
                                               &invalid_attach_options, &pipe));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoAttachMessagePipeToInvitation(invitation, 0, nullptr, nullptr));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      MojoAttachMessagePipeToInvitation(invitation, "x", 1, nullptr, nullptr));
 
   MojoExtractMessagePipeFromInvitationOptions invalid_extract_options;
   invalid_extract_options.struct_size = 0;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoExtractMessagePipeFromInvitation(MOJO_HANDLE_INVALID, 0,
+            MojoExtractMessagePipeFromInvitation(MOJO_HANDLE_INVALID, "x", 1,
                                                  nullptr, &pipe));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             MojoExtractMessagePipeFromInvitation(
-                invitation, 0, &invalid_extract_options, &pipe));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoExtractMessagePipeFromInvitation(
-                                              invitation, 0, nullptr, nullptr));
+                invitation, "x", 1, &invalid_extract_options, &pipe));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoExtractMessagePipeFromInvitation(invitation, "x", 1, nullptr,
+                                                 nullptr));
 
   PlatformChannel channel;
   MojoPlatformHandle endpoint_handle;
@@ -168,13 +180,13 @@ TEST_F(InvitationTest, AttachAndExtractLocally) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateInvitation(nullptr, &invitation));
 
   MojoHandle pipe0 = MOJO_HANDLE_INVALID;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoAttachMessagePipeToInvitation(invitation, 0, nullptr, &pipe0));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoAttachMessagePipeToInvitation(
+                                invitation, "x", 1, nullptr, &pipe0));
   EXPECT_NE(MOJO_HANDLE_INVALID, pipe0);
 
   MojoHandle pipe1 = MOJO_HANDLE_INVALID;
   EXPECT_EQ(MOJO_RESULT_OK, MojoExtractMessagePipeFromInvitation(
-                                invitation, 0, nullptr, &pipe1));
+                                invitation, "x", 1, nullptr, &pipe1));
   EXPECT_NE(MOJO_HANDLE_INVALID, pipe1);
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(invitation));
@@ -193,8 +205,8 @@ TEST_F(InvitationTest, ClosedInvitationClosesAttachments) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateInvitation(nullptr, &invitation));
 
   MojoHandle pipe = MOJO_HANDLE_INVALID;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoAttachMessagePipeToInvitation(invitation, 0, nullptr, &pipe));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoAttachMessagePipeToInvitation(
+                                invitation, "x", 1, nullptr, &pipe));
   EXPECT_NE(MOJO_HANDLE_INVALID, pipe);
 
   // Closing the invitation should close |pipe|'s peer.
@@ -210,16 +222,17 @@ TEST_F(InvitationTest, AttachNameInUse) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateInvitation(nullptr, &invitation));
 
   MojoHandle pipe0 = MOJO_HANDLE_INVALID;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoAttachMessagePipeToInvitation(invitation, 0, nullptr, &pipe0));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoAttachMessagePipeToInvitation(
+                                invitation, "x", 1, nullptr, &pipe0));
   EXPECT_NE(MOJO_HANDLE_INVALID, pipe0);
 
   MojoHandle pipe1 = MOJO_HANDLE_INVALID;
-  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-            MojoAttachMessagePipeToInvitation(invitation, 0, nullptr, &pipe1));
+  EXPECT_EQ(
+      MOJO_RESULT_ALREADY_EXISTS,
+      MojoAttachMessagePipeToInvitation(invitation, "x", 1, nullptr, &pipe1));
   EXPECT_EQ(MOJO_HANDLE_INVALID, pipe1);
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoAttachMessagePipeToInvitation(invitation, 1, nullptr, &pipe1));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoAttachMessagePipeToInvitation(
+                                invitation, "y", 1, nullptr, &pipe1));
   EXPECT_NE(MOJO_HANDLE_INVALID, pipe1);
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(invitation));
@@ -232,7 +245,9 @@ base::Process InvitationTest::LaunchChildTestClient(
     const std::string& test_client_name,
     MojoHandle* primordial_pipes,
     size_t num_primordial_pipes,
-    TransportType transport_type) {
+    TransportType transport_type,
+    MojoProcessErrorHandler error_handler,
+    uintptr_t error_handler_context) {
   base::CommandLine command_line(
       base::GetMultiProcessTestChildBaseCommandLine());
 
@@ -279,9 +294,9 @@ base::Process InvitationTest::LaunchChildTestClient(
 
   MojoHandle invitation;
   CHECK_EQ(MOJO_RESULT_OK, MojoCreateInvitation(nullptr, &invitation));
-  for (uint64_t name = 0; name < num_primordial_pipes; ++name) {
+  for (uint32_t name = 0; name < num_primordial_pipes; ++name) {
     CHECK_EQ(MOJO_RESULT_OK,
-             MojoAttachMessagePipeToInvitation(invitation, name, nullptr,
+             MojoAttachMessagePipeToInvitation(invitation, &name, 4, nullptr,
                                                &primordial_pipes[name]));
   }
 
@@ -309,7 +324,7 @@ base::Process InvitationTest::LaunchChildTestClient(
   transport_endpoint.platform_handles = &endpoint_handle;
   CHECK_EQ(MOJO_RESULT_OK,
            MojoSendInvitation(invitation, &process_handle, &transport_endpoint,
-                              nullptr, 0, nullptr));
+                              error_handler, error_handler_context, nullptr));
   return child_process;
 }
 
@@ -381,8 +396,10 @@ TEST_F(InvitationTest, SendInvitation) {
 DEFINE_TEST_CLIENT(SendInvitationClient) {
   MojoHandle primordial_pipe;
   MojoHandle invitation = AcceptInvitation();
-  ASSERT_EQ(MOJO_RESULT_OK, MojoExtractMessagePipeFromInvitation(
-                                invitation, 0, nullptr, &primordial_pipe));
+  const uint32_t pipe_name = 0;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoExtractMessagePipeFromInvitation(invitation, &pipe_name, 4,
+                                                 nullptr, &primordial_pipe));
   ASSERT_EQ(MOJO_RESULT_OK, MojoClose(invitation));
 
   WaitForSignals(primordial_pipe, MOJO_HANDLE_SIGNAL_READABLE);
@@ -420,10 +437,13 @@ TEST_F(InvitationTest, SendInvitationMultiplePipes) {
 DEFINE_TEST_CLIENT(SendInvitationMultiplePipesClient) {
   MojoHandle pipes[2];
   MojoHandle invitation = AcceptInvitation();
-  ASSERT_EQ(MOJO_RESULT_OK, MojoExtractMessagePipeFromInvitation(
-                                invitation, 0, nullptr, &pipes[0]));
-  ASSERT_EQ(MOJO_RESULT_OK, MojoExtractMessagePipeFromInvitation(
-                                invitation, 1, nullptr, &pipes[1]));
+  const uint32_t pipe_names[] = {0, 1};
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoExtractMessagePipeFromInvitation(invitation, &pipe_names[0], 4,
+                                                 nullptr, &pipes[0]));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoExtractMessagePipeFromInvitation(invitation, &pipe_names[1], 4,
+                                                 nullptr, &pipes[1]));
 
   WaitForSignals(pipes[0], MOJO_HANDLE_SIGNAL_READABLE);
   WaitForSignals(pipes[1], MOJO_HANDLE_SIGNAL_READABLE);
@@ -458,8 +478,10 @@ TEST_F(InvitationTest, SendInvitationWithServer) {
 DEFINE_TEST_CLIENT(SendInvitationWithServerClient) {
   MojoHandle primordial_pipe;
   MojoHandle invitation = AcceptInvitation();
-  ASSERT_EQ(MOJO_RESULT_OK, MojoExtractMessagePipeFromInvitation(
-                                invitation, 0, nullptr, &primordial_pipe));
+  const uint32_t pipe_name = 0;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoExtractMessagePipeFromInvitation(invitation, &pipe_name, 4,
+                                                 nullptr, &primordial_pipe));
   ASSERT_EQ(MOJO_RESULT_OK, MojoClose(invitation));
 
   WaitForSignals(primordial_pipe, MOJO_HANDLE_SIGNAL_READABLE);
@@ -470,6 +492,118 @@ DEFINE_TEST_CLIENT(SendInvitationWithServerClient) {
   ASSERT_EQ(MOJO_RESULT_OK, MojoClose(primordial_pipe));
 }
 #endif  // !defined(OS_FUCHSIA)
+
+const char kErrorMessage[] = "ur bad :(";
+const char kDisconnectMessage[] = "go away plz";
+
+class RemoteProcessState {
+ public:
+  RemoteProcessState()
+      : callback_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+  ~RemoteProcessState() = default;
+
+  bool disconnected() {
+    base::AutoLock lock(lock_);
+    return disconnected_;
+  }
+
+  void set_error_callback(base::RepeatingClosure callback) {
+    error_callback_ = std::move(callback);
+  }
+
+  void set_expected_error_message(const std::string& expected) {
+    expected_error_message_ = expected;
+  }
+
+  void NotifyError(const std::string& error_message, bool disconnected) {
+    base::AutoLock lock(lock_);
+    CHECK(!disconnected_);
+    EXPECT_NE(error_message.find(expected_error_message_), std::string::npos);
+    disconnected_ = disconnected;
+    ++call_count_;
+    if (error_callback_)
+      callback_task_runner_->PostTask(FROM_HERE, error_callback_);
+  }
+
+ private:
+  const scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
+
+  base::Lock lock_;
+  int call_count_ = 0;
+  bool disconnected_ = false;
+  std::string expected_error_message_;
+  base::RepeatingClosure error_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoteProcessState);
+};
+
+void TestProcessErrorHandler(uintptr_t context,
+                             const MojoProcessErrorDetails* details) {
+  auto* state = reinterpret_cast<RemoteProcessState*>(context);
+  std::string error_message;
+  if (details->error_message) {
+    error_message =
+        std::string(details->error_message, details->error_message_length - 1);
+  }
+  state->NotifyError(error_message,
+                     details->flags & MOJO_PROCESS_ERROR_FLAG_DISCONNECTED);
+}
+
+TEST_F(InvitationTest, ProcessErrors) {
+  RemoteProcessState process_state;
+  MojoHandle pipe;
+  base::Process child_process = LaunchChildTestClient(
+      "ProcessErrorsClient", &pipe, 1, TransportType::kChannel,
+      &TestProcessErrorHandler, reinterpret_cast<uintptr_t>(&process_state));
+
+  MojoMessageHandle message;
+  WaitForSignals(pipe, MOJO_HANDLE_SIGNAL_READABLE);
+  EXPECT_EQ(MOJO_RESULT_OK, MojoReadMessage(pipe, nullptr, &message));
+
+  base::RunLoop error_loop;
+  process_state.set_error_callback(error_loop.QuitClosure());
+
+  // Report this message as "bad". This should cause the error handler to be
+  // invoked and the RunLoop to be quit.
+  process_state.set_expected_error_message(kErrorMessage);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoNotifyBadMessage(message, kErrorMessage, sizeof(kErrorMessage),
+                                 nullptr));
+  error_loop.Run();
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
+
+  // Now tell the child it can exit, and wait for it to disconnect.
+  base::RunLoop disconnect_loop;
+  process_state.set_error_callback(disconnect_loop.QuitClosure());
+  process_state.set_expected_error_message(std::string());
+  WriteMessage(pipe, kDisconnectMessage);
+  disconnect_loop.Run();
+
+  EXPECT_TRUE(process_state.disconnected());
+
+  int wait_result = -1;
+  base::WaitForMultiprocessTestChildExit(
+      child_process, TestTimeouts::action_timeout(), &wait_result);
+  child_process.Close();
+  EXPECT_EQ(0, wait_result);
+}
+
+DEFINE_TEST_CLIENT(ProcessErrorsClient) {
+  MojoHandle pipe;
+  MojoHandle invitation = AcceptInvitation();
+  const uint32_t pipe_name = 0;
+  ASSERT_EQ(MOJO_RESULT_OK, MojoExtractMessagePipeFromInvitation(
+                                invitation, &pipe_name, 4, nullptr, &pipe));
+  ASSERT_EQ(MOJO_RESULT_OK, MojoClose(invitation));
+
+  // Send a message. Contents are irrelevant, the test process is just going to
+  // flag it as a bad.
+  WriteMessage(pipe, "doesn't matter");
+
+  // Wait for our goodbye before exiting.
+  WaitForSignals(pipe, MOJO_HANDLE_SIGNAL_READABLE);
+  EXPECT_EQ(kDisconnectMessage, ReadMessage(pipe));
+}
 
 }  // namespace
 }  // namespace edk
