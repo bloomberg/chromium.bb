@@ -16,7 +16,7 @@
 
 namespace file_manager {
 
-// TestCase: FileManagerBrowserTest parameters.
+// TestCase: FilesAppBrowserTest parameters.
 struct TestCase {
   explicit TestCase(const char* name)
     : test_name(name) {}
@@ -26,9 +26,7 @@ struct TestCase {
     return test_name;
   }
 
-  GuestMode GetGuestMode() const {
-    return guest_mode;
-  }
+  GuestMode GetGuestMode() const { return guest_mode; }
 
   TestCase& InGuestMode() {
     guest_mode = IN_GUEST_MODE;
@@ -40,8 +38,16 @@ struct TestCase {
     return *this;
   }
 
+  bool GetTabletMode() const { return tablet_mode; }
+
+  TestCase& TabletMode() {
+    tablet_mode = true;
+    return *this;
+  }
+
   const char* test_name = nullptr;
   GuestMode guest_mode = NOT_IN_GUEST_MODE;
+  bool tablet_mode = false;
 };
 
 // FilesApp browser test.
