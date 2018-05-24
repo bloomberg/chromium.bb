@@ -784,6 +784,25 @@
             ]
         }
     ],
+    "ChromeCleanupDistribution": [
+        {
+            "platforms": [
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Stable",
+                    "params": {
+                        "cleaner_download_group": "stable/eset",
+                        "reporter_omaha_tag": "stable_eset"
+                    },
+                    "enable_features": [
+                        "ChromeCleanupDistribution"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChromeModernDesign": [
         {
             "platforms": [
@@ -2999,26 +3018,6 @@
                     },
                     "enable_features": [
                         "ResourceLoadScheduler"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SRTExperimentalEngineTrial": [
-        {
-            "platforms": [
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "NewCleaner_Launch",
-                    "params": {
-                        "download_group": "stable/eset",
-                        "tag": "stable_eset"
-                    },
-                    "enable_features": [
-                        "DownloadCleanupToolByBitness",
-                        "ExperimentalSwReporterEngine"
                     ]
                 }
             ]
