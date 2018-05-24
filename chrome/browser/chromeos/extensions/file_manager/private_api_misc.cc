@@ -45,7 +45,6 @@
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/services/file_util/public/cpp/zip_file_creator.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/account_id/account_id.h"
 #include "components/drive/drive_pref_names.h"
@@ -648,9 +647,7 @@ void FileManagerPrivateConfigureVolumeFunction::OnCompleted(
 
 namespace {
 bool IsCrostiniEnabledForProfile(Profile* profile) {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             chromeos::switches::kCrostiniFiles) &&
-         IsCrostiniUIAllowedForProfile(profile) && IsCrostiniEnabled(profile);
+  return IsCrostiniUIAllowedForProfile(profile) && IsCrostiniEnabled(profile);
 }
 }  // namespace
 

@@ -2974,9 +2974,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kEnableFileManagerTouchMode,
          chromeos::switches::kDisableFileManagerTouchMode)},
-    {"crostini-files", flag_descriptions::kCrostiniFilesName,
-     flag_descriptions::kCrostiniFilesDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kCrostiniFiles)},
     {"show-android-files-in-files-app",
      flag_descriptions::kShowAndroidFilesInFilesAppName,
      flag_descriptions::kShowAndroidFilesInFilesAppDescription, kOsCrOS,
