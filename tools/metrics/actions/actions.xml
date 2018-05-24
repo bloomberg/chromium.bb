@@ -1568,8 +1568,18 @@ should be able to be added at any place in this file.
   <owner>dtrainor@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
-    A download tracked by the Chrome download service was externally deleted
-    e.g. through a third-party download manager.
+    A download file on primary storage was externally deleted by other
+    application. e.g. through a third-party download manager. The associated
+    database record will be also deleted.
+  </description>
+</action>
+
+<action name="Android.DownloadManager.Item.ExternallyDeletedKeepRecord">
+  <owner>xingliu@chromium.org</owner>
+  <description>
+    A download file was externally deleted by other application, e.g. through a
+    third-party download manager. However the associated database record will
+    not be immediately deleted.
   </description>
 </action>
 

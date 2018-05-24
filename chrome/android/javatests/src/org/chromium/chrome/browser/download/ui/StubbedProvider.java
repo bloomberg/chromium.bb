@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.ui;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -296,13 +297,15 @@ public class StubbedProvider implements BackendProvider {
                     .setDownloadGuid("sixth_guid")
                     .setMimeType("audio/mp3");
         } else if (which == 6) {
-            builder = new DownloadInfo.Builder()
-                    .setUrl("https://sigh.com")
-                    .setBytesReceived(ONE_GIGABYTE)
-                    .setFileName("huge_image.png")
-                    .setFilePath("/storage/fake_path/Downloads/huge_image.png")
-                    .setDownloadGuid("seventh_guid")
-                    .setMimeType("image/png");
+            builder =
+                    new DownloadInfo.Builder()
+                            .setUrl("https://sigh.com")
+                            .setBytesReceived(ONE_GIGABYTE)
+                            .setFileName("huge_image.png")
+                            .setFilePath(Environment.getExternalStorageDirectory().getAbsolutePath()
+                                    + "/fake_path/Downloads/huge_image.png")
+                            .setDownloadGuid("seventh_guid")
+                            .setMimeType("image/png");
         } else if (which == 7) {
             builder = new DownloadInfo.Builder()
                     .setUrl("https://sleepy.com")
