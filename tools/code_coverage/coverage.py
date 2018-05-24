@@ -1184,7 +1184,9 @@ def _CreateCoverageProfileDataFromTargetProfDataFiles(profdata_file_paths):
         LLVM_PROFDATA_PATH, 'merge', '-o', profdata_file_path, '-sparse=true'
     ]
     subprocess_cmd.extend(profdata_file_paths)
-    subprocess.check_call(subprocess_cmd)
+
+    output = subprocess.check_output(subprocess_cmd)
+    logging.debug('Merge output: %s' % output)
   except subprocess.CalledProcessError as error:
     logging.error(
         'Failed to merge target profdata files to create coverage profdata. %s',
@@ -1220,7 +1222,9 @@ def _CreateTargetProfDataFileFromProfRawFiles(target, profraw_file_paths):
         LLVM_PROFDATA_PATH, 'merge', '-o', profdata_file_path, '-sparse=true'
     ]
     subprocess_cmd.extend(profraw_file_paths)
-    subprocess.check_call(subprocess_cmd)
+
+    output = subprocess.check_output(subprocess_cmd)
+    logging.debug('Merge output: %s' % output)
   except subprocess.CalledProcessError as error:
     logging.error(
         'Failed to merge target profraw files to create target profdata.')
@@ -1496,6 +1500,15 @@ def _GetBinaryPathForWebTests():
     assert False, 'This platform is not supported for web tests.'
 
 
+def _SetupOutputDir():
+  """Setup output directory."""
+  if os.path.exists(OUTPUT_DIR):
+    shutil.rmtree(OUTPUT_DIR)
+
+  # Creates |OUTPUT_DIR| and its platform sub-directory.
+  os.makedirs(_GetCoverageReportRootDirPath())
+
+
 def _ParseCommandArguments():
   """Adds and parses relevant arguments for tool comands.
 
@@ -1630,6 +1643,7 @@ def Main():
 
   global BUILD_DIR
   BUILD_DIR = _GetFullPath(args.build_dir)
+
   global OUTPUT_DIR
   OUTPUT_DIR = _GetFullPath(args.output_dir)
 
@@ -1652,8 +1666,7 @@ def Main():
   if args.filters:
     absolute_filter_paths = _VerifyPathsAndReturnAbsolutes(args.filters)
 
-  if not os.path.exists(_GetCoverageReportRootDirPath()):
-    os.makedirs(_GetCoverageReportRootDirPath())
+  _SetupOutputDir()
 
   # Get .profdata file and list of binary paths.
   if args.web_tests:
