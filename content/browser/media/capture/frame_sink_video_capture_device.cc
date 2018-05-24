@@ -49,8 +49,7 @@ class ScopedFrameDoneHelper
 }  // namespace
 
 FrameSinkVideoCaptureDevice::FrameSinkVideoCaptureDevice()
-    : binding_(this),
-      cursor_renderer_(RescopeToUIThread(CursorRenderer::Create(
+    : cursor_renderer_(RescopeToUIThread(CursorRenderer::Create(
           CursorRenderer::CURSOR_DISPLAYED_ON_MOUSE_MOVEMENT))),
       weak_factory_(this) {
   DCHECK(cursor_renderer_);
@@ -91,8 +90,33 @@ void FrameSinkVideoCaptureDevice::AllocateAndStartWithReceiver(
                          &FrameSinkVideoCaptureDevice::RequestRefreshFrame,
                          weak_factory_.GetWeakPtr()))));
 
-  CreateCapturer(base::BindOnce(&FrameSinkVideoCaptureDevice::OnCapturerCreated,
-                                weak_factory_.GetWeakPtr()));
+  // Shutdown the prior capturer, if any.
+  MaybeStopConsuming();
+
+  capturer_ = std::make_unique<viz::ClientFrameSinkVideoCapturer>(
+      base::BindRepeating(&FrameSinkVideoCaptureDevice::CreateCapturer,
+                          base::Unretained(this)));
+
+  capturer_->SetFormat(capture_params_.requested_format.pixel_format,
+                       media::COLOR_SPACE_UNSPECIFIED);
+  capturer_->SetMinCapturePeriod(
+      base::TimeDelta::FromMicroseconds(base::saturated_cast<int64_t>(
+          base::Time::kMicrosecondsPerSecond /
+          capture_params_.requested_format.frame_rate)));
+  const auto& constraints = capture_params_.SuggestConstraints();
+  capturer_->SetResolutionConstraints(constraints.min_frame_size,
+                                      constraints.max_frame_size,
+                                      constraints.fixed_aspect_ratio);
+
+  if (target_.is_valid()) {
+    capturer_->ChangeTarget(target_);
+  }
+
+  receiver_->OnStarted();
+
+  if (!suspend_requested_) {
+    MaybeStartConsuming();
+  }
 }
 
 void FrameSinkVideoCaptureDevice::AllocateAndStart(
@@ -107,7 +131,7 @@ void FrameSinkVideoCaptureDevice::AllocateAndStart(
 void FrameSinkVideoCaptureDevice::RequestRefreshFrame() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (capturer_ && binding_.is_bound() && !suspend_requested_) {
+  if (capturer_ && !suspend_requested_) {
     capturer_->RequestRefreshFrame();
   }
 }
@@ -244,9 +268,9 @@ void FrameSinkVideoCaptureDevice::OnStopped() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // This method would never be called if FrameSinkVideoCaptureDevice explicitly
-  // called capturer_->Stop(), because the binding is closed at that time.
-  // Therefore, a call to this method means that the capturer cannot continue;
-  // and that's a permanent failure.
+  // called capturer_->StopAndResetConsumer(), because the binding is closed at
+  // that time. Therefore, a call to this method means that the capturer cannot
+  // continue; and that's a permanent failure.
   OnFatalError("Capturer service cannot continue.");
 }
 
@@ -276,97 +300,42 @@ void FrameSinkVideoCaptureDevice::WillStart() {}
 void FrameSinkVideoCaptureDevice::DidStop() {}
 
 void FrameSinkVideoCaptureDevice::CreateCapturer(
-    CreatedCapturerCallback callback) {
-  CreateCapturerViaGlobalManager(std::move(callback));
+    viz::mojom::FrameSinkVideoCapturerRequest request) {
+  CreateCapturerViaGlobalManager(std::move(request));
 }
 
 // static
 void FrameSinkVideoCaptureDevice::CreateCapturerViaGlobalManager(
-    CreatedCapturerCallback callback) {
-  // Hop to the UI thread to request a Mojo connection to a new capturer
-  // instance, then hop back to the device thread to deliver the client-side
-  // interface via |callback|.
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE, base::BindOnce([]() {
-        viz::HostFrameSinkManager* const manager = GetHostFrameSinkManager();
-        DCHECK(manager);
-        viz::mojom::FrameSinkVideoCapturerPtr capturer;
-        manager->CreateVideoCapturer(mojo::MakeRequest(&capturer));
-        return capturer.PassInterface();
-      }),
-      std::move(callback));
-}
-
-void FrameSinkVideoCaptureDevice::OnCapturerCreated(
-    viz::mojom::FrameSinkVideoCapturerPtrInfo info) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!receiver_) {
-    return;  // StopAndDeAllocate() occurred in the meantime.
-  }
-
-  // Shutdown the prior capturer, if any.
-  MaybeStopConsuming();
-  capturer_.reset();
-
-  if (!info) {
-    OnFatalError("Failed to create/connect to the replacement capturer.");
-    return;
-  }
-
-  // Bind and configure the new capturer.
-  capturer_.Bind(std::move(info));
-  // TODO(miu): Remove this once HostFrameSinkManager will notify this
-  // consumer when to take recovery steps after VIZ process crashes.
-  capturer_.set_connection_error_handler(base::BindOnce(
-      &FrameSinkVideoCaptureDevice::OnFatalError, base::Unretained(this),
-      "Capturer service connection lost."));
-  capturer_->SetFormat(capture_params_.requested_format.pixel_format,
-                       media::COLOR_SPACE_UNSPECIFIED);
-  capturer_->SetMinCapturePeriod(
-      base::TimeDelta::FromMicroseconds(base::saturated_cast<int64_t>(
-          base::Time::kMicrosecondsPerSecond /
-          capture_params_.requested_format.frame_rate)));
-  const auto& constraints = capture_params_.SuggestConstraints();
-  capturer_->SetResolutionConstraints(constraints.min_frame_size,
-                                      constraints.max_frame_size,
-                                      constraints.fixed_aspect_ratio);
-
-  if (target_.is_valid()) {
-    capturer_->ChangeTarget(target_);
-  }
-
-  receiver_->OnStarted();
-
-  if (!suspend_requested_) {
-    MaybeStartConsuming();
-  }
+    viz::mojom::FrameSinkVideoCapturerRequest request) {
+  // Send the request to UI thread because that's where HostFrameSinkManager
+  // lives.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          [](viz::mojom::FrameSinkVideoCapturerRequest request) {
+            viz::HostFrameSinkManager* const manager =
+                GetHostFrameSinkManager();
+            DCHECK(manager);
+            manager->CreateVideoCapturer(std::move(request));
+          },
+          std::move(request)));
 }
 
 void FrameSinkVideoCaptureDevice::MaybeStartConsuming() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!receiver_ || !capturer_ || binding_.is_bound()) {
+  if (!receiver_ || !capturer_) {
     return;
   }
 
-  viz::mojom::FrameSinkVideoConsumerPtr consumer;
-  binding_.Bind(mojo::MakeRequest(&consumer));
-  // TODO(miu): Remove this once HostFrameSinkManager will notify this consumer
-  // when to take recovery steps after VIZ process crashes.
-  binding_.set_connection_error_handler(base::BindOnce(
-      &FrameSinkVideoCaptureDevice::OnFatalError, base::Unretained(this),
-      "Consumer connection to Capturer service lost."));
-  capturer_->Start(std::move(consumer));
+  capturer_->Start(this);
 }
 
 void FrameSinkVideoCaptureDevice::MaybeStopConsuming() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (capturer_) {
-    capturer_->Stop();
-  }
-  binding_.Close();
+  if (capturer_)
+    capturer_->StopAndResetConsumer();
 }
 
 void FrameSinkVideoCaptureDevice::OnFramePropagationComplete(

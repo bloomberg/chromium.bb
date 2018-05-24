@@ -138,37 +138,33 @@ AuraWindowVideoCaptureDevice::~AuraWindowVideoCaptureDevice() = default;
 
 #if defined(OS_CHROMEOS)
 void AuraWindowVideoCaptureDevice::CreateCapturer(
-    CreatedCapturerCallback callback) {
+    viz::mojom::FrameSinkVideoCapturerRequest request) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(
           [](base::WeakPtr<WindowTracker> tracker_ptr,
-             CreatedCapturerCallback callback) {
+             viz::mojom::FrameSinkVideoCapturerRequest request) {
             WindowTracker* const tracker = tracker_ptr.get();
             if (!tracker) {
               // WindowTracker was destroyed in the meantime, due to early
               // shutdown.
-              std::move(callback).Run(nullptr);
               return;
             }
 
             if (tracker->target_type() == DesktopMediaID::TYPE_WINDOW) {
               VLOG(1) << "AuraWindowVideoCaptureDevice is using the LAME "
                          "capturer. :(";
-              viz::mojom::FrameSinkVideoCapturerPtr capturer;
               mojo::StrongBinding<viz::mojom::FrameSinkVideoCapturer>::Create(
                   std::make_unique<LameWindowCapturerChromeOS>(
                       tracker->target_window()),
-                  mojo::MakeRequest(&capturer));
-              std::move(callback).Run(capturer.PassInterface());
+                  std::move(request));
             } else {
               VLOG(1) << "AuraWindowVideoCaptureDevice is using the frame "
                          "sink capturer. :)";
-              CreateCapturerViaGlobalManager(std::move(callback));
+              CreateCapturerViaGlobalManager(std::move(request));
             }
           },
-          tracker_->AsWeakPtr(),
-          media::BindToCurrentLoop(std::move(callback))));
+          tracker_->AsWeakPtr(), std::move(request)));
 }
 #endif
 

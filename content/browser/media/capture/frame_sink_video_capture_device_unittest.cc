@@ -245,17 +245,15 @@ class FrameSinkVideoCaptureDeviceForTest : public FrameSinkVideoCaptureDevice {
       : capturer_(capturer) {}
 
  protected:
-  void CreateCapturer(CreatedCapturerCallback callback) final {
-    BrowserThread::PostTaskAndReplyWithResult(
+  void CreateCapturer(viz::mojom::FrameSinkVideoCapturerRequest request) final {
+    BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(
-            [](FrameSinkVideoCaptureDeviceForTest* self) {
-              viz::mojom::FrameSinkVideoCapturerPtr capturer_ptr;
-              self->capturer_->Bind(mojo::MakeRequest(&capturer_ptr));
-              return capturer_ptr.PassInterface();
+            [](MockFrameSinkVideoCapturer* capturer,
+               viz::mojom::FrameSinkVideoCapturerRequest request) {
+              capturer->Bind(std::move(request));
             },
-            this),
-        std::move(callback));
+            capturer_, std::move(request)));
   }
 
   MockFrameSinkVideoCapturer* const capturer_;
@@ -403,39 +401,6 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
   NiceMock<MockFrameSinkVideoCapturer> capturer_;
   std::unique_ptr<FrameSinkVideoCaptureDevice> device_;
 };
-
-// Tests a racy start condition: Ensure that nothing bad happens if
-// StopAndDeAllocate() is called before the capturer creation completes.
-TEST_F(FrameSinkVideoCaptureDeviceTest,
-       AllocatesAndDeallocatesBeforeCapturerCreated) {
-  auto receiver = std::make_unique<MockVideoFrameReceiver>();
-  EXPECT_CALL(*receiver, OnStarted()).Times(0);
-  EXPECT_CALL(*receiver, OnError()).Times(0);
-
-  EXPECT_CALL(capturer_, SetFormat(_, _)).Times(0);
-  EXPECT_CALL(capturer_, SetMinCapturePeriod(_)).Times(0);
-  EXPECT_CALL(capturer_, SetResolutionConstraints(_, _, _)).Times(0);
-  EXPECT_CALL(capturer_, ChangeTarget(_)).Times(0);
-  EXPECT_CALL(capturer_, MockStart(_)).Times(0);
-
-  EXPECT_FALSE(capturer_.is_bound());
-  POST_DEVICE_METHOD_CALL(AllocateAndStartWithReceiver, GetCaptureParams(),
-                          std::move(receiver));
-  // A task is pending on the UI thread to create the capturer. Call
-  // StopAndDeAllocate() before that task runs.
-  POST_DEVICE_METHOD_CALL0(StopAndDeAllocate);
-  WAIT_FOR_DEVICE_TASKS();
-
-  // Now, run the task on the UI thread, which will post the reply back to the
-  // device thread.
-  RUN_UI_TASKS();
-  EXPECT_TRUE(capturer_.is_bound());
-
-  // Now, when the reply task on the device thread is run, the
-  // FrameSinkVideoCaptureDevice should realize that StopAndDeAllocate() was
-  // called in the meantime and abort.
-  WAIT_FOR_DEVICE_TASKS();
-}
 
 // Tests a normal session, progressing through the start, frame capture, and
 // stop phases.

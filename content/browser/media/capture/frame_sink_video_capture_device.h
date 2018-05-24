@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/host/client_frame_sink_video_capturer.h"
 #include "content/browser/media/capture/cursor_renderer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,7 +22,6 @@
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
 
 namespace content {
 
@@ -91,22 +91,19 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   virtual void WillStart();
   virtual void DidStop();
 
-  // Creates a capturer and then runs the given |callback| to deliver the
-  // client-side interface. The default implementation calls
-  // CreateCapturerViaGlobalManager(), but subclasses and/or tests may provide
-  // alternatives.
-  using CreatedCapturerCallback =
-      base::OnceCallback<void(viz::mojom::FrameSinkVideoCapturerPtrInfo)>;
-  virtual void CreateCapturer(CreatedCapturerCallback callback);
+  // Establishes connection to FrameSinkVideoCapturer. The default
+  // implementation calls CreateCapturerViaGlobalManager(), but subclasses
+  // and/or tests may provide alternatives.
+  virtual void CreateCapturer(
+      viz::mojom::FrameSinkVideoCapturerRequest request);
 
-  // Creates a capturer using the global viz::HostFrameSinkManager.
-  static void CreateCapturerViaGlobalManager(CreatedCapturerCallback callback);
+  // Establishes connection to FrameSinkVideoCapturer using the global
+  // viz::HostFrameSinkManager.
+  static void CreateCapturerViaGlobalManager(
+      viz::mojom::FrameSinkVideoCapturerRequest request);
 
  private:
   using BufferId = decltype(media::VideoCaptureDevice::Client::Buffer::id);
-
-  // Bind a newly-created capturer, configure it, and resuming consuming.
-  void OnCapturerCreated(viz::mojom::FrameSinkVideoCapturerPtrInfo info);
 
   // If not consuming and all preconditions are met, set up and start consuming.
   void MaybeStartConsuming();
@@ -140,11 +137,7 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   // cleared by StopAndDeAllocate().
   std::unique_ptr<media::VideoFrameReceiver> receiver_;
 
-  // Mojo pointer to the capturer instance in VIZ.
-  viz::mojom::FrameSinkVideoCapturerPtr capturer_;
-
-  // Mojo binding to this instance as a consumer of frames from the capturer.
-  mojo::Binding<viz::mojom::FrameSinkVideoConsumer> binding_;
+  std::unique_ptr<viz::ClientFrameSinkVideoCapturer> capturer_;
 
   // A pool of structs that hold state relevant to frames currently being
   // processed by VideoFrameReceiver. Each "slot" is re-used by later frames.
