@@ -20,12 +20,13 @@ WorkerShadowPage::WorkerShadowPage(Client* client)
       web_view_(WebViewImpl::Create(nullptr,
                                     mojom::PageVisibilityState::kVisible,
                                     nullptr)),
-      main_frame_(WebLocalFrameImpl::CreateMainFrame(web_view_,
-                                                     this,
-                                                     nullptr,
-                                                     nullptr,
-                                                     g_empty_atom,
-                                                     WebSandboxFlags::kNone)) {
+      main_frame_(
+          WebLocalFrameImpl::CreateMainFrame(web_view_,
+                                             this,
+                                             nullptr /* interface_registry */,
+                                             nullptr /* opener */,
+                                             g_empty_atom,
+                                             WebSandboxFlags::kNone)) {
   DCHECK(IsMainThread());
 
   // TODO(http://crbug.com/363843): This needs to find a better way to
@@ -48,9 +49,13 @@ WorkerShadowPage::~WorkerShadowPage() {
   main_frame_->Close();
 }
 
-void WorkerShadowPage::Initialize(const KURL& script_url) {
+void WorkerShadowPage::Initialize(
+    const KURL& script_url,
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
   DCHECK(IsMainThread());
   AdvanceState(State::kInitializing);
+
+  loader_factory_ = std::move(loader_factory);
 
   // Construct substitute data source. We only need it to have same origin as
   // the worker so the loading checks work correctly.
@@ -87,6 +92,8 @@ WorkerShadowPage::CreateApplicationCacheHost(
 std::unique_ptr<blink::WebURLLoaderFactory>
 WorkerShadowPage::CreateURLLoaderFactory() {
   DCHECK(IsMainThread());
+  if (loader_factory_)
+    return Platform::Current()->WrapSharedURLLoaderFactory(loader_factory_);
   return Platform::Current()->CreateDefaultURLLoaderFactory();
 }
 

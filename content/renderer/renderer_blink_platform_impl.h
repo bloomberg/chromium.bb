@@ -53,6 +53,10 @@ class MotionData;
 class OrientationData;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace content {
 class BlinkInterfaceProviderImpl;
 class ChildURLLoaderFactoryBundle;
@@ -237,6 +241,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       override;
   std::unique_ptr<blink::WebURLLoaderFactory> WrapURLLoaderFactory(
       mojo::ScopedMessagePipeHandle url_loader_factory_handle) override;
+  std::unique_ptr<blink::WebURLLoaderFactory> WrapSharedURLLoaderFactory(
+      scoped_refptr<network::SharedURLLoaderFactory> factory) override;
   std::unique_ptr<blink::WebDataConsumerHandle> CreateDataConsumerHandle(
       mojo::ScopedDataPipeConsumerHandle handle) override;
   void RequestPurgeMemory() override;

@@ -5,11 +5,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WORKER_SHADOW_PAGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WORKER_SHADOW_PAGE_H_
 
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace blink {
 
@@ -51,8 +56,18 @@ class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
   explicit WorkerShadowPage(Client*);
   ~WorkerShadowPage() override;
 
-  // Calls Client::OnShadowPageInitialized() when complete.
-  void Initialize(const KURL& script_url);
+  // Initializes this instance and calls Client::OnShadowPageInitialized() when
+  // complete.
+  //
+  // If |loader_factory| is non-null, the shadow page will use it when making
+  // requests. For service workers, it is null since all loads go through
+  // ServiceWorkerNetworkProvider::script_loader_factory(). For shared workers,
+  // it is non-null since only the main script request goes through the script
+  // loader factory (implemented by SharedWorkerScriptLoaderFactory), and
+  // importScripts() go through the shadow page loader.
+  void Initialize(
+      const KURL& script_url,
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
   void SetContentSecurityPolicyAndReferrerPolicy(ContentSecurityPolicy*,
                                                  String referrer_policy);
@@ -90,6 +105,7 @@ class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
   Client* client_;
   WebView* web_view_;
   Persistent<WebLocalFrameImpl> main_frame_;
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
   State state_ = State::kUninitialized;
 };

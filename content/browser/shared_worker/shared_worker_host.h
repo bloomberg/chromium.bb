@@ -36,6 +36,7 @@ namespace content {
 class SharedWorkerContentSettingsProxyImpl;
 class SharedWorkerInstance;
 class SharedWorkerServiceImpl;
+class URLLoaderFactoryBundleInfo;
 
 // The SharedWorkerHost is the interface that represents the browser side of
 // the browser <-> worker communication channel. This is owned by
@@ -66,7 +67,8 @@ class CONTENT_EXPORT SharedWorkerHost
       mojom::SharedWorkerFactoryPtr factory,
       mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
           service_worker_provider_info,
-      network::mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory);
+      network::mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory,
+      std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle);
 
   void AllowFileSystem(const GURL& url,
                        base::OnceCallback<void(bool)> callback);
@@ -136,6 +138,8 @@ class CONTENT_EXPORT SharedWorkerHost
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
+
+  void CreateNetworkFactory(network::mojom::URLLoaderFactoryRequest request);
 
   void AdvanceTo(Phase phase);
 
