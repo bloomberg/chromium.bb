@@ -133,6 +133,11 @@ const Extension* CastExtensionSystem::LoadExtension(
   return extension.get();
 }
 
+void CastExtensionSystem::UnloadExtension(const std::string& extension_id,
+                                          UnloadedExtensionReason reason) {
+  extension_registrar_->RemoveExtension(extension_id, reason);
+}
+
 void CastExtensionSystem::PostLoadExtension(
     const scoped_refptr<extensions::Extension>& extension) {
   extension_registrar_->AddExtension(extension);
