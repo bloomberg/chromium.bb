@@ -76,9 +76,10 @@ def _ParseArgs(args):
                       help='GYP-list of native library placeholders to add '
                            'for the secondary ABI',
                       default='[]')
-  parser.add_argument('--uncompress-shared-libraries',
-                      action='store_true',
-                      help='Uncompress shared libraries')
+  parser.add_argument('--uncompress-shared-libraries', default='False',
+      choices=['true', 'True', 'false', 'False'],
+      help='Whether to uncompress native shared libraries. Argument must be '
+           'a boolean value.')
   parser.add_argument('--apksigner-path', required=True,
                       help='Path to the apksigner executable.')
   parser.add_argument('--zipalign-path', required=True,
@@ -107,6 +108,8 @@ def _ParseArgs(args):
     secondary_libs.extend(build_utils.ParseGnList(gyp_list))
   options.secondary_native_libs = secondary_libs
 
+  options.uncompress_shared_libraries = \
+      options.uncompress_shared_libraries in [ 'true', 'True' ]
 
   if not options.android_abi and (options.native_libs or
                                   options.native_lib_placeholders):
@@ -245,7 +248,7 @@ def main(args):
   input_strings = [options.android_abi,
                    options.native_lib_placeholders,
                    options.secondary_native_lib_placeholders,
-                   options.uncompress_shared_libraries]
+                   str(options.uncompress_shared_libraries)]
 
   if options.secondary_android_abi:
     input_strings.append(options.secondary_android_abi)

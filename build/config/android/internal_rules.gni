@@ -274,6 +274,12 @@ template("write_build_config") {
       ]
     }
 
+    if (defined(invoker.extra_shared_libraries)) {
+      _rebased_extra_shared_libraries =
+          rebase_path(invoker.extra_shared_libraries, root_build_dir)
+      args += [ "--extra-shared-libraries=$_rebased_extra_shared_libraries" ]
+    }
+
     if (defined(invoker.secondary_abi_shared_libraries_runtime_deps_file)) {
       # Don't list secondary_abi_shared_libraries_runtime_deps_file as an
       # input in order to avoid having to depend on the runtime_deps target.
@@ -283,6 +289,11 @@ template("write_build_config") {
         rebase_path(invoker.secondary_abi_shared_libraries_runtime_deps_file,
                     root_build_dir),
       ]
+    }
+
+    if (defined(invoker.uncompress_shared_libraries) &&
+        invoker.uncompress_shared_libraries) {
+      args += [ "--uncompress-shared-libraries" ]
     }
 
     if (defined(invoker.apk_path)) {
@@ -2089,6 +2100,8 @@ if (enable_java_templates) {
   # Creates a signed and aligned .apk.
   #
   # Variables
+  #   apk_name: (optional) APK name (without .apk suffix). If provided, will
+  #       be used to generate .info files later used by the supersize tool.
   #   assets_build_config: Path to android_apk .build_config containing merged
   #       asset information.
   #   deps: Specifies the dependencies of this target.
@@ -2101,11 +2114,17 @@ if (enable_java_templates) {
   #     the apk for the secondary ABI (optional).
   #   native_libs: List of native libraries.
   #   native_libs_filearg: @FileArg() of additionally native libraries.
+  #   secondary_abi_native_libs: (optional) List of native libraries for
+  #     secondary ABI.
+  #   secondary_abi_native_libs_filearg: (optiona). @FileArg() of additional
+  #     secondary ABI native libs.
   #   write_asset_list: Adds an extra file to the assets, which contains a list of
   #     all other asset files.
   #   keystore_path: Path to keystore to use for signing.
   #   keystore_name: Key alias to use.
   #   keystore_password: Keystore password.
+  #   uncompress_shared_libraries: (optional, default false) Whether to store
+  #     native libraries inside the APK uncompressed and page-aligned.
   template("package_apk") {
     action(target_name) {
       forward_variables_from(invoker,
@@ -2242,7 +2261,7 @@ if (enable_java_templates) {
 
       if (defined(invoker.uncompress_shared_libraries) &&
           invoker.uncompress_shared_libraries) {
-        args += [ "--uncompress-shared-libraries" ]
+        args += [ "--uncompress-shared-libraries=True" ]
       }
     }
   }
@@ -2722,9 +2741,12 @@ if (enable_java_templates) {
   #    system does not support compressed relocations in native shared
   #    libraries.
   #  shared_libraries_runtime_deps_file: Optional. Path to a file listing the
-  #    native shared libraries required at runtime by
+  #    native shared libraries required at runtime by the APK.
   #  secondary_abi_shared_libraries_runtime_deps_file:
-  #
+  #  extra_shared_libraries: Optional list of extra native libraries to
+  #    be stored in the APK.
+  #  uncompress_shared_libraries: Optional. True to store native shared
+  #    libraries uncompressed and page-aligned.
   #
   # For 'java_binary' and 'junit_binary' targets only. Ignored by others:
   #
@@ -2910,13 +2932,15 @@ if (enable_java_templates) {
               "android_manifest_dep",
               "apk_path",
               "apk_under_test",
+              "extra_shared_libraries",
               "incremental_allowed",
               "incremental_apk_path",
               "incremental_install_json_path",
               "non_native_packed_relocations",
               "proto_resources_path",
-              "shared_libraries_runtime_deps_file",
               "secondary_abi_shared_libraries_runtime_deps_file",
+              "shared_libraries_runtime_deps_file",
+              "uncompress_shared_libraries",
             ])
       }
       build_config = _build_config

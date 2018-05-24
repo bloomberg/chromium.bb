@@ -367,6 +367,15 @@ Empty if only a single ABI is supported.
 * `native['secondary_abi_java_libraries_list']`
 The same list as `native['second_abi_libraries']` as a Java source string.
 
+* `native['uncompress_shared_libraries']`
+A boolean indicating whether native libraries are stored uncompressed in the
+APK.
+
+* `native['extra_shared_libraries']`
+A list of native libraries to store within the APK, in addition to those from
+`native['libraries']`. These correspond to things like the Chromium linker
+or instrumentation libraries.
+
 * `assets`
 A list of assets stored compressed in the APK. Each entry has the format
 `<source-path>:<destination-path>`, where `<source-path>` is relative to
@@ -820,7 +829,12 @@ def main(argv):
                     action='store_true', default=False,
                     help='Whether relocation packing was applied using the '
                          'Android relocation_packer tool.')
-
+  parser.add_option('--uncompress-shared-libraries', default=False,
+                    action='store_true',
+                    help='Whether to store native libraries uncompressed')
+  parser.add_option('--extra-shared-libraries',
+                    help='GN-list of paths to extra native libraries stored '
+                    'in the APK.')
   # apk options
   parser.add_option('--apk-path', help='Path to the target\'s apk output.')
   parser.add_option('--incremental-apk-path',
@@ -885,6 +899,11 @@ def main(argv):
     if options.type != 'android_apk':
       raise Exception('--apk-proto-resources can only be used with '
                       '--type=android_apk')
+
+  if options.uncompress_shared_libraries:
+    if options.type != 'android_apk':
+      raise Exception('--uncompressed-shared-libraries can only be used '
+                      'with --type=android_apk')
 
   if options.jar_path and options.supports_android and not options.dex_path:
     raise Exception('java_library that supports Android requires a dex path.')
@@ -1280,12 +1299,17 @@ def main(argv):
       secondary_abi_java_libraries_list = _CreateJavaLibrariesList(
           secondary_abi_library_paths)
 
+    extra_shared_libraries = build_utils.ParseGnList(
+        options.extra_shared_libraries)
+
     all_inputs.extend(runtime_deps_files)
     config['native'] = {
       'libraries': library_paths,
       'secondary_abi_libraries': secondary_abi_library_paths,
       'java_libraries_list': java_libraries_list,
       'secondary_abi_java_libraries_list': secondary_abi_java_libraries_list,
+      'uncompress_shared_libraries': options.uncompress_shared_libraries,
+      'extra_shared_libraries': extra_shared_libraries,
     }
     config['assets'], config['uncompressed_assets'], locale_paks = (
         _MergeAssets(deps.All('android_assets')))

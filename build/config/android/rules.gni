@@ -2232,6 +2232,18 @@ if (enable_java_templates) {
       _srcjar_deps += [ ":${_template_name}__native_libraries_java" ]
     }
 
+    _extra_native_libs = _sanitizer_runtimes
+    _extra_native_libs_deps = []
+    assert(_extra_native_libs_deps == [])  # Mark as used.
+    if (_native_libs_deps != []) {
+      if (_use_chromium_linker) {
+        _extra_native_libs +=
+            [ "$root_shlib_dir/libchromium_android_linker$shlib_extension" ]
+        _extra_native_libs_deps +=
+            [ "//base/android/linker:chromium_android_linker" ]
+      }
+    }
+
     if (_generate_buildconfig_java) {
       generate_build_config_srcjar("${_template_name}__build_config_java") {
         forward_variables_from(invoker, [ "firebase_app_id" ])
@@ -2262,6 +2274,7 @@ if (enable_java_templates) {
                                "java_files",
                                "no_build_hooks",
                                "javac_args",
+                               "uncompress_shared_libraries",
                              ])
       type = "android_apk"
       main_target_name = _template_name
@@ -2305,6 +2318,8 @@ if (enable_java_templates) {
         secondary_abi_shared_libraries_runtime_deps_file =
             _secondary_abi_runtime_deps_file
       }
+
+      extra_shared_libraries = _extra_native_libs
     }
 
     # TODO(cjhopman): This is only ever needed to calculate the list of tests to
@@ -2463,18 +2478,8 @@ if (enable_java_templates) {
       }
     }
 
-    _extra_native_libs = _sanitizer_runtimes
-    _extra_native_libs_deps = []
-    assert(_extra_native_libs_deps == [])  # Mark as used.
     _extra_native_libs_even_when_incremental = []
     if (_native_libs_deps != []) {
-      if (_use_chromium_linker) {
-        _extra_native_libs +=
-            [ "$root_shlib_dir/libchromium_android_linker$shlib_extension" ]
-        _extra_native_libs_deps +=
-            [ "//base/android/linker:chromium_android_linker" ]
-      }
-
       _create_stack_script_rule_name = "${_template_name}__stack_script"
       _final_deps += [ ":${_create_stack_script_rule_name}" ]
       stack_script(_create_stack_script_rule_name) {
