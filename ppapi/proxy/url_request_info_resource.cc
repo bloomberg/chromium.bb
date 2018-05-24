@@ -5,6 +5,7 @@
 #include "ppapi/proxy/url_request_info_resource.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "ppapi/shared_impl/ppapi_features.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
@@ -147,6 +148,8 @@ bool URLRequestInfoResource::SetBooleanProperty(
   // SetProperty() above for why.
   switch (property) {
     case PP_URLREQUESTPROPERTY_STREAMTOFILE:
+      if (!base::FeatureList::IsEnabled(features::kStreamToFile))
+        return false;
       data_.stream_to_file = value;
       return true;
     case PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS:

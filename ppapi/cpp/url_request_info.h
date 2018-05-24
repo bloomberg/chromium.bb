@@ -144,14 +144,12 @@ class URLRequestInfo : public Resource {
 
   /// SetStreamToFile() sets the
   /// <code>PP_URLREQUESTPROPERTY_STREAMTOFILE</code> (corresponding
-  /// to a bool of type <code>PP_VARTYPE_BOOL</code>). The default of the
-  /// property is false. Set this value to true if you want to download the
-  /// data to a file. Use URL_Loader::FinishStreamingToFile() to complete
-  /// the download.
+  /// to a bool of type <code>PP_VARTYPE_BOOL</code>). The property is no longer
+  /// supported, so this always returns false.
   ///
   /// @param[in] enable A <code>bool</code> containing the property value.
   ///
-  /// @return true if successful, false if the parameter is invalid.
+  /// @return false.
   bool SetStreamToFile(bool enable) {
     return SetProperty(PP_URLREQUESTPROPERTY_STREAMTOFILE, enable);
   }

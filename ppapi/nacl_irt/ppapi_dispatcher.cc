@@ -9,7 +9,9 @@
 #include <map>
 #include <set>
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -165,6 +167,12 @@ void PpapiDispatcher::OnMsgInitializeNaClDispatcher(
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
+
+  base::FeatureList::InitializeInstance(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kEnableFeatures),
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kDisableFeatures));
 
   // Tell the process-global GetInterface which interfaces it can return to the
   // plugin.

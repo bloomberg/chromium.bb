@@ -453,7 +453,7 @@ std::string TestURLLoader::TestFailsBogusContentLength() {
 std::string TestURLLoader::TestStreamToFile() {
   pp::URLRequestInfo request(instance_);
   request.SetURL("test_url_loader_data/hello.txt");
-  request.SetStreamToFile(true);
+  ASSERT_FALSE(request.SetStreamToFile(true));
 
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
 
@@ -470,29 +470,11 @@ std::string TestURLLoader::TestStreamToFile() {
     return "Unexpected HTTP status code";
 
   pp::FileRef body(response_info.GetBodyAsFileRef());
-  if (body.is_null())
-    return "URLResponseInfo::GetBody returned null";
+  ASSERT_TRUE(body.is_null());
 
   callback.WaitForResult(loader.FinishStreamingToFile(callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_OK, callback.result());
-
-  pp::FileIO reader(instance_);
-  callback.WaitForResult(reader.Open(body, PP_FILEOPENFLAG_READ,
-                                     callback.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_OK, callback.result());
-
-  std::string data;
-  std::string error = ReadEntireFile(&reader, &data);
-  if (!error.empty())
-    return error;
-
-  std::string expected_body = "hello\n";
-  if (data.size() != expected_body.size())
-    return "ReadEntireFile returned unexpected content length";
-  if (data != expected_body)
-    return "ReadEntireFile returned unexpected content";
+  ASSERT_EQ(PP_ERROR_NOTSUPPORTED, callback.result());
 
   PASS();
 }

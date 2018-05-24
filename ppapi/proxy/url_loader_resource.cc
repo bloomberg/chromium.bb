@@ -16,6 +16,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/url_request_info_resource.h"
 #include "ppapi/proxy/url_response_info_resource.h"
+#include "ppapi/shared_impl/ppapi_features.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
 #include "ppapi/thunk/enter.h"
@@ -186,6 +187,9 @@ int32_t URLLoaderResource::ReadResponseBody(
 
 int32_t URLLoaderResource::FinishStreamingToFile(
     scoped_refptr<TrackedCallback> callback) {
+  if (!base::FeatureList::IsEnabled(features::kStreamToFile))
+    return PP_ERROR_NOTSUPPORTED;
+
   int32_t rv = ValidateCallback(callback);
   if (rv != PP_OK)
     return rv;

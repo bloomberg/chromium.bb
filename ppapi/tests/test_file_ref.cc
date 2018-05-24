@@ -194,22 +194,10 @@ std::string TestFileRef::TestGetName() {
   if (name != "/")
     return ReportMismatch("FileRef::GetName", name, "/");
 
-  pp::URLRequestInfo request(instance_);
-  request.SetURL("test_url_loader_data/hello.txt");
-  request.SetStreamToFile(true);
-
-  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-
-  pp::URLLoader loader(instance_);
-  callback.WaitForResult(loader.Open(request, callback.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_OK, callback.result());
-
-  pp::URLResponseInfo response_info(loader.GetResponseInfo());
-  ASSERT_FALSE(response_info.is_null());
-  ASSERT_EQ(200, response_info.GetStatusCode());
-
-  pp::FileRef file_ref_ext(response_info.GetBodyAsFileRef());
+  pp::FileRef file_ref_ext;
+  std::string result = MakeExternalFileRef(&file_ref_ext);
+  if (!result.empty())
+    return result;
   name = file_ref_ext.GetName().AsString();
   ASSERT_FALSE(name.empty());
 
@@ -228,22 +216,10 @@ std::string TestFileRef::TestGetPath() {
   pp::FileRef file_ref_temp(file_system_temp, kTempFilePath);
   ASSERT_EQ(kTempFilePath, file_ref_temp.GetPath().AsString());
 
-  pp::URLRequestInfo request(instance_);
-  request.SetURL("test_url_loader_data/hello.txt");
-  request.SetStreamToFile(true);
-
-  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-
-  pp::URLLoader loader(instance_);
-  callback.WaitForResult(loader.Open(request, callback.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_OK, callback.result());
-
-  pp::URLResponseInfo response_info(loader.GetResponseInfo());
-  ASSERT_FALSE(response_info.is_null());
-  ASSERT_EQ(200, response_info.GetStatusCode());
-
-  pp::FileRef file_ref_ext(response_info.GetBodyAsFileRef());
+  pp::FileRef file_ref_ext;
+  std::string result = MakeExternalFileRef(&file_ref_ext);
+  if (!result.empty())
+    return result;
   ASSERT_TRUE(file_ref_ext.GetPath().is_undefined());
 
   PASS();
@@ -269,22 +245,10 @@ std::string TestFileRef::TestGetParent() {
   pp::FileRef file_ref_with_root_parent(file_system_temp, "/foo");
   ASSERT_EQ("/", file_ref_with_root_parent.GetParent().GetPath().AsString());
 
-  pp::URLRequestInfo request(instance_);
-  request.SetURL("test_url_loader_data/hello.txt");
-  request.SetStreamToFile(true);
-
-  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-
-  pp::URLLoader loader(instance_);
-  callback.WaitForResult(loader.Open(request, callback.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_OK, callback.result());
-
-  pp::URLResponseInfo response_info(loader.GetResponseInfo());
-  ASSERT_FALSE(response_info.is_null());
-  ASSERT_EQ(200, response_info.GetStatusCode());
-
-  pp::FileRef file_ref_ext(response_info.GetBodyAsFileRef());
+  pp::FileRef file_ref_ext;
+  std::string result = MakeExternalFileRef(&file_ref_ext);
+  if (!result.empty())
+    return result;
   ASSERT_TRUE(file_ref_ext.GetParent().is_null());
 
   PASS();

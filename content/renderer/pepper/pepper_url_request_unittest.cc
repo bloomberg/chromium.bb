@@ -131,10 +131,10 @@ TEST_F(URLRequestInfoTest, StreamToFile) {
 
   EXPECT_FALSE(GetDownloadToFile());
 
-  EXPECT_TRUE(SetBooleanProperty(PP_URLREQUESTPROPERTY_STREAMTOFILE, true));
-  EXPECT_TRUE(GetDownloadToFile());
+  EXPECT_FALSE(SetBooleanProperty(PP_URLREQUESTPROPERTY_STREAMTOFILE, true));
+  EXPECT_FALSE(GetDownloadToFile());
 
-  EXPECT_TRUE(SetBooleanProperty(PP_URLREQUESTPROPERTY_STREAMTOFILE, false));
+  EXPECT_FALSE(SetBooleanProperty(PP_URLREQUESTPROPERTY_STREAMTOFILE, false));
   EXPECT_FALSE(GetDownloadToFile());
 }
 

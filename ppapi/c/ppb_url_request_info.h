@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_url_request_info.idl modified Thu Mar 28 10:19:35 2013. */
+/* From ppb_url_request_info.idl modified Thu May 17 11:28:52 2018. */
 
 #ifndef PPAPI_C_PPB_URL_REQUEST_INFO_H_
 #define PPAPI_C_PPB_URL_REQUEST_INFO_H_
@@ -54,9 +54,8 @@ typedef enum {
   /**
    * This corresponds to a <code>PP_Bool</code> (<code>PP_VARTYPE_BOOL</code>;
    * default=<code>PP_FALSE</code>).
-   * Set this value to <code>PP_TRUE</code> if you want to download the data
-   * to a file. Use PPB_URLLoader.FinishStreamingToFile() to complete the
-   * download.
+   * This property is no longer supported, so attempting to set it will always
+   * fail.
    */
   PP_URLREQUESTPROPERTY_STREAMTOFILE = 3,
   /**
