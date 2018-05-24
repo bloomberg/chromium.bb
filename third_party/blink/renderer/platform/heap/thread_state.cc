@@ -580,6 +580,8 @@ void ThreadState::ScheduleGCIfNeeded() {
   if (IsGCForbidden() || SweepForbidden())
     return;
 
+  ReportMemoryToV8();
+
   if (ShouldForceMemoryPressureGC()) {
     CompleteSweep();
     if (ShouldForceMemoryPressureGC()) {
@@ -1011,8 +1013,6 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
 void ThreadState::PostSweep() {
   DCHECK(CheckThread());
   ThreadHeap::ReportMemoryUsageForTracing();
-
-  ReportMemoryToV8();
 
   if (IsMainThread()) {
     ThreadHeapStats& stats = heap_->HeapStats();
