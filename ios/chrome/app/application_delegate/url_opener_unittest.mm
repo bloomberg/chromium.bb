@@ -54,7 +54,8 @@ typedef Tab* (^mock_gurl_nsuinteger_pagetransition)(const GURL&,
 
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
                       atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition {
+                   transition:(ui::PageTransition)transition
+                       opener:(Tab*)parentTab {
   static_cast<mock_gurl_nsuinteger_pagetransition>(
       [self blockForSelector:_cmd])(url, position, transition);
   id mockTab = [OCMockObject mockForClass:[Tab class]];
@@ -78,6 +79,7 @@ typedef Tab* (^mock_gurl_nsuinteger_pagetransition)(const GURL&,
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
                       atIndex:(NSUInteger)position
                    transition:(ui::PageTransition)transition
+                       opener:(Tab*)parentTab
            tabAddedCompletion:(ProceduralBlock)completion;
 - (void)expectNewForegroundTab;
 - (void)setActive:(BOOL)active;
@@ -97,6 +99,7 @@ typedef Tab* (^mock_gurl_nsuinteger_pagetransition)(const GURL&,
 - (Tab*)addSelectedTabWithURL:(const GURL&)url
                       atIndex:(NSUInteger)position
                    transition:(ui::PageTransition)transition
+                       opener:(Tab*)parentTab
            tabAddedCompletion:(ProceduralBlock)completion {
   self.tabURL = url;
   self.position = position;
