@@ -39,13 +39,11 @@ class MultiplexedChannelImpl : public MultiplexedChannel,
 
     virtual ~Factory();
 
-    using InitialClientList =
-        std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>;
     virtual std::unique_ptr<MultiplexedChannel> BuildInstance(
         std::unique_ptr<AuthenticatedChannel> authenticated_channel,
         MultiplexedChannel::Delegate* delegate,
         ConnectionDetails connection_details,
-        InitialClientList* initial_clients);
+        std::vector<ClientConnectionParameters>* initial_clients);
 
    private:
     static Factory* test_factory_;
@@ -63,8 +61,7 @@ class MultiplexedChannelImpl : public MultiplexedChannel,
   bool IsDisconnecting() override;
   bool IsDisconnected() override;
   void PerformAddClientToChannel(
-      const std::string& feature,
-      mojom::ConnectionDelegatePtr connection_delegate_ptr) override;
+      ClientConnectionParameters client_connection_parameters) override;
 
   // AuthenticatedChannel::Observer:
   void OnDisconnected() override;

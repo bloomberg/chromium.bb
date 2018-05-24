@@ -6,6 +6,7 @@
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_MULTIPLEXED_CHANNEL_H_
 
 #include "base/macros.h"
+#include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
@@ -35,8 +36,8 @@ class MultiplexedChannel {
   // Shares this channel with an additional client. Returns whether this action
   // was successful; all calls are expected to succeed unless the channel is
   // disconnected or disconnecting.
-  bool AddClientToChannel(const std::string& feature,
-                          mojom::ConnectionDelegatePtr connection_delegate_ptr);
+  bool AddClientToChannel(
+      ClientConnectionParameters client_connection_parameters);
 
   const ConnectionDetails& connection_details() { return connection_details_; }
 
@@ -44,8 +45,7 @@ class MultiplexedChannel {
   MultiplexedChannel(Delegate* delegate, ConnectionDetails connection_details);
 
   virtual void PerformAddClientToChannel(
-      const std::string& feature,
-      mojom::ConnectionDelegatePtr connection_delegate_ptr) = 0;
+      ClientConnectionParameters client_connection_parameters) = 0;
 
   void NotifyDisconnected();
 

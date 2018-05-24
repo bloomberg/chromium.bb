@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/multiplexed_channel.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
@@ -24,8 +25,7 @@ class FakeMultiplexedChannel : public MultiplexedChannel {
                          ConnectionDetails connection_details);
   ~FakeMultiplexedChannel() override;
 
-  std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>&
-  added_clients() {
+  std::vector<ClientConnectionParameters>& added_clients() {
     return added_clients_;
   }
 
@@ -40,14 +40,12 @@ class FakeMultiplexedChannel : public MultiplexedChannel {
   bool IsDisconnecting() override;
   bool IsDisconnected() override;
   void PerformAddClientToChannel(
-      const std::string& feature,
-      mojom::ConnectionDelegatePtr connection_delegate_ptr) override;
+      ClientConnectionParameters client_connection_parameters) override;
 
   bool is_disconnecting_ = false;
   bool is_disconnected_ = false;
 
-  std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>
-      added_clients_;
+  std::vector<ClientConnectionParameters> added_clients_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeMultiplexedChannel);
 };

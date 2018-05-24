@@ -35,33 +35,34 @@ SingleClientMessageProxyImpl::Factory::~Factory() = default;
 std::unique_ptr<SingleClientMessageProxy>
 SingleClientMessageProxyImpl::Factory::BuildInstance(
     SingleClientMessageProxy::Delegate* delegate,
-    const std::string& feature,
-    mojom::ConnectionDelegatePtr connection_delegate_ptr) {
+    ClientConnectionParameters client_connection_parameters) {
   return base::WrapUnique(new SingleClientMessageProxyImpl(
-      delegate, feature, std::move(connection_delegate_ptr)));
+      delegate, std::move(client_connection_parameters)));
 }
 
 SingleClientMessageProxyImpl::SingleClientMessageProxyImpl(
     SingleClientMessageProxy::Delegate* delegate,
-    const std::string& feature,
-    mojom::ConnectionDelegatePtr connection_delegate_ptr)
+    ClientConnectionParameters client_connection_parameters)
     : SingleClientMessageProxy(delegate),
-      feature_(feature),
-      connection_delegate_ptr_(std::move(connection_delegate_ptr)),
+      client_connection_parameters_(std::move(client_connection_parameters)),
       channel_(std::make_unique<ChannelImpl>(this /* delegate */)) {
-  DCHECK(connection_delegate_ptr_);
-  connection_delegate_ptr_->OnConnection(
+  DCHECK(client_connection_parameters_.connection_delegate_ptr());
+  client_connection_parameters_.connection_delegate_ptr()->OnConnection(
       channel_->GenerateInterfacePtr(),
       mojo::MakeRequest(&message_receiver_ptr_));
 }
 
 SingleClientMessageProxyImpl::~SingleClientMessageProxyImpl() = default;
 
+const base::UnguessableToken& SingleClientMessageProxyImpl::GetProxyId() {
+  return client_connection_parameters_.id();
+}
+
 void SingleClientMessageProxyImpl::HandleReceivedMessage(
     const std::string& feature,
     const std::string& payload) {
   // Ignore messages intended for other clients.
-  if (feature != feature_)
+  if (feature != client_connection_parameters_.feature())
     return;
 
   message_receiver_ptr_->OnMessageReceived(payload);
@@ -74,7 +75,8 @@ void SingleClientMessageProxyImpl::HandleRemoteDeviceDisconnection() {
 void SingleClientMessageProxyImpl::OnSendMessageRequested(
     const std::string& message,
     base::OnceClosure on_sent_callback) {
-  NotifySendMessageRequested(feature_, message, std::move(on_sent_callback));
+  NotifySendMessageRequested(client_connection_parameters_.feature(), message,
+                             std::move(on_sent_callback));
 }
 
 const mojom::ConnectionMetadata&
@@ -87,8 +89,8 @@ void SingleClientMessageProxyImpl::OnClientDisconnected() {
 }
 
 void SingleClientMessageProxyImpl::FlushForTesting() {
-  DCHECK(connection_delegate_ptr_);
-  connection_delegate_ptr_.FlushForTesting();
+  DCHECK(client_connection_parameters_.connection_delegate_ptr());
+  client_connection_parameters_.connection_delegate_ptr().FlushForTesting();
 
   DCHECK(message_receiver_ptr_);
   message_receiver_ptr_.FlushForTesting();

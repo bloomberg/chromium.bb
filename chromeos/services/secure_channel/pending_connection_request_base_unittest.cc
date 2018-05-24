@@ -8,6 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/fake_connection_delegate.h"
 #include "chromeos/services/secure_channel/fake_pending_connection_request_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,14 +35,12 @@ class TestPendingConnectionRequest
     : public PendingConnectionRequestBase<TestFailureDetail> {
  public:
   TestPendingConnectionRequest(
-      const std::string& feature,
-      mojom::ConnectionDelegatePtr connection_delegate_ptr,
+      ClientConnectionParameters client_connection_parameters,
       PendingConnectionRequestDelegate* delegate)
       : PendingConnectionRequestBase<TestFailureDetail>(
-            feature,
+            std::move(client_connection_parameters),
             kTestReadableRequestTypeForLogging,
-            delegate,
-            std::move(connection_delegate_ptr)) {}
+            delegate) {}
   ~TestPendingConnectionRequest() override = default;
 
   // PendingConnectionRequestBase<TestFailureDetail>:
@@ -72,9 +71,12 @@ class SecureChannelPendingConnectionRequestBaseTest : public testing::Test {
         fake_connection_delegate_->GenerateInterfacePtr();
     fake_connection_delegate_proxy_ =
         fake_connection_delegate_interface_ptr.get();
+
     test_pending_connection_request_ =
         std::make_unique<TestPendingConnectionRequest>(
-            kTestFeature, std::move(fake_connection_delegate_interface_ptr),
+            ClientConnectionParameters(
+                kTestFeature,
+                std::move(fake_connection_delegate_interface_ptr)),
             fake_pending_connection_request_delegate_.get());
   }
 
@@ -98,7 +100,7 @@ class SecureChannelPendingConnectionRequestBaseTest : public testing::Test {
   GetFailedConnectionReason() {
     return fake_pending_connection_request_delegate_
         ->GetFailedConnectionReasonForId(
-            test_pending_connection_request_->request_id());
+            test_pending_connection_request_->GetRequestId());
   }
 
   void DisconnectConnectionDelegatePtr() {
@@ -114,9 +116,10 @@ class SecureChannelPendingConnectionRequestBaseTest : public testing::Test {
     return fake_connection_delegate_->connection_attempt_failure_reason();
   }
 
-  std::pair<std::string, mojom::ConnectionDelegatePtr> ExtractClientData() {
-    return PendingConnectionRequest<TestFailureDetail>::ExtractClientData(
-        std::move(test_pending_connection_request_));
+  ClientConnectionParameters ExtractClientConnectionParameters() {
+    return PendingConnectionRequest<TestFailureDetail>::
+        ExtractClientConnectionParameters(
+            std::move(test_pending_connection_request_));
   }
 
   mojom::ConnectionDelegate::Proxy_* fake_connection_delegate_proxy() {
@@ -169,11 +172,12 @@ TEST_F(SecureChannelPendingConnectionRequestBaseTest,
             *GetFailedConnectionReason());
 }
 
-TEST_F(SecureChannelPendingConnectionRequestBaseTest, ExtractClientData) {
-  auto extracted_client_data = ExtractClientData();
-  EXPECT_EQ(kTestFeature, extracted_client_data.first);
+TEST_F(SecureChannelPendingConnectionRequestBaseTest,
+       ExtractClientConnectionParameters) {
+  auto extracted_client_data = ExtractClientConnectionParameters();
+  EXPECT_EQ(kTestFeature, extracted_client_data.feature());
   EXPECT_EQ(fake_connection_delegate_proxy(),
-            extracted_client_data.second.get());
+            extracted_client_data.connection_delegate_ptr().get());
 }
 
 }  // namespace secure_channel

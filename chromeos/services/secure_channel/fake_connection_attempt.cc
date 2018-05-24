@@ -20,13 +20,13 @@ FakeConnectionAttempt::~FakeConnectionAttempt() = default;
 void FakeConnectionAttempt::ProcessAddingNewConnectionRequest(
     std::unique_ptr<PendingConnectionRequest<std::string>> request) {
   DCHECK(request);
-  DCHECK(!base::ContainsKey(id_to_request_map_, request->request_id()));
+  DCHECK(!base::ContainsKey(id_to_request_map_, request->GetRequestId()));
 
-  id_to_request_map_[request->request_id()] = std::move(request);
+  id_to_request_map_[request->GetRequestId()] = std::move(request);
 }
 
-std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>
-FakeConnectionAttempt::ExtractClientData() {
+std::vector<ClientConnectionParameters>
+FakeConnectionAttempt::ExtractClientConnectionParameters() {
   return std::move(client_data_for_extraction_);
 }
 

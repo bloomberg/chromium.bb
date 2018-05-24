@@ -12,11 +12,16 @@ FakeSingleClientMessageProxy::FakeSingleClientMessageProxy(
     Delegate* delegate,
     base::OnceCallback<void(const base::UnguessableToken&)> destructor_callback)
     : SingleClientMessageProxy(delegate),
+      proxy_id_(base::UnguessableToken::Create()),
       destructor_callback_(std::move(destructor_callback)) {}
 
 FakeSingleClientMessageProxy::~FakeSingleClientMessageProxy() {
   if (destructor_callback_)
-    std::move(destructor_callback_).Run(proxy_id());
+    std::move(destructor_callback_).Run(GetProxyId());
+}
+
+const base::UnguessableToken& FakeSingleClientMessageProxy::GetProxyId() {
+  return proxy_id_;
 }
 
 void FakeSingleClientMessageProxy::HandleReceivedMessage(

@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/fake_connection_delegate.h"
 #include "chromeos/services/secure_channel/fake_message_receiver.h"
 #include "chromeos/services/secure_channel/fake_single_client_message_proxy.h"
@@ -43,8 +44,9 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
         std::move(fake_message_receiver));
 
     proxy_ = SingleClientMessageProxyImpl::Factory::Get()->BuildInstance(
-        fake_proxy_delegate_.get(), kTestFeature,
-        fake_connection_delegate_->GenerateInterfacePtr());
+        fake_proxy_delegate_.get(),
+        ClientConnectionParameters(
+            kTestFeature, fake_connection_delegate_->GenerateInterfacePtr()));
 
     CompletePendingMojoCalls();
     EXPECT_TRUE(fake_connection_delegate_->channel());
@@ -152,7 +154,8 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
   }
 
   bool WasDelegateNotifiedOfDisconnection() {
-    return proxy_->proxy_id() == fake_proxy_delegate_->disconnected_proxy_id();
+    return proxy_->GetProxyId() ==
+           fake_proxy_delegate_->disconnected_proxy_id();
   }
 
   const mojom::ConnectionMetadata& GetConnectionMetadataFromChannel() {

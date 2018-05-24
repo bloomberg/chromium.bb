@@ -40,7 +40,7 @@ MultiplexedChannelImpl::Factory::BuildInstance(
     std::unique_ptr<AuthenticatedChannel> authenticated_channel,
     MultiplexedChannel::Delegate* delegate,
     ConnectionDetails connection_details,
-    InitialClientList* initial_clients) {
+    std::vector<ClientConnectionParameters>* initial_clients) {
   DCHECK(authenticated_channel);
   DCHECK(!authenticated_channel->is_disconnected());
   DCHECK(delegate);
@@ -49,9 +49,9 @@ MultiplexedChannelImpl::Factory::BuildInstance(
 
   auto channel = base::WrapUnique(new MultiplexedChannelImpl(
       std::move(authenticated_channel), delegate, connection_details));
-  for (auto& client : *initial_clients) {
+  for (auto& client_connection_parameters : *initial_clients) {
     bool success =
-        channel->AddClientToChannel(client.first, std::move(client.second));
+        channel->AddClientToChannel(std::move(client_connection_parameters));
     if (!success) {
       PA_LOG(ERROR) << "MultiplexedChannelImpl::Factory::BuildInstance(): "
                     << "Failed to add initial client.";
@@ -84,15 +84,14 @@ bool MultiplexedChannelImpl::IsDisconnected() {
 }
 
 void MultiplexedChannelImpl::PerformAddClientToChannel(
-    const std::string& feature,
-    mojom::ConnectionDelegatePtr connection_delegate_ptr) {
-  DCHECK(!feature.empty());
-  DCHECK(connection_delegate_ptr);
+    ClientConnectionParameters client_connection_parameters) {
+  DCHECK(!client_connection_parameters.feature().empty());
+  DCHECK(client_connection_parameters.connection_delegate_ptr());
 
   auto proxy = SingleClientMessageProxyImpl::Factory::Get()->BuildInstance(
-      this /* delegate */, feature, std::move(connection_delegate_ptr));
-  DCHECK(!base::ContainsKey(id_to_proxy_map_, proxy->proxy_id()));
-  id_to_proxy_map_[proxy->proxy_id()] = std::move(proxy);
+      this /* delegate */, std::move(client_connection_parameters));
+  DCHECK(!base::ContainsKey(id_to_proxy_map_, proxy->GetProxyId()));
+  id_to_proxy_map_[proxy->GetProxyId()] = std::move(proxy);
 }
 
 void MultiplexedChannelImpl::OnDisconnected() {

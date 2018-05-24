@@ -10,6 +10,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/unguessable_token.h"
+#include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
@@ -32,10 +35,12 @@ class FakePendingConnectionRequest
   }
 
   void set_client_data_for_extraction(
-      std::pair<std::string, mojom::ConnectionDelegatePtr>
-          client_data_for_extraction) {
+      ClientConnectionParameters client_data_for_extraction) {
     client_data_for_extraction_ = std::move(client_data_for_extraction);
   }
+
+  // PendingConnectionRequest<std::string>:
+  const base::UnguessableToken& GetRequestId() const override;
 
   // Make NotifyRequestFinishedWithoutConnection() public for testing.
   using PendingConnectionRequest<
@@ -44,14 +49,13 @@ class FakePendingConnectionRequest
  private:
   // PendingConnectionRequest<std::string>:
   void HandleConnectionFailure(std::string failure_detail) override;
+  ClientConnectionParameters ExtractClientConnectionParameters() override;
 
-  std::pair<std::string, mojom::ConnectionDelegatePtr> ExtractClientData()
-      override;
+  const base::UnguessableToken id_;
 
   std::vector<std::string> handled_failure_details_;
 
-  std::pair<std::string, mojom::ConnectionDelegatePtr>
-      client_data_for_extraction_;
+  base::Optional<ClientConnectionParameters> client_data_for_extraction_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePendingConnectionRequest);
 };

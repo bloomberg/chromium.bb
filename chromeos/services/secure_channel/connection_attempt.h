@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_attempt_delegate.h"
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
@@ -29,13 +30,13 @@ class AuthenticatedChannel;
 template <typename FailureDetailType>
 class ConnectionAttempt {
  public:
-  // Extracts all of the features and ConnectionDelegates owned by |attempt|'s
+  // Extracts all of the ClientConnectionParameters owned by |attempt|'s
   // PendingConnectionRequests. This function deletes |attempt| as part of this
   // process to ensure that it is no longer used after extraction is complete.
-  static std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>
-  ExtractClientData(
+  static std::vector<ClientConnectionParameters>
+  ExtractClientConnectionParameters(
       std::unique_ptr<ConnectionAttempt<FailureDetailType>> attempt) {
-    return attempt->ExtractClientData();
+    return attempt->ExtractClientConnectionParameters();
   }
 
   virtual ~ConnectionAttempt() = default;
@@ -78,10 +79,10 @@ class ConnectionAttempt {
   virtual void ProcessAddingNewConnectionRequest(
       std::unique_ptr<PendingConnectionRequest<FailureDetailType>> request) = 0;
 
-  // Extracts the features and ConnectionDelegates from all child
+  // Extracts the ClientConnectionParameters from all child
   // PendingConnectionRequests.
-  virtual std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>
-  ExtractClientData() = 0;
+  virtual std::vector<ClientConnectionParameters>
+  ExtractClientConnectionParameters() = 0;
 
   void OnConnectionAttemptSucceeded(
       std::unique_ptr<AuthenticatedChannel> authenticated_channel) {
