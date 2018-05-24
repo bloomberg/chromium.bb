@@ -22,7 +22,8 @@ namespace {
 base::ReadOnlySharedMemoryRegion RenderPdfPagesToPwgRaster(
     base::ReadOnlySharedMemoryRegion pdf_region,
     const PdfRenderSettings& settings,
-    const PwgRasterSettings& bitmap_settings) {
+    const PwgRasterSettings& bitmap_settings,
+    uint32_t* page_count) {
   base::ReadOnlySharedMemoryRegion invalid_pwg_region;
   base::ReadOnlySharedMemoryMapping pdf_mapping = pdf_region.Map();
   if (!pdf_mapping.IsValid())
@@ -101,6 +102,7 @@ base::ReadOnlySharedMemoryRegion RenderPdfPagesToPwgRaster(
   if (!region_mapping.IsValid())
     return invalid_pwg_region;
 
+  *page_count = total_page_count;
   memcpy(region_mapping.mapping.memory(), pwg_data.data(), pwg_data.size());
   return std::move(region_mapping.region);
 }
@@ -118,8 +120,10 @@ void PdfToPwgRasterConverter::Convert(
     const PdfRenderSettings& pdf_settings,
     const PwgRasterSettings& pwg_raster_settings,
     ConvertCallback callback) {
-  std::move(callback).Run(RenderPdfPagesToPwgRaster(
-      std::move(pdf_region), pdf_settings, pwg_raster_settings));
+  uint32_t page_count = 0;
+  base::ReadOnlySharedMemoryRegion region = RenderPdfPagesToPwgRaster(
+      std::move(pdf_region), pdf_settings, pwg_raster_settings, &page_count);
+  std::move(callback).Run(std::move(region), page_count);
 }
 
 }  // namespace printing

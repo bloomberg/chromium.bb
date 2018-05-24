@@ -776,7 +776,7 @@ TEST_P(PrivetCapabilitiesTest, BadToken) {
 // request is uploading a file that is based on this pattern.
 class FakePwgRasterConverter : public printing::PwgRasterConverter {
  public:
-  void Start(base::RefCountedMemory* data,
+  void Start(const base::RefCountedMemory* data,
              const printing::PdfRenderSettings& conversion_settings,
              const printing::PwgRasterSettings& bitmap_settings,
              ResultCallback callback) override {
