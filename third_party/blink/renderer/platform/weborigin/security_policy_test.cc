@@ -254,7 +254,7 @@ TEST(SecurityPolicyTest, TrustworthyWhiteList) {
     scoped_refptr<const SecurityOrigin> origin =
         SecurityOrigin::CreateFromString(url);
     EXPECT_FALSE(origin->IsPotentiallyTrustworthy());
-    SecurityPolicy::AddOriginTrustworthyWhiteList(*origin);
+    SecurityPolicy::AddOriginTrustworthyWhiteList(origin->ToString());
     EXPECT_TRUE(origin->IsPotentiallyTrustworthy());
   }
 
@@ -281,7 +281,7 @@ TEST(SecurityPolicyTest, TrustworthyWhiteList) {
 
     EXPECT_FALSE(origin1->IsPotentiallyTrustworthy());
     EXPECT_FALSE(origin2->IsPotentiallyTrustworthy());
-    SecurityPolicy::AddOriginTrustworthyWhiteList(*origin1);
+    SecurityPolicy::AddOriginTrustworthyWhiteList(origin1->ToString());
     EXPECT_TRUE(origin1->IsPotentiallyTrustworthy());
     EXPECT_TRUE(origin2->IsPotentiallyTrustworthy());
   }

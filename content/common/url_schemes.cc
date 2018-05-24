@@ -37,10 +37,10 @@ std::vector<std::string>& GetMutableSavableSchemes() {
   return *schemes;
 }
 
-// Note we store url::Origins here instead of strings to deal with
-// canonicalization.
-std::vector<url::Origin>& GetMutableSecureOrigins() {
-  static base::NoDestructor<std::vector<url::Origin>> origins;
+// This set contains serialized canonicalized origins as well as hostname
+// patterns. The latter are canonicalized by component.
+std::vector<std::string>& GetMutableSecureOriginsAndPatterns() {
+  static base::NoDestructor<std::vector<std::string>> origins;
   return *origins;
 }
 
@@ -107,16 +107,16 @@ void RegisterContentSchemes(bool lock_schemes) {
 
   GetMutableServiceWorkerSchemes() = std::move(schemes.service_worker_schemes);
 
-  GetMutableSecureOrigins() = std::move(schemes.secure_origins);
-  network::cors::legacy::RegisterSecureOrigins(GetSecureOrigins());
+  GetMutableSecureOriginsAndPatterns() = std::move(schemes.secure_origins);
+  network::cors::legacy::RegisterSecureOrigins(GetSecureOriginsAndPatterns());
 }
 
 const std::vector<std::string>& GetSavableSchemes() {
   return GetMutableSavableSchemes();
 }
 
-const std::vector<url::Origin>& GetSecureOrigins() {
-  return GetMutableSecureOrigins();
+const std::vector<std::string>& GetSecureOriginsAndPatterns() {
+  return GetMutableSecureOriginsAndPatterns();
 }
 
 const std::vector<std::string>& GetServiceWorkerSchemes() {

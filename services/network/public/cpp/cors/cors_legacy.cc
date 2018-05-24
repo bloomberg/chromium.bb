@@ -5,15 +5,15 @@
 #include "services/network/public/cpp/cors/cors_legacy.h"
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #include "url/gurl.h"
-#include "url/origin.h"
 #include "url/url_util.h"
 
 namespace {
 
-std::vector<url::Origin>* secure_origins = nullptr;
+std::vector<std::string>* secure_origins = nullptr;
 
 }  // namespace
 
@@ -23,15 +23,15 @@ namespace cors {
 
 namespace legacy {
 
-void RegisterSecureOrigins(const std::vector<url::Origin>& origins) {
+void RegisterSecureOrigins(const std::vector<std::string>& origins) {
   delete secure_origins;
-  secure_origins = new std::vector<url::Origin>(origins.size());
+  secure_origins = new std::vector<std::string>(origins.size());
   std::copy(origins.begin(), origins.end(), secure_origins->begin());
 }
 
-const std::vector<url::Origin>& GetSecureOrigins() {
+const std::vector<std::string>& GetSecureOrigins() {
   if (!secure_origins)
-    secure_origins = new std::vector<url::Origin>;
+    secure_origins = new std::vector<std::string>;
   return *secure_origins;
 }
 

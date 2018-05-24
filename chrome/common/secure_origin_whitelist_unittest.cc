@@ -46,4 +46,48 @@ TEST_F(SecureOriginWhiteListTest, UnsafelyTreatInsecureOriginAsSecure) {
       GURL("http://foobar.127.example.com/a.html")));
 }
 
+TEST_F(SecureOriginWhiteListTest, HostnamePatterns) {
+  const struct HostnamePatternCase {
+    const char* pattern;
+    const char* test_input;
+    bool expected_secure;
+  } kTestCases[] = {
+      {"*.foo.com", "http://bar.foo.com", true},
+      {"*.foo.*.bar.com", "http://a.foo.b.bar.com:8000", true},
+      // For parsing/canonicalization simplicity, wildcard patterns can be
+      // hostnames only, not full origins.
+      {"http://*.foo.com", "http://bar.foo.com", false},
+      {"*://foo.com", "http://foo.com", false},
+      // Wildcards must be beyond eTLD+1.
+      {"*.co.uk", "http://foo.co.uk", false},
+      {"*.co.uk", "http://co.uk", false},
+      {"*.baz", "http://foo.baz", false},
+      {"foo.*.com", "http://foo.bar.com", false},
+      {"*.foo.baz", "http://a.foo.baz", true},
+      // Hostname patterns should be canonicalized.
+      {"*.FoO.com", "http://a.foo.com", true},
+      {"%2A.foo.com", "http://a.foo.com", false},
+      // Hostname patterns must contain a wildcard and a wildcard can only
+      // replace a component, not a part of a component.
+      {"foo.com", "http://foo.com", false},
+      {"test*.foo.com", "http://testblah.foo.com", false},
+      {"*foo.com", "http://testfoo.com", false},
+      {"foo*.com", "http://footest.com", false},
+  };
+
+  for (const auto& test : kTestCases) {
+    base::test::ScopedCommandLine scoped_command_line;
+    base::CommandLine* command_line =
+        scoped_command_line.GetProcessCommandLine();
+    command_line->AppendSwitchASCII(
+        switches::kUnsafelyTreatInsecureOriginAsSecure, test.pattern);
+    content::ResetSchemesAndOriginsWhitelist();
+    EXPECT_EQ(test.expected_secure,
+              content::IsOriginSecure(GURL(test.test_input)));
+    EXPECT_EQ(test.expected_secure,
+              content::IsPotentiallyTrustworthyOrigin(
+                  url::Origin::Create(GURL(test.test_input))));
+  }
+}
+
 }  // namespace chrome

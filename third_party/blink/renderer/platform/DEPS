@@ -27,6 +27,7 @@ include_rules = [
     "+base/rand_util.h",
     "+base/run_loop.h",
     "+base/sampling_heap_profiler/sampling_heap_profiler.h",
+    "+base/strings/pattern.h",
     "+base/strings/string_util.h",
     "+base/strings/stringprintf.h",
     "+base/synchronization/waitable_event.h",

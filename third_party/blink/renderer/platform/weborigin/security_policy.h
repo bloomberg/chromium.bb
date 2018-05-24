@@ -92,7 +92,7 @@ class PLATFORM_EXPORT SecurityPolicy {
   static bool IsAccessToURLWhiteListed(const SecurityOrigin* active_origin,
                                        const KURL&);
 
-  static void AddOriginTrustworthyWhiteList(const SecurityOrigin&);
+  static void AddOriginTrustworthyWhiteList(const String&);
   static bool IsOriginWhiteListedTrustworthy(const SecurityOrigin&);
   static bool IsUrlWhiteListedTrustworthy(const KURL&);
 

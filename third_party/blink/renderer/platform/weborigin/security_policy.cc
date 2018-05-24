@@ -29,6 +29,8 @@
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 #include <memory>
+
+#include "base/strings/pattern.h"
 #include "third_party/blink/public/platform/web_referrer_policy.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -40,6 +42,7 @@
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
@@ -242,15 +245,12 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
       referrer_policy_no_default);
 }
 
-void SecurityPolicy::AddOriginTrustworthyWhiteList(
-    const SecurityOrigin& origin) {
+void SecurityPolicy::AddOriginTrustworthyWhiteList(const String& origin) {
 #if DCHECK_IS_ON()
   // Must be called before we start other threads.
   DCHECK(WTF::IsBeforeThreadCreated());
 #endif
-  if (origin.IsUnique())
-    return;
-  TrustworthyOriginSet().insert(origin.ToRawString());
+  TrustworthyOriginSet().insert(origin);
 }
 
 bool SecurityPolicy::IsOriginWhiteListedTrustworthy(
@@ -259,7 +259,25 @@ bool SecurityPolicy::IsOriginWhiteListedTrustworthy(
   // allocations, copies, and frees.
   if (origin.IsUnique() || TrustworthyOriginSet().IsEmpty())
     return false;
-  return TrustworthyOriginSet().Contains(origin.ToRawString());
+  if (TrustworthyOriginSet().Contains(origin.ToRawString()))
+    return true;
+
+  // KURL and SecurityOrigin hosts should be canonicalized to 8-bit strings.
+  CHECK(origin.Host().Is8Bit());
+  StringUTF8Adaptor host_adaptor(origin.Host());
+  for (const auto& origin_or_pattern : TrustworthyOriginSet()) {
+    // Origins and hostname patterns are expected to be canonicalized (including
+    // canonicalization to 8-bit strings) before being inserted into the
+    // TrustworthyOriginSet().
+    CHECK(origin_or_pattern.Is8Bit());
+    StringUTF8Adaptor origin_or_pattern_adaptor(origin_or_pattern);
+    if (base::MatchPattern(host_adaptor.AsStringPiece(),
+                           origin_or_pattern_adaptor.AsStringPiece())) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool SecurityPolicy::IsUrlWhiteListedTrustworthy(const KURL& url) {
