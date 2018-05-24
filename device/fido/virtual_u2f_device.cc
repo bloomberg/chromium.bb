@@ -68,6 +68,16 @@ void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
     return;
   }
 
+  if (mutable_state()->simulate_invalid_response) {
+    std::vector<uint8_t> nonsense = {1, 2, 3};
+    auto response = apdu::ApduResponse(std::move(nonsense),
+                                       apdu::ApduResponse::Status::SW_NO_ERROR)
+                        .GetEncodedResponse();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb), std::move(response)));
+    return;
+  }
+
   base::Optional<std::vector<uint8_t>> response;
 
   switch (parsed_command->ins()) {

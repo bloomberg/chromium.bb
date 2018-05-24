@@ -1053,6 +1053,40 @@ TEST_F(AuthenticatorImplTest, GetAssertionPendingRequest) {
   EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, callback_receiver2.status());
 }
 
+TEST_F(AuthenticatorImplTest, InvalidResponse) {
+  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+  TestServiceManagerContext service_manager_context;
+
+  scoped_virtual_device.mutable_state()->simulate_invalid_response = true;
+
+  SimulateNavigation(GURL(kTestOrigin1));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  {
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+
+    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+              callback_receiver.status());
+  }
+
+  {
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+
+    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+              callback_receiver.status());
+  }
+}
+
 enum class IndividualAttestation {
   REQUESTED,
   NOT_REQUESTED,
