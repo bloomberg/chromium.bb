@@ -184,6 +184,10 @@ void Ui::OnUiRequestedNavigation() {
   model_->pop_mode(kModeEditingOmnibox);
 }
 
+void Ui::SetFloorHeight(float floor_height) {
+  model_->floor_height = floor_height;
+}
+
 void Ui::SetSpeechRecognitionEnabled(bool enabled) {
   if (enabled) {
     model_->speech.recognition_result.clear();

@@ -60,6 +60,7 @@ struct Model {
   std::vector<TabModel> incognito_tabs;
   bool incognito_tabs_view_selected = false;
   bool create_tabs_view = false;
+  float floor_height = 0.0f;
 
   // WebVR state.
   WebVrModel web_vr;
