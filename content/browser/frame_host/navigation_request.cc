@@ -336,6 +336,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           base::nullopt /* devtools_initiator_info */),
       request_params, browser_initiated, false /* from_begin_navigation */,
       &frame_entry, &entry, std::move(navigation_ui_data)));
+  navigation_request->blob_url_loader_factory_ =
+      frame_entry.blob_url_loader_factory();
   return navigation_request;
 }
 

@@ -123,7 +123,8 @@ class SessionRestorePageLoadMetricsObserverTest
     std::unique_ptr<content::NavigationEntry> entry(
         content::NavigationController::CreateNavigationEntry(
             GetTestURL(), content::Referrer(), ui::PAGE_TRANSITION_RELOAD,
-            false, std::string(), browser_context()));
+            false, std::string(), browser_context(),
+            nullptr /* blob_url_loader_factory */));
     entries.emplace_back(std::move(entry));
 
     content::NavigationController& controller = contents->GetController();

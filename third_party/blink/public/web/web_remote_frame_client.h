@@ -40,7 +40,8 @@ class WebRemoteFrameClient {
 
   // A remote frame was asked to start a navigation.
   virtual void Navigate(const WebURLRequest& request,
-                        bool should_replace_current_entry) {}
+                        bool should_replace_current_entry,
+                        mojo::ScopedMessagePipeHandle blob_url_token) {}
   virtual void Reload(WebFrameLoadType, ClientRedirectPolicy) {}
 
   virtual void FrameRectsChanged(const WebRect& local_frame_rect,

@@ -79,7 +79,8 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request) {
                                       frame_request.OriginDocument());
 
   Client()->Navigate(frame_request.GetResourceRequest(),
-                     frame_request.ReplacesCurrentItem());
+                     frame_request.ReplacesCurrentItem(),
+                     frame_request.GetBlobURLToken());
 }
 
 void RemoteFrame::Reload(FrameLoadType frame_load_type,

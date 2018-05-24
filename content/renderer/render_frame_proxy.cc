@@ -755,7 +755,8 @@ void RenderFrameProxy::ForwardPostMessage(
 }
 
 void RenderFrameProxy::Navigate(const blink::WebURLRequest& request,
-                                bool should_replace_current_entry) {
+                                bool should_replace_current_entry,
+                                mojo::ScopedMessagePipeHandle blob_url_token) {
   FrameHostMsg_OpenURL_Params params;
   params.url = request.Url();
   params.uses_post = request.HttpMethod().Utf8() == "POST";
@@ -768,6 +769,7 @@ void RenderFrameProxy::Navigate(const blink::WebURLRequest& request,
   params.should_replace_current_entry = should_replace_current_entry;
   params.user_gesture = request.HasUserGesture();
   params.triggering_event_info = blink::WebTriggeringEventInfo::kUnknown;
+  params.blob_url_token = blob_url_token.release();
 
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
 }

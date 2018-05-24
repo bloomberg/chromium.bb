@@ -2611,9 +2611,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // https://crbug.com/620261.
   std::unique_ptr<NavigationEntryImpl> cloned_entry =
       NavigationEntryImpl::FromNavigationEntry(
-          NavigationControllerImpl::CreateNavigationEntry(
+          NavigationController::CreateNavigationEntry(
               url1, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), shell()->web_contents()->GetBrowserContext()));
+              std::string(), shell()->web_contents()->GetBrowserContext(),
+              nullptr /* blob_url_loader_factory */));
   prev_entry = shell()->web_contents()->GetController().GetEntryAtIndex(0);
   cloned_entry->SetPageState(prev_entry->GetPageState());
   const std::vector<base::FilePath>& cloned_files =

@@ -6,7 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -27,6 +29,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -1227,6 +1230,56 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, SubframeErrorPages) {
     EXPECT_NE(GURL(kUnreachableWebDataURL),
               child2->current_frame_host()->GetSiteInstance()->GetSiteURL());
   }
+}
+
+class IsolatedOriginTestWithMojoBlobURLs : public IsolatedOriginTest {
+ public:
+  IsolatedOriginTestWithMojoBlobURLs() {
+    // Enabling NetworkService implies enabling MojoBlobURLs.
+    scoped_feature_list_.InitAndEnableFeature(
+        network::features::kNetworkService);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+// Times out on android, and crashes on mac due to its dependency on network
+// service.
+#define MAYBE_NavigateToBlobURL DISABLED_NavigateToBlobURL
+#else
+#define MAYBE_NavigateToBlobURL NavigateToBlobURL
+#endif
+
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithMojoBlobURLs,
+                       MAYBE_NavigateToBlobURL) {
+  GURL top_url(
+      embedded_test_server()->GetURL("www.foo.com", "/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), top_url));
+
+  GURL isolated_url(embedded_test_server()->GetURL("isolated.foo.com",
+                                                   "/page_with_iframe.html"));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  NavigateIframeToURL(web_contents(), "test_iframe", isolated_url);
+  EXPECT_EQ(child->current_url(), isolated_url);
+  EXPECT_TRUE(child->current_frame_host()->IsCrossProcessSubframe());
+
+  // Now navigate the child frame to a Blob URL.
+  TestNavigationObserver load_observer(shell()->web_contents());
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents()->GetMainFrame(),
+                            "const b = new Blob(['foo']);\n"
+                            "const u = URL.createObjectURL(b);\n"
+                            "frames[0].location = u;\n"
+                            "URL.revokeObjectURL(u);"));
+  load_observer.Wait();
+  EXPECT_TRUE(base::StartsWith(child->current_url().spec(),
+                               "blob:http://www.foo.com",
+                               base::CompareCase::SENSITIVE));
+  EXPECT_TRUE(load_observer.last_navigation_succeeded());
 }
 
 // Ensure that --disable-site-isolation-trials disables field trials.

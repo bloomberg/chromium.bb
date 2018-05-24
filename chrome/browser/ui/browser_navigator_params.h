@@ -16,6 +16,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
@@ -244,6 +245,9 @@ struct NavigateParams {
   // the SiteInstance that will be used for the resulting frame in the case of
   // an about:blank or a data url navigation.
   scoped_refptr<content::SiteInstance> source_site_instance;
+
+  // Optional URLLoaderFactory to facilitate blob URL loading.
+  scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
 
   // Indicates that the navigation should happen in an pwa window if
   // possible, i.e. if the is a PWA installed for the target URL.

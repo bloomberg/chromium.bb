@@ -512,7 +512,8 @@ ScopedJavaLocalRef<jobject>
           ui::PAGE_TRANSITION_LINK,
           true,  // is_renderer_initiated
           "",    // extra_headers
-          ProfileManager::GetActiveUserProfile()));
+          ProfileManager::GetActiveUserProfile(),
+          nullptr /* blob_url_loader_factory */));
 
   std::vector<content::NavigationEntry*> navigations(1);
   navigations[0] = entry.get();

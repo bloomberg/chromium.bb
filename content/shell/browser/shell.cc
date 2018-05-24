@@ -399,6 +399,7 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
   load_url_params.is_renderer_initiated = params.is_renderer_initiated;
   load_url_params.should_replace_current_entry =
       params.should_replace_current_entry;
+  load_url_params.blob_url_loader_factory = params.blob_url_loader_factory;
 
   if (params.uses_post) {
     load_url_params.load_type = NavigationController::LOAD_TYPE_HTTP_POST;

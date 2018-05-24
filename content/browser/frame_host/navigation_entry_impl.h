@@ -85,12 +85,14 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   enum : int { kInvalidBindings = -1 };
 
   NavigationEntryImpl();
-  NavigationEntryImpl(scoped_refptr<SiteInstanceImpl> instance,
-                      const GURL& url,
-                      const Referrer& referrer,
-                      const base::string16& title,
-                      ui::PageTransition transition_type,
-                      bool is_renderer_initiated);
+  NavigationEntryImpl(
+      scoped_refptr<SiteInstanceImpl> instance,
+      const GURL& url,
+      const Referrer& referrer,
+      const base::string16& title,
+      ui::PageTransition transition_type,
+      bool is_renderer_initiated,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
   ~NavigationEntryImpl() override;
 
   // NavigationEntry implementation:
@@ -233,7 +235,8 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       const std::vector<GURL>& redirect_chain,
       const PageState& page_state,
       const std::string& method,
-      int64_t post_id);
+      int64_t post_id,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
 
   // Returns the FrameNavigationEntry corresponding to |frame_tree_node|, if
   // there is one in this NavigationEntry.

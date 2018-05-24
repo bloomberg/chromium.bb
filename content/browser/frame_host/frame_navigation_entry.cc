@@ -25,7 +25,8 @@ FrameNavigationEntry::FrameNavigationEntry(
     const std::vector<GURL>& redirect_chain,
     const PageState& page_state,
     const std::string& method,
-    int64_t post_id)
+    int64_t post_id,
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory)
     : frame_unique_name_(frame_unique_name),
       item_sequence_number_(item_sequence_number),
       document_sequence_number_(document_sequence_number),
@@ -36,7 +37,8 @@ FrameNavigationEntry::FrameNavigationEntry(
       redirect_chain_(redirect_chain),
       page_state_(page_state),
       method_(method),
-      post_id_(post_id) {}
+      post_id_(post_id),
+      blob_url_loader_factory_(std::move(blob_url_loader_factory)) {}
 
 FrameNavigationEntry::~FrameNavigationEntry() {
 }
@@ -48,7 +50,7 @@ FrameNavigationEntry* FrameNavigationEntry::Clone() const {
   copy->UpdateEntry(frame_unique_name_, item_sequence_number_,
                     document_sequence_number_, site_instance_.get(), nullptr,
                     url_, referrer_, redirect_chain_, page_state_, method_,
-                    post_id_);
+                    post_id_, nullptr /* blob_url_loader_factory */);
   return copy;
 }
 
@@ -63,7 +65,8 @@ void FrameNavigationEntry::UpdateEntry(
     const std::vector<GURL>& redirect_chain,
     const PageState& page_state,
     const std::string& method,
-    int64_t post_id) {
+    int64_t post_id,
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   frame_unique_name_ = frame_unique_name;
   item_sequence_number_ = item_sequence_number;
   document_sequence_number_ = document_sequence_number;
@@ -75,6 +78,7 @@ void FrameNavigationEntry::UpdateEntry(
   page_state_ = page_state;
   method_ = method;
   post_id_ = post_id;
+  blob_url_loader_factory_ = std::move(blob_url_loader_factory);
 }
 
 void FrameNavigationEntry::set_item_sequence_number(

@@ -24,6 +24,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -101,7 +102,8 @@ class NavigationController {
       ui::PageTransition transition,
       bool is_renderer_initiated,
       const std::string& extra_headers,
-      BrowserContext* browser_context);
+      BrowserContext* browser_context,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
 
   // Extra optional parameters for LoadURLWithParams.
   struct CONTENT_EXPORT LoadURLParams {
@@ -198,6 +200,9 @@ class NavigationController {
 
     // Indicates whether or not this navigation was initiated via context menu.
     bool started_from_context_menu;
+
+    // Optional URLLoaderFactory to facilitate navigation to a blob URL.
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
 
     // This value should only be set for main frame navigations. Subframe
     // navigations will always get their NavigationUIData from

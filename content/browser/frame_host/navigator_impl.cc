@@ -554,7 +554,8 @@ void NavigatorImpl::RequestOpenURL(
     WindowOpenDisposition disposition,
     bool should_replace_current_entry,
     bool user_gesture,
-    blink::WebTriggeringEventInfo triggering_event_info) {
+    blink::WebTriggeringEventInfo triggering_event_info,
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   // Note: This can be called for subframes (even when OOPIFs are not possible)
   // if the disposition calls for a different window.
 
@@ -624,6 +625,8 @@ void NavigatorImpl::RequestOpenURL(
     params.is_renderer_initiated = false;
   }
 
+  params.blob_url_loader_factory = std::move(blob_url_loader_factory);
+
   GetContentClient()->browser()->OverrideNavigationParams(
       current_site_instance, &params.transition, &params.is_renderer_initiated,
       &params.referrer);
@@ -641,7 +644,8 @@ void NavigatorImpl::NavigateFromFrameProxy(
     bool should_replace_current_entry,
     const std::string& method,
     scoped_refptr<network::ResourceRequestBody> post_body,
-    const std::string& extra_headers) {
+    const std::string& extra_headers,
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   // |method != "POST"| should imply absence of |post_body|.
   if (method != "POST" && post_body) {
     NOTREACHED();
@@ -689,7 +693,7 @@ void NavigatorImpl::NavigateFromFrameProxy(
   controller_->NavigateFromFrameProxy(
       render_frame_host, url, is_renderer_initiated, source_site_instance,
       referrer_to_use, page_transition, should_replace_current_entry, method,
-      post_body, extra_headers);
+      post_body, extra_headers, std::move(blob_url_loader_factory));
 }
 
 void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
@@ -1072,10 +1076,11 @@ void NavigatorImpl::DidStartMainFrameNavigation(
       !renderer_provisional_load_to_pending_url) {
     std::unique_ptr<NavigationEntryImpl> entry =
         NavigationEntryImpl::FromNavigationEntry(
-            controller_->CreateNavigationEntry(
+            NavigationController::CreateNavigationEntry(
                 url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
                 true /* is_renderer_initiated */, std::string(),
-                controller_->GetBrowserContext()));
+                controller_->GetBrowserContext(),
+                nullptr /* blob_url_loader_factory */));
     entry->set_site_instance(site_instance);
     // TODO(creis): If there's a pending entry already, find a safe way to
     // update it instead of replacing it and copying over things like this.

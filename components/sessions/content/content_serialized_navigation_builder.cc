@@ -95,7 +95,8 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
           // increase the typed count.
           ui::PAGE_TRANSITION_RELOAD, false,
           // The extra headers are not sync'ed across sessions.
-          std::string(), browser_context));
+          std::string(), browser_context,
+          nullptr /* blob_url_loader_factory */));
 
   entry->SetTitle(navigation->title_);
   entry->SetPageState(content::PageState::CreateFromEncodedData(

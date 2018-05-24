@@ -186,7 +186,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
                           blink::WebDOMMessageEvent event,
                           bool has_user_gesture) override;
   void Navigate(const blink::WebURLRequest& request,
-                bool should_replace_current_entry) override;
+                bool should_replace_current_entry,
+                mojo::ScopedMessagePipeHandle blob_url_token) override;
   void FrameRectsChanged(const blink::WebRect& local_frame_rect,
                          const blink::WebRect& screen_space_rect) override;
   void UpdateRemoteViewportIntersection(
