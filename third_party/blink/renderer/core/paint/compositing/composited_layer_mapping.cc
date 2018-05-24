@@ -1265,8 +1265,8 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
     const IntRect& relative_compositing_bounds,
     const IntRect& local_compositing_bounds,
     const IntPoint& graphics_layer_parent_location) {
-  // In RLS mode, an iframe's main GraphicsLayer is positioned by the CLM for
-  // the <iframe> element in the parent frame's DOM.
+  // An iframe's main GraphicsLayer is positioned by the CLM for the <iframe>
+  // element in the parent frame's DOM.
   bool is_iframe_doc = GetLayoutObject().IsLayoutView() &&
                        !GetLayoutObject().GetFrame()->IsLocalRoot();
   if (!is_iframe_doc) {
@@ -3546,11 +3546,14 @@ bool CompositedLayerMapping::IsScrollableAreaLayer(
 }
 
 bool CompositedLayerMapping::ShouldThrottleRendering() const {
-  return Compositor()->ShouldThrottleRendering();
+  return GetLayoutObject().View()->GetFrame()->ShouldThrottleRendering();
 }
 
 bool CompositedLayerMapping::IsTrackingRasterInvalidations() const {
-  return Compositor()->IsTrackingRasterInvalidations();
+  return GetLayoutObject()
+      .View()
+      ->GetFrameView()
+      ->IsTrackingPaintInvalidations();
 }
 
 #if DCHECK_IS_ON()

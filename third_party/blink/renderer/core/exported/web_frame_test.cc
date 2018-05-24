@@ -1968,9 +1968,7 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode) {
   web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
 
   PaintLayerCompositor* compositor = web_view_helper.GetWebView()->Compositor();
-  GraphicsLayer* scroll_container = compositor->ContainerLayer();
-  if (!scroll_container)
-    scroll_container = compositor->RootGraphicsLayer();
+  GraphicsLayer* scroll_container = compositor->RootGraphicsLayer();
 
   EXPECT_EQ(0, web_view_helper.GetWebView()
                    ->MainFrameImpl()

@@ -86,6 +86,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -842,8 +843,14 @@ String LocalFrame::GetLayerTreeAsTextForTesting(unsigned flags) const {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     layers = View()->CompositedLayersAsJSON(static_cast<LayerTreeFlags>(flags));
   } else {
-    layers = ContentLayoutObject()->Compositor()->LayerTreeAsJSON(
-        static_cast<LayerTreeFlags>(flags));
+    if (const auto* root_layer =
+            ContentLayoutObject()->Compositor()->RootGraphicsLayer()) {
+      if (flags & kLayerTreeIncludesRootLayer && IsMainFrame()) {
+        while (root_layer->Parent())
+          root_layer = root_layer->Parent();
+      }
+      layers = root_layer->LayerTreeAsJSON(static_cast<LayerTreeFlags>(flags));
+    }
   }
 
   if (flags & kLayerTreeIncludesPaintInvalidations) {

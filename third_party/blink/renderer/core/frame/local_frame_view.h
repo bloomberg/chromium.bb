@@ -485,10 +485,6 @@ class CORE_EXPORT LocalFrameView final
   bool ScrollAnimatorEnabled() const override;
   bool ShouldScrollOnMainThread() const override;
   PaintLayer* Layer() const override;
-  GraphicsLayer* LayerForScrolling() const override;
-  GraphicsLayer* LayerForHorizontalScrollbar() const override;
-  GraphicsLayer* LayerForVerticalScrollbar() const override;
-  GraphicsLayer* LayerForScrollCorner() const override;
   int ScrollSize(ScrollbarOrientation) const override;
   bool IsScrollCornerVisible() const override;
   bool UpdateAfterCompositingChange() override;

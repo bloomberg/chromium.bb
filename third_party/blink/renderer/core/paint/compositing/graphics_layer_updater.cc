@@ -95,7 +95,6 @@ void GraphicsLayerUpdater::Update(
   TRACE_EVENT0("blink", "GraphicsLayerUpdater::update");
   UpdateRecursive(layer, kDoNotForceUpdate, UpdateContext(),
                   layers_needing_paint_invalidation);
-  layer.Compositor()->UpdateRootLayerPosition();
 }
 
 void GraphicsLayerUpdater::UpdateRecursive(
