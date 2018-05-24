@@ -317,6 +317,7 @@ crbug.com/819617 [ Linux ] fast/text/descent-clip-in-scaled-page.html [ Failure 
 
 # Tests for LayoutNG to pass, but not planned to fix for pre-LayoutNG.
 crbug.com/796943 fast/text/international/shape-across-elements-simple.html [ Failure ]
+crbug.com/845902 external/wpt/css/css-sizing/whitespace-and-break.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-004.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-005.html [ Failure ]
 
