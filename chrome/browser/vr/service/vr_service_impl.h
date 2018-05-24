@@ -18,6 +18,7 @@
 namespace vr {
 
 class VRDisplayHost;
+class BrowserXrDevice;
 
 // Browser process representation of a WebVR site session. Instantiated through
 // Mojo once the user loads a page containing WebVR.
@@ -39,10 +40,10 @@ class VRServiceImpl : public device::mojom::VRService,
                  SetClientCallback callback) override;
 
   // Tells the renderer that a new VR device is available.
-  void ConnectDevice(device::VRDevice* device);
+  void ConnectDevice(BrowserXrDevice* device);
 
   // Tells the renderer that a VR device has gone away.
-  void RemoveDevice(device::VRDevice* device);
+  void RemoveDevice(BrowserXrDevice* device);
 
   void InitializationComplete();
 
@@ -65,7 +66,7 @@ class VRServiceImpl : public device::mojom::VRService,
 
   void OnWebContentsFocusChanged(content::RenderWidgetHost* host, bool focused);
 
-  std::map<device::VRDevice*, std::unique_ptr<VRDisplayHost>> displays_;
+  std::map<BrowserXrDevice*, std::unique_ptr<VRDisplayHost>> displays_;
   SetClientCallback set_client_callback_;
   device::mojom::VRServiceClientPtr client_;
   content::RenderFrameHost* render_frame_host_;

@@ -31,25 +31,14 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
                 mojom::VRServiceClient* service_client,
                 mojom::VRDisplayInfoPtr display_info,
                 mojom::VRDisplayHostPtr display_host,
+                mojom::VRDisplayClientRequest client_request,
                 bool in_frame_focused);
   ~VRDisplayImpl() override;
-
-  virtual void OnChanged(mojom::VRDisplayInfoPtr vr_device_info);
-  virtual void OnExitPresent();
-  virtual void OnActivate(mojom::VRDisplayEventReason reason,
-                          base::Callback<void(bool)> on_handled);
-  virtual void OnDeactivate(mojom::VRDisplayEventReason reason);
 
   void SetListeningForActivate(bool listening);
   void SetInFocusedFrame(bool in_focused_frame);
   virtual bool ListeningForActivate();
   virtual bool InFocusedFrame();
-
-  void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
-                      mojom::VRPresentationProviderRequest request,
-                      mojom::VRRequestPresentOptionsPtr options,
-                      mojom::VRDisplayHost::RequestPresentCallback callback);
-  void ExitPresent();
 
  private:
   // mojom::VRMagicWindowProvider
@@ -59,7 +48,6 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
                     GetFrameDataCallback callback) override;
 
   mojo::Binding<mojom::VRMagicWindowProvider> binding_;
-  mojom::VRDisplayClientPtr client_;
   device::VRDeviceBase* device_;
   bool listening_for_activate_ = false;
   bool in_focused_frame_ = false;

@@ -25,7 +25,6 @@ class OculusDevice : public VRDeviceBase {
 
   // VRDeviceBase
   void RequestPresent(
-      VRDisplayImpl* display,
       mojom::VRSubmitFrameClientPtr submit_client,
       mojom::VRPresentationProviderRequest request,
       mojom::VRRequestPresentOptionsPtr present_options,

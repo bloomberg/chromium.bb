@@ -193,6 +193,8 @@ static_library("vr_common") {
     "sample_queue.h",
     "sequence.cc",
     "sequence.h",
+    "service/browser_xr_device.cc",
+    "service/browser_xr_device.h",
     "service/vr_device_manager.cc",
     "service/vr_device_manager.h",
     "service/vr_display_host.cc",
