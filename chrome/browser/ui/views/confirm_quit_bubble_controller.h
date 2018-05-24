@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
 class ConfirmQuitBubbleBase;
@@ -28,7 +29,8 @@ class Accelerator;
 
 // Manages showing and hiding the confirm-to-quit bubble.  Requests Chrome to be
 // closed if the quit accelerator is held down or pressed twice in succession.
-class ConfirmQuitBubbleController : public gfx::AnimationDelegate {
+class ConfirmQuitBubbleController : public gfx::AnimationDelegate,
+                                    public BrowserListObserver {
  public:
   static ConfirmQuitBubbleController* GetInstance();
 
@@ -71,6 +73,9 @@ class ConfirmQuitBubbleController : public gfx::AnimationDelegate {
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 
+  // BrowserListObserver:
+  void OnBrowserNoLongerActive(Browser* browser) override;
+
   void OnTimerElapsed();
 
   void ConfirmQuit();
@@ -82,6 +87,9 @@ class ConfirmQuitBubbleController : public gfx::AnimationDelegate {
   std::unique_ptr<ConfirmQuitBubbleBase> const view_;
 
   State state_;
+
+  // The last active browser when the accelerator was pressed.
+  Browser* browser_ = nullptr;
 
   std::unique_ptr<base::Timer> hide_timer_;
 

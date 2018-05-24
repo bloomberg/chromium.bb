@@ -86,6 +86,8 @@ class ConfirmQuitBubbleControllerTest : public testing::Test {
 
   void ReleaseOtherAccelerator() { SendAccelerator(false, false, false); }
 
+  void DeactivateBrowser() { controller_->OnBrowserNoLongerActive(nullptr); }
+
   std::unique_ptr<ConfirmQuitBubbleController> controller_;
 
   // Owned by |controller_|.
@@ -150,4 +152,32 @@ TEST_F(ConfirmQuitBubbleControllerTest, OtherKeyPress) {
   EXPECT_FALSE(quit_called_);
   ReleaseQuitAccelerator();
   EXPECT_TRUE(quit_called_);
+}
+
+// The controller state should be reset when the browser loses focus.
+TEST_F(ConfirmQuitBubbleControllerTest, BrowserLosesFocus) {
+  // Press but don't release the accelerator.
+  PressQuitAccelerator();
+  EXPECT_TRUE(timer_->IsRunning());
+  DeactivateBrowser();
+  EXPECT_FALSE(timer_->IsRunning());
+  EXPECT_FALSE(quit_called_);
+  ReleaseQuitAccelerator();
+
+  // Press and release the accelerator.
+  PressQuitAccelerator();
+  ReleaseQuitAccelerator();
+  EXPECT_TRUE(timer_->IsRunning());
+  DeactivateBrowser();
+  EXPECT_FALSE(timer_->IsRunning());
+  EXPECT_FALSE(quit_called_);
+
+  // Press and hold the accelerator.
+  PressQuitAccelerator();
+  EXPECT_TRUE(timer_->IsRunning());
+  timer_->Fire();
+  EXPECT_FALSE(timer_->IsRunning());
+  DeactivateBrowser();
+  ReleaseQuitAccelerator();
+  EXPECT_FALSE(quit_called_);
 }
