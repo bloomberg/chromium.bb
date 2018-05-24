@@ -361,6 +361,32 @@ public final class FetchHelperTest {
         verify(mDelegate, times(1)).requestSuggestions(eq(STARTING_URL));
     }
 
+    @Test
+    public void switchTabs_suggestionsDismissed() {
+        FetchHelper helper = createFetchHelper();
+        addTab(mTab2);
+
+        // Wait for the fetch delay and verify that suggestions are requested for the first tab.
+        verify(mDelegate, times(1)).reportFetchDelayed(eq(mWebContents));
+        runUntilFetchPossible();
+        verify(mDelegate, times(1)).requestSuggestions(eq(STARTING_URL));
+
+        // Simulate suggestions dismissed by user on the first tab.
+        helper.onSuggestionsDismissed(mTab);
+
+        // Switch to the second tab, and verify that suggestions are requested without a delay.
+        selectTab(mTab2);
+        verify(mDelegate, times(1)).clearState();
+        verify(mDelegate, times(0)).reportFetchDelayed(eq(mWebContents2));
+        verify(mDelegate, times(1)).requestSuggestions(eq(DIFFERENT_URL));
+
+        // Switch back to the first tab, and verify that fetch is not requested.
+        selectTab(mTab);
+        verify(mDelegate, times(2)).clearState();
+        verify(mDelegate, times(1)).reportFetchDelayed(eq(mWebContents));
+        verify(mDelegate, times(1)).requestSuggestions(eq(STARTING_URL));
+    }
+
     private void addTab(Tab tab) {
         getTabModelObserver().didAddTab(tab, TabLaunchType.FROM_LINK);
     }

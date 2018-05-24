@@ -56,6 +56,7 @@ class FetchHelper {
     class TabFetchReadinessState {
         private long mFetchTimeBaselineMillis;
         private String mUrl;
+        private boolean mSuggestionsDismissed;
 
         TabFetchReadinessState(String url) {
             updateUrl(url);
@@ -69,6 +70,7 @@ class FetchHelper {
         void updateUrl(String url) {
             mUrl = URLUtil.isNetworkUrl(url) ? url : null;
             mFetchTimeBaselineMillis = 0;
+            setSuggestionsDismissed(false);
         }
 
         /** @return The current URL tracked by this tab state. */
@@ -76,9 +78,12 @@ class FetchHelper {
             return mUrl;
         }
 
-        /** @return Whether the tab state is tracking a tab with valid page loaded. */
+        /**
+         * @return Whether the tab state is tracking a tab with valid page loaded and valid status
+         *         for fetching.
+         */
         boolean isTrackingPage() {
-            return mUrl != null;
+            return mUrl != null && !mSuggestionsDismissed;
         }
 
         /**
@@ -102,6 +107,11 @@ class FetchHelper {
         /** @return Whether the fetch timer is running. */
         boolean isFetchTimeBaselineSet() {
             return mFetchTimeBaselineMillis != 0;
+        }
+
+        /** @param dismissed Whether the suggestions have been dismissed by the user. */
+        void setSuggestionsDismissed(boolean dismissed) {
+            mSuggestionsDismissed = dismissed;
         }
 
         /**
@@ -393,6 +403,14 @@ class FetchHelper {
         return sDisableDelayForTesting
                 ? sFetchTimeBaselineMillisForTesting
                 : mObservedTabs.get(tab.getId()).getFetchTimeBaselineMillis();
+    }
+
+    /**
+     * Called when suggestions were dismissed.
+     * @param tab The tab on which suggestions were dismissed.
+     */
+    void onSuggestionsDismissed(@NonNull Tab tab) {
+        mObservedTabs.get(tab.getId()).setSuggestionsDismissed(true);
     }
 
     private boolean isFromGoogleSearchRequired() {
