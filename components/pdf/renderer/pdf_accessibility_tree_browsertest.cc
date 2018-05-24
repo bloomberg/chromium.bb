@@ -92,6 +92,10 @@ class PdfAccessibilityTreeTest : public content::RenderViewTest {
     viewport_info_.zoom = 1.0;
     viewport_info_.scroll = {0, 0};
     viewport_info_.offset = {0, 0};
+    viewport_info_.selection_start_page_index = 0;
+    viewport_info_.selection_start_char_index = 0;
+    viewport_info_.selection_end_page_index = 0;
+    viewport_info_.selection_end_char_index = 0;
     doc_info_.page_count = 1;
     page_info_.page_index = 0;
     page_info_.text_run_count = 0;
@@ -107,13 +111,7 @@ class PdfAccessibilityTreeTest : public content::RenderViewTest {
   std::vector<PP_PrivateAccessibilityCharInfo> chars_;
 };
 
-#if defined(MEMORY_SANITIZER)
-// https://crbug.com/845143
-#define MAYBE_TestEmptyPDFPage DISABLED_TestEmptyPDFPage
-#else
-#define MAYBE_TestEmptyPDFPage TestEmptyPDFPage
-#endif
-TEST_F(PdfAccessibilityTreeTest, MAYBE_TestEmptyPDFPage) {
+TEST_F(PdfAccessibilityTreeTest, TestEmptyPDFPage) {
   content::RenderFrame* render_frame = view_->GetMainRenderFrame();
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
   ASSERT_TRUE(render_frame->GetRenderAccessibility());
