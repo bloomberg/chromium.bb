@@ -18,6 +18,7 @@
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/contextual/contextual_suggestion.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_debugging_reporter.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_reporter.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_test_utils.h"
@@ -107,8 +108,11 @@ class ContextualContentSuggestionsServiceTest : public testing::Test {
     std::unique_ptr<FakeContextualSuggestionsFetcher> fetcher =
         std::make_unique<FakeContextualSuggestionsFetcher>();
     fetcher_ = fetcher.get();
+    auto debugging_reporter = std::make_unique<
+        contextual_suggestions::ContextualSuggestionsDebuggingReporter>();
     auto reporter_provider = std::make_unique<
-        contextual_suggestions::ContextualSuggestionsReporterProvider>();
+        contextual_suggestions::ContextualSuggestionsReporterProvider>(
+        std::move(debugging_reporter));
     source_ = std::make_unique<ContextualContentSuggestionsService>(
         std::move(fetcher),
         std::make_unique<FakeCachedImageFetcher>(&pref_service_),
