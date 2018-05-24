@@ -1493,8 +1493,6 @@
       'Chromium Win 10 GCE Tests',
       # chromium.memory
       'Linux TSan Tests',
-      # chromium.win
-      'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
       # chromium.clang
