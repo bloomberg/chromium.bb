@@ -130,7 +130,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
       base::OnceCallback<void(const SkBitmap&)> callback) override;
-  viz::mojom::FrameSinkVideoCapturerPtr CreateVideoCapturer() override;
+  std::unique_ptr<viz::ClientFrameSinkVideoCapturer> CreateVideoCapturer()
+      override;
   void FocusedNodeTouched(bool editable) override;
   void GetScreenInfo(ScreenInfo* screen_info) const override;
   void EnableAutoResize(const gfx::Size& min_size,

@@ -258,6 +258,16 @@ void HostFrameSinkManager::CreateVideoCapturer(
   frame_sink_manager_->CreateVideoCapturer(std::move(request));
 }
 
+std::unique_ptr<ClientFrameSinkVideoCapturer>
+HostFrameSinkManager::CreateVideoCapturer() {
+  return std::make_unique<ClientFrameSinkVideoCapturer>(base::BindRepeating(
+      [](base::WeakPtr<HostFrameSinkManager> self,
+         mojom::FrameSinkVideoCapturerRequest request) {
+        self->CreateVideoCapturer(std::move(request));
+      },
+      weak_ptr_factory_.GetWeakPtr()));
+}
+
 void HostFrameSinkManager::EvictSurfaces(
     const std::vector<SurfaceId>& surface_ids) {
   frame_sink_manager_->EvictSurfaces(surface_ids);

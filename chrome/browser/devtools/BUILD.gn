@@ -108,6 +108,7 @@ static_library("devtools") {
       "//chrome:strings",
       "//chrome/app/theme:theme_resources",
       "//chrome/common",
+      "//components/viz/host",
       "//net:http_server",
       "//skia",
       "//third_party/icu",
